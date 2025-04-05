@@ -2184,6 +2184,19 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		// Check and handle all built-in shortcuts.
 
+		if (is_tab_moves_focus_enabled()) {
+			if (k->is_action("ui_focus_next", true)) {
+				find_next_valid_focus()->grab_focus();
+				accept_event();
+				return;
+			}
+			if (k->is_action("ui_focus_prev", true)) {
+				find_prev_valid_focus()->grab_focus();
+				accept_event();
+				return;
+			}
+		}
+
 		// NEWLINES.
 		if (k->is_action("ui_text_newline_above", true)) {
 			_new_line(false, true);
@@ -3449,6 +3462,18 @@ bool TextEdit::is_empty_selection_clipboard_enabled() const {
 	return empty_selection_clipboard_enabled;
 }
 
+void TextEdit::set_tab_moves_focus_enabled(bool p_enabled) {
+	tab_moves_focus_enabled = p_enabled;
+
+	if (menu) {
+		menu->set_item_checked(menu->get_item_index(MENU_TAB_MOVES_FOCUS), p_enabled);
+	}
+}
+
+bool TextEdit::is_tab_moves_focus_enabled() const {
+	return tab_moves_focus_enabled;
+}
+
 // Text manipulation
 void TextEdit::clear() {
 	setting_text = true;
@@ -4127,6 +4152,9 @@ void TextEdit::menu_option(int p_option) {
 		} break;
 		case MENU_EMOJI_AND_SYMBOL: {
 			show_emoji_and_symbol_picker();
+		} break;
+		case MENU_TAB_MOVES_FOCUS: {
+			set_tab_moves_focus_enabled(!is_tab_moves_focus_enabled());
 		} break;
 	}
 }
@@ -6637,6 +6665,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_empty_selection_clipboard_enabled", "enabled"), &TextEdit::set_empty_selection_clipboard_enabled);
 	ClassDB::bind_method(D_METHOD("is_empty_selection_clipboard_enabled"), &TextEdit::is_empty_selection_clipboard_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_tab_moves_focus_enabled", "enabled"), &TextEdit::set_tab_moves_focus_enabled);
+	ClassDB::bind_method(D_METHOD("is_tab_moves_focus_enabled"), &TextEdit::is_tab_moves_focus_enabled);
+
 	// Text manipulation
 	ClassDB::bind_method(D_METHOD("clear"), &TextEdit::clear);
 
@@ -6718,6 +6749,7 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_INSERT_WJ);
 	BIND_ENUM_CONSTANT(MENU_INSERT_SHY);
 	BIND_ENUM_CONSTANT(MENU_EMOJI_AND_SYMBOL);
+	BIND_ENUM_CONSTANT(MENU_TAB_MOVES_FOCUS);
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
 	/* Versioning */
@@ -7034,6 +7066,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "empty_selection_clipboard_enabled"), "set_empty_selection_clipboard_enabled", "is_empty_selection_clipboard_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tab_moves_focus_enabled"), "set_tab_moves_focus_enabled", "is_tab_moves_focus_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Arbitrary:1,Word:2,Word (Smart):3"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_wrapped_lines"), "set_indent_wrapped_lines", "is_indent_wrapped_lines");
@@ -7497,6 +7530,8 @@ void TextEdit::_generate_context_menu() {
 	menu->add_separator();
 	menu->add_check_item(ETR("Display Control Characters"), MENU_DISPLAY_UCC);
 	menu->add_submenu_node_item(ETR("Insert Control Character"), menu_ctl, MENU_SUBMENU_INSERT_UCC);
+	menu->add_separator();
+	menu->add_check_item(ETR("Tab Key Moves Focus"), MENU_TAB_MOVES_FOCUS);
 
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
 	menu_dir->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
@@ -7550,6 +7585,7 @@ void TextEdit::_update_context_menu() {
 	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_LTR, text_direction == TEXT_DIRECTION_LTR)
 	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_RTL, text_direction == TEXT_DIRECTION_RTL)
 	MENU_ITEM_CHECKED(menu, MENU_DISPLAY_UCC, draw_control_chars)
+	MENU_ITEM_CHECKED(menu, MENU_TAB_MOVES_FOCUS, tab_moves_focus_enabled)
 	MENU_ITEM_DISABLED(menu, MENU_SUBMENU_INSERT_UCC, !editable)
 
 #undef MENU_ITEM_ACTION_DISABLED
