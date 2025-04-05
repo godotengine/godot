@@ -121,6 +121,34 @@ public:
 	AnimationNodeSync();
 };
 
+class AnimationNodeOneShotEvent : public AnimationNodeEvent {
+	GDCLASS(AnimationNodeOneShotEvent, AnimationNodeEvent);
+
+private:
+	bool fadein_finishing;
+	bool fadeout_starting;
+
+protected:
+	static void _bind_methods();
+
+public:
+	bool is_fadein_finishing() const {
+		return fadein_finishing;
+	}
+
+	void set_fadein_finishing(bool p_fadein_finishing) {
+		fadein_finishing = p_fadein_finishing;
+	}
+
+	bool is_fadeout_starting() const {
+		return fadeout_starting;
+	}
+
+	void set_fadeout_starting(bool p_fadeout_starting) {
+		fadeout_starting = p_fadeout_starting;
+	}
+};
+
 class AnimationNodeOneShot : public AnimationNodeSync {
 	GDCLASS(AnimationNodeOneShot, AnimationNodeSync);
 
@@ -155,6 +183,8 @@ private:
 	StringName fade_in_remaining = "fade_in_remaining";
 	StringName fade_out_remaining = "fade_out_remaining";
 	StringName time_to_restart = "time_to_restart";
+
+	void _check_and_notify_state_changes(bool p_active, bool p_internal_active, double p_fade_in_remaining);
 
 protected:
 	static void _bind_methods();
@@ -322,6 +352,33 @@ public:
 	AnimationNodeTimeSeek();
 };
 
+class AnimationNodeTransitionEvent : public AnimationNodeEvent {
+	GDCLASS(AnimationNodeTransitionEvent, AnimationNodeEvent);
+
+	String prev_state;
+	String next_state;
+
+protected:
+	static void _bind_methods();
+
+public:
+	String get_previous_state() const {
+		return prev_state;
+	}
+
+	void set_previous_state(const String &p_state) {
+		prev_state = p_state;
+	}
+
+	String get_next_state() const {
+		return next_state;
+	}
+
+	void set_next_state(const String &p_state) {
+		next_state = p_state;
+	}
+};
+
 class AnimationNodeTransition : public AnimationNodeSync {
 	GDCLASS(AnimationNodeTransition, AnimationNodeSync);
 
@@ -346,6 +403,8 @@ class AnimationNodeTransition : public AnimationNodeSync {
 	bool allow_transition_to_self = false;
 
 	bool pending_update = false;
+
+	void _create_event(bool p_starting, const String &p_previous, const String &p_next);
 
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;

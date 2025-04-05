@@ -105,6 +105,24 @@ VARIANT_ENUM_CAST(AnimationNodeStateMachineTransition::AdvanceMode)
 
 class AnimationNodeStateMachinePlayback;
 
+class AnimationNodeStateMachineEvent : public AnimationNodeEvent {
+	GDCLASS(AnimationNodeStateMachineEvent, AnimationNodeEvent);
+
+	Ref<AnimationNodeStateMachinePlayback> playback;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_playback(Ref<AnimationNodeStateMachinePlayback> p_playback) {
+		playback = p_playback;
+	}
+
+	Ref<AnimationNodeStateMachinePlayback> get_playback() const {
+		return playback;
+	}
+};
+
 class AnimationNodeStateMachine : public AnimationRootNode {
 	GDCLASS(AnimationNodeStateMachine, AnimationRootNode);
 
@@ -142,6 +160,7 @@ private:
 
 	Vector2 graph_offset;
 
+	void _create_event(bool p_starting, bool p_finishing, AnimationNodeStateMachinePlayback *p_playback);
 	void _remove_transition(const Ref<AnimationNodeStateMachineTransition> p_transition);
 	void _rename_transitions(const StringName &p_name, const StringName &p_new_name);
 	bool _can_connect(const StringName &p_name);
@@ -295,7 +314,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	bool _make_travel_path(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_is_allow_transition_to_self, Vector<StringName> &r_path, bool p_test_only);
 	String _validate_path(AnimationNodeStateMachine *p_state_machine, const String &p_path);
 	bool _travel(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_is_allow_transition_to_self, bool p_test_only);
-	void _start(AnimationNodeStateMachine *p_state_machine);
+	void _start(AnimationNodeStateMachine *p_state_machine, bool p_test_only);
 
 	void _clear_path_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only);
 	bool _travel_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const String &p_path, bool p_is_allow_transition_to_self, bool p_is_parent_same_state, bool p_test_only);

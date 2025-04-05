@@ -40,6 +40,51 @@ class AnimationNodeStartState;
 class AnimationNodeEndState;
 class AnimationTree;
 
+class AnimationNodeEvent : public Resource {
+	GDCLASS(AnimationNodeEvent, Resource);
+
+	bool starting;
+	bool finishing;
+	AnimationTree *tree;
+	String animation_node_path;
+
+protected:
+	static void _bind_methods();
+
+public:
+	bool is_starting() const {
+		return starting;
+	}
+
+	void set_starting(bool p_starting) {
+		starting = p_starting;
+	}
+
+	bool is_finishing() const {
+		return finishing;
+	}
+
+	void set_finishing(bool p_finishing) {
+		finishing = p_finishing;
+	}
+
+	AnimationTree *get_animation_tree() const {
+		return tree;
+	}
+
+	void set_animation_tree(AnimationTree *p_tree) {
+		tree = p_tree;
+	}
+
+	String get_animation_node_path() const {
+		return animation_node_path;
+	}
+
+	void set_animation_node_path(const String &p_path) {
+		animation_node_path = p_path;
+	}
+};
+
 class AnimationNode : public Resource {
 	GDCLASS(AnimationNode, Resource);
 
@@ -61,6 +106,7 @@ public:
 	LocalVector<Input> inputs;
 	AHashMap<NodePath, bool> filter;
 	bool filter_enabled = false;
+	bool events_enabled = false;
 
 	// To propagate information from upstream for use in estimation of playback progress.
 	// These values must be taken from the result of blend_node() or blend_input() and must be essentially read-only.
@@ -180,6 +226,9 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 
+	bool _should_use_events() const;
+	void _push_animation_node_event(Ref<AnimationNodeEvent> p_event) const;
+
 	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
 	GDVIRTUAL0RC(Array, _get_parameter_list)
 	GDVIRTUAL1RC(Ref<AnimationNode>, _get_child_by_name, StringName)
@@ -221,6 +270,9 @@ public:
 
 	void set_filter_enabled(bool p_enable);
 	bool is_filter_enabled() const;
+
+	void set_events_enabled(bool p_enable);
+	bool are_events_enabled() const;
 
 	void set_deletable(bool p_closable);
 	bool is_deletable() const;

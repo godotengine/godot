@@ -567,6 +567,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeTimeSeek);
 	GDREGISTER_CLASS(AnimationNodeTransition);
 
+	GDREGISTER_CLASS(AnimationNodeEvent);
+	GDREGISTER_CLASS(AnimationNodeOneShotEvent);
+	GDREGISTER_CLASS(AnimationNodeTransitionEvent);
+	GDREGISTER_CLASS(AnimationNodeStateMachineEvent);
+
 	GDREGISTER_CLASS(ShaderGlobalsOverride); // can be used in any shader
 
 	OS::get_singleton()->yield(); // may take time to init

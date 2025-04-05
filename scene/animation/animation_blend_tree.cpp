@@ -417,6 +417,17 @@ AnimationNodeSync::AnimationNodeSync() {
 }
 
 ////////////////////////////////////////////////////////
+
+void AnimationNodeOneShotEvent::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_fadein_finishing", "fadein_finishing"), &AnimationNodeOneShotEvent::set_fadein_finishing);
+	ClassDB::bind_method(D_METHOD("is_fadein_finishing"), &AnimationNodeOneShotEvent::is_fadein_finishing);
+	ClassDB::bind_method(D_METHOD("set_fadeout_starting", "fadeout_starting"), &AnimationNodeOneShotEvent::set_fadeout_starting);
+	ClassDB::bind_method(D_METHOD("is_fadeout_starting"), &AnimationNodeOneShotEvent::is_fadeout_starting);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fadein_finishing"), "set_fadein_finishing", "is_fadein_finishing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fadeout_starting"), "set_fadeout_starting", "is_fadeout_starting");
+}
+
 void AnimationNodeOneShot::get_parameter_list(List<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::BOOL, active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
@@ -535,6 +546,36 @@ bool AnimationNodeOneShot::has_filter() const {
 	return true;
 }
 
+void AnimationNodeOneShot::_check_and_notify_state_changes(bool p_prev_active, bool p_prev_internal_active, double p_prev_fade_in_remaining) {
+	if (!_should_use_events()) {
+		return;
+	}
+	Ref<AnimationNodeOneShotEvent> event;
+	if (p_prev_active != (bool)get_parameter(active)) {
+		if (event.is_null()) {
+			event.instantiate();
+		}
+		event->set_starting(!p_prev_active);
+		event->set_finishing(p_prev_active);
+	} else {
+		if (Animation::is_greater_approx(p_prev_fade_in_remaining, 0) && Math::is_zero_approx((double)get_parameter(fade_in_remaining))) {
+			if (event.is_null()) {
+				event.instantiate();
+			}
+			event->set_fadein_finishing(true);
+		}
+		if (get_fade_out_time() > 0 && p_prev_internal_active && p_prev_internal_active != (bool)get_parameter(internal_active)) {
+			if (event.is_null()) {
+				event.instantiate();
+			}
+			event->set_fadeout_starting(true);
+		}
+	}
+	if (event.is_valid()) {
+		_push_animation_node_event(event);
+	}
+}
+
 AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	OneShotRequest cur_request = static_cast<OneShotRequest>((int)get_parameter(request));
 	bool cur_active = get_parameter(active);
@@ -555,6 +596,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	double abs_delta = Math::abs(p_delta);
 	bool p_seek = p_playback_info.seeked;
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
+	double prev_fade_in_remaining = cur_fade_in_remaining;
 
 	if (Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking) {
 		clear_remaining_fade = true; // Reset occurs.
@@ -605,6 +647,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	}
 
 	if (!is_shooting) {
+		_check_and_notify_state_changes(cur_active, cur_internal_active, prev_fade_in_remaining);
 		AnimationMixer::PlaybackInfo pi = p_playback_info;
 		pi.weight = 1.0;
 		return blend_input(0, pi, FILTER_IGNORE, sync, p_test_only);
@@ -696,6 +739,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	set_parameter(fade_in_remaining, cur_fade_in_remaining);
 	set_parameter(fade_out_remaining, cur_fade_out_remaining);
 
+	_check_and_notify_state_changes(cur_active, cur_internal_active, prev_fade_in_remaining);
 	return cur_internal_active ? os_nti : main_nti;
 }
 
@@ -1053,6 +1097,17 @@ void AnimationNodeTimeSeek::_bind_methods() {
 
 /////////////////////////////////////////////////
 
+void AnimationNodeTransitionEvent::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_previous_state", "state"), &AnimationNodeTransitionEvent::set_previous_state);
+	ClassDB::bind_method(D_METHOD("get_previous_state"), &AnimationNodeTransitionEvent::get_previous_state);
+
+	ClassDB::bind_method(D_METHOD("set_next_state", "state"), &AnimationNodeTransitionEvent::set_next_state);
+	ClassDB::bind_method(D_METHOD("get_next_state"), &AnimationNodeTransitionEvent::get_next_state);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "previous_state"), "set_previous_state", "get_previous_state");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "next_state"), "set_next_state", "get_next_state");
+}
+
 bool AnimationNodeTransition::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -1251,8 +1306,20 @@ bool AnimationNodeTransition::is_allow_transition_to_self() const {
 	return allow_transition_to_self;
 }
 
+void AnimationNodeTransition::_create_event(bool p_starting, const String &p_previous, const String &p_next) {
+	if (_should_use_events()) {
+		Ref<AnimationNodeTransitionEvent> event;
+		event.instantiate();
+		event->set_starting(p_starting);
+		event->set_previous_state(p_previous);
+		event->set_next_state(p_next);
+		_push_animation_node_event(event);
+	}
+}
+
 AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	String cur_transition_request = get_parameter(transition_request);
+	String cur_state = get_parameter(current_state);
 	int cur_current_index = get_parameter(current_index);
 	int cur_prev_index = get_parameter(prev_index);
 
@@ -1297,6 +1364,7 @@ AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(const AnimationMix
 					clear_remaining_fade = true;
 				}
 			} else {
+				_create_event(true, cur_state, cur_transition_request);
 				switched = true;
 				cur_prev_index = cur_current_index;
 				set_parameter(prev_index, cur_current_index);
@@ -1307,8 +1375,11 @@ AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(const AnimationMix
 		} else {
 			ERR_PRINT("No such input: '" + cur_transition_request + "'");
 		}
+		set_parameter(transition_request, String());
+		if (switched && Animation::is_less_or_equal_approx(xfade_time, 0)) {
+			_create_event(false, cur_state, cur_transition_request);
+		}
 		cur_transition_request = String();
-		set_parameter(transition_request, cur_transition_request);
 	}
 
 	if (clear_remaining_fade) {
@@ -1381,6 +1452,9 @@ AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(const AnimationMix
 		blend_input(cur_prev_index, pi, FILTER_IGNORE, true, p_test_only);
 		if (!p_seek) {
 			if (Animation::is_less_or_equal_approx(cur_prev_xfading, 0)) {
+				if (xfade_time > 0) {
+					_create_event(false, get_input_name(cur_prev_index), cur_state);
+				}
 				set_parameter(prev_index, -1);
 			}
 			cur_prev_xfading -= Math::abs(p_playback_info.delta);
@@ -1554,7 +1628,6 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 	ERR_FAIL_COND(p_new_name == SceneStringName(output));
 
 	nodes[p_name].node->disconnect_changed(callable_mp(this, &AnimationNodeBlendTree::_node_changed));
-
 	nodes[p_new_name] = nodes[p_name];
 	nodes.erase(p_name);
 
@@ -1853,7 +1926,7 @@ void AnimationNodeBlendTree::_initialize_node_tree() {
 	n.node = output;
 	n.position = Vector2(300, 150);
 	n.connections.resize(1);
-	nodes["output"] = n;
+	nodes[SceneStringName(output)] = n;
 }
 
 AnimationNodeBlendTree::AnimationNodeBlendTree() {

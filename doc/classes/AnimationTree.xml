@@ -40,6 +40,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="animation_node_event">
+			<param index="0" name="event" type="Object" />
+			<description>
+			</description>
+		</signal>
 		<signal name="animation_player_changed">
 			<description>
 				Emitted when the [member anim_player] is changed.
