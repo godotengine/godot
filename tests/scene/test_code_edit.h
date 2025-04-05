@@ -3267,6 +3267,30 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		CHECK(code_edit->is_line_folded(0));
 		CHECK_FALSE(code_edit->is_line_folded(1));
 		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 4);
+
+		// Multiline comment interaction with code regions.
+		// Foldable even when directly below a code region start tag.
+		code_edit->set_text("#line0\n#line1\n#region a\n#line3\n#line4\nnothing\n#endregion");
+		CHECK(code_edit->can_fold_line(3));
+
+		// Doesn't fold beyond region start tag.
+		code_edit->fold_line(0);
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(0, 1), 1);
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(2, 2), 1);
+
+		// Foldable even when directly below a code region end tag.
+		code_edit->set_text("#region a\nnothing\n#line2\n#line3\n#endregion\n#line5\n#line6");
+		CHECK(code_edit->can_fold_line(5));
+
+		// Doesn't fold beyond region end tag.
+		code_edit->fold_line(2);
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(2, 3), 1);
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(4, 4), 1);
+
+		// Single line comment directly above a code region tag is not foldable.
+		code_edit->set_text("#line0\n#region a\nnothing\n#line3\n#endregion");
+		CHECK_FALSE(code_edit->can_fold_line(0));
+		CHECK_FALSE(code_edit->can_fold_line(3));
 	}
 
 	SUBCASE("[CodeEdit] folding carets") {
