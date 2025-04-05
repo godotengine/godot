@@ -37,6 +37,8 @@
 class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);
 
+	inline static constexpr real_t SHRINK_FACTOR = 0.4;
+
 public:
 	enum ScrollMode {
 		SCROLL_MODE_DISABLED = 0,
@@ -49,6 +51,7 @@ public:
 private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
+	Control *v_scroll_expander = nullptr;
 
 	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 
@@ -71,6 +74,7 @@ private:
 	bool follow_focus = false;
 	int scroll_border = 20;
 	int scroll_speed = 12;
+	bool vertical_scroll_shrink = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
@@ -136,6 +140,8 @@ public:
 
 	void set_draw_focus_border(bool p_draw);
 	bool get_draw_focus_border();
+
+	void set_vertical_scroll_shrink(bool p_enabled);
 
 	ScrollContainer();
 };

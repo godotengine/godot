@@ -274,6 +274,10 @@ void ScrollContainer::_update_scrollbar_position() {
 	v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, theme_cache.panel_style->get_margin(SIDE_TOP));
 	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -hmin.height - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
 
+	if (vertical_scroll_shrink) {
+		v_scroll->set_pivot_offset(Vector2(vmin.x, 0.0));
+		v_scroll_expander->set_rect(Rect2(get_size().x - vmin.width - rmar, theme_cache.panel_style->get_margin(SIDE_TOP), vmin.x, vmin.y));
+	}
 	_updating_scrollbars = false;
 }
 
@@ -322,7 +326,11 @@ void ScrollContainer::_reposition_children() {
 	}
 
 	if (_is_v_scroll_visible() || vertical_scroll_mode == SCROLL_MODE_RESERVE) {
-		size.x -= v_scroll->get_minimum_size().x;
+		if (vertical_scroll_shrink) {
+			size.x -= v_scroll->get_minimum_size().x * SHRINK_FACTOR;
+		} else {
+			size.x -= v_scroll->get_minimum_size().x;
+		}
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -706,6 +714,39 @@ void ScrollContainer::set_draw_focus_border(bool p_draw) {
 
 bool ScrollContainer::get_draw_focus_border() {
 	return draw_focus_border;
+}
+
+void ScrollContainer::set_vertical_scroll_shrink(bool p_enabled) {
+	if (vertical_scroll_shrink == p_enabled) {
+		return;
+	}
+	vertical_scroll_shrink = p_enabled;
+
+	if (!v_scroll_expander) {
+		v_scroll_expander = memnew(Control);
+		v_scroll_expander->hide();
+		add_child(v_scroll_expander, false, INTERNAL_MODE_BACK);
+		move_child(v_scroll_expander, v_scroll->get_index() - 1);
+	}
+
+	const Callable scale_setter = callable_mp((Control *)v_scroll, &Control::set_scale);
+	if (vertical_scroll_shrink) {
+		v_scroll_expander->show();
+		v_scroll->set_scale(Vector2(SHRINK_FACTOR, 1.0));
+		
+		v_scroll_expander->connect(SceneStringName(mouse_entered), scale_setter.bind(Vector2(1.0, 1.0)));
+		v_scroll->connect(SceneStringName(mouse_entered), scale_setter.bind(Vector2(1.0, 1.0)));
+		v_scroll->connect(SceneStringName(mouse_exited), scale_setter.bind(Vector2(SHRINK_FACTOR, 1.0)));
+	} else {
+		v_scroll_expander->hide();
+		v_scroll->set_scale(Vector2(1.0, 1.0));
+
+		v_scroll_expander->disconnect(SceneStringName(mouse_entered), scale_setter);
+		v_scroll->disconnect(SceneStringName(mouse_entered), scale_setter);
+		v_scroll->disconnect(SceneStringName(mouse_exited), scale_setter);
+	}
+
+	_update_scrollbar_position();
 }
 
 bool ScrollContainer::child_has_focus() {
