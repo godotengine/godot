@@ -49,29 +49,33 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	{
 		RD::FramebufferFormatID fb_format;
 		RD::PipelineColorBlendState blend_state;
-		String defines;
+		RD::PipelineRasterizationState rasterization_state;
+		RD::PipelineMultisampleState ms;
+		rasterization_state.enable_depth_clamp = true;
+		ms.sample_count = RD::TEXTURE_SAMPLES_4;
+
+		Vector<String> variants;
+		variants.push_back("");
+		variants.push_back("\n#define USE_ATTACHMENT\n");
+
+		ClusterRender::ShaderVariant shader_variant;
 		if (RD::get_singleton()->has_feature(RD::SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS)) {
 			fb_format = RD::get_singleton()->framebuffer_format_create_empty();
 			blend_state = RD::PipelineColorBlendState::create_disabled();
+			shader_variant = ClusterRender::SHADER_NORMAL;
 		} else {
 			Vector<RD::AttachmentFormat> afs;
 			afs.push_back(RD::AttachmentFormat());
 			afs.write[0].usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			fb_format = RD::get_singleton()->framebuffer_format_create(afs);
 			blend_state = RD::PipelineColorBlendState::create_blend();
-			defines = "\n#define USE_ATTACHMENT\n";
+			shader_variant = ClusterRender::SHADER_USE_ATTACHMENT;
 		}
 
-		RD::PipelineRasterizationState rasterization_state;
-		rasterization_state.enable_depth_clamp = true;
-		Vector<String> versions;
-		versions.push_back("");
-		cluster_render.cluster_render_shader.initialize(versions, defines);
+		cluster_render.cluster_render_shader.initialize(variants);
 		cluster_render.shader_version = cluster_render.cluster_render_shader.version_create();
-		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, 0);
+		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, shader_variant);
 		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
-		RD::PipelineMultisampleState ms;
-		ms.sample_count = RD::TEXTURE_SAMPLES_4;
 		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, ms, RD::PipelineDepthStencilState(), blend_state, 0);
 	}
 	{

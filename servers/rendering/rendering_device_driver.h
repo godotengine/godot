@@ -49,37 +49,7 @@
 #include "core/variant/type_info.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
-
-#include <algorithm>
-
-// This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
-// (See https://github.com/godotengine/godot-proposals/issues/5144.)
-template <typename T>
-class VectorView {
-	const T *_ptr = nullptr;
-	const uint32_t _size = 0;
-
-public:
-	const T &operator[](uint32_t p_index) {
-		DEV_ASSERT(p_index < _size);
-		return _ptr[p_index];
-	}
-
-	_ALWAYS_INLINE_ const T *ptr() const { return _ptr; }
-	_ALWAYS_INLINE_ uint32_t size() const { return _size; }
-
-	VectorView() = default;
-	VectorView(const T &p_ptr) :
-			// With this one you can pass a single element very conveniently!
-			_ptr(&p_ptr),
-			_size(1) {}
-	VectorView(const T *p_ptr, uint32_t p_size) :
-			_ptr(p_ptr), _size(p_size) {}
-	VectorView(const Vector<T> &p_lv) :
-			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
-	VectorView(const LocalVector<T> &p_lv) :
-			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
-};
+#include "servers/rendering/rendering_shader_container.h"
 
 // These utilities help drivers avoid allocations.
 #define ALLOCA(m_size) ((m_size != 0) ? alloca(m_size) : nullptr)
@@ -495,31 +465,20 @@ public:
 	/**** SHADER ****/
 	/****************/
 
-	virtual String shader_get_binary_cache_key() = 0;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) = 0;
-
 	struct ImmutableSampler {
 		UniformType type = UNIFORM_TYPE_MAX;
 		uint32_t binding = 0xffffffff; // Binding index as specified in shader.
 		LocalVector<ID> ids;
 	};
-	/** Creates a Pipeline State Object (PSO) out of the shader and all the input data it needs.
-	@param p_shader_binary		Shader binary bytecode (e.g. SPIR-V).
-	@param r_shader_desc		TBD.
-	@param r_name				TBD.
-	@param p_immutable_samplers	Immutable samplers can be embedded when creating the pipeline layout on the condition they
-								remain valid and unchanged, so they don't need to be specified when creating uniform sets.
-	@return						PSO resource for binding.
-	*/
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) = 0;
+
+	// Creates a Pipeline State Object (PSO) out of the shader and all the input data it needs.
+	// Immutable samplers can be embedded when creating the pipeline layout on the condition they remain valid and unchanged, so they don't need to be
+	// specified when creating uniform sets PSO resource for binding.
+	virtual ShaderID shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) = 0;
 	// Only meaningful if API_TRAIT_SHADER_CHANGE_INVALIDATION is SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH.
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) { return 0; }
 	virtual void shader_free(ShaderID p_shader) = 0;
 	virtual void shader_destroy_modules(ShaderID p_shader) = 0;
-
-protected:
-	// An optional service to implementations.
-	Error _reflect_spirv(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection);
 
 public:
 	/*********************/
@@ -863,6 +822,7 @@ public:
 	virtual String get_api_version() const = 0;
 	virtual String get_pipeline_cache_uuid() const = 0;
 	virtual const Capabilities &get_capabilities() const = 0;
+	virtual const RenderingShaderContainerFormat &get_shader_container_format() const = 0;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const { return false; }
 

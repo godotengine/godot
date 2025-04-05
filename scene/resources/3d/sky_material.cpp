@@ -150,7 +150,7 @@ float ProceduralSkyMaterial::get_sun_curve() const {
 
 void ProceduralSkyMaterial::set_use_debanding(bool p_use_debanding) {
 	use_debanding = p_use_debanding;
-	_update_shader();
+	_update_shader(use_debanding);
 	// Only set if shader already compiled
 	if (shader_set) {
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(use_debanding)]);
@@ -175,9 +175,8 @@ Shader::Mode ProceduralSkyMaterial::get_shader_mode() const {
 }
 
 RID ProceduralSkyMaterial::get_rid() const {
-	_update_shader();
+	_update_shader(use_debanding);
 	if (!shader_set) {
-		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[1 - int(use_debanding)]);
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(use_debanding)]);
 		shader_set = true;
 	}
@@ -185,7 +184,7 @@ RID ProceduralSkyMaterial::get_rid() const {
 }
 
 RID ProceduralSkyMaterial::get_shader_rid() const {
-	_update_shader();
+	_update_shader(use_debanding);
 	return shader_cache[int(use_debanding)];
 }
 
@@ -268,14 +267,14 @@ void ProceduralSkyMaterial::cleanup_shader() {
 	}
 }
 
-void ProceduralSkyMaterial::_update_shader() {
+void ProceduralSkyMaterial::_update_shader(bool p_use_debanding) {
 	MutexLock shader_lock(shader_mutex);
-	if (shader_cache[0].is_null()) {
-		for (int i = 0; i < 2; i++) {
-			shader_cache[i] = RS::get_singleton()->shader_create();
+	int index = int(p_use_debanding);
+	if (shader_cache[index].is_null()) {
+		shader_cache[index] = RS::get_singleton()->shader_create();
 
-			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
+		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+		RS::get_singleton()->shader_set_code(shader_cache[index], vformat(R"(
 // NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s ProceduralSkyMaterial.
 
 shader_type sky;
@@ -351,8 +350,7 @@ void sky() {
 	COLOR = mix(ground, sky, step(0.0, EYEDIR.y)) * exposure;
 }
 )",
-																		  i ? "render_mode use_debanding;" : ""));
-		}
+																		  p_use_debanding ? "render_mode use_debanding;" : ""));
 	}
 }
 
@@ -397,7 +395,7 @@ Ref<Texture2D> PanoramaSkyMaterial::get_panorama() const {
 void PanoramaSkyMaterial::set_filtering_enabled(bool p_enabled) {
 	filter = p_enabled;
 	notify_property_list_changed();
-	_update_shader();
+	_update_shader(filter);
 	// Only set if shader already compiled
 	if (shader_set) {
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(filter)]);
@@ -422,10 +420,8 @@ Shader::Mode PanoramaSkyMaterial::get_shader_mode() const {
 }
 
 RID PanoramaSkyMaterial::get_rid() const {
-	_update_shader();
-	// Don't compile shaders until first use, then compile both
+	_update_shader(filter);
 	if (!shader_set) {
-		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[1 - int(filter)]);
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(filter)]);
 		shader_set = true;
 	}
@@ -433,7 +429,7 @@ RID PanoramaSkyMaterial::get_rid() const {
 }
 
 RID PanoramaSkyMaterial::get_shader_rid() const {
-	_update_shader();
+	_update_shader(filter);
 	return shader_cache[int(filter)];
 }
 
@@ -456,20 +452,21 @@ Mutex PanoramaSkyMaterial::shader_mutex;
 RID PanoramaSkyMaterial::shader_cache[2];
 
 void PanoramaSkyMaterial::cleanup_shader() {
-	if (shader_cache[0].is_valid()) {
-		RS::get_singleton()->free(shader_cache[0]);
-		RS::get_singleton()->free(shader_cache[1]);
+	for (int i = 0; i < 2; i++) {
+		if (shader_cache[i].is_valid()) {
+			RS::get_singleton()->free(shader_cache[i]);
+		}
 	}
 }
 
-void PanoramaSkyMaterial::_update_shader() {
+void PanoramaSkyMaterial::_update_shader(bool p_filter) {
 	MutexLock shader_lock(shader_mutex);
-	if (shader_cache[0].is_null()) {
-		for (int i = 0; i < 2; i++) {
-			shader_cache[i] = RS::get_singleton()->shader_create();
+	int index = int(p_filter);
+	if (shader_cache[index].is_null()) {
+		shader_cache[index] = RS::get_singleton()->shader_create();
 
-			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
+		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+		RS::get_singleton()->shader_set_code(shader_cache[index], vformat(R"(
 // NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s PanoramaSkyMaterial.
 
 shader_type sky;
@@ -481,8 +478,7 @@ void sky() {
 	COLOR = texture(source_panorama, SKY_COORDS).rgb * exposure;
 }
 )",
-																		  i ? "filter_linear" : "filter_nearest"));
-		}
+																		  p_filter ? "filter_linear" : "filter_nearest"));
 	}
 }
 
@@ -580,7 +576,7 @@ float PhysicalSkyMaterial::get_energy_multiplier() const {
 
 void PhysicalSkyMaterial::set_use_debanding(bool p_use_debanding) {
 	use_debanding = p_use_debanding;
-	_update_shader();
+	_update_shader(use_debanding);
 	// Only set if shader already compiled
 	if (shader_set) {
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(use_debanding)]);
@@ -609,9 +605,8 @@ Shader::Mode PhysicalSkyMaterial::get_shader_mode() const {
 }
 
 RID PhysicalSkyMaterial::get_rid() const {
-	_update_shader();
+	_update_shader(use_debanding);
 	if (!shader_set) {
-		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[1 - int(use_debanding)]);
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(use_debanding)]);
 		shader_set = true;
 	}
@@ -619,7 +614,7 @@ RID PhysicalSkyMaterial::get_rid() const {
 }
 
 RID PhysicalSkyMaterial::get_shader_rid() const {
-	_update_shader();
+	_update_shader(use_debanding);
 	return shader_cache[int(use_debanding)];
 }
 
@@ -690,14 +685,14 @@ void PhysicalSkyMaterial::cleanup_shader() {
 	}
 }
 
-void PhysicalSkyMaterial::_update_shader() {
+void PhysicalSkyMaterial::_update_shader(bool p_use_debanding) {
 	MutexLock shader_lock(shader_mutex);
-	if (shader_cache[0].is_null()) {
-		for (int i = 0; i < 2; i++) {
-			shader_cache[i] = RS::get_singleton()->shader_create();
+	int index = int(p_use_debanding);
+	if (shader_cache[index].is_null()) {
+		shader_cache[index] = RS::get_singleton()->shader_create();
 
-			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
+		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+		RS::get_singleton()->shader_set_code(shader_cache[index], vformat(R"(
 // NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s PhysicalSkyMaterial.
 
 shader_type sky;
@@ -781,8 +776,7 @@ void sky() {
 	}
 }
 )",
-																		  i ? "render_mode use_debanding;" : ""));
-		}
+																		  p_use_debanding ? "render_mode use_debanding;" : ""));
 	}
 }
 
