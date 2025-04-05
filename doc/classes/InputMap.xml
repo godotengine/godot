@@ -117,4 +117,11 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="project_settings_loaded">
+			<description>
+				Emitted when the [ProjectSettings] [InputMap] has been loaded.
+			</description>
+		</signal>
+	</signals>
 </class>
