@@ -676,19 +676,19 @@ Vector3 SoftBody3D::get_point_transform(int p_point_index) {
 	return PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, p_point_index);
 }
 
-void SoftBody3D::apply_impulse(Vector3 p_impulse, int p_point_index) {
+void SoftBody3D::apply_impulse(const Vector3 &p_impulse, int p_point_index) {
 	PhysicsServer3D::get_singleton()->soft_body_apply_point_impulse(physics_rid, p_point_index, p_impulse);
 }
 
-void SoftBody3D::apply_force(Vector3 p_force, int p_point_index) {
+void SoftBody3D::apply_force(const Vector3 &p_force, int p_point_index) {
 	PhysicsServer3D::get_singleton()->soft_body_apply_point_force(physics_rid, p_point_index, p_force);
 }
 
-void SoftBody3D::apply_central_impulse(Vector3 p_impulse) {
+void SoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->soft_body_apply_central_impulse(physics_rid, p_impulse);
 }
 
-void SoftBody3D::apply_central_force(Vector3 p_force) {
+void SoftBody3D::apply_central_force(const Vector3 &p_force) {
 	PhysicsServer3D::get_singleton()->soft_body_apply_central_force(physics_rid, p_force);
 }
 
