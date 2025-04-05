@@ -71,6 +71,12 @@
             <layout
                 android:defaultWidth="@dimen/editor_default_window_width"
                 android:defaultHeight="@dimen/editor_default_window_height" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="org.godotengine.xr.hybrid.PANEL" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".embed.EmbeddedGodotGame"
@@ -97,6 +103,11 @@
             android:screenOrientation="landscape"
             android:resizeableActivity="false"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="org.godotengine.xr.hybrid.IMMERSIVE" />
+            </intent-filter>
         </activity>
     </application>
 
