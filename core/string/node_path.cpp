@@ -164,7 +164,8 @@ void NodePath::operator=(const NodePath &p_path) {
 
 	unref();
 
-	if (p_path.data && p_path.data->refcount.ref()) {
+	if (p_path.data) {
+		p_path.data->refcount.ref();
 		data = p_path.data;
 	}
 }
@@ -371,7 +372,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 	}
 
 	data = memnew(Data);
-	data->refcount.init();
+	data->refcount.init(1);
 	data->absolute = p_absolute;
 	data->path = p_path;
 	data->hash_cache_valid = false;
@@ -383,7 +384,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p
 	}
 
 	data = memnew(Data);
-	data->refcount.init();
+	data->refcount.init(1);
 	data->absolute = p_absolute;
 	data->path = p_path;
 	data->subpath = p_subpath;
@@ -391,7 +392,8 @@ NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p
 }
 
 NodePath::NodePath(const NodePath &p_path) {
-	if (p_path.data && p_path.data->refcount.ref()) {
+	if (p_path.data) {
+		p_path.data->refcount.ref();
 		data = p_path.data;
 	}
 }
@@ -448,7 +450,7 @@ NodePath::NodePath(const String &p_path) {
 	}
 
 	data = memnew(Data);
-	data->refcount.init();
+	data->refcount.init(1);
 	data->absolute = absolute;
 	data->subpath = subpath;
 	data->hash_cache_valid = false;
