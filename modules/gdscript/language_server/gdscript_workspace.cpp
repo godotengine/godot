@@ -559,16 +559,81 @@ Error GDScriptWorkspace::parse_local_script(const String &p_path) {
 }
 
 String GDScriptWorkspace::get_file_path(const String &p_uri) const {
-	String path = p_uri.uri_decode();
-	String base_uri = root_uri.uri_decode();
-	path = path.replacen(base_uri + "/", "res://");
-	return path;
+	int port;
+	String scheme, host, encoded_path, fragment;
+	p_uri.parse_url(scheme, host, port, encoded_path, fragment);
+
+	// TODO: Make the parsing RFC-3986 compliant.
+	if (scheme != "file" && scheme != "file:" && scheme != "file://") {
+		// The language server does only support the file protocol.
+		return "";
+	}
+
+	// Treat host like authority for now and ignore the port. It's an edge case for invalid file URI's anyway.
+	if (host != "" && host != "localhost") {
+		// The language server does not support nonlocal files.
+		return "";
+	}
+
+	// If query or fragment are present, the URI is not a valid file URI as per RFC-8089.
+	// We currently don't handle the query and it will be part of the path. However,
+	// this should not be a problem for a correct file URI.
+	if (fragment != "") {
+		return "";
+	}
+
+	String simple_path = encoded_path.uri_decode().simplify_path();
+
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	String local_path;
+
+	String os_res = ProjectSettings::get_singleton()->globalize_path("res://");
+	int offset = 0;
+
+	while (offset <= simple_path.length()) {
+		offset = simple_path.find_char('/', offset);
+
+		String part = simple_path.substr(0, offset);
+
+		if (!part.is_empty()) {
+			bool is_equal = dir->is_equivalent(os_res, part);
+
+			if (is_equal) {
+				String res_file = ProjectSettings::get_singleton()->localize_path(os_res.path_join(simple_path.substr(offset)));
+
+				EditorFileSystemDirectory *editor_dir;
+				int file_idx;
+				editor_dir = EditorFileSystem::get_singleton()->find_file(res_file, &file_idx);
+				if (editor_dir) {
+					return editor_dir->get_file_path(file_idx);
+				} else {
+					return res_file;
+				}
+			}
+		}
+
+		if (offset == -1) {
+			break;
+		}
+		offset += 1;
+	}
+
+	// Not inside the project dir.
+	local_path = simple_path;
+
+	return local_path;
 }
 
 String GDScriptWorkspace::get_file_uri(const String &p_path) const {
-	String uri = p_path;
-	uri = uri.replace("res://", root_uri + "/");
-	return uri;
+	String path = ProjectSettings::get_singleton()->globalize_path(p_path).lstrip("/");
+	LocalVector<String> encoded_parts;
+	for (const String &part : path.split("/")) {
+		encoded_parts.push_back(part.uri_encode());
+	}
+
+	// Always return file URI's with authority part (encoding drive letters with leading slash), to maintain compat with RFC-1738 which required it.
+	return "file:///" + String("/").join(encoded_parts);
 }
 
 void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
