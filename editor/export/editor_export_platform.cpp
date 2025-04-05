@@ -258,7 +258,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 	String simplified_path = p_path.simplify_path();
 	if (simplified_path.begins_with("uid://")) {
 		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
+		PRINT_VERBOSE(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
 	}
 
 	SavedData sd;
@@ -357,7 +357,7 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 	String path = p_path.simplify_path();
 	if (path.begins_with("uid://")) {
 		path = ResourceUID::uid_to_path(path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, path));
+		PRINT_VERBOSE(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, path));
 	}
 
 	path = path.replace_first("res://", "");
@@ -1027,7 +1027,7 @@ Error EditorExportPlatform::_script_save_file(void *p_userdata, const String &p_
 	String simplified_path = p_path.simplify_path();
 	if (simplified_path.begins_with("uid://")) {
 		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
+		PRINT_VERBOSE(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
 	}
 
 	Variant path = simplified_path;
@@ -2355,9 +2355,9 @@ Error EditorExportPlatform::ssh_run_on_remote(const String &p_host, const String
 
 	Error err = OS::get_singleton()->execute(ssh_path, args, &out, &exit_code, true);
 	if (out.is_empty()) {
-		print_verbose(vformat("Exit code: %d", exit_code));
+		PRINT_VERBOSE(vformat("Exit code: %d", exit_code));
 	} else {
-		print_verbose(vformat("Exit code: %d, Output: %s", exit_code, out.replace("\r\n", "\n")));
+		PRINT_VERBOSE(vformat("Exit code: %d, Output: %s", exit_code, out.replace("\r\n", "\n")));
 	}
 	if (r_out) {
 		*r_out = out.replace("\r\n", "\n").get_slicec('\n', 0);
