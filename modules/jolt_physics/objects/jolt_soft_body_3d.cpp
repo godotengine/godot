@@ -431,6 +431,7 @@ void JoltSoftBody3D::apply_vertex_impulse(int p_index, const Vector3 &p_impulse)
 	ERR_FAIL_INDEX(p_index, (int)shared->mesh_to_physics.size());
 	const size_t physics_index = (size_t)shared->mesh_to_physics[p_index];
 	if (pinned_vertices.has(physics_index)) {
+		ERR_FAIL_MSG("Cannot apply impulse or force on pinned point.");
 		return;
 	}
 
