@@ -40,6 +40,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
+#include "servers/navigation_server_2d.h"
 
 #include <Obstacle2d.h>
 
@@ -418,6 +419,8 @@ void NavMap2D::sync() {
 	}
 	if (iteration_ready) {
 		_sync_iteration();
+
+		NavigationServer2D::get_singleton()->emit_signal(SNAME("map_changed"), get_self());
 	}
 
 	map_settings_dirty = false;

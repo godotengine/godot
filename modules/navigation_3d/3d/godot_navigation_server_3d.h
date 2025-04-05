@@ -79,7 +79,6 @@ class GodotNavigationServer3D : public NavigationServer3D {
 
 	bool active = true;
 	LocalVector<NavMap3D *> active_maps;
-	LocalVector<uint32_t> active_maps_iteration_id;
 
 	NavMeshGenerator3D *navmesh_generator_3d = nullptr;
 
