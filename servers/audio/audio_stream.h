@@ -291,7 +291,7 @@ private:
 
 	HashSet<AudioStreamPlaybackRandomizer *> playbacks;
 	Vector<PoolEntry> audio_stream_pool;
-	float random_pitch_scale = 1.0f;
+	float random_pitch_semitones = 0.0f;
 	float random_volume_offset_db = 0.0f;
 
 	Ref<AudioStreamPlayback> instance_playback_random();
@@ -322,6 +322,9 @@ public:
 
 	void set_streams_count(int p_count);
 	int get_streams_count() const;
+
+	void set_random_pitch_semitones(float p_pitch_semitones);
+	float get_random_pitch_semitones() const;
 
 	void set_random_pitch(float p_pitch_scale);
 	float get_random_pitch() const;
