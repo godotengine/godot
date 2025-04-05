@@ -888,6 +888,9 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 
 		if (d.has("byteStride")) {
 			buffer_view->byte_stride = d["byteStride"];
+			if (buffer_view->byte_stride < 4 || buffer_view->byte_stride > 252 || buffer_view->byte_stride % 4 != 0) {
+				ERR_PRINT("glTF import: Invalid byte stride " + itos(buffer_view->byte_stride) + " for buffer view at index " + itos(i) + " while importing file '" + p_state->filename + "'. If defined, byte stride must be a multiple of 4 and between 4 and 252.");
+			}
 		}
 
 		if (d.has("target")) {
@@ -1029,6 +1032,9 @@ Error GLTFDocument::_parse_accessors(Ref<GLTFState> p_state) {
 		accessor->component_type = (GLTFAccessor::GLTFComponentType)(int32_t)d["componentType"];
 		ERR_FAIL_COND_V(!d.has("count"), ERR_PARSE_ERROR);
 		accessor->count = d["count"];
+		if (accessor->count <= 0) {
+			ERR_PRINT("glTF import: Invalid accessor count " + itos(accessor->count) + " for accessor at index " + itos(i) + " while importing file '" + p_state->filename + "'. Accessor count must be greater than 0.");
+		}
 		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
 		accessor->accessor_type = _get_accessor_type_from_str(d["type"]);
 
@@ -1432,7 +1438,7 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, c
 	const Ref<GLTFBufferView> bv = p_state->buffer_views[p_buffer_view];
 
 	int stride = p_element_size;
-	if (bv->byte_stride != -1) {
+	if (bv->byte_stride > 0) {
 		stride = bv->byte_stride;
 	}
 	if (p_for_vertex && stride % 4) {
@@ -3581,11 +3587,16 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				// Compression is enabled, so let's validate that the normals and tangents are correct.
 				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
 				Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
-				for (int vert = 0; vert < normals.size(); vert++) {
-					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-					if (abs(tan.dot(normals[vert])) > 0.0001) {
-						// Tangent is not perpendicular to the normal, so we can't use compression.
-						flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				if (unlikely(tangents.size() < normals.size() * 4)) {
+					ERR_PRINT("glTF import: Mesh " + itos(i) + " has invalid tangents.");
+					flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				} else {
+					for (int vert = 0; vert < normals.size(); vert++) {
+						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
+						if (abs(tan.dot(normals[vert])) > 0.0001) {
+							// Tangent is not perpendicular to the normal, so we can't use compression.
+							flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+						}
 					}
 				}
 			}
