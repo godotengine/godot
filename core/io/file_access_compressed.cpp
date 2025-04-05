@@ -292,6 +292,14 @@ uint64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, uint64_t p_length) con
 		ERR_FAIL_COND_V_MSG(ret == -1, -1, "Compressed file is corrupt.");
 		read_block_size = read_block == read_block_count - 1 ? read_total % block_size : block_size;
 		read_pos = 0;
+
+		if (read_block_size == 0) {
+			at_end = true;
+			if (dst_idx + 1 < p_length) {
+				read_eof = true;
+			}
+			return dst_idx + 1;
+		}
 	}
 
 	return p_length;
