@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/config/engine.h"
+#include "core/input/virtual_controller.h"
 #include "core/io/logger.h"
 #include "core/io/remote_filesystem_client.h"
 #include "core/os/time_enums.h"
@@ -367,6 +368,12 @@ public:
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
 	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const { return true; }
 	virtual bool _test_create_rendering_device(const String &p_display_driver) const { return true; }
+
+	virtual VirtualController *get_virtual_controller() const;
+
+	virtual void controller_connected() const;
+
+	virtual void controller_disconnected() const;
 
 	OS();
 	virtual ~OS();
