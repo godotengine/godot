@@ -208,11 +208,11 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 			const Variant &const_val = token.literal;
 			if (const_val.get_type() == Variant::STRING) {
 				String scr_path = const_val;
-				bool exists = fs->file_exists(scr_path);
-				if (!exists) {
-					scr_path = get_path().get_base_dir() + "/" + scr_path;
-					exists = fs->file_exists(scr_path);
+				if (scr_path.is_relative_path()) {
+					scr_path = get_path().get_base_dir().path_join(scr_path).simplify_path();
 				}
+				bool exists = fs->file_exists(scr_path);
+
 				if (exists) {
 					String value = const_val;
 					LSP::DocumentLink link;
