@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rich_text_label.h"
+#include "core/string/print_string.h"
 #include "rich_text_label.compat.inc"
 
 #include "core/input/input_map.h"
@@ -2294,13 +2295,65 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
+		real_t scroll_delta = 0.0;
+		static const real_t base_scroll_speed = 0.5;
+		enum ScrollDirection {
+			SCROLL_NONE,
+			SCROLL_UP,
+			SCROLL_DOWN
+		};
+
+		ScrollDirection scroll_dir = SCROLL_NONE;
+
+		const Vector2 global_mouse_pos = get_global_mouse_position();
+		const Rect2 global_rect = get_global_rect();
+
+		if (global_mouse_pos.y < global_rect.position.y) {
+			scroll_delta = -base_scroll_speed * (1.0 + (global_rect.position.y - global_mouse_pos.y) / 10.0);
+			scroll_dir = SCROLL_UP;
+		} else if (global_mouse_pos.y > (global_rect.position.y + global_rect.size.y)) {
+			scroll_delta = base_scroll_speed * (1.0 + (global_mouse_pos.y - (global_rect.position.y + global_rect.size.y)) / 10.0);
+			scroll_dir = SCROLL_DOWN;
+		}
+
+		if (scroll_dir != SCROLL_NONE) {
+			vscroll->scroll(scroll_delta);
+			queue_redraw();
+		}
+
 		ItemFrame *c_frame = nullptr;
 		int c_line = 0;
 		Item *c_item = nullptr;
 		int c_index = 0;
 		bool outside;
-
 		_find_click(main, m->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside, false);
+		// If the mouse is outside the text area, we need to scroll the text.
+		if (scroll_dir != SCROLL_NONE && selection.click_item && selection.active) {
+			// Calculate the boundary position of the visible area.
+			Vector2 boundary_pos;
+			if (scroll_dir == SCROLL_UP) {
+				// Top
+				boundary_pos.y = 0;
+				boundary_pos.x = 0;
+			} else if (scroll_dir == SCROLL_DOWN) {
+				// Bottom
+				boundary_pos.x = global_rect.size.x - 1;
+				boundary_pos.y = global_rect.size.y - 1;
+			}
+			// Search for the boundary item.
+			ItemFrame *boundary_frame = nullptr;
+			int boundary_line = 0;
+			Item *boundary_item = nullptr;
+			int boundary_index = 0;
+			_find_click(main, boundary_pos, &boundary_frame, &boundary_line, &boundary_item, &boundary_index, &outside, false);
+
+			// Overwrite the current item with the boundary item.
+			c_frame = boundary_frame;
+			c_line = boundary_line;
+			c_item = boundary_item;
+			c_index = boundary_index;
+		}
+
 		if (selection.click_item && c_item) {
 			selection.from_frame = selection.click_frame;
 			selection.from_line = selection.click_line;
