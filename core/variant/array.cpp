@@ -676,21 +676,9 @@ bool Array::all(const Callable &p_callable) const {
 	return true;
 }
 
-struct _ArrayVariantSort {
-	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
-		bool valid = false;
-		Variant res;
-		Variant::evaluate(Variant::OP_LESS, p_l, p_r, res, valid);
-		if (!valid) {
-			res = false;
-		}
-		return res;
-	}
-};
-
 void Array::sort() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	_p->array.sort_custom<_ArrayVariantSort>();
+	_p->array.sort_custom<StringLikeVariantOrder>();
 }
 
 void Array::sort_custom(const Callable &p_callable) {
@@ -714,7 +702,7 @@ void Array::shuffle() {
 int Array::bsearch(const Variant &p_value, bool p_before) const {
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "binary search"), -1);
-	SearchArray<Variant, _ArrayVariantSort> avs;
+	SearchArray<Variant, StringLikeVariantOrder> avs;
 	return avs.bisect(_p->array.ptrw(), _p->array.size(), value, p_before);
 }
 
