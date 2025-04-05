@@ -46,6 +46,8 @@ constexpr auto navmesh_cell_size_hint{ "0.001,100,0.001,or_greater" };
 constexpr float edge_connection_margin{ 0.25f };
 constexpr float link_connection_radius{ 1.0f };
 
+constexpr int path_search_max_polygons = 4096;
+
 } //namespace NavigationDefaults3D
 
 namespace NavigationDefaults2D {
@@ -61,5 +63,7 @@ constexpr auto navmesh_cell_size_hint{ "0.001,100,0.001,or_greater" };
 
 constexpr float edge_connection_margin{ 1.0f };
 constexpr float link_connection_radius{ 4.0f };
+
+constexpr int path_search_max_polygons = 4096;
 
 } //namespace NavigationDefaults2D
