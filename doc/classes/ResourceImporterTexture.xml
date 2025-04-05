@@ -88,12 +88,23 @@
 			- In 3D, a [BaseMaterial3D] will need to be created and configured to use the [constant BaseMaterial3D.BLEND_MODE_PREMULT_ALPHA] blend mode on materials that use this texture. In custom [code]spatial[/code] shaders, [code]render_mode blend_premul_alpha;[/code] should be used.
 		</member>
 		<member name="process/size_limit" type="int" setter="" getter="" default="0">
-			If set to a value greater than [code]0[/code], the size of the texture is limited on import to a value smaller than or equal to the value specified here. For non-square textures, the size limit affects the longer dimension, with the shorter dimension scaled to preserve aspect ratio. Resizing is performed using cubic interpolation.
+			If set to a value greater than [code]0[/code], the size of the texture is limited on import to a value smaller than or equal to the value specified here. For non-square textures, the size limit affects the longer dimension, with the shorter dimension scaled to preserve aspect ratio.
 			This can be used to reduce memory usage without affecting the source images, or avoid issues with textures not displaying on mobile/web platforms (as these usually can't display textures larger than 4096×4096).
+			[b]Note:[/b] Resizing is performed using cubic interpolation by default. If you don't like the result produced by this algorithm, you can change it in [member process/size_limit_interpolation].
 			[b]Note:[/b] Even if this is set to [code]0[/code], import size is limited to the following dimensions for technical reasons. Depending on [member compress/mode], textures will be downsampled on import if necessary:
 			- [b]Lossy:[/b] 16383 pixels width or height, whichever is larger;
 			- [b]Basis Universal:[/b] 16384 pixels width or height, whichever is larger;
 			- [b]All other modes:[/b] 32768 pixels width or height, whichever is larger.
+		</member>
+		<member name="process/size_limit_interpolation" type="int" setter="" getter="" default="2">
+			Resizes the texture according to the selected interpolation algorithm.
+			- [b]Nearest:[/b] Performs nearest-neighbor interpolation. If the texture is resized, it will be pixelated.
+			- [b]Bilinear:[/b] Performs bilinear interpolation. If the texture is resized, it will be blurry. This mode is faster than cubic interpolation, but it results in lower quality.
+			- [b]Cubic:[/b] Performs cubic interpolation. If the texture is resized, it will be blurry. This mode often gives better results compared to bilinear interpolation, at the cost of being slower.
+			- [b]Trilinear:[/b] Performs bilinear separately on the two most-suited mipmap levels, then linearly interpolates between them. It's slower than bilinear interpolation, but produces higher-quality results with far fewer aliasing artifacts.
+			[b]Note:[/b] If the texture does not have mipmaps, they will be generated and used internally, but no mipmaps will be generated on the resulting texture.
+			[b]Recommendation:[/b] If you use this method frequently, make sure you have the option [member mipmaps/generate] enabled to avoid wasting processing power in generating them again and again.
+			- [b]Lanczos:[/b] Performs Lanczos interpolation. This is the slowest texture resizing mode, but it typically gives the best results, especially when downscaling textures.
 		</member>
 		<member name="roughness/mode" type="int" setter="" getter="" default="0">
 			The color channel to consider as a roughness map in this texture. Only effective if [member roughness/src_normal] is not empty.
