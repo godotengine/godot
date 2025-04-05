@@ -460,6 +460,12 @@
 				The returned dictionary is in PropertyInfo format, with the keys [code]name[/code], [code]class_name[/code], [code]type[/code], [code]hint[/code], [code]hint_string[/code], and [code]usage[/code].
 			</description>
 		</method>
+		<method name="canvas_item_get_oversampling_factor" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="item" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="canvas_item_reset_physics_interpolation">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -587,6 +593,13 @@
 			<param index="1" name="color" type="Color" />
 			<description>
 				Multiplies the color of the canvas item specified by the [param item] RID, while affecting its children. See also [method canvas_item_set_self_modulate]. Equivalent to [member CanvasItem.modulate].
+			</description>
+		</method>
+		<method name="canvas_item_set_oversampling_factor">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="oversampling" type="float" />
+			<description>
 			</description>
 		</method>
 		<method name="canvas_item_set_parent">

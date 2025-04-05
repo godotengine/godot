@@ -3278,6 +3278,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_set_interpolated", "item", "interpolated"), &RenderingServer::canvas_item_set_interpolated);
 	ClassDB::bind_method(D_METHOD("canvas_item_reset_physics_interpolation", "item"), &RenderingServer::canvas_item_reset_physics_interpolation);
 	ClassDB::bind_method(D_METHOD("canvas_item_transform_physics_interpolation", "item", "transform"), &RenderingServer::canvas_item_transform_physics_interpolation);
+	ClassDB::bind_method(D_METHOD("canvas_item_set_oversampling_factor", "item", "oversampling"), &RenderingServer::canvas_item_set_oversampling_factor);
+	ClassDB::bind_method(D_METHOD("canvas_item_get_oversampling_factor", "item"), &RenderingServer::canvas_item_get_oversampling_factor);
 
 	/* Primitives */
 
