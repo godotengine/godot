@@ -127,10 +127,11 @@ static void _editor_init() {
 #endif
 
 #ifndef GDSCRIPT_NO_LSP
-	register_lsp_types();
 	GDScriptLanguageServer *lsp_plugin = memnew(GDScriptLanguageServer);
 	EditorNode::get_singleton()->add_editor_plugin(lsp_plugin);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("GDScriptLanguageProtocol", GDScriptLanguageProtocol::get_singleton()));
+	Engine::Singleton singleton("GDScriptLanguageProtocol", GDScriptLanguageProtocol::get_singleton());
+	singleton.editor_only = true;
+	Engine::get_singleton()->add_singleton(singleton);
 #endif // !GDSCRIPT_NO_LSP
 }
 
@@ -162,6 +163,9 @@ void initialize_gdscript_module(ModuleInitializationLevel p_level) {
 		EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		GDREGISTER_CLASS(GDScriptSyntaxHighlighter);
+#ifndef GDSCRIPT_NO_LSP
+		register_lsp_types();
+#endif // !GDSCRIPT_NO_LSP
 	}
 #endif // TOOLS_ENABLED
 }
