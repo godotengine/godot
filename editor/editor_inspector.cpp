@@ -3074,13 +3074,24 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 }
 
 void EditorInspector::update_tree() {
+	if (!object) {
+		// Only hide plugins if we are not editing any object.
+		// This should be handled outside of the update_tree call anyway (see EditorInspector::edit), but might as well keep it safe.
+		_clear(true);
+
+		return;
+	}
+
+	bool root_inspector_was_following_focus = get_root_inspector()->is_following_focus();
+	if (root_inspector_was_following_focus) {
+		// Temporarily disable focus following on the root inspector to avoid jumping while the inspector is updating.
+		get_root_inspector()->set_follow_focus(false);
+	}
+
 	// Store currently selected and focused elements to restore after the update.
 	// TODO: Can be useful to store more context for the focusable, such as the caret position in LineEdit.
 	StringName current_selected = property_selected;
 	int current_focusable = -1;
-
-	// Temporarily disable focus following on the root inspector to avoid jumping while the inspector is updating.
-	get_root_inspector()->set_follow_focus(false);
 
 	if (property_focusable != -1) {
 		// Check that focusable is actually focusable.
@@ -3103,14 +3114,8 @@ void EditorInspector::update_tree() {
 		}
 	}
 
-	// Only hide plugins if we are not editing any object.
 	// This should be handled outside of the update_tree call anyway (see EditorInspector::edit), but might as well keep it safe.
-	_clear(!object);
-
-	if (!object) {
-		get_root_inspector()->set_follow_focus(true);
-		return;
-	}
+	_clear(false);
 
 	List<Ref<EditorInspectorPlugin>> valid_plugins;
 
@@ -3994,7 +3999,9 @@ void EditorInspector::update_tree() {
 		EditorNode::get_singleton()->hide_unused_editors();
 	}
 
-	get_root_inspector()->set_follow_focus(true);
+	if (root_inspector_was_following_focus) {
+		get_root_inspector()->set_follow_focus(true);
+	}
 }
 
 void EditorInspector::update_property(const String &p_prop) {
