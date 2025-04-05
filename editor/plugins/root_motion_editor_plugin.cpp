@@ -226,7 +226,7 @@ bool EditorInspectorRootMotionPlugin::can_handle(Object *p_object) {
 }
 
 bool EditorInspectorRootMotionPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
-	if (p_path == "root_motion_track" && p_object->is_class("AnimationMixer") && p_type == Variant::NODE_PATH) {
+	if (p_path == "root_motion_track" && Object::is_class<AnimationMixer>(p_object) && p_type == Variant::NODE_PATH) {
 		EditorPropertyRootMotion *editor = memnew(EditorPropertyRootMotion);
 		add_property_editor(p_path, editor);
 		return true;

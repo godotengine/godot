@@ -669,7 +669,7 @@ void SceneDebuggerObject::deserialize(const Array &p_arr) {
 			if (var.is_zero()) {
 				var = Ref<Resource>();
 			} else if (var.get_type() == Variant::OBJECT) {
-				if (((Object *)var)->is_class("EncodedObjectAsID")) {
+				if (Object::is_class<EncodedObjectAsID>(((Object *)var))) {
 					var = Object::cast_to<EncodedObjectAsID>(var)->get_object_id();
 					pinfo.type = var.get_type();
 					pinfo.hint = PROPERTY_HINT_OBJECT_ID;
@@ -824,9 +824,9 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 		Variant orig_tf;
 
 		if (keep_transform) {
-			if (n2->is_class("Node3D")) {
+			if (Object::is_class<Node3D>(n2)) {
 				orig_tf = n2->call("get_transform");
-			} else if (n2->is_class("CanvasItem")) {
+			} else if (Object::is_class<CanvasItem>(n2)) {
 				orig_tf = n2->call("_edit_get_state");
 			}
 		}
@@ -834,12 +834,12 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 		n2->set(p_prop, p_value);
 
 		if (keep_transform) {
-			if (n2->is_class("Node3D")) {
+			if (Object::is_class<Node3D>(n2)) {
 				Variant new_tf = n2->call("get_transform");
 				if (new_tf != orig_tf) {
 					n2->call("set_transform", orig_tf);
 				}
-			} else if (n2->is_class("CanvasItem")) {
+			} else if (Object::is_class<CanvasItem>(n2)) {
 				Variant new_tf = n2->call("_edit_get_state");
 				if (new_tf != orig_tf) {
 					n2->call("_edit_set_state", orig_tf);
@@ -895,9 +895,9 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, const Var
 		Variant orig_tf;
 
 		if (keep_transform) {
-			if (n2->is_class("Node3D")) {
+			if (Object::is_class<Node3D>(n2)) {
 				orig_tf = n2->call("get_transform");
-			} else if (n2->is_class("CanvasItem")) {
+			} else if (Object::is_class<CanvasItem>(n2)) {
 				orig_tf = n2->call("_edit_get_state");
 			}
 		}
@@ -906,12 +906,12 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, const Var
 		n2->callp(p_method, p_args, p_argcount, ce);
 
 		if (keep_transform) {
-			if (n2->is_class("Node3D")) {
+			if (Object::is_class<Node3D>(n2)) {
 				Variant new_tf = n2->call("get_transform");
 				if (new_tf != orig_tf) {
 					n2->call("set_transform", orig_tf);
 				}
-			} else if (n2->is_class("CanvasItem")) {
+			} else if (Object::is_class<CanvasItem>(n2)) {
 				Variant new_tf = n2->call("_edit_get_state");
 				if (new_tf != orig_tf) {
 					n2->call("_edit_set_state", orig_tf);

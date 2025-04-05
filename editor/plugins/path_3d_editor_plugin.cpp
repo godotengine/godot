@@ -751,7 +751,7 @@ void Path3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Path3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Path3D");
+	return Object::is_class<Path3D>(p_object);
 }
 
 void Path3DEditorPlugin::make_visible(bool p_visible) {

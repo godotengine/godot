@@ -796,7 +796,7 @@ void Path2DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Path2DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Path2D");
+	return Object::is_class<Path2D>(p_object);
 }
 
 void Path2DEditorPlugin::make_visible(bool p_visible) {
