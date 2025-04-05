@@ -482,7 +482,6 @@ Error HTTPClientTCP::poll() {
 						(rs >= 2 && response_str[rs - 2] == '\n' && response_str[rs - 1] == '\n') ||
 						(rs >= 4 && response_str[rs - 4] == '\r' && response_str[rs - 3] == '\n' && response_str[rs - 2] == '\r' && response_str[rs - 1] == '\n')) {
 					// End of response, parse.
-					response_str.push_back(0);
 					String response = String::utf8((const char *)response_str.ptr(), response_str.size());
 					Vector<String> responses = response.split("\n");
 					body_size = -1;
@@ -506,13 +505,20 @@ Error HTTPClientTCP::poll() {
 						if (s.length() == 0) {
 							continue;
 						}
-						if (s.begins_with("content-length:")) {
-							body_size = s.substr(s.find_char(':') + 1).strip_edges().to_int();
+						const char content_length_label[] = "content-length:";
+						const char transfer_encoding_label[] = "transfer-encoding:";
+						if (s.begins_with(content_length_label)) {
+							const int index = std::size(content_length_label) - 1;
+							Span<char32_t> sp = Span<char32_t>(s.ptr() + index, s.length() - index);
+							sp = String::strip_edges_span(sp, true, true);
+							body_size = String::to_int(sp.begin(), sp.size());
 							body_left = body_size;
 
-						} else if (s.begins_with("transfer-encoding:")) {
-							String encoding = header.substr(header.find_char(':') + 1).strip_edges();
-							if (encoding == "chunked") {
+						} else if (s.begins_with(transfer_encoding_label)) {
+							const int index = std::size(transfer_encoding_label) - 1;
+							Span<char32_t> sp = Span<char32_t>(s.ptr() + index, s.length() - index);
+							sp = String::strip_edges_span(sp, true, true);
+							if (String("chunked") == sp) {
 								chunked = true;
 							}
 						} else if (s.begins_with("connection: close")) {
