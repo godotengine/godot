@@ -79,7 +79,13 @@
 			<return type="PackedStringArray" />
 			<param index="0" name="directory_path" type="String" />
 			<description>
-				Lists a directory (as example: "res://assets/enemies"), returning all resources contained within. The resource files are the original file names as visible in the editor before exporting.
+				Lists a directory, returning all resources and subdirectories contained within. The resource files have the original file names as visible in the editor before exporting. The directories have [code]"/"[/code] appended.
+				[codeblock]
+				print(ResourceLoader.list_directory("res://assets/enemies/slime"))
+				# Prints ["extra_data/", "model.gltf", "model.tscn", "model_slime.png"]
+				[/codeblock]
+				[b]Note:[/b] The order of files and directories returned by this method is not deterministic, and can vary between operating systems.
+				[b]Note:[/b] To normally traverse the filesystem, see [DirAccess].
 			</description>
 		</method>
 		<method name="load">
