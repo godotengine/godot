@@ -455,7 +455,7 @@ void JoltSoftBody3D::apply_vertex_impulse(int p_index, const Vector3 &p_impulse)
 void JoltSoftBody3D::apply_node_force(int p_index, const Vector3 &p_force) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply force to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
-	apply_node_impulse(p_index, p_force * space->get_last_step());
+	apply_vertex_impulse(p_index, p_force * space->get_last_step());
 }
 
 void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
