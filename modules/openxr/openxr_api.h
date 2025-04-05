@@ -73,6 +73,7 @@ public:
 		bool acquire(bool &p_should_render);
 		bool release();
 		RID get_image();
+		RID get_density_map();
 	};
 
 private:
@@ -501,6 +502,7 @@ public:
 	XrSwapchain get_color_swapchain();
 	RID get_color_texture();
 	RID get_depth_texture();
+	RID get_density_map_texture();
 	void set_velocity_texture(RID p_render_target);
 	RID get_velocity_texture();
 	void set_velocity_depth_texture(RID p_render_target);
