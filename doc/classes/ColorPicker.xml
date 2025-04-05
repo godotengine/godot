@@ -73,6 +73,9 @@
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
 			If [code]true[/code], shows an alpha channel slider (opacity).
 		</member>
+		<member name="edit_intensity" type="bool" setter="set_edit_intensity" getter="is_editing_intensity" default="true">
+			If [code]true[/code], shows an intensity slider. The intensity is applied as follows: multiply the color by [code]2 ** intensity[/code] in linear RGB space, and then convert it back to sRGB.
+		</member>
 		<member name="hex_visible" type="bool" setter="set_hex_visible" getter="is_hex_visible" default="true">
 			If [code]true[/code], the hex color code input field is visible.
 		</member>
@@ -111,13 +114,15 @@
 	</signals>
 	<constants>
 		<constant name="MODE_RGB" value="0" enum="ColorModeType">
-			Allows editing the color with Red/Green/Blue sliders.
+			Allows editing the color with Red/Green/Blue sliders in sRGB color space.
 		</constant>
 		<constant name="MODE_HSV" value="1" enum="ColorModeType">
 			Allows editing the color with Hue/Saturation/Value sliders.
 		</constant>
-		<constant name="MODE_RAW" value="2" enum="ColorModeType">
-			Allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
+		<constant name="MODE_RAW" value="2" enum="ColorModeType" deprecated="This is replaced by [constant MODE_LINEAR].">
+		</constant>
+		<constant name="MODE_LINEAR" value="2" enum="ColorModeType">
+			Allows editing the color with Red/Green/Blue sliders in linear color space.
 		</constant>
 		<constant name="MODE_OKHSL" value="3" enum="ColorModeType">
 			Allows editing the color with Hue/Saturation/Lightness sliders.
@@ -170,6 +175,9 @@
 		</theme_item>
 		<theme_item name="color_hue" data_type="icon" type="Texture2D">
 			Custom texture for the hue selection slider on the right.
+		</theme_item>
+		<theme_item name="color_script" data_type="icon" type="Texture2D">
+			The icon for the button that switches color text to hexadecimal.
 		</theme_item>
 		<theme_item name="expanded_arrow" data_type="icon" type="Texture2D">
 			The icon for color preset drop down menu when expanded.
