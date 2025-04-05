@@ -1634,6 +1634,8 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	name_edit_popup->hide();
 	updating = false;
 
+	selected_nodes.clear();
+	connected_nodes.clear();
 	state_machine_draw->queue_redraw();
 }
 
@@ -1693,6 +1695,7 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 			updating = false;
 		}
 
+		connected_nodes.clear();
 		selected_nodes.clear();
 	}
 
