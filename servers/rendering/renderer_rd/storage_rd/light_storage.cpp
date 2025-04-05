@@ -712,7 +712,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 						Projection shadow_mtx = rectm * bias * matrix * modelview;
 						light_data.shadow_split_offsets[j] = split;
-						float bias_scale = light_instance->shadow_transform[j].bias_scale * light_data.soft_shadow_scale;
+						// Ensure the bias scale multiplier isn't too close to zero, as it can cause shadow acne.
+						float bias_scale = light_instance->shadow_transform[j].bias_scale * MAX(0.05, light_data.soft_shadow_scale);
 						light_data.shadow_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0 * bias_scale;
 						// Use lower shadow normal bias for distant splits, relative to the share taken by the split.
 						// This helps reduce peter-panning at a distance.
