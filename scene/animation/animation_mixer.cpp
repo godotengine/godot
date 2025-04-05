@@ -611,7 +611,11 @@ void AnimationMixer::_init_root_motion_cache() {
 }
 
 void AnimationMixer::_create_track_num_to_track_cache_for_animation(Ref<Animation> &p_animation) {
-	ERR_FAIL_COND(animation_track_num_to_track_cache.has(p_animation));
+	if (animation_track_num_to_track_cache.has(p_animation)) {
+		// In AnimationMixer::_update_caches, it retrieves all animations via AnimationMixer::get_animation_list
+		// Since multiple AnimationLibraries can share the same Animation, it is possible that the cache is already created.
+		return;
+	}
 	LocalVector<TrackCache *> &track_num_to_track_cache = animation_track_num_to_track_cache.insert_new(p_animation, LocalVector<TrackCache *>())->value;
 	const Vector<Animation::Track *> &tracks = p_animation->get_tracks();
 
