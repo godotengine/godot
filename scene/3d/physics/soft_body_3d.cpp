@@ -363,8 +363,8 @@ void SoftBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_point_transform", "point_index"), &SoftBody3D::get_point_transform);
 
-	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "point_index"), &SoftBody3D::apply_impulse);
-	ClassDB::bind_method(D_METHOD("apply_force", "force", "point_index"), &SoftBody3D::apply_force);
+	ClassDB::bind_method(D_METHOD("apply_impulse", "point_index", "impulse"), &SoftBody3D::apply_impulse);
+	ClassDB::bind_method(D_METHOD("apply_force", "point_index", "force"), &SoftBody3D::apply_force);
 	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &SoftBody3D::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_central_force", "force"), &SoftBody3D::apply_central_force);
 
@@ -676,11 +676,11 @@ Vector3 SoftBody3D::get_point_transform(int p_point_index) {
 	return PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, p_point_index);
 }
 
-void SoftBody3D::apply_impulse(const Vector3 &p_impulse, int p_point_index) {
+void SoftBody3D::apply_impulse(int p_point_index, const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->soft_body_apply_point_impulse(physics_rid, p_point_index, p_impulse);
 }
 
-void SoftBody3D::apply_force(const Vector3 &p_force, int p_point_index) {
+void SoftBody3D::apply_force(int p_point_index, const Vector3 &p_force) {
 	PhysicsServer3D::get_singleton()->soft_body_apply_point_force(physics_rid, p_point_index, p_force);
 }
 
