@@ -1343,6 +1343,8 @@ void GodotNavigationServer3D::process(double p_delta_time) {
 	// Will run reliably every rendered frame independent of the physics tick rate.
 	// Use for things that (only) need to update once per main loop iteration and rendered frame or is visible to the user.
 	// E.g. (final) sync of objects for this main loop iteration, updating rendered debug visuals, updating debug statistics, ...
+
+	sync();
 }
 
 void GodotNavigationServer3D::physics_process(double p_delta_time) {
