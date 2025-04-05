@@ -79,4 +79,10 @@ void test_process_action_bad_method(const Dictionary &p_in) {
 	check_error_no_method(out_dict);
 }
 
+void test_no_response(const Variant &p_in) {
+	TestClassJSONRPC json_rpc = TestClassJSONRPC();
+	const Variant &res = json_rpc.process_action(p_in, true);
+	CHECK(res.get_type() == Variant::NIL);
+}
+
 } // namespace TestJSONRPC
