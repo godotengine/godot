@@ -316,32 +316,26 @@ int PopupMenu::_get_items_total_height() const {
 }
 
 int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
-	// Make the item area exclude shadows and the vertical margins and scrollbar.
-	Rect2 item_clickable_area = panel->get_global_rect();
-	if (scroll_container->get_v_scroll_bar()->is_visible_in_tree()) {
-		const int scroll_width = scroll_container->get_v_scroll_bar()->get_size().width;
-		if (is_layout_rtl()) {
-			item_clickable_area.position.x += scroll_width;
-			item_clickable_area.size.width -= scroll_width;
-		}
-		item_clickable_area.size.width -= scroll_width;
-	}
-	float win_scale = get_content_scale_factor();
-	item_clickable_area.position.x += theme_cache.panel_style->get_margin(SIDE_LEFT);
-	item_clickable_area.position.y += theme_cache.panel_style->get_margin(SIDE_TOP);
-	item_clickable_area.position *= win_scale;
-	item_clickable_area.size.y -= theme_cache.panel_style->get_margin(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_BOTTOM);
-	item_clickable_area.size *= win_scale;
+	// Transform to scroll_container local coordinates.
+	const Point2 scaled_pos = p_over / get_content_scale_factor();
+	const Point2 over_scroll_container =
+			scroll_container->get_global_transform_with_canvas().xform_inv(scaled_pos);
 
-	if (!item_clickable_area.has_point(p_over)) {
+	// Check if point is inside the item control as clipped by scroll_container.
+	const Rect2 scroll_container_rect = Rect2(Point2(), scroll_container->get_size());
+	const Rect2 bounding_rect = scroll_container_rect.intersection(control->get_rect());
+	if (!bounding_rect.has_point(over_scroll_container)) {
 		return -1;
 	}
 
-	float ofs = item_clickable_area.position.y + (float)theme_cache.v_separation * win_scale * 0.5;
+	// Perform item hit check in control node local space,
+	// so we don't need to worry about any of the container theming.
+	const float over_control_y = control->get_transform().xform_inv(over_scroll_container).y;
+	float bottom_edge = 0;
 	for (int i = 0; i < items.size(); i++) {
-		ofs += i > 0 ? (float)theme_cache.v_separation * win_scale : (float)theme_cache.v_separation * win_scale * 0.5;
-		ofs += _get_item_height(i) * win_scale;
-		if (p_over.y - control->get_position().y * win_scale < ofs) {
+		bottom_edge += theme_cache.v_separation;
+		bottom_edge += _get_item_height(i);
+		if (bottom_edge > over_control_y) {
 			return i;
 		}
 	}
