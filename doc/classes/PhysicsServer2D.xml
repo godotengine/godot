@@ -998,31 +998,40 @@
 	</methods>
 	<constants>
 		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0" enum="SpaceParameter">
-			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated. The default value of this parameter is [member ProjectSettings.physics/2d/solver/contact_recycle_radius].
+			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated.
+			In GodotPhysics2D the default value of this parameter is [member ProjectSettings.physics/godot_physics_2d/solver/contact_recycle_radius].
 		</constant>
 		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1" enum="SpaceParameter">
-			Constant to set/get the maximum distance a shape can be from another before they are considered separated and the contact is discarded. The default value of this parameter is [member ProjectSettings.physics/2d/solver/contact_max_separation].
+			Constant to set/get the maximum distance a shape can be from another before they are considered separated and the contact is discarded.
+			In GodotPhysics2D the default value of this parameter is [member ProjectSettings.physics/godot_physics_2d/solver/contact_max_separation].
 		</constant>
 		<constant name="SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION" value="2" enum="SpaceParameter">
-			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision. The default value of this parameter is [member ProjectSettings.physics/2d/solver/contact_max_allowed_penetration].
+			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
+			In GodotPhysics2D the default value of this parameter is [member ProjectSettings.physics/godot_physics_2d/solver/contact_max_allowed_penetration].
 		</constant>
 		<constant name="SPACE_PARAM_CONTACT_DEFAULT_BIAS" value="3" enum="SpaceParameter">
-			Constant to set/get the default solver bias for all physics contacts. A solver bias is a factor controlling how much two objects "rebound", after overlapping, to avoid leaving them in that state because of numerical imprecision. The default value of this parameter is [member ProjectSettings.physics/2d/solver/default_contact_bias].
+			Constant to set/get the default solver bias for all physics contacts. A solver bias is a factor controlling how much two objects "rebound", after overlapping, to avoid leaving them in that state because of numerical imprecision.
+			In GodotPhysics2D the default value of this parameter is [member ProjectSettings.physics/godot_physics_2d/solver/default_contact_bias].
 		</constant>
 		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="4" enum="SpaceParameter">
-			Constant to set/get the threshold linear velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given. The default value of this parameter is [member ProjectSettings.physics/2d/sleep_threshold_linear].
+			Constant to set/get the threshold linear velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
+			In GodotPhysics2D the default value of this parameter is [member ProjectSettings.physics/godot_physics_2d/sleep_threshold_linear].
 		</constant>
 		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="5" enum="SpaceParameter">
-			Constant to set/get the threshold angular velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given. The default value of this parameter is [member ProjectSettings.physics/2d/sleep_threshold_angular].
+			Constant to set/get the threshold angular velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
+			In GodotPhysics2D the default value of this parameter is [member ProjectSettings.physics/godot_physics_2d/sleep_threshold_angular].
 		</constant>
 		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="6" enum="SpaceParameter">
-			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time. The default value of this parameter is [member ProjectSettings.physics/2d/time_before_sleep].
+			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
+			In GodotPhysics2D the default value of this parameter is [member ProjectSettings.physics/godot_physics_2d/time_before_sleep].
 		</constant>
 		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="7" enum="SpaceParameter">
-			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision. The default value of this parameter is [member ProjectSettings.physics/2d/solver/default_constraint_bias].
+			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
+			In GodotPhysics2D the default value of this parameter is [member ProjectSettings.physics/godot_physics_2d/solver/default_constraint_bias].
 		</constant>
 		<constant name="SPACE_PARAM_SOLVER_ITERATIONS" value="8" enum="SpaceParameter">
-			Constant to set/get the number of solver iterations for all contacts and constraints. The greater the number of iterations, the more accurate the collisions will be. However, a greater number of iterations requires more CPU power, which can decrease performance. The default value of this parameter is [member ProjectSettings.physics/2d/solver/solver_iterations].
+			Constant to set/get the number of solver iterations for all contacts and constraints. The greater the number of iterations, the more accurate the collisions will be. However, a greater number of iterations requires more CPU power, which can decrease performance.
+			In GodotPhysics2D the default value of this parameter is [member ProjectSettings.physics/godot_physics_2d/solver/solver_iterations].
 		</constant>
 		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">
 			This is the constant for creating world boundary shapes. A world boundary shape is an [i]infinite[/i] line with an origin point, and a normal. Thus, it can be used for front/behind checks.
@@ -1179,15 +1188,15 @@
 		</constant>
 		<constant name="JOINT_PARAM_BIAS" value="0" enum="JointParam">
 			Constant to set/get how fast the joint pulls the bodies back to satisfy the joint constraint. The lower the value, the more the two bodies can pull on the joint. The default value of this parameter is [code]0.0[/code].
-			[b]Note:[/b] In Godot Physics, this parameter is only used for pin joints and groove joints.
+			[b]Note:[/b] In GodotPhysics2D this parameter is only used for pin joints and groove joints.
 		</constant>
 		<constant name="JOINT_PARAM_MAX_BIAS" value="1" enum="JointParam">
 			Constant to set/get the maximum speed with which the joint can apply corrections. The default value of this parameter is [code]3.40282e+38[/code].
-			[b]Note:[/b] In Godot Physics, this parameter is only used for groove joints.
+			[b]Note:[/b] In GodotPhysics2D this parameter is only used for groove joints.
 		</constant>
 		<constant name="JOINT_PARAM_MAX_FORCE" value="2" enum="JointParam">
 			Constant to set/get the maximum force that the joint can use to act on the two bodies. The default value of this parameter is [code]3.40282e+38[/code].
-			[b]Note:[/b] In Godot Physics, this parameter is only used for groove joints.
+			[b]Note:[/b] In GodotPhysics2D this parameter is only used for groove joints.
 		</constant>
 		<constant name="PIN_JOINT_SOFTNESS" value="0" enum="PinJointParam">
 			Constant to set/get a how much the bond of the pin joint can flex. The default value of this parameter is [code]0.0[/code].
