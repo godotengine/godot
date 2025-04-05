@@ -4576,6 +4576,14 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 					}
 				}
 			}
+#if DEBUG_ENABLED
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd && dd->class_list.has(name)) {
+				if (dd->class_list[name].is_deprecated) {
+					parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+				}
+			}
+#endif
 			result.is_constant = true;
 			p_identifier->set_datatype(result);
 			return;
