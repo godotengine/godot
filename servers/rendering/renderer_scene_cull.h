@@ -81,12 +81,15 @@ public:
 		float znear, zfar;
 		float size;
 		Vector2 offset;
+		Vector2 scale = Vector2(1.0, 1.0);
 		uint32_t visible_layers;
 		bool vaspect;
+		bool use_scale = false;
 		RID env;
 		RID attributes;
 		RID compositor;
 
+		Projection projection;
 		Transform3D transform;
 
 		Camera() {
@@ -109,6 +112,7 @@ public:
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
+	virtual void camera_set_scale(RID p_camera, Vector2 p_scale);
 	virtual void camera_set_transform(RID p_camera, const Transform3D &p_transform);
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
