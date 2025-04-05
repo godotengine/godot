@@ -294,11 +294,10 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 
 	// Load command use history.
 	Dictionary command_history = EditorSettings::get_singleton()->get_project_metadata("command_palette", "command_history", Dictionary());
-	Array history_entries = command_history.keys();
-	for (int i = 0; i < history_entries.size(); i++) {
-		const String &history_key = history_entries[i];
+	for (const KeyValue<Variant, Variant> &history_kv : command_history) {
+		const String &history_key = history_kv.key;
 		if (commands.has(history_key)) {
-			commands[history_key].last_used = command_history[history_key];
+			commands[history_key].last_used = history_kv.value;
 		}
 	}
 }

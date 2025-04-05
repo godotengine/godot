@@ -2229,10 +2229,8 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 			undo_redo->add_undo_property(object, count_property, properties_as_array.size());
 			for (int i = 0; i < (int)properties_as_array.size(); i++) {
 				Dictionary d = Dictionary(properties_as_array[i]);
-				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
-					String key = keys[j];
-					undo_redo->add_undo_property(object, vformat(key, i), d[key]);
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
 				}
 			}
 
@@ -2252,10 +2250,8 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 			undo_redo->add_do_property(object, count_property, properties_as_array.size());
 			for (int i = 0; i < (int)properties_as_array.size(); i++) {
 				Dictionary d = properties_as_array[i];
-				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
-					String key = keys[j];
-					undo_redo->add_do_property(object, vformat(key, i), d[key]);
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					undo_redo->add_do_property(object, vformat(kv.key, i), kv.value);
 				}
 			}
 		}
@@ -2306,10 +2302,8 @@ void EditorInspectorArray::_clear_array() {
 		undo_redo->add_undo_property(object, count_property, count);
 		for (int i = 0; i < (int)properties_as_array.size(); i++) {
 			Dictionary d = Dictionary(properties_as_array[i]);
-			Array keys = d.keys();
-			for (int j = 0; j < keys.size(); j++) {
-				String key = keys[j];
-				undo_redo->add_undo_property(object, vformat(key, i), d[key]);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
 			}
 		}
 
@@ -2371,10 +2365,8 @@ void EditorInspectorArray::_resize_array(int p_size) {
 			undo_redo->add_undo_property(object, count_property, count);
 			for (int i = count - 1; i > p_size - 1; i--) {
 				Dictionary d = Dictionary(properties_as_array[i]);
-				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
-					String key = keys[j];
-					undo_redo->add_undo_property(object, vformat(key, i), d[key]);
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
 				}
 			}
 
