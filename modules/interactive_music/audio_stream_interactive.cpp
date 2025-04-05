@@ -550,6 +550,7 @@ void AudioStreamPlaybackInteractive::stop() {
 	active = false;
 
 	for (int i = 0; i < AudioStreamInteractive::MAX_CLIPS; i++) {
+		bool was_active = states[i].active && !states[i].first_mix;
 		if (states[i].playback.is_valid()) {
 			states[i].playback->stop();
 		}
@@ -560,6 +561,9 @@ void AudioStreamPlaybackInteractive::stop() {
 		states[i].active = false;
 		states[i].auto_advance = -1;
 		states[i].first_mix = true;
+		if (was_active) {
+			emit_signal(SNAME("clip_ended"), i);
+		}
 	}
 }
 
@@ -620,6 +624,8 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 			//prepare auto advance
 			state.auto_advance = stream->clips[current].auto_advance_next_clip;
 		}
+
+		emit_signal(SNAME("clip_started"), current);
 		return;
 	}
 
@@ -631,6 +637,9 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 			states[i].playback->stop();
 			states[i].reset_fade();
 			states[i].active = false;
+			if (!states[i].first_mix) {
+				emit_signal(SNAME("clip_ended"), i);
+			}
 		}
 	}
 
@@ -913,6 +922,7 @@ void AudioStreamPlaybackInteractive::_mix_internal_state(int p_state_idx, int p_
 			}
 			playback_current = p_state_idx;
 			state.first_mix = false;
+			emit_signal(SNAME("clip_started"), p_state_idx);
 		} else {
 			// This is for fade in of new stream.
 			state.fade_wait -= mix_time;
@@ -957,6 +967,7 @@ void AudioStreamPlaybackInteractive::_mix_internal_state(int p_state_idx, int p_
 	if (!state.playback->is_playing()) {
 		// It finished because it either reached end or faded out, so deactivate and continue.
 		state.active = false;
+		emit_signal(SNAME("clip_ended"), p_state_idx);
 	}
 	if (queue_next != -1) {
 		_queue(queue_next, true);
@@ -1036,4 +1047,7 @@ void AudioStreamPlaybackInteractive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("switch_to_clip_by_name", "clip_name"), &AudioStreamPlaybackInteractive::switch_to_clip_by_name);
 	ClassDB::bind_method(D_METHOD("switch_to_clip", "clip_index"), &AudioStreamPlaybackInteractive::switch_to_clip);
 	ClassDB::bind_method(D_METHOD("get_current_clip_index"), &AudioStreamPlaybackInteractive::get_current_clip_index);
+
+	ADD_SIGNAL(MethodInfo("clip_started", PropertyInfo(Variant::INT, "clip_idx")));
+	ADD_SIGNAL(MethodInfo("clip_ended", PropertyInfo(Variant::INT, "clip_idx")));
 }
