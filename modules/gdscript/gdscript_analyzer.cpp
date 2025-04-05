@@ -4601,6 +4601,17 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		}
 		p_identifier->is_constant = true;
 		p_identifier->reduced_value = value;
+
+#if DEBUG_ENABLED
+		DocTools *dd = EditorHelp::get_doc_data();
+		if (dd && dd->class_list.has("@GlobalScope")) {
+			for (const DocData::ConstantDoc &cd : dd->class_list["@GlobalScope"].constants) {
+				if (cd.name == name && cd.is_deprecated) {
+					parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+				}
+			}
+		}
+#endif
 		return;
 	}
 
