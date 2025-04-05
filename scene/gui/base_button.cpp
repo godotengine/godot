@@ -213,6 +213,7 @@ void BaseButton::set_disabled(bool p_disabled) {
 		}
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		status.pressed_down_with_focus = false;
 	}
 	queue_redraw();
 	update_minimum_size();
