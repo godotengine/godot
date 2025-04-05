@@ -2856,6 +2856,9 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 			return true;
 		} else {
 			Ref<Script> dropped_node_script = dropped_node->get_script();
+			if (dropped_node_script.is_valid() && dropped_node_script->has_script_subtype(E)) {
+				return true;
+			}
 			while (dropped_node_script.is_valid()) {
 				if (dropped_node_script->get_path() == E) {
 					return true;
