@@ -298,6 +298,10 @@ void Particles2DEditorPlugin::_selection_changed() {
 	}
 
 	for (Node *particles : selected_particles) {
+		if (!ObjectDB::get_instance(particles->get_instance_id())) {
+			continue;
+		}
+
 		if (GPUParticles2D *gpu_particles = Object::cast_to<GPUParticles2D>(particles)) {
 			gpu_particles->set_show_gizmos(false);
 		} else if (CPUParticles2D *cpu_particles = Object::cast_to<CPUParticles2D>(particles)) {
