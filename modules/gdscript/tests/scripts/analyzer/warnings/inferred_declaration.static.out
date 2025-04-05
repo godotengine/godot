@@ -1,0 +1,2 @@
+GDTEST_OK
+~~ WARNING at line 2: (INFERRED_DECLARATION) "for" iterator variable "i" has an implicitly inferred static type.
