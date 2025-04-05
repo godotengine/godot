@@ -141,9 +141,16 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shape_set_data, "shape", "data");
 	GDVIRTUAL_BIND(_shape_set_custom_solver_bias, "shape", "bias");
 
+	GDVIRTUAL_BIND(_shape_set_friction_override, "shape", "enable", "friction");
+	GDVIRTUAL_BIND(_shape_set_bounce_override, "shape", "enable", "bounce");
+
 	GDVIRTUAL_BIND(_shape_get_type, "shape");
 	GDVIRTUAL_BIND(_shape_get_data, "shape");
 	GDVIRTUAL_BIND(_shape_get_custom_solver_bias, "shape");
+
+	GDVIRTUAL_BIND(_shape_get_friction_override, "shape");
+	GDVIRTUAL_BIND(_shape_get_bounce_override, "shape");
+
 	GDVIRTUAL_BIND(_shape_collide, "shape_A", "xform_A", "motion_A", "shape_B", "xform_B", "motion_B", "results", "result_max", "result_count");
 
 	/* SPACE API */

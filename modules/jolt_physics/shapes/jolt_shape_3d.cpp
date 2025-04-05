@@ -92,6 +92,54 @@ void JoltShape3D::set_solver_bias(float p_bias) {
 	}
 }
 
+real_t JoltShape3D::get_friction() const {
+	return material->friction;
+}
+
+void JoltShape3D::set_friction(real_t p_friction) {
+	if (Math::is_nan(p_friction) && !Math::is_nan(material->friction) && Math::is_nan(material->bounce)) {
+		// Friction and bounce are both unset, we should decrease per-shape material count for all owners.
+		_uses_shape_material = false;
+		for (const KeyValue<JoltShapedObject3D *, int> &E : ref_counts_by_owner) {
+			E.key->remove_shape_material();
+		}
+	} else if (!Math::is_nan(p_friction) && Math::is_nan(material->friction) && Math::is_nan(material->bounce)) {
+		// One of friction or bounce is now set, we should increase per-shape material count for all owners.
+		_uses_shape_material = true;
+		for (const KeyValue<JoltShapedObject3D *, int> &E : ref_counts_by_owner) {
+			E.key->add_shape_material();
+		}
+	}
+
+	material->friction = p_friction;
+}
+
+real_t JoltShape3D::get_bounce() const {
+	return material->bounce;
+}
+
+void JoltShape3D::set_bounce(real_t p_bounce) {
+	if (Math::is_nan(p_bounce) && !Math::is_nan(material->bounce) && Math::is_nan(material->friction)) {
+		// Friction and bounce are both unset, we should decrease per-shape material count for all owners.
+		_uses_shape_material = false;
+		for (const KeyValue<JoltShapedObject3D *, int> &E : ref_counts_by_owner) {
+			E.key->remove_shape_material();
+		}
+	} else if (!Math::is_nan(p_bounce) && Math::is_nan(material->bounce) && Math::is_nan(material->friction)) {
+		// One of friction or bounce is now set, we should increase per-shape material count for all owners.
+		_uses_shape_material = true;
+		for (const KeyValue<JoltShapedObject3D *, int> &E : ref_counts_by_owner) {
+			E.key->add_shape_material();
+		}
+	}
+
+	material->bounce = p_bounce;
+}
+
+bool JoltShape3D::uses_shape_material() const {
+	return _uses_shape_material;
+}
+
 JPH::ShapeRefC JoltShape3D::try_build() {
 	jolt_ref_mutex.lock();
 

@@ -83,10 +83,14 @@ public:
 
 	FUNC2(shape_set_data, RID, const Variant &);
 	FUNC2(shape_set_custom_solver_bias, RID, real_t);
+	FUNC3(shape_set_friction_override, RID, bool, real_t);
+	FUNC3(shape_set_bounce_override, RID, bool, real_t);
 
 	FUNC1RC(ShapeType, shape_get_type, RID);
 	FUNC1RC(Variant, shape_get_data, RID);
 	FUNC1RC(real_t, shape_get_custom_solver_bias, RID);
+	FUNC1RC(real_t, shape_get_friction_override, RID);
+	FUNC1RC(real_t, shape_get_bounce_override, RID);
 
 	//these work well, but should be used from the main thread only
 	bool shape_collide(RID p_shape_A, const Transform2D &p_xform_A, const Vector2 &p_motion_A, RID p_shape_B, const Transform2D &p_xform_B, const Vector2 &p_motion_B, Vector2 *r_results, int p_result_max, int &r_result_count) override {
