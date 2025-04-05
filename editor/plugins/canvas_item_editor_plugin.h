@@ -509,6 +509,7 @@ private:
 	VBoxContainer *controls_vb = nullptr;
 	Button *button_center_view = nullptr;
 	EditorZoomWidget *zoom_widget = nullptr;
+	real_t ruler_width = 15.0;
 	void _update_zoom(real_t p_zoom);
 	void _shortcut_zoom_set(real_t p_zoom);
 	void _zoom_on_position(real_t p_zoom, Point2 p_position = Point2());
