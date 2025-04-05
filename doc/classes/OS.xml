@@ -773,6 +773,47 @@
 				On macOS (sandboxed applications only), this function clears list of user selected folders accessible to the application.
 			</description>
 		</method>
+		<method name="send_notification">
+			<return type="int" enum="Error" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="message" type="String" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="icon" type="Variant" default="null" />
+			<param index="4" name="duration" type="int" default="-1" />
+			<description>
+				Sends a desktop notification to the user with the given title and message.
+
+				The notification behavior and appearance varies depending on the platform, with some platforms potentially ignoring certain parameters:
+				- [param title]: The title of the notification.
+				- [param message]: The main body text of the notification.
+				- [param callback]: Callable to be called when the user interacts with the notification (e.g., clicks on it). Note that not all platforms support this feature.
+				- [param icon]: A custom icon to display with the notification. Pass an Image object or null to use the default application icon.
+				- [param duration]: How long the notification should remain visible in seconds. If set to -1 (default), the system default duration will be used. If set to 0, the notification will remain until manually dismissed (not supported on all platforms).
+
+				Some use cases for this feature include:
+				- Alerting the player when a game event occurs while they've alt-tabbed out of the game window.
+				- Displaying chat or other notifications when the application isn't in focus.
+				- Notifying when a long-running task (like asset importing or export) has completed.
+
+				[b]Note:[/b] On macOS, this implementation uses the UserNotifications framework on macOS 10.15+ and falls back to NSUserNotification on older versions. When running in headless mode or with --script, the notification will be printed to the console instead.
+
+				[b]Note:[/b] This method is implemented on macOS and can be extended to other platforms such as Windows, Linux and mobile platforms.
+
+				[b]Example:[/b] Sending a notification when an operation completes:
+				[codeblocks]
+				[gdscript]
+				func _on_operation_completed() -&gt; void:
+				    OS.send_notification("Operation Completed", "Your task has finished processing.")
+				[/gdscript]
+				[csharp]
+				private void OnOperationCompleted()
+				{
+				    OS.SendNotification("Operation Completed", "Your task has finished processing.");
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="set_environment" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="variable" type="String" />

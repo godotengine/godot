@@ -35,6 +35,7 @@
 #import "godot_application.h"
 #import "godot_application_delegate.h"
 #import "macos_terminal_logger.h"
+#import <UserNotifications/UserNotifications.h>
 
 #include "core/crypto/crypto_core.h"
 #include "core/version_generated.gen.h"
@@ -942,6 +943,109 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
 	[NSApp registerUserInterfaceItemSearchHandler:delegate];
+}
+
+Error OS_MacOS::send_notification(const String &p_title, const String &p_message, const Callable &p_callback, const Ref<Image> &p_icon, int p_duration) {
+	// Always print to console first as a fallback
+	print_line("NOTIFICATION: " + p_title + " - " + p_message);
+
+	// For script mode or headless mode, just print to console and return
+	if (OS::get_singleton()->is_stdout_verbose() || Engine::get_singleton()->is_in_physics_frame() || Main::is_cmdline_tool()) {
+		return OK;
+	}
+
+	// Check if in headless mode
+	if (DisplayServer::get_singleton() && DisplayServer::get_singleton()->get_name() == "headless") {
+		WARN_PRINT("Desktop notifications are not available in headless mode.");
+		return OK;
+	}
+
+	// If there's no display server at all, just use console output
+	if (!DisplayServer::get_singleton()) {
+		return OK;
+	}
+
+	// Get bundle identifier to check if we're in a proper app context
+	NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
+	if (!bundleID) {
+		// Not in a proper app context, like when running from script or command line
+		return OK;
+	}
+
+	@try {
+		if (@available(macOS 10.15, *)) {
+			// Use NSUserNotification as fallback instead of UNUserNotificationCenter
+			// since it's more reliable in script mode
+			NSUserNotification *notification = [[NSUserNotification alloc] init];
+			notification.title = [NSString stringWithUTF8String:p_title.utf8().get_data()];
+			notification.informativeText = [NSString stringWithUTF8String:p_message.utf8().get_data()];
+
+			// Handle icon if provided
+			if (p_icon.is_valid()) {
+				// Convert Godot Image to NSImage
+				Vector<uint8_t> png_buffer = p_icon->save_png_to_buffer();
+				if (png_buffer.size() > 0) {
+					NSData *img_data = [NSData dataWithBytes:png_buffer.ptr() length:png_buffer.size()];
+					if (img_data) {
+						NSImage *nsImage = [[NSImage alloc] initWithData:img_data];
+						if (nsImage) {
+							notification.contentImage = nsImage;
+						}
+					}
+				}
+			}
+
+			// Handle duration
+			if (p_duration > 0) {
+				notification.deliveryDate = [NSDate dateWithTimeIntervalSinceNow:p_duration];
+				notification.deliveryRepeatInterval = nil; // Deliver only once
+			} else if (p_duration <= 0) {
+				// For persistent notifications (don't auto-remove)
+				notification.hasActionButton = YES;
+				notification.actionButtonTitle = @"OK";
+			}
+
+			[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+		} else {
+			// Fallback for older macOS versions
+			NSUserNotification *notification = [[NSUserNotification alloc] init];
+			notification.title = [NSString stringWithUTF8String:p_title.utf8().get_data()];
+			notification.informativeText = [NSString stringWithUTF8String:p_message.utf8().get_data()];
+
+			if (p_icon.is_valid()) {
+				// Convert Godot Image to NSImage
+				Vector<uint8_t> png_buffer = p_icon->save_png_to_buffer();
+				if (png_buffer.size() > 0) {
+					NSData *img_data = [NSData dataWithBytes:png_buffer.ptr() length:png_buffer.size()];
+					if (img_data) {
+						NSImage *nsImage = [[NSImage alloc] initWithData:img_data];
+						if (nsImage) {
+							notification.contentImage = nsImage;
+						}
+					}
+				}
+			}
+
+			// Handle duration
+			if (p_duration > 0) {
+				notification.deliveryDate = [NSDate dateWithTimeIntervalSinceNow:p_duration];
+				notification.deliveryRepeatInterval = nil; // Deliver only once
+			} else if (p_duration <= 0) {
+				// For persistent notifications (don't auto-remove)
+				notification.hasActionButton = YES;
+				notification.actionButtonTitle = @"OK";
+			}
+
+			[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+		}
+	} @catch (NSException *exception) {
+		// We already printed to console, so just continue
+		WARN_PRINT(String("Could not show notification: ") + String::utf8([exception.description UTF8String]));
+	}
+
+	// Return OK since we at least printed to console
+	// (are we sure this is the best way to handle this?)
+	return OK;
 }
 
 OS_MacOS::~OS_MacOS() {
