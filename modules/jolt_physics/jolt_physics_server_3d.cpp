@@ -1561,12 +1561,12 @@ void JoltPhysicsServer3D::set_active(bool p_active) {
 }
 
 void JoltPhysicsServer3D::init() {
-	job_system = new JoltJobSystem();
+	job_system = memnew(JoltJobSystem);
 }
 
 void JoltPhysicsServer3D::finish() {
 	if (job_system != nullptr) {
-		delete job_system;
+		memdelete(job_system);
 		job_system = nullptr;
 	}
 }

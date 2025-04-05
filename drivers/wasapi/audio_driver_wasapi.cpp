@@ -144,7 +144,7 @@ public:
 	ULONG STDMETHODCALLTYPE Release() {
 		ULONG ulRef = InterlockedDecrement(&_cRef);
 		if (0 == ulRef) {
-			delete this;
+			memdelete(this);
 		}
 		return ulRef;
 	}

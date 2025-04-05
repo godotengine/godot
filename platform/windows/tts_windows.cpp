@@ -156,8 +156,8 @@ Array TTS_Windows::get_voices() const {
 
 						int locale_chars = GetLocaleInfoW(locale, LOCALE_SISO639LANGNAME, nullptr, 0);
 						int region_chars = GetLocaleInfoW(locale, LOCALE_SISO3166CTRYNAME, nullptr, 0);
-						wchar_t *w_lang_code = new wchar_t[locale_chars];
-						wchar_t *w_reg_code = new wchar_t[region_chars];
+						wchar_t *w_lang_code = (wchar_t *)memalloc(sizeof(wchar_t) * locale_chars);
+						wchar_t *w_reg_code = (wchar_t *)memalloc(sizeof(wchar_t) * region_chars);
 						GetLocaleInfoW(locale, LOCALE_SISO639LANGNAME, w_lang_code, locale_chars);
 						GetLocaleInfoW(locale, LOCALE_SISO3166CTRYNAME, w_reg_code, region_chars);
 
@@ -171,8 +171,8 @@ Array TTS_Windows::get_voices() const {
 						voice_d["language"] = String::utf16((const char16_t *)w_lang_code) + "_" + String::utf16((const char16_t *)w_reg_code);
 						list.push_back(voice_d);
 
-						delete[] w_lang_code;
-						delete[] w_reg_code;
+						memfree(w_lang_code);
+						memfree(w_reg_code);
 
 						cpDataKeyAttribs->Release();
 					}

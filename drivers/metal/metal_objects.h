@@ -214,7 +214,7 @@ public:
 	id<MTLDepthStencilState> get_depth_stencil_state(bool p_use_depth, bool p_use_stencil);
 
 	explicit MDResourceCache(RenderingDeviceDriverMetal *p_device_driver) :
-			resource_factory(new MDResourceFactory(p_device_driver)) {}
+			resource_factory(new MDResourceFactory(p_device_driver)) {} // Note: deleted by std::unique_ptr, use generic C++ allocator.
 	~MDResourceCache() = default;
 };
 

@@ -2103,12 +2103,12 @@ TEST_CASE("[Variant] Identity comparison") {
 	CHECK(obj_null_one_var.identity_compare(obj_null_one_var));
 	CHECK(obj_null_one_var.identity_compare(obj_null_two_var));
 
-	Object *freed_one = new Object();
+	Object *freed_one = memnew(Object);
 	Variant freed_one_var = freed_one;
-	delete freed_one;
-	Object *freed_two = new Object();
+	memdelete(freed_one);
+	Object *freed_two = memnew(Object);
 	Variant freed_two_var = freed_two;
-	delete freed_two;
+	memdelete(freed_two);
 	CHECK_FALSE(freed_one_var.identity_compare(freed_two_var));
 }
 

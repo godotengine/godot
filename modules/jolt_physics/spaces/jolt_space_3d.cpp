@@ -94,10 +94,10 @@ void JoltSpace3D::_post_step(float p_step) {
 
 JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system) :
 		job_system(p_job_system),
-		temp_allocator(new JoltTempAllocator()),
-		layers(new JoltLayers()),
-		contact_listener(new JoltContactListener3D(this)),
-		physics_system(new JPH::PhysicsSystem()) {
+		temp_allocator(memnew(JoltTempAllocator)),
+		layers(memnew(JoltLayers)),
+		contact_listener(memnew(JoltContactListener3D(this))),
+		physics_system(memnew(JPH::PhysicsSystem)) {
 	physics_system->Init((JPH::uint)JoltProjectSettings::max_bodies, 0, (JPH::uint)JoltProjectSettings::max_body_pairs, (JPH::uint)JoltProjectSettings::max_contact_constraints, *layers, *layers, *layers);
 
 	JPH::PhysicsSettings settings;
@@ -137,22 +137,22 @@ JoltSpace3D::~JoltSpace3D() {
 	}
 
 	if (physics_system != nullptr) {
-		delete physics_system;
+		memdelete(physics_system);
 		physics_system = nullptr;
 	}
 
 	if (contact_listener != nullptr) {
-		delete contact_listener;
+		memdelete(contact_listener);
 		contact_listener = nullptr;
 	}
 
 	if (layers != nullptr) {
-		delete layers;
+		memdelete(layers);
 		layers = nullptr;
 	}
 
 	if (temp_allocator != nullptr) {
-		delete temp_allocator;
+		memdelete(temp_allocator);
 		temp_allocator = nullptr;
 	}
 }

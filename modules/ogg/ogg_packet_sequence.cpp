@@ -231,9 +231,9 @@ bool OggPacketSequencePlayback::set_page_number(int64_t p_page_number) {
 }
 
 OggPacketSequencePlayback::OggPacketSequencePlayback() {
-	packet = new ogg_packet();
+	packet = memnew(ogg_packet);
 }
 
 OggPacketSequencePlayback::~OggPacketSequencePlayback() {
-	delete packet;
+	memdelete(packet);
 }

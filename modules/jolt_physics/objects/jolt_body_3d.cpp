@@ -151,7 +151,7 @@ void JoltBody3D::_add_to_space() {
 
 	jolt_id = new_jolt_id;
 
-	delete jolt_settings;
+	memdelete(jolt_settings);
 	jolt_settings = nullptr;
 }
 
