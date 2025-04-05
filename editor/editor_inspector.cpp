@@ -1853,7 +1853,7 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 	return ms;
 }
 
-void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
+void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level, int p_reorder_placement) {
 	section = p_section;
 	label = p_label;
 	object = p_object;
@@ -1861,6 +1861,7 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 	foldable = p_foldable;
 	indent_depth = p_indent_depth;
 	level = p_level;
+	reorder_placement = p_reorder_placement;
 
 	if (!foldable && !vbox_added) {
 		add_child(vbox);
@@ -1923,6 +1924,10 @@ String EditorInspectorSection::get_section() const {
 
 VBoxContainer *EditorInspectorSection::get_vbox() {
 	return vbox;
+}
+
+int EditorInspectorSection::get_reorder_placement() const {
+	return reorder_placement;
 }
 
 void EditorInspectorSection::unfold() {
@@ -3162,6 +3167,10 @@ void EditorInspector::update_tree() {
 	HashMap<String, EditorInspectorArray *> editor_inspector_array_per_prefix;
 	HashMap<String, HashMap<String, LocalVector<EditorProperty *>>> favorites_to_add;
 
+	int section_reorder_placement = 0;
+	String section_reorder_name;
+	HashMap<String, Vector<EditorInspectorSection *>> reorder_map;
+
 	Color sscolor = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 	bool sub_inspectors_enabled = EDITOR_GET("interface/inspector/open_resources_in_current_inspector");
 
@@ -3184,6 +3193,8 @@ void EditorInspector::update_tree() {
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
 			// Setup a property sub-group.
 			subgroup = p.name;
+			section_reorder_placement = 0;
+			section_reorder_name = "";
 
 			Vector<String> hint_parts = p.hint_string.split(",");
 			subgroup_base = hint_parts[0];
@@ -3192,12 +3203,18 @@ void EditorInspector::update_tree() {
 			} else {
 				section_depth = 0;
 			}
+			if (hint_parts.size() > 2) {
+				section_reorder_placement = hint_parts[2].to_int();
+				section_reorder_name = p.name;
+			}
 
 			continue;
 
 		} else if (p.usage & PROPERTY_USAGE_GROUP) {
 			// Setup a property group.
 			group = p.name;
+			section_reorder_placement = 0;
+			section_reorder_name = "";
 
 			Vector<String> hint_parts = p.hint_string.split(",");
 			group_base = hint_parts[0];
@@ -3205,6 +3222,10 @@ void EditorInspector::update_tree() {
 				section_depth = hint_parts[1].to_int();
 			} else {
 				section_depth = 0;
+			}
+			if (hint_parts.size() > 2) {
+				section_reorder_placement = hint_parts[2].to_int();
+				section_reorder_name = p.name;
 			}
 
 			subgroup = "";
@@ -3507,6 +3528,13 @@ void EditorInspector::update_tree() {
 				current_vbox->add_child(section);
 				sections.push_back(section);
 
+				if (section_reorder_placement != 0) {
+					if (!reorder_map.has(section_reorder_name)) {
+						reorder_map.insert(section_reorder_name, Vector<EditorInspectorSection *>());
+					}
+					reorder_map.get(section_reorder_name).append(section);
+				}
+
 				String label;
 				String tooltip;
 
@@ -3532,8 +3560,10 @@ void EditorInspector::update_tree() {
 
 				Color c = sscolor;
 				c.a /= level;
-				section->setup(acc_path, label, object, c, use_folding, section_depth, level);
+				section->setup(acc_path, label, object, c, use_folding, section_depth, level, section_reorder_placement);
 				section->set_tooltip_text(tooltip);
+				section_reorder_placement = 0;
+				section_reorder_name = "";
 
 				// Add editors at the start of a group.
 				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
@@ -3880,6 +3910,24 @@ void EditorInspector::update_tree() {
 						ep->select(current_focusable);
 					}
 				}
+			}
+		}
+
+		// Reorder properties.
+		if (reorder_map.has(p.name)) {
+			int index = current_vbox->get_child_count();
+			for (EditorInspectorSection *section : reorder_map.get(p.name)) {
+				for (Variant c : section->get_vbox()->get_children()) {
+					Control *child = Object::cast_to<Control>(c);
+					if (child) {
+						child->reparent(current_vbox);
+						if (section->get_reorder_placement() < 0) {
+							current_vbox->move_child(child, MAX(0, index - editors.size()));
+							index += 1;
+						}
+					}
+				}
+				section->hide();
 			}
 		}
 	}
