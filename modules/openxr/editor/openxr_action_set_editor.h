@@ -34,6 +34,7 @@
 #include "../action_map/openxr_action_set.h"
 #include "openxr_action_editor.h"
 
+#include "editor/gui/editor_spin_slider.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"
@@ -56,7 +57,7 @@ private:
 	HBoxContainer *action_set_hb = nullptr;
 	LineEdit *action_set_name = nullptr;
 	LineEdit *action_set_localized_name = nullptr;
-	TextEdit *action_set_priority = nullptr;
+	EditorSpinSlider *action_set_priority = nullptr;
 	Button *add_action = nullptr;
 	Button *rem_action_set = nullptr;
 	VBoxContainer *actions_vb = nullptr;
@@ -68,7 +69,7 @@ private:
 	void _on_toggle_expand();
 	void _on_action_set_name_changed(const String p_new_text);
 	void _on_action_set_localized_name_changed(const String p_new_text);
-	void _on_action_set_priority_changed(const String p_new_text);
+	void _on_action_set_priority_changed(const double p_new_value);
 	void _on_add_action();
 	void _on_remove_action_set();
 
