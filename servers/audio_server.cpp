@@ -1612,7 +1612,7 @@ void AudioServer::update() {
 	listener_changed_callback_list.maybe_cleanup();
 	playback_list.maybe_cleanup();
 	for (AudioStreamPlaybackBusDetails *bus_details : bus_details_graveyard_frame_old) {
-		bus_details_graveyard_frame_old.erase(bus_details, [](AudioStreamPlaybackBusDetails *d) { delete d; });
+		bus_details_graveyard_frame_old.erase(bus_details, [](AudioStreamPlaybackBusDetails *d) noexcept { delete d; });
 	}
 	for (AudioStreamPlaybackBusDetails *bus_details : bus_details_graveyard) {
 		bus_details_graveyard_frame_old.insert(bus_details);
@@ -1699,7 +1699,7 @@ void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata
 void AudioServer::remove_update_callback(AudioCallback p_callback, void *p_userdata) {
 	for (CallbackItem *ci : update_callback_list) {
 		if (ci->callback == p_callback && ci->userdata == p_userdata) {
-			update_callback_list.erase(ci, [](CallbackItem *c) { delete c; });
+			update_callback_list.erase(ci, [](CallbackItem *c) noexcept { delete c; });
 		}
 	}
 }
@@ -1714,7 +1714,7 @@ void AudioServer::add_mix_callback(AudioCallback p_callback, void *p_userdata) {
 void AudioServer::remove_mix_callback(AudioCallback p_callback, void *p_userdata) {
 	for (CallbackItem *ci : mix_callback_list) {
 		if (ci->callback == p_callback && ci->userdata == p_userdata) {
-			mix_callback_list.erase(ci, [](CallbackItem *c) { delete c; });
+			mix_callback_list.erase(ci, [](CallbackItem *c) noexcept { delete c; });
 		}
 	}
 }
@@ -1729,7 +1729,7 @@ void AudioServer::add_listener_changed_callback(AudioCallback p_callback, void *
 void AudioServer::remove_listener_changed_callback(AudioCallback p_callback, void *p_userdata) {
 	for (CallbackItem *ci : listener_changed_callback_list) {
 		if (ci->callback == p_callback && ci->userdata == p_userdata) {
-			listener_changed_callback_list.erase(ci, [](CallbackItem *c) { delete c; });
+			listener_changed_callback_list.erase(ci, [](CallbackItem *c) noexcept { delete c; });
 		}
 	}
 }

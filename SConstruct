@@ -898,17 +898,15 @@ else:  # GCC, Clang
             env.AppendUnique(
                 CCFLAGS=[
                     "-Walloc-zero",
+                    "-Wattribute-alias=2",
                     "-Wduplicated-branches",
                     "-Wduplicated-cond",
                     "-Wstringop-overflow=4",
                 ]
             )
             env.AppendUnique(CXXFLAGS=["-Wplacement-new=1", "-Wvirtual-inheritance"])
-            # Need to fix a warning with AudioServer lambdas before enabling.
-            # if cc_version_major != 9:  # GCC 9 had a regression (GH-36325).
-            #    env.Append(CXXFLAGS=["-Wnoexcept"])
-            if cc_version_major >= 9:
-                env.AppendUnique(CCFLAGS=["-Wattribute-alias=2"])
+            if cc_version_major > 9:  # Regression in GCC 9 (see GH-36325).
+                env.AppendUnique(CXXFLAGS=["-Wnoexcept"])
             if cc_version_major >= 11:  # Broke on MethodBind templates before GCC 11.
                 env.AppendUnique(CCFLAGS=["-Wlogical-op"])
         elif methods.using_clang(env) or methods.using_emcc(env):
