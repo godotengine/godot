@@ -148,6 +148,10 @@ String OS_Web::get_unique_id() const {
 	ERR_FAIL_V_MSG("", "OS::get_unique_id() is not available on the Web platform.");
 }
 
+int OS_Web::get_default_thread_pool_size() const {
+	return godot_js_os_pthread_pool_size_get();
+}
+
 bool OS_Web::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "web") {
 		return true;
