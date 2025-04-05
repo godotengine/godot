@@ -62,6 +62,9 @@ enum class JoyAxis {
 
 enum class JoyButton {
 	INVALID = -1,
+	SEMANTIC_YES = -2,
+	SEMANTIC_NO = -3,
+	MIN = -4,
 	A = 0,
 	B = 1,
 	X = 2,

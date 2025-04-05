@@ -326,6 +326,21 @@ void InputEventConfigurationDialog::_update_input_list() {
 		joyb_root->set_collapsed(collapse);
 		joyb_root->set_meta("__type", INPUT_JOY_BUTTON);
 
+		for (int i = -2; i > (int)JoyButton::MIN; i--) {
+			Ref<InputEventJoypadButton> joyb;
+			joyb.instantiate();
+			joyb->set_button_index((JoyButton)i);
+			String desc = EventListenerLineEdit::get_event_text(joyb, false);
+
+			if (!search_term.is_empty() && !desc.contains(search_term)) {
+				continue;
+			}
+
+			TreeItem *item = input_list_tree->create_item(joyb_root);
+			item->set_text(0, desc);
+			item->set_meta("__index", i);
+		}
+
 		for (int i = 0; i < (int)JoyButton::MAX; i++) {
 			Ref<InputEventJoypadButton> joyb;
 			joyb.instantiate();
