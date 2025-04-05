@@ -848,7 +848,7 @@ void FileSystemDock::_set_file_display(bool p_active) {
 
 bool FileSystemDock::_is_file_type_disabled_by_feature_profile(const StringName &p_class) {
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
-	if (profile.is_null()) {
+	if (!ClassDB::class_exists(p_class) || profile.is_null()) {
 		return false;
 	}
 
