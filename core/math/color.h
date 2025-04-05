@@ -215,7 +215,9 @@ struct [[nodiscard]] Color {
 	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	static Color from_rgbe9995(uint32_t p_rgbe);
-	static Color from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8 = 255);
+	static constexpr Color from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8 = 255) {
+		return Color(p_r8 / 255.0f, p_g8 / 255.0f, p_b8 / 255.0f, p_a8 / 255.0f);
+	}
 
 	constexpr bool operator<(const Color &p_color) const; // Used in set keys.
 	operator String() const;
