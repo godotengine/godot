@@ -82,7 +82,7 @@ void register_exporter_types() {{
 
     docs = sorted(docs)
     env.CommandNoCache(
-        "#editor/doc_data_compressed.gen.h",
+        "#editor/translations/doc_data_compressed.gen.h",
         docs,
         env.Run(editor_builders.make_doc_header),
     )
@@ -95,28 +95,28 @@ void register_exporter_types() {{
 
     # Editor translations
     env.CommandNoCache(
-        "#editor/editor_translations.gen.h",
+        "#editor/translations/editor_translations.gen.h",
         Glob("#editor/translations/editor/*"),
         env.Run(editor_builders.make_translations_header),
     )
 
     # Property translations
     env.CommandNoCache(
-        "#editor/property_translations.gen.h",
+        "#editor/translations/property_translations.gen.h",
         Glob("#editor/translations/properties/*"),
         env.Run(editor_builders.make_translations_header),
     )
 
     # Documentation translations
     env.CommandNoCache(
-        "#editor/doc_translations.gen.h",
+        "#editor/translations/doc_translations.gen.h",
         Glob("#doc/translations/*"),
         env.Run(editor_builders.make_translations_header),
     )
 
     # Extractable translations
     env.CommandNoCache(
-        "#editor/extractable_translations.gen.h",
+        "#editor/translations/extractable_translations.gen.h",
         Glob("#editor/translations/extractable/*"),
         env.Run(editor_builders.make_translations_header),
     )
@@ -124,14 +124,19 @@ void register_exporter_types() {{
     env.add_source_files(env.editor_sources, "*.cpp")
     env.add_source_files(env.editor_sources, gen_exporters)
 
+    SConscript("animation/SCsub")
     SConscript("debugger/SCsub")
+    SConscript("dialogs/SCsub")
+    SConscript("docks/SCsub")
     SConscript("export/SCsub")
     SConscript("gui/SCsub")
     SConscript("icons/SCsub")
+    SConscript("inspector/SCsub")
     SConscript("import/SCsub")
     SConscript("plugins/SCsub")
     SConscript("project_manager/SCsub")
     SConscript("themes/SCsub")
+    SConscript("translations/SCsub")
 
     lib = env.add_library("editor", env.editor_sources)
     env.Prepend(LIBS=[lib])
