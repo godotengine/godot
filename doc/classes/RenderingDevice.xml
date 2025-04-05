@@ -1302,7 +1302,7 @@
 			8-bit-per-channel signed integer red/green/blue channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8_SRGB" value="28" enum="DataFormat">
-			8-bit-per-channel unsigned floating-point red/green/blue/blue channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
+			8-bit-per-channel unsigned floating-point red/green/blue channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8_UNORM" value="29" enum="DataFormat">
 			8-bit-per-channel unsigned floating-point blue/green/red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
