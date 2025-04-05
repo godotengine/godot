@@ -34,6 +34,23 @@
 #include "core/io/marshalls.h"
 #include "scene/resources/bit_map.h"
 
+static const char *compression_mode_names[7] = {
+	"Lossless", "Lossy", "Basis Universal", "S3TC", "ETC2", "BPTC", "ASTC"
+};
+
+static PortableCompressedTexture2D::CompressionMode get_expected_compression_mode(Image::Format format) {
+	if ((format >= Image::FORMAT_DXT1 && format <= Image::FORMAT_RGTC_RG) || format == Image::FORMAT_DXT5_RA_AS_RG) {
+		return PortableCompressedTexture2D::COMPRESSION_MODE_S3TC;
+	} else if (format >= Image::FORMAT_ETC && format <= Image::FORMAT_ETC2_RA_AS_RG) {
+		return PortableCompressedTexture2D::COMPRESSION_MODE_ETC2;
+	} else if (format >= Image::FORMAT_BPTC_RGBA && format <= Image::FORMAT_BPTC_RGBFU) {
+		return PortableCompressedTexture2D::COMPRESSION_MODE_BPTC;
+	} else if (format >= Image::FORMAT_ASTC_4x4 && format <= Image::FORMAT_ASTC_8x8_HDR) {
+		return PortableCompressedTexture2D::COMPRESSION_MODE_ASTC;
+	}
+	ERR_FAIL_V(PortableCompressedTexture2D::COMPRESSION_MODE_LOSSLESS);
+}
+
 void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 	if (p_data.is_empty()) {
 		return; //nothing to do
@@ -99,7 +116,8 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 		} break;
 		case COMPRESSION_MODE_S3TC:
 		case COMPRESSION_MODE_ETC2:
-		case COMPRESSION_MODE_BPTC: {
+		case COMPRESSION_MODE_BPTC:
+		case COMPRESSION_MODE_ASTC: {
 			image.instantiate(size.width, size.height, mipmaps, format, p_data.slice(20));
 		} break;
 	}
@@ -180,22 +198,31 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 		} break;
 		case COMPRESSION_MODE_S3TC:
 		case COMPRESSION_MODE_ETC2:
-		case COMPRESSION_MODE_BPTC: {
-			ERR_FAIL_COND(p_image->is_compressed());
+		case COMPRESSION_MODE_BPTC:
+		case COMPRESSION_MODE_ASTC: {
 			encode_uint16(DATA_FORMAT_IMAGE, buffer.ptrw() + 2);
-			Ref<Image> copy = p_image->duplicate();
-			switch (p_compression_mode) {
-				case COMPRESSION_MODE_S3TC:
-					copy->compress(Image::COMPRESS_S3TC);
-					break;
-				case COMPRESSION_MODE_ETC2:
-					copy->compress(Image::COMPRESS_ETC2);
-					break;
-				case COMPRESSION_MODE_BPTC:
-					copy->compress(Image::COMPRESS_BPTC);
-					break;
-				default: {
-				};
+			Ref<Image> copy = p_image;
+			if (p_image->is_compressed()) {
+				CompressionMode expected_compression_mode = get_expected_compression_mode(p_image->get_format());
+				ERR_FAIL_COND_MSG(expected_compression_mode != p_compression_mode, vformat("Mismatched compression mode for image format %s, expected %s, got %s.", Image::get_format_name(p_image->get_format()), compression_mode_names[expected_compression_mode], compression_mode_names[p_compression_mode]));
+			} else {
+				copy = p_image->duplicate();
+				switch (p_compression_mode) {
+					case COMPRESSION_MODE_S3TC:
+						copy->compress(Image::COMPRESS_S3TC);
+						break;
+					case COMPRESSION_MODE_ETC2:
+						copy->compress(Image::COMPRESS_ETC2);
+						break;
+					case COMPRESSION_MODE_BPTC:
+						copy->compress(Image::COMPRESS_BPTC);
+						break;
+					case COMPRESSION_MODE_ASTC:
+						copy->compress(Image::COMPRESS_ASTC);
+						break;
+					default: {
+					}
+				}
 			}
 			encode_uint32(copy->get_format(), buffer.ptrw() + 4);
 			buffer.append_array(copy->get_data());
@@ -357,6 +384,7 @@ void PortableCompressedTexture2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESSION_MODE_S3TC);
 	BIND_ENUM_CONSTANT(COMPRESSION_MODE_ETC2);
 	BIND_ENUM_CONSTANT(COMPRESSION_MODE_BPTC);
+	BIND_ENUM_CONSTANT(COMPRESSION_MODE_ASTC);
 }
 
 PortableCompressedTexture2D::PortableCompressedTexture2D() {}
