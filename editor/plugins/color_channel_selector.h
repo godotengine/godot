@@ -38,8 +38,6 @@ class Button;
 class ColorChannelSelector : public HBoxContainer {
 	GDCLASS(ColorChannelSelector, HBoxContainer);
 
-	static const unsigned int CHANNEL_COUNT = 4;
-
 public:
 	ColorChannelSelector();
 
@@ -56,7 +54,7 @@ private:
 
 	static void _bind_methods();
 
-	Button *channel_buttons[CHANNEL_COUNT] = {};
+	Button *channel_buttons[4] = {};
 	PanelContainer *panel = nullptr;
 	Button *toggle_button = nullptr;
 };
