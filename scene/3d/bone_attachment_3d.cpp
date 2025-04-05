@@ -143,7 +143,6 @@ void BoneAttachment3D::_check_bind() {
 		if (bone_idx != -1) {
 			sk->connect(SceneStringName(skeleton_updated), callable_mp(this, &BoneAttachment3D::on_skeleton_update));
 			bound = true;
-			callable_mp(this, &BoneAttachment3D::on_skeleton_update);
 		}
 	}
 }
@@ -220,11 +219,12 @@ void BoneAttachment3D::set_bone_idx(const int &p_idx) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (bone_idx <= -1 || bone_idx >= sk->get_bone_count()) {
-			WARN_PRINT("Bone index out of range! Cannot connect BoneAttachment to node!");
+			WARN_PRINT("Bone index " + itos(bone_idx) + " out of range! Cannot connect BoneAttachment to node!");
 			bone_idx = -1;
 		} else {
 			bone_name = sk->get_bone_name(bone_idx);
 		}
+		on_skeleton_update();
 	}
 
 	if (is_inside_tree()) {
