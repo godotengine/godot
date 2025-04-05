@@ -4,7 +4,7 @@
 		Provides parameters for [PhysicsDirectSpaceState3D]'s methods.
 	</brief_description>
 	<description>
-		By changing various properties of this object, such as the shape, you can configure the parameters for [method PhysicsDirectSpaceState3D.intersect_shape].
+		By changing various properties of this object, such as the shape, you can configure the parameters for [PhysicsDirectSpaceState3D]'s methods.
 	</description>
 	<tutorials>
 	</tutorials>
