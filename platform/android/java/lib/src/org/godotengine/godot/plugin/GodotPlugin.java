@@ -34,6 +34,7 @@ import org.godotengine.godot.BuildConfig;
 import org.godotengine.godot.Godot;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -110,6 +111,13 @@ public abstract class GodotPlugin {
 	}
 
 	/**
+	 * Provides access to the {@link Context}.
+	 */
+	protected Context getContext() {
+		return godot.getContext();
+	}
+
+	/**
 	 * Register the plugin with Godot native code.
 	 * <p>
 	 * This method is invoked on the render thread to register the plugin on engine startup.
@@ -179,7 +187,7 @@ public abstract class GodotPlugin {
 	 * @return the plugin's view to be included; null if no views should be included.
 	 */
 	@Nullable
-	public View onMainCreate(Activity activity) {
+	public View onMainCreate(@Nullable Activity activity) {
 		return null;
 	}
 
