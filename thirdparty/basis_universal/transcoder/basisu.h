@@ -20,34 +20,7 @@
 	#pragma warning (disable : 4201)
 	#pragma warning (disable : 4127) // warning C4127: conditional expression is constant
 	#pragma warning (disable : 4530) // C++ exception handler used, but unwind semantics are not enabled.
-
-	// Slamming this off always for v1.16 because we've gotten rid of most std containers.
-	#ifndef BASISU_NO_ITERATOR_DEBUG_LEVEL
-		#define BASISU_NO_ITERATOR_DEBUG_LEVEL (1)
-	#endif
-
-	#ifndef BASISU_NO_ITERATOR_DEBUG_LEVEL
-		//#define _HAS_ITERATOR_DEBUGGING 0
-
-		#if defined(_DEBUG) || defined(DEBUG)
-			// This is madness, but we need to disable iterator debugging in debug builds or the encoder is unsable because MSVC's iterator debugging implementation is totally broken.
-			#ifndef _ITERATOR_DEBUG_LEVEL
-			#define _ITERATOR_DEBUG_LEVEL 1
-			#endif
-			#ifndef _SECURE_SCL
-			#define _SECURE_SCL 1
-			#endif
-		#else // defined(_DEBUG) || defined(DEBUG)
-			#ifndef _SECURE_SCL
-			#define _SECURE_SCL 0
-			#endif
-			#ifndef _ITERATOR_DEBUG_LEVEL
-			#define _ITERATOR_DEBUG_LEVEL 0
-			#endif
-		#endif // defined(_DEBUG) || defined(DEBUG)
-
-	#endif // BASISU_NO_ITERATOR_DEBUG_LEVEL
-
+	
 #endif // _MSC_VER
 
 #include <stdlib.h>
@@ -66,6 +39,7 @@
 #include <type_traits>
 #include <assert.h>
 #include <random>
+#include <inttypes.h>
 
 #include "basisu_containers.h"
 
@@ -114,6 +88,7 @@ namespace basisu
 	typedef basisu::vector<int16_t> int16_vec;
 	typedef basisu::vector<uint16_t> uint16_vec;
 	typedef basisu::vector<uint32_t> uint_vec;
+	typedef basisu::vector<size_t> size_t_vec;
 	typedef basisu::vector<uint64_t> uint64_vec;
 	typedef basisu::vector<int> int_vec;
 	typedef basisu::vector<bool> bool_vec;
@@ -121,6 +96,16 @@ namespace basisu
 
 	void enable_debug_printf(bool enabled);
 	void debug_printf(const char *pFmt, ...);
+	void debug_puts(const char* p);
+
+	template <typename... Args>
+	inline void fmt_debug_printf(const char* pFmt, Args&&... args)
+	{
+		std::string res;
+		if (!fmt_variants(res, pFmt, fmt_variant_vec{ fmt_variant(std::forward<Args>(args))... }))
+			return;
+		debug_puts(res.c_str());
+	}
 
 #ifndef __EMSCRIPTEN__
 #ifdef __GNUC__
@@ -137,16 +122,13 @@ namespace basisu
 #endif                            
 #endif
 
+	constexpr double cPiD = 3.14159265358979323846264338327950288;
+	constexpr float REALLY_SMALL_FLOAT_VAL = .000000125f;
+	constexpr float SMALL_FLOAT_VAL = .0000125f;
+	constexpr float BIG_FLOAT_VAL = 1e+30f;
+
 	template <typename T0, typename T1> inline T0 lerp(T0 a, T0 b, T1 c) { return a + (b - a) * c; }
-
-	template <typename S> inline S maximum(S a, S b) { return (a > b) ? a : b; }
-	template <typename S> inline S maximum(S a, S b, S c) { return maximum(maximum(a, b), c); }
-	template <typename S> inline S maximum(S a, S b, S c, S d) { return maximum(maximum(maximum(a, b), c), d); }
-	
-	template <typename S> inline S minimum(S a, S b) {	return (a < b) ? a : b; }
-	template <typename S> inline S minimum(S a, S b, S c) {	return minimum(minimum(a, b), c); }
-	template <typename S> inline S minimum(S a, S b, S c, S d) { return minimum(minimum(minimum(a, b), c), d); }
-
+		
 	inline float clampf(float value, float low, float high) { if (value < low) value = low; else if (value > high) value = high;	return value; }
 	inline float saturate(float value) { return clampf(value, 0, 1.0f); }
 	inline uint8_t minimumub(uint8_t a, uint8_t b) { return (a < b) ? a : b; }
@@ -159,10 +141,31 @@ namespace basisu
 	inline float maximumf(float a, float b) { return (a > b) ? a : b; }
 	inline int squarei(int i) { return i * i; }
 	inline float squaref(float i) { return i * i; }
+	inline double squared(double i) { return i * i; }
 	template<typename T> inline T square(T a) { return a * a; }
+	template<typename T> inline T sign(T a) { return (a < 0) ? (T)-1 : ((a == 0) ? (T)0 : (T)1); }
+		
+	inline bool equal_tol(float a, float b, float t) { return fabsf(a - b) <= ((maximum(fabsf(a), fabsf(b)) + 1.0f) * t); }
+	inline bool equal_tol(double a, double b, double t) { return fabs(a - b) <= ((maximum(fabs(a), fabs(b)) + 1.0f) * t); }
 
-	template <typename S> inline S clamp(S value, S low, S high) { return (value < low) ? low : ((value > high) ? high : value); }
+	template <class T>
+	inline T prev_wrap(T i, T n)
+	{
+		T temp = i - 1;
+		if (temp < 0)
+			temp = n - 1;
+		return temp;
+	}
 
+	template <class T>
+	inline T next_wrap(T i, T n)
+	{
+		T temp = i + 1;
+		if (temp >= n)
+			temp = 0;
+		return temp;
+	}
+		
 	inline uint32_t iabs(int32_t i) { return (i < 0) ? static_cast<uint32_t>(-i) : static_cast<uint32_t>(i);	}
 	inline uint64_t iabs64(int64_t i) {	return (i < 0) ? static_cast<uint64_t>(-i) : static_cast<uint64_t>(i); }
 
@@ -356,6 +359,7 @@ namespace basisu
 			return *this;
 		}
 
+#if 0
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"            
@@ -414,6 +418,57 @@ namespace basisu
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
+#else
+		inline operator uint32_t() const
+		{
+			if constexpr (NumBytes == 1)
+			{
+				return m_bytes[0];
+			}
+			else if constexpr (NumBytes == 2)
+			{
+				return (m_bytes[1] << 8U) | m_bytes[0];
+			}
+			else if constexpr (NumBytes == 3)
+			{
+				return (m_bytes[2] << 16U) | (m_bytes[1] << 8U) | m_bytes[0];
+			}
+			else if constexpr (NumBytes == 4)
+			{
+				return read_le_dword(m_bytes);
+			}
+			else if constexpr (NumBytes == 5)
+			{
+				uint32_t l = read_le_dword(m_bytes);
+				uint32_t h = m_bytes[4];
+				return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
+			}
+			else if constexpr (NumBytes == 6)
+			{
+				uint32_t l = read_le_dword(m_bytes);
+				uint32_t h = (m_bytes[5] << 8U) | m_bytes[4];
+				return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
+			}
+			else if constexpr (NumBytes == 7)
+			{
+				uint32_t l = read_le_dword(m_bytes);
+				uint32_t h = (m_bytes[6] << 16U) | (m_bytes[5] << 8U) | m_bytes[4];
+				return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
+			}
+			else if constexpr (NumBytes == 8)
+			{
+				uint32_t l = read_le_dword(m_bytes);
+				uint32_t h = read_le_dword(m_bytes + 4);
+				return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
+			}
+			else
+			{
+				static_assert(NumBytes <= 8, "Invalid NumBytes");
+				return 0;
+			}
+		}
+		#endif
+
 	};
 
 	enum eZero { cZero };
@@ -446,18 +501,18 @@ namespace basisu
 	static const uint8_t g_huffman_sorted_codelength_codes[] = { cHuffmanSmallZeroRunCode, cHuffmanBigZeroRunCode,	cHuffmanSmallRepeatCode, cHuffmanBigRepeatCode, 0, 8, 7, 9, 6, 0xA, 5, 0xB, 4, 0xC, 3, 0xD, 2, 0xE, 1, 0xF, 0x10 };
 	const uint32_t cHuffmanTotalSortedCodelengthCodes = sizeof(g_huffman_sorted_codelength_codes) / sizeof(g_huffman_sorted_codelength_codes[0]);
 
-	// GPU texture formats
+	// GPU texture formats and various uncompressed texture formats.
 
 	enum class texture_format
 	{
 		cInvalidTextureFormat = -1,
 		
 		// Block-based formats
-		cETC1,			// ETC1
-		cETC1S,			// ETC1 (subset: diff colors only, no subblocks)
-		cETC2_RGB,		// ETC2 color block (basisu doesn't support ETC2 planar/T/H modes - just basic ETC1)
-		cETC2_RGBA,		// ETC2 EAC alpha block followed by ETC2 color block
-		cETC2_ALPHA,	// ETC2 EAC alpha block 
+		cETC1,				// ETC1
+		cETC1S,				// ETC1 (subset: diff colors only, no subblocks)
+		cETC2_RGB,			// ETC2 color block (basisu doesn't support ETC2 planar/T/H modes - just basic ETC1)
+		cETC2_RGBA,			// ETC2 EAC alpha block followed by ETC2 color block
+		cETC2_ALPHA,		// ETC2 EAC alpha block 
 		cBC1,				// DXT1
 		cBC3,				// DXT5 (BC4/DXT5A block followed by a BC1/DXT1 block)
 		cBC4,				// DXT5A
@@ -466,7 +521,8 @@ namespace basisu
 		cBC6HUnsigned,		// HDR
 		cBC7,
 		cASTC_LDR_4x4,		// ASTC 4x4 LDR only
-		cASTC_HDR_4x4,		// ASTC 4x4 HDR only (but may use LDR ASTC blocks internally)
+		cASTC_HDR_4x4,		// ASTC 4x4 HDR only (but may use LDR ASTC blocks internally, although our encoders don't do this)
+		cASTC_HDR_6x6,		// ASTC 6x6 HDR only (but may use LDR ASTC blocks internally, although our encoders don't do this)
 		cPVRTC1_4_RGB,
 		cPVRTC1_4_RGBA,
 		cATC_RGB,
@@ -491,8 +547,33 @@ namespace basisu
 		cRGB_9E5
 	};
 
+	inline bool is_uncompressed_texture_format(texture_format fmt)
+	{
+		switch (fmt)
+		{
+		case texture_format::cRGBA32:
+		case texture_format::cRGB565:
+		case texture_format::cBGR565:
+		case texture_format::cRGBA4444:
+		case texture_format::cABGR4444:
+		case texture_format::cRGBA_HALF:
+		case texture_format::cRGB_HALF:
+		case texture_format::cRGB_9E5:
+			return true;
+		default:
+			break;
+		}
+
+		return false;
+	}
+
+	inline bool is_block_based_texture_format(texture_format fmt)
+	{
+		return !is_uncompressed_texture_format(fmt);
+	}
+
 	// This is bytes per block for GPU formats, or bytes per texel for uncompressed formats.
-	inline uint32_t get_bytes_per_block(texture_format fmt)
+	inline uint32_t get_bytes_per_block_or_pixel(texture_format fmt)
 	{
 		switch (fmt)
 		{
@@ -534,16 +615,22 @@ namespace basisu
 	// This is qwords per block for GPU formats, or not valid for uncompressed formats.
 	inline uint32_t get_qwords_per_block(texture_format fmt)
 	{
-		return get_bytes_per_block(fmt) >> 3;
+		assert(is_block_based_texture_format(fmt));
+
+		const uint32_t bytes_per_block = get_bytes_per_block_or_pixel(fmt);
+		return bytes_per_block >> 3;
 	}
 
 	inline uint32_t get_block_width(texture_format fmt)
 	{
-		BASISU_NOTE_UNUSED(fmt);
+		assert(is_block_based_texture_format(fmt));
+
 		switch (fmt)
 		{
 		case texture_format::cFXT1_RGB:
 			return 8;
+		case texture_format::cASTC_HDR_6x6:
+			return 6;
 		default:
 			break;
 		}
@@ -552,19 +639,41 @@ namespace basisu
 
 	inline uint32_t get_block_height(texture_format fmt)
 	{
-		BASISU_NOTE_UNUSED(fmt);
+		assert(is_block_based_texture_format(fmt));
+
+		switch (fmt)
+		{
+		case texture_format::cASTC_HDR_6x6:
+			return 6;
+		default:
+			break;
+		}
 		return 4;
 	}
 
 	inline bool is_hdr_texture_format(texture_format fmt)
 	{
-		if (fmt == texture_format::cASTC_HDR_4x4)
+		switch (fmt)
+		{
+		case texture_format::cASTC_HDR_4x4:
+		case texture_format::cUASTC_HDR_4x4:
+		case texture_format::cASTC_HDR_6x6:
+		case texture_format::cBC6HSigned:
+		case texture_format::cBC6HUnsigned:
+		case texture_format::cRGBA_HALF:
+		case texture_format::cRGB_HALF:
+		case texture_format::cRGB_9E5:
 			return true;
-		if (fmt == texture_format::cUASTC_HDR_4x4)
-			return true;
-		if ((fmt == texture_format::cBC6HSigned) || (fmt == texture_format::cBC6HUnsigned))
-			return true;
+		default:
+			break;
+		}
+
 		return false;
+	}
+
+	inline bool is_ldr_texture_format(texture_format fmt)
+	{
+		return !is_hdr_texture_format(fmt);
 	}
 							
 } // namespace basisu

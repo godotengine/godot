@@ -20,22 +20,24 @@ basisu_encoder = env.editor_build
 if basisu_encoder:
     encoder_sources = [
         "3rdparty/android_astc_decomp.cpp",
-        "basisu_astc_hdr_enc.cpp",
+        "basisu_astc_hdr_6x6_enc.cpp",
+        "basisu_astc_hdr_common.cpp",
         "basisu_backend.cpp",
         "basisu_basis_file.cpp",
         "basisu_bc7enc.cpp",
-        "basisu_opencl.cpp",
         "basisu_comp.cpp",
         "basisu_enc.cpp",
         "basisu_etc.cpp",
         "basisu_frontend.cpp",
         "basisu_gpu_texture.cpp",
         "basisu_kernels_sse.cpp",
+        "basisu_opencl.cpp",
         "basisu_pvrtc1_4.cpp",
-        "basisu_resampler.cpp",
         "basisu_resample_filters.cpp",
+        "basisu_resampler.cpp",
         "basisu_ssim.cpp",
         "basisu_uastc_enc.cpp",
+        "basisu_uastc_hdr_4x4_enc.cpp",
         "pvpngreader.cpp",
     ]
     encoder_sources = [thirdparty_dir + "encoder/" + file for file in encoder_sources]
