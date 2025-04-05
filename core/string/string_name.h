@@ -53,12 +53,11 @@ class StringName {
 	struct _Data {
 		SafeRefCount refcount;
 		SafeNumeric<uint32_t> static_count;
-		const char *cname = nullptr;
 		String name;
 #ifdef DEBUG_ENABLED
 		uint32_t debug_references = 0;
 #endif
-		String get_name() const { return cname ? String(cname) : name; }
+		const String &get_name() const { return name; }
 		bool operator==(const String &p_name) const;
 		bool operator!=(const String &p_name) const;
 		bool operator==(const char *p_name) const;
@@ -97,13 +96,14 @@ class StringName {
 	StringName(_Data *p_data) { _data = p_data; }
 
 public:
-	operator const void *() const { return (_data && (_data->cname || !_data->name.is_empty())) ? (void *)1 : nullptr; }
+	operator const void *() const { return (_data && !_data->name.is_empty()) ? (void *)1 : nullptr; }
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
 	bool operator!=(const String &p_name) const;
 	bool operator!=(const char *p_name) const;
 
+	const char32_t *get_data() const { return _data ? _data->name.ptr() : U""; }
 	char32_t operator[](int p_index) const;
 	int length() const;
 	bool is_empty() const;
@@ -112,11 +112,7 @@ public:
 		if (!_data) {
 			return false;
 		}
-		if (_data->cname != nullptr) {
-			return (char32_t)_data->cname[0] == (char32_t)UNIQUE_NODE_PREFIX[0];
-		} else {
-			return (char32_t)_data->name[0] == (char32_t)UNIQUE_NODE_PREFIX[0];
-		}
+		return (char32_t)_data->name[0] == (char32_t)UNIQUE_NODE_PREFIX[0];
 	}
 	_FORCE_INLINE_ bool operator<(const StringName &p_name) const {
 		return _data < p_name._data;
@@ -151,11 +147,7 @@ public:
 
 	_FORCE_INLINE_ operator String() const {
 		if (_data) {
-			if (_data->cname) {
-				return String(_data->cname);
-			} else {
-				return _data->name;
-			}
+			return _data->name;
 		}
 
 		return String();
@@ -171,40 +163,13 @@ public:
 			return compare(l, r);
 		}
 		_FORCE_INLINE_ static bool compare(const StringName &l, const StringName &r) {
-			const char *l_cname = l._data ? l._data->cname : "";
-			const char *r_cname = r._data ? r._data->cname : "";
-
-			if (l_cname) {
-				if (r_cname) {
-					return str_compare(l_cname, r_cname) < 0;
-				} else {
-					return str_compare(l_cname, r._data->name.ptr()) < 0;
-				}
-			} else {
-				if (r_cname) {
-					return str_compare(l._data->name.ptr(), r_cname) < 0;
-				} else {
-					return str_compare(l._data->name.ptr(), r._data->name.ptr()) < 0;
-				}
-			}
+			return str_compare(l.get_data(), r.get_data()) < 0;
 		}
 		_FORCE_INLINE_ static bool compare(const String &l, const StringName &r) {
-			const char *r_cname = r._data ? r._data->cname : "";
-
-			if (r_cname) {
-				return str_compare(l.get_data(), r_cname) < 0;
-			} else {
-				return str_compare(l.get_data(), r._data->name.ptr()) < 0;
-			}
+			return str_compare(l.get_data(), r.get_data()) < 0;
 		}
 		_FORCE_INLINE_ static bool compare(const StringName &l, const String &r) {
-			const char *l_cname = l._data ? l._data->cname : "";
-
-			if (l_cname) {
-				return str_compare(l_cname, r.get_data()) < 0;
-			} else {
-				return str_compare(l._data->name.ptr(), r.get_data()) < 0;
-			}
+			return str_compare(l.get_data(), r.get_data()) < 0;
 		}
 		_FORCE_INLINE_ static bool compare(const String &l, const String &r) {
 			return str_compare(l.get_data(), r.get_data()) < 0;
