@@ -99,6 +99,8 @@ class ShaderMaterial : public Material {
 	mutable HashMap<StringName, Variant> param_cache;
 	mutable Mutex material_rid_mutex;
 
+	static void _check_parameter_type(const Variant &p_from, const Variant &p_to);
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
