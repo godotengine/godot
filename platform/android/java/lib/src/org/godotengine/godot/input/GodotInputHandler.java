@@ -90,6 +90,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 	private int cachedRotation = -1;
 	private boolean overrideVolumeButtons = false;
+	private boolean hasHardwareKeyboardConfig = false;
 
 	public GodotInputHandler(Context context, Godot godot) {
 		this.godot = godot;
@@ -105,6 +106,9 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			this.scaleGestureDetector.setStylusScaleEnabled(true);
 		}
+		Configuration config = context.getResources().getConfiguration();
+		hasHardwareKeyboardConfig = config.keyboard != Configuration.KEYBOARD_NOKEYS &&
+				config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
 	}
 
 	/**
@@ -143,6 +147,9 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	boolean hasHardwareKeyboard() {
+		if (hasHardwareKeyboardConfig) {
+			return true;
+		}
 		return !mHardwareKeyboardIds.isEmpty();
 	}
 
@@ -797,5 +804,12 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 	public void onConfigurationChanged(Configuration newConfig) {
 		updateCachedRotation();
+
+		boolean newHardwareKeyboardConfig = newConfig.keyboard != Configuration.KEYBOARD_NOKEYS &&
+				newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
+		if (hasHardwareKeyboardConfig != newHardwareKeyboardConfig) {
+			hasHardwareKeyboardConfig = newHardwareKeyboardConfig;
+			GodotLib.hardwareKeyboardConnected(hasHardwareKeyboard());
+		}
 	}
 }

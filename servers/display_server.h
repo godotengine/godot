@@ -272,6 +272,7 @@ public:
 	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); }
 	virtual Color get_base_color() const { return Color(0, 0, 0, 0); }
 	virtual void set_system_theme_change_callback(const Callable &p_callable) {}
+	virtual void set_hardware_keyboard_connection_change_callback(const Callable &p_callable) {}
 
 private:
 	static bool window_early_clear_override_enabled;
