@@ -216,7 +216,7 @@ public:
 		return _ptr[p_index];
 	}
 
-	template <bool p_ensure_zero = false>
+	template <OnAllocInit p_init = OnAllocInit::DEFAULT>
 	Error resize(Size p_size);
 
 	_FORCE_INLINE_ void remove_at(Size p_index) {
@@ -332,7 +332,7 @@ typename CowData<T>::USize CowData<T>::_copy_on_write() {
 }
 
 template <typename T>
-template <bool p_ensure_zero>
+template <OnAllocInit p_init>
 Error CowData<T>::resize(Size p_size) {
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
@@ -380,7 +380,7 @@ Error CowData<T>::resize(Size p_size) {
 		}
 
 		// construct the newly created elements
-		memnew_arr_placement<p_ensure_zero>(_ptr + current_size, p_size - current_size);
+		memnew_arr_placement<p_init>(_ptr + current_size, p_size - current_size);
 
 		*_get_size() = p_size;
 
