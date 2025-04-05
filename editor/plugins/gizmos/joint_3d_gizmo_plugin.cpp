@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "scene/3d/physics/joints/cone_twist_joint_3d.h"
+#include "scene/3d/physics/joints/distance_joint_3d.h"
 #include "scene/3d/physics/joints/generic_6dof_joint_3d.h"
 #include "scene/3d/physics/joints/hinge_joint_3d.h"
 #include "scene/3d/physics/joints/pin_joint_3d.h"
@@ -275,6 +276,17 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 	}
 }
 
+void JointGizmosDrawer::draw_cross(const Transform3D &p_offset, const Vector3 &p_origin, Vector<Vector3> &r_points) {
+	float cs = 0.25;
+
+	r_points.push_back(p_offset.translated_local(p_origin + Vector3(+cs, 0, 0)).origin);
+	r_points.push_back(p_offset.translated_local(p_origin + Vector3(-cs, 0, 0)).origin);
+	r_points.push_back(p_offset.translated_local(p_origin + Vector3(0, +cs, 0)).origin);
+	r_points.push_back(p_offset.translated_local(p_origin + Vector3(0, -cs, 0)).origin);
+	r_points.push_back(p_offset.translated_local(p_origin + Vector3(0, 0, +cs)).origin);
+	r_points.push_back(p_offset.translated_local(p_origin + Vector3(0, 0, -cs)).origin);
+}
+
 ////
 
 Joint3DGizmoPlugin::Joint3DGizmoPlugin() {
@@ -456,17 +468,32 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(body_a_points, body_a_material);
 		p_gizmo->add_lines(body_b_points, body_b_material);
 	}
+
+	DistanceJoint3D *dist = Object::cast_to<DistanceJoint3D>(joint);
+	if (dist) {
+		CreateGenericDistanceJointGizmo(
+				Transform3D(),
+				dist->get_global_transform(),
+				dist->get_global_point(DistanceJoint3D::POINT_PARAM_A),
+				dist->get_global_point(DistanceJoint3D::POINT_PARAM_B),
+				dist->get_param(DistanceJoint3D::PARAM_DISTANCE_MIN),
+				dist->get_param(DistanceJoint3D::PARAM_DISTANCE_MAX),
+				points,
+				body_a_points,
+				body_b_points);
+
+		p_gizmo->add_collision_segments(points);
+		p_gizmo->add_collision_segments(body_a_points);
+		p_gizmo->add_collision_segments(body_b_points);
+
+		p_gizmo->add_lines(points, common_material);
+		p_gizmo->add_lines(body_a_points, body_a_material);
+		p_gizmo->add_lines(body_b_points, body_b_material);
+	}
 }
 
 void Joint3DGizmoPlugin::CreatePinJointGizmo(const Transform3D &p_offset, Vector<Vector3> &r_cursor_points) {
-	float cs = 0.25;
-
-	r_cursor_points.push_back(p_offset.translated_local(Vector3(+cs, 0, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated_local(Vector3(-cs, 0, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, +cs, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, -cs, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, 0, +cs)).origin);
-	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, 0, -cs)).origin);
+	JointGizmosDrawer::draw_cross(p_offset, Vector3(0., 0., 0.), r_cursor_points);
 }
 
 void Joint3DGizmoPlugin::CreateHingeJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_limit_lower, real_t p_limit_upper, bool p_use_limit, Vector<Vector3> &r_common_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
@@ -720,4 +747,25 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 	}
 
 #undef ADD_VTX
+}
+
+void Joint3DGizmoPlugin::CreateGenericDistanceJointGizmo(const Transform3D &p_offset,
+		const Transform3D &p_trs_joint,
+		const Vector3 &p_vec_global_a,
+		const Vector3 &p_vec_global_b,
+		real_t distance_min,
+		real_t distance_max,
+		Vector<Vector3> &r_cursor_points,
+		Vector<Vector3> &r_body_points_a,
+		Vector<Vector3> &r_body_points_b) {
+	const Transform3D inv_trs_joint = p_trs_joint.affine_inverse();
+	const Vector3 vec_local_a = inv_trs_joint.xform(p_vec_global_a);
+	const Vector3 vec_local_b = inv_trs_joint.xform(p_vec_global_b);
+
+	JointGizmosDrawer::draw_cross(p_offset, vec_local_a, r_body_points_a);
+	JointGizmosDrawer::draw_cross(p_offset, vec_local_b, r_body_points_b);
+
+	const Vector3 dir = (vec_local_b - vec_local_a).normalized();
+	r_cursor_points.push_back(vec_local_a + dir * distance_min);
+	r_cursor_points.push_back(vec_local_a + dir * distance_max);
 }
