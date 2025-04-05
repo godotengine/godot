@@ -142,7 +142,15 @@ bool CameraTexture::get_camera_active() const {
 	}
 }
 
-CameraTexture::CameraTexture() {}
+CameraTexture::CameraTexture() {
+#ifdef TOOLS_ENABLED
+	// Note: This is a dirty hack for the editor to enable the monitoring of camera feeds on demand.
+	//       It will get triggered when the first camera texture is created, e.g. on deserialization,
+	//       when assigning the texture from a menu, or when creating it manually from tool code.
+	//       We expect other applications to enable monitoring consciously.
+	CameraServer::get_singleton()->set_monitoring_feeds(true);
+#endif
+}
 
 CameraTexture::~CameraTexture() {
 	if (_texture.is_valid()) {
