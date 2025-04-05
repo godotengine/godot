@@ -183,6 +183,7 @@
 
 		// set our texture...
 		feed->set_ycbcr_images(img[0], img[1]);
+		feed->emit_signal("frame_changed");
 	}
 
 	// and unlock
