@@ -306,7 +306,7 @@ void Dictionary::clear() {
 
 void Dictionary::sort() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
-	_p->variant_map.sort();
+	_p->variant_map.sort<StringLikeVariantOrder>();
 }
 
 void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
