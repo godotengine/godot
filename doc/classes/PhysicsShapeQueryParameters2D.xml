@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicsShapeQueryParameters2D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Provides parameters for [method PhysicsDirectSpaceState2D.intersect_shape].
+		Provides parameters for [PhysicsDirectSpaceState2D]'s methods.
 	</brief_description>
 	<description>
-		By changing various properties of this object, such as the shape, you can configure the parameters for [method PhysicsDirectSpaceState2D.intersect_shape].
+		By changing various properties of this object, such as the shape, you can configure the parameters for [PhysicsDirectSpaceState2D]'s methods.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,6 +30,7 @@
 		</member>
 		<member name="shape" type="Resource" setter="set_shape" getter="get_shape">
 			The [Shape2D] that will be used for collision/intersection queries. This stores the actual reference which avoids the shape to be released while being used for queries, so always prefer using this over [member shape_rid].
+			[b]Note:[/b] Only some methods of [PhysicsDirectSpaceState2D] that take this class as parameter make use of this property. See their respective descriptions for details.
 		</member>
 		<member name="shape_rid" type="RID" setter="set_shape_rid" getter="get_shape_rid" default="RID()">
 			The queried shape's [RID] that will be used for collision/intersection queries. Use this over [member shape] if you want to optimize for performance using the Servers API:
