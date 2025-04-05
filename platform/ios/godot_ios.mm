@@ -30,6 +30,7 @@
 
 #import "os_ios.h"
 
+#include "core/profiling.h"
 #include "core/string/ustring.h"
 #include "main/main.h"
 
@@ -72,6 +73,8 @@ int add_cmdline(int p_argc, char **p_args) {
 }
 
 int ios_main(int argc, char **argv) {
+	godot_init_profiler();
+
 	size_t len = strlen(argv[0]);
 
 	while (len--) {

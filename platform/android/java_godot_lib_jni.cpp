@@ -48,6 +48,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/profiling.h"
 #include "main/main.h"
 #include "servers/rendering_server.h"
 
@@ -165,6 +166,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env
 }
 
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline, jobject p_godot_tts) {
+	godot_init_profiler();
+
 	setup_android_thread();
 
 	const char **cmdline = nullptr;
