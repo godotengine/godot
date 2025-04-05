@@ -110,6 +110,10 @@ void JoltPhysicsDirectBodyState3D::apply_impulse(const Vector3 &p_impulse, const
 	return body->apply_impulse(p_impulse, p_position);
 }
 
+void JoltPhysicsDirectBodyState3D::apply_impulse_at_position(const Vector3 &p_impulse, const Vector3 &p_world_position) {
+	return body->apply_impulse_at_position(p_impulse, p_world_position);
+}
+
 void JoltPhysicsDirectBodyState3D::apply_torque_impulse(const Vector3 &p_impulse) {
 	return body->apply_torque_impulse(p_impulse);
 }
@@ -120,6 +124,10 @@ void JoltPhysicsDirectBodyState3D::apply_central_force(const Vector3 &p_force) {
 
 void JoltPhysicsDirectBodyState3D::apply_force(const Vector3 &p_force, const Vector3 &p_position) {
 	return body->apply_force(p_force, p_position);
+}
+
+void JoltPhysicsDirectBodyState3D::apply_force_at_position(const Vector3 &p_force, const Vector3 &p_world_position) {
+	return body->apply_force_at_position(p_force, p_world_position);
 }
 
 void JoltPhysicsDirectBodyState3D::apply_torque(const Vector3 &p_torque) {

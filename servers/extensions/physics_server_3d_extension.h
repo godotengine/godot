@@ -69,10 +69,12 @@ public:
 
 	EXBIND1(apply_central_impulse, const Vector3 &)
 	EXBIND2(apply_impulse, const Vector3 &, const Vector3 &)
+	EXBIND2(apply_impulse_at_position, const Vector3 &, const Vector3 &)
 	EXBIND1(apply_torque_impulse, const Vector3 &)
 
 	EXBIND1(apply_central_force, const Vector3 &)
 	EXBIND2(apply_force, const Vector3 &, const Vector3 &)
+	EXBIND2(apply_force_at_position, const Vector3 &, const Vector3 &)
 	EXBIND1(apply_torque, const Vector3 &)
 
 	EXBIND1(add_constant_central_force, const Vector3 &)
@@ -333,10 +335,12 @@ public:
 
 	EXBIND2(body_apply_central_impulse, RID, const Vector3 &)
 	EXBIND3(body_apply_impulse, RID, const Vector3 &, const Vector3 &)
+	EXBIND3(body_apply_impulse_at_position, RID, const Vector3 &, const Vector3 &)
 	EXBIND2(body_apply_torque_impulse, RID, const Vector3 &)
 
 	EXBIND2(body_apply_central_force, RID, const Vector3 &)
 	EXBIND3(body_apply_force, RID, const Vector3 &, const Vector3 &)
+	EXBIND3(body_apply_force_at_position, RID, const Vector3 &, const Vector3 &)
 	EXBIND2(body_apply_torque, RID, const Vector3 &)
 
 	EXBIND2(body_add_constant_central_force, RID, const Vector3 &)

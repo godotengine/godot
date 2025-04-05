@@ -306,6 +306,17 @@
 				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
+		<method name="body_apply_force_at_position">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
+			<param index="2" name="world_position" type="Vector3" />
+			<description>
+				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
+				[param world_position] is the position the force is applied in global coordinates.
+				You can use this instead of [method body_apply_force] to not have to manually calculate the offset of the force position.
+			</description>
+		</method>
 		<method name="body_apply_impulse">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
@@ -315,6 +326,18 @@
 				Applies a positioned impulse to the body.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
 				[param position] is the offset from the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="body_apply_impulse_at_position">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="impulse" type="Vector3" />
+			<param index="2" name="world_position" type="Vector3" />
+			<description>
+				Applies a positioned impulse to the body.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				[param world_position] is the position the force is applied in global coordinates.
+				You can use this instead of [method body_apply_impulse] to not have to manually calculate the offset of the force position.
 			</description>
 		</method>
 		<method name="body_apply_torque">
