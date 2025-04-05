@@ -4401,6 +4401,10 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			if (p_identifier->variable_source && p_identifier->variable_source->assignments == 0 && !(p_identifier->get_datatype().is_hard_type() && p_identifier->get_datatype().kind == GDScriptParser::DataType::BUILTIN)) {
 				parser->push_warning(p_identifier, GDScriptWarning::UNASSIGNED_VARIABLE, p_identifier->name);
 			}
+
+			if (p_identifier->variable_source->doc_data.is_deprecated) {
+				parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+			}
 #endif
 			break;
 		case GDScriptParser::IdentifierNode::LOCAL_ITERATOR:
