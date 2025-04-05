@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
+using System.Collections.Concurrent;
 
 #nullable enable
 
@@ -19,6 +20,10 @@ namespace Godot
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
+        private static readonly ConcurrentDictionary<string, WeakReference<StringName>> _stringNameCache = new();
+        private string? _cacheKey;
+        private string? _stringRepresentation;
+
         ~StringName()
         {
             Dispose(false);
@@ -35,10 +40,15 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
+            if (_cacheKey is not null)
+            {
+                _stringNameCache.TryRemove(_cacheKey, out _);
+            }
+
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
 
-            if (_weakReferenceToSelf != null)
+            if (_weakReferenceToSelf is not null)
             {
                 DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
             }
@@ -67,6 +77,8 @@ namespace Godot
         /// <param name="name">String to construct the <see cref="StringName"/> from.</param>
         public StringName(string name)
         {
+            _stringRepresentation = name; // StringNames can never change or simplify
+
             if (!string.IsNullOrEmpty(name))
             {
                 NativeValue = (godot_string_name.movable)NativeFuncs.godotsharp_string_name_new_from_string(name);
@@ -75,17 +87,42 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a string to a <see cref="StringName"/>.
+        /// Converts a <see cref="string"/> to a <see cref="StringName"/>.<br/>
+        /// The resulting <see cref="StringName"/> is temporarily cached for future casts.
         /// </summary>
         /// <param name="from">The string to convert.</param>
-        public static implicit operator StringName(string from) => new StringName(from);
+        [return: NotNullIfNotNull(nameof(from))]
+        public static implicit operator StringName?(string? from)
+        {
+            if (from is null)
+                return null;
+
+            while (true)
+            {
+                WeakReference<StringName> cachedStringName = _stringNameCache.GetOrAdd(from,
+                    static (string from) => new WeakReference<StringName>(new StringName(from)
+                    {
+                        _cacheKey = from,
+                    })
+                );
+
+                if (cachedStringName.TryGetTarget(out StringName? result))
+                {
+                    return result;
+                }
+                // It's possible to reach here if disposed in a race; try again
+            }
+        }
 
         /// <summary>
-        /// Converts a <see cref="StringName"/> to a string.
+        /// Converts a <see cref="StringName"/> to a <see cref="string"/>.
         /// </summary>
         /// <param name="from">The <see cref="StringName"/> to convert.</param>
-        [return: NotNullIfNotNull("from")]
-        public static implicit operator string?(StringName? from) => from?.ToString();
+        [return: NotNullIfNotNull(nameof(from))]
+        public static implicit operator string?(StringName? from)
+        {
+            return from?.ToString();
+        }
 
         /// <summary>
         /// Converts this <see cref="StringName"/> to a string.
@@ -96,10 +133,16 @@ namespace Godot
             if (IsEmpty)
                 return string.Empty;
 
+            if (_stringRepresentation is not null)
+                return _stringRepresentation;
+
             var src = (godot_string_name)NativeValue;
             NativeFuncs.godotsharp_string_name_as_string(out godot_string dest, src);
             using (dest)
-                return Marshaling.ConvertStringToManaged(dest);
+            {
+                _stringRepresentation = Marshaling.ConvertStringToManaged(dest);
+                return _stringRepresentation;
+            }
         }
 
         /// <summary>
