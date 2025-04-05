@@ -2331,10 +2331,10 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 			r_style |= WS_MAXIMIZE;
 		}
 		if (!p_fullscreen) {
-			r_style |= WS_SYSMENU | WS_MINIMIZEBOX;
+			r_style |= WS_SYSMENU;
 
 			if (p_resizable) {
-				r_style |= WS_MAXIMIZEBOX;
+				r_style |= WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
 			}
 		}
 	} else {
@@ -2348,9 +2348,9 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 			}
 		} else {
 			if (p_minimized) {
-				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MINIMIZE;
+				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZE;
 			} else {
-				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
 			}
 		}
 	}
