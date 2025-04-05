@@ -176,6 +176,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 				delete_button->set_flat(true);
 				delete_button->set_focus_mode(FOCUS_NONE);
 				delete_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+				delete_button->set_accessibility_name(TTRC("Delete"));
 				delete_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_node_request).bind(E), CONNECT_DEFERRED);
 				node->get_titlebar_hbox()->add_child(delete_button);
 			}
@@ -1406,6 +1407,7 @@ AnimationNodeAnimationEditorDialog::AnimationNodeAnimationEditorDialog() {
 	label_start->set_stretch_ratio(1);
 	select_start = memnew(OptionButton);
 	select_start->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	select_start->set_accessibility_name(TTRC("Start Marker"));
 	grid->add_child(select_start);
 	select_start->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	select_start->set_stretch_ratio(2);
@@ -1416,6 +1418,7 @@ AnimationNodeAnimationEditorDialog::AnimationNodeAnimationEditorDialog() {
 	label_end->set_stretch_ratio(1);
 	select_end = memnew(OptionButton);
 	select_end->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	select_end->set_accessibility_name(TTRC("End Marker"));
 	grid->add_child(select_end);
 	select_end->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	select_end->set_stretch_ratio(2);

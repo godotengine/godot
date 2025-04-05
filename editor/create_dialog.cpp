@@ -635,7 +635,7 @@ void CreateDialog::_favorite_activated() {
 }
 
 Variant CreateDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-	TreeItem *ti = favorites->get_item_at_position(p_point);
+	TreeItem *ti = (p_point == Vector2(INFINITY, INFINITY)) ? favorites->get_selected() : favorites->get_item_at_position(p_point);
 	if (ti) {
 		Dictionary d;
 		d["type"] = "create_favorite_drag";
@@ -667,13 +667,13 @@ bool CreateDialog::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 void CreateDialog::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary d = p_data;
 
-	TreeItem *ti = favorites->get_item_at_position(p_point);
+	TreeItem *ti = (p_point == Vector2(INFINITY, INFINITY)) ? favorites->get_selected() : favorites->get_item_at_position(p_point);
 	if (!ti) {
 		return;
 	}
 
 	String drop_at = ti->get_text(0);
-	int ds = favorites->get_drop_section_at_position(p_point);
+	int ds = (p_point == Vector2(INFINITY, INFINITY)) ? favorites->get_drop_section_at_position(favorites->get_item_rect(ti).position) : favorites->get_drop_section_at_position(p_point);
 
 	int drop_idx = favorite_list.find(drop_at);
 	if (drop_idx < 0) {
@@ -787,6 +787,7 @@ CreateDialog::CreateDialog() {
 	vsc->add_child(fav_vb);
 
 	favorites = memnew(Tree);
+	favorites->set_accessibility_name(TTRC("Favorites"));
 	favorites->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	favorites->set_hide_root(true);
 	favorites->set_hide_folding(true);
@@ -804,6 +805,7 @@ CreateDialog::CreateDialog() {
 	rec_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	recent = memnew(ItemList);
+	recent->set_accessibility_name(TTRC("Recent"));
 	recent->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->set_allow_reselect(true);
@@ -818,6 +820,7 @@ CreateDialog::CreateDialog() {
 	hsc->add_child(vbc);
 
 	search_box = memnew(LineEdit);
+	search_box->set_accessibility_name(TTRC("Search"));
 	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &CreateDialog::_text_changed));
@@ -829,11 +832,13 @@ CreateDialog::CreateDialog() {
 	favorite = memnew(Button);
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip_text(TTR("(Un)favorite selected item."));
+	favorite->set_accessibility_name(TTRC("(Un)favorite"));
 	favorite->connect(SceneStringName(pressed), callable_mp(this, &CreateDialog::_favorite_toggled));
 	search_hb->add_child(favorite);
 	vbc->add_margin_child(TTR("Search:"), search_hb);
 
 	search_options = memnew(Tree);
+	search_options->set_accessibility_name(TTRC("Matches"));
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->connect("item_activated", callable_mp(this, &CreateDialog::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &CreateDialog::_item_selected));
@@ -841,6 +846,7 @@ CreateDialog::CreateDialog() {
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
 	help_bit = memnew(EditorHelpBit);
+	help_bit->set_accessibility_name(TTRC("Description"));
 	help_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
 	help_bit->connect("request_hide", callable_mp(this, &CreateDialog::_hide_requested));
 	vbc->add_margin_child(TTR("Description:"), help_bit);

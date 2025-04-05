@@ -319,6 +319,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	_search_text_line_edit = memnew(LineEdit);
 	_search_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	_search_text_line_edit->set_accessibility_name(TTRC("Search"));
 	_search_text_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_text_modified));
 	_search_text_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
 	gc->add_child(_search_text_line_edit);
@@ -330,6 +331,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	_replace_text_line_edit = memnew(LineEdit);
 	_replace_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	_replace_text_line_edit->set_accessibility_name(TTRC("Replace"));
 	_replace_text_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_replace_text_submitted));
 	_replace_text_line_edit->hide();
 	gc->add_child(_replace_text_line_edit);
@@ -366,6 +368,7 @@ FindInFilesDialog::FindInFilesDialog() {
 		hbc->add_child(_folder_line_edit);
 
 		Button *folder_button = memnew(Button);
+		folder_button->set_accessibility_name(TTRC("Select Folder"));
 		folder_button->set_text("...");
 		folder_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesDialog::_on_folder_button_pressed));
 		hbc->add_child(folder_button);
@@ -622,6 +625,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	}
 
 	_results_display = memnew(Tree);
+	_results_display->set_accessibility_name(TTRC("Search Results"));
 	_results_display->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	_results_display->connect(SceneStringName(item_selected), callable_mp(this, &FindInFilesPanel::_on_result_selected));
@@ -644,6 +648,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		_replace_container->add_child(replace_label);
 
 		_replace_line_edit = memnew(LineEdit);
+		_replace_line_edit->set_accessibility_name(TTRC("Replace"));
 		_replace_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 		_replace_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesPanel::_on_replace_text_changed));
 		_replace_container->add_child(_replace_line_edit);

@@ -659,13 +659,13 @@ bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Varia
 	}
 
 	if (drop_data.has("type")) {
-		TreeItem *ti = tree->get_item_at_position(p_point);
+		TreeItem *ti = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_selected() : tree->get_item_at_position(p_point);
 
 		if (!ti) {
 			return false;
 		}
 
-		int section = tree->get_drop_section_at_position(p_point);
+		int section = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
 
 		return section >= -1;
 	}
@@ -674,13 +674,13 @@ bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Varia
 }
 
 void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) {
-	TreeItem *ti = tree->get_item_at_position(p_point);
+	TreeItem *ti = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_selected() : tree->get_item_at_position(p_point);
 
 	if (!ti) {
 		return;
 	}
 
-	int section = tree->get_drop_section_at_position(p_point);
+	int section = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
 
 	if (section < -1) {
 		return;
@@ -901,6 +901,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	autoload_add_path = memnew(LineEdit);
 	hbc->add_child(autoload_add_path);
+	autoload_add_path->set_accessibility_name(TTRC("Autoload Path"));
 	autoload_add_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	autoload_add_path->set_clear_button_enabled(true);
 	autoload_add_path->set_placeholder(vformat(TTR("Set path or press \"%s\" to create a script."), TTR("Add")));
@@ -908,6 +909,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	browse_button = memnew(Button);
 	hbc->add_child(browse_button);
+	browse_button->set_accessibility_name(TTRC("Select Autoload Path"));
 	browse_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAutoloadSettings::_browse_autoload_add_path));
 
 	file_dialog = memnew(EditorFileDialog);
@@ -925,6 +927,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	hbc->add_child(l);
 
 	autoload_add_name = memnew(LineEdit);
+	autoload_add_name->set_accessibility_name(TTRC("Node Name"));
 	autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	autoload_add_name->connect(SceneStringName(text_submitted), callable_mp(this, &EditorAutoloadSettings::_autoload_text_submitted));
 	autoload_add_name->connect(SceneStringName(text_changed), callable_mp(this, &EditorAutoloadSettings::_autoload_text_changed));
@@ -938,6 +941,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	hbc->add_child(add_autoload);
 
 	tree = memnew(Tree);
+	tree->set_accessibility_name(TTRC("Autoloads"));
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_allow_reselect(true);

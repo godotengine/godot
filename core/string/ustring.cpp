@@ -2073,33 +2073,44 @@ Error String::append_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	return result;
 }
 
-CharString String::utf8() const {
+CharString String::utf8(Vector<uint8_t> *r_ch_length_map) const {
 	int l = length();
 	if (!l) {
 		return CharString();
+	}
+
+	uint8_t *map_ptr = nullptr;
+	if (r_ch_length_map) {
+		r_ch_length_map->resize(l);
+		map_ptr = r_ch_length_map->ptrw();
 	}
 
 	const char32_t *d = &operator[](0);
 	int fl = 0;
 	for (int i = 0; i < l; i++) {
 		uint32_t c = d[i];
+		int ch_w = 1;
 		if (c <= 0x7f) { // 7 bits.
-			fl += 1;
+			ch_w = 1;
 		} else if (c <= 0x7ff) { // 11 bits
-			fl += 2;
+			ch_w = 2;
 		} else if (c <= 0xffff) { // 16 bits
-			fl += 3;
+			ch_w = 3;
 		} else if (c <= 0x001fffff) { // 21 bits
-			fl += 4;
+			ch_w = 4;
 		} else if (c <= 0x03ffffff) { // 26 bits
-			fl += 5;
+			ch_w = 5;
 			print_unicode_error(vformat("Invalid unicode codepoint (%x)", c));
 		} else if (c <= 0x7fffffff) { // 31 bits
-			fl += 6;
+			ch_w = 6;
 			print_unicode_error(vformat("Invalid unicode codepoint (%x)", c));
 		} else {
-			fl += 1;
+			ch_w = 1;
 			print_unicode_error(vformat("Invalid unicode codepoint (%x), cannot represent as UTF-8", c), true);
+		}
+		fl += ch_w;
+		if (map_ptr) {
+			map_ptr[i] = ch_w;
 		}
 	}
 
