@@ -42,6 +42,13 @@
 				Constructs a new [Vector2i] from the given [param x] and [param y].
 			</description>
 		</constructor>
+		<constructor name="Vector2i">
+			<return type="Vector2i" />
+			<param index="0" name="x_and_y" type="int" />
+			<description>
+				Constructs a new [Vector2i] using the same value of [param x_and_y] for both [member x] and [member y] components.
+			</description>
+		</constructor>
 	</constructors>
 	<methods>
 		<method name="abs" qualifiers="const">
