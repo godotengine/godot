@@ -439,7 +439,6 @@ void JoltSoftBody3D::apply_vertex_impulse(int p_index, const Vector3 &p_impulse)
 	if (unlikely(last_step == 0.0f)) {
 		return;
 	}
-	wake_up();
 
 	JoltWritableBody3D body = space->write_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
@@ -450,6 +449,8 @@ void JoltSoftBody3D::apply_vertex_impulse(int p_index, const Vector3 &p_impulse)
 	JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
 
 	physics_vertex.mVelocity += to_jolt(p_impulse) * physics_vertex.mInvMass;
+
+	wake_up();
 }
 
 void JoltSoftBody3D::apply_vertex_force(int p_index, const Vector3 &p_force) {
@@ -466,7 +467,6 @@ void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	if (unlikely(last_step == 0.0f)) {
 		return;
 	}
-	wake_up();
 
 	JoltWritableBody3D body = space->write_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
@@ -487,6 +487,8 @@ void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 		JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
 		physics_vertex.mVelocity += impulse * physics_vertex.mInvMass;
 	}
+
+	wake_up();
 }
 
 void JoltSoftBody3D::apply_central_force(const Vector3 &p_force) {
