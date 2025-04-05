@@ -1623,6 +1623,27 @@ void GDScript::clear(ClearData *p_clear_data) {
 	}
 }
 
+void GDScript::cancel_pending_functions(bool warn) {
+	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+
+	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
+		// Order matters since clearing the stack may already cause
+		// the GDScriptFunctionState to be destroyed and thus removed from the list.
+		pending_func_states.remove(E);
+		GDScriptFunctionState *state = E->self();
+#ifdef DEBUG_ENABLED
+		if (warn) {
+			WARN_PRINT("Canceling suspended execution of \"" + state->get_readable_function() + "\" due to a script reload.");
+		}
+#endif
+		ObjectID state_id = state->get_instance_id();
+		state->_clear_connections();
+		if (ObjectDB::get_instance(state_id)) {
+			state->_clear_stack();
+		}
+	}
+}
+
 GDScript::~GDScript() {
 	if (destructing) {
 		return;
@@ -1638,21 +1659,7 @@ GDScript::~GDScript() {
 
 	clear();
 
-	{
-		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
-
-		while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
-			// Order matters since clearing the stack may already cause
-			// the GDScriptFunctionState to be destroyed and thus removed from the list.
-			pending_func_states.remove(E);
-			GDScriptFunctionState *state = E->self();
-			ObjectID state_id = state->get_instance_id();
-			state->_clear_connections();
-			if (ObjectDB::get_instance(state_id)) {
-				state->_clear_stack();
-			}
-		}
-	}
+	cancel_pending_functions(false);
 
 	{
 		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
