@@ -390,6 +390,15 @@
 				Removes a track by specifying the track index.
 			</description>
 		</method>
+		<method name="resize_tracks">
+			<return type="int" enum="Error" />
+			<param index="0" name="size" type="int" />
+			<description>
+				Sets the animation's number of tracks to [param size]. If [param size] is smaller than the animation's track size, the tracks at the end are removed. If [param size] is greater, new [constant TYPE_VALUE] tracks are added.
+				Returns [constant OK] on success, or one of the following [enum Error] constants if this method fails: [constant ERR_INVALID_PARAMETER] if the size is negative, or [constant ERR_OUT_OF_MEMORY] if allocations fail. Use [method get_track_count] to find the actual amount of tracks after resize.
+				[b]Note:[/b] Calling this method once and set the new tracks is faster than calling [method add_track] for every new track.
+			</description>
+		</method>
 		<method name="rotation_track_insert_key">
 			<return type="int" />
 			<param index="0" name="track_idx" type="int" />
