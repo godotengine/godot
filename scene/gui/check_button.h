@@ -53,6 +53,10 @@ class CheckButton : public Button {
 		Color button_unchecked_color;
 	} theme_cache;
 
+	bool invert = false;
+
+	void _set_left_and_right_internal_margins();
+
 protected:
 	Size2 get_icon_size() const;
 	virtual Size2 get_minimum_size() const override;
@@ -61,6 +65,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_invert(bool p_invert);
+	bool is_invert() const;
+
 	CheckButton(const String &p_text = String());
 	~CheckButton();
 };
