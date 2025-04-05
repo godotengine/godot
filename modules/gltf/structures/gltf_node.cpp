@@ -203,17 +203,36 @@ NodePath GLTFNode::get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_ske
 	Vector<StringName> subpath;
 	Ref<GLTFNode> current_gltf_node = this;
 	const int gltf_node_count = p_state->nodes.size();
-	if (p_handle_skeletons && skeleton != -1) {
-		// Special case for skeleton nodes, skip all bones so that the path is to the Skeleton3D node.
-		// A path that would otherwise be `A/B/C/Bone1/Bone2/Bone3` becomes `A/B/C/Skeleton3D:Bone3`.
-		subpath.append(get_name());
-		// The generated Skeleton3D node will be named Skeleton3D, so add it to the path.
-		path.append("Skeleton3D");
-		do {
-			const int parent_index = current_gltf_node->get_parent();
-			ERR_FAIL_INDEX_V(parent_index, gltf_node_count, NodePath());
-			current_gltf_node = p_state->nodes[parent_index];
-		} while (current_gltf_node->skeleton != -1);
+	if (p_handle_skeletons) {
+		if (skin != -1) {
+			// Special case for skinned meshes, they become a child of a Skeleton3D node.
+			ERR_FAIL_INDEX_V(skin, p_state->skins.size(), NodePath());
+			Ref<GLTFSkin> gltf_skin = p_state->skins[skin];
+			ERR_FAIL_INDEX_V(gltf_skin->get_skeleton(), p_state->skeletons.size(), NodePath());
+			Ref<GLTFSkeleton> gltf_skeleton = p_state->skeletons[gltf_skin->get_skeleton()];
+			ERR_FAIL_COND_V(gltf_skeleton->get_roots().size() == 0, NodePath());
+			GLTFNodeIndex skeleton_root_index = gltf_skeleton->get_roots()[0];
+			ERR_FAIL_INDEX_V(skeleton_root_index, gltf_node_count, NodePath());
+			Ref<GLTFNode> skeleton_root_gltf_node = p_state->nodes[skeleton_root_index];
+			if (likely(skeleton_root_gltf_node->parent != -1)) {
+				Ref<GLTFNode> parent_gltf_node = p_state->nodes[skeleton_root_gltf_node->parent];
+				path = parent_gltf_node->get_scene_node_path(p_state, false).get_names();
+				path.append("Skeleton3D");
+			}
+			path.append(get_name());
+			return NodePath(path, subpath, false);
+		} else if (skeleton != -1) {
+			// Special case for skeleton nodes, skip all bones so that the path is to the Skeleton3D node.
+			// A path that would otherwise be `A/B/C/Bone1/Bone2/Bone3` becomes `A/B/C/Skeleton3D:Bone3`.
+			subpath.append(get_name());
+			// The generated Skeleton3D node will be named Skeleton3D, so add it to the path.
+			path.append("Skeleton3D");
+			do {
+				const int parent_index = current_gltf_node->get_parent();
+				ERR_FAIL_INDEX_V(parent_index, gltf_node_count, NodePath());
+				current_gltf_node = p_state->nodes[parent_index];
+			} while (current_gltf_node->skeleton != -1);
+		}
 	}
 	const bool is_godot_single_root = p_state->extensions_used.has("GODOT_single_root");
 	while (true) {
