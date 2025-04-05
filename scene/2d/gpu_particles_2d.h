@@ -194,6 +194,7 @@ public:
 
 	void restart(bool p_keep_seed = false);
 	Rect2 capture_rect() const;
+	PackedVector2Array capture_positions() const;
 	void convert_from_particles(Node *p_particles);
 
 	GPUParticles2D();
