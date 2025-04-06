@@ -4342,6 +4342,19 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				p_identifier->set_datatype(type_from_property(getter->get_return_info(), false, !has_setter));
 				p_identifier->source = GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
 			}
+#if DEBUG_ENABLED
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd && dd->class_list.has(native)) {
+				for (const DocData::PropertyDoc &doc : dd->class_list[native].properties) {
+					if (doc.name == name) {
+						if (doc.is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+						}
+						break;
+					}
+				}
+			}
+#endif
 			return;
 		}
 		if (ClassDB::get_method_info(native, name, &method_info)) {
