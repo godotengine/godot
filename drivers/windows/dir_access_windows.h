@@ -84,6 +84,7 @@ public:
 
 	virtual String get_filesystem_type() const override;
 	virtual bool is_case_sensitive(const String &p_path) const override;
+	virtual bool is_equivalent(const String &p_path_a, const String &p_path_b) const override;
 
 	DirAccessWindows();
 	~DirAccessWindows();

@@ -36,6 +36,8 @@
 #include "servers/camera_server.h"
 
 class CameraMacOS : public CameraServer {
+	GDSOFTCLASS(CameraMacOS, CameraServer);
+
 public:
 	CameraMacOS() = default;
 

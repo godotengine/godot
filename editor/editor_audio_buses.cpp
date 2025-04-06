@@ -974,8 +974,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effect_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate class names.
 	effect_options->connect("index_pressed", callable_mp(this, &EditorAudioBus::_effect_add));
 	add_child(effect_options);
-	List<StringName> effect_list;
-	ClassDB::get_inheriters_from_class("AudioEffect", &effect_list);
+	LocalVector<StringName> effect_list;
+	ClassDB::get_inheriters_from_class("AudioEffect", effect_list);
 	effect_list.sort_custom<StringName::AlphCompare>();
 	for (const StringName &E : effect_list) {
 		if (!ClassDB::can_instantiate(E) || ClassDB::is_virtual(E)) {

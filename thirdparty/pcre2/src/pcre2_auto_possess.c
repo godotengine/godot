@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2022 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,10 @@ repeats into possessive repeats where possible. */
 
 #include "pcre2_internal.h"
 
+/* This macro represents the max size of list[] and that is used to keep
+track of UCD info in several places, it should be kept on sync with the
+value used by GenerateUcd.py */
+#define MAX_LIST 8
 
 /*************************************************
 *        Tables for auto-possessification        *
@@ -64,7 +68,7 @@ The Unicode property types (\P and \p) have to be present to fill out the table
 because of what their opcode values are, but the table values should always be
 zero because property types are handled separately in the code. The last four
 columns apply to items that cannot be repeated, so there is no need to have
-rows for them. Note that OP_DIGIT etc. are generated only when PCRE_UCP is
+rows for them. Note that OP_DIGIT etc. are generated only when PCRE2_UCP is
 *not* set. When it is set, \d etc. are converted into OP_(NOT_)PROP codes. */
 
 #define APTROWS (LAST_AUTOTAB_LEFT_OP - FIRST_AUTOTAB_OP + 1)
@@ -123,21 +127,21 @@ opcode is used to select the column. The values are as follows:
 */
 
 static const uint8_t propposstab[PT_TABSIZE][PT_TABSIZE] = {
-/* ANY LAMP GC  PC  SC  SCX ALNUM SPACE PXSPACE WORD CLIST UCNC BIDICL BOOL */
-  { 0,  0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_ANY */
-  { 0,  3,  0,  0,  0,   0,    3,    1,      1,   0,    0,   0,    0,    0 },  /* PT_LAMP */
-  { 0,  0,  2,  4,  0,   0,    9,   10,     10,  11,    0,   0,    0,    0 },  /* PT_GC */
-  { 0,  0,  5,  2,  0,   0,   15,   16,     16,  17,    0,   0,    0,    0 },  /* PT_PC */
-  { 0,  0,  0,  0,  2,   2,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_SC */
-  { 0,  0,  0,  0,  2,   2,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_SCX */
-  { 0,  3,  6, 12,  0,   0,    3,    1,      1,   0,    0,   0,    0,    0 },  /* PT_ALNUM */
-  { 0,  1,  7, 13,  0,   0,    1,    3,      3,   1,    0,   0,    0,    0 },  /* PT_SPACE */
-  { 0,  1,  7, 13,  0,   0,    1,    3,      3,   1,    0,   0,    0,    0 },  /* PT_PXSPACE */
-  { 0,  0,  8, 14,  0,   0,    0,    1,      1,   3,    0,   0,    0,    0 },  /* PT_WORD */
-  { 0,  0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_CLIST */
-  { 0,  0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   3,    0,    0 },  /* PT_UCNC */
-  { 0,  0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_BIDICL */
-  { 0,  0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   0,    0,    0 }   /* PT_BOOL */
+/* LAMP GC  PC  SC  SCX ALNUM SPACE PXSPACE WORD CLIST UCNC BIDICL BOOL */
+  { 3,  0,  0,  0,   0,    3,    1,      1,   0,    0,   0,    0,    0 },  /* PT_LAMP */
+  { 0,  2,  4,  0,   0,    9,   10,     10,  11,    0,   0,    0,    0 },  /* PT_GC */
+  { 0,  5,  2,  0,   0,   15,   16,     16,  17,    0,   0,    0,    0 },  /* PT_PC */
+  { 0,  0,  0,  2,   2,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_SC */
+  { 0,  0,  0,  2,   2,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_SCX */
+  { 3,  6, 12,  0,   0,    3,    1,      1,   0,    0,   0,    0,    0 },  /* PT_ALNUM */
+  { 1,  7, 13,  0,   0,    1,    3,      3,   1,    0,   0,    0,    0 },  /* PT_SPACE */
+  { 1,  7, 13,  0,   0,    1,    3,      3,   1,    0,   0,    0,    0 },  /* PT_PXSPACE */
+  { 0,  8, 14,  0,   0,    0,    1,      1,   3,    0,   0,    0,    0 },  /* PT_WORD */
+  { 0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_CLIST */
+  { 0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   3,    0,    0 },  /* PT_UCNC */
+  { 0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_BIDICL */
+  { 0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   0,    0,    0 }   /* PT_BOOL */
+  /* PT_ANY does not need a record. */
 };
 
 /* This table is used to check whether auto-possessification is possible
@@ -199,7 +203,7 @@ static BOOL
 check_char_prop(uint32_t c, unsigned int ptype, unsigned int pdata,
   BOOL negated)
 {
-BOOL ok;
+BOOL ok, rc;
 const uint32_t *p;
 const ucd_record *prop = GET_UCD(c);
 
@@ -240,12 +244,13 @@ switch(ptype)
     {
     HSPACE_CASES:
     VSPACE_CASES:
-    return negated;
+    rc = negated;
+    break;
 
     default:
-    return (PRIV(ucp_gentype)[prop->chartype] == ucp_Z) == negated;
+    rc = (PRIV(ucp_gentype)[prop->chartype] == ucp_Z) == negated;
     }
-  break;  /* Control never reaches here */
+  return rc;
 
   case PT_WORD:
   return (PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
@@ -259,7 +264,8 @@ switch(ptype)
     if (c < *p) return !negated;
     if (c == *p++) return negated;
     }
-  break;  /* Control never reaches here */
+  PCRE2_DEBUG_UNREACHABLE(); /* Control should never reach here */
+  break;
 
   /* Haven't yet thought these through. */
 
@@ -328,6 +334,7 @@ get_chr_property_list(PCRE2_SPTR code, BOOL utf, BOOL ucp, const uint8_t *fcc,
 PCRE2_UCHAR c = *code;
 PCRE2_UCHAR base;
 PCRE2_SPTR end;
+PCRE2_SPTR class_end;
 uint32_t chr;
 
 #ifdef SUPPORT_UNICODE
@@ -450,10 +457,12 @@ switch(c)
   code += 2;
 
   do {
-     if (clist_dest >= list + 8)
+     if (clist_dest >= list + MAX_LIST)
        {
-       /* Early return if there is not enough space. This should never
-       happen, since all clists are shorter than 5 character now. */
+       /* Early return if there is not enough space. GenerateUcd.py
+       generated a list with more than 5 characters and something
+       must be done about that going forward. */
+       PCRE2_DEBUG_UNREACHABLE();   /* Remove if it ever triggers */
        list[2] = code[0];
        list[3] = code[1];
        return code;
@@ -473,11 +482,13 @@ switch(c)
   case OP_CLASS:
 #ifdef SUPPORT_WIDE_CHARS
   case OP_XCLASS:
-  if (c == OP_XCLASS)
+  case OP_ECLASS:
+  if (c == OP_XCLASS || c == OP_ECLASS)
     end = code + GET(code, 0) - 1;
   else
 #endif
     end = code + 32 / sizeof(PCRE2_UCHAR);
+  class_end = end;
 
   switch(*end)
     {
@@ -505,6 +516,7 @@ switch(c)
     break;
     }
   list[2] = (uint32_t)(end - code);
+  list[3] = (uint32_t)(end - class_end);
   return end;
   }
 
@@ -537,7 +549,7 @@ compare_opcodes(PCRE2_SPTR code, BOOL utf, BOOL ucp, const compile_block *cb,
   const uint32_t *base_list, PCRE2_SPTR base_end, int *rec_limit)
 {
 PCRE2_UCHAR c;
-uint32_t list[8];
+uint32_t list[MAX_LIST];
 const uint32_t *chr_ptr;
 const uint32_t *ochr_ptr;
 const uint32_t *list_ptr;
@@ -581,7 +593,7 @@ for(;;)
     continue;
     }
 
-  /* At the end of a branch, skip to the end of the group. */
+  /* At the end of a branch, skip to the end of the group and process it. */
 
   if (c == OP_ALT)
     {
@@ -638,19 +650,29 @@ for(;;)
         return FALSE;
       break;
 
-      /* Atomic sub-patterns and assertions can always auto-possessify their
-      last iterator except for variable length lookbehinds. However, if the
-      group was entered as a result of checking a previous iterator, this is
-      not possible. */
+      /* Atomic sub-patterns and forward assertions can always auto-possessify
+      their last iterator. However, if the group was entered as a result of
+      checking a previous iterator, this is not possible. */
 
       case OP_ASSERT:
       case OP_ASSERT_NOT:
       case OP_ONCE:
       return !entered_a_group;
 
+      /* Fixed-length lookbehinds can be treated the same way, but variable
+      length lookbehinds must not auto-possessify their last iterator. Note
+      that in order to identify a variable length lookbehind we must check
+      through all branches, because some may be of fixed length. */
+
       case OP_ASSERTBACK:
       case OP_ASSERTBACK_NOT:
-      return (bracode[1+LINK_SIZE] == OP_VREVERSE)? FALSE : !entered_a_group;
+      do
+        {
+        if (bracode[1+LINK_SIZE] == OP_VREVERSE) return FALSE;  /* Variable */
+        bracode += GET(bracode, 1);
+        }
+      while (*bracode == OP_ALT);
+      return !entered_a_group;  /* Not variable length */
 
       /* Non-atomic assertions - don't possessify last iterator. This needs
       more thought. */
@@ -748,12 +770,12 @@ for(;;)
     if (base_list[0] == OP_CLASS)
 #endif
       {
-      set1 = (uint8_t *)(base_end - base_list[2]);
+      set1 = (const uint8_t *)(base_end - base_list[2]);
       list_ptr = list;
       }
     else
       {
-      set1 = (uint8_t *)(code - list[2]);
+      set1 = (const uint8_t *)(code - list[2]);
       list_ptr = base_list;
       }
 
@@ -762,13 +784,14 @@ for(;;)
       {
       case OP_CLASS:
       case OP_NCLASS:
-      set2 = (uint8_t *)
+      set2 = (const uint8_t *)
         ((list_ptr == list ? code : base_end) - list_ptr[2]);
       break;
 
 #ifdef SUPPORT_WIDE_CHARS
       case OP_XCLASS:
-      xclass_flags = (list_ptr == list ? code : base_end) - list_ptr[2] + LINK_SIZE;
+      xclass_flags = (list_ptr == list ? code : base_end) -
+        list_ptr[2] + LINK_SIZE;
       if ((*xclass_flags & XCL_HASPROP) != 0) return FALSE;
       if ((*xclass_flags & XCL_MAP) == 0)
         {
@@ -777,7 +800,7 @@ for(;;)
         /* Might be an empty repeat. */
         continue;
         }
-      set2 = (uint8_t *)(xclass_flags + 1);
+      set2 = (const uint8_t *)(xclass_flags + 1);
       break;
 #endif
 
@@ -785,21 +808,21 @@ for(;;)
       invert_bits = TRUE;
       /* Fall through */
       case OP_DIGIT:
-      set2 = (uint8_t *)(cb->cbits + cbit_digit);
+      set2 = (const uint8_t *)(cb->cbits + cbit_digit);
       break;
 
       case OP_NOT_WHITESPACE:
       invert_bits = TRUE;
       /* Fall through */
       case OP_WHITESPACE:
-      set2 = (uint8_t *)(cb->cbits + cbit_space);
+      set2 = (const uint8_t *)(cb->cbits + cbit_space);
       break;
 
       case OP_NOT_WORDCHAR:
       invert_bits = TRUE;
       /* Fall through */
       case OP_WORDCHAR:
-      set2 = (uint8_t *)(cb->cbits + cbit_word);
+      set2 = (const uint8_t *)(cb->cbits + cbit_word);
       break;
 
       default:
@@ -1084,7 +1107,7 @@ for(;;)
 
       case OP_CLASS:
       if (chr > 255) break;
-      class_bitset = (uint8_t *)
+      class_bitset = (const uint8_t *)
         ((list_ptr == list ? code : base_end) - list_ptr[2]);
       if ((class_bitset[chr >> 3] & (1u << (chr & 7))) != 0) return FALSE;
       break;
@@ -1092,9 +1115,18 @@ for(;;)
 #ifdef SUPPORT_WIDE_CHARS
       case OP_XCLASS:
       if (PRIV(xclass)(chr, (list_ptr == list ? code : base_end) -
-          list_ptr[2] + LINK_SIZE, utf)) return FALSE;
+          list_ptr[2] + LINK_SIZE, (const uint8_t*)cb->start_code, utf))
+        return FALSE;
       break;
-#endif
+
+      case OP_ECLASS:
+      if (PRIV(eclass)(chr,
+          (list_ptr == list ? code : base_end) - list_ptr[2] + LINK_SIZE,
+          (list_ptr == list ? code : base_end) - list_ptr[3],
+          (const uint8_t*)cb->start_code, utf))
+        return FALSE;
+      break;
+#endif /* SUPPORT_WIDE_CHARS */
 
       default:
       return FALSE;
@@ -1109,8 +1141,8 @@ for(;;)
   if (list[1] == 0) return TRUE;
   }
 
-/* Control never reaches here. There used to be a fail-save return FALSE; here,
-but some compilers complain about an unreachable statement. */
+PCRE2_DEBUG_UNREACHABLE(); /* Control should never reach here */
+return FALSE;              /* Avoid compiler warnings */
 }
 
 
@@ -1140,7 +1172,7 @@ PRIV(auto_possessify)(PCRE2_UCHAR *code, const compile_block *cb)
 PCRE2_UCHAR c;
 PCRE2_SPTR end;
 PCRE2_UCHAR *repeat_opcode;
-uint32_t list[8];
+uint32_t list[MAX_LIST];
 int rec_limit = 1000;  /* Was 10,000 but clang+ASAN uses a lot of stack. */
 BOOL utf = (cb->external_options & PCRE2_UTF) != 0;
 BOOL ucp = (cb->external_options & PCRE2_UCP) != 0;
@@ -1149,7 +1181,11 @@ for (;;)
   {
   c = *code;
 
-  if (c >= OP_TABLE_LENGTH) return -1;   /* Something gone wrong */
+  if (c >= OP_TABLE_LENGTH)
+    {
+    PCRE2_DEBUG_UNREACHABLE();
+    return -1;   /* Something gone wrong */
+    }
 
   if (c >= OP_STAR && c <= OP_TYPEPOSUPTO)
     {
@@ -1198,10 +1234,14 @@ for (;;)
       }
     c = *code;
     }
-  else if (c == OP_CLASS || c == OP_NCLASS || c == OP_XCLASS)
+  else if (c == OP_CLASS || c == OP_NCLASS
+#ifdef SUPPORT_WIDE_CHARS
+           || c == OP_XCLASS || c == OP_ECLASS
+#endif
+           )
     {
 #ifdef SUPPORT_WIDE_CHARS
-    if (c == OP_XCLASS)
+    if (c == OP_XCLASS || c == OP_ECLASS)
       repeat_opcode = code + GET(code, 1);
     else
 #endif
@@ -1211,7 +1251,7 @@ for (;;)
     if (c >= OP_CRSTAR && c <= OP_CRMINRANGE)
       {
       /* The return from get_chr_property_list() will never be NULL when
-      *code (aka c) is one of the three class opcodes. However, gcc with
+      *code (aka c) is one of the four class opcodes. However, gcc with
       -fanalyzer notes that a NULL return is possible, and grumbles. Hence we
       put in a check. */
 
@@ -1279,6 +1319,7 @@ for (;;)
 
 #ifdef SUPPORT_WIDE_CHARS
     case OP_XCLASS:
+    case OP_ECLASS:
     code += GET(code, 1);
     break;
 #endif

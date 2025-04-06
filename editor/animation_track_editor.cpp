@@ -1251,12 +1251,12 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 					if (ap) {
 						List<StringName> anims;
 						ap->get_animation_list(&anims);
-						for (List<StringName>::Element *G = anims.front(); G; G = G->next()) {
+						for (const StringName &anim : anims) {
 							if (!animations.is_empty()) {
 								animations += ",";
 							}
 
-							animations += String(G->get());
+							animations += String(anim);
 						}
 					}
 				}
@@ -6623,7 +6623,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 		} break;
 		case EDIT_PASTE_TRACKS: {
-			if (track_clipboard.size() == 0) {
+			if (track_clipboard.is_empty()) {
 				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty!"));
 				break;
 			}

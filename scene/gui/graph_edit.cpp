@@ -1316,7 +1316,7 @@ Ref<GraphEdit::Connection> GraphEdit::get_closest_connection_at_point(const Vect
 
 		Vector<Vector2> points = get_connection_line(conn->_cache.from_pos * zoom, conn->_cache.to_pos * zoom);
 		for (int i = 0; i < points.size() - 1; i++) {
-			float distance = Geometry2D::get_distance_to_segment(transformed_point, &points[i]);
+			const real_t distance = Geometry2D::get_distance_to_segment(transformed_point, points[i], points[i + 1]);
 			if (distance <= lines_thickness * 0.5 + p_max_distance && distance < closest_distance) {
 				closest_connection = conn;
 				closest_distance = distance;
@@ -2330,6 +2330,8 @@ TypedArray<Dictionary> GraphEdit::_get_connections_intersecting_with_rect(const 
 }
 
 TypedArray<Dictionary> GraphEdit::_get_connection_list_from_node(const StringName &p_node) const {
+	ERR_FAIL_COND_V(!connection_map.has(p_node), TypedArray<Dictionary>());
+
 	List<Ref<GraphEdit::Connection>> connections_from_node = connection_map.get(p_node);
 	TypedArray<Dictionary> connections_from_node_dict;
 

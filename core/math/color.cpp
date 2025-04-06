@@ -109,36 +109,27 @@ uint64_t Color::to_rgba64() const {
 	return c;
 }
 
-String _to_hex(float p_val) {
+void _append_hex(float p_val, char32_t *string) {
 	int v = Math::round(p_val * 255.0f);
 	v = CLAMP(v, 0, 255);
-	String ret;
 
-	for (int i = 0; i < 2; i++) {
-		char32_t c[2] = { 0, 0 };
-		int lv = v & 0xF;
-		if (lv < 10) {
-			c[0] = '0' + lv;
-		} else {
-			c[0] = 'a' + lv - 10;
-		}
-
-		v >>= 4;
-		String cs = (const char32_t *)c;
-		ret = cs + ret;
-	}
-
-	return ret;
+	string[0] = hex_char_table_lower[(v >> 4) & 0xF];
+	string[1] = hex_char_table_lower[v & 0xF];
 }
 
 String Color::to_html(bool p_alpha) const {
 	String txt;
-	txt += _to_hex(r);
-	txt += _to_hex(g);
-	txt += _to_hex(b);
+	txt.resize(p_alpha ? 9 : 7);
+	char32_t *ptr = txt.ptrw();
+
+	_append_hex(r, ptr + 0);
+	_append_hex(g, ptr + 2);
+	_append_hex(b, ptr + 4);
 	if (p_alpha) {
-		txt += _to_hex(a);
+		_append_hex(a, ptr + 6);
 	}
+	ptr[txt.size() - 1] = '\0';
+
 	return txt;
 }
 
@@ -377,22 +368,20 @@ Color Color::html(const String &p_rgba) {
 bool Color::html_is_valid(const String &p_color) {
 	String color = p_color;
 
-	if (color.length() == 0) {
+	if (color.is_empty()) {
 		return false;
 	}
-	if (color[0] == '#') {
-		color = color.substr(1);
-	}
 
-	// Check if the amount of hex digits is valid.
+	int current_pos = (color[0] == '#') ? 1 : 0;
 	int len = color.length();
-	if (!(len == 3 || len == 4 || len == 6 || len == 8)) {
+	int num_of_digits = len - current_pos;
+	if (!(num_of_digits == 3 || num_of_digits == 4 || num_of_digits == 6 || num_of_digits == 8)) {
 		return false;
 	}
 
 	// Check if each hex digit is valid.
-	for (int i = 0; i < len; i++) {
-		if (_parse_col4(color, i) == -1) {
+	for (int i = current_pos; i < len; i++) {
+		if (!is_hex_digit(p_color[i])) {
 			return false;
 		}
 	}

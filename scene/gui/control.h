@@ -330,8 +330,10 @@ private:
 	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
 	bool _is_focus_disabled_recursively() const;
-	void _apply_focus_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_force);
-	void _apply_mouse_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_force);
+	void _propagate_focus_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_force);
+	void _propagate_mouse_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_force);
+	void _set_mouse_recursive_behavior_ignore_cache(RecursiveBehavior p_recursive_mouse_behavior);
+	void _set_focus_recursive_behavior_ignore_cache(RecursiveBehavior p_recursive_mouse_behavior);
 
 	// Theming.
 

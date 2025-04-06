@@ -221,7 +221,7 @@ void MenuBar::bind_global_menu() {
 		for (int i = 0; i < count; i++) {
 			String tag = nmenu->get_item_tag(main_menu, i).operator String().get_slicec('#', 1);
 			if (!tag.is_empty() && tag != prev_tag) {
-				MenuBar *mb = Object::cast_to<MenuBar>(ObjectDB::get_instance(ObjectID(static_cast<uint64_t>(tag.to_int()))));
+				MenuBar *mb = ObjectDB::get_instance<MenuBar>(ObjectID(static_cast<uint64_t>(tag.to_int())));
 				if (mb && mb->get_start_index() >= start_index) {
 					global_start_idx = i;
 					break;
@@ -548,7 +548,7 @@ int MenuBar::get_menu_idx_from_control(PopupMenu *p_child) const {
 }
 
 void MenuBar::_popup_changed(ObjectID p_menu) {
-	PopupMenu *pm = Object::cast_to<PopupMenu>(ObjectDB::get_instance(p_menu));
+	PopupMenu *pm = ObjectDB::get_instance<PopupMenu>(p_menu);
 	if (!pm) {
 		return;
 	}

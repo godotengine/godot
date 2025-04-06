@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2022 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -74,7 +74,7 @@ enum { POSIX_START_REGEX, POSIX_ANCHORED, POSIX_NOT_BRACKET,
 
 #define PUTCHARS(string) \
   { \
-  for (s = (char *)(string); *s != 0; s++) \
+  for (const char *s = string; *s != 0; s++) \
     { \
     if (p >= endp) return PCRE2_ERROR_NOMEMORY; \
     *p++ = *s; \
@@ -125,7 +125,6 @@ convert_posix(uint32_t pattype, PCRE2_SPTR pattern, PCRE2_SIZE plength,
   BOOL utf, PCRE2_UCHAR *use_buffer, PCRE2_SIZE use_length,
   PCRE2_SIZE *bufflenptr, BOOL dummyrun, pcre2_convert_context *ccontext)
 {
-char *s;
 PCRE2_SPTR posix = pattern;
 PCRE2_UCHAR *p = use_buffer;
 PCRE2_UCHAR *pp = p;
@@ -1065,7 +1064,7 @@ pcre2_pattern_convert(PCRE2_SPTR pattern, PCRE2_SIZE plength, uint32_t options,
   PCRE2_UCHAR **buffptr, PCRE2_SIZE *bufflenptr,
   pcre2_convert_context *ccontext)
 {
-int i, rc;
+int rc;
 PCRE2_UCHAR dummy_buffer[DUMMY_BUFFER_SIZE];
 PCRE2_UCHAR *use_buffer = dummy_buffer;
 PCRE2_SIZE use_length = DUMMY_BUFFER_SIZE;
@@ -1119,7 +1118,7 @@ if (buffptr != NULL && *buffptr != NULL)
 /* Call an individual converter, either just once (if a buffer was provided or
 just the length is needed), or twice (if a memory allocation is required). */
 
-for (i = 0; i < 2; i++)
+for (int i = 0; i < 2; i++)
   {
   PCRE2_UCHAR *allocated;
   BOOL dummyrun = buffptr == NULL || *buffptr == NULL;
@@ -1138,8 +1137,7 @@ for (i = 0; i < 2; i++)
     break;
 
     default:
-    *bufflenptr = 0;  /* Error offset */
-    return PCRE2_ERROR_INTERNAL;
+    goto EXIT;
     }
 
   if (rc != 0 ||           /* Error */
@@ -1159,8 +1157,12 @@ for (i = 0; i < 2; i++)
   use_length = *bufflenptr + 1;
   }
 
-/* Control should never get here. */
+/* Something went terribly wrong. Trigger an assert and return an error */
+PCRE2_DEBUG_UNREACHABLE();
 
+EXIT:
+
+*bufflenptr = 0;  /* Error offset */
 return PCRE2_ERROR_INTERNAL;
 }
 

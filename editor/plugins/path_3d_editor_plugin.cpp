@@ -149,7 +149,31 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 					local.snapf(snap);
 				}
 
-				if (info.type == HandleType::HANDLE_TYPE_IN) {
+				// Determine if control points should be swapped based on delta movement.
+				// Only run on the next update after an overlap is detected, to get proper delta movement.
+				if (control_points_overlapped) {
+					control_points_overlapped = false;
+					Vector3 delta = local - (info.type == HANDLE_TYPE_IN ? c->get_point_in(idx) : c->get_point_out(idx));
+					Vector3 p0 = c->get_point_position(idx - 1) - base;
+					Vector3 p1 = c->get_point_position(idx + 1) - base;
+					HandleType new_type = Math::abs(delta.angle_to(p0)) < Math::abs(delta.angle_to(p1)) ? HANDLE_TYPE_IN : HANDLE_TYPE_OUT;
+					if (info.type != new_type) {
+						swapped_control_points_idx = idx;
+					}
+				}
+
+				// Detect control points overlap.
+				bool control_points_equal = c->get_point_in(idx).is_equal_approx(c->get_point_out(idx));
+				if (idx > 0 && idx < (c->get_point_count() - 1) && control_points_equal) {
+					control_points_overlapped = true;
+				}
+
+				HandleType control_type = info.type;
+				if (swapped_control_points_idx == idx) {
+					control_type = info.type == HANDLE_TYPE_IN ? HANDLE_TYPE_OUT : HANDLE_TYPE_IN;
+				}
+
+				if (control_type == HandleType::HANDLE_TYPE_IN) {
 					c->set_point_in(idx, local);
 					if (Path3DEditorPlugin::singleton->mirror_angle_enabled()) {
 						c->set_point_out(idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -local : (-local.normalized() * orig_out_length));
@@ -190,6 +214,9 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 }
 
 void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
+	swapped_control_points_idx = -1;
+	control_points_overlapped = false;
+
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return;
@@ -593,10 +620,9 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 						from = gt.xform(from);
 						to = gt.xform(to);
 						if (cdist > 0) {
-							Vector2 s[2];
-							s[0] = viewport->point_to_screen(from);
-							s[1] = viewport->point_to_screen(to);
-							Vector2 inters = Geometry2D::get_closest_point_to_segment(mbpos, s);
+							const Vector2 segment_a = viewport->point_to_screen(from);
+							const Vector2 segment_b = viewport->point_to_screen(to);
+							Vector2 inters = Geometry2D::get_closest_point_to_segment(mbpos, segment_a, segment_b);
 							float d = inters.distance_to(mbpos);
 
 							if (d < 10 && d < closest_d) {

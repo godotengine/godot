@@ -563,7 +563,7 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 
 	// Begin astar.
 	while (!found_route) {
-		if (open_list.size() == 0) {
+		if (open_list.is_empty()) {
 			break; // No path found.
 		}
 

@@ -18,7 +18,7 @@ namespace ScaleHelpers
 	static constexpr float	cScaleToleranceSq = 1.0e-8f;
 
 	/// Test if a scale is identity
-	inline bool				IsNotScaled(Vec3Arg inScale)									{ return inScale.IsClose(Vec3::sReplicate(1.0f), cScaleToleranceSq); }
+	inline bool				IsNotScaled(Vec3Arg inScale)									{ return inScale.IsClose(Vec3::sOne(), cScaleToleranceSq); }
 
 	/// Test if a scale is uniform
 	inline bool				IsUniformScale(Vec3Arg inScale)									{ return inScale.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>().IsClose(inScale, cScaleToleranceSq); }

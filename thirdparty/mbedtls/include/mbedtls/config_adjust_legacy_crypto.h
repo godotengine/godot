@@ -48,6 +48,13 @@
 #endif
 #endif /* _MINGW32__ || (_MSC_VER && (_MSC_VER <= 1900)) */
 
+/* If MBEDTLS_PSA_CRYPTO_C is defined, make sure MBEDTLS_PSA_CRYPTO_CLIENT
+ * is defined as well to include all PSA code.
+ */
+#if defined(MBEDTLS_PSA_CRYPTO_C)
+#define MBEDTLS_PSA_CRYPTO_CLIENT
+#endif /* MBEDTLS_PSA_CRYPTO_C */
+
 /* Auto-enable CIPHER_C when any of the unauthenticated ciphers is builtin
  * in PSA. */
 #if defined(MBEDTLS_PSA_CRYPTO_C) && \
@@ -158,7 +165,66 @@
 #define MBEDTLS_MD_SHA3_512_VIA_PSA
 #define MBEDTLS_MD_SOME_PSA
 #endif
-#endif /* MBEDTLS_PSA_CRYPTO_C */
+
+#elif defined(MBEDTLS_PSA_CRYPTO_CLIENT)
+
+#if defined(PSA_WANT_ALG_MD5)
+#define MBEDTLS_MD_CAN_MD5
+#define MBEDTLS_MD_MD5_VIA_PSA
+#define MBEDTLS_MD_SOME_PSA
+#endif
+#if defined(PSA_WANT_ALG_SHA_1)
+#define MBEDTLS_MD_CAN_SHA1
+#define MBEDTLS_MD_SHA1_VIA_PSA
+#define MBEDTLS_MD_SOME_PSA
+#endif
+#if defined(PSA_WANT_ALG_SHA_224)
+#define MBEDTLS_MD_CAN_SHA224
+#define MBEDTLS_MD_SHA224_VIA_PSA
+#define MBEDTLS_MD_SOME_PSA
+#endif
+#if defined(PSA_WANT_ALG_SHA_256)
+#define MBEDTLS_MD_CAN_SHA256
+#define MBEDTLS_MD_SHA256_VIA_PSA
+#define MBEDTLS_MD_SOME_PSA
+#endif
+#if defined(PSA_WANT_ALG_SHA_384)
+#define MBEDTLS_MD_CAN_SHA384
+#define MBEDTLS_MD_SHA384_VIA_PSA
+#define MBEDTLS_MD_SOME_PSA
+#endif
+#if defined(PSA_WANT_ALG_SHA_512)
+#define MBEDTLS_MD_CAN_SHA512
+#define MBEDTLS_MD_SHA512_VIA_PSA
+#define MBEDTLS_MD_SOME_PSA
+#endif
+#if defined(PSA_WANT_ALG_RIPEMD160)
+#define MBEDTLS_MD_CAN_RIPEMD160
+#define MBEDTLS_MD_RIPEMD160_VIA_PSA
+#define MBEDTLS_MD_SOME_PSA
+#endif
+#if defined(PSA_WANT_ALG_SHA3_224)
+#define MBEDTLS_MD_CAN_SHA3_224
+#define MBEDTLS_MD_SHA3_224_VIA_PSA
+#define MBEDTLS_MD_SOME_PSA
+#endif
+#if defined(PSA_WANT_ALG_SHA3_256)
+#define MBEDTLS_MD_CAN_SHA3_256
+#define MBEDTLS_MD_SHA3_256_VIA_PSA
+#define MBEDTLS_MD_SOME_PSA
+#endif
+#if defined(PSA_WANT_ALG_SHA3_384)
+#define MBEDTLS_MD_CAN_SHA3_384
+#define MBEDTLS_MD_SHA3_384_VIA_PSA
+#define MBEDTLS_MD_SOME_PSA
+#endif
+#if defined(PSA_WANT_ALG_SHA3_512)
+#define MBEDTLS_MD_CAN_SHA3_512
+#define MBEDTLS_MD_SHA3_512_VIA_PSA
+#define MBEDTLS_MD_SOME_PSA
+#endif
+
+#endif /* !MBEDTLS_PSA_CRYPTO_CLIENT && !MBEDTLS_PSA_CRYPTO_C */
 
 /* Built-in implementations */
 #if defined(MBEDTLS_MD5_C)
@@ -351,13 +417,6 @@
 #if defined(MBEDTLS_PK_CAN_ECDSA_VERIFY) || defined(MBEDTLS_PK_CAN_ECDSA_SIGN)
 #define MBEDTLS_PK_CAN_ECDSA_SOME
 #endif
-
-/* If MBEDTLS_PSA_CRYPTO_C is defined, make sure MBEDTLS_PSA_CRYPTO_CLIENT
- * is defined as well to include all PSA code.
- */
-#if defined(MBEDTLS_PSA_CRYPTO_C)
-#define MBEDTLS_PSA_CRYPTO_CLIENT
-#endif /* MBEDTLS_PSA_CRYPTO_C */
 
 /* Helpers to state that each key is supported either on the builtin or PSA side. */
 #if defined(MBEDTLS_ECP_DP_SECP521R1_ENABLED) || defined(PSA_WANT_ECC_SECP_R1_521)

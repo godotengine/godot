@@ -72,24 +72,36 @@
 #include "servers/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
 #include "servers/movie_writer/movie_writer_mjpeg.h"
-#include "servers/navigation_server_3d.h"
-#include "servers/navigation_server_3d_dummy.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server_dummy.h"
 #include "servers/text_server.h"
 
 // 2D
+#ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_2d_dummy.h"
+#endif // NAVIGATION_2D_DISABLED
+
+#ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_2d_dummy.h"
+#endif // PHYSICS_2D_DISABLED
 
-#ifndef _3D_DISABLED
+// 3D
+#ifndef NAVIGATION_3D_DISABLED
+#include "servers/navigation_server_3d.h"
+#include "servers/navigation_server_3d_dummy.h"
+#endif // NAVIGATION_3D_DISABLED
+
+#ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_server_3d.h"
 #include "servers/physics_server_3d_dummy.h"
+#endif // PHYSICS_3D_DISABLED
+
+#ifndef XR_DISABLED
 #include "servers/xr_server.h"
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 #ifdef TESTS_ENABLED
 #include "tests/test_main.h"
@@ -164,13 +176,17 @@ static DisplayServer *display_server = nullptr;
 static RenderingServer *rendering_server = nullptr;
 static TextServerManager *tsman = nullptr;
 static ThemeDB *theme_db = nullptr;
+#ifndef PHYSICS_2D_DISABLED
 static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
-#ifndef _3D_DISABLED
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
 static PhysicsServer3D *physics_server_3d = nullptr;
+#endif // PHYSICS_3D_DISABLED
+#ifndef XR_DISABLED
 static XRServer *xr_server = nullptr;
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -327,7 +343,7 @@ static Vector<String> get_files_with_extension(const String &p_root, const Strin
 
 // FIXME: Could maybe be moved to have less code in main.cpp.
 void initialize_physics() {
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	/// 3D Physics Server
 	physics_server_3d = PhysicsServer3DManager::get_singleton()->new_server(
 			GLOBAL_GET(PhysicsServer3DManager::setting_property_name));
@@ -345,8 +361,9 @@ void initialize_physics() {
 	// Should be impossible, but make sure it's not null.
 	ERR_FAIL_NULL_MSG(physics_server_3d, "Failed to initialize PhysicsServer3D.");
 	physics_server_3d->init();
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
 	// 2D Physics server
 	physics_server_2d = PhysicsServer2DManager::get_singleton()->new_server(
 			GLOBAL_GET(PhysicsServer2DManager::get_singleton()->setting_property_name));
@@ -364,16 +381,19 @@ void initialize_physics() {
 	// Should be impossible, but make sure it's not null.
 	ERR_FAIL_NULL_MSG(physics_server_2d, "Failed to initialize PhysicsServer2D.");
 	physics_server_2d->init();
+#endif // PHYSICS_2D_DISABLED
 }
 
 void finalize_physics() {
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	physics_server_3d->finish();
 	memdelete(physics_server_3d);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
 	physics_server_2d->finish();
 	memdelete(physics_server_2d);
+#endif // PHYSICS_2D_DISABLED
 }
 
 void finalize_display() {
@@ -707,10 +727,12 @@ Error Main::test_setup() {
 		tsman->add_interface(ts);
 	}
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
+#endif // PHYSICS_2D_DISABLED
 
 	// From `Main::setup2()`.
 	register_early_core_singletons();
@@ -740,8 +762,12 @@ Error Main::test_setup() {
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
 
-	NavigationServer3DManager::initialize_server(); // 3D server first because 2D depends on it.
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3DManager::initialize_server();
+#endif // NAVIGATION_3D_DISABLED
+#ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2DManager::initialize_server();
+#endif // NAVIGATION_2D_DISABLED
 
 	register_scene_types();
 	register_driver_types();
@@ -825,8 +851,12 @@ void Main::test_cleanup() {
 
 	finalize_theme_db();
 
-	NavigationServer2DManager::finalize_server(); // 2D goes first as it uses the 3D server behind the scene.
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2DManager::finalize_server();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3DManager::finalize_server();
+#endif // NAVIGATION_3D_DISABLED
 
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
@@ -844,14 +874,16 @@ void Main::test_cleanup() {
 	if (tsman) {
 		memdelete(tsman);
 	}
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
 	}
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
 	}
+#endif // PHYSICS_2D_DISABLED
 	if (globals) {
 		memdelete(globals);
 	}
@@ -1893,6 +1925,49 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 	}
 
+#ifdef TOOLS_ENABLED
+	if (!project_manager && !editor) {
+		// If we didn't find a project, we fall back to the project manager.
+		project_manager = !found_project && !cmdline_tool;
+	}
+
+	{
+		// Synced with https://github.com/baldurk/renderdoc/blob/2b01465c7/renderdoc/driver/vulkan/vk_layer.cpp#L118-L165
+		LocalVector<String> layers_to_disable = {
+			"DISABLE_RTSS_LAYER", // GH-57937.
+			"DISABLE_VULKAN_OBS_CAPTURE", // GH-103800.
+			"DISABLE_VULKAN_OW_OBS_CAPTURE", // GH-104154.
+			"DISABLE_SAMPLE_LAYER", // GH-104154.
+			"DISABLE_GAMEPP_LAYER", // GH-104154.
+			"DISABLE_VK_LAYER_TENCENT_wegame_cross_overlay_1", // GH-104154.
+			// "NODEVICE_SELECT", // Kept as it's useful - GH-104592.
+			"VK_LAYER_bandicam_helper_DEBUG_1", // GH-101480.
+			"DISABLE_VK_LAYER_bandicam_helper_1", // GH-101480.
+			"DISABLE_VK_LAYER_reshade_1", // GH-70849.
+			"DISABLE_VK_LAYER_GPUOpen_GRS", // GH-104154.
+			"DISABLE_LAYER", // GH-104154 (fpsmon).
+			"DISABLE_MANGOHUD", // GH-57403.
+			"DISABLE_VKBASALT",
+		};
+
+#if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
+		if (editor || project_manager || test_rd_support || test_rd_creation) {
+#else
+		if (editor || project_manager) {
+#endif
+			// Disable Vulkan overlays in editor, they cause various issues.
+			for (const String &layer_disable : layers_to_disable) {
+				OS::get_singleton()->set_environment(layer_disable, "1");
+			}
+		} else {
+			// Re-allow using Vulkan overlays, disabled while using the editor.
+			for (const String &layer_disable : layers_to_disable) {
+				OS::get_singleton()->unset_environment(layer_disable);
+			}
+		}
+	}
+#endif
+
 #if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 	if (test_rd_support) {
 		// Test Rendering Device creation and exit.
@@ -1930,11 +2005,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			init_maximized = true;
 			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
 		}
-	}
-
-	if (!project_manager && !editor) {
-		// If we didn't find a project, we fall back to the project manager.
-		project_manager = !found_project && !cmdline_tool;
 	}
 
 	if (project_manager) {
@@ -2039,7 +2109,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->add_logger(memnew(RotatedFileLogger(base_path, max_files)));
 	}
 
-	if (main_args.size() == 0 && String(GLOBAL_GET("application/run/main_scene")) == "") {
+	if (main_args.is_empty() && String(GLOBAL_GET("application/run/main_scene")) == "") {
 #ifdef TOOLS_ENABLED
 		if (!editor && !project_manager) {
 #endif
@@ -2526,38 +2596,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
 
 #ifdef TOOLS_ENABLED
-	{
-		// Synced with https://github.com/baldurk/renderdoc/blob/2b01465c7/renderdoc/driver/vulkan/vk_layer.cpp#L118-L165
-		LocalVector<String> layers_to_disable = {
-			"DISABLE_RTSS_LAYER", // GH-57937.
-			"DISABLE_VULKAN_OBS_CAPTURE", // GH-103800.
-			"DISABLE_VULKAN_OW_OBS_CAPTURE", // GH-104154.
-			"DISABLE_SAMPLE_LAYER", // GH-104154.
-			"DISABLE_GAMEPP_LAYER", // GH-104154.
-			"DISABLE_VK_LAYER_TENCENT_wegame_cross_overlay_1", // GH-104154.
-			"NODEVICE_SELECT", // GH-104154.
-			"VK_LAYER_bandicam_helper_DEBUG_1", // GH-101480.
-			"DISABLE_VK_LAYER_bandicam_helper_1", // GH-101480.
-			"DISABLE_VK_LAYER_reshade_1", // GH-70849.
-			"DISABLE_VK_LAYER_GPUOpen_GRS", // GH-104154.
-			"DISABLE_LAYER", // GH-104154 (fpsmon).
-			"DISABLE_MANGOHUD", // GH-57403.
-			"DISABLE_VKBASALT",
-		};
-
-		if (editor || project_manager) {
-			// The editor and project manager always detect and use hiDPI if needed.
-			OS::get_singleton()->_allow_hidpi = true;
-			// Disable Vulkan overlays in editor, they cause various issues.
-			for (const String &layer_disable : layers_to_disable) {
-				OS::get_singleton()->set_environment(layer_disable, "1");
-			}
-		} else {
-			// Re-allow using Vulkan overlays, disabled while using the editor.
-			for (const String &layer_disable : layers_to_disable) {
-				OS::get_singleton()->unset_environment(layer_disable);
-			}
-		}
+	if (editor || project_manager) {
+		// The editor and project manager always detect and use hiDPI if needed.
+		OS::get_singleton()->_allow_hidpi = true;
 	}
 #endif
 
@@ -2966,10 +3007,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 		tsman->add_interface(ts);
 	}
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
+#endif // PHYSICS_2D_DISABLED
 
 	register_server_types();
 	{
@@ -3092,14 +3135,16 @@ Error Main::setup2(bool p_show_boot_logo) {
 			if (tsman) {
 				memdelete(tsman);
 			}
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 			if (physics_server_3d_manager) {
 				memdelete(physics_server_3d_manager);
 			}
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 			if (physics_server_2d_manager) {
 				memdelete(physics_server_2d_manager);
 			}
+#endif // PHYSICS_2D_DISABLED
 
 			return err;
 		}
@@ -3467,10 +3512,16 @@ Error Main::setup2(bool p_show_boot_logo) {
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
 
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	MAIN_PRINT("Main: Load Navigation");
+#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 
-	NavigationServer3DManager::initialize_server(); // 3D server first because 2D depends on it.
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3DManager::initialize_server();
+#endif // NAVIGATION_3D_DISABLED
+#ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2DManager::initialize_server();
+#endif // NAVIGATION_2D_DISABLED
 
 	register_scene_types();
 	register_driver_types();
@@ -4073,16 +4124,33 @@ int Main::start() {
 		if (debug_paths) {
 			sml->set_debug_paths_hint(true);
 		}
+
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
+#ifndef NAVIGATION_2D_DISABLED
+			NavigationServer2D::get_singleton()->set_debug_navigation_enabled(true);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 			NavigationServer3D::get_singleton()->set_debug_navigation_enabled(true);
+#endif // NAVIGATION_3D_DISABLED
 		}
 		if (debug_avoidance) {
+#ifndef NAVIGATION_2D_DISABLED
+			NavigationServer2D::get_singleton()->set_debug_avoidance_enabled(true);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 			NavigationServer3D::get_singleton()->set_debug_avoidance_enabled(true);
+#endif // NAVIGATION_3D_DISABLED
 		}
 		if (debug_navigation || debug_avoidance) {
+#ifndef NAVIGATION_2D_DISABLED
+			NavigationServer2D::get_singleton()->set_active(true);
+			NavigationServer2D::get_singleton()->set_debug_enabled(true);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 			NavigationServer3D::get_singleton()->set_active(true);
 			NavigationServer3D::get_singleton()->set_debug_enabled(true);
+#endif // NAVIGATION_3D_DISABLED
 		}
 		if (debug_canvas_item_redraw) {
 			RenderingServer::get_singleton()->canvas_item_set_debug_redraw(true);
@@ -4513,7 +4581,9 @@ bool Main::iteration() {
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t process_ticks = 0;
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	uint64_t navigation_process_ticks = 0;
+#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 
 	frame += ticks_elapsed;
 
@@ -4532,8 +4602,12 @@ bool Main::iteration() {
 	XRServer::get_singleton()->_process();
 #endif // XR_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2D::get_singleton()->sync();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3D::get_singleton()->sync();
+#endif // NAVIGATION_3D_DISABLED
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		if (Input::get_singleton()->is_agile_input_event_flushing()) {
@@ -4550,41 +4624,54 @@ bool Main::iteration() {
 		// may be the same, and no interpolation takes place.
 		OS::get_singleton()->get_main_loop()->iteration_prepare();
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 		PhysicsServer3D::get_singleton()->sync();
 		PhysicsServer3D::get_singleton()->flush_queries();
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
+#endif // PHYSICS_2D_DISABLED
 
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 			PhysicsServer3D::get_singleton()->end_sync();
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 			PhysicsServer2D::get_singleton()->end_sync();
+#endif // PHYSICS_2D_DISABLED
 
 			Engine::get_singleton()->_in_physics = false;
 			exit = true;
 			break;
 		}
 
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
 
-		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
+#ifndef NAVIGATION_2D_DISABLED
+		NavigationServer2D::get_singleton()->physics_process(physics_step * time_scale);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+		NavigationServer3D::get_singleton()->physics_process(physics_step * time_scale);
+#endif // NAVIGATION_3D_DISABLED
 
 		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
 		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
 
 		message_queue->flush();
+#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 		PhysicsServer3D::get_singleton()->end_sync();
 		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
+#endif // PHYSICS_2D_DISABLED
 
 		message_queue->flush();
 
@@ -4606,6 +4693,13 @@ bool Main::iteration() {
 		exit = true;
 	}
 	message_queue->flush();
+
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2D::get_singleton()->process(process_step * time_scale);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3D::get_singleton()->process(process_step * time_scale);
+#endif // NAVIGATION_3D_DISABLED
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
@@ -4810,9 +4904,13 @@ void Main::cleanup(bool p_force) {
 
 	finalize_theme_db();
 
-	// Before deinitializing server extensions, finalize servers which may be loaded as extensions.
-	NavigationServer2DManager::finalize_server(); // 2D goes first as it uses the 3D server behind the scene.
+// Before deinitializing server extensions, finalize servers which may be loaded as extensions.
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2DManager::finalize_server();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3DManager::finalize_server();
+#endif // NAVIGATION_3D_DISABLED
 	finalize_physics();
 
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
@@ -4821,11 +4919,11 @@ void Main::cleanup(bool p_force) {
 
 	EngineDebugger::deinitialize();
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	if (xr_server) {
 		memdelete(xr_server);
 	}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 	if (audio_server) {
 		audio_server->finish();
@@ -4859,14 +4957,16 @@ void Main::cleanup(bool p_force) {
 	if (tsman) {
 		memdelete(tsman);
 	}
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
 	}
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
 	}
+#endif // PHYSICS_2D_DISABLED
 	if (globals) {
 		memdelete(globals);
 	}

@@ -85,6 +85,10 @@ class Ref {
 
 	//virtual RefCounted * get_reference() const { return reference; }
 public:
+	static _FORCE_INLINE_ String get_class_static() {
+		return T::get_class_static();
+	}
+
 	_FORCE_INLINE_ bool operator==(const T *p_ptr) const {
 		return reference == p_ptr;
 	}
@@ -127,6 +131,15 @@ public:
 		ref(p_from);
 	}
 
+	void operator=(Ref &&p_from) {
+		if (reference == p_from.reference) {
+			return;
+		}
+		unref();
+		reference = p_from.reference;
+		p_from.reference = nullptr;
+	}
+
 	template <typename T_Other>
 	void operator=(const Ref<T_Other> &p_from) {
 		ref_pointer<false>(Object::cast_to<T>(p_from.ptr()));
@@ -159,6 +172,11 @@ public:
 		this->operator=(p_from);
 	}
 
+	Ref(Ref &&p_from) {
+		reference = p_from.reference;
+		p_from.reference = nullptr;
+	}
+
 	template <typename T_Other>
 	Ref(const Ref<T_Other> &p_from) {
 		this->operator=(p_from);
@@ -180,10 +198,15 @@ public:
 		// do a lot of referencing on references and stuff
 		// mutexes will avoid more crashes?
 
-		if (reference && reference->unreference()) {
-			memdelete(reference);
+		if (reference) {
+			// NOTE: `reinterpret_cast` is "safe" here because we know `T` has simple linear
+			// inheritance to `RefCounted`. This guarantees that `T * == `RefCounted *`, which
+			// allows us to declare `Ref<T>` with forward declared `T` types.
+			if (reinterpret_cast<RefCounted *>(reference)->unreference()) {
+				memdelete(reinterpret_cast<RefCounted *>(reference));
+			}
+			reference = nullptr;
 		}
-		reference = nullptr;
 	}
 
 	template <typename... VarArgs>
@@ -280,3 +303,8 @@ struct VariantInternalAccessor<const Ref<T> &> {
 // Zero-constructing Ref initializes reference to nullptr (and thus empty).
 template <typename T>
 struct is_zero_constructible<Ref<T>> : std::true_type {};
+
+template <typename T>
+Ref<T> ObjectDB::get_ref(ObjectID p_instance_id) {
+	return Ref<T>(get_instance(p_instance_id));
+}

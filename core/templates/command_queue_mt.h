@@ -113,7 +113,7 @@ class CommandQueueMT {
 	uint32_t sync_awaiters = 0;
 	WorkerThreadPool::TaskID pump_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	uint64_t flush_read_ptr = 0;
-	std::atomic<bool> pending;
+	std::atomic<bool> pending{ false };
 
 	template <typename T, typename... Args>
 	_FORCE_INLINE_ void create_command(Args &&...p_args) {

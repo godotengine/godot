@@ -133,18 +133,21 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 
 	action_name = memnew(LineEdit);
 	action_name->set_text(action->get_name());
+	action_name->set_tooltip_text(TTR("Internal name of the action. Some XR runtimes don't allow spaces or special characters."));
 	action_name->set_custom_minimum_size(Size2(150.0, 0.0));
 	action_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionEditor::_on_action_name_changed));
 	add_child(action_name);
 
 	action_localized_name = memnew(LineEdit);
 	action_localized_name->set_text(action->get_localized_name());
+	action_localized_name->set_tooltip_text(TTR("Human-readable name of the action. This can be displayed to end users."));
 	action_localized_name->set_custom_minimum_size(Size2(150.0, 0.0));
 	action_localized_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_localized_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionEditor::_on_action_localized_name_changed));
 	add_child(action_localized_name);
 
 	action_type_button = memnew(OptionButton);
+	action_type_button->set_tooltip_text(TTR("Type of the action"));
 	action_type_button->add_item("Bool", OpenXRAction::OPENXR_ACTION_BOOL);
 	action_type_button->add_item("Float", OpenXRAction::OPENXR_ACTION_FLOAT);
 	action_type_button->add_item("Vector2", OpenXRAction::OPENXR_ACTION_VECTOR2);

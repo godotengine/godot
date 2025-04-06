@@ -63,7 +63,14 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_server_3d.h"
+#endif // PHYSICS_3D_DISABLED
+
+#ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
 
 constexpr int GODOT4_CONFIG_VERSION = 5;
 
@@ -94,6 +101,10 @@ void ProjectManager::_notification(int p_what) {
 
 			_select_main_view(MAIN_VIEW_PROJECTS);
 			_update_list_placeholder();
+			_titlebar_resized();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_titlebar_resized();
 		} break;
 
@@ -142,8 +153,8 @@ void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 	}
 	List<StringName> tl;
 	p_theme->get_icon_list(EditorStringName(EditorIcons), &tl);
-	for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {
-		icon_type_cache[E->get()] = p_theme->get_icon(E->get(), EditorStringName(EditorIcons));
+	for (const StringName &name : tl) {
+		icon_type_cache[name] = p_theme->get_icon(name, EditorStringName(EditorIcons));
 	}
 }
 
@@ -263,7 +274,8 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			erase_missing_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 
 			open_btn_container->add_theme_constant_override("separation", 0);
-			open_options_popup->set_item_icon(0, get_editor_theme_icon(SNAME("NodeWarning")));
+			open_options_popup->set_item_icon(0, get_editor_theme_icon(SNAME("Notification")));
+			open_options_popup->set_item_icon(1, get_editor_theme_icon(SNAME("NodeWarning")));
 		}
 
 		// Asset library popup.
@@ -500,6 +512,10 @@ void ProjectManager::_open_selected_projects() {
 			args.push_back("--recovery-mode");
 		}
 
+		if (open_in_verbose_mode) {
+			args.push_back("--verbose");
+		}
+
 		Error err = OS::get_singleton()->create_instance(args);
 		if (err != OK) {
 			loading_label->hide();
@@ -616,6 +632,7 @@ void ProjectManager::_open_selected_projects_check_recovery_mode() {
 		return;
 	}
 
+	open_in_verbose_mode = false;
 	open_in_recovery_mode = false;
 	// Check if the project failed to load during last startup.
 	if (project.recovery_mode) {
@@ -656,7 +673,7 @@ void ProjectManager::_new_project() {
 void ProjectManager::_rename_project() {
 	const Vector<ProjectList::Item> &selected_list = project_list->get_selected_projects();
 
-	if (selected_list.size() == 0) {
+	if (selected_list.is_empty()) {
 		return;
 	}
 
@@ -671,7 +688,7 @@ void ProjectManager::_rename_project() {
 void ProjectManager::_erase_project() {
 	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
 
-	if (selected_list.size() == 0) {
+	if (selected_list.is_empty()) {
 		return;
 	}
 
@@ -773,7 +790,11 @@ void ProjectManager::_on_projects_updated() {
 
 void ProjectManager::_on_open_options_selected(int p_option) {
 	switch (p_option) {
-		case 0: // Edit in recovery mode.
+		case 0: // Edit in verbose mode.
+			open_in_verbose_mode = true;
+			_open_selected_projects_check_warnings();
+			break;
+		case 1: // Edit in recovery mode.
 			_open_recovery_mode_ask(true);
 			break;
 	}
@@ -1477,7 +1498,8 @@ ProjectManager::ProjectManager() {
 			open_btn_container->add_child(open_options_btn);
 
 			open_options_popup = memnew(PopupMenu);
-			open_options_popup->add_item(TTR("Edit in recovery mode"));
+			open_options_popup->add_item(TTRC("Edit in verbose mode"));
+			open_options_popup->add_item(TTRC("Edit in recovery mode"));
 			open_options_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectManager::_on_open_options_selected));
 			open_options_btn->add_child(open_options_popup);
 
@@ -1608,7 +1630,11 @@ ProjectManager::ProjectManager() {
 		ask_update_settings = memnew(ConfirmationDialog);
 		ask_update_settings->set_autowrap(true);
 		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_with_migration));
-		full_convert_button = ask_update_settings->add_button(TTR("Convert Full Project"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
+		int ed_swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+		if (ed_swap_cancel_ok == 0) {
+			ed_swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
+		}
+		full_convert_button = ask_update_settings->add_button(TTR("Convert Full Project"), ed_swap_cancel_ok != 2);
 		full_convert_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_full_convert_button_pressed));
 		add_child(ask_update_settings);
 

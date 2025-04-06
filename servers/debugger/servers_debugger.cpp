@@ -42,8 +42,7 @@
 Array ServersDebugger::ResourceUsage::serialize() {
 	infos.sort();
 
-	Array arr;
-	arr.push_back(infos.size() * 4);
+	Array arr = { infos.size() * 4 };
 	for (const ResourceInfo &E : infos) {
 		arr.push_back(E.path);
 		arr.push_back(E.format);
@@ -73,9 +72,7 @@ bool ServersDebugger::ResourceUsage::deserialize(const Array &p_arr) {
 }
 
 Array ServersDebugger::ScriptFunctionSignature::serialize() {
-	Array arr;
-	arr.push_back(name);
-	arr.push_back(id);
+	Array arr = { name, id };
 	return arr;
 }
 
@@ -88,13 +85,7 @@ bool ServersDebugger::ScriptFunctionSignature::deserialize(const Array &p_arr) {
 }
 
 Array ServersDebugger::ServersProfilerFrame::serialize() {
-	Array arr;
-	arr.push_back(frame_number);
-	arr.push_back(frame_time);
-	arr.push_back(process_time);
-	arr.push_back(physics_time);
-	arr.push_back(physics_frame_time);
-	arr.push_back(script_time);
+	Array arr = { frame_number, frame_time, process_time, physics_time, physics_frame_time, script_time };
 
 	arr.push_back(servers.size());
 	for (const ServerInfo &s : servers) {
@@ -163,9 +154,7 @@ bool ServersDebugger::ServersProfilerFrame::deserialize(const Array &p_arr) {
 }
 
 Array ServersDebugger::VisualProfilerFrame::serialize() {
-	Array arr;
-	arr.push_back(frame_number);
-	arr.push_back(areas.size() * 3);
+	Array arr = { frame_number, areas.size() * 3 };
 	for (int i = 0; i < areas.size(); i++) {
 		arr.push_back(areas[i].name);
 		arr.push_back(areas[i].cpu_msec);
@@ -372,9 +361,10 @@ public:
 		RS::get_singleton()->set_frame_profiling_enabled(p_enable);
 
 		// Send hardware information from the remote device so that it's accurate for remote debugging.
-		Array hardware_info;
-		hardware_info.push_back(OS::get_singleton()->get_processor_name());
-		hardware_info.push_back(RenderingServer::get_singleton()->get_video_adapter_name());
+		Array hardware_info = {
+			OS::get_singleton()->get_processor_name(),
+			RenderingServer::get_singleton()->get_video_adapter_name()
+		};
 		EngineDebugger::get_singleton()->send_message("visual:hardware_info", hardware_info);
 	}
 

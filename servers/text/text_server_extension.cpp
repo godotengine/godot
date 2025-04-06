@@ -108,6 +108,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_force_autohinter, "font_rid", "force_autohinter");
 	GDVIRTUAL_BIND(_font_is_force_autohinter, "font_rid");
 
+	GDVIRTUAL_BIND(_font_set_modulate_color_glyphs, "font_rid", "modulate");
+	GDVIRTUAL_BIND(_font_is_modulate_color_glyphs, "font_rid");
+
 	GDVIRTUAL_BIND(_font_set_hinting, "font_rid", "hinting");
 	GDVIRTUAL_BIND(_font_get_hinting, "font_rid");
 
@@ -628,6 +631,16 @@ void TextServerExtension::font_set_force_autohinter(const RID &p_font_rid, bool 
 bool TextServerExtension::font_is_force_autohinter(const RID &p_font_rid) const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_font_is_force_autohinter, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) {
+	GDVIRTUAL_CALL(_font_set_modulate_color_glyphs, p_font_rid, p_modulate);
+}
+
+bool TextServerExtension::font_is_modulate_color_glyphs(const RID &p_font_rid) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_font_is_modulate_color_glyphs, p_font_rid, ret);
 	return ret;
 }
 

@@ -359,6 +359,7 @@ class DisplayServerX11 : public DisplayServer {
 	void _update_context(WindowData &wd);
 
 	Context context = CONTEXT_ENGINE;
+	bool swap_cancel_ok = false;
 
 	WindowID _get_focused_window_or_popup() const;
 	bool _window_focus_check();
@@ -393,6 +394,8 @@ class DisplayServerX11 : public DisplayServer {
 	void _set_external_window_settings(Window p_window, Window p_parent_transient, WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect);
 	void _set_window_taskbar_pager_enabled(Window p_window, bool p_enabled);
 	Rect2i _screens_get_full_rect() const;
+
+	void initialize_tts() const;
 
 protected:
 	void _window_changed(XEvent *event);
@@ -547,6 +550,8 @@ public:
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) override;
+
+	virtual bool get_swap_cancel_ok() override;
 
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;

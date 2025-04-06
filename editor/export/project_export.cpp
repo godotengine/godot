@@ -1531,8 +1531,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	resources_vb->add_child(server_strip_message);
 
 	{
-		List<StringName> resource_names;
-		ClassDB::get_inheriters_from_class("Resource", &resource_names);
+		LocalVector<StringName> resource_names;
+		ClassDB::get_inheriters_from_class("Resource", resource_names);
 
 		PackedStringArray strippable;
 		for (const StringName &resource_name : resource_names) {

@@ -199,6 +199,14 @@ void OS::set_stderr_enabled(bool p_enabled) {
 	_stderr_enabled = p_enabled;
 }
 
+String OS::multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const {
+	return String();
+}
+
+PackedByteArray OS::string_to_multibyte(const String &p_encoding, const String &p_string) const {
+	return PackedByteArray();
+}
+
 int OS::get_exit_code() const {
 	return _exit_code;
 }
@@ -246,7 +254,7 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 	if (p_allow_paths) {
 		// Dir separators are allowed, but disallow ".." to avoid going up the filesystem
 		invalid_chars.push_back("..");
-		safe_dir_name = safe_dir_name.replace("\\", "/").strip_edges();
+		safe_dir_name = safe_dir_name.replace("\\", "/").replace("//", "/").strip_edges();
 	} else {
 		invalid_chars.push_back("/");
 		invalid_chars.push_back("\\");

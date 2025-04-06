@@ -65,7 +65,7 @@ int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_
 
 	int ret = -1;
 
-	if (_points.size() == 0) {
+	if (_points.is_empty()) {
 		_points.push_back(Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
 		ret = 0;
 
@@ -377,7 +377,7 @@ void Curve::set_max_domain(real_t p_max) {
 }
 
 real_t Curve::sample(real_t p_offset) const {
-	if (_points.size() == 0) {
+	if (_points.is_empty()) {
 		return 0;
 	}
 	if (_points.size() == 1) {
@@ -539,8 +539,8 @@ real_t Curve::sample_baked(real_t p_offset) const {
 	}
 
 	// Special cases if the cache is too small.
-	if (_baked_cache.size() == 0) {
-		if (_points.size() == 0) {
+	if (_baked_cache.is_empty()) {
+		if (_points.is_empty()) {
 			return 0;
 		}
 		return _points[0].position.y;
@@ -569,7 +569,7 @@ real_t Curve::sample_baked(real_t p_offset) const {
 }
 
 void Curve::ensure_default_setup(real_t p_min, real_t p_max) {
-	if (_points.size() == 0 && _min_value == 0 && _max_value == 1) {
+	if (_points.is_empty() && _min_value == 0 && _max_value == 1) {
 		add_point(Vector2(0, 1));
 		add_point(Vector2(1, 1));
 		set_min_value(p_min);
@@ -881,12 +881,22 @@ void Curve2D::_bake_segment2d_even_length(RBMap<real_t, Vector2> &r_bake, real_t
 
 Vector2 Curve2D::_calculate_tangent(const Vector2 &p_begin, const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t) {
 	// Handle corner cases.
-	if (Math::is_zero_approx(p_t - 0.0f) && p_control_1.is_equal_approx(p_begin)) {
-		return (p_end - p_begin).normalized();
-	}
-
-	if (Math::is_zero_approx(p_t - 1.0f) && p_control_2.is_equal_approx(p_end)) {
-		return (p_end - p_begin).normalized();
+	if (Math::is_zero_approx(p_t - 0.0f)) {
+		if (p_control_1.is_equal_approx(p_begin)) {
+			if (p_control_1.is_equal_approx(p_control_2)) {
+				return (p_end - p_begin).normalized();
+			} else {
+				return (p_control_2 - p_begin).normalized();
+			}
+		}
+	} else if (Math::is_zero_approx(p_t - 1.0f)) {
+		if (p_control_2.is_equal_approx(p_end)) {
+			if (p_control_2.is_equal_approx(p_control_1)) {
+				return (p_end - p_begin).normalized();
+			} else {
+				return (p_end - p_control_1).normalized();
+			}
+		}
 	}
 
 	return p_begin.bezier_derivative(p_control_1, p_control_2, p_end, p_t).normalized();
@@ -900,7 +910,7 @@ void Curve2D::_bake() const {
 	baked_max_ofs = 0;
 	baked_cache_dirty = false;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 		baked_point_cache.clear();
 		baked_dist_cache.clear();
 		baked_forward_vector_cache.clear();
@@ -1249,7 +1259,7 @@ void Curve2D::_set_data(const Dictionary &p_data) {
 PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) const {
 	PackedVector2Array tess;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 		return tess;
 	}
 
@@ -1299,7 +1309,7 @@ PackedVector2Array Curve2D::tessellate_even_length(int p_max_stages, real_t p_le
 	PackedVector2Array tess;
 
 	Vector<RBMap<real_t, Vector2>> midpoints = _tessellate_even_length(p_max_stages, p_length);
-	if (midpoints.size() == 0) {
+	if (midpoints.is_empty()) {
 		return tess;
 	}
 
@@ -1620,12 +1630,22 @@ void Curve3D::_bake_segment3d_even_length(RBMap<real_t, Vector3> &r_bake, real_t
 
 Vector3 Curve3D::_calculate_tangent(const Vector3 &p_begin, const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) {
 	// Handle corner cases.
-	if (Math::is_zero_approx(p_t - 0.0f) && p_control_1.is_equal_approx(p_begin)) {
-		return (p_end - p_begin).normalized();
-	}
-
-	if (Math::is_zero_approx(p_t - 1.0f) && p_control_2.is_equal_approx(p_end)) {
-		return (p_end - p_begin).normalized();
+	if (Math::is_zero_approx(p_t - 0.0f)) {
+		if (p_control_1.is_equal_approx(p_begin)) {
+			if (p_control_1.is_equal_approx(p_control_2)) {
+				return (p_end - p_begin).normalized();
+			} else {
+				return (p_control_2 - p_begin).normalized();
+			}
+		}
+	} else if (Math::is_zero_approx(p_t - 1.0f)) {
+		if (p_control_2.is_equal_approx(p_end)) {
+			if (p_control_2.is_equal_approx(p_control_1)) {
+				return (p_end - p_begin).normalized();
+			} else {
+				return (p_end - p_control_1).normalized();
+			}
+		}
 	}
 
 	return p_begin.bezier_derivative(p_control_1, p_control_2, p_end, p_t).normalized();
@@ -1639,7 +1659,7 @@ void Curve3D::_bake() const {
 	baked_max_ofs = 0;
 	baked_cache_dirty = false;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 #ifdef TOOLS_ENABLED
 		points_in_cache.clear();
 #endif
@@ -2273,7 +2293,7 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 PackedVector3Array Curve3D::tessellate(int p_max_stages, real_t p_tolerance) const {
 	PackedVector3Array tess;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 		return tess;
 	}
 	Vector<RBMap<real_t, Vector3>> midpoints;
@@ -2336,7 +2356,7 @@ PackedVector3Array Curve3D::tessellate_even_length(int p_max_stages, real_t p_le
 	PackedVector3Array tess;
 
 	Vector<RBMap<real_t, Vector3>> midpoints = _tessellate_even_length(p_max_stages, p_length);
-	if (midpoints.size() == 0) {
+	if (midpoints.is_empty()) {
 		return tess;
 	}
 

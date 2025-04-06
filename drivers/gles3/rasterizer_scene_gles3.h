@@ -739,7 +739,7 @@ protected:
 		float baked_exposure = 1.0;
 
 		//State to track when radiance cubemap needs updating
-		GLES3::SkyMaterialData *prev_material;
+		GLES3::SkyMaterialData *prev_material = nullptr;
 		Vector3 prev_position = Vector3(0.0, 0.0, 0.0);
 		float prev_time = 0.0f;
 	};

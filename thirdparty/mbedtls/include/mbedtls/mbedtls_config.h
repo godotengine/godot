@@ -1622,6 +1622,46 @@
  */
 //#define MBEDTLS_SSL_ASYNC_PRIVATE
 
+/** \def MBEDTLS_SSL_CLI_ALLOW_WEAK_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+ *
+ * In TLS clients, when a client authenticates a server through its
+ * certificate, the client normally checks three things:
+ * - the certificate chain must be valid;
+ * - the chain must start from a trusted CA;
+ * - the certificate must cover the server name that is expected by the client.
+ *
+ * Omitting any of these checks is generally insecure, and can allow a
+ * malicious server to impersonate a legitimate server.
+ *
+ * The third check may be safely skipped in some unusual scenarios,
+ * such as networks where eavesdropping is a risk but not active attacks,
+ * or a private PKI where the client equally trusts all servers that are
+ * accredited by the root CA.
+ *
+ * You should call mbedtls_ssl_set_hostname() with the expected server name
+ * before starting a TLS handshake on a client (unless the client is
+ * set up to only use PSK-based authentication, which does not rely on the
+ * host name). This configuration option controls what happens if a TLS client
+ * is configured with the authentication mode #MBEDTLS_SSL_VERIFY_REQUIRED
+ * (default), certificate authentication is enabled and the client does not
+ * call mbedtls_ssl_set_hostname():
+ *
+ * - If this option is unset (default), the connection attempt is aborted
+ *   with the error #MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME.
+ * - If this option is set, the TLS library does not check the server name
+ *   that the certificate is valid for. This is the historical behavior
+ *   of Mbed TLS, but may be insecure as explained above.
+ *
+ * Enable this option for strict backward compatibility if you have
+ * determined that it is secure in the scenario where you are using
+ * Mbed TLS.
+ *
+ * \deprecated This option exists only for backward compatibility and will
+ *             be removed in the next major version of Mbed TLS.
+ *
+ */
+//#define MBEDTLS_SSL_CLI_ALLOW_WEAK_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+
 /**
  * \def MBEDTLS_SSL_CONTEXT_SERIALIZATION
  *
@@ -1806,6 +1846,11 @@
  *       (X.509, PK) or by code shared with TLS 1.2 (record protection,
  *       running handshake hash) only use PSA crypto if
  *       #MBEDTLS_USE_PSA_CRYPTO is enabled.
+ *
+ * \note In multithreaded applications, you must also enable
+ *       #MBEDTLS_THREADING_C, even if individual TLS contexts are not
+ *       shared between threads, unless only one thread ever calls
+ *       TLS functions.
  *
  * Uncomment this macro to enable the support for TLS 1.3.
  */
@@ -2124,6 +2169,10 @@
  * \warning If you enable this option, you need to call `psa_crypto_init()`
  * before calling any function from the SSL/TLS, X.509 or PK modules, except
  * for the various mbedtls_xxx_init() functions which can be called at any time.
+ *
+ * \warning In multithreaded applications, you must also enable
+ * #MBEDTLS_THREADING_C, unless only one thread ever calls PSA functions
+ * (`psa_xxx()`), including indirect calls through SSL/TLS, X.509 or PK.
  *
  * \note An important and desirable effect of this option is that it allows
  * PK, X.509 and TLS to take advantage of PSA drivers. For example, enabling
@@ -3211,7 +3260,18 @@
 /**
  * \def MBEDTLS_PSA_CRYPTO_C
  *
- * Enable the Platform Security Architecture cryptography API.
+ * Enable the Platform Security Architecture (PSA) cryptography API.
+ *
+ * \note In multithreaded applications, you must enable #MBEDTLS_THREADING_C,
+ *       unless only one thread ever calls `psa_xxx()` functions.
+ *       That includes indirect calls, such as:
+ *       - performing a TLS handshake if support for TLS 1.3 is enabled;
+ *       - using a TLS 1.3 connection;
+ *       - indirect calls from PK, X.509 or SSL functions when
+ *         #MBEDTLS_USE_PSA_CRYPTO is enabled;
+ *       - indirect calls to calculate a hash when #MBEDTLS_MD_C is disabled;
+ *       - any other call to a function that requires calling psa_crypto_init()
+ *         beforehand.
  *
  * Module:  library/psa_crypto.c
  *
@@ -3267,6 +3327,26 @@
  * Requires: MBEDTLS_FS_IO
  */
 #define MBEDTLS_PSA_ITS_FILE_C
+
+/**
+ * \def MBEDTLS_PSA_STATIC_KEY_SLOTS
+ *
+ * Statically preallocate memory to store keys' material in PSA instead
+ * of allocating it dynamically when required. This allows builds without a
+ * heap, if none of the enabled cryptographic implementations or other features
+ * require it.
+ * This feature affects both volatile and persistent keys which means that
+ * it's not possible to persistently store a key which is larger than
+ * #MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE.
+ *
+ * \note This feature comes with a (potentially) higher RAM usage since:
+ *       - All the key slots are allocated no matter if they are used or not.
+ *       - Each key buffer's length is #MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE bytes.
+ *
+ * Requires: MBEDTLS_PSA_CRYPTO_C
+ *
+ */
+//#define MBEDTLS_PSA_STATIC_KEY_SLOTS
 
 /**
  * \def MBEDTLS_RIPEMD160_C
@@ -3611,10 +3691,38 @@
  * \def MBEDTLS_THREADING_C
  *
  * Enable the threading abstraction layer.
- * By default Mbed TLS assumes it is used in a non-threaded environment or that
- * contexts are not shared between threads. If you do intend to use contexts
+ *
+ * Traditionally, Mbed TLS assumes it is used in a non-threaded environment or
+ * that contexts are not shared between threads. If you do intend to use contexts
  * between threads, you will need to enable this layer to prevent race
- * conditions. See also our Knowledge Base article about threading:
+ * conditions.
+ *
+ * The PSA subsystem has an implicit shared context. Therefore, you must
+ * enable this option if more than one thread may use any part of
+ * Mbed TLS that is implemented on top of the PSA subsystem.
+ *
+ * You must enable this option in multithreaded applications where more than
+ * one thread performs any of the following operations:
+ *
+ * - Any call to a PSA function (`psa_xxx()`).
+ * - Any call to a TLS, X.509 or PK function (`mbedtls_ssl_xxx()`,
+ *   `mbedtls_x509_xxx()`, `mbedtls_pkcs7_xxx()`, `mbedtls_pk_xxx()`)
+ *   if `MBEDTLS_USE_PSA_CRYPTO` is enabled (regardless of whether individual
+ *   TLS, X.509 or PK contexts are shared between threads).
+ * - A TLS 1.3 connection, regardless of the compile-time configuration.
+ * - Any library feature that calculates a hash, if `MBEDTLS_MD_C` is disabled.
+ *   As an exception, algorithm-specific low-level modules do not require
+ *   threading protection unless the contexts are shared between threads.
+ * - Any library feature that performs symmetric encryption or decryption,
+ *   if `MBEDTLS_CIPHER_C` is disabled.
+ *   As an exception, algorithm-specific low-level modules do not require
+ *   threading protection unless the contexts are shared between threads.
+ * - Any use of a cryptographic context if the same context is used in
+ *   multiple threads.
+ * - Any call to a function where the documentation specifies that
+ *   psa_crypto_init() must be called prior to that function.
+ *
+ * See also our Knowledge Base article about threading:
  * https://mbed-tls.readthedocs.io/en/latest/kb/development/thread-safety-and-multi-threading
  *
  * Module:  library/threading.c
@@ -4068,6 +4176,19 @@
  * This option has no effect when #MBEDTLS_PSA_CRYPTO_C is disabled.
  */
 //#define MBEDTLS_PSA_KEY_SLOT_COUNT 32
+
+/**
+ * \def MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE
+ *
+ * Define the size (in bytes) of each static key buffer when
+ * #MBEDTLS_PSA_STATIC_KEY_SLOTS is set. If not
+ * explicitly defined then it's automatically guessed from available PSA keys
+ * enabled in the build through PSA_WANT_xxx symbols.
+ * If required by the application this parameter can be set to higher values
+ * in order to store larger objects (ex: raw keys), but please note that this
+ * will increase RAM usage.
+ */
+//#define MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE       256
 
 /* RSA OPTIONS */
 //#define MBEDTLS_RSA_GEN_KEY_MIN_BITS            1024 /**<  Minimum RSA key size that can be generated in bits (Minimum possible value is 128 bits) */

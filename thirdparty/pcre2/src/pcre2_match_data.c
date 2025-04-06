@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2022 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -77,14 +77,16 @@ return yield;
 *  Create a match data block using pattern data  *
 *************************************************/
 
-/* If no context is supplied, use the memory allocator from the code. */
+/* If no context is supplied, use the memory allocator from the code. This code
+assumes that a general context contains nothing other than a memory allocator.
+If that ever changes, this code will need fixing. */
 
 PCRE2_EXP_DEFN pcre2_match_data * PCRE2_CALL_CONVENTION
 pcre2_match_data_create_from_pattern(const pcre2_code *code,
   pcre2_general_context *gcontext)
 {
 if (gcontext == NULL) gcontext = (pcre2_general_context *)code;
-return pcre2_match_data_create(((pcre2_real_code *)code)->top_bracket + 1,
+return pcre2_match_data_create(((const pcre2_real_code *)code)->top_bracket + 1,
   gcontext);
 }
 

@@ -55,6 +55,10 @@
 #include "core/templates/rid.h"
 #include "core/typedefs.h"
 
+#ifdef _MSC_VER
+#include <intrin.h> // Needed for `__umulh` below.
+#endif
+
 /**
  * Hashing functions
  */

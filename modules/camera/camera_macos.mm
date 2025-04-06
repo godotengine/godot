@@ -195,6 +195,8 @@
 // CameraFeedMacOS - Subclass for camera feeds in macOS
 
 class CameraFeedMacOS : public CameraFeed {
+	GDSOFTCLASS(CameraFeedMacOS, CameraFeed);
+
 private:
 	AVCaptureDevice *device;
 	MyCaptureSession *capture_session;
@@ -206,8 +208,8 @@ public:
 
 	void set_device(AVCaptureDevice *p_device);
 
-	bool activate_feed();
-	void deactivate_feed();
+	bool activate_feed() override;
+	void deactivate_feed() override;
 };
 
 AVCaptureDevice *CameraFeedMacOS::get_device() const {

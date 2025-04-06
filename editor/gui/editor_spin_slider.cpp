@@ -457,6 +457,8 @@ void EditorSpinSlider::_notification(int p_what) {
 			_update_value_input_stylebox();
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_value_input_stylebox();
 		} break;

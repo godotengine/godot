@@ -490,6 +490,8 @@ void DynamicFontImportSettingsDialog::_main_prop_changed(const String &p_edited_
 			font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
 		} else if (p_edited_property == "force_autohinter") {
 			font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
+		} else if (p_edited_property == "modulate_color_glyphs") {
+			font_preview->set_modulate_color_glyphs(import_settings_data->get("modulate_color_glyphs"));
 		} else if (p_edited_property == "hinting") {
 			font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
 		} else if (p_edited_property == "subpixel_positioning") {
@@ -533,8 +535,8 @@ void DynamicFontImportSettingsDialog::_variation_add() {
 	import_variation_data->owner = this;
 	ERR_FAIL_COND(import_variation_data.is_null());
 
-	for (List<ResourceImporter::ImportOption>::Element *E = options_variations.front(); E; E = E->next()) {
-		import_variation_data->defaults[E->get().option.name] = E->get().default_value;
+	for (const ResourceImporter::ImportOption &option : options_variations) {
+		import_variation_data->defaults[option.option.name] = option.default_value;
 	}
 
 	import_variation_data->options = options_variations;
@@ -977,6 +979,7 @@ void DynamicFontImportSettingsDialog::_re_import() {
 	main_settings["msdf_size"] = import_settings_data->get("msdf_size");
 	main_settings["allow_system_fallback"] = import_settings_data->get("allow_system_fallback");
 	main_settings["force_autohinter"] = import_settings_data->get("force_autohinter");
+	main_settings["modulate_color_glyphs"] = import_settings_data->get("modulate_color_glyphs");
 	main_settings["hinting"] = import_settings_data->get("hinting");
 	main_settings["subpixel_positioning"] = import_settings_data->get("subpixel_positioning");
 	main_settings["keep_rounding_remainders"] = import_settings_data->get("keep_rounding_remainders");
@@ -1170,8 +1173,8 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 
 	text_settings_data->owner = this;
 
-	for (List<ResourceImporter::ImportOption>::Element *F = options_text.front(); F; F = F->next()) {
-		text_settings_data->defaults[F->get().option.name] = F->get().default_value;
+	for (const ResourceImporter::ImportOption &option : options_text) {
+		text_settings_data->defaults[option.option.name] = option.default_value;
 	}
 
 	text_settings_data->fd = font_main;
@@ -1190,8 +1193,8 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 
 	import_settings_data->settings.clear();
 	import_settings_data->defaults.clear();
-	for (List<ResourceImporter::ImportOption>::Element *E = options_general.front(); E; E = E->next()) {
-		import_settings_data->defaults[E->get().option.name] = E->get().default_value;
+	for (const ResourceImporter::ImportOption &option : options_general) {
+		import_settings_data->defaults[option.option.name] = option.default_value;
 	}
 
 	Ref<ConfigFile> config;
@@ -1203,8 +1206,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	if (err == OK) {
 		List<String> keys;
 		config->get_section_keys("params", &keys);
-		for (List<String>::Element *E = keys.front(); E; E = E->next()) {
-			String key = E->get();
+		for (const String &key : keys) {
 			print_verbose(String("    ") + key + " == " + String(config->get_value("params", key)));
 			if (key == "preload") {
 				Array preload_configurations = config->get_value("params", key);
@@ -1231,8 +1233,8 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 					ERR_FAIL_COND(import_variation_data_custom.is_null());
 
 					import_variation_data_custom->owner = this;
-					for (List<ResourceImporter::ImportOption>::Element *F = options_variations.front(); F; F = F->next()) {
-						import_variation_data_custom->defaults[F->get().option.name] = F->get().default_value;
+					for (const ResourceImporter::ImportOption &option : options_variations) {
+						import_variation_data_custom->defaults[option.option.name] = option.default_value;
 					}
 
 					import_variation_data_custom->fd = font_main;
@@ -1282,6 +1284,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 		font_preview->set_msdf_size(import_settings_data->get("msdf_size"));
 		font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
 		font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
+		font_preview->set_modulate_color_glyphs(import_settings_data->get("modulate_color_glyphs"));
 		font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
 		int font_subpixel_positioning = import_settings_data->get("subpixel_positioning").operator int();
 		if (font_subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
@@ -1323,6 +1326,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));

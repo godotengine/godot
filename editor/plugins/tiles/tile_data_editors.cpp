@@ -33,6 +33,7 @@
 #include "tile_set_editor.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/math/random_pcg.h"
 #include "core/os/keyboard.h"
 
 #include "editor/editor_node.h"
@@ -219,8 +220,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 			color = color.darkened(0.3);
 		}
 		color.a = 0.5;
-		Vector<Color> v_color;
-		v_color.push_back(color);
+		Vector<Color> v_color = { color };
 		base_control->draw_polygon(polygon, v_color);
 
 		color.a = 0.7;
@@ -438,8 +438,9 @@ void GenericTilePolygonEditor::_grab_polygon_segment_point(Vector2 p_pos, const 
 	for (unsigned int i = 0; i < polygons.size(); i++) {
 		const Vector<Vector2> &polygon = polygons[i];
 		for (int j = 0; j < polygon.size(); j++) {
-			Vector2 segment[2] = { polygon[j], polygon[(j + 1) % polygon.size()] };
-			Vector2 closest_point = Geometry2D::get_closest_point_to_segment(point, segment);
+			const Vector2 segment_a = polygon[j];
+			const Vector2 segment_b = polygon[(j + 1) % polygon.size()];
+			Vector2 closest_point = Geometry2D::get_closest_point_to_segment(point, segment_a, segment_b);
 			float distance = closest_point.distance_to(point);
 			if (distance < grab_threshold / editor_zoom_widget->get_zoom() && distance < closest_distance) {
 				r_polygon_index = i;
@@ -474,8 +475,9 @@ void GenericTilePolygonEditor::_snap_to_tile_shape(Point2 &r_point, float &r_cur
 	// Snap to edges if we did not snap to vertices.
 	if (!snapped) {
 		for (int i = 0; i < polygon.size(); i++) {
-			Point2 segment[2] = { polygon[i], polygon[(i + 1) % polygon.size()] };
-			Point2 point = Geometry2D::get_closest_point_to_segment(r_point, segment);
+			const Vector2 segment_a = polygon[i];
+			const Vector2 segment_b = polygon[(i + 1) % polygon.size()];
+			Point2 point = Geometry2D::get_closest_point_to_segment(r_point, segment_a, segment_b);
 			float distance = r_point.distance_to(point);
 			if (distance < p_snap_dist && distance < r_current_snapped_dist) {
 				snapped_point = point;
@@ -834,7 +836,7 @@ void GenericTilePolygonEditor::remove_polygon(int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)polygons.size());
 	polygons.remove_at(p_index);
 
-	if (polygons.size() == 0) {
+	if (polygons.is_empty()) {
 		button_create->set_pressed(true);
 	}
 	base_control->queue_redraw();
@@ -1482,8 +1484,7 @@ void TileDataOcclusionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 	}
 	color.a *= 0.5;
 
-	Vector<Color> debug_occlusion_color;
-	debug_occlusion_color.push_back(color);
+	Vector<Color> debug_occlusion_color = { color };
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
 	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
@@ -2064,14 +2065,12 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 		}
 
 		Vector2 end = p_transform.affine_inverse().xform(p_canvas_item->get_local_mouse_position());
-		Vector<Point2> mouse_pos_rect_polygon;
-		mouse_pos_rect_polygon.push_back(drag_start_pos);
-		mouse_pos_rect_polygon.push_back(Vector2(end.x, drag_start_pos.y));
-		mouse_pos_rect_polygon.push_back(end);
-		mouse_pos_rect_polygon.push_back(Vector2(drag_start_pos.x, end.y));
+		Vector<Point2> mouse_pos_rect_polygon = {
+			drag_start_pos, Vector2(end.x, drag_start_pos.y),
+			end, Vector2(drag_start_pos.x, end.y)
+		};
 
-		Vector<Color> color;
-		color.push_back(Color(1.0, 1.0, 1.0, 0.5));
+		Vector<Color> color = { Color(1.0, 1.0, 1.0, 0.5) };
 
 		p_canvas_item->draw_set_transform_matrix(p_transform);
 
@@ -2131,8 +2130,7 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 				Transform2D xform;
 				xform.set_origin(position);
 
-				Vector<Color> color;
-				color.push_back(Color(1.0, 1.0, 1.0, 0.5));
+				Vector<Color> color = { Color(1.0, 1.0, 1.0, 0.5) };
 
 				Vector<Vector2> polygon = tile_set->get_terrain_polygon(terrain_set);
 				if (Geometry2D::is_point_in_polygon(xform.affine_inverse().xform(mouse_pos), polygon)) {
@@ -2547,11 +2545,10 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						}
 					}
 
-					Vector<Point2> mouse_pos_rect_polygon;
-					mouse_pos_rect_polygon.push_back(drag_start_pos);
-					mouse_pos_rect_polygon.push_back(Vector2(mb->get_position().x, drag_start_pos.y));
-					mouse_pos_rect_polygon.push_back(mb->get_position());
-					mouse_pos_rect_polygon.push_back(Vector2(drag_start_pos.x, mb->get_position().y));
+					Vector<Point2> mouse_pos_rect_polygon = {
+						drag_start_pos, Vector2(mb->get_position().x, drag_start_pos.y),
+						mb->get_position(), Vector2(drag_start_pos.x, mb->get_position().y)
+					};
 
 					undo_redo->create_action(TTR("Painting Terrain"));
 					for (const TileMapCell &E : edited) {
@@ -3030,8 +3027,7 @@ void TileDataNavigationEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfo
 			Color random_variation_color;
 			random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.05, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.1);
 			random_variation_color.a = color.a;
-			Vector<Color> colors;
-			colors.push_back(random_variation_color);
+			Vector<Color> colors = { random_variation_color };
 
 			RenderingServer::get_singleton()->canvas_item_add_polygon(p_canvas_item->get_canvas_item(), vertices, colors);
 		}

@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2023 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -486,7 +486,7 @@ pcre2_substring_nametable_scan(const pcre2_code *code, PCRE2_SPTR stringname,
 uint16_t bot = 0;
 uint16_t top = code->name_count;
 uint16_t entrysize = code->name_entry_size;
-PCRE2_SPTR nametable = (PCRE2_SPTR)((char *)code + sizeof(pcre2_real_code));
+PCRE2_SPTR nametable = (PCRE2_SPTR)((const char *)code + sizeof(pcre2_real_code));
 
 while (top > bot)
   {

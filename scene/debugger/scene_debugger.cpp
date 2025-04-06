@@ -36,16 +36,6 @@
 #include "core/math/math_fieldwise.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
-#include "scene/2d/physics/collision_object_2d.h"
-#include "scene/2d/physics/collision_polygon_2d.h"
-#include "scene/2d/physics/collision_shape_2d.h"
-#ifndef _3D_DISABLED
-#include "scene/3d/physics/collision_object_3d.h"
-#include "scene/3d/physics/collision_shape_3d.h"
-#include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/3d/convex_polygon_shape_3d.h"
-#include "scene/resources/surface_tool.h"
-#endif // _3D_DISABLED
 #include "scene/gui/popup_menu.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
@@ -53,6 +43,23 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
 #include "servers/audio_server.h"
+
+#ifndef PHYSICS_2D_DISABLED
+#include "scene/2d/physics/collision_object_2d.h"
+#include "scene/2d/physics/collision_polygon_2d.h"
+#include "scene/2d/physics/collision_shape_2d.h"
+#endif // PHYSICS_2D_DISABLED
+
+#ifndef _3D_DISABLED
+#include "scene/3d/camera_3d.h"
+#ifndef PHYSICS_3D_DISABLED
+#include "scene/3d/physics/collision_object_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
+#endif // PHYSICS_3D_DISABLED
+#include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
+#include "scene/resources/surface_tool.h"
+#endif // _3D_DISABLED
 
 SceneDebugger::SceneDebugger() {
 	singleton = this;
@@ -331,7 +338,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 }
 
 void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
-	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+	Node *node = ObjectDB::get_instance<Node>(id);
 	ERR_FAIL_NULL(node);
 
 #ifdef TOOLS_ENABLED
@@ -383,7 +390,7 @@ void SceneDebugger::_send_object_ids(const Vector<ObjectID> &p_ids, bool p_updat
 		}
 
 		if (p_update_selection) {
-			if (Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id))) {
+			if (Node *node = ObjectDB::get_instance<Node>(id)) {
 				nodes.push_back(node);
 			}
 		}
@@ -407,9 +414,9 @@ void SceneDebugger::_send_object_ids(const Vector<ObjectID> &p_ids, bool p_updat
 		arr.append(invalid_selection);
 		EngineDebugger::get_singleton()->send_message("remote_selection_invalidated", arr);
 
-		EngineDebugger::get_singleton()->send_message(objs.is_empty() ? "remote_nothing_clicked" : "remote_nodes_clicked", objs);
+		EngineDebugger::get_singleton()->send_message(objs.is_empty() ? "remote_nothing_selected" : "remote_objects_selected", objs);
 	} else {
-		EngineDebugger::get_singleton()->send_message("scene:inspect_objects", objs);
+		EngineDebugger::get_singleton()->send_message(p_update_selection ? "remote_objects_selected" : "scene:inspect_objects", objs);
 	}
 }
 
@@ -468,7 +475,7 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 	HashMap<String, HashSet<Node *>>::Iterator E = edit_cache.find(p_filename);
 	if (E) {
 		E->value.erase(p_node);
-		if (E->value.size() == 0) {
+		if (E->value.is_empty()) {
 			edit_cache.remove(E);
 		}
 	}
@@ -603,10 +610,7 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 
 		Ref<Resource> res = var;
 
-		Array prop;
-		prop.push_back(pi.name);
-		prop.push_back(pi.type);
-
+		Array prop = { pi.name, pi.type };
 		PropertyHint hint = pi.hint;
 		String hint_string = pi.hint_string;
 		if (res.is_valid() && !res->get_path().is_empty()) {
@@ -1174,7 +1178,7 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 
 		EN->value.remove(FN);
 
-		if (EN->value.size() == 0) {
+		if (EN->value.is_empty()) {
 			live_edit_remove_list.remove(EN);
 		}
 
@@ -1652,7 +1656,7 @@ void RuntimeNodeSelect::_physics_frame() {
 #else
 				if (!selected_ci_nodes.is_empty() || !selected_3d_nodes.is_empty()) {
 #endif // _3D_DISABLED
-					EngineDebugger::get_singleton()->send_message("remote_nothing_clicked", Array());
+					EngineDebugger::get_singleton()->send_message("remote_nothing_selected", Array());
 					_clear_selection();
 				}
 
@@ -1714,7 +1718,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 			message.append(arr);
 		}
 
-		EngineDebugger::get_singleton()->send_message("remote_nodes_clicked", message);
+		EngineDebugger::get_singleton()->send_message("remote_objects_selected", message);
 		_set_selected_nodes(picked_nodes);
 
 		return;
@@ -1763,12 +1767,12 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 
 	for (ObjectID id : selected_ci_nodes) {
 		ids.push_back(id);
-		nodes.push_back(Object::cast_to<Node>(ObjectDB::get_instance(id)));
+		nodes.push_back(ObjectDB::get_instance<Node>(id));
 	}
 #ifndef _3D_DISABLED
 	for (const KeyValue<ObjectID, Ref<SelectionBox3D>> &KV : selected_3d_nodes) {
 		ids.push_back(KV.key);
-		nodes.push_back(Object::cast_to<Node>(ObjectDB::get_instance(KV.key)));
+		nodes.push_back(ObjectDB::get_instance<Node>(KV.key));
 	}
 #endif // _3D_DISABLED
 
@@ -1778,7 +1782,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 	}
 
 	if (ids.is_empty()) {
-		EngineDebugger::get_singleton()->send_message("remote_nothing_clicked", message);
+		EngineDebugger::get_singleton()->send_message("remote_nothing_selected", message);
 	} else {
 		for (const ObjectID &id : ids) {
 			SceneDebuggerObject obj(id);
@@ -1787,7 +1791,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 			message.append(arr);
 		}
 
-		EngineDebugger::get_singleton()->send_message("remote_nodes_clicked", message);
+		EngineDebugger::get_singleton()->send_message("remote_objects_selected", message);
 	}
 
 	_set_selected_nodes(nodes);
@@ -1903,7 +1907,7 @@ void RuntimeNodeSelect::_update_selection() {
 
 	for (LocalVector<ObjectID>::Iterator E = selected_ci_nodes.begin(); E != selected_ci_nodes.end(); ++E) {
 		ObjectID id = *E;
-		CanvasItem *ci = Object::cast_to<CanvasItem>(ObjectDB::get_instance(id));
+		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(id);
 		if (!ci) {
 			selected_ci_nodes.erase(id);
 			--E;
@@ -1924,6 +1928,7 @@ void RuntimeNodeSelect::_update_selection() {
 		if (ci->_edit_use_rect()) {
 			rect = ci->_edit_get_rect();
 		} else {
+#ifndef PHYSICS_2D_DISABLED
 			CollisionShape2D *collision_shape = Object::cast_to<CollisionShape2D>(ci);
 			if (collision_shape) {
 				Ref<Shape2D> shape = collision_shape->get_shape();
@@ -1931,6 +1936,7 @@ void RuntimeNodeSelect::_update_selection() {
 					rect = shape->get_rect();
 				}
 			}
+#endif // PHYSICS_2D_DISABLED
 		}
 
 		const Vector2 endpoints[4] = {
@@ -1949,7 +1955,7 @@ void RuntimeNodeSelect::_update_selection() {
 #ifndef _3D_DISABLED
 	for (HashMap<ObjectID, Ref<SelectionBox3D>>::ConstIterator KV = selected_3d_nodes.begin(); KV != selected_3d_nodes.end(); ++KV) {
 		ObjectID id = KV->key;
-		Node3D *node_3d = Object::cast_to<Node3D>(ObjectDB::get_instance(id));
+		Node3D *node_3d = ObjectDB::get_instance<Node3D>(id);
 		if (!node_3d) {
 			selected_3d_nodes.erase(id);
 			--KV;
@@ -1963,6 +1969,7 @@ void RuntimeNodeSelect::_update_selection() {
 		if (visual_instance) {
 			bounds = visual_instance->get_aabb();
 		} else {
+#ifndef PHYSICS_2D_DISABLED
 			CollisionShape3D *collision_shape = Object::cast_to<CollisionShape3D>(node_3d);
 			if (collision_shape) {
 				Ref<Shape3D> shape = collision_shape->get_shape();
@@ -1970,6 +1977,7 @@ void RuntimeNodeSelect::_update_selection() {
 					bounds = shape->get_debug_mesh()->get_aabb();
 				}
 			}
+#endif // PHYSICS_2D_DISABLED
 		}
 
 		Transform3D xform_to_top_level_parent_space = node_3d->get_global_transform().affine_inverse() * node_3d->get_global_transform();
@@ -2165,6 +2173,7 @@ void RuntimeNodeSelect::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_n
 		res.order = ci->get_effective_z_index() + ci->get_canvas_layer();
 		r_items.push_back(res);
 
+#ifndef PHYSICS_2D_DISABLED
 		// If it's a shape, get the collision object it's from.
 		// FIXME: If the collision object has multiple shapes, only the topmost will be above it in the list.
 		if (Object::cast_to<CollisionShape2D>(ci) || Object::cast_to<CollisionPolygon2D>(ci)) {
@@ -2176,6 +2185,7 @@ void RuntimeNodeSelect::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_n
 				r_items.push_back(res_col);
 			}
 		}
+#endif // PHYSICS_2D_DISABLED
 	}
 }
 
@@ -2307,6 +2317,7 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 		to = pos + ray * camera->get_far();
 	}
 
+#ifndef PHYSICS_3D_DISABLED
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();
 	PhysicsDirectSpaceState3D::RayResult result;
@@ -2342,6 +2353,7 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 			break;
 		}
 	}
+#endif // PHYSICS_3D_DISABLED
 
 	// Then go for the meshes.
 	Vector<ObjectID> items = RS::get_singleton()->instances_cull_ray(pos, to, root->get_world_3d()->get_scenario());
@@ -2445,6 +2457,7 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 	far_plane.d += zfar;
 	frustum.push_back(far_plane);
 
+#ifndef PHYSICS_3D_DISABLED
 	Vector<Vector3> points = Geometry3D::compute_convex_mesh_points(&frustum[0], frustum.size());
 	Ref<ConvexPolygonShape3D> shape;
 	shape.instantiate();
@@ -2476,6 +2489,7 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 
 		r_items.push_back(res);
 	}
+#endif // PHYSICS_3D_DISABLED
 
 	// Then go for the meshes.
 	Vector<ObjectID> items = RS::get_singleton()->instances_cull_convex(frustum, root->get_world_3d()->get_scenario());

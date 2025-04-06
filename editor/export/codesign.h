@@ -113,6 +113,8 @@ public:
 /*************************************************************************/
 
 class CodeSignBlob : public RefCounted {
+	GDSOFTCLASS(CodeSignBlob, RefCounted);
+
 public:
 	virtual PackedByteArray get_hash_sha1() const = 0;
 	virtual PackedByteArray get_hash_sha256() const = 0;

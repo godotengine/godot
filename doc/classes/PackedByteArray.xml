@@ -327,6 +327,16 @@
 				Converts ASCII/Latin-1 encoded array to [String]. Fast alternative to [method get_string_from_utf8] if the content is ASCII/Latin-1 only. Unlike the UTF-8 function this function maps every byte to a character in the array. Multibyte sequences will not be interpreted correctly. For parsing user input always use [method get_string_from_utf8]. This is the inverse of [method String.to_ascii_buffer].
 			</description>
 		</method>
+		<method name="get_string_from_multibyte_char" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="encoding" type="String" default="&quot;&quot;" />
+			<description>
+				Converts system multibyte code page encoded array to [String]. If conversion fails, empty string is returned. This is the inverse of [method String.to_multibyte_char_buffer].
+				The values permitted for [param encoding] are system dependent. If [param encoding] is empty string, system default encoding is used.
+				- For Windows, see [url=https://learn.microsoft.com/en-us/windows/win32/Intl/code-page-identifiers]Code Page Identifiers[/url] .NET names.
+				- For macOS and Linux/BSD, see [code]libiconv[/code] library documentation and [code]iconv --list[/code] for a list of supported encodings.
+			</description>
+		</method>
 		<method name="get_string_from_utf8" qualifiers="const">
 			<return type="String" />
 			<description>

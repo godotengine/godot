@@ -8,8 +8,8 @@ env:
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes strict_checks=yes
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
-  TSAN_OPTIONS: suppressions=misc/error_suppressions/tsan.txt
-  UBSAN_OPTIONS: suppressions=misc/error_suppressions/ubsan.txt
+  TSAN_OPTIONS: suppressions=${{ github.workspace }}/misc/error_suppressions/tsan.txt
+  UBSAN_OPTIONS: suppressions=${{ github.workspace }}/misc/error_suppressions/ubsan.txt
 
 jobs:
   build-linux:
@@ -90,7 +90,7 @@ jobs:
           - name: Minimal template (target=template_release, tests=yes, everything disabled)
             cache-name: linux-template-minimal
             target: template_release
-            sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no
+            sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes disable_physics_2d=yes disable_physics_3d=yes deprecated=no minizip=no
             bin: ./bin/godot.linuxbsd.template_release.x86_64
             tests: true
             artifact: true

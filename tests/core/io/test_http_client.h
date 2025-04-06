@@ -58,10 +58,7 @@ TEST_CASE("[HTTPClient] query_string_from_dict") {
 	Dictionary dict2;
 	dict2["key1"] = "value";
 	dict2["key2"] = 123;
-	Array values;
-	values.push_back(1);
-	values.push_back(2);
-	values.push_back(3);
+	Array values = { 1, 2, 3 };
 	dict2["key3"] = values;
 	dict2["key4"] = Variant();
 	String multiple_keys = client->query_string_from_dict(dict2);

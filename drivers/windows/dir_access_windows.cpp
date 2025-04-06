@@ -391,6 +391,38 @@ bool DirAccessWindows::is_case_sensitive(const String &p_path) const {
 	}
 }
 
+typedef struct {
+	ULONGLONG LowPart;
+	ULONGLONG HighPart;
+} GD_FILE_ID_128;
+
+typedef struct {
+	ULONGLONG VolumeSerialNumber;
+	GD_FILE_ID_128 FileId;
+} GD_FILE_ID_INFO;
+
+bool DirAccessWindows::is_equivalent(const String &p_path_a, const String &p_path_b) const {
+	String f1 = fix_path(p_path_a);
+	GD_FILE_ID_INFO st1;
+	HANDLE h1 = ::CreateFileW((LPCWSTR)(f1.utf16().get_data()), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+	if (h1 == INVALID_HANDLE_VALUE) {
+		return DirAccess::is_equivalent(p_path_a, p_path_b);
+	}
+	::GetFileInformationByHandleEx(h1, (FILE_INFO_BY_HANDLE_CLASS)0x12 /*FileIdInfo*/, &st1, sizeof(st1));
+	::CloseHandle(h1);
+
+	String f2 = fix_path(p_path_b);
+	GD_FILE_ID_INFO st2;
+	HANDLE h2 = ::CreateFileW((LPCWSTR)(f2.utf16().get_data()), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+	if (h2 == INVALID_HANDLE_VALUE) {
+		return DirAccess::is_equivalent(p_path_a, p_path_b);
+	}
+	::GetFileInformationByHandleEx(h2, (FILE_INFO_BY_HANDLE_CLASS)0x12 /*FileIdInfo*/, &st2, sizeof(st2));
+	::CloseHandle(h2);
+
+	return (st1.VolumeSerialNumber == st2.VolumeSerialNumber) && (st1.FileId.LowPart == st2.FileId.LowPart) && (st1.FileId.HighPart == st2.FileId.HighPart);
+}
+
 bool DirAccessWindows::is_link(String p_file) {
 	String f = fix_path(p_file);
 

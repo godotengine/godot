@@ -32,7 +32,9 @@
 
 #include "scene/resources/2d/tile_set.h"
 
+#ifndef NAVIGATION_2D_DISABLED
 class NavigationMeshSourceGeometryData2D;
+#endif // NAVIGATION_2D_DISABLED
 class TileSetAtlasSource;
 class TileMap;
 
@@ -108,9 +110,11 @@ struct CellData {
 	SelfList<CellData> rendering_quadrant_list_element;
 	LocalVector<LocalVector<RID>> occluders;
 
+#ifndef PHYSICS_2D_DISABLED
 	// Physics.
 	Ref<PhysicsQuadrant> physics_quadrant;
 	SelfList<CellData> physics_quadrant_list_element;
+#endif // PHYSICS_2D_DISABLED
 
 	// Navigation.
 	LocalVector<RID> navigation_regions;
@@ -140,7 +144,9 @@ struct CellData {
 
 	CellData(const CellData &p_other) :
 			rendering_quadrant_list_element(this),
+#ifndef PHYSICS_2D_DISABLED
 			physics_quadrant_list_element(this),
+#endif // PHYSICS_2D_DISABLED
 			dirty_list_element(this) {
 		coords = p_other.coords;
 		cell = p_other.cell;
@@ -152,7 +158,9 @@ struct CellData {
 
 	CellData() :
 			rendering_quadrant_list_element(this),
+#ifndef PHYSICS_2D_DISABLED
 			physics_quadrant_list_element(this),
+#endif // PHYSICS_2D_DISABLED
 			dirty_list_element(this) {
 	}
 };
@@ -221,6 +229,7 @@ public:
 	}
 };
 
+#ifndef PHYSICS_2D_DISABLED
 class PhysicsQuadrant : public RefCounted {
 	GDCLASS(PhysicsQuadrant, RefCounted);
 
@@ -302,6 +311,7 @@ public:
 		cells.clear();
 	}
 };
+#endif // PHYSICS_2D_DISABLED
 
 class TileMapLayer : public Node2D {
 	GDCLASS(TileMapLayer, Node2D);
@@ -432,6 +442,7 @@ private:
 	void _rendering_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
 
+#ifndef PHYSICS_2D_DISABLED
 	HashMap<Vector2i, Ref<PhysicsQuadrant>> physics_quadrant_map;
 	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
 	bool _physics_was_cleaned_up = false;
@@ -443,7 +454,9 @@ private:
 #ifdef DEBUG_ENABLED
 	void _physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQuadrant &r_debug_quadrant);
 #endif // DEBUG_ENABLED
+#endif // PHYSICS_2D_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
 	bool _navigation_was_cleaned_up = false;
 	void _navigation_update(bool p_force_cleanup);
 	void _navigation_notification(int p_what);
@@ -452,6 +465,7 @@ private:
 #ifdef DEBUG_ENABLED
 	void _navigation_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
+#endif // NAVIGATION_2D_DISABLED
 
 	bool _scenes_was_cleaned_up = false;
 	void _scenes_update(bool p_force_cleanup);
@@ -513,7 +527,7 @@ public:
 	// Not exposed to users.
 	TileMapCell get_cell(const Vector2i &p_coords) const;
 
-	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
+	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
 
 	////////////// Exposed functions //////////////
 
@@ -545,9 +559,11 @@ public:
 	void set_cells_terrain_connect(TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
 	void set_cells_terrain_path(TypedArray<Vector2i> p_path, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
 
+#ifndef PHYSICS_2D_DISABLED
 	// --- Physics helpers ---
 	bool has_body_rid(RID p_physics_body) const;
 	Vector2i get_coords_for_body_rid(RID p_physics_body) const; // For finding tiles from collision.
+#endif // PHYSICS_2D_DISABLED
 
 	// --- Runtime ---
 	void update_internals();
@@ -606,12 +622,16 @@ public:
 	DebugVisibilityMode get_navigation_visibility_mode() const;
 
 private:
+#ifndef NAVIGATION_2D_DISABLED
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
+#endif // NAVIGATION_2D_DISABLED
 
 public:
+#ifndef NAVIGATION_2D_DISABLED
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_2D_DISABLED
 
 	TileMapLayer();
 	~TileMapLayer();

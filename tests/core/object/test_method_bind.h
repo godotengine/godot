@@ -55,6 +55,8 @@ public:
 	};
 
 	class ObjectSubclass : public Object {
+		GDSOFTCLASS(ObjectSubclass, Object);
+
 	public:
 		int value = 1;
 	};

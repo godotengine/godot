@@ -647,7 +647,7 @@ static real_t rand_from_seed(uint32_t &seed) {
 }
 
 void CPUParticles3D::_update_internal() {
-	if (particles.size() == 0 || !is_visible_in_tree()) {
+	if (particles.is_empty() || !is_visible_in_tree()) {
 		_set_redraw(false);
 		return;
 	}

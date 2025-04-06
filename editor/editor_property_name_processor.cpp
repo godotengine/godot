@@ -59,11 +59,7 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_tooltip_styl
 }
 
 bool EditorPropertyNameProcessor::is_localization_available() {
-	if (!EditorSettings::get_singleton()) {
-		return false;
-	}
-	const Vector<String> forbidden = String("en").split(",");
-	return !forbidden.has(EDITOR_GET("interface/editor/editor_language"));
+	return EditorSettings::get_singleton() && EDITOR_GET("interface/editor/editor_language") != "en";
 }
 
 String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const {

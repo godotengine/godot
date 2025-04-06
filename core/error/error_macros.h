@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include "core/object/object_id.h"
 #include "core/typedefs.h"
 
-#include <atomic> // We'd normally use safe_refcount.h, but that would cause circular includes.
+#include <atomic> // IWYU pragma: keep // Used in macro. We'd normally use `safe_refcount.h`, but that would cause circular includes.
 
 class String;
+class ObjectID;
 
 enum ErrorHandlerType {
 	ERR_HANDLER_ERROR,

@@ -3218,11 +3218,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHTMAP;
 					} else {
-						if (inst->omni_light_gl_cache.size() == 0) {
+						if (inst->omni_light_gl_cache.is_empty()) {
 							spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_OMNI;
 						}
 
-						if (inst->spot_light_gl_cache.size() == 0) {
+						if (inst->spot_light_gl_cache.is_empty()) {
 							spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_SPOT;
 						}
 
@@ -3230,7 +3230,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
 						}
 
-						if (inst->reflection_probe_rid_cache.size() == 0) {
+						if (inst->reflection_probe_rid_cache.is_empty()) {
 							// We don't have any probes.
 							spec_constants |= SceneShaderGLES3::DISABLE_REFLECTION_PROBE;
 						} else if (inst->reflection_probe_rid_cache.size() > 1) {

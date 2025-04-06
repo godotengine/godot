@@ -77,6 +77,10 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 		emit_signal(SNAME("settings_changed"));
+
+		if (p_name == SNAME("interface/editor/editor_language")) {
+			setup_language();
+		}
 	}
 	return true;
 }
@@ -874,7 +878,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_navigation_scheme", 0, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_sensitivity", 0.25, "0.01,2,0.001")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_inertia", 0.0, "0,1,0.001")
-	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_base_speed", 5.0, "0,10,0.01")
+	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_base_speed", 5.0, "0,10,0.01,or_greater")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_activation_modifier", 0, "None,Shift,Alt,Meta,Ctrl")
 	_initial_set("editors/3d/freelook/freelook_speed_zoom_link", false);
 
@@ -1323,9 +1327,9 @@ fail:
 
 void EditorSettings::setup_language() {
 	String lang = get("interface/editor/editor_language");
-	TranslationServer::get_singleton()->set_locale(lang);
 
 	if (lang == "en") {
+		TranslationServer::get_singleton()->set_locale(lang);
 		return; // Default, nothing to do.
 	}
 	// Load editor translation for configured/detected locale.
@@ -1337,6 +1341,8 @@ void EditorSettings::setup_language() {
 
 	// Load extractable translation for projects.
 	load_extractable_translations(lang);
+
+	TranslationServer::get_singleton()->set_locale(lang);
 }
 
 void EditorSettings::setup_network() {

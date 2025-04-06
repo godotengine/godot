@@ -98,6 +98,9 @@ private:
 	// projection views extensions
 	Vector<OpenXRExtensionWrapper *> projection_views_extensions;
 
+	// frame info extensions
+	Vector<OpenXRExtensionWrapper *> frame_info_extensions;
+
 	// view configuration
 	LocalVector<XrViewConfigurationType> supported_view_configuration_types;
 
@@ -153,6 +156,7 @@ private:
 
 	bool play_space_is_dirty = true;
 	XrSpace play_space = XR_NULL_HANDLE;
+	XrSpace custom_play_space = XR_NULL_HANDLE;
 	XrSpace view_space = XR_NULL_HANDLE;
 	XRPose::TrackingConfidence head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
 
@@ -465,6 +469,7 @@ public:
 	bool set_requested_reference_space(XrReferenceSpaceType p_requested_reference_space);
 	XrReferenceSpaceType get_requested_reference_space() const { return requested_reference_space; }
 	XrReferenceSpaceType get_reference_space() const { return reference_space; }
+	void set_custom_play_space(XrSpace p_custom_space);
 
 	void set_submit_depth_buffer(bool p_submit_depth_buffer);
 	bool get_submit_depth_buffer() const { return submit_depth_buffer; }
@@ -581,6 +586,9 @@ public:
 
 	void register_projection_views_extension(OpenXRExtensionWrapper *p_extension);
 	void unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension);
+
+	void register_frame_info_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension);
 
 	const Vector<XrEnvironmentBlendMode> get_supported_environment_blend_modes();
 	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;

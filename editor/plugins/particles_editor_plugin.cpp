@@ -292,7 +292,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin() {
 }
 
 void Particles2DEditorPlugin::_selection_changed() {
-	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
+	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
 	if (selected_particles.is_empty() && selected_nodes.is_empty()) {
 		return;
 	}
@@ -656,7 +656,7 @@ void Particles3DEditorPlugin::_node_selected(const NodePath &p_path) {
 	}
 
 	geometry = mi->get_mesh()->get_faces();
-	if (geometry.size() == 0) {
+	if (geometry.is_empty()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain face geometry."), sel->get_name()));
 		return;
 	}

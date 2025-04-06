@@ -103,6 +103,7 @@ void XRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(XR_PLAY_AREA_SITTING);
 	BIND_ENUM_CONSTANT(XR_PLAY_AREA_ROOMSCALE);
 	BIND_ENUM_CONSTANT(XR_PLAY_AREA_STAGE);
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_CUSTOM);
 
 	BIND_ENUM_CONSTANT(XR_ENV_BLEND_MODE_OPAQUE);
 	BIND_ENUM_CONSTANT(XR_ENV_BLEND_MODE_ADDITIVE);
@@ -218,7 +219,6 @@ void XRInterface::trigger_haptic_pulse(const String &p_action_name, const String
 }
 
 Array XRInterface::get_supported_environment_blend_modes() {
-	Array default_blend_modes;
-	default_blend_modes.push_back(XR_ENV_BLEND_MODE_OPAQUE);
+	Array default_blend_modes = { XR_ENV_BLEND_MODE_OPAQUE };
 	return default_blend_modes;
 }

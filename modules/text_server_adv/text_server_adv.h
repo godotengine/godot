@@ -94,11 +94,6 @@ using namespace godot;
 
 // Thirdparty headers.
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-#endif
-
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>
 #include <unicode/uchar.h>
@@ -111,10 +106,6 @@ using namespace godot;
 #include <unicode/uspoof.h>
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include <ft2build.h>
@@ -175,6 +166,10 @@ class TextServerAdvanced : public TextServerExtension {
 	mutable USet *allowed = nullptr;
 	mutable USpoofChecker *sc_spoof = nullptr;
 	mutable USpoofChecker *sc_conf = nullptr;
+
+	mutable HashMap<String, UBreakIterator *> line_break_iterators_per_language;
+
+	UBreakIterator *_create_line_break_iterator_for_locale(const String &p_language, UErrorCode *r_err) const;
 
 	// Font cache data.
 
@@ -326,6 +321,7 @@ class TextServerAdvanced : public TextServerExtension {
 		int fixed_size = 0;
 		bool allow_system_fallback = true;
 		bool force_autohinter = false;
+		bool modulate_color_glyphs = false;
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		bool keep_rounding_remainders = true;
@@ -545,11 +541,6 @@ class TextServerAdvanced : public TextServerExtension {
 		bool js_ops_valid = false;
 		bool chars_valid = false;
 
-		HashMap<String, UBreakIterator *> line_break_iterators_per_language;
-
-		// Creating UBreakIterator is surprisingly costly. To improve efficiency, we cache them.
-		UBreakIterator *_get_break_iterator_for_locale(const String &p_language, UErrorCode *r_err);
-
 		~ShapedTextDataAdvanced() {
 			for (int i = 0; i < bidi_iter.size(); i++) {
 				if (bidi_iter[i]) {
@@ -561,9 +552,6 @@ class TextServerAdvanced : public TextServerExtension {
 			}
 			if (hb_buffer) {
 				hb_buffer_destroy(hb_buffer);
-			}
-			for (const KeyValue<String, UBreakIterator *> &bi : line_break_iterators_per_language) {
-				ubrk_close(bi.value);
 			}
 		}
 	};
@@ -810,6 +798,9 @@ public:
 
 	MODBIND2(font_set_force_autohinter, const RID &, bool);
 	MODBIND1RC(bool, font_is_force_autohinter, const RID &);
+
+	MODBIND2(font_set_modulate_color_glyphs, const RID &, bool);
+	MODBIND1RC(bool, font_is_modulate_color_glyphs, const RID &);
 
 	MODBIND2(font_set_subpixel_positioning, const RID &, SubpixelPositioning);
 	MODBIND1RC(SubpixelPositioning, font_get_subpixel_positioning, const RID &);
