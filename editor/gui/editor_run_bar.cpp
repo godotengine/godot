@@ -218,6 +218,10 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 		return;
 	}
 
+	if (!EditorNode::get_singleton()->validate_custom_directory()) {
+		return;
+	}
+
 	_reset_play_buttons();
 
 	String write_movie_file;
