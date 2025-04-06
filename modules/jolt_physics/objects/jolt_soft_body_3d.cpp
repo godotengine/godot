@@ -469,8 +469,8 @@ void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	const JPH::Vec3 impulse = to_jolt(p_impulse) / mesh_vertex_count;
 
 	for (JPH::SoftBodyVertex &physics_vertex : physics_vertices) {
-	    if (physics_vertex.mInvMass > 0.0f) {
-		    physics_vertex.mVelocity += impulse * physics_vertex.mInvMass;
+		if (physics_vertex.mInvMass > 0.0f) {
+			physics_vertex.mVelocity += impulse * physics_vertex.mInvMass;
 		}
 	}
 
