@@ -464,9 +464,7 @@ void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*body->GetMotionPropertiesUnchecked());
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 
-	const int mesh_vertex_count = shared->mesh_to_physics.size();
-
-	const JPH::Vec3 impulse = to_jolt(p_impulse) / mesh_vertex_count;
+	const JPH::Vec3 impulse = to_jolt(p_impulse) / physics_vertices.size();
 
 	for (JPH::SoftBodyVertex &physics_vertex : physics_vertices) {
 		if (physics_vertex.mInvMass > 0.0f) {
