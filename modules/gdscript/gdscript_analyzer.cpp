@@ -4030,6 +4030,20 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 	StringName name = p_identifier->name;
 
 	if (base.kind == GDScriptParser::DataType::ENUM) {
+#if DEBUG_ENABLED
+		DocTools *dd = EditorHelp::get_doc_data();
+		StringName class_name = String(base.native_type).get_slicec('.', 0);
+		if (dd && dd->class_list.has(class_name)) {
+			for (const DocData::ConstantDoc &doc : dd->class_list[class_name].constants) {
+				if (doc.enumeration == base.enum_type && doc.name == name) {
+					if (doc.is_deprecated) {
+						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+					}
+					break;
+				}
+			}
+		}
+#endif
 		if (base.is_meta_type) {
 			if (base.enum_values.has(name)) {
 				p_identifier->set_datatype(type_from_metatype(base));
