@@ -1986,6 +1986,45 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 		type = specified_type;
 	}
 
+#if DEBUG_ENABLED
+	// TODO: Determine if specified type is deprecated, and emit warning if so
+	auto dd = EditorHelp::get_doc_data();
+	bool is_deprecated = false;
+	switch (type.kind) {
+		case GDScriptParser::DataType::Kind::BUILTIN: // No built-in datatypes are deprecated.
+			break;
+		case GDScriptParser::DataType::Kind::NATIVE:
+			is_deprecated = dd && dd->class_list.has(type.native_type) && dd->class_list[type.native_type].is_deprecated;
+			break;
+		case GDScriptParser::DataType::Kind::SCRIPT: {
+			StringName class_name = type.script_type->get_doc_class_name();
+			is_deprecated = dd && dd->class_list.has(class_name) && dd->class_list[class_name].is_deprecated;
+			break;
+		}
+		case GDScriptParser::DataType::Kind::CLASS:
+			is_deprecated = type.class_type->doc_data.is_deprecated;
+			break;
+		case GDScriptParser::DataType::Kind::ENUM: {
+			StringName enum_type = type.enum_type; // Something like MyEnum.
+			GDScriptParser::ClassNode *class_type = type.class_type;
+			StringName class_name = class_type ? class_type->identifier->name : "@GlobalScope";
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd && dd->class_list.has(class_name)) {
+				DocData::ClassDoc class_doc = dd->class_list[class_name];
+				if (class_doc.enums.has(enum_type)) {
+					is_deprecated = class_doc.enums[enum_type].is_deprecated;
+				}
+			}
+			break;
+		}
+		default:
+			break;
+	}
+	if (is_deprecated) {
+		parser->push_warning(p_assignable, GDScriptWarning::DEPRECATED_IDENTIFIER);
+	}
+#endif
+
 	if (p_assignable->initializer != nullptr) {
 		reduce_expression(p_assignable->initializer);
 
