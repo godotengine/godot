@@ -2315,6 +2315,40 @@ void DisplayServerX11::_update_size_hints(WindowID p_window) {
 	XFree(xsh);
 }
 
+void DisplayServerX11::_update_actions_hints(WindowID p_window) {
+	WindowData &wd = windows[p_window];
+
+	Atom prop = XInternAtom(x11_display, "_NET_WM_ALLOWED_ACTIONS", False);
+	if (prop != None) {
+		Atom wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_HORZ", False);
+		Atom wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_VERT", False);
+		Atom wm_act_min = XInternAtom(x11_display, "_NET_WM_ACTION_MINIMIZE", False);
+		Atom type;
+		int format;
+		unsigned long len;
+		unsigned long remaining;
+		unsigned char *data = nullptr;
+		if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 1024, False, XA_ATOM, &type, &format, &len, &remaining, &data) == Success) {
+			Atom *atoms = (Atom *)data;
+			Vector<Atom> new_atoms;
+			for (uint64_t i = 0; i < len; i++) {
+				if (atoms[i] != wm_act_max_horz && atoms[i] != wm_act_max_vert && atoms[i] != wm_act_min) {
+					new_atoms.push_back(atoms[i]);
+				}
+			}
+			if (!wd.no_max_btn) {
+				new_atoms.push_back(wm_act_max_horz);
+				new_atoms.push_back(wm_act_max_vert);
+			}
+			if (!wd.no_min_btn) {
+				new_atoms.push_back(wm_act_min);
+			}
+			XChangeProperty(x11_display, wd.x11_window, prop, XA_ATOM, 32, PropModeReplace, (unsigned char *)new_atoms.ptrw(), new_atoms.size());
+			XFree(data);
+		}
+	}
+}
+
 Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -3001,6 +3035,18 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 	WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			wd.no_max_btn = p_enabled;
+			_update_actions_hints(p_window);
+
+			XFlush(x11_display);
+		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			wd.no_min_btn = p_enabled;
+			_update_actions_hints(p_window);
+
+			XFlush(x11_display);
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			if (p_enabled && wd.embed_parent) {
 				print_line("Embedded window resize can't be disabled.");
@@ -3009,6 +3055,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 
 			wd.resize_disabled = p_enabled;
 			_update_size_hints(p_window);
+			_update_actions_hints(p_window);
 
 			XFlush(x11_display);
 		} break;
@@ -3095,6 +3142,12 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 	const WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			return wd.no_max_btn;
+		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			return wd.no_min_btn;
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			return wd.resize_disabled;
 		} break;
@@ -4841,6 +4894,9 @@ void DisplayServerX11::process_events() {
 				XWindowAttributes xwa;
 				XSync(x11_display, False);
 				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+
+				_update_actions_hints(window_id);
+				XFlush(x11_display);
 
 				// Set focus when menu window is started.
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case

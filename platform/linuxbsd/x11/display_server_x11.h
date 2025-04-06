@@ -199,6 +199,8 @@ class DisplayServerX11 : public DisplayServer {
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
+		bool no_min_btn = false;
+		bool no_max_btn = false;
 		Vector2i last_position_before_fs;
 		bool focused = true;
 		bool minimized = false;
@@ -352,6 +354,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool _window_minimize_check(WindowID p_window) const;
 	void _validate_mode_on_map(WindowID p_window);
 	void _update_size_hints(WindowID p_window);
+	void _update_actions_hints(WindowID p_window);
 	void _set_wm_fullscreen(WindowID p_window, bool p_enabled, bool p_exclusive);
 	void _set_wm_maximized(WindowID p_window, bool p_enabled);
 	void _set_wm_minimized(WindowID p_window, bool p_enabled);

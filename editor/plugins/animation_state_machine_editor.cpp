@@ -1946,6 +1946,8 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	delete_window = memnew(ConfirmationDialog);
 	delete_window->set_flag(Window::FLAG_RESIZE_DISABLED, true);
+	delete_window->set_flag(Window::FLAG_MINIMIZE_DISABLED, true);
+	delete_window->set_flag(Window::FLAG_MAXIMIZE_DISABLED, true);
 	add_child(delete_window);
 
 	delete_tree = memnew(Tree);
