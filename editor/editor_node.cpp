@@ -5702,11 +5702,6 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 		return false;
 	}
 
-	if (!EditorNode::validate_custom_directory()) {
-		current_menu_option = -1;
-		return false;
-	}
-
 	return true;
 }
 
