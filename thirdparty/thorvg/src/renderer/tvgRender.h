@@ -35,6 +35,8 @@ namespace tvg
 using RenderData = void*;
 using pixel_t = uint32_t;
 
+#define DASH_PATTERN_THRESHOLD 0.001f
+
 enum RenderUpdateFlag : uint8_t {None = 0, Path = 1, Color = 2, Gradient = 4, Stroke = 8, Transform = 16, Image = 32, GradientStroke = 64, Blend = 128, All = 255};
 enum CompositionFlag : uint8_t {Invalid = 0, Opacity = 1, Blending = 2, Masking = 4, PostProcessing = 8};  //Composition Purpose
 
