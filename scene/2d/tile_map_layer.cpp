@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/random_pcg.h"
+#include "core/templates/a_hash_map.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
@@ -1043,9 +1044,7 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 	RenderingServer *rs = RenderingServer::get_singleton();
 	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 
-	Color debug_collision_color = get_tree()->get_debug_collisions_color();
-	Vector<Color> color;
-	color.push_back(debug_collision_color);
+	const Color &debug_collision_color = get_tree()->get_debug_collisions_color();
 
 	RandomPCG rand;
 	rand.seed(hash_murmur3_one_real(r_debug_quadrant.quadrant_coords.y, hash_murmur3_one_real(r_debug_quadrant.quadrant_coords.x)));
@@ -1061,6 +1060,15 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 	Vector2i first_physics_quadrant_coords = _coords_to_quadrant_coords(covered_cell_area.get_position() - Vector2i(1, 1), physics_quadrant_size) + Vector2i(1, 1);
 	Vector2i last_physics_quadrant_coords = _coords_to_quadrant_coords(covered_cell_area.get_end() - Vector2i(1, 1), physics_quadrant_size) + Vector2i(1, 1);
 
+	LocalVector<Vector2> face_vertex_array;
+	LocalVector<Color> face_color_array;
+	LocalVector<int32_t> face_index_array;
+
+	LocalVector<Vector2> line_vertex_array;
+	LocalVector<Color> line_color_array;
+
+	AHashMap<Vector2, int> vertex_map;
+
 	// Arrays to generate a mesh.
 	for (int x = first_physics_quadrant_coords.x; x < last_physics_quadrant_coords.x; x++) {
 		for (int y = first_physics_quadrant_coords.y; y < last_physics_quadrant_coords.y; y++) {
@@ -1074,18 +1082,33 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 			const Vector2 debug_quadrant_pos = tile_set->map_to_local(r_debug_quadrant.quadrant_coords * TILE_MAP_DEBUG_QUADRANT_SIZE);
 			Transform2D global_to_debug_quadrant = (get_global_transform() * Transform2D(0, debug_quadrant_pos)).affine_inverse();
 
+			// Clear arrays for new quadrant while keeping allocated memory.
+
+			face_vertex_array.clear();
+			face_color_array.clear();
+			face_index_array.clear();
+
+			line_vertex_array.clear();
+			line_color_array.clear();
+
+			vertex_map.clear();
+
 			for (const KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : physics_quadrant->bodies) {
 				const RID &body = kvbody.value.body;
-				Transform2D body_to_quadrant = global_to_debug_quadrant * Transform2D(ps->body_get_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM));
+				int shape_count = ps->body_get_shape_count(body);
+				if (shape_count == 0) {
+					continue;
+				}
+				const Transform2D body_to_quadrant = global_to_debug_quadrant * Transform2D(ps->body_get_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM));
 
-				Color random_variation_color;
-				random_variation_color.set_hsv(
+				Color face_random_variation_color;
+				face_random_variation_color.set_hsv(
 						debug_collision_color.get_h() + rand.random(-1.0, 1.0) * 0.05,
 						debug_collision_color.get_s(),
 						debug_collision_color.get_v() + rand.random(-1.0, 1.0) * 0.1,
 						debug_collision_color.a);
+				const Color line_random_variation_color = face_random_variation_color.lightened(0.2);
 
-				int shape_count = ps->body_get_shape_count(body);
 				for (int shape_index = 0; shape_index < shape_count; shape_index++) {
 					const RID &shape = ps->body_get_shape(body, shape_index);
 					const Transform2D &shape_xform = ps->body_get_shape_transform(body, shape_index);
@@ -1093,47 +1116,107 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 
 					if (type == PhysicsServer2D::SHAPE_CONVEX_POLYGON) {
 						PackedVector2Array outline = ps->shape_get_data(shape);
-
-						PackedVector2Array vertex_array;
-						vertex_array.resize(outline.size() + 1);
-
-						PackedColorArray face_color_array;
-						face_color_array.resize(outline.size() + 1);
-						PackedInt32Array face_index_array;
-						face_index_array.resize((outline.size() - 2) * 3);
-
-						PackedColorArray line_color_array;
-						line_color_array.resize(outline.size() + 1);
-
-						for (int i = 0; i < outline.size() + 1; i++) {
-							Vector2 vertex = (body_to_quadrant * shape_xform).xform(outline[i % outline.size()]);
-							vertex_array.write[i] = vertex;
-							face_color_array.write[i] = random_variation_color;
-							line_color_array.write[i] = random_variation_color.lightened(0.2);
-						}
-						for (int i = 0; i < outline.size() - 2; i++) {
-							face_index_array.write[i * 3] = 0;
-							face_index_array.write[i * 3 + 1] = i + 1;
-							face_index_array.write[i * 3 + 2] = i + 2;
+						const int outline_size = outline.size();
+						if (outline_size < 3) {
+							continue;
 						}
 
-						Array face_mesh_array;
-						face_mesh_array.resize(Mesh::ARRAY_MAX);
-						face_mesh_array[Mesh::ARRAY_VERTEX] = vertex_array;
-						face_mesh_array[Mesh::ARRAY_INDEX] = face_index_array;
-						face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
-						rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+						const Transform2D outline_xform = body_to_quadrant * shape_xform;
 
-						Array line_mesh_array;
-						line_mesh_array.resize(Mesh::ARRAY_MAX);
-						line_mesh_array[Mesh::ARRAY_VERTEX] = vertex_array;
-						line_mesh_array[Mesh::ARRAY_COLOR] = line_color_array;
+						// Adds debug mesh lines.
 
-						rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_LINE_STRIP, line_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+						Vector2 previous_line_vertex = outline_xform.xform(outline[outline_size - 1]);
+
+						for (int i = 0; i < outline_size; i++) {
+							Vector2 line_vertex = outline_xform.xform(outline[i]);
+
+							line_vertex_array.push_back(previous_line_vertex);
+							line_vertex_array.push_back(line_vertex);
+
+							previous_line_vertex = line_vertex;
+
+							line_color_array.push_back(line_random_variation_color);
+							line_color_array.push_back(line_random_variation_color);
+						}
+
+						// Adds debug mesh faces.
+
+						const Vector2 vertex1 = outline_xform.xform(outline[0]);
+						const Vector2 vertex2 = outline_xform.xform(outline[1]);
+						Vector2 vertex3;
+
+						int vertex1_index = -1;
+						int vertex2_index = -1;
+						int vertex3_index = -1;
+
+						int last_vertex3_index = -1;
+
+						// Find triangle fan anchor vertex1 index.
+						{
+							AHashMap<Vector2, int>::Iterator E = vertex_map.find(vertex1);
+							if (!E) {
+								E = vertex_map.insert(vertex1, vertex_map.size());
+								face_vertex_array.push_back(vertex1);
+								face_color_array.push_back(face_random_variation_color);
+							}
+							vertex1_index = E->value;
+						}
+
+						// Find starting vertex2 index.
+						{
+							AHashMap<Vector2, int>::Iterator E = vertex_map.find(vertex2);
+							if (!E) {
+								E = vertex_map.insert(vertex2, vertex_map.size());
+								face_vertex_array.push_back(vertex2);
+								face_color_array.push_back(face_random_variation_color);
+							}
+							vertex2_index = E->value;
+						}
+
+						// Create mesh triangle face fan from outline vertices using vertex_map indices.
+						for (int i = 1; i < outline_size - 1; i++) {
+							if (i > 1) {
+								vertex2_index = last_vertex3_index;
+							}
+
+							vertex3 = outline_xform.xform(outline[i + 1]);
+
+							{
+								AHashMap<Vector2, int>::Iterator E = vertex_map.find(vertex3);
+								if (!E) {
+									E = vertex_map.insert(vertex3, vertex_map.size());
+									face_vertex_array.push_back(vertex3);
+									face_color_array.push_back(face_random_variation_color);
+								}
+								vertex3_index = E->value;
+								last_vertex3_index = vertex3_index;
+							}
+
+							face_index_array.push_back(vertex1_index);
+							face_index_array.push_back(vertex2_index);
+							face_index_array.push_back(vertex3_index);
+						}
+
 					} else {
 						WARN_PRINT("Wrong shape type for a tile, should be SHAPE_CONVEX_POLYGON.");
 					}
 				}
+			}
+
+			if (face_index_array.size() > 2) {
+				Array face_mesh_array;
+				face_mesh_array.resize(Mesh::ARRAY_MAX);
+				face_mesh_array[Mesh::ARRAY_VERTEX] = Vector<Vector2>(face_vertex_array);
+				face_mesh_array[Mesh::ARRAY_INDEX] = Vector<int32_t>(face_index_array);
+				face_mesh_array[Mesh::ARRAY_COLOR] = Vector<Color>(face_color_array);
+				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+
+				Array line_mesh_array;
+				line_mesh_array.resize(Mesh::ARRAY_MAX);
+				line_mesh_array[Mesh::ARRAY_VERTEX] = Vector<Vector2>(line_vertex_array);
+				line_mesh_array[Mesh::ARRAY_COLOR] = Vector<Color>(line_color_array);
+
+				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
 			}
 		}
 	}
