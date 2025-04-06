@@ -123,6 +123,8 @@ public:
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
+		bool no_min_btn = false;
+		bool no_max_btn = false;
 		bool no_focus = false;
 		bool is_popup = false;
 		bool mpass = false;

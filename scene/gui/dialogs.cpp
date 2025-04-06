@@ -448,6 +448,9 @@ AcceptDialog::AcceptDialog() {
 	set_clamp_to_embedder(true);
 	set_keep_title_visible(true);
 
+	set_flag(FLAG_MINIMIZE_DISABLED, true);
+	set_flag(FLAG_MAXIMIZE_DISABLED, true);
+
 	bg_panel = memnew(Panel);
 	add_child(bg_panel, false, INTERNAL_MODE_FRONT);
 

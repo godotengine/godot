@@ -223,6 +223,8 @@ Popup::Popup() {
 	set_transient(true);
 	set_flag(FLAG_BORDERLESS, true);
 	set_flag(FLAG_RESIZE_DISABLED, true);
+	set_flag(FLAG_MINIMIZE_DISABLED, true);
+	set_flag(FLAG_MAXIMIZE_DISABLED, true);
 	set_flag(FLAG_POPUP, true);
 	set_flag(FLAG_POPUP_WM_HINT, true);
 }

@@ -626,9 +626,19 @@
 			If non-zero, the [Window] can't be resized to be bigger than this size.
 			[b]Note:[/b] This property will be ignored if the value is lower than [member min_size].
 		</member>
+		<member name="maximize_disabled" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window]'s maximize button is disabled.
+			[b]Note:[/b] If both minimize and maximize buttons are disabled, buttons are fully hidden, and only close button is visible.
+			[b]Note:[/b] This property is implemented only on macOS and Windows.
+		</member>
 		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be smaller than this size.
 			[b]Note:[/b] This property will be ignored in favor of [method get_contents_minimum_size] if [member wrap_controls] is enabled and if its size is bigger.
+		</member>
+		<member name="minimize_disabled" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window]'s minimize button is disabled.
+			[b]Note:[/b] If both minimize and maximize buttons are disabled, buttons are fully hidden, and only close button is visible.
+			[b]Note:[/b] This property is implemented only on macOS and Windows.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
 			Set's the window's current mode.
@@ -714,7 +724,7 @@
 			If [code]true[/code], the [Window] can't be focused nor interacted with. It can still be visible.
 		</member>
 		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the window can't be resized. Minimize and maximize buttons are disabled.
+			If [code]true[/code], the window can't be resized.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
 			If [code]true[/code], the window is visible.
@@ -887,7 +897,15 @@
 		<constant name="FLAG_POPUP_WM_HINT" value="10" enum="Flags">
 			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
 		</constant>
-		<constant name="FLAG_MAX" value="11" enum="Flags">
+		<constant name="FLAG_MINIMIZE_DISABLED" value="11" enum="Flags">
+			Window minimize button is disabled.
+			[b]Note:[/b] This flag is implemented on macOS and Windows.
+		</constant>
+		<constant name="FLAG_MAXIMIZE_DISABLED" value="12" enum="Flags">
+			Window maximize button is disabled.
+			[b]Note:[/b] This flag is implemented on macOS and Windows.
+		</constant>
+		<constant name="FLAG_MAX" value="13" enum="Flags">
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
