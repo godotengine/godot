@@ -465,7 +465,10 @@ class TextServerFallback : public TextServerExtension {
 		bool fit_width_minimum_reached = false;
 
 		Vector<Glyph> glyphs;
-		Vector<Glyph> glyphs_logical;
+
+		~ShapedTextDataFallback() {
+			TextServerFallback::buf_glyphs -= glyphs.size();
+		}
 	};
 
 	// Common data.
@@ -579,6 +582,12 @@ class TextServerFallback : public TextServerExtension {
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
 	Mutex ft_mutex;
+
+public:
+	static int64_t buf_count;
+	static int64_t font_count;
+	static int64_t font_var_count;
+	static int64_t buf_glyphs;
 
 protected:
 	static void _bind_methods() {}
@@ -870,6 +879,8 @@ public:
 	MODBIND2RC(String, string_to_upper, const String &, const String &);
 	MODBIND2RC(String, string_to_lower, const String &, const String &);
 	MODBIND2RC(String, string_to_title, const String &, const String &);
+
+	MODBIND1RC(int64_t, get_process_info, ProcessInfo);
 
 	MODBIND0(cleanup);
 

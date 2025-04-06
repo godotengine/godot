@@ -226,6 +226,13 @@ public:
 		FIXED_SIZE_SCALE_ENABLED,
 	};
 
+	enum ProcessInfo {
+		BUFFER_COUNT,
+		FONT_COUNT,
+		FONT_VARIATION_COUNT,
+		BUFFER_GLYPH_COUNT,
+	};
+
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
@@ -579,6 +586,8 @@ public:
 
 	TypedArray<Vector3i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
+	virtual int64_t get_process_info(ProcessInfo p_info) const { return 0.0; }
+
 	virtual void cleanup() {}
 
 	TextServer();
@@ -677,6 +686,7 @@ VARIANT_ENUM_CAST(TextServer::StructuredTextParser);
 VARIANT_ENUM_CAST(TextServer::FontAntialiasing);
 VARIANT_ENUM_CAST(TextServer::FontLCDSubpixelLayout);
 VARIANT_ENUM_CAST(TextServer::FixedSizeScaleMode);
+VARIANT_ENUM_CAST(TextServer::ProcessInfo);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);
