@@ -435,11 +435,6 @@ void JoltSoftBody3D::apply_vertex_impulse(int p_index, const Vector3 &p_impulse)
 		return;
 	}
 
-	const float last_step = space->get_last_step();
-	if (unlikely(last_step == 0.0f)) {
-		return;
-	}
-
 	JoltWritableBody3D body = space->write_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
 
@@ -463,11 +458,6 @@ void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply central impulse to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 	ERR_FAIL_NULL(shared);
 
-	const float last_step = space->get_last_step();
-	if (unlikely(last_step == 0.0f)) {
-		return;
-	}
-
 	JoltWritableBody3D body = space->write_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
 
@@ -478,14 +468,10 @@ void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 
 	const JPH::Vec3 impulse = to_jolt(p_impulse) / mesh_vertex_count;
 
-	for (int i = 0; i < mesh_vertex_count; ++i) {
-		const size_t physics_index = (size_t)shared->mesh_to_physics[i];
-		if (pinned_vertices.has(physics_index)) {
-			continue;
+	for (JPH::SoftBodyVertex &physics_vertex : physics_vertices) {
+	    if (physics_vertex.mInvMass > 0.0f) {
+		    physics_vertex.mVelocity += impulse * physics_vertex.mInvMass;
 		}
-
-		JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
-		physics_vertex.mVelocity += impulse * physics_vertex.mInvMass;
 	}
 
 	wake_up();
