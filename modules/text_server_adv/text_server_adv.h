@@ -286,6 +286,7 @@ class TextServerAdvanced : public TextServerExtension {
 		HashMap<int64_t, int64_t> inv_glyph_map;
 		HashMap<int32_t, FontGlyph> glyph_map;
 		HashMap<Vector2i, Vector2> kerning_map;
+		int64_t gl_count = 0;
 		hb_font_t *hb_handle = nullptr;
 
 #ifdef MODULE_FREETYPE_ENABLED
@@ -294,6 +295,19 @@ class TextServerAdvanced : public TextServerExtension {
 #endif
 
 		~FontForSizeAdvanced() {
+			int64_t sz = 0;
+			for (const ShelfPackTexture &tex : textures) {
+				if (tex.image.is_valid()) {
+					sz += tex.image->get_data_size() * 2;
+				}
+			}
+			TextServerAdvanced::pref_data_tx_bytes -= sz;
+			TextServerAdvanced::pref_data_glyphs -= glyph_map.size();
+			if (viewport_oversampling != 0) {
+				TextServerAdvanced::pref_data_os_tx_bytes -= sz;
+				TextServerAdvanced::pref_data_os_glyphs -= glyph_map.size();
+			}
+
 			if (hb_handle != nullptr) {
 				hb_font_destroy(hb_handle);
 			}
@@ -563,6 +577,8 @@ class TextServerAdvanced : public TextServerExtension {
 		bool chars_valid = false;
 
 		~ShapedTextDataAdvanced() {
+			TextServerAdvanced::buf_glyphs -= glyphs.size();
+			TextServerAdvanced::buf_glyphs -= glyphs_logical.size();
 			for (int i = 0; i < bidi_iter.size(); i++) {
 				if (bidi_iter[i]) {
 					ubidi_close(bidi_iter[i]);
@@ -732,6 +748,17 @@ class TextServerAdvanced : public TextServerExtension {
 			}
 		}
 	};
+
+public:
+	static int64_t buf_count;
+	static int64_t font_count;
+	static int64_t font_var_count;
+	static int64_t buf_glyphs;
+	static int64_t pref_data_glyphs;
+	static int64_t pref_data_tx_bytes;
+	static int64_t pref_data_os_glyphs;
+	static int64_t pref_data_os_tx_bytes;
+	static int64_t pref_sys_fonts;
 
 protected:
 	static void _bind_methods() {}
@@ -1047,6 +1074,8 @@ public:
 	MODBIND2RC(String, string_to_upper, const String &, const String &);
 	MODBIND2RC(String, string_to_lower, const String &, const String &);
 	MODBIND2RC(String, string_to_title, const String &, const String &);
+
+	MODBIND1RC(int64_t, get_process_info, ProcessInfo);
 
 	MODBIND0(cleanup);
 

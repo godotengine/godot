@@ -226,6 +226,19 @@ public:
 		FIXED_SIZE_SCALE_ENABLED,
 	};
 
+	enum ProcessInfo {
+		BUFFER_COUNT,
+		FONT_COUNT,
+		FONT_VARIATION_COUNT,
+		BUFFER_GLYPH_COUNT,
+		FONT_GLYPH_COUNT,
+		FONT_TEXTURE_BYTES,
+		FONT_OVERSAMPLED_GLYPH_COUNT,
+		FONT_OVERSAMPLED_TEXTURE_BYTES,
+		FONT_OVERSAMPLING_LEVELS,
+		FONT_SYSTEM_FONT_DATA,
+	};
+
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
@@ -607,6 +620,8 @@ public:
 
 	virtual void set_current_drawn_item_ovrsampling(double p_vp_oversampling) { vp_oversampling = p_vp_oversampling; }
 
+	virtual int64_t get_process_info(ProcessInfo p_info) const { return 0.0; }
+
 	virtual void cleanup() {}
 
 	TextServer();
@@ -705,6 +720,7 @@ VARIANT_ENUM_CAST(TextServer::StructuredTextParser);
 VARIANT_ENUM_CAST(TextServer::FontAntialiasing);
 VARIANT_ENUM_CAST(TextServer::FontLCDSubpixelLayout);
 VARIANT_ENUM_CAST(TextServer::FixedSizeScaleMode);
+VARIANT_ENUM_CAST(TextServer::ProcessInfo);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);

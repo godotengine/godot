@@ -341,6 +341,16 @@ _FORCE_INLINE_ bool is_connected_to_prev(char32_t p_chr, char32_t p_pchr) {
 
 /*************************************************************************/
 
+int64_t TextServerAdvanced::buf_count = 0;
+int64_t TextServerAdvanced::font_count = 0;
+int64_t TextServerAdvanced::font_var_count = 0;
+int64_t TextServerAdvanced::buf_glyphs = 0;
+int64_t TextServerAdvanced::pref_data_glyphs = 0;
+int64_t TextServerAdvanced::pref_data_tx_bytes = 0;
+int64_t TextServerAdvanced::pref_data_os_glyphs = 0;
+int64_t TextServerAdvanced::pref_data_os_tx_bytes = 0;
+int64_t TextServerAdvanced::pref_sys_fonts = 0;
+
 bool TextServerAdvanced::icu_data_loaded = false;
 PackedByteArray TextServerAdvanced::icu_data;
 
@@ -400,6 +410,7 @@ void TextServerAdvanced::_free_rid(const RID &p_rid) {
 		{
 			MutexLock lock(fd->mutex);
 			font_owner.free(p_rid);
+			font_count--;
 		}
 		memdelete(fd);
 	} else if (font_var_owner.owns(p_rid)) {
@@ -408,6 +419,7 @@ void TextServerAdvanced::_free_rid(const RID &p_rid) {
 		FontAdvancedLinkedVariation *fdv = font_var_owner.get_or_null(p_rid);
 		{
 			font_var_owner.free(p_rid);
+			font_var_count--;
 		}
 		memdelete(fdv);
 	} else if (shaped_owner.owns(p_rid)) {
@@ -415,6 +427,7 @@ void TextServerAdvanced::_free_rid(const RID &p_rid) {
 		{
 			MutexLock lock(sd->mutex);
 			shaped_owner.free(p_rid);
+			buf_count--;
 		}
 		memdelete(sd);
 	}
@@ -862,6 +875,12 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 
 		ShelfPackTexture tex = ShelfPackTexture(texsize, texsize);
 		tex.image = Image::create_empty(texsize, texsize, false, p_image_format);
+		if (tex.image.is_valid()) {
+			pref_data_tx_bytes += tex.image->get_data_size() * 2;
+			if (p_data->viewport_oversampling != 0) {
+				pref_data_os_tx_bytes += tex.image->get_data_size() * 2;
+			}
+		}
 		{
 			// Zero texture.
 			uint8_t *w = tex.image->ptrw();
@@ -1202,6 +1221,16 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 /* Font Cache                                                            */
 /*************************************************************************/
 
+_FORCE_INLINE_ void TextServerAdvanced::_sync_glyph_count(FontForSizeAdvanced *p_data) const {
+	pref_data_glyphs -= p_data->gl_count;
+	pref_data_glyphs += p_data->glyph_map.size();
+	if (p_data->viewport_oversampling != 0) {
+		pref_data_os_glyphs -= p_data->gl_count;
+		pref_data_os_glyphs += p_data->glyph_map.size();
+	}
+	p_data->gl_count = p_data->glyph_map.size();
+}
+
 _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling) const {
 	FontForSizeAdvanced *fd = nullptr;
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(p_font_data, p_size, fd, false, p_oversampling), false);
@@ -1217,6 +1246,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 	if (glyph_index == 0) { // Non graphical or invalid glyph, do not render.
 		E = fd->glyph_map.insert(p_glyph, FontGlyph());
 		r_glyph = E->value;
+		_sync_glyph_count(fd);
 		return true;
 	}
 
@@ -1254,6 +1284,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 		if (error) {
 			E = fd->glyph_map.insert(p_glyph, FontGlyph());
 			r_glyph = E->value;
+			_sync_glyph_count(fd);
 			return false;
 		}
 
@@ -1324,6 +1355,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 					gl = rasterize_msdf(p_font_data, fd, p_font_data->msdf_range, rect_range, &slot->outline, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0);
 #else
 					fd->glyph_map[p_glyph] = FontGlyph();
+					_sync_glyph_count(fd);
 					ERR_FAIL_V_MSG(false, "Compiled without MSDFGEN support!");
 #endif
 				} else {
@@ -1334,6 +1366,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 			FT_Stroker stroker;
 			if (FT_Stroker_New(ft_library, &stroker) != 0) {
 				fd->glyph_map[p_glyph] = FontGlyph();
+				_sync_glyph_count(fd);
 				ERR_FAIL_V_MSG(false, "FreeType: Failed to load glyph stroker.");
 			}
 
@@ -1361,11 +1394,13 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 		gl.from_svg = from_svg;
 		E = fd->glyph_map.insert(p_glyph, gl);
 		r_glyph = E->value;
+		_sync_glyph_count(fd);
 		return gl.found;
 	}
 #endif
 	E = fd->glyph_map.insert(p_glyph, FontGlyph());
 	r_glyph = E->value;
+	_sync_glyph_count(fd);
 	return false;
 }
 
@@ -1972,6 +2007,7 @@ RID TextServerAdvanced::_create_font() {
 	_THREAD_SAFE_METHOD_
 
 	FontAdvanced *fd = memnew(FontAdvanced);
+	font_count++;
 
 	return font_owner.make_rid(fd);
 }
@@ -1988,6 +2024,7 @@ RID TextServerAdvanced::_create_font_linked_variation(const RID &p_font_rid) {
 
 	FontAdvancedLinkedVariation *new_fdv = memnew(FontAdvancedLinkedVariation);
 	new_fdv->base_font = rid;
+	font_var_count++;
 
 	return font_var_owner.make_rid(new_fdv);
 }
@@ -2958,6 +2995,18 @@ void TextServerAdvanced::_font_clear_textures(const RID &p_font_rid, const Vecto
 
 	FontForSizeAdvanced *ffsd = nullptr;
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd));
+
+	int64_t sz = 0;
+	for (const ShelfPackTexture &tex : ffsd->textures) {
+		if (tex.image.is_valid()) {
+			sz += tex.image->get_data_size() * 2;
+		}
+	}
+	pref_data_tx_bytes -= sz;
+	if (ffsd->viewport_oversampling != 0) {
+		pref_data_os_tx_bytes -= sz;
+	}
+
 	ffsd->textures.clear();
 }
 
@@ -2970,6 +3019,16 @@ void TextServerAdvanced::_font_remove_texture(const RID &p_font_rid, const Vecto
 	FontForSizeAdvanced *ffsd = nullptr;
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd));
 	ERR_FAIL_INDEX(p_texture_index, ffsd->textures.size());
+
+	const ShelfPackTexture &tex = ffsd->textures[p_texture_index];
+	int64_t sz = 0;
+	if (tex.image.is_valid()) {
+		sz -= tex.image->get_data_size() * 2;
+	}
+	pref_data_tx_bytes -= sz;
+	if (ffsd->viewport_oversampling != 0) {
+		pref_data_os_tx_bytes -= sz;
+	}
 
 	ffsd->textures.remove_at(p_texture_index);
 }
@@ -2990,9 +3049,22 @@ void TextServerAdvanced::_font_set_texture_image(const RID &p_font_rid, const Ve
 
 	ShelfPackTexture &tex = ffsd->textures.write[p_texture_index];
 
+	int64_t sz = 0;
+	if (tex.image.is_valid()) {
+		sz -= tex.image->get_data_size() * 2;
+	}
+
 	tex.image = p_image;
 	tex.texture_w = p_image->get_width();
 	tex.texture_h = p_image->get_height();
+
+	if (tex.image.is_valid()) {
+		sz += tex.image->get_data_size() * 2;
+	}
+	pref_data_tx_bytes -= sz;
+	if (ffsd->viewport_oversampling != 0) {
+		pref_data_os_tx_bytes -= sz;
+	}
 
 	Ref<Image> img = p_image;
 	if (fd->mipmaps && !img->has_mipmaps()) {
@@ -3091,6 +3163,7 @@ void TextServerAdvanced::_font_clear_glyphs(const RID &p_font_rid, const Vector2
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd));
 
 	ffsd->glyph_map.clear();
+	_sync_glyph_count(ffsd);
 }
 
 void TextServerAdvanced::_font_remove_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) {
@@ -3103,6 +3176,7 @@ void TextServerAdvanced::_font_remove_glyph(const RID &p_font_rid, const Vector2
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd));
 
 	ffsd->glyph_map.erase(p_glyph);
+	_sync_glyph_count(ffsd);
 }
 
 double TextServerAdvanced::_get_extra_advance(RID p_font_rid, int p_font_size) const {
@@ -3174,6 +3248,7 @@ void TextServerAdvanced::_font_set_glyph_advance(const RID &p_font_rid, int64_t 
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd));
 
 	FontGlyph &fgl = ffsd->glyph_map[p_glyph];
+	_sync_glyph_count(ffsd);
 
 	fgl.advance = p_advance;
 	fgl.found = true;
@@ -3226,6 +3301,7 @@ void TextServerAdvanced::_font_set_glyph_offset(const RID &p_font_rid, const Vec
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd));
 
 	FontGlyph &fgl = ffsd->glyph_map[p_glyph];
+	_sync_glyph_count(ffsd);
 
 	fgl.rect.position = p_offset;
 	fgl.found = true;
@@ -3278,6 +3354,7 @@ void TextServerAdvanced::_font_set_glyph_size(const RID &p_font_rid, const Vecto
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd));
 
 	FontGlyph &fgl = ffsd->glyph_map[p_glyph];
+	_sync_glyph_count(ffsd);
 
 	fgl.rect.size = p_gl_size;
 	fgl.found = true;
@@ -3320,6 +3397,7 @@ void TextServerAdvanced::_font_set_glyph_uv_rect(const RID &p_font_rid, const Ve
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd));
 
 	FontGlyph &fgl = ffsd->glyph_map[p_glyph];
+	_sync_glyph_count(ffsd);
 
 	fgl.uv_rect = p_uv_rect;
 	fgl.found = true;
@@ -3362,6 +3440,7 @@ void TextServerAdvanced::_font_set_glyph_texture_idx(const RID &p_font_rid, cons
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd));
 
 	FontGlyph &fgl = ffsd->glyph_map[p_glyph];
+	_sync_glyph_count(ffsd);
 
 	fgl.texture_idx = p_texture_idx;
 	fgl.found = true;
@@ -4299,6 +4378,9 @@ int64_t TextServerAdvanced::_convert_pos_inv(const ShapedTextDataAdvanced *p_sd,
 }
 
 void TextServerAdvanced::invalidate(TextServerAdvanced::ShapedTextDataAdvanced *p_shaped, bool p_text) {
+	buf_glyphs -= p_shaped->glyphs.size();
+	buf_glyphs -= p_shaped->glyphs_logical.size();
+
 	p_shaped->valid.clear();
 	p_shaped->sort_valid = false;
 	p_shaped->line_breaks_valid = false;
@@ -4360,6 +4442,7 @@ RID TextServerAdvanced::_create_shaped_text(TextServer::Direction p_direction, T
 	sd->hb_buffer = hb_buffer_create();
 	sd->direction = p_direction;
 	sd->orientation = p_orientation;
+	buf_count++;
 	return shaped_owner.make_rid(sd);
 }
 
@@ -4958,6 +5041,8 @@ bool TextServerAdvanced::_shaped_text_resize_object(const RID &p_shaped, const V
 				sd->width += gl.advance * gl.repeat;
 			}
 		}
+		buf_glyphs -= sd->glyphs_logical.size();
+
 		sd->sort_valid = false;
 		sd->glyphs_logical.clear();
 		_realign(sd);
@@ -5073,6 +5158,7 @@ RID TextServerAdvanced::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 		memdelete(new_sd);
 		return RID();
 	}
+	buf_count++;
 	return shaped_owner.make_rid(new_sd);
 }
 
@@ -5238,6 +5324,7 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 							p_new_sd->width += gl.advance * gl.repeat;
 						}
 						p_new_sd->glyphs.push_back(gl);
+						buf_glyphs++;
 					}
 				}
 			}
@@ -5540,7 +5627,9 @@ RID TextServerAdvanced::_find_sys_font_for_text(const RID &p_fdef, const String 
 			}
 
 			if (!system_font_data.has(E)) {
-				system_font_data[E] = FileAccess::get_file_as_bytes(E);
+				const PackedByteArray &new_font_data = FileAccess::get_file_as_bytes(E);
+				pref_sys_fonts += new_font_data.size();
+				system_font_data[E] = new_font_data;
 			}
 
 			const PackedByteArray &font_data = system_font_data[E];
@@ -6043,6 +6132,7 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 		sd_glyphs_new = sd_glyphs;
 	}
 
+	buf_glyphs -= sd->glyphs_logical.size();
 	sd->sort_valid = false;
 	sd->glyphs_logical.clear();
 	const char32_t *ch = sd->text.ptr();
@@ -6154,6 +6244,7 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 
 	if (sd->break_inserts > 0) {
 		sd->glyphs = glyphs_new;
+		buf_glyphs += MIN(sd_shift, sd->break_inserts);
 	}
 
 	sd->line_breaks_valid = true;
@@ -6296,6 +6387,7 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 		sd->js_ops_valid = true;
 	}
 
+	buf_glyphs -= sd->glyphs_logical.size();
 	sd->sort_valid = false;
 	sd->glyphs_logical.clear();
 
@@ -6333,6 +6425,7 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 									}
 									gl.flags |= GRAPHEME_IS_ELONGATION | GRAPHEME_IS_VIRTUAL;
 									sd->glyphs.insert(i, gl);
+									buf_glyphs++;
 									i++;
 
 									// Update write pointer and size.
@@ -6373,6 +6466,7 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 						} else {
 							sd->glyphs.insert(i + count, gl); // Insert after.
 						}
+						buf_glyphs++;
 						i += count;
 
 						// Update write pointer and size.
@@ -6584,6 +6678,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 				p_sd->width += gl.advance;
 
 				p_sd->glyphs.push_back(gl);
+				buf_glyphs++;
 			}
 		}
 		return;
@@ -6792,6 +6887,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 					w[i + j].start += p_sd->start;
 					w[i + j].end += p_sd->start;
 					p_sd->glyphs.push_back(w[i + j]);
+					buf_glyphs++;
 				}
 			} else {
 				if (failed_subrun_start >= w[i].start) {
@@ -7003,15 +7099,16 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 								gl.advance = sd->objects[span.embedded_key].rect.size.y;
 							}
 							sd->glyphs.push_back(gl);
+							buf_glyphs++;
 						} else {
 							Array fonts;
 							Array fonts_scr_only;
 							Array fonts_no_match;
-							int font_count = span.fonts.size();
-							if (font_count > 0) {
+							int span_font_count = span.fonts.size();
+							if (span_font_count > 0) {
 								fonts.push_back(sd->spans[k].fonts[0]);
 							}
-							for (int l = 1; l < font_count; l++) {
+							for (int l = 1; l < span_font_count; l++) {
 								if (_font_is_script_supported(span.fonts[l], script_code)) {
 									if (_font_is_language_supported(span.fonts[l], span.language)) {
 										fonts.push_back(sd->spans[k].fonts[l]);
@@ -7080,6 +7177,7 @@ const Glyph *TextServerAdvanced::_shaped_text_sort_logical(const RID &p_shaped) 
 		sd->glyphs_logical = sd->glyphs;
 		sd->glyphs_logical.sort_custom<GlyphCompare>();
 		sd->sort_valid = true;
+		buf_glyphs += sd->glyphs_logical.size();
 	}
 
 	return sd->glyphs_logical.ptr();
@@ -8031,6 +8129,33 @@ TextServerAdvanced::TextServerAdvanced() {
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerAdvanced::_update_settings));
 }
 
+int64_t TextServerAdvanced::_get_process_info(ProcessInfo p_info) const {
+	switch (p_info) {
+		case BUFFER_COUNT:
+			return buf_count;
+		case FONT_COUNT:
+			return font_count;
+		case FONT_VARIATION_COUNT:
+			return font_var_count;
+		case BUFFER_GLYPH_COUNT:
+			return buf_glyphs;
+		case FONT_GLYPH_COUNT:
+			return pref_data_glyphs;
+		case FONT_TEXTURE_BYTES:
+			return pref_data_tx_bytes;
+		case FONT_OVERSAMPLED_GLYPH_COUNT:
+			return pref_data_os_glyphs;
+		case FONT_OVERSAMPLED_TEXTURE_BYTES:
+			return pref_data_os_tx_bytes;
+		case FONT_OVERSAMPLING_LEVELS:
+			return oversampling_levels.size();
+		case FONT_SYSTEM_FONT_DATA:
+			return pref_sys_fonts;
+		default:
+			return 0;
+	}
+}
+
 void TextServerAdvanced::_font_clear_system_fallback_cache() {
 	_THREAD_SAFE_METHOD_
 	for (const KeyValue<SystemFontKey, SystemFontCache> &E : system_fonts) {
@@ -8041,6 +8166,7 @@ void TextServerAdvanced::_font_clear_system_fallback_cache() {
 	}
 	system_fonts.clear();
 	system_font_data.clear();
+	pref_sys_fonts = 0;
 }
 
 void TextServerAdvanced::_cleanup() {
