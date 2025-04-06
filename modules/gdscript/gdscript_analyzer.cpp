@@ -4395,6 +4395,20 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			p_identifier->reduced_value = int_constant;
 			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 
+#if DEBUG_ENABLED
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd && dd->class_list.has(native)) {
+				for (const DocData::ConstantDoc &doc : dd->class_list[native].constants) {
+					if (doc.name == name) {
+						if (doc.is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+						}
+						break;
+					}
+				}
+			}
+#endif
+
 			// Check whether this constant, which exists, belongs to an enum
 			StringName enum_name = ClassDB::get_integer_constant_enum(native, name);
 			if (enum_name != StringName()) {
