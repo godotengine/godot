@@ -1749,6 +1749,12 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 
 	Control *c = Object::cast_to<Control>(p_node);
 
+	// stop the capture on controls that don't allow it.
+	// this makes it as if this control never even existed/wasn't visible
+	if (c && !c->get_mouse_capture()) {
+		return nullptr;
+	}
+
 	if (!c || !c->is_clipping_contents() || c->has_point(matrix.affine_inverse().xform(p_global))) {
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 			CanvasItem *ci = Object::cast_to<CanvasItem>(p_node->get_child(i));

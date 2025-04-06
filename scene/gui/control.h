@@ -228,6 +228,9 @@ private:
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
 		RecursiveBehavior parent_mouse_recursive_behavior = RECURSIVE_BEHAVIOR_INHERITED;
 		RecursiveBehavior mouse_recursive_behavior = RECURSIVE_BEHAVIOR_INHERITED;
+
+		bool mouse_capture = true;
+
 		bool force_pass_scroll_events = true;
 
 		bool clip_contents = false;
@@ -538,6 +541,9 @@ public:
 
 	void set_mouse_recursive_behavior(RecursiveBehavior p_recursive_mouse_behavior);
 	RecursiveBehavior get_mouse_recursive_behavior() const;
+
+	void set_mouse_capture(bool p_state);
+	bool get_mouse_capture() const;
 
 	void set_force_pass_scroll_events(bool p_force_pass_scroll_events);
 	bool is_force_pass_scroll_events() const;
