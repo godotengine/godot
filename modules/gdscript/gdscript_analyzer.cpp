@@ -4354,6 +4354,19 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			// Signal is a type too.
 			p_identifier->set_datatype(make_signal_type(method_info));
 			p_identifier->source = GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
+#if DEBUG_ENABLED
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd && dd->class_list.has(native)) {
+				for (const DocData::MethodDoc &doc : dd->class_list[native].signals) {
+					if (doc.name == name) {
+						if (doc.is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+						}
+						break;
+					}
+				}
+			}
+#endif
 			return;
 		}
 		if (ClassDB::has_enum(native, name)) {
