@@ -4385,6 +4385,15 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		if (ClassDB::has_enum(native, name)) {
 			p_identifier->set_datatype(make_native_enum_type(name, native));
 			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+#if DEBUG_ENABLED
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd && dd->class_list.has(native) && dd->class_list[native].enums.has(name)) {
+				DocData::EnumDoc doc = dd->class_list[native].enums[name];
+				if (doc.is_deprecated) {
+					parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+				}
+			}
+#endif
 			return;
 		}
 		bool valid = false;
