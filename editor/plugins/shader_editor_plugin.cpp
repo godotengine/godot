@@ -407,7 +407,7 @@ void ShaderEditorPlugin::_setup_popup_menu(PopupMenuType p_type, PopupMenu *p_me
 		p_menu->add_separator();
 		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/close_file", TTRC("Close File"), KeyModifierMask::CMD_OR_CTRL | Key::W), FILE_CLOSE);
 		p_menu->add_separator();
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_scripts_panel"), TOGGLE_SHADERS_PANEL);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"), TOGGLE_FILES_PANEL);
 	} else {
 		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/close_file", TTRC("Close File"), KeyModifierMask::CMD_OR_CTRL | Key::W), FILE_CLOSE);
 		p_menu->add_item(TTR("Close All"), CLOSE_ALL);
@@ -610,18 +610,18 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 			Ref<Resource> shader = _get_current_shader();
 			DisplayServer::get_singleton()->clipboard_set(shader->get_path());
 		} break;
-		case TOGGLE_SHADERS_PANEL: {
+		case TOGGLE_FILES_PANEL: {
 			left_panel->set_visible(!left_panel->is_visible());
 
 			int index = shader_tabs->get_current_tab();
 			ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
 			TextShaderEditor *editor = Object::cast_to<TextShaderEditor>(edited_shaders[index].shader_editor);
 			if (editor) {
-				editor->get_code_editor()->update_toggle_scripts_button();
+				editor->get_code_editor()->update_toggle_files_button();
 			} else {
 				VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(edited_shaders[index].shader_editor);
 				if (vs_editor) {
-					vs_editor->update_toggle_scripts_button();
+					vs_editor->update_toggle_files_button();
 				}
 			}
 		} break;
@@ -779,7 +779,7 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
 
 	VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(p_editor);
 	if (vs_editor) {
-		file_menu_index = 2; // Toggle Scripts Panel button + separator
+		file_menu_index = 2; // Toggle Files Panel button + separator
 	}
 
 	file_menu->get_parent()->remove_child(file_menu);

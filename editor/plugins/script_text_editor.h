@@ -216,7 +216,7 @@ public:
 
 	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
-	void update_toggle_scripts_button() override;
+	void update_toggle_files_button() override;
 
 	virtual void apply_code() override;
 	virtual Ref<Resource> get_edited_resource() const override;

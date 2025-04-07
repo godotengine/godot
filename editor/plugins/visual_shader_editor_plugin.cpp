@@ -2470,11 +2470,11 @@ Size2 VisualShaderEditor::get_minimum_size() const {
 	return Size2(10, 200);
 }
 
-void VisualShaderEditor::update_toggle_scripts_button() {
-	ERR_FAIL_NULL(toggle_scripts_list);
-	bool forward = toggle_scripts_list->is_visible() == is_layout_rtl();
-	toggle_scripts_button->set_button_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
-	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
+void VisualShaderEditor::update_toggle_files_button() {
+	ERR_FAIL_NULL(toggle_files_list);
+	bool forward = toggle_files_list->is_visible() == is_layout_rtl();
+	toggle_files_button->set_button_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
+	toggle_files_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Files Panel"), ED_GET_SHORTCUT("script_editor/toggle_files_panel")->get_as_text()));
 }
 
 void VisualShaderEditor::_draw_color_over_button(Object *p_obj, Color p_color) {
@@ -5270,11 +5270,11 @@ void VisualShaderEditor::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				_update_graph();
 			}
-			update_toggle_scripts_button();
+			update_toggle_files_button();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			update_toggle_scripts_button();
+			update_toggle_files_button();
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -6391,13 +6391,13 @@ void VisualShaderEditor::_show_shader_preview() {
 }
 
 void VisualShaderEditor::set_toggle_list_control(Control *p_control) {
-	toggle_scripts_list = p_control;
+	toggle_files_list = p_control;
 }
 
-void VisualShaderEditor::_toggle_scripts_pressed() {
-	ERR_FAIL_NULL(toggle_scripts_list);
-	toggle_scripts_list->set_visible(!toggle_scripts_list->is_visible());
-	update_toggle_scripts_button();
+void VisualShaderEditor::_toggle_files_pressed() {
+	ERR_FAIL_NULL(toggle_files_list);
+	toggle_files_list->set_visible(!toggle_files_list->is_visible());
+	update_toggle_files_button();
 }
 
 void VisualShaderEditor::_bind_methods() {
@@ -6655,11 +6655,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar->add_child(separator);
 	toolbar->move_child(separator, 0);
 
-	toggle_scripts_button = memnew(Button);
-	toggle_scripts_button->set_flat(true);
-	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_toggle_scripts_pressed));
-	toolbar->add_child(toggle_scripts_button);
-	toolbar->move_child(toggle_scripts_button, 0);
+	toggle_files_button = memnew(Button);
+	toggle_files_button->set_flat(true);
+	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_toggle_files_pressed));
+	toolbar->add_child(toggle_files_button);
+	toolbar->move_child(toggle_files_button, 0);
 
 	///////////////////////////////////////
 	// CODE PREVIEW

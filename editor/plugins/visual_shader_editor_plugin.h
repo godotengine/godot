@@ -212,8 +212,8 @@ class VisualShaderEditor : public ShaderEditor {
 	EditorProperty *current_prop = nullptr;
 	VBoxContainer *shader_preview_vbox = nullptr;
 	Button *site_search = nullptr;
-	Button *toggle_scripts_button = nullptr;
-	Control *toggle_scripts_list = nullptr;
+	Button *toggle_files_button = nullptr;
+	Control *toggle_files_list = nullptr;
 	GraphEdit *graph = nullptr;
 	Button *add_node = nullptr;
 	MenuButton *varying_button = nullptr;
@@ -450,7 +450,7 @@ class VisualShaderEditor : public ShaderEditor {
 
 	void _show_shader_preview();
 
-	void _toggle_scripts_pressed();
+	void _toggle_files_pressed();
 
 	Vector<int> nodes_link_to_frame_buffer; // Contains the nodes that are requested to be linked to a frame. This is used to perform one Undo/Redo operation for dragging nodes.
 	int frame_node_id_to_link_to = -1;
@@ -666,7 +666,7 @@ public:
 	void update_custom_type(const Ref<Resource> &p_resource);
 
 	virtual Size2 get_minimum_size() const override;
-	void update_toggle_scripts_button();
+	void update_toggle_files_button();
 
 	Ref<VisualShader> get_visual_shader() const { return visual_shader; }
 
