@@ -69,6 +69,13 @@ String ARVRCamera::get_configuration_warning() const {
 		warning += TTR("ARVRCamera must have an ARVROrigin node as its parent.");
 	};
 
+	if (is_physics_interpolated()) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("ARVRCamera should have physics_interpolation_mode set to OFF in order to avoid jitter.");
+	}
+
 	return warning;
 };
 
@@ -172,8 +179,8 @@ Vector<Plane> ARVRCamera::get_frustum() const {
 	return cm.get_projection_planes(get_camera_transform());
 };
 
-ARVRCamera::ARVRCamera(){
-	// nothing to do here yet for now..
+ARVRCamera::ARVRCamera() {
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 };
 
 ARVRCamera::~ARVRCamera(){
@@ -390,6 +397,13 @@ String ARVRController::get_configuration_warning() const {
 		warning += TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller.");
 	};
 
+	if (is_physics_interpolated()) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("ARVRController should have physics_interpolation_mode set to OFF in order to avoid jitter.");
+	}
+
 	return warning;
 };
 
@@ -397,6 +411,8 @@ ARVRController::ARVRController() {
 	controller_id = 1;
 	is_active = true;
 	button_states = 0;
+
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 };
 
 ARVRController::~ARVRController(){
@@ -524,6 +540,13 @@ String ARVRAnchor::get_configuration_warning() const {
 		warning += TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor.");
 	};
 
+	if (is_physics_interpolated()) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("ARVRAnchor should have physics_interpolation_mode set to OFF in order to avoid jitter.");
+	}
+
 	return warning;
 };
 
@@ -543,6 +566,8 @@ Ref<Mesh> ARVRAnchor::get_mesh() const {
 ARVRAnchor::ARVRAnchor() {
 	anchor_id = 1;
 	is_active = true;
+
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 };
 
 ARVRAnchor::~ARVRAnchor(){
