@@ -163,7 +163,7 @@ String GDScriptWarning::get_message() const {
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
 		case DEPRECATED_IDENTIFIER:
-			return R"(This identifier is deprecated, dont use it)";
+			return R"(This identifier is deprecated. See its documentation for more information and alternatives.)";
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
