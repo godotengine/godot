@@ -4031,15 +4031,24 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 
 	if (base.kind == GDScriptParser::DataType::ENUM) {
 #if DEBUG_ENABLED
-		DocTools *dd = EditorHelp::get_doc_data();
-		StringName class_name = String(base.native_type).get_slicec('.', 0);
-		if (dd && dd->class_list.has(class_name)) {
-			for (const DocData::ConstantDoc &doc : dd->class_list[class_name].constants) {
-				if (doc.enumeration == base.enum_type && doc.name == name) {
-					if (doc.is_deprecated) {
-						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+		if (base.class_type && base.class_type->identifier && base.class_type->identifier->name) {
+			DocTools *dd = EditorHelp::get_doc_data();
+			StringName class_name = base.class_type->identifier->name;
+
+			// It's an inner class, so we need to get the outer class's name
+			// as well to construct its full name as found in the doc data.
+			if (base.class_type->outer != nullptr) {
+				class_name = String(base.class_type->outer->identifier->name) + "." + class_name;
+			}
+
+			if (dd && dd->class_list.has(class_name)) {
+				for (const DocData::ConstantDoc &doc : dd->class_list[class_name].constants) {
+					if (doc.enumeration == base.enum_type && doc.name == name) {
+						if (doc.is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+						}
+						break;
 					}
-					break;
 				}
 			}
 		}
