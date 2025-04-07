@@ -1634,10 +1634,10 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 	emit_signal(SNAME("show_warnings_panel"), p_show);
 }
 
-void CodeTextEditor::_toggle_scripts_pressed() {
-	ERR_FAIL_NULL(toggle_scripts_list);
-	toggle_scripts_list->set_visible(!toggle_scripts_list->is_visible());
-	update_toggle_scripts_button();
+void CodeTextEditor::_toggle_files_pressed() {
+	ERR_FAIL_NULL(toggle_files_list);
+	toggle_files_list->set_visible(!toggle_files_list->is_visible());
+	update_toggle_files_button();
 }
 
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
@@ -1655,22 +1655,22 @@ void CodeTextEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			if (toggle_scripts_button->is_visible()) {
-				update_toggle_scripts_button();
+			if (toggle_files_button->is_visible()) {
+				update_toggle_files_button();
 			}
 			_update_text_editor_theme();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			if (toggle_scripts_button->is_visible()) {
-				update_toggle_scripts_button();
+			if (toggle_files_button->is_visible()) {
+				update_toggle_files_button();
 			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (toggle_scripts_button->is_visible()) {
-				update_toggle_scripts_button();
+			if (toggle_files_button->is_visible()) {
+				update_toggle_files_button();
 			}
 			set_process_input(is_visible_in_tree());
 		} break;
@@ -1827,18 +1827,18 @@ void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_cod
 }
 
 void CodeTextEditor::set_toggle_list_control(Control *p_control) {
-	toggle_scripts_list = p_control;
+	toggle_files_list = p_control;
 }
 
-void CodeTextEditor::show_toggle_scripts_button() {
-	toggle_scripts_button->show();
+void CodeTextEditor::show_toggle_files_button() {
+	toggle_files_button->show();
 }
 
-void CodeTextEditor::update_toggle_scripts_button() {
-	ERR_FAIL_NULL(toggle_scripts_list);
-	bool forward = toggle_scripts_list->is_visible() == is_layout_rtl();
-	toggle_scripts_button->set_button_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
-	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
+void CodeTextEditor::update_toggle_files_button() {
+	ERR_FAIL_NULL(toggle_files_list);
+	bool forward = toggle_files_list->is_visible() == is_layout_rtl();
+	toggle_files_button->set_button_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
+	toggle_files_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Files Panel"), ED_GET_SHORTCUT("script_editor/toggle_files_panel")->get_as_text()));
 }
 
 CodeTextEditor::CodeTextEditor() {
@@ -1875,13 +1875,13 @@ CodeTextEditor::CodeTextEditor() {
 	error_line = 0;
 	error_column = 0;
 
-	toggle_scripts_button = memnew(Button);
-	toggle_scripts_button->set_flat(true);
-	toggle_scripts_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_toggle_scripts_pressed));
-	toggle_scripts_button->set_accessibility_name(TTRC("Scripts"));
-	status_bar->add_child(toggle_scripts_button);
-	toggle_scripts_button->hide();
+	toggle_files_button = memnew(Button);
+	toggle_files_button->set_flat(true);
+	toggle_files_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_toggle_files_pressed));
+	toggle_files_button->set_accessibility_name(TTRC("Scripts"));
+	status_bar->add_child(toggle_files_button);
+	toggle_files_button->hide();
 
 	// Error
 	ScrollContainer *scroll = memnew(ScrollContainer);
