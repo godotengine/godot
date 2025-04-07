@@ -476,12 +476,14 @@ class AnimationTrackEdit : public Control {
 
 	mutable int dropping_at = 0;
 	float insert_at_pos = 0.0f;
-	bool moving_selection_attempt = false;
-	bool moving_selection_effective = false;
-	float moving_selection_pivot = 0.0f;
-	float moving_selection_mouse_begin_x = 0.0f;
+	bool transform_selection_attempt = false;
+	float transform_selection_mouse_begin_x = 0.0f;
 	int select_single_attempt = -1;
+	float moving_selection_pivot = 0.0f;
 	bool moving_selection = false;
+	bool moving_selection_effective = false;
+	bool scaling_selection = false;
+	bool scaling_selection_effective = false;
 
 	bool in_group = false;
 	AnimationTrackEditor *editor = nullptr;
@@ -734,6 +736,13 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _move_selection_commit();
 	void _move_selection_cancel();
 
+	bool scaling_selection = false;
+	float scaling_selection_factor = 1.0f;
+	void _scale_selection_begin();
+	void _scale_selection(float p_factor);
+	void _scale_selection_commit(bool p_from_cursor);
+	void _scale_selection_cancel();
+
 	AnimationTrackKeyEdit *key_edit = nullptr;
 	AnimationMultiTrackKeyEdit *multi_key_edit = nullptr;
 	void _update_key_edit();
@@ -937,11 +946,13 @@ public:
 	bool is_selection_active() const;
 	bool is_key_clipboard_active() const;
 	bool is_moving_selection() const;
+	bool is_scaling_selection() const;
 	bool is_snap_timeline_enabled() const;
 	bool is_snap_keys_enabled() const;
 	bool is_bezier_editor_active() const;
 	bool can_add_reset_key() const;
 	float get_moving_selection_offset() const;
+	float get_scaling_selection_factor() const;
 	float snap_time(float p_value, bool p_relative = false);
 	float get_snap_unit();
 	bool is_grouping_tracks();
