@@ -25,10 +25,10 @@ layout(location = 11) in vec4 weight_attrib;
 #include "canvas_uniforms_inc.glsl"
 
 #ifndef USE_ATTRIBUTES
-
-layout(location = 4) out flat uint instance_index_interp;
-
-#endif // !USE_ATTRIBUTES
+layout(location = 4) out flat uint instance_index;
+#else
+#define instance_index params.base_instance_index
+#endif // USE_ATTRIBUTES
 
 layout(location = 0) out vec2 uv_interp;
 layout(location = 1) out vec4 color_interp;
@@ -48,8 +48,6 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 /* clang-format on */
 #endif
 
-uint instance_index;
-
 #GLOBALS
 
 #ifdef USE_ATTRIBUTES
@@ -67,11 +65,8 @@ void main() {
 	vec4 custom1 = vec4(0.0);
 #endif
 
-#ifdef USE_ATTRIBUTES
-	instance_index = params.base_instance_index;
-#else
+#ifndef USE_ATTRIBUTES
 	instance_index = gl_InstanceIndex + params.base_instance_index;
-	instance_index_interp = instance_index;
 #endif // USE_ATTRIBUTES
 	const InstanceData draw_data = instances.data[instance_index];
 
@@ -242,7 +237,9 @@ void main() {
 #include "canvas_uniforms_inc.glsl"
 
 #ifndef USE_ATTRIBUTES
-layout(location = 4) in flat uint instance_index_interp;
+layout(location = 4) in flat uint instance_index;
+#else
+#define instance_index params.base_instance_index
 #endif // USE_ATTRIBUTES
 
 layout(location = 0) in vec2 uv_interp;
@@ -288,8 +285,6 @@ vec2 texture_sdf_normal(vec2 p_sdf) {
 vec2 sdf_to_screen_uv(vec2 p_sdf) {
 	return p_sdf * canvas_data.sdf_to_screen;
 }
-
-uint instance_index;
 
 #GLOBALS
 
@@ -465,11 +460,6 @@ void main() {
 	vec2 uv = uv_interp;
 	vec2 vertex = vertex_interp;
 
-#ifdef USE_ATTRIBUTES
-	instance_index = params.base_instance_index;
-#else
-	instance_index = instance_index_interp;
-#endif // USE_ATTRIBUTES
 	const InstanceData draw_data = instances.data[instance_index];
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
