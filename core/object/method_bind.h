@@ -142,8 +142,7 @@ public:
 template <typename Derived, typename T, typename R, bool should_returns>
 class MethodBindVarArgBase : public MethodBind {
 protected:
-	R(T::*method)
-	(const Variant **, int, Callable::CallError &);
+	R (T::*method)(const Variant **, int, Callable::CallError &);
 	MethodInfo method_info;
 
 public:
@@ -473,8 +472,7 @@ template <typename T, typename R, typename... P>
 template <typename R, typename... P>
 #endif
 class MethodBindTR : public MethodBind {
-	R(MB_T::*method)
-	(P...);
+	R (MB_T::*method)(P...);
 
 protected:
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
@@ -569,8 +567,7 @@ template <typename T, typename R, typename... P>
 template <typename R, typename... P>
 #endif
 class MethodBindTRC : public MethodBind {
-	R(MB_T::*method)
-	(P...) const;
+	R (MB_T::*method)(P...) const;
 
 protected:
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
@@ -721,8 +718,7 @@ MethodBind *create_static_method_bind(void (*p_method)(P...)) {
 
 template <typename R, typename... P>
 class MethodBindTRS : public MethodBind {
-	R(*function)
-	(P...);
+	R (*function)(P...);
 
 protected:
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
