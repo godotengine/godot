@@ -174,6 +174,10 @@
 #include "editor/plugins/shader_baker/shader_baker_export_plugin_platform_d3d12.h"
 #endif
 
+#ifdef METAL_ENABLED
+#include "editor/plugins/shader_baker/shader_baker_export_plugin_platform_metal.h"
+#endif
+
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
 #ifndef PHYSICS_2D_DISABLED
@@ -8254,6 +8258,12 @@ EditorNode::EditorNode() {
 	Ref<ShaderBakerExportPluginPlatformD3D12> shader_baker_export_plugin_platform_d3d12;
 	shader_baker_export_plugin_platform_d3d12.instantiate();
 	shader_baker_export_plugin->add_platform(shader_baker_export_plugin_platform_d3d12);
+#endif
+
+#ifdef METAL_ENABLED
+	Ref<ShaderBakerExportPluginPlatformMetal> shader_baker_export_plugin_platform_metal;
+	shader_baker_export_plugin_platform_metal.instantiate();
+	shader_baker_export_plugin->add_platform(shader_baker_export_plugin_platform_metal);
 #endif
 
 	EditorExport::get_singleton()->add_export_plugin(shader_baker_export_plugin);

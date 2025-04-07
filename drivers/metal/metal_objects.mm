@@ -53,6 +53,7 @@
 #import "metal_utils.h"
 #import "pixel_formats.h"
 #import "rendering_device_driver_metal.h"
+#import "rendering_shader_container_metal.h"
 
 #import <os/signpost.h>
 
@@ -1931,7 +1932,7 @@ static const char *SHADER_STAGE_NAMES[] = {
 };
 
 void ShaderCacheEntry::notify_free() const {
-	owner.shader_cache_free_entry(key);
+	RenderingShaderContainerFormatMetal::shader_cache_free_entry(key);
 }
 
 @interface MDLibrary ()
@@ -1969,6 +1970,17 @@ void ShaderCacheEntry::notify_free() const {
 						   options:(MTLCompileOptions *)options;
 @end
 
+@interface MDBinaryLibrary : MDLibrary {
+	id<MTLLibrary> _library;
+	NSError *_error;
+	bool _loaded;
+	id<MTLDevice> _device;
+}
+- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
+							device:(id<MTLDevice>)device
+							  data:(dispatch_data_t)data;
+@end
+
 @implementation MDLibrary
 
 + (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
@@ -1984,6 +1996,12 @@ void ShaderCacheEntry::notify_free() const {
 		case ShaderLoadStrategy::LAZY:
 			return [[MDLazyLibrary alloc] initWithCacheEntry:entry device:device source:source options:options];
 	}
+}
+
++ (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
+								  device:(id<MTLDevice>)device
+									data:(dispatch_data_t)data {
+	return [[MDBinaryLibrary alloc] initWithCacheEntry:entry device:device data:data];
 }
 
 - (id<MTLLibrary>)library {
@@ -2111,6 +2129,32 @@ void ShaderCacheEntry::notify_free() const {
 
 - (NSError *)error {
 	[self load];
+	return _error;
+}
+
+@end
+
+@implementation MDBinaryLibrary
+
+- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
+							device:(id<MTLDevice>)device
+							  data:(dispatch_data_t)data {
+	self = [super initWithCacheEntry:entry];
+	NSError *error = nil;
+	_library = [device newLibraryWithData:data error:&error];
+	if (error != nil) {
+		NSString *desc = [error description];
+		ERR_PRINT(vformat("Unable to load shader library: %s", desc.UTF8String));
+	}
+	_error = error;
+	return self;
+}
+
+- (id<MTLLibrary>)library {
+	return _library;
+}
+
+- (NSError *)error {
 	return _error;
 }
 

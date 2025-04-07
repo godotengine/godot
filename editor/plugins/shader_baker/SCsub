@@ -8,3 +8,6 @@ if env["vulkan"]:
 
 if env["d3d12"]:
     env.add_source_files(env.editor_sources, "shader_baker_export_plugin_platform_d3d12.cpp")
+
+if env["metal"]:
+    env.add_source_files(env.editor_sources, "shader_baker_export_plugin_platform_metal.cpp")

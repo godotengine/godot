@@ -143,6 +143,7 @@ private:
 public:
 	MetalFeatures features;
 	MetalLimits limits;
+	id<MTLDevice> device;
 
 	SampleCount find_nearest_supported_sample_count(RenderingDevice::TextureSamples p_samples) const;
 

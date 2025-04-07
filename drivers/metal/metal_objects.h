@@ -53,6 +53,7 @@
 #import "metal_device_properties.h"
 #import "metal_utils.h"
 #import "pixel_formats.h"
+#import "sha256_digest.h"
 
 #include "servers/rendering/rendering_device_driver.h"
 
@@ -642,28 +643,11 @@ enum class ShaderLoadStrategy {
 								  source:(NSString *)source
 								 options:(MTLCompileOptions *)options
 								strategy:(ShaderLoadStrategy)strategy;
+
++ (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
+								  device:(id<MTLDevice>)device
+									data:(dispatch_data_t)data;
 @end
-
-struct SHA256Digest {
-	unsigned char data[CC_SHA256_DIGEST_LENGTH];
-
-	uint32_t hash() const {
-		uint32_t c = crc32(0, data, CC_SHA256_DIGEST_LENGTH);
-		return c;
-	}
-
-	SHA256Digest() {
-		bzero(data, CC_SHA256_DIGEST_LENGTH);
-	}
-
-	SHA256Digest(const char *p_data, size_t p_length) {
-		CC_SHA256(p_data, (CC_LONG)p_length, data);
-	}
-
-	_FORCE_INLINE_ uint32_t short_sha() const {
-		return __builtin_bswap32(*(uint32_t *)&data[0]);
-	}
-};
 
 template <>
 struct HashMapComparatorDefault<SHA256Digest> {
@@ -674,20 +658,20 @@ struct HashMapComparatorDefault<SHA256Digest> {
 
 /// A cache entry for a Metal shader library.
 struct ShaderCacheEntry {
-	RenderingDeviceDriverMetal &owner;
 	/// A hash of the Metal shader source code.
 	SHA256Digest key;
 	CharString name;
 	RD::ShaderStage stage = RD::SHADER_STAGE_VERTEX;
 	/// This reference must be weak, to ensure that when the last strong reference to the library
 	/// is released, the cache entry is freed.
+	LocalVector<uint8_t> binary;
 	MDLibrary *__weak library = nil;
 
 	/// Notify the cache that this entry is no longer needed.
 	void notify_free() const;
 
-	ShaderCacheEntry(RenderingDeviceDriverMetal &p_owner, SHA256Digest p_key) :
-			owner(p_owner), key(p_key) {
+	ShaderCacheEntry(SHA256Digest p_key) :
+			key(p_key) {
 	}
 	~ShaderCacheEntry() = default;
 };

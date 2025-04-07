@@ -335,6 +335,7 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 }
 
 MetalDeviceProperties::MetalDeviceProperties(id<MTLDevice> p_device) {
+	device = p_device;
 	init_features(p_device);
 	init_limits(p_device);
 }

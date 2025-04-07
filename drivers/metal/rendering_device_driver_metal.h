@@ -31,6 +31,7 @@
 #pragma once
 
 #import "metal_objects.h"
+#import "rendering_shader_container_metal.h"
 
 #include "servers/rendering/rendering_device_driver.h"
 
@@ -46,8 +47,6 @@
 class RenderingContextDriverMetal;
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMetal : public RenderingDeviceDriver {
-	friend struct ShaderCacheEntry;
-
 	template <typename T>
 	using Result = std::variant<T, Error>;
 
@@ -78,19 +77,6 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 
 	Error _create_device();
 	Error _check_capabilities();
-
-#pragma mark - Shader Cache
-
-	ShaderLoadStrategy _shader_load_strategy = ShaderLoadStrategy::DEFAULT;
-
-	/**
-	 * The shader cache is a map of hashes of the Metal source to shader cache entries.
-	 *
-	 * To prevent unbounded growth of the cache, cache entries are automatically freed when
-	 * there are no more references to the MDLibrary associated with the cache entry.
-	 */
-	HashMap<SHA256Digest, ShaderCacheEntry *, HashableHasher<SHA256Digest>> _shader_cache;
-	void shader_cache_free_entry(const SHA256Digest &key);
 
 public:
 	Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override final;
@@ -242,19 +228,13 @@ private:
 	friend struct PushConstantData;
 
 private:
-	/// Contains additional metadata about the shader.
-	struct ShaderMeta {
-		/// Indicates whether the shader uses multiview.
-		bool has_multiview = false;
-	};
-
-	Error _reflect_spirv16(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection, ShaderMeta &r_shader_meta);
+	RenderingShaderContainerFormatMetal shader_container_format;
 
 public:
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) override final;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
+	virtual ShaderID shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
 	virtual void shader_destroy_modules(ShaderID p_shader) override final;
+	virtual const RenderingShaderContainerFormat &get_shader_container_format() const override final;
 
 #pragma mark - Uniform Set
 
