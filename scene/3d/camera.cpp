@@ -45,11 +45,63 @@ void Camera::_request_camera_update() {
 	_update_camera();
 }
 
-void Camera::fti_update_servers() {
+void Camera::fti_pump_property() {
+	switch (mode) {
+		default:
+			break;
+		case PROJECTION_PERSPECTIVE: {
+			fov.pump();
+		} break;
+		case PROJECTION_ORTHOGONAL: {
+			size.pump();
+		} break;
+		case PROJECTION_FRUSTUM: {
+			size.pump();
+			frustum_offset.pump();
+		} break;
+	}
+	near.pump();
+	far.pump();
+
+	Spatial::fti_pump_property();
+}
+
+void Camera::fti_update_servers_property() {
+	if (camera.is_valid()) {
+		float f = Engine::get_singleton()->get_physics_interpolation_fraction();
+
+		switch (mode) {
+			default:
+				break;
+			case PROJECTION_PERSPECTIVE: {
+				// If there have been changes due to interpolation, update the servers.
+				if (fov.interpolate(f) || near.interpolate(f) || far.interpolate(f)) {
+					VisualServer::get_singleton()->camera_set_perspective(camera, fov.interpolated(), near.interpolated(), far.interpolated());
+				}
+			} break;
+			case PROJECTION_ORTHOGONAL: {
+				if (size.interpolate(f) || near.interpolate(f) || far.interpolate(f)) {
+					VisualServer::get_singleton()->camera_set_orthogonal(camera, size.interpolated(), near.interpolated(), far.interpolated());
+				}
+			} break;
+			case PROJECTION_FRUSTUM: {
+				if (size.interpolate(f) || frustum_offset.interpolate(f) || near.interpolate(f) || far.interpolate(f)) {
+					VisualServer::get_singleton()->camera_set_frustum(camera, size.interpolated(), frustum_offset.interpolated(), near.interpolated(), far.interpolated());
+				}
+			} break;
+		}
+	}
+
+	Spatial::fti_update_servers_property();
+}
+
+void Camera::fti_update_servers_xform() {
 	if (camera.is_valid()) {
 		Transform tr = _get_adjusted_camera_transform(_get_cached_global_transform_interpolated());
 		VisualServer::get_singleton()->camera_set_transform(camera, tr);
 	}
+
+	Spatial::fti_update_servers_xform();
 }
 
 void Camera::_update_camera_mode() {
@@ -57,7 +109,6 @@ void Camera::_update_camera_mode() {
 	switch (mode) {
 		case PROJECTION_PERSPECTIVE: {
 			set_perspective(fov, near, far);
-
 		} break;
 		case PROJECTION_ORTHOGONAL: {
 			set_orthogonal(size, near, far);
@@ -66,6 +117,8 @@ void Camera::_update_camera_mode() {
 			set_frustum(size, frustum_offset, near, far);
 		} break;
 	}
+
+	fti_notify_node_changed(false);
 }
 
 void Camera::_validate_property(PropertyInfo &p_property) const {
@@ -812,11 +865,11 @@ ClippedCamera::ProcessMode ClippedCamera::get_process_mode() const {
 	return process_mode;
 }
 
-void ClippedCamera::fti_pump() {
+void ClippedCamera::fti_pump_xform() {
 	_interpolation_data.clip_offset_prev = _interpolation_data.clip_offset_curr;
 
 	// Must call the base class.
-	Spatial::fti_pump();
+	Camera::fti_pump_xform();
 }
 
 void ClippedCamera::_physics_interpolated_changed() {
@@ -833,9 +886,9 @@ Transform ClippedCamera::_get_adjusted_camera_transform(const Transform &p_xform
 	return t;
 }
 
-void ClippedCamera::fti_update_servers() {
+void ClippedCamera::fti_update_servers_xform() {
 	clip_offset = ((_interpolation_data.clip_offset_curr - _interpolation_data.clip_offset_prev) * Engine::get_singleton()->get_physics_interpolation_fraction()) + _interpolation_data.clip_offset_prev;
-	Camera::fti_update_servers();
+	Camera::fti_update_servers_xform();
 }
 
 void ClippedCamera::_notification(int p_what) {

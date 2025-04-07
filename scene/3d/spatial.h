@@ -123,8 +123,10 @@ private:
 		bool disable_scale : 1;
 
 		// Scene tree interpolation
-		bool fti_on_frame_list : 1;
-		bool fti_on_tick_list : 1;
+		bool fti_on_frame_xform_list : 1;
+		bool fti_on_frame_property_list : 1;
+		bool fti_on_tick_xform_list : 1;
+		bool fti_on_tick_property_list : 1;
 		bool fti_global_xform_interp_set : 1;
 
 		bool merging_allowed : 1;
@@ -166,18 +168,23 @@ protected:
 	// Calling this announces to the FTI system that a node has been moved,
 	// or requires an update in terms of interpolation
 	// (e.g. changing Camera zoom even if position hasn't changed).
-	void fti_notify_node_changed();
+	void fti_notify_node_changed(bool p_transform_changed = true);
 
 	// Opportunity after FTI to update the servers
 	// with global_transform_interpolated,
 	// and any custom interpolated data in derived classes.
 	// Make sure to call the parent class fti_update_servers(),
 	// so all data is updated to the servers.
-	virtual void fti_update_servers() {}
+	virtual void fti_update_servers_xform() {}
+	virtual void fti_update_servers_property() {}
 
 	// Pump the FTI data, also gives a chance for inherited classes
 	// to pump custom data, but they *must* call the base class here too.
-	virtual void fti_pump();
+	// This is the opportunity for classes to move current values for
+	// transforms and properties to stored previous values,
+	// and this should take place both on ticks, and during resets.
+	virtual void fti_pump_xform();
+	virtual void fti_pump_property() {}
 
 	void _notification(int p_what);
 	static void _bind_methods();

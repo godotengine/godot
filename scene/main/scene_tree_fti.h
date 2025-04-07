@@ -47,7 +47,7 @@ public:
 	void set_enabled(Node *p_root, bool p_enabled) {}
 	bool is_enabled() const { return false; }
 
-	void spatial_notify_set_transform(Spatial &r_spatial) {}
+	void spatial_notify_changed(Spatial &r_spatial, bool p_transform_changed) {}
 	void spatial_notify_delete(Spatial *p_spatial) {}
 };
 #else
@@ -66,7 +66,13 @@ public:
 class SceneTreeFTI {
 	struct Data {
 		// Prev / Curr lists of spatials having local xforms pumped.
-		LocalVector<Spatial *> spatial_tick_list[2];
+		LocalVector<Spatial *> tick_xform_list[2];
+
+		// Prev / Curr lists of spatials having actively interpolated properties.
+		LocalVector<Spatial *> tick_property_list[2];
+
+		LocalVector<Spatial *> frame_property_list;
+
 		uint32_t mirror = 0;
 
 		bool enabled = false;
@@ -82,15 +88,20 @@ class SceneTreeFTI {
 
 	void _update_dirty_spatials(Node *p_node, uint32_t p_current_frame, float p_interpolation_fraction, bool p_active, const Transform *p_parent_global_xform = nullptr, int p_depth = 0);
 	void _reset_flags(Node *p_node);
-	void _spatial_notify_set_transform(Spatial &r_spatial);
+	void _spatial_notify_set_xform(Spatial &r_spatial);
+	void _spatial_notify_set_property(Spatial &r_spatial);
 
 public:
 	// Hottest function, allow inlining the data.enabled check.
-	void spatial_notify_set_transform(Spatial &r_spatial) {
+	void spatial_notify_changed(Spatial &r_spatial, bool p_transform_changed) {
 		if (!data.enabled) {
 			return;
 		}
-		_spatial_notify_set_transform(r_spatial);
+		if (p_transform_changed) {
+			_spatial_notify_set_xform(r_spatial);
+		} else {
+			_spatial_notify_set_property(r_spatial);
+		}
 	}
 
 	void spatial_notify_delete(Spatial *p_spatial);
