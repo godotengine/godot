@@ -4776,7 +4776,6 @@ void EditorInspector::_notification(int p_what) {
 			ERR_FAIL_NULL(EditorFeatureProfileManager::get_singleton());
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
-			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			if (!is_sub_inspector()) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
@@ -5013,6 +5012,7 @@ EditorInspector::EditorInspector() {
 	base_vbox->add_child(main_vbox);
 
 	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
+	set_vertical_scroll_mode(SCROLL_MODE_RESERVE);
 	set_follow_focus(true);
 
 	changing = 0;
@@ -5041,4 +5041,5 @@ EditorInspector::EditorInspector() {
 
 	set_draw_focus_border(true);
 	set_scroll_on_drag_hover(true);
+	set_vertical_scroll_shrink(true);
 }

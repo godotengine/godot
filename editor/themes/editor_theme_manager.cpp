@@ -2198,6 +2198,10 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 	// Editor inspector.
 	{
+		Ref<StyleBoxFlat> inspector_panel = p_config.tree_panel_style->duplicate();
+		inspector_panel->set_content_margin(SIDE_RIGHT, 0);
+		p_theme->set_stylebox(SceneStringName(panel), "EditorInspector", inspector_panel);
+
 		// Vertical separation between inspector categories and sections.
 		p_theme->set_constant("v_separation", "EditorInspector", 0);
 
