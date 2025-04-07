@@ -71,6 +71,9 @@ class OS_Unix : public OS {
 	void _load_iconv();
 #endif
 
+	static int _wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options);
+	bool _check_pid_is_running(const pid_t p_pid, int *r_status) const;
+
 protected:
 	// UNIX only handles the core functions.
 	// inheriting platforms under unix (eg. X11) should handle the rest
