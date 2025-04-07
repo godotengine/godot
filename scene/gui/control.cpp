@@ -2352,8 +2352,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 	};
 
 	Vector2 vdir = dir[p_side];
-
-	Rect2 r = get_global_rect();
+	Rect2 r = get_screen_transform().xform(Rect2(Point2(), get_size()));
 	real_t begin_d = vdir.dot(r.get_position());
 	real_t end_d = vdir.dot(r.get_end());
 	real_t maxd = MAX(begin_d, end_d);
@@ -2367,7 +2366,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		ScrollContainer *sc = Object::cast_to<ScrollContainer>(base);
 
 		if (sc) {
-			Rect2 sc_r = sc->get_global_rect();
+			Rect2 sc_r = sc->get_screen_transform().xform(Rect2(Point2(), sc->get_size()));
 			bool follow_focus = sc->is_following_focus();
 
 			if (result && !follow_focus && !sc_r.intersects(result_rect)) {
@@ -2386,8 +2385,8 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 
 				if (!follow_focus && maxd < sc_mind) {
 					// Reposition to find visible control.
+					r.position += (sc_mind - maxd) * vdir;
 					maxd = sc_mind;
-					r.set_position(r.get_position() + (sc_mind - maxd) * vdir);
 				}
 
 				if (follow_focus || sc_maxd > maxd) {
@@ -2396,10 +2395,11 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 
 				if (result == nullptr) {
 					// Reposition to search upwards.
-					maxd = sc_maxd;
-					r.set_position(r.get_position() + (sc_maxd - maxd) * vdir);
+					real_t new_d = CLAMP(maxd, sc_mind, sc_maxd);
+					r.position += (new_d - maxd) * vdir;
+					maxd = new_d;
 				} else {
-					result_rect = result->get_global_rect();
+					result_rect = result->get_screen_transform().xform(Rect2(Point2(), result->get_size()));
 					if (follow_focus) {
 						real_t r_begin_d = vdir.dot(result_rect.get_position());
 						real_t r_end_d = vdir.dot(result_rect.get_end());
@@ -2411,9 +2411,9 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 						}
 
 						if (r_maxd > sc_maxd) {
-							result_rect.set_position(result_rect.get_position() + (sc_maxd - r_maxd) * vdir);
+							result_rect.position += (sc_maxd - r_maxd) * vdir;
 						} else if (r_mind < sc_mind) {
-							result_rect.set_position(result_rect.get_position() + (sc_mind - r_mind) * vdir);
+							result_rect.position += (sc_mind - r_mind) * vdir;
 						}
 					}
 				}
@@ -2513,58 +2513,60 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	Container *container = Object::cast_to<Container>(p_at);
 	bool in_container = container ? container->is_ancestor_of(this) : false;
 
-	if (c && c != this && c->get_focus_mode_with_recursive() == FOCUS_ALL && !in_container && p_clamp.intersects(c->get_global_rect())) {
-		Rect2 r_c = c->get_global_rect();
+	if (c && c != this && c->get_focus_mode_with_recursive() == FOCUS_ALL && !in_container) {
+		Rect2 r_c = c->get_screen_transform().xform(Rect2(Point2(), c->get_size()));
 		r_c = r_c.intersection(p_clamp);
-		real_t begin_d = p_dir.dot(r_c.get_position());
-		real_t end_d = p_dir.dot(r_c.get_end());
-		real_t max = MAX(begin_d, end_d);
+		if (r_c.has_area()) {
+			real_t begin_d = p_dir.dot(r_c.get_position());
+			real_t end_d = p_dir.dot(r_c.get_end());
+			real_t max = MAX(begin_d, end_d);
 
-		// Use max to allow navigation to overlapping controls (for ScrollContainer case).
-		if (max > (p_min + CMP_EPSILON)) {
-			// Calculate the shortest distance. (No shear transform)
-			// Flip along axis(es) so that C falls in the first quadrant of c (as origin) for easy calculation.
-			// The same transformation would put the direction vector in the positive direction (+x or +y).
-			//       |           -------------
-			//       |           |     |     |
-			//       |           |-----C-----|
-			//   ----|---a       |     |     |
-			//   |   |   |       b------------
-			//  -|---c---|----------------------->
-			//   |   |   |
-			//   ----|----
-			// cC = ca + ab + bC
-			// The shortest distance is the vector ab's length or its positive projection length.
+			// Use max to allow navigation to overlapping controls (for ScrollContainer case).
+			if (max > (p_min + CMP_EPSILON)) {
+				// Calculate the shortest distance. (No shear transform)
+				// Flip along axis(es) so that C falls in the first quadrant of c (as origin) for easy calculation.
+				// The same transformation would put the direction vector in the positive direction (+x or +y).
+				//       |           -------------
+				//       |           |     |     |
+				//       |           |-----C-----|
+				//   ----|---a       |     |     |
+				//   |   |   |       b------------
+				//  -|---c---|----------------------->
+				//   |   |   |
+				//   ----|----
+				// cC = ca + ab + bC
+				// The shortest distance is the vector ab's length or its positive projection length.
 
-			Vector2 cC_origin = r_c.get_center() - p_rect.get_center();
-			Vector2 cC = cC_origin.abs(); // Converted to fall in the first quadrant of c.
+				Vector2 cC_origin = r_c.get_center() - p_rect.get_center();
+				Vector2 cC = cC_origin.abs(); // Converted to fall in the first quadrant of c.
 
-			Vector2 ab = cC - 0.5 * r_c.get_size() - 0.5 * p_rect.get_size();
+				Vector2 ab = cC - 0.5 * r_c.get_size() - 0.5 * p_rect.get_size();
 
-			real_t min_d_squared = 0.0;
-			if (ab.x > 0.0) {
-				min_d_squared += ab.x * ab.x;
-			}
-			if (ab.y > 0.0) {
-				min_d_squared += ab.y * ab.y;
-			}
+				real_t min_d_squared = 0.0;
+				if (ab.x > 0.0) {
+					min_d_squared += ab.x * ab.x;
+				}
+				if (ab.y > 0.0) {
+					min_d_squared += ab.y * ab.y;
+				}
 
-			if (min_d_squared < r_closest_dist_squared || *r_closest == nullptr) {
-				r_closest_dist_squared = min_d_squared;
-				*r_closest = c;
-			} else if (min_d_squared == r_closest_dist_squared) {
-				// Tie-breaking aims to address situations where a potential focus neighbor's bounding rect
-				// is right next to the currently focused control (e.g. in BoxContainer with
-				// separation overridden to 0). This needs specific handling so that the correct
-				// focus neighbor is selected.
-
-				Point2 p_center = p_rect.get_center();
-				Control *closest = *r_closest;
-				Point2 closest_center = closest->get_global_rect().get_center();
-
-				// Tie-break in favor of the control most aligned with p_dir.
-				if (Math::abs(p_dir.cross(cC_origin)) < Math::abs(p_dir.cross(closest_center - p_center))) {
+				if (min_d_squared < r_closest_dist_squared || *r_closest == nullptr) {
+					r_closest_dist_squared = min_d_squared;
 					*r_closest = c;
+				} else if (min_d_squared == r_closest_dist_squared) {
+					// Tie-breaking aims to address situations where a potential focus neighbor's bounding rect
+					// is right next to the currently focused control (e.g. in BoxContainer with
+					// separation overridden to 0). This needs specific handling so that the correct
+					// focus neighbor is selected.
+
+					Point2 p_center = p_rect.get_center();
+					Control *closest = *r_closest;
+					Point2 closest_center = closest->get_screen_transform().xform(Rect2(Point2(), closest->get_size())).get_center();
+
+					// Tie-break in favor of the control most aligned with p_dir.
+					if (Math::abs(p_dir.cross(cC_origin)) < Math::abs(p_dir.cross(closest_center - p_center))) {
+						*r_closest = c;
+					}
 				}
 			}
 		}
@@ -2574,7 +2576,7 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	Rect2 intersection = p_clamp;
 	if (sc) {
 		if (!sc->is_following_focus() || !in_container) {
-			intersection = p_clamp.intersection(sc->get_global_rect());
+			intersection = p_clamp.intersection(sc->get_screen_transform().xform(Rect2(Point2(), sc->get_size())));
 			if (!intersection.has_area()) {
 				return;
 			}
