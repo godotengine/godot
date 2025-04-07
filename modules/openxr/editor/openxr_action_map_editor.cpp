@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 
 HashMap<String, String> OpenXRActionMapEditor::interaction_profile_editors;
 HashMap<String, String> OpenXRActionMapEditor::binding_modifier_editors;
@@ -431,7 +432,7 @@ String OpenXRActionMapEditor::get_binding_modifier_editor_class(const String &p_
 
 OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	undo_redo = EditorUndoRedoManager::get_singleton();
-	set_custom_minimum_size(Size2(0.0, 300.0));
+	set_custom_minimum_size(Size2(0.0, 300.0 * EDSCALE));
 
 	top_hb = memnew(HBoxContainer);
 	add_child(top_hb);

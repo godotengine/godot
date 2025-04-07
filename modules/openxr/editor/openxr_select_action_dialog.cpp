@@ -30,6 +30,8 @@
 
 #include "openxr_select_action_dialog.h"
 
+#include "editor/themes/editor_scale.h"
+
 void OpenXRSelectActionDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("action_selected", PropertyInfo(Variant::STRING, "action")));
 }
@@ -124,7 +126,7 @@ OpenXRSelectActionDialog::OpenXRSelectActionDialog(Ref<OpenXRActionMap> p_action
 	set_title(TTR("Select an action"));
 
 	scroll = memnew(ScrollContainer);
-	scroll->set_custom_minimum_size(Size2(600.0, 400.0));
+	scroll->set_custom_minimum_size(Size2(600.0 * EDSCALE, 400.0 * EDSCALE));
 	add_child(scroll);
 
 	main_vb = memnew(VBoxContainer);
