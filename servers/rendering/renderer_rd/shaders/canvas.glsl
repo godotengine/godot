@@ -460,11 +460,6 @@ float msdf_median(float r, float g, float b, float a) {
 	return min(max(min(r, g), min(max(r, g), b)), a);
 }
 
-#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
-vec4 region_rect = draw_data.src_rect;
-#else
-vec4 region_rect = vec4(0.0, 0.0, 1.0 / draw_data.color_texture_pixel_size)
-#endif
 
 void main() {
 	vec4 color = color_interp;
@@ -477,6 +472,12 @@ void main() {
 	instance_index = instance_index_interp;
 #endif // USE_ATTRIBUTES
 	const InstanceData draw_data = instances.data[instance_index];
+
+#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
+vec4 region_rect = draw_data.src_rect;
+#else
+vec4 region_rect = vec4(0.0, 0.0, 1.0 / draw_data.color_texture_pixel_size);
+#endif
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
