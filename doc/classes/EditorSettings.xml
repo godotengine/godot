@@ -1142,6 +1142,10 @@
 			If [code]true[/code], enable TLSv1.3 negotiation.
 			[b]Note:[/b] Only supported when using Mbed TLS 3.0 or later (Linux distribution packages may be compiled against older system Mbed TLS packages), otherwise the maximum supported TLS version is always TLSv1.2.
 		</member>
+		<member name="project_manager/auto_create_nomedia_file" type="bool" setter="" getter="">
+			If [code]true[/code], the editor automatically creates a [code].nomedia[/code] file in the project's root directory to prevent media files from appearing in Android's gallery or media library apps.
+			[b]Note:[/b] Only available in the Android editor.
+		</member>
 		<member name="project_manager/default_renderer" type="String" setter="" getter="">
 			The renderer type that will be checked off by default when creating a new project. Accepted strings are "forward_plus", "mobile" or "gl_compatibility".
 		</member>

@@ -1052,6 +1052,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	const String default_renderer = "forward_plus";
 #endif
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", default_renderer, "forward_plus,mobile,gl_compatibility")
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "project_manager/auto_create_nomedia_file", true, "")
 
 #undef EDITOR_SETTING
 #undef EDITOR_SETTING_BASIC
