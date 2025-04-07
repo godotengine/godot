@@ -4267,6 +4267,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				case GDScriptParser::ClassNode::Member::CLASS: {
 					reduce_identifier_from_base_set_class(p_identifier, member.get_datatype());
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CLASS;
+#ifdef DEBUG_ENABLED
+					if (script_class->get_member(name).m_class->doc_data.is_deprecated) {
+						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+					}
+#endif
 					return;
 				}
 
