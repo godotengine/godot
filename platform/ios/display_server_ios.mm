@@ -500,10 +500,18 @@ int DisplayServerIOS::get_primary_screen() const {
 }
 
 Point2i DisplayServerIOS::screen_get_position(int p_screen) const {
-	return Size2i();
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
+	return Point2i(0, 0);
 }
 
 Size2i DisplayServerIOS::screen_get_size(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	CALayer *layer = AppDelegate.viewController.godotView.renderingLayer;
 
 	if (!layer) {
@@ -514,10 +522,18 @@ Size2i DisplayServerIOS::screen_get_size(int p_screen) const {
 }
 
 Rect2i DisplayServerIOS::screen_get_usable_rect(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
 int DisplayServerIOS::screen_get_dpi(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	struct utsname systemInfo;
 	uname(&systemInfo);
 
@@ -555,6 +571,10 @@ int DisplayServerIOS::screen_get_dpi(int p_screen) const {
 }
 
 float DisplayServerIOS::screen_get_refresh_rate(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	float fps = [UIScreen mainScreen].maximumFramesPerSecond;
 	if ([NSProcessInfo processInfo].lowPowerModeEnabled) {
 		fps = 60;
@@ -563,6 +583,10 @@ float DisplayServerIOS::screen_get_refresh_rate(int p_screen) const {
 }
 
 float DisplayServerIOS::screen_get_scale(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	return [UIScreen mainScreen].scale;
 }
 
@@ -607,7 +631,8 @@ void DisplayServerIOS::window_set_title(const String &p_title, WindowID p_window
 }
 
 int DisplayServerIOS::window_get_current_screen(WindowID p_window) const {
-	return SCREEN_OF_MAIN_WINDOW;
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+	return 0;
 }
 
 void DisplayServerIOS::window_set_current_screen(int p_screen, WindowID p_window) {
@@ -696,6 +721,10 @@ float DisplayServerIOS::screen_get_max_scale() const {
 }
 
 void DisplayServerIOS::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
+
 	screen_orientation = p_orientation;
 	if (@available(iOS 16.0, *)) {
 		[AppDelegate.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
@@ -705,6 +734,10 @@ void DisplayServerIOS::screen_set_orientation(DisplayServer::ScreenOrientation p
 }
 
 DisplayServer::ScreenOrientation DisplayServerIOS::screen_get_orientation(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_LANDSCAPE);
+
 	return screen_orientation;
 }
 
