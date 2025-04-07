@@ -805,6 +805,57 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 #endif
 }
 
+int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options) {
+	while (true) {
+		if (waitpid(p_pid, r_status, p_options) != -1) {
+			// Thread exited normally.
+			return 0;
+		}
+		const int error = errno;
+		if (error == EINTR) {
+			// We're in a debugger, should call waitpid again.
+			// See https://stackoverflow.com/a/45472920/730797.
+			continue;
+		}
+		return error;
+	}
+}
+
+bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
+	const ProcessInfo *pi = process_map->getptr(p_pid);
+
+	if (pi && !pi->is_running) {
+		// Can return cached value.
+		if (r_status) {
+			*r_status = pi->exit_code;
+		}
+		return false;
+	}
+
+	int status = 0;
+	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG);
+	if (result == 0) {
+		// Thread is still running.
+		return true;
+	}
+
+	ERR_FAIL_COND_V_MSG(result == -1, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
+	// Thread exited normally.
+
+	status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
+
+	if (pi) {
+		pi->is_running = false;
+		pi->exit_code = status;
+	}
+
+	if (r_status) {
+		*r_status = status;
+	}
+
+	return false;
+}
+
 Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
@@ -870,12 +921,12 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		raise(SIGKILL);
 	}
 
-	int status;
-	waitpid(pid, &status, 0);
+	int status = 0;
+	const int result = _wait_for_pid_completion(pid, &status, 0);
 	if (r_exitcode) {
 		*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 	}
-	return OK;
+	return result ? FAILED : OK;
 #endif
 }
 
@@ -929,7 +980,7 @@ Error OS_Unix::kill(const ProcessID &p_pid) {
 	if (!ret) {
 		//avoid zombie process
 		int st;
-		::waitpid(p_pid, &st, 0);
+		_wait_for_pid_completion(p_pid, &st, 0);
 	}
 	return ret ? ERR_INVALID_PARAMETER : OK;
 }
@@ -940,42 +991,19 @@ int OS_Unix::get_process_id() const {
 
 bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
 	MutexLock lock(process_map_mutex);
-	const ProcessInfo *pi = process_map->getptr(p_pid);
-
-	if (pi && !pi->is_running) {
-		return false;
-	}
-
-	int status = 0;
-	if (waitpid(p_pid, &status, WNOHANG) != 0) {
-		if (pi) {
-			pi->is_running = false;
-			pi->exit_code = status;
-		}
-		return false;
-	}
-
-	return true;
+	return _check_pid_is_running(p_pid, nullptr);
 }
 
 int OS_Unix::get_process_exit_code(const ProcessID &p_pid) const {
 	MutexLock lock(process_map_mutex);
-	const ProcessInfo *pi = process_map->getptr(p_pid);
 
-	if (pi && !pi->is_running) {
-		return pi->exit_code;
+	int exit_code = 0;
+	if (_check_pid_is_running(p_pid, &exit_code)) {
+		// Thread is still running
+		return -1;
 	}
 
-	int status = 0;
-	if (waitpid(p_pid, &status, WNOHANG) != 0) {
-		status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
-		if (pi) {
-			pi->is_running = false;
-			pi->exit_code = status;
-		}
-		return status;
-	}
-	return -1;
+	return exit_code;
 }
 
 String OS_Unix::get_locale() const {
