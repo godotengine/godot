@@ -4484,6 +4484,12 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			// TODO: Constant should have a value on the node itself.
 			p_identifier->reduced_value = p_identifier->constant_source->initializer->reduced_value;
 			found_source = true;
+
+#ifdef DEBUG_ENABLED
+			if (p_identifier->constant_source->doc_data.is_deprecated) {
+				parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+			}
+#endif
 			break;
 		case GDScriptParser::IdentifierNode::MEMBER_SIGNAL:
 			p_identifier->signal_source->usages++;
