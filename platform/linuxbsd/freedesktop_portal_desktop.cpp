@@ -490,7 +490,7 @@ bool FreeDesktopPortalDesktop::file_chooser_parse_response(DBusMessageIter *p_it
 						while (dbus_message_iter_get_arg_type(&uri_iter) == DBUS_TYPE_STRING) {
 							const char *value;
 							dbus_message_iter_get_basic(&uri_iter, &value);
-							r_urls.push_back(String::utf8(value).trim_prefix("file://").uri_decode());
+							r_urls.push_back(String::utf8(value).trim_prefix("file://").uri_file_decode());
 							if (!dbus_message_iter_next(&uri_iter)) {
 								break;
 							}

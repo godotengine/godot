@@ -1130,6 +1130,7 @@
 				GD.Print(url.URIDecode()) // Prints "$DOCS_URL/?highlight=Godot Engine:docs"
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] This method decodes [code]+[/code] as space.
 			</description>
 		</method>
 		<method name="uri_encode" qualifiers="const">
@@ -1150,6 +1151,12 @@
 				GD.Print(url); // Prints "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="uri_file_decode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Decodes the file path from its URL-encoded format. Unlike [method uri_decode] this method leaves [code]+[/code] as is.
 			</description>
 		</method>
 		<method name="validate_filename" qualifiers="const">
