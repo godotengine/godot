@@ -71,7 +71,6 @@ extern "C" {
 
 static const D3D12_RANGE VOID_RANGE = {};
 
-
 static const uint32_t MAX_DYNAMIC_BUFFERS = 8u; // Minimum guaranteed by Vulkan.
 
 /*****************/
@@ -829,7 +828,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 		case MEMORY_ALLOCATION_TYPE_GPU: {
 			// Use default parameters.
 			if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
-				allocation_desc.HeapType = D3D12_HEAP_TYPE_UPLOAD /*D3D12_HEAP_TYPE_GPU_UPLOAD*/;
+				allocation_desc.HeapType = dynamic_persistent_upload_heap;
 
 				// We can't use STORAGE for write access, just for read.
 				resource_desc.Flags = resource_desc.Flags & ~D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
@@ -6146,6 +6145,16 @@ Error RenderingDeviceDriverD3D12::_initialize_allocator() {
 
 	HRESULT res = D3D12MA::CreateAllocator(&allocator_desc, &allocator);
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::CreateAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+
+	if (allocator->IsGPUUploadHeapSupported()) {
+		dynamic_persistent_upload_heap = D3D12_HEAP_TYPE_GPU_UPLOAD;
+		print_verbose("D3D12: Device supports GPU UPLOAD heap.");
+	} else {
+		dynamic_persistent_upload_heap = D3D12_HEAP_TYPE_UPLOAD;
+		// Print it as a warning (instead of verbose) because in the rare chance this lesser-used code path
+		// causes bugs, we get an inkling of what's going on (i.e. in order to repro bugs locally).
+		WARN_PRINT("D3D12: Device does NOT support GPU UPLOAD heap. ReBAR must be enabled for this feature. Regular UPLOAD heaps will be used as fallback.");
+	}
 
 	return OK;
 }

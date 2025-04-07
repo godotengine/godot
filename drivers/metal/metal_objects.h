@@ -771,7 +771,7 @@ public:
 	uint32_t index;
 	LocalVector<RDD::BoundUniform> uniforms;
 	HashMap<CacheKey, BoundUniformSet, HashableHasher<CacheKey>> bound_uniforms;
-	TightLocalVector<MetalBufferDynamicInfo const *, uint32_t, true> dynamic_buffers;
+	TightLocalVector<MetalBufferDynamicInfo const *, uint32_t> dynamic_buffers;
 
 	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets);
 	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets);

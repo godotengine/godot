@@ -1252,8 +1252,6 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 	uint32_t uniform_sets_count = mtl_refl.uniform_sets.size();
 	uniform_sets.resize(uniform_sets_count);
 
-	const bool has_dynamic_buffers = !p_dynamic_buffers.is_empty();
-
 	// Create sets.
 	for (uint32_t i = 0; i < uniform_sets_count; i++) {
 		UniformSet &set = uniform_sets.write[i];

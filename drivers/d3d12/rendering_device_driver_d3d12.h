@@ -132,6 +132,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	MiscFeaturesSupport misc_features_support;
 	RenderingShaderContainerFormatD3D12 shader_container_format;
 	String pipeline_cache_id;
+	D3D12_HEAP_TYPE dynamic_persistent_upload_heap = D3D12_HEAP_TYPE_UPLOAD;
 
 	class DescriptorsHeap {
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
