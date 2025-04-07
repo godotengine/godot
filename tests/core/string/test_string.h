@@ -1774,6 +1774,7 @@ TEST_CASE("[String] uri_encode/unescape") {
 	static const uint8_t u8str[] = { 0x54, 0xC4, 0x93, 0xC5, 0xA1, 0x74, 0x00 };
 	String x2 = String::utf8((const char *)u8str);
 	String x3 = U"Tēšt";
+	String x4 = U"file+name";
 
 	CHECK(x1.uri_decode() == x2);
 	CHECK(x1.uri_decode() == x3);
@@ -1783,6 +1784,8 @@ TEST_CASE("[String] uri_encode/unescape") {
 
 	CHECK(s.uri_encode() == t);
 	CHECK(t.uri_decode() == s);
+	CHECK(x4.uri_file_decode() == x4);
+	CHECK(x4.uri_decode() == U"file name");
 }
 
 TEST_CASE("[String] xml_escape/unescape") {

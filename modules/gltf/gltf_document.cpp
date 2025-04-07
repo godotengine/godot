@@ -812,7 +812,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_
 					buffer_data = _parse_base64_uri(uri);
 				} else { // Relative path to an external image file.
 					ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
-					uri = uri.uri_decode();
+					uri = uri.uri_file_decode();
 					uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
 					ERR_FAIL_COND_V_MSG(!FileAccess::exists(uri), ERR_FILE_NOT_FOUND, "glTF: Binary file not found: " + uri);
 					buffer_data = FileAccess::get_file_as_bytes(uri);
@@ -4123,7 +4123,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				}
 			} else { // Relative path to an external image file.
 				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
-				uri = uri.uri_decode();
+				uri = uri.uri_file_decode();
 				uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
 				resource_uri = uri.simplify_path();
 				// ResourceLoader will rely on the file extension to use the relevant loader.

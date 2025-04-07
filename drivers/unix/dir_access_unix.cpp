@@ -257,7 +257,7 @@ static void _get_drives(List<String> *list) {
 				// Parse only file:// links
 				if (strncmp(string, "file://", 7) == 0) {
 					// Strip any unwanted edges on the strings and push_back if it's not a duplicate.
-					String fpath = String::utf8(string + 7).strip_edges().split_spaces()[0].uri_decode();
+					String fpath = String::utf8(string + 7).strip_edges().split_spaces()[0].uri_file_decode();
 					if (!list->find(fpath)) {
 						list->push_back(fpath);
 					}
