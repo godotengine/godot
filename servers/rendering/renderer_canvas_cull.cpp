@@ -443,7 +443,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			if (!use_canvas_group) {
 				ci->ysort_xform = Transform2D();
 				ci->ysort_modulate = Color(1, 1, 1, 1) / ci->modulate;
-			ci->ysort_index = 0;
+				ci->ysort_index = 0;
 				ci->ysort_parent_abs_z_index = parent_z;
 				child_items[0] = ci;
 				i = 1;
