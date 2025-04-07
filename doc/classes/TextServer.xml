@@ -1097,6 +1097,13 @@
 				Returns the name of the server interface.
 			</description>
 		</method>
+		<method name="get_process_info" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="info" type="int" enum="TextServer.ProcessInfo" />
+			<description>
+				Returns information about the current state of the text server. See [enum ProcessInfo] for the list of available states.
+			</description>
+		</method>
 		<method name="get_support_data" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
@@ -2202,6 +2209,18 @@
 		</constant>
 		<constant name="FIXED_SIZE_SCALE_ENABLED" value="2" enum="FixedSizeScaleMode">
 			Bitmap font is scaled to an arbitrary (fractional) size. This is the recommended option for non-pixel art fonts.
+		</constant>
+		<constant name="BUFFER_COUNT" value="0" enum="ProcessInfo">
+			Number of shaped text buffers.
+		</constant>
+		<constant name="FONT_COUNT" value="1" enum="ProcessInfo">
+			Number of fonts.
+		</constant>
+		<constant name="FONT_VARIATION_COUNT" value="2" enum="ProcessInfo">
+			Number of font variations.
+		</constant>
+		<constant name="BUFFER_GLYPH_COUNT" value="3" enum="ProcessInfo">
+			Number of glyphs in the shaped text buffers.
 		</constant>
 	</constants>
 </class>

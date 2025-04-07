@@ -542,6 +542,8 @@ class TextServerAdvanced : public TextServerExtension {
 		bool chars_valid = false;
 
 		~ShapedTextDataAdvanced() {
+			TextServerAdvanced::buf_glyphs -= glyphs.size();
+			TextServerAdvanced::buf_glyphs -= glyphs_logical.size();
 			for (int i = 0; i < bidi_iter.size(); i++) {
 				if (bidi_iter[i]) {
 					ubidi_close(bidi_iter[i]);
@@ -714,6 +716,12 @@ class TextServerAdvanced : public TextServerExtension {
 			}
 		}
 	};
+
+public:
+	static int64_t buf_count;
+	static int64_t font_count;
+	static int64_t font_var_count;
+	static int64_t buf_glyphs;
 
 protected:
 	static void _bind_methods() {}
@@ -1018,6 +1026,8 @@ public:
 	MODBIND2RC(String, string_to_upper, const String &, const String &);
 	MODBIND2RC(String, string_to_lower, const String &, const String &);
 	MODBIND2RC(String, string_to_title, const String &, const String &);
+
+	MODBIND1RC(int64_t, get_process_info, ProcessInfo);
 
 	MODBIND0(cleanup);
 

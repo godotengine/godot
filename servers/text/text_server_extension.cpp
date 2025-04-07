@@ -355,6 +355,8 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_parse_structured_text, "parser_type", "args", "text");
 
+	GDVIRTUAL_BIND(_get_process_info, "info");
+
 	GDVIRTUAL_BIND(_cleanup);
 }
 
@@ -1616,6 +1618,12 @@ bool TextServerExtension::spoof_check(const String &p_string) const {
 		return ret;
 	}
 	return TextServer::spoof_check(p_string);
+}
+
+int64_t TextServerExtension::get_process_info(ProcessInfo p_info) const {
+	int64_t ret = 0;
+	GDVIRTUAL_CALL(_get_process_info, p_info, ret);
+	return ret;
 }
 
 void TextServerExtension::cleanup() {

@@ -299,7 +299,19 @@
 		<constant name="NAVIGATION_3D_OBSTACLE_COUNT" value="58" enum="Monitor">
 			Number of active navigation obstacles in the [NavigationServer3D].
 		</constant>
-		<constant name="MONITOR_MAX" value="59" enum="Monitor">
+		<constant name="TEXTSERVER_BUFFER_COUNT" value="59" enum="Monitor">
+			Number of shaped text buffers.
+		</constant>
+		<constant name="TEXTSERVER_FONT_COUNT" value="60" enum="Monitor">
+			Number of fonts.
+		</constant>
+		<constant name="TEXTSERVER_FONT_VARIATION_COUNT" value="61" enum="Monitor">
+			Number of font variations.
+		</constant>
+		<constant name="TEXTSERVER_BUFFER_GLYPH_COUNT" value="62" enum="Monitor">
+			Number of glyphs in the shaped text buffers.
+		</constant>
+		<constant name="MONITOR_MAX" value="63" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
 		</constant>
 	</constants>
