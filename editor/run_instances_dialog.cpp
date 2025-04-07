@@ -194,7 +194,7 @@ void RunInstancesDialog::_instance_tree_rmb(const Vector2 &p_pos, MouseButton p_
 }
 
 void RunInstancesDialog::popup_dialog() {
-	popup_centered(Vector2(1200, 600) * EDSCALE);
+	popup_centered_clamped(Size2(1200, 700) * EDSCALE, 0.8);
 }
 
 int RunInstancesDialog::get_instance_count() const {
@@ -310,46 +310,48 @@ RunInstancesDialog::RunInstancesDialog() {
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
 
-	GridContainer *args_gc = memnew(GridContainer);
-	args_gc->set_columns(3);
-	args_gc->add_theme_constant_override("h_separation", 12 * EDSCALE);
-	main_vb->add_child(args_gc);
+	HBoxContainer *instance_vb = memnew(HBoxContainer);
+	main_vb->add_child(instance_vb);
 
 	enable_multiple_instances_checkbox = memnew(CheckBox);
 	enable_multiple_instances_checkbox->set_text(TTR("Enable Multiple Instances"));
 	enable_multiple_instances_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false));
-	args_gc->add_child(enable_multiple_instances_checkbox);
+	instance_vb->add_child(enable_multiple_instances_checkbox);
 	enable_multiple_instances_checkbox->connect(SceneStringName(pressed), callable_mp(this, &RunInstancesDialog::_start_main_timer));
-
-	{
-		Label *l = memnew(Label);
-		l->set_text(TTR("Main Run Args:"));
-		args_gc->add_child(l);
-	}
-
-	{
-		Label *l = memnew(Label);
-		l->set_text(TTR("Main Feature Tags:"));
-		args_gc->add_child(l);
-	}
-
-	stored_data = TypedArray<Dictionary>(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instances_config", TypedArray<Dictionary>()));
 
 	instance_count = memnew(SpinBox);
 	instance_count->set_min(1);
 	instance_count->set_max(20);
 	instance_count->set_value(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instance_count", stored_data.size()));
 
-	args_gc->add_child(instance_count);
+	instance_vb->add_child(instance_count);
 	instance_count->connect(SceneStringName(value_changed), callable_mp(this, &RunInstancesDialog::_start_instance_timer).unbind(1));
 	instance_count->connect(SceneStringName(value_changed), callable_mp(this, &RunInstancesDialog::_refresh_argument_count).unbind(1));
 	enable_multiple_instances_checkbox->connect(SceneStringName(toggled), callable_mp(instance_count, &SpinBox::set_editable));
 	instance_count->set_editable(enable_multiple_instances_checkbox->is_pressed());
 
+	GridContainer *main_gc = memnew(GridContainer);
+	main_gc->set_columns(2);
+	main_vb->add_child(main_gc);
+
+	{
+		Label *l = memnew(Label);
+		l->set_text(TTR("Main Run Args:"));
+		main_gc->add_child(l);
+	}
+
+	{
+		Label *l = memnew(Label);
+		l->set_text(TTR("Main Feature Tags:"));
+		main_gc->add_child(l);
+	}
+
+	stored_data = TypedArray<Dictionary>(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instances_config", TypedArray<Dictionary>()));
+
 	main_args_edit = memnew(LineEdit);
 	main_args_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_args_edit->set_placeholder(TTR("Space-separated arguments, example: host player1 blue"));
-	args_gc->add_child(main_args_edit);
+	main_gc->add_child(main_args_edit);
 	_fetch_main_args();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &RunInstancesDialog::_fetch_main_args));
 	main_args_edit->connect(SceneStringName(text_changed), callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
@@ -358,7 +360,7 @@ RunInstancesDialog::RunInstancesDialog() {
 	main_features_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_features_edit->set_placeholder(TTR("Comma-separated tags, example: demo, steam, event"));
 	main_features_edit->set_text(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_main_feature_tags", ""));
-	args_gc->add_child(main_features_edit);
+	main_gc->add_child(main_features_edit);
 	main_features_edit->connect(SceneStringName(text_changed), callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
 
 	{
