@@ -435,10 +435,8 @@ void EditorSpinSlider::_draw_spin_slider() {
 					grabber->set_texture(grabber_tex);
 				}
 
-				Vector2 scale = get_global_transform_with_canvas().get_scale();
-				grabber->set_scale(scale);
 				grabber->reset_size();
-				grabber->set_position((grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
+				grabber->set_position(grabber_rect.get_center() - grabber->get_size() * 0.5);
 
 				if (mousewheel_over_grabber) {
 					Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
