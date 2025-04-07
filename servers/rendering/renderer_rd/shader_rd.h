@@ -132,8 +132,8 @@ private:
 	String base_sha256;
 	LocalVector<String> group_sha256;
 
-	static ShaderVersionPairSet shader_versions_embedded_set;
-	static Mutex shader_versions_embedded_set_mutex;
+	static inline ShaderVersionPairSet shader_versions_embedded_set;
+	static inline Mutex shader_versions_embedded_set_mutex;
 
 	static String shader_cache_user_dir;
 	static String shader_cache_res_dir;

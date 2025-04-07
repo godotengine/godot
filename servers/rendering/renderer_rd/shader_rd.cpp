@@ -910,9 +910,6 @@ void ShaderRD::shaders_embedded_set_unlock() {
 	shader_versions_embedded_set_mutex.unlock();
 }
 
-ShaderRD::ShaderVersionPairSet ShaderRD::shader_versions_embedded_set;
-Mutex ShaderRD::shader_versions_embedded_set_mutex;
-
 void ShaderRD::set_shader_cache_user_dir(const String &p_dir) {
 	shader_cache_user_dir = p_dir;
 }
