@@ -150,6 +150,7 @@ void SectionedInspector::_section_selected() {
 	selected_category = sections->get_selected()->get_metadata(0);
 	filter->set_section(selected_category, sections->get_selected()->get_first_child() == nullptr);
 	inspector->set_property_prefix(selected_category + "/");
+	inspector->set_v_scroll(0);
 }
 
 void SectionedInspector::set_current_section(const String &p_section) {
