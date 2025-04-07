@@ -63,6 +63,8 @@ private:
 	void _lock_panel_toggled(bool p_pressed);
 	Button *_add_new_action_button(const String &p_shortcut, Key p_keycode = Key::NONE);
 
+	void _hardware_keyboard_connected(bool p_connected);
+
 public:
 	TouchActionsPanel();
 };

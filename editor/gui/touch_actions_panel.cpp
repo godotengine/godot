@@ -41,6 +41,10 @@
 
 void TouchActionsPanel::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			DisplayServer::get_singleton()->set_hardware_keyboard_connection_change_callback(callable_mp(this, &TouchActionsPanel::_hardware_keyboard_connected));
+			_hardware_keyboard_connected(DisplayServer::get_singleton()->has_hardware_keyboard());
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			drag_handle->set_texture(get_editor_theme_icon(SNAME("DragHandle")));
 			layout_toggle_button->set_button_icon(get_editor_theme_icon(SNAME("Orientation")));
@@ -51,6 +55,10 @@ void TouchActionsPanel::_notification(int p_what) {
 			redo_button->set_button_icon(get_editor_theme_icon(SNAME("Redo")));
 		} break;
 	}
+}
+
+void TouchActionsPanel::_hardware_keyboard_connected(bool p_connected) {
+	set_visible(!p_connected);
 }
 
 void TouchActionsPanel::_simulate_editor_shortcut(const String &p_shortcut_name) {

@@ -1033,6 +1033,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_get_height"), &DisplayServer::virtual_keyboard_get_height);
 
 	ClassDB::bind_method(D_METHOD("has_hardware_keyboard"), &DisplayServer::has_hardware_keyboard);
+	ClassDB::bind_method(D_METHOD("set_hardware_keyboard_connection_change_callback", "callable"), &DisplayServer::set_hardware_keyboard_connection_change_callback);
 
 	ClassDB::bind_method(D_METHOD("cursor_set_shape", "shape"), &DisplayServer::cursor_set_shape);
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
