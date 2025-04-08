@@ -3030,14 +3030,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 			const String base_path = resource_path.substr(0, resource_path.rfind_char('/')) + "/";
 
-			file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-			file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-			file->clear_filters();
-			file->set_current_path(base_path);
-			file->set_current_file(ProjectZIPPacker::get_project_zip_safe_name());
-			file->add_filter("*.zip", "ZIP Archive");
-			file->set_title(TTR("Pack Project as ZIP..."));
-			file->popup_file_dialog();
+			file_pack_zip->set_current_path(base_path);
+			file_pack_zip->set_current_file(ProjectZIPPacker::get_project_zip_safe_name());
+			file_pack_zip->popup_file_dialog();
 		} break;
 
 		case FILE_UNDO: {
@@ -8066,6 +8061,14 @@ EditorNode::EditorNode() {
 	}
 	gui_base->add_child(file_script);
 	file_script->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
+
+	file_pack_zip = memnew(EditorFileDialog);
+	file_pack_zip->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
+	file_pack_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_pack_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_pack_zip->add_filter("*.zip", "ZIP Archive");
+	file_pack_zip->set_title(TTR("Pack Project as ZIP..."));
+	gui_base->add_child(file_pack_zip);
 
 	file_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 	file_menu->connect("about_to_popup", callable_mp(this, &EditorNode::_update_file_menu_opened));
