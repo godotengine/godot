@@ -2542,6 +2542,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (!bool(GLOBAL_GET("display/window/size/resizable"))) {
 			window_flags |= DisplayServer::WINDOW_FLAG_RESIZE_DISABLED_BIT;
 		}
+		if (bool(GLOBAL_GET("display/window/size/minimize_disabled"))) {
+			window_flags |= DisplayServer::WINDOW_FLAG_MINIMIZE_DISABLED_BIT;
+		}
+		if (bool(GLOBAL_GET("display/window/size/maximize_disabled"))) {
+			window_flags |= DisplayServer::WINDOW_FLAG_MAXIMIZE_DISABLED_BIT;
+		}
 		if (bool(GLOBAL_GET("display/window/size/borderless"))) {
 			window_flags |= DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
 		}
