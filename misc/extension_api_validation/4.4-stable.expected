@@ -31,3 +31,11 @@ GH-104890
 Validate extension JSON: API was removed: classes/JSONRPC/methods/set_scope
 
 Replaced `set_scope` with `set_method`. Compatibility method registered for binary compatibility. Manual upgrade required by users to retain functionality.
+
+
+GH-100019
+---------
+Validate extension JSON: Error: Field 'classes/CodeEdit/methods/add_code_completion_option/arguments': size changed value in new API, from 6 to 8.
+Validate extension JSON: Error: Field 'classes/CodeEdit/methods/add_code_completion_option/arguments': size changed value in new API, from 7 to 8.
+
+New argument `deprecated` added to `add_code_completion_option`. Compatibility method registered.
