@@ -56,6 +56,30 @@
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
+		<method name="bswap16">
+			<return type="void" />
+			<param index="0" name="offset" type="int" default="0" />
+			<param index="1" name="count" type="int" default="-1" />
+			<description>
+				Swaps the byte order of [param count] 16-bit segments of the array starting at [param offset]. Swap is done in-place. If [param count] is less than zero, all segments to the end of array are processed, if processed data size is not a multiple of 2, the byte after the last processed 16-bit segment is not modified.
+			</description>
+		</method>
+		<method name="bswap32">
+			<return type="void" />
+			<param index="0" name="offset" type="int" default="0" />
+			<param index="1" name="count" type="int" default="-1" />
+			<description>
+				Swaps the byte order of [param count] 32-bit segments of the array starting at [param offset]. Swap is done in-place. If [param count] is less than zero, all segments to the end of array are processed, if processed data size is not a multiple of 4, bytes after the last processed 32-bit segment are not modified.
+			</description>
+		</method>
+		<method name="bswap64">
+			<return type="void" />
+			<param index="0" name="offset" type="int" default="0" />
+			<param index="1" name="count" type="int" default="-1" />
+			<description>
+				Swaps the byte order of [param count] 64-bit segments of the array starting at [param offset]. Swap is done in-place. If [param count] is less than zero, all segments to the end of array are processed, if processed data size is not a multiple of 8, bytes after the last processed 64-bit segment are not modified.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
