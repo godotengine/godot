@@ -398,6 +398,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				vb->add_child(label);
 
 				duplicate_resources_tree = memnew(Tree);
+				duplicate_resources_tree->set_accessibility_name(TTRC("Duplicate resources"));
 				duplicate_resources_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				vb->add_child(duplicate_resources_tree);
 				duplicate_resources_tree->set_columns(2);
@@ -1103,6 +1104,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	assign_button->set_accessibility_name(TTRC("Assign Resource"));
 	assign_button->set_expand_icon(true);
 	assign_button->set_clip_text(true);
 	assign_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -1127,8 +1129,9 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	edit_button->set_flat(false);
 	edit_button->set_toggle_mode(true);
 	edit_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
-	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu));
+	edit_button->set_accessibility_name(TTRC("Edit"));
 	add_child(edit_button);
+	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu));
 	edit_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
 
 	add_theme_constant_override("separation", 0);
