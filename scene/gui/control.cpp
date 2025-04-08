@@ -599,11 +599,6 @@ bool Control::_property_get_revert(const StringName &p_name, Variant &r_property
 
 // Global relations.
 
-bool Control::is_top_level_control() const {
-	ERR_READ_THREAD_GUARD_V(false);
-	return is_inside_tree() && (!data.parent_canvas_item && !data.RI && is_set_as_top_level());
-}
-
 Control *Control::get_parent_control() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
 	return data.parent_control;
@@ -616,23 +611,13 @@ Window *Control::get_parent_window() const {
 
 Control *Control::get_root_parent_control() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
-	const CanvasItem *ci = this;
-	const Control *root = this;
-
-	while (ci) {
-		const Control *c = Object::cast_to<Control>(ci);
-		if (c) {
-			root = c;
-
-			if (c->data.RI || c->is_top_level_control()) {
-				break;
-			}
+	const Control *c = this;
+	if (is_inside_tree()) {
+		while (c->data.parent_control) {
+			c = c->data.parent_control;
 		}
-
-		ci = ci->get_parent_item();
 	}
-
-	return const_cast<Control *>(root);
+	return const_cast<Control *>(c);
 }
 
 Rect2 Control::get_parent_anchorable_rect() const {
