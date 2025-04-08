@@ -460,7 +460,6 @@ float msdf_median(float r, float g, float b, float a) {
 	return min(max(min(r, g), min(max(r, g), b)), a);
 }
 
-
 void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
