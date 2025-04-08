@@ -414,10 +414,10 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Dictionary dictionary = p_var;
 			Array arr;
 
-			for (int i = 0; i < dictionary.size(); i++) {
+			for (const KeyValue<Variant, Variant> &kv : dictionary) {
 				DAP::Variable var;
-				var.name = dictionary.get_key_at_index(i);
-				Variant value = dictionary.get_value_at_index(i);
+				var.name = kv.key;
+				Variant value = kv.value;
 				var.type = Variant::get_type_name(value.get_type());
 				var.value = value;
 				var.variablesReference = parse_variant(value);
