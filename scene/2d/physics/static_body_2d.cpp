@@ -30,6 +30,7 @@
 
 #include "static_body_2d.h"
 
+#ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/capsule_shape_2d.h"
 #include "scene/resources/2d/circle_shape_2d.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
@@ -38,6 +39,7 @@
 #include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
 #include "servers/navigation_server_2d.h"
+#endif // NAVIGATION_2D_DISABLED
 
 Callable StaticBody2D::_navmesh_source_geometry_parsing_callback;
 RID StaticBody2D::_navmesh_source_geometry_parser;
@@ -89,6 +91,7 @@ void StaticBody2D::_reload_physics_characteristics() {
 	}
 }
 
+#ifndef NAVIGATION_2D_DISABLED
 void StaticBody2D::navmesh_parse_init() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	if (!_navmesh_source_geometry_parser.is_valid()) {
@@ -213,6 +216,7 @@ void StaticBody2D::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 		}
 	}
 }
+#endif // NAVIGATION_2D_DISABLED
 
 void StaticBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_constant_linear_velocity", "vel"), &StaticBody2D::set_constant_linear_velocity);

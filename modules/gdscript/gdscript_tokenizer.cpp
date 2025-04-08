@@ -157,7 +157,7 @@ static const char *token_names[] = {
 };
 
 // Avoid desync.
-static_assert(sizeof(token_names) / sizeof(token_names[0]) == GDScriptTokenizer::Token::TK_MAX, "Amount of token names don't match the amount of token types.");
+static_assert(std::size(token_names) == GDScriptTokenizer::Token::TK_MAX, "Amount of token names don't match the amount of token types.");
 
 const char *GDScriptTokenizer::Token::get_name() const {
 	ERR_FAIL_INDEX_V_MSG(type, TK_MAX, "<error>", "Using token type out of the enum.");
@@ -366,7 +366,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 	token.end_column = column;
 	token.leftmost_column = leftmost_column;
 	token.rightmost_column = rightmost_column;
-	token.source = String(_start, _current - _start);
+	token.source = String::utf32(Span(_start, _current - _start));
 
 	if (p_type != Token::ERROR && cursor_line > -1) {
 		// Also count whitespace after token.
@@ -588,7 +588,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
 		return token;
 	}
 
-	String name(_start, len);
+	String name = String::utf32(Span(_start, len));
 	if (len < MIN_KEYWORD_LENGTH || len > MAX_KEYWORD_LENGTH) {
 		// Cannot be a keyword, as the length doesn't match any.
 		return make_identifier(name);
@@ -696,13 +696,13 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 	if (_peek(-1) == '.') {
 		has_decimal = true;
 	} else if (_peek(-1) == '0') {
-		if (_peek() == 'x') {
+		if (_peek() == 'x' || _peek() == 'X') {
 			// Hexadecimal.
 			base = 16;
 			digit_check_func = is_hex_digit;
 			need_digits = true;
 			_advance();
-		} else if (_peek() == 'b') {
+		} else if (_peek() == 'b' || _peek() == 'B') {
 			// Binary.
 			base = 2;
 			digit_check_func = is_binary_digit;
@@ -863,7 +863,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 
 	// Create a string with the whole number.
 	int len = _current - _start;
-	String number = String(_start, len).replace("_", "");
+	String number = String::utf32(Span(_start, len)).remove_char('_');
 
 	// Convert to the appropriate literal type.
 	if (base == 16) {
@@ -1337,7 +1337,7 @@ void GDScriptTokenizerText::check_indent() {
 }
 
 String GDScriptTokenizerText::_get_indent_char_name(char32_t ch) {
-	ERR_FAIL_COND_V(ch != ' ' && ch != '\t', String(&ch, 1).c_escape());
+	ERR_FAIL_COND_V(ch != ' ' && ch != '\t', String::chr(ch).c_escape());
 
 	return ch == ' ' ? "space" : "tab";
 }

@@ -30,6 +30,8 @@
 
 #include "geometry_3d.h"
 
+#include "core/templates/hash_map.h"
+
 void Geometry3D::get_closest_points_between_segments(const Vector3 &p_p0, const Vector3 &p_p1, const Vector3 &p_q0, const Vector3 &p_q1, Vector3 &r_ps, Vector3 &r_qt) {
 	// Based on David Eberly's Computation of Distance Between Line Segments algorithm.
 
@@ -593,7 +595,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 
 		Vector3 ref = Vector3(0.0, 1.0, 0.0);
 
-		if (ABS(p.normal.dot(ref)) > 0.95f) {
+		if (Math::abs(p.normal.dot(ref)) > 0.95f) {
 			ref = Vector3(0.0, 0.0, 1.0); // Change axis.
 		}
 

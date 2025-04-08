@@ -138,7 +138,7 @@ TranslationServer::Locale::Locale(const TranslationServer &p_server, const Strin
 	String univ_locale = p_locale.replace("-", "_");
 
 	// Extract locale elements.
-	Vector<String> locale_elements = univ_locale.get_slice("@", 0).split("_");
+	Vector<String> locale_elements = univ_locale.get_slicec('@', 0).split("_");
 	language = locale_elements[0];
 	if (locale_elements.size() >= 2) {
 		if (locale_elements[1].length() == 4 && is_ascii_upper_case(locale_elements[1][0]) && is_ascii_lower_case(locale_elements[1][1]) && is_ascii_lower_case(locale_elements[1][2]) && is_ascii_lower_case(locale_elements[1][3])) {
@@ -162,7 +162,7 @@ TranslationServer::Locale::Locale(const TranslationServer &p_server, const Strin
 	}
 
 	// Try extract script and variant from the extra part.
-	Vector<String> script_extra = univ_locale.get_slice("@", 1).split(";");
+	Vector<String> script_extra = univ_locale.get_slicec('@', 1).split(";");
 	for (int i = 0; i < script_extra.size(); i++) {
 		if (script_extra[i].to_lower() == "cyrillic") {
 			script = "Cyrl";
@@ -299,12 +299,12 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 		}
 	}
 
-	String name = language_map[lang_name];
+	String name = get_language_name(lang_name);
 	if (!script_name.is_empty()) {
-		name = name + " (" + script_map[script_name] + ")";
+		name = name + " (" + get_script_name(script_name) + ")";
 	}
 	if (!country_name.is_empty()) {
-		name = name + ", " + country_name_map[country_name];
+		name = name + ", " + get_country_name(country_name);
 	}
 	return name;
 }
@@ -320,7 +320,11 @@ Vector<String> TranslationServer::get_all_languages() const {
 }
 
 String TranslationServer::get_language_name(const String &p_language) const {
-	return language_map[p_language];
+	if (language_map.has(p_language)) {
+		return language_map[p_language];
+	} else {
+		return p_language;
+	}
 }
 
 Vector<String> TranslationServer::get_all_scripts() const {
@@ -334,7 +338,11 @@ Vector<String> TranslationServer::get_all_scripts() const {
 }
 
 String TranslationServer::get_script_name(const String &p_script) const {
-	return script_map[p_script];
+	if (script_map.has(p_script)) {
+		return script_map[p_script];
+	} else {
+		return p_script;
+	}
 }
 
 Vector<String> TranslationServer::get_all_countries() const {
@@ -348,7 +356,11 @@ Vector<String> TranslationServer::get_all_countries() const {
 }
 
 String TranslationServer::get_country_name(const String &p_country) const {
-	return country_name_map[p_country];
+	if (country_name_map.has(p_country)) {
+		return country_name_map[p_country];
+	} else {
+		return p_country;
+	}
 }
 
 void TranslationServer::set_locale(const String &p_locale) {
@@ -492,10 +504,10 @@ String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		const PackedStringArray &locales = editor_domain->get_loaded_locales();
-		if (locales.is_empty()) {
-			return "en";
+		if (locales.has(locale)) {
+			return locale;
 		}
-		return locales[0];
+		return "en";
 	} else {
 #else
 	{
@@ -503,7 +515,7 @@ String TranslationServer::get_tool_locale() {
 		// Look for best matching loaded translation.
 		Ref<Translation> t = main_domain->get_translation_object(locale);
 		if (t.is_null()) {
-			return "en";
+			return fallback;
 		}
 		return t->get_locale();
 	}

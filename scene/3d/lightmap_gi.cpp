@@ -293,8 +293,7 @@ Dictionary LightmapGIData::_get_probe_data() const {
 
 #ifndef DISABLE_DEPRECATED
 void LightmapGIData::set_light_texture(const Ref<TextureLayered> &p_light_texture) {
-	TypedArray<TextureLayered> arr;
-	arr.append(p_light_texture);
+	TypedArray<TextureLayered> arr = { p_light_texture };
 	set_lightmap_textures(arr);
 }
 
@@ -699,7 +698,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 	BSPNode node;
 	node.plane = best_plane;
 
-	if (indices_under.size() == 0) {
+	if (indices_under.is_empty()) {
 		//nothing to do here
 		node.under = BSPNode::EMPTY_LEAF;
 	} else if (indices_under.size() == 1) {
@@ -708,7 +707,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 		node.under = _compute_bsp_tree(p_points, p_planes, planes_tested, p_simplices, indices_under, bsp_nodes);
 	}
 
-	if (indices_over.size() == 0) {
+	if (indices_over.is_empty()) {
 		//nothing to do here
 		node.over = BSPNode::EMPTY_LEAF;
 	} else if (indices_over.size() == 1) {
@@ -917,7 +916,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		Vector<MeshesFound> meshes_found;
 		_find_meshes_and_lights(p_from_node ? p_from_node : get_parent(), meshes_found, lights_found, probes_found);
 
-		if (meshes_found.size() == 0) {
+		if (meshes_found.is_empty()) {
 			return BAKE_ERROR_NO_MESHES;
 		}
 		// create mesh data for insert
@@ -1024,8 +1023,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				const Vector3 *nr = nullptr;
 				Vector<int> index = a[Mesh::ARRAY_INDEX];
 
-				ERR_CONTINUE(uv.size() == 0);
-				ERR_CONTINUE(normals.size() == 0);
+				ERR_CONTINUE(uv.is_empty());
+				ERR_CONTINUE(normals.is_empty());
 
 				uvr = uv.ptr();
 				nr = normals.ptr();
@@ -1491,11 +1490,17 @@ void LightmapGI::_notification(int p_what) {
 								"%s (%s): The directional lightmap textures are stored in a format that isn't supported anymore. Please bake lightmaps again to make lightmaps display from this node again.",
 								get_light_data()->get_path(), get_name()));
 
+				if (last_owner && last_owner != get_owner()) {
+					light_data->clear_users();
+				}
+
 				_assign_lightmaps();
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			last_owner = get_owner();
+
 			if (light_data.is_valid()) {
 				_clear_lightmaps();
 			}

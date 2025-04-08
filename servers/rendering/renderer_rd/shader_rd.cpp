@@ -76,7 +76,7 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 		} else if (l.begins_with("#CODE")) {
 			chunk.type = StageTemplate::Chunk::TYPE_CODE;
 			push_chunk = true;
-			chunk.code = l.replace_first("#CODE", String()).replace(":", "").strip_edges().to_upper();
+			chunk.code = l.replace_first("#CODE", String()).remove_char(':').strip_edges().to_upper();
 		} else if (l.begins_with("#include ")) {
 			String include_file = l.replace("#include ", "").strip_edges();
 			if (include_file[0] == '"') {
@@ -149,9 +149,9 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 
 	StringBuilder tohash;
 	tohash.append("[GodotVersionNumber]");
-	tohash.append(VERSION_NUMBER);
+	tohash.append(GODOT_VERSION_NUMBER);
 	tohash.append("[GodotVersionHash]");
-	tohash.append(VERSION_HASH);
+	tohash.append(GODOT_VERSION_HASH);
 	tohash.append("[SpirvCacheKey]");
 	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
 	tohash.append("[BinaryCacheKey]");
@@ -187,8 +187,7 @@ void ShaderRD::_initialize_version(Version *p_version) {
 
 	p_version->variants.resize_zeroed(variant_defines.size());
 	p_version->variant_data.resize(variant_defines.size());
-	p_version->group_compilation_tasks.resize(group_enabled.size());
-	p_version->group_compilation_tasks.fill(0);
+	p_version->group_compilation_tasks.resize_zeroed(group_enabled.size());
 }
 
 void ShaderRD::_clear_version(Version *p_version) {
@@ -283,7 +282,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 		current_source = builder.as_string();
 		RD::ShaderStageSPIRVData stage;
 		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_VERTEX, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
-		if (stage.spirv.size() == 0) {
+		if (stage.spirv.is_empty()) {
 			build_ok = false;
 		} else {
 			stage.shader_stage = RD::SHADER_STAGE_VERTEX;
@@ -301,7 +300,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 		current_source = builder.as_string();
 		RD::ShaderStageSPIRVData stage;
 		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_FRAGMENT, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
-		if (stage.spirv.size() == 0) {
+		if (stage.spirv.is_empty()) {
 			build_ok = false;
 		} else {
 			stage.shader_stage = RD::SHADER_STAGE_FRAGMENT;
@@ -320,7 +319,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 
 		RD::ShaderStageSPIRVData stage;
 		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_COMPUTE, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
-		if (stage.spirv.size() == 0) {
+		if (stage.spirv.is_empty()) {
 			build_ok = false;
 		} else {
 			stage.shader_stage = RD::SHADER_STAGE_COMPUTE;
@@ -555,7 +554,7 @@ void ShaderRD::_compile_version_start(Version *p_version, int p_group) {
 	compile_data.version = p_version;
 	compile_data.group = p_group;
 
-	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &ShaderRD::_compile_variant, compile_data, group_to_variant_map[p_group].size(), -1, true, SNAME("ShaderCompilation"));
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_named_pool(SNAME("ShaderCompilationPool"))->add_template_group_task(this, &ShaderRD::_compile_variant, compile_data, group_to_variant_map[p_group].size(), -1, true, SNAME("ShaderCompilation"));
 	p_version->group_compilation_tasks.write[p_group] = group_task;
 }
 
@@ -563,9 +562,8 @@ void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
 	if (p_version->group_compilation_tasks.size() <= p_group || p_version->group_compilation_tasks[p_group] == 0) {
 		return;
 	}
-
 	WorkerThreadPool::GroupID group_task = p_version->group_compilation_tasks[p_group];
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	WorkerThreadPool::get_named_pool(SNAME("ShaderCompilationPool"))->wait_for_group_task_completion(group_task);
 	p_version->group_compilation_tasks.write[p_group] = 0;
 
 	bool all_valid = true;

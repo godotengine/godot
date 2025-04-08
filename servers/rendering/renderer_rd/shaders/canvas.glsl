@@ -25,10 +25,10 @@ layout(location = 11) in vec4 weight_attrib;
 #include "canvas_uniforms_inc.glsl"
 
 #ifndef USE_ATTRIBUTES
-
-layout(location = 4) out flat uint instance_index_interp;
-
-#endif // !USE_ATTRIBUTES
+layout(location = 4) out flat uint instance_index;
+#else
+#define instance_index params.base_instance_index
+#endif // USE_ATTRIBUTES
 
 layout(location = 0) out vec2 uv_interp;
 layout(location = 1) out vec4 color_interp;
@@ -65,11 +65,8 @@ void main() {
 	vec4 custom1 = vec4(0.0);
 #endif
 
-#ifdef USE_ATTRIBUTES
-	uint instance_index = params.base_instance_index;
-#else
-	uint instance_index = gl_InstanceIndex + params.base_instance_index;
-	instance_index_interp = instance_index;
+#ifndef USE_ATTRIBUTES
+	instance_index = gl_InstanceIndex + params.base_instance_index;
 #endif // USE_ATTRIBUTES
 	const InstanceData draw_data = instances.data[instance_index];
 
@@ -241,6 +238,8 @@ void main() {
 
 #ifndef USE_ATTRIBUTES
 layout(location = 4) in flat uint instance_index;
+#else
+#define instance_index params.base_instance_index
 #endif // USE_ATTRIBUTES
 
 layout(location = 0) in vec2 uv_interp;
@@ -302,6 +301,7 @@ vec4 light_compute(
 		vec2 screen_uv,
 		vec2 uv,
 		vec4 color, bool is_directional) {
+	const InstanceData draw_data = instances.data[instance_index];
 	vec4 light = vec4(0.0);
 	vec3 light_direction = vec3(0.0);
 
@@ -460,11 +460,7 @@ void main() {
 	vec2 uv = uv_interp;
 	vec2 vertex = vertex_interp;
 
-#ifdef USE_ATTRIBUTES
-	const InstanceData draw_data = instances.data[params.base_instance_index];
-#else
 	const InstanceData draw_data = instances.data[instance_index];
-#endif // USE_ATTRIBUTES
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 

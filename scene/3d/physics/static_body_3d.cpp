@@ -30,6 +30,7 @@
 
 #include "static_body_3d.h"
 
+#ifndef NAVIGATION_3D_DISABLED
 #include "core/math/convex_hull.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -47,6 +48,7 @@
 
 Callable StaticBody3D::_navmesh_source_geometry_parsing_callback;
 RID StaticBody3D::_navmesh_source_geometry_parser;
+#endif // NAVIGATION_3D_DISABLED
 
 void StaticBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
@@ -95,6 +97,7 @@ void StaticBody3D::_reload_physics_characteristics() {
 	}
 }
 
+#ifndef NAVIGATION_3D_DISABLED
 void StaticBody3D::navmesh_parse_init() {
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	if (!_navmesh_source_geometry_parser.is_valid()) {
@@ -226,6 +229,7 @@ void StaticBody3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_na
 		}
 	}
 }
+#endif // NAVIGATION_3D_DISABLED
 
 void StaticBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_constant_linear_velocity", "vel"), &StaticBody3D::set_constant_linear_velocity);

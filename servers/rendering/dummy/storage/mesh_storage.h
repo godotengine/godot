@@ -28,24 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_STORAGE_DUMMY_H
-#define MESH_STORAGE_DUMMY_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/storage/mesh_storage.h"
 
 namespace RendererDummy {
 
+struct DummyMesh {
+	Vector<RS::SurfaceData> surfaces;
+	int blend_shape_count;
+	RS::BlendShapeMode blend_shape_mode;
+	PackedFloat32Array blend_shape_values;
+	Dependency dependency;
+};
+
 class MeshStorage : public RendererMeshStorage {
 private:
 	static MeshStorage *singleton;
-
-	struct DummyMesh {
-		Vector<RS::SurfaceData> surfaces;
-		int blend_shape_count;
-		RS::BlendShapeMode blend_shape_mode;
-		PackedFloat32Array blend_shape_values;
-	};
 
 	mutable RID_Owner<DummyMesh> mesh_owner;
 
@@ -62,7 +62,7 @@ public:
 	~MeshStorage();
 
 	/* MESH API */
-
+	DummyMesh *get_mesh(RID p_rid) { return mesh_owner.get_or_null(p_rid); }
 	bool owns_mesh(RID p_rid) { return mesh_owner.owns(p_rid); }
 
 	virtual RID mesh_allocate() override;
@@ -92,6 +92,7 @@ public:
 		s->blend_shape_data = p_surface.blend_shape_data;
 		s->uv_scale = p_surface.uv_scale;
 		s->material = p_surface.material;
+		m->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 	}
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const override { return 0; }
@@ -201,5 +202,3 @@ public:
 };
 
 } // namespace RendererDummy
-
-#endif // MESH_STORAGE_DUMMY_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISPLAY_SERVER_H
-#define DISPLAY_SERVER_H
+#pragma once
 
 #include "core/input/input.h"
 #include "core/io/image.h"
@@ -98,12 +97,20 @@ public:
 private:
 	static void _input_set_mouse_mode(Input::MouseMode p_mode);
 	static Input::MouseMode _input_get_mouse_mode();
+	static void _input_set_mouse_mode_override(Input::MouseMode p_mode);
+	static Input::MouseMode _input_get_mouse_mode_override();
+	static void _input_set_mouse_mode_override_enabled(bool p_enabled);
+	static bool _input_is_mouse_mode_override_enabled();
 	static void _input_warp(const Vector2 &p_to_pos);
 	static Input::CursorShape _input_get_current_cursor_shape();
 	static void _input_set_custom_mouse_cursor_func(const Ref<Resource> &, Input::CursorShape, const Vector2 &p_hotspot);
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif
 
 	static Ref<Image> _get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot);
 
@@ -158,6 +165,8 @@ public:
 		FEATURE_WINDOW_EMBEDDING,
 		FEATURE_NATIVE_DIALOG_FILE_MIME,
 		FEATURE_EMOJI_AND_SYMBOL_PICKER,
+		FEATURE_NATIVE_COLOR_PICKER,
+		FEATURE_SELF_FITTING_WINDOWS,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -263,6 +272,7 @@ public:
 	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); }
 	virtual Color get_base_color() const { return Color(0, 0, 0, 0); }
 	virtual void set_system_theme_change_callback(const Callable &p_callable) {}
+	virtual void set_hardware_keyboard_connection_change_callback(const Callable &p_callable) {}
 
 private:
 	static bool window_early_clear_override_enabled;
@@ -275,15 +285,20 @@ public:
 	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
 
 	enum MouseMode {
-		MOUSE_MODE_VISIBLE,
-		MOUSE_MODE_HIDDEN,
-		MOUSE_MODE_CAPTURED,
-		MOUSE_MODE_CONFINED,
-		MOUSE_MODE_CONFINED_HIDDEN,
+		MOUSE_MODE_VISIBLE = Input::MOUSE_MODE_VISIBLE,
+		MOUSE_MODE_HIDDEN = Input::MOUSE_MODE_HIDDEN,
+		MOUSE_MODE_CAPTURED = Input::MOUSE_MODE_CAPTURED,
+		MOUSE_MODE_CONFINED = Input::MOUSE_MODE_CONFINED,
+		MOUSE_MODE_CONFINED_HIDDEN = Input::MOUSE_MODE_CONFINED_HIDDEN,
+		MOUSE_MODE_MAX = Input::MOUSE_MODE_MAX,
 	};
 
 	virtual void mouse_set_mode(MouseMode p_mode);
 	virtual MouseMode mouse_get_mode() const;
+	virtual void mouse_set_mode_override(MouseMode p_mode);
+	virtual MouseMode mouse_get_mode_override() const;
+	virtual void mouse_set_mode_override_enabled(bool p_override_enabled);
+	virtual bool mouse_is_mode_override_enabled() const;
 
 	virtual void warp_mouse(const Point2i &p_position);
 	virtual Point2i mouse_get_position() const;
@@ -393,6 +408,7 @@ public:
 		WINDOW_FLAG_MOUSE_PASSTHROUGH,
 		WINDOW_FLAG_SHARP_CORNERS,
 		WINDOW_FLAG_EXCLUDE_FROM_CAPTURE,
+		WINDOW_FLAG_POPUP_WM_HINT,
 		WINDOW_FLAG_MAX,
 	};
 
@@ -408,6 +424,7 @@ public:
 		WINDOW_FLAG_MOUSE_PASSTHROUGH_BIT = (1 << WINDOW_FLAG_MOUSE_PASSTHROUGH),
 		WINDOW_FLAG_SHARP_CORNERS_BIT = (1 << WINDOW_FLAG_SHARP_CORNERS),
 		WINDOW_FLAG_EXCLUDE_FROM_CAPTURE_BIT = (1 << WINDOW_FLAG_EXCLUDE_FROM_CAPTURE),
+		WINDOW_FLAG_POPUP_WM_HINT_BIT = (1 << WINDOW_FLAG_POPUP_WM_HINT),
 	};
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID);
@@ -436,6 +453,7 @@ public:
 		WINDOW_EVENT_GO_BACK_REQUEST,
 		WINDOW_EVENT_DPI_CHANGE,
 		WINDOW_EVENT_TITLEBAR_CHANGE,
+		WINDOW_EVENT_FORCE_CLOSE,
 	};
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
@@ -568,6 +586,7 @@ public:
 	virtual void enable_for_stealing_focus(OS::ProcessID pid);
 
 	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus);
+	virtual Error request_close_embedded_process(OS::ProcessID p_pid);
 	virtual Error remove_embedded_process(OS::ProcessID p_pid);
 	virtual OS::ProcessID get_focused_process_id();
 
@@ -582,8 +601,13 @@ public:
 		FILE_DIALOG_MODE_SAVE_FILE,
 		FILE_DIALOG_MODE_SAVE_MAX
 	};
-	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
-	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback);
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id = MAIN_WINDOW_ID);
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id = MAIN_WINDOW_ID);
+
+#ifndef DISABLE_DEPRECATED
+	Error _file_dialog_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
+	Error _file_dialog_with_options_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback);
+#endif
 
 	virtual void beep() const;
 
@@ -595,6 +619,7 @@ public:
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const;
 	virtual void show_emoji_and_symbol_picker() const;
+	virtual bool color_picker(const Callable &p_callback);
 
 	virtual int tablet_get_driver_count() const { return 1; }
 	virtual String tablet_get_driver_name(int p_driver) const { return "default"; }
@@ -642,8 +667,10 @@ public:
 	// Used to cache the result of `can_create_rendering_device()` when RenderingDevice isn't currently being used.
 	// This is done as creating a RenderingDevice is quite slow.
 	static inline RenderingDeviceCreationStatus created_rendering_device = RenderingDeviceCreationStatus::UNKNOWN;
-
 	static bool can_create_rendering_device();
+
+	static inline RenderingDeviceCreationStatus supported_rendering_device = RenderingDeviceCreationStatus::UNKNOWN;
+	static bool is_rendering_device_supported();
 
 	DisplayServer();
 	~DisplayServer();
@@ -662,5 +689,3 @@ VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
 VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)
 VARIANT_ENUM_CAST(DisplayServer::FileDialogMode)
-
-#endif // DISPLAY_SERVER_H

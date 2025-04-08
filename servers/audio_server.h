@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_SERVER_H
-#define AUDIO_SERVER_H
+#pragma once
 
 #include "core/math/audio_frame.h"
 #include "core/object/class_db.h"
@@ -229,6 +228,10 @@ private:
 
 	bool tag_used_audio_streams = false;
 
+#ifdef DEBUG_ENABLED
+	bool debug_mute = false;
+#endif // DEBUG_ENABLED
+
 	struct Bus {
 		StringName name;
 		bool solo = false;
@@ -366,6 +369,11 @@ public:
 	AudioFrame *thread_get_channel_mix_buffer(int p_bus, int p_buffer);
 	int thread_get_mix_buffer_size() const;
 	int thread_find_bus_index(const StringName &p_name);
+
+#ifdef DEBUG_ENABLED
+	void set_debug_mute(bool p_mute);
+	bool get_debug_mute() const;
+#endif // DEBUG_ENABLED
 
 	void set_bus_count(int p_count);
 	int get_bus_count() const;
@@ -548,5 +556,3 @@ public:
 };
 
 typedef AudioServer AS;
-
-#endif // AUDIO_SERVER_H

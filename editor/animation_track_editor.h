@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_TRACK_EDITOR_H
-#define ANIMATION_TRACK_EDITOR_H
+#pragma once
 
 #include "editor/editor_data.h"
 #include "editor/editor_properties.h"
@@ -404,7 +403,6 @@ public:
 	void _clear_selection(bool p_update);
 
 	AnimationMarkerEdit();
-	~AnimationMarkerEdit();
 };
 
 class AnimationTrackEdit : public Control {
@@ -803,6 +801,9 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _anim_paste_keys(float p_ofs, bool p_ofs_valid, int p_track);
 
+	void _toggle_function_names();
+	Button *function_name_toggler = nullptr;
+
 	void _view_group_toggle();
 	Button *view_group = nullptr;
 	Button *selected_filter = nullptr;
@@ -916,6 +917,7 @@ public:
 
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
+	void clear();
 
 	void cleanup();
 
@@ -947,6 +949,7 @@ public:
 	bool is_marker_selected(const StringName &p_marker) const;
 	bool is_marker_moving_selection() const;
 	float get_marker_moving_selection_offset() const;
+	bool is_function_name_pressed();
 
 	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
 	void goto_prev_step(bool p_from_mouse_event);
@@ -983,7 +986,6 @@ class AnimationTrackKeyEditEditor : public EditorProperty {
 
 public:
 	AnimationTrackKeyEditEditor(Ref<Animation> p_animation, int p_track, real_t p_key_ofs, bool p_use_fps);
-	~AnimationTrackKeyEditEditor();
 };
 
 // AnimationMarkerKeyEditEditorPlugin
@@ -1001,7 +1003,4 @@ class AnimationMarkerKeyEditEditor : public EditorProperty {
 
 public:
 	AnimationMarkerKeyEditEditor(Ref<Animation> p_animation, const StringName &p_name, bool p_use_fps);
-	~AnimationMarkerKeyEditEditor();
 };
-
-#endif // ANIMATION_TRACK_EDITOR_H

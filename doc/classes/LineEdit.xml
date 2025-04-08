@@ -252,7 +252,7 @@
 			The caret's column position inside the [LineEdit]. When set, the text may scroll to accommodate it.
 		</member>
 		<member name="caret_force_displayed" type="bool" setter="set_caret_force_displayed" getter="is_caret_force_displayed" default="false">
-			If [code]true[/code], the [LineEdit] will always show the caret, even if focus is lost.
+			If [code]true[/code], the [LineEdit] will always show the caret, even if not editing or focus is lost.
 		</member>
 		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
 			Allow moving caret, selecting and removing the individual composite character components.
@@ -277,7 +277,7 @@
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
 		<member name="emoji_menu_enabled" type="bool" setter="set_emoji_menu_enabled" getter="is_emoji_menu_enabled" default="true">
-			If [code]false[/code], "Emoji and Symbols" menu is enabled.
+			If [code]true[/code], "Emoji and Symbols" menu is enabled.
 		</member>
 		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length_enabled" getter="is_expand_to_text_length_enabled" default="false">
 			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.

@@ -114,6 +114,7 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 	font->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
 	font->set_keep_rounding_remainders(true);
 	font->set_force_autohinter(false);
+	font->set_modulate_color_glyphs(false);
 	font->set_allow_system_fallback(false);
 	font->set_hinting(TextServer::HINTING_NONE);
 	font->set_oversampling(1.0f);
@@ -159,7 +160,7 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 								c++; // Skip "+".
 								continue;
 							}
-						} else if (range[c] == '0' && (c <= range.length() - 2) && range[c + 1] == 'x') {
+						} else if (range[c] == '0' && (c <= range.length() - 2) && (range[c + 1] == 'x' || range[c + 1] == 'X')) {
 							// Read hexadecimal value, start.
 							token = String();
 							if (step == STEP_START_BEGIN) {
@@ -343,7 +344,4 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save font to file \"" + p_save_path + ".res\".");
 	print_verbose("Done saving to: " + p_save_path + ".fontdata");
 	return OK;
-}
-
-ResourceImporterImageFont::ResourceImporterImageFont() {
 }

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CPU_PARTICLES_3D_H
-#define CPU_PARTICLES_3D_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
 
@@ -197,6 +196,7 @@ private:
 	void _update_internal();
 	void _particles_process(double p_delta);
 	void _update_particle_data_buffer();
+	void _set_emitting();
 
 	Mutex update_mutex;
 
@@ -344,5 +344,3 @@ VARIANT_ENUM_CAST(CPUParticles3D::DrawOrder)
 VARIANT_ENUM_CAST(CPUParticles3D::Parameter)
 VARIANT_ENUM_CAST(CPUParticles3D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles3D::EmissionShape)
-
-#endif // CPU_PARTICLES_3D_H

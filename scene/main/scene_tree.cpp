@@ -43,19 +43,26 @@
 #include "scene/gui/control.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
-#include "servers/physics_server_2d.h"
+
 #ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/world_3d.h"
-#include "servers/physics_server_3d.h"
 #endif // _3D_DISABLED
-#include "window.h"
+
+#ifndef PHYSICS_2D_DISABLED
+#include "servers/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_server_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 void SceneTreeTimer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_time_left", "time"), &SceneTreeTimer::set_time_left);
@@ -130,7 +137,7 @@ void SceneTree::ClientPhysicsInterpolation::physics_process() {
 		}
 	}
 }
-#endif
+#endif // _3D_DISABLED
 
 void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
@@ -482,6 +489,11 @@ void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
 
 	_physics_interpolation_enabled = p_enabled;
 	RenderingServer::get_singleton()->set_physics_interpolation_enabled(p_enabled);
+
+	// Perform an auto reset on the root node for convenience for the user.
+	if (root) {
+		root->reset_physics_interpolation();
+	}
 }
 
 bool SceneTree::is_physics_interpolation_enabled() const {
@@ -506,13 +518,6 @@ void SceneTree::iteration_prepare() {
 		// are flushed before pumping the interpolation prev and currents.
 		flush_transform_notifications();
 		RenderingServer::get_singleton()->tick();
-
-#ifndef _3D_DISABLED
-		// Any objects performing client physics interpolation
-		// should be given an opportunity to keep their previous transforms
-		// up to date before each new physics tick.
-		_client_physics_interpolation.physics_process();
-#endif
 	}
 }
 
@@ -528,7 +533,9 @@ bool SceneTree::physics_process(double p_time) {
 
 	emit_signal(SNAME("physics_frame"));
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	call_group(SNAME("_picking_viewports"), SNAME("_process_picking"));
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
 	_process(true);
 
@@ -552,6 +559,13 @@ void SceneTree::iteration_end() {
 	// to be flushed to the RenderingServer before finishing a physics tick.
 	if (_physics_interpolation_enabled) {
 		flush_transform_notifications();
+
+#ifndef _3D_DISABLED
+		// Any objects performing client physics interpolation
+		// should be given an opportunity to keep their previous transforms
+		// up to date.
+		_client_physics_interpolation.physics_process();
+#endif
 	}
 }
 
@@ -581,7 +595,7 @@ bool SceneTree::process(double p_time) {
 	MessageQueue::get_singleton()->flush(); //small little hack
 	flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
 
-	if (unlikely(pending_new_scene)) {
+	if (unlikely(pending_new_scene_id.is_valid())) {
 		_flush_scene_change();
 	}
 
@@ -764,9 +778,7 @@ void SceneTree::_main_window_focus_in() {
 void SceneTree::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			if (!Engine::get_singleton()->is_editor_hint()) {
-				get_root()->propagate_notification(p_notification);
-			}
+			get_root()->propagate_notification(p_notification);
 		} break;
 
 		case NOTIFICATION_OS_MEMORY_WARNING:
@@ -967,10 +979,12 @@ void SceneTree::set_pause(bool p_enabled) {
 
 	paused = p_enabled;
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
+#endif // PHYSICS_2D_DISABLED
 	if (get_root()) {
 		get_root()->_propagate_pause_notification(p_enabled);
 	}
@@ -991,10 +1005,12 @@ void SceneTree::set_suspend(bool p_enabled) {
 
 	Engine::get_singleton()->set_freeze_time_scale(p_enabled);
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled && !paused);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled && !paused);
+#endif // PHYSICS_2D_DISABLED
 	if (get_root()) {
 		get_root()->_propagate_suspend_notification(p_enabled);
 	}
@@ -1335,7 +1351,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 		if (p_viewport->is_input_handled()) {
 			break;
 		}
-		Node *n = Object::cast_to<Node>(ObjectDB::get_instance(id));
+		Node *n = ObjectDB::get_instance<Node>(id);
 		if (n) {
 			n->_call_shortcut_input(p_input);
 		}
@@ -1503,15 +1519,33 @@ Node *SceneTree::get_current_scene() const {
 }
 
 void SceneTree::_flush_scene_change() {
-	if (prev_scene) {
-		memdelete(prev_scene);
-		prev_scene = nullptr;
+	if (prev_scene_id.is_valid()) {
+		// Might have already been freed externally.
+		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
+		if (prev_scene) {
+			memdelete(prev_scene);
+		}
+		prev_scene_id = ObjectID();
 	}
-	current_scene = pending_new_scene;
-	root->add_child(pending_new_scene);
-	pending_new_scene = nullptr;
-	// Update display for cursor instantly.
-	root->update_mouse_cursor_state();
+
+	DEV_ASSERT(pending_new_scene_id.is_valid());
+	Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
+	if (pending_new_scene) {
+		// Ensure correct state before `add_child` (might enqueue subsequent scene change).
+		current_scene = pending_new_scene;
+		pending_new_scene_id = ObjectID();
+
+		root->add_child(pending_new_scene);
+		// Update display for cursor instantly.
+		root->update_mouse_cursor_state();
+
+		// Only on successful scene change.
+		emit_signal(SNAME("scene_changed"));
+	} else {
+		current_scene = nullptr;
+		pending_new_scene_id = ObjectID();
+		ERR_PRINT("Scene instance has been freed before becoming the current scene. No current scene is set.");
+	}
 }
 
 Error SceneTree::change_scene_to_file(const String &p_path) {
@@ -1531,21 +1565,23 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
 
 	// If called again while a change is pending.
-	if (pending_new_scene) {
-		queue_delete(pending_new_scene);
-		pending_new_scene = nullptr;
+	if (pending_new_scene_id.is_valid()) {
+		Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
+		if (pending_new_scene) {
+			queue_delete(pending_new_scene);
+		}
+		pending_new_scene_id = ObjectID();
 	}
 
-	prev_scene = current_scene;
-
 	if (current_scene) {
+		prev_scene_id = current_scene->get_instance_id();
 		// Let as many side effects as possible happen or be queued now,
 		// so they are run before the scene is actually deleted.
 		root->remove_child(current_scene);
 	}
 	DEV_ASSERT(!current_scene);
 
-	pending_new_scene = new_scene;
+	pending_new_scene_id = new_scene->get_instance_id();
 	return OK;
 }
 
@@ -1779,6 +1815,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolation"), "set_physics_interpolation_enabled", "is_physics_interpolation_enabled");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
+	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("tree_process_mode_changed")); //editor only signal, but due to API hash it can't be removed in run-time
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
@@ -1883,16 +1920,16 @@ SceneTree::SceneTree() {
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 
-	const int msaa_mode_2d = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa_2d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), 0);
+	const int msaa_mode_2d = GLOBAL_GET("rendering/anti_aliasing/quality/msaa_2d");
 	root->set_msaa_2d(Viewport::MSAA(msaa_mode_2d));
 
-	const int msaa_mode_3d = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), 0);
+	const int msaa_mode_3d = GLOBAL_GET("rendering/anti_aliasing/quality/msaa_3d");
 	root->set_msaa_3d(Viewport::MSAA(msaa_mode_3d));
 
 	const bool transparent_background = GLOBAL_DEF("rendering/viewport/transparent_background", false);
 	root->set_transparent_background(transparent_background);
 
-	const bool use_hdr_2d = GLOBAL_DEF_RST_BASIC("rendering/viewport/hdr_2d", false);
+	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
 	root->set_use_hdr_2d(use_hdr_2d);
 
 	const int ssaa_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), 0);
@@ -1936,7 +1973,7 @@ SceneTree::SceneTree() {
 
 	int shadowmap_size = GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/positional_shadow/atlas_size", PROPERTY_HINT_RANGE, "256,16384"), 4096);
 	GLOBAL_DEF("rendering/lights_and_shadows/positional_shadow/atlas_size.mobile", 2048);
-	bool shadowmap_16_bits = GLOBAL_DEF("rendering/lights_and_shadows/positional_shadow/atlas_16_bits", true);
+	bool shadowmap_16_bits = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_16_bits");
 	int atlas_q0 = GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), 2);
 	int atlas_q1 = GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), 2);
 	int atlas_q2 = GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), 3);
@@ -1987,7 +2024,9 @@ SceneTree::SceneTree() {
 	}
 #endif // _3D_DISABLED
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
 	root->connect("close_requested", callable_mp(this, &SceneTree::_main_window_close));
 	root->connect("go_back_requested", callable_mp(this, &SceneTree::_main_window_go_back));
@@ -2001,13 +2040,19 @@ SceneTree::SceneTree() {
 }
 
 SceneTree::~SceneTree() {
-	if (prev_scene) {
-		memdelete(prev_scene);
-		prev_scene = nullptr;
+	if (prev_scene_id.is_valid()) {
+		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
+		if (prev_scene) {
+			memdelete(prev_scene);
+		}
+		prev_scene_id = ObjectID();
 	}
-	if (pending_new_scene) {
-		memdelete(pending_new_scene);
-		pending_new_scene = nullptr;
+	if (pending_new_scene_id.is_valid()) {
+		Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
+		if (pending_new_scene) {
+			memdelete(pending_new_scene);
+		}
+		pending_new_scene_id = ObjectID();
 	}
 	if (root) {
 		root->_set_tree(nullptr);

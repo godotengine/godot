@@ -543,7 +543,6 @@ void shapeDelOutline(SwShape* shape, SwMpool* mpool, uint32_t tid)
 void shapeReset(SwShape* shape)
 {
     rleReset(shape->rle);
-    rleReset(shape->strokeRle);
     shape->fastTrack = false;
     shape->bbox.reset();
 }

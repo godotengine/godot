@@ -344,7 +344,7 @@ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, int p_
 	}
 }
 
-_FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type, const Vector<ShaderLanguage::Scalar> &value, uint8_t *data) {
+_FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type, const Vector<ShaderLanguage::Scalar> &value, uint8_t *data, bool p_use_linear_color) {
 	switch (type) {
 		case ShaderLanguage::TYPE_BOOL: {
 			uint32_t *gui = (uint32_t *)data;
@@ -441,18 +441,28 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 
 		} break;
 		case ShaderLanguage::TYPE_VEC3: {
+			Color c = Color(value[0].real, value[1].real, value[2].real);
+			if (p_use_linear_color) {
+				c = c.srgb_to_linear();
+			}
+
 			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 3; i++) {
-				gui[i] = value[i].real;
+				gui[i] = c.components[i];
 			}
 
 		} break;
 		case ShaderLanguage::TYPE_VEC4: {
+			Color c = Color(value[0].real, value[1].real, value[2].real, value[3].real);
+			if (p_use_linear_color) {
+				c = c.srgb_to_linear();
+			}
+
 			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 4; i++) {
-				gui[i] = value[i].real;
+				gui[i] = c.components[i];
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
@@ -569,6 +579,9 @@ Variant MaterialStorage::ShaderData::get_default_parameter(const StringName &p_p
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
 		Vector<ShaderLanguage::Scalar> default_value = uniform.default_value;
+		if (default_value.is_empty()) {
+			return ShaderLanguage::get_default_datatype_value(uniform.type, uniform.array_size, uniform.hint);
+		}
 		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
 	}
 	return Variant();
@@ -786,7 +799,7 @@ void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringNa
 
 		} else if (E.value.default_value.size()) {
 			//default value
-			_fill_std140_ubo_value(E.value.type, E.value.default_value, data);
+			_fill_std140_ubo_value(E.value.type, E.value.default_value, data, E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR && p_use_linear_color);
 			//value=E.value.default_value;
 		} else {
 			//zero because it was not provided
@@ -1124,7 +1137,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		update_textures(p_parameters, p_default_texture_params, p_texture_uniforms, texture_cache.ptrw(), p_use_linear_color, p_3d_material);
 	}
 
-	if (p_ubo_size == 0 && (p_texture_uniforms.size() == 0)) {
+	if (p_ubo_size == 0 && (p_texture_uniforms.is_empty())) {
 		// This material does not require an uniform set, so don't create it.
 		return false;
 	}
@@ -1692,7 +1705,7 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 
 	for (const PropertyInfo &E : settings) {
 		if (E.name.begins_with("shader_globals/")) {
-			StringName name = E.name.get_slice("/", 1);
+			StringName name = E.name.get_slicec('/', 1);
 			Dictionary d = GLOBAL_GET(E.name);
 
 			ERR_CONTINUE(!d.has("type"));

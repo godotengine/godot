@@ -154,7 +154,7 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
             callptrargsptr += ", "
         argtext += f"m_type{i + 1}"
         callargtext += f"m_type{i + 1} arg{i + 1}"
-        callsiargs += f"_to_variant(arg{i + 1})"
+        callsiargs += f"arg{i + 1}"
         callsiargptrs += f"&vargs[{i}]"
         callptrargs += (
             f"PtrToArg<m_type{i + 1}>::EncodeT argval{i + 1} = (PtrToArg<m_type{i + 1}>::EncodeT)arg{i + 1};\\\n"
@@ -207,12 +207,9 @@ def run(target, source, env):
     max_versions = 12
 
     txt = """/* THIS FILE IS GENERATED DO NOT EDIT */
-#ifndef GDVIRTUAL_GEN_H
-#define GDVIRTUAL_GEN_H
+#pragma once
 
 #include "core/object/script_instance.h"
-
-#include <utility>
 
 #ifdef TOOLS_ENABLED
 #define _GDVIRTUAL_TRACK(m_virtual, m_initialized)\\
@@ -240,37 +237,6 @@ def run(target, source, env):
 #define _GDVIRTUAL_GET_DEPRECATED(m_name, m_name_sn, m_compat)
 #endif
 
-// MSVC WORKAROUND START
-// FIXME The below helper functions are needed to work around an MSVC bug.
-// They should be removed (by modifying core/object/make_virtuals.py) once the bug ceases to be triggered.
-// The bug is triggered by the following code:
-// `Variant(arg)`
-// Through the introduction of the move constructor, MSVC forgets that `operator Variant()`
-// is also a valid way to resolve this call. So for some argument types, it fails the call because
-// it cannot convert to `Variant`.
-// The function `_to_variant` helps the compiler select `.operator Variant()` for appropriate arguments using SFINAE.
-
-template <typename T, typename = void>
-struct has_variant_operator : std::false_type {};
-
-template <typename T>
-struct has_variant_operator<T, std::void_t<decltype(std::declval<T>().operator Variant())>> : std::true_type {};
-
-// Function that is enabled if T has `.operator Variant()`.
-template <typename T>
-_ALWAYS_INLINE_ typename std::enable_if<has_variant_operator<T>::value, Variant>::type
-_to_variant(T&& t) {
-    return std::forward<T>(t).operator Variant();
-}
-
-// Function that is enabled if T does not have `.operator Variant()`.
-template <typename T>
-_ALWAYS_INLINE_ typename std::enable_if<!has_variant_operator<T>::value, Variant>::type
-_to_variant(T&& t) {
-    return Variant(std::forward<T>(t));
-}
-// MSVC WORKAROUND END
-
 """
 
     for i in range(max_versions + 1):
@@ -287,8 +253,6 @@ _to_variant(T&& t) {
         txt += generate_version(i, False, True, False, True)
         txt += generate_version(i, True, False, False, True)
         txt += generate_version(i, True, True, False, True)
-
-    txt += "#endif // GDVIRTUAL_GEN_H\n"
 
     with open(str(target[0]), "w", encoding="utf-8", newline="\n") as f:
         f.write(txt)

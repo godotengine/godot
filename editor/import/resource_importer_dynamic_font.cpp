@@ -116,6 +116,7 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
@@ -153,6 +154,7 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	Dictionary ot_ov = p_options["opentype_features"];
 
 	bool autohinter = p_options["force_autohinter"];
+	bool modulate_color_glyphs = p_options["modulate_color_glyphs"];
 	bool allow_system_fallback = p_options["allow_system_fallback"];
 	int hinting = p_options["hinting"];
 	int subpixel_positioning = p_options["subpixel_positioning"];
@@ -176,41 +178,45 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_opentype_feature_overrides(ot_ov);
 	font->set_fixed_size(0);
 	font->set_force_autohinter(autohinter);
+	font->set_modulate_color_glyphs(modulate_color_glyphs);
 	font->set_allow_system_fallback(allow_system_fallback);
 	font->set_hinting((TextServer::Hinting)hinting);
 	font->set_oversampling(oversampling);
 	font->set_fallbacks(fallbacks);
 
 	if (subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
-		PackedInt32Array glyphs = TS->font_get_supported_glyphs(font->get_rids()[0]);
-		bool is_pixel = true;
-		for (int32_t gl : glyphs) {
-			Dictionary ct = TS->font_get_glyph_contours(font->get_rids()[0], 16, gl);
-			PackedInt32Array contours = ct["contours"];
-			PackedVector3Array points = ct["points"];
-			int prev_start = 0;
-			for (int i = 0; i < contours.size(); i++) {
-				for (int j = prev_start; j <= contours[i]; j++) {
-					int next_point = (j < contours[i]) ? (j + 1) : prev_start;
-					if ((points[j].z != TextServer::CONTOUR_CURVE_TAG_ON) || (!Math::is_equal_approx(points[j].x, points[next_point].x) && !Math::is_equal_approx(points[j].y, points[next_point].y))) {
-						is_pixel = false;
+		Array rids = font->get_rids();
+		if (!rids.is_empty()) {
+			PackedInt32Array glyphs = TS->font_get_supported_glyphs(rids[0]);
+			bool is_pixel = true;
+			for (int32_t gl : glyphs) {
+				Dictionary ct = TS->font_get_glyph_contours(rids[0], 16, gl);
+				PackedInt32Array contours = ct["contours"];
+				PackedVector3Array points = ct["points"];
+				int prev_start = 0;
+				for (int i = 0; i < contours.size(); i++) {
+					for (int j = prev_start; j <= contours[i]; j++) {
+						int next_point = (j < contours[i]) ? (j + 1) : prev_start;
+						if ((points[j].z != TextServer::CONTOUR_CURVE_TAG_ON) || (!Math::is_equal_approx(points[j].x, points[next_point].x) && !Math::is_equal_approx(points[j].y, points[next_point].y))) {
+							is_pixel = false;
+							break;
+						}
+					}
+					prev_start = contours[i] + 1;
+					if (!is_pixel) {
 						break;
 					}
 				}
-				prev_start = contours[i] + 1;
 				if (!is_pixel) {
 					break;
 				}
 			}
-			if (!is_pixel) {
-				break;
+			if (is_pixel && !glyphs.is_empty()) {
+				print_line(vformat("%s: Pixel font detected, disabling subpixel positioning.", p_source_file));
+				subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+			} else {
+				subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 			}
-		}
-		if (is_pixel && !glyphs.is_empty()) {
-			print_line(vformat("%s: Pixel font detected, disabling subpixel positioning.", p_source_file));
-			subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
-		} else {
-			subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		}
 	}
 	font->set_subpixel_positioning((TextServer::SubpixelPositioning)subpixel_positioning);
@@ -267,7 +273,4 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save font to file \"" + p_save_path + ".res\".");
 	print_verbose("Done saving to: " + p_save_path + ".fontdata");
 	return OK;
-}
-
-ResourceImporterDynamicFont::ResourceImporterDynamicFont() {
 }

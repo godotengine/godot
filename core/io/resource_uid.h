@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_UID_H
-#define RESOURCE_UID_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 #include "core/string/string_name.h"
 #include "core/templates/hash_map.h"
 
 class FileAccess;
+
+typedef void (*ResourceUIDScanForUIDOnStartup)();
 
 class ResourceUID : public Object {
 	GDCLASS(ResourceUID, Object)
@@ -63,6 +64,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	inline static ResourceUIDScanForUIDOnStartup scan_for_uid_on_startup = nullptr;
+
 	String id_to_text(ID p_id) const;
 	ID text_to_id(const String &p_text) const;
 
@@ -89,5 +92,3 @@ public:
 	ResourceUID();
 	~ResourceUID();
 };
-
-#endif // RESOURCE_UID_H

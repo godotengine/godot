@@ -342,7 +342,7 @@ struct kern
   }
 
   bool apply (AAT::hb_aat_apply_context_t *c,
-	      const AAT::kern_accelerator_data_t *accel_data = nullptr) const
+	      const AAT::kern_accelerator_data_t &accel_data) const
   { return dispatch (c, accel_data); }
 
   template <typename context_t, typename ...Ts>
@@ -395,7 +395,7 @@ struct kern
 
     bool apply (AAT::hb_aat_apply_context_t *c) const
     {
-      return table->apply (c, &accel_data);
+      return table->apply (c, accel_data);
     }
 
     hb_blob_ptr_t<kern> table;

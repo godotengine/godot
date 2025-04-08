@@ -33,6 +33,7 @@
 
 #include "core/os/keyboard.h"
 #include "editor/add_metadata_dialog.h"
+#include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_main_screen.h"
@@ -414,6 +415,9 @@ void EditorProperty::_notification(int p_what) {
 
 			int ofs = get_theme_constant(SNAME("font_offset"));
 			int text_limit = text_size - ofs;
+			int base_spacing = EDITOR_GET("interface/theme/base_spacing");
+			int padding = base_spacing * EDSCALE;
+			int half_padding = padding / 2;
 
 			if (checkable) {
 				Ref<Texture2D> checkbox;
@@ -444,19 +448,31 @@ void EditorProperty::_notification(int p_what) {
 
 			if (can_revert && !is_read_only()) {
 				Ref<Texture2D> reload_icon = get_editor_theme_icon(SNAME("ReloadSmall"));
-				text_limit -= reload_icon->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
-				revert_rect = Rect2(ofs + text_limit, (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
+				text_limit -= reload_icon->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+				revert_rect = Rect2(ofs + text_limit, 0, reload_icon->get_width() + padding + (1 * EDSCALE), size.height);
+
+				Point2 rtl_pos = Point2();
+				if (rtl) {
+					rtl_pos = Point2(size.width - revert_rect.position.x - (reload_icon->get_width() + padding + (1 * EDSCALE)), revert_rect.position.y);
+				}
 
 				Color color2(1, 1, 1);
 				if (revert_hover) {
 					color2.r *= 1.2;
 					color2.g *= 1.2;
 					color2.b *= 1.2;
+
+					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
+					if (rtl) {
+						draw_style_box(sb_hover, Rect2(rtl_pos, revert_rect.size));
+					} else {
+						draw_style_box(sb_hover, revert_rect);
+					}
 				}
 				if (rtl) {
-					draw_texture(reload_icon, Vector2(size.width - revert_rect.position.x - reload_icon->get_width(), revert_rect.position.y), color2);
+					draw_texture(reload_icon, rtl_pos + Point2(padding, size.height - reload_icon->get_height()) / 2, color2);
 				} else {
-					draw_texture(reload_icon, revert_rect.position, color2);
+					draw_texture(reload_icon, revert_rect.position + Point2(padding, size.height - reload_icon->get_height()) / 2, color2);
 				}
 			} else {
 				revert_rect = Rect2();
@@ -494,19 +510,32 @@ void EditorProperty::_notification(int p_what) {
 					key = get_editor_theme_icon(SNAME("Key"));
 				}
 
-				ofs -= key->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+				ofs -= key->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+				keying_rect = Rect2(ofs, 0, key->get_width() + padding, size.height);
+
+				Point2 rtl_pos = Point2();
+				if (rtl) {
+					rtl_pos = Point2(size.width - keying_rect.position.x - (key->get_width() + padding), keying_rect.position.y);
+				}
 
 				Color color2(1, 1, 1);
 				if (keying_hover) {
 					color2.r *= 1.2;
 					color2.g *= 1.2;
 					color2.b *= 1.2;
+
+					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
+					if (rtl) {
+						draw_style_box(sb_hover, Rect2(rtl_pos, keying_rect.size));
+					} else {
+						draw_style_box(sb_hover, keying_rect);
+					}
 				}
-				keying_rect = Rect2(ofs, ((size.height - key->get_height()) / 2), key->get_width(), key->get_height());
+
 				if (rtl) {
-					draw_texture(key, Vector2(size.width - keying_rect.position.x - key->get_width(), keying_rect.position.y), color2);
+					draw_texture(key, rtl_pos + Point2(padding, size.height - key->get_height()) / 2, color2);
 				} else {
-					draw_texture(key, keying_rect.position, color2);
+					draw_texture(key, keying_rect.position + Point2(padding, size.height - key->get_height()) / 2, color2);
 				}
 
 			} else {
@@ -518,25 +547,44 @@ void EditorProperty::_notification(int p_what) {
 
 				close = get_editor_theme_icon(SNAME("Close"));
 
-				ofs -= close->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+				ofs -= close->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+				delete_rect = Rect2(ofs, 0, close->get_width() + padding, size.height);
+
+				Point2 rtl_pos = Point2();
+				if (rtl) {
+					rtl_pos = Point2(size.width - delete_rect.position.x - (close->get_width() + padding), delete_rect.position.y);
+				}
 
 				Color color2(1, 1, 1);
 				if (delete_hover) {
 					color2.r *= 1.2;
 					color2.g *= 1.2;
 					color2.b *= 1.2;
+
+					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
+					if (rtl) {
+						draw_style_box(sb_hover, Rect2(rtl_pos, delete_rect.size));
+					} else {
+						draw_style_box(sb_hover, delete_rect);
+					}
 				}
-				delete_rect = Rect2(ofs, ((size.height - close->get_height()) / 2), close->get_width(), close->get_height());
+
 				if (rtl) {
-					draw_texture(close, Vector2(size.width - delete_rect.position.x - close->get_width(), delete_rect.position.y), color2);
+					draw_texture(close, rtl_pos + Point2(padding, size.height - close->get_height()) / 2, color2);
 				} else {
-					draw_texture(close, delete_rect.position, color2);
+					draw_texture(close, delete_rect.position + Point2(padding, size.height - close->get_height()) / 2, color2);
 				}
 			} else {
 				delete_rect = Rect2();
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
+			EditorInspector *inspector = get_parent_inspector();
+			if (inspector) {
+				inspector = inspector->get_root_inspector();
+			}
+			set_shortcut_context(inspector);
+
 			if (has_borders) {
 				get_parent()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
 				_update_property_bg();
@@ -545,6 +593,15 @@ void EditorProperty::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			if (has_borders) {
 				get_parent()->disconnect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
+			}
+		} break;
+		case NOTIFICATION_MOUSE_EXIT: {
+			if (keying_hover || revert_hover || check_hover || delete_hover) {
+				keying_hover = false;
+				revert_hover = false;
+				check_hover = false;
+				delete_hover = false;
+				queue_redraw();
 			}
 		} break;
 	}
@@ -565,6 +622,16 @@ Object *EditorProperty::get_edited_object() {
 
 StringName EditorProperty::get_edited_property() const {
 	return property;
+}
+
+Variant EditorProperty::get_edited_property_display_value() const {
+	ERR_FAIL_NULL_V(object, Variant());
+	Control *control = Object::cast_to<Control>(object);
+	if (checkable && !checked && control && String(property).begins_with("theme_override_")) {
+		return control->get_used_theme_item(property);
+	} else {
+		return get_edited_property_value();
+	}
 }
 
 EditorInspector *EditorProperty::get_parent_inspector() const {
@@ -719,9 +786,7 @@ bool EditorProperty::use_keying_next() const {
 	List<PropertyInfo> plist;
 	object->get_property_list(&plist, true);
 
-	for (List<PropertyInfo>::Element *I = plist.front(); I; I = I->next()) {
-		PropertyInfo &p = I->get();
-
+	for (const PropertyInfo &p : plist) {
 		if (p.name == property) {
 			return (p.usage & PROPERTY_USAGE_KEYING_INCREMENTS);
 		}
@@ -868,6 +933,9 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (me.is_valid()) {
 		Vector2 mpos = me->get_position();
+		if (bottom_child_rect.has_point(mpos)) {
+			return; // Makes child EditorProperties behave like sibling nodes when handling mouse events.
+		}
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
 		}
@@ -1327,6 +1395,7 @@ void EditorProperty::_update_popup() {
 			menu->add_icon_item(get_editor_theme_icon(SNAME("Unfavorite")), TTR("Unfavorite Property"), MENU_FAVORITE_PROPERTY);
 			menu->set_item_tooltip(menu->get_item_index(MENU_FAVORITE_PROPERTY), TTR("Make this property be put back at its original place."));
 		} else {
+			// TRANSLATORS: This is a menu item to add a property to the favorites.
 			menu->add_icon_item(get_editor_theme_icon(SNAME("Favorites")), TTR("Favorite Property"), MENU_FAVORITE_PROPERTY);
 			menu->set_item_tooltip(menu->get_item_index(MENU_FAVORITE_PROPERTY), TTR("Make this property be placed at the top for all objects of this class."));
 		}
@@ -1591,6 +1660,8 @@ void EditorInspectorSection::_notification(int p_what) {
 			update_minimum_size();
 			bg_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 			bg_color.a /= level;
+			int separation = get_theme_constant(SNAME("v_separation"), SNAME("EditorInspector"));
+			vbox->add_theme_constant_override(SNAME("separation"), separation);
 		} break;
 
 		case NOTIFICATION_SORT_CHILDREN: {
@@ -1835,6 +1906,15 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
 	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		int header_height = _get_header_height();
+		Vector2 previous = mm->get_position() - mm->get_relative();
+		if ((mm->get_position().y >= header_height) != (previous.y >= header_height)) {
+			queue_redraw();
+		}
+	}
 }
 
 String EditorInspectorSection::get_section() const {
@@ -1874,6 +1954,12 @@ void EditorInspectorSection::fold() {
 void EditorInspectorSection::set_bg_color(const Color &p_bg_color) {
 	bg_color = p_bg_color;
 	queue_redraw();
+}
+
+void EditorInspectorSection::reset_timer() {
+	if (dropping_for_unfold && !dropping_unfold_timer->is_stopped()) {
+		dropping_unfold_timer->start();
+	}
 }
 
 bool EditorInspectorSection::has_revertable_properties() const {
@@ -2037,7 +2123,7 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 			popup_array_index_pressed = begin_array_index + p_index;
 			rmb_popup->set_item_disabled(OPTION_MOVE_UP, popup_array_index_pressed == 0);
 			rmb_popup->set_item_disabled(OPTION_MOVE_DOWN, popup_array_index_pressed == count - 1);
-			rmb_popup->set_position(get_screen_position() + mb->get_position());
+			rmb_popup->set_position(array_elements[p_index].panel->get_screen_position() + mb->get_position());
 			rmb_popup->reset_size();
 			rmb_popup->popup();
 		}
@@ -2143,10 +2229,8 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 			undo_redo->add_undo_property(object, count_property, properties_as_array.size());
 			for (int i = 0; i < (int)properties_as_array.size(); i++) {
 				Dictionary d = Dictionary(properties_as_array[i]);
-				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
-					String key = keys[j];
-					undo_redo->add_undo_property(object, vformat(key, i), d[key]);
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
 				}
 			}
 
@@ -2166,10 +2250,8 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 			undo_redo->add_do_property(object, count_property, properties_as_array.size());
 			for (int i = 0; i < (int)properties_as_array.size(); i++) {
 				Dictionary d = properties_as_array[i];
-				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
-					String key = keys[j];
-					undo_redo->add_do_property(object, vformat(key, i), d[key]);
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					undo_redo->add_do_property(object, vformat(kv.key, i), kv.value);
 				}
 			}
 		}
@@ -2220,10 +2302,8 @@ void EditorInspectorArray::_clear_array() {
 		undo_redo->add_undo_property(object, count_property, count);
 		for (int i = 0; i < (int)properties_as_array.size(); i++) {
 			Dictionary d = Dictionary(properties_as_array[i]);
-			Array keys = d.keys();
-			for (int j = 0; j < keys.size(); j++) {
-				String key = keys[j];
-				undo_redo->add_undo_property(object, vformat(key, i), d[key]);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
 			}
 		}
 
@@ -2285,10 +2365,8 @@ void EditorInspectorArray::_resize_array(int p_size) {
 			undo_redo->add_undo_property(object, count_property, count);
 			for (int i = count - 1; i > p_size - 1; i--) {
 				Dictionary d = Dictionary(properties_as_array[i]);
-				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
-					String key = keys[j];
-					undo_redo->add_undo_property(object, vformat(key, i), d[key]);
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
 				}
 			}
 
@@ -2665,8 +2743,6 @@ VBoxContainer *EditorInspectorArray::get_vbox(int p_index) {
 EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	read_only = p_read_only;
 
-	set_mouse_filter(Control::MOUSE_FILTER_STOP);
-
 	odd_style.instantiate();
 	even_style.instantiate();
 
@@ -2918,7 +2994,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 			ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 			ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
 			ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
-			ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), CONNECT_DEFERRED);
+			ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
 			ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
 
 			if (F.properties.size()) {
@@ -3081,13 +3157,14 @@ void EditorInspector::update_tree() {
 	Color sscolor = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 	bool sub_inspectors_enabled = EDITOR_GET("interface/inspector/open_resources_in_current_inspector");
 
-	// Get the lists of editors to add the beginning.
-	for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
-		ped->parse_begin(object);
-		_parse_added_editors(begin_vbox, nullptr, ped);
-	}
-	if (begin_vbox->get_child_count()) {
+	if (!valid_plugins.is_empty()) {
 		begin_vbox->show();
+
+		// Get the lists of editors to add the beginning.
+		for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
+			ped->parse_begin(object);
+			_parse_added_editors(begin_vbox, nullptr, ped);
+		}
 	}
 
 	StringName doc_name;
@@ -3389,6 +3466,8 @@ void EditorInspector::update_tree() {
 		// Recreate the category vbox if it was reset.
 		if (category_vbox == nullptr) {
 			category_vbox = memnew(VBoxContainer);
+			int separation = get_theme_constant(SNAME("v_separation"), SNAME("EditorInspector"));
+			category_vbox->add_theme_constant_override(SNAME("separation"), separation);
 			category_vbox->hide();
 			main_vbox->add_child(category_vbox);
 		}
@@ -3416,6 +3495,7 @@ void EditorInspector::update_tree() {
 			if (!vbox_per_path[root_vbox].has(acc_path)) {
 				// If the section does not exists, create it.
 				EditorInspectorSection *section = memnew(EditorInspectorSection);
+				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 				current_vbox->add_child(section);
 				sections.push_back(section);
 
@@ -3484,9 +3564,9 @@ void EditorInspector::update_tree() {
 			String swap_method;
 			for (int i = (p.type == Variant::NIL ? 1 : 2); i < class_name_components.size(); i++) {
 				if (class_name_components[i].begins_with("page_size") && class_name_components[i].get_slice_count("=") == 2) {
-					page_size = class_name_components[i].get_slice("=", 1).to_int();
+					page_size = class_name_components[i].get_slicec('=', 1).to_int();
 				} else if (class_name_components[i].begins_with("add_button_text") && class_name_components[i].get_slice_count("=") == 2) {
-					add_button_text = class_name_components[i].get_slice("=", 1).strip_edges();
+					add_button_text = class_name_components[i].get_slicec('=', 1).strip_edges();
 				} else if (class_name_components[i] == "static") {
 					movable = false;
 				} else if (class_name_components[i] == "const") {
@@ -3496,7 +3576,7 @@ void EditorInspector::update_tree() {
 				} else if (class_name_components[i] == "unfoldable") {
 					foldable = false;
 				} else if (class_name_components[i].begins_with("swap_method") && class_name_components[i].get_slice_count("=") == 2) {
-					swap_method = class_name_components[i].get_slice("=", 1).strip_edges();
+					swap_method = class_name_components[i].get_slicec('=', 1).strip_edges();
 				}
 			}
 
@@ -3756,7 +3836,7 @@ void EditorInspector::update_tree() {
 				ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 				ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
 				ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
-				ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), CONNECT_DEFERRED);
+				ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
 				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
 
 				if (use_doc_hints) {
@@ -3781,13 +3861,16 @@ void EditorInspector::update_tree() {
 				ep->set_doc_path(doc_path);
 				ep->set_internal(p.usage & PROPERTY_USAGE_INTERNAL);
 
-				ep->update_property();
-				ep->_update_flags();
-				ep->update_editor_property_status();
-				ep->update_cache();
+				// If this property is favorited, it won't be in the tree yet. So don't do this setup right now.
+				if (ep->is_inside_tree()) {
+					ep->update_property();
+					ep->_update_flags();
+					ep->update_editor_property_status();
+					ep->update_cache();
 
-				if (current_selected && ep->property == current_selected) {
-					ep->select(current_focusable);
+					if (current_selected && ep->property == current_selected) {
+						ep->select(current_focusable);
+					}
 				}
 			}
 		}
@@ -3813,6 +3896,7 @@ void EditorInspector::update_tree() {
 				}
 
 				EditorInspectorSection *section = memnew(EditorInspectorSection);
+				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 				favorites_groups_vbox->add_child(section);
 				parent_vbox = section->get_vbox();
 				section->setup("", section_name, object, sscolor, false);
@@ -3832,6 +3916,7 @@ void EditorInspector::update_tree() {
 					}
 
 					EditorInspectorSection *section = memnew(EditorInspectorSection);
+					get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 					vbox->add_child(section);
 					vbox = section->get_vbox();
 					section->setup("", section_name, object, sscolor, false);
@@ -3840,6 +3925,16 @@ void EditorInspector::update_tree() {
 
 				for (EditorProperty *ep : KV2.value) {
 					vbox->add_child(ep);
+
+					// Now that it's inside the tree, do the setup.
+					ep->update_property();
+					ep->_update_flags();
+					ep->update_editor_property_status();
+					ep->update_cache();
+
+					if (current_selected && ep->property == current_selected) {
+						ep->select(current_focusable);
+					}
 				}
 			}
 		}
@@ -3854,8 +3949,9 @@ void EditorInspector::update_tree() {
 		}
 
 		// Clean up empty sections.
-		for (List<EditorInspectorSection *>::Element *I = sections.back(); I; I = I->prev()) {
+		for (List<EditorInspectorSection *>::Element *I = sections.back(); I;) {
 			EditorInspectorSection *section = I->get();
+			I = I->prev(); // Note: Advance before erasing element.
 			if (section->get_vbox()->get_child_count() == 0) {
 				sections.erase(section);
 				vbox_per_path[main_vbox].erase(section->get_section());
@@ -4137,7 +4233,8 @@ void EditorInspector::expand_revertable() {
 }
 
 void EditorInspector::set_scroll_offset(int p_offset) {
-	set_v_scroll(p_offset);
+	// This can be called before the container finishes sorting its children, so defer it.
+	callable_mp((ScrollContainer *)this, &ScrollContainer::set_v_scroll).call_deferred(p_offset);
 }
 
 int EditorInspector::get_scroll_offset() const {
@@ -4204,6 +4301,10 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		emit_signal(_prop_edited, p_name);
 	} else if (Object::cast_to<MultiNodeEdit>(object)) {
 		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
+		_edit_request_change(object, p_name);
+		emit_signal(_prop_edited, p_name);
+	} else if (Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
+		Object::cast_to<EditorDebuggerRemoteObjects>(object)->set_property_field(p_name, p_value, p_changed_field);
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
 	} else {
@@ -4385,13 +4486,26 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 			_edit_set(p_path, Variant(), false, "");
 		} else {
 			Variant to_create;
-			List<PropertyInfo> pinfo;
-			object->get_property_list(&pinfo);
-			for (const PropertyInfo &E : pinfo) {
-				if (E.name == p_path) {
-					Callable::CallError ce;
-					Variant::construct(E.type, to_create, nullptr, 0, ce);
-					break;
+			Control *control = Object::cast_to<Control>(object);
+			bool skip = false;
+			if (control && p_path.begins_with("theme_override_")) {
+				to_create = control->get_used_theme_item(p_path);
+				Ref<Resource> resource = to_create;
+				if (resource.is_valid()) {
+					to_create = resource->duplicate();
+				}
+				skip = true;
+			}
+
+			if (!skip) {
+				List<PropertyInfo> pinfo;
+				object->get_property_list(&pinfo);
+				for (const PropertyInfo &E : pinfo) {
+					if (E.name == p_path) {
+						Callable::CallError ce;
+						Variant::construct(E.type, to_create, nullptr, 0, ce);
+						break;
+					}
 				}
 			}
 			_edit_set(p_path, to_create, false, "");
@@ -4535,7 +4649,7 @@ void EditorInspector::_set_property_favorited(const String &p_path, bool p_favor
 
 	String theme_property;
 	if (p_path.begins_with("theme_override_")) {
-		theme_property = p_path.get_slice("/", 1);
+		theme_property = p_path.get_slicec('/', 1);
 	}
 
 	while (!validate_name.is_empty()) {
@@ -4641,6 +4755,12 @@ void EditorInspector::_clear_current_favorites() {
 
 void EditorInspector::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (property_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+				update_tree_pending = true;
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			favorites_category->icon = get_editor_theme_icon(SNAME("Favorites"));
 
@@ -4721,7 +4841,6 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			bool needs_update = false;
 			if (!is_sub_inspector() && EditorThemeManager::is_generated_theme_outdated()) {
 				add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			}
@@ -4730,16 +4849,12 @@ void EditorInspector::_notification(int p_what) {
 				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_settings_style();
 				if (property_name_style != style) {
 					property_name_style = style;
-					needs_update = true;
+					update_tree_pending = true;
 				}
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
-				needs_update = true;
-			}
-
-			if (needs_update) {
-				update_tree();
+				update_tree_pending = true;
 			}
 		} break;
 	}
@@ -4925,4 +5040,5 @@ EditorInspector::EditorInspector() {
 	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 
 	set_draw_focus_border(true);
+	set_scroll_on_drag_hover(true);
 }

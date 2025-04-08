@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_EDITOR_PLUGIN_H
-#define SCRIPT_EDITOR_PLUGIN_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "editor/plugins/editor_plugin.h"
@@ -223,8 +222,6 @@ public:
 	virtual CodeTextEditor *get_code_editor() const = 0;
 
 	virtual void validate() = 0;
-
-	ScriptEditorBase() {}
 };
 
 typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resource);
@@ -440,6 +437,7 @@ class ScriptEditor : public PanelContainer {
 	void _goto_script_line(Ref<RefCounted> p_script, int p_line);
 	void _set_execution(Ref<RefCounted> p_script, int p_line);
 	void _clear_execution(Ref<RefCounted> p_script);
+	String _get_debug_tooltip(const String &p_text, Node *p_se);
 	void _breaked(bool p_breaked, bool p_can_debug);
 	void _script_created(Ref<Script> p_script);
 	void _set_breakpoint(Ref<RefCounted> p_script, int p_line, bool p_enabled);
@@ -568,6 +566,7 @@ public:
 	PackedStringArray get_unsaved_scripts() const;
 	void save_current_script();
 	void save_all_scripts();
+	void update_script_times();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
@@ -622,7 +621,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_plugin_name() const override { return "Script"; }
+	virtual String get_plugin_name() const override { return TTRC("Script"); }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -641,7 +640,4 @@ public:
 	virtual void edited_scene_changed() override;
 
 	ScriptEditorPlugin();
-	~ScriptEditorPlugin();
 };
-
-#endif // SCRIPT_EDITOR_PLUGIN_H

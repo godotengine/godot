@@ -30,8 +30,6 @@
 
 #include "grid_map_editor_plugin.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "core/os/keyboard.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_main_screen.h"
@@ -867,7 +865,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			const real_t delta = pan_gesture->get_delta().y * 0.5;
 			accumulated_floor_delta += delta;
 			int step = 0;
-			if (ABS(accumulated_floor_delta) > 1.0) {
+			if (Math::abs(accumulated_floor_delta) > 1.0) {
 				step = SIGN(accumulated_floor_delta);
 				accumulated_floor_delta -= step;
 			}
@@ -1877,11 +1875,3 @@ int GridMapEditorPlugin::get_selected_palette_item() const {
 		return -1;
 	}
 }
-
-GridMapEditorPlugin::GridMapEditorPlugin() {
-}
-
-GridMapEditorPlugin::~GridMapEditorPlugin() {
-}
-
-#endif // TOOLS_ENABLED

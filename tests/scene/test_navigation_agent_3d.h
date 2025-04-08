@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_NAVIGATION_AGENT_3D_H
-#define TEST_NAVIGATION_AGENT_3D_H
+#pragma once
 
-#include "scene/3d/navigation_agent_3d.h"
+#include "scene/3d/navigation/navigation_agent_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/main/window.h"
 
@@ -39,7 +38,7 @@
 
 namespace TestNavigationAgent3D {
 
-TEST_SUITE("[Navigation]") {
+TEST_SUITE("[Navigation3D]") {
 	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should have valid RID") {
 		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
 		CHECK(agent_node->get_rid().is_valid());
@@ -67,5 +66,3 @@ TEST_SUITE("[Navigation]") {
 }
 
 } //namespace TestNavigationAgent3D
-
-#endif // TEST_NAVIGATION_AGENT_3D_H

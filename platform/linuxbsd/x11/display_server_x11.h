@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISPLAY_SERVER_X11_H
-#define DISPLAY_SERVER_X11_H
+#pragma once
 
 #ifdef X11_ENABLED
 
@@ -297,6 +296,11 @@ class DisplayServerX11 : public DisplayServer {
 	void _flush_mouse_motion();
 
 	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
+	bool mouse_mode_override_enabled = false;
+	void _mouse_update_mode();
+
 	Point2i center;
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
@@ -333,6 +337,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool xinerama_ext_ok = true;
 	bool xshaped_ext_ok = true;
 	bool xwayland = false;
+	bool kde5_embed_workaround = false; // Workaround embedded game visibility on KDE 5 (GH-102043).
 
 	struct Property {
 		unsigned char *data;
@@ -354,6 +359,7 @@ class DisplayServerX11 : public DisplayServer {
 	void _update_context(WindowData &wd);
 
 	Context context = CONTEXT_ENGINE;
+	bool swap_cancel_ok = false;
 
 	WindowID _get_focused_window_or_popup() const;
 	bool _window_focus_check();
@@ -389,6 +395,8 @@ class DisplayServerX11 : public DisplayServer {
 	void _set_window_taskbar_pager_enabled(Window p_window, bool p_enabled);
 	Rect2i _screens_get_full_rect() const;
 
+	void initialize_tts() const;
+
 protected:
 	void _window_changed(XEvent *event);
 
@@ -414,16 +422,21 @@ public:
 #if defined(DBUS_ENABLED)
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
+	virtual Color get_accent_color() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
-	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
-	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) override;
 #endif
 
 	virtual void beep() const override;
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual void mouse_set_mode_override(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode_override() const override;
+	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
+	virtual bool mouse_is_mode_override_enabled() const override;
 
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
@@ -530,12 +543,15 @@ public:
 	virtual void window_start_resize(WindowResizeEdge p_edge, WindowID p_window) override;
 
 	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
+	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
 	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
 	virtual OS::ProcessID get_focused_process_id() override;
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) override;
+
+	virtual bool get_swap_cancel_ok() override;
 
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;
@@ -544,6 +560,8 @@ public:
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
+
+	virtual bool color_picker(const Callable &p_callback) override;
 
 	virtual void process_events() override;
 
@@ -567,5 +585,3 @@ public:
 };
 
 #endif // X11_ENABLED
-
-#endif // DISPLAY_SERVER_X11_H

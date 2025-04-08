@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_SHADER_FORWARD_MOBILE_H
-#define SCENE_SHADER_FORWARD_MOBILE_H
+#pragma once
 
 #include "../storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/pipeline_hash_map_rd.h"
@@ -172,8 +171,9 @@ public:
 				h = hash_murmur3_one_32(cull_mode, h);
 				h = hash_murmur3_one_32(primitive_type, h);
 				h = hash_murmur3_one_32(shader_specialization.packed_0, h);
-				h = hash_murmur3_one_float(shader_specialization.packed_1, h);
+				h = hash_murmur3_one_32(shader_specialization.packed_1, h);
 				h = hash_murmur3_one_32(shader_specialization.packed_2, h);
+				h = hash_murmur3_one_float(shader_specialization.packed_3, h);
 				h = hash_murmur3_one_32(version, h);
 				h = hash_murmur3_one_32(render_pass, h);
 				h = hash_murmur3_one_32(wireframe, h);
@@ -336,5 +336,3 @@ public:
 };
 
 } // namespace RendererSceneRenderImplementation
-
-#endif // SCENE_SHADER_FORWARD_MOBILE_H

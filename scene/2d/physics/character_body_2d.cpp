@@ -409,7 +409,7 @@ void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResu
 		on_wall = true;
 		wall_normal = p_result.collision_normal;
 		// Don't apply wall velocity when the collider is a CharacterBody2D.
-		if (Object::cast_to<CharacterBody2D>(ObjectDB::get_instance(p_result.collider_id)) == nullptr) {
+		if (ObjectDB::get_instance<CharacterBody2D>(p_result.collider_id) == nullptr) {
 			_set_platform_data(p_result);
 		}
 	}
@@ -509,7 +509,7 @@ Ref<KinematicCollision2D> CharacterBody2D::_get_slide_collision(int p_bounce) {
 }
 
 Ref<KinematicCollision2D> CharacterBody2D::_get_last_slide_collision() {
-	if (motion_results.size() == 0) {
+	if (motion_results.is_empty()) {
 		return Ref<KinematicCollision2D>();
 	}
 	return _get_slide_collision(motion_results.size() - 1);

@@ -45,7 +45,7 @@ void ItemList::_shape_text(int p_idx) {
 	}
 	item.text_buf->add_string(item.xl_text, theme_cache.font, theme_cache.font_size, item.language);
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-		item.text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
+		item.text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES);
 	} else {
 		item.text_buf->set_break_flags(TextServer::BREAK_NONE);
 	}
@@ -429,7 +429,7 @@ void ItemList::deselect(int p_idx) {
 }
 
 void ItemList::deselect_all() {
-	if (items.size() < 1) {
+	if (items.is_empty()) {
 		return;
 	}
 
@@ -558,7 +558,7 @@ void ItemList::set_max_text_lines(int p_lines) {
 		max_text_lines = p_lines;
 		for (int i = 0; i < items.size(); i++) {
 			if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-				items.write[i].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
+				items.write[i].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES);
 				items.write[i].text_buf->set_max_lines_visible(p_lines);
 			} else {
 				items.write[i].text_buf->set_break_flags(TextServer::BREAK_NONE);
@@ -608,7 +608,7 @@ void ItemList::set_icon_mode(IconMode p_mode) {
 		icon_mode = p_mode;
 		for (int i = 0; i < items.size(); i++) {
 			if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-				items.write[i].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
+				items.write[i].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES);
 			} else {
 				items.write[i].text_buf->set_break_flags(TextServer::BREAK_NONE);
 			}
@@ -1201,7 +1201,7 @@ void ItemList::_notification(int p_what) {
 
 					const int y = base_ofs.y + separators[i];
 					if (rtl && scroll_bar_v->is_visible()) {
-						draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT) * 2 + scroll_bar_v_min.width, y), Vector2(width + theme_cache.panel_style->get_margin(SIDE_LEFT) + scroll_bar_v_min.width, y), theme_cache.guide_color);
+						draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT) + scroll_bar_v_min.width, y), Vector2(width + theme_cache.panel_style->get_margin(SIDE_LEFT) + scroll_bar_v_min.width, y), theme_cache.guide_color);
 					} else {
 						draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width + theme_cache.panel_style->get_margin(SIDE_LEFT), y), theme_cache.guide_color);
 					}
@@ -1282,10 +1282,8 @@ void ItemList::_notification(int p_what) {
 				}
 
 				Vector2 text_ofs;
+				Size2 icon_size;
 				if (items[i].icon.is_valid()) {
-					Size2 icon_size;
-					//= _adjust_to_max_size(items[i].get_icon_size(),fixed_icon_size) * icon_scale;
-
 					if (fixed_icon_size.x > 0 && fixed_icon_size.y > 0) {
 						icon_size = fixed_icon_size * icon_scale;
 					} else {
@@ -1358,16 +1356,7 @@ void ItemList::_notification(int p_what) {
 				}
 
 				if (!items[i].text.is_empty()) {
-					int max_len = -1;
-
 					Vector2 size2 = items[i].text_buf->get_size();
-					if (fixed_column_width) {
-						max_len = fixed_column_width;
-					} else if (same_column_width) {
-						max_len = items[i].rect_cache.size.x;
-					} else {
-						max_len = size2.x;
-					}
 
 					Color txt_modulate;
 					if (items[i].selected && hovered == i) {
@@ -1392,14 +1381,17 @@ void ItemList::_notification(int p_what) {
 
 						text_ofs.y += MAX(theme_cache.v_separation, 0) / 2;
 
-						if (rtl) {
-							text_ofs.x = size.width - text_ofs.x - max_len;
-						}
-
 						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 						float text_w = items[i].rect_cache.size.width;
+						if (wraparound_items && items[i].rect_cache.size.width > width) {
+							text_w -= items[i].rect_cache.size.width - width;
+						}
 						items.write[i].text_buf->set_width(text_w);
+
+						if (rtl) {
+							text_ofs.x = size.width - text_ofs.x - text_w;
+						}
 
 						if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
@@ -1423,11 +1415,17 @@ void ItemList::_notification(int p_what) {
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						float text_w = width - text_ofs.x + theme_cache.panel_style->get_margin(SIDE_LEFT);
+						float text_w = items[i].rect_cache.size.width - icon_size.x - MAX(theme_cache.h_separation, 0);
+						if (wraparound_items && items[i].rect_cache.size.width > width) {
+							text_w -= items[i].rect_cache.size.width - width;
+						}
 						items.write[i].text_buf->set_width(text_w);
 
 						if (rtl) {
-							text_ofs.x = size.width - width - theme_cache.panel_style->get_margin(SIDE_RIGHT);
+							text_ofs.x = size.width - items[i].rect_cache.size.width + icon_size.x - text_ofs.x + MAX(theme_cache.h_separation, 0);
+							if (wraparound_items) {
+								text_ofs.x += MAX(items[i].rect_cache.size.width - width, 0);
+							}
 							items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 						} else {
 							items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_LEFT);
@@ -1437,12 +1435,16 @@ void ItemList::_notification(int p_what) {
 							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
 						}
 
-						if (rtl) {
-							if (width - items[i].rect_cache.position.x - (MAX(theme_cache.h_separation, 0) / 2) - int(scroll_bar_h->get_value()) > 0) {
+						if (fixed_column_width > 0) {
+							if (items[i].rect_cache.size.width - icon_size.x - MAX(theme_cache.h_separation, 0) > 0) {
 								items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 							}
 						} else {
-							if (width - text_ofs.x + theme_cache.panel_style->get_margin(SIDE_LEFT) > 0) {
+							if (wraparound_items) {
+								if (width - icon_size.x - MAX(theme_cache.h_separation, 0) - int(scroll_bar_h->get_value()) > 0) {
+									items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
+								}
+							} else {
 								items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 							}
 						}
@@ -1506,8 +1508,6 @@ void ItemList::force_update_list_size() {
 			int max_width = -1;
 			if (fixed_column_width) {
 				max_width = fixed_column_width;
-			} else if (same_column_width) {
-				max_width = items[i].rect_cache.size.x;
 			}
 			items.write[i].text_buf->set_width(max_width);
 			Size2 s = items[i].text_buf->get_size();
@@ -1595,13 +1595,12 @@ void ItemList::force_update_list_size() {
 			}
 		}
 
-		Size2 scroll_bar_v_min = scroll_bar_v->is_visible() ? scroll_bar_v->get_combined_minimum_size() : Size2();
 		float scroll_bar_v_page = MAX(0, size.height - theme_cache.panel_style->get_minimum_size().height);
 		float scroll_bar_v_max = MAX(scroll_bar_v_page, ofs.y + max_h);
 		float scroll_bar_h_page = MAX(0, size.width - theme_cache.panel_style->get_minimum_size().width);
 		float scroll_bar_h_max = 0;
 		if (!wraparound_items) {
-			scroll_bar_h_max = MAX(scroll_bar_h_page, max_w) - scroll_bar_v_min.width;
+			scroll_bar_h_max = MAX(scroll_bar_h_page, max_w);
 		}
 
 		if (scroll_bar_v_page >= scroll_bar_v_max || is_layout_rtl()) {
@@ -1626,7 +1625,6 @@ void ItemList::force_update_list_size() {
 				scroll_bar_v->hide();
 			} else {
 				auto_width_value += scroll_bar_v_minwidth;
-				scroll_bar_h_max += scroll_bar_v_minwidth;
 				scroll_bar_v->show();
 
 				if (do_autoscroll_to_bottom) {
@@ -1634,7 +1632,7 @@ void ItemList::force_update_list_size() {
 				}
 			}
 
-			if (is_layout_rtl()) {
+			if (is_layout_rtl() && !wraparound_items) {
 				scroll_bar_h->set_max(scroll_bar_h_page);
 				scroll_bar_h->set_min(-(scroll_bar_h_max - scroll_bar_h_page));
 			} else {
@@ -1692,7 +1690,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	pos.x += scroll_bar_h->get_value();
 
 	if (is_layout_rtl()) {
-		pos.x = get_size().width - pos.x - theme_cache.panel_style->get_margin(SIDE_LEFT) - theme_cache.panel_style->get_margin(SIDE_RIGHT);
+		pos.x = get_size().width - pos.x - scroll_bar_h->get_value() - theme_cache.panel_style->get_margin(SIDE_LEFT) - theme_cache.panel_style->get_margin(SIDE_RIGHT);
 	}
 
 	int closest = -1;
@@ -1701,8 +1699,16 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	for (int i = 0; i < items.size(); i++) {
 		Rect2 rc = items[i].rect_cache;
 
-		if (i % current_columns == current_columns - 1 && wraparound_items) {
-			rc.size.width = get_size().width - rc.position.x; // Make sure you can still select the last item when clicking past the column.
+		if (i % current_columns == current_columns - 1) { // Make sure you can still select the last item when clicking past the column.
+			if (is_layout_rtl()) {
+				rc.size.width = get_size().width - scroll_bar_h->get_value() + rc.position.x;
+			} else {
+				rc.size.width = get_size().width + scroll_bar_h->get_value() - rc.position.x;
+			}
+		}
+
+		if (rc.size.x < 0) {
+			continue; // Skip negative item sizes, because they are off screen.
 		}
 
 		if (rc.has_point(pos)) {
@@ -2072,7 +2078,7 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_text_lines", PROPERTY_HINT_RANGE, "1,10,1,or_greater"), "set_max_text_lines", "get_max_text_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_width"), "set_auto_width", "has_auto_width");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wraparound_items"), "set_wraparound_items", "has_wraparound_items");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 	ADD_GROUP("Columns", "");

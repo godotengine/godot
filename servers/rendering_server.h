@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_SERVER_H
-#define RENDERING_SERVER_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/math/geometry_3d.h"
@@ -857,6 +856,7 @@ public:
 	};
 
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, ParticlesCollisionHeightfieldResolution p_resolution) = 0; // For SDF and vector field.
+	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) = 0;
 
 	/* FOG VOLUME API */
 
@@ -1977,5 +1977,3 @@ VARIANT_ENUM_CAST(RenderingServer::Features);
 
 // Alias to make it easier to use.
 #define RS RenderingServer
-
-#endif // RENDERING_SERVER_H

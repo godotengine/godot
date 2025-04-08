@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_STRING_H
-#define TEST_STRING_H
+#pragma once
 
 #include "core/string/ustring.h"
 
@@ -60,7 +59,7 @@ TEST_CASE("[String] Assign from Latin-1 char string (copycon)") {
 	const String &t1(s);
 	CHECK(u32scmp(t1.get_data(), U"Sheep") == 0);
 
-	String t2 = String("Sheep", 3);
+	String t2 = String::latin1(Span("Sheep", 3));
 	CHECK(u32scmp(t2.get_data(), U"She") == 0);
 }
 
@@ -88,34 +87,38 @@ TEST_CASE("[String] UTF8") {
 	/* how can i embed UTF in here? */
 	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
 	static const uint8_t u8str[] = { 0x45, 0x20, 0xE3, 0x81, 0x8A, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0 };
-	String s = u32str;
-	Error err = s.parse_utf8(s.utf8().get_data());
+	String expected = u32str;
+	String parsed;
+	Error err = parsed.append_utf8(expected.utf8().get_data());
 	CHECK(err == OK);
-	CHECK(s == u32str);
+	CHECK(parsed == u32str);
 
-	err = s.parse_utf8((const char *)u8str);
+	parsed.clear();
+	err = parsed.append_utf8((const char *)u8str);
 	CHECK(err == OK);
-	CHECK(s == u32str);
+	CHECK(parsed == u32str);
 
 	CharString cs = (const char *)u8str;
-	CHECK(String::utf8(cs) == s);
+	CHECK(String::utf8(cs) == parsed);
 }
 
 TEST_CASE("[String] UTF16") {
 	/* how can i embed UTF in here? */
 	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
 	static const char16_t u16str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0xD83C, 0xDFA4, 0 };
-	String s = u32str;
-	Error err = s.parse_utf16(s.utf16().get_data());
+	String expected = u32str;
+	String parsed;
+	Error err = parsed.append_utf16(expected.utf16().get_data());
 	CHECK(err == OK);
-	CHECK(s == u32str);
+	CHECK(parsed == u32str);
 
-	err = s.parse_utf16(u16str);
+	parsed.clear();
+	err = parsed.append_utf16(u16str);
 	CHECK(err == OK);
-	CHECK(s == u32str);
+	CHECK(parsed == u32str);
 
 	Char16String cs = u16str;
-	CHECK(String::utf16(cs) == s);
+	CHECK(String::utf16(cs) == parsed);
 }
 
 TEST_CASE("[String] UTF8 with BOM") {
@@ -123,7 +126,7 @@ TEST_CASE("[String] UTF8 with BOM") {
 	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
 	static const uint8_t u8str[] = { 0xEF, 0xBB, 0xBF, 0x45, 0x20, 0xE3, 0x81, 0x8A, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0 };
 	String s;
-	Error err = s.parse_utf8((const char *)u8str);
+	Error err = s.append_utf8((const char *)u8str);
 	CHECK(err == OK);
 	CHECK(s == u32str);
 
@@ -137,11 +140,12 @@ TEST_CASE("[String] UTF16 with BOM") {
 	static const char16_t u16str[] = { 0xFEFF, 0x0020, 0x0045, 0x304A, 0x360F, 0x3088, 0x3046, 0xD83C, 0xDFA4, 0 };
 	static const char16_t u16str_swap[] = { 0xFFFE, 0x2000, 0x4500, 0x4A30, 0x0F36, 0x8830, 0x4630, 0x3CD8, 0xA4DF, 0 };
 	String s;
-	Error err = s.parse_utf16(u16str);
+	Error err = s.append_utf16(u16str);
 	CHECK(err == OK);
 	CHECK(s == u32str);
 
-	err = s.parse_utf16(u16str_swap);
+	s.clear();
+	err = s.append_utf16(u16str_swap);
 	CHECK(err == OK);
 	CHECK(s == u32str);
 
@@ -156,23 +160,23 @@ TEST_CASE("[String] UTF8 with CR") {
 	const String base = U"Hello darkness\r\nMy old friend\nI've come to talk\rWith you again";
 
 	String keep_cr;
-	Error err = keep_cr.parse_utf8(base.utf8().get_data());
+	Error err = keep_cr.append_utf8(base.utf8().get_data());
 	CHECK(err == OK);
 	CHECK(keep_cr == base);
 
 	String no_cr;
-	err = no_cr.parse_utf8(base.utf8().get_data(), -1, true); // Skip CR.
+	err = no_cr.append_utf8(base.utf8().get_data(), -1, true); // Skip CR.
 	CHECK(err == OK);
 	CHECK(no_cr == base.replace("\r", ""));
 }
 
-TEST_CASE("[String] Invalid UTF8 (non-standard)") {
+TEST_CASE("[String] Invalid UTF8 (non shortest form sequence)") {
 	ERR_PRINT_OFF
-	static const uint8_t u8str[] = { 0x45, 0xE3, 0x81, 0x8A, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0xF0, 0x82, 0x82, 0xAC, 0xED, 0xA0, 0x81, 0 };
-	//                               +     +2                +2                +2                +3                      overlong +3             unpaired +2
-	static const char32_t u32str[] = { 0x45, 0x304A, 0x3088, 0x3046, 0x1F3A4, 0x20AC, 0xFFFD, 0 };
+	// Examples from the unicode standard : 3.9 Unicode Encoding Forms - Table 3.8.
+	static const uint8_t u8str[] = { 0xC0, 0xAF, 0xE0, 0x80, 0xBF, 0xF0, 0x81, 0x82, 0x41, 0 };
+	static const char32_t u32str[] = { 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0 };
 	String s;
-	Error err = s.parse_utf8((const char *)u8str);
+	Error err = s.append_utf8((const char *)u8str);
 	CHECK(err == ERR_INVALID_DATA);
 	CHECK(s == u32str);
 
@@ -181,13 +185,43 @@ TEST_CASE("[String] Invalid UTF8 (non-standard)") {
 	ERR_PRINT_ON
 }
 
-TEST_CASE("[String] Invalid UTF8 (unrecoverable)") {
+TEST_CASE("[String] Invalid UTF8 (ill formed sequences for surrogates)") {
 	ERR_PRINT_OFF
-	static const uint8_t u8str[] = { 0x45, 0xE3, 0x81, 0x8A, 0x8F, 0xE3, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xC0, 0x80, 0xF0, 0x9F, 0x8E, 0xA4, 0xF0, 0x82, 0x82, 0xAC, 0xED, 0xA0, 0x81, 0 };
-	//                               +     +2                inv   +2    inv   inv   inv   +2                +2                ovl NUL +1  +3                      overlong +3             unpaired +2
-	static const char32_t u32str[] = { 0x45, 0x304A, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x3088, 0x3046, 0xFFFD, 0x1F3A4, 0x20AC, 0xFFFD, 0 };
+	// Examples from the unicode standard : 3.9 Unicode Encoding Forms - Table 3.9.
+	static const uint8_t u8str[] = { 0xED, 0xA0, 0x80, 0xED, 0xBF, 0xBF, 0xED, 0xAF, 0x41, 0 };
+	static const char32_t u32str[] = { 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0 };
 	String s;
-	Error err = s.parse_utf8((const char *)u8str);
+	Error err = s.append_utf8((const char *)u8str);
+	CHECK(err == ERR_INVALID_DATA);
+	CHECK(s == u32str);
+
+	CharString cs = (const char *)u8str;
+	CHECK(String::utf8(cs) == s);
+	ERR_PRINT_ON
+}
+
+TEST_CASE("[String] Invalid UTF8 (other ill formed sequences)") {
+	ERR_PRINT_OFF
+	// Examples from the unicode standard : 3.9 Unicode Encoding Forms - Table 3.10.
+	static const uint8_t u8str[] = { 0xF4, 0x91, 0x92, 0x93, 0xFF, 0x41, 0x80, 0xBF, 0x42, 0 };
+	static const char32_t u32str[] = { 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0xFFFD, 0xFFFD, 0x42, 0 };
+	String s;
+	Error err = s.append_utf8((const char *)u8str);
+	CHECK(err == ERR_INVALID_DATA);
+	CHECK(s == u32str);
+
+	CharString cs = (const char *)u8str;
+	CHECK(String::utf8(cs) == s);
+	ERR_PRINT_ON
+}
+
+TEST_CASE("[String] Invalid UTF8 (truncated sequences)") {
+	ERR_PRINT_OFF
+	// Examples from the unicode standard : 3.9 Unicode Encoding Forms - Table 3.11.
+	static const uint8_t u8str[] = { 0xE1, 0x80, 0xE2, 0xF0, 0x91, 0x92, 0xF1, 0xBF, 0x41, 0 };
+	static const char32_t u32str[] = { 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0 };
+	String s;
+	Error err = s.append_utf8((const char *)u8str);
 	CHECK(err == ERR_INVALID_DATA);
 	CHECK(s == u32str);
 
@@ -202,7 +236,7 @@ TEST_CASE("[String] Invalid UTF16 (non-standard)") {
 	//                                 +       +       +       +       unpaired
 	static const char32_t u32str[] = { 0x0045, 0x304A, 0x3088, 0x3046, 0xDFA4, 0 };
 	String s;
-	Error err = s.parse_utf16(u16str);
+	Error err = s.append_utf16(u16str);
 	CHECK(err == ERR_PARSE_ERROR);
 	CHECK(s == u32str);
 
@@ -467,6 +501,23 @@ TEST_CASE("[String] Erasing") {
 	CHECK(s == "Josephine is such a girl!");
 }
 
+TEST_CASE("[String] remove_char") {
+	String s = "Banana";
+	CHECK(s.remove_char('a') == "Bnn");
+	CHECK(s.remove_char('\0') == "Banana");
+	CHECK(s.remove_char('x') == "Banana");
+}
+
+TEST_CASE("[String] remove_chars") {
+	String s = "Banana";
+	CHECK(s.remove_chars("Ba") == "nn");
+	CHECK(s.remove_chars(String("Ba")) == "nn");
+	CHECK(s.remove_chars("") == "Banana");
+	CHECK(s.remove_chars(String()) == "Banana");
+	CHECK(s.remove_chars("xy") == "Banana");
+	CHECK(s.remove_chars(String("xy")) == "Banana");
+}
+
 TEST_CASE("[String] Number to string") {
 	CHECK(String::num(0) == "0.0"); // The method takes double, so always add zeros.
 	CHECK(String::num(0.0) == "0.0");
@@ -545,7 +596,10 @@ TEST_CASE("[String] String to integer") {
 		CHECK(String(nums[i]).to_int() == num[i]);
 	}
 	CHECK(String("0b1011").to_int() == 1011); // Looks like a binary number, but to_int() handles this as a base-10 number, "b" is just ignored.
+	CHECK(String("0B1011").to_int() == 1011);
+
 	CHECK(String("0x1012").to_int() == 1012); // Looks like a hexadecimal number, but to_int() handles this as a base-10 number, "x" is just ignored.
+	CHECK(String("0X1012").to_int() == 1012);
 
 	ERR_PRINT_OFF
 	CHECK(String("999999999999999999999999999999999999999999999999999999999").to_int() == INT64_MAX); // Too large, largest possible is returned.
@@ -554,10 +608,10 @@ TEST_CASE("[String] String to integer") {
 }
 
 TEST_CASE("[String] Hex to integer") {
-	static const char *nums[12] = { "0xFFAE", "22", "0", "AADDAD", "0x7FFFFFFFFFFFFFFF", "-0xf", "", "000", "000f", "0xaA", "-ff", "-" };
-	static const int64_t num[12] = { 0xFFAE, 0x22, 0, 0xAADDAD, 0x7FFFFFFFFFFFFFFF, -0xf, 0, 0, 0xf, 0xaa, -0xff, 0x0 };
+	static const char *nums[13] = { "0xFFAE", "22", "0", "AADDAD", "0x7FFFFFFFFFFFFFFF", "-0xf", "", "000", "000f", "0xaA", "-ff", "-", "0XFFAE" };
+	static const int64_t num[13] = { 0xFFAE, 0x22, 0, 0xAADDAD, 0x7FFFFFFFFFFFFFFF, -0xf, 0, 0, 0xf, 0xaa, -0xff, 0x0, 0xFFAE };
 
-	for (int i = 0; i < 12; i++) {
+	for (int i = 0; i < 13; i++) {
 		CHECK(String(nums[i]).hex_to_int() == num[i]);
 	}
 
@@ -575,10 +629,10 @@ TEST_CASE("[String] Hex to integer") {
 }
 
 TEST_CASE("[String] Bin to integer") {
-	static const char *nums[10] = { "", "0", "0b0", "0b1", "0b", "1", "0b1010", "-0b11", "-1010", "0b0111111111111111111111111111111111111111111111111111111111111111" };
-	static const int64_t num[10] = { 0, 0, 0, 1, 0, 1, 10, -3, -10, 0x7FFFFFFFFFFFFFFF };
+	static const char *nums[11] = { "", "0", "0b0", "0b1", "0b", "1", "0b1010", "-0b11", "-1010", "0b0111111111111111111111111111111111111111111111111111111111111111", "0B1010" };
+	static const int64_t num[11] = { 0, 0, 0, 1, 0, 1, 10, -3, -10, 0x7FFFFFFFFFFFFFFF, 10 };
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 11; i++) {
 		CHECK(String(nums[i]).bin_to_int() == num[i]);
 	}
 
@@ -600,7 +654,7 @@ TEST_CASE("[String] String to float") {
 	static const double num[12] = { -12348298412.2, 0.05, 2.0002, -0.0001, 0.0, 0.0, 123.0, 0.0, 0.0, 0.007, 234.0, 3.0 };
 
 	for (int i = 0; i < 12; i++) {
-		CHECK(!(ABS(String(nums[i]).to_float() - num[i]) > 0.00001));
+		CHECK(!(Math::abs(String(nums[i]).to_float() - num[i]) > 0.00001));
 	}
 
 	// Invalid float strings should return 0.
@@ -711,6 +765,14 @@ TEST_CASE("[String] Splitting") {
 			CHECK(l[i] == slices[i]);
 		}
 	}
+	{
+		const String s = "Mars Jupiter Saturn Uranus";
+		const char *slices[2] = { "Mars", "Jupiter Saturn Uranus" };
+		Vector<String> l = s.split_spaces(1);
+		for (int i = 0; i < l.size(); i++) {
+			CHECK(l[i] == slices[i]);
+		}
+	}
 
 	{
 		const String s = "1.2;2.3 4.5";
@@ -719,14 +781,14 @@ TEST_CASE("[String] Splitting") {
 		const Vector<double> d_arr = s.split_floats(";");
 		CHECK(d_arr.size() == 2);
 		for (int i = 0; i < d_arr.size(); i++) {
-			CHECK(ABS(d_arr[i] - slices[i]) <= 0.00001);
+			CHECK(Math::abs(d_arr[i] - slices[i]) <= 0.00001);
 		}
 
 		const Vector<String> keys = { ";", " " };
 		const Vector<float> f_arr = s.split_floats_mk(keys);
 		CHECK(f_arr.size() == 3);
 		for (int i = 0; i < f_arr.size(); i++) {
-			CHECK(ABS(f_arr[i] - slices[i]) <= 0.00001);
+			CHECK(Math::abs(f_arr[i] - slices[i]) <= 0.00001);
 		}
 	}
 
@@ -737,7 +799,7 @@ TEST_CASE("[String] Splitting") {
 		const Vector<double> arr = s.split_floats(" ");
 		CHECK(arr.size() == 10);
 		for (int i = 0; i < arr.size(); i++) {
-			CHECK(ABS(arr[i] - slices[i]) <= 0.00001);
+			CHECK(Math::abs(arr[i] - slices[i]) <= 0.00001);
 		}
 
 		const Vector<String> keys = { ";", " " };
@@ -1547,9 +1609,9 @@ TEST_CASE("[String] lstrip and rstrip") {
 #undef STRIP_TEST
 }
 
-TEST_CASE("[String] Ensuring empty string into parse_utf8 passes empty string") {
+TEST_CASE("[String] Ensuring empty string into extend_utf8 passes empty string") {
 	String empty;
-	CHECK(empty.parse_utf8(nullptr, -1) == ERR_INVALID_DATA);
+	CHECK(empty.append_utf8(nullptr, -1) == ERR_INVALID_DATA);
 }
 
 TEST_CASE("[String] Cyrillic to_lower()") {
@@ -1885,15 +1947,15 @@ TEST_CASE("[String] Join") {
 }
 
 TEST_CASE("[String] Is_*") {
-	static const char *data[13] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "文字" };
-	static bool isnum[13] = { true, true, true, false, false, false, false, false, false, false, false, false, false };
-	static bool isint[13] = { true, true, false, false, false, false, false, false, false, false, false, false, false };
-	static bool ishex[13] = { true, true, false, false, true, false, true, false, true, false, false, false, false };
-	static bool ishex_p[13] = { false, false, false, false, false, false, false, true, false, false, false, false, false };
-	static bool isflt[13] = { true, true, true, false, true, true, false, false, false, false, false, false, false };
-	static bool isaid[13] = { false, false, false, false, false, false, false, false, true, true, false, false, false };
-	static bool isuid[13] = { false, false, false, false, false, false, false, false, true, true, false, false, true };
-	for (int i = 0; i < 12; i++) {
+	static const char *data[] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "文字", "1E2", "1E-2" };
+	static bool isnum[] = { true, true, true, false, false, false, false, false, false, false, false, false, false, false, false };
+	static bool isint[] = { true, true, false, false, false, false, false, false, false, false, false, false, false, false, false };
+	static bool ishex[] = { true, true, false, false, true, false, true, false, true, false, false, false, false, true, false };
+	static bool ishex_p[] = { false, false, false, false, false, false, false, true, false, false, false, false, false, false, false };
+	static bool isflt[] = { true, true, true, false, true, true, false, false, false, false, false, false, false, true, true };
+	static bool isaid[] = { false, false, false, false, false, false, false, false, true, true, false, false, false, false, false };
+	static bool isuid[] = { false, false, false, false, false, false, false, false, true, true, false, false, true, false, false };
+	for (unsigned int i = 0; i < std::size(data); i++) {
 		String s = String::utf8(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
 		CHECK(s.is_valid_int() == isint[i]);
@@ -2100,5 +2162,3 @@ TEST_CASE("[Stress][String] Empty via `is_empty()`") {
 	}
 }
 } // namespace TestString
-
-#endif // TEST_STRING_H

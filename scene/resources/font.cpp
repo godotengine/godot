@@ -210,9 +210,10 @@ real_t Font::get_height(int p_font_size) const {
 	if (dirty_rids) {
 		_update_rids();
 	}
+
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_ascent(rids[i], p_font_size) + TS->font_get_descent(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_ascent(rids.get(i), p_font_size) + TS->font_get_descent(rids.get(i), p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_BOTTOM) + get_spacing(TextServer::SPACING_TOP);
 }
@@ -223,7 +224,7 @@ real_t Font::get_ascent(int p_font_size) const {
 	}
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_ascent(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_ascent(rids.get(i), p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_TOP);
 }
@@ -234,7 +235,7 @@ real_t Font::get_descent(int p_font_size) const {
 	}
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_descent(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_descent(rids.get(i), p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_BOTTOM);
 }
@@ -245,7 +246,7 @@ real_t Font::get_underline_position(int p_font_size) const {
 	}
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_underline_position(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_underline_position(rids.get(i), p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_TOP);
 }
@@ -256,7 +257,7 @@ real_t Font::get_underline_thickness(int p_font_size) const {
 	}
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_underline_thickness(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_underline_thickness(rids.get(i), p_font_size));
 	}
 	return ret;
 }
@@ -476,9 +477,9 @@ Size2 Font::get_char_size(char32_t p_char, int p_font_size) const {
 		_update_rids();
 	}
 	for (int i = 0; i < rids.size(); i++) {
-		if (TS->font_has_char(rids[i], p_char)) {
-			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
-			return Size2(TS->font_get_glyph_advance(rids[i], p_font_size, glyph).x, get_height(p_font_size));
+		if (TS->font_has_char(rids.get(i), p_char)) {
+			int32_t glyph = TS->font_get_glyph_index(rids.get(i), p_font_size, p_char, 0);
+			return Size2(TS->font_get_glyph_advance(rids.get(i), p_font_size, glyph).x, get_height(p_font_size));
 		}
 	}
 	return Size2();
@@ -489,10 +490,10 @@ real_t Font::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, 
 		_update_rids();
 	}
 	for (int i = 0; i < rids.size(); i++) {
-		if (TS->font_has_char(rids[i], p_char)) {
-			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
-			TS->font_draw_glyph(rids[i], p_canvas_item, p_font_size, p_pos, glyph, p_modulate);
-			return TS->font_get_glyph_advance(rids[i], p_font_size, glyph).x;
+		if (TS->font_has_char(rids.get(i), p_char)) {
+			int32_t glyph = TS->font_get_glyph_index(rids.get(i), p_font_size, p_char, 0);
+			TS->font_draw_glyph(rids.get(i), p_canvas_item, p_font_size, p_pos, glyph, p_modulate);
+			return TS->font_get_glyph_advance(rids.get(i), p_font_size, glyph).x;
 		}
 	}
 	return 0.f;
@@ -503,10 +504,10 @@ real_t Font::draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t 
 		_update_rids();
 	}
 	for (int i = 0; i < rids.size(); i++) {
-		if (TS->font_has_char(rids[i], p_char)) {
-			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
-			TS->font_draw_glyph_outline(rids[i], p_canvas_item, p_font_size, p_size, p_pos, glyph, p_modulate);
-			return TS->font_get_glyph_advance(rids[i], p_font_size, glyph).x;
+		if (TS->font_has_char(rids.get(i), p_char)) {
+			int32_t glyph = TS->font_get_glyph_index(rids.get(i), p_font_size, p_char, 0);
+			TS->font_draw_glyph_outline(rids.get(i), p_canvas_item, p_font_size, p_size, p_pos, glyph, p_modulate);
+			return TS->font_get_glyph_advance(rids.get(i), p_font_size, glyph).x;
 		}
 	}
 	return 0.f;
@@ -518,7 +519,7 @@ bool Font::has_char(char32_t p_char) const {
 		_update_rids();
 	}
 	for (int i = 0; i < rids.size(); i++) {
-		if (TS->font_has_char(rids[i], p_char)) {
+		if (TS->font_has_char(rids.get(i), p_char)) {
 			return true;
 		}
 	}
@@ -531,7 +532,7 @@ String Font::get_supported_chars() const {
 	}
 	String chars;
 	for (int i = 0; i < rids.size(); i++) {
-		String data_chars = TS->font_get_supported_chars(rids[i]);
+		String data_chars = TS->font_get_supported_chars(rids.get(i));
 		for (int j = 0; j < data_chars.length(); j++) {
 			if (chars.find_char(data_chars[j]) == -1) {
 				chars += data_chars[j];
@@ -601,6 +602,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_fixed_size(cache[p_cache_index], fixed_size);
 			TS->font_set_fixed_size_scale_mode(cache[p_cache_index], fixed_size_scale_mode);
 			TS->font_set_force_autohinter(cache[p_cache_index], force_autohinter);
+			TS->font_set_modulate_color_glyphs(cache[p_cache_index], modulate_color_glyphs);
 			TS->font_set_allow_system_fallback(cache[p_cache_index], allow_system_fallback);
 			TS->font_set_hinting(cache[p_cache_index], hinting);
 			TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
@@ -928,6 +930,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &FontFile::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &FontFile::is_force_autohinter);
 
+	ClassDB::bind_method(D_METHOD("set_modulate_color_glyphs", "modulate"), &FontFile::set_modulate_color_glyphs);
+	ClassDB::bind_method(D_METHOD("is_modulate_color_glyphs"), &FontFile::is_modulate_color_glyphs);
+
 	ClassDB::bind_method(D_METHOD("set_hinting", "hinting"), &FontFile::set_hinting);
 	ClassDB::bind_method(D_METHOD("get_hinting"), &FontFile::get_hinting);
 
@@ -1053,6 +1058,7 @@ void FontFile::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_size", "get_msdf_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_allow_system_fallback", "is_allow_system_fallback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_force_autohinter", "is_force_autohinter");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "modulate_color_glyphs", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_modulate_color_glyphs", "is_modulate_color_glyphs");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_STORAGE), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_oversampling", "get_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size", "get_fixed_size");
@@ -1412,6 +1418,7 @@ void FontFile::reset_state() {
 	disable_embedded_bitmaps = true;
 	msdf = false;
 	force_autohinter = false;
+	modulate_color_glyphs = false;
 	allow_system_fallback = true;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
@@ -1452,6 +1459,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 	disable_embedded_bitmaps = true;
 	msdf = false;
 	force_autohinter = false;
+	modulate_color_glyphs = false;
 	allow_system_fallback = true;
 	hinting = TextServer::HINTING_NONE;
 	oversampling = 1.0f;
@@ -1487,7 +1495,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 			switch (block_type) {
 				case 1: /* info */ {
 					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, "Invalid BMFont info block size.");
-					base_size = ABS(static_cast<int16_t>(f->get_16()));
+					base_size = Math::abs(static_cast<int16_t>(f->get_16()));
 					if (base_size == 0) {
 						base_size = 16;
 					}
@@ -1781,7 +1789,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 
 			if (type == "info") {
 				if (keys.has("size")) {
-					base_size = ABS(keys["size"].to_int());
+					base_size = Math::abs(keys["size"].to_int());
 					if (base_size == 0) {
 						base_size = 16;
 					}
@@ -2268,6 +2276,21 @@ void FontFile::set_force_autohinter(bool p_force_autohinter) {
 
 bool FontFile::is_force_autohinter() const {
 	return force_autohinter;
+}
+
+void FontFile::set_modulate_color_glyphs(bool p_modulate) {
+	if (modulate_color_glyphs != p_modulate) {
+		modulate_color_glyphs = p_modulate;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_modulate_color_glyphs(cache[i], modulate_color_glyphs);
+		}
+		emit_changed();
+	}
+}
+
+bool FontFile::is_modulate_color_glyphs() const {
+	return modulate_color_glyphs;
 }
 
 void FontFile::set_hinting(TextServer::Hinting p_hinting) {
@@ -3099,6 +3122,9 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &SystemFont::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &SystemFont::is_force_autohinter);
 
+	ClassDB::bind_method(D_METHOD("set_modulate_color_glyphs", "modulate"), &SystemFont::set_modulate_color_glyphs);
+	ClassDB::bind_method(D_METHOD("is_modulate_color_glyphs"), &SystemFont::is_modulate_color_glyphs);
+
 	ClassDB::bind_method(D_METHOD("set_hinting", "hinting"), &SystemFont::set_hinting);
 	ClassDB::bind_method(D_METHOD("get_hinting"), &SystemFont::get_hinting);
 
@@ -3137,6 +3163,7 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_embedded_bitmaps"), "set_disable_embedded_bitmaps", "get_disable_embedded_bitmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback"), "set_allow_system_fallback", "is_allow_system_fallback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter"), "set_force_autohinter", "is_force_autohinter");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), "set_modulate_color_glyphs", "is_modulate_color_glyphs");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), "set_keep_rounding_remainders", "get_keep_rounding_remainders");
@@ -3242,6 +3269,7 @@ void SystemFont::_update_base_font() {
 		file->set_generate_mipmaps(mipmaps);
 		file->set_disable_embedded_bitmaps(disable_embedded_bitmaps);
 		file->set_force_autohinter(force_autohinter);
+		file->set_modulate_color_glyphs(modulate_color_glyphs);
 		file->set_allow_system_fallback(allow_system_fallback);
 		file->set_hinting(hinting);
 		file->set_subpixel_positioning(subpixel_positioning);
@@ -3286,6 +3314,7 @@ void SystemFont::reset_state() {
 	mipmaps = false;
 	disable_embedded_bitmaps = true;
 	force_autohinter = false;
+	modulate_color_glyphs = false;
 	allow_system_fallback = true;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
@@ -3413,6 +3442,20 @@ void SystemFont::set_force_autohinter(bool p_force_autohinter) {
 
 bool SystemFont::is_force_autohinter() const {
 	return force_autohinter;
+}
+
+void SystemFont::set_modulate_color_glyphs(bool p_modulate) {
+	if (modulate_color_glyphs != p_modulate) {
+		modulate_color_glyphs = p_modulate;
+		if (base_font.is_valid()) {
+			base_font->set_modulate_color_glyphs(modulate_color_glyphs);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::is_modulate_color_glyphs() const {
+	return modulate_color_glyphs;
 }
 
 void SystemFont::set_hinting(TextServer::Hinting p_hinting) {

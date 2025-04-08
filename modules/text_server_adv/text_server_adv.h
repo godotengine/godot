@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_SERVER_ADV_H
-#define TEXT_SERVER_ADV_H
+#pragma once
 
 /*************************************************************************/
 /* ICU/HarfBuzz/Graphite backed Text Server implementation with BiDi,    */
@@ -95,11 +94,6 @@ using namespace godot;
 
 // Thirdparty headers.
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-#endif
-
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>
 #include <unicode/uchar.h>
@@ -112,10 +106,6 @@ using namespace godot;
 #include <unicode/uspoof.h>
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include <ft2build.h>
@@ -147,7 +137,8 @@ class TextServerAdvanced : public TextServerExtension {
 		HashSet<StringName> lang;
 		String digits;
 		String percent_sign;
-		String exp;
+		String exp_l;
+		String exp_u;
 	};
 
 	Vector<NumSystemData> num_systems;
@@ -175,6 +166,10 @@ class TextServerAdvanced : public TextServerExtension {
 	mutable USet *allowed = nullptr;
 	mutable USpoofChecker *sc_spoof = nullptr;
 	mutable USpoofChecker *sc_conf = nullptr;
+
+	mutable HashMap<String, UBreakIterator *> line_break_iterators_per_language;
+
+	UBreakIterator *_create_line_break_iterator_for_locale(const String &p_language, UErrorCode *r_err) const;
 
 	// Font cache data.
 
@@ -271,6 +266,7 @@ class TextServerAdvanced : public TextServerExtension {
 		Rect2 rect;
 		Rect2 uv_rect;
 		Vector2 advance;
+		bool from_svg = false;
 	};
 
 	struct FontForSizeAdvanced {
@@ -325,6 +321,7 @@ class TextServerAdvanced : public TextServerExtension {
 		int fixed_size = 0;
 		bool allow_system_fallback = true;
 		bool force_autohinter = false;
+		bool modulate_color_glyphs = false;
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		bool keep_rounding_remainders = true;
@@ -403,7 +400,7 @@ class TextServerAdvanced : public TextServerExtension {
 	_FORCE_INLINE_ Variant::Type _get_tag_type(int64_t p_tag) const;
 	_FORCE_INLINE_ bool _get_tag_hidden(int64_t p_tag) const;
 	_FORCE_INLINE_ int _font_get_weight_by_name(const String &p_sty_name) const {
-		String sty_name = p_sty_name.replace(" ", "").replace("-", "");
+		String sty_name = p_sty_name.remove_chars(" -");
 		if (sty_name.contains("thin") || sty_name.contains("hairline")) {
 			return 100;
 		} else if (sty_name.contains("extralight") || sty_name.contains("ultralight")) {
@@ -430,7 +427,7 @@ class TextServerAdvanced : public TextServerExtension {
 		return 400;
 	}
 	_FORCE_INLINE_ int _font_get_stretch_by_name(const String &p_sty_name) const {
-		String sty_name = p_sty_name.replace(" ", "").replace("-", "");
+		String sty_name = p_sty_name.remove_chars(" -");
 		if (sty_name.contains("ultracondensed")) {
 			return 50;
 		} else if (sty_name.contains("extracondensed")) {
@@ -676,7 +673,7 @@ class TextServerAdvanced : public TextServerExtension {
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
-	_FORCE_INLINE_ void _add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
+	_FORCE_INLINE_ void _add_features(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
 
 	Mutex ft_mutex;
 
@@ -801,6 +798,9 @@ public:
 
 	MODBIND2(font_set_force_autohinter, const RID &, bool);
 	MODBIND1RC(bool, font_is_force_autohinter, const RID &);
+
+	MODBIND2(font_set_modulate_color_glyphs, const RID &, bool);
+	MODBIND1RC(bool, font_is_modulate_color_glyphs, const RID &);
 
 	MODBIND2(font_set_subpixel_positioning, const RID &, SubpixelPositioning);
 	MODBIND1RC(SubpixelPositioning, font_get_subpixel_positioning, const RID &);
@@ -1024,5 +1024,3 @@ public:
 	TextServerAdvanced();
 	~TextServerAdvanced();
 };
-
-#endif // TEXT_SERVER_ADV_H

@@ -100,6 +100,13 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 			return Ref<Texture2D>();
 		}
 
+		if (atlas->is_compressed()) {
+			atlas = atlas->duplicate();
+			if (atlas->decompress() != OK) {
+				return Ref<Texture2D>();
+			}
+		}
+
 		if (!tex_atlas->get_region().has_area()) {
 			return Ref<Texture2D>();
 		}
@@ -175,9 +182,6 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 	return ImageTexture::create_from_image(img);
 }
 
-EditorTexturePreviewPlugin::EditorTexturePreviewPlugin() {
-}
-
 ////////////////////////////////////////////////////////////////////////////
 
 bool EditorImagePreviewPlugin::handles(const String &p_type) const {
@@ -213,9 +217,6 @@ Ref<Texture2D> EditorImagePreviewPlugin::generate(const Ref<Resource> &p_from, c
 	post_process_preview(img);
 
 	return ImageTexture::create_from_image(img);
-}
-
-EditorImagePreviewPlugin::EditorImagePreviewPlugin() {
 }
 
 bool EditorImagePreviewPlugin::generate_small_preview_automatically() const {
@@ -280,9 +281,6 @@ bool EditorBitmapPreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
 
-EditorBitmapPreviewPlugin::EditorBitmapPreviewPlugin() {
-}
-
 ///////////////////////////////////////////////////////////////////////////
 
 bool EditorPackedScenePreviewPlugin::handles(const String &p_type) const {
@@ -316,9 +314,6 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	} else {
 		return Ref<Texture2D>();
 	}
-}
-
-EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
 }
 
 //////////////////////////////////////////////////////////////////
@@ -642,9 +637,6 @@ Ref<Texture2D> EditorScriptPreviewPlugin::_generate_from_source_code(const Scrip
 	return ImageTexture::create_from_image(img);
 }
 
-EditorScriptPreviewPlugin::EditorScriptPreviewPlugin() {
-}
-
 ///////////////////////////////////////////////////////////////////
 
 bool EditorAudioStreamPreviewPlugin::handles(const String &p_type) const {
@@ -722,9 +714,6 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 
 	Ref<Image> image = Image::create_from_data(w, h, false, Image::FORMAT_RGB8, img);
 	return ImageTexture::create_from_image(image);
-}
-
-EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -944,7 +933,4 @@ Ref<Texture2D> EditorGradientPreviewPlugin::generate(const Ref<Resource> &p_from
 		return ImageTexture::create_from_image(ptex->get_image());
 	}
 	return Ref<Texture2D>();
-}
-
-EditorGradientPreviewPlugin::EditorGradientPreviewPlugin() {
 }

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_RESOURCE_PREVIEW_H
-#define EDITOR_RESOURCE_PREVIEW_H
+#pragma once
 
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -69,8 +68,6 @@ public:
 
 	virtual bool generate_small_preview_automatically() const;
 	virtual bool can_generate_small_preview() const;
-
-	EditorResourcePreviewGenerator();
 };
 
 class EditorResourcePreview : public Node {
@@ -153,5 +150,3 @@ public:
 	EditorResourcePreview();
 	~EditorResourcePreview();
 };
-
-#endif // EDITOR_RESOURCE_PREVIEW_H

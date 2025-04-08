@@ -894,18 +894,16 @@ namespace embree
     }
 
     /* initiate build */
-    // -- GODOT start --
-    // try {
+    //try {
       TaskScheduler::TaskGroupContext context;
       scheduler->spawn_root([&]() { commit_task(); Lock<MutexSys> lock(taskGroup->schedulerMutex); taskGroup->scheduler = nullptr; }, &context, 1, !join);
-    // }
-    // catch (...) {
-    //   accels_clear();
-    //   Lock<MutexSys> lock(taskGroup->schedulerMutex);
-    //   taskGroup->scheduler = nullptr;
-    //   throw;
-    // }
-    // -- GODOT end --
+    //}
+    //catch (...) {
+    //  accels_clear();
+    //  Lock<MutexSys> lock(taskGroup->schedulerMutex);
+    //  taskGroup->scheduler = nullptr;
+    //  throw;
+    //}
   }
 
 #endif

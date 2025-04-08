@@ -370,7 +370,7 @@ static RD::RenderPrimitive _primitive_type_to_render_primitive(RS::PrimitiveType
 
 _FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
 	static const uint32_t divisor[RS::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
-	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 1 };
+	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 2 };
 	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];
 }
 
@@ -379,7 +379,8 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	//re create canvas state
-	Vector<RD::Uniform> uniforms;
+	thread_local LocalVector<RD::Uniform> uniforms;
+	uniforms.clear();
 
 	{
 		RD::Uniform u;
@@ -914,8 +915,6 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 	}
 
 	texture_info_map.clear();
-	state.current_batch_index = 0;
-	state.canvas_instance_batches.clear();
 	state.current_data_buffer_index = (state.current_data_buffer_index + 1) % BATCH_DATA_BUFFER_COUNT;
 	state.current_instance_buffer_index = 0;
 }
@@ -1023,8 +1022,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 
 	cl->shadow.z_far = p_far;
 	cl->shadow.y_offset = float(p_shadow_index * 2 + 1) / float(state.max_lights_per_render * 2);
-	Vector<Color> cc;
-	cc.push_back(Color(p_far, p_far, p_far, 1.0));
+	Color cc = Color(p_far, p_far, p_far, 1.0);
 
 	// First, do a culling pass and record what occluders need to be drawn for this light.
 	static thread_local LocalVector<OccluderPolygon *> occluders;
@@ -1077,7 +1075,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 	}
 
 	Rect2i rect(0, p_shadow_index * 2, state.shadow_texture_size, 2);
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::DRAW_CLEAR_ALL, cc, 1.0f, 0, rect);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::DRAW_CLEAR_ALL, VectorView(&cc, 1), 1.0f, 0, rect);
 
 	if (state.shadow_occluder_buffer.is_valid()) {
 		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shadow_render.render_pipelines[SHADOW_RENDER_MODE_POSITIONAL_SHADOW]);
@@ -1131,7 +1129,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 
 	Vector2 center = p_clip_rect.get_center();
 
-	float to_edge_distance = ABS(light_dir.dot(p_clip_rect.get_support(-light_dir)) - light_dir.dot(center));
+	float to_edge_distance = Math::abs(light_dir.dot(p_clip_rect.get_support(-light_dir)) - light_dir.dot(center));
 
 	Vector2 from_pos = center - light_dir * (to_edge_distance + p_cull_distance);
 	float distance = to_edge_distance * 2.0 + p_cull_distance;
@@ -1301,7 +1299,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		}
 	}
 
-	if ((oc->line_point_count != lines.size() || lines.size() == 0) && oc->vertex_array.is_valid()) {
+	if ((oc->line_point_count != lines.size() || lines.is_empty()) && oc->vertex_array.is_valid()) {
 		RD::get_singleton()->free(oc->vertex_array);
 		RD::get_singleton()->free(oc->vertex_buffer);
 		RD::get_singleton()->free(oc->index_array);
@@ -1406,7 +1404,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		}
 	}
 
-	if (((oc->sdf_index_count != sdf_indices.size() && oc->sdf_point_count != p_points.size()) || p_points.size() == 0) && oc->sdf_vertex_array.is_valid()) {
+	if (((oc->sdf_index_count != sdf_indices.size() && oc->sdf_point_count != p_points.size()) || p_points.is_empty()) && oc->sdf_vertex_array.is_valid()) {
 		RD::get_singleton()->free(oc->sdf_vertex_array);
 		RD::get_singleton()->free(oc->sdf_vertex_buffer);
 		RD::get_singleton()->free(oc->sdf_index_array);
@@ -1839,7 +1837,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.base_varying_index = 5;
 
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
-		actions.instance_uniform_index_variable = "draw_data.instance_uniforms_ofs";
+		actions.instance_uniform_index_variable = "instances.data[instance_index].instance_uniforms_ofs";
 
 		shader.compiler.initialize(actions);
 	}
@@ -2221,7 +2219,7 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 	RID framebuffer;
 	RID fb_uniform_set;
 	bool clear = false;
-	Vector<Color> clear_colors;
+	Color clear_color;
 
 	if (p_to_backbuffer) {
 		framebuffer = texture_storage->render_target_get_rd_backbuffer_framebuffer(p_to_render_target.render_target);
@@ -2232,7 +2230,7 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 
 		if (texture_storage->render_target_is_clear_requested(p_to_render_target.render_target)) {
 			clear = true;
-			clear_colors.push_back(texture_storage->render_target_get_clear_request_color(p_to_render_target.render_target));
+			clear_color = texture_storage->render_target_get_clear_request_color(p_to_render_target.render_target);
 			texture_storage->render_target_disable_clear_request(p_to_render_target.render_target);
 		}
 		// TODO: Obtain from framebuffer format eventually when this is implemented.
@@ -2245,7 +2243,7 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::DRAW_CLEAR_COLOR_0 : RD::DRAW_DEFAULT_ALL, clear_colors, 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::UI_PASS);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::DRAW_CLEAR_COLOR_0 : RD::DRAW_DEFAULT_ALL, clear_color, 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::UI_PASS);
 
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, fb_uniform_set, BASE_UNIFORM_SET);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, state.default_transforms_uniform_set, TRANSFORMS_UNIFORM_SET);
@@ -2289,6 +2287,8 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 
 	RD::get_singleton()->draw_list_end();
 
+	state.current_batch_index = 0;
+	state.canvas_instance_batches.clear();
 	state.last_instance_index += instance_index;
 }
 
@@ -2913,12 +2913,13 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 			r_current_batch->tex_info = tex_info;
 		}
 
+		_update_transform_2d_to_mat2x3(base_transform, world);
 		InstanceData *instance_data = new_instance_data(world, lights, base_flags, r_index, uniforms_ofs, tex_info);
 
 		Rect2 src_rect;
 		Rect2 dst_rect;
 
-		dst_rect = Rect2(Vector2(), p_item->rect.size);
+		dst_rect = p_item->rect;
 		if (dst_rect.size.width < 0) {
 			dst_rect.position.x += dst_rect.size.width;
 			dst_rect.size.width *= -1;
@@ -3199,8 +3200,10 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 }
 
 RendererCanvasRenderRD::Batch *RendererCanvasRenderRD::_new_batch(bool &r_batch_broken) {
-	if (state.canvas_instance_batches.size() == 0) {
-		state.canvas_instance_batches.push_back(Batch());
+	if (state.canvas_instance_batches.is_empty()) {
+		Batch new_batch;
+		new_batch.instance_buffer_index = state.current_instance_buffer_index;
+		state.canvas_instance_batches.push_back(new_batch);
 		return state.canvas_instance_batches.ptr();
 	}
 
@@ -3297,6 +3300,8 @@ void RendererCanvasRenderRD::_prepare_batch_texture_info(RID p_texture, TextureS
 
 RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	//canvas state
 
 	material_storage->material_free(default_canvas_group_material);
@@ -3344,7 +3349,9 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 		}
 	}
 
-	RendererRD::TextureStorage::get_singleton()->canvas_texture_free(default_canvas_texture);
+	// Disable the callback, as we're tearing everything down
+	texture_storage->canvas_texture_set_invalidation_callback(default_canvas_texture, nullptr, nullptr);
+	texture_storage->canvas_texture_free(default_canvas_texture);
 	//pipelines don't need freeing, they are all gone after shaders are gone
 
 	memdelete(shader.default_version_data);

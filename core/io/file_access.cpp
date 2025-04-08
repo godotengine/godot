@@ -104,7 +104,7 @@ Ref<FileAccess> FileAccess::create_temp(int p_mode_flags, const String &p_prefix
 	uint32_t suffix_i = 0;
 	String path;
 	while (true) {
-		String datetime = Time::get_singleton()->get_datetime_string_from_system().replace("-", "").replace("T", "").replace(":", "");
+		String datetime = Time::get_singleton()->get_datetime_string_from_system().remove_chars("-T:");
 		datetime += itos(Time::get_singleton()->get_ticks_usec());
 		String suffix = datetime + (suffix_i > 0 ? itos(suffix_i) : "");
 		path = TEMP_DIR.path_join((p_prefix.is_empty() ? "" : p_prefix + "-") + suffix + (extension.is_empty() ? "" : "." + extension));
@@ -429,7 +429,7 @@ class CharBuffer {
 public:
 	_FORCE_INLINE_ CharBuffer() :
 			buffer(stack_buffer),
-			capacity(sizeof(stack_buffer) / sizeof(char)) {
+			capacity(std::size(stack_buffer)) {
 	}
 
 	_FORCE_INLINE_ void push_back(char c) {
@@ -451,7 +451,7 @@ String FileAccess::get_line() const {
 	uint8_t c = get_8();
 
 	while (!eof_reached()) {
-		if (c == '\n' || c == '\0') {
+		if (c == '\n' || c == '\0' || get_error() != OK) {
 			line.push_back(0);
 			return String::utf8(line.get_data());
 		} else if (c != '\r') {
@@ -565,7 +565,7 @@ String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
 	w[len] = 0;
 
 	String s;
-	s.parse_utf8((const char *)w, len, p_skip_cr);
+	s.append_utf8((const char *)w, len, p_skip_cr);
 	return s;
 }
 
@@ -629,8 +629,29 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	Ref<FileAccess> fa = create_for_path(p_file);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
-	uint64_t mt = fa->_get_modified_time(p_file);
-	return mt;
+	return fa->_get_modified_time(p_file);
+}
+
+uint64_t FileAccess::get_access_time(const String &p_file) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return 0;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	return fa->_get_access_time(p_file);
+}
+
+int64_t FileAccess::get_size(const String &p_file) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return PackedData::get_singleton()->get_size(p_file);
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), -1, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	return fa->_get_size(p_file);
 }
 
 BitField<FileAccess::UnixPermissionFlags> FileAccess::get_unix_permissions(const String &p_file) {
@@ -723,9 +744,7 @@ String FileAccess::get_pascal_string() {
 	get_buffer((uint8_t *)cs.ptr(), sl);
 	cs[sl] = 0;
 
-	String ret;
-	ret.parse_utf8(cs.ptr(), sl);
-	return ret;
+	return String::utf8(cs.ptr(), sl);
 }
 
 bool FileAccess::store_line(const String &p_line) {
@@ -817,7 +836,7 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 	}
 
 	String ret;
-	ret.parse_utf8((const char *)array.ptr(), array.size());
+	ret.append_utf8((const char *)array.ptr(), array.size());
 	return ret;
 }
 
@@ -931,7 +950,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_float"), &FileAccess::get_float);
 	ClassDB::bind_method(D_METHOD("get_double"), &FileAccess::get_double);
 	ClassDB::bind_method(D_METHOD("get_real"), &FileAccess::get_real);
-	ClassDB::bind_method(D_METHOD("get_buffer", "length"), (Vector<uint8_t>(FileAccess::*)(int64_t) const) & FileAccess::get_buffer);
+	ClassDB::bind_method(D_METHOD("get_buffer", "length"), (Vector<uint8_t> (FileAccess::*)(int64_t) const) & FileAccess::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &FileAccess::get_line);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &FileAccess::get_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("get_as_text", "skip_cr"), &FileAccess::get_as_text, DEFVAL(false));
@@ -950,7 +969,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_float", "value"), &FileAccess::store_float);
 	ClassDB::bind_method(D_METHOD("store_double", "value"), &FileAccess::store_double);
 	ClassDB::bind_method(D_METHOD("store_real", "value"), &FileAccess::store_real);
-	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (bool(FileAccess::*)(const Vector<uint8_t> &)) & FileAccess::store_buffer);
+	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (bool (FileAccess::*)(const Vector<uint8_t> &))&FileAccess::store_buffer);
 	ClassDB::bind_method(D_METHOD("store_line", "line"), &FileAccess::store_line);
 	ClassDB::bind_method(D_METHOD("store_csv_line", "values", "delim"), &FileAccess::store_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("store_string", "string"), &FileAccess::store_string);
@@ -963,6 +982,8 @@ void FileAccess::_bind_methods() {
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("file_exists", "path"), &FileAccess::exists);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_modified_time", "file"), &FileAccess::get_modified_time);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_access_time", "file"), &FileAccess::get_access_time);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_size", "file"), &FileAccess::get_size);
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_unix_permissions", "file"), &FileAccess::get_unix_permissions);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("set_unix_permissions", "file", "permissions"), &FileAccess::set_unix_permissions);

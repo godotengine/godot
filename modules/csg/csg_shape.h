@@ -28,14 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CSG_SHAPE_H
-#define CSG_SHAPE_H
+#pragma once
 
 #include "csg.h"
 
 #include "scene/3d/path_3d.h"
 #include "scene/3d/visual_instance_3d.h"
+
+#ifndef PHYSICS_3D_DISABLED
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 #include "thirdparty/misc/mikktspace.h"
 
@@ -65,6 +67,7 @@ private:
 	bool last_visible = false;
 	float snap = 0.001;
 
+#ifndef PHYSICS_3D_DISABLED
 	bool use_collision = false;
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
@@ -73,6 +76,7 @@ private:
 	RID root_collision_instance;
 	RID root_collision_debug_instance;
 	Transform3D debug_shape_old_transform;
+#endif // PHYSICS_3D_DISABLED
 
 	bool calculate_tangents = true;
 
@@ -110,13 +114,14 @@ private:
 	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
-	void _update_shape();
+#ifndef PHYSICS_3D_DISABLED
 	void _update_collision_faces();
 	bool _is_debug_collision_shape_visible();
 	void _update_debug_collision_shape();
 	void _clear_debug_collision_shape();
 	void _on_transform_changed();
 	Vector<Vector3> _get_brush_collision_faces();
+#endif // PHYSICS_3D_DISABLED
 
 protected:
 	void _notification(int p_what);
@@ -133,6 +138,7 @@ protected:
 
 public:
 	Array get_meshes() const;
+	void update_shape();
 
 	void set_operation(Operation p_operation);
 	Operation get_operation() const;
@@ -156,6 +162,8 @@ public:
 	void set_collision_mask_value(int p_layer_number, bool p_value);
 	bool get_collision_mask_value(int p_layer_number) const;
 
+	RID _get_root_collision_instance() const;
+
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
 
@@ -170,10 +178,13 @@ public:
 	bool is_root_shape() const;
 
 	Ref<ArrayMesh> bake_static_mesh();
+#ifndef PHYSICS_3D_DISABLED
 	Ref<ConcavePolygonShape3D> bake_collision_shape();
+#endif // PHYSICS_3D_DISABLED
 
 	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
 
+#ifndef NAVIGATION_3D_DISABLED
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
@@ -181,6 +192,7 @@ private:
 public:
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_3D_DISABLED
 
 	CSGShape3D();
 	~CSGShape3D();
@@ -480,5 +492,3 @@ public:
 VARIANT_ENUM_CAST(CSGPolygon3D::Mode)
 VARIANT_ENUM_CAST(CSGPolygon3D::PathRotation)
 VARIANT_ENUM_CAST(CSGPolygon3D::PathIntervalType)
-
-#endif // CSG_SHAPE_H

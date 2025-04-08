@@ -57,7 +57,7 @@ in this Software without prior written authorization from The Open Group.
   }
 
 
-#if defined( __clang__ )                                            || \
+#if ( defined( __clang_major__ ) && __clang_major__ >= 5 )          || \
     ( defined( __GNUC__ )                                          &&  \
       ( __GNUC__ > 4 || ( __GNUC__ == 4 && __GNUC_MINOR__ >= 8 ) ) )
 

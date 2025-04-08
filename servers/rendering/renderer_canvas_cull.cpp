@@ -434,7 +434,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
 			ci->ysort_xform = Transform2D();
-			ci->ysort_modulate = Color(1, 1, 1, 1);
+			ci->ysort_modulate = Color(1, 1, 1, 1) / ci->modulate;
 			ci->ysort_index = 0;
 			ci->ysort_parent_abs_z_index = parent_z;
 			child_items[0] = ci;
@@ -1522,7 +1522,7 @@ void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	if (p_tile) {
 		rect->flags |= RendererCanvasRender::CANVAS_RECT_TILE;
 		rect->flags |= RendererCanvasRender::CANVAS_RECT_REGION;
-		rect->source = Rect2(0, 0, ABS(p_rect.size.width), ABS(p_rect.size.height));
+		rect->source = Rect2(0, 0, Math::abs(p_rect.size.width), Math::abs(p_rect.size.height));
 	}
 
 	if (p_rect.size.x < 0) {
@@ -2605,8 +2605,8 @@ bool RendererCanvasCull::free(RID p_rid) {
 		}
 
 		canvas_item_set_material(canvas_item->self, RID());
-		canvas_item->instance_uniforms.free(canvas_item->self);
 		update_dirty_items();
+		canvas_item->instance_uniforms.free(canvas_item->self);
 
 		if (canvas_item->canvas_group != nullptr) {
 			memdelete(canvas_item->canvas_group);

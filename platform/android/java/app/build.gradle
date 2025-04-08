@@ -70,7 +70,10 @@ dependencies {
     }
 
     // .NET dependencies
-    monoImplementation fileTree(dir: 'monoLibs', include: ['*.jar'])
+    String jar = '../../../../modules/mono/thirdparty/libSystem.Security.Cryptography.Native.Android.jar'
+    if (file(jar).exists()) {
+        monoImplementation files(jar)
+    }
 }
 
 android {
@@ -101,8 +104,6 @@ android {
             String[] export_abi_list = getExportEnabledABIs()
             abiFilters export_abi_list
         }
-
-        manifestPlaceholders = [godotEditorVersion: getGodotEditorVersion()]
 
         // Feel free to modify the application id to your own.
         applicationId getExportPackageName()

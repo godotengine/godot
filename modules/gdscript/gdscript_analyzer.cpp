@@ -1093,7 +1093,12 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 							}
 						}
 						if (is_get_node) {
-							parser->push_warning(member.variable, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY, is_using_shorthand ? "$" : "get_node()");
+							String offending_syntax = "get_node()";
+							if (is_using_shorthand) {
+								GDScriptParser::GetNodeNode *get_node_node = static_cast<GDScriptParser::GetNodeNode *>(expr);
+								offending_syntax = get_node_node->use_dollar ? "$" : "%";
+							}
+							parser->push_warning(member.variable, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY, offending_syntax);
 						}
 					}
 				}
@@ -1635,13 +1640,12 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 
 	const MethodInfo &annotation_info = parser->valid_annotations[p_annotation->name].info;
 
-	const List<PropertyInfo>::Element *E = annotation_info.arguments.front();
-	for (int i = 0; i < p_annotation->arguments.size(); i++) {
+	for (int64_t i = 0, j = 0; i < p_annotation->arguments.size(); i++) {
 		GDScriptParser::ExpressionNode *argument = p_annotation->arguments[i];
-		const PropertyInfo &argument_info = E->get();
+		const PropertyInfo &argument_info = annotation_info.arguments[j];
 
-		if (E->next() != nullptr) {
-			E = E->next();
+		if (j + 1 < annotation_info.arguments.size()) {
+			++j;
 		}
 
 		reduce_expression(argument);
@@ -2153,7 +2157,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			GDScriptParser::IdentifierNode *callee = static_cast<GDScriptParser::IdentifierNode *>(call->callee);
 			if (callee->name == "range") {
 				list_resolved = true;
-				if (call->arguments.size() < 1) {
+				if (call->arguments.is_empty()) {
 					push_error(R"*(Invalid call for "range()" function. Expected at least 1 argument, none given.)*", call->callee);
 				} else if (call->arguments.size() > 3) {
 					push_error(vformat(R"*(Invalid call for "range()" function. Expected at most 3 arguments, %d given.)*", call->arguments.size()), call->callee);
@@ -3318,28 +3322,24 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 					bool types_match = true;
 
-					{
-						List<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
-						for (int i = 0; i < p_call->arguments.size(); ++arg_itr, ++i) {
-							GDScriptParser::DataType par_type = type_from_property(*arg_itr, true);
-							GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
-							if (!is_type_compatible(par_type, arg_type, true)) {
-								types_match = false;
-								break;
+					for (int64_t i = 0; i < p_call->arguments.size(); ++i) {
+						GDScriptParser::DataType par_type = type_from_property(info.arguments[i], true);
+						GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
+						if (!is_type_compatible(par_type, arg_type, true)) {
+							types_match = false;
+							break;
 #ifdef DEBUG_ENABLED
-							} else {
-								if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
-									parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, function_name);
-								}
-#endif
+						} else {
+							if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
+								parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, function_name);
 							}
+#endif
 						}
 					}
 
 					if (types_match) {
-						List<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
-						for (int i = 0; i < p_call->arguments.size(); ++arg_itr, ++i) {
-							GDScriptParser::DataType par_type = type_from_property(*arg_itr, true);
+						for (int64_t i = 0; i < p_call->arguments.size(); ++i) {
+							GDScriptParser::DataType par_type = type_from_property(info.arguments[i], true);
 							if (p_call->arguments[i]->is_constant) {
 								update_const_expression_builtin_type(p_call->arguments[i], par_type, "pass");
 							}
@@ -5569,7 +5569,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 			result.set_container_element_type(0, elem_type);
 		} else if (p_property.type == Variant::DICTIONARY && p_property.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
 			// Check element type.
-			StringName key_elem_type_name = p_property.hint_string.get_slice(";", 0);
+			StringName key_elem_type_name = p_property.hint_string.get_slicec(';', 0);
 			GDScriptParser::DataType key_elem_type;
 			key_elem_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 
@@ -5594,7 +5594,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 			}
 			key_elem_type.is_constant = false;
 
-			StringName value_elem_type_name = p_property.hint_string.get_slice(";", 1);
+			StringName value_elem_type_name = p_property.hint_string.get_slicec(';', 1);
 			GDScriptParser::DataType value_elem_type;
 			value_elem_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 

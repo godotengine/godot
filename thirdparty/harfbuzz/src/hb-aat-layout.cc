@@ -34,8 +34,11 @@
 #include "hb-aat-layout-just-table.hh" // Just so we compile it; unused otherwise.
 #include "hb-aat-layout-kerx-table.hh"
 #include "hb-aat-layout-morx-table.hh"
-#include "hb-aat-layout-trak-table.hh"
+#include "hb-aat-layout-trak-table.hh" // Just so we compile it; unused otherwise.
 #include "hb-aat-ltag-table.hh"
+
+#include "hb-ot-layout-gsub-table.hh"
+#include "hb-ot-layout-gdef-table.hh"
 
 
 /*
@@ -207,6 +210,36 @@ hb_aat_layout_find_feature_mapping (hb_tag_t tag)
  */
 
 
+bool
+AAT::morx::is_blocklisted (hb_blob_t *blob,
+                           hb_face_t *face) const
+{
+#ifdef HB_NO_AAT_LAYOUT_BLOCKLIST
+  return false;
+#endif
+
+  switch HB_CODEPOINT_ENCODE3 (blob->length,
+                               face->table.GSUB->table.get_length (),
+                               face->table.GDEF->table.get_length ())
+  {
+    /* https://github.com/harfbuzz/harfbuzz/issues/4108
+       sha1sum:a71ca6813b7e56a772cffff7c24a5166b087197c  AALMAGHRIBI.ttf */
+    case HB_CODEPOINT_ENCODE3 (19892, 2794, 340):
+      return true;
+  }
+  return false;
+}
+
+bool
+AAT::mort::is_blocklisted (hb_blob_t *blob,
+                           hb_face_t *face) const
+{
+#ifdef HB_NO_AAT_LAYOUT_BLOCKLIST
+  return false;
+#endif
+  return false;
+}
+
 void
 hb_aat_layout_compile_map (const hb_aat_map_builder_t *mapper,
 			   hb_aat_map_t *map)
@@ -359,17 +392,6 @@ hb_bool_t
 hb_aat_layout_has_tracking (hb_face_t *face)
 {
   return face->table.trak->has_data ();
-}
-
-void
-hb_aat_layout_track (const hb_ot_shape_plan_t *plan,
-		     hb_font_t *font,
-		     hb_buffer_t *buffer)
-{
-  const AAT::trak& trak = *font->face->table.trak;
-
-  AAT::hb_aat_apply_context_t c (plan, font, buffer);
-  trak.apply (&c);
 }
 
 /**

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISPLAY_SERVER_WEB_H
-#define DISPLAY_SERVER_WEB_H
+#pragma once
 
 #include "servers/display_server.h"
 
@@ -103,8 +102,12 @@ private:
 	int key_event_pos = 0;
 
 	bool swap_cancel_ok = false;
-	bool tts = false;
 	NativeMenu *native_menu = nullptr;
+
+	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
+	bool mouse_mode_override_enabled = false;
+	void _mouse_update_mode();
 
 	// utilities
 	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod, Key p_keycode);
@@ -184,6 +187,11 @@ public:
 	// mouse
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual void mouse_set_mode_override(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode_override() const override;
+	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
+	virtual bool mouse_is_mode_override_enabled() const override;
+
 	virtual Point2i mouse_get_position() const override;
 
 	// ime
@@ -283,5 +291,3 @@ public:
 	DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerWeb();
 };
-
-#endif // DISPLAY_SERVER_WEB_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DOC_DATA_H
-#define DOC_DATA_H
+#pragma once
 
 #include "core/io/xml_parser.h"
 #include "core/variant/variant.h"
@@ -115,7 +114,7 @@ public:
 				// Must be an operator or a constructor since there is no other overloading
 				if (name.left(8) == "operator") {
 					if (arguments.size() == p_method.arguments.size()) {
-						if (arguments.size() == 0) {
+						if (arguments.is_empty()) {
 							return false;
 						}
 						return arguments[0].type < p_method.arguments[0].type;
@@ -127,7 +126,7 @@ public:
 					// - 1. Default constructor: Foo()
 					// - 2. Copy constructor: Foo(Foo)
 					// - 3+. Other constructors Foo(Bar, ...) based on first argument's name
-					if (arguments.size() == 0 || p_method.arguments.size() == 0) { // 1.
+					if (arguments.is_empty() || p_method.arguments.is_empty()) { // 1.
 						return arguments.size() < p_method.arguments.size();
 					}
 					if (arguments[0].type == return_type || p_method.arguments[0].type == p_method.return_type) { // 2.
@@ -980,5 +979,3 @@ public:
 	static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo);
 	static void method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc);
 };
-
-#endif // DOC_DATA_H

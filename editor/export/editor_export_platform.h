@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_EXPORT_PLATFORM_H
-#define EDITOR_EXPORT_PLATFORM_H
+#pragma once
 
 class EditorFileSystemDirectory;
 struct EditorProgress;
@@ -202,6 +201,8 @@ protected:
 	Error _load_patches(const Vector<String> &p_patches);
 	void _unload_patches();
 
+	Ref<Image> _load_icon_or_splash_image(const String &p_path, Error *r_error) const;
+
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const = 0;
 
@@ -334,11 +335,8 @@ public:
 	virtual void get_platform_features(List<String> *r_features) const = 0;
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {}
 	virtual String get_debug_protocol() const { return "tcp://"; }
-
-	EditorExportPlatform();
+	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const { return HashMap<String, Variant>(); }
 };
 
 VARIANT_ENUM_CAST(EditorExportPlatform::ExportMessageType)
 VARIANT_BITFIELD_CAST(EditorExportPlatform::DebugFlags);
-
-#endif // EDITOR_EXPORT_PLATFORM_H

@@ -192,7 +192,11 @@ void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Vari
 		restart_required_label->show();
 
 		if (!restart_required_button) {
-			restart_required_button = add_button(TTR("Restart Now"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
+			int ed_swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+			if (ed_swap_cancel_ok == 0) {
+				ed_swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
+			}
+			restart_required_button = add_button(TTR("Restart Now"), ed_swap_cancel_ok != 2);
 			restart_required_button->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_request_restart));
 		}
 	}

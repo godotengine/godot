@@ -167,6 +167,11 @@ Rect2i Popup::_popup_adjust_rect() const {
 
 	Rect2i current(get_position(), get_size());
 
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+		// We're fine as is, the Display Server will take care of that for us.
+		return current;
+	}
+
 	if (current.position.x + current.size.x > parent_rect.position.x + parent_rect.size.x) {
 		current.position.x = parent_rect.position.x + parent_rect.size.x - current.size.x;
 	}
@@ -219,6 +224,7 @@ Popup::Popup() {
 	set_flag(FLAG_BORDERLESS, true);
 	set_flag(FLAG_RESIZE_DISABLED, true);
 	set_flag(FLAG_POPUP, true);
+	set_flag(FLAG_POPUP_WM_HINT, true);
 }
 
 Popup::~Popup() {
@@ -247,8 +253,14 @@ void PopupPanel::_input_from_window(const Ref<InputEvent> &p_event) {
 
 		Ref<InputEventMouseButton> b = p_event;
 		// Hide it if the shadows have been clicked.
-		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::LEFT && !panel->get_global_rect().has_point(b->get_position())) {
-			_close_pressed();
+		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::LEFT) {
+			Rect2 panel_area = panel->get_global_rect();
+			float win_scale = get_content_scale_factor();
+			panel_area.position *= win_scale;
+			panel_area.size *= win_scale;
+			if (!panel_area.has_point(b->get_position())) {
+				_close_pressed();
+			}
 		}
 	} else {
 		WARN_PRINT_ONCE("PopupPanel has received an invalid InputEvent. Consider filtering out invalid events.");
@@ -293,7 +305,7 @@ Rect2i PopupPanel::_popup_adjust_rect() const {
 	_update_child_rects();
 
 	if (is_layout_rtl()) {
-		current.position -= Vector2(ABS(panel->get_offset(SIDE_RIGHT)), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
+		current.position -= Vector2(Math::abs(panel->get_offset(SIDE_RIGHT)), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	} else {
 		current.position -= Vector2(panel->get_offset(SIDE_LEFT), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	}

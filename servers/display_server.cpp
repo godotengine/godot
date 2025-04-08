@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "display_server.h"
+#include "display_server.compat.inc"
 
 #include "core/input/input.h"
 #include "scene/resources/texture.h"
@@ -501,6 +502,22 @@ DisplayServer::MouseMode DisplayServer::mouse_get_mode() const {
 	return MOUSE_MODE_VISIBLE;
 }
 
+void DisplayServer::mouse_set_mode_override(MouseMode p_mode) {
+	WARN_PRINT("Mouse is not supported by this display server.");
+}
+
+DisplayServer::MouseMode DisplayServer::mouse_get_mode_override() const {
+	return MOUSE_MODE_VISIBLE;
+}
+
+void DisplayServer::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	WARN_PRINT("Mouse is not supported by this display server.");
+}
+
+bool DisplayServer::mouse_is_mode_override_enabled() const {
+	return false;
+}
+
 void DisplayServer::warp_mouse(const Point2i &p_position) {
 }
 
@@ -663,6 +680,11 @@ Error DisplayServer::embed_process(WindowID p_window, OS::ProcessID p_pid, const
 	return ERR_UNAVAILABLE;
 }
 
+Error DisplayServer::request_close_embedded_process(OS::ProcessID p_pid) {
+	WARN_PRINT("Embedded process not supported by this display server.");
+	return ERR_UNAVAILABLE;
+}
+
 Error DisplayServer::remove_embedded_process(OS::ProcessID p_pid) {
 	WARN_PRINT("Embedded process not supported by this display server.");
 	return ERR_UNAVAILABLE;
@@ -683,12 +705,12 @@ Error DisplayServer::dialog_input_text(String p_title, String p_description, Str
 	return ERR_UNAVAILABLE;
 }
 
-Error DisplayServer::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+Error DisplayServer::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
 	return ERR_UNAVAILABLE;
 }
 
-Error DisplayServer::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+Error DisplayServer::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
 	return ERR_UNAVAILABLE;
 }
@@ -724,6 +746,10 @@ Key DisplayServer::keyboard_get_label_from_physical(Key p_keycode) const {
 }
 
 void DisplayServer::show_emoji_and_symbol_picker() const {
+}
+
+bool DisplayServer::color_picker(const Callable &p_callback) {
+	return false;
 }
 
 void DisplayServer::force_process_and_drop_events() {
@@ -1007,6 +1033,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_get_height"), &DisplayServer::virtual_keyboard_get_height);
 
 	ClassDB::bind_method(D_METHOD("has_hardware_keyboard"), &DisplayServer::has_hardware_keyboard);
+	ClassDB::bind_method(D_METHOD("set_hardware_keyboard_connection_change_callback", "callable"), &DisplayServer::set_hardware_keyboard_connection_change_callback);
 
 	ClassDB::bind_method(D_METHOD("cursor_set_shape", "shape"), &DisplayServer::cursor_set_shape);
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
@@ -1019,8 +1046,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("dialog_show", "title", "description", "buttons", "callback"), &DisplayServer::dialog_show);
 	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_input_text);
 
-	ClassDB::bind_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback"), &DisplayServer::file_dialog_show);
-	ClassDB::bind_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback"), &DisplayServer::file_dialog_with_options_show);
+	ClassDB::bind_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback", "parent_window_id"), &DisplayServer::file_dialog_show, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback", "parent_window_id"), &DisplayServer::file_dialog_with_options_show, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("beep"), &DisplayServer::beep);
 
@@ -1033,6 +1060,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("keyboard_get_label_from_physical", "keycode"), &DisplayServer::keyboard_get_label_from_physical);
 
 	ClassDB::bind_method(D_METHOD("show_emoji_and_symbol_picker"), &DisplayServer::show_emoji_and_symbol_picker);
+	ClassDB::bind_method(D_METHOD("color_picker", "callback"), &DisplayServer::color_picker);
 
 	ClassDB::bind_method(D_METHOD("process_events"), &DisplayServer::process_events);
 	ClassDB::bind_method(D_METHOD("force_process_and_drop_events"), &DisplayServer::force_process_and_drop_events);
@@ -1092,12 +1120,15 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_WINDOW_EMBEDDING);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE_MIME);
 	BIND_ENUM_CONSTANT(FEATURE_EMOJI_AND_SYMBOL_PICKER);
+	BIND_ENUM_CONSTANT(FEATURE_NATIVE_COLOR_PICKER);
+	BIND_ENUM_CONSTANT(FEATURE_SELF_FITTING_WINDOWS);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CAPTURED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_MAX);
 
 	BIND_CONSTANT(SCREEN_WITH_MOUSE_FOCUS);
 	BIND_CONSTANT(SCREEN_WITH_KEYBOARD_FOCUS);
@@ -1166,6 +1197,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_MOUSE_PASSTHROUGH);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_SHARP_CORNERS);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_EXCLUDE_FROM_CAPTURE);
+	BIND_ENUM_CONSTANT(WINDOW_FLAG_POPUP_WM_HINT);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_MOUSE_ENTER);
@@ -1176,6 +1208,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_GO_BACK_REQUEST);
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_DPI_CHANGE);
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_TITLEBAR_CHANGE);
+	BIND_ENUM_CONSTANT(WINDOW_EVENT_FORCE_CLOSE);
 
 	BIND_ENUM_CONSTANT(WINDOW_EDGE_TOP_LEFT);
 	BIND_ENUM_CONSTANT(WINDOW_EDGE_TOP);
@@ -1266,6 +1299,22 @@ Input::MouseMode DisplayServer::_input_get_mouse_mode() {
 	return Input::MouseMode(singleton->mouse_get_mode());
 }
 
+void DisplayServer::_input_set_mouse_mode_override(Input::MouseMode p_mode) {
+	singleton->mouse_set_mode_override(MouseMode(p_mode));
+}
+
+Input::MouseMode DisplayServer::_input_get_mouse_mode_override() {
+	return Input::MouseMode(singleton->mouse_get_mode_override());
+}
+
+void DisplayServer::_input_set_mouse_mode_override_enabled(bool p_enabled) {
+	singleton->mouse_set_mode_override_enabled(p_enabled);
+}
+
+bool DisplayServer::_input_is_mouse_mode_override_enabled() {
+	return singleton->mouse_is_mode_override_enabled();
+}
+
 void DisplayServer::_input_warp(const Vector2 &p_to_pos) {
 	singleton->warp_mouse(p_to_pos);
 }
@@ -1278,8 +1327,90 @@ void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_i
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hotspot);
 }
 
+bool DisplayServer::is_rendering_device_supported() {
+#if defined(RD_ENABLED)
+	RenderingDevice *device = RenderingDevice::get_singleton();
+	if (device) {
+		return true;
+	}
+
+	if (supported_rendering_device == RenderingDeviceCreationStatus::SUCCESS) {
+		return true;
+	} else if (supported_rendering_device == RenderingDeviceCreationStatus::FAILURE) {
+		return false;
+	}
+
+	Error err;
+
+#if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
+	// On some drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
+	List<String> arguments;
+	arguments.push_back("--test-rd-support");
+	if (get_singleton()) {
+		arguments.push_back("--display-driver");
+		arguments.push_back(get_singleton()->get_name().to_lower());
+	}
+
+	String pipe;
+	int exitcode = 0;
+	err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
+	if (err == OK && exitcode == 0) {
+		supported_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+		return true;
+	} else {
+		supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+	}
+#else // WINDOWS_ENABLED
+
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+	rcd = memnew(RenderingContextDriverVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverD3D12);
+	}
+#endif
+#ifdef METAL_ENABLED
+	if (rcd == nullptr) {
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
+		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
+		rcd = memnew(RenderingContextDriverMetal);
+		GODOT_CLANG_WARNING_POP
+	}
+#endif
+
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				// Creating a RenderingDevice is quite slow.
+				// Cache the result for future usage, so that it's much faster on subsequent calls.
+				supported_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+				memdelete(rcd);
+				rcd = nullptr;
+				return true;
+			} else {
+				supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+			}
+		}
+
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+
+#endif // WINDOWS_ENABLED
+#endif // RD_ENABLED
+	return false;
+}
+
 bool DisplayServer::can_create_rendering_device() {
-	if (get_singleton()->get_name() == "headless") {
+	if (get_singleton() && get_singleton()->get_name() == "headless") {
 		return false;
 	}
 
@@ -1296,6 +1427,23 @@ bool DisplayServer::can_create_rendering_device() {
 	}
 
 	Error err;
+
+#ifdef WINDOWS_ENABLED
+	// On some NVIDIA drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
+	List<String> arguments;
+	arguments.push_back("--test-rd-creation");
+
+	String pipe;
+	int exitcode = 0;
+	err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
+	if (err == OK && exitcode == 0) {
+		created_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+		return true;
+	} else {
+		created_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+	}
+#else // WINDOWS_ENABLED
+
 	RenderingContextDriver *rcd = nullptr;
 
 #if defined(VULKAN_ENABLED)
@@ -1308,11 +1456,10 @@ bool DisplayServer::can_create_rendering_device() {
 #endif
 #ifdef METAL_ENABLED
 	if (rcd == nullptr) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
 		rcd = memnew(RenderingContextDriverMetal);
-#pragma clang diagnostic pop
+		GODOT_CLANG_WARNING_POP
 	}
 #endif
 
@@ -1339,6 +1486,7 @@ bool DisplayServer::can_create_rendering_device() {
 		rcd = nullptr;
 	}
 
+#endif // WINDOWS_ENABLED
 #endif // RD_ENABLED
 	return false;
 }
@@ -1347,6 +1495,10 @@ DisplayServer::DisplayServer() {
 	singleton = this;
 	Input::set_mouse_mode_func = _input_set_mouse_mode;
 	Input::get_mouse_mode_func = _input_get_mouse_mode;
+	Input::set_mouse_mode_override_func = _input_set_mouse_mode_override;
+	Input::get_mouse_mode_override_func = _input_get_mouse_mode_override;
+	Input::set_mouse_mode_override_enabled_func = _input_set_mouse_mode_override_enabled;
+	Input::is_mouse_mode_override_enabled_func = _input_is_mouse_mode_override_enabled;
 	Input::warp_mouse_func = _input_warp;
 	Input::get_current_cursor_shape_func = _input_get_current_cursor_shape;
 	Input::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;

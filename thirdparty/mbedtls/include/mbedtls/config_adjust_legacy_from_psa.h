@@ -69,7 +69,6 @@
     (defined(PSA_WANT_ECC_SECP_R1_384) && !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_R1_384)) || \
     (defined(PSA_WANT_ECC_SECP_R1_521) && !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_R1_521)) || \
     (defined(PSA_WANT_ECC_SECP_K1_192) && !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_K1_192)) || \
-    (defined(PSA_WANT_ECC_SECP_K1_224) && !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_K1_224)) || \
     (defined(PSA_WANT_ECC_SECP_K1_256) && !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_K1_256))
 #define MBEDTLS_PSA_ECC_ACCEL_INCOMPLETE_CURVES
 #define MBEDTLS_PSA_ECC_ACCEL_INCOMPLETE_WEIERSTRASS_CURVES
@@ -224,17 +223,6 @@
 #define MBEDTLS_ECP_DP_SECP192K1_ENABLED
 #endif /* missing accel */
 #endif /* PSA_WANT_ECC_SECP_K1_192 */
-
-#if defined(PSA_WANT_ECC_SECP_K1_224)
-#if !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_K1_224) || \
-    defined(MBEDTLS_PSA_ECC_ACCEL_INCOMPLETE_KEY_TYPES) || \
-    defined(MBEDTLS_PSA_ECC_ACCEL_INCOMPLETE_ALGS)
-#define MBEDTLS_PSA_BUILTIN_ECC_SECP_K1_224 1
-#define MBEDTLS_ECP_DP_SECP224K1_ENABLED
-/* https://github.com/Mbed-TLS/mbedtls/issues/3541 */
-#error "SECP224K1 is buggy via the PSA API in Mbed TLS."
-#endif /* missing accel */
-#endif /* PSA_WANT_ECC_SECP_K1_224 */
 
 #if defined(PSA_WANT_ECC_SECP_K1_256)
 #if !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_K1_256) || \
@@ -781,13 +769,6 @@
     defined(PSA_HAVE_SOFT_KEY_TYPE_CAMELLIA)
 #define PSA_HAVE_SOFT_BLOCK_CIPHER 1
 #endif
-
-#if defined(PSA_WANT_ALG_CBC_MAC)
-#if !defined(MBEDTLS_PSA_ACCEL_ALG_CBC_MAC)
-#error "CBC-MAC is not yet supported via the PSA API in Mbed TLS."
-#define MBEDTLS_PSA_BUILTIN_ALG_CBC_MAC 1
-#endif /* !MBEDTLS_PSA_ACCEL_ALG_CBC_MAC */
-#endif /* PSA_WANT_ALG_CBC_MAC */
 
 #if defined(PSA_WANT_ALG_CMAC)
 #if !defined(MBEDTLS_PSA_ACCEL_ALG_CMAC) || \

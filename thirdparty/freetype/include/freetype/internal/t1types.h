@@ -5,7 +5,7 @@
  *   Basic Type1/Type2 type definitions and interface (specification
  *   only).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -21,7 +21,7 @@
 #define T1TYPES_H_
 
 
-#include <freetype/t1tables.h>
+#include <freetype/ftmm.h>
 #include <freetype/internal/pshints.h>
 #include <freetype/internal/ftserv.h>
 #include <freetype/internal/fthash.h>
@@ -135,6 +135,54 @@ FT_BEGIN_HEADER
     FT_Byte**  code;
 
   } CID_SubrsRec, *CID_Subrs;
+
+
+  /* this structure is used to store the BlendDesignMap entry for an axis */
+  typedef struct  PS_DesignMap_
+  {
+    FT_Byte    num_points;
+    FT_Long*   design_points;
+    FT_Fixed*  blend_points;
+
+  } PS_DesignMapRec, *PS_DesignMap;
+
+  /* backward compatible definition */
+  typedef PS_DesignMapRec  T1_DesignMap;
+
+
+  typedef struct  PS_BlendRec_
+  {
+    FT_UInt          num_designs;
+    FT_UInt          num_axis;
+
+    FT_String*       axis_names[T1_MAX_MM_AXIS];
+    FT_Fixed*        design_pos[T1_MAX_MM_DESIGNS];
+    PS_DesignMapRec  design_map[T1_MAX_MM_AXIS];
+
+    FT_Fixed*        weight_vector;
+    FT_Fixed*        default_weight_vector;
+
+    PS_FontInfo      font_infos[T1_MAX_MM_DESIGNS + 1];
+    PS_Private       privates  [T1_MAX_MM_DESIGNS + 1];
+
+    FT_ULong         blend_bitflags;
+
+    FT_BBox*         bboxes    [T1_MAX_MM_DESIGNS + 1];
+
+    /* since 2.3.0 */
+
+    /* undocumented, optional: the default design instance;   */
+    /* corresponds to default_weight_vector --                */
+    /* num_default_design_vector == 0 means it is not present */
+    /* in the font and associated metrics files               */
+    FT_UInt          default_design_vector[T1_MAX_MM_DESIGNS];
+    FT_UInt          num_default_design_vector;
+
+  } PS_BlendRec, *PS_Blend;
+
+
+  /* backward compatible definition */
+  typedef PS_BlendRec  T1_Blend;
 
 
   /*************************************************************************/

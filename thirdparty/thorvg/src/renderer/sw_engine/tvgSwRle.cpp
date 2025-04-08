@@ -482,7 +482,7 @@ static bool _setCell(RleWorker& rw, SwPoint pos)
 static bool _startCell(RleWorker& rw, SwPoint pos)
 {
     if (pos.x > rw.cellMax.x) pos.x = rw.cellMax.x;
-    if (pos.x < rw.cellMin.x) pos.x = rw.cellMin.x;
+    if (pos.x < rw.cellMin.x) pos.x = rw.cellMin.x - 1;
 
     rw.area = 0;
     rw.cover = 0;
@@ -866,6 +866,8 @@ void _replaceClipSpan(SwRle *rle, SwSpan* clippedSpans, uint32_t size)
 
 SwRle* rleRender(SwRle* rle, const SwOutline* outline, const SwBBox& renderRegion, bool antiAlias)
 {
+    if (!outline) return nullptr;
+
     constexpr auto RENDER_POOL_SIZE = 16384L;
     constexpr auto BAND_SIZE = 40;
 

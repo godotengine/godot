@@ -33,9 +33,6 @@
 #include "core/object/script_language.h"
 #include "editor/editor_file_system.h"
 
-EditorImportPlugin::EditorImportPlugin() {
-}
-
 String EditorImportPlugin::get_importer_name() const {
 	String ret;
 	if (GDVIRTUAL_CALL(_get_importer_name, ret)) {
@@ -121,9 +118,7 @@ int EditorImportPlugin::get_format_version() const {
 }
 
 void EditorImportPlugin::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options, int p_preset) const {
-	Array needed;
-	needed.push_back("name");
-	needed.push_back("default_value");
+	Array needed = { "name", "default_value" };
 	TypedArray<Dictionary> options;
 	if (GDVIRTUAL_CALL(_get_import_options, p_path, p_preset, options)) {
 		for (int i = 0; i < options.size(); i++) {
@@ -205,10 +200,8 @@ bool EditorImportPlugin::can_import_threaded() const {
 
 Error EditorImportPlugin::_append_import_external_resource(const String &p_file, const Dictionary &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters) {
 	HashMap<StringName, Variant> options;
-	List<Variant> keys;
-	p_custom_options.get_key_list(&keys);
-	for (const Variant &K : keys) {
-		options.insert(K, p_custom_options[K]);
+	for (const KeyValue<Variant, Variant> &kv : p_custom_options) {
+		options.insert(kv.key, kv.value);
 	}
 	return append_import_external_resource(p_file, options, p_custom_importer, p_generator_parameters);
 }

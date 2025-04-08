@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ARRAY_H
-#define ARRAY_H
+#pragma once
 
 #include "core/typedefs.h"
 
 #include <climits>
+#include <initializer_list>
 
 class Callable;
 class StringName;
@@ -57,21 +57,19 @@ public:
 		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return element_ptr == p_other.element_ptr; }
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return element_ptr != p_other.element_ptr; }
 
-		_FORCE_INLINE_ ConstIterator(const Variant *p_element_ptr, Variant *p_read_only = nullptr) :
-				element_ptr(p_element_ptr), read_only(p_read_only) {}
+		_FORCE_INLINE_ ConstIterator(const Variant *p_element_ptr) :
+				element_ptr(p_element_ptr) {}
 		_FORCE_INLINE_ ConstIterator() {}
 		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_other) :
-				element_ptr(p_other.element_ptr), read_only(p_other.read_only) {}
+				element_ptr(p_other.element_ptr) {}
 
 		_FORCE_INLINE_ ConstIterator &operator=(const ConstIterator &p_other) {
 			element_ptr = p_other.element_ptr;
-			read_only = p_other.read_only;
 			return *this;
 		}
 
 	private:
 		const Variant *element_ptr = nullptr;
-		Variant *read_only = nullptr;
 	};
 
 	struct Iterator {
@@ -97,7 +95,7 @@ public:
 		}
 
 		operator ConstIterator() const {
-			return ConstIterator(element_ptr, read_only);
+			return ConstIterator(element_ptr);
 		}
 
 	private:
@@ -204,8 +202,7 @@ public:
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
+	Array(std::initializer_list<Variant> p_init);
 	Array();
 	~Array();
 };
-
-#endif // ARRAY_H

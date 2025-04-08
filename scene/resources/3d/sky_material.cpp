@@ -276,7 +276,7 @@ void ProceduralSkyMaterial::_update_shader() {
 
 			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
-// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s ProceduralSkyMaterial.
+// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s ProceduralSkyMaterial.
 
 shader_type sky;
 %s
@@ -470,7 +470,7 @@ void PanoramaSkyMaterial::_update_shader() {
 
 			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
-// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PanoramaSkyMaterial.
+// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s PanoramaSkyMaterial.
 
 shader_type sky;
 
@@ -698,7 +698,7 @@ void PhysicalSkyMaterial::_update_shader() {
 
 			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
-// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PhysicalSkyMaterial.
+// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s PhysicalSkyMaterial.
 
 shader_type sky;
 %s

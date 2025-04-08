@@ -37,16 +37,34 @@
 #include "servers/rendering_server.h"
 
 #ifdef X11_ENABLED
+#include "x11/detect_prime_x11.h"
 #include "x11/display_server_x11.h"
 #endif
 
 #ifdef WAYLAND_ENABLED
+#include "wayland/detect_prime_egl.h"
 #include "wayland/display_server_wayland.h"
 #endif
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
+#endif
+
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#ifdef X11_ENABLED
+#include "x11/rendering_context_driver_vulkan_x11.h"
+#endif
+#ifdef WAYLAND_ENABLED
+#include "wayland/rendering_context_driver_vulkan_wayland.h"
+#endif
+#endif
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
 #include <dlfcn.h>
@@ -74,7 +92,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	String program;
 
 	for (int i = 0; i < path_elems.size(); i++) {
-		for (uint64_t k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
+		for (uint64_t k = 0; k < std::size(message_programs); k++) {
 			String tested_path = path_elems[i].path_join(message_programs[k]);
 
 			if (FileAccess::exists(tested_path)) {
@@ -155,7 +173,7 @@ String OS_LinuxBSD::get_unique_id() const {
 		memset(buf, 0, sizeof(buf));
 		size_t len = sizeof(buf) - 1;
 		if (sysctl(mib, 2, buf, &len, 0x0, 0) != -1) {
-			machine_id = String::utf8(buf).replace("-", "");
+			machine_id = String::utf8(buf).remove_char('-');
 		}
 #else
 		Ref<FileAccess> f = FileAccess::open("/etc/machine-id", FileAccess::READ);
@@ -751,7 +769,7 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 
 	Vector<String> ret;
 	static const char *allowed_formats[] = { "TrueType", "CFF" };
-	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
+	for (size_t i = 0; i < std::size(allowed_formats); i++) {
 		FcPattern *pattern = FcPatternCreate();
 		if (pattern) {
 			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
@@ -1178,6 +1196,73 @@ String OS_LinuxBSD::get_system_ca_certificates() {
 	ERR_FAIL_COND_V_MSG(f.is_null(), "", vformat("Failed to open system CA certificates file: '%s'", certfile));
 
 	return f->get_as_text();
+}
+
+bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) const {
+	// Tests Rendering Device creation.
+
+	bool ok = false;
+#if defined(RD_ENABLED)
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+#ifdef X11_ENABLED
+	if (p_display_driver == "x11" || p_display_driver.is_empty()) {
+		rcd = memnew(RenderingContextDriverVulkanX11);
+	}
+#endif
+#ifdef WAYLAND_ENABLED
+	if (p_display_driver == "wayland") {
+		rcd = memnew(RenderingContextDriverVulkanWayland);
+	}
+#endif
+#endif
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				ok = true;
+			}
+		}
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+#endif
+	return ok;
+}
+
+bool OS_LinuxBSD::_test_create_rendering_device_and_gl(const String &p_display_driver) const {
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some drivers.
+
+#ifdef GLES3_ENABLED
+#ifdef X11_ENABLED
+	if (p_display_driver == "x11" || p_display_driver.is_empty()) {
+#ifdef SOWRAP_ENABLED
+		if (initialize_xlib(0) != 0) {
+			return false;
+		}
+#endif
+		DetectPrimeX11::create_context();
+	}
+#endif
+#ifdef WAYLAND_ENABLED
+	if (p_display_driver == "wayland") {
+#ifdef SOWRAP_ENABLED
+		if (initialize_wayland_egl(0) != 0) {
+			return false;
+		}
+#endif
+		DetectPrimeEGL::create_context(EGL_PLATFORM_WAYLAND_KHR);
+	}
+#endif
+	RasterizerGLES3::make_current(true);
+#endif
+	return _test_create_rendering_device(p_display_driver);
 }
 
 OS_LinuxBSD::OS_LinuxBSD() {

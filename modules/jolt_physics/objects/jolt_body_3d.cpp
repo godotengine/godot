@@ -32,6 +32,7 @@
 
 #include "../joints/jolt_joint_3d.h"
 #include "../jolt_project_settings.h"
+#include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "../spaces/jolt_broad_phase_layer.h"
@@ -131,10 +132,10 @@ void JoltBody3D::_add_to_space() {
 	jolt_settings->mAllowSleeping = is_sleep_actually_allowed();
 	jolt_settings->mLinearDamping = 0.0f;
 	jolt_settings->mAngularDamping = 0.0f;
-	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::get_max_linear_velocity();
-	jolt_settings->mMaxAngularVelocity = JoltProjectSettings::get_max_angular_velocity();
+	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::max_linear_velocity;
+	jolt_settings->mMaxAngularVelocity = JoltProjectSettings::max_angular_velocity;
 
-	if (JoltProjectSettings::use_enhanced_internal_edge_removal_for_bodies()) {
+	if (JoltProjectSettings::use_enhanced_internal_edge_removal_for_bodies) {
 		jolt_settings->mEnhancedInternalEdgeRemoval = true;
 	}
 
@@ -543,15 +544,14 @@ JoltBody3D::~JoltBody3D() {
 void JoltBody3D::set_transform(Transform3D p_transform) {
 	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, vformat("An invalid transform was passed to physics body '%s'.", to_string()));
 
-	const Vector3 new_scale = p_transform.basis.get_scale();
+	Vector3 new_scale;
+	JoltMath::decompose(p_transform, new_scale);
 
 	// Ideally we would do an exact comparison here, but due to floating-point precision this would be invalidated very often.
 	if (!scale.is_equal_approx(new_scale)) {
 		scale = new_scale;
 		_shapes_changed();
 	}
-
-	p_transform.basis.orthonormalize();
 
 	if (!in_space()) {
 		jolt_settings->mPosition = to_jolt_r(p_transform.origin);
@@ -906,7 +906,7 @@ void JoltBody3D::set_max_contacts_reported(int p_count) {
 }
 
 bool JoltBody3D::reports_all_kinematic_contacts() const {
-	return reports_contacts() && JoltProjectSettings::should_generate_all_kinematic_contacts();
+	return reports_contacts() && JoltProjectSettings::generate_all_kinematic_contacts;
 }
 
 void JoltBody3D::add_contact(const JoltBody3D *p_collider, float p_depth, int p_shape_index, int p_collider_shape_index, const Vector3 &p_normal, const Vector3 &p_position, const Vector3 &p_collider_position, const Vector3 &p_velocity, const Vector3 &p_collider_velocity, const Vector3 &p_impulse) {

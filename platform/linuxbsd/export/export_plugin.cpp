@@ -50,7 +50,7 @@ Error EditorExportPlatformLinuxBSD::_export_debug_script(const Ref<EditorExportP
 	}
 
 	f->store_line("#!/bin/sh");
-	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
+	f->store_line("printf '\\033c\\033]0;%s\\a' " + p_app_name);
 	f->store_line("base_path=\"$(dirname \"$(realpath \"$0\")\")\"");
 	f->store_line("\"$base_path/" + p_pkg_name + "\" \"$@\"");
 
@@ -67,7 +67,7 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	if (!template_path.is_empty()) {
 		String exe_arch = _get_exe_arch(template_path);
 		if (arch != exe_arch) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Mismatching custom export template executable architecture, found \"%s\", expected \"%s\"."), exe_arch, arch));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Mismatching custom export template executable architecture: found \"%s\", expected \"%s\"."), exe_arch, arch));
 			return ERR_CANT_CREATE;
 		}
 	}

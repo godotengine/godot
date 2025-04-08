@@ -28,10 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CSG_GIZMOS_H
-#define CSG_GIZMOS_H
-
-#ifdef TOOLS_ENABLED
+#pragma once
 
 #include "../csg_shape.h"
 
@@ -62,7 +59,6 @@ public:
 	virtual void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) override;
 
 	CSGShape3DGizmoPlugin();
-	~CSGShape3DGizmoPlugin();
 };
 
 class CSGShapeEditor : public Control {
@@ -104,7 +100,3 @@ public:
 
 	EditorPluginCSG();
 };
-
-#endif // TOOLS_ENABLED
-
-#endif // CSG_GIZMOS_H

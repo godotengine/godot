@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MULTIMESH_INSTANCE_2D_H
-#define MULTIMESH_INSTANCE_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/multimesh.h"
@@ -64,11 +63,11 @@ private:
 	static RID _navmesh_source_geometry_parser;
 
 public:
+#ifndef NAVIGATION_2D_DISABLED
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_2D_DISABLED
 
 	MultiMeshInstance2D();
 	~MultiMeshInstance2D();
 };
-
-#endif // MULTIMESH_INSTANCE_2D_H

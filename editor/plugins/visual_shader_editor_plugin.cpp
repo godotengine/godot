@@ -34,6 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
+#include "core/version_generated.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_vector.h"
@@ -89,7 +90,7 @@ static FloatConstantDef float_constant_defs[] = {
 	{ "Sqrt2", Math_SQRT2, TTRC("Sqrt2 constant (1.414214). Square root of 2.") }
 };
 
-const int MAX_FLOAT_CONST_DEFS = sizeof(float_constant_defs) / sizeof(FloatConstantDef);
+constexpr int MAX_FLOAT_CONST_DEFS = std::size(float_constant_defs);
 
 ///////////////////
 
@@ -1491,9 +1492,6 @@ void VisualShaderGraphPlugin::disconnect_nodes(VisualShader::Type p_type, int p_
 	}
 }
 
-VisualShaderGraphPlugin::~VisualShaderGraphPlugin() {
-}
-
 /////////////////
 
 void VisualShaderEditedProperty::_bind_methods() {
@@ -1573,6 +1571,10 @@ void VisualShaderEditor::validate_script() {
 	if (visual_shader.is_valid()) {
 		_update_nodes();
 	}
+}
+
+Control *VisualShaderEditor::get_top_bar() {
+	return toolbar;
 }
 
 void VisualShaderEditor::add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin) {
@@ -2464,6 +2466,13 @@ void VisualShaderEditor::_set_mode(int p_which) {
 
 Size2 VisualShaderEditor::get_minimum_size() const {
 	return Size2(10, 200);
+}
+
+void VisualShaderEditor::update_toggle_scripts_button() {
+	ERR_FAIL_NULL(toggle_scripts_list);
+	bool forward = toggle_scripts_list->is_visible() == is_layout_rtl();
+	toggle_scripts_button->set_button_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
+	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
 }
 
 void VisualShaderEditor::_draw_color_over_button(Object *p_obj, Color p_color) {
@@ -4424,8 +4433,8 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 		for (const VisualShader::Connection &E : conns) {
 			if (E.from_node == F || E.to_node == F) {
 				bool cancel = false;
-				for (List<VisualShader::Connection>::Element *R = used_conns.front(); R; R = R->next()) {
-					if (R->get().from_node == E.from_node && R->get().from_port == E.from_port && R->get().to_node == E.to_node && R->get().to_port == E.to_port) {
+				for (const VisualShader::Connection &R : used_conns) {
+					if (R.from_node == E.from_node && R.from_port == E.from_port && R.to_node == E.to_node && R.to_port == E.to_port) {
 						cancel = true; // to avoid ERR_ALREADY_EXISTS warning
 						break;
 					}
@@ -5150,6 +5159,10 @@ void VisualShaderEditor::_param_unselected() {
 	_clear_preview_param();
 }
 
+void VisualShaderEditor::_help_open() {
+	OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/visual_shaders.html", GODOT_VERSION_DOCS_URL));
+}
+
 void VisualShaderEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -5191,6 +5204,7 @@ void VisualShaderEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			site_search->set_button_icon(get_editor_theme_icon(SNAME("ExternalLink")));
 			highend_label->set_modulate(get_theme_color(SNAME("highend_color"), EditorStringName(Editor)));
 
 			param_filter->set_right_icon(Control::get_editor_theme_icon(SNAME("Search")));
@@ -5254,6 +5268,11 @@ void VisualShaderEditor::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				_update_graph();
 			}
+			update_toggle_scripts_button();
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			update_toggle_scripts_button();
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -6357,6 +6376,16 @@ void VisualShaderEditor::_show_shader_preview() {
 	}
 }
 
+void VisualShaderEditor::set_toggle_list_control(Control *p_control) {
+	toggle_scripts_list = p_control;
+}
+
+void VisualShaderEditor::_toggle_scripts_pressed() {
+	ERR_FAIL_NULL(toggle_scripts_list);
+	toggle_scripts_list->set_visible(!toggle_scripts_list->is_visible());
+	update_toggle_scripts_button();
+}
+
 void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_nodes", &VisualShaderEditor::_update_nodes);
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
@@ -6493,7 +6522,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar_panel->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE, PRESET_MODE_MINSIZE, 10);
 	toolbar_panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
-	HFlowContainer *toolbar = memnew(HFlowContainer);
+	toolbar = memnew(HFlowContainer);
 	{
 		LocalVector<Node *> nodes;
 		for (int i = 0; i < graph->get_menu_hbox()->get_child_count(); i++) {
@@ -6591,6 +6620,32 @@ VisualShaderEditor::VisualShaderEditor() {
 	shader_preview_button->set_pressed(true);
 	toolbar->add_child(shader_preview_button);
 	shader_preview_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_show_shader_preview));
+
+	Control *spacer = memnew(Control);
+	spacer->set_h_size_flags(Control::SIZE_EXPAND);
+	toolbar->add_child(spacer);
+
+	site_search = memnew(Button);
+	site_search->set_flat(true);
+	site_search->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_help_open));
+	site_search->set_text(TTR("Online Docs"));
+	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
+	toolbar->add_child(site_search);
+	toolbar->add_child(memnew(VSeparator));
+
+	VSeparator *separator = memnew(VSeparator);
+	toolbar->add_child(separator);
+	toolbar->move_child(separator, 0);
+
+	separator = memnew(VSeparator);
+	toolbar->add_child(separator);
+	toolbar->move_child(separator, 0);
+
+	toggle_scripts_button = memnew(Button);
+	toggle_scripts_button->set_flat(true);
+	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_toggle_scripts_pressed));
+	toolbar->add_child(toggle_scripts_button);
+	toolbar->move_child(toggle_scripts_button, 0);
 
 	///////////////////////////////////////
 	// CODE PREVIEW
@@ -7623,12 +7678,15 @@ public:
 	}
 
 	void _item_selected(int p_item) {
-		editor->call_deferred(SNAME("_input_select_item"), input, get_item_text(p_item));
+		editor->call_deferred(SNAME("_input_select_item"), input, get_item_metadata(p_item));
 	}
 
 	void setup(VisualShaderEditor *p_editor, const Ref<VisualShaderNodeInput> &p_input) {
+		set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 		editor = p_editor;
 		input = p_input;
+
 		Ref<Texture2D> type_icon[] = {
 			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("float"), EditorStringName(EditorIcons)),
 			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("int"), EditorStringName(EditorIcons)),
@@ -7641,13 +7699,16 @@ public:
 			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("ImageTexture"), EditorStringName(EditorIcons)),
 		};
 
-		add_item("[None]");
+		add_item(TTR("[None]"));
+		set_item_metadata(-1, "[None]");
+
 		int to_select = -1;
 		for (int i = 0; i < input->get_input_index_count(); i++) {
 			if (input->get_input_name() == input->get_input_index_name(i)) {
 				to_select = i + 1;
 			}
 			add_icon_item(type_icon[input->get_input_index_type(i)], input->get_input_index_name(i));
+			set_item_metadata(-1, input->get_input_index_name(i));
 		}
 
 		if (to_select >= 0) {
@@ -7672,10 +7733,12 @@ public:
 	}
 
 	void _item_selected(int p_item) {
-		editor->call_deferred(SNAME("_varying_select_item"), varying, get_item_text(p_item));
+		editor->call_deferred(SNAME("_varying_select_item"), varying, get_item_metadata(p_item));
 	}
 
 	void setup(VisualShaderEditor *p_editor, const Ref<VisualShaderNodeVarying> &p_varying, VisualShader::Type p_type) {
+		set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 		editor = p_editor;
 		varying = p_varying;
 
@@ -7692,7 +7755,8 @@ public:
 
 		bool is_getter = Ref<VisualShaderNodeVaryingGetter>(p_varying.ptr()).is_valid();
 
-		add_item("[None]");
+		add_item(TTR("[None]"));
+		set_item_metadata(-1, "[None]");
 
 		int to_select = -1;
 		for (int i = 0, j = 0; i < varying->get_varyings_count(); i++) {
@@ -7726,6 +7790,7 @@ public:
 				to_select = i - j + 1;
 			}
 			add_icon_item(type_icon[varying->get_varying_type_by_index(i)], varying->get_varying_name_by_index(i));
+			set_item_metadata(-1, varying->get_varying_name_by_index(i));
 		}
 
 		if (to_select >= 0) {
@@ -7752,10 +7817,12 @@ public:
 	}
 
 	void _item_selected(int p_item) {
-		editor->call_deferred(SNAME("_parameter_ref_select_item"), parameter_ref, get_item_text(p_item));
+		editor->call_deferred(SNAME("_parameter_ref_select_item"), parameter_ref, get_item_metadata(p_item));
 	}
 
 	void setup(VisualShaderEditor *p_editor, const Ref<VisualShaderNodeParameterRef> &p_parameter_ref) {
+		set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 		editor = p_editor;
 		parameter_ref = p_parameter_ref;
 
@@ -7772,13 +7839,16 @@ public:
 			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("ImageTexture"), EditorStringName(EditorIcons)),
 		};
 
-		add_item("[None]");
+		add_item(TTR("[None]"));
+		set_item_metadata(-1, "[None]");
+
 		int to_select = -1;
 		for (int i = 0; i < p_parameter_ref->get_parameters_count(); i++) {
 			if (p_parameter_ref->get_parameter_name() == p_parameter_ref->get_parameter_name_by_index(i)) {
 				to_select = i + 1;
 			}
 			add_icon_item(type_icon[p_parameter_ref->get_parameter_type_by_index(i)], p_parameter_ref->get_parameter_name_by_index(i));
+			set_item_metadata(-1, p_parameter_ref->get_parameter_name_by_index(i));
 		}
 
 		if (to_select >= 0) {
@@ -7967,7 +8037,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 	}
 
 	Vector<StringName> properties = p_node->get_editable_properties();
-	if (properties.size() == 0) {
+	if (properties.is_empty()) {
 		return nullptr;
 	}
 
@@ -7984,7 +8054,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 		}
 	}
 
-	if (pinfo.size() == 0) {
+	if (pinfo.is_empty()) {
 		return nullptr;
 	}
 
@@ -8126,6 +8196,7 @@ void EditorPropertyVisualShaderMode::set_option_button_clip(bool p_enable) {
 
 EditorPropertyVisualShaderMode::EditorPropertyVisualShaderMode() {
 	options = memnew(OptionButton);
+	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	options->set_clip_text(true);
 	add_child(options);
 	add_focusable(options);
@@ -8193,6 +8264,7 @@ void VisualShaderNodePortPreview::setup(const Ref<VisualShader> &p_shader, Ref<S
 		add_child(checkerboard);
 	}
 
+	set_mouse_filter(MOUSE_FILTER_PASS);
 	shader = p_shader;
 	shader->connect_changed(callable_mp(this, &VisualShaderNodePortPreview::_shader_changed), CONNECT_DEFERRED);
 	preview_mat = p_preview_material;

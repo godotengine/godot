@@ -46,7 +46,7 @@ String ResourceUID::get_cache_file() {
 }
 
 static constexpr uint8_t uuid_characters[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', '0', '1', '2', '3', '4', '5', '6', '7', '8' };
-static constexpr uint32_t uuid_characters_element_count = (sizeof(uuid_characters) / sizeof(*uuid_characters));
+static constexpr uint32_t uuid_characters_element_count = std::size(uuid_characters);
 static constexpr uint8_t max_uuid_number_length = 13; // Max 0x7FFFFFFFFFFFFFFF (uid://d4n4ub6itg400) size is 13 characters.
 
 String ResourceUID::id_to_text(ID p_id) const {
@@ -154,6 +154,19 @@ String ResourceUID::get_id_path(ID p_id) const {
 	ERR_FAIL_COND_V_MSG(p_id == INVALID_ID, String(), "Invalid UID.");
 	MutexLock l(mutex);
 	const ResourceUID::Cache *cache = unique_ids.getptr(p_id);
+
+#if TOOLS_ENABLED
+	// On startup, the scan_for_uid_on_startup callback should be set and will
+	// execute EditorFileSystem::scan_for_uid, which scans all project files
+	// to reload the UID cache before the first scan.
+	// Note: EditorFileSystem::scan_for_uid sets scan_for_uid_on_startup to nullptr
+	//       once the first scan_for_uid is complete.
+	if (!cache && scan_for_uid_on_startup) {
+		scan_for_uid_on_startup();
+		cache = unique_ids.getptr(p_id);
+	}
+#endif
+
 	ERR_FAIL_COND_V_MSG(!cache, String(), vformat("Unrecognized UID: \"%s\".", id_to_text(p_id)));
 	const CharString &cs = cache->cs;
 	return String::utf8(cs.ptr());
@@ -298,7 +311,7 @@ String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const Str
 		ERR_FAIL_COND_V(rl != len, String());
 
 		if (singleton->id_to_text(id) == p_uid_string) {
-			return String(cs);
+			return String::utf8(cs.get_data());
 		}
 	}
 	return String();

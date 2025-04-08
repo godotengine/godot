@@ -570,6 +570,7 @@ ActionMapEditor::ActionMapEditor() {
 	add_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_edit->set_placeholder(TTR("Add New Action"));
 	add_edit->set_clear_button_enabled(true);
+	add_edit->set_keep_editing_on_text_submit(true);
 	add_edit->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
 	add_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ActionMapEditor::_add_action));
 	add_hbox->add_child(add_edit);

@@ -7,7 +7,6 @@ dithered = "#define BC1_DITHER";
 #version 450
 
 #include "CrossPlatformSettings_piece_all.glsl"
-#include "UavCrossPlatform_piece_all.glsl"
 
 #define FLT_MAX 340282346638528859811704183484516925440.0f
 

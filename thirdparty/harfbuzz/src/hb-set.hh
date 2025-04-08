@@ -106,6 +106,7 @@ struct hb_sparseset_t
   void del_range (hb_codepoint_t a, hb_codepoint_t b) { s.del_range (a, b); }
 
   bool get (hb_codepoint_t g) const { return s.get (g); }
+  bool may_have (hb_codepoint_t g) const { return get (g); }
 
   /* Has interface. */
   bool operator [] (hb_codepoint_t k) const { return get (k); }
@@ -119,6 +120,9 @@ struct hb_sparseset_t
   { add (v); return *this; }
   hb_sparseset_t& operator << (const hb_codepoint_pair_t& range)
   { add_range (range.first, range.second); return *this; }
+
+  bool may_intersect (const hb_sparseset_t &other) const
+  { return s.may_intersect (other.s); }
 
   bool intersects (hb_codepoint_t first, hb_codepoint_t last) const
   { return s.intersects (first, last); }

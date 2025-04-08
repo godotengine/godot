@@ -686,28 +686,12 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				vcode += _prestr(varying.precision, ShaderLanguage::is_float_type(varying.type));
 				vcode += _typestr(varying.type);
 				vcode += " " + _mkid(varying_name);
-				uint32_t inc = 1U;
+				uint32_t inc = varying.get_size();
 
 				if (varying.array_size > 0) {
-					inc = (uint32_t)varying.array_size;
-
 					vcode += "[";
 					vcode += itos(varying.array_size);
 					vcode += "]";
-				}
-
-				switch (varying.type) {
-					case SL::TYPE_MAT2:
-						inc *= 2U;
-						break;
-					case SL::TYPE_MAT3:
-						inc *= 3U;
-						break;
-					case SL::TYPE_MAT4:
-						inc *= 4U;
-						break;
-					default:
-						break;
 				}
 
 				vcode += ";\n";
@@ -905,7 +889,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.usage_defines.has(vnode->name) && !used_name_defines.has(vnode->name)) {
 				String define = p_default_actions.usage_defines[vnode->name];
 				if (define.begins_with("@")) {
-					define = p_default_actions.usage_defines[define.substr(1, define.length())];
+					define = p_default_actions.usage_defines[define.substr(1)];
 				}
 				r_gen_code.defines.push_back(define);
 				used_name_defines.insert(vnode->name);
@@ -1022,7 +1006,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.usage_defines.has(anode->name) && !used_name_defines.has(anode->name)) {
 				String define = p_default_actions.usage_defines[anode->name];
 				if (define.begins_with("@")) {
-					define = p_default_actions.usage_defines[define.substr(1, define.length())];
+					define = p_default_actions.usage_defines[define.substr(1)];
 				}
 				r_gen_code.defines.push_back(define);
 				used_name_defines.insert(anode->name);
@@ -1481,6 +1465,7 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 	info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
+	info.base_varying_index = actions.base_varying_index;
 
 	Error err = parser.compile(p_code, info);
 

@@ -214,8 +214,8 @@ Error CryptoCore::AESContext::decrypt_cfb(size_t p_length, uint8_t p_iv[16], con
 }
 
 // CryptoCore
-String CryptoCore::b64_encode_str(const uint8_t *p_src, int p_src_len) {
-	int b64len = p_src_len / 3 * 4 + 4 + 1;
+String CryptoCore::b64_encode_str(const uint8_t *p_src, size_t p_src_len) {
+	size_t b64len = p_src_len / 3 * 4 + 4 + 1;
 	Vector<uint8_t> b64buff;
 	b64buff.resize(b64len);
 	uint8_t *w64 = b64buff.ptrw();
@@ -225,27 +225,27 @@ String CryptoCore::b64_encode_str(const uint8_t *p_src, int p_src_len) {
 	return ret ? String() : (const char *)&w64[0];
 }
 
-Error CryptoCore::b64_encode(uint8_t *r_dst, int p_dst_len, size_t *r_len, const uint8_t *p_src, int p_src_len) {
+Error CryptoCore::b64_encode(uint8_t *r_dst, size_t p_dst_len, size_t *r_len, const uint8_t *p_src, size_t p_src_len) {
 	int ret = mbedtls_base64_encode(r_dst, p_dst_len, r_len, p_src, p_src_len);
 	return ret ? FAILED : OK;
 }
 
-Error CryptoCore::b64_decode(uint8_t *r_dst, int p_dst_len, size_t *r_len, const uint8_t *p_src, int p_src_len) {
+Error CryptoCore::b64_decode(uint8_t *r_dst, size_t p_dst_len, size_t *r_len, const uint8_t *p_src, size_t p_src_len) {
 	int ret = mbedtls_base64_decode(r_dst, p_dst_len, r_len, p_src, p_src_len);
 	return ret ? FAILED : OK;
 }
 
-Error CryptoCore::md5(const uint8_t *p_src, int p_src_len, unsigned char r_hash[16]) {
+Error CryptoCore::md5(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[16]) {
 	int ret = mbedtls_md5_ret(p_src, p_src_len, r_hash);
 	return ret ? FAILED : OK;
 }
 
-Error CryptoCore::sha1(const uint8_t *p_src, int p_src_len, unsigned char r_hash[20]) {
+Error CryptoCore::sha1(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[20]) {
 	int ret = mbedtls_sha1_ret(p_src, p_src_len, r_hash);
 	return ret ? FAILED : OK;
 }
 
-Error CryptoCore::sha256(const uint8_t *p_src, int p_src_len, unsigned char r_hash[32]) {
+Error CryptoCore::sha256(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[32]) {
 	int ret = mbedtls_sha256_ret(p_src, p_src_len, r_hash, 0);
 	return ret ? FAILED : OK;
 }

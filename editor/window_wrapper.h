@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WINDOW_WRAPPER_H
-#define WINDOW_WRAPPER_H
+#pragma once
 
 #include "core/math/rect2.h"
 #include "scene/gui/margin_container.h"
@@ -86,6 +85,7 @@ public:
 	void set_window_title(const String &p_title);
 	void set_margins_enabled(bool p_enabled);
 	Size2 get_margins_size();
+	Size2 get_margins_top_left();
 	void grab_window_focus();
 
 	void set_override_close_request(bool p_enabled);
@@ -115,5 +115,3 @@ protected:
 public:
 	ScreenSelect();
 };
-
-#endif // WINDOW_WRAPPER_H

@@ -77,6 +77,10 @@ Input *Input::singleton = nullptr;
 
 void (*Input::set_mouse_mode_func)(Input::MouseMode) = nullptr;
 Input::MouseMode (*Input::get_mouse_mode_func)() = nullptr;
+void (*Input::set_mouse_mode_override_func)(Input::MouseMode) = nullptr;
+Input::MouseMode (*Input::get_mouse_mode_override_func)() = nullptr;
+void (*Input::set_mouse_mode_override_enabled_func)(bool) = nullptr;
+bool (*Input::is_mouse_mode_override_enabled_func)() = nullptr;
 void (*Input::warp_mouse_func)(const Vector2 &p_position) = nullptr;
 Input::CursorShape (*Input::get_current_cursor_shape_func)() = nullptr;
 void (*Input::set_custom_mouse_cursor_func)(const Ref<Resource> &, Input::CursorShape, const Vector2 &) = nullptr;
@@ -86,51 +90,29 @@ Input *Input::get_singleton() {
 }
 
 void Input::set_mouse_mode(MouseMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 5);
-
-	if (p_mode == mouse_mode) {
-		return;
-	}
-
-	// Allow to be set even if overridden, to see if the platform allows the mode.
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
 	set_mouse_mode_func(p_mode);
-	mouse_mode = get_mouse_mode_func();
-
-	if (mouse_mode_override_enabled) {
-		set_mouse_mode_func(mouse_mode_override);
-	}
 }
 
 Input::MouseMode Input::get_mouse_mode() const {
-	return mouse_mode;
-}
-
-void Input::set_mouse_mode_override_enabled(bool p_enabled) {
-	if (p_enabled == mouse_mode_override_enabled) {
-		return;
-	}
-
-	mouse_mode_override_enabled = p_enabled;
-
-	if (p_enabled) {
-		set_mouse_mode_func(mouse_mode_override);
-		mouse_mode_override = get_mouse_mode_func();
-	} else {
-		set_mouse_mode_func(mouse_mode);
-	}
+	return get_mouse_mode_func();
 }
 
 void Input::set_mouse_mode_override(MouseMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 5);
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	set_mouse_mode_override_func(p_mode);
+}
 
-	if (p_mode == mouse_mode_override) {
-		return;
-	}
+Input::MouseMode Input::get_mouse_mode_override() const {
+	return get_mouse_mode_override_func();
+}
 
-	if (mouse_mode_override_enabled) {
-		set_mouse_mode_func(p_mode);
-		mouse_mode_override = get_mouse_mode_func();
-	}
+void Input::set_mouse_mode_override_enabled(bool p_override_enabled) {
+	set_mouse_mode_override_enabled_func(p_override_enabled);
+}
+
+bool Input::is_mouse_mode_override_enabled() {
+	return is_mouse_mode_override_enabled_func();
 }
 
 void Input::_bind_methods() {
@@ -199,6 +181,7 @@ void Input::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CAPTURED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(CURSOR_ARROW);
 	BIND_ENUM_CONSTANT(CURSOR_IBEAM);
@@ -236,7 +219,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 				continue;
 			}
 
-			String name = pi.name.substr(pi.name.find_char('/') + 1, pi.name.length());
+			String name = pi.name.substr(pi.name.find_char('/') + 1);
 			r_options->push_back(name.quote());
 		}
 	}
@@ -631,7 +614,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 Vector3 Input::get_gravity() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!gravity_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_gravity` is not enabled in project settings.");
 	}
@@ -643,7 +626,7 @@ Vector3 Input::get_gravity() const {
 Vector3 Input::get_accelerometer() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!accelerometer_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_accelerometer` is not enabled in project settings.");
 	}
@@ -655,7 +638,7 @@ Vector3 Input::get_accelerometer() const {
 Vector3 Input::get_magnetometer() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!magnetometer_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_magnetometer` is not enabled in project settings.");
 	}
@@ -667,7 +650,7 @@ Vector3 Input::get_magnetometer() const {
 Vector3 Input::get_gyroscope() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!gyroscope_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_gyroscope` is not enabled in project settings.");
 	}
@@ -1611,8 +1594,8 @@ void Input::parse_mapping(const String &p_mapping) {
 			continue;
 		}
 
-		String output = entry[idx].get_slice(":", 0).replace(" ", "");
-		String input = entry[idx].get_slice(":", 1).replace(" ", "");
+		String output = entry[idx].get_slicec(':', 0).remove_char(' ');
+		String input = entry[idx].get_slicec(':', 1).remove_char(' ');
 		if (output.length() < 1 || input.length() < 2) {
 			continue;
 		}

@@ -130,7 +130,7 @@ Ref<GLTFLight> GLTFLight::from_node(const Light3D *p_light) {
 	Ref<GLTFLight> l;
 	l.instantiate();
 	ERR_FAIL_NULL_V_MSG(p_light, l, "Tried to create a GLTFLight from a Light3D node, but the given node was null.");
-	l->color = p_light->get_color();
+	l->color = p_light->get_color().srgb_to_linear();
 	if (cast_to<DirectionalLight3D>(p_light)) {
 		l->light_type = "directional";
 		const DirectionalLight3D *light = cast_to<const DirectionalLight3D>(p_light);
@@ -156,33 +156,33 @@ Ref<GLTFLight> GLTFLight::from_node(const Light3D *p_light) {
 }
 
 Light3D *GLTFLight::to_node() const {
+	Light3D *light = nullptr;
 	if (light_type == "directional") {
-		DirectionalLight3D *light = memnew(DirectionalLight3D);
-		light->set_param(Light3D::PARAM_ENERGY, intensity);
-		light->set_color(color);
-		return light;
-	}
-	if (light_type == "point") {
-		OmniLight3D *light = memnew(OmniLight3D);
-		light->set_param(OmniLight3D::PARAM_ENERGY, intensity);
-		light->set_param(OmniLight3D::PARAM_RANGE, CLAMP(range, 0, 4096));
-		light->set_color(color);
-		return light;
-	}
-	if (light_type == "spot") {
-		SpotLight3D *light = memnew(SpotLight3D);
-		light->set_param(SpotLight3D::PARAM_ENERGY, intensity);
-		light->set_param(SpotLight3D::PARAM_RANGE, CLAMP(range, 0, 4096));
-		light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad_to_deg(outer_cone_angle));
-		light->set_color(color);
+		DirectionalLight3D *dir_light = memnew(DirectionalLight3D);
+		dir_light->set_param(Light3D::PARAM_ENERGY, intensity);
+		light = dir_light;
+	} else if (light_type == "point") {
+		OmniLight3D *omni_light = memnew(OmniLight3D);
+		omni_light->set_param(OmniLight3D::PARAM_ENERGY, intensity);
+		omni_light->set_param(OmniLight3D::PARAM_RANGE, CLAMP(range, 0, 4096));
+		light = omni_light;
+	} else if (light_type == "spot") {
+		SpotLight3D *spot_light = memnew(SpotLight3D);
+		spot_light->set_param(SpotLight3D::PARAM_ENERGY, intensity);
+		spot_light->set_param(SpotLight3D::PARAM_RANGE, CLAMP(range, 0, 4096));
+		spot_light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad_to_deg(outer_cone_angle));
 		// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b
 		// The points in desmos are not exact, except for (1, infinity).
 		float angle_ratio = inner_cone_angle / outer_cone_angle;
 		float angle_attenuation = 0.2 / (1 - angle_ratio) - 0.1;
-		light->set_param(SpotLight3D::PARAM_SPOT_ATTENUATION, angle_attenuation);
-		return light;
+		spot_light->set_param(SpotLight3D::PARAM_SPOT_ATTENUATION, angle_attenuation);
+		light = spot_light;
+	} else {
+		ERR_PRINT("Failed to create a Light3D node from GLTFLight, unknown light type '" + light_type + "'.");
+		return nullptr;
 	}
-	return memnew(Light3D);
+	light->set_color(color.linear_to_srgb());
+	return light;
 }
 
 Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary p_dictionary) {
@@ -195,7 +195,7 @@ Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary p_dictionary) {
 	if (p_dictionary.has("color")) {
 		const Array &arr = p_dictionary["color"];
 		if (arr.size() == 3) {
-			light->color = Color(arr[0], arr[1], arr[2]).linear_to_srgb();
+			light->color = Color(arr[0], arr[1], arr[2]);
 		} else {
 			ERR_PRINT("Error parsing glTF light: The color must have exactly 3 numbers.");
 		}

@@ -30,13 +30,14 @@
 
 #include "multimesh_instance_2d.h"
 
+#ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
-#include "scene/scene_string_names.h"
 #include "servers/navigation_server_2d.h"
 
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
 #include "thirdparty/misc/polypartition.h"
+#endif // NAVIGATION_2D_DISABLED
 
 Callable MultiMeshInstance2D::_navmesh_source_geometry_parsing_callback;
 RID MultiMeshInstance2D::_navmesh_source_geometry_parser;
@@ -106,6 +107,7 @@ Rect2 MultiMeshInstance2D::_edit_get_rect() const {
 }
 #endif // DEBUG_ENABLED
 
+#ifndef NAVIGATION_2D_DISABLED
 void MultiMeshInstance2D::navmesh_parse_init() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	if (!_navmesh_source_geometry_parser.is_valid()) {
@@ -209,6 +211,7 @@ void MultiMeshInstance2D::navmesh_parse_source_geometry(const Ref<NavigationPoly
 		}
 	}
 }
+#endif // NAVIGATION_2D_DISABLED
 
 MultiMeshInstance2D::MultiMeshInstance2D() {
 }

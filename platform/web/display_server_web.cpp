@@ -384,12 +384,10 @@ const char *DisplayServerWeb::godot2dom_cursor(DisplayServer::CursorShape p_shap
 }
 
 bool DisplayServerWeb::tts_is_speaking() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_speaking();
 }
 
 bool DisplayServerWeb::tts_is_paused() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_paused();
 }
 
@@ -424,13 +422,11 @@ void DisplayServerWeb::_update_voices_callback(const Vector<String> &p_voices) {
 }
 
 TypedArray<Dictionary> DisplayServerWeb::tts_get_voices() const {
-	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_get_voices(update_voices_callback);
 	return voices;
 }
 
 void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (p_interrupt) {
 		tts_stop();
 	}
@@ -447,17 +443,14 @@ void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, in
 }
 
 void DisplayServerWeb::tts_pause() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_pause();
 }
 
 void DisplayServerWeb::tts_resume() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_resume();
 }
 
 void DisplayServerWeb::tts_stop() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	for (const KeyValue<int, CharString> &E : utterance_ids) {
 		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E.key);
 	}
@@ -550,24 +543,45 @@ void DisplayServerWeb::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 }
 
 // Mouse mode
-void DisplayServerWeb::mouse_set_mode(MouseMode p_mode) {
-	ERR_FAIL_COND_MSG(p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN, "MOUSE_MODE_CONFINED is not supported for the Web platform.");
-	if (p_mode == mouse_get_mode()) {
+void DisplayServerWeb::_mouse_update_mode() {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	ERR_FAIL_COND_MSG(wanted_mouse_mode == MOUSE_MODE_CONFINED || wanted_mouse_mode == MOUSE_MODE_CONFINED_HIDDEN, "MOUSE_MODE_CONFINED is not supported for the Web platform.");
+	if (wanted_mouse_mode == mouse_get_mode()) {
 		return;
 	}
 
-	if (p_mode == MOUSE_MODE_VISIBLE) {
+	if (wanted_mouse_mode == MOUSE_MODE_VISIBLE) {
 		godot_js_display_cursor_set_visible(1);
 		godot_js_display_cursor_lock_set(0);
 
-	} else if (p_mode == MOUSE_MODE_HIDDEN) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_HIDDEN) {
 		godot_js_display_cursor_set_visible(0);
 		godot_js_display_cursor_lock_set(0);
 
-	} else if (p_mode == MOUSE_MODE_CAPTURED) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_CAPTURED) {
 		godot_js_display_cursor_set_visible(1);
 		godot_js_display_cursor_lock_set(1);
 	}
+}
+
+void DisplayServerWeb::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+
+	if (mouse_mode_override_enabled) {
+		mouse_mode_base = p_mode;
+		// No need to update, as override is enabled.
+		return;
+	}
+	if (p_mode == mouse_mode_base && p_mode == mouse_get_mode()) {
+		// No need to update, as it is currently set as the correct mode.
+		return;
+	}
+
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
 }
 
 DisplayServer::MouseMode DisplayServerWeb::mouse_get_mode() const {
@@ -579,6 +593,39 @@ DisplayServer::MouseMode DisplayServerWeb::mouse_get_mode() const {
 		return MOUSE_MODE_CAPTURED;
 	}
 	return MOUSE_MODE_VISIBLE;
+}
+
+void DisplayServerWeb::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+
+	if (!mouse_mode_override_enabled) {
+		mouse_mode_override = p_mode;
+		// No need to update, as override is not enabled.
+		return;
+	}
+	if (p_mode == mouse_mode_override && p_mode == mouse_get_mode()) {
+		// No need to update, as it is currently set as the correct mode.
+		return;
+	}
+
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerWeb::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerWeb::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerWeb::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 Point2i DisplayServerWeb::mouse_get_position() const {
@@ -1032,7 +1079,6 @@ DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, W
 DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	r_error = OK; // Always succeeds for now.
 
-	tts = GLOBAL_GET("audio/general/text_to_speech");
 	native_menu = memnew(NativeMenu); // Dummy native menu.
 
 	// Ensure the canvas ID.
@@ -1145,7 +1191,7 @@ bool DisplayServerWeb::has_feature(Feature p_feature) const {
 		case FEATURE_VIRTUAL_KEYBOARD:
 			return godot_js_display_vk_available() != 0;
 		case FEATURE_TEXT_TO_SPEECH:
-			return tts && (godot_js_display_tts_available() != 0);
+			return godot_js_display_tts_available() != 0;
 		default:
 			return false;
 	}

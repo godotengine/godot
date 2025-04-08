@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_PROPERTIES_VECTOR_H
-#define EDITOR_PROPERTIES_VECTOR_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 
@@ -62,7 +61,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step = 1.0, bool p_hide_slider = true, bool p_link = false, const String &p_suffix = String(), bool p_radians_as_degrees = false);
+	void setup(double p_min, double p_max, double p_step = 1.0, bool p_hide_slider = true, bool p_link = false, const String &p_suffix = String(), bool p_radians_as_degrees = false, bool p_is_int = false);
 	EditorPropertyVectorN(Variant::Type p_type, bool p_force_wide, bool p_horizontal);
 };
 
@@ -107,5 +106,3 @@ class EditorPropertyVector4i : public EditorPropertyVectorN {
 public:
 	EditorPropertyVector4i(bool p_force_wide = false);
 };
-
-#endif // EDITOR_PROPERTIES_VECTOR_H

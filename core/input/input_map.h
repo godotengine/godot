@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_MAP_H
-#define INPUT_MAP_H
+#pragma once
 
 #include "core/input/input_event.h"
 #include "core/object/class_db.h"
@@ -55,6 +54,8 @@ public:
 	};
 
 	static constexpr float DEFAULT_DEADZONE = 0.2f;
+	// Keep bigger deadzone for toggle actions (default `ui_*` actions, axis `pressed`) (GH-103360).
+	static constexpr float DEFAULT_TOGGLE_DEADZONE = 0.5f;
 
 private:
 	static InputMap *singleton;
@@ -114,5 +115,3 @@ public:
 	InputMap();
 	~InputMap();
 };
-
-#endif // INPUT_MAP_H

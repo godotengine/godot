@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef UTILITIES_GLES3_H
-#define UTILITIES_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -226,10 +225,10 @@ public:
 	virtual String get_video_adapter_api_version() const override;
 
 	virtual Size2i get_maximum_viewport_size() const override;
+	virtual uint32_t get_maximum_shader_varyings() const override;
+	virtual uint64_t get_maximum_uniform_buffer_size() const override;
 };
 
 } // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // UTILITIES_GLES3_H

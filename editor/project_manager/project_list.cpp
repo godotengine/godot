@@ -68,10 +68,13 @@ void ProjectListItemControl::_notification(int p_what) {
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
 			favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
+
 			if (project_is_missing) {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 			} else {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+#endif
 			}
 		} break;
 
@@ -153,7 +156,7 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 					project_version_major = project_version_split[0].to_int();
 					project_version_minor = project_version_split[1].to_int();
 				}
-				if (VERSION_MAJOR != project_version_major || VERSION_MINOR <= project_version_minor) {
+				if (GODOT_VERSION_MAJOR != project_version_major || GODOT_VERSION_MINOR <= project_version_minor) {
 					// Don't show a warning if the project was last edited in a previous minor version.
 					tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
 				}
@@ -190,9 +193,6 @@ void ProjectListItemControl::set_is_favorite(bool p_favorite) {
 }
 
 void ProjectListItemControl::set_is_missing(bool p_missing) {
-	if (project_is_missing == p_missing) {
-		return;
-	}
 	project_is_missing = p_missing;
 
 	if (project_is_missing) {
@@ -201,10 +201,8 @@ void ProjectListItemControl::set_is_missing(bool p_missing) {
 		explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
 		explore_button->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
 	} else {
-		project_icon->set_modulate(Color(1, 1, 1, 1.0));
-
-		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 		explore_button->set_tooltip_text(TTR("Show in File Manager"));
 #else
 		// Opening the system file manager is not supported on the Android and web editors.
@@ -446,7 +444,7 @@ void ProjectList::_migrate_config() {
 		String path = EDITOR_GET(property_key);
 		print_line("Migrating legacy project '" + path + "'.");
 
-		String favoriteKey = "favorite_projects/" + property_key.get_slice("/", 1);
+		String favoriteKey = "favorite_projects/" + property_key.get_slicec('/', 1);
 		bool favorite = EditorSettings::get_singleton()->has_setting(favoriteKey);
 		add_project(path, favorite);
 		if (favorite) {
@@ -502,6 +500,9 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 			if (icon.is_empty()) {
 				WARN_PRINT(vformat("Could not load icon from UID for project at path \"%s\". Make sure UID cache exists.", p_path));
 			}
+		} else {
+			// Cache does not exist yet, so ignore and fallback to default icon.
+			icon = "";
 		}
 	}
 
@@ -650,7 +651,7 @@ void ProjectList::sort_projects() {
 			PackedStringArray remaining;
 			for (const String &part : search_parts) {
 				if (part.begins_with("tag:")) {
-					tags.push_back(part.get_slice(":", 1));
+					tags.push_back(part.get_slicec(':', 1));
 				} else {
 					remaining.append(part);
 				}
@@ -1045,7 +1046,7 @@ void ProjectList::select_first_visible_project() {
 
 Vector<ProjectList::Item> ProjectList::get_selected_projects() const {
 	Vector<Item> items;
-	if (_selected_project_paths.size() == 0) {
+	if (_selected_project_paths.is_empty()) {
 		return items;
 	}
 	items.resize(_selected_project_paths.size());
@@ -1066,7 +1067,7 @@ const HashSet<String> &ProjectList::get_selected_project_keys() const {
 }
 
 int ProjectList::get_single_selected_index() const {
-	if (_selected_project_paths.size() == 0) {
+	if (_selected_project_paths.is_empty()) {
 		// Default selection
 		return 0;
 	}
@@ -1087,7 +1088,7 @@ int ProjectList::get_single_selected_index() const {
 }
 
 void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
-	if (_selected_project_paths.size() == 0) {
+	if (_selected_project_paths.is_empty()) {
 		return;
 	}
 

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_MAP_LAYER_EDITOR_H
-#define TILE_MAP_LAYER_EDITOR_H
+#pragma once
 
 #include "tile_atlas_view.h"
 
@@ -68,6 +67,7 @@ public:
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) {}
 	virtual void tile_set_changed() {}
 	virtual void edit(ObjectID p_tile_map_layer_id) {}
+	virtual void draw_tile_coords_over_viewport(Control *p_overlay, const TileMapLayer *p_edited_layer, Ref<TileSet> p_tile_set, bool p_show_rectangle_size, const Vector2i &p_rectangle_origin);
 };
 
 class TileMapLayerEditorTilesPlugin : public TileMapLayerSubEditorPlugin {
@@ -240,7 +240,6 @@ public:
 	virtual void edit(ObjectID p_tile_map_layer_id) override;
 
 	TileMapLayerEditorTilesPlugin();
-	~TileMapLayerEditorTilesPlugin();
 };
 
 class TileMapLayerEditorTerrainsPlugin : public TileMapLayerSubEditorPlugin {
@@ -332,7 +331,6 @@ public:
 	virtual void edit(ObjectID p_tile_map_layer_id) override;
 
 	TileMapLayerEditorTerrainsPlugin();
-	~TileMapLayerEditorTerrainsPlugin();
 };
 
 class TileMapLayerEditor : public VBoxContainer {
@@ -422,5 +420,3 @@ public:
 	// Static functions.
 	static Vector<Vector2i> get_line(const TileMapLayer *p_tile_map_layer, Vector2i p_from_cell, Vector2i p_to_cell);
 };
-
-#endif // TILE_MAP_LAYER_EDITOR_H

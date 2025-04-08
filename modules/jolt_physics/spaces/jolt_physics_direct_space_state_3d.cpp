@@ -32,6 +32,7 @@
 
 #include "../jolt_physics_server_3d.h"
 #include "../jolt_project_settings.h"
+#include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../objects/jolt_area_3d.h"
 #include "../objects/jolt_body_3d.h"
@@ -76,7 +77,7 @@ bool JoltPhysicsDirectSpaceState3D::_cast_motion_impl(const JPH::Shape &p_jolt_s
 	aabb_translated.Translate(motion);
 	aabb.Encapsulate(aabb_translated);
 
-	JoltQueryCollectorAnyMulti<JPH::CollideShapeBodyCollector, 2048> aabb_collector;
+	JoltQueryCollectorAnyMulti<JPH::CollideShapeBodyCollector, 1024> aabb_collector;
 	space->get_broad_phase_query().CollideAABox(aabb, aabb_collector, p_broad_phase_layer_filter, p_object_layer_filter);
 
 	if (!aabb_collector.had_hit()) {
@@ -171,9 +172,6 @@ bool JoltPhysicsDirectSpaceState3D::_cast_motion_impl(const JPH::Shape &p_jolt_s
 }
 
 bool JoltPhysicsDirectSpaceState3D::_body_motion_recover(const JoltBody3D &p_body, const Transform3D &p_transform, float p_margin, const HashSet<RID> &p_excluded_bodies, const HashSet<ObjectID> &p_excluded_objects, Vector3 &r_recovery) const {
-	const int recovery_iterations = JoltProjectSettings::get_motion_query_recovery_iterations();
-	const float recovery_amount = JoltProjectSettings::get_motion_query_recovery_amount();
-
 	const JPH::Shape *jolt_shape = p_body.get_jolt_shape();
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
@@ -189,10 +187,10 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_recover(const JoltBody3D &p_bod
 
 	bool recovered = false;
 
-	for (int i = 0; i < recovery_iterations; ++i) {
+	for (int i = 0; i < JoltProjectSettings::motion_query_recovery_iterations; ++i) {
 		collector.reset();
 
-		_collide_shape_kinematics(jolt_shape, JPH::Vec3::sReplicate(1.0f), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
+		_collide_shape_kinematics(jolt_shape, JPH::Vec3::sOne(), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
 
 		if (!collector.had_hit()) {
 			break;
@@ -240,7 +238,7 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_recover(const JoltBody3D &p_bod
 			const JoltBody3D *other_body = other_jolt_body.as_body();
 			ERR_CONTINUE(other_body == nullptr);
 
-			const float recovery_distance = penetration_depth * recovery_amount;
+			const float recovery_distance = penetration_depth * JoltProjectSettings::motion_query_recovery_amount;
 			const float other_priority = other_body->get_collision_priority();
 			const float other_priority_normalized = other_priority / average_priority;
 			const float scaled_recovery_distance = recovery_distance * other_priority_normalized;
@@ -288,15 +286,14 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_cast(const JoltBody3D &p_body, 
 		const Transform3D transform_com_local = transform_local.translated_local(com_scaled);
 		Transform3D transform_com = body_transform * transform_com_local;
 
-		Vector3 scale = transform_com.basis.get_scale();
+		Vector3 scale;
+		JoltMath::decompose(transform_com, scale);
 		JOLT_ENSURE_SCALE_VALID(jolt_shape, scale, "body_test_motion was passed an invalid transform along with body '%s'. This results in invalid scaling for shape at index %d.");
-
-		transform_com.basis.orthonormalize();
 
 		real_t shape_safe_fraction = 1.0;
 		real_t shape_unsafe_fraction = 1.0;
 
-		collided |= _cast_motion_impl(*jolt_shape, transform_com, scale, p_motion, JoltProjectSettings::use_enhanced_internal_edge_removal_for_motion_queries(), false, settings, motion_filter, motion_filter, motion_filter, motion_filter, shape_safe_fraction, shape_unsafe_fraction);
+		collided |= _cast_motion_impl(*jolt_shape, transform_com, scale, p_motion, JoltProjectSettings::use_enhanced_internal_edge_removal_for_motion_queries, false, settings, motion_filter, motion_filter, motion_filter, motion_filter, shape_safe_fraction, shape_unsafe_fraction);
 
 		r_safe_fraction = MIN(r_safe_fraction, shape_safe_fraction);
 		r_unsafe_fraction = MIN(r_unsafe_fraction, shape_unsafe_fraction);
@@ -323,7 +320,7 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_collide(const JoltBody3D &p_bod
 
 	const JoltMotionFilter3D motion_filter(p_body, p_excluded_bodies, p_excluded_objects);
 	JoltQueryCollectorClosestMulti<JPH::CollideShapeCollector, 32> collector(p_max_collisions);
-	_collide_shape_kinematics(jolt_shape, JPH::Vec3::sReplicate(1.0f), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
+	_collide_shape_kinematics(jolt_shape, JPH::Vec3::sOne(), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
 
 	if (!collector.had_hit() || p_result == nullptr) {
 		return collector.had_hit();
@@ -400,7 +397,7 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_collide(const JoltBody3D &p_bod
 }
 
 int JoltPhysicsDirectSpaceState3D::_try_get_face_index(const JPH::Body &p_body, const JPH::SubShapeID &p_sub_shape_id) {
-	if (!JoltProjectSettings::enable_ray_cast_face_index()) {
+	if (!JoltProjectSettings::enable_ray_cast_face_index) {
 		return -1;
 	}
 
@@ -421,7 +418,7 @@ void JoltPhysicsDirectSpaceState3D::_generate_manifold(const JPH::CollideShapeRe
 	const JPH::PhysicsSettings &physics_settings = physics_system.GetPhysicsSettings();
 	const JPH::Vec3 penetration_axis = p_hit.mPenetrationAxis.Normalized();
 
-	JPH::ManifoldBetweenTwoFaces(p_hit.mContactPointOn1, p_hit.mContactPointOn2, penetration_axis, physics_settings.mManifoldToleranceSq, p_hit.mShape1Face, p_hit.mShape2Face, r_contact_points1, r_contact_points2 JPH_IF_DEBUG_RENDERER(, p_center_of_mass));
+	JPH::ManifoldBetweenTwoFaces(p_hit.mContactPointOn1, p_hit.mContactPointOn2, penetration_axis, physics_settings.mManifoldTolerance, p_hit.mShape1Face, p_hit.mShape2Face, r_contact_points1, r_contact_points2 JPH_IF_DEBUG_RENDERER(, p_center_of_mass));
 
 	if (r_contact_points1.size() > 4) {
 		JPH::PruneContactPoints(penetration_axis, r_contact_points1, r_contact_points2 JPH_IF_DEBUG_RENDERER(, p_center_of_mass));
@@ -439,7 +436,7 @@ void JoltPhysicsDirectSpaceState3D::_collide_shape_queries(
 		const JPH::ObjectLayerFilter &p_object_layer_filter,
 		const JPH::BodyFilter &p_body_filter,
 		const JPH::ShapeFilter &p_shape_filter) const {
-	if (JoltProjectSettings::use_enhanced_internal_edge_removal_for_queries()) {
+	if (JoltProjectSettings::use_enhanced_internal_edge_removal_for_queries) {
 		space->get_narrow_phase_query().CollideShapeWithInternalEdgeRemoval(p_shape, p_scale, p_transform_com, p_settings, p_base_offset, p_collector, p_broad_phase_layer_filter, p_object_layer_filter, p_body_filter, p_shape_filter);
 	} else {
 		space->get_narrow_phase_query().CollideShape(p_shape, p_scale, p_transform_com, p_settings, p_base_offset, p_collector, p_broad_phase_layer_filter, p_object_layer_filter, p_body_filter, p_shape_filter);
@@ -457,7 +454,7 @@ void JoltPhysicsDirectSpaceState3D::_collide_shape_kinematics(
 		const JPH::ObjectLayerFilter &p_object_layer_filter,
 		const JPH::BodyFilter &p_body_filter,
 		const JPH::ShapeFilter &p_shape_filter) const {
-	if (JoltProjectSettings::use_enhanced_internal_edge_removal_for_motion_queries()) {
+	if (JoltProjectSettings::use_enhanced_internal_edge_removal_for_motion_queries) {
 		space->get_narrow_phase_query().CollideShapeWithInternalEdgeRemoval(p_shape, p_scale, p_transform_com, p_settings, p_base_offset, p_collector, p_broad_phase_layer_filter, p_object_layer_filter, p_body_filter, p_shape_filter);
 	} else {
 		space->get_narrow_phase_query().CollideShape(p_shape, p_scale, p_transform_com, p_settings, p_base_offset, p_collector, p_broad_phase_layer_filter, p_object_layer_filter, p_body_filter, p_shape_filter);
@@ -590,10 +587,9 @@ int JoltPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_para
 	Transform3D transform = p_parameters.transform;
 	JOLT_ENSURE_SCALE_NOT_ZERO(transform, "intersect_shape was passed an invalid transform.");
 
-	Vector3 scale = transform.basis.get_scale();
+	Vector3 scale;
+	JoltMath::decompose(transform, scale);
 	JOLT_ENSURE_SCALE_VALID(jolt_shape, scale, "intersect_shape was passed an invalid transform.");
-
-	transform.basis.orthonormalize();
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	const Transform3D transform_com = transform.translated_local(com_scaled);
@@ -647,10 +643,9 @@ bool JoltPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_paramet
 	Transform3D transform = p_parameters.transform;
 	JOLT_ENSURE_SCALE_NOT_ZERO(transform, "cast_motion (maybe from ShapeCast3D?) was passed an invalid transform.");
 
-	Vector3 scale = transform.basis.get_scale();
+	Vector3 scale;
+	JoltMath::decompose(transform, scale);
 	JOLT_ENSURE_SCALE_VALID(jolt_shape, scale, "cast_motion (maybe from ShapeCast3D?) was passed an invalid transform.");
-
-	transform.basis.orthonormalize();
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	Transform3D transform_com = transform.translated_local(com_scaled);
@@ -659,7 +654,7 @@ bool JoltPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_paramet
 	settings.mMaxSeparationDistance = (float)p_parameters.margin;
 
 	const JoltQueryFilter3D query_filter(*this, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.exclude);
-	_cast_motion_impl(*jolt_shape, transform_com, scale, p_parameters.motion, JoltProjectSettings::use_enhanced_internal_edge_removal_for_queries(), true, settings, query_filter, query_filter, query_filter, JPH::ShapeFilter(), r_closest_safe, r_closest_unsafe);
+	_cast_motion_impl(*jolt_shape, transform_com, scale, p_parameters.motion, JoltProjectSettings::use_enhanced_internal_edge_removal_for_queries, true, settings, query_filter, query_filter, query_filter, JPH::ShapeFilter(), r_closest_safe, r_closest_unsafe);
 
 	return true;
 }
@@ -684,10 +679,9 @@ bool JoltPhysicsDirectSpaceState3D::collide_shape(const ShapeParameters &p_param
 	Transform3D transform = p_parameters.transform;
 	JOLT_ENSURE_SCALE_NOT_ZERO(transform, "collide_shape was passed an invalid transform.");
 
-	Vector3 scale = transform.basis.get_scale();
+	Vector3 scale;
+	JoltMath::decompose(transform, scale);
 	JOLT_ENSURE_SCALE_VALID(jolt_shape, scale, "collide_shape was passed an invalid transform.");
-
-	transform.basis.orthonormalize();
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	const Transform3D transform_com = transform.translated_local(com_scaled);
@@ -754,10 +748,9 @@ bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameter
 	Transform3D transform = p_parameters.transform;
 	JOLT_ENSURE_SCALE_NOT_ZERO(transform, "get_rest_info (maybe from ShapeCast3D?) was passed an invalid transform.");
 
-	Vector3 scale = transform.basis.get_scale();
+	Vector3 scale;
+	JoltMath::decompose(transform, scale);
 	JOLT_ENSURE_SCALE_VALID(jolt_shape, scale, "get_rest_info (maybe from ShapeCast3D?) was passed an invalid transform.");
-
-	transform.basis.orthonormalize();
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	const Transform3D transform_com = transform.translated_local(com_scaled);
@@ -794,7 +787,6 @@ bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameter
 	r_info->normal = to_godot(-hit.mPenetrationAxis.Normalized());
 	r_info->rid = object->get_rid();
 	r_info->collider_id = object->get_instance_id();
-	r_info->shape = 0;
 	r_info->linear_velocity = object->get_velocity_at_position(hit_point);
 
 	return true;
@@ -890,8 +882,8 @@ bool JoltPhysicsDirectSpaceState3D::body_test_motion(const JoltBody3D &p_body, c
 	Transform3D transform = p_parameters.from;
 	JOLT_ENSURE_SCALE_NOT_ZERO(transform, vformat("body_test_motion (maybe from move_and_slide?) was passed an invalid transform along with body '%s'.", p_body.to_string()));
 
-	Vector3 scale = transform.basis.get_scale();
-	transform.basis.orthonormalize();
+	Vector3 scale;
+	JoltMath::decompose(transform, scale);
 
 	space->try_optimize();
 

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_SERVER_3D_H
-#define NAVIGATION_SERVER_3D_H
+#pragma once
 
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
@@ -347,7 +346,8 @@ public:
 	/// The result of this process is needed by the physics server,
 	/// so this must be called in the main thread.
 	/// Note: This function is not thread safe.
-	virtual void process(real_t delta_time) = 0;
+	virtual void process(double p_delta_time) = 0;
+	virtual void physics_process(double p_delta_time) = 0;
 	virtual void init() = 0;
 	virtual void sync() = 0;
 	virtual void finish() = 0;
@@ -590,5 +590,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(NavigationServer3D::ProcessInfo);
-
-#endif // NAVIGATION_SERVER_3D_H

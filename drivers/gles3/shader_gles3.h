@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_GLES3_H
-#define SHADER_GLES3_H
+#pragma once
 
 #include "core/math/projection.h"
 #include "core/os/mutex.h"
@@ -189,7 +188,7 @@ protected:
 		Version *version = version_owner.get_or_null(p_version);
 		ERR_FAIL_NULL_V(version, false);
 
-		if (version->variants.size() == 0) {
+		if (version->variants.is_empty()) {
 			_initialize_version(version); //may lack initialization
 		}
 
@@ -258,5 +257,3 @@ public:
 };
 
 #endif // GLES3_ENABLED
-
-#endif // SHADER_GLES3_H

@@ -119,10 +119,10 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			menu->clear(false);
 			animations_menu->clear();
 			animations_to_add.clear();
-			List<StringName> classes;
+			LocalVector<StringName> classes;
 			classes.sort_custom<StringName::AlphCompare>();
 
-			ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
+			ClassDB::get_inheriters_from_class("AnimationRootNode", classes);
 			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
 			List<StringName> names;

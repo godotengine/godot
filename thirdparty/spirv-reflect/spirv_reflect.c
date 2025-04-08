@@ -1571,10 +1571,8 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
       } break;
 
       case SpvDecorationSpecId: {
-// -- GODOT begin --
         uint32_t word_offset = p_node->word_offset + member_offset+ 3;
         CHECKED_READU32(p_parser, word_offset, p_target_decorations->spec_id);
-// -- GODOT end --
         spec_constant_count++;
       } break;
 
@@ -1696,7 +1694,6 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
   }
   for (uint32_t i = 0; i < p_parser->node_count; ++i) {
     SpvReflectPrvNode* p_node = &(p_parser->nodes[i]);
-// -- GODOT begin --
     const uint32_t count = p_module->spec_constant_count;
     switch(p_node->op) {
       default: continue;
@@ -1734,7 +1731,6 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
     p_module->spec_constants[count].spirv_id = p_node->result_id;
 
     p_module->spec_constant_count++;
-// -- GODOT end --
   }
 
   return SPV_REFLECT_RESULT_SUCCESS;
@@ -2692,13 +2688,11 @@ static SpvReflectResult ParseDescriptorBlockVariableSizes(SpvReflectPrvParser* p
         // ...then array
         uint32_t element_count = (p_member_var->array.dims_count > 0 ? 1 : 0);
         for (uint32_t i = 0; i < p_member_var->array.dims_count; ++i) {
-// -- GODOT begin --
           if (p_member_var->array.spec_constant_op_ids[i] != (uint32_t)INVALID_VALUE) {
             // Force size to be reported as 0 to effectively disable buffer size validation, since
             // the value is unreliable anyway as only valid for the default values of the SCs involved.
             element_count = 0;
           }
-// -- GODOT end --
           element_count *= p_member_var->array.dims[i];
         }
         p_member_var->size = element_count * p_member_var->array.stride;

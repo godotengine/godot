@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp"
+    android:height="16dp"
+    android:viewportWidth="2.4"
+    android:viewportHeight="2.4">
+
+    <path
+        android:pathData="M1.252 0.15 a0.1 0.1 0 0 0-0.082 0.03 L0.6 0.75 H0.318C0.225 0.75 0.15 0.817 0.15 0.9 v0.6c0 0.083 0.075 0.15 0.168 0.15H0.6l0.57 0.57 c0.066 0.067 0.18 0.02 0.18-0.074V0.256A0.106 0.106 0 0 0 1.252 0.15"
+        android:fillColor="@color/game_menu_icons_color_state"/>
+    <path
+        android:strokeWidth=".165"
+        android:strokeLineCap="round"
+        android:pathData="M1.575 0.675 c0.45 0.525 0 1.05 0 1.05m0.3-1.35c0.675 0.825 0 1.65 0 1.65"
+        android:strokeColor="@color/game_menu_icons_color_state"/>
+</vector>

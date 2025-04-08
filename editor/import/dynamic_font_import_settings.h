@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DYNAMIC_FONT_IMPORT_SETTINGS_H
-#define DYNAMIC_FONT_IMPORT_SETTINGS_H
+#pragma once
 
 #include "core/io/resource_importer.h"
 
@@ -83,6 +82,8 @@ class DynamicFontImportSettingsDialog : public ConfirmationDialog {
 	Ref<DynamicFontImportSettingsData> import_settings_data;
 	List<ResourceImporter::ImportOption> options_variations;
 	List<ResourceImporter::ImportOption> options_general;
+
+	bool is_pixel = false;
 
 	// Root layout
 	Label *label_warn = nullptr;
@@ -170,5 +171,3 @@ public:
 
 	DynamicFontImportSettingsDialog();
 };
-
-#endif // DYNAMIC_FONT_IMPORT_SETTINGS_H

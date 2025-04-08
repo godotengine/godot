@@ -60,23 +60,17 @@ using namespace godot;
 // Built-in ICU data.
 
 #ifdef ICU_STATIC_DATA
-#include "icudata.gen.h"
+#include <icudata.gen.h>
 #endif
 
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
-#ifdef _MSC_VER
-#pragma warning(disable : 4458)
-#endif
 #include <core/EdgeHolder.h>
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>
 #include <msdfgen.h>
-#ifdef _MSC_VER
-#pragma warning(default : 4458)
-#endif
 #endif
 
 #ifdef MODULE_SVG_ENABLED
@@ -1318,11 +1312,12 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 			} break;
 		}
 
+		FT_GlyphSlot slot = fd->face->glyph;
+		bool from_svg = (slot->format == FT_GLYPH_FORMAT_SVG); // Need to check before FT_Render_Glyph as it will change format to bitmap.
 		if (!outline) {
 			if (!p_font_data->msdf) {
-				error = FT_Render_Glyph(fd->face->glyph, aa_mode);
+				error = FT_Render_Glyph(slot, aa_mode);
 			}
-			FT_GlyphSlot slot = fd->face->glyph;
 			if (!error) {
 				if (p_font_data->msdf) {
 #ifdef MODULE_MSDFGEN_ENABLED
@@ -1363,6 +1358,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 		cleanup_stroker:
 			FT_Stroker_Done(stroker);
 		}
+		gl.from_svg = from_svg;
 		E = fd->glyph_map.insert(p_glyph, gl);
 		r_glyph = E->value;
 		return gl.found;
@@ -1417,25 +1413,17 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 			fargs.flags = FT_OPEN_MEMORY;
 			fargs.stream = &fd->stream;
 
-			int max_index = 0;
-			FT_Face tmp_face = nullptr;
-			error = FT_Open_Face(ft_library, &fargs, -1, &tmp_face);
-			if (tmp_face && error == 0) {
-				max_index = tmp_face->num_faces - 1;
-			}
-			if (tmp_face) {
-				FT_Done_Face(tmp_face);
-			}
-
-			error = FT_Open_Face(ft_library, &fargs, CLAMP(p_font_data->face_index, 0, max_index), &fd->face);
+			error = FT_Open_Face(ft_library, &fargs, p_font_data->face_index, &fd->face);
 			if (error) {
-				FT_Done_Face(fd->face);
-				fd->face = nullptr;
+				if (fd->face) {
+					FT_Done_Face(fd->face);
+					fd->face = nullptr;
+				}
 				memdelete(fd);
 				if (p_silent) {
 					return false;
 				} else {
-					ERR_FAIL_V_MSG(false, "FreeType: Error loading font: '" + String(FT_Error_String(error)) + "'.");
+					ERR_FAIL_V_MSG(false, "FreeType: Error loading font: '" + String(FT_Error_String(error)) + "' (face_index=" + String::num_int64(p_font_data->face_index) + ").");
 				}
 			}
 		}
@@ -1451,10 +1439,10 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 
 		if (FT_HAS_COLOR(fd->face) && fd->face->num_fixed_sizes > 0) {
 			int best_match = 0;
-			int diff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
+			int diff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
 			fd->scale = double(fd->size.x * fd->oversampling) / fd->face->available_sizes[0].width;
 			for (int i = 1; i < fd->face->num_fixed_sizes; i++) {
-				int ndiff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
+				int ndiff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
 				if (ndiff < diff) {
 					best_match = i;
 					diff = ndiff;
@@ -2446,6 +2434,24 @@ bool TextServerAdvanced::_font_is_force_autohinter(const RID &p_font_rid) const 
 	return fd->force_autohinter;
 }
 
+void TextServerAdvanced::_font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->modulate_color_glyphs != p_modulate) {
+		fd->modulate_color_glyphs = p_modulate;
+	}
+}
+
+bool TextServerAdvanced::_font_is_modulate_color_glyphs(const RID &p_font_rid) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->modulate_color_glyphs;
+}
+
 void TextServerAdvanced::_font_set_hinting(const RID &p_font_rid, TextServer::Hinting p_hinting) {
 	FontAdvanced *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
@@ -3312,6 +3318,10 @@ RID TextServerAdvanced::_font_get_glyph_texture_rid(const RID &p_font_rid, const
 			if (ffsd->textures[fgl.texture_idx].dirty) {
 				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
 				Ref<Image> img = tex.image;
+				if (fgl.from_svg) {
+					// Same as the "fix alpha border" process option when importing SVGs
+					img->fix_alpha_edges();
+				}
 				if (fd->mipmaps && !img->has_mipmaps()) {
 					img = tex.image->duplicate();
 					img->generate_mipmaps();
@@ -3360,6 +3370,10 @@ Size2 TextServerAdvanced::_font_get_glyph_texture_size(const RID &p_font_rid, co
 			if (ffsd->textures[fgl.texture_idx].dirty) {
 				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
 				Ref<Image> img = tex.image;
+				if (fgl.from_svg) {
+					// Same as the "fix alpha border" process option when importing SVGs
+					img->fix_alpha_edges();
+				}
 				if (fd->mipmaps && !img->has_mipmaps()) {
 					img = tex.image->duplicate();
 					img->generate_mipmaps();
@@ -3798,7 +3812,7 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 		if (fgl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
-			if (ffsd->face && ffsd->textures[fgl.texture_idx].image.is_valid() && (ffsd->textures[fgl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
+			if (!fd->modulate_color_glyphs && ffsd->face && ffsd->textures[fgl.texture_idx].image.is_valid() && (ffsd->textures[fgl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
@@ -3806,6 +3820,10 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 				if (ffsd->textures[fgl.texture_idx].dirty) {
 					ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
 					Ref<Image> img = tex.image;
+					if (fgl.from_svg) {
+						// Same as the "fix alpha border" process option when importing SVGs
+						img->fix_alpha_edges();
+					}
 					if (fd->mipmaps && !img->has_mipmaps()) {
 						img = tex.image->duplicate();
 						img->generate_mipmaps();
@@ -5308,6 +5326,9 @@ void TextServerAdvanced::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	if (!sd->valid.is_set()) {
 		_shaped_text_shape(p_shaped_line);
 	}
+	if (!sd->line_breaks_valid) {
+		_shaped_text_update_breaks(p_shaped_line);
+	}
 
 	sd->text_trimmed = false;
 	sd->overrun_trim_data.ellipsis_glyph_buf.clear();
@@ -5412,14 +5433,15 @@ void TextServerAdvanced::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	int ell_min_characters = 6;
 	double width = sd->width;
+	double width_without_el = width;
 
 	bool is_rtl = sd->para_direction == DIRECTION_RTL;
 
 	int trim_pos = (is_rtl) ? sd_size : 0;
 	int ellipsis_pos = (enforce_ellipsis) ? 0 : -1;
 
-	int last_valid_cut = 0;
-	bool found = false;
+	int last_valid_cut = -1;
+	int last_valid_cut_witout_el = -1;
 
 	int glyphs_from = (is_rtl) ? 0 : sd_size - 1;
 	int glyphs_to = (is_rtl) ? sd_size - 1 : -1;
@@ -5435,18 +5457,32 @@ void TextServerAdvanced::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 			}
 			if (sd_glyphs[i].count > 0) {
 				bool above_min_char_threshold = ((is_rtl) ? sd_size - 1 - i : i) >= ell_min_characters;
-
+				if (!above_min_char_threshold && last_valid_cut_witout_el != -1) {
+					trim_pos = last_valid_cut_witout_el;
+					ellipsis_pos = -1;
+					width = width_without_el;
+					break;
+				}
+				if (!enforce_ellipsis && width <= p_width && last_valid_cut_witout_el == -1) {
+					if (cut_per_word && above_min_char_threshold) {
+						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+							last_valid_cut_witout_el = i;
+							width_without_el = width;
+						}
+					} else {
+						last_valid_cut_witout_el = i;
+						width_without_el = width;
+					}
+				}
 				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
 					if (cut_per_word && above_min_char_threshold) {
 						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 							last_valid_cut = i;
-							found = true;
 						}
 					} else {
 						last_valid_cut = i;
-						found = true;
 					}
-					if (found) {
+					if (last_valid_cut != -1) {
 						trim_pos = last_valid_cut;
 
 						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
@@ -5632,8 +5668,13 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 				i++;
 			}
 			int r_end = sd->spans[i].end;
-			UBreakIterator *bi = ubrk_open(UBRK_LINE, (language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale().ascii().get_data() : language.ascii().get_data(), data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
-			if (U_FAILURE(err)) {
+			UBreakIterator *bi = _create_line_break_iterator_for_locale(language, &err);
+
+			if (!U_FAILURE(err) && bi) {
+				ubrk_setText(bi, data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
+			}
+
+			if (U_FAILURE(err) || !bi) {
 				// No data loaded - use fallback.
 				for (int j = r_start; j < r_end; j++) {
 					char32_t c = sd->text[j - sd->start];
@@ -5661,8 +5702,8 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 						sd->break_inserts++;
 					}
 				}
+				ubrk_close(bi);
 			}
-			ubrk_close(bi);
 			i++;
 		}
 		sd->break_ops_valid = true;
@@ -6090,17 +6131,15 @@ Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char
 	return gl;
 }
 
-_FORCE_INLINE_ void TextServerAdvanced::_add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs) {
-	Array keys = p_source.keys();
-	Array values = p_source.values();
-	for (int i = 0; i < keys.size(); i++) {
-		int32_t value = values[i];
+_FORCE_INLINE_ void TextServerAdvanced::_add_features(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs) {
+	for (const KeyValue<Variant, Variant> &key_value : p_source) {
+		int32_t value = key_value.value;
 		if (value >= 0) {
 			hb_feature_t feature;
-			if (keys[i].is_string()) {
-				feature.tag = _name_to_tag(keys[i]);
+			if (key_value.key.is_string()) {
+				feature.tag = _name_to_tag(key_value.key);
 			} else {
-				feature.tag = keys[i];
+				feature.tag = key_value.key;
 			}
 			feature.value = value;
 			feature.start = 0;
@@ -6108,6 +6147,24 @@ _FORCE_INLINE_ void TextServerAdvanced::_add_featuers(const Dictionary &p_source
 			r_ftrs.push_back(feature);
 		}
 	}
+}
+
+UBreakIterator *TextServerAdvanced::_create_line_break_iterator_for_locale(const String &p_language, UErrorCode *r_err) const {
+	// Creating UBreakIterator (ubrk_open) is surprisingly costly.
+	// However, cloning (ubrk_clone) is cheaper, so we keep around blueprints to accelerate creating new ones.
+
+	const String language = p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	_THREAD_SAFE_METHOD_
+	const HashMap<String, UBreakIterator *>::Iterator key_value = line_break_iterators_per_language.find(language);
+	if (key_value) {
+		return ubrk_clone(key_value->value, r_err);
+	}
+	UBreakIterator *bi = ubrk_open(UBRK_LINE, language.ascii().get_data(), nullptr, 0, r_err);
+	if (U_FAILURE(*r_err) || !bi) {
+		return nullptr;
+	}
+	line_break_iterators_per_language.insert(language, bi);
+	return ubrk_clone(bi, r_err);
 }
 
 void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, TypedArray<RID> p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font) {
@@ -6253,8 +6310,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 	hb_buffer_add_utf32(p_sd->hb_buffer, (const uint32_t *)p_sd->text.ptr(), p_sd->text.length(), p_start, p_end - p_start);
 
 	Vector<hb_feature_t> ftrs;
-	_add_featuers(_font_get_opentype_feature_overrides(f), ftrs);
-	_add_featuers(p_sd->spans[p_span].features, ftrs);
+	_add_features(_font_get_opentype_feature_overrides(f), ftrs);
+	_add_features(p_sd->spans[p_span].features, ftrs);
 
 	hb_shape(hb_font, p_sd->hb_buffer, ftrs.is_empty() ? nullptr : &ftrs[0], ftrs.size());
 
@@ -6878,7 +6935,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		ar.lang.insert(StringName("sd_Arab_PK"));
 		ar.digits = U"٠١٢٣٤٥٦٧٨٩٫";
 		ar.percent_sign = U"٪";
-		ar.exp = U"اس";
+		ar.exp_l = U"اس";
+		ar.exp_u = U"اس";
 		num_systems.push_back(ar);
 	}
 
@@ -6909,7 +6967,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		pr.lang.insert(StringName("uz_Arab_AF"));
 		pr.digits = U"۰۱۲۳۴۵۶۷۸۹٫";
 		pr.percent_sign = U"٪";
-		pr.exp = U"اس";
+		pr.exp_l = U"اس";
+		pr.exp_u = U"اس";
 		num_systems.push_back(pr);
 	}
 
@@ -6927,7 +6986,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		bn.lang.insert(StringName("mni_Beng_IN"));
 		bn.digits = U"০১২৩৪৫৬৭৮৯.";
 		bn.percent_sign = U"%";
-		bn.exp = U"e";
+		bn.exp_l = U"e";
+		bn.exp_u = U"E";
 		num_systems.push_back(bn);
 	}
 
@@ -6943,7 +7003,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		mr.lang.insert(StringName("sa_IN"));
 		mr.digits = U"०१२३४५६७८९.";
 		mr.percent_sign = U"%";
-		mr.exp = U"e";
+		mr.exp_l = U"e";
+		mr.exp_u = U"E";
 		num_systems.push_back(mr);
 	}
 
@@ -6954,7 +7015,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		dz.lang.insert(StringName("dz_BT"));
 		dz.digits = U"༠༡༢༣༤༥༦༧༨༩.";
 		dz.percent_sign = U"%";
-		dz.exp = U"e";
+		dz.exp_l = U"e";
+		dz.exp_u = U"E";
 		num_systems.push_back(dz);
 	}
 
@@ -6967,7 +7029,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		sat.lang.insert(StringName("sat_Olck_IN"));
 		sat.digits = U"᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙.";
 		sat.percent_sign = U"%";
-		sat.exp = U"e";
+		sat.exp_l = U"e";
+		sat.exp_u = U"E";
 		num_systems.push_back(sat);
 	}
 
@@ -6978,7 +7041,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		my.lang.insert(StringName("my_MM"));
 		my.digits = U"၀၁၂၃၄၅၆၇၈၉.";
 		my.percent_sign = U"%";
-		my.exp = U"e";
+		my.exp_l = U"e";
+		my.exp_u = U"E";
 		num_systems.push_back(my);
 	}
 
@@ -6990,7 +7054,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		ccp.lang.insert(StringName("ccp_IN"));
 		ccp.digits = U"𑄶𑄷𑄸𑄹𑄺𑄻𑄼𑄽𑄾𑄿.";
 		ccp.percent_sign = U"%";
-		ccp.exp = U"e";
+		ccp.exp_l = U"e";
+		ccp.exp_u = U"E";
 		num_systems.push_back(ccp);
 	}
 
@@ -7012,7 +7077,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		ff.lang.insert(StringName("ff_Adlm_SN"));
 		ff.digits = U"𞥐𞥑𞥒𞥓𞥔𞥕𞥖𞥗𞥘𞥙.";
 		ff.percent_sign = U"%";
-		ff.exp = U"e";
+		ff.exp_l = U"𞤉";
+		ff.exp_u = U"𞤉";
 		num_systems.push_back(ff);
 	}
 }
@@ -7026,8 +7092,8 @@ String TextServerAdvanced::_format_number(const String &p_string, const String &
 			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
-			res.replace("e", num_systems[i].exp);
-			res.replace("E", num_systems[i].exp);
+			res = res.replace("e", num_systems[i].exp_l);
+			res = res.replace("E", num_systems[i].exp_u);
 			char32_t *data = res.ptrw();
 			for (int j = 0; j < res.length(); j++) {
 				if (data[j] >= 0x30 && data[j] <= 0x39) {
@@ -7051,7 +7117,8 @@ String TextServerAdvanced::_parse_number(const String &p_string, const String &p
 			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
-			res.replace(num_systems[i].exp, "e");
+			res = res.replace(num_systems[i].exp_l, "e");
+			res = res.replace(num_systems[i].exp_u, "E");
 			char32_t *data = res.ptrw();
 			for (int j = 0; j < res.length(); j++) {
 				if (data[j] == num_systems[i].digits[10]) {
@@ -7674,6 +7741,9 @@ TextServerAdvanced::~TextServerAdvanced() {
 	if (allowed != nullptr) {
 		uset_close(allowed);
 		allowed = nullptr;
+	}
+	for (const KeyValue<String, UBreakIterator *> &bi : line_break_iterators_per_language) {
+		ubrk_close(bi.value);
 	}
 
 	std::atexit(u_cleanup);

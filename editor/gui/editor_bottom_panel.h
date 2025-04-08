@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_BOTTOM_PANEL_H
-#define EDITOR_BOTTOM_PANEL_H
+#pragma once
 
 #include "scene/gui/panel_container.h"
 
@@ -86,8 +85,7 @@ public:
 	void move_item_to_end(Control *p_item);
 	void hide_bottom_panel();
 	void toggle_last_opened_bottom_panel();
+	void set_expanded(bool p_expanded);
 
 	EditorBottomPanel();
 };
-
-#endif // EDITOR_BOTTOM_PANEL_H

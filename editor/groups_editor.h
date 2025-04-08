@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GROUPS_EDITOR_H
-#define GROUPS_EDITOR_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 
@@ -138,7 +137,4 @@ public:
 	void set_current(Node *p_node);
 
 	GroupsEditor();
-	~GroupsEditor();
 };
-
-#endif // GROUPS_EDITOR_H

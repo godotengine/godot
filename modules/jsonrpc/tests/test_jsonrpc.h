@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_JSONRPC_H
-#define TEST_JSONRPC_H
+#pragma once
 
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
@@ -61,20 +60,17 @@ TEST_CASE("[JSONRPC] process_string invalid") {
 }
 
 class TestClassJSONRPC : public JSONRPC {
-	GDCLASS(TestClassJSONRPC, JSONRPC)
-
 public:
-	String something(const String &p_in);
+	TestClassJSONRPC() {
+		set_method("something", callable_mp(this, &TestClassJSONRPC::something));
+	}
 
-protected:
-	static void _bind_methods();
+	String something(const String &p_in);
 };
 
 void test_process_action(const Variant &p_in, const Variant &p_expected, bool p_process_array_elements = false);
 
 TEST_CASE("[JSONRPC] process_action Dictionary") {
-	ClassDB::register_class<TestClassJSONRPC>();
-
 	Dictionary in_dict = Dictionary();
 	in_dict["method"] = "something";
 	in_dict["id"] = "ID";
@@ -135,5 +131,3 @@ TEST_CASE("[JSONRPC] process_action bad method") {
 }
 
 } // namespace TestJSONRPC
-
-#endif // TEST_JSONRPC_H

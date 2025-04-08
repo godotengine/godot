@@ -361,6 +361,10 @@ void ScrollContainer::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_updating_scrollbars = true;
 			callable_mp(this, is_ready() ? &ScrollContainer::_reposition_children : &ScrollContainer::_update_scrollbar_position).call_deferred();
+			if (p_what == NOTIFICATION_THEME_CHANGED) {
+				scroll_border = get_theme_constant(SNAME("scroll_border"), SNAME("Tree"));
+				scroll_speed = get_theme_constant(SNAME("scroll_speed"), SNAME("Tree"));
+			}
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -384,6 +388,43 @@ void ScrollContainer::_notification(int p_what) {
 				focus_border_is_drawn = true;
 			} else {
 				focus_border_is_drawn = false;
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_BEGIN: {
+			if (scroll_on_drag_hover && is_visible_in_tree()) {
+				set_process_internal(true);
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			set_process_internal(false);
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (scroll_on_drag_hover && get_viewport()->gui_is_dragging()) {
+				Point2 mouse_position = get_viewport()->get_mouse_position() - get_global_position();
+				Transform2D xform = get_transform();
+				if (Rect2(Point2(), xform.get_scale() * get_size()).grow(scroll_border).has_point(mouse_position)) {
+					Point2 point;
+
+					if ((Math::abs(mouse_position.x) < Math::abs(mouse_position.x - get_size().width)) && (Math::abs(mouse_position.x) < scroll_border)) {
+						point.x = mouse_position.x - scroll_border;
+					} else if (Math::abs(mouse_position.x - get_size().width) < scroll_border) {
+						point.x = mouse_position.x - (get_size().width - scroll_border);
+					}
+
+					if ((Math::abs(mouse_position.y) < Math::abs(mouse_position.y - get_size().height)) && (Math::abs(mouse_position.y) < scroll_border)) {
+						point.y = mouse_position.y - scroll_border;
+					} else if (Math::abs(mouse_position.y - get_size().height) < scroll_border) {
+						point.y = mouse_position.y - (get_size().height - scroll_border);
+					}
+
+					point *= scroll_speed * get_process_delta_time();
+					point += Point2(get_h_scroll(), get_v_scroll());
+					h_scroll->set_value(point.x);
+					v_scroll->set_value(point.y);
+				}
 			}
 		} break;
 
@@ -582,6 +623,10 @@ PackedStringArray ScrollContainer::get_configuration_warnings() const {
 	}
 
 	return warnings;
+}
+
+void ScrollContainer::set_scroll_on_drag_hover(bool p_scroll) {
+	scroll_on_drag_hover = p_scroll;
 }
 
 HScrollBar *ScrollContainer::get_h_scroll_bar() {

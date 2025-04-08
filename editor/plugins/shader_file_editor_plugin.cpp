@@ -166,7 +166,7 @@ void ShaderFileEditor::_update_options() {
 		}
 	}
 
-	if (version_list.size() == 0) {
+	if (version_list.is_empty()) {
 		for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 			stages[i]->set_disabled(true);
 		}
@@ -318,7 +318,4 @@ ShaderFileEditorPlugin::ShaderFileEditorPlugin() {
 	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	button = EditorNode::get_bottom_panel()->add_item(TTR("ShaderFile"), shader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_file_bottom_panel", TTRC("Toggle ShaderFile Bottom Panel")));
 	button->hide();
-}
-
-ShaderFileEditorPlugin::~ShaderFileEditorPlugin() {
 }

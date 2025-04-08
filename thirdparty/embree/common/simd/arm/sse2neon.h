@@ -102,9 +102,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-// -- GODOT start --
 #if defined(_WIN32) && !defined(__MINGW32__)
-// -- GODOT end --
 /* Definitions for _mm_{malloc,free} are provided by <malloc.h>
  * from both MinGW-w64 and MSVC.
  */
@@ -1890,13 +1888,11 @@ FORCE_INLINE __m128 _mm_div_ss(__m128 a, __m128 b)
 #if !defined(SSE2NEON_ALLOC_DEFINED)
 FORCE_INLINE void _mm_free(void *addr)
 {
-// -- GODOT start --
 #if defined(_WIN32)
     _aligned_free(addr);
 #else
     free(addr);
 #endif
-// -- GODOT end --
 }
 #endif
 
@@ -2088,7 +2084,6 @@ FORCE_INLINE void *_mm_malloc(size_t size, size_t align)
         return malloc(size);
     if (align == 2 || (sizeof(void *) == 8 && align == 4))
         align = sizeof(void *);
-// -- GODOT start --
 #if defined(_WIN32)
     ptr = _aligned_malloc(size, align);
     if (ptr)
@@ -2097,7 +2092,6 @@ FORCE_INLINE void *_mm_malloc(size_t size, size_t align)
     if (!posix_memalign(&ptr, align, size))
         return ptr;
 #endif
-// -- GODOT end --
     return NULL;
 }
 #endif

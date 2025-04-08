@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_TEXT_EDITOR_H
-#define SCRIPT_TEXT_EDITOR_H
+#pragma once
 
 #include "script_editor_plugin.h"
 
@@ -98,6 +97,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Color safe_line_number_color = Color(1, 1, 1);
 
 	Color marked_line_color = Color(1, 1, 1);
+	Color warning_line_color = Color(1, 1, 1);
 	Color folded_code_region_color = Color(1, 1, 1);
 	int previous_line = 0;
 
@@ -274,5 +274,3 @@ public:
 	ScriptTextEditor();
 	~ScriptTextEditor();
 };
-
-#endif // SCRIPT_TEXT_EDITOR_H

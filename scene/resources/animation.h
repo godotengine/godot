@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_H
-#define ANIMATION_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/templates/local_vector.h"
@@ -44,6 +43,7 @@ public:
 	typedef uint32_t TypeHash;
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
+	static inline constexpr real_t DEFAULT_STEP = 1.0 / 30;
 
 	enum TrackType : uint8_t {
 		TYPE_VALUE, // Set a value in a property, can be interpolated.
@@ -281,7 +281,7 @@ private:
 	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
 
 	double length = 1.0;
-	real_t step = 1.0 / 30;
+	real_t step = DEFAULT_STEP;
 	LoopMode loop_mode = LOOP_NONE;
 	bool capture_included = false;
 	void _check_capture_included();
@@ -586,5 +586,3 @@ VARIANT_ENUM_CAST(Animation::FindMode);
 VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::HandleSetMode);
 #endif // TOOLS_ENABLED
-
-#endif // ANIMATION_H

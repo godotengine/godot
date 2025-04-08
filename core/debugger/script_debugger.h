@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_DEBUGGER_H
-#define SCRIPT_DEBUGGER_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
@@ -40,6 +39,7 @@ class ScriptDebugger {
 	typedef ScriptLanguage::StackInfo StackInfo;
 
 	bool skip_breakpoints = false;
+	bool ignore_error_breaks = false;
 
 	HashMap<int, HashSet<StringName>> breakpoints;
 
@@ -64,6 +64,8 @@ public:
 	ScriptLanguage *get_break_language() { return break_lang; }
 	void set_skip_breakpoints(bool p_skip_breakpoints);
 	bool is_skipping_breakpoints();
+	void set_ignore_error_breaks(bool p_ignore);
+	bool is_ignoring_error_breaks();
 	void insert_breakpoint(int p_line, const StringName &p_source);
 	void remove_breakpoint(int p_line, const StringName &p_source);
 	_ALWAYS_INLINE_ bool is_breakpoint(int p_line, const StringName &p_source) const {
@@ -82,5 +84,3 @@ public:
 	Vector<StackInfo> get_error_stack_info() const;
 	ScriptDebugger() {}
 };
-
-#endif // SCRIPT_DEBUGGER_H

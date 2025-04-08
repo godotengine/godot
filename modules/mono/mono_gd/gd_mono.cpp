@@ -101,11 +101,11 @@ String find_hostfxr() {
 
 	// hostfxr_resolver doesn't look for dotnet in `PATH`. If it fails, we try to find the dotnet
 	// executable in `PATH` here and pass its location as `dotnet_root` to `get_hostfxr_path`.
-	String dotnet_exe = path::find_executable("dotnet");
+	String dotnet_exe = Path::find_executable("dotnet");
 
 	if (!dotnet_exe.is_empty()) {
 		// The file found in PATH may be a symlink
-		dotnet_exe = path::abspath(path::realpath(dotnet_exe));
+		dotnet_exe = Path::abspath(Path::realpath(dotnet_exe));
 
 		// TODO:
 		// Sometimes, the symlink may not point to the dotnet executable in the dotnet root.
@@ -385,7 +385,7 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
-	String assembly_name = path::get_csharp_project_name();
+	String assembly_name = Path::get_csharp_project_name();
 
 	HostFxrCharString assembly_path = str_to_hostfxr(GodotSharpDirs::get_api_assemblies_dir()
 					.path_join(assembly_name + ".dll"));
@@ -410,12 +410,14 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 }
 
 godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle) {
-	String assembly_name = path::get_csharp_project_name();
+	String assembly_name = Path::get_csharp_project_name();
 
 #if defined(WINDOWS_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dll");
 #elif defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dylib");
+#elif defined(ANDROID_ENABLED)
+	String native_aot_so_path = "lib" + assembly_name + ".so";
 #elif defined(UNIX_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".so");
 #else
@@ -461,12 +463,12 @@ String make_tpa_list() {
 godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
-	String assembly_name = path::get_csharp_project_name();
+	String assembly_name = Path::get_csharp_project_name();
 
 	String tpa_list = make_tpa_list();
 	const char *prop_keys[] = { "TRUSTED_PLATFORM_ASSEMBLIES" };
 	const char *prop_values[] = { tpa_list.utf8().get_data() };
-	int nprops = sizeof(prop_keys) / sizeof(prop_keys[0]);
+	constexpr int nprops = std::size(prop_keys);
 
 	void *coreclr_handle = nullptr;
 	unsigned int domain_id = 0;
@@ -625,7 +627,7 @@ void GDMono::_init_godot_api_hashes() {
 
 #ifdef TOOLS_ENABLED
 bool GDMono::_load_project_assembly() {
-	String assembly_name = path::get_csharp_project_name();
+	String assembly_name = Path::get_csharp_project_name();
 
 	String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
 								   .path_join(assembly_name + ".dll");
@@ -636,7 +638,7 @@ bool GDMono::_load_project_assembly() {
 	}
 
 	String loaded_assembly_path;
-	bool success = plugin_callbacks.LoadProjectAssemblyCallback(assembly_path.utf16(), &loaded_assembly_path);
+	bool success = plugin_callbacks.LoadProjectAssemblyCallback(assembly_path.utf16().get_data(), &loaded_assembly_path);
 
 	if (success) {
 		project_assembly_path = loaded_assembly_path.simplify_path();
@@ -656,7 +658,7 @@ void GDMono::reload_failure() {
 
 		ERR_PRINT_ED(".NET: Giving up on assembly reloading. Please restart the editor if unloading was failing.");
 
-		String assembly_name = path::get_csharp_project_name();
+		String assembly_name = Path::get_csharp_project_name();
 		String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir().path_join(assembly_name + ".dll");
 		assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
 		project_assembly_path = assembly_path.simplify_path();
@@ -714,7 +716,7 @@ GDMono::~GDMono() {
 	singleton = nullptr;
 }
 
-namespace mono_bind {
+namespace MonoBind {
 
 GodotSharp *GodotSharp::singleton = nullptr;
 
@@ -737,4 +739,4 @@ GodotSharp::~GodotSharp() {
 	singleton = nullptr;
 }
 
-} // namespace mono_bind
+} // namespace MonoBind

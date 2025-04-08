@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TUPLE_H
-#define TUPLE_H
+#pragma once
 
 // Simple recursive Tuple type that has no runtime overhead.
 //
@@ -86,6 +85,10 @@ struct Tuple<T, Rest...> : Tuple<Rest...> {
 			value(std::forward<F>(f)) {}
 };
 
+// Tuple is zero-constructible if and only if all constrained types are zero-constructible.
+template <typename... Types>
+struct is_zero_constructible<Tuple<Types...>> : std::conjunction<is_zero_constructible<Types>...> {};
+
 template <size_t I, typename Tuple>
 struct TupleGet;
 
@@ -117,5 +120,3 @@ template <size_t I, typename... Types>
 _FORCE_INLINE_ const auto &tuple_get(const Tuple<Types...> &t) {
 	return TupleGet<I, Tuple<Types...>>::tuple_get(t);
 }
-
-#endif // TUPLE_H

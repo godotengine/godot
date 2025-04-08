@@ -86,6 +86,46 @@ void register_dynamic_symbol(char *name, void *address) {
 	OS_IOS::dynamic_symbol_lookup_table[String(name)] = address;
 }
 
+Rect2 fit_keep_aspect_centered(const Vector2 &p_container, const Vector2 &p_rect) {
+	real_t available_ratio = p_container.width / p_container.height;
+	real_t fit_ratio = p_rect.width / p_rect.height;
+	Rect2 result;
+	if (fit_ratio < available_ratio) {
+		// Fit height - we'll have horizontal gaps
+		result.size.height = p_container.height;
+		result.size.width = p_container.height * fit_ratio;
+		result.position.y = 0;
+		result.position.x = (p_container.width - result.size.width) * 0.5f;
+	} else {
+		// Fit width - we'll have vertical gaps
+		result.size.width = p_container.width;
+		result.size.height = p_container.width / fit_ratio;
+		result.position.x = 0;
+		result.position.y = (p_container.height - result.size.height) * 0.5f;
+	}
+	return result;
+}
+
+Rect2 fit_keep_aspect_covered(const Vector2 &p_container, const Vector2 &p_rect) {
+	real_t available_ratio = p_container.width / p_container.height;
+	real_t fit_ratio = p_rect.width / p_rect.height;
+	Rect2 result;
+	if (fit_ratio < available_ratio) {
+		// Need to scale up to fit width, and crop height
+		result.size.width = p_container.width;
+		result.size.height = p_container.width / fit_ratio;
+		result.position.x = 0;
+		result.position.y = (p_container.height - result.size.height) * 0.5f;
+	} else {
+		// Need to scale up to fit height, and crop width
+		result.size.width = p_container.height * fit_ratio;
+		result.size.height = p_container.height;
+		result.position.x = (p_container.width - result.size.width) * 0.5f;
+		result.position.y = 0;
+	}
+	return result;
+}
+
 OS_IOS *OS_IOS::get_singleton() {
 	return (OS_IOS *)OS::get_singleton();
 }
@@ -126,11 +166,13 @@ void OS_IOS::initialize() {
 	initialize_core();
 }
 
+void OS_IOS::initialize_joypads() {
+	joypad_apple = memnew(JoypadApple);
+}
+
 void OS_IOS::initialize_modules() {
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
-
-	joypad_apple = memnew(JoypadApple);
 }
 
 void OS_IOS::deinitialize_modules() {
@@ -317,7 +359,7 @@ String OS_IOS::get_user_data_dir(const String &p_user_dir) const {
 	if (ret.is_empty()) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-			ret.parse_utf8([[paths firstObject] UTF8String]);
+			ret.append_utf8([[paths firstObject] UTF8String]);
 		}
 	}
 	return ret;
@@ -328,7 +370,7 @@ String OS_IOS::get_cache_path() const {
 	if (ret.is_empty()) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-			ret.parse_utf8([[paths firstObject] UTF8String]);
+			ret.append_utf8([[paths firstObject] UTF8String]);
 		}
 	}
 	return ret;
@@ -492,23 +534,26 @@ Vector<String> OS_IOS::get_system_font_path_for_text(const String &p_font_name, 
 	CTFontDescriptorRef font = CTFontDescriptorCreateWithAttributes(attributes);
 	if (font) {
 		CTFontRef family = CTFontCreateWithFontDescriptor(font, 0, nullptr);
-		CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
-		CFRange range = CFRangeMake(0, CFStringGetLength(string));
-		CTFontRef fallback_family = CTFontCreateForString(family, string, range);
-		if (fallback_family) {
-			CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
-			if (fallback_font) {
-				CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
-				if (url) {
-					NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
-					ret.push_back(String::utf8([font_path UTF8String]));
-					CFRelease(url);
+		if (family) {
+			CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
+			CFRange range = CFRangeMake(0, CFStringGetLength(string));
+			CTFontRef fallback_family = CTFontCreateForString(family, string, range);
+			if (fallback_family) {
+				CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
+				if (fallback_font) {
+					CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
+					if (url) {
+						NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
+						ret.push_back(String::utf8([font_path UTF8String]));
+						CFRelease(url);
+					}
+					CFRelease(fallback_font);
 				}
-				CFRelease(fallback_font);
+				CFRelease(fallback_family);
 			}
-			CFRelease(fallback_family);
+			CFRelease(string);
+			CFRelease(family);
 		}
-		CFRelease(string);
 		CFRelease(font);
 	}
 
@@ -655,6 +700,23 @@ void OS_IOS::on_exit_background() {
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 		}
+	}
+}
+
+Rect2 OS_IOS::calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const {
+	String scalemodestr = GLOBAL_GET("ios/launch_screen_image_mode");
+
+	if (scalemodestr == "scaleAspectFit") {
+		return fit_keep_aspect_centered(p_window_size, p_imgrect_size);
+	} else if (scalemodestr == "scaleAspectFill") {
+		return fit_keep_aspect_covered(p_window_size, p_imgrect_size);
+	} else if (scalemodestr == "scaleToFill") {
+		return Rect2(Point2(), p_window_size);
+	} else if (scalemodestr == "center") {
+		return OS_Unix::calculate_boot_screen_rect(p_window_size, p_imgrect_size);
+	} else {
+		WARN_PRINT(vformat("Boot screen scale mode mismatch between iOS and Godot: %s not supported", scalemodestr));
+		return OS_Unix::calculate_boot_screen_rect(p_window_size, p_imgrect_size);
 	}
 }
 

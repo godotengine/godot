@@ -48,14 +48,14 @@ static void decompress_image(BCdecFormat format, const void *src, void *dst, con
 	const uint8_t *src_blocks = reinterpret_cast<const uint8_t *>(src);
 	uint8_t *dec_blocks = reinterpret_cast<uint8_t *>(dst);
 
-#define DECOMPRESS_LOOP(func, block_size, color_bytesize, color_components)            \
-	for (uint64_t y = 0; y < height; y += 4) {                                         \
-		for (uint64_t x = 0; x < width; x += 4) {                                      \
-			func(&src_blocks[src_pos], &dec_blocks[dst_pos], width *color_components); \
-			src_pos += block_size;                                                     \
-			dst_pos += 4 * color_bytesize;                                             \
-		}                                                                              \
-		dst_pos += 3 * width * color_bytesize;                                         \
+#define DECOMPRESS_LOOP(func, block_size, color_bytesize, color_components)             \
+	for (uint64_t y = 0; y < height; y += 4) {                                          \
+		for (uint64_t x = 0; x < width; x += 4) {                                       \
+			func(&src_blocks[src_pos], &dec_blocks[dst_pos], width * color_components); \
+			src_pos += block_size;                                                      \
+			dst_pos += 4 * color_bytesize;                                              \
+		}                                                                               \
+		dst_pos += 3 * width * color_bytesize;                                          \
 	}
 
 #define DECOMPRESS_LOOP_SAFE(func, block_size, color_bytesize, color_components, output)                                                              \
@@ -158,9 +158,12 @@ void image_decompress_bcdec(Image *p_image) {
 
 	// Compressed images' dimensions should be padded to the upper multiple of 4.
 	// If they aren't, they need to be realigned (the actual data is correctly padded though).
-	if (width % 4 != 0 || height % 4 != 0) {
-		int new_width = width + (4 - (width % 4));
-		int new_height = height + (4 - (height % 4));
+	const bool need_width_realign = width % 4 != 0;
+	const bool need_height_realign = height % 4 != 0;
+
+	if (need_width_realign || need_height_realign) {
+		int new_width = need_width_realign ? width + (4 - (width % 4)) : width;
+		int new_height = need_height_realign ? height + (4 - (height % 4)) : height;
 
 		print_verbose(vformat("Compressed image's dimensions are not multiples of 4 (%dx%d), aligning to (%dx%d)", width, height, new_width, new_height));
 

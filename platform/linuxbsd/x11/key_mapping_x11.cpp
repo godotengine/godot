@@ -1129,6 +1129,33 @@ void KeyMappingX11::initialize() {
 	location_map[0x86] = KeyLocation::RIGHT;
 }
 
+bool KeyMappingX11::is_sym_numpad(KeySym p_keysym) {
+	switch (p_keysym) {
+		case XK_KP_Equal:
+		case XK_KP_Add:
+		case XK_KP_Subtract:
+		case XK_KP_Multiply:
+		case XK_KP_Divide:
+		case XK_KP_Separator:
+		case XK_KP_Decimal:
+		case XK_KP_Delete:
+		case XK_KP_0:
+		case XK_KP_1:
+		case XK_KP_2:
+		case XK_KP_3:
+		case XK_KP_4:
+		case XK_KP_5:
+		case XK_KP_6:
+		case XK_KP_7:
+		case XK_KP_8:
+		case XK_KP_9: {
+			return true;
+		} break;
+	}
+
+	return false;
+}
+
 Key KeyMappingX11::get_keycode(KeySym p_keysym) {
 	if (p_keysym >= 0x20 && p_keysym < 0x7E) { // ASCII, maps 1-1
 		if (p_keysym > 0x60 && p_keysym < 0x7B) { // Lowercase ASCII.

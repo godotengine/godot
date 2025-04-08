@@ -167,7 +167,7 @@ private:
 #else // TOOLS_ENABLED
 		String platform = _get_platform_name();
 		String arch = Engine::get_singleton()->get_architecture_name();
-		String appname_safe = path::get_csharp_project_name();
+		String appname_safe = Path::get_csharp_project_name();
 		String packed_path = "res://.godot/mono/publish/" + arch;
 		if (DirAccess::exists(packed_path)) {
 			// The dotnet publish data is packed in the pck/zip.

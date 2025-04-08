@@ -63,13 +63,13 @@ PackedStringArray SceneTreeEditor::_get_node_configuration_warnings(Node *p_node
 		if (node_2d) {
 			// Note: Warn for Node2D but not all CanvasItems, don't warn for Control nodes.
 			// Control nodes may have reasons to use a transformed root node like anchors.
-			if (!node_2d->get_transform().is_equal_approx(Transform2D())) {
+			if (!node_2d->get_position().is_zero_approx()) {
 				warnings.append(TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform and reload the scene to remove this warning."));
 			}
 		}
 		Node3D *node_3d = Object::cast_to<Node3D>(p_node);
 		if (node_3d) {
-			if (!node_3d->get_transform().is_equal_approx(Transform3D())) {
+			if (!node_3d->get_position().is_zero_approx()) {
 				warnings.append(TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform and reload the scene to remove this warning."));
 			}
 		}
@@ -112,7 +112,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 	} else if (p_id == BUTTON_VISIBILITY) {
 		undo_redo->create_action(TTR("Toggle Visible"));
 		_toggle_visible(n);
-		List<Node *> selection = editor_selection->get_selected_node_list();
+		List<Node *> selection = editor_selection->get_top_selected_node_list();
 		if (selection.size() > 1 && selection.find(n) != nullptr) {
 			for (Node *nv : selection) {
 				ERR_FAIL_NULL(nv);
@@ -447,7 +447,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			_set_item_custom_color(p_item, accent);
 		}
 	} else if (p_part_of_subscene) {
-		if (valid_types.size() == 0) {
+		if (valid_types.is_empty()) {
 			_set_item_custom_color(p_item, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		}
 	} else if (marked.has(p_node)) {
@@ -512,8 +512,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 
 		String msg_temp;
 		if (num_connections >= 1) {
-			Array arr;
-			arr.push_back(num_connections);
+			Array arr = { num_connections };
 			msg_temp += TTRN("Node has one connection.", "Node has {num} connections.", num_connections).format(arr, "{num}");
 			if (num_groups >= 1) {
 				msg_temp += "\n";
@@ -924,12 +923,19 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		// If pinned state changed, update the currently pinned node.
 		if (AnimationPlayerEditor::get_singleton()->is_pinned() != node_cache.current_has_pin) {
 			node_cache.current_has_pin = AnimationPlayerEditor::get_singleton()->is_pinned();
-			node_cache.mark_dirty(pinned_node);
+			if (node_cache.has(pinned_node)) {
+				node_cache.mark_dirty(pinned_node);
+			}
 		}
 		// If the current pinned node changed update both the old and new node.
 		if (node_cache.current_pinned_node != pinned_node) {
-			node_cache.mark_dirty(pinned_node);
-			node_cache.mark_dirty(node_cache.current_pinned_node);
+			// get_editing_node() will return deleted nodes. If the nodes are not in cache don't try to mark them.
+			if (node_cache.has(pinned_node)) {
+				node_cache.mark_dirty(pinned_node);
+			}
+			if (node_cache.has(node_cache.current_pinned_node)) {
+				node_cache.mark_dirty(node_cache.current_pinned_node);
+			}
 			node_cache.current_pinned_node = pinned_node;
 		}
 
@@ -1170,6 +1176,9 @@ void SceneTreeEditor::_compute_hash(Node *p_node, uint64_t &hash) {
 }
 
 void SceneTreeEditor::_reset() {
+	// Stop any waiting change to tooltip.
+	update_node_tooltip_delay->stop();
+
 	tree->clear();
 	node_cache.clear();
 }
@@ -1281,7 +1290,7 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 
 void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {
 	ERR_FAIL_NULL(tree);
-	TreeItem *item = Object::cast_to<TreeItem>(ObjectDB::get_instance(p_item_id));
+	TreeItem *item = ObjectDB::get_instance<TreeItem>(p_item_id);
 	if (item) {
 		tree->scroll_to_item(item, true);
 	}
@@ -1571,7 +1580,6 @@ void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *
 		undo_redo->add_undo_method(item, "set_metadata", 0, p_node->get_path());
 		undo_redo->add_undo_method(item, "set_text", 0, p_node->get_name());
 
-		p_node->set_name(new_name);
 		undo_redo->add_do_method(p_node, "set_name", new_name);
 		undo_redo->add_do_method(item, "set_metadata", 0, p_node->get_path());
 		undo_redo->add_do_method(item, "set_text", 0, new_name);
@@ -1831,7 +1839,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 }
 
 bool SceneTreeEditor::_is_script_type(const StringName &p_type) const {
-	return (script_types->find(p_type));
+	return (script_types->has(p_type));
 }
 
 bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
@@ -1857,7 +1865,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
-		if (files.size() == 0) {
+		if (files.is_empty()) {
 			return false; // TODO Weird?
 		}
 
@@ -2136,8 +2144,8 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	ask_before_revoke_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
 	vb->add_child(ask_before_revoke_checkbox);
 
-	script_types = memnew(List<StringName>);
-	ClassDB::get_inheriters_from_class("Script", script_types);
+	script_types = memnew(LocalVector<StringName>);
+	ClassDB::get_inheriters_from_class("Script", *script_types);
 }
 
 SceneTreeEditor::~SceneTreeEditor() {
@@ -2332,9 +2340,6 @@ SceneTreeDialog::SceneTreeDialog() {
 	tree->connect("node_selected", callable_mp(this, &SceneTreeDialog::_selected_changed));
 }
 
-SceneTreeDialog::~SceneTreeDialog() {
-}
-
 /******** CACHE *********/
 
 HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCache::add(Node *p_node, TreeItem *p_item) {
@@ -2371,6 +2376,10 @@ HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCach
 	return I;
 }
 
+bool SceneTreeEditor::NodeCache::has(Node *p_node) {
+	return get(p_node, false).operator bool();
+}
+
 void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 	if (!p_node) {
 		return;
@@ -2378,6 +2387,11 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 
 	if (p_node == editor->selected) {
 		editor->selected = nullptr;
+	}
+
+	if (p_node == current_pinned_node) {
+		current_pinned_node = nullptr;
+		current_has_pin = false;
 	}
 
 	editor->marked.erase(p_node);
@@ -2417,6 +2431,7 @@ void SceneTreeEditor::NodeCache::mark_dirty(Node *p_node, bool p_parents) {
 		if (!p_parents) {
 			break;
 		}
+
 		node = node->get_parent();
 	}
 }
@@ -2481,4 +2496,6 @@ void SceneTreeEditor::NodeCache::clear() {
 	}
 	cache.clear();
 	to_delete.clear();
+	current_pinned_node = nullptr;
+	current_has_pin = false;
 }

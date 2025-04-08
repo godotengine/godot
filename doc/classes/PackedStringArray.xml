@@ -82,6 +82,13 @@
 				Creates a copy of the array, and returns it.
 			</description>
 		</method>
+		<method name="erase">
+			<return type="bool" />
+			<param index="0" name="value" type="String" />
+			<description>
+				Removes the first occurrence of a value from the array and returns [code]true[/code]. If the value does not exist in the array, nothing happens and [code]false[/code] is returned. To remove an element by index, use [method remove_at] instead.
+			</description>
+		</method>
 		<method name="fill">
 			<return type="void" />
 			<param index="0" name="value" type="String" />
@@ -144,6 +151,7 @@
 			<param index="0" name="new_size" type="int" />
 			<description>
 				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size. Calling [method resize] once and assigning the new values is faster than adding new elements one by one.
+				Returns [constant OK] on success, or one of the following [enum Error] constants if this method fails: [constant ERR_INVALID_PARAMETER] if the size is negative, or [constant ERR_OUT_OF_MEMORY] if allocations fail. Use [method size] to find the actual size of the array after resize.
 			</description>
 		</method>
 		<method name="reverse">
@@ -193,7 +201,7 @@
 		<method name="to_byte_array" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Returns a [PackedByteArray] with each string encoded as bytes.
+				Returns a [PackedByteArray] with each string encoded as UTF-8. Strings are [code]null[/code] terminated.
 			</description>
 		</method>
 	</methods>

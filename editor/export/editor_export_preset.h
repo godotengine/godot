@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_EXPORT_PRESET_H
-#define EDITOR_EXPORT_PRESET_H
+#pragma once
 
 class EditorExportPlatform;
 
@@ -195,12 +194,8 @@ public:
 
 	const HashMap<StringName, PropertyInfo> &get_properties() const { return properties; }
 	const HashMap<StringName, Variant> &get_values() const { return values; }
-
-	EditorExportPreset();
 };
 
 VARIANT_ENUM_CAST(EditorExportPreset::ExportFilter);
 VARIANT_ENUM_CAST(EditorExportPreset::FileExportMode);
 VARIANT_ENUM_CAST(EditorExportPreset::ScriptExportMode);
-
-#endif // EDITOR_EXPORT_PRESET_H

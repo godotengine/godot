@@ -613,12 +613,12 @@ void GDScriptParser::parse_program() {
 	current_class = head;
 	bool can_have_class_or_extends = true;
 
-#define PUSH_PENDING_ANNOTATIONS_TO_HEAD                  \
-	if (!annotation_stack.is_empty()) {                   \
-		for (AnnotationNode * annot : annotation_stack) { \
-			head->annotations.push_back(annot);           \
-		}                                                 \
-		annotation_stack.clear();                         \
+#define PUSH_PENDING_ANNOTATIONS_TO_HEAD                 \
+	if (!annotation_stack.is_empty()) {                  \
+		for (AnnotationNode *annot : annotation_stack) { \
+			head->annotations.push_back(annot);          \
+		}                                                \
+		annotation_stack.clear();                        \
 	}
 
 	while (!check(GDScriptTokenizer::Token::TK_EOF)) {
@@ -672,14 +672,16 @@ void GDScriptParser::parse_program() {
 		}
 	}
 
+	if (current.type == GDScriptTokenizer::Token::CLASS_NAME || current.type == GDScriptTokenizer::Token::EXTENDS) {
+		// Set range of the class to only start at extends or class_name if present.
+		reset_extents(head, current);
+	}
+
 	while (can_have_class_or_extends) {
 		// Order here doesn't matter, but there should be only one of each at most.
 		switch (current.type) {
 			case GDScriptTokenizer::Token::CLASS_NAME:
 				PUSH_PENDING_ANNOTATIONS_TO_HEAD;
-				if (head->start_line == 1) {
-					reset_extents(head, current);
-				}
 				advance();
 				if (head->identifier != nullptr) {
 					push_error(R"("class_name" can only be used once.)");
@@ -689,9 +691,6 @@ void GDScriptParser::parse_program() {
 				break;
 			case GDScriptTokenizer::Token::EXTENDS:
 				PUSH_PENDING_ANNOTATIONS_TO_HEAD;
-				if (head->start_line == 1) {
-					reset_extents(head, current);
-				}
 				advance();
 				if (head->extends_used) {
 					push_error(R"("extends" can only be used once.)");
@@ -3302,7 +3301,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			IdentifierNode *identifier = parse_identifier();
 			call->callee = identifier;
 			call->function_name = identifier->name;
-			consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after function name.)");
+			if (!consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after function name.)")) {
+				pop_multiline();
+				complete_extents(call);
+				return nullptr;
+			}
 		}
 	} else {
 		call->callee = p_previous_operand;
@@ -3487,6 +3490,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_
 
 	if (preload->path == nullptr) {
 		push_error(R"(Expected resource path after "(".)");
+	} else if (preload->path->type == Node::LITERAL) {
+		override_completion_context(preload->path, COMPLETION_RESOURCE_PATH, preload);
 	}
 
 	pop_completion_call();
@@ -4129,7 +4134,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 	};
 	/* clang-format on */
 	// Avoid desync.
-	static_assert(sizeof(rules) / sizeof(rules[0]) == GDScriptTokenizer::Token::TK_MAX, "Amount of parse rules don't match the amount of token types.");
+	static_assert(std::size(rules) == GDScriptTokenizer::Token::TK_MAX, "Amount of parse rules don't match the amount of token types.");
 
 	// Let's assume this is never invalid, since nothing generates a TK_MAX.
 	return &rules[p_token_type];

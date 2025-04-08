@@ -86,7 +86,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 		for (int i = 0; i < 3; i++) {
 			Vector3 axis;
 			axis[i] = 1.0;
-			real_t dot = ABS(normal.dot(axis));
+			real_t dot = Math::abs(normal.dot(axis));
 			if (i == 0 || dot > closest_dot) {
 				closest_axis = i;
 				closest_dot = dot;
@@ -136,7 +136,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector3 intersection;
 
 				if (!plane.intersects_segment(ray_from, ray_to, &intersection)) {
-					if (ABS(plane.distance_to(ray_from)) < ABS(plane.distance_to(ray_to))) {
+					if (Math::abs(plane.distance_to(ray_from)) < Math::abs(plane.distance_to(ray_to))) {
 						intersection = plane.project(ray_from);
 					} else {
 						intersection = plane.project(ray_to);
@@ -399,6 +399,9 @@ int Voxelizer::get_bake_steps(Ref<Mesh> &p_mesh) const {
 Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material, BakeStepFunc p_bake_step_func) {
 	ERR_FAIL_COND_V_MSG(!p_xform.is_finite(), BAKE_RESULT_INVALID_PARAMETER, "Invalid mesh bake transform.");
 
+	// Precalculate for transforming vertex normals
+	Basis normal_xform = p_xform.basis.inverse().transposed();
+
 	int bake_total = get_bake_steps(p_mesh), bake_current = 0;
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
@@ -463,7 +466,7 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 
 				if (nr) {
 					for (int k = 0; k < 3; k++) {
-						normal[k] = nr[ir[j * 3 + k]];
+						normal[k] = normal_xform.xform(nr[ir[j * 3 + k]]).normalized();
 					}
 				}
 
