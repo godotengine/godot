@@ -107,17 +107,16 @@ void EditorPropertyText::_show_secret_toggled(const bool &p_toggled) {
 	if (p_toggled) {
 		text->set_tooltip_text(get_tooltip_string(text->get_text()));
 		show_secret->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
-		show_secret->set_tooltip_text(TTR("Hide secret text."));
+		show_secret->set_tooltip_text(TTRC("Hide secret text."));
 	} else {
 		text->set_tooltip_text("");
 		show_secret->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
-		show_secret->set_tooltip_text(TTR("Show secret text."));
+		show_secret->set_tooltip_text(TTRC("Show secret text."));
 	}
 }
 
 void EditorPropertyText::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_secret) {
 				if (show_secret->is_pressed()) {
@@ -162,9 +161,9 @@ void EditorPropertyText::set_secret(bool p_enabled) {
 		show_secret = memnew(Button);
 		show_secret->set_clip_text(true);
 		show_secret->set_toggle_mode(true);
-		show_secret->set_tooltip_text(TTR("Show secret text."));
+		show_secret->set_tooltip_text(TTRC("Show secret text."));
 		text->get_parent()->add_child(show_secret);
-		add_focusable(text);
+		add_focusable(show_secret);
 		show_secret->connect(SceneStringName(toggled), callable_mp(this, &EditorPropertyText::_show_secret_toggled));
 	} else {
 		text->set_tooltip_text(get_tooltip_string(text->get_text()));
