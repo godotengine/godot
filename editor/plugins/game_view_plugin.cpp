@@ -366,6 +366,9 @@ void GameView::_stop_pressed() {
 void GameView::_embedding_completed() {
 	_attach_script_debugger();
 	_update_ui();
+	if (make_floating_on_play) {
+		get_window()->set_flag(Window::FLAG_ALWAYS_ON_TOP, bool(GLOBAL_GET("display/window/size/always_on_top")));
+	}
 }
 
 void GameView::_embedding_failed() {
