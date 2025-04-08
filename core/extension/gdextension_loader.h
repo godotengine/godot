@@ -35,6 +35,8 @@
 class GDExtension;
 
 class GDExtensionLoader : public RefCounted {
+	GDSOFTCLASS(GDExtensionLoader, GDExtensionLoader);
+
 public:
 	virtual Error open_library(const String &p_path) = 0;
 	virtual Error initialize(GDExtensionInterfaceGetProcAddress p_get_proc_address, const Ref<GDExtension> &p_extension, GDExtensionInitialization *r_initialization) = 0;

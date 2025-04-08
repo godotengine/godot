@@ -1306,8 +1306,6 @@ void GodotNavigationServer3D::set_active(bool p_active) {
 }
 
 void GodotNavigationServer3D::flush_queries() {
-	// In c++ we can't be sure that this is performed in the main thread
-	// even with mutable functions.
 	MutexLock lock(commands_mutex);
 	MutexLock lock2(operations_mutex);
 
@@ -1340,7 +1338,21 @@ void GodotNavigationServer3D::sync() {
 	}
 }
 
-void GodotNavigationServer3D::process(real_t p_delta_time) {
+void GodotNavigationServer3D::process(double p_delta_time) {
+	// Called for each main loop iteration AFTER node and user script process() and BEFORE RenderingServer sync.
+	// Will run reliably every rendered frame independent of the physics tick rate.
+	// Use for things that (only) need to update once per main loop iteration and rendered frame or is visible to the user.
+	// E.g. (final) sync of objects for this main loop iteration, updating rendered debug visuals, updating debug statistics, ...
+}
+
+void GodotNavigationServer3D::physics_process(double p_delta_time) {
+	// Called for each physics process step AFTER node and user script physics_process() and BEFORE PhysicsServer sync.
+	// Will NOT run reliably every rendered frame. If there is no physics step this function will not run.
+	// Use for physics or step depending calculations and updates where the result affects the next step calculation.
+	// E.g. anything physics sync related, avoidance simulations, physics space state queries, ...
+	// If physics process needs to play catchup this function will be called multiple times per frame so it should not hold
+	// costly updates that are not important outside the stepped calculations to avoid causing a physics performance death spiral.
+
 	flush_queries();
 
 	if (!active) {

@@ -450,9 +450,8 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	bool valid_rel_specifier = !provisioning_profile_specifier_rel.is_empty();
 	rel_manual |= valid_rel_specifier;
 
-	String str;
+	String str = String::utf8((const char *)pfile.ptr(), pfile.size());
 	String strnew;
-	str.append_utf8((const char *)pfile.ptr(), pfile.size());
 	Vector<String> lines = str.split("\n");
 	for (int i = 0; i < lines.size(); i++) {
 		if (lines[i].contains("$binary")) {

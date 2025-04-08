@@ -802,7 +802,7 @@ Vector<String> EditorFileSystem::_get_import_dest_paths(const String &p_path) {
 }
 
 bool EditorFileSystem::_scan_import_support(const Vector<String> &reimports) {
-	if (import_support_queries.size() == 0) {
+	if (import_support_queries.is_empty()) {
 		return false;
 	}
 	HashMap<String, int> import_support_test;
@@ -818,7 +818,7 @@ bool EditorFileSystem::_scan_import_support(const Vector<String> &reimports) {
 		}
 	}
 
-	if (import_support_test.size() == 0) {
+	if (import_support_test.is_empty()) {
 		return false; //well nothing to do
 	}
 
@@ -1068,6 +1068,19 @@ void EditorFileSystem::scan() {
 	// to be loaded to continue the scan and reimportations.
 	if (first_scan) {
 		_first_scan_filesystem();
+#ifdef ANDROID_ENABLED
+		const String nomedia_file_path = ProjectSettings::get_singleton()->get_resource_path().path_join(".nomedia");
+		if (!FileAccess::exists(nomedia_file_path)) {
+			// Create a .nomedia file to hide assets from media apps on Android.
+			Ref<FileAccess> f = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
+			if (f.is_null()) {
+				// .nomedia isn't so critical.
+				ERR_PRINT("Couldn't create .nomedia in project path.");
+			} else {
+				f->close();
+			}
+		}
+#endif
 	}
 
 	_update_extensions();
@@ -1858,7 +1871,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 	Vector<String> path = f.split("/");
 
-	if (path.size() == 0) {
+	if (path.is_empty()) {
 		return false;
 	}
 	String file = path[path.size() - 1];
@@ -1991,7 +2004,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 
 	Vector<String> path = f.split("/");
 
-	if (path.size() == 0) {
+	if (path.is_empty()) {
 		return nullptr;
 	}
 
@@ -3099,7 +3112,7 @@ void EditorFileSystem::_queue_refresh_filesystem() {
 
 void EditorFileSystem::_refresh_filesystem() {
 	for (const ObjectID &id : folders_to_sort) {
-		EditorFileSystemDirectory *dir = Object::cast_to<EditorFileSystemDirectory>(ObjectDB::get_instance(id));
+		EditorFileSystemDirectory *dir = ObjectDB::get_instance<EditorFileSystemDirectory>(id);
 		if (dir) {
 			dir->subdirs.sort_custom<DirectoryComparator>();
 		}

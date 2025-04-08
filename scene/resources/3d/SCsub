@@ -6,7 +6,6 @@ Import("env")
 env.add_source_files(env.scene_sources, "fog_material.cpp")
 env.add_source_files(env.scene_sources, "importer_mesh.cpp")
 env.add_source_files(env.scene_sources, "mesh_library.cpp")
-env.add_source_files(env.scene_sources, "navigation_mesh_source_geometry_data_3d.cpp")
 env.add_source_files(env.scene_sources, "primitive_meshes.cpp")
 env.add_source_files(env.scene_sources, "skin.cpp")
 env.add_source_files(env.scene_sources, "sky_material.cpp")
@@ -25,3 +24,5 @@ if not env["disable_physics_3d"]:
     env.add_source_files(env.scene_sources, "shape_3d.cpp")
     env.add_source_files(env.scene_sources, "sphere_shape_3d.cpp")
     env.add_source_files(env.scene_sources, "world_boundary_shape_3d.cpp")
+if not env["disable_navigation_3d"]:
+    env.add_source_files(env.scene_sources, "navigation_mesh_source_geometry_data_3d.cpp")

@@ -291,9 +291,8 @@ void ScriptEditorDebugger::_remote_object_selected(ObjectID p_id) {
 }
 
 void ScriptEditorDebugger::_remote_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field) {
-	const Array &ids = p_values.keys();
-	for (uint64_t id : ids) {
-		update_remote_object(ObjectID(id), p_prop, p_values[id], p_field);
+	for (const KeyValue<Variant, Variant> &kv : p_values) {
+		update_remote_object(ObjectID(static_cast<uint64_t>(kv.key)), p_prop, kv.value, p_field);
 	}
 	request_remote_objects(p_values.keys(), false);
 }
@@ -371,7 +370,7 @@ void ScriptEditorDebugger::_msg_debug_exit(uint64_t p_thread_id, const Array &p_
 	threads_debugged.erase(p_thread_id);
 	if (p_thread_id == debugging_thread_id) {
 		_clear_execution();
-		if (threads_debugged.size() == 0) {
+		if (threads_debugged.is_empty()) {
 			debugging_thread_id = Thread::UNASSIGNED_ID;
 		} else {
 			// Find next thread to debug.
@@ -1667,7 +1666,7 @@ void ScriptEditorDebugger::_error_selected() {
 	}
 
 	Array meta = selected->get_metadata(0);
-	if (meta.size() == 0) {
+	if (meta.is_empty()) {
 		return;
 	}
 

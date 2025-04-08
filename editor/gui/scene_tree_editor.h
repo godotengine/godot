@@ -212,7 +212,7 @@ class SceneTreeEditor : public Control {
 
 	Timer *update_timer = nullptr;
 
-	List<StringName> *script_types;
+	LocalVector<StringName> *script_types;
 	bool _is_script_type(const StringName &p_type) const;
 
 	Vector<StringName> valid_types;

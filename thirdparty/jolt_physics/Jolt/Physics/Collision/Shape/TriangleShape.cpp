@@ -188,7 +188,7 @@ MassProperties TriangleShape::GetMassProperties() const
 	// creating a Body:
 	//
 	// BodyCreationSettings::mOverrideMassProperties = EOverrideMassProperties::MassAndInertiaProvided;
-	// BodyCreationSettings::mMassPropertiesOverride.SetMassAndInertiaOfSolidBox(Vec3::sReplicate(1.0f), 1000.0f);
+	// BodyCreationSettings::mMassPropertiesOverride.SetMassAndInertiaOfSolidBox(Vec3::sOne(), 1000.0f);
 	//
 	// Note that this makes the triangle shape behave the same as a mesh shape with a single triangle.
 	// In practice there is very little use for a dynamic triangle shape as back side collisions will be ignored
@@ -413,6 +413,9 @@ void TriangleShape::sRegister()
 	{
 		CollisionDispatch::sRegisterCollideShape(s, EShapeSubType::Triangle, sCollideConvexVsTriangle);
 		CollisionDispatch::sRegisterCastShape(s, EShapeSubType::Triangle, sCastConvexVsTriangle);
+
+		CollisionDispatch::sRegisterCollideShape(EShapeSubType::Triangle, s, CollisionDispatch::sReversedCollideShape);
+		CollisionDispatch::sRegisterCastShape(EShapeSubType::Triangle, s, CollisionDispatch::sReversedCastShape);
 	}
 
 	// Specialized collision functions

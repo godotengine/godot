@@ -79,6 +79,7 @@ public:
 	enum ModifierCallbackModeProcess {
 		MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS,
 		MODIFIER_CALLBACK_MODE_PROCESS_IDLE,
+		MODIFIER_CALLBACK_MODE_PROCESS_MANUAL,
 	};
 
 private:
@@ -93,6 +94,7 @@ private:
 	void _update_deferred(UpdateFlag p_update_flag = UPDATE_FLAG_POSE);
 	uint8_t update_flags = UPDATE_FLAG_NONE;
 	bool updating = false; // Is updating now?
+	double update_delta = 0.0;
 
 	struct Bone {
 		String name;
@@ -293,6 +295,8 @@ public:
 
 	void set_modifier_callback_mode_process(ModifierCallbackModeProcess p_mode);
 	ModifierCallbackModeProcess get_modifier_callback_mode_process() const;
+
+	void advance(double p_delta);
 
 #ifndef DISABLE_DEPRECATED
 	Transform3D get_bone_global_pose_no_override(int p_bone) const;

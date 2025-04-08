@@ -1572,7 +1572,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		Vector<uint8_t> array;
 		if (GDExtension::get_extension_list_config_file() == forced_export[i]) {
 			array = _filter_extension_list_config_file(forced_export[i], paths);
-			if (array.size() == 0) {
+			if (array.is_empty()) {
 				continue;
 			}
 		} else {
@@ -1585,9 +1585,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	Dictionary int_export = get_internal_export_files(p_preset, p_debug);
-	for (const Variant &int_name : int_export.keys()) {
-		const PackedByteArray &array = int_export[int_name];
-		err = save_proxy.save_file(p_udata, int_name, array, idx, total, enc_in_filters, enc_ex_filters, key, seed);
+	for (const KeyValue<Variant, Variant> &int_export_kv : int_export) {
+		const PackedByteArray &array = int_export_kv.value;
+		err = save_proxy.save_file(p_udata, int_export_kv.key, array, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 		if (err != OK) {
 			return err;
 		}

@@ -330,7 +330,7 @@ void EditorPropertySizeFlags::update_property() {
 void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vertical) {
 	vertical = p_vertical;
 
-	if (p_options.size() == 0) {
+	if (p_options.is_empty()) {
 		flag_presets->clear();
 		flag_presets->add_item(TTR("Container Default"));
 		flag_presets->set_disabled(true);

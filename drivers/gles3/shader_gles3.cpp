@@ -690,7 +690,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 
 void ShaderGLES3::_clear_version(Version *p_version) {
 	// Variants not compiled yet, just return
-	if (p_version->variants.size() == 0) {
+	if (p_version->variants.is_empty()) {
 		return;
 	}
 

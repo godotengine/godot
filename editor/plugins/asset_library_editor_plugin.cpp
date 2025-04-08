@@ -708,11 +708,11 @@ void EditorAssetLibrary::_update_repository_options() {
 	default_urls["godotengine.org (Official)"] = "https://godotengine.org/asset-library/api";
 	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
 	repository->clear();
-	Array keys = available_urls.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		String key = keys[i];
-		repository->add_item(key);
-		repository->set_item_metadata(i, available_urls[key]);
+	int i = 0;
+	for (const KeyValue<Variant, Variant> &kv : available_urls) {
+		repository->add_item(kv.key);
+		repository->set_item_metadata(i, kv.value);
+		i++;
 	}
 }
 
@@ -1214,14 +1214,7 @@ void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_req
 }
 
 void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
-	String str;
-
-	{
-		int datalen = p_data.size();
-		const uint8_t *r = p_data.ptr();
-		str.append_utf8((const char *)r, datalen);
-	}
-
+	String str = String::utf8((const char *)p_data.ptr(), (int)p_data.size());
 	bool error_abort = true;
 
 	switch (p_status) {

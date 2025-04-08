@@ -486,7 +486,7 @@ void FileDialog::_post_popup() {
 void FileDialog::_push_history() {
 	local_history.resize(local_history_pos + 1);
 	String new_path = dir_access->get_current_dir();
-	if (local_history.size() == 0 || new_path != local_history[local_history_pos]) {
+	if (local_history.is_empty() || new_path != local_history[local_history_pos]) {
 		local_history.push_back(new_path);
 		local_history_pos++;
 		dir_prev->set_disabled(local_history_pos == 0);
@@ -1778,7 +1778,7 @@ FileDialog::FileDialog() {
 	show_filename_filter_button->set_theme_type_variation(SceneStringName(FlatButton));
 	show_filename_filter_button->set_toggle_mode(true);
 	show_filename_filter_button->set_pressed(false);
-	show_filename_filter_button->set_tooltip_text(RTR("Toggle the visibility of the filter for file names."));
+	show_filename_filter_button->set_tooltip_text(ETR("Toggle the visibility of the filter for file names."));
 	show_filename_filter_button->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_filename_filter));
 	hbc->add_child(show_filename_filter_button);
 
@@ -1805,7 +1805,7 @@ FileDialog::FileDialog() {
 	tree->add_child(message);
 
 	filename_filter_box = memnew(HBoxContainer);
-	filename_filter_box->add_child(memnew(Label(RTR("Filter:"))));
+	filename_filter_box->add_child(memnew(Label(ETR("Filter:"))));
 	filename_filter = memnew(LineEdit);
 	filename_filter->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	filename_filter->set_stretch_ratio(4);

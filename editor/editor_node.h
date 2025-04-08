@@ -356,6 +356,7 @@ private:
 	ConfirmationDialog *save_confirmation = nullptr;
 	ConfirmationDialog *import_confirmation = nullptr;
 	ConfirmationDialog *pick_main_scene = nullptr;
+	ConfirmationDialog *open_project_settings = nullptr;
 	Button *select_current_scene_button = nullptr;
 	AcceptDialog *accept = nullptr;
 	AcceptDialog *save_accept = nullptr;
@@ -962,6 +963,7 @@ public:
 	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin_for_type_name(const String &p_type);
 
 	bool ensure_main_scene(bool p_from_native);
+	bool validate_custom_directory();
 };
 
 class EditorPluginList : public Object {

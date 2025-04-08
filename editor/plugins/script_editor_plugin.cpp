@@ -3206,7 +3206,7 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	if (String(d["type"]) == "nodes") {
 		Array nodes = d["nodes"];
-		if (nodes.size() == 0) {
+		if (nodes.is_empty()) {
 			return false;
 		}
 		Node *node = get_node((nodes[0]));
@@ -3224,7 +3224,7 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
-		if (files.size() == 0) {
+		if (files.is_empty()) {
 			return false; //weird
 		}
 
@@ -3282,7 +3282,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 
 	if (String(d["type"]) == "nodes") {
 		Array nodes = d["nodes"];
-		if (nodes.size() == 0) {
+		if (nodes.is_empty()) {
 			return;
 		}
 		Node *node = get_node(nodes[0]);

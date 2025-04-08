@@ -1752,7 +1752,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides workspace symbol support.
 	 */
-	bool workspaceSymbolProvider = true;
+	bool workspaceSymbolProvider = false;
 
 	/**
 	 * The server supports workspace folder.

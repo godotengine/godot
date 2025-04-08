@@ -264,6 +264,9 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_force_autohinter", "font_rid", "force_autohinter"), &TextServer::font_set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("font_is_force_autohinter", "font_rid"), &TextServer::font_is_force_autohinter);
 
+	ClassDB::bind_method(D_METHOD("font_set_modulate_color_glyphs", "font_rid", "force_autohinter"), &TextServer::font_set_modulate_color_glyphs);
+	ClassDB::bind_method(D_METHOD("font_is_modulate_color_glyphs", "font_rid"), &TextServer::font_is_modulate_color_glyphs);
+
 	ClassDB::bind_method(D_METHOD("font_set_hinting", "font_rid", "hinting"), &TextServer::font_set_hinting);
 	ClassDB::bind_method(D_METHOD("font_get_hinting", "font_rid"), &TextServer::font_get_hinting);
 
@@ -962,7 +965,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 	}
 
 	if (l_size > 0) {
-		if (lines.size() == 0 || (lines[lines.size() - 1] < range.y && prev_safe_break < l_size)) {
+		if (lines.is_empty() || (lines[lines.size() - 1] < range.y && prev_safe_break < l_size)) {
 			if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES)) {
 				int start_pos = (prev_safe_break < l_size) ? prev_safe_break : l_size - 1;
 				if (last_end <= l_gl[start_pos].start) {
@@ -1149,7 +1152,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 	}
 
 	if (l_size > 0) {
-		if (lines.size() == 0 || (lines[lines.size() - 1] < range.y && prev_safe_break < l_size)) {
+		if (lines.is_empty() || (lines[lines.size() - 1] < range.y && prev_safe_break < l_size)) {
 			if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES)) {
 				int start_pos = (prev_safe_break < l_size) ? prev_safe_break : l_size - 1;
 				if (last_end <= l_gl[start_pos].start) {

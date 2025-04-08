@@ -1033,6 +1033,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_get_height"), &DisplayServer::virtual_keyboard_get_height);
 
 	ClassDB::bind_method(D_METHOD("has_hardware_keyboard"), &DisplayServer::has_hardware_keyboard);
+	ClassDB::bind_method(D_METHOD("set_hardware_keyboard_connection_change_callback", "callable"), &DisplayServer::set_hardware_keyboard_connection_change_callback);
 
 	ClassDB::bind_method(D_METHOD("cursor_set_shape", "shape"), &DisplayServer::cursor_set_shape);
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
@@ -1120,6 +1121,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE_MIME);
 	BIND_ENUM_CONSTANT(FEATURE_EMOJI_AND_SYMBOL_PICKER);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_COLOR_PICKER);
+	BIND_ENUM_CONSTANT(FEATURE_SELF_FITTING_WINDOWS);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -1195,6 +1197,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_MOUSE_PASSTHROUGH);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_SHARP_CORNERS);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_EXCLUDE_FROM_CAPTURE);
+	BIND_ENUM_CONSTANT(WINDOW_FLAG_POPUP_WM_HINT);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_MOUSE_ENTER);
@@ -1205,6 +1208,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_GO_BACK_REQUEST);
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_DPI_CHANGE);
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_TITLEBAR_CHANGE);
+	BIND_ENUM_CONSTANT(WINDOW_EVENT_FORCE_CLOSE);
 
 	BIND_ENUM_CONSTANT(WINDOW_EDGE_TOP_LEFT);
 	BIND_ENUM_CONSTANT(WINDOW_EDGE_TOP);
@@ -1370,11 +1374,10 @@ bool DisplayServer::is_rendering_device_supported() {
 #endif
 #ifdef METAL_ENABLED
 	if (rcd == nullptr) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
 		rcd = memnew(RenderingContextDriverMetal);
-#pragma clang diagnostic pop
+		GODOT_CLANG_WARNING_POP
 	}
 #endif
 
@@ -1453,11 +1456,10 @@ bool DisplayServer::can_create_rendering_device() {
 #endif
 #ifdef METAL_ENABLED
 	if (rcd == nullptr) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
 		rcd = memnew(RenderingContextDriverMetal);
-#pragma clang diagnostic pop
+		GODOT_CLANG_WARNING_POP
 	}
 #endif
 

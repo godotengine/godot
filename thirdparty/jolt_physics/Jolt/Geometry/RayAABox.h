@@ -21,7 +21,7 @@ public:
 		mIsParallel = Vec3::sLessOrEqual(inDirection.Abs(), Vec3::sReplicate(1.0e-20f));
 
 		// Calculate 1 / direction while avoiding division by zero
-		mInvDirection = Vec3::sSelect(inDirection, Vec3::sReplicate(1.0f), mIsParallel).Reciprocal();
+		mInvDirection = Vec3::sSelect(inDirection, Vec3::sOne(), mIsParallel).Reciprocal();
 	}
 
 	Vec3			mInvDirection;					///< 1 / ray direction

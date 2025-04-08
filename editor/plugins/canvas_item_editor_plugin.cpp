@@ -3076,7 +3076,7 @@ void CanvasItemEditor::_draw_rulers() {
 		if (i % (major_subdivision * minor_subdivision) == 0) {
 			viewport->draw_line(Point2(position.x, 0), Point2(position.x, RULER_WIDTH), graduation_color, Math::round(EDSCALE));
 			real_t val = (ruler_transform * major_subdivide * minor_subdivide).xform(Point2(i, 0)).x;
-			viewport->draw_string(font, Point2(position.x + 2, font->get_height(font_size)), TS->format_number(vformat(((int)val == val) ? "%d" : "%.1f", val)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+			viewport->draw_string(font, Point2(position.x + 2, font->get_ascent(font_size) + Math::round(EDSCALE)), TS->format_number(vformat(((int)val == val) ? "%d" : "%.1f", val)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 		} else {
 			if (i % minor_subdivision == 0) {
 				viewport->draw_line(Point2(position.x, RULER_WIDTH * 0.33), Point2(position.x, RULER_WIDTH), graduation_color, Math::round(EDSCALE));
@@ -3094,7 +3094,7 @@ void CanvasItemEditor::_draw_rulers() {
 			viewport->draw_line(Point2(0, position.y), Point2(RULER_WIDTH, position.y), graduation_color, Math::round(EDSCALE));
 			real_t val = (ruler_transform * major_subdivide * minor_subdivide).xform(Point2(0, i)).y;
 
-			Transform2D text_xform = Transform2D(-Math_PI / 2.0, Point2(font->get_height(font_size), position.y - 2));
+			Transform2D text_xform = Transform2D(-Math_PI / 2.0, Point2(font->get_ascent(font_size) + Math::round(EDSCALE), position.y - 2));
 			viewport->draw_set_transform_matrix(viewport->get_transform() * text_xform);
 			viewport->draw_string(font, Point2(), TS->format_number(vformat(((int)val == val) ? "%d" : "%.1f", val)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 			viewport->draw_set_transform_matrix(viewport->get_transform());
@@ -4740,7 +4740,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 			undo_redo->create_action(TTR("Paste Pose"));
 			for (const PoseClipboard &E : pose_clipboard) {
-				Node2D *n2d = Object::cast_to<Node2D>(ObjectDB::get_instance(E.id));
+				Node2D *n2d = ObjectDB::get_instance<Node2D>(E.id);
 				if (!n2d) {
 					continue;
 				}
@@ -6063,7 +6063,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_
 }
 
 void CanvasItemEditorViewport::_perform_drop_data() {
-	ERR_FAIL_COND(selected_files.size() <= 0);
+	ERR_FAIL_COND(selected_files.is_empty());
 
 	_remove_preview();
 
@@ -6273,7 +6273,7 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 	if (d.has("type") && String(d["type"]) == "files") {
 		selected_files = d["files"];
 	}
-	if (selected_files.size() == 0) {
+	if (selected_files.is_empty()) {
 		return;
 	}
 

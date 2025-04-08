@@ -258,12 +258,6 @@ void Object::_postinitialize() {
 	notification(NOTIFICATION_POSTINITIALIZE);
 }
 
-void Object::get_valid_parents_static(List<String> *p_parents) {
-}
-
-void Object::_get_valid_parents_static(List<String> *p_parents) {
-}
-
 void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid) {
 #ifdef TOOLS_ENABLED
 
@@ -911,18 +905,14 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 	return ret;
 }
 
-void Object::notification(int p_notification, bool p_reversed) {
-	if (p_reversed) {
-		if (script_instance) {
-			script_instance->notification(p_notification, p_reversed);
-		}
-	} else {
-		_notificationv(p_notification, p_reversed);
-	}
+void Object::_notification_forward(int p_notification) {
+	// Notify classes starting with Object and ending with most derived subclass.
+	// e.g. Object -> Node -> Node3D
+	_notification_forwardv(p_notification);
 
 	if (_extension) {
 		if (_extension->notification2) {
-			_extension->notification2(_extension_instance, p_notification, static_cast<GDExtensionBool>(p_reversed));
+			_extension->notification2(_extension_instance, p_notification, static_cast<GDExtensionBool>(false));
 #ifndef DISABLE_DEPRECATED
 		} else if (_extension->notification) {
 			_extension->notification(_extension_instance, p_notification);
@@ -930,13 +920,29 @@ void Object::notification(int p_notification, bool p_reversed) {
 		}
 	}
 
-	if (p_reversed) {
-		_notificationv(p_notification, p_reversed);
-	} else {
-		if (script_instance) {
-			script_instance->notification(p_notification, p_reversed);
+	if (script_instance) {
+		script_instance->notification(p_notification, false);
+	}
+}
+
+void Object::_notification_backward(int p_notification) {
+	if (script_instance) {
+		script_instance->notification(p_notification, true);
+	}
+
+	if (_extension) {
+		if (_extension->notification2) {
+			_extension->notification2(_extension_instance, p_notification, static_cast<GDExtensionBool>(true));
+#ifndef DISABLE_DEPRECATED
+		} else if (_extension->notification) {
+			_extension->notification(_extension_instance, p_notification);
+#endif // DISABLE_DEPRECATED
 		}
 	}
+
+	// Notify classes starting with most derived subclass and ending in Object.
+	// e.g. Node3D -> Node -> Object
+	_notification_backwardv(p_notification);
 }
 
 String Object::to_string() {
@@ -1584,7 +1590,7 @@ void Object::initialize_class() {
 	if (initialized) {
 		return;
 	}
-	ClassDB::_add_class<Object>();
+	_add_class_to_classdb(get_class_static(), get_parent_class_static());
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
@@ -1658,6 +1664,14 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 		default: {
 		}
 	}
+}
+
+void Object::_add_class_to_classdb(const StringName &p_class, const StringName &p_inherits) {
+	ClassDB::_add_class(p_class, p_inherits);
+}
+
+void Object::_get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
+	ClassDB::get_property_list(p_class, p_list, p_no_inheritance, p_validator);
 }
 
 #ifdef TOOLS_ENABLED
@@ -1888,7 +1902,7 @@ Variant::Type Object::get_static_property_type(const StringName &p_property, boo
 }
 
 Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid) const {
-	if (p_path.size() == 0) {
+	if (p_path.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
 		}

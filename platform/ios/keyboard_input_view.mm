@@ -122,8 +122,7 @@
 }
 
 - (void)enterText:(NSString *)substring {
-	String characters;
-	characters.append_utf8([substring UTF8String]);
+	String characters = String::utf8([substring UTF8String]);
 
 	for (int i = 0; i < characters.size(); i++) {
 		int character = characters[i];

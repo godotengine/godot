@@ -77,7 +77,6 @@ import org.godotengine.godot.xr.XRMode
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean

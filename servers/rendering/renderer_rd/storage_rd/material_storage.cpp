@@ -1137,7 +1137,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		update_textures(p_parameters, p_default_texture_params, p_texture_uniforms, texture_cache.ptrw(), p_use_linear_color, p_3d_material);
 	}
 
-	if (p_ubo_size == 0 && (p_texture_uniforms.size() == 0)) {
+	if (p_ubo_size == 0 && (p_texture_uniforms.is_empty())) {
 		// This material does not require an uniform set, so don't create it.
 		return false;
 	}

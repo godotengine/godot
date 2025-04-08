@@ -673,7 +673,7 @@ void ProjectManager::_new_project() {
 void ProjectManager::_rename_project() {
 	const Vector<ProjectList::Item> &selected_list = project_list->get_selected_projects();
 
-	if (selected_list.size() == 0) {
+	if (selected_list.is_empty()) {
 		return;
 	}
 
@@ -688,7 +688,7 @@ void ProjectManager::_rename_project() {
 void ProjectManager::_erase_project() {
 	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
 
-	if (selected_list.size() == 0) {
+	if (selected_list.is_empty()) {
 		return;
 	}
 
@@ -1630,7 +1630,11 @@ ProjectManager::ProjectManager() {
 		ask_update_settings = memnew(ConfirmationDialog);
 		ask_update_settings->set_autowrap(true);
 		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_with_migration));
-		full_convert_button = ask_update_settings->add_button(TTR("Convert Full Project"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
+		int ed_swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+		if (ed_swap_cancel_ok == 0) {
+			ed_swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
+		}
+		full_convert_button = ask_update_settings->add_button(TTR("Convert Full Project"), ed_swap_cancel_ok != 2);
 		full_convert_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_full_convert_button_pressed));
 		add_child(ask_update_settings);
 

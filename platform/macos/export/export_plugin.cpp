@@ -736,9 +736,8 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 }
 
 void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist) {
-	String str;
+	String str = String::utf8((const char *)plist.ptr(), plist.size());
 	String strnew;
-	str.append_utf8((const char *)plist.ptr(), plist.size());
 	Vector<String> lines = str.split("\n");
 	for (int i = 0; i < lines.size(); i++) {
 		if (lines[i].find("$priv_collection") != -1) {
@@ -815,9 +814,8 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 }
 
 void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary) {
-	String str;
+	String str = String::utf8((const char *)plist.ptr(), plist.size());
 	String strnew;
-	str.append_utf8((const char *)plist.ptr(), plist.size());
 	Vector<String> lines = str.split("\n");
 	for (int i = 0; i < lines.size(); i++) {
 		if (lines[i].contains("$binary")) {

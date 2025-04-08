@@ -5532,7 +5532,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		} else {
 			Vector<String> &expr = split_tag_block;
-			if (expr.size() < 1) {
+			if (expr.is_empty()) {
 				add_text("[");
 				pos = brk_pos + 1;
 			} else {
@@ -5819,7 +5819,7 @@ bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p
 bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p_search_previous) {
 	ERR_FAIL_COND_V(!selection.enabled, false);
 
-	if (p_string.size() == 0) {
+	if (p_string.is_empty()) {
 		selection.active = false;
 		return false;
 	}

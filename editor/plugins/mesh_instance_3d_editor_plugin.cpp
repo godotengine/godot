@@ -36,7 +36,7 @@
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/gui/aspect_ratio_container.h"
@@ -394,7 +394,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 		Array a = mesh->surface_get_arrays(i);
 
 		Vector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
-		if (uv.size() == 0) {
+		if (uv.is_empty()) {
 			err_dialog->set_text(vformat(TTR("Mesh has no UV in layer %d."), p_layer + 1));
 			err_dialog->popup_centered();
 			return;
@@ -440,7 +440,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 }
 
 void MeshInstance3DEditor::_debug_uv_draw() {
-	if (uv_lines.size() == 0) {
+	if (uv_lines.is_empty()) {
 		return;
 	}
 

@@ -1932,7 +1932,7 @@ AnimationMixer *AnimationPlayerEditor::fetch_mixer_for_library() const {
 }
 
 Node *AnimationPlayerEditor::get_cached_root_node() const {
-	return Object::cast_to<Node>(ObjectDB::get_instance(cached_root_node_id));
+	return ObjectDB::get_instance<Node>(cached_root_node_id);
 }
 
 bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {

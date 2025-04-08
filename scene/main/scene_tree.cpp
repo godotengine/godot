@@ -1351,7 +1351,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 		if (p_viewport->is_input_handled()) {
 			break;
 		}
-		Node *n = Object::cast_to<Node>(ObjectDB::get_instance(id));
+		Node *n = ObjectDB::get_instance<Node>(id);
 		if (n) {
 			n->_call_shortcut_input(p_input);
 		}
@@ -1521,7 +1521,7 @@ Node *SceneTree::get_current_scene() const {
 void SceneTree::_flush_scene_change() {
 	if (prev_scene_id.is_valid()) {
 		// Might have already been freed externally.
-		Node *prev_scene = Object::cast_to<Node>(ObjectDB::get_instance(prev_scene_id));
+		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
 		if (prev_scene) {
 			memdelete(prev_scene);
 		}
@@ -1529,7 +1529,7 @@ void SceneTree::_flush_scene_change() {
 	}
 
 	DEV_ASSERT(pending_new_scene_id.is_valid());
-	Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+	Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
 	if (pending_new_scene) {
 		// Ensure correct state before `add_child` (might enqueue subsequent scene change).
 		current_scene = pending_new_scene;
@@ -1566,7 +1566,7 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 
 	// If called again while a change is pending.
 	if (pending_new_scene_id.is_valid()) {
-		Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+		Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
 		if (pending_new_scene) {
 			queue_delete(pending_new_scene);
 		}
@@ -2041,14 +2041,14 @@ SceneTree::SceneTree() {
 
 SceneTree::~SceneTree() {
 	if (prev_scene_id.is_valid()) {
-		Node *prev_scene = Object::cast_to<Node>(ObjectDB::get_instance(prev_scene_id));
+		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
 		if (prev_scene) {
 			memdelete(prev_scene);
 		}
 		prev_scene_id = ObjectID();
 	}
 	if (pending_new_scene_id.is_valid()) {
-		Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+		Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
 		if (pending_new_scene) {
 			memdelete(pending_new_scene);
 		}

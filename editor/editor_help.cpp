@@ -4555,7 +4555,7 @@ void EditorHelpBitTooltip::popup_under_cursor() {
 	// When `FLAG_POPUP` is false, it prevents the editor from losing focus when displaying the tooltip.
 	// This way, clicks and double-clicks are still available outside the tooltip.
 	set_flag(Window::FLAG_POPUP, false);
-	set_flag(Window::FLAG_NO_FOCUS, true);
+	set_flag(Window::FLAG_NO_FOCUS, !is_embedded());
 	popup(r);
 }
 

@@ -94,11 +94,6 @@ using namespace godot;
 
 // Thirdparty headers.
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-#endif
-
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>
 #include <unicode/uchar.h>
@@ -111,10 +106,6 @@ using namespace godot;
 #include <unicode/uspoof.h>
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include <ft2build.h>
@@ -330,6 +321,7 @@ class TextServerAdvanced : public TextServerExtension {
 		int fixed_size = 0;
 		bool allow_system_fallback = true;
 		bool force_autohinter = false;
+		bool modulate_color_glyphs = false;
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		bool keep_rounding_remainders = true;
@@ -806,6 +798,9 @@ public:
 
 	MODBIND2(font_set_force_autohinter, const RID &, bool);
 	MODBIND1RC(bool, font_is_force_autohinter, const RID &);
+
+	MODBIND2(font_set_modulate_color_glyphs, const RID &, bool);
+	MODBIND1RC(bool, font_is_modulate_color_glyphs, const RID &);
 
 	MODBIND2(font_set_subpixel_positioning, const RID &, SubpixelPositioning);
 	MODBIND1RC(SubpixelPositioning, font_get_subpixel_positioning, const RID &);

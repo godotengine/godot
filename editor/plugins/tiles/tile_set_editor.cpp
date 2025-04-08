@@ -80,7 +80,7 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		if (String(d["type"]) == "files") {
 			Vector<String> files = d["files"];
 
-			if (files.size() == 0) {
+			if (files.is_empty()) {
 				return false;
 			}
 
@@ -784,7 +784,7 @@ void TileSetEditor::remove_expanded_editor() {
 		return;
 	}
 
-	Node *original_parent = Object::cast_to<Node>(ObjectDB::get_instance(expanded_editor_parent));
+	Node *original_parent = ObjectDB::get_instance<Node>(expanded_editor_parent);
 	if (original_parent) {
 		expanded_editor->remove_meta("reparented");
 		expanded_editor->reparent(original_parent);

@@ -35,13 +35,14 @@
 #include "core/io/resource_loader.h"
 #include "core/templates/local_vector.h"
 #include "scene/2d/node_2d.h"
-#ifndef _3D_DISABLED
-#include "scene/3d/node_3d.h"
-#endif // _3D_DISABLED
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/missing_node.h"
 #include "scene/property_utils.h"
+
+#ifndef _3D_DISABLED
+#include "scene/3d/node_3d.h"
+#endif // _3D_DISABLED
 
 #define PACKED_SCENE_VERSION 3
 
@@ -127,14 +128,14 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	// Nodes where instantiation failed (because something is missing.)
 	List<Node *> stray_instances;
 
-#define NODE_FROM_ID(p_name, p_id)                      \
-	Node *p_name;                                       \
-	if (p_id & FLAG_ID_IS_PATH) {                       \
-		NodePath np = node_paths[p_id & FLAG_MASK];     \
-		p_name = ret_nodes[0]->get_node_or_null(np);    \
-	} else {                                            \
-		ERR_FAIL_INDEX_V(p_id &FLAG_MASK, nc, nullptr); \
-		p_name = ret_nodes[p_id & FLAG_MASK];           \
+#define NODE_FROM_ID(p_name, p_id)                       \
+	Node *p_name;                                        \
+	if (p_id & FLAG_ID_IS_PATH) {                        \
+		NodePath np = node_paths[p_id & FLAG_MASK];      \
+		p_name = ret_nodes[0]->get_node_or_null(np);     \
+	} else {                                             \
+		ERR_FAIL_INDEX_V(p_id & FLAG_MASK, nc, nullptr); \
+		p_name = ret_nodes[p_id & FLAG_MASK];            \
 	}
 
 	int nc = nodes.size();
@@ -521,7 +522,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 	for (const DeferredNodePathProperties &dnp : deferred_node_paths) {
 		// Replace properties stored as NodePaths with actual Nodes.
-		Node *base = Object::cast_to<Node>(ObjectDB::get_instance(dnp.base));
+		Node *base = ObjectDB::get_instance<Node>(dnp.base);
 		ERR_CONTINUE_EDMSG(!base, vformat("Failed to set deferred property '%s' as the base node disappeared.", dnp.property));
 		if (dnp.value.get_type() == Variant::ARRAY) {
 			Array paths = dnp.value;

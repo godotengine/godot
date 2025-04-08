@@ -2486,7 +2486,7 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 			if (kv.key == owner_id || !kv.value.has(plugin)) {
 				continue;
 			}
-			EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
+			EditorPropertyResource *epres = ObjectDB::get_instance<EditorPropertyResource>(kv.key);
 			if (epres) {
 				// If it's resource property editing the same resource type, fold it later to avoid premature modifications
 				// that may result in unsafe iteration of active_plugins.
@@ -2617,7 +2617,7 @@ void EditorNode::_add_to_history(const Object *p_object, const String &p_propert
 	ObjectID history_id = editor_history.get_current();
 	if (id != history_id) {
 		const MultiNodeEdit *multi_node_edit = Object::cast_to<const MultiNodeEdit>(p_object);
-		const MultiNodeEdit *history_multi_node_edit = Object::cast_to<const MultiNodeEdit>(ObjectDB::get_instance(history_id));
+		const MultiNodeEdit *history_multi_node_edit = ObjectDB::get_instance<MultiNodeEdit>(history_id);
 		if (multi_node_edit && history_multi_node_edit && multi_node_edit->is_same_selection(history_multi_node_edit)) {
 			return;
 		}
@@ -3786,7 +3786,7 @@ void EditorNode::add_extension_editor_plugin(const StringName &p_class_name) {
 	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_class_name, SNAME("EditorPlugin")), vformat("Class is not an editor plugin: %s", p_class_name));
 	ERR_FAIL_COND_MSG(singleton->editor_data.has_extension_editor_plugin(p_class_name), vformat("Editor plugin already added for class: %s", p_class_name));
 
-	EditorPlugin *plugin = Object::cast_to<EditorPlugin>(ClassDB::instantiate(p_class_name));
+	EditorPlugin *plugin = Object::cast_to<EditorPlugin>(ClassDB::_instantiate_allow_unexposed(p_class_name));
 	singleton->editor_data.add_extension_editor_plugin(p_class_name, plugin);
 	add_editor_plugin(plugin);
 }
@@ -3816,7 +3816,7 @@ void EditorNode::_update_addon_config() {
 		enabled_addons.push_back(E.key);
 	}
 
-	if (enabled_addons.size() == 0) {
+	if (enabled_addons.is_empty()) {
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", Variant());
 	} else {
 		enabled_addons.sort();
@@ -5702,6 +5702,30 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 		return false;
 	}
 
+	if (!EditorNode::validate_custom_directory()) {
+		current_menu_option = -1;
+		return false;
+	}
+
+	return true;
+}
+
+bool EditorNode::validate_custom_directory() {
+	bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
+
+	if (use_custom_dir) {
+		String data_dir = OS::get_singleton()->get_user_data_dir();
+		Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_USERDATA);
+		if (dir->change_dir(data_dir) != OK) {
+			dir->make_dir_recursive(data_dir);
+			if (dir->change_dir(data_dir) != OK) {
+				open_project_settings->set_text(vformat(TTR("User data dir '%s' is not valid. Change to a valid one?"), data_dir));
+				open_project_settings->popup_centered();
+				return false;
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -6342,7 +6366,7 @@ void EditorNode::preload_reimporting_with_path_in_edited_scenes(const List<Strin
 }
 
 void EditorNode::reload_instances_with_path_in_edited_scenes() {
-	if (scenes_modification_table.size() == 0) {
+	if (scenes_modification_table.is_empty()) {
 		return;
 	}
 	EditorProgress progress("reloading_scene", TTR("Scenes reloading"), editor_data.get_edited_scene_count());
@@ -7931,7 +7955,10 @@ EditorNode::EditorNode() {
 
 #ifdef ANDROID_ENABLED
 	// Add TouchActionsPanel node.
-	add_child(memnew(TouchActionsPanel));
+	bool is_enabled = EDITOR_GET("interface/touchscreen/enable_touch_actions_panel");
+	if (is_enabled) {
+		add_child(memnew(TouchActionsPanel));
+	}
 #endif
 
 	// Bottom panels.
@@ -8261,6 +8288,11 @@ EditorNode::EditorNode() {
 	pick_main_scene->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind(SETTINGS_PICK_MAIN_SCENE));
 	select_current_scene_button = pick_main_scene->add_button(TTR("Select Current"), true, "select_current");
 	pick_main_scene->connect("custom_action", callable_mp(this, &EditorNode::_pick_main_scene_custom_action));
+
+	open_project_settings = memnew(ConfirmationDialog);
+	gui_base->add_child(open_project_settings);
+	open_project_settings->set_ok_button_text(TTRC("Open Project Settings"));
+	open_project_settings->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind(PROJECT_OPEN_SETTINGS));
 
 	for (int i = 0; i < _init_callbacks.size(); i++) {
 		_init_callbacks[i]();

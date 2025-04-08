@@ -85,6 +85,9 @@ public:
 	/// Restore the state of this object from inStream. Does not save group filter.
 	void					RestoreBinaryState(StreamIn &inStream);
 
+	/// An invalid collision group
+	static const CollisionGroup	sInvalid;
+
 private:
 	RefConst<GroupFilter>	mGroupFilter;
 	GroupID					mGroupID = cInvalidGroup;

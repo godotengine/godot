@@ -447,7 +447,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			_set_item_custom_color(p_item, accent);
 		}
 	} else if (p_part_of_subscene) {
-		if (valid_types.size() == 0) {
+		if (valid_types.is_empty()) {
 			_set_item_custom_color(p_item, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		}
 	} else if (marked.has(p_node)) {
@@ -1290,7 +1290,7 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 
 void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {
 	ERR_FAIL_NULL(tree);
-	TreeItem *item = Object::cast_to<TreeItem>(ObjectDB::get_instance(p_item_id));
+	TreeItem *item = ObjectDB::get_instance<TreeItem>(p_item_id);
 	if (item) {
 		tree->scroll_to_item(item, true);
 	}
@@ -1839,7 +1839,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 }
 
 bool SceneTreeEditor::_is_script_type(const StringName &p_type) const {
-	return (script_types->find(p_type));
+	return (script_types->has(p_type));
 }
 
 bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
@@ -1865,7 +1865,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
-		if (files.size() == 0) {
+		if (files.is_empty()) {
 			return false; // TODO Weird?
 		}
 
@@ -2144,8 +2144,8 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	ask_before_revoke_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
 	vb->add_child(ask_before_revoke_checkbox);
 
-	script_types = memnew(List<StringName>);
-	ClassDB::get_inheriters_from_class("Script", script_types);
+	script_types = memnew(LocalVector<StringName>);
+	ClassDB::get_inheriters_from_class("Script", *script_types);
 }
 
 SceneTreeEditor::~SceneTreeEditor() {

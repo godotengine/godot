@@ -8,3 +8,5 @@ env.add_source_files(env.scene_sources, "*.cpp")
 # Chain load SCsubs
 if not env["disable_physics_2d"]:
     SConscript("physics/SCsub")
+if not env["disable_navigation_2d"]:
+    SConscript("navigation/SCsub")

@@ -136,7 +136,7 @@ void ThemeItemImportTree::_update_items_tree() {
 				filtered_names.push_back(F);
 			}
 
-			if (filtered_names.size() == 0) {
+			if (filtered_names.is_empty()) {
 				continue;
 			}
 
@@ -734,7 +734,7 @@ void ThemeItemImportTree::_deselect_all_data_type_pressed(int p_data_type) {
 }
 
 void ThemeItemImportTree::_import_selected() {
-	if (selected_items.size() == 0) {
+	if (selected_items.is_empty()) {
 		EditorNode::get_singleton()->show_accept(TTR("Nothing was selected for the import."), TTR("OK"));
 		return;
 	}

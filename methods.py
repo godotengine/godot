@@ -108,31 +108,19 @@ def redirect_emitter(target, source, env):
 def disable_warnings(self):
     # 'self' is the environment
     if self.msvc and not using_clang(self):
-        # We have to remove existing warning level defines before appending /w,
-        # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
-        WARN_FLAGS = ["/Wall", "/W4", "/W3", "/W2", "/W1", "/W0"]
-        self["CCFLAGS"] = [x for x in self["CCFLAGS"] if x not in WARN_FLAGS]
-        self["CFLAGS"] = [x for x in self["CFLAGS"] if x not in WARN_FLAGS]
-        self["CXXFLAGS"] = [x for x in self["CXXFLAGS"] if x not in WARN_FLAGS]
-        self.AppendUnique(CCFLAGS=["/w"])
+        self["WARNLEVEL"] = "/w"
     else:
-        self.AppendUnique(CCFLAGS=["-w"])
+        self["WARNLEVEL"] = "-w"
 
 
 def force_optimization_on_debug(self):
     # 'self' is the environment
     if self["target"] == "template_release":
         return
-
-    if self.msvc:
-        # We have to remove existing optimization level defines before appending /O2,
-        # otherwise we get: "warning D9025 : overriding '/0d' with '/02'"
-        self["CCFLAGS"] = [x for x in self["CCFLAGS"] if not x.startswith("/O")]
-        self["CFLAGS"] = [x for x in self["CFLAGS"] if not x.startswith("/O")]
-        self["CXXFLAGS"] = [x for x in self["CXXFLAGS"] if not x.startswith("/O")]
-        self.AppendUnique(CCFLAGS=["/O2"])
+    elif self.msvc:
+        self["OPTIMIZELEVEL"] = "/O2"
     else:
-        self.AppendUnique(CCFLAGS=["-O3"])
+        self["OPTIMIZELEVEL"] = "-O3"
 
 
 def add_module_version_string(self, s):

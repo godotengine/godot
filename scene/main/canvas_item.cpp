@@ -1687,6 +1687,7 @@ void CanvasItem::set_clip_children_mode(ClipChildrenMode p_clip_mode) {
 
 	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CanvasGroupMode(clip_children_mode));
 }
+
 CanvasItem::ClipChildrenMode CanvasItem::get_clip_children_mode() const {
 	ERR_READ_THREAD_GUARD_V(CLIP_CHILDREN_DISABLED);
 	return clip_children_mode;

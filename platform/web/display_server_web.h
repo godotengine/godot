@@ -102,7 +102,6 @@ private:
 	int key_event_pos = 0;
 
 	bool swap_cancel_ok = false;
-	bool tts = false;
 	NativeMenu *native_menu = nullptr;
 
 	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;

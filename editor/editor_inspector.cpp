@@ -579,6 +579,12 @@ void EditorProperty::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
+			EditorInspector *inspector = get_parent_inspector();
+			if (inspector) {
+				inspector = inspector->get_root_inspector();
+			}
+			set_shortcut_context(inspector);
+
 			if (has_borders) {
 				get_parent()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
 				_update_property_bg();
@@ -2223,10 +2229,8 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 			undo_redo->add_undo_property(object, count_property, properties_as_array.size());
 			for (int i = 0; i < (int)properties_as_array.size(); i++) {
 				Dictionary d = Dictionary(properties_as_array[i]);
-				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
-					String key = keys[j];
-					undo_redo->add_undo_property(object, vformat(key, i), d[key]);
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
 				}
 			}
 
@@ -2246,10 +2250,8 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 			undo_redo->add_do_property(object, count_property, properties_as_array.size());
 			for (int i = 0; i < (int)properties_as_array.size(); i++) {
 				Dictionary d = properties_as_array[i];
-				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
-					String key = keys[j];
-					undo_redo->add_do_property(object, vformat(key, i), d[key]);
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					undo_redo->add_do_property(object, vformat(kv.key, i), kv.value);
 				}
 			}
 		}
@@ -2300,10 +2302,8 @@ void EditorInspectorArray::_clear_array() {
 		undo_redo->add_undo_property(object, count_property, count);
 		for (int i = 0; i < (int)properties_as_array.size(); i++) {
 			Dictionary d = Dictionary(properties_as_array[i]);
-			Array keys = d.keys();
-			for (int j = 0; j < keys.size(); j++) {
-				String key = keys[j];
-				undo_redo->add_undo_property(object, vformat(key, i), d[key]);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
 			}
 		}
 
@@ -2365,10 +2365,8 @@ void EditorInspectorArray::_resize_array(int p_size) {
 			undo_redo->add_undo_property(object, count_property, count);
 			for (int i = count - 1; i > p_size - 1; i--) {
 				Dictionary d = Dictionary(properties_as_array[i]);
-				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
-					String key = keys[j];
-					undo_redo->add_undo_property(object, vformat(key, i), d[key]);
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
 				}
 			}
 
@@ -2996,7 +2994,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 			ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 			ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
 			ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
-			ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), CONNECT_DEFERRED);
+			ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
 			ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
 
 			if (F.properties.size()) {
@@ -3838,7 +3836,7 @@ void EditorInspector::update_tree() {
 				ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 				ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
 				ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
-				ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), CONNECT_DEFERRED);
+				ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
 				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
 
 				if (use_doc_hints) {

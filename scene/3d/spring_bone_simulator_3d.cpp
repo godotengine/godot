@@ -1371,6 +1371,9 @@ void SpringBoneSimulator3D::_find_collisions() {
 }
 
 void SpringBoneSimulator3D::_process_collisions() {
+	if (!is_inside_tree()) {
+		return;
+	}
 	for (const ObjectID &oid : collisions) {
 		Object *t_obj = ObjectDB::get_instance(oid);
 		if (!t_obj) {
@@ -1493,7 +1496,11 @@ void SpringBoneSimulator3D::_set_active(bool p_active) {
 	}
 }
 
-void SpringBoneSimulator3D::_process_modification() {
+void SpringBoneSimulator3D::_process_modification(double p_delta) {
+	if (!is_inside_tree()) {
+		return;
+	}
+
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton) {
 		return;
@@ -1507,14 +1514,16 @@ void SpringBoneSimulator3D::_process_modification() {
 	}
 #endif //TOOLS_ENABLED
 
-	double delta = skeleton->get_modifier_callback_mode_process() == Skeleton3D::MODIFIER_CALLBACK_MODE_PROCESS_IDLE ? skeleton->get_process_delta_time() : skeleton->get_physics_process_delta_time();
 	for (int i = 0; i < settings.size(); i++) {
 		_init_joints(skeleton, settings[i]);
-		_process_joints(delta, skeleton, settings[i]->joints, get_valid_collision_instance_ids(i), settings[i]->cached_center, settings[i]->cached_inverted_center, settings[i]->cached_inverted_center.basis.get_rotation_quaternion());
+		_process_joints(p_delta, skeleton, settings[i]->joints, get_valid_collision_instance_ids(i), settings[i]->cached_center, settings[i]->cached_inverted_center, settings[i]->cached_inverted_center.basis.get_rotation_quaternion());
 	}
 }
 
 void SpringBoneSimulator3D::reset() {
+	if (!is_inside_tree()) {
+		return;
+	}
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton) {
 		return;
