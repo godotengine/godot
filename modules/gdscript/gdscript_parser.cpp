@@ -4357,7 +4357,7 @@ static StringName _find_narrowest_native_or_global_class(const GDScriptParser::D
 			}
 
 			if (p_type.is_meta_type) {
-				return script.is_valid() ? script->get_class() : Script::get_class_static();
+				return script.is_valid() ? script->get_class_name() : Script::get_class_static();
 			}
 			if (script.is_null()) {
 				return p_type.native_type;
@@ -5257,7 +5257,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 		case SCRIPT:
 			result.type = Variant::OBJECT;
 			if (is_meta_type) {
-				result.class_name = script_type.is_valid() ? script_type->get_class() : Script::get_class_static();
+				result.class_name = script_type.is_valid() ? script_type->get_class_name() : Script::get_class_static();
 			} else if (script_type.is_valid() && script_type->get_global_name() != StringName()) {
 				result.class_name = script_type->get_global_name();
 			} else {

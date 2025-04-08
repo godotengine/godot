@@ -105,7 +105,7 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 			return;
 		case GDType::SCRIPT:
 			if (p_gdtype.is_meta_type) {
-				r_type = p_gdtype.script_type.is_valid() ? p_gdtype.script_type->get_class() : Script::get_class_static();
+				r_type = p_gdtype.script_type.is_valid() ? p_gdtype.script_type->get_class_name() : Script::get_class_static();
 				return;
 			}
 			if (p_gdtype.script_type.is_valid()) {
