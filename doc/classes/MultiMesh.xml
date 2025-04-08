@@ -114,40 +114,7 @@
 			This property provides access to the underlying buffer that stores transformation 
 			matrices and other instance data for all mesh instances.
 
-			The buffer structure depends on the [member transform_format] property and if [member use_custom_data] or [member use_colors] is enabled.
-			For 2D transforms, the buffer stride is 8 packed as follows:
-			[codeblock]
-			var buffer = multimesh.get_buffer();
-			# buffer[0] is transform.x.x
-			# buffer[1] is transform.x.y
-			# buffer[2] is unknown
-			# buffer[3] is transform.origin.x
-			# buffer[4] is transform.y.x
-			# buffer[5] is transform.y.y
-			# buffer[6] is unknown
-			# buffer[7] is transform.origin.y
-			[/codeblock]
-
-			For 3D transforms, the buffer stride is 12 and packed as follows:
-			[codeblock]
-			var buffer = multimesh.get_buffer();
-			# buffer[0] is transform.basis.x.x
-			# buffer[1] is transform.basis.x.y
-			# buffer[2] is transform.basis.x.z
-			# buffer[3] is transform.origin.x
-			# buffer[4] is transform.basis.y.x
-			# buffer[5] is transform.basis.y.y
-			# buffer[6] is transform.basis.y.z
-			# buffer[7] is transform.origin.y
-			# buffer[8] is transform.basis.z.x
-			# buffer[9] is transform.basis.z.y
-			# buffer[10] is transform.basis.z.z
-			# buffer[11] is transform.origin.z
-			[/codeblock]
-
-			When [member use_colors] is enabled, the buffer stride is increased by 4 and packed contiguously after the transform data with r, g, b, a components.
-			
-			When [member use_custom_data] is enabled, the buffer stride is increased by 4 and packed contiguously after the transform data with r, g, b, a components.
+			The buffer structure depends on the [member transform_format] property and if [member use_custom_data] or [member use_colors] is enabled. More info in [member RenderingServer.multimesh_set_buffer].
 		</member>
 		<member name="color_array" type="PackedColorArray" setter="_set_color_array" getter="_get_color_array" deprecated="Accessing this property is very slow. Use [method set_instance_color] and [method get_instance_color] instead.">
 			Array containing each [Color] used by all instances of this mesh.
