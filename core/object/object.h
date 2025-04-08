@@ -419,14 +419,14 @@ private:                                                                        
 public:                                                                                                                                     \
 	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;             \
 	virtual const StringName *_get_class_namev() const override {                                                                           \
+		return &get_class_static();                                                                                                         \
+	}                                                                                                                                       \
+	static const StringName &get_class_static() {                                                                                           \
 		static StringName _class_name_static;                                                                                               \
 		if (unlikely(!_class_name_static)) {                                                                                                \
 			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                     \
 		}                                                                                                                                   \
-		return &_class_name_static;                                                                                                         \
-	}                                                                                                                                       \
-	static _FORCE_INLINE_ String get_class_static() {                                                                                       \
-		return String(#m_class);                                                                                                            \
+		return _class_name_static;                                                                                                          \
 	}                                                                                                                                       \
 	virtual bool is_class(const String &p_class) const override {                                                                           \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                      \
@@ -739,11 +739,7 @@ protected:
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	virtual const StringName *_get_class_namev() const {
-		static StringName _class_name_static;
-		if (unlikely(!_class_name_static)) {
-			StringName::assign_static_unique_class_name(&_class_name_static, "Object");
-		}
-		return &_class_name_static;
+		return &get_class_static();
 	}
 
 	TypedArray<StringName> _get_meta_list_bind() const;
@@ -811,7 +807,13 @@ public:
 	};
 
 	/* TYPE API */
-	static String get_class_static() { return "Object"; }
+	static const StringName &get_class_static() {
+		static StringName _class_name_static;
+		if (unlikely(!_class_name_static)) {
+			StringName::assign_static_unique_class_name(&_class_name_static, "Object");
+		}
+		return _class_name_static;
+	}
 
 	_FORCE_INLINE_ String get_class() const { return get_class_name(); }
 
