@@ -1987,7 +1987,7 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 	}
 
 #if DEBUG_ENABLED
-	auto dd = EditorHelp::get_doc_data();
+	DocTools *dd = EditorHelp::get_doc_data();
 	bool is_deprecated = false;
 	String new_value_type = "value";
 	String value_name = type.native_type;
@@ -6007,9 +6007,9 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 			*r_native_class = native_method->get_instance_class();
 		}
 
-		auto dd = EditorHelp::get_doc_data();
+		DocTools *dd = EditorHelp::get_doc_data();
 		if (dd) {
-			auto method_list = dd->class_list[base_native].methods;
+			Vector<DocData::MethodDoc> method_list = dd->class_list[base_native].methods;
 			for (int i = 0; i < method_list.size(); i++) {
 				if (method_list[i].name == function_name && method_list[i].is_deprecated) {
 					parser->push_warning(p_source, GDScriptWarning::DEPRECATED_IDENTIFIER, "function", function_name);
