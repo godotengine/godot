@@ -780,10 +780,23 @@ void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio)
 
 	threads.resize(p_thread_count);
 
+	Thread::Settings settings;
+#ifdef __APPLE__
+	// The default stack size for new threads on Apple platforms is 512KiB.
+	// This is insufficient when using a library like SPIRV-Cross,
+	// which can generate deep stacks and result in a stack overflow.
+#ifdef DEV_ENABLED
+	// Debug builds need an even larger stack size.
+	settings.stack_size = 2 * 1024 * 1024; // 2 MiB
+#else
+	settings.stack_size = 1 * 1024 * 1024; // 1 MiB
+#endif
+#endif
+
 	for (uint32_t i = 0; i < threads.size(); i++) {
 		threads[i].index = i;
 		threads[i].pool = this;
-		threads[i].thread.start(&WorkerThreadPool::_thread_function, &threads[i]);
+		threads[i].thread.start(&WorkerThreadPool::_thread_function, &threads[i], settings);
 		thread_ids.insert(threads[i].thread.get_id(), i);
 	}
 }

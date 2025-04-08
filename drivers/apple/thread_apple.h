@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  thread_posix.cpp                                                      */
+/*  thread_apple.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,56 +28,83 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#if defined(UNIX_ENABLED)
+#pragma once
 
-#include "thread_posix.h"
+#include "core/templates/safe_refcount.h"
+#include "core/typedefs.h"
 
-#include "core/os/thread.h"
-#include "core/string/ustring.h"
+#include <pthread.h>
+#include <new> // For hardware interference size
 
-#if defined(PLATFORM_THREAD_OVERRIDE) && defined(__APPLE__)
-void init_thread_posix() {
-}
+class String;
+
+class Thread {
+public:
+	typedef void (*Callback)(void *p_userdata);
+
+	typedef uint64_t ID;
+
+	enum : ID {
+		UNASSIGNED_ID = 0,
+		MAIN_ID = 1
+	};
+
+	enum Priority {
+		PRIORITY_LOW,
+		PRIORITY_NORMAL,
+		PRIORITY_HIGH
+	};
+
+	struct Settings {
+		Priority priority;
+		/// Override the default stack size (0 means default)
+		uint64_t stack_size = 0;
+		Settings() { priority = PRIORITY_NORMAL; }
+	};
+
+#if defined(__cpp_lib_hardware_interference_size)
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Winterference-size")
+	static constexpr size_t CACHE_LINE_BYTES = std::hardware_destructive_interference_size;
+	GODOT_GCC_WARNING_POP
 #else
-
-#ifdef PTHREAD_BSD_SET_NAME
-#include <pthread_np.h>
+	// At a negligible memory cost, we use a conservatively high value.
+	static constexpr size_t CACHE_LINE_BYTES = 128;
 #endif
 
-static Error set_name(const String &p_name) {
-#ifdef PTHREAD_NO_RENAME
-	return ERR_UNAVAILABLE;
+private:
+	friend class Main;
 
-#else
+	ID id = UNASSIGNED_ID;
+	pthread_t pthread;
 
-#ifdef PTHREAD_RENAME_SELF
+	static SafeNumeric<uint64_t> id_counter;
+	static thread_local ID caller_id;
 
-	// check if thread is the same as caller
-	int err = pthread_setname_np(p_name.utf8().get_data());
+	static void *thread_callback(void *p_data);
 
-#else
+	static void make_main_thread() { caller_id = MAIN_ID; }
+	static void release_main_thread() { caller_id = id_counter.increment(); }
 
-	pthread_t running_thread = pthread_self();
-#ifdef PTHREAD_BSD_SET_NAME
-	pthread_set_name_np(running_thread, p_name.utf8().get_data());
-	int err = 0; // Open/FreeBSD ignore errors in this function
-#elif defined(PTHREAD_NETBSD_SET_NAME)
-	int err = pthread_setname_np(running_thread, "%s", const_cast<char *>(p_name.utf8().get_data()));
-#else
-	int err = pthread_setname_np(running_thread, p_name.utf8().get_data());
-#endif // PTHREAD_BSD_SET_NAME
+public:
+	_FORCE_INLINE_ static void yield() { pthread_yield_np(); }
 
-#endif // PTHREAD_RENAME_SELF
+	_FORCE_INLINE_ ID get_id() const { return id; }
+	// get the ID of the caller thread
+	_FORCE_INLINE_ static ID get_caller_id() {
+		return caller_id;
+	}
+	// get the ID of the main thread
+	_FORCE_INLINE_ static ID get_main_id() { return MAIN_ID; }
 
-	return err == 0 ? OK : ERR_INVALID_PARAMETER;
+	_FORCE_INLINE_ static bool is_main_thread() { return caller_id == MAIN_ID; }
 
-#endif // PTHREAD_NO_RENAME
-}
+	static Error set_name(const String &p_name);
 
-void init_thread_posix() {
-	Thread::_set_platform_functions({ .set_name = set_name });
-}
+	ID start(Thread::Callback p_callback, void *p_user, const Settings &p_settings = Settings());
+	bool is_started() const { return id != UNASSIGNED_ID; }
+	/// Waits until thread is finished, and deallocates it.
+	void wait_to_finish();
 
-#endif // PLATFORM_THREAD_OVERRIDE && __APPLE__
-
-#endif // UNIX_ENABLED
+	Thread() = default;
+	~Thread();
+};
