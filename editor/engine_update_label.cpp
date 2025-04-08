@@ -250,12 +250,7 @@ void EngineUpdateLabel::_notification(int p_what) {
 			}
 
 			if (_can_check_updates()) {
-				if (!checked_update) {
-					_check_update();
-				} else {
-					// This will be wrong when user toggles online mode twice when update is available, but it's not worth handling.
-					_set_status(UpdateStatus::UP_TO_DATE);
-				}
+				_check_update();
 			} else {
 				_set_status(UpdateStatus::OFFLINE);
 			}
