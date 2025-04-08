@@ -107,7 +107,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="instance" type="Object" />
 			<description>
-				Returns the passed [param instance] converted to a Dictionary. Can be useful for serializing.
+				Returns the passed [param instance] converted to a [Dictionary]. Can be useful for serializing.
 				[codeblock]
 				var foo = "bar"
 				func _ready():
@@ -133,7 +133,7 @@
 				- A constant from the [enum Variant.Type] enumeration, for example [constant TYPE_INT].
 				- An [Object]-derived class which exists in [ClassDB], for example [Node].
 				- A [Script] (you can use any class, including inner one).
-				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need dynamic type checking.
+				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need to check the type dynamically.
 				[b]Examples:[/b]
 				[codeblock]
 				print(is_instance_of(a, TYPE_INT))
