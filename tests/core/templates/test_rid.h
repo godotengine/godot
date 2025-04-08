@@ -143,7 +143,7 @@ TEST_CASE("[RID_Owner] Thread safety") {
 			uint32_t target = (p_step / 2 + 1) * threads.size();
 			sync[buf_idx].fetch_add(1, std::memory_order_relaxed);
 			do {
-				std::this_thread::yield();
+				Thread::yield();
 			} while (sync[buf_idx].load(std::memory_order_relaxed) != target);
 		}
 
