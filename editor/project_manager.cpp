@@ -1158,12 +1158,10 @@ void ProjectManager::_titlebar_resized() {
 	if (left_menu_spacer) {
 		int w = (root_container->is_layout_rtl()) ? margin.y : margin.x;
 		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
-		right_spacer->set_custom_minimum_size(Size2(w, 0));
 	}
 	if (right_menu_spacer) {
 		int w = (root_container->is_layout_rtl()) ? margin.x : margin.y;
 		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
-		left_spacer->set_custom_minimum_size(Size2(w, 0));
 	}
 	if (title_bar) {
 		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
@@ -1309,6 +1307,7 @@ ProjectManager::ProjectManager() {
 		main_view_toggles->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		main_view_toggles->set_stretch_ratio(2.0);
 		title_bar->add_child(main_view_toggles);
+		title_bar->set_center_control(main_view_toggles);
 
 		if (can_expand) {
 			// Spacer to center main toggles.
