@@ -63,6 +63,7 @@ private:
 	Vector<RD::PipelineImmutableSampler> immutable_samplers;
 
 	struct Version {
+		Mutex *mutex = nullptr;
 		CharString uniforms;
 		CharString vertex_globals;
 		CharString compute_globals;
@@ -79,8 +80,6 @@ private:
 		bool initialize_needed;
 	};
 
-	Mutex variant_set_mutex;
-
 	struct CompileData {
 		Version *version;
 		int group = 0;
@@ -95,7 +94,9 @@ private:
 	void _compile_ensure_finished(Version *p_version);
 	void _allocate_placeholders(Version *p_version, int p_group);
 
-	RID_Owner<Version> version_owner;
+	RID_Owner<Version, true> version_owner;
+	Mutex versions_mutex;
+	HashMap<RID, Mutex *> version_mutexes;
 
 	struct StageTemplate {
 		struct Chunk {
@@ -167,6 +168,8 @@ public:
 
 		Version *version = version_owner.get_or_null(p_version);
 		ERR_FAIL_NULL_V(version, RID());
+
+		MutexLock lock(*version->mutex);
 
 		if (version->dirty) {
 			_initialize_version(version);
