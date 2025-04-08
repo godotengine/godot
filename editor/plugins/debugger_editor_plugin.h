@@ -57,6 +57,7 @@ private:
 		RUN_RELOAD_SCRIPTS,
 		SERVER_KEEP_OPEN,
 		RUN_MULTIPLE_INSTANCES,
+		OPEN_INSTANCES_DIALOG
 	};
 
 	bool initializing = true;
