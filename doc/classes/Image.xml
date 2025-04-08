@@ -470,15 +470,15 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Saves the image as a DDS (DirectDraw Surface) file to [param path]. DDS is a container format that can store textures in various compression formats, such as DXT1, DXT5, or BC7.
-				[b]Note:[/b] The DDS module may be disabled in certain builds, which means [method save_dds] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
+				Saves the image as a DDS (DirectDraw Surface) file to [param path]. DDS is a container format that can store textures in various compression formats, such as DXT1, DXT5, or BC7. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the DDS module.
+				[b]Note:[/b] The DDS module may be disabled in certain builds.
 			</description>
 		</method>
 		<method name="save_dds_to_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Saves the image as a DDS (DirectDraw Surface) file to a byte array. DDS is a container format that can store textures in various compression formats, such as DXT1, DXT5, or BC7.
-				[b]Note:[/b] The DDS module may be disabled in certain builds, which means [method save_dds_to_buffer] will return an empty byte array when it is called from an exported project.
+				Saves the image as a DDS (DirectDraw Surface) file to a byte array. DDS is a container format that can store textures in various compression formats, such as DXT1, DXT5, or BC7. This function will return an empty byte array if Godot was compiled without the DDS module.
+				[b]Note:[/b] The DDS module may be disabled in certain builds.
 			</description>
 		</method>
 		<method name="save_exr" qualifiers="const">
@@ -486,16 +486,16 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="grayscale" type="bool" default="false" />
 			<description>
-				Saves the image as an EXR file to [param path]. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel.
-				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
+				Saves the image as an EXR file to [param path]. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the TinyEXR module.
+				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds.
 			</description>
 		</method>
 		<method name="save_exr_to_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<param index="0" name="grayscale" type="bool" default="false" />
 			<description>
-				Saves the image as an EXR file to a byte array. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel.
-				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr_to_buffer] will return an empty byte array when it is called from an exported project.
+				Saves the image as an EXR file to a byte array. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
+				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds.
 			</description>
 		</method>
 		<method name="save_jpg" qualifiers="const">
