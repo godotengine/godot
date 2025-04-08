@@ -48,6 +48,7 @@ void QuickSettingsDialog::_fetch_setting_values() {
 	editor_themes.clear();
 	editor_scales.clear();
 	editor_network_modes.clear();
+	editor_check_for_updates.clear();
 	editor_directory_naming_conventions.clear();
 
 	{
@@ -65,6 +66,8 @@ void QuickSettingsDialog::_fetch_setting_values() {
 				editor_scales = pi.hint_string.split(",");
 			} else if (pi.name == "network/connection/network_mode") {
 				editor_network_modes = pi.hint_string.split(",");
+			} else if (pi.name == "network/connection/engine_version_update_mode") {
+				editor_check_for_updates = pi.hint_string.split(",");
 			} else if (pi.name == "project_manager/directory_naming_convention") {
 				editor_directory_naming_conventions = pi.hint_string.split(",");
 			}
@@ -130,6 +133,19 @@ void QuickSettingsDialog::_update_current_values() {
 		}
 	}
 
+	// Check for updates options.
+	{
+		const int current_check_for_updates_mode = EDITOR_GET("network/connection/engine_version_update_mode");
+
+		for (int i = 0; i < editor_check_for_updates.size(); i++) {
+			const String &update_mode_value = editor_check_for_updates[i];
+			if (current_check_for_updates_mode == i) {
+				check_for_updates_option_button->set_text(update_mode_value);
+				check_for_updates_option_button->select(i);
+			}
+		}
+	}
+
 	// Project directory naming options.
 	{
 		const int current_directory_naming = EDITOR_GET("project_manager/directory_naming_convention");
@@ -177,6 +193,10 @@ void QuickSettingsDialog::_scale_selected(int p_id) {
 
 void QuickSettingsDialog::_network_mode_selected(int p_id) {
 	_set_setting_value("network/connection/network_mode", p_id);
+}
+
+void QuickSettingsDialog::_check_for_updates_selected(int p_id) {
+	_set_setting_value("network/connection/engine_version_update_mode", p_id);
 }
 
 void QuickSettingsDialog::_directory_naming_convention_selected(int p_id) {
@@ -318,6 +338,20 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			}
 
 			_add_setting_control(TTR("Network Mode"), network_mode_option_button);
+		}
+
+		// Update check options.
+		{
+			check_for_updates_option_button = memnew(OptionButton);
+			check_for_updates_option_button->set_fit_to_longest_item(false);
+			check_for_updates_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_check_for_updates_selected));
+
+			for (int i = 0; i < editor_check_for_updates.size(); i++) {
+				const String &check_for_updates_value = editor_check_for_updates[i];
+				check_for_updates_option_button->add_item(check_for_updates_value, i);
+			}
+
+			_add_setting_control(TTR("Check for Updates"), check_for_updates_option_button);
 		}
 
 		// Project directory naming options.
