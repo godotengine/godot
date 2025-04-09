@@ -109,6 +109,7 @@ void AudioDriver::input_buffer_write(int32_t sample) {
 			input_size++;
 		}
 	} else {
+		// This case could only happen if two threads were calling this function without any locking.
 		WARN_PRINT("input_buffer_write: Invalid input_position=" + itos(input_position) + " input_buffer.size()=" + itos(input_buffer.size()));
 	}
 }
