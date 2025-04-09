@@ -3222,9 +3222,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 					break;
 			}
 			if (!(force_res || use_custom_res)) {
-				display_server->window_set_size(window_size * ui_scale, DisplayServer::MAIN_WINDOW_ID);
+				display_server->window_set_size(Size2(window_size) * ui_scale, DisplayServer::MAIN_WINDOW_ID);
 			}
-			if (display_server->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) { // Note: add "&& !display_server->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)" when Wayland multi-window support is merged.
+			if (display_server->has_feature(DisplayServer::FEATURE_SUBWINDOWS) && !display_server->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
 				Size2 real_size = DisplayServer::get_singleton()->window_get_size();
 				Rect2i scr_rect = display_server->screen_get_usable_rect(init_screen);
 				display_server->window_set_position(scr_rect.position + (scr_rect.size - real_size) / 2, DisplayServer::MAIN_WINDOW_ID);
