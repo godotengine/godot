@@ -30,15 +30,15 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_device_driver.h"
-#include "servers/rendering/rendering_shader_container.h"
+#import "sha256_digest.h"
 
-#include "sha256_digest.h"
+#import "servers/rendering/rendering_device_driver.h"
+#import "servers/rendering/rendering_shader_container.h"
 
 struct ShaderCacheEntry;
 class MetalDeviceProperties;
 
-const uint32_t R32UI_ALIGNMENT_CONSTANT_ID = 65535;
+constexpr uint32_t R32UI_ALIGNMENT_CONSTANT_ID = 65535;
 
 class RenderingShaderContainerFormatMetal;
 
@@ -48,8 +48,51 @@ class RenderingShaderContainerMetal : public RenderingShaderContainer {
 	RenderingShaderContainerFormatMetal *owner = nullptr;
 	bool export_mode = false;
 
+	bool shader_compile_binary_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv);
+
 public:
 	static constexpr uint32_t FORMAT_VERSION = 1;
+
+	struct HeaderData {
+		enum Flags : uint32_t {
+			NONE = 0,
+			NEEDS_VIEW_MASK_BUFFER = 1 << 0,
+			USES_ARGUMENT_BUFFERS = 1 << 1,
+		};
+
+		// The Metal language version specified when compiling SPIR-V to MSL.
+		// Format is major * 10000 + minor * 100 + patch.
+		uint32_t msl_version = UINT32_MAX;
+		uint32_t flags = NONE;
+
+		bool needs_view_mask_buffer() const {
+			return flags & NEEDS_VIEW_MASK_BUFFER;
+		}
+
+		void set_needs_view_mask_buffer(bool p_value) {
+			if (p_value) {
+				flags |= NEEDS_VIEW_MASK_BUFFER;
+			} else {
+				flags &= ~NEEDS_VIEW_MASK_BUFFER;
+			}
+		}
+
+		bool uses_argument_buffers() const {
+			return flags & USES_ARGUMENT_BUFFERS;
+		}
+
+		void set_uses_argument_buffers(bool p_value) {
+			if (p_value) {
+				flags |= USES_ARGUMENT_BUFFERS;
+			} else {
+				flags &= ~USES_ARGUMENT_BUFFERS;
+			}
+		}
+	};
+
+	struct ShaderData {
+
+	};
 
 	RDD::ShaderID create_shader(const Vector<RDD::ImmutableSampler> &p_immutable_samplers);
 
@@ -60,32 +103,22 @@ protected:
 	virtual uint32_t _format() const override;
 	virtual uint32_t _format_version() const override;
 	virtual bool _set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) override;
+
+#pragma mark - Serialisation
+
 };
 
 class RenderingShaderContainerFormatMetal : public RenderingShaderContainerFormat {
-#pragma mark - Shader Cache
-
-	/**
-	 * The shader cache is a map of hashes of the Metal source to shader cache entries.
-	 *
-	 * To prevent unbounded growth of the cache, cache entries are automatically freed when
-	 * there are no more references to the MDLibrary associated with the cache entry.
-	 */
-	static inline HashMap<SHA256Digest, ShaderCacheEntry *, HashableHasher<SHA256Digest>> _shader_cache;
-	bool export_mode = false;
-
-	friend struct ShaderCacheEntry;
 	friend class RenderingShaderContainerMetal;
+
+	bool export_mode = false;
 
 	MetalDeviceProperties *device_properties = nullptr;
 
 public:
-	static void shader_cache_free_entry(const SHA256Digest &key);
-	static void clear_shader_cache();
-
 	virtual Ref<RenderingShaderContainer> create_container() const override;
 	virtual ShaderLanguageVersion get_shader_language_version() const override;
 	virtual ShaderSpirvVersion get_shader_spirv_version() const override;
 	RenderingShaderContainerFormatMetal(bool p_export = false);
-	virtual ~RenderingShaderContainerFormatMetal();
+	virtual ~RenderingShaderContainerFormatMetal() = default;
 };

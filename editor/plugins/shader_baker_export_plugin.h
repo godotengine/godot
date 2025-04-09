@@ -38,7 +38,7 @@ class ShaderBakerExportPluginPlatform : public RefCounted {
 	GDCLASS(ShaderBakerExportPluginPlatform, RefCounted);
 
 public:
-	virtual RenderingShaderContainerFormat *create_shader_container_format() = 0;
+	virtual RenderingShaderContainerFormat *create_shader_container_format(const Ref<EditorExportPlatform> &p_platform) = 0;
 	virtual bool matches_driver(const String &p_driver) = 0;
 	virtual ~ShaderBakerExportPluginPlatform() {}
 };

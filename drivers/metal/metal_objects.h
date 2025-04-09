@@ -626,8 +626,30 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformSet {
 struct ShaderCacheEntry;
 
 enum class ShaderLoadStrategy {
-	DEFAULT,
+	IMMEDIATE,
 	LAZY,
+
+	/// The default strategy is to load the shader immediately.
+	DEFAULT = IMMEDIATE,
+};
+
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalShaderCache {
+	friend struct ShaderCacheEntry;
+	friend class RenderingShaderContainerMetal;
+
+	static ShaderLoadStrategy _shader_load_strategy;
+
+	/**
+	 * The shader cache is a map of hashes of the Metal source to shader cache entries.
+	 *
+	 * To prevent unbounded growth of the cache, cache entries are automatically freed when
+	 * there are no more references to the MDLibrary associated with the cache entry.
+	 */
+	static inline HashMap<SHA256Digest, ShaderCacheEntry *, HashableHasher<SHA256Digest>> _shader_cache;
+
+	static void shader_cache_free_entry(const SHA256Digest &key);
+	static void clear_shader_cache();
+	static void initialize();
 };
 
 /// A Metal shader library.

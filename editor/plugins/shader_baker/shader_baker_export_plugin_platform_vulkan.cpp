@@ -32,7 +32,7 @@
 
 #include "drivers/vulkan/rendering_shader_container_vulkan.h"
 
-RenderingShaderContainerFormat *ShaderBakerExportPluginPlatformVulkan::create_shader_container_format() {
+RenderingShaderContainerFormat *ShaderBakerExportPluginPlatformVulkan::create_shader_container_format(const Ref<EditorExportPlatform> &p_platform) {
 	return memnew(RenderingShaderContainerFormatVulkan);
 }
 

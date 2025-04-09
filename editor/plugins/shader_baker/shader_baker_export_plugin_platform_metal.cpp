@@ -32,7 +32,7 @@
 
 #include "drivers/metal/rendering_shader_container_metal.h"
 
-RenderingShaderContainerFormat *ShaderBakerExportPluginPlatformMetal::create_shader_container_format() {
+RenderingShaderContainerFormat *ShaderBakerExportPluginPlatformMetal::create_shader_container_format(const Ref<EditorExportPlatform> &p_platform) {
 	return memnew(RenderingShaderContainerFormatMetal(true));
 }
 

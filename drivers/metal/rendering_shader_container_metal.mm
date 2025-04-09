@@ -657,6 +657,8 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) ShaderBinaryData {
 	}
 };
 
+// endregion
+
 /// Contains additional metadata about the shader.
 struct ShaderMeta {
 	/// Indicates whether the shader uses multiview.
@@ -971,8 +973,9 @@ Error _reflect_spirv16(VectorView<RD::ShaderStageSPIRVData> p_spirv, RD::ShaderR
 }
 
 Error compile_metal_source(String p_shader_name, const char *p_source, ShaderStageData &p_stage_data) {
-	//static Mutex mutex;
-	//MutexLock mLock(mutex);
+	if (p_shader_name.contains_char(':')) {
+		p_shader_name = p_shader_name.replace(":", "_");
+	}
 	Error r_error;
 	Ref<FileAccess> source_file = FileAccess::create_temp(FileAccess::ModeFlags::READ_WRITE,
 			p_shader_name + "_" + itos(p_stage_data.key.short_sha()),
@@ -992,7 +995,7 @@ Error compile_metal_source(String p_shader_name, const char *p_source, ShaderSta
 		ERR_FAIL_V_MSG(r_error, "Unable to create temporary target file");
 	}
 	{
-		List<String> args{ "-sdk", "iphoneos", "metal", "-Os", "-target", "air64-apple-ios16.0" };
+		List<String> args{ "-sdk", "macosx", "metal", "-O3" };
 		if (p_stage_data.is_position_invariant) {
 			args.push_back("-fpreserve-invariance");
 		}
@@ -1019,7 +1022,7 @@ Error compile_metal_source(String p_shader_name, const char *p_source, ShaderSta
 		}
 	}
 	{
-		List<String> args{ "-sdk", "iphoneos", "metal-dsymutil", "-remove-source", result_file->get_path_absolute() };
+		List<String> args{ "-sdk", "macosx", "metal-dsymutil", "-remove-source", result_file->get_path_absolute() };
 		String r_pipe;
 		int exit_code;
 		Error err = OS::get_singleton()->execute("/usr/bin/xcrun", args, &r_pipe, &exit_code, true);
@@ -1043,19 +1046,20 @@ Error compile_metal_source(String p_shader_name, const char *p_source, ShaderSta
 	return OK;
 }
 
-Vector<uint8_t> shader_compile_binary_from_spirv(MetalDeviceProperties *device_properties, const Vector<RD::ShaderStageSPIRVData> &p_spirv, const String &p_shader_name, bool p_export_mode) {
-	using Result = ::Vector<uint8_t>;
+bool RenderingShaderContainerMetal::shader_compile_binary_from_spirv(const Vector<RD::ShaderStageSPIRVData> &p_spirv) {
 	using namespace spirv_cross;
 	using spirv_cross::CompilerMSL;
 	using spirv_cross::Resource;
 
+	shaders.resize(1);
+
 	RD::ShaderReflection spirv_data;
 	ShaderMeta shader_meta;
-	ERR_FAIL_COND_V(_reflect_spirv16(p_spirv, spirv_data, shader_meta), Result());
+	ERR_FAIL_COND_V(_reflect_spirv16(p_spirv, spirv_data, shader_meta), false);
 
 	ShaderBinaryData bin_data{};
-	if (!p_shader_name.is_empty()) {
-		bin_data.shader_name = p_shader_name.utf8();
+	if (shader_name.size() > 0) {
+		bin_data.shader_name = shader_name;
 	} else {
 		bin_data.shader_name = "unnamed";
 	}
@@ -1099,15 +1103,13 @@ Vector<uint8_t> shader_compile_binary_from_spirv(MetalDeviceProperties *device_p
 	// Reflection using SPIRV-Cross:
 	// https://github.com/KhronosGroup/SPIRV-Cross/wiki/Reflection-API-user-guide
 
-	MTLCompileOptions *compile_options = [MTLCompileOptions new];
-	uint32_t version_major = (compile_options.languageVersion >> 0x10) & 0xff;
-	uint32_t version_minor = (compile_options.languageVersion >> 0x00) & 0xff;
+	MetalDeviceProperties *device_properties = owner->device_properties;
 
 	CompilerMSL::Options msl_options{};
-	msl_options.set_msl_version(version_major, version_minor);
+	msl_options.set_msl_version(device_properties->features.mslVersionMajor, device_properties->features.mslVersionMinor);
 	bin_data.msl_version = msl_options.msl_version;
 #if TARGET_OS_OSX
-	if (p_export_mode) {
+	if (export_mode) {
 		msl_options.platform = CompilerMSL::Options::iOS;
 	} else {
 		msl_options.platform = CompilerMSL::Options::macOS;
@@ -1116,7 +1118,7 @@ Vector<uint8_t> shader_compile_binary_from_spirv(MetalDeviceProperties *device_p
 	msl_options.platform = CompilerMSL::Options::iOS;
 #endif
 
-	if (p_export_mode) {
+	if (export_mode) {
 		msl_options.ios_use_simdgroup_functions = (*device_properties).features.simdPermute;
 		msl_options.ios_support_base_vertex_instance = true;
 	}
@@ -1170,7 +1172,7 @@ Vector<uint8_t> shader_compile_binary_from_spirv(MetalDeviceProperties *device_p
 		try {
 			parser.parse();
 		} catch (CompilerError &e) {
-			ERR_FAIL_V_MSG(Result(), "Failed to parse IR at stage " + String(RD::SHADER_STAGE_NAMES[stage]) + ": " + e.what());
+			ERR_FAIL_V_MSG(false, "Failed to parse IR at stage " + String(RD::SHADER_STAGE_NAMES[stage]) + ": " + e.what());
 		}
 
 		CompilerMSL compiler(std::move(parser.get_parsed_ir()));
@@ -1184,10 +1186,10 @@ Vector<uint8_t> shader_compile_binary_from_spirv(MetalDeviceProperties *device_p
 		try {
 			source = compiler.compile();
 		} catch (CompilerError &e) {
-			ERR_FAIL_V_MSG(Result(), "Failed to compile stage " + String(RD::SHADER_STAGE_NAMES[stage]) + ": " + e.what());
+			ERR_FAIL_V_MSG(false, "Failed to compile stage " + String(RD::SHADER_STAGE_NAMES[stage]) + ": " + e.what());
 		}
 
-		ERR_FAIL_COND_V_MSG(compiler.get_entry_points_and_stages().size() != 1, Result(), "Expected a single entry point and stage.");
+		ERR_FAIL_COND_V_MSG(compiler.get_entry_points_and_stages().size() != 1, false, "Expected a single entry point and stage.");
 
 		SmallVector<EntryPoint> entry_pts_stages = compiler.get_entry_points_and_stages();
 		EntryPoint &entry_point_stage = entry_pts_stages.front();
@@ -1420,31 +1422,31 @@ Vector<uint8_t> shader_compile_binary_from_spirv(MetalDeviceProperties *device_p
 
 		if (!resources.uniform_buffers.empty()) {
 			Error err = descriptor_bindings(resources.uniform_buffers, Writable::No);
-			ERR_FAIL_COND_V(err != OK, Result());
+			ERR_FAIL_COND_V(err != OK, false);
 		}
 		if (!resources.storage_buffers.empty()) {
 			Error err = descriptor_bindings(resources.storage_buffers, Writable::Maybe);
-			ERR_FAIL_COND_V(err != OK, Result());
+			ERR_FAIL_COND_V(err != OK, false);
 		}
 		if (!resources.storage_images.empty()) {
 			Error err = descriptor_bindings(resources.storage_images, Writable::Maybe);
-			ERR_FAIL_COND_V(err != OK, Result());
+			ERR_FAIL_COND_V(err != OK, false);
 		}
 		if (!resources.sampled_images.empty()) {
 			Error err = descriptor_bindings(resources.sampled_images, Writable::No);
-			ERR_FAIL_COND_V(err != OK, Result());
+			ERR_FAIL_COND_V(err != OK, false);
 		}
 		if (!resources.separate_images.empty()) {
 			Error err = descriptor_bindings(resources.separate_images, Writable::No);
-			ERR_FAIL_COND_V(err != OK, Result());
+			ERR_FAIL_COND_V(err != OK, false);
 		}
 		if (!resources.separate_samplers.empty()) {
 			Error err = descriptor_bindings(resources.separate_samplers, Writable::No);
-			ERR_FAIL_COND_V(err != OK, Result());
+			ERR_FAIL_COND_V(err != OK, false);
 		}
 		if (!resources.subpass_inputs.empty()) {
 			Error err = descriptor_bindings(resources.subpass_inputs, Writable::No);
-			ERR_FAIL_COND_V(err != OK, Result());
+			ERR_FAIL_COND_V(err != OK, false);
 		}
 
 		if (!resources.push_constant_buffers.empty()) {
@@ -1457,9 +1459,9 @@ Vector<uint8_t> shader_compile_binary_from_spirv(MetalDeviceProperties *device_p
 			}
 		}
 
-		ERR_FAIL_COND_V_MSG(!resources.atomic_counters.empty(), Result(), "Atomic counters not supported");
-		ERR_FAIL_COND_V_MSG(!resources.acceleration_structures.empty(), Result(), "Acceleration structures not supported");
-		ERR_FAIL_COND_V_MSG(!resources.shader_record_buffers.empty(), Result(), "Shader record buffers not supported");
+		ERR_FAIL_COND_V_MSG(!resources.atomic_counters.empty(), false, "Atomic counters not supported");
+		ERR_FAIL_COND_V_MSG(!resources.acceleration_structures.empty(), false, "Acceleration structures not supported");
+		ERR_FAIL_COND_V_MSG(!resources.shader_record_buffers.empty(), false, "Shader record buffers not supported");
 
 		if (!resources.stage_inputs.empty()) {
 			for (Resource const &res : resources.stage_inputs) {
@@ -1476,9 +1478,9 @@ Vector<uint8_t> shader_compile_binary_from_spirv(MetalDeviceProperties *device_p
 		stage_data.supports_fast_math = !entry_point.flags.get(spv::ExecutionModeSignedZeroInfNanPreserve);
 		stage_data.entry_point_name = entry_point.name.c_str();
 		stage_data.key = SHA256Digest(source.c_str(), source.length());
-		if (p_export_mode) {
+		if (export_mode) {
 			// Try to compile the Metal source code
-			Error compile_err = compile_metal_source(p_shader_name, source.c_str(), stage_data);
+			Error compile_err = compile_metal_source(shader_name.ptr(), source.c_str(), stage_data);
 			if (compile_err == OK) {
 				stage_data.binary_mode = true;
 			}
@@ -1500,19 +1502,16 @@ Vector<uint8_t> shader_compile_binary_from_spirv(MetalDeviceProperties *device_p
 	bin_data.serialize(writer);
 	ret.resize(writer.get_pos());
 
-	return ret;
-}
-
-bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) {
-	PackedByteArray code_bytes;
-	shaders.resize(1);
-	Vector<uint8_t> bin = shader_compile_binary_from_spirv(owner->device_properties, p_spirv, String::utf8(shader_name), export_mode);
 	RenderingShaderContainer::Shader &shader = shaders.ptrw()[0];
 	shader.code_decompressed_size = 0;
 	shader.code_compression_flags = 0;
-	shader.code_compressed_bytes = bin;
+	shader.code_compressed_bytes = ret;
 
 	return true;
+}
+
+bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) {
+	return shader_compile_binary_from_spirv(p_spirv);
 }
 
 RDD::ShaderID RenderingShaderContainerMetal::create_shader(const Vector<RDD::ImmutableSampler> &p_immutable_samplers) {
@@ -1550,7 +1549,7 @@ RDD::ShaderID RenderingShaderContainerMetal::create_shader(const Vector<RDD::Imm
 	HashMap<RD::ShaderStage, MDLibrary *> libraries;
 
 	for (ShaderStageData &shader_data : binary_data.stages) {
-		if (ShaderCacheEntry **p = RenderingShaderContainerFormatMetal::_shader_cache.getptr(shader_data.key); p != nullptr) {
+		if (ShaderCacheEntry **p = MetalShaderCache::_shader_cache.getptr(shader_data.key); p != nullptr) {
 			libraries[shader_data.stage] = (*p)->library;
 			continue;
 		}
@@ -1576,9 +1575,9 @@ RDD::ShaderID RenderingShaderContainerMetal::create_shader(const Vector<RDD::Imm
 												   device:owner->device_properties->device
 												   source:source
 												  options:options
-												 strategy:ShaderLoadStrategy::LAZY];
+												 strategy:MetalShaderCache::_shader_load_strategy];
 		}
-		RenderingShaderContainerFormatMetal::_shader_cache[shader_data.key] = cd;
+		MetalShaderCache::_shader_cache[shader_data.key] = cd;
 		libraries[shader_data.stage] = library;
 	}
 
@@ -1724,13 +1723,14 @@ RDD::ShaderID RenderingShaderContainerMetal::create_shader(const Vector<RDD::Imm
 		shader = rs;
 	}
 
-	// r_shader_desc.vertex_input_mask = binary_data.vertex_input_mask;
-	// r_shader_desc.fragment_output_mask = binary_data.fragment_output_mask;
-	// r_shader_desc.is_compute = binary_data.is_compute();
-	// r_shader_desc.compute_local_size[0] = binary_data.compute_local_size.x;
-	// r_shader_desc.compute_local_size[1] = binary_data.compute_local_size.y;
-	// r_shader_desc.compute_local_size[2] = binary_data.compute_local_size.z;
-	// r_shader_desc.push_constant_size = binary_data.push_constant.size;
+	DEV_ASSERT(reflection_data.vertex_input_mask == binary_data.vertex_input_mask);
+	DEV_ASSERT(reflection_data.vertex_input_mask == binary_data.vertex_input_mask);
+	DEV_ASSERT(reflection_data.fragment_output_mask == binary_data.fragment_output_mask);
+	DEV_ASSERT(reflection_data.is_compute == binary_data.is_compute());
+	DEV_ASSERT(reflection_data.compute_local_size[0] == binary_data.compute_local_size.x);
+	DEV_ASSERT(reflection_data.compute_local_size[1] == binary_data.compute_local_size.y);
+	DEV_ASSERT(reflection_data.compute_local_size[2] == binary_data.compute_local_size.z);
+	DEV_ASSERT(reflection_data.push_constant_size == binary_data.push_constant.size);
 
 	return RDD::ShaderID(shader);
 }
@@ -1756,7 +1756,7 @@ RenderingDeviceCommons::ShaderLanguageVersion RenderingShaderContainerFormatMeta
 }
 
 RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatMetal::get_shader_spirv_version() const {
-	return SHADER_SPIRV_VERSION_1_5;
+	return SHADER_SPIRV_VERSION_1_6;
 }
 
 static void mvkDispatchToMainAndWait(dispatch_block_t block) {
@@ -1774,22 +1774,4 @@ RenderingShaderContainerFormatMetal::RenderingShaderContainerFormatMetal(bool p_
 		device = MTLCreateSystemDefaultDevice();
 	});
 	device_properties = memnew(MetalDeviceProperties(device));
-}
-
-RenderingShaderContainerFormatMetal::~RenderingShaderContainerFormatMetal() {
-}
-
-void RenderingShaderContainerFormatMetal::shader_cache_free_entry(const SHA256Digest &key) {
-	if (ShaderCacheEntry **pentry = _shader_cache.getptr(key); pentry != nullptr) {
-		ShaderCacheEntry *entry = *pentry;
-		_shader_cache.erase(key);
-		entry->library = nil;
-		memdelete(entry);
-	}
-}
-
-void RenderingShaderContainerFormatMetal::clear_shader_cache() {
-	for (KeyValue<SHA256Digest, ShaderCacheEntry *> &kv : _shader_cache) {
-		memdelete(kv.value);
-	}
 }

@@ -2548,7 +2548,7 @@ RenderingDeviceDriverMetal::~RenderingDeviceDriverMetal() {
 		delete cb;
 	}
 
-	RenderingShaderContainerFormatMetal::clear_shader_cache();
+	MetalShaderCache::clear_shader_cache();
 }
 
 #pragma mark - Initialization

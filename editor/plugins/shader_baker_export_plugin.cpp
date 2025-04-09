@@ -59,16 +59,13 @@ bool ShaderBakerExportPlugin::_initialize_container_format(const Ref<EditorExpor
 		driver_variant = GLOBAL_GET("rendering/rendering_device/driver");
 		if (!driver_variant.is_string()) {
 			return false;
-		} else {
-			shader_container_driver = driver_variant;
 		}
-	} else {
-		shader_container_driver = driver_variant;
 	}
+	shader_container_driver = driver_variant;
 
 	for (Ref<ShaderBakerExportPluginPlatform> platform : platforms) {
 		if (platform->matches_driver(shader_container_driver)) {
-			shader_container_format = platform->create_shader_container_format();
+			shader_container_format = platform->create_shader_container_format(p_platform);
 			ERR_FAIL_NULL_V_MSG(shader_container_format, false, "Unable to create shader container format for the export platform.");
 			return true;
 		}
