@@ -1790,6 +1790,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(xml_unescape, sarray(), varray());
 	bind_string_method(uri_encode, sarray(), varray());
 	bind_string_method(uri_decode, sarray(), varray());
+	bind_string_method(uri_file_decode, sarray(), varray());
 	bind_string_method(c_escape, sarray(), varray());
 	bind_string_method(c_unescape, sarray(), varray());
 	bind_string_method(json_escape, sarray(), varray());
