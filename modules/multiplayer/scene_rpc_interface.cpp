@@ -30,6 +30,8 @@
 
 #include "scene_rpc_interface.h"
 
+#include "core/string/print_string.h"
+#include "core/variant/variant.h"
 #include "scene_multiplayer.h"
 
 #include "core/debugger/engine_debugger.h"
@@ -205,6 +207,8 @@ void SceneRPCInterface::process_rpc(int p_from, const uint8_t *p_packet, int p_p
 	}
 
 	Node *node = _process_get_node(p_from, p_packet, node_target, p_packet_len);
+	print_line(vformat("[core] Received RPC call on ID#%d, resolving to node %s", node_target, node)); // TODO: Remove
+
 	ERR_FAIL_NULL_MSG(node, "Invalid packet received. Requested node was not found.");
 
 	uint16_t name_id = 0;
@@ -377,6 +381,8 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 		encode_uint32(psc_id, &(packet_cache.write[ofs]));
 		ofs += 4;
 	}
+
+	print_line(vformat("[core] Sending RPC to node %s with ID#%d", p_node, psc_id)); // TODO: Remove
 
 	// Encode method ID
 	if (p_rpc_id <= UINT8_MAX) {
