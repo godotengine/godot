@@ -209,7 +209,7 @@ public:
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
 	virtual bool can_lose_focus_on_node_selection() { return true; }
-	virtual void update_toggle_scripts_button() {}
+	virtual void update_toggle_files_button() {}
 
 	virtual bool show_members_overview() = 0;
 
@@ -252,7 +252,7 @@ class ScriptEditor : public PanelContainer {
 		CLOSE_DOCS,
 		CLOSE_ALL,
 		CLOSE_OTHER_TABS,
-		TOGGLE_SCRIPTS_PANEL,
+		TOGGLE_FILES_PANEL,
 		SHOW_IN_FILE_SYSTEM,
 		FILE_COPY_PATH,
 		FILE_COPY_UID,
@@ -545,8 +545,8 @@ protected:
 public:
 	static ScriptEditor *get_singleton() { return script_editor; }
 
-	bool toggle_scripts_panel();
-	bool is_scripts_panel_toggled();
+	bool toggle_files_panel();
+	bool is_files_panel_toggled();
 	void apply_scripts() const;
 	void reload_scripts(bool p_refresh_only = false);
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);

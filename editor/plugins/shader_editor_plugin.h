@@ -75,7 +75,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 		CLOSE_OTHER_TABS,
 		SHOW_IN_FILE_SYSTEM,
 		COPY_PATH,
-		TOGGLE_SHADERS_PANEL,
+		TOGGLE_FILES_PANEL,
 	};
 
 	enum PopupMenuType {

@@ -1270,5 +1270,5 @@ TextShaderEditor::TextShaderEditor() {
 	add_child(disk_changed);
 
 	_editor_settings_changed();
-	code_editor->show_toggle_scripts_button(); // TODO: Disabled for now, because it doesn't work properly.
+	code_editor->show_toggle_files_button(); // TODO: Disabled for now, because it doesn't work properly.
 }
