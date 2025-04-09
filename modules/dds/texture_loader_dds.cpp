@@ -165,8 +165,8 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 		uint32_t size = p_width * p_height * info.block_size;
 
 		for (uint32_t i = 1; i < p_mipmaps; i++) {
-			w = (w + 1) >> 1;
-			h = (h + 1) >> 1;
+			w = MAX(1u, w >> 1);
+			h = MAX(1u, h >> 1);
 			size += w * h * info.block_size;
 		}
 
