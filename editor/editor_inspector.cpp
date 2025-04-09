@@ -4969,9 +4969,11 @@ void EditorInspector::_clear_current_favorites() {
 }
 
 void EditorInspector::_update_theme() {
-	updating_theme = true;
-	add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-	updating_theme = false;
+	if (!is_sub_inspector()) {
+		updating_theme = true;
+		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+		updating_theme = false;
+	}
 }
 
 void EditorInspector::_notification(int p_what) {
@@ -5002,19 +5004,21 @@ void EditorInspector::_notification(int p_what) {
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
 			get_parent()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorInspector::_update_theme));
-			_update_theme();
 			if (!is_sub_inspector()) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
 		} break;
 
-		case NOTIFICATION_EXIT_TREE: {
-			get_parent()->disconnect(SceneStringName(theme_changed), callable_mp(this, &EditorInspector::_update_theme));
+		case NOTIFICATION_ENTER_TREE: {
+			_update_theme();
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
-			if (!is_sub_inspector() && is_inside_tree()) {
-				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
+			if (is_inside_tree()) {
+				get_parent()->disconnect(SceneStringName(theme_changed), callable_mp(this, &EditorInspector::_update_theme));
+				if (!is_sub_inspector()) {
+					get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
+				}
 			}
 			edit(nullptr);
 		} break;
@@ -5071,7 +5075,7 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (!is_sub_inspector() && EditorThemeManager::is_generated_theme_outdated()) {
+			if (EditorThemeManager::is_generated_theme_outdated()) {
 				_update_theme();
 			}
 
