@@ -30,6 +30,8 @@
 
 #include "editor_export_platform.h"
 
+#include "editor_export_platform.compat.inc"
+
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/extension/gdextension.h"
@@ -946,7 +948,7 @@ Dictionary EditorExportPlatform::get_internal_export_files(const Ref<EditorExpor
 	Dictionary files;
 
 	// Text server support data.
-	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA) && (bool)GLOBAL_GET("internationalization/locale/include_text_server_data")) {
+	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA) && (bool)get_project_setting(p_preset, "internationalization/locale/include_text_server_data")) {
 		String ts_name = TS->get_support_data_filename();
 		String ts_target = "res://" + ts_name;
 		if (!ts_name.is_empty()) {
@@ -992,13 +994,13 @@ Dictionary EditorExportPlatform::get_internal_export_files(const Ref<EditorExpor
 	return files;
 }
 
-Vector<String> EditorExportPlatform::get_forced_export_files() {
+Vector<String> EditorExportPlatform::get_forced_export_files(const Ref<EditorExportPreset> &p_preset) {
 	Vector<String> files;
 
 	files.push_back(ProjectSettings::get_singleton()->get_global_class_list_path());
 
-	String icon = ResourceUID::ensure_path(GLOBAL_GET("application/config/icon"));
-	String splash = ResourceUID::ensure_path(GLOBAL_GET("application/boot_splash/image"));
+	String icon = ResourceUID::ensure_path(get_project_setting(p_preset, "application/config/icon"));
+	String splash = ResourceUID::ensure_path(get_project_setting(p_preset, "application/boot_splash/image"));
 	if (!icon.is_empty() && FileAccess::exists(icon)) {
 		files.push_back(icon);
 	}
@@ -1110,7 +1112,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				continue;
 			}
 
-			String autoload_path = GLOBAL_GET(pi.name);
+			String autoload_path = get_project_setting(p_preset, pi.name);
 
 			if (autoload_path.begins_with("*")) {
 				autoload_path = autoload_path.substr(1);
@@ -1253,7 +1255,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	HashMap<String, FileExportCache> export_cache;
 	String export_base_path = ProjectSettings::get_singleton()->get_project_data_path().path_join("exported/") + itos(custom_resources_hash);
 
-	bool convert_text_to_binary = GLOBAL_GET("editor/export/convert_text_resources_to_binary");
+	bool convert_text_to_binary = get_project_setting(p_preset, "editor/export/convert_text_resources_to_binary");
 
 	if (convert_text_to_binary || !customize_resources_plugins.is_empty() || !customize_scenes_plugins.is_empty()) {
 		// See if we have something to open
@@ -1565,7 +1567,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 	}
 
-	Vector<String> forced_export = get_forced_export_files();
+	Vector<String> forced_export = get_forced_export_files(p_preset);
 	for (int i = 0; i < forced_export.size(); i++) {
 		Vector<uint8_t> array;
 		if (GDExtension::get_extension_list_config_file() == forced_export[i]) {
@@ -2464,6 +2466,14 @@ Array EditorExportPlatform::get_current_presets() const {
 	return ret;
 }
 
+Variant EditorExportPlatform::get_project_setting(const Ref<EditorExportPreset> &p_preset, const StringName &p_name) {
+	if (p_preset.is_valid()) {
+		return p_preset->get_project_setting(p_name);
+	} else {
+		return GLOBAL_GET(p_name);
+	}
+}
+
 void EditorExportPlatform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_os_name"), &EditorExportPlatform::get_os_name);
 
@@ -2502,7 +2512,7 @@ void EditorExportPlatform::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_internal_export_files", "preset", "debug"), &EditorExportPlatform::get_internal_export_files);
 
-	ClassDB::bind_static_method("EditorExportPlatform", D_METHOD("get_forced_export_files"), &EditorExportPlatform::get_forced_export_files);
+	ClassDB::bind_static_method("EditorExportPlatform", D_METHOD("get_forced_export_files", "preset"), &EditorExportPlatform::get_forced_export_files);
 
 	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_NONE);
 	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_INFO);
