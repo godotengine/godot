@@ -38,6 +38,7 @@
 #if defined(UNIX_ENABLED)
 
 class FileAccessUnix : public FileAccess {
+	GDSOFTCLASS(FileAccessUnix, FileAccess);
 	FILE *f = nullptr;
 	int flags = 0;
 	void check_errors(bool p_write = false) const;
