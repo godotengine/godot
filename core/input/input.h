@@ -105,6 +105,7 @@ private:
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
 	bool disable_input = false;
+	unsigned int microphone_buffer_ofs = 0;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
@@ -395,6 +396,10 @@ public:
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
+
+	Error start_microphone();
+	Error stop_microphone();
+	PackedVector2Array get_microphone_buffer(int p_frames);
 
 	Input();
 	~Input();
