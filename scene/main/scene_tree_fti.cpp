@@ -51,7 +51,7 @@ void SceneTreeFTI::_reset_flags(Node *p_node) {
 
 		// In most cases the later  NOTIFICATION_RESET_PHYSICS_INTERPOLATION
 		// will reset this, but this should help cover hidden nodes.
-		s->data.local_transform_prev = s->data.local_transform;
+		s->data.local_transform_prev = s->get_transform();
 	}
 
 	for (int n = 0; n < p_node->get_child_count(); n++) {
@@ -101,6 +101,10 @@ void SceneTreeFTI::tick_update() {
 			if (s->data.fti_on_frame_xform_list) {
 				s->data.fti_on_frame_xform_list = false;
 			}
+
+			// Ensure that the spatial gets at least ONE further
+			// update in the resting position in the next frame update.
+			s->data.fti_frame_xform_force_update = true;
 		}
 	}
 
@@ -114,6 +118,9 @@ void SceneTreeFTI::tick_update() {
 		if (!s->data.fti_on_tick_property_list) {
 			// Needs a reset so jittering will stop.
 			s->fti_pump_xform();
+
+			// Ensure the servers are up to date with the final resting value.
+			s->fti_update_servers_property();
 
 			// Remove from interpolation list.
 			if (s->data.fti_on_frame_property_list) {
@@ -184,11 +191,14 @@ void SceneTreeFTI::_spatial_notify_set_property(Spatial &r_spatial) {
 }
 
 void SceneTreeFTI::_spatial_notify_set_xform(Spatial &r_spatial) {
+	DEV_CHECK_ONCE(data.enabled);
+
 	if (!r_spatial.is_physics_interpolated()) {
+		// Force an update of non-interpolated to servers
+		// on the next traversal.
+		r_spatial.data.fti_frame_xform_force_update = true;
 		return;
 	}
-
-	DEV_CHECK_ONCE(data.enabled);
 
 	if (!r_spatial.data.fti_on_tick_xform_list) {
 		r_spatial.data.fti_on_tick_xform_list = true;
@@ -198,6 +208,14 @@ void SceneTreeFTI::_spatial_notify_set_xform(Spatial &r_spatial) {
 		DEV_CHECK_ONCE(data.tick_xform_list[data.mirror].find(&r_spatial) == -1);
 #endif
 		data.tick_xform_list[data.mirror].push_back(&r_spatial);
+
+		// The following flag could have been previously set
+		// (for removal from the tick list).
+		// We no longer need this guarantee,
+		// however there is probably no downside to leaving it set
+		// as it will be cleared on the next frame anyway.
+		// This line is left for reference.
+		// r_spatial.data.fti_frame_xform_force_update = false;
 	}
 
 	if (!r_spatial.data.fti_on_frame_xform_list) {
@@ -259,6 +277,12 @@ void SceneTreeFTI::_update_dirty_spatials(Node *p_node, uint32_t p_current_frame
 		return;
 	}
 
+	// We are going to be using data.global_transform, so
+	// we need to ensure data.global_transform is not dirty!
+	if (s->data.dirty & Spatial::DIRTY_GLOBAL) {
+		_ALLOW_DISCARD_ s->get_global_transform();
+	}
+
 	// Start the active interpolation chain from here onwards
 	// as we recurse further into the SceneTree.
 	// Once we hit an active (interpolated) node, we have to fully
@@ -267,7 +291,7 @@ void SceneTreeFTI::_update_dirty_spatials(Node *p_node, uint32_t p_current_frame
 	if (!p_active) {
 		if (data.frame_start) {
 			// On the frame start, activate whenever we hit something that requests interpolation.
-			if (s->data.fti_on_frame_xform_list) {
+			if (s->data.fti_on_frame_xform_list || s->data.fti_frame_xform_force_update) {
 				p_active = true;
 			}
 		} else {
@@ -303,9 +327,11 @@ void SceneTreeFTI::_update_dirty_spatials(Node *p_node, uint32_t p_current_frame
 		// This will either use interpolation, or just use the current local if not interpolated.
 		Transform local_interp;
 		if (s->is_physics_interpolated()) {
-			TransformInterpolator::interpolate_transform(s->data.local_transform_prev, s->data.local_transform, local_interp, p_interpolation_fraction);
+			// Make sure to call `get_transform()` rather than using local_transform directly, because
+			// local_transform may be dirty and need updating from rotation / scale.
+			TransformInterpolator::interpolate_transform(s->data.local_transform_prev, s->get_transform(), local_interp, p_interpolation_fraction);
 		} else {
-			local_interp = s->data.local_transform;
+			local_interp = s->get_transform();
 		}
 
 		// Concatenate parent xform.
@@ -328,6 +354,11 @@ void SceneTreeFTI::_update_dirty_spatials(Node *p_node, uint32_t p_current_frame
 
 		// Upload to VisualServer the interpolated global xform.
 		s->fti_update_servers_xform();
+
+		// Only do this at most for one frame,
+		// it is used to catch objects being removed from the tick lists
+		// that have a deferred frame update.
+		s->data.fti_frame_xform_force_update = false;
 
 	} // if active.
 

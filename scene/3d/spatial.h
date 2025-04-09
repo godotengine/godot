@@ -128,6 +128,7 @@ private:
 		bool fti_on_tick_xform_list : 1;
 		bool fti_on_tick_property_list : 1;
 		bool fti_global_xform_interp_set : 1;
+		bool fti_frame_xform_force_update : 1;
 
 		bool merging_allowed : 1;
 

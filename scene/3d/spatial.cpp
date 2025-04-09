@@ -179,8 +179,11 @@ void Spatial::_notification(int p_what) {
 
 			notification(NOTIFICATION_ENTER_WORLD);
 
-			if (is_physics_interpolated_and_enabled()) {
-				// Always reset FTI when entering tree.
+			if (is_inside_tree() && get_tree()->is_physics_interpolation_enabled()) {
+				// Always reset FTI when entering tree
+				// and update the servers,
+				// both for interpolated and non-interpolated nodes,
+				// to ensure the server xforms are up to date.
 				fti_pump_xform();
 
 				// No need to interpolate as we are doing a reset.
@@ -278,7 +281,7 @@ void Spatial::_notification(int p_what) {
 
 		case NOTIFICATION_PAUSED: {
 			if (is_physics_interpolated_and_enabled()) {
-				data.local_transform_prev = data.local_transform;
+				data.local_transform_prev = get_transform();
 			}
 		} break;
 
@@ -310,11 +313,7 @@ void Spatial::set_global_rotation(const Vector3 &p_euler_rad) {
 }
 
 void Spatial::fti_pump_xform() {
-	if (data.dirty & DIRTY_LOCAL) {
-		_update_local_transform();
-	}
-
-	data.local_transform_prev = data.local_transform;
+	data.local_transform_prev = get_transform();
 }
 
 void Spatial::fti_notify_node_changed(bool p_transform_changed) {
@@ -1119,6 +1118,7 @@ Spatial::Spatial() :
 	data.fti_on_tick_xform_list = false;
 	data.fti_on_tick_property_list = false;
 	data.fti_global_xform_interp_set = false;
+	data.fti_frame_xform_force_update = false;
 
 	data.merging_mode = MERGING_MODE_INHERIT;
 
