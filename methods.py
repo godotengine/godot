@@ -96,9 +96,9 @@ def redirect_emitter(target, source, env):
 
     redirected_targets = []
     for item in target:
-        if base_folder in (path := Path(item.get_abspath()).resolve()).parents:
+        if base_folder in (path := Path(item.get_abspath())).parents:
             item = env.File(f"#bin/obj/{path.relative_to(base_folder)}")
-        elif (alt_base := Path(env.Dir(".").get_abspath()).resolve().parent) in path.parents:
+        elif (alt_base := Path(env.Dir(".").get_abspath()).parent) in path.parents:
             item = env.File(f"#bin/obj/external/{path.relative_to(alt_base)}")
         else:
             print_warning(f'Failed to redirect "{path}"')
