@@ -138,6 +138,62 @@ TEST_CASE("[SceneTree][Control] Focus") {
 		memdelete(child_ctrl);
 	}
 
+	SUBCASE("[SceneTree][Control] Grab focus with focus behavior recursive") {
+		CHECK_UNARY_FALSE(ctrl->has_focus());
+
+		// Cannot grab focus if focus behavior is disabled.
+		ctrl->set_focus_mode(Control::FocusMode::FOCUS_ALL);
+		ctrl->set_focus_behavior_recursive(Control::FOCUS_BEHAVIOR_DISABLED);
+
+		ERR_PRINT_OFF
+		ctrl->grab_focus();
+		ERR_PRINT_ON
+		CHECK_UNARY_FALSE(ctrl->has_focus());
+
+		// Cannot grab focus if focus behavior is enabled but focus mode is none.
+		ctrl->set_focus_mode(Control::FocusMode::FOCUS_NONE);
+		ctrl->set_focus_behavior_recursive(Control::FOCUS_BEHAVIOR_ENABLED);
+
+		ERR_PRINT_OFF
+		ctrl->grab_focus();
+		ERR_PRINT_ON
+		CHECK_UNARY_FALSE(ctrl->has_focus());
+
+		// Can grab focus if focus behavior is enabled and focus mode is all.
+		ctrl->set_focus_mode(Control::FocusMode::FOCUS_ALL);
+		ctrl->set_focus_behavior_recursive(Control::FOCUS_BEHAVIOR_ENABLED);
+
+		ctrl->grab_focus();
+		CHECK_UNARY(ctrl->has_focus());
+	}
+
+	SUBCASE("[SceneTree][Control] Children focus with focus behavior recursive") {
+		Control *child_control = memnew(Control);
+		ctrl->add_child(child_control);
+
+		// Can grab focus on child if parent focus behavior is inherit.
+		ctrl->set_focus_mode(Control::FocusMode::FOCUS_ALL);
+		ctrl->set_focus_behavior_recursive(Control::FOCUS_BEHAVIOR_INHERITED);
+		child_control->set_focus_mode(Control::FocusMode::FOCUS_ALL);
+		child_control->set_focus_behavior_recursive(Control::FOCUS_BEHAVIOR_INHERITED);
+
+		child_control->grab_focus();
+		CHECK_UNARY(child_control->has_focus());
+
+		// Cannot grab focus on child if parent focus behavior is disabled.
+		ctrl->set_focus_mode(Control::FocusMode::FOCUS_ALL);
+		ctrl->set_focus_behavior_recursive(Control::FOCUS_BEHAVIOR_DISABLED);
+		child_control->set_focus_mode(Control::FocusMode::FOCUS_ALL);
+		child_control->set_focus_behavior_recursive(Control::FOCUS_BEHAVIOR_INHERITED);
+
+		ERR_PRINT_OFF
+		child_control->grab_focus();
+		ERR_PRINT_ON
+		CHECK_UNARY_FALSE(child_control->has_focus());
+
+		memdelete(child_control);
+	}
+
 	memdelete(ctrl);
 }
 
