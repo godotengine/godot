@@ -86,7 +86,11 @@ public:
 	typedef void (*FileCloseFailNotify)(const String &);
 
 	typedef Ref<FileAccess> (*CreateFunc)();
+#ifdef BIG_ENDIAN_ENABLED
+	bool big_endian = true;
+#else
 	bool big_endian = false;
+#endif
 	bool real_is_double = false;
 
 	virtual BitField<UnixPermissionFlags> _get_unix_permissions(const String &p_file) = 0;
