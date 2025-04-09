@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "rich_text_label.h"
-#include "core/string/print_string.h"
 #include "rich_text_label.compat.inc"
 
 #include "core/input/input_map.h"
