@@ -1339,6 +1339,7 @@ void Thread::_start_func(void *ud) {
 	// When the call returns, we will reference the thread again if possible.
 	ObjectID th_instance_id = t->get_instance_id();
 	Callable target_callable = t->target_callable;
+	String id = t->get_id();
 	t = Ref<Thread>();
 
 	Callable::CallError ce;
@@ -1356,7 +1357,7 @@ void Thread::_start_func(void *ud) {
 	}
 
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_MSG(vformat("Could not call function '%s' to start thread %d: %s.", func_name, t->get_id(), Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce)));
+		ERR_FAIL_MSG(vformat("Could not call function '%s' to start thread %s: %s.", func_name, id, Variant::get_callable_error_text(target_callable, nullptr, 0, ce)));
 	}
 }
 
