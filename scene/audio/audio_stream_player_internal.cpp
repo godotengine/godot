@@ -30,6 +30,7 @@
 
 #include "audio_stream_player_internal.h"
 
+#include "core/variant/typed_dictionary.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
@@ -204,6 +205,39 @@ void AudioStreamPlayerInternal::validate_property(PropertyInfo &p_property) cons
 		}
 
 		p_property.hint_string = options;
+
+	} else if (p_property.name == "sends") {
+		String options;
+		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+			String name = AudioServer::get_singleton()->get_bus_name(i);
+			if (name == "Master" || sends.has(name)) {
+				continue;
+			}
+			if (options != "") {
+				options += ",";
+			}
+			options += name;
+		}
+
+		String hints;
+
+		// Key
+		hints += itos(Variant::Type::STRING_NAME);
+		hints += "/";
+		hints += itos(PROPERTY_HINT_ENUM);
+		hints += ":";
+		hints += options;
+
+		hints += ";";
+
+		// Value
+		hints += itos(Variant::Type::FLOAT);
+		hints += "/";
+		hints += itos(PROPERTY_HINT_RANGE);
+		hints += ":";
+		hints += "-80,0,0.1,suffix:dB";
+
+		p_property.hint_string = hints;
 	}
 }
 
@@ -346,6 +380,38 @@ StringName AudioStreamPlayerInternal::get_bus() const {
 		}
 	}
 	return SceneStringName(Master);
+}
+
+TypedDictionary<StringName, float> AudioStreamPlayerInternal::get_sends() const {
+	return sends;
+}
+
+TypedDictionary<StringName, float> AudioStreamPlayerInternal::get_all_buses() const {
+	TypedDictionary<StringName, float> buses = get_sends().duplicate();
+	buses[get_bus()] = volume_db;
+	return buses;
+}
+
+HashMap<StringName, Vector<AudioFrame>> AudioStreamPlayerInternal::get_all_bus_volume_vectors(const TypedDictionary<StringName, float> p_buses, const Vector<AudioFrame> p_volume_vector) {
+	float main_volume_linear = Math::db_to_linear(volume_db);
+	int vector_size = p_volume_vector.size();
+
+	HashMap<StringName, Vector<AudioFrame>> map;
+	for (const Variant &key_v : p_buses.keys()) {
+		StringName key = key_v;
+		float value_db = p_buses[key];
+		float value_linear = Math::db_to_linear(value_db);
+		float send_volume_linear = value_linear * main_volume_linear;
+
+		Vector<AudioFrame> send_volume_vector;
+		send_volume_vector.resize(vector_size);
+		for (int i = 0; i < vector_size; i++) {
+			send_volume_vector.write[i].left = p_volume_vector[i].left * send_volume_linear;
+			send_volume_vector.write[i].right = p_volume_vector[i].right * send_volume_linear;
+		}
+		map[key] = send_volume_vector;
+	}
+	return map;
 }
 
 AudioStreamPlayerInternal::AudioStreamPlayerInternal(Node *p_node, const Callable &p_play_callable, const Callable &p_stop_callable, bool p_physical) {
