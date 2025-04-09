@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "shader_language.h"
 
 class ShaderTypes {

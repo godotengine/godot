@@ -48,7 +48,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::set_id(int p_id) {
 	ERR_FAIL_COND(p_id < 0);

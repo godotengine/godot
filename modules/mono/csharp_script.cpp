@@ -55,7 +55,7 @@
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"

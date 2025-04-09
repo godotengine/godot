@@ -38,7 +38,7 @@
 #include "bc1.glsl.gen.h"
 #include "bc4.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 static Mutex betsy_mutex;
 static BetsyCompressor *betsy = nullptr;

@@ -34,7 +34,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 void World3D::_register_camera(Camera3D *p_camera) {
 	cameras.insert(p_camera);
