@@ -2549,7 +2549,11 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 			SceneTreeDock::get_singleton()->set_selection({ current_node });
 			InspectorDock::get_singleton()->update(current_node);
 			if (!inspector_only && !skip_main_plugin) {
-				skip_main_plugin = stay_in_script_editor_on_node_selected && !ScriptEditor::get_singleton()->is_editor_floating() && ScriptEditor::get_singleton()->is_visible_in_tree();
+				if (!ScriptEditor::get_singleton()->is_editor_floating() && ScriptEditor::get_singleton()->is_visible_in_tree()) {
+					skip_main_plugin = stay_in_script_editor_on_node_selected;
+				} else {
+					skip_main_plugin = !_can_auto_switch_main_screens();
+				}
 			}
 		} else {
 			NodeDock::get_singleton()->set_node(nullptr);
@@ -2629,9 +2633,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 				if (!changing_scene) {
 					main_plugin->edit(current_obj);
 				}
-			}
-
-			else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
+			} else if (main_plugin != editor_plugin_screen) {
 				// Unedit previous plugin.
 				editor_plugin_screen->edit(nullptr);
 				active_plugins[editor_owner_id].erase(editor_plugin_screen);
@@ -3839,32 +3841,13 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	changing_scene = false;
 
-	int current_tab = -1;
-	for (int i = 0; i < editor_table.size(); i++) {
-		if (editor_plugin_screen == editor_table[i]) {
-			current_tab = i;
-			break;
-		}
-	}
-
-	if (p_state.has("editor_index")) {
-		int index = p_state["editor_index"];
-		if (current_tab < 2) { // If currently in spatial/2d, only switch to spatial/2d. If currently in script, stay there.
-			if (index < 2 || !get_edited_scene()) {
-				editor_select(index);
-			}
-		}
-	}
-
 	if (get_edited_scene()) {
-		if (current_tab < 2) {
-			Node *editor_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
-			editor_node = editor_node == nullptr ? get_edited_scene() : editor_node;
-
-			if (Object::cast_to<CanvasItem>(editor_node)) {
-				editor_select(EDITOR_2D);
-			} else if (Object::cast_to<Node3D>(editor_node)) {
-				editor_select(EDITOR_3D);
+		if (_can_auto_switch_main_screens()) {
+			Node *selected_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
+			selected_node = selected_node == nullptr ? get_edited_scene() : selected_node;
+			const int plugin_index = _get_plugin_index(editor_data.get_handling_main_editor(selected_node));
+			if (plugin_index >= 0) {
+				editor_select(plugin_index);
 			}
 		}
 	}
@@ -3889,6 +3872,36 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	// Reset SDFGI after everything else so that any last-second scene modifications will be processed.
 	RenderingServer::get_singleton()->sdfgi_reset();
+}
+
+bool EditorNode::_can_auto_switch_main_screens() const {
+	if (editor_plugin_screen == nullptr) {
+		return true;
+	}
+	// Only allow auto-switching if the selected button is to the left of the Script button.
+	for (int i = 0; i < main_editor_button_hb->get_child_count(); i++) {
+		Button *button = Object::cast_to<Button>(main_editor_button_hb->get_child(i));
+		if (button->get_text() == "Script") {
+			// Selected button is at or after the Script button.
+			return false;
+		}
+		if (button->get_text() == editor_plugin_screen->get_name()) {
+			// Selected button is before the Script button.
+			return true;
+		}
+	}
+	return false;
+}
+
+int EditorNode::_get_plugin_index(EditorPlugin *p_editor) const {
+	int screen = -1;
+	for (int i = 0; i < editor_table.size(); i++) {
+		if (p_editor == editor_table[i]) {
+			screen = i;
+			break;
+		}
+	}
+	return screen;
 }
 
 bool EditorNode::is_changing_scene() const {
@@ -7265,6 +7278,7 @@ EditorNode::EditorNode() {
 	}
 
 	main_editor_button_hb = memnew(HBoxContainer);
+	main_editor_button_hb->set_name("EditorMainScreenButtons");
 	title_bar->add_child(main_editor_button_hb);
 
 	// Options are added and handled by DebuggerEditorPlugin.
