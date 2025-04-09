@@ -245,7 +245,7 @@ void NavRegion3D::update_polygons() {
 		const int *indices = navigation_mesh_polygon.ptr();
 		bool valid(true);
 
-		polygon.points.resize(navigation_mesh_polygon_size);
+		polygon.vertices.resize(navigation_mesh_polygon_size);
 		polygon.edges.resize(navigation_mesh_polygon_size);
 
 		real_t _new_polygon_surface_area = 0.0;
@@ -270,8 +270,7 @@ void NavRegion3D::update_polygons() {
 			}
 
 			Vector3 point_position = transform.xform(vertices_r[idx]);
-			polygon.points[j].pos = point_position;
-			polygon.points[j].key = NavMapBuilder3D::get_point_key(point_position, map->get_merge_rasterizer_cell_size());
+			polygon.vertices[j] = point_position;
 
 			if (first_vertex) {
 				first_vertex = false;
