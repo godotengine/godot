@@ -642,6 +642,8 @@ private:
 
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
+	bool _can_auto_switch_main_screens() const;
+	int _get_plugin_index(EditorPlugin *p_editor) const;
 
 	int _get_current_main_editor();
 
