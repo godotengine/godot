@@ -346,13 +346,13 @@
 		<method name="get_string_from_utf16" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. Returns empty string if source array is not valid UTF-16 string. This is the inverse of [method String.to_utf16_buffer].
+				Converts UTF-16 encoded array to [String]. If the BOM is missing, little-endianness is assumed. Returns empty string if source array is not valid UTF-16 string. This is the inverse of [method String.to_utf16_buffer].
 			</description>
 		</method>
 		<method name="get_string_from_utf32" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-32 encoded array to [String]. System endianness is assumed. Returns empty string if source array is not valid UTF-32 string. This is the inverse of [method String.to_utf32_buffer].
+				Converts UTF-32 encoded array to [String]. Returns empty string if source array is not valid UTF-32 string. This is the inverse of [method String.to_utf32_buffer].
 			</description>
 		</method>
 		<method name="get_string_from_wchar" qualifiers="const">
