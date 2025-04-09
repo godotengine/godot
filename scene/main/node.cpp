@@ -1608,7 +1608,7 @@ String Node::get_description() const {
 	} else {
 		description = get_name();
 		if (description.is_empty()) {
-			description = get_class();
+			description = get_class_name();
 		}
 	}
 	return description;
@@ -1727,7 +1727,7 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 	if (name == StringName()) {
 		// No name and a new name is needed, create one.
 
-		name = p_child->get_class();
+		name = p_child->get_class_name();
 	}
 
 	const Node *const *existing = data.children.getptr(name);
@@ -2944,7 +2944,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		instantiated = true;
 
 	} else {
-		Object *obj = ClassDB::instantiate(get_class());
+		Object *obj = ClassDB::instantiate(get_class_name());
 		ERR_FAIL_NULL_V(obj, nullptr);
 		node = Object::cast_to<Node>(obj);
 		if (!node) {
@@ -3366,7 +3366,7 @@ void Node::_replace_connections_target(Node *p_new_target) {
 		if (c.flags & CONNECT_PERSIST) {
 			c.signal.get_object()->disconnect(c.signal.get_name(), Callable(this, c.callable.get_method()));
 			bool valid = p_new_target->has_method(c.callable.get_method()) || Ref<Script>(p_new_target->get_script()).is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.callable.get_method());
-			ERR_CONTINUE_MSG(!valid, vformat("Attempt to connect signal '%s.%s' to nonexistent method '%s.%s'.", c.signal.get_object()->get_class(), c.signal.get_name(), c.callable.get_object()->get_class(), c.callable.get_method()));
+			ERR_CONTINUE_MSG(!valid, vformat("Attempt to connect signal '%s.%s' to nonexistent method '%s.%s'.", c.signal.get_object()->get_class_name(), c.signal.get_name(), c.callable.get_object()->get_class_name(), c.callable.get_method()));
 			c.signal.get_object()->connect(c.signal.get_name(), Callable(p_new_target, c.callable.get_method()), c.flags);
 		}
 	}
@@ -3502,7 +3502,7 @@ static void _print_orphan_nodes_routine(Object *p_obj) {
 
 	List<String> info_strings;
 	info_strings.push_back(path);
-	info_strings.push_back(n->get_class());
+	info_strings.push_back(n->get_class_name());
 
 	_print_orphan_nodes_map[p_obj->get_instance_id()] = info_strings;
 }

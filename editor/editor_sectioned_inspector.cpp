@@ -191,7 +191,7 @@ void SectionedInspector::edit(Object *p_object) {
 
 	ObjectID id = p_object->get_instance_id();
 
-	inspector->set_object_class(p_object->get_class());
+	inspector->set_object_class(p_object->get_class_name());
 
 	if (obj != id) {
 		obj = id;

@@ -143,7 +143,7 @@ Error CallQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant
 		if (pages_used == max_pages) {
 			String type;
 			if (ObjectDB::get_instance(p_id)) {
-				type = ObjectDB::get_instance(p_id)->get_class();
+				type = ObjectDB::get_instance(p_id)->get_class_name();
 			}
 			fprintf(stderr, "Failed set: %s: %s target ID: %s. Message queue out of memory. %s\n", type.utf8().get_data(), String(p_prop).utf8().get_data(), itos(p_id).utf8().get_data(), error_text.utf8().get_data());
 			statistics();

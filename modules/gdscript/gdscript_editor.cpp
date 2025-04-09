@@ -4253,7 +4253,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 								r_result.class_name = Object::cast_to<GDScriptNativeClass>(obj)->get_name();
 							} else {
 								r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
-								r_result.class_name = obj->get_class();
+								r_result.class_name = obj->get_class_name();
 							}
 							return OK;
 						}

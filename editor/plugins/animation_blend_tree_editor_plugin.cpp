@@ -325,11 +325,11 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 	} else if (p_idx == MENU_LOAD_FILE_CONFIRM) {
 		anode = file_loaded;
 		file_loaded.unref();
-		base_name = anode->get_class();
+		base_name = anode->get_class_name();
 	} else if (p_idx == MENU_PASTE) {
 		anode = EditorSettings::get_singleton()->get_resource_clipboard();
 		ERR_FAIL_COND(anode.is_null());
-		base_name = anode->get_class();
+		base_name = anode->get_class_name();
 	} else if (!add_options[p_idx].type.is_empty()) {
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(add_options[p_idx].type));
 		ERR_FAIL_NULL(an);

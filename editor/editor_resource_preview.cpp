@@ -169,7 +169,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 	uint64_t started_at = OS::get_singleton()->get_ticks_usec();
 
 	if (p_item.resource.is_valid()) {
-		type = p_item.resource->get_class();
+		type = p_item.resource->get_class_name();
 	} else {
 		type = ResourceLoader::get_resource_type(p_item.path);
 	}

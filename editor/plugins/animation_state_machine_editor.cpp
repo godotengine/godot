@@ -752,7 +752,7 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 	}
 
 	if (base_name.is_empty()) {
-		base_name = node->get_class().replace_first("AnimationNode", "");
+		base_name = String(node->get_class_name()).replace_first("AnimationNode", "");
 	}
 
 	int base = 1;

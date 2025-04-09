@@ -815,9 +815,11 @@ public:
 		return _class_name_static;
 	}
 
-	_FORCE_INLINE_ String get_class() const { return get_class_name(); }
+#ifndef DISABLE_DEPRECATED
+	[[deprecated]] _FORCE_INLINE_ String get_class() const { return get_class_name(); }
+#endif
 
-	virtual String get_save_class() const { return get_class(); } //class stored when saving
+	virtual String get_save_class() const { return get_class_name(); } //class stored when saving
 
 	virtual bool is_class(const String &p_class) const {
 		if (_extension && _extension->is_class(p_class)) {

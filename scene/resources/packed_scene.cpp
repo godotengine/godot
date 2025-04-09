@@ -84,7 +84,7 @@ Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, Ha
 	HashMap<Ref<Resource>, Ref<Resource>>::Iterator R = remap_cache.find(p_resource);
 	if (R) {
 		remap_resource = R->value;
-	} else if (p_fallback.is_valid() && p_fallback->is_local_to_scene() && p_fallback->get_class() == p_resource->get_class()) {
+	} else if (p_fallback.is_valid() && p_fallback->is_local_to_scene() && p_fallback->get_class_name() == p_resource->get_class_name()) {
 		// Simply copy the data from the source resource to update the fallback resource that was previously set.
 
 		p_fallback->reset_state(); // May want to reset state.
@@ -979,7 +979,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			// It's a missing node (type non existent on load).
 			nd.type = _nm_get_string(missing_node->get_original_class(), name_map);
 		} else {
-			nd.type = _nm_get_string(p_node->get_class(), name_map);
+			nd.type = _nm_get_string(p_node->get_class_name(), name_map);
 		}
 	} else {
 		// this node is part of an instantiated process, so do not save the type.
@@ -2150,7 +2150,7 @@ void PackedScene::reload_from_file() {
 		return;
 	}
 
-	Ref<PackedScene> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+	Ref<PackedScene> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class_name(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 	if (s.is_null()) {
 		return;
 	}

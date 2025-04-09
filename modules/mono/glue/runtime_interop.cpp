@@ -273,7 +273,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Obj
 
 	bool parent_is_object_class = ClassDB::is_parent_class(p_unmanaged->get_class_name(), script_binding.type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, { nullptr },
-			"Type inherits from native type '" + script_binding.type_name + "', so it can't be instantiated in object of type: '" + p_unmanaged->get_class() + "'.");
+			"Type inherits from native type '" + script_binding.type_name + "', so it can't be instantiated in object of type: '" + p_unmanaged->get_class_name() + "'.");
 
 	GCHandleIntPtr strong_gchandle =
 			GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectBinding(
@@ -349,7 +349,7 @@ void godotsharp_array_filter_godot_objects_by_native(StringName *p_native_name, 
 	memnew_placement(r_output, Array);
 
 	for (int i = 0; i < p_input->size(); ++i) {
-		if (ClassDB::is_parent_class(((Object *)(*p_input)[i])->get_class(), *p_native_name)) {
+		if (ClassDB::is_parent_class(((Object *)(*p_input)[i])->get_class_name(), *p_native_name)) {
 			r_output->push_back(p_input[i]);
 		}
 	}
@@ -1507,7 +1507,7 @@ void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
 #endif
 	// Can't call 'Object::to_string()' here, as that can end up calling 'ToString' again resulting in an endless circular loop.
 	memnew_placement(r_str,
-			String("<" + p_ptr->get_class() + "#" + itos(p_ptr->get_instance_id()) + ">"));
+			String("<" + p_ptr->get_class_name() + "#" + itos(p_ptr->get_instance_id()) + ">"));
 }
 
 #ifdef __cplusplus

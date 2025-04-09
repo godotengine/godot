@@ -3308,7 +3308,7 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 			continue;
 		}
 
-		if (sb->get_class() == leading_stylebox.stylebox->get_class()) {
+		if (sb->get_class_name() == leading_stylebox.stylebox->get_class_name()) {
 			styleboxes.push_back(sb);
 		}
 	}

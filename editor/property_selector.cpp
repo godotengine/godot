@@ -349,7 +349,7 @@ void PropertySelector::_item_selected() {
 	} else if (!base_type.is_empty()) {
 		class_type = base_type;
 	} else if (instance) {
-		class_type = instance->get_class();
+		class_type = instance->get_class_name();
 	}
 
 	String text;
@@ -562,7 +562,7 @@ void PropertySelector::select_method_from_basic_type(Variant::Type p_type, const
 }
 
 void PropertySelector::select_method_from_instance(Object *p_instance, const String &p_current) {
-	base_type = p_instance->get_class();
+	base_type = p_instance->get_class_name();
 	selected = p_current;
 	type = Variant::NIL;
 	script = ObjectID();

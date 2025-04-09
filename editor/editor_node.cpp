@@ -1560,7 +1560,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 			file->set_current_file(p_resource->get_path().get_file());
 		} else {
 			if (!preferred.is_empty()) {
-				String resource_name_snake_case = p_resource->get_class().to_snake_case();
+				String resource_name_snake_case = String(p_resource->get_class_name()).to_snake_case();
 				file->set_current_file("new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower());
 			} else {
 				file->set_current_file(String());
@@ -1575,7 +1575,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 			}
 		}
 	} else if (!preferred.is_empty()) {
-		const String resource_name_snake_case = p_resource->get_class().to_snake_case();
+		const String resource_name_snake_case = String(p_resource->get_class_name()).to_snake_case();
 		const String existing = "new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower();
 		file->set_current_path(existing);
 	}
@@ -2424,7 +2424,7 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 	ERR_FAIL_NULL(p_editing_owner);
 
 	// Editing for this type of object may be disabled by user's feature profile.
-	if (!p_object || _is_class_editor_disabled_by_feature_profile(p_object->get_class())) {
+	if (!p_object || _is_class_editor_disabled_by_feature_profile(p_object->get_class_name())) {
 		// Nothing to edit, clean up the owner context and return.
 		hide_unused_editors(p_editing_owner);
 		return;
@@ -4454,7 +4454,7 @@ void EditorNode::update_node_from_node_modification_entry(Node *p_node, Modifica
 			Connection conn = E;
 
 			bool valid = p_node->has_method(conn.callable.get_method()) || Ref<Script>(p_node->get_script()).is_null() || Ref<Script>(p_node->get_script())->has_method(conn.callable.get_method());
-			ERR_CONTINUE_MSG(!valid, vformat("Attempt to connect signal '%s.%s' to nonexistent method '%s.%s'.", conn.signal.get_object()->get_class(), conn.signal.get_name(), conn.callable.get_object()->get_class(), conn.callable.get_method()));
+			ERR_CONTINUE_MSG(!valid, vformat("Attempt to connect signal '%s.%s' to nonexistent method '%s.%s'.", conn.signal.get_object()->get_class_name(), conn.signal.get_name(), conn.callable.get_object()->get_class_name(), conn.callable.get_method()));
 
 			// Get the object which the signal is connected from.
 			Object *source_object = conn.signal.get_object();
@@ -5088,7 +5088,7 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 	if (Object::cast_to<MultiNodeEdit>(p_object)) {
 		return get_class_icon(Object::cast_to<MultiNodeEdit>(p_object)->get_edited_class_name(), p_fallback);
 	} else {
-		return _get_class_or_script_icon(p_object->get_class(), scr.is_valid() ? scr->get_path() : String(), p_fallback);
+		return _get_class_or_script_icon(p_object->get_class_name(), scr.is_valid() ? scr->get_path() : String(), p_fallback);
 	}
 }
 
@@ -6024,7 +6024,7 @@ Dictionary EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from
 	} else if (!p_res->get_name().is_empty()) {
 		label->set_text(p_res->get_name());
 	} else {
-		label->set_text(p_res->get_class());
+		label->set_text(p_res->get_class_name());
 	}
 
 	drag_control->add_child(label);

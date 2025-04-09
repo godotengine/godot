@@ -3292,7 +3292,7 @@ void EditorHelp::popup_search() {
 	find_bar->popup_search();
 }
 
-String EditorHelp::get_class() {
+String EditorHelp::get_class_name() {
 	return edited_class;
 }
 

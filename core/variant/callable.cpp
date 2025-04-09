@@ -359,7 +359,7 @@ Callable::operator String() const {
 
 		Object *base = get_object();
 		if (base) {
-			String class_name = base->get_class();
+			String class_name = base->get_class_name();
 			Ref<Script> script = base->get_script();
 			if (script.is_valid()) {
 				if (!script->get_global_name().is_empty()) {
@@ -519,7 +519,7 @@ bool Signal::operator<(const Signal &p_signal) const {
 Signal::operator String() const {
 	Object *base = get_object();
 	if (base) {
-		String class_name = base->get_class();
+		String class_name = base->get_class_name();
 		Ref<Script> script = base->get_script();
 		if (script.is_valid() && script->get_path().is_resource_file()) {
 			class_name += "(" + script->get_path().get_file() + ")";

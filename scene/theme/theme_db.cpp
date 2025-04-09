@@ -360,7 +360,7 @@ void ThemeDB::update_class_instance_items(Node *p_instance) {
 
 	// Use the hierarchy to initialize all inherited theme caches. Setters carry the necessary
 	// context and will set the values appropriately.
-	StringName class_name = p_instance->get_class();
+	StringName class_name = p_instance->get_class_name();
 	while (class_name != StringName()) {
 		HashMap<StringName, HashMap<StringName, ThemeItemBind>>::Iterator E = theme_item_binds.find(class_name);
 		if (E) {

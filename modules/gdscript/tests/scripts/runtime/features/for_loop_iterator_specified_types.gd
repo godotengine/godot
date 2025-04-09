@@ -37,7 +37,7 @@ func test():
 	var d2 := { RefCounted.new(): 1, Resource.new(): 2, ConfigFile.new(): 3 }
 	for k: RefCounted in d2:
 		var key := k
-		prints(k.get_class(), key.get_class())
+		prints(k.get_class_name(), key.get_class_name())
 
 	print("Test implicitly typed dictionary literal.")
 	for k: StringName in { x = 123, y = 456, z = 789 }:

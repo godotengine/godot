@@ -56,7 +56,7 @@ void OpenXRBindingModifiersDialog::_notification(int p_what) {
 OpenXRBindingModifierEditor *OpenXRBindingModifiersDialog::_add_binding_modifier_editor(Ref<OpenXRBindingModifier> p_binding_modifier) {
 	ERR_FAIL_COND_V(p_binding_modifier.is_null(), nullptr);
 
-	String class_name = p_binding_modifier->get_class();
+	String class_name = p_binding_modifier->get_class_name();
 	ERR_FAIL_COND_V(class_name.is_empty(), nullptr);
 	String editor_class = OpenXRActionMapEditor::get_binding_modifier_editor_class(class_name);
 	ERR_FAIL_COND_V(editor_class.is_empty(), nullptr);

@@ -508,7 +508,7 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 	}
 
 	id = p_id;
-	class_name = obj->get_class();
+	class_name = obj->get_class_name();
 
 	if (ScriptInstance *si = obj->get_script_instance()) {
 		// Read script instance constants and variables
@@ -729,7 +729,7 @@ SceneDebuggerTree::SceneDebuggerTree(Node *p_root) {
 				}
 			}
 		}
-		nodes.push_back(RemoteNode(count, n->get_name(), class_name.is_empty() ? n->get_class() : class_name, n->get_instance_id(), n->get_scene_file_path(), view_flags));
+		nodes.push_back(RemoteNode(count, n->get_name(), class_name.is_empty() ? String(n->get_class_name()) : class_name, n->get_instance_id(), n->get_scene_file_path(), view_flags));
 	}
 }
 

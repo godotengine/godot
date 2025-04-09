@@ -931,7 +931,7 @@ bool ResourceLoader::_ensure_load_progress() {
 }
 
 void ResourceLoader::resource_changed_connect(Resource *p_source, const Callable &p_callable, uint32_t p_flags) {
-	print_lt(vformat("%d\t%ud:%s\t" FUNCTION_STR "\t%d", Thread::get_caller_id(), p_source->get_instance_id(), p_source->get_class(), p_callable.get_object_id()));
+	print_lt(vformat("%d\t%ud:%s\t" FUNCTION_STR "\t%d", Thread::get_caller_id(), p_source->get_instance_id(), p_source->get_class_name(), p_callable.get_object_id()));
 
 	MutexLock lock(thread_load_mutex);
 
@@ -949,7 +949,7 @@ void ResourceLoader::resource_changed_connect(Resource *p_source, const Callable
 }
 
 void ResourceLoader::resource_changed_disconnect(Resource *p_source, const Callable &p_callable) {
-	print_lt(vformat("%d\t%ud:%s\t" FUNCTION_STR "t%d", Thread::get_caller_id(), p_source->get_instance_id(), p_source->get_class(), p_callable.get_object_id()));
+	print_lt(vformat("%d\t%ud:%s\t" FUNCTION_STR "t%d", Thread::get_caller_id(), p_source->get_instance_id(), p_source->get_class_name(), p_callable.get_object_id()));
 
 	MutexLock lock(thread_load_mutex);
 
@@ -963,7 +963,7 @@ void ResourceLoader::resource_changed_disconnect(Resource *p_source, const Calla
 }
 
 void ResourceLoader::resource_changed_emit(Resource *p_source) {
-	print_lt(vformat("%d\t%ud:%s\t" FUNCTION_STR, Thread::get_caller_id(), p_source->get_instance_id(), p_source->get_class()));
+	print_lt(vformat("%d\t%ud:%s\t" FUNCTION_STR, Thread::get_caller_id(), p_source->get_instance_id(), p_source->get_class_name()));
 
 	MutexLock lock(thread_load_mutex);
 
