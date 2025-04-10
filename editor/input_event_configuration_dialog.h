@@ -45,8 +45,17 @@ private:
 	struct IconCache {
 		Ref<Texture2D> keyboard;
 		Ref<Texture2D> mouse;
+		Ref<Texture2D> mouse_left_button;
+		Ref<Texture2D> mouse_right_button;
+		Ref<Texture2D> mouse_middle_button;
+		Ref<Texture2D> mouse_wheel_up;
+		Ref<Texture2D> mouse_wheel_down;
+		Ref<Texture2D> mouse_wheel_left;
+		Ref<Texture2D> mouse_wheel_right;
 		Ref<Texture2D> joypad_button;
 		Ref<Texture2D> joypad_axis;
+		Ref<Texture2D> mouse_xbutton1;
+		Ref<Texture2D> mouse_xbutton2;
 	} icon_cache;
 
 	Ref<InputEvent> event;
