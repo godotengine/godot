@@ -746,8 +746,8 @@ void BitMap::bitwise_not() {
 }
 
 void BitMap::bitwise_or(const Ref<BitMap> &p_other) {
-	ERR_FAIL_COND_MSG(p_other.is_null(), "Null reference to supplied BitMap other.");
-	ERR_FAIL_COND_MSG(get_size() != p_other->get_size(), "The given bitmap is not the expected size for the specified operation.");
+	ERR_FAIL_COND_MSG(p_other.is_null(), "The BitMap passed as the \"other\" parameter is null.");
+	ERR_FAIL_COND_MSG(get_size() != p_other->get_size(), "Both bitmaps need to have the same size.");
 
 	int ds = bitmask.size();
 	uint8_t *d = bitmask.ptrw();
@@ -766,8 +766,8 @@ void BitMap::bitwise_or(const Ref<BitMap> &p_other) {
 }
 
 void BitMap::bitwise_xor(const Ref<BitMap> &p_other) {
-	ERR_FAIL_COND_MSG(p_other.is_null(), "Null reference to supplied BitMap other.");
-	ERR_FAIL_COND_MSG(get_size() != p_other->get_size(), "The given bitmap is not the expected size for the specified operation.");
+	ERR_FAIL_COND_MSG(p_other.is_null(), "The BitMap passed as the \"other\" parameter is null.");
+	ERR_FAIL_COND_MSG(get_size() != p_other->get_size(), "Both bitmaps need to have the same size.");
 
 	int ds = bitmask.size();
 	uint8_t *d = bitmask.ptrw();
