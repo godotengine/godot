@@ -84,7 +84,7 @@ public:
 	void set_one_way_collision_margin(real_t p_margin);
 	real_t get_one_way_collision_margin() const;
 
-	void set_one_way_collision_direction(const Vector2 &p_one_way_collision_direction);
+	void set_one_way_collision_direction(const Vector2 &p_direction);
 	Vector2 get_one_way_collision_direction() const;
 
 	void set_debug_color(const Color &p_color);
