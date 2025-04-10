@@ -307,7 +307,7 @@ Rect2i PopupPanel::_popup_adjust_rect() const {
 	_update_child_rects();
 
 	if (is_layout_rtl()) {
-		current.position -= Vector2(Math::abs(panel->get_offset(SIDE_RIGHT)), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
+		current.position -= Vector2(-panel->get_offset(SIDE_RIGHT), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	} else {
 		current.position -= Vector2(panel->get_offset(SIDE_LEFT), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	}
@@ -337,14 +337,14 @@ void PopupPanel::_update_shadow_offsets() const {
 	// Offset the background panel so it leaves space inside the window for the shadows to be drawn.
 	const Point2 shadow_offset = sb->get_shadow_offset();
 	if (is_layout_rtl()) {
-		panel->set_offset(SIDE_LEFT, shadow_size + shadow_offset.x);
-		panel->set_offset(SIDE_RIGHT, -shadow_size + shadow_offset.x);
+		panel->set_offset(SIDE_LEFT, MAX(0, shadow_size + shadow_offset.x));
+		panel->set_offset(SIDE_RIGHT, MIN(0, -shadow_size + shadow_offset.x));
 	} else {
-		panel->set_offset(SIDE_LEFT, shadow_size - shadow_offset.x);
-		panel->set_offset(SIDE_RIGHT, -shadow_size - shadow_offset.x);
+		panel->set_offset(SIDE_LEFT, MAX(0, shadow_size - shadow_offset.x));
+		panel->set_offset(SIDE_RIGHT, MIN(0, -shadow_size - shadow_offset.x));
 	}
-	panel->set_offset(SIDE_TOP, shadow_size - shadow_offset.y);
-	panel->set_offset(SIDE_BOTTOM, -shadow_size - shadow_offset.y);
+	panel->set_offset(SIDE_TOP, MAX(0, shadow_size - shadow_offset.y));
+	panel->set_offset(SIDE_BOTTOM, MIN(0, -shadow_size - shadow_offset.y));
 }
 
 void PopupPanel::_update_child_rects() const {
