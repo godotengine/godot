@@ -4726,8 +4726,8 @@ Variant ShaderLanguage::get_default_datatype_value(DataType p_type, int p_array_
 				}
 				value = Variant(array);
 			} else {
-				VariantInitializer<float>::init(&value);
-				VariantDefaultInitializer<float>::init(&value);
+				VariantInitializer<double>::init(&value);
+				VariantDefaultInitializer<double>::init(&value);
 			}
 			break;
 		case ShaderLanguage::TYPE_VEC2:
