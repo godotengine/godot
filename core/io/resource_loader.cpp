@@ -61,8 +61,6 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 		return ret;
 	}
 
-	String extension = p_path.get_extension();
-
 	List<String> extensions;
 	if (p_for_type.is_empty()) {
 		get_recognized_extensions(&extensions);
@@ -71,7 +69,8 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 	}
 
 	for (const String &E : extensions) {
-		if (E.nocasecmp_to(extension) == 0) {
+		const String ext = !E.begins_with(".") ? "." + E : E;
+		if (p_path.right(ext.length()).nocasecmp_to(ext) == 0) {
 			return true;
 		}
 	}
@@ -330,7 +329,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		if (ResourceFormatImporter::get_singleton()->get_importer_by_extension(p_path.get_extension()).is_valid()) {
+		if (ResourceFormatImporter::get_singleton()->get_importer_by_file(p_path).is_valid()) {
 			// The format is known to the editor, but the file hasn't been imported
 			// (otherwise, ResourceFormatImporter would have been found as a suitable loader).
 			found = true;
