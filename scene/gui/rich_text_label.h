@@ -252,6 +252,14 @@ private:
 		Color ol_color;
 		Rect2 dropcap_margins;
 		ItemDropcap() { type = ITEM_DROPCAP; }
+		~ItemDropcap() {
+			if (font.is_valid()) {
+				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
+				if (owner_rtl) {
+					font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
+				}
+			}
+		}
 	};
 
 	struct ItemImage : public Item {
@@ -284,6 +292,14 @@ private:
 		bool def_size = false;
 		int font_size = 0;
 		ItemFont() { type = ITEM_FONT; }
+		~ItemFont() {
+			if (font.is_valid()) {
+				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
+				if (owner_rtl) {
+					font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
+				}
+			}
+		}
 	};
 
 	struct ItemFontSize : public Item {
@@ -657,6 +673,8 @@ private:
 	Rect2 _get_text_rect();
 	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
 	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
+
+	void _invalidate_fonts();
 
 	Size2 _get_image_size(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Rect2 &p_region = Rect2());
 
