@@ -229,7 +229,7 @@ real_t CollisionShape2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
 
-void CollisionShape2D::set_one_way_collision_direction(Vector2 p_direction) {
+void CollisionShape2D::set_one_way_collision_direction(const Vector2 &p_direction) {
 	one_way_collision_direction = p_direction.normalized();
 	if (collision_object) {
 		collision_object->shape_owner_set_one_way_collision_direction(owner_id, p_direction.normalized());
