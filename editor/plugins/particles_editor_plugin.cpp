@@ -65,7 +65,7 @@ void ParticlesEditorPlugin::_notification(int p_what) {
 			PopupMenu *popup = menu->get_popup();
 			popup->add_shortcut(ED_SHORTCUT("particles/restart_emission", TTRC("Restart Emission"), KeyModifierMask::CTRL | Key::R), MENU_RESTART);
 			_add_menu_options(popup);
-			popup->add_item(conversion_option_name, MENU_OPTION_CONVERT);
+			popup->add_item(TTRGET(conversion_option_name), MENU_OPTION_CONVERT);
 		} break;
 	}
 }
@@ -89,7 +89,7 @@ void ParticlesEditorPlugin::_menu_callback(int p_idx) {
 			Node *converted_node = _convert_particles();
 
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(conversion_option_name, UndoRedo::MERGE_DISABLE, edited_node);
+			ur->create_action(TTRGET(conversion_option_name), UndoRedo::MERGE_DISABLE, edited_node);
 			SceneTreeDock::get_singleton()->replace_node(edited_node, converted_node);
 			ur->commit_action(false);
 		} break;
@@ -493,7 +493,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	handled_type = TTRC("GPUParticles2D");
-	conversion_option_name = TTR("Convert to CPUParticles2D");
+	conversion_option_name = TTRC("Convert to CPUParticles2D");
 
 	generate_visibility_rect = memnew(ConfirmationDialog);
 	generate_visibility_rect->set_title(TTR("Generate Visibility Rect"));
@@ -591,7 +591,7 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	handled_type = TTRC("CPUParticles2D");
-	conversion_option_name = TTR("Convert to GPUParticles2D");
+	conversion_option_name = TTRC("Convert to GPUParticles2D");
 }
 
 // 3D /////////////////////////////////////////////
@@ -966,7 +966,7 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 
 GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin() {
 	handled_type = TTRC("GPUParticles3D");
-	conversion_option_name = TTR("Convert to CPUParticles3D");
+	conversion_option_name = TTRC("Convert to CPUParticles3D");
 }
 
 Node *CPUParticles3DEditorPlugin::_convert_particles() {
@@ -1011,5 +1011,5 @@ void CPUParticles3DEditorPlugin::_generate_emission_points() {
 
 CPUParticles3DEditorPlugin::CPUParticles3DEditorPlugin() {
 	handled_type = TTRC("CPUParticles3D");
-	conversion_option_name = TTR("Convert to GPUParticles3D");
+	conversion_option_name = TTRC("Convert to GPUParticles3D");
 }

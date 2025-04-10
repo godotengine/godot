@@ -5081,7 +5081,7 @@ void Node3DEditorViewport::commit_transform() {
 		TTRC("Scale"),
 	};
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(_transform_name[_edit.mode]);
+	undo_redo->create_action(TTRGET(_transform_name[_edit.mode]));
 
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 

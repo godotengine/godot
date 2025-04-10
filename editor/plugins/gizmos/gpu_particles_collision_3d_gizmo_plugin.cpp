@@ -143,7 +143,7 @@ void GPUParticlesCollision3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *
 	}
 
 	if (Object::cast_to<GPUParticlesCollisionBox3D>(sn) || Object::cast_to<GPUParticlesAttractorBox3D>(sn) || Object::cast_to<GPUParticlesAttractorVectorField3D>(sn) || Object::cast_to<GPUParticlesCollisionSDF3D>(sn) || Object::cast_to<GPUParticlesCollisionHeightField3D>(sn)) {
-		helper->box_commit_handle("Change Box Shape Size", p_cancel, sn);
+		helper->box_commit_handle(TTR("Change Box Shape Size"), p_cancel, sn);
 	}
 }
 
