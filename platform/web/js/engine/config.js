@@ -134,6 +134,12 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		fileSizes: [],
 		/**
+		 * Fetch pack and engine gzip from the server.
+		 * @memberof EngineConfig
+		 * @type {boolean}
+		 */
+		gzip: false,
+		/**
 		 * A callback function for handling Godot's ``OS.execute`` calls.
 		 *
 		 * This is for example used in the Web Editor template to switch between project manager and editor, and for running the game.
@@ -259,6 +265,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.serviceWorker = parse('serviceWorker', this.serviceWorker);
 		this.gdextensionLibs = parse('gdextensionLibs', this.gdextensionLibs);
 		this.fileSizes = parse('fileSizes', this.fileSizes);
+		this.gzip = parse('gzip', this.gzip);
 		this.args = parse('args', this.args);
 		this.onExecute = parse('onExecute', this.onExecute);
 		this.onExit = parse('onExit', this.onExit);
