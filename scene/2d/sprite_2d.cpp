@@ -30,6 +30,7 @@
 
 #include "sprite_2d.h"
 
+#include "core/input/input.h"
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
@@ -63,7 +64,7 @@ void Sprite2D::_edit_set_rect(const Rect2 &p_rect) {
 	if (texture.is_null()) {
 		return;
 	}
-	if (!region_enabled) {
+	if (!(region_enabled && Input::get_singleton()->is_key_label_pressed(Key::CTRL))) {
 		Node2D::_edit_set_rect(p_rect);
 		return;
 	}
