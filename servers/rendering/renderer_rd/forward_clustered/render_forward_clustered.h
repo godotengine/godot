@@ -629,14 +629,6 @@ private:
 	void _update_dirty_geometry_instances();
 	void _update_dirty_geometry_pipelines();
 
-	// Global data about the scene that can be used to pre-allocate resources without relying on culling.
-	struct GlobalSurfaceData {
-		bool screen_texture_used = false;
-		bool normal_texture_used = false;
-		bool depth_texture_used = false;
-		bool sss_used = false;
-	} global_surface_data;
-
 	/* Render List */
 
 	struct RenderList {
