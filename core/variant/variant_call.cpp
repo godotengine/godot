@@ -694,6 +694,57 @@ struct _VariantCall {
 		return s;
 	}
 
+	static void func_PackedByteArray_bswap16(PackedByteArray *p_instance, int64_t p_offset, int64_t p_count) {
+		size_t sz = p_instance->size();
+		if (sz == 0 || p_count == 0) {
+			return;
+		}
+		ERR_FAIL_COND(p_offset < 0 || p_offset > int64_t(sz) - 2);
+		if (p_count < 0) {
+			p_count = floor((sz - p_offset) / 2);
+		}
+		ERR_FAIL_COND(p_count > floor((sz - p_offset) / 2));
+
+		uint16_t *w = (uint16_t *)(p_instance->ptrw() + p_offset);
+		for (int64_t i = 0; i < p_count; i++) {
+			w[i] = BSWAP16(w[i]);
+		}
+	}
+
+	static void func_PackedByteArray_bswap32(PackedByteArray *p_instance, int64_t p_offset, int64_t p_count) {
+		size_t sz = p_instance->size();
+		if (sz == 0 || p_count == 0) {
+			return;
+		}
+		ERR_FAIL_COND(p_offset < 0 || p_offset > int64_t(sz) - 4);
+		if (p_count < 0) {
+			p_count = floor((sz - p_offset) / 4);
+		}
+		ERR_FAIL_COND(p_count > floor((sz - p_offset) / 4));
+
+		uint32_t *w = (uint32_t *)(p_instance->ptrw() + p_offset);
+		for (int64_t i = 0; i < p_count; i++) {
+			w[i] = BSWAP32(w[i]);
+		}
+	}
+
+	static void func_PackedByteArray_bswap64(PackedByteArray *p_instance, int64_t p_offset, int64_t p_count) {
+		size_t sz = p_instance->size();
+		if (sz == 0 || p_count == 0) {
+			return;
+		}
+		ERR_FAIL_COND(p_offset < 0 || p_offset > int64_t(sz) - 8);
+		if (p_count < 0) {
+			p_count = floor((sz - p_offset) / 8);
+		}
+		ERR_FAIL_COND(p_count > floor((sz - p_offset) / 8));
+
+		uint64_t *w = (uint64_t *)(p_instance->ptrw() + p_offset);
+		for (int64_t i = 0; i < p_count; i++) {
+			w[i] = BSWAP64(w[i]);
+		}
+	}
+
 	static String func_PackedByteArray_get_string_from_utf8(PackedByteArray *p_instance) {
 		String s;
 		if (p_instance->size() > 0) {
@@ -2496,6 +2547,10 @@ static void _register_variant_builtin_methods_array() {
 	bind_function(PackedByteArray, to_int64_array, _VariantCall::func_PackedByteArray_decode_s64_array, sarray(), varray());
 	bind_function(PackedByteArray, to_float32_array, _VariantCall::func_PackedByteArray_decode_float_array, sarray(), varray());
 	bind_function(PackedByteArray, to_float64_array, _VariantCall::func_PackedByteArray_decode_double_array, sarray(), varray());
+
+	bind_functionnc(PackedByteArray, bswap16, _VariantCall::func_PackedByteArray_bswap16, sarray("offset", "count"), varray(0, -1));
+	bind_functionnc(PackedByteArray, bswap32, _VariantCall::func_PackedByteArray_bswap32, sarray("offset", "count"), varray(0, -1));
+	bind_functionnc(PackedByteArray, bswap64, _VariantCall::func_PackedByteArray_bswap64, sarray("offset", "count"), varray(0, -1));
 
 	bind_functionnc(PackedByteArray, encode_u8, _VariantCall::func_PackedByteArray_encode_u8, sarray("byte_offset", "value"), varray());
 	bind_functionnc(PackedByteArray, encode_s8, _VariantCall::func_PackedByteArray_encode_s8, sarray("byte_offset", "value"), varray());
