@@ -3960,6 +3960,7 @@
 			<description>
 				Sets the stacking order for a viewport's canvas.
 				[param layer] is the actual canvas layer, while [param sublayer] specifies the stacking order of the canvas among those in the same layer.
+				[b]Note:[/b] [param layer] should be between [constant CANVAS_LAYER_MIN] and [constant CANVAS_LAYER_MAX] (inclusive). Any other value will wrap around.
 			</description>
 		</method>
 		<method name="viewport_set_canvas_transform">
@@ -4456,6 +4457,12 @@
 		</constant>
 		<constant name="CANVAS_ITEM_Z_MAX" value="4096">
 			The maximum Z-layer for canvas items.
+		</constant>
+		<constant name="CANVAS_LAYER_MIN" value="-2147483648">
+			The minimum canvas layer.
+		</constant>
+		<constant name="CANVAS_LAYER_MAX" value="2147483647">
+			The maximum canvas layer.
 		</constant>
 		<constant name="MAX_GLOW_LEVELS" value="7">
 			The maximum number of glow levels that can be used with the glow post-processing effect.
