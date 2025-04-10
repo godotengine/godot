@@ -1,0 +1,20 @@
+commit 462c1cd875ae8f6b5f6406dda01881fb173ac30c
+Author: Daniel Kinsman <danielkinsman@riseup.net>
+Date:   Thu Mar 20 12:21:28 2025 +1100
+
+    remove unneeded source files and lossless jpeg support
+
+diff --git a/thirdparty/libjpeg-turbo/src/turbojpeg.c b/thirdparty/libjpeg-turbo/src/turbojpeg.c
+index 389aea55d3..eec8e2a616 100644
+--- a/thirdparty/libjpeg-turbo/src/turbojpeg.c
++++ b/thirdparty/libjpeg-turbo/src/turbojpeg.c
+@@ -1200,9 +1200,6 @@ bailout:
+ #define BITS_IN_JSAMPLE  12
+ #include "turbojpeg-mp.c"
+ #undef BITS_IN_JSAMPLE
+-#define BITS_IN_JSAMPLE  16
+-#include "turbojpeg-mp.c"
+-#undef BITS_IN_JSAMPLE
+ 
+ /* TurboJPEG 1.2+ */
+ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,

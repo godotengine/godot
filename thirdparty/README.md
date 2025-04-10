@@ -80,15 +80,14 @@ Files extracted from upstream source:
 Files extracted from upstream source:
 
 - `encoder/` and `transcoder/` folders, with the following files removed from `encoder`:
-  `jpgd.{cpp,h}`, `3rdparty/{qoi.h,tinydds.h,tinyexr.cpp,tinyexr.h}`
+  `3rdparty/{qoi.h,tinydds.h,tinyexr.cpp,tinyexr.h}`
 - `LICENSE`
 
 Patches:
 
 - `0001-external-zstd-pr344.patch` (GH-73441)
-- `0002-external-jpgd.patch` (GH-88508)
-- `0003-external-tinyexr.patch` (GH-97582)
-- `0004-remove-tinydds-qoi.patch` (GH-97582)
+- `0002-external-tinyexr.patch` (GH-97582)
+- `0003-remove-tinydds-qoi.patch` (GH-97582)
 
 
 ## brotli
@@ -469,22 +468,6 @@ Files extracted from upstream source:
 - `LICENSE`
 
 
-## jpeg-compressor
-
-- Upstream: https://github.com/richgel999/jpeg-compressor
-- Version: 2.00 (aeb7d3b463aa8228b87a28013c15ee50a7e6fcf3, 2020)
-- License: Public domain or MIT
-
-Files extracted from upstream source:
-
-- `jpgd*.{c,h}`
-- `jpge*.{c,h}`
-
-Patches:
-
-- `0001-clang-fortify-fix.patch` (GH-101927)
-
-
 ## libbacktrace
 
 - Upstream: https://github.com/ianlancetaylor/libbacktrace
@@ -502,6 +485,24 @@ Patches:
 
 - `0001-big-files-support.patch` (GH-100281)
 
+
+## libjpeg-turbo
+
+- Upstream: https://github.com/libjpeg-turbo/libjpeg-turbo
+- Version: git (adbb328159b5558e846690c49f9458deccbb0f43, 2025)
+- License: TurboJPEG modified BSD-3-Clause, IJG License
+
+Files extracted from upstream source:
+
+-  src/*.{c,h} except for:
+	- cdjpeg.c, cjpeg.c, djpeg,c, example.c, jcdiffct.c jclhuff.c, jclossls.c, jpegtran.c, rdbmp.c, rdcolmap.c, rdgif.c, rdjpgcom.c, rdppm.c, rdswitch.c, rdtarga.c, strtestc, tjbench.c, tjcomp.c, tjdecomp.c, tjtran.c, tjunittest.c, tjutil.c, wrbmp.c, wrgif.c, wrjpgcom.c, wrppm.c, wrtarga.c
+- `LICENSE.md`
+- `README.ijg`
+
+Patches:
+
+- `000-cmake_generated_headers.patch`
+- `001-disable-16bitlossless.patch`
 
 ## libktx
 
