@@ -1274,7 +1274,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         props_template = props_template.replace("%%OUTPUT%%", output)
 
-        proplist = [format_key_value(v) for v in list(env["CPPDEFINES"])]
+        proplist = [format_key_value(j) for j in list(env["CPPDEFINES"])]
         proplist += [format_key_value(j) for j in env.get("VSHINT_DEFINES", [])]
         props_template = props_template.replace("%%DEFINES%%", ";".join(proplist))
 
@@ -1283,9 +1283,9 @@ def generate_vs_project(env, original_args, project_name="godot"):
         proplist += [str(j) for j in get_default_include_paths(env)]
         props_template = props_template.replace("%%INCLUDES%%", ";".join(proplist))
 
-        proplist = env["CCFLAGS"]
-        proplist += [x for x in env["CXXFLAGS"] if not x.startswith("$")]
-        proplist += [str(j) for j in env.get("VSHINT_OPTIONS", [])]
+        proplist = [env.subst("$CCFLAGS")]
+        proplist += [env.subst("$CXXFLAGS")]
+        proplist += [env.subst("$VSHINT_OPTIONS")]
         props_template = props_template.replace("%%OPTIONS%%", " ".join(proplist))
 
         # Windows allows us to have spaces in paths, so we need
