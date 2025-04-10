@@ -77,7 +77,8 @@ void CallableCustomMethodPointerBase::_setup(const std::byte *p_base_ptr, uint32
 	// Precompute hash.
 	uint32_t word;
 	for (uint32_t i = 0; i < comp_size; i += sizeof(word)) {
-		memcpy(&word, comp_ptr + i, sizeof(word));
+		// Use memcpy to avoid UB with strict-aliasing.
+		memcpy(&word, comp_ptr + i, MIN(sizeof(word), comp_size - i));
 		if (i == 0) {
 			h = hash_murmur3_one_32(word);
 		} else {
