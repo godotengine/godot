@@ -882,14 +882,14 @@ const char32_t *String::get_data() const {
 	return size() ? &operator[](0) : &zero;
 }
 
-String String::_camelcase_to_underscore() const {
-	const char32_t *cstr = get_data();
-	String new_string;
-	int start_index = 0;
-
+String String::_separate_compound_words() const {
 	if (length() == 0) {
 		return *this;
 	}
+
+	const char32_t *cstr = get_data();
+	int start_index = 0;
+	String new_string;
 
 	bool is_prev_upper = is_unicode_upper_case(cstr[0]);
 	bool is_prev_lower = is_unicode_lower_case(cstr[0]);
@@ -911,7 +911,7 @@ String String::_camelcase_to_underscore() const {
 		const bool cond_d = (is_prev_upper || is_prev_lower) && is_curr_digit; // A2, a2
 
 		if (cond_a || cond_b || cond_c || cond_d) {
-			new_string += substr(start_index, i - start_index) + "_";
+			new_string += substr(start_index, i - start_index) + " ";
 			start_index = i;
 		}
 
@@ -921,40 +921,72 @@ String String::_camelcase_to_underscore() const {
 	}
 
 	new_string += substr(start_index, size() - start_index);
+
+	for (int i = 0; i < new_string.size(); i++) {
+		const bool whitespace = is_whitespace(new_string[i]);
+		const bool underscore = is_underscore(new_string[i]);
+		const bool hyphen = is_hyphen(new_string[i]);
+
+		if (whitespace || underscore || hyphen) {
+			new_string[i] = ' ';
+		}
+	}
+
 	return new_string.to_lower();
 }
 
 String String::capitalize() const {
-	String aux = _camelcase_to_underscore().replace_char('_', ' ').strip_edges();
-	String cap;
-	for (int i = 0; i < aux.get_slice_count(" "); i++) {
-		String slice = aux.get_slicec(' ', i);
+	String words = _separate_compound_words().strip_edges();
+	String ret;
+	for (int i = 0; i < words.get_slice_count(" "); i++) {
+		String slice = words.get_slicec(' ', i);
 		if (slice.length() > 0) {
 			slice[0] = _find_upper(slice[0]);
 			if (i > 0) {
-				cap += " ";
+				ret += " ";
 			}
-			cap += slice;
+			ret += slice;
 		}
 	}
-
-	return cap;
+	return ret;
 }
 
 String String::to_camel_case() const {
-	String s = to_pascal_case();
-	if (!s.is_empty()) {
-		s[0] = _find_lower(s[0]);
+	String words = _separate_compound_words().strip_edges();
+	String ret;
+	for (int i = 0; i < words.get_slice_count(" "); i++) {
+		String slice = words.get_slicec(' ', i);
+		if (slice.length() > 0) {
+			if (i == 0) {
+				slice[0] = _find_lower(slice[0]);
+			} else {
+				slice[0] = _find_upper(slice[0]);
+			}
+			ret += slice;
+		}
 	}
-	return s;
+	return ret;
 }
 
 String String::to_pascal_case() const {
-	return capitalize().remove_char(' ');
+	String words = _separate_compound_words().strip_edges();
+	String ret;
+	for (int i = 0; i < words.get_slice_count(" "); i++) {
+		String slice = words.get_slicec(' ', i);
+		if (slice.length() > 0) {
+			slice[0] = _find_upper(slice[0]);
+			ret += slice;
+		}
+	}
+	return ret;
 }
 
 String String::to_snake_case() const {
-	return _camelcase_to_underscore().replace_char(' ', '_').strip_edges();
+	return _separate_compound_words().replace_char(' ', '_');
+}
+
+String String::to_kebab_case() const {
+	return _separate_compound_words().replace_char(' ', '-');
 }
 
 String String::get_with_code_lines() const {

@@ -255,10 +255,12 @@ StringName ConnectDialog::generate_method_callback_name(Node *p_source, const St
 	subst["NodeName"] = node_name.to_pascal_case();
 	subst["nodeName"] = node_name.to_camel_case();
 	subst["node_name"] = node_name.to_snake_case();
+	subst["node-name"] = node_name.to_kebab_case();
 
 	subst["SignalName"] = p_signal_name.to_pascal_case();
 	subst["signalName"] = p_signal_name.to_camel_case();
 	subst["signal_name"] = p_signal_name.to_snake_case();
+	subst["signal-name"] = p_signal_name.to_kebab_case();
 
 	String dst_method;
 	if (p_source == p_target) {
