@@ -5,6 +5,18 @@ respective folder names. Use two empty lines to separate categories for
 readability.
 
 
+## accesskit
+
+- Upstream: https://github.com/AccessKit/accesskit-c
+- Version: 0.15.1 (0d1da94a33708041b07c61eb702c67cfa3a5f95b, 2025)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `accesskit.h`
+- `LICENSE-MIT`
+
+
 ## amd-fsr
 
 - Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR
@@ -448,7 +460,7 @@ Files generated from upstream source:
 ## jolt_physics
 
 - Upstream: https://github.com/jrouwe/JoltPhysics
-- Version: 5.2.1 (f094082aa2bbfcbebc725dbe8b8f65c7d5152886, 2024)
+- Version: 5.3.0 (0373ec0dd762e4bc2f6acdb08371ee84fa23c6db, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -974,7 +986,7 @@ Patches:
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.17.1 (6ca5309972f03625e6990f3084ff4c1cc55a09b6, 2025)
+- Version: 0.18.0 (729ab835444f5f229e5f7cff332692ce6c00415d, 2025)
 - License: MIT
 
 Files extracted from upstream source:

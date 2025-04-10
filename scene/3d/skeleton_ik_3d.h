@@ -144,7 +144,7 @@ protected:
 	static void _bind_methods();
 	virtual void _notification(int p_what);
 
-	virtual void _process_modification() override;
+	virtual void _process_modification(double p_delta) override;
 
 public:
 	SkeletonIK3D();

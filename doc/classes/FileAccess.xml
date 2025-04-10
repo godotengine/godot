@@ -569,8 +569,7 @@
 	<members>
 		<member name="big_endian" type="bool" setter="set_big_endian" getter="is_big_endian">
 			If [code]true[/code], the file is read with big-endian [url=https://en.wikipedia.org/wiki/Endianness]endianness[/url]. If [code]false[/code], the file is read with little-endian endianness. If in doubt, leave this to [code]false[/code] as most files are written with little-endian endianness.
-			[b]Note:[/b] [member big_endian] is only about the file format, not the CPU type. The CPU endianness doesn't affect the default endianness for files written.
-			[b]Note:[/b] This is always reset to [code]false[/code] whenever you open the file. Therefore, you must set [member big_endian] [i]after[/i] opening the file, not before.
+			[b]Note:[/b] This is always reset to system endianness, which is little-endian on all supported platforms, whenever you open the file. Therefore, you must set [member big_endian] [i]after[/i] opening the file, not before.
 		</member>
 	</members>
 	<constants>

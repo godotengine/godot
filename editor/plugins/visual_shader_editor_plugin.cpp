@@ -34,6 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
+#include "core/version_generated.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_vector.h"
@@ -1211,6 +1212,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		if (valid_right) {
 			if (expanded_port_counter == 0 && vsnode->is_output_port_expandable(i)) {
 				TextureButton *expand = memnew(TextureButton);
+				expand->set_accessibility_name(TTRC("Expand output port"));
 				expand->set_toggle_mode(true);
 				expand->set_texture_normal(editor->get_editor_theme_icon(SNAME("GuiTreeArrowRight")));
 				expand->set_texture_pressed(editor->get_editor_theme_icon(SNAME("GuiTreeArrowDown")));
@@ -1221,6 +1223,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			}
 			if (vsnode->has_output_port_preview(i) && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
 				TextureButton *preview = memnew(TextureButton);
+				preview->set_accessibility_name(TTRC("Select preview port"));
 				preview->set_toggle_mode(true);
 				preview->set_texture_normal(editor->get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
 				preview->set_texture_pressed(editor->get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
@@ -1570,6 +1573,10 @@ void VisualShaderEditor::validate_script() {
 	if (visual_shader.is_valid()) {
 		_update_nodes();
 	}
+}
+
+Control *VisualShaderEditor::get_top_bar() {
+	return toolbar;
 }
 
 void VisualShaderEditor::add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin) {
@@ -2192,8 +2199,7 @@ void VisualShaderEditor::_update_nodes() {
 		}
 	}
 
-	List<Variant> keys;
-	added.get_key_list(&keys);
+	LocalVector<Variant> keys = added.get_key_list();
 	keys.sort_custom<StringLikeVariantOrder>();
 
 	for (const Variant &key : keys) {
@@ -2461,6 +2467,13 @@ void VisualShaderEditor::_set_mode(int p_which) {
 
 Size2 VisualShaderEditor::get_minimum_size() const {
 	return Size2(10, 200);
+}
+
+void VisualShaderEditor::update_toggle_files_button() {
+	ERR_FAIL_NULL(toggle_files_list);
+	bool forward = toggle_files_list->is_visible() == is_layout_rtl();
+	toggle_files_button->set_button_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
+	toggle_files_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Files Panel"), ED_GET_SHORTCUT("script_editor/toggle_files_panel")->get_as_text()));
 }
 
 void VisualShaderEditor::_draw_color_over_button(Object *p_obj, Color p_color) {
@@ -5147,6 +5160,10 @@ void VisualShaderEditor::_param_unselected() {
 	_clear_preview_param();
 }
 
+void VisualShaderEditor::_help_open() {
+	OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/visual_shaders.html", GODOT_VERSION_DOCS_URL));
+}
+
 void VisualShaderEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -5188,6 +5205,7 @@ void VisualShaderEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			site_search->set_button_icon(get_editor_theme_icon(SNAME("ExternalLink")));
 			highend_label->set_modulate(get_theme_color(SNAME("highend_color"), EditorStringName(Editor)));
 
 			param_filter->set_right_icon(Control::get_editor_theme_icon(SNAME("Search")));
@@ -5251,6 +5269,11 @@ void VisualShaderEditor::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				_update_graph();
 			}
+			update_toggle_files_button();
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			update_toggle_files_button();
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -6099,6 +6122,10 @@ void VisualShaderEditor::_connection_menu_id_pressed(int p_idx) {
 }
 
 Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+	if (p_point == Vector2(INFINITY, INFINITY)) {
+		return Variant();
+	}
+
 	if (p_from == members) {
 		TreeItem *it = members->get_item_at_position(p_point);
 		if (!it) {
@@ -6124,6 +6151,10 @@ Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 }
 
 bool VisualShaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	if (p_point == Vector2(INFINITY, INFINITY)) {
+		return false;
+	}
+
 	if (p_from == graph) {
 		Dictionary d = p_data;
 
@@ -6139,6 +6170,10 @@ bool VisualShaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 }
 
 void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	if (p_point == Vector2(INFINITY, INFINITY)) {
+		return;
+	}
+
 	if (p_from == graph) {
 		Dictionary d = p_data;
 
@@ -6354,6 +6389,16 @@ void VisualShaderEditor::_show_shader_preview() {
 	}
 }
 
+void VisualShaderEditor::set_toggle_list_control(Control *p_control) {
+	toggle_files_list = p_control;
+}
+
+void VisualShaderEditor::_toggle_files_pressed() {
+	ERR_FAIL_NULL(toggle_files_list);
+	toggle_files_list->set_visible(!toggle_files_list->is_visible());
+	update_toggle_files_button();
+}
+
 void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_nodes", &VisualShaderEditor::_update_nodes);
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
@@ -6490,7 +6535,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar_panel->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE, PRESET_MODE_MINSIZE, 10);
 	toolbar_panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
-	HFlowContainer *toolbar = memnew(HFlowContainer);
+	toolbar = memnew(HFlowContainer);
 	{
 		LocalVector<Node *> nodes;
 		for (int i = 0; i < graph->get_menu_hbox()->get_child_count(); i++) {
@@ -6588,6 +6633,32 @@ VisualShaderEditor::VisualShaderEditor() {
 	shader_preview_button->set_pressed(true);
 	toolbar->add_child(shader_preview_button);
 	shader_preview_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_show_shader_preview));
+
+	Control *spacer = memnew(Control);
+	spacer->set_h_size_flags(Control::SIZE_EXPAND);
+	toolbar->add_child(spacer);
+
+	site_search = memnew(Button);
+	site_search->set_flat(true);
+	site_search->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_help_open));
+	site_search->set_text(TTR("Online Docs"));
+	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
+	toolbar->add_child(site_search);
+	toolbar->add_child(memnew(VSeparator));
+
+	VSeparator *separator = memnew(VSeparator);
+	toolbar->add_child(separator);
+	toolbar->move_child(separator, 0);
+
+	separator = memnew(VSeparator);
+	toolbar->add_child(separator);
+	toolbar->move_child(separator, 0);
+
+	toggle_files_button = memnew(Button);
+	toggle_files_button->set_flat(true);
+	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_toggle_files_pressed));
+	toolbar->add_child(toggle_files_button);
+	toolbar->move_child(toggle_files_button, 0);
 
 	///////////////////////////////////////
 	// CODE PREVIEW
@@ -6688,6 +6759,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_tools = memnew(MenuButton);
 	filter_hbox->add_child(preview_tools);
 	preview_tools->set_tooltip_text(TTR("Options"));
+	preview_tools->set_accessibility_name(TTRC("Options"));
 	preview_tools->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_preview_tools_menu_option));
 	preview_tools->get_popup()->add_item(TTR("Copy Parameters From Material"), COPY_PARAMS_FROM_MATERIAL);
 	preview_tools->get_popup()->add_item(TTR("Paste Parameters To Material"), PASTE_PARAMS_TO_MATERIAL);
@@ -6737,10 +6809,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	node_filter->connect(SceneStringName(gui_input), callable_mp(this, &VisualShaderEditor::_sbox_input));
 	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	node_filter->set_placeholder(TTR("Search"));
+	node_filter->set_accessibility_name(TTRC("Search"));
 
 	tools = memnew(MenuButton);
 	filter_hb->add_child(tools);
 	tools->set_tooltip_text(TTR("Options"));
+	tools->set_accessibility_name(TTRC("Options"));
 	tools->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_tools_menu_option));
 	tools->get_popup()->add_item(TTR("Expand All"), EXPAND_ALL);
 	tools->get_popup()->add_item(TTR("Collapse All"), COLLAPSE_ALL);
@@ -6816,6 +6890,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		varying_type->add_item("Vector4");
 		varying_type->add_item("Boolean");
 		varying_type->add_item("Transform");
+		varying_type->set_accessibility_name(TTRC("Varying Type"));
 		varying_type->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_varying_type_changed));
 
 		varying_name = memnew(LineEdit);
@@ -6829,6 +6904,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		hb->add_child(varying_mode);
 		varying_mode->add_item("Vertex -> [Fragment, Light]");
 		varying_mode->add_item("Fragment -> Light");
+		varying_mode->set_accessibility_name(TTRC("Varying Mode"));
 		varying_mode->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_varying_mode_changed));
 
 		varying_error_label = memnew(Label);
@@ -7979,7 +8055,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 	}
 
 	Vector<StringName> properties = p_node->get_editable_properties();
-	if (properties.size() == 0) {
+	if (properties.is_empty()) {
 		return nullptr;
 	}
 
@@ -7996,7 +8072,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 		}
 	}
 
-	if (pinfo.size() == 0) {
+	if (pinfo.is_empty()) {
 		return nullptr;
 	}
 

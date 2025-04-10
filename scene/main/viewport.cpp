@@ -294,7 +294,7 @@ void Viewport::_sub_window_register(Window *p_window) {
 		ERR_FAIL_COND(gui.sub_windows[i].window == p_window);
 	}
 
-	if (gui.sub_windows.size() == 0) {
+	if (gui.sub_windows.is_empty()) {
 		subwindow_canvas = RS::get_singleton()->canvas_create();
 		RS::get_singleton()->viewport_attach_canvas(viewport, subwindow_canvas);
 		RS::get_singleton()->viewport_set_canvas_stacking(viewport, subwindow_canvas, SUBWINDOW_CANVAS_LAYER, 0);
@@ -465,7 +465,7 @@ void Viewport::_sub_window_remove(Window *p_window) {
 	RS::get_singleton()->free(sw.canvas_item);
 	gui.sub_windows.remove_at(index);
 
-	if (gui.sub_windows.size() == 0) {
+	if (gui.sub_windows.is_empty()) {
 		RS::get_singleton()->free(subwindow_canvas);
 		subwindow_canvas = RID();
 	}
@@ -929,7 +929,7 @@ void Viewport::_process_picking() {
 
 		CollisionObject3D *capture_object = nullptr;
 		if (physics_object_capture.is_valid()) {
-			capture_object = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
+			capture_object = ObjectDB::get_instance<CollisionObject3D>(physics_object_capture);
 			if (!capture_object || !camera_3d || (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed())) {
 				physics_object_capture = ObjectID();
 			} else {
@@ -978,7 +978,7 @@ void Viewport::_process_picking() {
 
 					if (is_mouse && new_collider != physics_object_over) {
 						if (physics_object_over.is_valid()) {
-							CollisionObject3D *previous_co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
+							CollisionObject3D *previous_co = ObjectDB::get_instance<CollisionObject3D>(physics_object_over);
 							if (previous_co) {
 								previous_co->_mouse_exit();
 							}
@@ -1515,7 +1515,28 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 	return tooltip;
 }
 
+void Viewport::cancel_tooltip() {
+	_gui_cancel_tooltip();
+}
+
+void Viewport::show_tooltip(Control *p_control) {
+	if (!p_control) {
+		return;
+	}
+
+	if (gui.tooltip_timer.is_valid()) {
+		gui.tooltip_timer->release_connections();
+		gui.tooltip_timer = Ref<SceneTreeTimer>();
+	}
+	gui.tooltip_control = p_control;
+	_gui_show_tooltip_at(p_control->get_size() / 2);
+}
+
 void Viewport::_gui_show_tooltip() {
+	_gui_show_tooltip_at(gui.last_mouse_pos);
+}
+
+void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 	if (!gui.tooltip_control) {
 		return;
 	}
@@ -2112,7 +2133,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		} else {
 			ObjectID control_id = gui.touch_focus[touch_index];
-			Control *over = control_id.is_valid() ? Object::cast_to<Control>(ObjectDB::get_instance(control_id)) : nullptr;
+			Control *over = control_id.is_valid() ? ObjectDB::get_instance<Control>(control_id) : nullptr;
 			if (over && over->can_process()) {
 				touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
 				pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
@@ -2147,7 +2168,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	if (drag_event.is_valid()) {
 		const int drag_event_index = drag_event->get_index();
 		ObjectID control_id = gui.touch_focus[drag_event_index];
-		Control *over = control_id.is_valid() ? Object::cast_to<Control>(ObjectDB::get_instance(control_id)) : nullptr;
+		Control *over = control_id.is_valid() ? ObjectDB::get_instance<Control>(control_id) : nullptr;
 		if (!over) {
 			over = gui_find_control(drag_event->get_position());
 		}
@@ -2205,6 +2226,17 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		Control *from = gui.key_focus ? gui.key_focus : nullptr;
+		if (!from) {
+			for (int i = 0; i < get_child_count(true); i++) {
+				Control *c = Object::cast_to<Control>(get_child(i, true));
+				if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+					continue;
+				}
+
+				from = c;
+				break;
+			}
+		}
 
 		if (from && p_event->is_pressed()) {
 			Control *next = nullptr;
@@ -2219,6 +2251,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				if (p_event->is_action_pressed(SNAME("ui_focus_prev")) && input->is_action_just_pressed(SNAME("ui_focus_prev"))) {
 					next = from->find_prev_valid_focus();
+				}
+
+				if (p_event->is_action_pressed(SNAME("ui_accessibility_drag_and_drop")) && input->is_action_just_pressed(SNAME("ui_accessibility_drag_and_drop"))) {
+					if (gui_is_dragging()) {
+						from->accessibility_drop();
+					} else {
+						from->accessibility_drag();
+					}
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_up")) && input->is_action_just_pressed(SNAME("ui_up"))) {
@@ -2243,6 +2283,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				if (p_event->is_action_pressed(SNAME("ui_focus_prev"), true, true)) {
 					next = from->find_prev_valid_focus();
+				}
+
+				if (p_event->is_action_pressed(SNAME("ui_accessibility_drag_and_drop"), true, true)) {
+					if (gui_is_dragging()) {
+						from->accessibility_drop();
+					} else {
+						from->accessibility_drag();
+					}
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_up"), true, true)) {
@@ -2270,9 +2318,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 }
 
 void Viewport::_perform_drop(Control *p_control) {
+	gui_perform_drop_at(p_control ? p_control->get_local_mouse_position() : Vector2(), p_control);
+}
+
+void Viewport::gui_perform_drop_at(const Point2 &p_pos, Control *p_control) {
 	// Without any arguments, simply cancel Drag and Drop.
 	if (p_control) {
-		gui.drag_successful = _gui_drop(p_control, p_control->get_local_mouse_position(), false);
+		gui.drag_successful = _gui_drop(p_control, p_pos, false);
 	} else {
 		gui.drag_successful = false;
 	}
@@ -2286,6 +2338,7 @@ void Viewport::_perform_drop(Control *p_control) {
 	Viewport *section_root = get_section_root_viewport();
 	section_root->gui.drag_data = Variant();
 	gui.dragging = false;
+	gui.drag_description = String();
 	section_root->gui.global_dragging = false;
 	gui.drag_mouse_over = nullptr;
 	Viewport::_propagate_drag_notification(section_root, NOTIFICATION_DRAG_END);
@@ -2314,12 +2367,23 @@ void Viewport::gui_set_root_order_dirty() {
 	gui.roots_order_dirty = true;
 }
 
+void Viewport::_gui_force_drag_start() {
+	Viewport *section_root = get_section_root_viewport();
+	section_root->gui.global_dragging = true;
+}
+
+void Viewport::_gui_force_drag_cancel() {
+	Viewport *section_root = get_section_root_viewport();
+	section_root->gui.global_dragging = false;
+}
+
 void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control) {
 	ERR_FAIL_COND_MSG(p_data.get_type() == Variant::NIL, "Drag data must be a value.");
 
-	gui.dragging = true;
 	Viewport *section_root = get_section_root_viewport();
-	section_root->gui.global_dragging = true;
+	ERR_FAIL_COND(!section_root->gui.global_dragging);
+
+	gui.dragging = true;
 	section_root->gui.drag_data = p_data;
 	gui.mouse_focus = nullptr;
 	gui.mouse_focus_mask.clear();
@@ -2351,7 +2415,7 @@ Control *Viewport::_gui_get_drag_preview() {
 	if (gui.drag_preview_id.is_null()) {
 		return nullptr;
 	} else {
-		Control *drag_preview = Object::cast_to<Control>(ObjectDB::get_instance(gui.drag_preview_id));
+		Control *drag_preview = ObjectDB::get_instance<Control>(gui.drag_preview_id);
 		if (!drag_preview) {
 			ERR_PRINT("Don't free the control set as drag preview.");
 			gui.drag_preview_id = ObjectID();
@@ -2583,7 +2647,7 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 
 #ifndef PHYSICS_3D_DISABLED
 	if (physics_object_over.is_valid()) {
-		CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
+		CollisionObject3D *co = ObjectDB::get_instance<CollisionObject3D>(physics_object_over);
 		if (co) {
 			if (!co->is_inside_tree()) {
 				physics_object_over = ObjectID();
@@ -3477,6 +3541,19 @@ void Viewport::set_disable_input_override(bool p_disable) {
 		_gui_cancel_tooltip();
 	}
 	disable_input_override = p_disable;
+}
+
+String Viewport::gui_get_drag_description() const {
+	ERR_READ_THREAD_GUARD_V(String());
+	if (get_section_root_viewport()->gui.drag_description.is_empty()) {
+		return RTR("Drag-and-drop data");
+	} else {
+		return get_section_root_viewport()->gui.drag_description;
+	}
+}
+
+void Viewport::gui_set_drag_description(const String &p_description) {
+	gui.drag_description = p_description;
 }
 
 Variant Viewport::gui_get_drag_data() const {
@@ -4863,6 +4940,8 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("gui_cancel_drag"), &Viewport::gui_cancel_drag);
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
+	ClassDB::bind_method(D_METHOD("gui_get_drag_description"), &Viewport::gui_get_drag_description);
+	ClassDB::bind_method(D_METHOD("gui_set_drag_description", "description"), &Viewport::gui_set_drag_description);
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
 	ClassDB::bind_method(D_METHOD("gui_is_drag_successful"), &Viewport::gui_is_drag_successful);
 

@@ -41,6 +41,10 @@
 
 void TouchActionsPanel::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			DisplayServer::get_singleton()->set_hardware_keyboard_connection_change_callback(callable_mp(this, &TouchActionsPanel::_hardware_keyboard_connected));
+			_hardware_keyboard_connected(DisplayServer::get_singleton()->has_hardware_keyboard());
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			drag_handle->set_texture(get_editor_theme_icon(SNAME("DragHandle")));
 			layout_toggle_button->set_button_icon(get_editor_theme_icon(SNAME("Orientation")));
@@ -51,6 +55,10 @@ void TouchActionsPanel::_notification(int p_what) {
 			redo_button->set_button_icon(get_editor_theme_icon(SNAME("Redo")));
 		} break;
 	}
+}
+
+void TouchActionsPanel::_hardware_keyboard_connected(bool p_connected) {
+	set_visible(!p_connected);
 }
 
 void TouchActionsPanel::_simulate_editor_shortcut(const String &p_shortcut_name) {
@@ -73,11 +81,12 @@ void TouchActionsPanel::_simulate_key_press(Key p_keycode) {
 	Input::get_singleton()->parse_input_event(event);
 }
 
-Button *TouchActionsPanel::_add_new_action_button(const String &p_shortcut, Key p_keycode) {
+Button *TouchActionsPanel::_add_new_action_button(const String &p_shortcut, const String &p_name, Key p_keycode) {
 	Button *action_button = memnew(Button);
 	action_button->set_focus_mode(Control::FOCUS_NONE);
 	action_button->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	action_button->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	action_button->set_accessibility_name(p_name);
 	if (p_keycode == Key::NONE) {
 		action_button->connect(SceneStringName(pressed), callable_mp(this, &TouchActionsPanel::_simulate_editor_shortcut).bind(p_shortcut));
 	} else {
@@ -146,6 +155,7 @@ TouchActionsPanel::TouchActionsPanel() {
 	box->add_child(drag_handle);
 
 	layout_toggle_button = memnew(Button);
+	layout_toggle_button->set_accessibility_name(TTRC("Switch Layout"));
 	layout_toggle_button->set_focus_mode(Control::FOCUS_NONE);
 	layout_toggle_button->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	layout_toggle_button->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
@@ -154,6 +164,7 @@ TouchActionsPanel::TouchActionsPanel() {
 
 	lock_panel_button = memnew(Button);
 	lock_panel_button->set_toggle_mode(true);
+	lock_panel_button->set_accessibility_name(TTRC("Lock Panel"));
 	lock_panel_button->set_focus_mode(Control::FOCUS_NONE);
 	lock_panel_button->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	lock_panel_button->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
@@ -166,8 +177,8 @@ TouchActionsPanel::TouchActionsPanel() {
 	box->add_child(separator);
 
 	// Add action buttons.
-	save_button = _add_new_action_button("editor/save_scene");
-	delete_button = _add_new_action_button("", Key::KEY_DELETE);
-	undo_button = _add_new_action_button("ui_undo");
-	redo_button = _add_new_action_button("ui_redo");
+	save_button = _add_new_action_button("editor/save_scene", TTR("Save"));
+	delete_button = _add_new_action_button("", TTR("Delete"), Key::KEY_DELETE);
+	undo_button = _add_new_action_button("ui_undo", TTR("Undo"));
+	redo_button = _add_new_action_button("ui_redo", TTR("Redo"));
 }

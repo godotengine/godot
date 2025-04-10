@@ -569,7 +569,7 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 			wall_normal = collision.normal;
 
 			// Don't apply wall velocity when the collider is a CharacterBody3D.
-			if (Object::cast_to<CharacterBody3D>(ObjectDB::get_instance(collision.collider_id)) == nullptr) {
+			if (ObjectDB::get_instance<CharacterBody3D>(collision.collider_id) == nullptr) {
 				_set_platform_data(collision);
 			}
 		}
@@ -717,7 +717,7 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 }
 
 Ref<KinematicCollision3D> CharacterBody3D::_get_last_slide_collision() {
-	if (motion_results.size() == 0) {
+	if (motion_results.is_empty()) {
 		return Ref<KinematicCollision3D>();
 	}
 	return _get_slide_collision(motion_results.size() - 1);

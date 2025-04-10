@@ -286,11 +286,7 @@ void ExportTemplateManager::_refresh_mirrors_completed(int p_status, int p_code,
 		return;
 	}
 
-	String response_json;
-	{
-		const uint8_t *r = p_data.ptr();
-		response_json.parse_utf8((const char *)r, p_data.size());
-	}
+	String response_json = String::utf8((const char *)p_data.ptr(), p_data.size());
 
 	JSON json;
 	Error err = json.parse(response_json);
@@ -469,8 +465,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", file));
 			unzCloseCurrentFile(pkg);
 
-			String data_str;
-			data_str.parse_utf8((const char *)uncomp_data.ptr(), uncomp_data.size());
+			String data_str = String::utf8((const char *)uncomp_data.ptr(), uncomp_data.size());
 			data_str = data_str.strip_edges();
 
 			// Version number should be of the form major.minor[.patch].status[.module_config]
@@ -1022,6 +1017,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_installed_path = memnew(LineEdit);
 	current_installed_path->set_editable(false);
 	current_installed_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	current_installed_path->set_accessibility_name(TTRC("Installed Path"));
 	current_installed_hb->add_child(current_installed_path);
 
 #ifndef ANDROID_ENABLED
@@ -1057,6 +1053,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	download_install_hb->add_child(mirrors_label);
 
 	mirrors_list = memnew(OptionButton);
+	mirrors_list->set_accessibility_name(TTRC("Mirror"));
 	mirrors_list->set_custom_minimum_size(Size2(280, 0) * EDSCALE);
 	download_install_hb->add_child(mirrors_list);
 
@@ -1065,6 +1062,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	request_mirrors->connect("request_completed", callable_mp(this, &ExportTemplateManager::_refresh_mirrors_completed));
 
 	mirror_options_button = memnew(MenuButton);
+	mirror_options_button->set_accessibility_name(TTRC("Mirror Options"));
 	mirror_options_button->get_popup()->add_item(TTR("Open in Web Browser"), VISIT_WEB_MIRROR);
 	mirror_options_button->get_popup()->add_item(TTR("Copy Mirror URL"), COPY_MIRROR_URL);
 	download_install_hb->add_child(mirror_options_button);

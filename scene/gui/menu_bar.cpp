@@ -85,6 +85,15 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 			_open_popup(selected_menu, true);
 		}
 		return;
+	} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
+		if (focused_menu == -1) {
+			focused_menu = 0;
+		}
+		selected_menu = focused_menu;
+		if (active_menu >= 0) {
+			get_menu_popup(active_menu)->hide();
+		}
+		_open_popup(selected_menu, true);
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -221,7 +230,7 @@ void MenuBar::bind_global_menu() {
 		for (int i = 0; i < count; i++) {
 			String tag = nmenu->get_item_tag(main_menu, i).operator String().get_slicec('#', 1);
 			if (!tag.is_empty() && tag != prev_tag) {
-				MenuBar *mb = Object::cast_to<MenuBar>(ObjectDB::get_instance(ObjectID(static_cast<uint64_t>(tag.to_int()))));
+				MenuBar *mb = ObjectDB::get_instance<MenuBar>(ObjectID(static_cast<uint64_t>(tag.to_int())));
 				if (mb && mb->get_start_index() >= start_index) {
 					global_start_idx = i;
 					break;
@@ -276,6 +285,12 @@ void MenuBar::unbind_global_menu() {
 
 void MenuBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_MENU_BAR);
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			if (get_menu_count() > 0) {
 				_refresh_menu_names();
@@ -407,6 +422,10 @@ void MenuBar::_draw_menu_item(int p_index) {
 	bool hovered = (focused_menu == p_index);
 	bool pressed = (active_menu == p_index);
 	bool rtl = is_layout_rtl();
+
+	if (has_focus() && focused_menu == -1 && p_index == 0) {
+		hovered = true;
+	}
 
 	if (menu_cache[p_index].hidden) {
 		return;
@@ -548,7 +567,7 @@ int MenuBar::get_menu_idx_from_control(PopupMenu *p_child) const {
 }
 
 void MenuBar::_popup_changed(ObjectID p_menu) {
-	PopupMenu *pm = Object::cast_to<PopupMenu>(ObjectDB::get_instance(p_menu));
+	PopupMenu *pm = ObjectDB::get_instance<PopupMenu>(p_menu);
 	if (!pm) {
 		return;
 	}
@@ -950,6 +969,7 @@ String MenuBar::get_tooltip(const Point2 &p_pos) const {
 }
 
 MenuBar::MenuBar() {
+	set_focus_mode(FOCUS_ALL);
 	set_process_shortcut_input(true);
 }
 

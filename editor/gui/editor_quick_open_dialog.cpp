@@ -115,6 +115,7 @@ EditorQuickOpenDialog::EditorQuickOpenDialog() {
 		search_box = memnew(LineEdit);
 		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		search_box->set_placeholder(TTR("Search files..."));
+		search_box->set_accessibility_name(TTRC("Search"));
 		search_box->set_clear_button_enabled(true);
 		mc->add_child(search_box);
 	}
@@ -278,6 +279,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		bottom_bar->add_child(vsep);
 
 		display_mode_toggle = memnew(Button);
+		display_mode_toggle->set_accessibility_name(TTRC("Display Mode"));
 		style_button(display_mode_toggle);
 		display_mode_toggle->connect(SceneStringName(pressed), callable_mp(this, &QuickOpenResultContainer::_toggle_display_mode));
 		bottom_bar->add_child(display_mode_toggle);
@@ -343,18 +345,31 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 		// Load history when opening for the first time.
 		file_type_icons.insert(SNAME("__default_icon"), get_editor_theme_icon(SNAME("Object")));
 
+		bool history_modified = false;
 		List<String> history_keys;
 		history_file->get_section_keys("selected_history", &history_keys);
 		for (const String &type : history_keys) {
 			const StringName type_name = type;
 			const PackedStringArray paths = history_file->get_value("selected_history", type);
 
+			PackedStringArray cleaned_paths;
+			cleaned_paths.resize(paths.size());
+
 			Vector<QuickOpenResultCandidate> loaded_candidates;
 			loaded_candidates.resize(paths.size());
 			{
 				QuickOpenResultCandidate *candidates_write = loaded_candidates.ptrw();
+				String *cleanup_write = cleaned_paths.ptrw();
 				int i = 0;
-				for (const String &path : paths) {
+				for (String path : paths) {
+					if (path.begins_with("uid://")) {
+						ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(path);
+						if (!ResourceUID::get_singleton()->has_id(id)) {
+							continue;
+						}
+						path = ResourceUID::get_singleton()->get_id_path(id);
+					}
+
 					if (!ResourceLoader::exists(path)) {
 						continue;
 					}
@@ -363,13 +378,29 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 					QuickOpenResultCandidate candidate;
 					_setup_candidate(candidate, path);
 					candidates_write[i] = candidate;
+					cleanup_write[i] = path;
 					i++;
 				}
 				loaded_candidates.resize(i);
+				cleaned_paths.resize(i);
 				selected_history.insert(type, loaded_candidates);
+
+				if (i < paths.size()) {
+					// Some paths removed, need to update history.
+					if (i == 0) {
+						history_file->erase_section_key("selected_history", type);
+					} else {
+						history_file->set_value("selected_history", type, cleaned_paths);
+					}
+					history_modified = true;
+				}
 			}
 		}
+		if (history_modified) {
+			history_file->save(_get_cache_file_path());
+		}
 	}
+
 	_create_initial_results();
 }
 

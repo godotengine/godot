@@ -18,6 +18,8 @@ JPH_IMPLEMENT_SERIALIZABLE_NON_VIRTUAL(CollisionGroup)
 	JPH_ADD_ATTRIBUTE(CollisionGroup, mSubGroupID)
 }
 
+const CollisionGroup CollisionGroup::sInvalid;
+
 void CollisionGroup::SaveBinaryState(StreamOut &inStream) const
 {
 	inStream.Write(mGroupID);

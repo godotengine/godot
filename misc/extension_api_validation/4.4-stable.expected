@@ -26,6 +26,31 @@ Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/unregi
 Switched from `OpenXRExtensionWrapperExtension` to parent `OpenXRExtensionWrapper`. Compatibility methods registered.
 
 
+=======
+GH-104890
+---------
+Validate extension JSON: API was removed: classes/JSONRPC/methods/set_scope
+
+Replaced `set_scope` with `set_method`. Compatibility method registered for binary compatibility. Manual upgrade required by users to retain functionality.
+
+
+GH-76829
+--------
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments': size changed value in new API, from 6 to 11.
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments': size changed value in new API, from 10 to 11.
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_table/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/TreeItem/methods/add_button/arguments': size changed value in new API, from 5 to 6.
+
+Added optional arguments. Compatibility methods registered.
+
+
+GH-71542
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorExportPlatform/methods/get_forced_export_files': arguments
+
+Optional argument added. Compatibility methods registered.
+
+
 GH-10736
 ---------
 Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/body_set_shape_as_one_way_collision/arguments': size changed value in new API, from 4 to 5.

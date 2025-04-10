@@ -396,6 +396,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Label
 
 	theme->set_stylebox(CoreStringName(normal), "Label", memnew(StyleBoxEmpty));
+	theme->set_stylebox("focus", "Label", focus);
 	theme->set_font(SceneStringName(font), "Label", Ref<Font>());
 	theme->set_font_size(SceneStringName(font_size), "Label", -1);
 
@@ -793,9 +794,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox(SceneStringName(panel), "GraphNode", graphnode_normal);
 	theme->set_stylebox("panel_selected", "GraphNode", graphnode_selected);
+	theme->set_stylebox("panel_focus", "GraphNode", focus);
 	theme->set_stylebox("titlebar", "GraphNode", graphn_sb_titlebar);
 	theme->set_stylebox("titlebar_selected", "GraphNode", graphn_sb_titlebar_selected);
 	theme->set_stylebox("slot", "GraphNode", graphnode_slot);
+	theme->set_stylebox("slot_selected", "GraphNode", focus);
 	theme->set_icon("port", "GraphNode", icons["graph_port"]);
 	theme->set_icon("resizer", "GraphNode", icons["resizer_se"]);
 	theme->set_color("resizer_color", "GraphNode", control_font_color);
@@ -862,6 +865,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("cursor_unfocused", "Tree", focus);
 	theme->set_stylebox("button_hover", "Tree", make_flat_stylebox(Color(1, 1, 1, 0.07)));
 	theme->set_stylebox("button_pressed", "Tree", button_pressed);
+	theme->set_stylebox("button_hover", "Tree", button_hover);
 	theme->set_stylebox("title_button_normal", "Tree", make_flat_stylebox(style_pressed_color, 4, 4, 4, 4));
 	theme->set_stylebox("title_button_pressed", "Tree", make_flat_stylebox(style_hover_color, 4, 4, 4, 4));
 	theme->set_stylebox("title_button_hover", "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 4));
@@ -1240,6 +1244,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("layout", "GraphEdit", icons["grid_layout"]);
 
 	theme->set_stylebox(SceneStringName(panel), "GraphEdit", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
+	theme->set_stylebox("panel_focus", "GraphEdit", focus);
 
 	Ref<StyleBoxFlat> graph_toolbar_style = make_flat_stylebox(Color(0.24, 0.24, 0.24, 0.6), 4, 2, 4, 2);
 	theme->set_stylebox("menu_panel", "GraphEdit", graph_toolbar_style);
@@ -1253,6 +1258,40 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("connection_hover_thickness", "GraphEdit", 0);
 	theme->set_color("connection_valid_target_tint_color", "GraphEdit", Color(1, 1, 1, 0.4));
 	theme->set_color("connection_rim_color", "GraphEdit", style_normal_color);
+
+	Ref<StyleBoxFlat> foldable_container_title = make_flat_stylebox(style_pressed_color);
+	foldable_container_title->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	foldable_container_title->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+	theme->set_stylebox("title_panel", "FoldableContainer", foldable_container_title);
+	Ref<StyleBoxFlat> foldable_container_hover = make_flat_stylebox(style_hover_color);
+	foldable_container_hover->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	foldable_container_hover->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+	theme->set_stylebox("title_hover_panel", "FoldableContainer", foldable_container_hover);
+	theme->set_stylebox("title_collapsed_panel", "FoldableContainer", make_flat_stylebox(style_pressed_color));
+	theme->set_stylebox("title_collapsed_hover_panel", "FoldableContainer", make_flat_stylebox(style_hover_color));
+	Ref<StyleBoxFlat> foldable_container_panel = make_flat_stylebox(style_normal_color);
+	foldable_container_panel->set_content_margin_all(default_margin);
+	foldable_container_panel->set_corner_radius(CORNER_TOP_LEFT, 0);
+	foldable_container_panel->set_corner_radius(CORNER_TOP_RIGHT, 0);
+	theme->set_stylebox(SceneStringName(panel), "FoldableContainer", foldable_container_panel);
+	Ref<StyleBoxFlat> foldable_focus_style = make_flat_stylebox(style_focus_color, default_margin, default_margin, default_margin, default_margin, default_corner_radius, false, 2);
+	theme->set_stylebox("focus", "FoldableContainer", foldable_focus_style);
+
+	theme->set_font(SceneStringName(font), "FoldableContainer", Ref<Font>());
+	theme->set_font_size(SceneStringName(font_size), "FoldableContainer", default_font_size);
+
+	theme->set_color(SceneStringName(font_color), "FoldableContainer", control_font_color);
+	theme->set_color("hover_font_color", "FoldableContainer", control_font_hover_color);
+	theme->set_color("collapsed_font_color", "FoldableContainer", control_font_pressed_color);
+	theme->set_color("font_outline_color", "FoldableContainer", Color(1, 1, 1));
+
+	theme->set_icon("expanded_arrow", "FoldableContainer", icons["arrow_down"]);
+	theme->set_icon("expanded_arrow_mirrored", "FoldableContainer", icons["arrow_up"]);
+	theme->set_icon("folded_arrow", "FoldableContainer", icons["arrow_right"]);
+	theme->set_icon("folded_arrow_mirrored", "FoldableContainer", icons["arrow_left"]);
+
+	theme->set_constant("outline_size", "FoldableContainer", 0);
+	theme->set_constant("h_separation", "FoldableContainer", Math::round(2 * scale));
 
 	// Visual Node Ports
 

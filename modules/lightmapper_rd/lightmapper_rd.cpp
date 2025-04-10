@@ -645,19 +645,19 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		r_cluster_aabbs_buffer = rd->storage_buffer_create(cab.size(), cab);
 
 		Vector<uint8_t> lb = lights.to_byte_array();
-		if (lb.size() == 0) {
+		if (lb.is_empty()) {
 			lb.resize(sizeof(Light)); //even if no lights, the buffer must exist
 		}
 		lights_buffer = rd->storage_buffer_create(lb.size(), lb);
 
 		Vector<uint8_t> sb = seam_buffer_vec.to_byte_array();
-		if (sb.size() == 0) {
+		if (sb.is_empty()) {
 			sb.resize(sizeof(Vector2i) * 2); //even if no seams, the buffer must exist
 		}
 		seams_buffer = rd->storage_buffer_create(sb.size(), sb);
 
 		Vector<uint8_t> pb = p_probe_positions.to_byte_array();
-		if (pb.size() == 0) {
+		if (pb.is_empty()) {
 			pb.resize(sizeof(Probe));
 		}
 		probe_positions_buffer = rd->storage_buffer_create(pb.size(), pb);

@@ -108,6 +108,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_force_autohinter, "font_rid", "force_autohinter");
 	GDVIRTUAL_BIND(_font_is_force_autohinter, "font_rid");
 
+	GDVIRTUAL_BIND(_font_set_modulate_color_glyphs, "font_rid", "modulate");
+	GDVIRTUAL_BIND(_font_is_modulate_color_glyphs, "font_rid");
+
 	GDVIRTUAL_BIND(_font_set_hinting, "font_rid", "hinting");
 	GDVIRTUAL_BIND(_font_get_hinting, "font_rid");
 
@@ -265,11 +268,23 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_add_string, "shaped", "text", "fonts", "size", "opentype_features", "language", "meta");
 	GDVIRTUAL_BIND(_shaped_text_add_object, "shaped", "key", "size", "inline_align", "length", "baseline");
 	GDVIRTUAL_BIND(_shaped_text_resize_object, "shaped", "key", "size", "inline_align", "baseline");
+	GDVIRTUAL_BIND(_shaped_get_text, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_get_span_count, "shaped");
 	GDVIRTUAL_BIND(_shaped_get_span_meta, "shaped", "index");
 	GDVIRTUAL_BIND(_shaped_get_span_embedded_object, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_span_text, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_span_object, "shaped", "index");
 	GDVIRTUAL_BIND(_shaped_set_span_update_font, "shaped", "index", "fonts", "size", "opentype_features");
+
+	GDVIRTUAL_BIND(_shaped_get_run_count, "shaped");
+	GDVIRTUAL_BIND(_shaped_get_run_text, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_range, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_font_rid, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_font_size, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_language, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_direction, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_object, "shaped", "index");
 
 	GDVIRTUAL_BIND(_shaped_text_substr, "shaped", "start", "length");
 	GDVIRTUAL_BIND(_shaped_text_get_parent, "shaped");
@@ -628,6 +643,16 @@ void TextServerExtension::font_set_force_autohinter(const RID &p_font_rid, bool 
 bool TextServerExtension::font_is_force_autohinter(const RID &p_font_rid) const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_font_is_force_autohinter, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) {
+	GDVIRTUAL_CALL(_font_set_modulate_color_glyphs, p_font_rid, p_modulate);
+}
+
+bool TextServerExtension::font_is_modulate_color_glyphs(const RID &p_font_rid) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_font_is_modulate_color_glyphs, p_font_rid, ret);
 	return ret;
 }
 
@@ -1181,6 +1206,12 @@ bool TextServerExtension::shaped_text_resize_object(const RID &p_shaped, const V
 	return ret;
 }
 
+String TextServerExtension::shaped_get_text(const RID &p_shaped) const {
+	String ret;
+	GDVIRTUAL_CALL(_shaped_get_text, p_shaped, ret);
+	return ret;
+}
+
 int64_t TextServerExtension::shaped_get_span_count(const RID &p_shaped) const {
 	int64_t ret = 0;
 	GDVIRTUAL_CALL(_shaped_get_span_count, p_shaped, ret);
@@ -1199,8 +1230,68 @@ Variant TextServerExtension::shaped_get_span_embedded_object(const RID &p_shaped
 	return ret;
 }
 
+String TextServerExtension::shaped_get_span_text(const RID &p_shaped, int64_t p_index) const {
+	String ret;
+	GDVIRTUAL_CALL(_shaped_get_span_text, p_shaped, p_index, ret);
+	return ret;
+}
+
+Variant TextServerExtension::shaped_get_span_object(const RID &p_shaped, int64_t p_index) const {
+	Variant ret = false;
+	GDVIRTUAL_CALL(_shaped_get_span_object, p_shaped, p_index, ret);
+	return ret;
+}
+
 void TextServerExtension::shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features) {
 	GDVIRTUAL_CALL(_shaped_set_span_update_font, p_shaped, p_index, p_fonts, p_size, p_opentype_features);
+}
+
+int64_t TextServerExtension::shaped_get_run_count(const RID &p_shaped) const {
+	int64_t ret = 0;
+	GDVIRTUAL_CALL(_shaped_get_run_count, p_shaped, ret);
+	return ret;
+}
+
+String TextServerExtension::shaped_get_run_text(const RID &p_shaped, int64_t p_index) const {
+	String ret;
+	GDVIRTUAL_CALL(_shaped_get_run_text, p_shaped, p_index, ret);
+	return ret;
+}
+
+Vector2i TextServerExtension::shaped_get_run_range(const RID &p_shaped, int64_t p_index) const {
+	Vector2i ret;
+	GDVIRTUAL_CALL(_shaped_get_run_range, p_shaped, p_index, ret);
+	return ret;
+}
+
+RID TextServerExtension::shaped_get_run_font_rid(const RID &p_shaped, int64_t p_index) const {
+	RID ret;
+	GDVIRTUAL_CALL(_shaped_get_run_font_rid, p_shaped, p_index, ret);
+	return ret;
+}
+
+int TextServerExtension::shaped_get_run_font_size(const RID &p_shaped, int64_t p_index) const {
+	int ret = 0;
+	GDVIRTUAL_CALL(_shaped_get_run_font_size, p_shaped, p_index, ret);
+	return ret;
+}
+
+String TextServerExtension::shaped_get_run_language(const RID &p_shaped, int64_t p_index) const {
+	String ret;
+	GDVIRTUAL_CALL(_shaped_get_run_language, p_shaped, p_index, ret);
+	return ret;
+}
+
+TextServer::Direction TextServerExtension::shaped_get_run_direction(const RID &p_shaped, int64_t p_index) const {
+	TextServer::Direction ret = TextServer::DIRECTION_LTR;
+	GDVIRTUAL_CALL(_shaped_get_run_direction, p_shaped, p_index, ret);
+	return ret;
+}
+
+Variant TextServerExtension::shaped_get_run_object(const RID &p_shaped, int64_t p_index) const {
+	Variant ret;
+	GDVIRTUAL_CALL(_shaped_get_run_object, p_shaped, p_index, ret);
+	return ret;
 }
 
 RID TextServerExtension::shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const {

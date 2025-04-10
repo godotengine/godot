@@ -61,9 +61,8 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 
 	Array version_array;
 	{
-		String s;
 		const uint8_t *r = p_body.ptr();
-		s.parse_utf8((const char *)r, p_body.size());
+		String s = String::utf8((const char *)r, p_body.size());
 
 		Variant result = JSON::parse_string(s);
 		if (result == Variant()) {
@@ -185,17 +184,20 @@ void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 			} else {
 				_set_message(TTR("Update checks disabled."), theme_cache.disabled_color);
 			}
+			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_OFF);
 			set_tooltip_text("");
 			break;
 		}
 
 		case UpdateStatus::ERROR: {
 			set_disabled(false);
+			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_POLITE);
 			set_tooltip_text(TTR("An error has occurred. Click to try again."));
 		} break;
 
 		case UpdateStatus::UPDATE_AVAILABLE: {
 			set_disabled(false);
+			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_POLITE);
 			set_tooltip_text(TTR("Click to open download page."));
 		} break;
 

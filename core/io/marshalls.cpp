@@ -107,7 +107,7 @@ static Error _decode_string(const uint8_t *&buf, int &len, int *r_len, String &r
 	ERR_FAIL_COND_V(strlen < 0 || strlen + pad > len, ERR_FILE_EOF);
 
 	String str;
-	ERR_FAIL_COND_V(str.parse_utf8((const char *)buf, strlen) != OK, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(str.append_utf8((const char *)buf, strlen) != OK, ERR_INVALID_DATA);
 	r_string = str;
 
 	// Add padding.
@@ -1345,7 +1345,7 @@ static Error _encode_container_type(const ContainerType &p_type, uint8_t *&buf, 
 				_encode_string(EncodedObjectAsID::get_class_static(), buf, r_len);
 			}
 		} else if (p_type.class_name != StringName()) {
-			_encode_string(p_full_objects ? p_type.class_name.operator String() : EncodedObjectAsID::get_class_static(), buf, r_len);
+			_encode_string(p_full_objects ? p_type.class_name : EncodedObjectAsID::get_class_static(), buf, r_len);
 		} else {
 			// No need to check `p_full_objects` since `class_name` should be non-empty for `builtin_type == Variant::OBJECT`.
 			if (buf) {

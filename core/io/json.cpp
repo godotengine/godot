@@ -122,8 +122,7 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 			ERR_FAIL_COND_V_MSG(p_markers.has(d.id()), "\"{...}\"", "Converting circular structure to JSON.");
 			p_markers.insert(d.id());
 
-			List<Variant> keys;
-			d.get_key_list(&keys);
+			LocalVector<Variant> keys = d.get_key_list();
 
 			if (p_sort_keys) {
 				keys.sort_custom<StringLikeVariantOrder>();

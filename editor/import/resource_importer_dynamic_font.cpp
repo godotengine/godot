@@ -116,6 +116,7 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
@@ -153,6 +154,7 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	Dictionary ot_ov = p_options["opentype_features"];
 
 	bool autohinter = p_options["force_autohinter"];
+	bool modulate_color_glyphs = p_options["modulate_color_glyphs"];
 	bool allow_system_fallback = p_options["allow_system_fallback"];
 	int hinting = p_options["hinting"];
 	int subpixel_positioning = p_options["subpixel_positioning"];
@@ -176,6 +178,7 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_opentype_feature_overrides(ot_ov);
 	font->set_fixed_size(0);
 	font->set_force_autohinter(autohinter);
+	font->set_modulate_color_glyphs(modulate_color_glyphs);
 	font->set_allow_system_fallback(allow_system_fallback);
 	font->set_hinting((TextServer::Hinting)hinting);
 	font->set_oversampling(oversampling);
@@ -220,16 +223,16 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_keep_rounding_remainders(keep_rounding_remainders);
 
 	Dictionary langs = p_options["language_support"];
-	for (int i = 0; i < langs.size(); i++) {
-		String key = langs.get_key_at_index(i);
-		bool enabled = langs.get_value_at_index(i);
+	for (const KeyValue<Variant, Variant> &kv : langs) {
+		String key = kv.key;
+		bool enabled = kv.value;
 		font->set_language_support_override(key, enabled);
 	}
 
 	Dictionary scripts = p_options["script_support"];
-	for (int i = 0; i < scripts.size(); i++) {
-		String key = scripts.get_key_at_index(i);
-		bool enabled = scripts.get_value_at_index(i);
+	for (const KeyValue<Variant, Variant> &kv : scripts) {
+		String key = kv.key;
+		bool enabled = kv.value;
 		font->set_script_support_override(key, enabled);
 	}
 

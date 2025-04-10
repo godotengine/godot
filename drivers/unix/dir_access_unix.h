@@ -85,6 +85,7 @@ public:
 	virtual Error create_link(String p_source, String p_target) override;
 
 	virtual bool is_case_sensitive(const String &p_path) const override;
+	virtual bool is_equivalent(const String &p_path_a, const String &p_path_b) const override;
 
 	virtual uint64_t get_space_left() override;
 

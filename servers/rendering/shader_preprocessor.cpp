@@ -133,7 +133,7 @@ void ShaderPreprocessor::Tokenizer::skip_whitespace() {
 
 bool ShaderPreprocessor::Tokenizer::consume_empty_line() {
 	// Read until newline and return true if the content was all whitespace/empty.
-	return tokens_to_string(advance('\n')).strip_edges().size() == 0;
+	return tokens_to_string(advance('\n')).strip_edges().is_empty();
 }
 
 String ShaderPreprocessor::Tokenizer::get_identifier(bool *r_is_cursor, bool p_started) {

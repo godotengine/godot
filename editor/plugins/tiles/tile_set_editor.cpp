@@ -80,7 +80,7 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		if (String(d["type"]) == "files") {
 			Vector<String> files = d["files"];
 
-			if (files.size() == 0) {
+			if (files.is_empty()) {
 				return false;
 			}
 
@@ -784,7 +784,7 @@ void TileSetEditor::remove_expanded_editor() {
 		return;
 	}
 
-	Node *original_parent = Object::cast_to<Node>(ObjectDB::get_instance(expanded_editor_parent));
+	Node *original_parent = ObjectDB::get_instance<Node>(expanded_editor_parent);
 	if (original_parent) {
 		expanded_editor->remove_meta("reparented");
 		expanded_editor->reparent(original_parent);
@@ -846,6 +846,7 @@ TileSetEditor::TileSetEditor() {
 	source_sort_button->set_flat(false);
 	source_sort_button->set_theme_type_variation(SceneStringName(FlatButton));
 	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
+	source_sort_button->set_accessibility_name(TTRC("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_set_source_sort));
@@ -896,6 +897,7 @@ TileSetEditor::TileSetEditor() {
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
 	sources_advanced_menu_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
+	sources_advanced_menu_button->set_accessibility_name(TTRC("Advanced"));
 	sources_bottom_actions->add_child(sources_advanced_menu_button);
 	sources_bottom_actions->add_child(source_sort_button);
 

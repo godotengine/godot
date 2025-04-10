@@ -43,6 +43,8 @@
 #include "main/main.h"
 #include "scene/resources/texture.h"
 
+#include "servers/rendering/dummy/rasterizer_dummy.h"
+
 #if defined(VULKAN_ENABLED)
 #include "rendering_context_driver_vulkan_windows.h"
 #endif
@@ -51,6 +53,10 @@
 #endif
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
+#if defined(ACCESSKIT_ENABLED)
+#include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
 #include <avrt.h>
@@ -142,6 +148,11 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 			return true;
 		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 			return (os_ver.dwBuildNumber >= 17134); // Windows 10 Redstone 4 (1803)+ only.
+#ifdef ACCESSKIT_ENABLED
+		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return (accessibility_driver != nullptr);
+		} break;
+#endif
 		default:
 			return false;
 	}
@@ -254,38 +265,63 @@ void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window)
 	}
 }
 
+void DisplayServerWindows::initialize_tts() const {
+	const_cast<DisplayServerWindows *>(this)->tts = memnew(TTS_Windows);
+}
+
 bool DisplayServerWindows::tts_is_speaking() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return tts->is_speaking();
 }
 
 bool DisplayServerWindows::tts_is_paused() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return tts->is_paused();
 }
 
 TypedArray<Dictionary> DisplayServerWindows::tts_get_voices() const {
-	ERR_FAIL_NULL_V_MSG(tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, TypedArray<Dictionary>());
 	return tts->get_voices();
 }
 
 void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
 void DisplayServerWindows::tts_pause() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->pause();
 }
 
 void DisplayServerWindows::tts_resume() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->resume();
 }
 
 void DisplayServerWindows::tts_stop() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->stop();
 }
 
@@ -297,11 +333,7 @@ Error DisplayServerWindows::file_dialog_with_options_show(const String &p_title,
 	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true, p_window_id);
 }
 
-// Silence warning due to a COM API weirdness.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor") // Silence warning due to a COM API weirdness.
 
 class FileDialogEventHandler : public IFileDialogEvents, public IFileDialogControlEvents {
 	LONG ref_count = 1;
@@ -395,7 +427,7 @@ public:
 		int gid = ctl_id++;
 		int cid = ctl_id++;
 
-		if (p_options.size() == 0) {
+		if (p_options.is_empty()) {
 			// Add check box.
 			p_pfdc->StartVisualGroup(gid, L"");
 			p_pfdc->AddCheckButton(cid, (LPCWSTR)p_name.utf16().get_data(), p_default);
@@ -420,9 +452,7 @@ public:
 	virtual ~FileDialogEventHandler() {}
 };
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
 
 LRESULT CALLBACK WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	DisplayServerWindows *ds_win = static_cast<DisplayServerWindows *>(DisplayServer::get_singleton());
@@ -981,7 +1011,7 @@ String DisplayServerWindows::clipboard_get() const {
 		if (mem != nullptr) {
 			LPTSTR ptr = (LPTSTR)GlobalLock(mem);
 			if (ptr != nullptr) {
-				ret.parse_utf8((const char *)ptr);
+				ret.append_utf8((const char *)ptr);
 				GlobalUnlock(mem);
 			}
 		}
@@ -1602,6 +1632,12 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 
 	if (p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT) {
 		wd.resizable = false;
+	}
+	if (p_flags & WINDOW_FLAG_MINIMIZE_DISABLED_BIT) {
+		wd.no_min_btn = true;
+	}
+	if (p_flags & WINDOW_FLAG_MAXIMIZE_DISABLED_BIT) {
+		wd.no_max_btn = true;
 	}
 	if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
 		wd.borderless = true;
@@ -2284,7 +2320,7 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 	return Size2();
 }
 
-void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex) {
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex) {
 	// Windows docs for window styles:
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
@@ -2312,9 +2348,11 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 			r_style |= WS_MAXIMIZE;
 		}
 		if (!p_fullscreen) {
-			r_style |= WS_SYSMENU | WS_MINIMIZEBOX;
-
-			if (p_resizable) {
+			r_style |= WS_SYSMENU;
+			if (!p_no_min_btn) {
+				r_style |= WS_MINIMIZEBOX;
+			}
+			if (!p_no_max_btn) {
 				r_style |= WS_MAXIMIZEBOX;
 			}
 		}
@@ -2327,11 +2365,23 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 			} else {
 				r_style = WS_OVERLAPPEDWINDOW;
 			}
+			if (p_no_min_btn) {
+				r_style &= ~WS_MINIMIZEBOX;
+			}
+			if (p_no_max_btn) {
+				r_style &= ~WS_MAXIMIZEBOX;
+			}
 		} else {
 			if (p_minimized) {
-				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MINIMIZE;
+				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZE;
 			} else {
-				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+			}
+			if (!p_no_min_btn) {
+				r_style |= WS_MINIMIZEBOX;
+			}
+			if (!p_no_max_btn) {
+				r_style |= WS_MAXIMIZEBOX;
 			}
 		}
 	}
@@ -2361,7 +2411,7 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.no_min_btn, wd.no_max_btn, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -2516,10 +2566,10 @@ bool DisplayServerWindows::window_is_maximize_allowed(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
 
-	// FIXME: Implement this, or confirm that it should always be true.
-
-	return true;
+	const DWORD style = GetWindowLongPtr(wd.hWnd, GWL_STYLE);
+	return (style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX;
 }
 
 void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
@@ -2528,6 +2578,14 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	switch (p_flag) {
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			wd.no_min_btn = p_enabled;
+			_update_window_style(p_window);
+		} break;
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			wd.no_max_btn = p_enabled;
+			_update_window_style(p_window);
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			if (p_enabled && wd.parent_hwnd) {
 				print_line("Embedded window resize can't be disabled.");
@@ -2623,6 +2681,12 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
 	switch (p_flag) {
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			return wd.no_max_btn;
+		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			return wd.no_min_btn;
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			return !wd.resizable;
 		} break;
@@ -2716,6 +2780,46 @@ bool DisplayServerWindows::can_any_window_draw() const {
 	return false;
 }
 
+int DisplayServerWindows::accessibility_should_increase_contrast() const {
+	HIGHCONTRASTA hc;
+	hc.cbSize = sizeof(HIGHCONTRAST);
+	if (!SystemParametersInfoA(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRAST), &hc, 0)) {
+		return -1;
+	}
+	return (hc.dwFlags & HCF_HIGHCONTRASTON);
+}
+
+int DisplayServerWindows::accessibility_should_reduce_animation() const {
+	bool anim_enabled = false;
+	if (!SystemParametersInfoA(SPI_GETCLIENTAREAANIMATION, 0, &anim_enabled, 0)) {
+		return -1;
+	}
+	return (!anim_enabled);
+}
+
+int DisplayServerWindows::accessibility_should_reduce_transparency() const {
+	bool tr_enabled = false;
+	if (!SystemParametersInfoA(SPI_GETDISABLEOVERLAPPEDCONTENT, 0, &tr_enabled, 0)) {
+		return -1;
+	}
+	return tr_enabled;
+}
+
+int DisplayServerWindows::accessibility_screen_reader_active() const {
+	bool sr_enabled = false;
+	if (SystemParametersInfoA(SPI_GETSCREENREADER, 0, &sr_enabled, 0) && sr_enabled) {
+		return true;
+	}
+
+	static const WCHAR *narrator_mutex_name = L"NarratorRunning";
+	HANDLE narrator_mutex = OpenMutexW(MUTEX_ALL_ACCESS, false, narrator_mutex_name);
+	if (narrator_mutex) {
+		CloseHandle(narrator_mutex);
+		return true;
+	}
+	return false;
+}
+
 Vector2i DisplayServerWindows::ime_get_selection() const {
 	_THREAD_SAFE_METHOD_
 
@@ -2761,7 +2865,7 @@ String DisplayServerWindows::ime_get_text() const {
 	int32_t length = ImmGetCompositionStringW(wd.im_himc, GCS_COMPSTR, nullptr, 0);
 	wchar_t *string = reinterpret_cast<wchar_t *>(memalloc(length));
 	ImmGetCompositionStringW(wd.im_himc, GCS_COMPSTR, string, length);
-	ret.parse_utf16((char16_t *)string, length / sizeof(wchar_t));
+	ret.append_utf16((char16_t *)string, length / sizeof(wchar_t));
 
 	memdelete(string);
 
@@ -4503,6 +4607,16 @@ LRESULT DisplayServerWindows::_handle_early_window_message(HWND hWnd, UINT uMsg,
 
 			// Fix this up so we can recognize the remaining messages.
 			pWindowData->hWnd = hWnd;
+
+#ifdef ACCESSKIT_ENABLED
+			if (accessibility_driver && !accessibility_driver->window_create(pWindowData->id, (void *)hWnd)) {
+				if (OS::get_singleton()->is_stdout_verbose()) {
+					ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+				}
+				memdelete(accessibility_driver);
+				accessibility_driver = nullptr;
+			}
+#endif
 		} break;
 		default: {
 			// Additional messages during window creation should happen after we fixed
@@ -4553,6 +4667,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case WM_GETOBJECT: {
+			get_object_recieved = true;
+		} break;
 		case WM_MENUCOMMAND: {
 			native_menu->_menu_activate(HMENU(lParam), (int)wParam);
 		} break;
@@ -5851,6 +5968,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			joypad->probe_joypads();
 		} break;
 		case WM_DESTROY: {
+#ifdef ACCESSKIT_ENABLED
+			if (accessibility_driver) {
+				accessibility_driver->window_destroy(window_id);
+			}
+#endif
 			Input::get_singleton()->flush_buffered_events();
 			if (window_mouseover_id == window_id) {
 				window_mouseover_id = INVALID_WINDOW_ID;
@@ -5904,6 +6026,11 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id) {
 			SetFocus(wd.hWnd);
 		}
 		wd.window_focused = true;
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver) {
+			accessibility_driver->accessibility_set_window_focused(p_window_id, true);
+		}
+#endif
 		_send_window_event(wd, WINDOW_EVENT_FOCUS_IN);
 	} else { // WM_INACTIVE.
 		Input::get_singleton()->release_pressed_events();
@@ -5917,6 +6044,11 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id) {
 			ReleaseCapture();
 		}
 		wd.window_focused = false;
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver) {
+			accessibility_driver->accessibility_set_window_focused(p_window_id, false);
+		}
+#endif
 		_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
 	}
 
@@ -6134,7 +6266,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP_BIT), p_parent_hwnd, dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_flags & WINDOW_FLAG_MINIMIZE_DISABLED_BIT, p_flags & WINDOW_FLAG_MAXIMIZE_DISABLED_BIT, p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP_BIT), p_parent_hwnd, dwStyle, dwExStyle);
 
 	int rq_screen = get_screen_from_rect(p_rect);
 	if (rq_screen < 0) {
@@ -6204,6 +6336,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		WindowData &wd = windows[id];
 
+		wd.id = id;
 		wd.hWnd = CreateWindowExW(
 				dwExStyle,
 				L"Engine", L"",
@@ -6626,9 +6759,22 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Init TTS
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
-		tts = memnew(TTS_Windows);
+		initialize_tts();
 	}
 	native_menu = memnew(NativeMenuWindows);
+
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		accessibility_driver = memnew(AccessibilityDriverAccessKit);
+		if (accessibility_driver->init() != OK) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT("Can't create an accessibility driver, accessibility support disabled!");
+			}
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+	}
+#endif
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
@@ -6810,6 +6956,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	_register_raw_input_devices(INVALID_WINDOW_ID);
 
+	// Init context and rendering device.
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
+	}
+
 #if defined(RD_ENABLED)
 	[[maybe_unused]] bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
 	[[maybe_unused]] bool fallback_to_d3d12 = GLOBAL_GET("rendering/rendering_device/fallback_to_d3d12");
@@ -6882,7 +7033,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 #endif
-// Init context and rendering device
+
 #if defined(GLES3_ENABLED)
 
 	bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_angle");
@@ -7057,6 +7208,24 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	windows[MAIN_WINDOW_ID].initialized = true;
 
+	if (accessibility_screen_reader_active()) {
+		_THREAD_SAFE_LOCK_
+		uint64_t time_wait = OS::get_singleton()->get_ticks_msec();
+		while (true) {
+			MSG msg = {};
+			while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+				TranslateMessage(&msg);
+				DispatchMessageW(&msg);
+			}
+
+			uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_wait;
+			if (delta > 500 || get_object_recieved) {
+				break;
+			}
+		}
+		_THREAD_SAFE_UNLOCK_
+	}
+
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
@@ -7114,6 +7283,7 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_angle");
 #endif
+	drivers.push_back("dummy");
 
 	return drivers;
 }
@@ -7264,6 +7434,11 @@ DisplayServerWindows::~DisplayServerWindows() {
 	if (gl_manager_native) {
 		memdelete(gl_manager_native);
 		gl_manager_native = nullptr;
+	}
+#endif
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		memdelete(accessibility_driver);
 	}
 #endif
 	if (tts) {

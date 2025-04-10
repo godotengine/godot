@@ -114,6 +114,14 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="get_setting_with_override_and_custom_features" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="features" type="PackedStringArray" />
+			<description>
+				Similar to [method get_setting_with_override], but applies feature tag overrides instead of current OS features.
+			</description>
+		</method>
 		<method name="globalize_path" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
@@ -235,6 +243,16 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility/general/accessibility_support" type="int" setter="" getter="" default="0">
+			Accessibility support mode:
+			- [b]Auto[/b] ([code]0[/code]): accessibility support is enabled, but accessibility information updates are processed only if an assistive app (e.g. screen reader or Braille display) is active (default).
+			- [b]Always Active[/b] ([code]1[/code]): accessibility support is enabled, and accessibility information updates are processed regardless of current assistive apps' status.
+			- [b]Disabled[/b] ([code]2[/code]): accessibility support is fully disabled.
+			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, macOS Accessibility Inspector, or AT-SPI Browser do not count as assistive apps. To test your app with these tools, use [code]1[/code].
+		</member>
+		<member name="accessibility/general/updates_per_second" type="int" setter="" getter="" default="60">
+			The number of accessibility information updates per second.
+		</member>
 		<member name="animation/warnings/check_angle_interpolation_type_conflicting" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [AnimationMixer] prints the warning of interpolation being forced to choose the shortest rotation path due to multiple angle interpolation types being mixed in the [AnimationMixer] cache.
 		</member>
@@ -408,7 +426,7 @@
 		</member>
 		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="0.5">
 			The base strength of the panning effect for all [AudioStreamPlayer3D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
-			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
+			The default value of [code]0.5[/code] is tuned for headphones which means that the opposite side channel goes no lower than 50% of the volume of the nearside channel. You may find that you can set this value higher for speakers to have the same effect since both ears can hear from each speaker.
 		</member>
 		<member name="audio/general/default_playback_type" type="int" setter="" getter="" default="0" experimental="">
 			Specifies the default playback type of the platform.
@@ -427,7 +445,7 @@
 			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosessioncategory]AVAudioSessionCategory[/url] on iOS. Use the [code]Playback[/code] category to get sound output, even if the phone is in silent mode.
 		</member>
 		<member name="audio/general/text_to_speech" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], text-to-speech support is enabled, see [method DisplayServer.tts_get_voices] and [method DisplayServer.tts_speak].
+			If [code]true[/code], text-to-speech support is enabled on startup, otherwise it is enabled first time TTS method is used, see [method DisplayServer.tts_get_voices] and [method DisplayServer.tts_speak].
 			[b]Note:[/b] Enabling TTS can cause addition idle CPU usage and interfere with the sleep mode, so consider disabling it if TTS is not used.
 		</member>
 		<member name="audio/video/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
@@ -688,31 +706,58 @@
 		<member name="debug/shader_language/warnings/unused_varying" type="bool" setter="" getter="" default="true">
 			When set to [code]true[/code], produces a warning when a varying is never used.
 		</member>
-		<member name="debug/shapes/avoidance/agents_radius_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.25)">
+		<member name="debug/shapes/avoidance/2d/agents_radius_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.25)">
 			Color of the avoidance agents radius, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/avoidance/enable_agents_radius" type="bool" setter="" getter="" default="true">
+		<member name="debug/shapes/avoidance/2d/enable_agents_radius" type="bool" setter="" getter="" default="true">
 			If enabled, displays avoidance agents radius when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/avoidance/enable_obstacles_radius" type="bool" setter="" getter="" default="true">
+		<member name="debug/shapes/avoidance/2d/enable_obstacles_radius" type="bool" setter="" getter="" default="true">
 			If enabled, displays avoidance obstacles radius when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/avoidance/enable_obstacles_static" type="bool" setter="" getter="" default="true">
+		<member name="debug/shapes/avoidance/2d/enable_obstacles_static" type="bool" setter="" getter="" default="true">
 			If enabled, displays static avoidance obstacles when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/avoidance/obstacles_radius_color" type="Color" setter="" getter="" default="Color(1, 0.5, 0, 0.25)">
+		<member name="debug/shapes/avoidance/2d/obstacles_radius_color" type="Color" setter="" getter="" default="Color(1, 0.5, 0, 0.25)">
 			Color of the avoidance obstacles radius, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/avoidance/obstacles_static_edge_pushin_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 1)">
+		<member name="debug/shapes/avoidance/2d/obstacles_static_edge_pushin_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 1)">
 			Color of the static avoidance obstacles edges when their vertices are winded in order to push agents in, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/avoidance/obstacles_static_edge_pushout_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 1)">
+		<member name="debug/shapes/avoidance/2d/obstacles_static_edge_pushout_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 1)">
 			Color of the static avoidance obstacles edges when their vertices are winded in order to push agents out, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/avoidance/obstacles_static_face_pushin_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 0)">
+		<member name="debug/shapes/avoidance/2d/obstacles_static_face_pushin_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 0)">
 			Color of the static avoidance obstacles faces when their vertices are winded in order to push agents in, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/avoidance/obstacles_static_face_pushout_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.5)">
+		<member name="debug/shapes/avoidance/2d/obstacles_static_face_pushout_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.5)">
+			Color of the static avoidance obstacles faces when their vertices are winded in order to push agents out, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/3d/agents_radius_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.25)">
+			Color of the avoidance agents radius, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/3d/enable_agents_radius" type="bool" setter="" getter="" default="true">
+			If enabled, displays avoidance agents radius when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/3d/enable_obstacles_radius" type="bool" setter="" getter="" default="true">
+			If enabled, displays avoidance obstacles radius when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/3d/enable_obstacles_static" type="bool" setter="" getter="" default="true">
+			If enabled, displays static avoidance obstacles when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/3d/obstacles_radius_color" type="Color" setter="" getter="" default="Color(1, 0.5, 0, 0.25)">
+			Color of the avoidance obstacles radius, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/3d/obstacles_static_edge_pushin_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 1)">
+			Color of the static avoidance obstacles edges when their vertices are winded in order to push agents in, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/3d/obstacles_static_edge_pushout_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 1)">
+			Color of the static avoidance obstacles edges when their vertices are winded in order to push agents out, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/3d/obstacles_static_face_pushin_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 0)">
+			Color of the static avoidance obstacles faces when their vertices are winded in order to push agents in, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/3d/obstacles_static_face_pushout_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.5)">
 			Color of the static avoidance obstacles faces when their vertices are winded in order to push agents out, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
@@ -727,58 +772,100 @@
 		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color(0, 0.6, 0.7, 0.42)">
 			Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/agent_path_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 1)">
+		<member name="debug/shapes/navigation/2d/agent_path_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 1)">
 			Color to display enabled navigation agent paths when an agent has debug enabled.
 		</member>
-		<member name="debug/shapes/navigation/agent_path_point_size" type="float" setter="" getter="" default="4.0">
+		<member name="debug/shapes/navigation/2d/agent_path_point_size" type="float" setter="" getter="" default="4.0">
 			Rasterized size (pixel) used to render navigation agent path points when an agent has debug enabled.
 		</member>
-		<member name="debug/shapes/navigation/edge_connection_color" type="Color" setter="" getter="" default="Color(1, 0, 1, 1)">
+		<member name="debug/shapes/navigation/2d/edge_connection_color" type="Color" setter="" getter="" default="Color(1, 0, 1, 1)">
 			Color to display edge connections between navigation regions, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/enable_agent_paths" type="bool" setter="" getter="" default="true">
+		<member name="debug/shapes/navigation/2d/enable_agent_paths" type="bool" setter="" getter="" default="true">
 			If enabled, displays navigation agent paths when an agent has debug enabled.
 		</member>
-		<member name="debug/shapes/navigation/enable_agent_paths_xray" type="bool" setter="" getter="" default="true">
-			If enabled, displays navigation agent paths through geometry when an agent has debug enabled.
-		</member>
-		<member name="debug/shapes/navigation/enable_edge_connections" type="bool" setter="" getter="" default="true">
+		<member name="debug/shapes/navigation/2d/enable_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled, displays edge connections between navigation regions when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/enable_edge_connections_xray" type="bool" setter="" getter="" default="true">
-			If enabled, displays edge connections between navigation regions through geometry when "Visible Navigation" is enabled in the Debug menu.
-		</member>
-		<member name="debug/shapes/navigation/enable_edge_lines" type="bool" setter="" getter="" default="true">
+		<member name="debug/shapes/navigation/2d/enable_edge_lines" type="bool" setter="" getter="" default="true">
 			If enabled, displays navigation mesh polygon edges when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/enable_edge_lines_xray" type="bool" setter="" getter="" default="true">
-			If enabled, displays navigation mesh polygon edges through geometry when "Visible Navigation" is enabled in the Debug menu.
-		</member>
-		<member name="debug/shapes/navigation/enable_geometry_face_random_color" type="bool" setter="" getter="" default="true">
+		<member name="debug/shapes/navigation/2d/enable_geometry_face_random_color" type="bool" setter="" getter="" default="true">
 			If enabled, colorizes each navigation mesh polygon face with a random color when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/enable_link_connections" type="bool" setter="" getter="" default="true">
+		<member name="debug/shapes/navigation/2d/enable_link_connections" type="bool" setter="" getter="" default="true">
 			If enabled, displays navigation link connections when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/enable_link_connections_xray" type="bool" setter="" getter="" default="true">
-			If enabled, displays navigation link connections through geometry when "Visible Navigation" is enabled in the Debug menu.
-		</member>
-		<member name="debug/shapes/navigation/geometry_edge_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 1)">
+		<member name="debug/shapes/navigation/2d/geometry_edge_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 1)">
 			Color to display enabled navigation mesh polygon edges, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/geometry_edge_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 1)">
+		<member name="debug/shapes/navigation/2d/geometry_edge_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 1)">
 			Color to display disabled navigation mesh polygon edges, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/geometry_face_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 0.4)">
+		<member name="debug/shapes/navigation/2d/geometry_face_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 0.4)">
 			Color to display enabled navigation mesh polygon faces, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/geometry_face_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 0.4)">
+		<member name="debug/shapes/navigation/2d/geometry_face_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 0.4)">
 			Color to display disabled navigation mesh polygon faces, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/link_connection_color" type="Color" setter="" getter="" default="Color(1, 0.5, 1, 1)">
+		<member name="debug/shapes/navigation/2d/link_connection_color" type="Color" setter="" getter="" default="Color(1, 0.5, 1, 1)">
 			Color to use to display navigation link connections, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/link_connection_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 1)">
+		<member name="debug/shapes/navigation/2d/link_connection_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 1)">
+			Color to use to display disabled navigation link connections, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/agent_path_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 1)">
+			Color to display enabled navigation agent paths when an agent has debug enabled.
+		</member>
+		<member name="debug/shapes/navigation/3d/agent_path_point_size" type="float" setter="" getter="" default="4.0">
+			Rasterized size (pixel) used to render navigation agent path points when an agent has debug enabled.
+		</member>
+		<member name="debug/shapes/navigation/3d/edge_connection_color" type="Color" setter="" getter="" default="Color(1, 0, 1, 1)">
+			Color to display edge connections between navigation regions, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/enable_agent_paths" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation agent paths when an agent has debug enabled.
+		</member>
+		<member name="debug/shapes/navigation/3d/enable_agent_paths_xray" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation agent paths through geometry when an agent has debug enabled.
+		</member>
+		<member name="debug/shapes/navigation/3d/enable_edge_connections" type="bool" setter="" getter="" default="true">
+			If enabled, displays edge connections between navigation regions when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/enable_edge_connections_xray" type="bool" setter="" getter="" default="true">
+			If enabled, displays edge connections between navigation regions through geometry when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/enable_edge_lines" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation mesh polygon edges when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/enable_edge_lines_xray" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation mesh polygon edges through geometry when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/enable_geometry_face_random_color" type="bool" setter="" getter="" default="true">
+			If enabled, colorizes each navigation mesh polygon face with a random color when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/enable_link_connections" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation link connections when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/enable_link_connections_xray" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation link connections through geometry when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/geometry_edge_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 1)">
+			Color to display enabled navigation mesh polygon edges, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/geometry_edge_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 1)">
+			Color to display disabled navigation mesh polygon edges, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/geometry_face_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 0.4)">
+			Color to display enabled navigation mesh polygon faces, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/geometry_face_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 0.4)">
+			Color to display disabled navigation mesh polygon faces, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/link_connection_color" type="Color" setter="" getter="" default="Color(1, 0.5, 1, 1)">
+			Color to use to display navigation link connections, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/3d/link_connection_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 1)">
 			Color to use to display disabled navigation link connections, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/paths/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
@@ -878,6 +965,12 @@
 		<member name="display/window/size/initial_screen" type="int" setter="" getter="" default="0">
 			Main window initial screen, this setting is used only if [member display/window/size/initial_position_type] is set to "Other Screen Center" ([code]2[/code]).
 			[b]Note:[/b] This setting only affects the exported project, or when the project is run from the command line. In the editor, the value of [member EditorSettings.run/window_placement/screen] is used instead.
+		</member>
+		<member name="display/window/size/maximize_disabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the main window's maximize button is disabled.
+		</member>
+		<member name="display/window/size/minimize_disabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the main window's minimize button is disabled.
 		</member>
 		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
 			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
@@ -1056,8 +1149,11 @@
 		<member name="gui/common/snap_controls_to_pixels" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], snaps [Control] node vertices to the nearest pixel to ensure they remain crisp even when the camera moves or zooms.
 		</member>
-		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
-			If [code]true[/code], swaps [b]Cancel[/b] and [b]OK[/b] buttons in dialogs on Windows to follow interface conventions. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
+		<member name="gui/common/swap_cancel_ok" type="int" setter="" getter="" default="0">
+			How to position the Cancel and OK buttons in the project's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting.
+			- [b]Auto[/b] ([code]0[/code]) follows the platform convention: OK first on Windows, KDE, and LXQt, Cancel first on macOS and other Linux desktop environments. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
+			- [b]Cancel First[/b] ([code]1[/code]) forces the ordering Cancel/OK.
+			- [b]OK First[/b] ([code]2[/code]) forces the ordering OK/Cancel.
 			[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
@@ -1119,6 +1215,10 @@
 			Default [InputEventAction] to confirm a focused button, menu or list item, or validate input.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_accessibility_drag_and_drop" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to start or end a drag-and-drop operation without using mouse.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_cancel" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to discard a modal or pending input.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -1155,6 +1255,10 @@
 			Default [InputEventAction] to go up one directory in a [FileDialog].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_focus_mode" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to switch [TextEdit] [member input/ui_text_indent] between moving keyboard focus to the next [Control] in the scene and inputting a [code]Tab[/code] character.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_focus_next" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to focus the next [Control] in the scene. The focus behavior can be configured via [member Control.focus_next].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -1170,6 +1274,20 @@
 		<member name="input/ui_graph_duplicate" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to duplicate a [GraphNode] in a [GraphEdit].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_graph_follow_left" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to follow a [GraphNode] input port connection.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_graph_follow_left.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to follow a [GraphNode] input port connection.
+		</member>
+		<member name="input/ui_graph_follow_right" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to follow a [GraphNode] output port connection.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_graph_follow_right.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to follow a [GraphNode] output port connection.
 		</member>
 		<member name="input/ui_home" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go to the start position of a [Control] (e.g. first item in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_HOME] on typical desktop UI systems.
@@ -2958,6 +3076,7 @@
 		</member>
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], uses texture arrays instead of mipmaps for reflection probes and panorama backgrounds (sky). This reduces jitter noise and upscaling artifacts on reflections, but is significantly slower to compute and uses [member rendering/reflections/sky_reflections/roughness_layers] times more memory.
+			[b]Note:[/b] Texture array reflections are always disabled on macOS on Intel GPUs due to driver bugs.
 		</member>
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.

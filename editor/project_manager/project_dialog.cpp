@@ -725,6 +725,17 @@ void ProjectDialog::ok_pressed() {
 
 	hide();
 	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL) {
+#ifdef ANDROID_ENABLED
+		// Create a .nomedia file to hide assets from media apps on Android.
+		const String nomedia_file_path = path.path_join(".nomedia");
+		Ref<FileAccess> f2 = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
+		if (f2.is_null()) {
+			// .nomedia isn't so critical.
+			ERR_PRINT("Couldn't create .nomedia in project path.");
+		} else {
+			f2->close();
+		}
+#endif
 		emit_signal(SNAME("project_created"), path, edit_check_box->is_pressed());
 	} else if (mode == MODE_RENAME) {
 		emit_signal(SNAME("projects_updated"));
@@ -910,6 +921,7 @@ ProjectDialog::ProjectDialog() {
 
 	project_path = memnew(LineEdit);
 	project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	project_path->set_accessibility_name(TTRC("Project Path"));
 	project_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	pphb->add_child(project_path);
 
@@ -925,6 +937,7 @@ ProjectDialog::ProjectDialog() {
 
 	install_path = memnew(LineEdit);
 	install_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	install_path->set_accessibility_name(TTRC("Install Path"));
 	install_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	iphb->add_child(install_path);
 

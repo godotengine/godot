@@ -190,7 +190,7 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_recover(const JoltBody3D &p_bod
 	for (int i = 0; i < JoltProjectSettings::motion_query_recovery_iterations; ++i) {
 		collector.reset();
 
-		_collide_shape_kinematics(jolt_shape, JPH::Vec3::sReplicate(1.0f), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
+		_collide_shape_kinematics(jolt_shape, JPH::Vec3::sOne(), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
 
 		if (!collector.had_hit()) {
 			break;
@@ -320,7 +320,7 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_collide(const JoltBody3D &p_bod
 
 	const JoltMotionFilter3D motion_filter(p_body, p_excluded_bodies, p_excluded_objects);
 	JoltQueryCollectorClosestMulti<JPH::CollideShapeCollector, 32> collector(p_max_collisions);
-	_collide_shape_kinematics(jolt_shape, JPH::Vec3::sReplicate(1.0f), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
+	_collide_shape_kinematics(jolt_shape, JPH::Vec3::sOne(), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
 
 	if (!collector.had_hit() || p_result == nullptr) {
 		return collector.had_hit();
@@ -418,7 +418,7 @@ void JoltPhysicsDirectSpaceState3D::_generate_manifold(const JPH::CollideShapeRe
 	const JPH::PhysicsSettings &physics_settings = physics_system.GetPhysicsSettings();
 	const JPH::Vec3 penetration_axis = p_hit.mPenetrationAxis.Normalized();
 
-	JPH::ManifoldBetweenTwoFaces(p_hit.mContactPointOn1, p_hit.mContactPointOn2, penetration_axis, physics_settings.mManifoldToleranceSq, p_hit.mShape1Face, p_hit.mShape2Face, r_contact_points1, r_contact_points2 JPH_IF_DEBUG_RENDERER(, p_center_of_mass));
+	JPH::ManifoldBetweenTwoFaces(p_hit.mContactPointOn1, p_hit.mContactPointOn2, penetration_axis, physics_settings.mManifoldTolerance, p_hit.mShape1Face, p_hit.mShape2Face, r_contact_points1, r_contact_points2 JPH_IF_DEBUG_RENDERER(, p_center_of_mass));
 
 	if (r_contact_points1.size() > 4) {
 		JPH::PruneContactPoints(penetration_axis, r_contact_points1, r_contact_points2 JPH_IF_DEBUG_RENDERER(, p_center_of_mass));

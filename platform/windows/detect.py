@@ -5,7 +5,7 @@ import sys
 from typing import TYPE_CHECKING
 
 import methods
-from methods import print_error, print_warning
+from methods import print_error, print_info, print_warning
 from platform_methods import detect_arch, validate_arch
 
 if TYPE_CHECKING:
@@ -148,7 +148,9 @@ def detect_build_env_arch():
 
 
 def get_tools(env: "SConsEnvironment"):
-    if os.name != "nt" or env.get("use_mingw"):
+    from SCons.Tool.MSCommon import msvc_exists
+
+    if os.name != "nt" or env.get("use_mingw") or not msvc_exists():
         return ["mingw"]
     else:
         msvc_arch_aliases = {"x86_32": "x86", "arm32": "arm"}
@@ -241,6 +243,44 @@ def get_flags():
         "arch": arch,
         "supported": ["d3d12", "mono", "xaudio2"],
     }
+
+
+def build_def_file(target, source, env: "SConsEnvironment"):
+    arch_aliases = {
+        "x86_32": "i386",
+        "x86_64": "i386:x86-64",
+        "arm32": "arm",
+        "arm64": "arm64",
+    }
+
+    cmdbase = "dlltool -m " + arch_aliases[env["arch"]]
+    if env["arch"] != "x86_32":
+        cmdbase += " --no-leading-underscore"
+
+    mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
+
+    for x in range(len(source)):
+        ok = True
+        # Try prefixed executable (MinGW on Linux).
+        cmd = mingw_bin_prefix + cmdbase + " -d " + str(source[x]) + " -l " + str(target[x])
+        try:
+            out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
+            if len(out[1]):
+                ok = False
+        except Exception:
+            ok = False
+
+        # Try generic executable (MSYS2).
+        if not ok:
+            cmd = cmdbase + " -d " + str(source[x]) + " -l " + str(target[x])
+            try:
+                out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
+                if len(out[1]):
+                    return -1
+            except Exception:
+                return -1
+
+    return 0
 
 
 def configure_msvc(env: "SConsEnvironment"):
@@ -363,6 +403,11 @@ def configure_msvc(env: "SConsEnvironment"):
 
     validate_win_version(env)
 
+    if env["accesskit"]:
+        if int(env["target_win_version"], 16) < 0x0602:
+            print_info("AcceeKit enabled, targeted Windows version changed to Windows 8 (0x602).")
+            env["target_win_version"] = "0x0602"  # Accessibility API require Windows 8+
+
     env.AppendUnique(
         CPPDEFINES=[
             "WINDOWS_ENABLED",
@@ -419,6 +464,29 @@ def configure_msvc(env: "SConsEnvironment"):
     if env.debug_features:
         LIBS += ["psapi", "dbghelp"]
 
+    if env["accesskit"]:
+        if env["accesskit_sdk_path"] != "":
+            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+            if env["arch"] == "arm64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/msvc/static"])
+            elif env["arch"] == "x86_64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/msvc/static"])
+            elif env["arch"] == "x86_32":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/msvc/static"])
+            LIBS += [
+                "accesskit",
+                "uiautomationcore",
+                "runtimeobject",
+                "propsys",
+                "oleaut32",
+                "user32",
+                "userenv",
+                "ntdll",
+            ]
+        else:
+            env.Append(CPPDEFINES=["ACCESSKIT_DYNAMIC"])
+        env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+
     if env["vulkan"]:
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         if not env["use_volk"]:
@@ -459,7 +527,7 @@ def configure_msvc(env: "SConsEnvironment"):
                 "libGLES.windows." + env["arch"] + prebuilt_lib_extra_suffix,
             ]
             LIBS += ["dxgi", "d3d9", "d3d11"]
-        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
+        env.Prepend(CPPEXTPATH=["#thirdparty/angle/include"])
 
     if env["target"] in ["editor", "template_debug"]:
         LIBS += ["psapi", "dbghelp"]
@@ -701,6 +769,11 @@ def configure_mingw(env: "SConsEnvironment"):
 
     validate_win_version(env)
 
+    if env["accesskit"]:
+        if int(env["target_win_version"], 16) < 0x0602:
+            print_info("AcceeKit enabled, targeted Windows version changed to Windows 8 (0x602).")
+            env["target_win_version"] = "0x0602"  # Accessibility API require Windows 8+
+
     if not env["use_llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
 
@@ -765,6 +838,38 @@ def configure_mingw(env: "SConsEnvironment"):
         ]
     )
 
+    if env["accesskit"]:
+        if env["accesskit_sdk_path"] != "":
+            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+            if env["use_llvm"]:
+                if env["arch"] == "arm64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/mingw-llvm/static/"])
+                elif env["arch"] == "x86_64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw-llvm/static/"])
+                elif env["arch"] == "x86_32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw-llvm/static/"])
+            else:
+                if env["arch"] == "x86_64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw/static/"])
+                elif env["arch"] == "x86_32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw/static/"])
+            env.Append(
+                LIBS=[
+                    "accesskit",
+                    "uiautomationcore." + env["arch"],
+                    "runtimeobject",
+                    "propsys",
+                    "oleaut32",
+                    "user32",
+                    "userenv",
+                    "ntdll",
+                ]
+            )
+        else:
+            env.Append(CPPDEFINES=["ACCESSKIT_DYNAMIC"])
+        env.Append(LIBPATH=["#platform/windows"])
+        env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+
     if env.debug_features:
         env.Append(LIBS=["psapi", "dbghelp"])
 
@@ -806,9 +911,12 @@ def configure_mingw(env: "SConsEnvironment"):
                 ]
             )
             env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
-        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
+        env.Prepend(CPPEXTPATH=["#thirdparty/angle/include"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
+
+    # dlltool
+    env.Append(BUILDERS={"DEF": env.Builder(action=build_def_file, suffix=".a", src_suffix=".def")})
 
 
 def configure(env: "SConsEnvironment"):

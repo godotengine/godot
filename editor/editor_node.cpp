@@ -68,6 +68,7 @@
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
+#include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/rendering_server.h"
 
@@ -497,16 +498,25 @@ void EditorNode::_update_from_settings() {
 	ResourceImporterTexture::get_singleton()->update_imports();
 
 #ifdef DEBUG_ENABLED
-	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/edge_connection_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/geometry_edge_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/geometry_face_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/geometry_edge_disabled_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/geometry_face_disabled_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/enable_edge_connections"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections_xray(GLOBAL_GET("debug/shapes/navigation/enable_edge_connections_xray"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/enable_edge_lines"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines_xray(GLOBAL_GET("debug/shapes/navigation/enable_edge_lines_xray"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/enable_geometry_face_random_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/2d/edge_connection_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_disabled_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_disabled_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_connections"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_lines"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/2d/enable_geometry_face_random_color"));
+
+	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/3d/edge_connection_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_disabled_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_disabled_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections_xray"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines_xray"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/3d/enable_geometry_face_random_color"));
 #endif // DEBUG_ENABLED
 }
 
@@ -2476,7 +2486,7 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 			if (kv.key == owner_id || !kv.value.has(plugin)) {
 				continue;
 			}
-			EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
+			EditorPropertyResource *epres = ObjectDB::get_instance<EditorPropertyResource>(kv.key);
 			if (epres) {
 				// If it's resource property editing the same resource type, fold it later to avoid premature modifications
 				// that may result in unsafe iteration of active_plugins.
@@ -2607,7 +2617,7 @@ void EditorNode::_add_to_history(const Object *p_object, const String &p_propert
 	ObjectID history_id = editor_history.get_current();
 	if (id != history_id) {
 		const MultiNodeEdit *multi_node_edit = Object::cast_to<const MultiNodeEdit>(p_object);
-		const MultiNodeEdit *history_multi_node_edit = Object::cast_to<const MultiNodeEdit>(ObjectDB::get_instance(history_id));
+		const MultiNodeEdit *history_multi_node_edit = ObjectDB::get_instance<MultiNodeEdit>(history_id);
 		if (multi_node_edit && history_multi_node_edit && multi_node_edit->is_same_selection(history_multi_node_edit)) {
 			return;
 		}
@@ -3020,14 +3030,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 			const String base_path = resource_path.substr(0, resource_path.rfind_char('/')) + "/";
 
-			file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-			file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-			file->clear_filters();
-			file->set_current_path(base_path);
-			file->set_current_file(ProjectZIPPacker::get_project_zip_safe_name());
-			file->add_filter("*.zip", "ZIP Archive");
-			file->set_title(TTR("Pack Project as ZIP..."));
-			file->popup_file_dialog();
+			file_pack_zip->set_current_path(base_path);
+			file_pack_zip->set_current_file(ProjectZIPPacker::get_project_zip_safe_name());
+			file_pack_zip->popup_file_dialog();
 		} break;
 
 		case FILE_UNDO: {
@@ -3697,10 +3702,8 @@ void EditorNode::replace_resources_in_object(Object *p_object, const Vector<Ref<
 			} break;
 			case Variant::DICTIONARY: {
 				Dictionary d = p_object->get(E.name);
-				List<Variant> keys;
 				bool dictionary_requires_updating = false;
-				d.get_key_list(&keys);
-				for (const Variant &F : keys) {
+				for (const Variant &F : d.get_key_list()) {
 					Variant v = d[F];
 					Ref<Resource> res = v;
 
@@ -3776,7 +3779,7 @@ void EditorNode::add_extension_editor_plugin(const StringName &p_class_name) {
 	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_class_name, SNAME("EditorPlugin")), vformat("Class is not an editor plugin: %s", p_class_name));
 	ERR_FAIL_COND_MSG(singleton->editor_data.has_extension_editor_plugin(p_class_name), vformat("Editor plugin already added for class: %s", p_class_name));
 
-	EditorPlugin *plugin = Object::cast_to<EditorPlugin>(ClassDB::instantiate(p_class_name));
+	EditorPlugin *plugin = Object::cast_to<EditorPlugin>(ClassDB::_instantiate_allow_unexposed(p_class_name));
 	singleton->editor_data.add_extension_editor_plugin(p_class_name, plugin);
 	add_editor_plugin(plugin);
 }
@@ -3806,7 +3809,7 @@ void EditorNode::_update_addon_config() {
 		enabled_addons.push_back(E.key);
 	}
 
-	if (enabled_addons.size() == 0) {
+	if (enabled_addons.is_empty()) {
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", Variant());
 	} else {
 		enabled_addons.sort();
@@ -5695,6 +5698,25 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 	return true;
 }
 
+bool EditorNode::validate_custom_directory() {
+	bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
+
+	if (use_custom_dir) {
+		String data_dir = OS::get_singleton()->get_user_data_dir();
+		Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_USERDATA);
+		if (dir->change_dir(data_dir) != OK) {
+			dir->make_dir_recursive(data_dir);
+			if (dir->change_dir(data_dir) != OK) {
+				open_project_settings->set_text(vformat(TTR("User data dir '%s' is not valid. Change to a valid one?"), data_dir));
+				open_project_settings->popup_centered();
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 void EditorNode::_immediate_dialog_confirmed() {
 	immediate_dialog_confirmed = true;
 }
@@ -6332,7 +6354,7 @@ void EditorNode::preload_reimporting_with_path_in_edited_scenes(const List<Strin
 }
 
 void EditorNode::reload_instances_with_path_in_edited_scenes() {
-	if (scenes_modification_table.size() == 0) {
+	if (scenes_modification_table.is_empty()) {
 		return;
 	}
 	EditorProgress progress("reloading_scene", TTR("Scenes reloading"), editor_data.get_edited_scene_count());
@@ -7472,6 +7494,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/toggle_last_opened_bottom_panel", TTRC("Toggle Last Opened Bottom Panel"), KeyModifierMask::CMD_OR_CTRL | Key::J);
 	distraction_free->set_shortcut(ED_GET_SHORTCUT("editor/distraction_free_mode"));
 	distraction_free->set_tooltip_text(TTRC("Toggle distraction-free mode."));
+	distraction_free->set_accessibility_name(TTRC("Distraction-free Mode"));
 	distraction_free->set_toggle_mode(true);
 	scene_tabs->add_extra_button(distraction_free);
 	distraction_free->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
@@ -7689,6 +7712,7 @@ EditorNode::EditorNode() {
 	main_editor_button_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	editor_main_screen->set_button_container(main_editor_button_hb);
 	title_bar->add_child(main_editor_button_hb);
+	title_bar->set_center_control(main_editor_button_hb);
 
 	// Options are added and handled by DebuggerEditorPlugin.
 	debug_menu = memnew(PopupMenu);
@@ -7797,6 +7821,7 @@ EditorNode::EditorNode() {
 	renderer->set_fit_to_longest_item(false);
 	renderer->set_focus_mode(Control::FOCUS_NONE);
 	renderer->set_tooltip_text(TTR("Choose a rendering method.\n\nNotes:\n- On mobile platforms, the Mobile rendering method is used if Forward+ is selected here.\n- On the web platform, the Compatibility rendering method is always used."));
+	renderer->set_accessibility_name(TTRC("Rendering Method"));
 
 	right_menu_hb->add_child(renderer);
 
@@ -7854,6 +7879,7 @@ EditorNode::EditorNode() {
 	right_menu_hb->add_child(update_spinner);
 	update_spinner->set_button_icon(theme->get_icon(SNAME("Progress1"), EditorStringName(EditorIcons)));
 	update_spinner->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
+	update_spinner->set_accessibility_name(TTRC("Update Mode"));
 	PopupMenu *p = update_spinner->get_popup();
 	p->add_radio_check_item(TTR("Update Continuously"), SPINNER_UPDATE_CONTINUOUSLY);
 	p->add_radio_check_item(TTR("Update When Changed"), SPINNER_UPDATE_WHEN_CHANGED);
@@ -7921,7 +7947,10 @@ EditorNode::EditorNode() {
 
 #ifdef ANDROID_ENABLED
 	// Add TouchActionsPanel node.
-	add_child(memnew(TouchActionsPanel));
+	bool is_enabled = EDITOR_GET("interface/touchscreen/enable_touch_actions_panel");
+	if (is_enabled) {
+		add_child(memnew(TouchActionsPanel));
+	}
 #endif
 
 	// Bottom panels.
@@ -8030,6 +8059,14 @@ EditorNode::EditorNode() {
 	}
 	gui_base->add_child(file_script);
 	file_script->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
+
+	file_pack_zip = memnew(EditorFileDialog);
+	file_pack_zip->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
+	file_pack_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_pack_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_pack_zip->add_filter("*.zip", "ZIP Archive");
+	file_pack_zip->set_title(TTR("Pack Project as ZIP..."));
+	gui_base->add_child(file_pack_zip);
 
 	file_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 	file_menu->connect("about_to_popup", callable_mp(this, &EditorNode::_update_file_menu_opened));
@@ -8251,6 +8288,11 @@ EditorNode::EditorNode() {
 	pick_main_scene->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind(SETTINGS_PICK_MAIN_SCENE));
 	select_current_scene_button = pick_main_scene->add_button(TTR("Select Current"), true, "select_current");
 	pick_main_scene->connect("custom_action", callable_mp(this, &EditorNode::_pick_main_scene_custom_action));
+
+	open_project_settings = memnew(ConfirmationDialog);
+	gui_base->add_child(open_project_settings);
+	open_project_settings->set_ok_button_text(TTRC("Open Project Settings"));
+	open_project_settings->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind(PROJECT_OPEN_SETTINGS));
 
 	for (int i = 0; i < _init_callbacks.size(); i++) {
 		_init_callbacks[i]();

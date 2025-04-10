@@ -490,6 +490,8 @@ void DynamicFontImportSettingsDialog::_main_prop_changed(const String &p_edited_
 			font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
 		} else if (p_edited_property == "force_autohinter") {
 			font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
+		} else if (p_edited_property == "modulate_color_glyphs") {
+			font_preview->set_modulate_color_glyphs(import_settings_data->get("modulate_color_glyphs"));
 		} else if (p_edited_property == "hinting") {
 			font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
 		} else if (p_edited_property == "subpixel_positioning") {
@@ -977,6 +979,7 @@ void DynamicFontImportSettingsDialog::_re_import() {
 	main_settings["msdf_size"] = import_settings_data->get("msdf_size");
 	main_settings["allow_system_fallback"] = import_settings_data->get("allow_system_fallback");
 	main_settings["force_autohinter"] = import_settings_data->get("force_autohinter");
+	main_settings["modulate_color_glyphs"] = import_settings_data->get("modulate_color_glyphs");
 	main_settings["hinting"] = import_settings_data->get("hinting");
 	main_settings["subpixel_positioning"] = import_settings_data->get("subpixel_positioning");
 	main_settings["keep_rounding_remainders"] = import_settings_data->get("keep_rounding_remainders");
@@ -1281,6 +1284,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 		font_preview->set_msdf_size(import_settings_data->get("msdf_size"));
 		font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
 		font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
+		font_preview->set_modulate_color_glyphs(import_settings_data->get("modulate_color_glyphs"));
 		font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
 		int font_subpixel_positioning = import_settings_data->get("subpixel_positioning").operator int();
 		if (font_subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
@@ -1322,6 +1326,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
@@ -1439,7 +1444,8 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	page2_hb_vars->add_child(label_vars);
 
 	add_var = memnew(Button);
-	add_var->set_tooltip_text(TTR("Add configuration"));
+	add_var->set_tooltip_text(TTR("Add new font variation configuration."));
+	add_var->set_accessibility_name(TTRC("Add Configuration"));
 	page2_hb_vars->add_child(add_var);
 	add_var->connect(SceneStringName(pressed), callable_mp(this, &DynamicFontImportSettingsDialog::_variation_add));
 

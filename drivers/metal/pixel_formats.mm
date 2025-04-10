@@ -450,8 +450,7 @@ void PixelFormats::initDataFormatCapabilities() {
 
 	addDataFormatDesc(X8_D24_UNORM_PACK32, Invalid, Depth24Unorm_Stencil8, Invalid, Invalid, 1, 1, 4, DepthStencil);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 
 	addDataFormatDesc(BC1_RGB_UNORM_BLOCK, BC1_RGBA, Invalid, Invalid, Invalid, 4, 4, 8, Compressed);
 	addDataFormatDesc(BC1_RGB_SRGB_BLOCK, BC1_RGBA_sRGB, Invalid, Invalid, Invalid, 4, 4, 8, Compressed);
@@ -476,7 +475,7 @@ void PixelFormats::initDataFormatCapabilities() {
 	addDataFormatDesc(BC7_UNORM_BLOCK, BC7_RGBAUnorm, Invalid, Invalid, Invalid, 4, 4, 16, Compressed);
 	addDataFormatDesc(BC7_SRGB_BLOCK, BC7_RGBAUnorm_sRGB, Invalid, Invalid, Invalid, 4, 4, 16, Compressed);
 
-#pragma clang diagnostic pop
+	GODOT_CLANG_WARNING_POP
 
 	addDataFormatDesc(ETC2_R8G8B8_UNORM_BLOCK, ETC2_RGB8, Invalid, Invalid, Invalid, 4, 4, 8, Compressed);
 	addDataFormatDesc(ETC2_R8G8B8_SRGB_BLOCK, ETC2_RGB8_sRGB, Invalid, Invalid, Invalid, 4, 4, 8, Compressed);
@@ -729,8 +728,7 @@ void PixelFormats::initMTLPixelFormatCapabilities() {
 	addMTLPixelFormatDescSRGB(ASTC_12x12_sRGB, ASTC_12x12, RF, ASTC_12x12_LDR);
 	addMTLPixelFormatDesc(ASTC_12x12_HDR, ASTC_12x12, RF);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 
 	addMTLPixelFormatDesc(BC1_RGBA, BC1_RGBA, RF);
 	addMTLPixelFormatDescSRGB(BC1_RGBA_sRGB, BC1_RGBA, RF, BC1_RGBA);
@@ -747,7 +745,7 @@ void PixelFormats::initMTLPixelFormatCapabilities() {
 	addMTLPixelFormatDesc(BC7_RGBAUnorm, BC7_RGBA, RF);
 	addMTLPixelFormatDescSRGB(BC7_RGBAUnorm_sRGB, BC7_RGBA, RF, BC7_RGBAUnorm);
 
-#pragma clang diagnostic pop
+	GODOT_CLANG_WARNING_POP
 
 	// YUV pixel formats
 	addMTLPixelFormatDesc(GBGR422, None, RF);
@@ -968,8 +966,7 @@ void PixelFormats::modifyMTLFormatCapabilities(const MetalFeatures &p_feat) {
 	setMTLPixFmtCapsIf(noHDR_ASTC, ASTC_12x10_HDR, None);
 	setMTLPixFmtCapsIf(noHDR_ASTC, ASTC_12x12_HDR, None);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 
 	bool noBC = !p_feat.supportsBCTextureCompression;
 	setMTLPixFmtCapsIf(noBC, BC1_RGBA, None);
@@ -987,7 +984,7 @@ void PixelFormats::modifyMTLFormatCapabilities(const MetalFeatures &p_feat) {
 	setMTLPixFmtCapsIf(noBC, BC7_RGBAUnorm, None);
 	setMTLPixFmtCapsIf(noBC, BC7_RGBAUnorm_sRGB, None);
 
-#pragma clang diagnostic pop
+	GODOT_CLANG_WARNING_POP
 
 	setMTLPixFmtCapsIf(iosOnly2, BGRA10_XR, None);
 	setMTLPixFmtCapsIf(iosOnly2, BGRA10_XR_sRGB, None);

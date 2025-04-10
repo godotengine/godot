@@ -45,7 +45,7 @@
 
 void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_new_signal"), &GDScriptWorkspace::apply_new_signal);
-	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::did_delete_files);
+	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::didDeleteFiles);
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
 	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
 	ClassDB::bind_method(D_METHOD("get_file_path", "uri"), &GDScriptWorkspace::get_file_path);
@@ -106,7 +106,7 @@ void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStr
 	GDScriptLanguageProtocol::get_singleton()->request_client("workspace/applyEdit", params.to_json());
 }
 
-void GDScriptWorkspace::did_delete_files(const Dictionary &p_params) {
+void GDScriptWorkspace::didDeleteFiles(const Dictionary &p_params) {
 	Array files = p_params["files"];
 	for (int i = 0; i < files.size(); ++i) {
 		Dictionary file = files[i];
@@ -559,8 +559,8 @@ Error GDScriptWorkspace::parse_local_script(const String &p_path) {
 }
 
 String GDScriptWorkspace::get_file_path(const String &p_uri) const {
-	String path = p_uri.uri_decode();
-	String base_uri = root_uri.uri_decode();
+	String path = p_uri.uri_file_decode();
+	String base_uri = root_uri.uri_file_decode();
 	path = path.replacen(base_uri + "/", "res://");
 	return path;
 }

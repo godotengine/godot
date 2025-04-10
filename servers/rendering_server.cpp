@@ -924,7 +924,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 		// Create AABBs for each detected bone.
 		int total_bones = max_bone + 1;
 
-		bool first = r_bone_aabb.size() == 0;
+		bool first = r_bone_aabb.is_empty();
 
 		r_bone_aabb.resize(total_bones);
 
@@ -1317,8 +1317,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	}
 	Vector<SurfaceData::LOD> lods;
 	if (index_array_len) {
-		List<Variant> keys;
-		p_lods.get_key_list(&keys);
+		LocalVector<Variant> keys = p_lods.get_key_list();
 		keys.sort(); // otherwise lod levels may get skipped
 		for (const Variant &E : keys) {
 			float distance = E;

@@ -313,9 +313,15 @@ uint16_t FileAccess::get_16() const {
 	uint16_t data = 0;
 	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint16_t));
 
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		data = BSWAP16(data);
+	}
+#else
 	if (big_endian) {
 		data = BSWAP16(data);
 	}
+#endif
 
 	return data;
 }
@@ -324,9 +330,15 @@ uint32_t FileAccess::get_32() const {
 	uint32_t data = 0;
 	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint32_t));
 
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		data = BSWAP32(data);
+	}
+#else
 	if (big_endian) {
 		data = BSWAP32(data);
 	}
+#endif
 
 	return data;
 }
@@ -335,9 +347,15 @@ uint64_t FileAccess::get_64() const {
 	uint64_t data = 0;
 	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint64_t));
 
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		data = BSWAP64(data);
+	}
+#else
 	if (big_endian) {
 		data = BSWAP64(data);
 	}
+#endif
 
 	return data;
 }
@@ -565,7 +583,7 @@ String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
 	w[len] = 0;
 
 	String s;
-	s.parse_utf8((const char *)w, len, p_skip_cr);
+	s.append_utf8((const char *)w, len, p_skip_cr);
 	return s;
 }
 
@@ -574,25 +592,43 @@ bool FileAccess::store_8(uint8_t p_dest) {
 }
 
 bool FileAccess::store_16(uint16_t p_dest) {
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		p_dest = BSWAP16(p_dest);
+	}
+#else
 	if (big_endian) {
 		p_dest = BSWAP16(p_dest);
 	}
+#endif
 
 	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint16_t));
 }
 
 bool FileAccess::store_32(uint32_t p_dest) {
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		p_dest = BSWAP32(p_dest);
+	}
+#else
 	if (big_endian) {
 		p_dest = BSWAP32(p_dest);
 	}
+#endif
 
 	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint32_t));
 }
 
 bool FileAccess::store_64(uint64_t p_dest) {
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		p_dest = BSWAP64(p_dest);
+	}
+#else
 	if (big_endian) {
 		p_dest = BSWAP64(p_dest);
 	}
+#endif
 
 	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint64_t));
 }
@@ -744,9 +780,7 @@ String FileAccess::get_pascal_string() {
 	get_buffer((uint8_t *)cs.ptr(), sl);
 	cs[sl] = 0;
 
-	String ret;
-	ret.parse_utf8(cs.ptr(), sl);
-	return ret;
+	return String::utf8(cs.ptr(), sl);
 }
 
 bool FileAccess::store_line(const String &p_line) {
@@ -838,7 +872,7 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 	}
 
 	String ret;
-	ret.parse_utf8((const char *)array.ptr(), array.size());
+	ret.append_utf8((const char *)array.ptr(), array.size());
 	return ret;
 }
 
@@ -952,7 +986,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_float"), &FileAccess::get_float);
 	ClassDB::bind_method(D_METHOD("get_double"), &FileAccess::get_double);
 	ClassDB::bind_method(D_METHOD("get_real"), &FileAccess::get_real);
-	ClassDB::bind_method(D_METHOD("get_buffer", "length"), (Vector<uint8_t>(FileAccess::*)(int64_t) const) & FileAccess::get_buffer);
+	ClassDB::bind_method(D_METHOD("get_buffer", "length"), (Vector<uint8_t> (FileAccess::*)(int64_t) const) & FileAccess::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &FileAccess::get_line);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &FileAccess::get_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("get_as_text", "skip_cr"), &FileAccess::get_as_text, DEFVAL(false));
@@ -971,7 +1005,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_float", "value"), &FileAccess::store_float);
 	ClassDB::bind_method(D_METHOD("store_double", "value"), &FileAccess::store_double);
 	ClassDB::bind_method(D_METHOD("store_real", "value"), &FileAccess::store_real);
-	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (bool(FileAccess::*)(const Vector<uint8_t> &)) & FileAccess::store_buffer);
+	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (bool (FileAccess::*)(const Vector<uint8_t> &))&FileAccess::store_buffer);
 	ClassDB::bind_method(D_METHOD("store_line", "line"), &FileAccess::store_line);
 	ClassDB::bind_method(D_METHOD("store_csv_line", "values", "delim"), &FileAccess::store_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("store_string", "string"), &FileAccess::store_string);

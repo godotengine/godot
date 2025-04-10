@@ -359,6 +359,29 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 
+Variant ProjectSettings::get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features) const {
+	_THREAD_SAFE_METHOD_
+
+	StringName name = p_name;
+	if (feature_overrides.has(name)) {
+		const LocalVector<Pair<StringName, StringName>> &overrides = feature_overrides[name];
+		for (uint32_t i = 0; i < overrides.size(); i++) {
+			if (p_features.has(String(overrides[i].first).to_lower())) {
+				if (props.has(overrides[i].second)) {
+					name = overrides[i].second;
+					break;
+				}
+			}
+		}
+	}
+
+	if (!props.has(name)) {
+		WARN_PRINT("Property not found: " + String(name));
+		return Variant();
+	}
+	return props[name].variant;
+}
+
 Variant ProjectSettings::get_setting_with_override(const StringName &p_name) const {
 	_THREAD_SAFE_METHOD_
 
@@ -774,8 +797,7 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		cs.resize(slen + 1);
 		cs[slen] = 0;
 		f->get_buffer((uint8_t *)cs.ptr(), slen);
-		String key;
-		key.parse_utf8(cs.ptr(), slen);
+		String key = String::utf8(cs.ptr(), slen);
 
 		uint32_t vlen = f->get_32();
 		Vector<uint8_t> d;
@@ -1412,6 +1434,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_setting", "name", "default_value"), &ProjectSettings::get_setting, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_setting_with_override", "name"), &ProjectSettings::get_setting_with_override);
 	ClassDB::bind_method(D_METHOD("get_global_class_list"), &ProjectSettings::get_global_class_list);
+	ClassDB::bind_method(D_METHOD("get_setting_with_override_and_custom_features", "name", "features"), &ProjectSettings::get_setting_with_override_and_custom_features);
 	ClassDB::bind_method(D_METHOD("set_order", "name", "position"), &ProjectSettings::set_order);
 	ClassDB::bind_method(D_METHOD("get_order", "name"), &ProjectSettings::get_order);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &ProjectSettings::set_initial_value);
@@ -1492,6 +1515,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/auto_accept_quit", true);
 	GLOBAL_DEF("application/config/quit_on_go_back", true);
 
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/accessibility_support", PROPERTY_HINT_ENUM, "Auto (When Screen Reader is Running),Always Active,Disabled"), 0);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/updates_per_second", PROPERTY_HINT_RANGE, "1,100,1"), 60);
+
 	// The default window size is tuned to:
 	// - Have a 16:9 aspect ratio,
 	// - Have both dimensions divisible by 8 to better play along with video recording,
@@ -1514,6 +1540,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/size/extend_to_title", false);
 	GLOBAL_DEF("display/window/size/no_focus", false);
 	GLOBAL_DEF("display/window/size/sharp_corners", false);
+	GLOBAL_DEF("display/window/size/minimize_disabled", false);
+	GLOBAL_DEF("display/window/size/maximize_disabled", false);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
@@ -1630,6 +1658,19 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations_pot_files", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_add_builtin_strings_to_pot", false);
+
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+	GLOBAL_DEF("navigation/world/map_use_async_iterations", true);
+
+	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_multiple_threads", true);
+	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_high_priority_threads", true);
+
+	GLOBAL_DEF("navigation/pathfinding/max_threads", 4);
+
+	GLOBAL_DEF("navigation/baking/use_crash_prevention_checks", true);
+	GLOBAL_DEF("navigation/baking/thread_model/baking_use_multiple_threads", true);
+	GLOBAL_DEF("navigation/baking/thread_model/baking_use_high_priority_threads", true);
+#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
 }

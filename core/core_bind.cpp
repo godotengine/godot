@@ -806,13 +806,11 @@ Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p
 }
 
 Vector2 Geometry2D::get_closest_point_to_segment(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-	Vector2 s[2] = { p_a, p_b };
-	return ::Geometry2D::get_closest_point_to_segment(p_point, s);
+	return ::Geometry2D::get_closest_point_to_segment(p_point, p_a, p_b);
 }
 
 Vector2 Geometry2D::get_closest_point_to_segment_uncapped(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-	Vector2 s[2] = { p_a, p_b };
-	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, s);
+	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
 bool Geometry2D::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
@@ -1069,13 +1067,11 @@ Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p
 }
 
 Vector3 Geometry3D::get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return ::Geometry3D::get_closest_point_to_segment(p_point, s);
+	return ::Geometry3D::get_closest_point_to_segment(p_point, p_a, p_b);
 }
 
 Vector3 Geometry3D::get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, s);
+	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
 Vector3 Geometry3D::get_triangle_barycentric_coords(const Vector3 &p_point, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
@@ -1343,6 +1339,7 @@ void Thread::_start_func(void *ud) {
 	// When the call returns, we will reference the thread again if possible.
 	ObjectID th_instance_id = t->get_instance_id();
 	Callable target_callable = t->target_callable;
+	String id = t->get_id();
 	t = Ref<Thread>();
 
 	Callable::CallError ce;
@@ -1350,7 +1347,7 @@ void Thread::_start_func(void *ud) {
 	target_callable.callp(nullptr, 0, ret, ce);
 	// If script properly kept a reference to the thread, we should be able to re-reference it now
 	// (well, or if the call failed, since we had to break chains anyway because the outcome isn't known upfront).
-	t = Ref<Thread>(ObjectDB::get_instance(th_instance_id));
+	t = ObjectDB::get_ref<Thread>(th_instance_id);
 	if (t.is_valid()) {
 		t->ret = ret;
 		t->running.clear();
@@ -1360,7 +1357,7 @@ void Thread::_start_func(void *ud) {
 	}
 
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_MSG(vformat("Could not call function '%s' to start thread %d: %s.", func_name, t->get_id(), Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce)));
+		ERR_FAIL_MSG(vformat("Could not call function '%s' to start thread %s: %s.", func_name, id, Variant::get_callable_error_text(target_callable, nullptr, 0, ce)));
 	}
 }
 
@@ -1441,8 +1438,8 @@ PackedStringArray ClassDB::get_class_list() const {
 }
 
 PackedStringArray ClassDB::get_inheriters_from_class(const StringName &p_class) const {
-	List<StringName> classes;
-	::ClassDB::get_inheriters_from_class(p_class, &classes);
+	LocalVector<StringName> classes;
+	::ClassDB::get_inheriters_from_class(p_class, classes);
 
 	PackedStringArray ret;
 	ret.resize(classes.size());

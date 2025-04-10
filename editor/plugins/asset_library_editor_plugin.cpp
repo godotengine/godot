@@ -136,6 +136,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	add_child(hb);
 
 	icon = memnew(TextureButton);
+	icon->set_accessibility_name(TTRC("Open asset details"));
 	icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	hb->add_child(icon);
 
@@ -145,11 +146,13 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	title = memnew(LinkButton);
+	title->set_accessibility_name(TTRC("Title"));
 	title->set_auto_translate_mode(AutoTranslateMode::AUTO_TRANSLATE_MODE_DISABLED);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(title);
 
 	category = memnew(LinkButton);
+	category->set_accessibility_name(TTRC("Category"));
 	category->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(category);
 
@@ -159,6 +162,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 
 	author = memnew(LinkButton);
 	author->set_tooltip_text(TTR("Author"));
+	author->set_accessibility_name(TTRC("Author"));
 	author_price_hbox->add_child(author);
 
 	author_price_hbox->add_child(memnew(HSeparator));
@@ -184,6 +188,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	price = memnew(Label);
 	price->add_theme_style_override(CoreStringName(normal), label_margin);
 	price->set_tooltip_text(TTR("License"));
+	price->set_accessibility_name(TTRC("License"));
 	price->set_mouse_filter(MOUSE_FILTER_PASS);
 
 	author_price_hbox->add_child(price);
@@ -579,6 +584,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	dismiss_button = memnew(TextureButton);
 	dismiss_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItemDownload::_close));
+	dismiss_button->set_accessibility_name(TTRC("Close"));
 	title_hb->add_child(dismiss_button);
 
 	title->set_clip_text(true);
@@ -708,11 +714,11 @@ void EditorAssetLibrary::_update_repository_options() {
 	default_urls["godotengine.org (Official)"] = "https://godotengine.org/asset-library/api";
 	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
 	repository->clear();
-	Array keys = available_urls.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		String key = keys[i];
-		repository->add_item(key);
-		repository->set_item_metadata(i, available_urls[key]);
+	int i = 0;
+	for (const KeyValue<Variant, Variant> &kv : available_urls) {
+		repository->add_item(kv.key);
+		repository->set_item_metadata(i, kv.value);
+		i++;
 	}
 }
 
@@ -1214,14 +1220,7 @@ void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_req
 }
 
 void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
-	String str;
-
-	{
-		int datalen = p_data.size();
-		const uint8_t *r = p_data.ptr();
-		str.parse_utf8((const char *)r, datalen);
-	}
-
+	String str = String::utf8((const char *)p_data.ptr(), (int)p_data.size());
 	bool error_abort = true;
 
 	switch (p_status) {

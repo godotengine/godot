@@ -84,7 +84,7 @@ int OpenXRActionSet::get_action_count() const {
 
 void OpenXRActionSet::clear_actions() {
 	// Actions held within our action set should be released and destroyed but just in case they are still used some where else
-	if (actions.size() == 0) {
+	if (actions.is_empty()) {
 		return;
 	}
 

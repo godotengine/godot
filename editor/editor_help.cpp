@@ -3197,9 +3197,9 @@ void EditorHelp::generate_doc(bool p_use_cache, bool p_use_script_cache) {
 	}
 }
 
-void EditorHelp::_toggle_scripts_pressed() {
-	ScriptEditor::get_singleton()->toggle_scripts_panel();
-	update_toggle_scripts_button();
+void EditorHelp::_toggle_files_pressed() {
+	ScriptEditor::get_singleton()->toggle_files_panel();
+	update_toggle_files_button();
 }
 
 void EditorHelp::_notification(int p_what) {
@@ -3233,13 +3233,13 @@ void EditorHelp::_notification(int p_what) {
 			if (is_inside_tree()) {
 				_class_desc_resized(true);
 			}
-			update_toggle_scripts_button();
+			update_toggle_files_button();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			update_toggle_scripts_button();
+			update_toggle_files_button();
 		} break;
 	}
 }
@@ -3308,13 +3308,13 @@ void EditorHelp::set_scroll(int p_scroll) {
 	class_desc->get_v_scroll_bar()->set_value(p_scroll);
 }
 
-void EditorHelp::update_toggle_scripts_button() {
+void EditorHelp::update_toggle_files_button() {
 	if (is_layout_rtl()) {
-		toggle_scripts_button->set_button_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Forward") : SNAME("Back")));
+		toggle_files_button->set_button_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_files_panel_toggled() ? SNAME("Forward") : SNAME("Back")));
 	} else {
-		toggle_scripts_button->set_button_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward")));
+		toggle_files_button->set_button_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_files_panel_toggled() ? SNAME("Back") : SNAME("Forward")));
 	}
-	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
+	toggle_files_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Files Panel"), ED_GET_SHORTCUT("script_editor/toggle_files_panel")->get_as_text()));
 }
 
 void EditorHelp::_bind_methods() {
@@ -3357,10 +3357,11 @@ EditorHelp::EditorHelp() {
 	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
 	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE));
 
-	toggle_scripts_button = memnew(Button);
-	toggle_scripts_button->set_flat(true);
-	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelp::_toggle_scripts_pressed));
-	status_bar->add_child(toggle_scripts_button);
+	toggle_files_button = memnew(Button);
+	toggle_files_button->set_accessibility_name(TTRC("Scripts"));
+	toggle_files_button->set_flat(true);
+	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelp::_toggle_files_pressed));
+	status_bar->add_child(toggle_files_button);
 
 	class_desc->set_selection_enabled(true);
 	class_desc->set_context_menu_enabled(true);
@@ -4555,7 +4556,7 @@ void EditorHelpBitTooltip::popup_under_cursor() {
 	// When `FLAG_POPUP` is false, it prevents the editor from losing focus when displaying the tooltip.
 	// This way, clicks and double-clicks are still available outside the tooltip.
 	set_flag(Window::FLAG_POPUP, false);
-	set_flag(Window::FLAG_NO_FOCUS, true);
+	set_flag(Window::FLAG_NO_FOCUS, !is_embedded());
 	popup(r);
 }
 
@@ -4744,6 +4745,7 @@ EditorHelpHighlighter::~EditorHelpHighlighter() {
 
 FindBar::FindBar() {
 	search_text = memnew(LineEdit);
+	search_text->set_accessibility_name(TTRC("Search help"));
 	add_child(search_text);
 	search_text->set_keep_editing_on_text_submit(true);
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
@@ -4756,12 +4758,14 @@ FindBar::FindBar() {
 	matches_label->hide();
 
 	find_prev = memnew(Button);
+	find_prev->set_accessibility_name(TTRC("Find Previous"));
 	find_prev->set_flat(true);
 	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_prev));
 
 	find_next = memnew(Button);
+	find_next->set_accessibility_name(TTRC("Find Next"));
 	find_next->set_flat(true);
 	add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
@@ -4773,6 +4777,7 @@ FindBar::FindBar() {
 
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
+	hide_button->set_accessibility_name(TTRC("Hide"));
 	hide_button->set_focus_mode(FOCUS_NONE);
 	hide_button->set_ignore_texture_size(true);
 	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);

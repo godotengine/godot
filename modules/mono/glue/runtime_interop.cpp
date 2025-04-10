@@ -934,7 +934,7 @@ bool godotsharp_variant_equals(const godot_variant *p_a, const godot_variant *p_
 
 void godotsharp_string_new_with_utf16_chars(String *r_dest, const char16_t *p_contents) {
 	memnew_placement(r_dest, String());
-	r_dest->parse_utf16(p_contents);
+	r_dest->append_utf16(p_contents);
 }
 
 // string_name.h

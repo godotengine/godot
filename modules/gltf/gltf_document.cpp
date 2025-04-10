@@ -299,8 +299,7 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> p_state) {
 	Vector<uint8_t> array;
 	array.resize(file->get_length());
 	file->get_buffer(array.ptrw(), array.size());
-	String text;
-	text.parse_utf8((const char *)array.ptr(), array.size());
+	String text = String::utf8((const char *)array.ptr(), array.size());
 
 	JSON json;
 	err = json.parse(text);
@@ -330,8 +329,7 @@ Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
 	uint32_t len = p_file->get_buffer(json_data.ptrw(), chunk_length);
 	ERR_FAIL_COND_V(len != chunk_length, ERR_FILE_CORRUPT);
 
-	String text;
-	text.parse_utf8((const char *)json_data.ptr(), json_data.size());
+	String text = String::utf8((const char *)json_data.ptr(), json_data.size());
 
 	JSON json;
 	Error err = json.parse(text);
@@ -743,7 +741,7 @@ Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> p_state, const String &p_p
 		if (file.is_null()) {
 			return err;
 		}
-		if (buffer_data.size() == 0) {
+		if (buffer_data.is_empty()) {
 			return OK;
 		}
 		file->create(FileAccess::ACCESS_RESOURCES);
@@ -775,7 +773,7 @@ Error GLTFDocument::_encode_buffer_bins(Ref<GLTFState> p_state, const String &p_
 		if (file.is_null()) {
 			return err;
 		}
-		if (buffer_data.size() == 0) {
+		if (buffer_data.is_empty()) {
 			return OK;
 		}
 		file->create(FileAccess::ACCESS_RESOURCES);
@@ -814,7 +812,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_
 					buffer_data = _parse_base64_uri(uri);
 				} else { // Relative path to an external image file.
 					ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
-					uri = uri.uri_decode();
+					uri = uri.uri_file_decode();
 					uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
 					ERR_FAIL_COND_V_MSG(!FileAccess::exists(uri), ERR_FILE_NOT_FOUND, "glTF: Binary file not found: " + uri);
 					buffer_data = FileAccess::get_file_as_bytes(uri);
@@ -890,6 +888,9 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 
 		if (d.has("byteStride")) {
 			buffer_view->byte_stride = d["byteStride"];
+			if (buffer_view->byte_stride < 4 || buffer_view->byte_stride > 252 || buffer_view->byte_stride % 4 != 0) {
+				ERR_PRINT("glTF import: Invalid byte stride " + itos(buffer_view->byte_stride) + " for buffer view at index " + itos(i) + " while importing file '" + p_state->filename + "'. If defined, byte stride must be a multiple of 4 and between 4 and 252.");
+			}
 		}
 
 		if (d.has("target")) {
@@ -1031,6 +1032,9 @@ Error GLTFDocument::_parse_accessors(Ref<GLTFState> p_state) {
 		accessor->component_type = (GLTFAccessor::GLTFComponentType)(int32_t)d["componentType"];
 		ERR_FAIL_COND_V(!d.has("count"), ERR_PARSE_ERROR);
 		accessor->count = d["count"];
+		if (accessor->count <= 0) {
+			ERR_PRINT("glTF import: Invalid accessor count " + itos(accessor->count) + " for accessor at index " + itos(i) + " while importing file '" + p_state->filename + "'. Accessor count must be greater than 0.");
+		}
 		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
 		accessor->accessor_type = _get_accessor_type_from_str(d["type"]);
 
@@ -1434,7 +1438,7 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, c
 	const Ref<GLTFBufferView> bv = p_state->buffer_views[p_buffer_view];
 
 	int stride = p_element_size;
-	if (bv->byte_stride != -1) {
+	if (bv->byte_stride > 0) {
 		stride = bv->byte_stride;
 	}
 	if (p_for_vertex && stride % 4) {
@@ -1649,7 +1653,7 @@ Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> p_state, const GLTF
 }
 
 GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state, const Vector<int32_t> p_attribs, const bool p_for_vertex, const bool p_for_vertex_indices) {
-	if (p_attribs.size() == 0) {
+	if (p_attribs.is_empty()) {
 		return -1;
 	}
 	const int element_count = 1;
@@ -1714,7 +1718,7 @@ Vector<int> GLTFDocument::_decode_accessor_as_ints(Ref<GLTFState> p_state, const
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<int> ret;
 
-	if (attribs.size() == 0) {
+	if (attribs.is_empty()) {
 		return ret;
 	}
 
@@ -1739,7 +1743,7 @@ Vector<float> GLTFDocument::_decode_accessor_as_floats(Ref<GLTFState> p_state, c
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<float> ret;
 
-	if (attribs.size() == 0) {
+	if (attribs.is_empty()) {
 		return ret;
 	}
 
@@ -1770,7 +1774,7 @@ void GLTFDocument::_round_min_max_components(Vector<double> &r_type_min, Vector<
 }
 
 GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> p_state, const Vector<Vector2> p_attribs, const bool p_for_vertex) {
-	if (p_attribs.size() == 0) {
+	if (p_attribs.is_empty()) {
 		return -1;
 	}
 	const int element_count = 2;
@@ -1820,7 +1824,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> p_state,
 }
 
 GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> p_state, const Vector<Color> p_attribs, const bool p_for_vertex) {
-	if (p_attribs.size() == 0) {
+	if (p_attribs.is_empty()) {
 		return -1;
 	}
 
@@ -1886,7 +1890,7 @@ void GLTFDocument::_calc_accessor_min_max(int p_i, const int p_element_count, Ve
 }
 
 GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> p_state, const Vector<Color> p_attribs, const bool p_for_vertex) {
-	if (p_attribs.size() == 0) {
+	if (p_attribs.is_empty()) {
 		return -1;
 	}
 
@@ -1940,7 +1944,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> p_sta
 }
 
 GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> p_state, const Vector<Color> p_attribs, const bool p_for_vertex) {
-	if (p_attribs.size() == 0) {
+	if (p_attribs.is_empty()) {
 		return -1;
 	}
 
@@ -1991,7 +1995,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> p_stat
 }
 
 GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quaternions(Ref<GLTFState> p_state, const Vector<Quaternion> p_attribs, const bool p_for_vertex) {
-	if (p_attribs.size() == 0) {
+	if (p_attribs.is_empty()) {
 		return -1;
 	}
 	const int element_count = 4;
@@ -2047,7 +2051,7 @@ Vector<Vector2> GLTFDocument::_decode_accessor_as_vec2(Ref<GLTFState> p_state, c
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<Vector2> ret;
 
-	if (attribs.size() == 0) {
+	if (attribs.is_empty()) {
 		return ret;
 	}
 
@@ -2070,7 +2074,7 @@ Vector<Vector2> GLTFDocument::_decode_accessor_as_vec2(Ref<GLTFState> p_state, c
 }
 
 GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> p_state, const Vector<double> p_attribs, const bool p_for_vertex) {
-	if (p_attribs.size() == 0) {
+	if (p_attribs.is_empty()) {
 		return -1;
 	}
 	const int element_count = 1;
@@ -2119,7 +2123,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> p_stat
 }
 
 GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> p_state, const Vector<Vector3> p_attribs, const bool p_for_vertex) {
-	if (p_attribs.size() == 0) {
+	if (p_attribs.is_empty()) {
 		return -1;
 	}
 	const int element_count = 3;
@@ -2169,7 +2173,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> p_state,
 }
 
 GLTFAccessorIndex GLTFDocument::_encode_sparse_accessor_as_vec3(Ref<GLTFState> p_state, const Vector<Vector3> p_attribs, const Vector<Vector3> p_reference_attribs, const float p_reference_multiplier, const bool p_for_vertex, const GLTFAccessorIndex p_reference_accessor) {
-	if (p_attribs.size() == 0) {
+	if (p_attribs.is_empty()) {
 		return -1;
 	}
 
@@ -2278,7 +2282,7 @@ GLTFAccessorIndex GLTFDocument::_encode_sparse_accessor_as_vec3(Ref<GLTFState> p
 }
 
 GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> p_state, const Vector<Transform3D> p_attribs, const bool p_for_vertex) {
-	if (p_attribs.size() == 0) {
+	if (p_attribs.is_empty()) {
 		return -1;
 	}
 	const int element_count = 16;
@@ -2353,7 +2357,7 @@ Vector<Vector3> GLTFDocument::_decode_accessor_as_vec3(Ref<GLTFState> p_state, c
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<Vector3> ret;
 
-	if (attribs.size() == 0) {
+	if (attribs.is_empty()) {
 		return ret;
 	}
 
@@ -2379,7 +2383,7 @@ Vector<Color> GLTFDocument::_decode_accessor_as_color(Ref<GLTFState> p_state, co
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<Color> ret;
 
-	if (attribs.size() == 0) {
+	if (attribs.is_empty()) {
 		return ret;
 	}
 
@@ -2411,7 +2415,7 @@ Vector<Quaternion> GLTFDocument::_decode_accessor_as_quaternion(Ref<GLTFState> p
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<Quaternion> ret;
 
-	if (attribs.size() == 0) {
+	if (attribs.is_empty()) {
 		return ret;
 	}
 
@@ -2430,7 +2434,7 @@ Vector<Transform2D> GLTFDocument::_decode_accessor_as_xform2d(Ref<GLTFState> p_s
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<Transform2D> ret;
 
-	if (attribs.size() == 0) {
+	if (attribs.is_empty()) {
 		return ret;
 	}
 
@@ -2447,7 +2451,7 @@ Vector<Basis> GLTFDocument::_decode_accessor_as_basis(Ref<GLTFState> p_state, co
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<Basis> ret;
 
-	if (attribs.size() == 0) {
+	if (attribs.is_empty()) {
 		return ret;
 	}
 
@@ -2465,7 +2469,7 @@ Vector<Transform3D> GLTFDocument::_decode_accessor_as_xform(Ref<GLTFState> p_sta
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<Transform3D> ret;
 
-	if (attribs.size() == 0) {
+	if (attribs.is_empty()) {
 		return ret;
 	}
 
@@ -3583,11 +3587,16 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				// Compression is enabled, so let's validate that the normals and tangents are correct.
 				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
 				Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
-				for (int vert = 0; vert < normals.size(); vert++) {
-					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-					if (abs(tan.dot(normals[vert])) > 0.0001) {
-						// Tangent is not perpendicular to the normal, so we can't use compression.
-						flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				if (unlikely(tangents.size() < normals.size() * 4)) {
+					ERR_PRINT("glTF import: Mesh " + itos(i) + " has invalid tangents.");
+					flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				} else {
+					for (int vert = 0; vert < normals.size(); vert++) {
+						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
+						if (abs(tan.dot(normals[vert])) > 0.0001) {
+							// Tangent is not perpendicular to the normal, so we can't use compression.
+							flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+						}
 					}
 				}
 			}
@@ -3834,10 +3843,9 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 		if (p_state->filename.to_lower().ends_with("gltf")) {
 			String img_name = p_state->images[i]->get_name();
 			if (img_name.is_empty()) {
-				img_name = itos(i);
+				img_name = itos(i).pad_zeros(3);
 			}
 			img_name = _gen_unique_name(p_state, img_name);
-			img_name = img_name.pad_zeros(3);
 			String relative_texture_dir = "textures";
 			String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
 			Ref<DirAccess> da = DirAccess::open(p_state->base_path);
@@ -4126,7 +4134,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				}
 			} else { // Relative path to an external image file.
 				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
-				uri = uri.uri_decode();
+				uri = uri.uri_file_decode();
 				uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
 				resource_uri = uri.simplify_path();
 				// ResourceLoader will rely on the file extension to use the relevant loader.
@@ -4151,7 +4159,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				// Fallback to loading as byte array. This enables us to support the
 				// spec's requirement that we honor mimetype regardless of file URI.
 				data = FileAccess::get_file_as_bytes(resource_uri);
-				if (data.size() == 0) {
+				if (data.is_empty()) {
 					WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded as a buffer of MIME type '%s' from URI: %s because there was no data to load. Skipping it.", i, mime_type, resource_uri));
 					p_state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.
 					p_state->source_images.push_back(Ref<Image>());

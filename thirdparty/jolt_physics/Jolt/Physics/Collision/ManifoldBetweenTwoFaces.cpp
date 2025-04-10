@@ -134,8 +134,10 @@ void PruneContactPoints(Vec3Arg inPenetrationAxis, ContactPoints &ioContactPoint
 	ioContactPointsOn2 = points_to_keep_on_2;
 }
 
-void ManifoldBetweenTwoFaces(Vec3Arg inContactPoint1, Vec3Arg inContactPoint2, Vec3Arg inPenetrationAxis, float inMaxContactDistanceSq	, const ConvexShape::SupportingFace &inShape1Face, const ConvexShape::SupportingFace &inShape2Face, ContactPoints &outContactPoints1, ContactPoints &outContactPoints2 JPH_IF_DEBUG_RENDERER(, RVec3Arg inCenterOfMass))
+void ManifoldBetweenTwoFaces(Vec3Arg inContactPoint1, Vec3Arg inContactPoint2, Vec3Arg inPenetrationAxis, float inMaxContactDistance, const ConvexShape::SupportingFace &inShape1Face, const ConvexShape::SupportingFace &inShape2Face, ContactPoints &outContactPoints1, ContactPoints &outContactPoints2 JPH_IF_DEBUG_RENDERER(, RVec3Arg inCenterOfMass))
 {
+	JPH_ASSERT(inMaxContactDistance > 0.0f);
+
 #ifdef JPH_DEBUG_RENDERER
 	if (ContactConstraintManager::sDrawContactPoint)
 	{
@@ -165,7 +167,7 @@ void ManifoldBetweenTwoFaces(Vec3Arg inContactPoint1, Vec3Arg inContactPoint2, V
 		else if (inShape1Face.size() == 2)
 			ClipPolyVsEdge(inShape2Face, inShape1Face[0], inShape1Face[1], inPenetrationAxis, clipped_face);
 
-		// Project the points back onto the plane of shape 1 face and only keep those that are behind the plane
+		// Determine plane origin and normal for shape 1
 		Vec3 plane_origin = inShape1Face[0];
 		Vec3 plane_normal;
 		Vec3 first_edge = inShape1Face[1] - plane_origin;
@@ -180,20 +182,25 @@ void ManifoldBetweenTwoFaces(Vec3Arg inContactPoint1, Vec3Arg inContactPoint2, V
 			plane_normal = first_edge.Cross(inPenetrationAxis).Cross(first_edge);
 		}
 
-		// Check if the plane normal has any length, if not the clipped shape is so small that we'll just use the contact points
-		float plane_normal_len_sq = plane_normal.LengthSq();
-		if (plane_normal_len_sq > 0.0f)
+		// If penetration axis and plane normal are perpendicular, fall back to the contact points
+		float penetration_axis_dot_plane_normal = inPenetrationAxis.Dot(plane_normal);
+		if (penetration_axis_dot_plane_normal != 0.0f)
 		{
-			// Discard points of faces that are too far away to collide
+			float penetration_axis_len = inPenetrationAxis.Length();
+
 			for (Vec3 p2 : clipped_face)
 			{
-				float distance = (p2 - plane_origin).Dot(plane_normal); // Note should divide by length of plane_normal (unnormalized here)
-				if (distance <= 0.0f || Square(distance) < inMaxContactDistanceSq * plane_normal_len_sq) // Must be close enough to plane, note we correct for not dividing by plane normal length here
-				{
-					// Project point back on shape 1 using the normal, note we correct for not dividing by plane normal length here:
-					// p1 = p2 - (distance / sqrt(plane_normal_len_sq)) * (plane_normal / sqrt(plane_normal_len_sq));
-					Vec3 p1 = p2 - (distance / plane_normal_len_sq) * plane_normal;
+				// Project clipped face back onto the plane of face 1, we do this by solving:
+				// p1 = p2 + distance * penetration_axis / |penetration_axis|
+				// (p1 - plane_origin) . plane_normal = 0
+				// This gives us:
+				// distance = -|penetration_axis| * (p2 - plane_origin) . plane_normal / penetration_axis . plane_normal
+				float distance = (p2 - plane_origin).Dot(plane_normal) / penetration_axis_dot_plane_normal; // note left out -|penetration_axis| term
 
+				// If the point is less than inMaxContactDistance in front of the plane of face 2, add it as a contact point
+				if (distance * penetration_axis_len < inMaxContactDistance)
+				{
+					Vec3 p1 = p2 - distance * inPenetrationAxis;
 					outContactPoints1.push_back(p1);
 					outContactPoints2.push_back(p2);
 				}
@@ -213,15 +220,19 @@ void ManifoldBetweenTwoFaces(Vec3Arg inContactPoint1, Vec3Arg inContactPoint2, V
 			DebugRenderer::sInstance->DrawWirePolygon(com, inShape2Face, Color::sGreen, 0.05f);
 
 			// Draw normal
-			if (plane_normal_len_sq > 0.0f)
+			float plane_normal_len = plane_normal.Length();
+			if (plane_normal_len > 0.0f)
 			{
 				RVec3 plane_origin_ws = inCenterOfMass + plane_origin;
-				DebugRenderer::sInstance->DrawArrow(plane_origin_ws, plane_origin_ws + plane_normal / sqrt(plane_normal_len_sq), Color::sYellow, 0.05f);
+				DebugRenderer::sInstance->DrawArrow(plane_origin_ws, plane_origin_ws + plane_normal / plane_normal_len, Color::sYellow, 0.05f);
 			}
 
 			// Draw contact points that remain after distance check
 			for (ContactPoints::size_type p = old_size; p < outContactPoints1.size(); ++p)
+			{
 				DebugRenderer::sInstance->DrawMarker(inCenterOfMass + outContactPoints1[p], Color::sYellow, 0.1f);
+				DebugRenderer::sInstance->DrawMarker(inCenterOfMass + outContactPoints2[p], Color::sOrange, 0.1f);
+			}
 		}
 	#endif // JPH_DEBUG_RENDERER
 	}
