@@ -352,7 +352,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	const float win_scale = get_content_scale_factor();
 
 	const Point2 panel_ofs_start = Point2(panel->get_offset(SIDE_LEFT), panel->get_offset(SIDE_TOP)) * win_scale;
-	const Point2 panel_ofs_end = Point2(panel->get_offset(SIDE_RIGHT), panel->get_offset(SIDE_BOTTOM)).abs() * win_scale;
+	const Point2 panel_ofs_end = Point2(-panel->get_offset(SIDE_RIGHT), -panel->get_offset(SIDE_BOTTOM)) * win_scale;
 
 	const Point2 this_pos = get_position() + Point2(0, panel_ofs_start.y + theme_cache.panel_style->get_margin(SIDE_TOP) * win_scale);
 	Rect2 this_rect(this_pos, get_size());
@@ -1045,14 +1045,14 @@ void PopupMenu::_update_shadow_offsets() const {
 	// Offset the background panel so it leaves space inside the window for the shadows to be drawn.
 	const Point2 shadow_offset = sb->get_shadow_offset();
 	if (is_layout_rtl()) {
-		panel->set_offset(SIDE_LEFT, shadow_size + shadow_offset.x);
-		panel->set_offset(SIDE_RIGHT, -shadow_size + shadow_offset.x);
+		panel->set_offset(SIDE_LEFT, MAX(0, shadow_size + shadow_offset.x));
+		panel->set_offset(SIDE_RIGHT, MIN(0, -shadow_size + shadow_offset.x));
 	} else {
-		panel->set_offset(SIDE_LEFT, shadow_size - shadow_offset.x);
-		panel->set_offset(SIDE_RIGHT, -shadow_size - shadow_offset.x);
+		panel->set_offset(SIDE_LEFT, MAX(0, shadow_size - shadow_offset.x));
+		panel->set_offset(SIDE_RIGHT, MIN(0, -shadow_size - shadow_offset.x));
 	}
-	panel->set_offset(SIDE_TOP, shadow_size - shadow_offset.y);
-	panel->set_offset(SIDE_BOTTOM, -shadow_size - shadow_offset.y);
+	panel->set_offset(SIDE_TOP, MAX(0, shadow_size - shadow_offset.y));
+	panel->set_offset(SIDE_BOTTOM, MIN(0, -shadow_size - shadow_offset.y));
 }
 
 Rect2i PopupMenu::_popup_adjust_rect() const {
@@ -1066,7 +1066,7 @@ Rect2i PopupMenu::_popup_adjust_rect() const {
 	_update_shadow_offsets();
 
 	if (is_layout_rtl()) {
-		current.position -= Vector2(Math::abs(panel->get_offset(SIDE_RIGHT)), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
+		current.position -= Vector2(-panel->get_offset(SIDE_RIGHT), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	} else {
 		current.position -= Vector2(panel->get_offset(SIDE_LEFT), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	}
