@@ -3315,7 +3315,7 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 			popup_pref_size.width = 180;
 			break;
 	}
-	property_editor_popup->set_min_size(popup_pref_size);
+	property_editor_popup->set_min_size(popup_pref_size * EDSCALE);
 
 	property_editor->set_object_and_property(edited_property_holder.ptr(), "edited_property");
 	property_editor->update_property();
