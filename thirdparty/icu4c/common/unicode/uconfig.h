@@ -323,6 +323,16 @@
 #   define UCONFIG_NO_NORMALIZATION 0
 #endif
 
+/**
+ * \def UCONFIG_USE_ML_PHRASE_BREAKING
+ * This switch turns on BudouX ML phrase-based line breaking, rather than using the dictionary.
+ *
+ * @internal
+ */
+#ifndef UCONFIG_USE_ML_PHRASE_BREAKING
+#   define UCONFIG_USE_ML_PHRASE_BREAKING 0
+#endif
+
 #if UCONFIG_NO_NORMALIZATION
     /* common library */
     /* ICU 50 CJK dictionary BreakIterator uses normalization */
@@ -401,6 +411,17 @@
  */
 #ifndef UCONFIG_NO_FORMATTING
 #   define UCONFIG_NO_FORMATTING 0
+#endif
+
+/**
+ * \def UCONFIG_NO_MF2
+ * This switch turns off the experimental MessageFormat 2.0 API.
+ *
+ * @internal ICU 75 technology preview
+ * @deprecated This API is for technology preview only.
+ */
+#ifndef UCONFIG_NO_MF2
+#   define UCONFIG_NO_MF2 0
 #endif
 
 /**

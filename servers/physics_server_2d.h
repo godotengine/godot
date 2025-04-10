@@ -1,39 +1,40 @@
-/*************************************************************************/
-/*  physics_server_2d.h                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  physics_server_2d.h                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef PHYSICS_SERVER_2D_H
-#define PHYSICS_SERVER_2D_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
+
+constexpr int MAX_CONTACTS_REPORTED_2D_MAX = 4096;
 
 class PhysicsDirectSpaceState2D;
 template <typename T>
@@ -92,6 +93,7 @@ public:
 	virtual Vector2 get_contact_local_position(int p_contact_idx) const = 0;
 	virtual Vector2 get_contact_local_normal(int p_contact_idx) const = 0;
 	virtual int get_contact_local_shape(int p_contact_idx) const = 0;
+	virtual Vector2 get_contact_local_velocity_at_position(int p_contact_idx) const = 0;
 
 	virtual RID get_contact_collider(int p_contact_idx) const = 0;
 	virtual Vector2 get_contact_collider_position(int p_contact_idx) const = 0;
@@ -99,6 +101,7 @@ public:
 	virtual Object *get_contact_collider_object(int p_contact_idx) const;
 	virtual int get_contact_collider_shape(int p_contact_idx) const = 0;
 	virtual Vector2 get_contact_collider_velocity_at_position(int p_contact_idx) const = 0;
+	virtual Vector2 get_contact_impulse(int p_contact_idx) const = 0;
 
 	virtual real_t get_step() const = 0;
 	virtual void integrate_forces();
@@ -119,7 +122,7 @@ class PhysicsDirectSpaceState2D : public Object {
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
-	TypedArray<PackedVector2Array> _collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
+	TypedArray<Vector2> _collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
 
 protected:
@@ -285,8 +288,7 @@ public:
 		AREA_PARAM_GRAVITY,
 		AREA_PARAM_GRAVITY_VECTOR,
 		AREA_PARAM_GRAVITY_IS_POINT,
-		AREA_PARAM_GRAVITY_DISTANCE_SCALE,
-		AREA_PARAM_GRAVITY_POINT_ATTENUATION,
+		AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE,
 		AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE,
 		AREA_PARAM_LINEAR_DAMP,
 		AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE,
@@ -552,11 +554,22 @@ public:
 	virtual void joint_make_damped_spring(RID p_joint, const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, RID p_body_a, RID p_body_b = RID()) = 0;
 
 	enum PinJointParam {
-		PIN_JOINT_SOFTNESS
+		PIN_JOINT_SOFTNESS,
+		PIN_JOINT_LIMIT_UPPER,
+		PIN_JOINT_LIMIT_LOWER,
+		PIN_JOINT_MOTOR_TARGET_VELOCITY
 	};
 
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) = 0;
 	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const = 0;
+
+	enum PinJointFlag {
+		PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED,
+		PIN_JOINT_FLAG_MOTOR_ENABLED
+	};
+
+	virtual void pin_joint_set_flag(RID p_joint, PinJointFlag p_flag, bool p_enabled) = 0;
+	virtual bool pin_joint_get_flag(RID p_joint, PinJointFlag p_flag) const = 0;
 
 	enum DampedSpringParam {
 		DAMPED_SPRING_REST_LENGTH,
@@ -748,7 +761,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	PhysicsServer2D::MotionResult *get_result_ptr() const { return const_cast<PhysicsServer2D::MotionResult *>(&result); }
+	PhysicsServer2D::MotionResult *get_result_ptr() { return &result; }
 
 	Vector2 get_travel() const;
 	Vector2 get_remainder() const;
@@ -829,8 +842,7 @@ VARIANT_ENUM_CAST(PhysicsServer2D::CCDMode);
 VARIANT_ENUM_CAST(PhysicsServer2D::JointParam);
 VARIANT_ENUM_CAST(PhysicsServer2D::JointType);
 VARIANT_ENUM_CAST(PhysicsServer2D::PinJointParam);
+VARIANT_ENUM_CAST(PhysicsServer2D::PinJointFlag);
 VARIANT_ENUM_CAST(PhysicsServer2D::DampedSpringParam);
 VARIANT_ENUM_CAST(PhysicsServer2D::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer2D::ProcessInfo);
-
-#endif // PHYSICS_SERVER_2D_H

@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  gpu_particles_2d.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gpu_particles_2d.h                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef GPU_PARTICLES_2D_H
-#define GPU_PARTICLES_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -47,8 +46,12 @@ public:
 private:
 	RID particles;
 
+	bool emitting = false;
+	bool active = false;
+	bool signal_canceled = false;
 	bool one_shot = false;
 	int amount = 0;
+	float amount_ratio = 1.0;
 	double lifetime = 0.0;
 	double pre_process_time = 0.0;
 	real_t explosiveness_ratio = 0.0;
@@ -59,8 +62,13 @@ private:
 	int fixed_fps = 0;
 	bool fractional_delta = false;
 	bool interpolate = true;
+	float interp_to_end_factor = 0;
+	Vector3 previous_velocity;
+	Vector2 previous_position;
+	uint32_t seed = 0;
+	bool use_fixed_seed = false;
 #ifdef TOOLS_ENABLED
-	bool show_visibility_rect = false;
+	bool show_gizmos = false;
 #endif
 	Ref<Material> process_material;
 
@@ -78,6 +86,10 @@ private:
 	int trail_sections = 8;
 	int trail_section_subdivisions = 4;
 
+	double time = 0.0;
+	double emission_time = 0.0;
+	double active_time = 0.0;
+
 	RID mesh;
 
 	void _attach_sub_emitter();
@@ -88,7 +100,15 @@ protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
+#ifdef TOOLS_ENABLED
+	void _draw_emission_gizmo();
+#endif
 	void _update_collision_size();
+
+#ifndef DISABLE_DEPRECATED
+	void _restart_bind_compat_92089();
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	void set_emitting(bool p_emitting);
@@ -107,9 +127,11 @@ public:
 	void set_trail_lifetime(double p_seconds);
 	void set_trail_sections(int p_sections);
 	void set_trail_section_subdivisions(int p_subdivisions);
+	void set_interp_to_end(float p_interp);
+	void request_particles_process(real_t p_requested_process_time);
 
 #ifdef TOOLS_ENABLED
-	void set_show_visibility_rect(bool p_show_visibility_rect);
+	void set_show_gizmos(bool p_show_gizmos);
 #endif
 
 	bool is_emitting() const;
@@ -129,6 +151,7 @@ public:
 	double get_trail_lifetime() const;
 	int get_trail_sections() const;
 	int get_trail_section_subdivisions() const;
+	float get_interp_to_end() const;
 
 	void set_fixed_fps(int p_count);
 	int get_fixed_fps() const;
@@ -145,10 +168,19 @@ public:
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
 
+	void set_amount_ratio(float p_ratio);
+	float get_amount_ratio() const;
+
 	PackedStringArray get_configuration_warnings() const override;
 
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;
+
+	void set_use_fixed_seed(bool p_use_fixed_seed);
+	bool get_use_fixed_seed() const;
+
+	void set_seed(uint32_t p_seed);
+	uint32_t get_seed() const;
 
 	enum EmitFlags {
 		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,
@@ -160,13 +192,13 @@ public:
 
 	void emit_particle(const Transform2D &p_transform, const Vector2 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
 
-	void restart();
+	void restart(bool p_keep_seed = false);
 	Rect2 capture_rect() const;
+	void convert_from_particles(Node *p_particles);
+
 	GPUParticles2D();
 	~GPUParticles2D();
 };
 
 VARIANT_ENUM_CAST(GPUParticles2D::DrawOrder)
 VARIANT_ENUM_CAST(GPUParticles2D::EmitFlags)
-
-#endif // GPU_PARTICLES_2D_H

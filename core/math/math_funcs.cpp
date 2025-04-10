@@ -1,48 +1,49 @@
-/*************************************************************************/
-/*  math_funcs.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  math_funcs.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "math_funcs.h"
 
 #include "core/error/error_macros.h"
+#include "core/math/random_pcg.h"
 
-RandomPCG Math::default_rand(RandomPCG::DEFAULT_SEED, RandomPCG::DEFAULT_INC);
+static RandomPCG default_rand;
 
-uint32_t Math::rand_from_seed(uint64_t *seed) {
-	RandomPCG rng = RandomPCG(*seed, RandomPCG::DEFAULT_INC);
+uint32_t Math::rand_from_seed(uint64_t *p_seed) {
+	RandomPCG rng = RandomPCG(*p_seed);
 	uint32_t r = rng.rand();
-	*seed = rng.get_seed();
+	*p_seed = rng.get_seed();
 	return r;
 }
 
-void Math::seed(uint64_t x) {
-	default_rand.seed(x);
+void Math::seed(uint64_t p_value) {
+	default_rand.seed(p_value);
 }
 
 void Math::randomize() {
@@ -53,8 +54,8 @@ uint32_t Math::rand() {
 	return default_rand.rand();
 }
 
-double Math::randfn(double mean, double deviation) {
-	return default_rand.randfn(mean, deviation);
+double Math::randfn(double p_mean, double p_deviation) {
+	return default_rand.randfn(p_mean, p_deviation);
 }
 
 int Math::step_decimals(double p_step) {
@@ -168,14 +169,14 @@ uint32_t Math::larger_prime(uint32_t p_val) {
 	}
 }
 
-double Math::random(double from, double to) {
-	return default_rand.random(from, to);
+double Math::random(double p_from, double p_to) {
+	return default_rand.random(p_from, p_to);
 }
 
-float Math::random(float from, float to) {
-	return default_rand.random(from, to);
+float Math::random(float p_from, float p_to) {
+	return default_rand.random(p_from, p_to);
 }
 
-int Math::random(int from, int to) {
-	return default_rand.random(from, to);
+int Math::random(int p_from, int p_to) {
+	return default_rand.random(p_from, p_to);
 }

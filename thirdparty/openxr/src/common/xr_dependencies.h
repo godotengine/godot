@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2022, The Khronos Group Inc.
+// Copyright (c) 2018-2024, The Khronos Group Inc.
 //
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
@@ -46,18 +46,6 @@
 #ifdef XR_USE_PLATFORM_XLIB
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-
-#ifdef Success
-#undef Success
-#endif  // Success
-
-#ifdef Always
-#undef Always
-#endif  // Always
-
-#ifdef None
-#undef None
-#endif  // None
 #endif  // XR_USE_PLATFORM_XLIB
 
 #ifdef XR_USE_PLATFORM_XCB
@@ -72,12 +60,16 @@
 #include <xcb/glx.h>
 #endif  // XR_USE_PLATFORM_XCB
 #ifdef XR_USE_PLATFORM_MACOS
-#include <CL/cl_gl_ext.h>
+#include <OpenCL/cl_gl_ext.h>
 #endif  // XR_USE_PLATFORM_MACOS
 #endif  // XR_USE_GRAPHICS_API_OPENGL
 
 #ifdef XR_USE_GRAPHICS_API_OPENGL_ES
+#ifdef GLAD_ENABLED
+#include "thirdparty/glad/glad/egl.h"
+#else
 #include <EGL/egl.h>
+#endif
 #endif  // XR_USE_GRAPHICS_API_OPENGL_ES
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
@@ -87,3 +79,25 @@
 #ifdef XR_USE_PLATFORM_WAYLAND
 #include "wayland-client.h"
 #endif  // XR_USE_PLATFORM_WAYLAND
+
+#ifdef XR_USE_PLATFORM_EGL
+#ifdef GLAD_ENABLED
+#include "thirdparty/glad/glad/egl.h"
+#else
+#include <EGL/egl.h>
+#endif
+#endif  // XR_USE_PLATFORM_EGL
+
+#if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
+#ifdef Success
+#undef Success
+#endif  // Success
+
+#ifdef Always
+#undef Always
+#endif  // Always
+
+#ifdef None
+#undef None
+#endif  // None
+#endif  // defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)

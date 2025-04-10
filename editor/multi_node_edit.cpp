@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  multi_node_edit.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  multi_node_edit.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "multi_node_edit.h"
 
@@ -48,6 +48,8 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 	if (name == "scripts") { // Script set is intercepted at object level (check Variant Object::get()), so use a different name.
 		name = "script";
+	} else if (name.begins_with("Metadata/")) {
+		name = name.replace_first("Metadata/", "metadata/");
 	}
 
 	Node *node_path_target = nullptr;
@@ -55,7 +57,7 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		node_path_target = es->get_node(p_value);
 	}
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
 	ur->create_action(vformat(TTR("Set %s on %d nodes"), name, get_node_count()), UndoRedo::MERGE_ENDS);
 	for (const NodePath &E : nodes) {
@@ -98,6 +100,8 @@ bool MultiNodeEdit::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
 	if (name == "scripts") { // Script set is intercepted at object level (check Variant Object::get()), so use a different name.
 		name = "script";
+	} else if (name.begins_with("Metadata/")) {
+		name = name.replace_first("Metadata/", "metadata/");
 	}
 
 	for (const NodePath &E : nodes) {
@@ -137,14 +141,18 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<PropertyInfo> plist;
 		n->get_property_list(&plist, true);
 
-		for (const PropertyInfo &F : plist) {
+		for (PropertyInfo F : plist) {
 			if (F.name == "script") {
 				continue; // Added later manually, since this is intercepted before being set (check Variant Object::get()).
+			} else if (F.name.begins_with("metadata/")) {
+				F.name = F.name.replace_first("metadata/", "Metadata/"); // Trick to not get actual metadata edited from MultiNodeEdit.
 			}
+
 			if (!usage.has(F.name)) {
 				PLData pld;
 				pld.uses = 0;
 				pld.info = F;
+				pld.info.name = F.name;
 				usage[F.name] = pld;
 				data_list.push_back(usage.getptr(F.name));
 			}
@@ -178,25 +186,9 @@ bool MultiNodeEdit::_property_can_revert(const StringName &p_name) const {
 	}
 
 	if (ClassDB::has_property(get_edited_class_name(), p_name)) {
-		StringName class_name;
 		for (const NodePath &E : nodes) {
 			Node *node = es->get_node_or_null(E);
-			if (!node) {
-				continue;
-			}
-
-			class_name = node->get_class_name();
-		}
-
-		Variant default_value = ClassDB::class_get_default_property_value(class_name, p_name);
-		for (const NodePath &E : nodes) {
-			Node *node = es->get_node_or_null(E);
-			if (!node) {
-				continue;
-			}
-
-			if (node->get(p_name) != default_value) {
-				// A node that doesn't have the default value has been found, so show the revert button.
+			if (node) {
 				return true;
 			}
 		}
@@ -227,8 +219,29 @@ bool MultiNodeEdit::_property_get_revert(const StringName &p_name, Variant &r_pr
 	return false;
 }
 
+void MultiNodeEdit::_queue_notify_property_list_changed() {
+	if (notify_property_list_changed_pending) {
+		return;
+	}
+	notify_property_list_changed_pending = true;
+	callable_mp(this, &MultiNodeEdit::_notify_property_list_changed).call_deferred();
+}
+
+void MultiNodeEdit::_notify_property_list_changed() {
+	notify_property_list_changed_pending = false;
+	notify_property_list_changed();
+}
+
 void MultiNodeEdit::add_node(const NodePath &p_node) {
 	nodes.push_back(p_node);
+
+	Node *es = EditorNode::get_singleton()->get_edited_scene();
+	if (es) {
+		Node *node = es->get_node_or_null(p_node);
+		if (node) {
+			node->connect(CoreStringName(property_list_changed), callable_mp(this, &MultiNodeEdit::_queue_notify_property_list_changed));
+		}
+	}
 }
 
 int MultiNodeEdit::get_node_count() const {
@@ -236,7 +249,7 @@ int MultiNodeEdit::get_node_count() const {
 }
 
 NodePath MultiNodeEdit::get_node(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, nodes.size(), NodePath());
+	ERR_FAIL_INDEX_V(p_index, get_node_count(), NodePath());
 	return nodes[p_index];
 }
 
@@ -302,7 +315,4 @@ void MultiNodeEdit::_bind_methods() {
 	ClassDB::bind_method("_hide_script_from_inspector", &MultiNodeEdit::_hide_script_from_inspector);
 	ClassDB::bind_method("_hide_metadata_from_inspector", &MultiNodeEdit::_hide_metadata_from_inspector);
 	ClassDB::bind_method("_get_editor_name", &MultiNodeEdit::_get_editor_name);
-}
-
-MultiNodeEdit::MultiNodeEdit() {
 }

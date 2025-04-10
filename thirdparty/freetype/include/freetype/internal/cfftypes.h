@@ -5,7 +5,7 @@
  *   Basic OpenType/CFF type definitions and interface (specification
  *   only).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -248,10 +248,10 @@ FT_BEGIN_HEADER
     FT_Byte   num_family_blues;
     FT_Byte   num_family_other_blues;
 
-    FT_Pos    blue_values[14];
-    FT_Pos    other_blues[10];
-    FT_Pos    family_blues[14];
-    FT_Pos    family_other_blues[10];
+    FT_Fixed  blue_values[14];
+    FT_Fixed  other_blues[10];
+    FT_Fixed  family_blues[14];
+    FT_Fixed  family_other_blues[10];
 
     FT_Fixed  blue_scale;
     FT_Pos    blue_shift;
@@ -315,7 +315,7 @@ FT_BEGIN_HEADER
     /* The normal stack then points to these values instead of the DICT   */
     /* because all other operators in Private DICT clear the stack.       */
     /* `blend_stack' could be cleared at each operator other than blend.  */
-    /* Blended values are stored as 5-byte fixed point values.            */
+    /* Blended values are stored as 5-byte fixed-point values.            */
 
     FT_Byte*  blend_stack;    /* base of stack allocation     */
     FT_Byte*  blend_top;      /* first empty slot             */

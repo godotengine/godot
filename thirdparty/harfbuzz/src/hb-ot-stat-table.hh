@@ -57,6 +57,17 @@ enum
   // Reserved = 0xFFFC				/* Reserved for future use — set to zero. */
 };
 
+static bool axis_value_is_outside_axis_range (hb_tag_t axis_tag, float axis_value,
+                                              const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location)
+{
+  if (!user_axes_location->has (axis_tag))
+    return false;
+
+  double axis_value_double = static_cast<double>(axis_value);
+  Triple axis_range = user_axes_location->get (axis_tag);
+  return (axis_value_double < axis_range.minimum || axis_value_double > axis_range.maximum);
+}
+
 struct StatAxisRecord
 {
   int cmp (hb_tag_t key) const { return tag.cmp (key); }
@@ -96,23 +107,19 @@ struct AxisValueFormat1
   }
 
   bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
-                        const hb_hashmap_t<hb_tag_t, float> *user_axes_location) const
+                        const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
   {
     hb_tag_t axis_tag = get_axis_tag (axis_records);
     float axis_value = get_value ();
 
-    if (!user_axes_location->has (axis_tag) ||
-        fabsf(axis_value - user_axes_location->get (axis_tag)) < 0.001f)
-      return true;
-
-    return false;
+    return !axis_value_is_outside_axis_range (axis_tag, axis_value, user_axes_location);
   }
 
   bool subset (hb_subset_context_t *c,
                const hb_array_t<const StatAxisRecord> axis_records) const
   {
     TRACE_SUBSET (this);
-    const hb_hashmap_t<hb_tag_t, float>*  user_axes_location = c->plan->user_axes_location;
+    const hb_hashmap_t<hb_tag_t, Triple>* user_axes_location = &c->plan->user_axes_location;
 
     if (keep_axis_value (axis_records, user_axes_location))
       return_trace (c->serializer->embed (this));
@@ -155,23 +162,19 @@ struct AxisValueFormat2
   }
 
   bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
-                        const hb_hashmap_t<hb_tag_t, float> *user_axes_location) const
+                        const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
   {
     hb_tag_t axis_tag = get_axis_tag (axis_records);
     float axis_value = get_value ();
 
-    if (!user_axes_location->has (axis_tag) ||
-        fabsf(axis_value - user_axes_location->get (axis_tag)) < 0.001f)
-      return true;
-
-    return false;
+    return !axis_value_is_outside_axis_range (axis_tag, axis_value, user_axes_location);
   }
 
   bool subset (hb_subset_context_t *c,
                const hb_array_t<const StatAxisRecord> axis_records) const
   {
     TRACE_SUBSET (this);
-    const hb_hashmap_t<hb_tag_t, float>*  user_axes_location = c->plan->user_axes_location;
+    const hb_hashmap_t<hb_tag_t, Triple>* user_axes_location = &c->plan->user_axes_location;
 
     if (keep_axis_value (axis_records, user_axes_location))
       return_trace (c->serializer->embed (this));
@@ -218,23 +221,19 @@ struct AxisValueFormat3
   }
 
   bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
-                        const hb_hashmap_t<hb_tag_t, float> *user_axes_location) const
+                        const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
   {
     hb_tag_t axis_tag = get_axis_tag (axis_records);
     float axis_value = get_value ();
 
-    if (!user_axes_location->has (axis_tag) ||
-        fabsf(axis_value - user_axes_location->get (axis_tag)) < 0.001f)
-      return true;
-
-    return false;
+    return !axis_value_is_outside_axis_range (axis_tag, axis_value, user_axes_location);
   }
 
   bool subset (hb_subset_context_t *c,
                const hb_array_t<const StatAxisRecord> axis_records) const
   {
     TRACE_SUBSET (this);
-    const hb_hashmap_t<hb_tag_t, float>* user_axes_location = c->plan->user_axes_location;
+    const hb_hashmap_t<hb_tag_t, Triple>* user_axes_location = &c->plan->user_axes_location;
 
     if (keep_axis_value (axis_records, user_axes_location))
       return_trace (c->serializer->embed (this));
@@ -291,7 +290,7 @@ struct AxisValueFormat4
   { return axisValues.as_array (axisCount)[axis_index]; }
 
   bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
-                        const hb_hashmap_t<hb_tag_t, float> *user_axes_location) const
+                        const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
   {
     hb_array_t<const AxisValueRecord> axis_value_records = axisValues.as_array (axisCount);
 
@@ -301,8 +300,7 @@ struct AxisValueFormat4
       float axis_value = rec.get_value ();
       hb_tag_t axis_tag = axis_records[axis_idx].get_axis_tag ();
 
-      if (user_axes_location->has (axis_tag) &&
-          fabsf(axis_value - user_axes_location->get (axis_tag)) > 0.001f)
+      if (axis_value_is_outside_axis_range (axis_tag, axis_value, user_axes_location))
         return false;
     }
 
@@ -313,7 +311,7 @@ struct AxisValueFormat4
                const hb_array_t<const StatAxisRecord> axis_records) const
   {
     TRACE_SUBSET (this);
-    const hb_hashmap_t<hb_tag_t, float> *user_axes_location = c->plan->user_axes_location;
+    const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location = &c->plan->user_axes_location;
     if (!keep_axis_value (axis_records, user_axes_location))
       return_trace (false);
 
@@ -330,6 +328,7 @@ struct AxisValueFormat4
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
                           axisValues.sanitize (c, axisCount)));
   }
 
@@ -351,15 +350,15 @@ struct AxisValueFormat4
 
 struct AxisValue
 {
-  bool get_value (unsigned int axis_index) const
+  float get_value (unsigned int axis_index) const
   {
     switch (u.format)
     {
-    case 1: return u.format1.get_value ();
-    case 2: return u.format2.get_value ();
-    case 3: return u.format3.get_value ();
-    case 4: return u.format4.get_axis_record (axis_index).get_value ();
-    default:return 0;
+    case 1: hb_barrier (); return u.format1.get_value ();
+    case 2: hb_barrier (); return u.format2.get_value ();
+    case 3: hb_barrier (); return u.format3.get_value ();
+    case 4: hb_barrier (); return u.format4.get_axis_record (axis_index).get_value ();
+    default:return 0.f;
     }
   }
 
@@ -367,9 +366,9 @@ struct AxisValue
   {
     switch (u.format)
     {
-    case 1: return u.format1.get_axis_index ();
-    case 2: return u.format2.get_axis_index ();
-    case 3: return u.format3.get_axis_index ();
+    case 1: hb_barrier (); return u.format1.get_axis_index ();
+    case 2: hb_barrier (); return u.format2.get_axis_index ();
+    case 3: hb_barrier (); return u.format3.get_axis_index ();
     /* case 4: Makes more sense for variable fonts which are handled by fvar in hb-style */
     default:return -1;
     }
@@ -379,10 +378,10 @@ struct AxisValue
   {
     switch (u.format)
     {
-    case 1: return u.format1.get_value_name_id ();
-    case 2: return u.format2.get_value_name_id ();
-    case 3: return u.format3.get_value_name_id ();
-    case 4: return u.format4.get_value_name_id ();
+    case 1: hb_barrier (); return u.format1.get_value_name_id ();
+    case 2: hb_barrier (); return u.format2.get_value_name_id ();
+    case 3: hb_barrier (); return u.format3.get_value_name_id ();
+    case 4: hb_barrier (); return u.format4.get_value_name_id ();
     default:return HB_OT_NAME_ID_INVALID;
     }
   }
@@ -390,26 +389,26 @@ struct AxisValue
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
+    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
     TRACE_DISPATCH (this, u.format);
-    if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
-    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
-    case 3: return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
-    case 4: return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
+    case 1: hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: hb_barrier (); return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 3: hb_barrier (); return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
+    case 4: hb_barrier (); return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
 
   bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
-                        hb_hashmap_t<hb_tag_t, float> *user_axes_location) const
+                        hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
   {
     switch (u.format)
     {
-    case 1: return u.format1.keep_axis_value (axis_records, user_axes_location);
-    case 2: return u.format2.keep_axis_value (axis_records, user_axes_location);
-    case 3: return u.format3.keep_axis_value (axis_records, user_axes_location);
-    case 4: return u.format4.keep_axis_value (axis_records, user_axes_location);
+    case 1: hb_barrier (); return u.format1.keep_axis_value (axis_records, user_axes_location);
+    case 2: hb_barrier (); return u.format2.keep_axis_value (axis_records, user_axes_location);
+    case 3: hb_barrier (); return u.format3.keep_axis_value (axis_records, user_axes_location);
+    case 4: hb_barrier (); return u.format4.keep_axis_value (axis_records, user_axes_location);
     default:return false;
     }
   }
@@ -419,13 +418,14 @@ struct AxisValue
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
+    hb_barrier ();
 
     switch (u.format)
     {
-    case 1: return_trace (u.format1.sanitize (c));
-    case 2: return_trace (u.format2.sanitize (c));
-    case 3: return_trace (u.format3.sanitize (c));
-    case 4: return_trace (u.format4.sanitize (c));
+    case 1: hb_barrier (); return_trace (u.format1.sanitize (c));
+    case 2: hb_barrier (); return_trace (u.format2.sanitize (c));
+    case 3: hb_barrier (); return_trace (u.format3.sanitize (c));
+    case 4: hb_barrier (); return_trace (u.format4.sanitize (c));
     default:return_trace (true);
     }
   }
@@ -451,8 +451,6 @@ struct AxisValueOffsetArray: UnsizedArrayOf<Offset16To<AxisValue>>
                const hb_array_t<const StatAxisRecord> axis_records) const
   {
     TRACE_SUBSET (this);
-    auto *out = c->serializer->start_embed (this);
-    if (unlikely (!out)) return_trace (false);
 
     auto axisValueOffsets = as_array (axisValueCount);
     count = 0;
@@ -488,7 +486,7 @@ struct STAT
     hb_array_t<const Offset16To<AxisValue>> axis_values = get_axis_value_offsets ();
     for (unsigned int i = 0; i < axis_values.length; i++)
     {
-      const AxisValue& axis_value = this+axis_values[i];
+      const AxisValue& axis_value = this+offsetToAxisValueOffsets+axis_values[i];
       if (axis_value.get_axis_index () == axis_index)
       {
 	if (value)
@@ -517,7 +515,7 @@ struct STAT
     return axis_value.get_value_name_id ();
   }
 
-  void collect_name_ids (hb_hashmap_t<hb_tag_t, float> *user_axes_location,
+  void collect_name_ids (hb_hashmap_t<hb_tag_t, Triple> *user_axes_location,
                          hb_set_t *nameids_to_retain /* OUT */) const
   {
     if (!has_data ()) return;
@@ -536,6 +534,8 @@ struct STAT
     | hb_map (&AxisValue::get_value_name_id)
     | hb_sink (nameids_to_retain)
     ;
+
+    nameids_to_retain->add (elidedFallbackNameID);
   }
 
   bool subset (hb_subset_context_t *c) const
@@ -563,6 +563,7 @@ struct STAT
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version.major == 1 &&
 			  version.minor > 0 &&
 			  designAxesOffset.sanitize (c, this, designAxisCount) &&

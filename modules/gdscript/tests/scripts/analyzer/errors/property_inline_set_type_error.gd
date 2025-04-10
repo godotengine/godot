@@ -1,7 +1,7 @@
-var _prop : int
+var _prop: int
 
 # Inline setter assigns String to int.
-var prop : String:
+var prop: String:
 	set(value):
 		_prop = value
 

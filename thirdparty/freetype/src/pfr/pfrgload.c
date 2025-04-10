@@ -4,7 +4,7 @@
  *
  *   FreeType PFR glyph loader (body).
  *
- * Copyright (C) 2002-2022 by
+ * Copyright (C) 2002-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -42,8 +42,7 @@
   {
     FT_ZERO( glyph );
 
-    glyph->loader     = loader;
-    glyph->path_begun = 0;
+    glyph->loader = loader;
 
     FT_GlyphLoader_Rewind( loader );
   }
@@ -109,7 +108,7 @@
 
     /* don't add empty contours */
     if ( last >= first )
-      outline->contours[outline->n_contours++] = (short)last;
+      outline->contours[outline->n_contours++] = (FT_UShort)last;
 
     glyph->path_begun = 0;
   }
@@ -179,8 +178,8 @@
     error = FT_GLYPHLOADER_CHECK_POINTS( loader, 3, 0 );
     if ( !error )
     {
-      FT_Vector*  vec = outline->points         + outline->n_points;
-      FT_Byte*    tag = (FT_Byte*)outline->tags + outline->n_points;
+      FT_Vector*  vec = outline->points + outline->n_points;
+      FT_Byte*    tag = outline->tags   + outline->n_points;
 
 
       vec[0] = *control1;
@@ -190,7 +189,7 @@
       tag[1] = FT_CURVE_TAG_CUBIC;
       tag[2] = FT_CURVE_TAG_ON;
 
-      outline->n_points = (FT_Short)( outline->n_points + 3 );
+      outline->n_points += 3;
     }
 
   Exit:
@@ -409,7 +408,7 @@
           break;
 
         case 6:                            /* horizontal to vertical curve */
-          FT_TRACE6(( "- hv curve " ));
+          FT_TRACE6(( "- hv curve" ));
           args_format = 0xB8E;
           args_count  = 3;
           break;
@@ -561,8 +560,7 @@
                            FT_Byte*   limit )
   {
     FT_Error        error  = FT_Err_Ok;
-    FT_GlyphLoader  loader = glyph->loader;
-    FT_Memory       memory = loader->memory;
+    FT_Memory       memory = glyph->loader->memory;
     PFR_SubGlyph    subglyph;
     FT_UInt         flags, i, count, org_count;
     FT_Int          x_pos, y_pos;

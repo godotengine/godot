@@ -1,47 +1,53 @@
-/*************************************************************************/
-/*  collision_shape_2d_editor_plugin.cpp                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  collision_shape_2d_editor_plugin.cpp                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "collision_shape_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "scene/resources/capsule_shape_2d.h"
-#include "scene/resources/circle_shape_2d.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/rectangle_shape_2d.h"
-#include "scene/resources/segment_shape_2d.h"
-#include "scene/resources/separation_ray_shape_2d.h"
-#include "scene/resources/world_boundary_shape_2d.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/2d/capsule_shape_2d.h"
+#include "scene/resources/2d/circle_shape_2d.h"
+#include "scene/resources/2d/concave_polygon_shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/rectangle_shape_2d.h"
+#include "scene/resources/2d/segment_shape_2d.h"
+#include "scene/resources/2d/separation_ray_shape_2d.h"
+#include "scene/resources/2d/world_boundary_shape_2d.h"
+
+CollisionShape2DEditor::CollisionShape2DEditor() {
+	grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+}
 
 void CollisionShape2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -67,9 +73,17 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
+			Ref<ConcavePolygonShape2D> shape = node->get_shape();
+			const Vector<Vector2> &segments = shape->get_segments();
+			return segments[idx];
+
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
+			Ref<ConvexPolygonShape2D> shape = node->get_shape();
+			const Vector<Vector2> &points = shape->get_points();
+			return points[idx];
+
 		} break;
 
 		case WORLD_BOUNDARY_SHAPE: {
@@ -129,8 +143,6 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 				} else if (idx == 1) {
 					capsule->set_height(parameter * 2);
 				}
-
-				canvas_item_editor->update_viewport();
 			}
 
 		} break;
@@ -138,15 +150,30 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 		case CIRCLE_SHAPE: {
 			Ref<CircleShape2D> circle = node->get_shape();
 			circle->set_radius(p_point.length());
-
-			canvas_item_editor->update_viewport();
-
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
+			Ref<ConcavePolygonShape2D> concave_shape = node->get_shape();
+
+			Vector<Vector2> segments = concave_shape->get_segments();
+
+			ERR_FAIL_INDEX(idx, segments.size());
+			segments.write[idx] = p_point;
+
+			concave_shape->set_segments(segments);
+
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
+			Ref<ConvexPolygonShape2D> convex_shape = node->get_shape();
+
+			Vector<Vector2> points = convex_shape->get_points();
+
+			ERR_FAIL_INDEX(idx, points.size());
+			points.write[idx] = p_point;
+
+			convex_shape->set_points(points);
+
 		} break;
 
 		case WORLD_BOUNDARY_SHAPE: {
@@ -154,23 +181,18 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 				Ref<WorldBoundaryShape2D> world_boundary = node->get_shape();
 
 				if (idx == 0) {
-					world_boundary->set_distance(p_point.length());
+					Vector2 normal = world_boundary->get_normal();
+					world_boundary->set_distance(p_point.dot(normal) / normal.length_squared());
 				} else {
 					world_boundary->set_normal(p_point.normalized());
 				}
-
-				canvas_item_editor->update_viewport();
 			}
-
 		} break;
 
 		case SEPARATION_RAY_SHAPE: {
 			Ref<SeparationRayShape2D> ray = node->get_shape();
 
 			ray->set_length(Math::abs(p_point.y));
-
-			canvas_item_editor->update_viewport();
-
 		} break;
 
 		case RECTANGLE_SHAPE: {
@@ -194,8 +216,6 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 					pos += (size - (Point2)original) * 0.5 * RECT_HANDLES[idx] * 0.5;
 					node->set_global_position(original_transform.xform(pos));
 				}
-
-				canvas_item_editor->update_viewport();
 			}
 
 		} break;
@@ -209,17 +229,13 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 				} else if (idx == 1) {
 					seg->set_b(p_point);
 				}
-
-				canvas_item_editor->update_viewport();
 			}
-
 		} break;
 	}
-	node->get_shape()->notify_property_list_changed();
 }
 
 void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Set Handle"));
 
 	switch (shape_type) {
@@ -233,10 +249,8 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 			} else if (idx == 1) {
 				undo_redo->add_do_method(capsule.ptr(), "set_height", capsule->get_height());
 			}
-			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 			undo_redo->add_undo_method(capsule.ptr(), "set_radius", values[0]);
 			undo_redo->add_undo_method(capsule.ptr(), "set_height", values[1]);
-			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 
 		} break;
 
@@ -244,18 +258,38 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 			Ref<CircleShape2D> circle = node->get_shape();
 
 			undo_redo->add_do_method(circle.ptr(), "set_radius", circle->get_radius());
-			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 			undo_redo->add_undo_method(circle.ptr(), "set_radius", p_org);
-			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
-			// Cannot be edited directly, use CollisionPolygon2D instead.
+			Ref<ConcavePolygonShape2D> concave_shape = node->get_shape();
+
+			Vector2 values = p_org;
+
+			Vector<Vector2> undo_segments = concave_shape->get_segments();
+
+			ERR_FAIL_INDEX(idx, undo_segments.size());
+			undo_segments.write[idx] = values;
+
+			undo_redo->add_do_method(concave_shape.ptr(), "set_segments", concave_shape->get_segments());
+			undo_redo->add_undo_method(concave_shape.ptr(), "set_segments", undo_segments);
+
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
-			// Cannot be edited directly, use CollisionPolygon2D instead.
+			Ref<ConvexPolygonShape2D> convex_shape = node->get_shape();
+
+			Vector2 values = p_org;
+
+			Vector<Vector2> undo_points = convex_shape->get_points();
+
+			ERR_FAIL_INDEX(idx, undo_points.size());
+			undo_points.write[idx] = values;
+
+			undo_redo->add_do_method(convex_shape.ptr(), "set_points", convex_shape->get_points());
+			undo_redo->add_undo_method(convex_shape.ptr(), "set_points", undo_points);
+
 		} break;
 
 		case WORLD_BOUNDARY_SHAPE: {
@@ -263,14 +297,10 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 
 			if (idx == 0) {
 				undo_redo->add_do_method(world_boundary.ptr(), "set_distance", world_boundary->get_distance());
-				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 				undo_redo->add_undo_method(world_boundary.ptr(), "set_distance", p_org);
-				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			} else {
 				undo_redo->add_do_method(world_boundary.ptr(), "set_normal", world_boundary->get_normal());
-				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 				undo_redo->add_undo_method(world_boundary.ptr(), "set_normal", p_org);
-				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			}
 
 		} break;
@@ -279,9 +309,7 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 			Ref<SeparationRayShape2D> ray = node->get_shape();
 
 			undo_redo->add_do_method(ray.ptr(), "set_length", ray->get_length());
-			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 			undo_redo->add_undo_method(ray.ptr(), "set_length", p_org);
-			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 
 		} break;
 
@@ -290,10 +318,8 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 
 			undo_redo->add_do_method(rect.ptr(), "set_size", rect->get_size());
 			undo_redo->add_do_method(node, "set_global_transform", node->get_global_transform());
-			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 			undo_redo->add_undo_method(rect.ptr(), "set_size", p_org);
 			undo_redo->add_undo_method(node, "set_global_transform", original_transform);
-			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 
 		} break;
 
@@ -301,14 +327,10 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 			Ref<SegmentShape2D> seg = node->get_shape();
 			if (idx == 0) {
 				undo_redo->add_do_method(seg.ptr(), "set_a", seg->get_a());
-				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 				undo_redo->add_undo_method(seg.ptr(), "set_a", p_org);
-				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			} else if (idx == 1) {
 				undo_redo->add_do_method(seg.ptr(), "set_b", seg->get_b());
-				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 				undo_redo->add_undo_method(seg.ptr(), "set_b", p_org);
-				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			}
 
 		} break;
@@ -322,11 +344,12 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		return false;
 	}
 
-	if (!node->get_shape().is_valid()) {
+	if (!node->is_visible_in_tree()) {
 		return false;
 	}
 
-	if (!node->is_visible_in_tree()) {
+	Viewport *vp = node->get_viewport();
+	if (vp && !vp->is_visible_subviewport()) {
 		return false;
 	}
 
@@ -335,7 +358,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
 
 	if (mb.is_valid()) {
 		Vector2 gpoint = mb->get_position();
@@ -343,7 +366,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				for (int i = 0; i < handles.size(); i++) {
-					if (xform.xform(handles[i]).distance_to(gpoint) < 8) {
+					if (xform.xform(handles[i]).distance_to(gpoint) < grab_threshold) {
 						edit_handle = i;
 
 						break;
@@ -356,6 +379,8 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 					return false;
 				}
 
+				original_mouse_pos = gpoint;
+				original_point = handles[edit_handle];
 				original = get_handle_value(edit_handle);
 				original_transform = node->get_global_transform();
 				last_point = original;
@@ -365,7 +390,9 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 
 			} else {
 				if (pressed) {
-					commit_handle(edit_handle, original);
+					if (original_mouse_pos != gpoint) {
+						commit_handle(edit_handle, original);
+					}
 
 					edit_handle = -1;
 					pressed = false;
@@ -386,6 +413,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		}
 
 		Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
+		cpoint = node->get_viewport()->get_popup_base_transform().affine_inverse().xform(cpoint);
 		cpoint = original_transform.affine_inverse().xform(cpoint);
 		last_point = cpoint;
 
@@ -409,38 +437,44 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	return false;
 }
 
-void CollisionShape2DEditor::_get_current_shape_type() {
+void CollisionShape2DEditor::_shape_changed() {
+	canvas_item_editor->update_viewport();
+
+	if (current_shape.is_valid()) {
+		current_shape->disconnect_changed(callable_mp(canvas_item_editor, &CanvasItemEditor::update_viewport));
+		current_shape = Ref<Shape2D>();
+		shape_type = -1;
+	}
+
 	if (!node) {
 		return;
 	}
 
-	Ref<Shape2D> s = node->get_shape();
+	current_shape = node->get_shape();
 
-	if (!s.is_valid()) {
+	if (current_shape.is_valid()) {
+		current_shape->connect_changed(callable_mp(canvas_item_editor, &CanvasItemEditor::update_viewport));
+	} else {
 		return;
 	}
 
-	if (Object::cast_to<CapsuleShape2D>(*s)) {
+	if (Object::cast_to<CapsuleShape2D>(*current_shape)) {
 		shape_type = CAPSULE_SHAPE;
-	} else if (Object::cast_to<CircleShape2D>(*s)) {
+	} else if (Object::cast_to<CircleShape2D>(*current_shape)) {
 		shape_type = CIRCLE_SHAPE;
-	} else if (Object::cast_to<ConcavePolygonShape2D>(*s)) {
+	} else if (Object::cast_to<ConcavePolygonShape2D>(*current_shape)) {
 		shape_type = CONCAVE_POLYGON_SHAPE;
-	} else if (Object::cast_to<ConvexPolygonShape2D>(*s)) {
+	} else if (Object::cast_to<ConvexPolygonShape2D>(*current_shape)) {
 		shape_type = CONVEX_POLYGON_SHAPE;
-	} else if (Object::cast_to<WorldBoundaryShape2D>(*s)) {
+	} else if (Object::cast_to<WorldBoundaryShape2D>(*current_shape)) {
 		shape_type = WORLD_BOUNDARY_SHAPE;
-	} else if (Object::cast_to<SeparationRayShape2D>(*s)) {
+	} else if (Object::cast_to<SeparationRayShape2D>(*current_shape)) {
 		shape_type = SEPARATION_RAY_SHAPE;
-	} else if (Object::cast_to<RectangleShape2D>(*s)) {
+	} else if (Object::cast_to<RectangleShape2D>(*current_shape)) {
 		shape_type = RECTANGLE_SHAPE;
-	} else if (Object::cast_to<SegmentShape2D>(*s)) {
+	} else if (Object::cast_to<SegmentShape2D>(*current_shape)) {
 		shape_type = SEGMENT_SHAPE;
-	} else {
-		shape_type = -1;
 	}
-
-	canvas_item_editor->update_viewport();
 }
 
 void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
@@ -448,30 +482,29 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		return;
 	}
 
-	if (!node->get_shape().is_valid()) {
-		return;
-	}
-
 	if (!node->is_visible_in_tree()) {
 		return;
 	}
 
-	_get_current_shape_type();
+	Viewport *vp = node->get_viewport();
+	if (vp && !vp->is_visible_subviewport()) {
+		return;
+	}
 
 	if (shape_type == -1) {
 		return;
 	}
 
-	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
 
-	Ref<Texture2D> h = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> h = get_editor_theme_icon(SNAME("EditorHandle"));
 	Vector2 size = h->get_size() * 0.5;
 
 	handles.clear();
 
 	switch (shape_type) {
 		case CAPSULE_SHAPE: {
-			Ref<CapsuleShape2D> shape = node->get_shape();
+			Ref<CapsuleShape2D> shape = current_shape;
 
 			handles.resize(2);
 			float radius = shape->get_radius();
@@ -486,7 +519,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case CIRCLE_SHAPE: {
-			Ref<CircleShape2D> shape = node->get_shape();
+			Ref<CircleShape2D> shape = current_shape;
 
 			handles.resize(1);
 			handles.write[0] = Point2(shape->get_radius(), 0);
@@ -496,13 +529,33 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
+			Ref<ConcavePolygonShape2D> shape = current_shape;
+
+			const Vector<Vector2> &segments = shape->get_segments();
+
+			handles.resize(segments.size());
+			for (int i = 0; i < handles.size(); i++) {
+				handles.write[i] = segments[i];
+				p_overlay->draw_texture(h, gt.xform(handles[i]) - size);
+			}
+
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
+			Ref<ConvexPolygonShape2D> shape = current_shape;
+
+			const Vector<Vector2> &points = shape->get_points();
+
+			handles.resize(points.size());
+			for (int i = 0; i < handles.size(); i++) {
+				handles.write[i] = points[i];
+				p_overlay->draw_texture(h, gt.xform(handles[i]) - size);
+			}
+
 		} break;
 
 		case WORLD_BOUNDARY_SHAPE: {
-			Ref<WorldBoundaryShape2D> shape = node->get_shape();
+			Ref<WorldBoundaryShape2D> shape = current_shape;
 
 			handles.resize(2);
 			handles.write[0] = shape->get_normal() * shape->get_distance();
@@ -514,7 +567,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case SEPARATION_RAY_SHAPE: {
-			Ref<SeparationRayShape2D> shape = node->get_shape();
+			Ref<SeparationRayShape2D> shape = current_shape;
 
 			handles.resize(1);
 			handles.write[0] = Point2(0, shape->get_length());
@@ -524,7 +577,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case RECTANGLE_SHAPE: {
-			Ref<RectangleShape2D> shape = node->get_shape();
+			Ref<RectangleShape2D> shape = current_shape;
 
 			handles.resize(8);
 			Vector2 ext = shape->get_size() / 2;
@@ -536,7 +589,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case SEGMENT_SHAPE: {
-			Ref<SegmentShape2D> shape = node->get_shape();
+			Ref<SegmentShape2D> shape = current_shape;
 
 			handles.resize(2);
 			handles.write[0] = shape->get_a();
@@ -558,6 +611,18 @@ void CollisionShape2DEditor::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			get_tree()->disconnect("node_removed", callable_mp(this, &CollisionShape2DEditor::_node_removed));
 		} break;
+
+		case NOTIFICATION_PROCESS: {
+			if (node && node->get_shape() != current_shape) {
+				_shape_changed();
+			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/polygon_editor")) {
+				grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+			}
+		} break;
 	}
 }
 
@@ -568,31 +633,17 @@ void CollisionShape2DEditor::edit(Node *p_node) {
 
 	if (p_node) {
 		node = Object::cast_to<CollisionShape2D>(p_node);
-
-		_get_current_shape_type();
-
+		set_process(true);
 	} else {
+		if (pressed) {
+			set_handle(edit_handle, original_point);
+			pressed = false;
+		}
 		edit_handle = -1;
-		shape_type = -1;
-
 		node = nullptr;
+		set_process(false);
 	}
-
-	canvas_item_editor->update_viewport();
-}
-
-void CollisionShape2DEditor::_bind_methods() {
-	ClassDB::bind_method("_get_current_shape_type", &CollisionShape2DEditor::_get_current_shape_type);
-}
-
-CollisionShape2DEditor::CollisionShape2DEditor() {
-	node = nullptr;
-	canvas_item_editor = nullptr;
-
-	edit_handle = -1;
-	pressed = false;
-
-	shape_type = 0;
+	_shape_changed();
 }
 
 void CollisionShape2DEditorPlugin::edit(Object *p_obj) {
@@ -612,7 +663,4 @@ void CollisionShape2DEditorPlugin::make_visible(bool visible) {
 CollisionShape2DEditorPlugin::CollisionShape2DEditorPlugin() {
 	collision_shape_2d_editor = memnew(CollisionShape2DEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(collision_shape_2d_editor);
-}
-
-CollisionShape2DEditorPlugin::~CollisionShape2DEditorPlugin() {
 }

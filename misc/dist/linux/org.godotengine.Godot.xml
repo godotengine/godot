@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<mime-info xmlns="https://specifications.freedesktop.org/shared-mime-info-spec">
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="application/x-godot-project">
     <comment>Godot Engine project</comment>
     <sub-class-of type="text/plain"/>

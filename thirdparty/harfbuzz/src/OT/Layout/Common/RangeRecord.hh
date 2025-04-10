@@ -51,6 +51,18 @@ struct RangeRecord
   int cmp (hb_codepoint_t g) const
   { return g < first ? -1 : g <= last ? 0 : +1; }
 
+  HB_INTERNAL static int cmp_range (const void *pa, const void *pb) {
+    const RangeRecord *a = (const RangeRecord *) pa;
+    const RangeRecord *b = (const RangeRecord *) pb;
+    if (a->first < b->first) return -1;
+    if (a->first > b->first) return +1;
+    if (a->last < b->last) return -1;
+    if (a->last > b->last) return +1;
+    if (a->value < b->value) return -1;
+    if (a->value > b->value) return +1;
+    return 0;
+  }
+
   unsigned get_population () const
   {
     if (unlikely (last < first)) return 0;

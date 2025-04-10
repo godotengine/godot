@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  navigation_mesh.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  navigation_mesh.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "navigation_mesh.h"
 
@@ -35,10 +35,11 @@
 #endif // DEBUG_ENABLED
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
+	RWLockWrite write_lock(rwlock);
 	ERR_FAIL_COND(p_mesh.is_null());
 
 	vertices = Vector<Vector3>();
-	clear_polygons();
+	polygons.clear();
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -50,7 +51,7 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 
 		Vector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
 		Vector<int> iarr = arr[Mesh::ARRAY_INDEX];
-		if (varr.size() == 0 || iarr.size() == 0) {
+		if (varr.is_empty() || iarr.is_empty()) {
 			WARN_PRINT("A mesh surface was skipped when creating a NavigationMesh due to an empty vertex or index array.");
 			continue;
 		}
@@ -60,14 +61,13 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 		int rlen = iarr.size();
 		const int *r = iarr.ptr();
 
+		Vector<int> polygon;
 		for (int j = 0; j < rlen; j += 3) {
-			Vector<int> vi;
-			vi.resize(3);
-			vi.write[0] = r[j + 0] + from;
-			vi.write[1] = r[j + 1] + from;
-			vi.write[2] = r[j + 2] + from;
-
-			add_polygon(vi);
+			polygon.resize(3);
+			polygon.write[0] = r[j + 0] + from;
+			polygon.write[1] = r[j + 1] + from;
+			polygon.write[2] = r[j + 2] + from;
+			polygons.push_back(polygon);
 		}
 	}
 }
@@ -127,7 +127,7 @@ NavigationMesh::SourceGeometryMode NavigationMesh::get_source_geometry_mode() co
 	return source_geometry_mode;
 }
 
-void NavigationMesh::set_source_group_name(StringName p_group_name) {
+void NavigationMesh::set_source_group_name(const StringName &p_group_name) {
 	source_group_name = p_group_name;
 }
 
@@ -151,6 +151,15 @@ void NavigationMesh::set_cell_height(float p_value) {
 
 float NavigationMesh::get_cell_height() const {
 	return cell_height;
+}
+
+void NavigationMesh::set_border_size(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
+	border_size = p_value;
+}
+
+float NavigationMesh::get_border_size() const {
+	return border_size;
 }
 
 void NavigationMesh::set_agent_height(float p_value) {
@@ -225,13 +234,13 @@ float NavigationMesh::get_edge_max_error() const {
 	return edge_max_error;
 }
 
-void NavigationMesh::set_vertices_per_polyon(float p_value) {
+void NavigationMesh::set_vertices_per_polygon(float p_value) {
 	ERR_FAIL_COND(p_value < 3);
-	vertices_per_polyon = p_value;
+	vertices_per_polygon = p_value;
 }
 
-float NavigationMesh::get_vertices_per_polyon() const {
-	return vertices_per_polyon;
+float NavigationMesh::get_vertices_per_polygon() const {
+	return vertices_per_polygon;
 }
 
 void NavigationMesh::set_detail_sample_distance(float p_value) {
@@ -278,7 +287,7 @@ bool NavigationMesh::get_filter_walkable_low_height_spans() const {
 
 void NavigationMesh::set_filter_baking_aabb(const AABB &p_aabb) {
 	filter_baking_aabb = p_aabb;
-	notify_property_list_changed();
+	emit_changed();
 }
 
 AABB NavigationMesh::get_filter_baking_aabb() const {
@@ -287,7 +296,7 @@ AABB NavigationMesh::get_filter_baking_aabb() const {
 
 void NavigationMesh::set_filter_baking_aabb_offset(const Vector3 &p_aabb_offset) {
 	filter_baking_aabb_offset = p_aabb_offset;
-	notify_property_list_changed();
+	emit_changed();
 }
 
 Vector3 NavigationMesh::get_filter_baking_aabb_offset() const {
@@ -295,50 +304,85 @@ Vector3 NavigationMesh::get_filter_baking_aabb_offset() const {
 }
 
 void NavigationMesh::set_vertices(const Vector<Vector3> &p_vertices) {
+	RWLockWrite write_lock(rwlock);
 	vertices = p_vertices;
 	notify_property_list_changed();
 }
 
 Vector<Vector3> NavigationMesh::get_vertices() const {
+	RWLockRead read_lock(rwlock);
 	return vertices;
 }
 
 void NavigationMesh::_set_polygons(const Array &p_array) {
+	RWLockWrite write_lock(rwlock);
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
-		polygons.write[i].indices = p_array[i];
+		polygons.write[i] = p_array[i];
 	}
 	notify_property_list_changed();
 }
 
 Array NavigationMesh::_get_polygons() const {
+	RWLockRead read_lock(rwlock);
 	Array ret;
 	ret.resize(polygons.size());
 	for (int i = 0; i < ret.size(); i++) {
-		ret[i] = polygons[i].indices;
+		ret[i] = polygons[i];
 	}
 
 	return ret;
 }
 
+void NavigationMesh::set_polygons(const Vector<Vector<int>> &p_polygons) {
+	RWLockWrite write_lock(rwlock);
+	polygons = p_polygons;
+	notify_property_list_changed();
+}
+
+Vector<Vector<int>> NavigationMesh::get_polygons() const {
+	RWLockRead read_lock(rwlock);
+	return polygons;
+}
+
 void NavigationMesh::add_polygon(const Vector<int> &p_polygon) {
-	Polygon polygon;
-	polygon.indices = p_polygon;
-	polygons.push_back(polygon);
+	RWLockWrite write_lock(rwlock);
+	polygons.push_back(p_polygon);
 	notify_property_list_changed();
 }
 
 int NavigationMesh::get_polygon_count() const {
+	RWLockRead read_lock(rwlock);
 	return polygons.size();
 }
 
 Vector<int> NavigationMesh::get_polygon(int p_idx) {
+	RWLockRead read_lock(rwlock);
 	ERR_FAIL_INDEX_V(p_idx, polygons.size(), Vector<int>());
-	return polygons[p_idx].indices;
+	return polygons[p_idx];
 }
 
 void NavigationMesh::clear_polygons() {
+	RWLockWrite write_lock(rwlock);
 	polygons.clear();
+}
+
+void NavigationMesh::clear() {
+	RWLockWrite write_lock(rwlock);
+	polygons.clear();
+	vertices.clear();
+}
+
+void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons) {
+	RWLockWrite write_lock(rwlock);
+	vertices = p_vertices;
+	polygons = p_polygons;
+}
+
+void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons) {
+	RWLockRead read_lock(rwlock);
+	r_vertices = vertices;
+	r_polygons = polygons;
 }
 
 #ifdef DEBUG_ENABLED
@@ -348,15 +392,17 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 		return debug_mesh;
 	}
 
-	if (!debug_mesh.is_valid()) {
-		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	if (debug_mesh.is_null()) {
+		debug_mesh.instantiate();
 	} else {
 		debug_mesh->clear_surfaces();
 	}
 
-	if (vertices.size() == 0) {
+	if (vertices.is_empty()) {
 		return debug_mesh;
 	}
+
+	RWLockRead read_lock(rwlock);
 
 	int polygon_count = get_polygon_count();
 
@@ -401,7 +447,7 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	}
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
-	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_material();
+	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material();
 	debug_mesh->surface_set_material(0, debug_geometry_face_material);
 
 	// if enabled build geometry edge line surface
@@ -426,7 +472,7 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 		line_mesh_array.resize(Mesh::ARRAY_MAX);
 		line_mesh_array[Mesh::ARRAY_VERTEX] = line_vertex_array;
 		debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, line_mesh_array);
-		Ref<StandardMaterial3D> debug_geometry_edge_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_material();
+		Ref<StandardMaterial3D> debug_geometry_edge_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_material();
 		debug_mesh->surface_set_material(1, debug_geometry_edge_material);
 	}
 
@@ -459,6 +505,9 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cell_height", "cell_height"), &NavigationMesh::set_cell_height);
 	ClassDB::bind_method(D_METHOD("get_cell_height"), &NavigationMesh::get_cell_height);
 
+	ClassDB::bind_method(D_METHOD("set_border_size", "border_size"), &NavigationMesh::set_border_size);
+	ClassDB::bind_method(D_METHOD("get_border_size"), &NavigationMesh::get_border_size);
+
 	ClassDB::bind_method(D_METHOD("set_agent_height", "agent_height"), &NavigationMesh::set_agent_height);
 	ClassDB::bind_method(D_METHOD("get_agent_height"), &NavigationMesh::get_agent_height);
 
@@ -483,8 +532,8 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_edge_max_error", "edge_max_error"), &NavigationMesh::set_edge_max_error);
 	ClassDB::bind_method(D_METHOD("get_edge_max_error"), &NavigationMesh::get_edge_max_error);
 
-	ClassDB::bind_method(D_METHOD("set_vertices_per_polyon", "vertices_per_polyon"), &NavigationMesh::set_vertices_per_polyon);
-	ClassDB::bind_method(D_METHOD("get_vertices_per_polyon"), &NavigationMesh::get_vertices_per_polyon);
+	ClassDB::bind_method(D_METHOD("set_vertices_per_polygon", "vertices_per_polygon"), &NavigationMesh::set_vertices_per_polygon);
+	ClassDB::bind_method(D_METHOD("get_vertices_per_polygon"), &NavigationMesh::get_vertices_per_polygon);
 
 	ClassDB::bind_method(D_METHOD("set_detail_sample_distance", "detail_sample_dist"), &NavigationMesh::set_detail_sample_distance);
 	ClassDB::bind_method(D_METHOD("get_detail_sample_distance"), &NavigationMesh::get_detail_sample_distance);
@@ -518,6 +567,8 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_polygons", "polygons"), &NavigationMesh::_set_polygons);
 	ClassDB::bind_method(D_METHOD("_get_polygons"), &NavigationMesh::_get_polygons);
 
+	ClassDB::bind_method(D_METHOD("clear"), &NavigationMesh::clear);
+
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 
@@ -530,9 +581,10 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "Root Node Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry_source_group_name"), "set_source_group_name", "get_source_group_name");
 	ADD_PROPERTY_DEFAULT("geometry_source_group_name", StringName("navigation_mesh_source_group"));
-	ADD_GROUP("Cells", "cell_");
+	ADD_GROUP("Cells", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_height", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_height", "get_cell_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "border_size", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_border_size", "get_border_size");
 	ADD_GROUP("Agents", "agent_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_height", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_agent_height", "get_agent_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_radius", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_agent_radius", "get_agent_radius");
@@ -544,8 +596,8 @@ void NavigationMesh::_bind_methods() {
 	ADD_GROUP("Edges", "edge_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_max_length", PROPERTY_HINT_RANGE, "0.0,50.0,0.01,or_greater,suffix:m"), "set_edge_max_length", "get_edge_max_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_max_error", PROPERTY_HINT_RANGE, "0.1,3.0,0.01,or_greater,suffix:m"), "set_edge_max_error", "get_edge_max_error");
-	ADD_GROUP("Polygons", "polygon_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "polygon_vertices_per_polyon", PROPERTY_HINT_RANGE, "3.0,12.0,1.0,or_greater"), "set_vertices_per_polyon", "get_vertices_per_polyon");
+	ADD_GROUP("Polygons", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vertices_per_polygon", PROPERTY_HINT_RANGE, "3.0,12.0,1.0,or_greater"), "set_vertices_per_polygon", "get_vertices_per_polygon");
 	ADD_GROUP("Details", "detail_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail_sample_distance", PROPERTY_HINT_RANGE, "0.1,16.0,0.01,or_greater,suffix:m"), "set_detail_sample_distance", "get_detail_sample_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail_sample_max_error", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater,suffix:m"), "set_detail_sample_max_error", "get_detail_sample_max_error");
@@ -590,39 +642,18 @@ void NavigationMesh::_validate_property(PropertyInfo &p_property) const {
 
 #ifndef DISABLE_DEPRECATED
 bool NavigationMesh::_set(const StringName &p_name, const Variant &p_value) {
-	String prop_name = p_name;
-	if (prop_name.find("/") != -1) {
-		// Compatibility with pre-3.5 "category/path" property names.
-		prop_name = prop_name.replace("/", "_");
-		if (prop_name == "sample_partition_type_sample_partition_type") {
-			set("sample_partition_type", p_value);
-		} else if (prop_name == "filter_filter_walkable_low_height_spans") {
-			set("filter_walkable_low_height_spans", p_value);
-		} else {
-			set(prop_name, p_value);
-		}
-
+	if (p_name == "polygon_verts_per_poly") { // Renamed in 4.0 beta 9.
+		set_vertices_per_polygon(p_value);
 		return true;
 	}
 	return false;
 }
 
 bool NavigationMesh::_get(const StringName &p_name, Variant &r_ret) const {
-	String prop_name = p_name;
-	if (prop_name.find("/") != -1) {
-		// Compatibility with pre-3.5 "category/path" property names.
-		prop_name = prop_name.replace("/", "_");
-		if (prop_name == "sample_partition_type_sample_partition_type") {
-			r_ret = get("sample_partition_type");
-		} else if (prop_name == "filter_filter_walkable_low_height_spans") {
-			r_ret = get("filter_walkable_low_height_spans");
-		} else {
-			r_ret = get(prop_name);
-		}
+	if (p_name == "polygon_verts_per_poly") { // Renamed in 4.0 beta 9.
+		r_ret = get_vertices_per_polygon();
 		return true;
 	}
 	return false;
 }
 #endif // DISABLE_DEPRECATED
-
-NavigationMesh::NavigationMesh() {}

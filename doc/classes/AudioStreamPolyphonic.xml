@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamPolyphonic" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		AudioStream that lets the user play custom streams at any time from code, simultaneously using a single player.
+	</brief_description>
+	<description>
+		AudioStream that lets the user play custom streams at any time from code, simultaneously using a single player.
+		Playback control is done via the [AudioStreamPlaybackPolyphonic] instance set inside the player, which can be obtained via [method AudioStreamPlayer.get_stream_playback], [method AudioStreamPlayer2D.get_stream_playback] or [method AudioStreamPlayer3D.get_stream_playback] methods. Obtaining the playback instance is only valid after the [code]stream[/code] property is set as an [AudioStreamPolyphonic] in those players.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="polyphony" type="int" setter="set_polyphony" getter="get_polyphony" default="32">
+			Maximum amount of simultaneous streams that can be played.
+		</member>
+	</members>
+</class>

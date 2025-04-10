@@ -1,38 +1,36 @@
-/*************************************************************************/
-/*  wsl_peer.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  wsl_peer.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#include "wsl_peer.h"
 
 #ifndef WEB_ENABLED
-
-#include "wsl_peer.h"
-
-#include "wsl_peer.h"
 
 #include "core/io/stream_peer_tls.h"
 
@@ -101,6 +99,7 @@ void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
 		p_tcp->poll();
 		StreamPeerTCP::Status status = p_tcp->get_status();
 		if (status == StreamPeerTCP::STATUS_CONNECTED) {
+			// On Windows, setting TCP_NODELAY may fail if the socket is still connecting.
 			p_tcp->set_no_delay(true);
 			ip_candidates.clear();
 			return;
@@ -126,8 +125,8 @@ void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
 /// Server functions
 ///
 Error WSLPeer::accept_stream(Ref<StreamPeer> p_stream) {
-	ERR_FAIL_COND_V(wsl_ctx || tcp.is_valid(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_stream.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
 
 	_clear();
 
@@ -144,6 +143,7 @@ Error WSLPeer::accept_stream(Ref<StreamPeer> p_stream) {
 	}
 	ERR_FAIL_COND_V(connection.is_null() || tcp.is_null(), ERR_INVALID_PARAMETER);
 	is_server = true;
+	tcp->set_no_delay(true);
 	ready_state = STATE_CONNECTING;
 	handshake_buffer->resize(WSL_MAX_HEADER_SIZE);
 	handshake_buffer->seek(0);
@@ -151,7 +151,7 @@ Error WSLPeer::accept_stream(Ref<StreamPeer> p_stream) {
 }
 
 bool WSLPeer::_parse_client_request() {
-	Vector<String> psa = String((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4).split("\r\n");
+	Vector<String> psa = String::ascii(Span((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4)).split("\r\n");
 	int len = psa.size();
 	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
 
@@ -295,6 +295,7 @@ Error WSLPeer::_do_server_handshake() {
 			resolver.stop();
 			// Response sent, initialize wslay context.
 			wslay_event_context_server_init(&wsl_ctx, &_wsl_callbacks, this);
+			wslay_event_config_set_no_buffering(wsl_ctx, 1);
 			wslay_event_config_set_max_recv_msg_length(wsl_ctx, inbound_buffer_size);
 			in_buffer.resize(nearest_shift(inbound_buffer_size), max_queued_packets);
 			packet_buffer.resize(inbound_buffer_size);
@@ -312,7 +313,7 @@ void WSLPeer::_do_client_handshake() {
 	ERR_FAIL_COND(tcp.is_null());
 
 	// Try to connect to candidates.
-	if (resolver.has_more_candidates()) {
+	if (resolver.has_more_candidates() || tcp->get_status() == StreamPeerTCP::STATUS_CONNECTING) {
 		resolver.try_next_candidate(tcp);
 		if (resolver.has_more_candidates()) {
 			return; // Still pending.
@@ -332,9 +333,8 @@ void WSLPeer::_do_client_handshake() {
 		if (connection == tcp) {
 			// Start SSL handshake
 			tls = Ref<StreamPeerTLS>(StreamPeerTLS::create());
-			ERR_FAIL_COND_MSG(tls.is_null(), "SSL is not available in this build.");
-			tls->set_blocking_handshake_enabled(false);
-			if (tls->connect_to_stream(tcp, verify_tls, requested_host, tls_cert) != OK) {
+			ERR_FAIL_COND(tls.is_null());
+			if (tls->connect_to_stream(tcp, requested_host, tls_options) != OK) {
 				close(-1);
 				return; // Error.
 			}
@@ -380,7 +380,6 @@ void WSLPeer::_do_client_handshake() {
 				// Header is too big
 				close(-1);
 				ERR_FAIL_MSG("Response headers too big.");
-				return;
 			}
 
 			uint8_t byte;
@@ -403,9 +402,9 @@ void WSLPeer::_do_client_handshake() {
 				if (!_verify_server_response()) {
 					close(-1);
 					ERR_FAIL_MSG("Invalid response headers.");
-					return;
 				}
 				wslay_event_context_client_init(&wsl_ctx, &_wsl_callbacks, this);
+				wslay_event_config_set_no_buffering(wsl_ctx, 1);
 				wslay_event_config_set_max_recv_msg_length(wsl_ctx, inbound_buffer_size);
 				in_buffer.resize(nearest_shift(inbound_buffer_size), max_queued_packets);
 				packet_buffer.resize(inbound_buffer_size);
@@ -417,7 +416,7 @@ void WSLPeer::_do_client_handshake() {
 }
 
 bool WSLPeer::_verify_server_response() {
-	Vector<String> psa = String((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4).split("\r\n");
+	Vector<String> psa = String::ascii(Span((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4)).split("\r\n");
 	int len = psa.size();
 	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers. Got: " + itos(len) + ", expected >= 4.");
 
@@ -452,7 +451,7 @@ bool WSLPeer::_verify_server_response() {
 	WSL_CHECK_NC("sec-websocket-accept", _compute_key_response(session_key));
 #undef WSL_CHECK_NC
 #undef WSL_CHECK
-	if (supported_protocols.size() == 0) {
+	if (supported_protocols.is_empty()) {
 		// We didn't request a custom protocol
 		ERR_FAIL_COND_V_MSG(headers.has("sec-websocket-protocol"), false, "Received unrequested sub-protocol -> " + headers["sec-websocket-protocol"]);
 	} else {
@@ -470,23 +469,24 @@ bool WSLPeer::_verify_server_response() {
 		}
 		if (!valid) {
 			ERR_FAIL_V_MSG(false, "Received unrequested sub-protocol -> " + selected_protocol);
-			return false;
 		}
 	}
 	return true;
 }
 
-Error WSLPeer::connect_to_url(const String &p_url, bool p_verify_tls, Ref<X509Certificate> p_cert) {
-	ERR_FAIL_COND_V(wsl_ctx || tcp.is_valid(), ERR_ALREADY_IN_USE);
+Error WSLPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_options) {
 	ERR_FAIL_COND_V(p_url.is_empty(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_options.is_valid() && p_options->is_server(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
 
 	_clear();
 
 	String host;
 	String path;
 	String scheme;
+	String fragment;
 	int port = 0;
-	Error err = p_url.parse_url(scheme, host, port, path);
+	Error err = p_url.parse_url(scheme, host, port, path, fragment);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Invalid URL: " + p_url);
 	if (scheme.is_empty()) {
 		scheme = "ws://";
@@ -504,10 +504,17 @@ Error WSLPeer::connect_to_url(const String &p_url, bool p_verify_tls, Ref<X509Ce
 		path = "/";
 	}
 
+	ERR_FAIL_COND_V_MSG(use_tls && !StreamPeerTLS::is_available(), ERR_UNAVAILABLE, "WSS is not available in this build.");
+
 	requested_url = p_url;
 	requested_host = host;
-	verify_tls = p_verify_tls;
-	tls_cert = p_cert;
+
+	if (p_options.is_valid()) {
+		tls_options = p_options;
+	} else {
+		tls_options = TLSOptions::client();
+	}
+
 	tcp.instantiate();
 
 	resolver.start(host, port);
@@ -563,8 +570,15 @@ ssize_t WSLPeer::_wsl_recv_callback(wslay_event_context_ptr ctx, uint8_t *data, 
 		wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
 		return -1;
 	}
+	// Make sure we don't read more than what our buffer can hold.
+	size_t buffer_limit = MIN(peer->in_buffer.payload_space_left(), peer->in_buffer.packets_space_left() * 2); // The minimum size of a websocket message is 2 bytes.
+	size_t to_read = MIN(len, buffer_limit);
+	if (to_read == 0) {
+		wslay_event_set_error(ctx, WSLAY_ERR_WOULDBLOCK);
+		return -1;
+	}
 	int read = 0;
-	Error err = conn->get_partial_data(data, len, read);
+	Error err = conn->get_partial_data(data, to_read, read);
 	if (err != OK) {
 		print_verbose("Websocket get data error: " + itos(err) + ", read (should be 0!): " + itos(read));
 		wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
@@ -575,6 +589,26 @@ ssize_t WSLPeer::_wsl_recv_callback(wslay_event_context_ptr ctx, uint8_t *data, 
 		return -1;
 	}
 	return read;
+}
+
+void WSLPeer::_wsl_recv_start_callback(wslay_event_context_ptr ctx, const struct wslay_event_on_frame_recv_start_arg *arg, void *user_data) {
+	WSLPeer *peer = (WSLPeer *)user_data;
+	uint8_t op = arg->opcode;
+	if (op == WSLAY_TEXT_FRAME || op == WSLAY_BINARY_FRAME) {
+		// Get ready to process a data package.
+		PendingMessage &pm = peer->pending_message;
+		pm.opcode = op;
+	}
+}
+
+void WSLPeer::_wsl_frame_recv_chunk_callback(wslay_event_context_ptr ctx, const struct wslay_event_on_frame_recv_chunk_arg *arg, void *user_data) {
+	WSLPeer *peer = (WSLPeer *)user_data;
+	PendingMessage &pm = peer->pending_message;
+	if (pm.opcode != 0) {
+		// Only write the payload.
+		peer->in_buffer.write_packet(arg->data, arg->data_length, nullptr);
+		pm.payload_size += arg->data_length;
+	}
 }
 
 ssize_t WSLPeer::_wsl_send_callback(wslay_event_context_ptr ctx, const uint8_t *data, size_t len, int flags, void *user_data) {
@@ -598,7 +632,7 @@ ssize_t WSLPeer::_wsl_send_callback(wslay_event_context_ptr ctx, const uint8_t *
 }
 
 int WSLPeer::_wsl_genmask_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, void *user_data) {
-	ERR_FAIL_COND_V(!_static_rng, WSLAY_ERR_CALLBACK_FAILURE);
+	ERR_FAIL_NULL_V(_static_rng, WSLAY_ERR_CALLBACK_FAILURE);
 	Error err = _static_rng->get_random_bytes(buf, len);
 	ERR_FAIL_COND_V(err != OK, WSLAY_ERR_CALLBACK_FAILURE);
 	return 0;
@@ -612,9 +646,9 @@ void WSLPeer::_wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct w
 		// Close request or confirmation.
 		peer->close_code = arg->status_code;
 		size_t len = arg->msg_length;
-		peer->close_reason = "";
+		peer->close_reason.clear();
 		if (len > 2 /* first 2 bytes = close code */) {
-			peer->close_reason.parse_utf8((char *)arg->msg + 2, len - 2);
+			peer->close_reason.append_utf8((char *)arg->msg + 2, len - 2);
 		}
 		if (peer->ready_state == STATE_OPEN) {
 			peer->ready_state = STATE_CLOSING;
@@ -622,25 +656,26 @@ void WSLPeer::_wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct w
 		return;
 	}
 
-	if (peer->ready_state == STATE_CLOSING) {
-		return;
+	if (op == WSLAY_PONG) {
+		peer->heartbeat_waiting = false;
+	} else if (op == WSLAY_TEXT_FRAME || op == WSLAY_BINARY_FRAME) {
+		PendingMessage &pm = peer->pending_message;
+		ERR_FAIL_COND(pm.opcode != op);
+		// Only write the packet (since it's now completed).
+		uint8_t is_string = pm.opcode == WSLAY_TEXT_FRAME ? 1 : 0;
+		peer->in_buffer.write_packet(nullptr, pm.payload_size, &is_string);
+		pm.clear();
 	}
-
-	if (op == WSLAY_TEXT_FRAME || op == WSLAY_BINARY_FRAME) {
-		// Message.
-		uint8_t is_string = arg->opcode == WSLAY_TEXT_FRAME ? 1 : 0;
-		peer->in_buffer.write_packet(arg->msg, arg->msg_length, &is_string);
-	}
-	// Ping or pong.
+	// Ping.
 }
 
 wslay_event_callbacks WSLPeer::_wsl_callbacks = {
 	_wsl_recv_callback,
 	_wsl_send_callback,
 	_wsl_genmask_callback,
-	nullptr, /* on_frame_recv_start_callback */
-	nullptr, /* on_frame_recv_callback */
-	nullptr, /* on_frame_recv_end_callback */
+	_wsl_recv_start_callback,
+	_wsl_frame_recv_chunk_callback,
+	nullptr,
 	_wsl_msg_recv_callback
 };
 
@@ -674,8 +709,32 @@ void WSLPeer::poll() {
 	}
 
 	if (ready_state == STATE_OPEN || ready_state == STATE_CLOSING) {
-		ERR_FAIL_COND(!wsl_ctx);
+		ERR_FAIL_NULL(wsl_ctx);
+		uint64_t ticks = OS::get_singleton()->get_ticks_msec();
 		int err = 0;
+		if (heartbeat_interval_msec != 0 && ticks - last_heartbeat > heartbeat_interval_msec && ready_state == STATE_OPEN) {
+			if (heartbeat_waiting) {
+				wslay_event_context_free(wsl_ctx);
+				wsl_ctx = nullptr;
+				close(-1);
+				return;
+			}
+			heartbeat_waiting = true;
+			struct wslay_event_msg msg;
+			msg.opcode = WSLAY_PING;
+			msg.msg = nullptr;
+			msg.msg_length = 0;
+			err = wslay_event_queue_msg(wsl_ctx, &msg);
+			if (err == 0) {
+				last_heartbeat = ticks;
+			} else {
+				print_verbose("Websocket (wslay) failed to send ping: " + itos(err));
+				wslay_event_context_free(wsl_ctx);
+				wsl_ctx = nullptr;
+				close(-1);
+				return;
+			}
+		}
 		if ((err = wslay_event_recv(wsl_ctx)) != 0 || (err = wslay_event_send(wsl_ctx)) != 0) {
 			// Error close.
 			print_verbose("Websocket (wslay) poll error: " + itos(err));
@@ -684,12 +743,37 @@ void WSLPeer::poll() {
 			close(-1);
 			return;
 		}
-		if (wslay_event_get_close_sent(wsl_ctx) && wslay_event_get_close_received(wsl_ctx)) {
-			// Clean close.
-			wslay_event_context_free(wsl_ctx);
-			wsl_ctx = nullptr;
-			close(-1);
-			return;
+		if (wslay_event_get_close_sent(wsl_ctx)) {
+			if (wslay_event_get_close_received(wsl_ctx)) {
+				// Clean close.
+				wslay_event_context_free(wsl_ctx);
+				wsl_ctx = nullptr;
+				close(-1);
+				return;
+			} else if (!wslay_event_get_read_enabled(wsl_ctx)) {
+				// Some protocol error caused wslay to stop processing incoming events, we'll never receive a close from the other peer.
+				close_code = wslay_event_get_status_code_sent(wsl_ctx);
+				switch (close_code) {
+					case WSLAY_CODE_MESSAGE_TOO_BIG:
+						close_reason = "Message too big";
+						break;
+					case WSLAY_CODE_PROTOCOL_ERROR:
+						close_reason = "Protocol error";
+						break;
+					case WSLAY_CODE_ABNORMAL_CLOSURE:
+						close_reason = "Abnormal closure";
+						break;
+					case WSLAY_CODE_INVALID_FRAME_PAYLOAD_DATA:
+						close_reason = "Invalid frame payload data";
+						break;
+					default:
+						close_reason = "Unknown";
+				}
+				wslay_event_context_free(wsl_ctx);
+				wsl_ctx = nullptr;
+				close(-1);
+				return;
+			}
 		}
 	}
 }
@@ -776,8 +860,12 @@ void WSLPeer::close(int p_code, String p_reason) {
 		}
 	}
 
-	in_buffer.clear();
-	packet_buffer.resize(0);
+	if (ready_state == STATE_CLOSED) {
+		heartbeat_waiting = false;
+		in_buffer.clear();
+		packet_buffer.resize(0);
+		pending_message.clear();
+	}
 }
 
 IPAddress WSLPeer::get_connected_host() const {

@@ -1,53 +1,29 @@
-
 #define MAX_LIGHTS_PER_ITEM 16
 
 #define M_PI 3.14159265359
 
 #define SDF_MAX_LENGTH 16384.0
 
-//1 means enabled, 2+ means trails in use
-#define FLAGS_INSTANCING_MASK 0x7F
-#define FLAGS_INSTANCING_HAS_COLORS (1 << 7)
-#define FLAGS_INSTANCING_HAS_CUSTOM_DATA (1 << 8)
+#define INSTANCE_FLAGS_LIGHT_COUNT_SHIFT 0 // 4 bits.
 
-#define FLAGS_CLIP_RECT_UV (1 << 9)
-#define FLAGS_TRANSPOSE_RECT (1 << 10)
-#define FLAGS_USING_LIGHT_MASK (1 << 11)
-#define FLAGS_NINEPACH_DRAW_CENTER (1 << 12)
-#define FLAGS_USING_PARTICLES (1 << 13)
+#define INSTANCE_FLAGS_CLIP_RECT_UV (1 << 4)
+#define INSTANCE_FLAGS_TRANSPOSE_RECT (1 << 5)
+#define INSTANCE_FLAGS_USE_MSDF (1 << 6)
+#define INSTANCE_FLAGS_USE_LCD (1 << 7)
 
-#define FLAGS_NINEPATCH_H_MODE_SHIFT 16
-#define FLAGS_NINEPATCH_V_MODE_SHIFT 18
+#define INSTANCE_FLAGS_NINEPATCH_DRAW_CENTER_SHIFT 8
+#define INSTANCE_FLAGS_NINEPATCH_H_MODE_SHIFT 9
+#define INSTANCE_FLAGS_NINEPATCH_V_MODE_SHIFT 11
 
-#define FLAGS_LIGHT_COUNT_SHIFT 20
+#define INSTANCE_FLAGS_SHADOW_MASKED_SHIFT 13 // 16 bits.
+#define INSTANCE_FLAGS_SHADOW_MASKED (1 << INSTANCE_FLAGS_SHADOW_MASKED_SHIFT)
 
-#define FLAGS_DEFAULT_NORMAL_MAP_USED (1 << 26)
-#define FLAGS_DEFAULT_SPECULAR_MAP_USED (1 << 27)
-
-#define FLAGS_USE_MSDF (1 << 28)
-#define FLAGS_USE_LCD (1 << 29)
-
-#define SAMPLER_NEAREST_CLAMP 0
-#define SAMPLER_LINEAR_CLAMP 1
-#define SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP 2
-#define SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP 3
-#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP 4
-#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP 5
-#define SAMPLER_NEAREST_REPEAT 6
-#define SAMPLER_LINEAR_REPEAT 7
-#define SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT 8
-#define SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT 9
-#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
-#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
-
-// Push Constant
-
-layout(push_constant, std430) uniform DrawData {
+struct InstanceData {
 	vec2 world_x;
 	vec2 world_y;
 	vec2 world_ofs;
 	uint flags;
-	uint specular_shininess;
+	uint instance_uniforms_ofs;
 #ifdef USE_PRIMITIVE
 	vec2 points[3];
 	vec2 uvs[3];
@@ -61,9 +37,50 @@ layout(push_constant, std430) uniform DrawData {
 
 #endif
 	vec2 color_texture_pixel_size;
-	uint lights[4];
+	uvec4 lights;
+};
+
+//1 means enabled, 2+ means trails in use
+#define BATCH_FLAGS_INSTANCING_MASK 0x7F
+#define BATCH_FLAGS_INSTANCING_HAS_COLORS_SHIFT 7
+#define BATCH_FLAGS_INSTANCING_HAS_COLORS (1 << BATCH_FLAGS_INSTANCING_HAS_COLORS_SHIFT)
+#define BATCH_FLAGS_INSTANCING_HAS_CUSTOM_DATA_SHIFT 8
+#define BATCH_FLAGS_INSTANCING_HAS_CUSTOM_DATA (1 << BATCH_FLAGS_INSTANCING_HAS_CUSTOM_DATA_SHIFT)
+
+#define BATCH_FLAGS_DEFAULT_NORMAL_MAP_USED (1 << 9)
+#define BATCH_FLAGS_DEFAULT_SPECULAR_MAP_USED (1 << 10)
+
+layout(push_constant, std430) uniform Params {
+	uint base_instance_index; // base index to instance data
+	uint sc_packed_0;
+	uint specular_shininess;
+	uint batch_flags;
 }
-draw_data;
+params;
+
+// Specialization constants.
+
+#ifdef UBERSHADER
+
+// Pull the constants from the draw call's push constants.
+uint sc_packed_0() {
+	return params.sc_packed_0;
+}
+
+#else
+
+// Pull the constants from the pipeline's specialization constants.
+layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
+
+uint sc_packed_0() {
+	return pso_sc_packed_0;
+}
+
+#endif
+
+bool sc_use_lighting() {
+	return ((sc_packed_0() >> 0) & 1U) != 0;
+}
 
 // In vulkan, sets should always be ordered using the following logic:
 // Lower Sets: Sets that change format and layout less often
@@ -72,6 +89,8 @@ draw_data;
 // invalidates all the upper ones (as likely internal base offset changes)
 
 /* SET0: Globals */
+
+#define CANVAS_FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR (1 << 0)
 
 // The values passed per draw primitives are cached within it
 
@@ -90,7 +109,7 @@ layout(set = 0, binding = 1, std140) uniform CanvasData {
 
 	uint directional_light_count;
 	float tex_to_sdf;
-	uint pad1;
+	uint flags;
 	uint pad2;
 }
 canvas_data;
@@ -134,10 +153,10 @@ layout(set = 0, binding = 4) uniform texture2D shadow_atlas_texture;
 
 layout(set = 0, binding = 5) uniform sampler shadow_sampler;
 
-layout(set = 0, binding = 6) uniform texture2D screen_texture;
+layout(set = 0, binding = 6) uniform texture2D color_buffer;
 layout(set = 0, binding = 7) uniform texture2D sdf_texture;
 
-layout(set = 0, binding = 8) uniform sampler material_samplers[12];
+#include "samplers_inc.glsl"
 
 layout(set = 0, binding = 9, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
@@ -161,3 +180,8 @@ layout(set = 3, binding = 0) uniform texture2D color_texture;
 layout(set = 3, binding = 1) uniform texture2D normal_texture;
 layout(set = 3, binding = 2) uniform texture2D specular_texture;
 layout(set = 3, binding = 3) uniform sampler texture_sampler;
+
+layout(set = 3, binding = 4, std430) restrict readonly buffer DrawData {
+	InstanceData data[];
+}
+instances;

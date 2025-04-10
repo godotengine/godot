@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  audio_effect_stereo_enhance.cpp                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_effect_stereo_enhance.cpp                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_effect_stereo_enhance.h"
 
@@ -39,34 +39,34 @@ void AudioEffectStereoEnhanceInstance::process(const AudioFrame *p_src_frames, A
 	unsigned int delay_frames = (base->time_pullout / 1000.0) * AudioServer::get_singleton()->get_mix_rate();
 
 	for (int i = 0; i < p_frame_count; i++) {
-		float l = p_src_frames[i].l;
-		float r = p_src_frames[i].r;
+		float left = p_src_frames[i].left;
+		float right = p_src_frames[i].right;
 
-		float center = (l + r) / 2.0f;
+		float center = (left + right) / 2.0f;
 
-		l = (center + (l - center) * intensity);
-		r = (center + (r - center) * intensity);
+		left = (center + (left - center) * intensity);
+		right = (center + (right - center) * intensity);
 
 		if (surround_mode) {
-			float val = (l + r) / 2.0;
+			float val = (left + right) / 2.0;
 
 			delay_ringbuff[ringbuff_pos & ringbuff_mask] = val;
 
 			float out = delay_ringbuff[(ringbuff_pos - delay_frames) & ringbuff_mask] * surround_amount;
 
-			l += out;
-			r += -out;
+			left += out;
+			right += -out;
 		} else {
-			float val = r;
+			float val = right;
 
 			delay_ringbuff[ringbuff_pos & ringbuff_mask] = val;
 
-			//r is delayed
-			r = delay_ringbuff[(ringbuff_pos - delay_frames) & ringbuff_mask];
+			// The right channel is delayed.
+			right = delay_ringbuff[(ringbuff_pos - delay_frames) & ringbuff_mask];
 		}
 
-		p_dst_frames[i].l = l;
-		p_dst_frames[i].r = r;
+		p_dst_frames[i].left = left;
+		p_dst_frames[i].right = right;
 		ringbuff_pos++;
 	}
 }

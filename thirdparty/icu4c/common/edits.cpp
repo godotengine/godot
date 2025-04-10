@@ -35,7 +35,7 @@ const int32_t LENGTH_IN_2TRAIL = 62;
 
 }  // namespace
 
-void Edits::releaseArray() U_NOEXCEPT {
+void Edits::releaseArray() noexcept {
     if (array != stackArray) {
         uprv_free(array);
     }
@@ -47,7 +47,7 @@ Edits &Edits::copyArray(const Edits &other) {
         return *this;
     }
     if (length > capacity) {
-        uint16_t *newArray = (uint16_t *)uprv_malloc((size_t)length * 2);
+        uint16_t* newArray = static_cast<uint16_t*>(uprv_malloc(static_cast<size_t>(length) * 2));
         if (newArray == nullptr) {
             length = delta = numChanges = 0;
             errorCode_ = U_MEMORY_ALLOCATION_ERROR;
@@ -63,7 +63,7 @@ Edits &Edits::copyArray(const Edits &other) {
     return *this;
 }
 
-Edits &Edits::moveArray(Edits &src) U_NOEXCEPT {
+Edits &Edits::moveArray(Edits &src) noexcept {
     if (U_FAILURE(errorCode_)) {
         length = delta = numChanges = 0;
         return *this;
@@ -94,7 +94,7 @@ Edits &Edits::operator=(const Edits &other) {
     return copyArray(other);
 }
 
-Edits &Edits::operator=(Edits &&src) U_NOEXCEPT {
+Edits &Edits::operator=(Edits &&src) noexcept {
     length = src.length;
     delta = src.delta;
     numChanges = src.numChanges;
@@ -106,7 +106,7 @@ Edits::~Edits() {
     releaseArray();
 }
 
-void Edits::reset() U_NOEXCEPT {
+void Edits::reset() noexcept {
     length = delta = numChanges = 0;
     errorCode_ = U_ZERO_ERROR;
 }
@@ -186,30 +186,30 @@ void Edits::addReplace(int32_t oldLength, int32_t newLength) {
             head |= oldLength << 6;
         } else if(oldLength <= 0x7fff) {
             head |= LENGTH_IN_1TRAIL << 6;
-            array[limit++] = (uint16_t)(0x8000 | oldLength);
+            array[limit++] = static_cast<uint16_t>(0x8000 | oldLength);
         } else {
             head |= (LENGTH_IN_2TRAIL + (oldLength >> 30)) << 6;
-            array[limit++] = (uint16_t)(0x8000 | (oldLength >> 15));
-            array[limit++] = (uint16_t)(0x8000 | oldLength);
+            array[limit++] = static_cast<uint16_t>(0x8000 | (oldLength >> 15));
+            array[limit++] = static_cast<uint16_t>(0x8000 | oldLength);
         }
         if(newLength < LENGTH_IN_1TRAIL) {
             head |= newLength;
         } else if(newLength <= 0x7fff) {
             head |= LENGTH_IN_1TRAIL;
-            array[limit++] = (uint16_t)(0x8000 | newLength);
+            array[limit++] = static_cast<uint16_t>(0x8000 | newLength);
         } else {
             head |= LENGTH_IN_2TRAIL + (newLength >> 30);
-            array[limit++] = (uint16_t)(0x8000 | (newLength >> 15));
-            array[limit++] = (uint16_t)(0x8000 | newLength);
+            array[limit++] = static_cast<uint16_t>(0x8000 | (newLength >> 15));
+            array[limit++] = static_cast<uint16_t>(0x8000 | newLength);
         }
-        array[length] = (uint16_t)head;
+        array[length] = static_cast<uint16_t>(head);
         length = limit;
     }
 }
 
 void Edits::append(int32_t r) {
     if(length < capacity || growArray()) {
-        array[length++] = (uint16_t)r;
+        array[length++] = static_cast<uint16_t>(r);
     }
 }
 
@@ -232,8 +232,8 @@ UBool Edits::growArray() {
         errorCode_ = U_INDEX_OUTOFBOUNDS_ERROR;
         return false;
     }
-    uint16_t *newArray = (uint16_t *)uprv_malloc((size_t)newCapacity * 2);
-    if (newArray == NULL) {
+    uint16_t* newArray = static_cast<uint16_t*>(uprv_malloc(static_cast<size_t>(newCapacity) * 2));
+    if (newArray == nullptr) {
         errorCode_ = U_MEMORY_ALLOCATION_ERROR;
         return false;
     }
@@ -415,7 +415,7 @@ int32_t Edits::Iterator::readLength(int32_t head) {
         U_ASSERT(array[index] >= 0x8000);
         U_ASSERT(array[index + 1] >= 0x8000);
         int32_t len = ((head & 1) << 30) |
-                ((int32_t)(array[index] & 0x7fff) << 15) |
+                (static_cast<int32_t>(array[index] & 0x7fff) << 15) |
                 (array[index + 1] & 0x7fff);
         index += 2;
         return len;

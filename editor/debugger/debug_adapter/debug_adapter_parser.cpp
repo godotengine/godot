@@ -1,40 +1,40 @@
-/*************************************************************************/
-/*  debug_adapter_parser.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  debug_adapter_parser.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "debug_adapter_parser.h"
 
+#include "editor/debugger/debug_adapter/debug_adapter_types.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
-#include "editor/editor_node.h"
-#include "editor/editor_run_native.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 void DebugAdapterParser::_bind_methods() {
@@ -45,7 +45,7 @@ void DebugAdapterParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("req_attach", "params"), &DebugAdapterParser::req_attach);
 	ClassDB::bind_method(D_METHOD("req_restart", "params"), &DebugAdapterParser::req_restart);
 	ClassDB::bind_method(D_METHOD("req_terminate", "params"), &DebugAdapterParser::req_terminate);
-	ClassDB::bind_method(D_METHOD("req_configurationDone", "params"), &DebugAdapterParser::prepare_success_response);
+	ClassDB::bind_method(D_METHOD("req_configurationDone", "params"), &DebugAdapterParser::req_configurationDone);
 	ClassDB::bind_method(D_METHOD("req_pause", "params"), &DebugAdapterParser::req_pause);
 	ClassDB::bind_method(D_METHOD("req_continue", "params"), &DebugAdapterParser::req_continue);
 	ClassDB::bind_method(D_METHOD("req_threads", "params"), &DebugAdapterParser::req_threads);
@@ -144,10 +144,8 @@ Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const 
 		// Send all current breakpoints
 		List<String> breakpoints;
 		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
-		for (List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
-			String breakpoint = E->get();
-
-			String path = breakpoint.left(breakpoint.find(":", 6)); // Skip initial part of path, aka "res://"
+		for (const String &breakpoint : breakpoints) {
+			String path = breakpoint.left(breakpoint.find_char(':', 6)); // Skip initial part of path, aka "res://"
 			int line = breakpoint.substr(path.size()).to_int();
 
 			DebugAdapterProtocol::get_singleton()->on_debug_breakpoint_toggled(path, line, true);
@@ -162,7 +160,7 @@ Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const 
 
 Dictionary DebugAdapterParser::req_disconnect(const Dictionary &p_params) const {
 	if (!DebugAdapterProtocol::get_singleton()->get_current_peer()->attached) {
-		EditorNode::get_singleton()->run_stop();
+		EditorRunBar::get_singleton()->stop_playing();
 	}
 
 	return prepare_success_response(p_params);
@@ -181,6 +179,13 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 		DebugAdapterProtocol::get_singleton()->get_current_peer()->supportsCustomData = args["godot/custom_data"];
 	}
 
+	DebugAdapterProtocol::get_singleton()->get_current_peer()->pending_launch = p_params;
+
+	return Dictionary();
+}
+
+Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const {
+	Dictionary args = p_params["arguments"];
 	ScriptEditorDebugger *dbg = EditorDebuggerNode::get_singleton()->get_default_debugger();
 	if ((bool)args["noDebug"] != dbg->is_skip_breakpoints()) {
 		dbg->debug_skip_breakpoints();
@@ -188,7 +193,7 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 
 	String platform_string = args.get("platform", "host");
 	if (platform_string == "host") {
-		EditorNode::get_singleton()->run_play();
+		EditorRunBar::get_singleton()->play_main_scene();
 	} else {
 		int device = args.get("device", -1);
 		int idx = -1;
@@ -212,8 +217,8 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 			return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN_PLATFORM);
 		}
 
-		EditorNode *editor = EditorNode::get_singleton();
-		Error err = platform_string == "android" ? editor->run_play_native(device, idx) : editor->run_play_native(-1, idx);
+		EditorRunBar *run_bar = EditorRunBar::get_singleton();
+		Error err = platform_string == "android" ? run_bar->start_native_device(device * 10000 + idx) : run_bar->start_native_device(idx);
 		if (err) {
 			if (err == ERR_INVALID_PARAMETER && platform_string == "android") {
 				return prepare_error_response(p_params, DAP::ErrorType::MISSING_DEVICE);
@@ -247,7 +252,7 @@ Dictionary DebugAdapterParser::req_restart(const Dictionary &p_params) const {
 	args = args["arguments"];
 	params["arguments"] = args;
 
-	Dictionary response = DebugAdapterProtocol::get_singleton()->get_current_peer()->attached ? req_attach(params) : req_launch(params);
+	Dictionary response = DebugAdapterProtocol::get_singleton()->get_current_peer()->attached ? req_attach(params) : _launch_process(params);
 	if (!response["success"]) {
 		response["command"] = p_params["command"];
 		return response;
@@ -257,13 +262,23 @@ Dictionary DebugAdapterParser::req_restart(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_terminate(const Dictionary &p_params) const {
-	EditorNode::get_singleton()->run_stop();
+	EditorRunBar::get_singleton()->stop_playing();
+
+	return prepare_success_response(p_params);
+}
+
+Dictionary DebugAdapterParser::req_configurationDone(const Dictionary &p_params) const {
+	Ref<DAPeer> peer = DebugAdapterProtocol::get_singleton()->get_current_peer();
+	if (!peer->pending_launch.is_empty()) {
+		peer->res_queue.push_back(_launch_process(peer->pending_launch));
+		peer->pending_launch.clear();
+	}
 
 	return prepare_success_response(p_params);
 }
 
 Dictionary DebugAdapterParser::req_pause(const Dictionary &p_params) const {
-	EditorNode::get_singleton()->get_pause_button()->set_pressed(true);
+	EditorRunBar::get_singleton()->get_pause_button()->set_pressed(true);
 	EditorDebuggerNode::get_singleton()->_paused();
 
 	DebugAdapterProtocol::get_singleton()->notify_stopped_paused();
@@ -272,7 +287,7 @@ Dictionary DebugAdapterParser::req_pause(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_continue(const Dictionary &p_params) const {
-	EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
+	EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
 	EditorDebuggerNode::get_singleton()->_paused();
 
 	DebugAdapterProtocol::get_singleton()->notify_continued();
@@ -284,12 +299,11 @@ Dictionary DebugAdapterParser::req_threads(const Dictionary &p_params) const {
 	Dictionary response = prepare_success_response(p_params), body;
 	response["body"] = body;
 
-	Array arr;
 	DAP::Thread thread;
 
 	thread.id = 1; // Hardcoded because Godot only supports debugging one thread at the moment
 	thread.name = "Main";
-	arr.push_back(thread.to_json());
+	Array arr = { thread.to_json() };
 	body["threads"] = arr;
 
 	return response;
@@ -308,8 +322,7 @@ Dictionary DebugAdapterParser::req_stackTrace(const Dictionary &p_params) const 
 
 	Array arr;
 	DebugAdapterProtocol *dap = DebugAdapterProtocol::get_singleton();
-	for (const KeyValue<DAP::StackFrame, List<int>> &E : dap->stackframe_list) {
-		DAP::StackFrame sf = E.key;
+	for (DAP::StackFrame sf : dap->stackframe_list) {
 		if (!lines_at_one) {
 			sf.line--;
 		}
@@ -341,6 +354,12 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 		return prepare_error_response(p_params, DAP::ErrorType::WRONG_PATH, variables);
 	}
 
+	// If path contains \, it's a Windows path, so we need to convert it to /, and make the drive letter uppercase
+	if (source.path.contains_char('\\')) {
+		source.path = source.path.replace("\\", "/");
+		source.path = source.path.substr(0, 1).to_upper() + source.path.substr(1);
+	}
+
 	Array breakpoints = args["breakpoints"], lines;
 	for (int i = 0; i < breakpoints.size(); i++) {
 		DAP::SourceBreakpoint breakpoint;
@@ -349,6 +368,8 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 		lines.push_back(breakpoint.line + !lines_at_one);
 	}
 
+	// Always update the source checksum for the requested path, as it might have been modified externally.
+	DebugAdapterProtocol::get_singleton()->update_source(source.path);
 	Array updated_breakpoints = DebugAdapterProtocol::get_singleton()->update_breakpoints(source.path, lines);
 	body["breakpoints"] = updated_breakpoints;
 
@@ -360,13 +381,12 @@ Dictionary DebugAdapterParser::req_breakpointLocations(const Dictionary &p_param
 	response["body"] = body;
 	Dictionary args = p_params["arguments"];
 
-	Array locations;
 	DAP::BreakpointLocation location;
 	location.line = args["line"];
 	if (args.has("endLine")) {
 		location.endLine = args["endLine"];
 	}
-	locations.push_back(location.to_json());
+	Array locations = { location.to_json() };
 
 	body["breakpoints"] = locations;
 	return response;
@@ -380,14 +400,13 @@ Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
 	int frame_id = args["frameId"];
 	Array scope_list;
 
-	DAP::StackFrame frame;
-	frame.id = frame_id;
-	HashMap<DAP::StackFrame, List<int>, DAP::StackFrame>::Iterator E = DebugAdapterProtocol::get_singleton()->stackframe_list.find(frame);
+	HashMap<DebugAdapterProtocol::DAPStackFrameID, Vector<int>>::Iterator E = DebugAdapterProtocol::get_singleton()->scope_list.find(frame_id);
 	if (E) {
-		ERR_FAIL_COND_V(E->value.size() != 3, prepare_error_response(p_params, DAP::ErrorType::UNKNOWN));
-		for (int i = 0; i < 3; i++) {
+		const Vector<int> &scope_ids = E->value;
+		ERR_FAIL_COND_V(scope_ids.size() != 3, prepare_error_response(p_params, DAP::ErrorType::UNKNOWN));
+		for (int i = 0; i < 3; ++i) {
 			DAP::Scope scope;
-			scope.variablesReference = E->value[i];
+			scope.variablesReference = scope_ids[i];
 			switch (i) {
 				case 0:
 					scope.name = "Locals";
@@ -419,26 +438,34 @@ Dictionary DebugAdapterParser::req_variables(const Dictionary &p_params) const {
 		return Dictionary();
 	}
 
-	Dictionary response = prepare_success_response(p_params), body;
-	response["body"] = body;
-
 	Dictionary args = p_params["arguments"];
 	int variable_id = args["variablesReference"];
 
-	HashMap<int, Array>::Iterator E = DebugAdapterProtocol::get_singleton()->variable_list.find(variable_id);
+	if (HashMap<int, Array>::Iterator E = DebugAdapterProtocol::get_singleton()->variable_list.find(variable_id); E) {
+		Dictionary response = prepare_success_response(p_params);
+		Dictionary body;
+		response["body"] = body;
 
-	if (E) {
 		if (!DebugAdapterProtocol::get_singleton()->get_current_peer()->supportsVariableType) {
 			for (int i = 0; i < E->value.size(); i++) {
 				Dictionary variable = E->value[i];
 				variable.erase("type");
 			}
 		}
+
 		body["variables"] = E ? E->value : Array();
 		return response;
 	} else {
-		return Dictionary();
+		// If the requested variable is an object, it needs to be requested from the debuggee.
+		ObjectID object_id = DebugAdapterProtocol::get_singleton()->search_object_id(variable_id);
+
+		if (object_id.is_null()) {
+			return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN);
+		}
+
+		DebugAdapterProtocol::get_singleton()->request_remote_object(object_id);
 	}
+	return Dictionary();
 }
 
 Dictionary DebugAdapterParser::req_next(const Dictionary &p_params) const {
@@ -456,15 +483,27 @@ Dictionary DebugAdapterParser::req_stepIn(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
-	Dictionary response = prepare_success_response(p_params), body;
-	response["body"] = body;
-
 	Dictionary args = p_params["arguments"];
+	String expression = args["expression"];
+	int frame_id = args.has("frameId") ? static_cast<int>(args["frameId"]) : DebugAdapterProtocol::get_singleton()->_current_frame;
 
-	String value = EditorDebuggerNode::get_singleton()->get_var_value(args["expression"]);
-	body["result"] = value;
+	if (HashMap<String, DAP::Variable>::Iterator E = DebugAdapterProtocol::get_singleton()->eval_list.find(expression); E) {
+		Dictionary response = prepare_success_response(p_params);
+		Dictionary body;
+		response["body"] = body;
 
-	return response;
+		DAP::Variable var = E->value;
+
+		body["result"] = var.value;
+		body["variablesReference"] = var.variablesReference;
+
+		// Since an evaluation can alter the state of the debuggee, they are volatile, and should only be used once
+		DebugAdapterProtocol::get_singleton()->eval_list.erase(E->key);
+		return response;
+	} else {
+		DebugAdapterProtocol::get_singleton()->request_remote_evaluate(expression, frame_id);
+	}
+	return Dictionary();
 }
 
 Dictionary DebugAdapterParser::req_godot_put_msg(const Dictionary &p_params) const {
@@ -551,8 +590,7 @@ Dictionary DebugAdapterParser::ev_stopped_breakpoint(const int &p_id) const {
 	body["reason"] = "breakpoint";
 	body["description"] = "Breakpoint";
 
-	Array breakpoints;
-	breakpoints.push_back(p_id);
+	Array breakpoints = { p_id };
 	body["hitBreakpointIds"] = breakpoints;
 
 	return event;
@@ -578,12 +616,12 @@ Dictionary DebugAdapterParser::ev_continued() const {
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_output(const String &p_message) const {
+Dictionary DebugAdapterParser::ev_output(const String &p_message, RemoteDebugger::MessageType p_type) const {
 	Dictionary event = prepare_base_event(), body;
 	event["event"] = "output";
 	event["body"] = body;
 
-	body["category"] = "stdout";
+	body["category"] = (p_type == RemoteDebugger::MessageType::MESSAGE_TYPE_ERROR) ? "stderr" : "stdout";
 	body["output"] = p_message + "\r\n";
 
 	return event;

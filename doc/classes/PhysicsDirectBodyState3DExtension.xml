@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectBodyState3DExtension" inherits="PhysicsDirectBodyState3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsDirectBodyState3DExtension" inherits="PhysicsDirectBodyState3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Provides virtual methods that can be overridden to create custom [PhysicsDirectBodyState3D] implementations.
 	</brief_description>
 	<description>
+		This class extends [PhysicsDirectBodyState3D] by providing additional virtual methods that can be overridden. When these methods are overridden, they will be called instead of the internal methods of the physics server.
+		Intended for use with GDExtension to create custom implementations of [PhysicsDirectBodyState3D].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -131,7 +134,7 @@
 			</description>
 		</method>
 		<method name="_get_contact_impulse" qualifiers="virtual const">
-			<return type="float" />
+			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
@@ -150,6 +153,12 @@
 		</method>
 		<method name="_get_contact_local_shape" qualifiers="virtual const">
 			<return type="int" />
+			<param index="0" name="contact_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_contact_local_velocity_at_position" qualifiers="virtual const">
+			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>

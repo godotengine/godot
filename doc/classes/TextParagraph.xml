@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextParagraph" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TextParagraph" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Holds a paragraph of text.
 	</brief_description>
 	<description>
-		Abstraction over [TextServer] for handling paragraph of text.
+		Abstraction over [TextServer] for handling a single paragraph of text.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -122,6 +122,12 @@
 				Returns drop cap bounding box size.
 			</description>
 		</method>
+		<method name="get_inferred_direction" qualifiers="const">
+			<return type="int" enum="TextServer.Direction" />
+			<description>
+				Returns the text writing direction inferred by the BiDi algorithm.
+			</description>
+		</method>
 		<method name="get_line_ascent" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="line" type="int" />
@@ -175,7 +181,7 @@
 			<return type="Vector2" />
 			<param index="0" name="line" type="int" />
 			<description>
-				Returns size of the bounding box of the line of text.
+				Returns size of the bounding box of the line of text. Returned size is rounded up.
 			</description>
 		</method>
 		<method name="get_line_underline_position" qualifiers="const">
@@ -203,6 +209,12 @@
 			<return type="Vector2" />
 			<description>
 				Returns the size of the bounding box of the paragraph, without line breaks.
+			</description>
+		</method>
+		<method name="get_range" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the character range of the paragraph.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -265,7 +277,7 @@
 		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="HorizontalAlignment" default="0">
 			Paragraph horizontal alignment.
 		</member>
-		<member name="break_flags" type="int" setter="set_break_flags" getter="get_break_flags" enum="TextServer.LineBreakFlag" default="3">
+		<member name="break_flags" type="int" setter="set_break_flags" getter="get_break_flags" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3">
 			Line breaking rules. For more info see [TextServer].
 		</member>
 		<member name="custom_punctuation" type="String" setter="set_custom_punctuation" getter="get_custom_punctuation" default="&quot;&quot;">
@@ -274,8 +286,14 @@
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.
 		</member>
-		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" default="3">
-			Line alignment rules. For more info see [TextServer].
+		<member name="ellipsis_char" type="String" setter="set_ellipsis_char" getter="get_ellipsis_char" default="&quot;…&quot;">
+			Ellipsis character used for text clipping.
+		</member>
+		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
+			Line fill alignment rules. See [enum TextServer.JustificationFlag] for more information.
+		</member>
+		<member name="line_spacing" type="float" setter="set_line_spacing" getter="get_line_spacing" default="0.0">
+			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
 		</member>
 		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">
 			Limits the lines of text shown.

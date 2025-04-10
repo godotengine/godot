@@ -112,7 +112,7 @@ public:
     /**
      * Clone this object.
      * Clones can be used concurrently in multiple threads.
-     * If an error occurs, then NULL is returned.
+     * If an error occurs, then nullptr is returned.
      * The caller must delete the clone.
      *
      * @return a clone of this object
@@ -129,7 +129,7 @@ public:
      * @return the current index.
      * @stable ICU 2.0
      */
-    inline int32_t getIndex(void) const;
+    inline int32_t getIndex() const;
 
     /**
      * Set the current parse position.
@@ -152,7 +152,7 @@ public:
      * error index has not been set.
      * @stable ICU 2.0
      */
-    inline int32_t getErrorIndex(void) const;
+    inline int32_t getErrorIndex() const;
 
     /**
      * ICU "poor man's RTTI", returns a UClassID for this class.

@@ -1,0 +1,268 @@
+# Russian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-03-02 14:19+0000\n"
+"Last-Translator: Artem <artemka.hvostov@yandex.ru>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ru/>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "All Recognized"
+msgstr "Все разрешённые"
+
+msgid "New Code Region"
+msgstr "Новая область кода"
+
+msgid "Pick a color from the screen."
+msgstr "Взять цвет с экрана."
+
+msgid "Pick a color from the application window."
+msgstr "Выберите цвет в окне приложения."
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+"Цвет: #%s\n"
+"ЛКМ: Применить цвет\n"
+"ПКМ: Удалить пресет"
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color"
+msgstr ""
+"Цвет: #%s\n"
+"ЛКМ: Применить цвет"
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr ""
+"Введите шестнадцатеричный код (\"#ff0000\") или названный цвет (\"red\")."
+
+msgid "Select a picker shape."
+msgstr "Выберите форму виджета."
+
+msgid "Select a picker mode."
+msgstr "Выберите режим виджета."
+
+msgid "Hex code or named color"
+msgstr "Шестнадцатеричный код или названный цвет"
+
+msgid "Add current color as a preset."
+msgstr "Добавить текущий цвет как пресет."
+
+msgid "Network"
+msgstr "Сеть"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Файл \"%s\" уже существует.\n"
+"Перезаписать файл?"
+
+msgid "Open"
+msgstr "Открыть"
+
+msgid "Select Current Folder"
+msgstr "Выбрать текущую папку"
+
+msgid "Save"
+msgstr "Сохранить"
+
+msgid "Select This Folder"
+msgstr "Выбрать эту папку"
+
+msgid "You don't have permission to access contents of this folder."
+msgstr "У вас нет прав для доступа к содержимому этой папки."
+
+msgid "All Files"
+msgstr "Все файлы"
+
+msgid "Open a File"
+msgstr "Открыть файл"
+
+msgid "Open File(s)"
+msgstr "Открыть файл(ы)"
+
+msgid "Open a Directory"
+msgstr "Открыть каталог"
+
+msgid "Open a File or Directory"
+msgstr "Открыть каталог или файл"
+
+msgid "Save a File"
+msgstr "Сохранить файл"
+
+msgid "Go to previous folder."
+msgstr "Перейти к предыдущей папке."
+
+msgid "Go to next folder."
+msgstr "Перейти к следующей папке."
+
+msgid "Go to parent folder."
+msgstr "Перейти к родительской папке."
+
+msgid "Path:"
+msgstr "Путь:"
+
+msgid "Refresh files."
+msgstr "Обновить файлы."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Переключить видимость скрытых файлов."
+
+msgid "Directories & Files:"
+msgstr "Каталоги и файлы:"
+
+msgid "File:"
+msgstr "Файл:"
+
+msgid "Create Folder"
+msgstr "Создать папку"
+
+msgid "Name:"
+msgstr "Имя:"
+
+msgid "Could not create folder."
+msgstr "Невозможно создать папку."
+
+msgid "Invalid extension, or empty filename."
+msgstr "Недопустимое расширение или пустое имя файла."
+
+msgid "Zoom Out"
+msgstr "Отдалить"
+
+msgid "Zoom Reset"
+msgstr "Сбросить масштабирование"
+
+msgid "Zoom In"
+msgstr "Приблизить"
+
+msgid "Toggle the visual grid."
+msgstr "Переключить видимую сетку."
+
+msgid "Toggle snapping to the grid."
+msgstr "Переключить привязку к сетке."
+
+msgid "Change the snapping distance."
+msgstr "Измените расстояние привязки."
+
+msgid "Toggle the graph minimap."
+msgstr "Переключить миникарту графа."
+
+msgid "Automatically arrange selected nodes."
+msgstr "Автоматически располагать выбранные узлы."
+
+msgid "Same as Layout Direction"
+msgstr "То же, что и направление макета"
+
+msgid "Auto-Detect Direction"
+msgstr "Автоопределение направления"
+
+msgid "Left-to-Right"
+msgstr "Слева направо"
+
+msgid "Right-to-Left"
+msgstr "Справа налево"
+
+msgid "Left-to-Right Mark (LRM)"
+msgstr "Писать слева направо (LRM)"
+
+msgid "Right-to-Left Mark (RLM)"
+msgstr "Писать справа налево (RLM)"
+
+msgid "Start of Left-to-Right Embedding (LRE)"
+msgstr ""
+"Начало текста, написанного слева направо, внутри текста, написанного справа "
+"налево (LRE)"
+
+msgid "Start of Right-to-Left Embedding (RLE)"
+msgstr ""
+"Начало текста, написанного справа налево, внутри текста, написанного слева "
+"направо (RLE)"
+
+msgid "Start of Left-to-Right Override (LRO)"
+msgstr ""
+"Начать замену текста, написанного слева направо, текстом, написанным справа "
+"налево (LRO)"
+
+msgid "Start of Right-to-Left Override (RLO)"
+msgstr ""
+"Начать замену текста, написанного справа налево, текстом, написанным слева "
+"направо (RLO)"
+
+msgid "Pop Direction Formatting (PDF)"
+msgstr "Конец вставленного текста с другим направлением (PDF)"
+
+msgid "Arabic Letter Mark (ALM)"
+msgstr "Знак арабского письма (ALM)"
+
+msgid "Left-to-Right Isolate (LRI)"
+msgstr "Разделитель слева-направо (LRI)"
+
+msgid "Right-to-Left Isolate (RLI)"
+msgstr "Разделитель справа-налево (RLI)"
+
+msgid "First Strong Isolate (FSI)"
+msgstr "Первый усиленный разделитель (FSI)"
+
+msgid "Pop Direction Isolate (PDI)"
+msgstr "Конец изолированного текста с другим направлением (PDI)"
+
+msgid "Zero-Width Joiner (ZWJ)"
+msgstr "Разрешающий образования лигатур символ (ZWJ)"
+
+msgid "Zero-Width Non-Joiner (ZWNJ)"
+msgstr "Запрещающий образования лигатур символ (ZWNJ)"
+
+msgid "Word Joiner (WJ)"
+msgstr "Cоединитель слов (WJ)"
+
+msgid "Soft Hyphen (SHY)"
+msgstr "Мягкий перенос (SHY)"
+
+msgid "Cut"
+msgstr "Вырезать"
+
+msgid "Copy"
+msgstr "Копировать"
+
+msgid "Paste"
+msgstr "Вставить"
+
+msgid "Select All"
+msgstr "Выделить всё"
+
+msgid "Clear"
+msgstr "Очистить"
+
+msgid "Undo"
+msgstr "Отменить"
+
+msgid "Redo"
+msgstr "Повторить"
+
+msgid "Text Writing Direction"
+msgstr "Направление написания текста"
+
+msgid "Display Control Characters"
+msgstr "Отображать управляющие символы"
+
+msgid "Insert Control Character"
+msgstr "Вставить управляющий символ"
+
+msgid "(Other)"
+msgstr "(Другие)"

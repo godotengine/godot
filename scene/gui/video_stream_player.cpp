@@ -1,37 +1,36 @@
-/*************************************************************************/
-/*  video_stream_player.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  video_stream_player.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "video_stream_player.h"
 
 #include "core/os/os.h"
-#include "scene/scene_string_names.h"
 #include "servers/audio_server.h"
 
 int VideoStreamPlayer::sp_get_channel_count() const {
@@ -82,10 +81,10 @@ void VideoStreamPlayer::_mix_audios(void *p_self) {
 
 // Called from audio thread
 void VideoStreamPlayer::_mix_audio() {
-	if (!stream.is_valid()) {
+	if (stream.is_null()) {
 		return;
 	}
-	if (!playback.is_valid() || !playback->is_playing() || playback->is_paused()) {
+	if (playback.is_null() || !playback->is_playing() || playback->is_paused()) {
 		return;
 	}
 
@@ -103,7 +102,7 @@ void VideoStreamPlayer::_mix_audio() {
 
 	if (cc == 1) {
 		AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 0);
-		ERR_FAIL_COND(!target);
+		ERR_FAIL_NULL(target);
 
 		for (int j = 0; j < buffer_size; j++) {
 			target[j] += buffer[j] * vol;
@@ -114,7 +113,7 @@ void VideoStreamPlayer::_mix_audio() {
 
 		for (int k = 0; k < cc; k++) {
 			targets[k] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, k);
-			ERR_FAIL_COND(!targets[k]);
+			ERR_FAIL_NULL(targets[k]);
 		}
 
 		for (int j = 0; j < buffer_size; j++) {
@@ -128,6 +127,13 @@ void VideoStreamPlayer::_mix_audio() {
 
 void VideoStreamPlayer::_notification(int p_notification) {
 	switch (p_notification) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_VIDEO);
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			AudioServer::get_singleton()->add_mix_callback(_mix_audios, this);
 
@@ -137,6 +143,7 @@ void VideoStreamPlayer::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			stop();
 			AudioServer::get_singleton()->remove_mix_callback(_mix_audios, this);
 		} break;
 
@@ -159,7 +166,12 @@ void VideoStreamPlayer::_notification(int p_notification) {
 			playback->update(delta); // playback->is_playing() returns false in the last video frame
 
 			if (!playback->is_playing()) {
-				emit_signal(SceneStringNames::get_singleton()->finished);
+				resampler.flush();
+				if (loop) {
+					play();
+					return;
+				}
+				emit_signal(SceneStringName(finished));
 			}
 		} break;
 
@@ -171,10 +183,11 @@ void VideoStreamPlayer::_notification(int p_notification) {
 				return;
 			}
 
-			Size2 s = expand ? get_size() : texture->get_size();
+			Size2 s = expand ? get_size() : texture_size;
 			draw_texture_rect(texture, Rect2(Point2(), s), false);
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (is_playing() && !is_paused()) {
 				paused_from_tree = true;
@@ -185,6 +198,13 @@ void VideoStreamPlayer::_notification(int p_notification) {
 				last_audio_time = 0;
 			}
 		} break;
+
+		case NOTIFICATION_UNSUSPENDED: {
+			if (get_tree()->is_paused()) {
+				break;
+			}
+			[[fallthrough]];
+		}
 
 		case NOTIFICATION_UNPAUSED: {
 			if (paused_from_tree) {
@@ -199,9 +219,25 @@ void VideoStreamPlayer::_notification(int p_notification) {
 	}
 }
 
+void VideoStreamPlayer::texture_changed(const Ref<Texture2D> &p_texture) {
+	const Size2 new_texture_size = p_texture.is_valid() ? p_texture->get_size() : Size2();
+
+	if (new_texture_size == texture_size) {
+		return;
+	}
+
+	texture_size = new_texture_size;
+
+	queue_redraw();
+
+	if (!expand) {
+		update_minimum_size();
+	}
+}
+
 Size2 VideoStreamPlayer::get_minimum_size() const {
-	if (!expand && !texture.is_null()) {
-		return texture->get_size();
+	if (!expand && texture.is_valid()) {
+		return texture_size;
 	} else {
 		return Size2();
 	}
@@ -221,8 +257,22 @@ bool VideoStreamPlayer::has_expand() const {
 	return expand;
 }
 
+void VideoStreamPlayer::set_loop(bool p_loop) {
+	loop = p_loop;
+}
+
+bool VideoStreamPlayer::has_loop() const {
+	return loop;
+}
+
 void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	stop();
+
+	// Make sure to handle stream changes seamlessly, e.g. when done via
+	// translation remapping.
+	if (stream.is_valid()) {
+		stream->disconnect_changed(callable_mp(this, &VideoStreamPlayer::set_stream));
+	}
 
 	AudioServer::get_singleton()->lock();
 	mix_buffer.resize(AudioServer::get_singleton()->thread_get_mix_buffer_size());
@@ -235,10 +285,22 @@ void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	}
 	AudioServer::get_singleton()->unlock();
 
-	if (!playback.is_null()) {
-		playback->set_loop(loops);
+	if (stream.is_valid()) {
+		stream->connect_changed(callable_mp(this, &VideoStreamPlayer::set_stream).bind(stream));
+	}
+
+	if (texture.is_valid()) {
+		texture->disconnect_changed(callable_mp(this, &VideoStreamPlayer::texture_changed));
+	}
+
+	if (playback.is_valid()) {
 		playback->set_paused(paused);
 		texture = playback->get_texture();
+
+		if (texture.is_valid()) {
+			texture_size = texture->get_size();
+			texture->connect_changed(callable_mp(this, &VideoStreamPlayer::texture_changed).bind(texture));
+		}
 
 		const int channels = playback->get_channels();
 
@@ -281,6 +343,9 @@ void VideoStreamPlayer::play() {
 	playback->play();
 	set_process_internal(true);
 	last_audio_time = 0;
+
+	// We update the playback to render the first frame immediately.
+	playback->update(0);
 
 	if (!can_process()) {
 		_notification(NOTIFICATION_PAUSED);
@@ -344,6 +409,12 @@ int VideoStreamPlayer::get_buffering_msec() const {
 
 void VideoStreamPlayer::set_audio_track(int p_track) {
 	audio_track = p_track;
+	if (stream.is_valid()) {
+		stream->set_audio_track(audio_track);
+	}
+	if (playback.is_valid()) {
+		playback->set_audio_track(audio_track);
+	}
 }
 
 int VideoStreamPlayer::get_audio_track() const {
@@ -379,6 +450,13 @@ String VideoStreamPlayer::get_stream_name() const {
 		return "<No Stream>";
 	}
 	return stream->get_name();
+}
+
+double VideoStreamPlayer::get_stream_length() const {
+	if (playback.is_null()) {
+		return 0;
+	}
+	return playback->get_length();
 }
 
 double VideoStreamPlayer::get_stream_position() const {
@@ -423,7 +501,7 @@ StringName VideoStreamPlayer::get_bus() const {
 			return bus;
 		}
 	}
-	return "Master";
+	return SceneStringName(Master);
 }
 
 void VideoStreamPlayer::_validate_property(PropertyInfo &p_property) const {
@@ -453,6 +531,9 @@ void VideoStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_paused", "paused"), &VideoStreamPlayer::set_paused);
 	ClassDB::bind_method(D_METHOD("is_paused"), &VideoStreamPlayer::is_paused);
 
+	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &VideoStreamPlayer::set_loop);
+	ClassDB::bind_method(D_METHOD("has_loop"), &VideoStreamPlayer::has_loop);
+
 	ClassDB::bind_method(D_METHOD("set_volume", "volume"), &VideoStreamPlayer::set_volume);
 	ClassDB::bind_method(D_METHOD("get_volume"), &VideoStreamPlayer::get_volume);
 
@@ -463,6 +544,7 @@ void VideoStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_audio_track"), &VideoStreamPlayer::get_audio_track);
 
 	ClassDB::bind_method(D_METHOD("get_stream_name"), &VideoStreamPlayer::get_stream_name);
+	ClassDB::bind_method(D_METHOD("get_stream_length"), &VideoStreamPlayer::get_stream_length);
 
 	ClassDB::bind_method(D_METHOD("set_stream_position", "position"), &VideoStreamPlayer::set_stream_position);
 	ClassDB::bind_method(D_METHOD("get_stream_position"), &VideoStreamPlayer::get_stream_position);
@@ -490,6 +572,7 @@ void VideoStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_paused", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffering_msec", PROPERTY_HINT_RANGE, "10,1000,suffix:ms"), "set_buffering_msec", "get_buffering_msec");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", PROPERTY_USAGE_NONE), "set_stream_position", "get_stream_position");
 

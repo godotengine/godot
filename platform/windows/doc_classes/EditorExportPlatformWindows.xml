@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformWindows" inherits="EditorExportPlatformPC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exporter for Windows.
+	</brief_description>
+	<description>
+		The Windows exporter customizes how a Windows build is handled. In the editor's "Export" window, it is created when adding a new "Windows" preset.
+	</description>
+	<tutorials>
+		<link title="Exporting for Windows">$DOCS_URL/tutorials/export/exporting_for_windows.html</link>
+	</tutorials>
+	<members>
+		<member name="application/company_name" type="String" setter="" getter="">
+			Company that produced the application. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
+		</member>
+		<member name="application/console_wrapper_icon" type="String" setter="" getter="">
+			Console wrapper icon file. If left empty, it will fallback to [member application/icon], then to [member ProjectSettings.application/config/windows_native_icon], and lastly, [member ProjectSettings.application/config/icon].
+		</member>
+		<member name="application/copyright" type="String" setter="" getter="">
+			Copyright notice for the bundle visible to the user. Optional. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
+		</member>
+		<member name="application/d3d12_agility_sdk_multiarch" type="bool" setter="" getter="">
+			If [code]true[/code], and [member application/export_d3d12] is set, the Agility SDK DLLs will be stored in arch-specific subdirectories.
+		</member>
+		<member name="application/export_angle" type="int" setter="" getter="">
+			If set to [code]1[/code], ANGLE libraries are exported with the exported application. If set to [code]0[/code], ANGLE libraries are exported only if [member ProjectSettings.rendering/gl_compatibility/driver] is set to [code]"opengl3_angle"[/code].
+		</member>
+		<member name="application/export_d3d12" type="int" setter="" getter="">
+			If set to [code]1[/code], the Direct3D 12 runtime libraries (Agility SDK, PIX) are exported with the exported application. If set to [code]0[/code], Direct3D 12 libraries are exported only if [member ProjectSettings.rendering/rendering_device/driver] is set to [code]"d3d12"[/code].
+		</member>
+		<member name="application/file_description" type="String" setter="" getter="">
+			File description to be presented to users. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
+		</member>
+		<member name="application/file_version" type="String" setter="" getter="">
+			Version number of the file. Falls back to [member ProjectSettings.application/config/version] if left empty. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
+		</member>
+		<member name="application/icon" type="String" setter="" getter="">
+			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/windows_native_icon], and then to [member ProjectSettings.application/config/icon].
+		</member>
+		<member name="application/icon_interpolation" type="int" setter="" getter="">
+			Interpolation method used to resize application icon.
+		</member>
+		<member name="application/modify_resources" type="bool" setter="" getter="">
+			If enabled, icon and metadata of the exported executable is set according to the other [code]application/*[/code] values.
+		</member>
+		<member name="application/product_name" type="String" setter="" getter="">
+			Name of the application. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
+		</member>
+		<member name="application/product_version" type="String" setter="" getter="">
+			Application version visible to the user. Falls back to [member ProjectSettings.application/config/version] if left empty. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
+		</member>
+		<member name="application/trademarks" type="String" setter="" getter="">
+			Trademarks and registered trademarks that apply to the file. Optional. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
+		</member>
+		<member name="binary_format/architecture" type="String" setter="" getter="">
+			Application executable architecture.
+			Supported architectures: [code]x86_32[/code], [code]x86_64[/code], and [code]arm64[/code].
+		</member>
+		<member name="binary_format/embed_pck" type="bool" setter="" getter="">
+			If [code]true[/code], project resources are embedded into the executable.
+		</member>
+		<member name="codesign/custom_options" type="PackedStringArray" setter="" getter="">
+			Array of the additional command line arguments passed to the code signing tool. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
+		</member>
+		<member name="codesign/description" type="String" setter="" getter="">
+			Description of the signed content. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
+		</member>
+		<member name="codesign/digest_algorithm" type="int" setter="" getter="">
+			Digest algorithm to use for creating signature. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
+		</member>
+		<member name="codesign/enable" type="bool" setter="" getter="">
+			If [code]true[/code], executable signing is enabled.
+		</member>
+		<member name="codesign/identity" type="String" setter="" getter="">
+			PKCS #12 certificate file used to sign executable or certificate SHA-1 hash (if [member codesign/identity_type] is set to "Use certificate store"). See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
+			Can be overridden with the environment variable [code]GODOT_WINDOWS_CODESIGN_IDENTITY[/code].
+		</member>
+		<member name="codesign/identity_type" type="int" setter="" getter="">
+			Type of identity to use. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
+			Can be overridden with the environment variable [code]GODOT_WINDOWS_CODESIGN_IDENTITY_TYPE[/code].
+		</member>
+		<member name="codesign/password" type="String" setter="" getter="">
+			Password for the certificate file used to sign executable. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
+			Can be overridden with the environment variable [code]GODOT_WINDOWS_CODESIGN_PASSWORD[/code].
+		</member>
+		<member name="codesign/timestamp" type="bool" setter="" getter="">
+			If [code]true[/code], time-stamp is added to the signature. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
+		</member>
+		<member name="codesign/timestamp_server_url" type="String" setter="" getter="">
+			URL of the time stamp server. If left empty, the default server is used. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
+		</member>
+		<member name="custom_template/debug" type="String" setter="" getter="">
+			Path to the custom export template. If left empty, default template is used.
+		</member>
+		<member name="custom_template/release" type="String" setter="" getter="">
+			Path to the custom export template. If left empty, default template is used.
+		</member>
+		<member name="debug/export_console_wrapper" type="int" setter="" getter="">
+			If [code]true[/code], a console wrapper executable is exported alongside the main executable, which allows running the project with enabled console output.
+		</member>
+		<member name="ssh_remote_deploy/cleanup_script" type="String" setter="" getter="">
+			Script code to execute on the remote host when app is finished.
+			The following variables can be used in the script:
+			- [code]{temp_dir}[/code] - Path of temporary folder on the remote, used to upload app and scripts to.
+			- [code]{archive_name}[/code] - Name of the ZIP containing uploaded application.
+			- [code]{exe_name}[/code] - Name of application executable.
+			- [code]{cmd_args}[/code] - Array of the command line argument for the application.
+		</member>
+		<member name="ssh_remote_deploy/enabled" type="bool" setter="" getter="">
+			Enables remote deploy using SSH/SCP.
+		</member>
+		<member name="ssh_remote_deploy/extra_args_scp" type="String" setter="" getter="">
+			Array of the additional command line arguments passed to the SCP.
+		</member>
+		<member name="ssh_remote_deploy/extra_args_ssh" type="String" setter="" getter="">
+			Array of the additional command line arguments passed to the SSH.
+		</member>
+		<member name="ssh_remote_deploy/host" type="String" setter="" getter="">
+			Remote host SSH user name and address, in [code]user@address[/code] format.
+		</member>
+		<member name="ssh_remote_deploy/port" type="String" setter="" getter="">
+			Remote host SSH port number.
+		</member>
+		<member name="ssh_remote_deploy/run_script" type="String" setter="" getter="">
+			Script code to execute on the remote host when running the app.
+			The following variables can be used in the script:
+			- [code]{temp_dir}[/code] - Path of temporary folder on the remote, used to upload app and scripts to.
+			- [code]{archive_name}[/code] - Name of the ZIP containing uploaded application.
+			- [code]{exe_name}[/code] - Name of application executable.
+			- [code]{cmd_args}[/code] - Array of the command line argument for the application.
+		</member>
+		<member name="texture_format/etc2_astc" type="bool" setter="" getter="">
+			If [code]true[/code], project textures are exported in the ETC2/ASTC format.
+		</member>
+		<member name="texture_format/s3tc_bptc" type="bool" setter="" getter="">
+			If [code]true[/code], project textures are exported in the S3TC/BPTC format.
+		</member>
+	</members>
+</class>

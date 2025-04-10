@@ -38,7 +38,8 @@ typedef biased_subrs_t<CFF1Subrs>   cff1_biased_subrs_t;
 struct cff1_cs_interp_env_t : cs_interp_env_t<number_t, CFF1Subrs>
 {
   template <typename ACC>
-  cff1_cs_interp_env_t (const hb_ubytes_t &str, ACC &acc, unsigned int fd)
+  cff1_cs_interp_env_t (const hb_ubytes_t &str, ACC &acc, unsigned int fd,
+			const int *coords_=nullptr, unsigned int num_coords_=0)
     : SUPER (str, acc.globalSubrs, acc.privateDicts[fd].localSubrs)
   {
     processed_width = false;

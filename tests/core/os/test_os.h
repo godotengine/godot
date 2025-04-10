@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  test_os.h                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_os.h                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef TEST_OS_H
-#define TEST_OS_H
+#pragma once
 
 #include "core/os/os.h"
 
@@ -47,18 +46,40 @@ TEST_CASE("[OS] Environment variables") {
 			OS::get_singleton()->has_environment("HOME"),
 			"The HOME environment variable should be present.");
 #endif
+}
 
-	OS::get_singleton()->set_environment("HELLO", "world");
+TEST_CASE("[OS] UTF-8 environment variables") {
+	String value = String::utf8("hell\xc3\xb6"); // "hellö", UTF-8 encoded
+
+	OS::get_singleton()->set_environment("HELLO", value);
+	String val = OS::get_singleton()->get_environment("HELLO");
 	CHECK_MESSAGE(
-			OS::get_singleton()->get_environment("HELLO") == "world",
+			val == value,
 			"The previously-set HELLO environment variable should return the expected value.");
+	CHECK_MESSAGE(
+			val.length() == 5,
+			"The previously-set HELLO environment variable was decoded as UTF-8 and should have a length of 5.");
+	OS::get_singleton()->unset_environment("HELLO");
+}
+
+TEST_CASE("[OS] Non-UTF-8 environment variables") {
+	String value = String("\xff t\xf6rkylempij\xe4vongahdus"); // hex FF and a Finnish pangram, latin-1
+	OS::get_singleton()->set_environment("HELLO", value);
+	String val = OS::get_singleton()->get_environment("HELLO");
+	CHECK_MESSAGE(
+			val == value,
+			"The previously-set HELLO environment variable should return the expected value.");
+	CHECK_MESSAGE(
+			val.length() == 23,
+			"The previously-set HELLO environment variable was not decoded from Latin-1.");
+	OS::get_singleton()->unset_environment("HELLO");
 }
 
 TEST_CASE("[OS] Command line arguments") {
 	List<String> arguments = OS::get_singleton()->get_cmdline_args();
 	bool found = false;
-	for (int i = 0; i < arguments.size(); i++) {
-		if (arguments[i] == "--test") {
+	for (const String &arg : arguments) {
+		if (arg == "--test") {
 			found = true;
 			break;
 		}
@@ -93,6 +114,7 @@ TEST_CASE("[OS] Ticks") {
 }
 
 TEST_CASE("[OS] Feature tags") {
+#ifdef TOOLS_ENABLED
 	CHECK_MESSAGE(
 			OS::get_singleton()->has_feature("editor"),
 			"The binary has the \"editor\" feature tag.");
@@ -105,6 +127,29 @@ TEST_CASE("[OS] Feature tags") {
 	CHECK_MESSAGE(
 			!OS::get_singleton()->has_feature("template_release"),
 			"The binary does not have the \"template_release\" feature tag.");
+#else
+	CHECK_MESSAGE(
+			!OS::get_singleton()->has_feature("editor"),
+			"The binary does not have the \"editor\" feature tag.");
+	CHECK_MESSAGE(
+			OS::get_singleton()->has_feature("template"),
+			"The binary has the \"template\" feature tag.");
+#ifdef DEBUG_ENABLED
+	CHECK_MESSAGE(
+			OS::get_singleton()->has_feature("template_debug"),
+			"The binary has the \"template_debug\" feature tag.");
+	CHECK_MESSAGE(
+			!OS::get_singleton()->has_feature("template_release"),
+			"The binary does not have the \"template_release\" feature tag.");
+#else
+	CHECK_MESSAGE(
+			!OS::get_singleton()->has_feature("template_debug"),
+			"The binary does not have the \"template_debug\" feature tag.");
+	CHECK_MESSAGE(
+			OS::get_singleton()->has_feature("template_release"),
+			"The binary has the \"template_release\" feature tag.");
+#endif // DEBUG_ENABLED
+#endif // TOOLS_ENABLED
 }
 
 TEST_CASE("[OS] Process ID") {
@@ -117,12 +162,14 @@ TEST_CASE("[OS] Processor count and memory information") {
 	CHECK_MESSAGE(
 			OS::get_singleton()->get_processor_count() >= 1,
 			"The returned processor count should be greater than zero.");
+#ifdef DEBUG_ENABLED
 	CHECK_MESSAGE(
 			OS::get_singleton()->get_static_memory_usage() >= 1,
 			"The returned static memory usage should be greater than zero.");
 	CHECK_MESSAGE(
 			OS::get_singleton()->get_static_memory_peak_usage() >= 1,
 			"The returned static memory peak usage should be greater than zero.");
+#endif // DEBUG_ENABLED
 }
 
 TEST_CASE("[OS] Execute") {
@@ -154,5 +201,3 @@ TEST_CASE("[OS] Execute") {
 }
 
 } // namespace TestOS
-
-#endif // TEST_OS_H

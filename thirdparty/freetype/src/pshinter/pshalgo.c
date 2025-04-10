@@ -4,7 +4,7 @@
  *
  *   PostScript hinting algorithm (body).
  *
- * Copyright (C) 2001-2022 by
+ * Copyright (C) 2001-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used
@@ -516,7 +516,7 @@
             if ( !psh_hint_is_fitted( parent ) )
               psh_hint_align( parent, globals, dimension, glyph );
 
-            /* keep original relation between hints, this is, use the */
+            /* keep original relation between hints, that is, use the */
             /* scaled distance between the centers of the hints to    */
             /* compute the new position                               */
             par_org_center = parent->org_pos + ( parent->org_len >> 1 );
@@ -1118,7 +1118,7 @@
     FT_UInt     n;
     PSH_Point   point = glyph->points;
     FT_Vector*  vec   = glyph->outline->points;
-    char*       tags  = glyph->outline->tags;
+    FT_Byte*    tags  = glyph->outline->tags;
 
 
     for ( n = 0; n < glyph->num_points; n++ )
@@ -1171,8 +1171,8 @@
          FT_QNEW_ARRAY( glyph->contours, outline->n_contours ) )
       goto Exit;
 
-    glyph->num_points   = (FT_UInt)outline->n_points;
-    glyph->num_contours = (FT_UInt)outline->n_contours;
+    glyph->num_points   = outline->n_points;
+    glyph->num_contours = outline->n_contours;
 
     {
       FT_UInt      first = 0, next, n;
@@ -1186,7 +1186,7 @@
         PSH_Point  point;
 
 
-        next  = (FT_UInt)outline->contours[n] + 1;
+        next  = outline->contours[n] + 1;
         count = next - first;
 
         contour->start = points + first;

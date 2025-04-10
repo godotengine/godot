@@ -4,15 +4,15 @@ plugins {
 }
 
 ext {
-    PUBLISH_VERSION = getGodotPublishVersion()
     PUBLISH_ARTIFACT_ID = 'godot'
 }
 
 apply from: "../scripts/publish-module.gradle"
 
 dependencies {
-    implementation libraries.kotlinStdLib
-    implementation libraries.androidxFragment
+    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+
+    testImplementation "junit:junit:4.13.2"
 }
 
 def pathToRootDir = "../../../../"
@@ -40,13 +40,18 @@ android {
         jvmTarget = versions.javaVersion
     }
 
+    buildFeatures {
+        aidl = true
+        buildConfig = true
+    }
+
     buildTypes {
         dev {
             initWith debug
         }
     }
 
-    flavorDimensions "products"
+    flavorDimensions = ["products"]
     productFlavors {
         editor {}
         template {}
@@ -71,6 +76,7 @@ android {
         main {
             manifest.srcFile 'AndroidManifest.xml'
             java.srcDirs = ['src']
+            test.java.srcDirs = ['srcTest/java']
             res.srcDirs = ['res']
             aidl.srcDirs = ['aidl']
             assets.srcDirs = ['assets']
@@ -81,17 +87,9 @@ android {
         release.jniLibs.srcDirs = ['libs/release']
 
         // Editor jni library
+        editorRelease.jniLibs.srcDirs = ['libs/tools/release']
         editorDebug.jniLibs.srcDirs = ['libs/tools/debug']
         editorDev.jniLibs.srcDirs = ['libs/tools/dev']
-    }
-
-    // Disable 'editorRelease'.
-    // The editor can't be used with target=release as debugging tools are then not
-    // included, and it would crash on errors instead of reporting them.
-    variantFilter { variant ->
-        if (variant.name == "editorRelease") {
-            setIgnore(true)
-        }
     }
 
     libraryVariants.all { variant ->
@@ -106,9 +104,15 @@ android {
         }
 
         boolean devBuild = buildType == "dev"
+        boolean debugSymbols = devBuild
+        boolean runTests = devBuild
+        boolean storeRelease = buildType == "release"
+        boolean productionBuild = storeRelease
 
         def sconsTarget = flavorName
         if (sconsTarget == "template") {
+            // Tests are not supported on template builds
+            runTests = false
             switch (buildType) {
                 case "release":
                     sconsTarget += "_release"
@@ -117,7 +121,7 @@ android {
                 case "dev":
                 default:
                     sconsTarget += "_debug"
-                    break;
+                    break
             }
         }
 
@@ -136,10 +140,10 @@ android {
         def sconsExts = (org.gradle.internal.os.OperatingSystem.current().isWindows()
             ? [".bat", ".cmd", ".ps1", ".exe"]
             : [""])
-        logger.lifecycle("Looking for $sconsName executable path")
+        logger.debug("Looking for $sconsName executable path")
         for (ext in sconsExts) {
             String sconsNameExt = sconsName + ext
-            logger.lifecycle("Checking $sconsNameExt")
+            logger.debug("Checking $sconsNameExt")
             sconsExecutableFile = org.gradle.internal.os.OperatingSystem.current().findInPath(sconsNameExt)
             if (sconsExecutableFile != null) {
                 // We're done!
@@ -156,7 +160,7 @@ android {
         if (sconsExecutableFile == null) {
             throw new GradleException("Unable to find executable path for the '$sconsName' command.")
         } else {
-            logger.lifecycle("Found executable path for $sconsName: ${sconsExecutableFile.absolutePath}")
+            logger.debug("Found executable path for $sconsName: ${sconsExecutableFile.absolutePath}")
         }
 
         for (String selectedAbi : selectedAbis) {
@@ -168,7 +172,7 @@ android {
             def taskName = getSconsTaskName(flavorName, buildType, selectedAbi)
             tasks.create(name: taskName, type: Exec) {
                 executable sconsExecutableFile.absolutePath
-                args "--directory=${pathToRootDir}", "platform=android", "dev_mode=${devBuild}", "dev_build=${devBuild}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
+                args "--directory=${pathToRootDir}", "platform=android", "store_release=${storeRelease}", "production=${productionBuild}", "dev_mode=${devBuild}", "dev_build=${devBuild}", "debug_symbols=${debugSymbols}", "tests=${runTests}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
             }
 
             // Schedule the tasks so the generated libs are present before the aar file is packaged.

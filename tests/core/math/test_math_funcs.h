@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  test_math_funcs.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_math_funcs.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef TEST_MATH_FUNCS_H
-#define TEST_MATH_FUNCS_H
+#pragma once
 
 #include "tests/test_macros.h"
 
@@ -47,13 +46,15 @@ TEST_CASE("[Math] C++ macros") {
 	// `max` is lower than `min`.
 	CHECK(CLAMP(620, 600, 50) == 50);
 
-	CHECK(ABS(-5) == 5);
-	CHECK(ABS(0) == 0);
-	CHECK(ABS(5) == 5);
+	CHECK(Math::abs(-5) == 5);
+	CHECK(Math::abs(0) == 0);
+	CHECK(Math::abs(5) == 5);
 
 	CHECK(SIGN(-5) == -1.0);
 	CHECK(SIGN(0) == 0.0);
 	CHECK(SIGN(5) == 1.0);
+	// Check that SIGN(NAN) returns 0.0.
+	CHECK(SIGN(NAN) == 0.0);
 }
 
 TEST_CASE("[Math] Power of two functions") {
@@ -108,6 +109,29 @@ TEST_CASE_TEMPLATE("[Math] round/floor/ceil", T, float, double) {
 	CHECK(Math::ceil((T)-1.9) == (T)-1.0);
 }
 
+TEST_CASE_TEMPLATE("[Math] integer division round up unsigned", T, uint32_t, uint64_t) {
+	CHECK(Math::division_round_up((T)0, (T)64) == 0);
+	CHECK(Math::division_round_up((T)1, (T)64) == 1);
+	CHECK(Math::division_round_up((T)63, (T)64) == 1);
+	CHECK(Math::division_round_up((T)64, (T)64) == 1);
+	CHECK(Math::division_round_up((T)65, (T)64) == 2);
+	CHECK(Math::division_round_up((T)65, (T)1) == 65);
+}
+
+TEST_CASE_TEMPLATE("[Math] integer division round up signed", T, int32_t, int64_t) {
+	CHECK(Math::division_round_up((T)0, (T)64) == 0);
+	CHECK(Math::division_round_up((T)1, (T)64) == 1);
+	CHECK(Math::division_round_up((T)63, (T)64) == 1);
+	CHECK(Math::division_round_up((T)64, (T)64) == 1);
+	CHECK(Math::division_round_up((T)65, (T)64) == 2);
+	CHECK(Math::division_round_up((T)65, (T)1) == 65);
+	CHECK(Math::division_round_up((T)-1, (T)64) == 0);
+	CHECK(Math::division_round_up((T)-1, (T)-1) == 1);
+	CHECK(Math::division_round_up((T)-1, (T)1) == -1);
+	CHECK(Math::division_round_up((T)-1, (T)-2) == 1);
+	CHECK(Math::division_round_up((T)-4, (T)-2) == 2);
+}
+
 TEST_CASE_TEMPLATE("[Math] sin/cos/tan", T, float, double) {
 	CHECK(Math::sin((T)-0.1) == doctest::Approx((T)-0.0998334166));
 	CHECK(Math::sin((T)0.1) == doctest::Approx((T)0.0998334166));
@@ -157,15 +181,15 @@ TEST_CASE_TEMPLATE("[Math] asin/acos/atan", T, float, double) {
 	CHECK(Math::asin((T)0.1) == doctest::Approx((T)0.1001674212));
 	CHECK(Math::asin((T)0.5) == doctest::Approx((T)0.5235987756));
 	CHECK(Math::asin((T)1.0) == doctest::Approx((T)1.5707963268));
-	CHECK(Math::is_nan(Math::asin((T)1.5)));
-	CHECK(Math::is_nan(Math::asin((T)450.0)));
+	CHECK(Math::asin((T)2.0) == doctest::Approx((T)1.5707963268));
+	CHECK(Math::asin((T)-2.0) == doctest::Approx((T)-1.5707963268));
 
 	CHECK(Math::acos((T)-0.1) == doctest::Approx((T)1.670963748));
 	CHECK(Math::acos((T)0.1) == doctest::Approx((T)1.4706289056));
 	CHECK(Math::acos((T)0.5) == doctest::Approx((T)1.0471975512));
 	CHECK(Math::acos((T)1.0) == doctest::Approx((T)0.0));
-	CHECK(Math::is_nan(Math::acos((T)1.5)));
-	CHECK(Math::is_nan(Math::acos((T)450.0)));
+	CHECK(Math::acos((T)2.0) == doctest::Approx((T)0.0));
+	CHECK(Math::acos((T)-2.0) == doctest::Approx((T)Math_PI));
 
 	CHECK(Math::atan((T)-0.1) == doctest::Approx((T)-0.0996686525));
 	CHECK(Math::atan((T)0.1) == doctest::Approx((T)0.0996686525));
@@ -173,6 +197,37 @@ TEST_CASE_TEMPLATE("[Math] asin/acos/atan", T, float, double) {
 	CHECK(Math::atan((T)1.0) == doctest::Approx((T)0.7853981634));
 	CHECK(Math::atan((T)1.5) == doctest::Approx((T)0.9827937232));
 	CHECK(Math::atan((T)450.0) == doctest::Approx((T)1.5685741082));
+}
+
+TEST_CASE_TEMPLATE("[Math] asinh/acosh/atanh", T, float, double) {
+	CHECK(Math::asinh((T)-2.0) == doctest::Approx((T)-1.4436354751));
+	CHECK(Math::asinh((T)-0.1) == doctest::Approx((T)-0.0998340788));
+	CHECK(Math::asinh((T)0.1) == doctest::Approx((T)0.0998340788));
+	CHECK(Math::asinh((T)0.5) == doctest::Approx((T)0.4812118250));
+	CHECK(Math::asinh((T)1.0) == doctest::Approx((T)0.8813735870));
+	CHECK(Math::asinh((T)2.0) == doctest::Approx((T)1.4436354751));
+
+	CHECK(Math::acosh((T)-2.0) == doctest::Approx((T)0.0));
+	CHECK(Math::acosh((T)-0.1) == doctest::Approx((T)0.0));
+	CHECK(Math::acosh((T)0.1) == doctest::Approx((T)0.0));
+	CHECK(Math::acosh((T)0.5) == doctest::Approx((T)0.0));
+	CHECK(Math::acosh((T)1.0) == doctest::Approx((T)0.0));
+	CHECK(Math::acosh((T)2.0) == doctest::Approx((T)1.3169578969));
+	CHECK(Math::acosh((T)450.0) == doctest::Approx((T)6.8023935287));
+
+	CHECK(Math::is_inf(Math::atanh((T)-2.0)));
+	CHECK(Math::atanh((T)-2.0) < (T)0.0);
+	CHECK(Math::is_inf(Math::atanh((T)-1.0)));
+	CHECK(Math::atanh((T)-1.0) < (T)0.0);
+	CHECK(Math::atanh((T)-0.1) == doctest::Approx((T)-0.1003353477));
+	CHECK(Math::atanh((T)0.1) == doctest::Approx((T)0.1003353477));
+	CHECK(Math::atanh((T)0.5) == doctest::Approx((T)0.5493061443));
+	CHECK(Math::is_inf(Math::atanh((T)1.0)));
+	CHECK(Math::atanh((T)1.0) > (T)0.0);
+	CHECK(Math::is_inf(Math::atanh((T)1.5)));
+	CHECK(Math::atanh((T)1.5) > (T)0.0);
+	CHECK(Math::is_inf(Math::atanh((T)450.0)));
+	CHECK(Math::atanh((T)450.0) > (T)0.0);
 }
 
 TEST_CASE_TEMPLATE("[Math] sinc/sincn/atan2", T, float, double) {
@@ -325,6 +380,28 @@ TEST_CASE_TEMPLATE("[Math] remap", T, float, double) {
 	CHECK(Math::remap((T)-100.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)0.0));
 	CHECK(Math::remap((T)-200.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)-1000.0));
 	CHECK(Math::remap((T)-250.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)-1500.0));
+
+	// Note: undefined behavior can happen when `p_istart == p_istop`. We don't bother testing this as it will
+	// vary between hardware and compilers properly implementing IEEE 754.
+}
+
+TEST_CASE_TEMPLATE("[Math] angle_difference", T, float, double) {
+	// Loops around, should return 0.0.
+	CHECK(Math::angle_difference((T)0.0, (T)Math_TAU) == doctest::Approx((T)0.0));
+	CHECK(Math::angle_difference((T)Math_PI, (T)-Math_PI) == doctest::Approx((T)0.0));
+	CHECK(Math::angle_difference((T)0.0, (T)Math_TAU * (T)4.0) == doctest::Approx((T)0.0));
+
+	// Rotation is clockwise, so it should return -PI.
+	CHECK(Math::angle_difference((T)0.0, (T)Math_PI) == doctest::Approx((T)-Math_PI));
+	CHECK(Math::angle_difference((T)0.0, (T)-Math_PI) == doctest::Approx((T)Math_PI));
+	CHECK(Math::angle_difference((T)Math_PI, (T)0.0) == doctest::Approx((T)Math_PI));
+	CHECK(Math::angle_difference((T)-Math_PI, (T)0.0) == doctest::Approx((T)-Math_PI));
+
+	CHECK(Math::angle_difference((T)0.0, (T)3.0) == doctest::Approx((T)3.0));
+	CHECK(Math::angle_difference((T)1.0, (T)-2.0) == doctest::Approx((T)-3.0));
+	CHECK(Math::angle_difference((T)-1.0, (T)2.0) == doctest::Approx((T)3.0));
+	CHECK(Math::angle_difference((T)-2.0, (T)-4.5) == doctest::Approx((T)-2.5));
+	CHECK(Math::angle_difference((T)100.0, (T)102.5) == doctest::Approx((T)2.5));
 }
 
 TEST_CASE_TEMPLATE("[Math] lerp_angle", T, float, double) {
@@ -355,6 +432,23 @@ TEST_CASE_TEMPLATE("[Math] move_toward", T, float, double) {
 	CHECK(Math::move_toward(-2.0, -5.0, -1.0) == doctest::Approx((T)-1.0));
 	CHECK(Math::move_toward(-2.0, -5.0, 2.5) == doctest::Approx((T)-4.5));
 	CHECK(Math::move_toward(-2.0, -5.0, 4.0) == doctest::Approx((T)-5.0));
+}
+
+TEST_CASE_TEMPLATE("[Math] rotate_toward", T, float, double) {
+	// Rotate toward.
+	CHECK(Math::rotate_toward((T)0.0, (T)Math_PI * (T)0.75, (T)1.5) == doctest::Approx((T)1.5));
+	CHECK(Math::rotate_toward((T)-2.0, (T)1.0, (T)2.5) == doctest::Approx((T)0.5));
+	CHECK(Math::rotate_toward((T)-2.0, (T)Math_PI, (T)Math_PI) == doctest::Approx((T)-Math_PI));
+	CHECK(Math::rotate_toward((T)1.0, (T)Math_PI, (T)20.0) == doctest::Approx((T)Math_PI));
+
+	// Rotate away.
+	CHECK(Math::rotate_toward((T)0.0, (T)0.0, (T)-1.5) == doctest::Approx((T)-1.5));
+	CHECK(Math::rotate_toward((T)0.0, (T)0.0, (T)-Math_PI) == doctest::Approx((T)-Math_PI));
+	CHECK(Math::rotate_toward((T)3.0, (T)Math_PI, (T)-Math_PI) == doctest::Approx((T)0.0));
+	CHECK(Math::rotate_toward((T)2.0, (T)Math_PI, (T)-1.5) == doctest::Approx((T)0.5));
+	CHECK(Math::rotate_toward((T)1.0, (T)2.0, (T)-0.5) == doctest::Approx((T)0.5));
+	CHECK(Math::rotate_toward((T)2.5, (T)2.0, (T)-0.5) == doctest::Approx((T)3.0));
+	CHECK(Math::rotate_toward((T)-1.0, (T)1.0, (T)-1.0) == doctest::Approx((T)-2.0));
 }
 
 TEST_CASE_TEMPLATE("[Math] smoothstep", T, float, double) {
@@ -472,7 +566,7 @@ TEST_CASE_TEMPLATE("[Math] wrapf", T, float, double) {
 
 	CHECK(Math::wrapf(300'000'000'000.0, -20.0, 160.0) == doctest::Approx((T)120.0));
 	// float's precision is too low for 300'000'000'000.0, so we reduce it by a factor of 1000.
-	CHECK(Math::wrapf((float)300'000'000.0, (float)-20.0, (float)160.0) == doctest::Approx((T)128.0));
+	CHECK(Math::wrapf((float)15'000'000.0, (float)-20.0, (float)160.0) == doctest::Approx((T)60.0));
 }
 
 TEST_CASE_TEMPLATE("[Math] fract", T, float, double) {
@@ -545,5 +639,3 @@ TEST_CASE_TEMPLATE("[Math] bezier_interpolate", T, float, double) {
 }
 
 } // namespace TestMath
-
-#endif // TEST_MATH_FUNCS_H

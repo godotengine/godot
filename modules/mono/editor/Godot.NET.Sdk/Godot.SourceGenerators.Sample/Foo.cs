@@ -1,11 +1,11 @@
 namespace Godot.SourceGenerators.Sample
 {
-    partial class Foo : Godot.Object
+    public partial class Foo : GodotObject
     {
     }
 
     // Foo again in the same file
-    partial class Foo
+    public partial class Foo
     {
     }
 }

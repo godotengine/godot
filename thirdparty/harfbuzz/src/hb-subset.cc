@@ -37,9 +37,10 @@
 #include "hb-ot-hhea-table.hh"
 #include "hb-ot-hmtx-table.hh"
 #include "hb-ot-maxp-table.hh"
-#include "hb-ot-color-sbix-table.hh"
-#include "hb-ot-color-colr-table.hh"
-#include "hb-ot-color-cpal-table.hh"
+#include "OT/Color/CBDT/CBDT.hh"
+#include "OT/Color/COLR/COLR.hh"
+#include "OT/Color/CPAL/CPAL.hh"
+#include "OT/Color/sbix/sbix.hh"
 #include "hb-ot-os2-table.hh"
 #include "hb-ot-post-table.hh"
 #include "hb-ot-post-table-v2subset.hh"
@@ -47,12 +48,15 @@
 #include "hb-ot-cff2-table.hh"
 #include "hb-ot-vorg-table.hh"
 #include "hb-ot-name-table.hh"
-#include "hb-ot-color-cbdt-table.hh"
+#include "hb-ot-layout-base-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
+#include "hb-ot-var-avar-table.hh"
+#include "hb-ot-var-cvar-table.hh"
 #include "hb-ot-var-fvar-table.hh"
 #include "hb-ot-var-gvar-table.hh"
 #include "hb-ot-var-hvar-table.hh"
+#include "hb-ot-var-mvar-table.hh"
 #include "hb-ot-math-table.hh"
 #include "hb-ot-stat-table.hh"
 #include "hb-repacker.hh"
@@ -60,6 +64,27 @@
 
 using OT::Layout::GSUB;
 using OT::Layout::GPOS;
+
+
+#ifndef HB_NO_SUBSET_CFF
+template<>
+struct hb_subset_plan_t::source_table_loader<const OT::cff1>
+{
+  auto operator () (hb_subset_plan_t *plan)
+  HB_AUTO_RETURN (plan->accelerator ? plan->accelerator->cff1_accel :
+		  plan->inprogress_accelerator ? plan->inprogress_accelerator->cff1_accel :
+		  plan->cff1_accel)
+};
+template<>
+struct hb_subset_plan_t::source_table_loader<const OT::cff2>
+{
+  auto operator () (hb_subset_plan_t *plan)
+  HB_AUTO_RETURN (plan->accelerator ? plan->accelerator->cff2_accel :
+		  plan->inprogress_accelerator ? plan->inprogress_accelerator->cff2_accel :
+		  plan->cff2_accel)
+};
+#endif
+
 
 /**
  * SECTION:hb-subset
@@ -95,8 +120,8 @@ static hb_tag_t known_tables[] {
   HB_OT_TAG_BASE,
   HB_OT_TAG_CBDT,
   HB_OT_TAG_CBLC,
-  HB_OT_TAG_cff1,
-  HB_OT_TAG_cff2,
+  HB_OT_TAG_CFF1,
+  HB_OT_TAG_CFF2,
   HB_OT_TAG_cmap,
   HB_OT_TAG_COLR,
   HB_OT_TAG_CPAL,
@@ -168,11 +193,11 @@ _get_table_tags (const hb_subset_plan_t* plan,
       hb_concat (
           + hb_array (known_tables)
           | hb_filter ([&] (hb_tag_t tag) {
-            return !_table_is_empty (plan->source, tag) && !plan->no_subset_tables->has (tag);
+            return !_table_is_empty (plan->source, tag) && !plan->no_subset_tables.has (tag);
           })
           | hb_map ([] (hb_tag_t tag) -> hb_tag_t { return tag; }),
 
-          plan->no_subset_tables->iter ()
+          plan->no_subset_tables.iter ()
           | hb_filter([&] (hb_tag_t tag) {
             return !_table_is_empty (plan->source, tag);
           }));
@@ -191,15 +216,36 @@ _get_table_tags (const hb_subset_plan_t* plan,
 static unsigned
 _plan_estimate_subset_table_size (hb_subset_plan_t *plan,
 				  unsigned table_len,
-				  bool same_size)
+				  hb_tag_t table_tag)
 {
   unsigned src_glyphs = plan->source->get_num_glyphs ();
   unsigned dst_glyphs = plan->glyphset ()->get_population ();
 
-  if (unlikely (!src_glyphs) || same_size)
-    return 512 + table_len;
+  unsigned bulk = 8192;
+  /* Tables that we want to allocate same space as the source table. For GSUB/GPOS it's
+   * because those are expensive to subset, so giving them more room is fine. */
+  bool same_size = table_tag == HB_OT_TAG_GSUB ||
+		   table_tag == HB_OT_TAG_GPOS ||
+		   table_tag == HB_OT_TAG_name;
 
-  return 512 + (unsigned) (table_len * sqrt ((double) dst_glyphs / src_glyphs));
+  if (plan->flags & HB_SUBSET_FLAGS_RETAIN_GIDS)
+  {
+    if (table_tag == HB_OT_TAG_CFF1)
+    {
+      /* Add some extra room for the CFF charset. */
+      bulk += src_glyphs * 16;
+    }
+    else if (table_tag == HB_OT_TAG_CFF2)
+    {
+      /* Just extra CharString offsets. */
+      bulk += src_glyphs * 4;
+    }
+  }
+
+  if (unlikely (!src_glyphs) || same_size)
+    return bulk + table_len;
+
+  return bulk + (unsigned) (table_len * sqrt ((double) dst_glyphs / src_glyphs));
 }
 
 /*
@@ -208,13 +254,6 @@ _plan_estimate_subset_table_size (hb_subset_plan_t *plan,
 static hb_blob_t*
 _repack (hb_tag_t tag, const hb_serialize_context_t& c)
 {
-  if (tag != HB_OT_TAG_GPOS
-      &&  tag != HB_OT_TAG_GSUB)
-  {
-    // Check for overflow in a non-handled table.
-    return c.successful () ? c.copy_blob () : nullptr;
-  }
-
   if (!c.offset_overflow ())
     return c.copy_blob ();
 
@@ -237,7 +276,7 @@ _try_subset (const TableType *table,
              hb_vector_t<char>* buf,
              hb_subset_context_t* c /* OUT */)
 {
-  c->serializer->start_serialize<TableType> ();
+  c->serializer->start_serialize ();
   if (c->serializer->in_error ()) return false;
 
   bool needed = table->subset (c);
@@ -256,8 +295,8 @@ _try_subset (const TableType *table,
   DEBUG_MSG (SUBSET, nullptr, "OT::%c%c%c%c ran out of room; reallocating to %u bytes.",
              HB_UNTAG (c->table_tag), buf_size);
 
-  if (unlikely (buf_size > c->source_blob->length * 16 ||
-		!buf->alloc (buf_size)))
+  if (unlikely (buf_size > c->source_blob->length * 256 ||
+		!buf->alloc_exact (buf_size)))
   {
     DEBUG_MSG (SUBSET, nullptr, "OT::%c%c%c%c failed to reallocate %u bytes.",
                HB_UNTAG (c->table_tag), buf_size);
@@ -268,45 +307,46 @@ _try_subset (const TableType *table,
   return _try_subset (table, buf, c);
 }
 
+template <typename T>
+static auto _do_destroy (T &t, hb_priority<1>) HB_RETURN (void, t.destroy ())
+
+template <typename T>
+static void _do_destroy (T &t, hb_priority<0>) {}
+
 template<typename TableType>
 static bool
 _subset (hb_subset_plan_t *plan, hb_vector_t<char> &buf)
 {
-  hb_blob_ptr_t<TableType> source_blob = plan->source_table<TableType> ();
-  const TableType *table = source_blob.get ();
+  auto &&source_blob = plan->source_table<TableType> ();
+  auto *table = source_blob.get ();
 
   hb_tag_t tag = TableType::tableTag;
-  if (!source_blob.get_blob()->data)
+  hb_blob_t *blob = source_blob.get_blob();
+  if (unlikely (!blob || !blob->data))
   {
     DEBUG_MSG (SUBSET, nullptr,
                "OT::%c%c%c%c::subset sanitize failed on source table.", HB_UNTAG (tag));
-    source_blob.destroy ();
+    _do_destroy (source_blob, hb_prioritize);
     return false;
   }
 
-  /* Tables that we want to allocate same space as the source table. For GSUB/GPOS it's
-   * because those are expensive to subset, so giving them more room is fine. */
-  bool same_size_table = TableType::tableTag == HB_OT_TAG_GSUB ||
-			 TableType::tableTag == HB_OT_TAG_GPOS ||
-			 TableType::tableTag == HB_OT_TAG_name;
-
-  unsigned buf_size = _plan_estimate_subset_table_size (plan, source_blob.get_length (), same_size_table);
+  unsigned buf_size = _plan_estimate_subset_table_size (plan, blob->length, TableType::tableTag);
   DEBUG_MSG (SUBSET, nullptr,
              "OT::%c%c%c%c initial estimated table size: %u bytes.", HB_UNTAG (tag), buf_size);
   if (unlikely (!buf.alloc (buf_size)))
   {
     DEBUG_MSG (SUBSET, nullptr, "OT::%c%c%c%c failed to allocate %u bytes.", HB_UNTAG (tag), buf_size);
-    source_blob.destroy ();
+    _do_destroy (source_blob, hb_prioritize);
     return false;
   }
 
   bool needed = false;
   hb_serialize_context_t serializer (buf.arrayZ, buf.allocated);
   {
-    hb_subset_context_t c (source_blob.get_blob (), plan, &serializer, tag);
+    hb_subset_context_t c (blob, plan, &serializer, tag);
     needed = _try_subset (table, &buf, &c);
   }
-  source_blob.destroy ();
+  _do_destroy (source_blob, hb_prioritize);
 
   if (serializer.in_error () && !serializer.only_offset_overflow ())
   {
@@ -362,7 +402,7 @@ _is_table_present (hb_face_t *source, hb_tag_t tag)
 static bool
 _should_drop_table (hb_subset_plan_t *plan, hb_tag_t tag)
 {
-  if (plan->drop_tables->has (tag))
+  if (plan->drop_tables.has (tag))
     return true;
 
   switch (tag)
@@ -420,7 +460,11 @@ _dependencies_satisfied (hb_subset_plan_t *plan, hb_tag_t tag,
   {
   case HB_OT_TAG_hmtx:
   case HB_OT_TAG_vmtx:
-    return plan->pinned_at_default || !pending_subset_tags.has (HB_OT_TAG_glyf);
+  case HB_OT_TAG_maxp:
+  case HB_OT_TAG_OS2:
+    return !plan->normalized_coords || !pending_subset_tags.has (HB_OT_TAG_glyf);
+  case HB_OT_TAG_GPOS:
+    return plan->all_axes_pinned || !pending_subset_tags.has (HB_OT_TAG_GDEF);
   default:
     return true;
   }
@@ -431,7 +475,7 @@ _subset_table (hb_subset_plan_t *plan,
 	       hb_vector_t<char> &buf,
 	       hb_tag_t tag)
 {
-  if (plan->no_subset_tables->has (tag)) {
+  if (plan->no_subset_tables.has (tag)) {
     return _passthrough (plan, tag);
   }
 
@@ -460,10 +504,11 @@ _subset_table (hb_subset_plan_t *plan,
   case HB_OT_TAG_CBLC: return _subset<const OT::CBLC> (plan, buf);
   case HB_OT_TAG_CBDT: return true; /* skip CBDT, handled by CBLC */
   case HB_OT_TAG_MATH: return _subset<const OT::MATH> (plan, buf);
+  case HB_OT_TAG_BASE: return _subset<const OT::BASE> (plan, buf);
 
 #ifndef HB_NO_SUBSET_CFF
-  case HB_OT_TAG_cff1: return _subset<const OT::cff1> (plan, buf);
-  case HB_OT_TAG_cff2: return _subset<const OT::cff2> (plan, buf);
+  case HB_OT_TAG_CFF1: return _subset<const OT::cff1> (plan, buf);
+  case HB_OT_TAG_CFF2: return _subset<const OT::cff2> (plan, buf);
   case HB_OT_TAG_VORG: return _subset<const OT::VORG> (plan, buf);
 #endif
 
@@ -475,14 +520,36 @@ _subset_table (hb_subset_plan_t *plan,
   case HB_OT_TAG_HVAR: return _subset<const OT::HVAR> (plan, buf);
   case HB_OT_TAG_VVAR: return _subset<const OT::VVAR> (plan, buf);
 #endif
+
+#ifndef HB_NO_VAR
   case HB_OT_TAG_fvar:
-    if (plan->user_axes_location->is_empty ()) return _passthrough (plan, tag);
+    if (plan->user_axes_location.is_empty ()) return _passthrough (plan, tag);
     return _subset<const OT::fvar> (plan, buf);
+  case HB_OT_TAG_avar:
+    if (plan->user_axes_location.is_empty ()) return _passthrough (plan, tag);
+    return _subset<const OT::avar> (plan, buf);
+  case HB_OT_TAG_cvar:
+    if (plan->user_axes_location.is_empty ()) return _passthrough (plan, tag);
+    return _subset<const OT::cvar> (plan, buf);
+  case HB_OT_TAG_MVAR:
+    if (plan->user_axes_location.is_empty ()) return _passthrough (plan, tag);
+    return _subset<const OT::MVAR> (plan, buf);
+#endif
+
   case HB_OT_TAG_STAT:
-    /*TODO(qxliu): change the condition as we support more complex
-     * instancing operation*/
-    if (plan->all_axes_pinned) return _subset<const OT::STAT> (plan, buf);
+    if (!plan->user_axes_location.is_empty ()) return _subset<const OT::STAT> (plan, buf);
     else return _passthrough (plan, tag);
+
+  case HB_TAG ('c', 'v', 't', ' '):
+#ifndef HB_NO_VAR
+    if (_is_table_present (plan->source, HB_OT_TAG_cvar) &&
+        plan->normalized_coords && !plan->pinned_at_default)
+    {
+      auto &cvar = *plan->source->table.cvar;
+      return OT::cvar::add_cvt_and_apply_deltas (plan, cvar.get_tuple_var_data (), &cvar);
+    }
+#endif
+    return _passthrough (plan, tag);
 
   default:
     if (plan->flags & HB_SUBSET_FLAGS_PASSTHROUGH_UNRECOGNIZED)
@@ -527,14 +594,20 @@ static void _attach_accelerator_data (hb_subset_plan_t* plan,
  * @input: input to use for the subsetting.
  *
  * Subsets a font according to provided input. Returns nullptr
- * if the subset operation fails.
+ * if the subset operation fails or the face has no glyphs.
  *
  * Since: 2.9.0
  **/
 hb_face_t *
 hb_subset_or_fail (hb_face_t *source, const hb_subset_input_t *input)
 {
-  if (unlikely (!input || !source)) return hb_face_get_empty ();
+  if (unlikely (!input || !source)) return nullptr;
+
+  if (unlikely (!source->get_num_glyphs ()))
+  {
+    DEBUG_MSG (SUBSET, nullptr, "No glyphs in source font.");
+    return nullptr;
+  }
 
   hb_subset_plan_t *plan = hb_subset_plan_create_or_fail (source, input);
   if (unlikely (!plan)) {
@@ -582,46 +655,49 @@ hb_subset_plan_execute_or_fail (hb_subset_plan_t *plan)
     offset += num_tables;
   }
 
-  hb_vector_t<char> buf;
-  buf.alloc (4096 - 16);
-
-
   bool success = true;
 
-  while (!pending_subset_tags.is_empty ())
   {
-    if (subsetted_tags.in_error ()
-        || pending_subset_tags.in_error ()) {
-      success = false;
-      goto end;
-    }
+    // Grouping to deallocate buf before calling hb_face_reference (plan->dest).
 
-    bool made_changes = false;
-    for (hb_tag_t tag : pending_subset_tags)
+    hb_vector_t<char> buf;
+    buf.alloc (8192 - 16);
+
+    while (!pending_subset_tags.is_empty ())
     {
-      if (!_dependencies_satisfied (plan, tag,
-                                    subsetted_tags,
-                                    pending_subset_tags))
-      {
-        // delayed subsetting for some tables since they might have dependency on other tables
-        // in some cases: e.g: during instantiating glyf tables, hmetrics/vmetrics are updated
-        // and saved in subset plan, hmtx/vmtx subsetting need to use these updated metrics values
-        continue;
+      if (subsetted_tags.in_error ()
+	  || pending_subset_tags.in_error ()) {
+	success = false;
+	goto end;
       }
 
-      pending_subset_tags.del (tag);
-      subsetted_tags.add (tag);
-      made_changes = true;
+      bool made_changes = false;
+      for (hb_tag_t tag : pending_subset_tags)
+      {
+	if (!_dependencies_satisfied (plan, tag,
+				      subsetted_tags,
+				      pending_subset_tags))
+	{
+	  // delayed subsetting for some tables since they might have dependency on other tables
+	  // in some cases: e.g: during instantiating glyf tables, hmetrics/vmetrics are updated
+	  // and saved in subset plan, hmtx/vmtx subsetting need to use these updated metrics values
+	  continue;
+	}
 
-      success = _subset_table (plan, buf, tag);
-      if (unlikely (!success)) goto end;
-    }
+	pending_subset_tags.del (tag);
+	subsetted_tags.add (tag);
+	made_changes = true;
 
-    if (!made_changes)
-    {
-      DEBUG_MSG (SUBSET, nullptr, "Table dependencies unable to be satisfied. Subset failed.");
-      success = false;
-      goto end;
+	success = _subset_table (plan, buf, tag);
+	if (unlikely (!success)) goto end;
+      }
+
+      if (!made_changes)
+      {
+	DEBUG_MSG (SUBSET, nullptr, "Table dependencies unable to be satisfied. Subset failed.");
+	success = false;
+	goto end;
+      }
     }
   }
 

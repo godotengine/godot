@@ -1,46 +1,41 @@
-/*************************************************************************/
-/*  raycast_occlusion_cull.h                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  raycast_occlusion_cull.h                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef RAYCAST_OCCLUSION_CULL_H
-#define RAYCAST_OCCLUSION_CULL_H
+#pragma once
 
-#include "core/io/image.h"
 #include "core/math/projection.h"
-#include "core/object/object.h"
-#include "core/object/ref_counted.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
-#include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 
-#include <embree3/rtcore.h>
+#include <embree4/rtcore.h>
 
 class RaycastOcclusionCull : public RendererSceneOcclusionCull {
 	typedef RTCRayHit16 CameraRayTile;
@@ -76,7 +71,7 @@ public:
 		virtual void clear() override;
 		virtual void resize(const Size2i &p_size) override;
 		void sort_rays(const Vector3 &p_camera_dir, bool p_orthogonal);
-		void update_camera_rays(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal);
+		void update_camera_rays(const Transform3D &p_cam_transform, const Vector3 &p_near_bottom_left, const Vector2 &p_near_extents, real_t p_z_far, bool p_cam_orthogonal);
 
 		~RaycastHZBuffer();
 	};
@@ -109,7 +104,7 @@ private:
 	struct OccluderInstance {
 		RID occluder;
 		LocalVector<uint32_t> indices;
-		LocalVector<Vector3> xformed_vertices;
+		LocalVector<float> xformed_vertices;
 		Transform3D xform;
 		bool enabled = true;
 		bool removed = false;
@@ -126,13 +121,12 @@ private:
 			uint32_t vertex_count;
 			Transform3D xform;
 			const Vector3 *read;
-			Vector3 *write = nullptr;
+			float *write = nullptr;
 		};
 
 		Thread *commit_thread = nullptr;
 		bool commit_done = true;
 		bool dirty = false;
-		bool removed = false;
 
 		RTCScene ebr_scene[2] = { nullptr, nullptr };
 		int current_scene_idx = 0;
@@ -145,9 +139,10 @@ private:
 		void _update_dirty_instance_thread(int p_idx, RID *p_instances);
 		void _update_dirty_instance(int p_idx, RID *p_instances);
 		void _transform_vertices_thread(uint32_t p_thread, TransformThreadData *p_data);
-		void _transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform3D &p_xform, int p_from, int p_to);
+		void _transform_vertices_range(const Vector3 *p_read, float *p_write, const Transform3D &p_xform, int p_from, int p_to);
 		static void _commit_scene(void *p_ud);
-		bool update();
+		void free();
+		void update();
 
 		void _raycast(uint32_t p_thread, const RaycastThreadData *p_raycast_data) const;
 		void raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count) const;
@@ -163,8 +158,10 @@ private:
 	HashMap<RID, Scenario> scenarios;
 	HashMap<RID, RaycastHZBuffer> buffers;
 	RS::ViewportOcclusionCullingBuildQuality build_quality;
+	bool _jitter_enabled = false;
 
 	void _init_embree();
+	Vector2 _get_jitter(const Rect2 &p_viewport_rect, const Size2i &p_buffer_size);
 
 public:
 	virtual bool is_occluder(RID p_rid) override;
@@ -192,5 +189,3 @@ public:
 	RaycastOcclusionCull();
 	~RaycastOcclusionCull();
 };
-
-#endif // RAYCAST_OCCLUSION_CULL_H

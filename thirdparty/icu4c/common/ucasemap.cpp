@@ -41,7 +41,6 @@
 #include "uassert.h"
 #include "ucase.h"
 #include "ucasemap_imp.h"
-#include "ustr_imp.h"
 
 U_NAMESPACE_USE
 
@@ -49,7 +48,7 @@ U_NAMESPACE_USE
 
 UCaseMap::UCaseMap(const char *localeID, uint32_t opts, UErrorCode *pErrorCode) :
 #if !UCONFIG_NO_BREAK_ITERATION
-        iter(NULL),
+        iter(nullptr),
 #endif
         caseLocale(UCASE_LOC_UNKNOWN), options(opts) {
     ucasemap_setLocale(this, localeID, pErrorCode);
@@ -64,15 +63,15 @@ UCaseMap::~UCaseMap() {
 U_CAPI UCaseMap * U_EXPORT2
 ucasemap_open(const char *locale, uint32_t options, UErrorCode *pErrorCode) {
     if(U_FAILURE(*pErrorCode)) {
-        return NULL;
+        return nullptr;
     }
     UCaseMap *csm = new UCaseMap(locale, options, pErrorCode);
-    if(csm==NULL) {
+    if(csm==nullptr) {
         *pErrorCode = U_MEMORY_ALLOCATION_ERROR;
-        return NULL;
+        return nullptr;
     } else if (U_FAILURE(*pErrorCode)) {
         delete csm;
-        return NULL;
+        return nullptr;
     }
     return csm;
 }
@@ -97,7 +96,7 @@ ucasemap_setLocale(UCaseMap *csm, const char *locale, UErrorCode *pErrorCode) {
     if(U_FAILURE(*pErrorCode)) {
         return;
     }
-    if (locale != NULL && *locale == 0) {
+    if (locale != nullptr && *locale == 0) {
         csm->locale[0] = 0;
         csm->caseLocale = UCASE_LOC_ROOT;
         return;
@@ -136,14 +135,14 @@ namespace {
 
 /* append a full case mapping result, see UCASE_MAX_STRING_LENGTH */
 inline UBool
-appendResult(int32_t cpLength, int32_t result, const UChar *s,
+appendResult(int32_t cpLength, int32_t result, const char16_t *s,
              ByteSink &sink, uint32_t options, icu::Edits *edits, UErrorCode &errorCode) {
     U_ASSERT(U_SUCCESS(errorCode));
 
     /* decode the result */
     if(result<0) {
         /* (not) original code point */
-        if(edits!=NULL) {
+        if(edits!=nullptr) {
             edits->addUnchanged(cpLength);
         }
         if((options & U_OMIT_UNCHANGED_TEXT) == 0) {
@@ -161,12 +160,12 @@ appendResult(int32_t cpLength, int32_t result, const UChar *s,
 }
 
 // See unicode/utf8.h U8_APPEND_UNSAFE().
-inline uint8_t getTwoByteLead(UChar32 c) { return (uint8_t)((c >> 6) | 0xc0); }
-inline uint8_t getTwoByteTrail(UChar32 c) { return (uint8_t)((c & 0x3f) | 0x80); }
+inline uint8_t getTwoByteLead(UChar32 c) { return static_cast<uint8_t>((c >> 6) | 0xc0); }
+inline uint8_t getTwoByteTrail(UChar32 c) { return static_cast<uint8_t>((c & 0x3f) | 0x80); }
 
 UChar32 U_CALLCONV
 utf8_caseContextIterator(void *context, int8_t dir) {
-    UCaseContext *csc=(UCaseContext *)context;
+    UCaseContext* csc = static_cast<UCaseContext*>(context);
     UChar32 c;
 
     if(dir<0) {
@@ -235,7 +234,7 @@ void toLower(int32_t caseLocale, uint32_t options,
                 if (d == 0) { continue; }
                 ByteSinkUtil::appendUnchanged(src + prev, srcIndex - 1 - prev,
                                               sink, options, edits, errorCode);
-                char ascii = (char)(lead + d);
+                char ascii = static_cast<char>(lead + d);
                 sink.Append(&ascii, 1);
                 if (edits != nullptr) {
                     edits->addReplace(1, 1);
@@ -292,7 +291,7 @@ void toLower(int32_t caseLocale, uint32_t options,
             break;
         }
         // slow path
-        const UChar *s;
+        const char16_t *s;
         if (caseLocale >= 0) {
             csc->cpStart = cpStart;
             csc->cpLimit = srcIndex;
@@ -343,7 +342,7 @@ void toUpper(int32_t caseLocale, uint32_t options,
                 if (d == 0) { continue; }
                 ByteSinkUtil::appendUnchanged(src + prev, srcIndex - 1 - prev,
                                               sink, options, edits, errorCode);
-                char ascii = (char)(lead + d);
+                char ascii = static_cast<char>(lead + d);
                 sink.Append(&ascii, 1);
                 if (edits != nullptr) {
                     edits->addReplace(1, 1);
@@ -402,7 +401,7 @@ void toUpper(int32_t caseLocale, uint32_t options,
         // slow path
         csc->cpStart = cpStart;
         csc->cpLimit = srcIndex;
-        const UChar *s;
+        const char16_t *s;
         c = ucase_toFullUpper(c, utf8_caseContextIterator, csc, &s, caseLocale);
         if (c >= 0) {
             ByteSinkUtil::appendUnchanged(src + prev, cpStart - prev,
@@ -580,7 +579,7 @@ ucasemap_internalUTF8ToTitle(
                 if(c>=0) {
                     csc.cpStart=titleStart;
                     csc.cpLimit=titleLimit;
-                    const UChar *s;
+                    const char16_t *s;
                     c=ucase_toFullTitle(c, utf8_caseContextIterator, &csc, &s, caseLocale);
                     if (!appendResult(titleLimit-titleStart, c, s, sink, options, edits, errorCode)) {
                         return;
@@ -679,14 +678,18 @@ void toUpper(uint32_t options,
             // Adding one only to the final vowel in a longer sequence
             // (which does not occur in normal writing) would require lookahead.
             // Set the same flag as for preserving an existing dialytika.
-            if ((data & HAS_VOWEL) != 0 && (state & AFTER_VOWEL_WITH_ACCENT) != 0 &&
-                    (upper == 0x399 || upper == 0x3A5)) {
-                data |= HAS_DIALYTIKA;
+            if ((data & HAS_VOWEL) != 0 &&
+                (state & (AFTER_VOWEL_WITH_PRECOMPOSED_ACCENT | AFTER_VOWEL_WITH_COMBINING_ACCENT)) !=
+                    0 &&
+                (upper == 0x399 || upper == 0x3A5)) {
+                data |= (state & AFTER_VOWEL_WITH_PRECOMPOSED_ACCENT) != 0 ? HAS_DIALYTIKA
+                                                                           : HAS_COMBINING_DIALYTIKA;
             }
             int32_t numYpogegrammeni = 0;  // Map each one to a trailing, spacing, capital iota.
             if ((data & HAS_YPOGEGRAMMENI) != 0) {
                 numYpogegrammeni = 1;
             }
+            const UBool hasPrecomposedAccent = (data & HAS_ACCENT) != 0;
             // Skip combining diacritics after this Greek letter.
             int32_t nextNextIndex = nextIndex;
             while (nextIndex < srcLength) {
@@ -704,7 +707,8 @@ void toUpper(uint32_t options,
                 }
             }
             if ((data & HAS_VOWEL_AND_ACCENT_AND_DIALYTIKA) == HAS_VOWEL_AND_ACCENT) {
-                nextState |= AFTER_VOWEL_WITH_ACCENT;
+                nextState |= hasPrecomposedAccent ? AFTER_VOWEL_WITH_PRECOMPOSED_ACCENT
+                                                  : AFTER_VOWEL_WITH_COMBINING_ACCENT;
             }
             // Map according to Greek rules.
             UBool addTonos = false;
@@ -715,7 +719,7 @@ void toUpper(uint32_t options,
                     !isFollowedByCasedLetter(src, nextIndex, srcLength)) {
                 // Keep disjunctive "or" with (only) a tonos.
                 // We use the same "word boundary" conditions as for the Final_Sigma test.
-                if (i == nextIndex) {
+                if (hasPrecomposedAccent) {
                     upper = 0x389;  // Preserve the precomposed form.
                 } else {
                     addTonos = true;
@@ -743,25 +747,25 @@ void toUpper(uint32_t options,
                 int32_t i2 = i + 2;
                 if ((data & HAS_EITHER_DIALYTIKA) != 0) {
                     change |= (i2 + 2) > nextIndex ||
-                            src[i2] != (uint8_t)u8"\u0308"[0] ||
-                            src[i2 + 1] != (uint8_t)u8"\u0308"[1];
+                            src[i2] != static_cast<uint8_t>(u8"\u0308"[0]) ||
+                            src[i2 + 1] != static_cast<uint8_t>(u8"\u0308"[1]);
                     i2 += 2;
                 }
                 if (addTonos) {
                     change |= (i2 + 2) > nextIndex ||
-                            src[i2] != (uint8_t)u8"\u0301"[0] ||
-                            src[i2 + 1] != (uint8_t)u8"\u0301"[1];
+                            src[i2] != static_cast<uint8_t>(u8"\u0301"[0]) ||
+                            src[i2 + 1] != static_cast<uint8_t>(u8"\u0301"[1]);
                     i2 += 2;
                 }
                 int32_t oldLength = nextIndex - i;
                 int32_t newLength = (i2 - i) + numYpogegrammeni * 2;  // 2 bytes per U+0399
                 change |= oldLength != newLength;
                 if (change) {
-                    if (edits != NULL) {
+                    if (edits != nullptr) {
                         edits->addReplace(oldLength, newLength);
                     }
                 } else {
-                    if (edits != NULL) {
+                    if (edits != nullptr) {
                         edits->addUnchanged(oldLength);
                     }
                     // Write unchanged text?
@@ -783,8 +787,8 @@ void toUpper(uint32_t options,
                 }
             }
         } else if(c>=0) {
-            const UChar *s;
-            c=ucase_toFullUpper(c, NULL, NULL, &s, UCASE_LOC_GREEK);
+            const char16_t *s;
+            c=ucase_toFullUpper(c, nullptr, nullptr, &s, UCASE_LOC_GREEK);
             if (!appendResult(nextIndex - i, c, s, sink, options, edits, errorCode)) {
                 return;
             }
@@ -863,14 +867,14 @@ ucasemap_mapUTF8(int32_t caseLocale, uint32_t options, UCASEMAP_BREAK_ITERATOR_P
 
     // Get the string length.
     if (srcLength == -1) {
-        srcLength = (int32_t)uprv_strlen((const char *)src);
+        srcLength = static_cast<int32_t>(uprv_strlen(src));
     }
 
     if (edits != nullptr && (options & U_EDITS_NO_RESET) == 0) {
         edits->reset();
     }
     stringCaseMapper(caseLocale, options, UCASEMAP_BREAK_ITERATOR
-                     (const uint8_t *)src, srcLength, sink, edits, errorCode);
+                     reinterpret_cast<const uint8_t*>(src), srcLength, sink, edits, errorCode);
     sink.Flush();
     if (U_SUCCESS(errorCode)) {
         if (edits != nullptr) {
@@ -891,8 +895,8 @@ ucasemap_mapUTF8(int32_t caseLocale, uint32_t options, UCASEMAP_BREAK_ITERATOR_P
         return 0;
     }
     if( destCapacity<0 ||
-        (dest==NULL && destCapacity>0) ||
-        (src==NULL && srcLength!=0) || srcLength<-1
+        (dest==nullptr && destCapacity>0) ||
+        (src==nullptr && srcLength!=0) || srcLength<-1
     ) {
         errorCode=U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
@@ -900,11 +904,11 @@ ucasemap_mapUTF8(int32_t caseLocale, uint32_t options, UCASEMAP_BREAK_ITERATOR_P
 
     /* get the string length */
     if(srcLength==-1) {
-        srcLength=(int32_t)uprv_strlen((const char *)src);
+        srcLength = static_cast<int32_t>(uprv_strlen(src));
     }
 
     /* check for overlapping source and destination */
-    if( dest!=NULL &&
+    if( dest!=nullptr &&
         ((src>=dest && src<(dest+destCapacity)) ||
          (dest>=src && dest<(src+srcLength)))
     ) {
@@ -912,21 +916,20 @@ ucasemap_mapUTF8(int32_t caseLocale, uint32_t options, UCASEMAP_BREAK_ITERATOR_P
         return 0;
     }
 
-    CheckedArrayByteSink sink(dest, destCapacity);
     if (edits != nullptr && (options & U_EDITS_NO_RESET) == 0) {
         edits->reset();
     }
-    stringCaseMapper(caseLocale, options, UCASEMAP_BREAK_ITERATOR
-                     (const uint8_t *)src, srcLength, sink, edits, errorCode);
-    sink.Flush();
-    if (U_SUCCESS(errorCode)) {
-        if (sink.Overflowed()) {
-            errorCode = U_BUFFER_OVERFLOW_ERROR;
-        } else if (edits != nullptr) {
-            edits->copyErrorTo(errorCode);
-        }
+    int32_t reslen = ByteSinkUtil::viaByteSinkToTerminatedChars(
+        dest, destCapacity,
+        [&](ByteSink& sink, UErrorCode& status) {
+            stringCaseMapper(caseLocale, options, UCASEMAP_BREAK_ITERATOR
+                             reinterpret_cast<const uint8_t*>(src), srcLength, sink, edits, status);
+        },
+        errorCode);
+    if (U_SUCCESS(errorCode) && edits != nullptr) {
+        edits->copyErrorTo(errorCode);
     }
-    return u_terminateChars(dest, destCapacity, sink.NumberOfBytesAppended(), &errorCode);
+    return reslen;
 }
 
 /* public API functions */
@@ -940,7 +943,7 @@ ucasemap_utf8ToLower(const UCaseMap *csm,
         csm->caseLocale, csm->options, UCASEMAP_BREAK_ITERATOR_NULL
         dest, destCapacity,
         src, srcLength,
-        ucasemap_internalUTF8ToLower, NULL, *pErrorCode);
+        ucasemap_internalUTF8ToLower, nullptr, *pErrorCode);
 }
 
 U_CAPI int32_t U_EXPORT2
@@ -952,7 +955,7 @@ ucasemap_utf8ToUpper(const UCaseMap *csm,
         csm->caseLocale, csm->options, UCASEMAP_BREAK_ITERATOR_NULL
         dest, destCapacity,
         src, srcLength,
-        ucasemap_internalUTF8ToUpper, NULL, *pErrorCode);
+        ucasemap_internalUTF8ToUpper, nullptr, *pErrorCode);
 }
 
 U_CAPI int32_t U_EXPORT2
@@ -964,7 +967,7 @@ ucasemap_utf8FoldCase(const UCaseMap *csm,
         UCASE_LOC_ROOT, csm->options, UCASEMAP_BREAK_ITERATOR_NULL
         dest, destCapacity,
         src, srcLength,
-        ucasemap_internalUTF8Fold, NULL, *pErrorCode);
+        ucasemap_internalUTF8Fold, nullptr, *pErrorCode);
 }
 
 U_NAMESPACE_BEGIN

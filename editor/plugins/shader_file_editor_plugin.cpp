@@ -1,46 +1,43 @@
-/*************************************************************************/
-/*  shader_file_editor_plugin.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_file_editor_plugin.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "shader_file_editor_plugin.h"
 
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
-#include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/gui/editor_bottom_panel.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/split_container.h"
 #include "servers/display_server.h"
-#include "servers/rendering/shader_types.h"
 
 /*** SHADER SCRIPT EDITOR ****/
 
@@ -61,17 +58,17 @@ void ShaderFileEditor::_version_selected(int p_option) {
 
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		if (bytecode->get_stage_bytecode(RD::ShaderStage(i)).is_empty() && bytecode->get_stage_compile_error(RD::ShaderStage(i)) == String()) {
-			stages[i]->set_icon(Ref<Texture2D>());
+			stages[i]->set_button_icon(Ref<Texture2D>());
 			continue;
 		}
 
 		Ref<Texture2D> icon;
 		if (bytecode->get_stage_compile_error(RD::ShaderStage(i)) != String()) {
-			icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
+			icon = get_editor_theme_icon(SNAME("ImportFail"));
 		} else {
-			icon = get_theme_icon(SNAME("ImportCheck"), SNAME("EditorIcons"));
+			icon = get_editor_theme_icon(SNAME("ImportCheck"));
 		}
-		stages[i]->set_icon(icon);
+		stages[i]->set_button_icon(icon);
 
 		if (first_found == -1) {
 			first_found = i;
@@ -96,7 +93,7 @@ void ShaderFileEditor::_version_selected(int p_option) {
 
 	String error = bytecode->get_stage_compile_error(stage);
 
-	error_text->push_font(get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+	error_text->push_font(get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 
 	if (error.is_empty()) {
 		error_text->add_text(TTR("Shader stage compiled without errors."));
@@ -112,7 +109,7 @@ void ShaderFileEditor::_update_options() {
 		stage_hb->hide();
 		versions->hide();
 		error_text->clear();
-		error_text->push_font(get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+		error_text->push_font(get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 		error_text->add_text(vformat(TTR("File structure for '%s' contains unrecoverable errors:\n\n"), shader_file->get_path().get_file()));
 		error_text->add_text(shader_file->get_base_error());
 		return;
@@ -124,7 +121,7 @@ void ShaderFileEditor::_update_options() {
 	int c = versions->get_current();
 	//remember current
 	versions->clear();
-	Vector<StringName> version_list = shader_file->get_version_list();
+	TypedArray<StringName> version_list = shader_file->get_version_list();
 
 	if (c >= version_list.size()) {
 		c = version_list.size() - 1;
@@ -155,9 +152,9 @@ void ShaderFileEditor::_update_options() {
 		}
 
 		if (failed) {
-			icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
+			icon = get_editor_theme_icon(SNAME("ImportFail"));
 		} else {
-			icon = get_theme_icon(SNAME("ImportCheck"), SNAME("EditorIcons"));
+			icon = get_editor_theme_icon(SNAME("ImportCheck"));
 		}
 
 		versions->add_item(title, icon);
@@ -169,7 +166,7 @@ void ShaderFileEditor::_update_options() {
 		}
 	}
 
-	if (version_list.size() == 0) {
+	if (version_list.is_empty()) {
 		for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 			stages[i]->set_disabled(true);
 		}
@@ -216,13 +213,10 @@ void ShaderFileEditor::_editor_settings_changed() {
 	}
 }
 
-void ShaderFileEditor::_bind_methods() {
-}
-
 void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 	if (p_shader.is_null()) {
 		if (shader_file.is_valid()) {
-			shader_file->disconnect("changed", callable_mp(this, &ShaderFileEditor::_shader_changed));
+			shader_file->disconnect_changed(callable_mp(this, &ShaderFileEditor::_shader_changed));
 		}
 		return;
 	}
@@ -234,7 +228,7 @@ void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 	shader_file = p_shader;
 
 	if (shader_file.is_valid()) {
-		shader_file->connect("changed", callable_mp(this, &ShaderFileEditor::_shader_changed));
+		shader_file->connect_changed(callable_mp(this, &ShaderFileEditor::_shader_changed));
 	}
 
 	_update_options();
@@ -255,8 +249,10 @@ ShaderFileEditor::ShaderFileEditor() {
 	add_child(main_hs);
 
 	versions = memnew(ItemList);
-	versions->connect("item_selected", callable_mp(this, &ShaderFileEditor::_version_selected));
+	versions->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	versions->connect(SceneStringName(item_selected), callable_mp(this, &ShaderFileEditor::_version_selected));
 	versions->set_custom_minimum_size(Size2i(200 * EDSCALE, 0));
+	versions->set_theme_type_variation("TreeSecondary");
 	main_hs->add_child(versions);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
@@ -283,12 +279,13 @@ ShaderFileEditor::ShaderFileEditor() {
 		stage_hb->add_child(button);
 		stages[i] = button;
 		button->set_button_group(bg);
-		button->connect("pressed", callable_mp(this, &ShaderFileEditor::_version_selected).bind(i));
+		button->connect(SceneStringName(pressed), callable_mp(this, &ShaderFileEditor::_version_selected).bind(i));
 	}
 
 	error_text = memnew(RichTextLabel);
 	error_text->set_v_size_flags(SIZE_EXPAND_FILL);
 	error_text->set_selection_enabled(true);
+	error_text->set_context_menu_enabled(true);
 	main_vb->add_child(error_text);
 }
 
@@ -305,12 +302,12 @@ bool ShaderFileEditorPlugin::handles(Object *p_object) const {
 void ShaderFileEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(shader_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(shader_editor);
 
 	} else {
 		button->hide();
 		if (shader_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 	}
 }
@@ -319,9 +316,6 @@ ShaderFileEditorPlugin::ShaderFileEditorPlugin() {
 	shader_editor = memnew(ShaderFileEditor);
 
 	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("ShaderFile"), shader_editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("ShaderFile"), shader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_file_bottom_panel", TTRC("Toggle ShaderFile Bottom Panel")));
 	button->hide();
-}
-
-ShaderFileEditorPlugin::~ShaderFileEditorPlugin() {
 }

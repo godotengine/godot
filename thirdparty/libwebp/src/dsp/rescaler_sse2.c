@@ -85,7 +85,7 @@ static void RescalerImportRowExpand_SSE2(WebPRescaler* const wrk,
       const __m128i mult = _mm_cvtsi32_si128(((x_add - accum) << 16) | accum);
       const __m128i out = _mm_madd_epi16(cur_pixels, mult);
       assert(sizeof(*frow) == sizeof(uint32_t));
-      WebPUint32ToMem((uint8_t*)frow, _mm_cvtsi128_si32(out));
+      WebPInt32ToMem((uint8_t*)frow, _mm_cvtsi128_si32(out));
       frow += 1;
       if (frow >= frow_end) break;
       accum -= wrk->x_sub;
@@ -132,7 +132,7 @@ static void RescalerImportRowShrink_SSE2(WebPRescaler* const wrk,
     __m128i base = zero;
     accum += wrk->x_add;
     while (accum > 0) {
-      const __m128i A = _mm_cvtsi32_si128(WebPMemToUint32(src));
+      const __m128i A = _mm_cvtsi32_si128(WebPMemToInt32(src));
       src += 4;
       base = _mm_unpacklo_epi8(A, zero);
       // To avoid overflow, we need: base * x_add / x_sub < 32768
@@ -198,7 +198,7 @@ static WEBP_INLINE void ProcessRow_SSE2(const __m128i* const A0,
                                         const __m128i* const mult,
                                         uint8_t* const dst) {
   const __m128i rounder = _mm_set_epi32(0, ROUNDER, 0, ROUNDER);
-  const __m128i mask = _mm_set_epi32(0xffffffffu, 0, 0xffffffffu, 0);
+  const __m128i mask = _mm_set_epi32(~0, 0, ~0, 0);
   const __m128i B0 = _mm_mul_epu32(*A0, *mult);
   const __m128i B1 = _mm_mul_epu32(*A1, *mult);
   const __m128i B2 = _mm_mul_epu32(*A2, *mult);

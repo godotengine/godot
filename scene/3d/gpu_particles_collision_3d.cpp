@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gpu_particles_collision_3d.cpp                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gpu_particles_collision_3d.cpp                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gpu_particles_collision_3d.h"
 
@@ -58,6 +58,7 @@ GPUParticlesCollision3D::GPUParticlesCollision3D(RS::ParticlesCollisionType p_ty
 }
 
 GPUParticlesCollision3D::~GPUParticlesCollision3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(collision);
 }
 
@@ -94,24 +95,42 @@ GPUParticlesCollisionSphere3D::~GPUParticlesCollisionSphere3D() {
 ///////////////////////////
 
 void GPUParticlesCollisionBox3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GPUParticlesCollisionBox3D::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &GPUParticlesCollisionBox3D::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &GPUParticlesCollisionBox3D::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &GPUParticlesCollisionBox3D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_size", "get_size");
 }
 
-void GPUParticlesCollisionBox3D::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
-	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), extents);
+#ifndef DISABLE_DEPRECATED
+bool GPUParticlesCollisionBox3D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		set_size((Vector3)p_value * 2);
+		return true;
+	}
+	return false;
+}
+
+bool GPUParticlesCollisionBox3D::_get(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		r_property = size / 2;
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
+void GPUParticlesCollisionBox3D::set_size(const Vector3 &p_size) {
+	size = p_size;
+	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), size / 2);
 	update_gizmos();
 }
 
-Vector3 GPUParticlesCollisionBox3D::get_extents() const {
-	return extents;
+Vector3 GPUParticlesCollisionBox3D::get_size() const {
+	return size;
 }
 
 AABB GPUParticlesCollisionBox3D::get_aabb() const {
-	return AABB(-extents, extents * 2);
+	return AABB(-size / 2, size);
 }
 
 GPUParticlesCollisionBox3D::GPUParticlesCollisionBox3D() :
@@ -153,7 +172,7 @@ void GPUParticlesCollisionSDF3D::_find_meshes(const AABB &p_aabb, Node *p_at_nod
 			for (int i = 0; i < meshes.size(); i += 2) {
 				Transform3D mxf = meshes[i];
 				Ref<Mesh> mesh = meshes[i + 1];
-				if (!mesh.is_valid()) {
+				if (mesh.is_null()) {
 					continue;
 				}
 
@@ -311,7 +330,7 @@ void GPUParticlesCollisionSDF3D::_find_closest_distance(const Vector3 &p_pos, co
 			Vector3 center = p_bvh[p_bvh_cell].bounds.position + he;
 
 			Vector3 rel = (p_pos - center).abs();
-			Vector3 closest(MIN(rel.x, he.x), MIN(rel.y, he.y), MIN(rel.z, he.z));
+			Vector3 closest = rel.min(he);
 			float d = rel.distance_to(closest);
 
 			if (d >= r_closest_distance) {
@@ -358,14 +377,12 @@ Vector3i GPUParticlesCollisionSDF3D::get_estimated_cell_size() const {
 	static const int subdivs[RESOLUTION_MAX] = { 16, 32, 64, 128, 256, 512 };
 	int subdiv = subdivs[get_resolution()];
 
-	AABB aabb(-extents, extents * 2);
+	AABB aabb(-size / 2, size);
 
 	float cell_size = aabb.get_longest_axis_size() / float(subdiv);
 
 	Vector3i sdf_size = Vector3i(aabb.size / cell_size);
-	sdf_size.x = MAX(1, sdf_size.x);
-	sdf_size.y = MAX(1, sdf_size.y);
-	sdf_size.z = MAX(1, sdf_size.z);
+	sdf_size = sdf_size.maxi(1);
 	return sdf_size;
 }
 
@@ -373,14 +390,12 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 	static const int subdivs[RESOLUTION_MAX] = { 16, 32, 64, 128, 256, 512 };
 	int subdiv = subdivs[get_resolution()];
 
-	AABB aabb(-extents, extents * 2);
+	AABB aabb(-size / 2, size);
 
 	float cell_size = aabb.get_longest_axis_size() / float(subdiv);
 
 	Vector3i sdf_size = Vector3i(aabb.size / cell_size);
-	sdf_size.x = MAX(1, sdf_size.x);
-	sdf_size.y = MAX(1, sdf_size.y);
-	sdf_size.z = MAX(1, sdf_size.z);
+	sdf_size = sdf_size.maxi(1);
 
 	if (bake_begin_function) {
 		bake_begin_function(100);
@@ -450,8 +465,13 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 	}
 
 	//compute bvh
-
-	ERR_FAIL_COND_V_MSG(faces.size() <= 1, Ref<Image>(), "No faces detected during GPUParticlesCollisionSDF3D bake. Check whether there are visible meshes matching the bake mask within its extents.");
+	if (faces.size() <= 1) {
+		ERR_PRINT("No faces detected during GPUParticlesCollisionSDF3D bake. Check whether there are visible meshes matching the bake mask within its extents.");
+		if (bake_end_function) {
+			bake_end_function();
+		}
+		return Ref<Image>();
+	}
 
 	LocalVector<FacePos> face_pos;
 
@@ -504,7 +524,7 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 }
 
 PackedStringArray GPUParticlesCollisionSDF3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = GPUParticlesCollision3D::get_configuration_warnings();
 
 	if (bake_mask == 0) {
 		warnings.push_back(RTR("The Bake Mask has no bits enabled, which means baking will not produce any collision for this GPUParticlesCollisionSDF3D.\nTo resolve this, enable at least one bit in the Bake Mask property."));
@@ -514,8 +534,8 @@ PackedStringArray GPUParticlesCollisionSDF3D::get_configuration_warnings() const
 }
 
 void GPUParticlesCollisionSDF3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GPUParticlesCollisionSDF3D::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &GPUParticlesCollisionSDF3D::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &GPUParticlesCollisionSDF3D::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &GPUParticlesCollisionSDF3D::get_size);
 
 	ClassDB::bind_method(D_METHOD("set_resolution", "resolution"), &GPUParticlesCollisionSDF3D::set_resolution);
 	ClassDB::bind_method(D_METHOD("get_resolution"), &GPUParticlesCollisionSDF3D::get_resolution);
@@ -531,7 +551,7 @@ void GPUParticlesCollisionSDF3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bake_mask_value", "layer_number", "value"), &GPUParticlesCollisionSDF3D::set_bake_mask_value);
 	ClassDB::bind_method(D_METHOD("get_bake_mask_value", "layer_number"), &GPUParticlesCollisionSDF3D::get_bake_mask_value);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "16,32,64,128,256,512"), "set_resolution", "get_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "thickness", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,suffix:m"), "set_thickness", "get_thickness");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
@@ -546,6 +566,24 @@ void GPUParticlesCollisionSDF3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(RESOLUTION_MAX);
 }
 
+#ifndef DISABLE_DEPRECATED
+bool GPUParticlesCollisionSDF3D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		set_size((Vector3)p_value * 2);
+		return true;
+	}
+	return false;
+}
+
+bool GPUParticlesCollisionSDF3D::_get(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		r_property = size / 2;
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
 void GPUParticlesCollisionSDF3D::set_thickness(float p_thickness) {
 	thickness = p_thickness;
 }
@@ -554,14 +592,14 @@ float GPUParticlesCollisionSDF3D::get_thickness() const {
 	return thickness;
 }
 
-void GPUParticlesCollisionSDF3D::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
-	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), extents);
+void GPUParticlesCollisionSDF3D::set_size(const Vector3 &p_size) {
+	size = p_size;
+	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), size / 2);
 	update_gizmos();
 }
 
-Vector3 GPUParticlesCollisionSDF3D::get_extents() const {
-	return extents;
+Vector3 GPUParticlesCollisionSDF3D::get_size() const {
+	return size;
 }
 
 void GPUParticlesCollisionSDF3D::set_resolution(Resolution p_resolution) {
@@ -609,7 +647,7 @@ Ref<Texture3D> GPUParticlesCollisionSDF3D::get_texture() const {
 }
 
 AABB GPUParticlesCollisionSDF3D::get_aabb() const {
-	return AABB(-extents, extents * 2);
+	return AABB(-size / 2, size);
 }
 
 GPUParticlesCollisionSDF3D::BakeBeginFunc GPUParticlesCollisionSDF3D::bake_begin_function = nullptr;
@@ -674,8 +712,8 @@ void GPUParticlesCollisionHeightField3D::_notification(int p_what) {
 }
 
 void GPUParticlesCollisionHeightField3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GPUParticlesCollisionHeightField3D::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &GPUParticlesCollisionHeightField3D::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &GPUParticlesCollisionHeightField3D::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &GPUParticlesCollisionHeightField3D::get_size);
 
 	ClassDB::bind_method(D_METHOD("set_resolution", "resolution"), &GPUParticlesCollisionHeightField3D::set_resolution);
 	ClassDB::bind_method(D_METHOD("get_resolution"), &GPUParticlesCollisionHeightField3D::get_resolution);
@@ -683,13 +721,20 @@ void GPUParticlesCollisionHeightField3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_update_mode", "update_mode"), &GPUParticlesCollisionHeightField3D::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &GPUParticlesCollisionHeightField3D::get_update_mode);
 
+	ClassDB::bind_method(D_METHOD("set_heightfield_mask", "heightfield_mask"), &GPUParticlesCollisionHeightField3D::set_heightfield_mask);
+	ClassDB::bind_method(D_METHOD("get_heightfield_mask"), &GPUParticlesCollisionHeightField3D::get_heightfield_mask);
+
+	ClassDB::bind_method(D_METHOD("set_heightfield_mask_value", "layer_number", "value"), &GPUParticlesCollisionHeightField3D::set_heightfield_mask_value);
+	ClassDB::bind_method(D_METHOD("get_heightfield_mask_value", "layer_number"), &GPUParticlesCollisionHeightField3D::get_heightfield_mask_value);
+
 	ClassDB::bind_method(D_METHOD("set_follow_camera_enabled", "enabled"), &GPUParticlesCollisionHeightField3D::set_follow_camera_enabled);
 	ClassDB::bind_method(D_METHOD("is_follow_camera_enabled"), &GPUParticlesCollisionHeightField3D::is_follow_camera_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "256 (Fastest),512 (Fast),1024 (Average),2048 (Slow),4096 (Slower),8192 (Slowest)"), "set_resolution", "get_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "When Moved (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_camera_enabled"), "set_follow_camera_enabled", "is_follow_camera_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "heightfield_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_heightfield_mask", "get_heightfield_mask");
 
 	BIND_ENUM_CONSTANT(RESOLUTION_256);
 	BIND_ENUM_CONSTANT(RESOLUTION_512);
@@ -703,15 +748,33 @@ void GPUParticlesCollisionHeightField3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(UPDATE_MODE_ALWAYS);
 }
 
-void GPUParticlesCollisionHeightField3D::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
-	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), extents);
+#ifndef DISABLE_DEPRECATED
+bool GPUParticlesCollisionHeightField3D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		set_size((Vector3)p_value * 2);
+		return true;
+	}
+	return false;
+}
+
+bool GPUParticlesCollisionHeightField3D::_get(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		r_property = size / 2;
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
+void GPUParticlesCollisionHeightField3D::set_size(const Vector3 &p_size) {
+	size = p_size;
+	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), size / 2);
 	update_gizmos();
 	RS::get_singleton()->particles_collision_height_field_update(_get_collision());
 }
 
-Vector3 GPUParticlesCollisionHeightField3D::get_extents() const {
-	return extents;
+Vector3 GPUParticlesCollisionHeightField3D::get_size() const {
+	return size;
 }
 
 void GPUParticlesCollisionHeightField3D::set_resolution(Resolution p_resolution) {
@@ -734,6 +797,33 @@ GPUParticlesCollisionHeightField3D::UpdateMode GPUParticlesCollisionHeightField3
 	return update_mode;
 }
 
+void GPUParticlesCollisionHeightField3D::set_heightfield_mask(uint32_t p_heightfield_mask) {
+	heightfield_mask = p_heightfield_mask;
+	RS::get_singleton()->particles_collision_set_height_field_mask(_get_collision(), p_heightfield_mask);
+}
+
+uint32_t GPUParticlesCollisionHeightField3D::get_heightfield_mask() const {
+	return heightfield_mask;
+}
+
+void GPUParticlesCollisionHeightField3D::set_heightfield_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 20, "Render layer number must be between 1 and 20 inclusive.");
+	uint32_t mask = get_heightfield_mask();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
+	} else {
+		mask &= ~(1 << (p_layer_number - 1));
+	}
+	set_heightfield_mask(mask);
+}
+
+bool GPUParticlesCollisionHeightField3D::get_heightfield_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 20, false, "Render layer number must be between 1 and 20 inclusive.");
+	return heightfield_mask & (1 << (p_layer_number - 1));
+}
+
 void GPUParticlesCollisionHeightField3D::set_follow_camera_enabled(bool p_enabled) {
 	follow_camera_mode = p_enabled;
 	set_process_internal(follow_camera_mode || update_mode == UPDATE_MODE_ALWAYS);
@@ -744,7 +834,7 @@ bool GPUParticlesCollisionHeightField3D::is_follow_camera_enabled() const {
 }
 
 AABB GPUParticlesCollisionHeightField3D::get_aabb() const {
-	return AABB(-extents, extents * 2);
+	return AABB(-size / 2, size);
 }
 
 GPUParticlesCollisionHeightField3D::GPUParticlesCollisionHeightField3D() :
@@ -819,6 +909,7 @@ GPUParticlesAttractor3D::GPUParticlesAttractor3D(RS::ParticlesCollisionType p_ty
 	set_base(collision);
 }
 GPUParticlesAttractor3D::~GPUParticlesAttractor3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(collision);
 }
 
@@ -855,24 +946,42 @@ GPUParticlesAttractorSphere3D::~GPUParticlesAttractorSphere3D() {
 ///////////////////////////
 
 void GPUParticlesAttractorBox3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GPUParticlesAttractorBox3D::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &GPUParticlesAttractorBox3D::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &GPUParticlesAttractorBox3D::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &GPUParticlesAttractorBox3D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_size", "get_size");
 }
 
-void GPUParticlesAttractorBox3D::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
-	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), extents);
+#ifndef DISABLE_DEPRECATED
+bool GPUParticlesAttractorBox3D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		set_size((Vector3)p_value * 2);
+		return true;
+	}
+	return false;
+}
+
+bool GPUParticlesAttractorBox3D::_get(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		r_property = size / 2;
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
+void GPUParticlesAttractorBox3D::set_size(const Vector3 &p_size) {
+	size = p_size;
+	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), size / 2);
 	update_gizmos();
 }
 
-Vector3 GPUParticlesAttractorBox3D::get_extents() const {
-	return extents;
+Vector3 GPUParticlesAttractorBox3D::get_size() const {
+	return size;
 }
 
 AABB GPUParticlesAttractorBox3D::get_aabb() const {
-	return AABB(-extents, extents * 2);
+	return AABB(-size / 2, size);
 }
 
 GPUParticlesAttractorBox3D::GPUParticlesAttractorBox3D() :
@@ -885,24 +994,42 @@ GPUParticlesAttractorBox3D::~GPUParticlesAttractorBox3D() {
 ///////////////////////////
 
 void GPUParticlesAttractorVectorField3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GPUParticlesAttractorVectorField3D::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &GPUParticlesAttractorVectorField3D::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &GPUParticlesAttractorVectorField3D::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &GPUParticlesAttractorVectorField3D::get_size);
 
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &GPUParticlesAttractorVectorField3D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &GPUParticlesAttractorVectorField3D::get_texture);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture3D"), "set_texture", "get_texture");
 }
 
-void GPUParticlesAttractorVectorField3D::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
-	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), extents);
+#ifndef DISABLE_DEPRECATED
+bool GPUParticlesAttractorVectorField3D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		set_size((Vector3)p_value * 2);
+		return true;
+	}
+	return false;
+}
+
+bool GPUParticlesAttractorVectorField3D::_get(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		r_property = size / 2;
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
+void GPUParticlesAttractorVectorField3D::set_size(const Vector3 &p_size) {
+	size = p_size;
+	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), size / 2);
 	update_gizmos();
 }
 
-Vector3 GPUParticlesAttractorVectorField3D::get_extents() const {
-	return extents;
+Vector3 GPUParticlesAttractorVectorField3D::get_size() const {
+	return size;
 }
 
 void GPUParticlesAttractorVectorField3D::set_texture(const Ref<Texture3D> &p_texture) {
@@ -916,7 +1043,7 @@ Ref<Texture3D> GPUParticlesAttractorVectorField3D::get_texture() const {
 }
 
 AABB GPUParticlesAttractorVectorField3D::get_aabb() const {
-	return AABB(-extents, extents * 2);
+	return AABB(-size / 2, size);
 }
 
 GPUParticlesAttractorVectorField3D::GPUParticlesAttractorVectorField3D() :

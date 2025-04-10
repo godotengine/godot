@@ -1,37 +1,37 @@
-/*************************************************************************/
-/*  joypad_linux.h                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  joypad_linux.h                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef JOYPAD_LINUX_H
-#define JOYPAD_LINUX_H
+#pragma once
 
 #ifdef JOYDEV_ENABLED
+
 #include "core/input/input.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
@@ -62,7 +62,7 @@ private:
 		float curr_axis[MAX_ABS];
 		int key_map[MAX_KEY];
 		int abs_map[MAX_ABS];
-		HatMask dpad = HatMask::CENTER;
+		BitField<HatMask> dpad;
 		int fd = -1;
 
 		String devpath;
@@ -93,6 +93,21 @@ private:
 
 	Vector<String> attached_devices;
 
+	// List of lowercase words that will prevent the controller from being recognized if its name matches.
+	// This is done to prevent trackpads, graphics tablets and motherboard LED controllers from being
+	// recognized as controllers (and taking up controller ID slots as a result).
+	// Only whole words are matched within the controller name string. The match is case-insensitive.
+	const Vector<String> banned_words = {
+		"touchpad", // Matches e.g. "SynPS/2 Synaptics TouchPad", "Sony Interactive Entertainment DualSense Wireless Controller Touchpad"
+		"trackpad",
+		"clickpad",
+		"keyboard", // Matches e.g. "PG-90215 Keyboard", "Usb Keyboard Usb Keyboard Consumer Control"
+		"mouse", // Matches e.g. "Mouse passthrough"
+		"pen", // Matches e.g. "Wacom One by Wacom S Pen"
+		"finger", // Matches e.g. "Wacom HID 495F Finger"
+		"led", // Matches e.g. "ASRock LED Controller"
+	};
+
 	static void monitor_joypads_thread_func(void *p_user);
 	void monitor_joypads_thread_run();
 
@@ -119,5 +134,3 @@ private:
 };
 
 #endif // JOYDEV_ENABLED
-
-#endif // JOYPAD_LINUX_H

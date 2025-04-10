@@ -2,7 +2,7 @@
 #define VULKAN_VI_H_ 1
 
 /*
-** Copyright 2015-2022 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -19,6 +19,7 @@ extern "C" {
 
 
 
+// VK_NN_vi_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_NN_vi_surface 1
 #define VK_NN_VI_SURFACE_SPEC_VERSION     1
 #define VK_NN_VI_SURFACE_EXTENSION_NAME   "VK_NN_vi_surface"

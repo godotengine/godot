@@ -1,39 +1,42 @@
-/*************************************************************************/
-/*  progress_dialog.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  progress_dialog.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "progress_dialog.h"
 
-#include "core/object/message_queue.h"
 #include "core/os/os.h"
-#include "editor/editor_scale.h"
+#include "editor/editor_interface.h"
+#include "editor/editor_node.h"
+#include "editor/themes/editor_scale.h"
 #include "main/main.h"
+#include "scene/gui/panel_container.h"
+#include "scene/main/window.h"
 #include "servers/display_server.h"
 
 void BackgroundProgress::_add_task(const String &p_task, const String &p_label, int p_steps) {
@@ -95,15 +98,8 @@ void BackgroundProgress::_end_task(const String &p_task) {
 	tasks.erase(p_task);
 }
 
-void BackgroundProgress::_bind_methods() {
-	ClassDB::bind_method("_add_task", &BackgroundProgress::_add_task);
-	ClassDB::bind_method("_task_step", &BackgroundProgress::_task_step);
-	ClassDB::bind_method("_end_task", &BackgroundProgress::_end_task);
-	ClassDB::bind_method("_update", &BackgroundProgress::_update);
-}
-
 void BackgroundProgress::add_task(const String &p_task, const String &p_label, int p_steps) {
-	MessageQueue::get_singleton()->push_call(this, "_add_task", p_task, p_label, p_steps);
+	callable_mp(this, &BackgroundProgress::_add_task).call_deferred(p_task, p_label, p_steps);
 }
 
 void BackgroundProgress::task_step(const String &p_task, int p_step) {
@@ -115,7 +111,7 @@ void BackgroundProgress::task_step(const String &p_task, int p_step) {
 	}
 
 	if (no_updates) {
-		MessageQueue::get_singleton()->push_call(this, "_update");
+		callable_mp(this, &BackgroundProgress::_update).call_deferred();
 	}
 
 	{
@@ -125,7 +121,7 @@ void BackgroundProgress::task_step(const String &p_task, int p_step) {
 }
 
 void BackgroundProgress::end_task(const String &p_task) {
-	MessageQueue::get_singleton()->push_call(this, "_end_task", p_task);
+	callable_mp(this, &BackgroundProgress::_end_task).call_deferred(p_task);
 }
 
 ////////////////////////////////////////////////
@@ -133,21 +129,53 @@ void BackgroundProgress::end_task(const String &p_task) {
 ProgressDialog *ProgressDialog::singleton = nullptr;
 
 void ProgressDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			Ref<StyleBox> style = main->get_theme_stylebox(SceneStringName(panel), SNAME("PopupMenu"));
+			main_border_size = style->get_minimum_size();
+			main->set_offset(SIDE_LEFT, style->get_margin(SIDE_LEFT));
+			main->set_offset(SIDE_RIGHT, -style->get_margin(SIDE_RIGHT));
+			main->set_offset(SIDE_TOP, style->get_margin(SIDE_TOP));
+			main->set_offset(SIDE_BOTTOM, -style->get_margin(SIDE_BOTTOM));
+
+			center_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "PopupPanel"));
+		} break;
+	}
+}
+
+void ProgressDialog::_update_ui() {
+	// Run main loop for two frames.
+	if (is_inside_tree()) {
+		DisplayServer::get_singleton()->process_events();
+		Main::iteration();
+	}
 }
 
 void ProgressDialog::_popup() {
+	// Activate processing of all inputs in EditorNode, and the EditorNode::input method
+	// will discard every key input.
+	EditorNode::get_singleton()->set_process_input(true);
+	// Disable all other windows to prevent interaction with them.
+	for (Window *w : host_windows) {
+		w->set_process_mode(PROCESS_MODE_DISABLED);
+	}
+
 	Size2 ms = main->get_combined_minimum_size();
 	ms.width = MAX(500 * EDSCALE, ms.width);
+	ms += main_border_size;
 
-	Ref<StyleBox> style = main->get_theme_stylebox(SNAME("panel"), SNAME("PopupMenu"));
-	ms += style->get_minimum_size();
-	main->set_offset(SIDE_LEFT, style->get_margin(SIDE_LEFT));
-	main->set_offset(SIDE_RIGHT, -style->get_margin(SIDE_RIGHT));
-	main->set_offset(SIDE_TOP, style->get_margin(SIDE_TOP));
-	main->set_offset(SIDE_BOTTOM, -style->get_margin(SIDE_BOTTOM));
+	center_panel->set_custom_minimum_size(ms);
 
-	//raise();
-	popup_centered(ms);
+	Window *current_window = SceneTree::get_singleton()->get_root()->get_last_exclusive_window();
+	ERR_FAIL_NULL(current_window);
+	reparent(current_window);
+
+	// Ensures that events are properly released before the dialog blocks input.
+	bool window_is_input_disabled = current_window->is_input_disabled();
+	current_window->set_disable_input(!window_is_input_disabled);
+	current_window->set_disable_input(window_is_input_disabled);
+
+	show();
 }
 
 void ProgressDialog::add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
@@ -177,24 +205,24 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 		cancel_hb->hide();
 	}
 	cancel_hb->move_to_front();
-	cancelled = false;
+	canceled = false;
 	_popup();
 	if (p_can_cancel) {
 		cancel->grab_focus();
 	}
+	_update_ui();
 }
 
 bool ProgressDialog::task_step(const String &p_task, const String &p_state, int p_step, bool p_force_redraw) {
-	ERR_FAIL_COND_V(!tasks.has(p_task), cancelled);
-
-	if (!p_force_redraw) {
-		uint64_t tus = OS::get_singleton()->get_ticks_usec();
-		if (tus - last_progress_tick < 200000) { //200ms
-			return cancelled;
-		}
-	}
+	ERR_FAIL_COND_V(!tasks.has(p_task), canceled);
 
 	Task &t = tasks[p_task];
+	if (!p_force_redraw) {
+		uint64_t tus = OS::get_singleton()->get_ticks_usec();
+		if (tus - t.last_progress_tick < 200000) { //200ms
+			return canceled;
+		}
+	}
 	if (p_step < 0) {
 		t.progress->set_value(t.progress->get_value() + 1);
 	} else {
@@ -202,15 +230,10 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 	}
 
 	t.state->set_text(p_state);
-	last_progress_tick = OS::get_singleton()->get_ticks_usec();
-	if (cancel_hb->is_visible()) {
-		DisplayServer::get_singleton()->process_events();
-	}
+	t.last_progress_tick = OS::get_singleton()->get_ticks_usec();
+	_update_ui();
 
-#ifndef ANDROID_ENABLED
-	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
-#endif
-	return cancelled;
+	return canceled;
 }
 
 void ProgressDialog::end_task(const String &p_task) {
@@ -222,25 +245,45 @@ void ProgressDialog::end_task(const String &p_task) {
 
 	if (tasks.is_empty()) {
 		hide();
+		EditorNode::get_singleton()->set_process_input(false);
+		for (Window *w : host_windows) {
+			w->set_process_mode(PROCESS_MODE_INHERIT);
+		}
 	} else {
 		_popup();
 	}
 }
 
-void ProgressDialog::_cancel_pressed() {
-	cancelled = true;
+void ProgressDialog::add_host_window(Window *p_window) {
+	ERR_FAIL_NULL(p_window);
+	host_windows.push_back(p_window);
 }
 
-void ProgressDialog::_bind_methods() {
+void ProgressDialog::remove_host_window(Window *p_window) {
+	ERR_FAIL_NULL(p_window);
+	host_windows.erase(p_window);
+}
+
+void ProgressDialog::_cancel_pressed() {
+	canceled = true;
 }
 
 ProgressDialog::ProgressDialog() {
-	main = memnew(VBoxContainer);
-	add_child(main);
-	main->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	set_exclusive(true);
-	last_progress_tick = 0;
+	// We want to cover the entire screen to prevent the user from interacting with the Editor.
+	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	// Be sure it's the top most component.
+	set_z_index(RS::CANVAS_ITEM_Z_MAX);
 	singleton = this;
+	hide();
+
+	center_panel = memnew(PanelContainer);
+	add_child(center_panel);
+	center_panel->set_h_size_flags(SIZE_SHRINK_BEGIN);
+	center_panel->set_v_size_flags(SIZE_SHRINK_BEGIN);
+
+	main = memnew(VBoxContainer);
+	center_panel->add_child(main);
+
 	cancel_hb = memnew(HBoxContainer);
 	main->add_child(cancel_hb);
 	cancel_hb->hide();
@@ -249,5 +292,5 @@ ProgressDialog::ProgressDialog() {
 	cancel_hb->add_child(cancel);
 	cancel->set_text(TTR("Cancel"));
 	cancel_hb->add_spacer();
-	cancel->connect("pressed", callable_mp(this, &ProgressDialog::_cancel_pressed));
+	cancel->connect(SceneStringName(pressed), callable_mp(this, &ProgressDialog::_cancel_pressed));
 }

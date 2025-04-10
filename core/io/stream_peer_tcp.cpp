@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  stream_peer_tcp.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  stream_peer_tcp.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "stream_peer_tcp.h"
 
@@ -51,6 +51,7 @@ Error StreamPeerTCP::poll() {
 			status = STATUS_ERROR;
 			return err;
 		}
+		return OK;
 	} else if (status != STATUS_CONNECTING) {
 		return OK;
 	}
@@ -88,7 +89,7 @@ void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, IPAddress p_host, uint1
 }
 
 Error StreamPeerTCP::bind(int p_port, const IPAddress &p_host) {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
 
@@ -105,7 +106,7 @@ Error StreamPeerTCP::bind(int p_port, const IPAddress &p_host) {
 }
 
 Error StreamPeerTCP::connect_to_host(const IPAddress &p_host, int p_port) {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(status != STATUS_NONE, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_host.is_valid(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V_MSG(p_port < 1 || p_port > 65535, ERR_INVALID_PARAMETER, "The remote port number must be between 1 and 65535 (inclusive).");
@@ -139,7 +140,7 @@ Error StreamPeerTCP::connect_to_host(const IPAddress &p_host, int p_port) {
 }
 
 Error StreamPeerTCP::write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block) {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 
 	if (status != STATUS_CONNECTED) {
 		return FAILED;
@@ -237,7 +238,7 @@ Error StreamPeerTCP::read(uint8_t *p_buffer, int p_bytes, int &r_received, bool 
 }
 
 void StreamPeerTCP::set_no_delay(bool p_enabled) {
-	ERR_FAIL_COND(!_sock.is_valid() || !_sock->is_open());
+	ERR_FAIL_COND(_sock.is_null() || !_sock->is_open());
 	_sock->set_tcp_no_delay_enabled(p_enabled);
 }
 
@@ -280,7 +281,7 @@ Error StreamPeerTCP::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_rec
 }
 
 int StreamPeerTCP::get_available_bytes() const {
-	ERR_FAIL_COND_V(!_sock.is_valid(), -1);
+	ERR_FAIL_COND_V(_sock.is_null(), -1);
 	return _sock->get_available_bytes();
 }
 

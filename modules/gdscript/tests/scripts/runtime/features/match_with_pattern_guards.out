@@ -1,0 +1,10 @@
+GDTEST_OK
+guards work
+a is 0 and b is 1
+a is equal to zero
+3rd element is 3
+works with wildcard too.
+guard with multiple patterns
+regular pattern after guard mismatch
+side effect
+side effect only ran once

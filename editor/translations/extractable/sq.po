@@ -1,0 +1,77 @@
+# Albanian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"PO-Revision-Date: 2023-09-16 22:13+0000\n"
+"Last-Translator: Andrea Toska <toskaandrea@gmail.com>\n"
+"Language-Team: Albanian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/sq/>\n"
+"Language: sq\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.0.2\n"
+
+msgid "All Recognized"
+msgstr "Të Gjithë të Njohurat"
+
+msgid "Open"
+msgstr "Hap"
+
+msgid "Select Current Folder"
+msgstr "Zgjidh Folderin Aktual"
+
+msgid "Save"
+msgstr "Ruaj"
+
+msgid "Select This Folder"
+msgstr "Zgjidh Këtë Folder"
+
+msgid "Open a File"
+msgstr "Hap një Skedar"
+
+msgid "Open File(s)"
+msgstr "Hap Skedarët"
+
+msgid "Open a Directory"
+msgstr "Hap një Direktori"
+
+msgid "Open a File or Directory"
+msgstr "Hap një Skedar ose Direktori"
+
+msgid "Save a File"
+msgstr "Ruaj një Skedar"
+
+msgid "Path:"
+msgstr "Rruga:"
+
+msgid "Directories & Files:"
+msgstr "Direktorit & Skedarët:"
+
+msgid "File:"
+msgstr "Skedar:"
+
+msgid "Create Folder"
+msgstr "Krijo një Folder"
+
+msgid "Name:"
+msgstr "Emri:"
+
+msgid "Could not create folder."
+msgstr "Nuk mund të krijoj folderin."
+
+msgid "Paste"
+msgstr "Ngjit"
+
+msgid "Clear"
+msgstr "Pastro"
+
+msgid "Undo"
+msgstr "Zhbëj"
+
+msgid "Redo"
+msgstr "Ribëj"

@@ -1,42 +1,40 @@
-/*************************************************************************/
-/*  engine_debugger.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  engine_debugger.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef ENGINE_DEBUGGER_H
-#define ENGINE_DEBUGGER_H
+#pragma once
 
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/array.h"
-#include "core/variant/variant.h"
 
 class RemoteDebuggerPeer;
 class ScriptDebugger;
@@ -106,9 +104,9 @@ public:
 	_FORCE_INLINE_ static EngineDebugger *get_singleton() { return singleton; }
 	_FORCE_INLINE_ static bool is_active() { return singleton != nullptr && script_debugger != nullptr; }
 
-	_FORCE_INLINE_ static ScriptDebugger *get_script_debugger() { return script_debugger; };
+	_FORCE_INLINE_ static ScriptDebugger *get_script_debugger() { return script_debugger; }
 
-	static void initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints, void (*p_allow_focus_steal_fn)());
+	static void initialize(const String &p_uri, bool p_skip_breakpoints, bool p_ignore_error_breaks, const Vector<String> &p_breakpoints, void (*p_allow_focus_steal_fn)());
 	static void deinitialize();
 	static void register_profiler(const StringName &p_name, const Profiler &p_profiler);
 	static void unregister_profiler(const StringName &p_name);
@@ -126,7 +124,13 @@ public:
 	void profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts = Array());
 	Error capture_parse(const StringName &p_name, const String &p_msg, const Array &p_args, bool &r_captured);
 
-	void line_poll();
+	void line_poll() {
+		// The purpose of this is just processing events every now and then when the script might get too busy otherwise bugs like infinite loops can't be caught.
+		if (unlikely(poll_every % 2048) == 0) {
+			poll_events(false);
+		}
+		poll_every++;
+	}
 
 	virtual void poll_events(bool p_is_idle) {}
 	virtual void send_message(const String &p_msg, const Array &p_data) = 0;
@@ -135,5 +139,3 @@ public:
 
 	virtual ~EngineDebugger();
 };
-
-#endif // ENGINE_DEBUGGER_H

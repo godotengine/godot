@@ -1,37 +1,35 @@
-/*************************************************************************/
-/*  menu_bar.h                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  menu_bar.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef MENU_BAR_H
-#define MENU_BAR_H
+#pragma once
 
-#include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
 
 class MenuBar : public Control {
@@ -41,7 +39,7 @@ class MenuBar : public Control {
 
 	bool switch_on_hover = true;
 	bool disable_shortcuts = false;
-	bool is_native = true;
+	bool prefer_native = true;
 	bool flat = false;
 	int start_index = -1;
 
@@ -55,6 +53,7 @@ class MenuBar : public Control {
 		Ref<TextLine> text_buf;
 		bool hidden = false;
 		bool disabled = false;
+		RID submenu_rid;
 
 		Menu(const String &p_name) {
 			name = p_name;
@@ -66,13 +65,11 @@ class MenuBar : public Control {
 		}
 	};
 	Vector<Menu> menu_cache;
-	HashSet<String> global_menus;
 
 	int focused_menu = -1;
 	int selected_menu = -1;
 	int active_menu = -1;
 
-	Vector2i mouse_pos_adjusted;
 	Vector2i old_mouse_pos;
 	ObjectID shortcut_context;
 
@@ -114,14 +111,36 @@ class MenuBar : public Control {
 
 	void _open_popup(int p_index, bool p_focus_item = false);
 	void _popup_visibility_changed(bool p_visible);
-	void _update_submenu(const String &p_menu_name, PopupMenu *p_child);
-	void _clear_menu();
-	void _update_menu();
+
+	String global_menu_tag;
+
+	int _find_global_start_index() {
+		if (global_menu_tag.is_empty()) {
+			return -1;
+		}
+
+		NativeMenu *nmenu = NativeMenu::get_singleton();
+		if (!nmenu) {
+			return -1;
+		}
+		RID main_menu = nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
+		int count = nmenu->get_item_count(main_menu);
+		for (int i = 0; i < count; i++) {
+			if (nmenu->get_item_tag(main_menu, i).operator String().begins_with(global_menu_tag)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	void _popup_changed(ObjectID p_menu);
+
+	void bind_global_menu();
+	void unbind_global_menu();
 
 protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
@@ -170,11 +189,8 @@ public:
 
 	PopupMenu *get_menu_popup(int p_menu) const;
 
-	virtual void get_translatable_strings(List<String> *p_strings) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	MenuBar();
 	~MenuBar();
 };
-
-#endif // MENU_BAR_H

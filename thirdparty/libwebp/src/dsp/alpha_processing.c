@@ -425,6 +425,7 @@ void (*WebPAlphaReplace)(uint32_t* src, int length, uint32_t color);
 //------------------------------------------------------------------------------
 // Init function
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void WebPInitAlphaProcessingMIPSdspR2(void);
 extern void WebPInitAlphaProcessingSSE2(void);
 extern void WebPInitAlphaProcessingSSE41(void);

@@ -1,38 +1,39 @@
-/*************************************************************************/
-/*  multimesh_editor_plugin.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  multimesh_editor_plugin.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "multimesh_editor_plugin.h"
 
 #include "editor/editor_node.h"
-#include "editor/scene_tree_editor.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/editor_string_names.h"
+#include "editor/gui/scene_tree_editor.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/menu_button.h"
@@ -109,7 +110,7 @@ void MultiMeshEditor::_populate() {
 
 	MeshInstance3D *ss_instance = Object::cast_to<MeshInstance3D>(ss_node);
 
-	if (!ss_instance || !ss_instance->get_mesh().is_valid()) {
+	if (!ss_instance || ss_instance->get_mesh().is_null()) {
 		err_dialog->set_text(TTR("Surface source is invalid (no geometry)."));
 		err_dialog->popup_centered();
 		return;
@@ -119,7 +120,7 @@ void MultiMeshEditor::_populate() {
 
 	Vector<Face3> geometry = ss_instance->get_mesh()->get_faces();
 
-	if (geometry.size() == 0) {
+	if (geometry.is_empty()) {
 		err_dialog->set_text(TTR("Surface source is invalid (no faces)."));
 		err_dialog->popup_centered();
 		return;
@@ -153,7 +154,7 @@ void MultiMeshEditor::_populate() {
 		area_accum += area;
 	}
 
-	ERR_FAIL_COND_MSG(triangle_area_map.size() == 0, "Couldn't map area.");
+	ERR_FAIL_COND_MSG(triangle_area_map.is_empty(), "Couldn't map area.");
 	ERR_FAIL_COND_MSG(area_accum == 0, "Couldn't map area.");
 
 	Ref<MultiMesh> multimesh = memnew(MultiMesh);
@@ -254,16 +255,15 @@ void MultiMeshEditor::edit(MultiMeshInstance3D *p_multimesh) {
 
 void MultiMeshEditor::_browse(bool p_source) {
 	browsing_source = p_source;
-	std->get_scene_tree()->set_marked(node, false);
-	std->popup_scenetree_dialog();
+	Node *browsed_node = nullptr;
 	if (p_source) {
+		browsed_node = node->get_node_or_null(mesh_source->get_text());
 		std->set_title(TTR("Select a Source Mesh:"));
 	} else {
+		browsed_node = node->get_node_or_null(surface_source->get_text());
 		std->set_title(TTR("Select a Target Surface:"));
 	}
-}
-
-void MultiMeshEditor::_bind_methods() {
+	std->popup_scenetree_dialog(browsed_node);
 }
 
 MultiMeshEditor::MultiMeshEditor() {
@@ -272,10 +272,10 @@ MultiMeshEditor::MultiMeshEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("MultiMesh");
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MultiMeshInstance3D"), SNAME("EditorIcons")));
+	options->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MultiMeshInstance3D"), EditorStringName(EditorIcons)));
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
-	options->get_popup()->connect("id_pressed", callable_mp(this, &MultiMeshEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &MultiMeshEditor::_menu_option));
 
 	populate_dialog = memnew(ConfirmationDialog);
 	populate_dialog->set_title(TTR("Populate MultiMesh"));
@@ -290,10 +290,12 @@ MultiMeshEditor::MultiMeshEditor() {
 	surface_source = memnew(LineEdit);
 	hbc->add_child(surface_source);
 	surface_source->set_h_size_flags(SIZE_EXPAND_FILL);
+	surface_source->set_accessibility_name(TTRC("Surface Source"));
 	Button *b = memnew(Button);
 	hbc->add_child(b);
+	b->set_accessibility_name(TTRC("Browse"));
 	b->set_text("..");
-	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse).bind(false));
+	b->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_browse).bind(false));
 
 	vbc->add_margin_child(TTR("Target Surface:"), hbc);
 
@@ -301,13 +303,16 @@ MultiMeshEditor::MultiMeshEditor() {
 	mesh_source = memnew(LineEdit);
 	hbc->add_child(mesh_source);
 	mesh_source->set_h_size_flags(SIZE_EXPAND_FILL);
+	mesh_source->set_accessibility_name(TTRC("Mesh Source"));
 	b = memnew(Button);
 	hbc->add_child(b);
+	b->set_accessibility_name(TTRC("Browse"));
 	b->set_text("..");
 	vbc->add_margin_child(TTR("Source Mesh:"), hbc);
-	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse).bind(true));
+	b->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_browse).bind(true));
 
 	populate_axis = memnew(OptionButton);
+	populate_axis->set_accessibility_name(TTRC("Up Axis"));
 	populate_axis->add_item(TTR("X-Axis"));
 	populate_axis->add_item(TTR("Y-Axis"));
 	populate_axis->add_item(TTR("Z-Axis"));
@@ -317,11 +322,13 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_rotate_random = memnew(HSlider);
 	populate_rotate_random->set_max(1);
 	populate_rotate_random->set_step(0.01);
+	populate_rotate_random->set_accessibility_name(TTRC("Random Rotation"));
 	vbc->add_margin_child(TTR("Random Rotation:"), populate_rotate_random);
 
 	populate_tilt_random = memnew(HSlider);
 	populate_tilt_random->set_max(1);
 	populate_tilt_random->set_step(0.01);
+	populate_tilt_random->set_accessibility_name(TTRC("Random Tilt"));
 	vbc->add_margin_child(TTR("Random Tilt:"), populate_tilt_random);
 
 	populate_scale_random = memnew(SpinBox);
@@ -329,7 +336,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_scale_random->set_max(1);
 	populate_scale_random->set_value(0);
 	populate_scale_random->set_step(0.01);
-
+	populate_scale_random->set_accessibility_name(TTRC("Random Scale"));
 	vbc->add_margin_child(TTR("Random Scale:"), populate_scale_random);
 
 	populate_scale = memnew(SpinBox);
@@ -337,7 +344,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_scale->set_max(4096);
 	populate_scale->set_value(1);
 	populate_scale->set_step(0.01);
-
+	populate_scale->set_accessibility_name(TTRC("Scale"));
 	vbc->add_margin_child(TTR("Scale:"), populate_scale);
 
 	populate_amount = memnew(SpinBox);
@@ -347,12 +354,16 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_amount->set_min(1);
 	populate_amount->set_max(65536);
 	populate_amount->set_value(128);
+	populate_amount->set_accessibility_name(TTRC("Amount"));
 	vbc->add_margin_child(TTR("Amount:"), populate_amount);
 
 	populate_dialog->set_ok_button_text(TTR("Populate"));
 
-	populate_dialog->get_ok_button()->connect("pressed", callable_mp(this, &MultiMeshEditor::_populate));
+	populate_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_populate));
 	std = memnew(SceneTreeDialog);
+	Vector<StringName> valid_types;
+	valid_types.push_back("MeshInstance3D");
+	std->set_valid_types(valid_types);
 	populate_dialog->add_child(std);
 	std->connect("selected", callable_mp(this, &MultiMeshEditor::_browsed));
 
@@ -381,10 +392,7 @@ void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 
 MultiMeshEditorPlugin::MultiMeshEditorPlugin() {
 	multimesh_editor = memnew(MultiMeshEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(multimesh_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(multimesh_editor);
 
 	multimesh_editor->options->hide();
-}
-
-MultiMeshEditorPlugin::~MultiMeshEditorPlugin() {
 }

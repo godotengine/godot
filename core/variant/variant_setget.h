@@ -1,42 +1,39 @@
-/*************************************************************************/
-/*  variant_setget.h                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  variant_setget.h                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef VARIANT_SETGET_H
-#define VARIANT_SETGET_H
+#pragma once
 
 #include "variant.h"
 
-#include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/object/class_db.h"
-#include "core/templates/local_vector.h"
 #include "core/variant/variant_internal.h"
 
 /**** NAMED SETTERS AND GETTERS ****/
@@ -69,7 +66,9 @@
 			b.m_member = PtrToArg<m_member_type>::convert(member);                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                  \
 		}                                                                                                                            \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                         \
+		static Variant::Type get_type() {                                                                                            \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                         \
+		}                                                                                                                            \
 	};
 
 #define SETGET_NUMBER_STRUCT(m_base_type, m_member_type, m_member)                                                                \
@@ -103,7 +102,9 @@
 			b.m_member = PtrToArg<m_member_type>::convert(member);                                                                \
 			PtrToArg<m_base_type>::encode(b, base);                                                                               \
 		}                                                                                                                         \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                      \
+		static Variant::Type get_type() {                                                                                         \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                      \
+		}                                                                                                                         \
 	};
 
 #define SETGET_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom)                                                         \
@@ -134,7 +135,9 @@
 			b.m_custom = PtrToArg<m_member_type>::convert(member);                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                  \
 		}                                                                                                                            \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                         \
+		static Variant::Type get_type() {                                                                                            \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                         \
+		}                                                                                                                            \
 	};
 
 #define SETGET_NUMBER_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom)                                               \
@@ -168,7 +171,9 @@
 			b.m_custom = PtrToArg<m_member_type>::convert(member);                                                                \
 			PtrToArg<m_base_type>::encode(b, base);                                                                               \
 		}                                                                                                                         \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                      \
+		static Variant::Type get_type() {                                                                                         \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                      \
+		}                                                                                                                         \
 	};
 
 #define SETGET_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter)                                                \
@@ -199,7 +204,9 @@
 			b.m_setter(PtrToArg<m_member_type>::convert(member));                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                 \
 		}                                                                                                                           \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                        \
+		static Variant::Type get_type() {                                                                                           \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                        \
+		}                                                                                                                           \
 	};
 
 #define SETGET_NUMBER_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter)                                         \
@@ -233,7 +240,9 @@
 			b.m_setter(PtrToArg<m_member_type>::convert(member));                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                 \
 		}                                                                                                                           \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                        \
+		static Variant::Type get_type() {                                                                                           \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                        \
+		}                                                                                                                           \
 	};
 
 #define SETGET_STRUCT_FUNC_INDEX(m_base_type, m_member_type, m_member, m_setter, m_getter, m_index)                                          \
@@ -264,7 +273,9 @@
 			b.m_setter(m_index, PtrToArg<m_member_type>::convert(member));                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                          \
 		}                                                                                                                                    \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                                 \
+		static Variant::Type get_type() {                                                                                                    \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                                 \
+		}                                                                                                                                    \
 	};
 
 SETGET_NUMBER_STRUCT(Vector2, double, x)
@@ -347,5 +358,3 @@ SETGET_NUMBER_STRUCT_FUNC(Color, double, v, set_v, get_v)
 SETGET_NUMBER_STRUCT_FUNC(Color, double, ok_hsl_h, set_ok_hsl_h, get_ok_hsl_h)
 SETGET_NUMBER_STRUCT_FUNC(Color, double, ok_hsl_s, set_ok_hsl_s, get_ok_hsl_s)
 SETGET_NUMBER_STRUCT_FUNC(Color, double, ok_hsl_l, set_ok_hsl_l, get_ok_hsl_l)
-
-#endif // VARIANT_SETGET_H

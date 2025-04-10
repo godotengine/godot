@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  text_line.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  text_line.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "text_line.h"
 
@@ -35,6 +35,7 @@ void TextLine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &TextLine::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextLine::get_direction);
+	ClassDB::bind_method(D_METHOD("get_inferred_direction"), &TextLine::get_inferred_direction);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Left-to-right,Right-to-left"), "set_direction", "get_direction");
 
@@ -79,7 +80,11 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextLine::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextLine::get_text_overrun_behavior);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+
+	ClassDB::bind_method(D_METHOD("set_ellipsis_char", "char"), &TextLine::set_ellipsis_char);
+	ClassDB::bind_method(D_METHOD("get_ellipsis_char"), &TextLine::get_ellipsis_char);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ellipsis_char"), "set_ellipsis_char", "get_ellipsis_char");
 
 	ClassDB::bind_method(D_METHOD("get_objects"), &TextLine::get_objects);
 	ClassDB::bind_method(D_METHOD("get_object_rect", "key"), &TextLine::get_object_rect);
@@ -100,7 +105,12 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextLine::hit_test);
 }
 
-void TextLine::_shape() {
+void TextLine::_shape() const {
+	// When a shaped text is invalidated by an external source, we want to reshape it.
+	if (!TS->shaped_text_is_ready(rid)) {
+		dirty = true;
+	}
+
 	if (dirty) {
 		if (!tab_stops.is_empty()) {
 			TS->shaped_text_tab_align(rid, tab_stops);
@@ -109,6 +119,17 @@ void TextLine::_shape() {
 		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
 		if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 			switch (overrun_behavior) {
+				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS_FORCE: {
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
+					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
+				} break;
+				case TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE: {
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
+					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
+				} break;
 				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
@@ -132,8 +153,10 @@ void TextLine::_shape() {
 			if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
 				TS->shaped_text_fit_to_width(rid, width, flags);
 				overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
+				TS->shaped_text_set_custom_ellipsis(rid, (el_char.length() > 0) ? el_char[0] : 0x2026);
 				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
 			} else {
+				TS->shaped_text_set_custom_ellipsis(rid, (el_char.length() > 0) ? el_char[0] : 0x2026);
 				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
 			}
 		} else if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
@@ -178,6 +201,10 @@ TextServer::Direction TextLine::get_direction() const {
 	return TS->shaped_text_get_direction(rid);
 }
 
+TextServer::Direction TextLine::get_inferred_direction() const {
+	return TS->shaped_text_get_inferred_direction(rid);
+}
+
 void TextLine::set_orientation(TextServer::Orientation p_orientation) {
 	TS->shaped_text_set_orientation(rid, p_orientation);
 	dirty = true;
@@ -195,9 +222,6 @@ void TextLine::set_bidi_override(const Array &p_override) {
 bool TextLine::add_string(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language, const Variant &p_meta) {
 	ERR_FAIL_COND_V(p_font.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language, p_meta);
-	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-		TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
-	}
 	dirty = true;
 	return res;
 }
@@ -209,7 +233,7 @@ bool TextLine::add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_
 }
 
 bool TextLine::resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, float p_baseline) {
-	const_cast<TextLine *>(this)->_shape();
+	_shape();
 	return TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align, p_baseline);
 }
 
@@ -304,6 +328,23 @@ TextServer::OverrunBehavior TextLine::get_text_overrun_behavior() const {
 	return overrun_behavior;
 }
 
+void TextLine::set_ellipsis_char(const String &p_char) {
+	String c = p_char;
+	if (c.length() > 1) {
+		WARN_PRINT("Ellipsis must be exactly one character long (" + itos(c.length()) + " characters given).");
+		c = c.left(1);
+	}
+	if (el_char == c) {
+		return;
+	}
+	el_char = c;
+	dirty = true;
+}
+
+String TextLine::get_ellipsis_char() const {
+	return el_char;
+}
+
 void TextLine::set_width(float p_width) {
 	width = p_width;
 	if (alignment == HORIZONTAL_ALIGNMENT_FILL || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
@@ -316,37 +357,37 @@ float TextLine::get_width() const {
 }
 
 Size2 TextLine::get_size() const {
-	const_cast<TextLine *>(this)->_shape();
+	_shape();
 	return TS->shaped_text_get_size(rid);
 }
 
 float TextLine::get_line_ascent() const {
-	const_cast<TextLine *>(this)->_shape();
+	_shape();
 	return TS->shaped_text_get_ascent(rid);
 }
 
 float TextLine::get_line_descent() const {
-	const_cast<TextLine *>(this)->_shape();
+	_shape();
 	return TS->shaped_text_get_descent(rid);
 }
 
 float TextLine::get_line_width() const {
-	const_cast<TextLine *>(this)->_shape();
+	_shape();
 	return TS->shaped_text_get_width(rid);
 }
 
 float TextLine::get_line_underline_position() const {
-	const_cast<TextLine *>(this)->_shape();
+	_shape();
 	return TS->shaped_text_get_underline_position(rid);
 }
 
 float TextLine::get_line_underline_thickness() const {
-	const_cast<TextLine *>(this)->_shape();
+	_shape();
 	return TS->shaped_text_get_underline_thickness(rid);
 }
 
 void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) const {
-	const_cast<TextLine *>(this)->_shape();
+	_shape();
 
 	Vector2 ofs = p_pos;
 
@@ -393,7 +434,7 @@ void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) co
 }
 
 void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color) const {
-	const_cast<TextLine *>(this)->_shape();
+	_shape();
 
 	Vector2 ofs = p_pos;
 
@@ -440,7 +481,7 @@ void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_si
 }
 
 int TextLine::hit_test(float p_coords) const {
-	const_cast<TextLine *>(this)->_shape();
+	_shape();
 
 	return TS->shaped_text_hit_test_position(rid, p_coords);
 }
@@ -449,9 +490,6 @@ TextLine::TextLine(const String &p_text, const Ref<Font> &p_font, int p_font_siz
 	rid = TS->create_shaped_text(p_direction, p_orientation);
 	if (p_font.is_valid()) {
 		TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language);
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
-		}
 	}
 }
 

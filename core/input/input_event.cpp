@@ -1,40 +1,41 @@
-/*************************************************************************/
-/*  input_event.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  input_event.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "input_event.h"
 
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 
-const int InputEvent::DEVICE_ID_TOUCH_MOUSE = -1;
+const int InputEvent::DEVICE_ID_EMULATION = -1;
 const int InputEvent::DEVICE_ID_INTERNAL = -2;
 
 void InputEvent::set_device(int p_device) {
@@ -51,15 +52,15 @@ bool InputEvent::is_action(const StringName &p_action, bool p_exact_match) const
 }
 
 bool InputEvent::is_action_pressed(const StringName &p_action, bool p_allow_echo, bool p_exact_match) const {
-	bool pressed;
-	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, &pressed, nullptr, nullptr);
-	return valid && pressed && (p_allow_echo || !is_echo());
+	bool pressed_state;
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, &pressed_state, nullptr, nullptr);
+	return valid && pressed_state && (p_allow_echo || !is_echo());
 }
 
 bool InputEvent::is_action_released(const StringName &p_action, bool p_exact_match) const {
-	bool pressed;
-	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, &pressed, nullptr, nullptr);
-	return valid && !pressed;
+	bool pressed_state;
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, &pressed_state, nullptr, nullptr);
+	return valid && !pressed_state;
 }
 
 float InputEvent::get_action_strength(const StringName &p_action, bool p_exact_match) const {
@@ -74,8 +75,16 @@ float InputEvent::get_action_raw_strength(const StringName &p_action, bool p_exa
 	return valid ? raw_strength : 0.0f;
 }
 
+bool InputEvent::is_canceled() const {
+	return canceled;
+}
+
 bool InputEvent::is_pressed() const {
-	return false;
+	return pressed && !canceled;
+}
+
+bool InputEvent::is_released() const {
+	return !pressed && !canceled;
 }
 
 bool InputEvent::is_echo() const {
@@ -107,7 +116,9 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_action_released", "action", "exact_match"), &InputEvent::is_action_released, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match"), &InputEvent::get_action_strength, DEFVAL(false));
 
+	ClassDB::bind_method(D_METHOD("is_canceled"), &InputEvent::is_canceled);
 	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEvent::is_pressed);
+	ClassDB::bind_method(D_METHOD("is_released"), &InputEvent::is_released);
 	ClassDB::bind_method(D_METHOD("is_echo"), &InputEvent::is_echo);
 
 	ClassDB::bind_method(D_METHOD("as_text"), &InputEvent::as_text);
@@ -121,6 +132,8 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("xformed_by", "xform", "local_ofs"), &InputEvent::xformed_by, DEFVAL(Vector2()));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
+
+	BIND_CONSTANT(DEVICE_ID_EMULATION);
 }
 
 ///////////////////////////////////
@@ -145,13 +158,13 @@ int64_t InputEventFromWindow::get_window_id() const {
 void InputEventWithModifiers::set_command_or_control_autoremap(bool p_enabled) {
 	command_or_control_autoremap = p_enabled;
 	if (command_or_control_autoremap) {
-#ifdef MACOS_ENABLED
-		ctrl_pressed = false;
-		meta_pressed = true;
-#else
-		ctrl_pressed = true;
-		meta_pressed = false;
-#endif
+		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+			ctrl_pressed = false;
+			meta_pressed = true;
+		} else {
+			ctrl_pressed = true;
+			meta_pressed = false;
+		}
 	} else {
 		ctrl_pressed = false;
 		meta_pressed = false;
@@ -164,11 +177,11 @@ bool InputEventWithModifiers::is_command_or_control_autoremap() const {
 }
 
 bool InputEventWithModifiers::is_command_or_control_pressed() const {
-#ifdef MACOS_ENABLED
-	return meta_pressed;
-#else
-	return ctrl_pressed;
-#endif
+	if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		return meta_pressed;
+	} else {
+		return ctrl_pressed;
+	}
 }
 
 void InputEventWithModifiers::set_shift_pressed(bool p_enabled) {
@@ -190,7 +203,7 @@ bool InputEventWithModifiers::is_alt_pressed() const {
 }
 
 void InputEventWithModifiers::set_ctrl_pressed(bool p_enabled) {
-	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command/Control autoremaping is enabled, cannot set Control directly!");
+	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command or Control autoremapping is enabled, cannot set Control directly!");
 	ctrl_pressed = p_enabled;
 	emit_changed();
 }
@@ -200,7 +213,7 @@ bool InputEventWithModifiers::is_ctrl_pressed() const {
 }
 
 void InputEventWithModifiers::set_meta_pressed(bool p_enabled) {
-	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command/Control autoremaping is enabled, cannot set Meta directly!");
+	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command or Control autoremapping is enabled, cannot set Meta directly!");
 	meta_pressed = p_enabled;
 	emit_changed();
 }
@@ -216,26 +229,26 @@ void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModif
 	set_meta_pressed(event->is_meta_pressed());
 }
 
-Key InputEventWithModifiers::get_modifiers_mask() const {
-	Key mask = Key::NONE;
+BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
+	BitField<KeyModifierMask> mask;
 	if (is_ctrl_pressed()) {
-		mask |= KeyModifierMask::CTRL;
+		mask.set_flag(KeyModifierMask::CTRL);
 	}
 	if (is_shift_pressed()) {
-		mask |= KeyModifierMask::SHIFT;
+		mask.set_flag(KeyModifierMask::SHIFT);
 	}
 	if (is_alt_pressed()) {
-		mask |= KeyModifierMask::ALT;
+		mask.set_flag(KeyModifierMask::ALT);
 	}
 	if (is_meta_pressed()) {
-		mask |= KeyModifierMask::META;
+		mask.set_flag(KeyModifierMask::META);
 	}
 	if (is_command_or_control_autoremap()) {
-#ifdef MACOS_ENABLED
-		mask |= KeyModifierMask::META;
-#else
-		mask |= KeyModifierMask::CTRL;
-#endif
+		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+			mask.set_flag(KeyModifierMask::META);
+		} else {
+			mask.set_flag(KeyModifierMask::CTRL);
+		}
 	}
 	return mask;
 }
@@ -285,6 +298,8 @@ void InputEventWithModifiers::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_meta_pressed", "pressed"), &InputEventWithModifiers::set_meta_pressed);
 	ClassDB::bind_method(D_METHOD("is_meta_pressed"), &InputEventWithModifiers::is_meta_pressed);
 
+	ClassDB::bind_method(D_METHOD("get_modifiers_mask"), &InputEventWithModifiers::get_modifiers_mask);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command_or_control_autoremap"), "set_command_or_control_autoremap", "is_command_or_control_autoremap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alt_pressed"), "set_alt_pressed", "is_alt_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shift_pressed"), "set_shift_pressed", "is_shift_pressed");
@@ -315,10 +330,6 @@ void InputEventKey::set_pressed(bool p_pressed) {
 	emit_changed();
 }
 
-bool InputEventKey::is_pressed() const {
-	return pressed;
-}
-
 void InputEventKey::set_keycode(Key p_keycode) {
 	keycode = p_keycode;
 	emit_changed();
@@ -326,6 +337,15 @@ void InputEventKey::set_keycode(Key p_keycode) {
 
 Key InputEventKey::get_keycode() const {
 	return keycode;
+}
+
+void InputEventKey::set_key_label(Key p_key_label) {
+	key_label = p_key_label;
+	emit_changed();
+}
+
+Key InputEventKey::get_key_label() const {
+	return key_label;
 }
 
 void InputEventKey::set_physical_keycode(Key p_keycode) {
@@ -346,6 +366,15 @@ char32_t InputEventKey::get_unicode() const {
 	return unicode;
 }
 
+void InputEventKey::set_location(KeyLocation p_key_location) {
+	location = p_key_location;
+	emit_changed();
+}
+
+KeyLocation InputEventKey::get_location() const {
+	return location;
+}
+
 void InputEventKey::set_echo(bool p_enable) {
 	echo = p_enable;
 	emit_changed();
@@ -356,20 +385,96 @@ bool InputEventKey::is_echo() const {
 }
 
 Key InputEventKey::get_keycode_with_modifiers() const {
-	return keycode | get_modifiers_mask();
+	return keycode | (int64_t)get_modifiers_mask();
 }
 
 Key InputEventKey::get_physical_keycode_with_modifiers() const {
-	return physical_keycode | get_modifiers_mask();
+	return physical_keycode | (int64_t)get_modifiers_mask();
+}
+
+Key InputEventKey::get_key_label_with_modifiers() const {
+	return key_label | get_modifiers_mask();
+}
+
+String InputEventKey::as_text_physical_keycode() const {
+	String kc;
+
+	if (physical_keycode != Key::NONE) {
+		kc = keycode_get_string(physical_keycode);
+	} else {
+		kc = "(" + RTR("Unset") + ")";
+	}
+
+	if (kc.is_empty()) {
+		return kc;
+	}
+
+	String mods_text = InputEventWithModifiers::as_text();
+	return mods_text.is_empty() ? kc : mods_text + "+" + kc;
+}
+
+String InputEventKey::as_text_keycode() const {
+	String kc;
+
+	if (keycode != Key::NONE) {
+		kc = keycode_get_string(keycode);
+	} else {
+		kc = "(" + RTR("Unset") + ")";
+	}
+
+	if (kc.is_empty()) {
+		return kc;
+	}
+
+	String mods_text = InputEventWithModifiers::as_text();
+	return mods_text.is_empty() ? kc : mods_text + "+" + kc;
+}
+
+String InputEventKey::as_text_key_label() const {
+	String kc;
+
+	if (key_label != Key::NONE) {
+		kc = keycode_get_string(key_label);
+	} else {
+		kc = "(" + RTR("Unset") + ")";
+	}
+
+	if (kc.is_empty()) {
+		return kc;
+	}
+
+	String mods_text = InputEventWithModifiers::as_text();
+	return mods_text.is_empty() ? kc : mods_text + "+" + kc;
+}
+
+String InputEventKey::as_text_location() const {
+	String loc;
+
+	switch (location) {
+		case KeyLocation::LEFT:
+			loc = "left";
+			break;
+		case KeyLocation::RIGHT:
+			loc = "right";
+			break;
+		default:
+			break;
+	}
+
+	return loc;
 }
 
 String InputEventKey::as_text() const {
 	String kc;
 
-	if (keycode == Key::NONE) {
+	if (keycode == Key::NONE && physical_keycode == Key::NONE && key_label != Key::NONE) {
+		kc = keycode_get_string(key_label) + " (Unicode)";
+	} else if (keycode != Key::NONE) {
+		kc = keycode_get_string(keycode);
+	} else if (physical_keycode != Key::NONE) {
 		kc = keycode_get_string(physical_keycode) + " (" + RTR("Physical") + ")";
 	} else {
-		kc = keycode_get_string(keycode);
+		kc = "(" + RTR("Unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -386,24 +491,42 @@ String InputEventKey::to_string() {
 
 	String kc = "";
 	String physical = "false";
-	if (keycode == Key::NONE) {
+
+	String loc = as_text_location();
+	if (loc.is_empty()) {
+		loc = "unspecified";
+	}
+
+	if (keycode == Key::NONE && physical_keycode == Key::NONE && unicode != 0) {
+		kc = "U+" + String::num_uint64(unicode, 16) + " (" + String::chr(unicode) + ")";
+	} else if (keycode != Key::NONE) {
+		kc = itos((int64_t)keycode) + " (" + keycode_get_string(keycode) + ")";
+	} else if (physical_keycode != Key::NONE) {
 		kc = itos((int64_t)physical_keycode) + " (" + keycode_get_string(physical_keycode) + ")";
 		physical = "true";
 	} else {
-		kc = itos((int64_t)keycode) + " (" + keycode_get_string(keycode) + ")";
+		kc = "(" + RTR("Unset") + ")";
 	}
 
 	String mods = InputEventWithModifiers::as_text();
 	mods = mods.is_empty() ? "none" : mods;
 
-	return vformat("InputEventKey: keycode=%s, mods=%s, physical=%s, pressed=%s, echo=%s", kc, mods, physical, p, e);
+	return vformat("InputEventKey: keycode=%s, mods=%s, physical=%s, location=%s, pressed=%s, echo=%s", kc, mods, physical, loc, p, e);
 }
 
-Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode) {
+Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode, bool p_physical) {
 	Ref<InputEventKey> ie;
 	ie.instantiate();
-	ie->set_keycode(p_keycode & KeyModifierMask::CODE_MASK);
-	ie->set_unicode(char32_t(p_keycode & KeyModifierMask::CODE_MASK));
+	if (p_physical) {
+		ie->set_physical_keycode(p_keycode & KeyModifierMask::CODE_MASK);
+	} else {
+		ie->set_keycode(p_keycode & KeyModifierMask::CODE_MASK);
+	}
+
+	char32_t ch = char32_t(p_keycode & KeyModifierMask::CODE_MASK);
+	if (ch < 0xd800 || (ch > 0xdfff && ch <= 0x10ffff)) {
+		ie->set_unicode(ch);
+	}
 
 	if ((p_keycode & KeyModifierMask::SHIFT) != Key::NONE) {
 		ie->set_shift_pressed(true);
@@ -435,13 +558,21 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool p_exact_ma
 	}
 
 	bool match;
-	if (keycode != Key::NONE) {
+	if (keycode == Key::NONE && physical_keycode == Key::NONE && key_label != Key::NONE) {
+		match = key_label == key->key_label;
+	} else if (keycode != Key::NONE) {
 		match = keycode == key->keycode;
+	} else if (physical_keycode != Key::NONE) {
+		match = physical_keycode == key->physical_keycode;
+		if (location != KeyLocation::UNSPECIFIED) {
+			match &= location == key->location;
+		}
 	} else {
-		match = get_physical_keycode() == key->get_physical_keycode();
+		match = false;
 	}
-	Key action_mask = get_modifiers_mask();
-	Key key_mask = key->get_modifiers_mask();
+
+	Key action_mask = (Key)(int64_t)get_modifiers_mask();
+	Key key_mask = (Key)(int64_t)key->get_modifiers_mask();
 	if (key->is_pressed()) {
 		match &= (action_mask & key_mask) == action_mask;
 	}
@@ -470,12 +601,20 @@ bool InputEventKey::is_match(const Ref<InputEvent> &p_event, bool p_exact_match)
 		return false;
 	}
 
-	if (keycode == Key::NONE) {
-		return physical_keycode == key->physical_keycode &&
+	if (keycode == Key::NONE && physical_keycode == Key::NONE && key_label != Key::NONE) {
+		return (key_label == key->key_label) &&
+				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	} else if (keycode != Key::NONE) {
+		return (keycode == key->keycode) &&
+				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	} else if (physical_keycode != Key::NONE) {
+		if (location != KeyLocation::UNSPECIFIED && location != key->location) {
+			return false;
+		}
+		return (physical_keycode == key->physical_keycode) &&
 				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
 	} else {
-		return keycode == key->keycode &&
-				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+		return false;
 	}
 }
 
@@ -488,29 +627,43 @@ void InputEventKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physical_keycode", "physical_keycode"), &InputEventKey::set_physical_keycode);
 	ClassDB::bind_method(D_METHOD("get_physical_keycode"), &InputEventKey::get_physical_keycode);
 
+	ClassDB::bind_method(D_METHOD("set_key_label", "key_label"), &InputEventKey::set_key_label);
+	ClassDB::bind_method(D_METHOD("get_key_label"), &InputEventKey::get_key_label);
+
 	ClassDB::bind_method(D_METHOD("set_unicode", "unicode"), &InputEventKey::set_unicode);
 	ClassDB::bind_method(D_METHOD("get_unicode"), &InputEventKey::get_unicode);
+
+	ClassDB::bind_method(D_METHOD("set_location", "location"), &InputEventKey::set_location);
+	ClassDB::bind_method(D_METHOD("get_location"), &InputEventKey::get_location);
 
 	ClassDB::bind_method(D_METHOD("set_echo", "echo"), &InputEventKey::set_echo);
 
 	ClassDB::bind_method(D_METHOD("get_keycode_with_modifiers"), &InputEventKey::get_keycode_with_modifiers);
 	ClassDB::bind_method(D_METHOD("get_physical_keycode_with_modifiers"), &InputEventKey::get_physical_keycode_with_modifiers);
+	ClassDB::bind_method(D_METHOD("get_key_label_with_modifiers"), &InputEventKey::get_key_label_with_modifiers);
+
+	ClassDB::bind_method(D_METHOD("as_text_keycode"), &InputEventKey::as_text_keycode);
+	ClassDB::bind_method(D_METHOD("as_text_physical_keycode"), &InputEventKey::as_text_physical_keycode);
+	ClassDB::bind_method(D_METHOD("as_text_key_label"), &InputEventKey::as_text_key_label);
+	ClassDB::bind_method(D_METHOD("as_text_location"), &InputEventKey::as_text_location);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keycode"), "set_keycode", "get_keycode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physical_keycode"), "set_physical_keycode", "get_physical_keycode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "key_label"), "set_key_label", "get_key_label");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "unicode"), "set_unicode", "get_unicode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "location", PROPERTY_HINT_ENUM, "Unspecified,Left,Right"), "set_location", "get_location");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
 ///////////////////////////////////
 
-void InputEventMouse::set_button_mask(MouseButton p_mask) {
+void InputEventMouse::set_button_mask(BitField<MouseButtonMask> p_mask) {
 	button_mask = p_mask;
 	emit_changed();
 }
 
-MouseButton InputEventMouse::get_button_mask() const {
+BitField<MouseButtonMask> InputEventMouse::get_button_mask() const {
 	return button_mask;
 }
 
@@ -568,8 +721,8 @@ void InputEventMouseButton::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
 
-bool InputEventMouseButton::is_pressed() const {
-	return pressed;
+void InputEventMouseButton::set_canceled(bool p_canceled) {
+	canceled = p_canceled;
 }
 
 void InputEventMouseButton::set_double_click(bool p_double_click) {
@@ -596,9 +749,12 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 
 	mb->set_button_mask(get_button_mask());
 	mb->set_pressed(pressed);
+	mb->set_canceled(canceled);
 	mb->set_double_click(double_click);
 	mb->set_factor(factor);
 	mb->set_button_index(button_index);
+
+	mb->merge_meta_from(this);
 
 	return mb;
 }
@@ -610,8 +766,8 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool p_
 	}
 
 	bool match = button_index == mb->button_index;
-	Key action_modifiers_mask = get_modifiers_mask();
-	Key button_modifiers_mask = mb->get_modifiers_mask();
+	Key action_modifiers_mask = (Key)(int64_t)get_modifiers_mask();
+	Key button_modifiers_mask = (Key)(int64_t)mb->get_modifiers_mask();
 	if (mb->is_pressed()) {
 		match &= (action_modifiers_mask & button_modifiers_mask) == action_modifiers_mask;
 	}
@@ -691,6 +847,7 @@ String InputEventMouseButton::as_text() const {
 
 String InputEventMouseButton::to_string() {
 	String p = is_pressed() ? "true" : "false";
+	String canceled_state = is_canceled() ? "true" : "false";
 	String d = double_click ? "true" : "false";
 
 	MouseButton idx = get_button_index();
@@ -717,7 +874,7 @@ String InputEventMouseButton::to_string() {
 
 	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
 	String index_and_mods = vformat("button_index=%s, mods=%s", button_index, mods);
-	return vformat("InputEventMouseButton: %s, pressed=%s, position=(%s), button_mask=%d, double_click=%s", index_and_mods, p, String(get_position()), get_button_mask(), d);
+	return vformat("InputEventMouseButton: %s, pressed=%s, canceled=%s, position=(%s), button_mask=%d, double_click=%s", index_and_mods, p, canceled_state, String(get_position()), get_button_mask(), d);
 }
 
 void InputEventMouseButton::_bind_methods() {
@@ -728,13 +885,14 @@ void InputEventMouseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_button_index"), &InputEventMouseButton::get_button_index);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventMouseButton::set_pressed);
-	//	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventMouseButton::is_pressed);
+	ClassDB::bind_method(D_METHOD("set_canceled", "canceled"), &InputEventMouseButton::set_canceled);
 
 	ClassDB::bind_method(D_METHOD("set_double_click", "double_click"), &InputEventMouseButton::set_double_click);
 	ClassDB::bind_method(D_METHOD("is_double_click"), &InputEventMouseButton::is_double_click);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "factor"), "set_factor", "get_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "canceled"), "set_canceled", "is_canceled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_click"), "set_double_click", "is_double_click");
 }
@@ -773,12 +931,28 @@ Vector2 InputEventMouseMotion::get_relative() const {
 	return relative;
 }
 
+void InputEventMouseMotion::set_relative_screen_position(const Vector2 &p_relative) {
+	screen_relative = p_relative;
+}
+
+Vector2 InputEventMouseMotion::get_relative_screen_position() const {
+	return screen_relative;
+}
+
 void InputEventMouseMotion::set_velocity(const Vector2 &p_velocity) {
 	velocity = p_velocity;
 }
 
 Vector2 InputEventMouseMotion::get_velocity() const {
 	return velocity;
+}
+
+void InputEventMouseMotion::set_screen_velocity(const Vector2 &p_velocity) {
+	screen_velocity = p_velocity;
+}
+
+Vector2 InputEventMouseMotion::get_screen_velocity() const {
+	return screen_velocity;
 }
 
 Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
@@ -798,7 +972,11 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 
 	mm->set_button_mask(get_button_mask());
 	mm->set_relative(p_xform.basis_xform(get_relative()));
+	mm->set_relative_screen_position(get_relative_screen_position());
 	mm->set_velocity(p_xform.basis_xform(get_velocity()));
+	mm->set_screen_velocity(get_screen_velocity());
+
+	mm->merge_meta_from(this);
 
 	return mm;
 }
@@ -808,26 +986,23 @@ String InputEventMouseMotion::as_text() const {
 }
 
 String InputEventMouseMotion::to_string() {
-	MouseButton mouse_button_mask = get_button_mask();
+	BitField<MouseButtonMask> mouse_button_mask = get_button_mask();
 	String button_mask_string = itos((int64_t)mouse_button_mask);
-	switch (mouse_button_mask) {
-		case MouseButton::MASK_LEFT:
-			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
-			break;
-		case MouseButton::MASK_MIDDLE:
-			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]));
-			break;
-		case MouseButton::MASK_RIGHT:
-			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]));
-			break;
-		case MouseButton::MASK_XBUTTON1:
-			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]));
-			break;
-		case MouseButton::MASK_XBUTTON2:
-			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]));
-			break;
-		default:
-			break;
+
+	if (mouse_button_mask.has_flag(MouseButtonMask::LEFT)) {
+		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
+	}
+	if (mouse_button_mask.has_flag(MouseButtonMask::MIDDLE)) {
+		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]));
+	}
+	if (mouse_button_mask.has_flag(MouseButtonMask::RIGHT)) {
+		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]));
+	}
+	if (mouse_button_mask.has_flag(MouseButtonMask::MB_XBUTTON1)) {
+		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]));
+	}
+	if (mouse_button_mask.has_flag(MouseButtonMask::MB_XBUTTON2)) {
+		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]));
 	}
 
 	// Work around the fact vformat can only take 5 substitutions but 7 need to be passed.
@@ -842,6 +1017,10 @@ bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 	}
 
 	if (get_window_id() != motion->get_window_id()) {
+		return false;
+	}
+
+	if (is_canceled() != motion->is_canceled()) {
 		return false;
 	}
 
@@ -872,7 +1051,9 @@ bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 	set_position(motion->get_position());
 	set_global_position(motion->get_global_position());
 	set_velocity(motion->get_velocity());
+	set_screen_velocity(motion->get_screen_velocity());
 	relative += motion->get_relative();
+	screen_relative += motion->get_relative_screen_position();
 
 	return true;
 }
@@ -890,20 +1071,28 @@ void InputEventMouseMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventMouseMotion::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventMouseMotion::get_relative);
 
+	ClassDB::bind_method(D_METHOD("set_screen_relative", "relative"), &InputEventMouseMotion::set_relative_screen_position);
+	ClassDB::bind_method(D_METHOD("get_screen_relative"), &InputEventMouseMotion::get_relative_screen_position);
+
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventMouseMotion::set_velocity);
 	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventMouseMotion::get_velocity);
+
+	ClassDB::bind_method(D_METHOD("set_screen_velocity", "velocity"), &InputEventMouseMotion::set_screen_velocity);
+	ClassDB::bind_method(D_METHOD("get_screen_velocity"), &InputEventMouseMotion::get_screen_velocity);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pen_inverted"), "set_pen_inverted", "get_pen_inverted");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "screen_relative", PROPERTY_HINT_NONE, "suffix:px"), "set_screen_relative", "get_screen_relative");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "screen_velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_screen_velocity", "get_screen_velocity");
 }
 
 ///////////////////////////////////
 
 void InputEventJoypadMotion::set_axis(JoyAxis p_axis) {
-	ERR_FAIL_COND(p_axis < JoyAxis::LEFT_X || p_axis > JoyAxis::MAX);
+	ERR_FAIL_COND(p_axis < JoyAxis::INVALID || p_axis > JoyAxis::MAX);
 
 	axis = p_axis;
 	emit_changed();
@@ -915,15 +1104,12 @@ JoyAxis InputEventJoypadMotion::get_axis() const {
 
 void InputEventJoypadMotion::set_axis_value(float p_value) {
 	axis_value = p_value;
+	pressed = Math::abs(axis_value) >= InputMap::DEFAULT_TOGGLE_DEADZONE;
 	emit_changed();
 }
 
 float InputEventJoypadMotion::get_axis_value() const {
 	return axis_value;
-}
-
-bool InputEventJoypadMotion::is_pressed() const {
-	return Math::abs(axis_value) >= 0.5f;
 }
 
 bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
@@ -940,12 +1126,12 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool p
 	if (match) {
 		float jm_abs_axis_value = Math::abs(jm->get_axis_value());
 		bool same_direction = (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0);
-		bool pressed = same_direction && jm_abs_axis_value >= p_deadzone;
+		bool pressed_state = same_direction && jm_abs_axis_value >= p_deadzone;
 		if (r_pressed != nullptr) {
-			*r_pressed = pressed;
+			*r_pressed = pressed_state;
 		}
 		if (r_strength != nullptr) {
-			if (pressed) {
+			if (pressed_state) {
 				if (p_deadzone == 1.0f) {
 					*r_strength = 1.0f;
 				} else {
@@ -999,6 +1185,15 @@ String InputEventJoypadMotion::to_string() {
 	return vformat("InputEventJoypadMotion: axis=%d, axis_value=%.2f", axis, axis_value);
 }
 
+Ref<InputEventJoypadMotion> InputEventJoypadMotion::create_reference(JoyAxis p_axis, float p_value) {
+	Ref<InputEventJoypadMotion> ie;
+	ie.instantiate();
+	ie->set_axis(p_axis);
+	ie->set_axis_value(p_value);
+
+	return ie;
+}
+
 void InputEventJoypadMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis", "axis"), &InputEventJoypadMotion::set_axis);
 	ClassDB::bind_method(D_METHOD("get_axis"), &InputEventJoypadMotion::get_axis);
@@ -1023,10 +1218,6 @@ JoyButton InputEventJoypadButton::get_button_index() const {
 
 void InputEventJoypadButton::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
-}
-
-bool InputEventJoypadButton::is_pressed() const {
-	return pressed;
 }
 
 void InputEventJoypadButton::set_pressure(float p_pressure) {
@@ -1077,7 +1268,7 @@ static const char *_joy_button_descriptions[(size_t)JoyButton::SDL_MAX] = {
 	TTRC("Top Action, Sony Triangle, Xbox Y, Nintendo X"),
 	TTRC("Back, Sony Select, Xbox Back, Nintendo -"),
 	TTRC("Guide, Sony PS, Xbox Home"),
-	TTRC("Start, Nintendo +"),
+	TTRC("Start, Xbox Menu, Nintendo +"),
 	TTRC("Left Stick, Sony L3, Xbox L/LS"),
 	TTRC("Right Stick, Sony R3, Xbox R/RS"),
 	TTRC("Left Shoulder, Sony L1, Xbox LB"),
@@ -1095,21 +1286,21 @@ static const char *_joy_button_descriptions[(size_t)JoyButton::SDL_MAX] = {
 };
 
 String InputEventJoypadButton::as_text() const {
-	String text = "Joypad Button " + itos((int64_t)button_index);
+	String text = vformat(RTR("Joypad Button %d"), (int64_t)button_index);
 
 	if (button_index > JoyButton::INVALID && button_index < JoyButton::SDL_MAX) {
-		text += vformat(" (%s)", _joy_button_descriptions[(size_t)button_index]);
+		text += vformat(" (%s)", TTRGET(_joy_button_descriptions[(size_t)button_index]));
 	}
 
 	if (pressure != 0) {
-		text += ", Pressure:" + String(Variant(pressure));
+		text += ", " + RTR("Pressure:") + " " + String(Variant(pressure));
 	}
 
 	return text;
 }
 
 String InputEventJoypadButton::to_string() {
-	String p = pressed ? "true" : "false";
+	String p = is_pressed() ? "true" : "false";
 	return vformat("InputEventJoypadButton: button_index=%d, pressed=%s, pressure=%.2f", button_index, p, pressure);
 }
 
@@ -1129,7 +1320,6 @@ void InputEventJoypadButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventJoypadButton::get_pressure);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventJoypadButton::set_pressed);
-	//	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventJoypadButton::is_pressed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
@@ -1158,8 +1348,8 @@ void InputEventScreenTouch::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
 
-bool InputEventScreenTouch::is_pressed() const {
-	return pressed;
+void InputEventScreenTouch::set_canceled(bool p_canceled) {
+	canceled = p_canceled;
 }
 
 void InputEventScreenTouch::set_double_tap(bool p_double_tap) {
@@ -1177,21 +1367,25 @@ Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, co
 	st->set_index(index);
 	st->set_position(p_xform.xform(pos + p_local_ofs));
 	st->set_pressed(pressed);
+	st->set_canceled(canceled);
 	st->set_double_tap(double_tap);
+
+	st->merge_meta_from(this);
 
 	return st;
 }
 
 String InputEventScreenTouch::as_text() const {
-	String status = pressed ? RTR("touched") : RTR("released");
+	String status = canceled ? RTR("canceled") : (pressed ? RTR("touched") : RTR("released"));
 
 	return vformat(RTR("Screen %s at (%s) with %s touch points"), status, String(get_position()), itos(index));
 }
 
 String InputEventScreenTouch::to_string() {
 	String p = pressed ? "true" : "false";
+	String canceled_state = canceled ? "true" : "false";
 	String double_tap_string = double_tap ? "true" : "false";
-	return vformat("InputEventScreenTouch: index=%d, pressed=%s, position=(%s), double_tap=%s", index, p, String(get_position()), double_tap_string);
+	return vformat("InputEventScreenTouch: index=%d, pressed=%s, canceled=%s, position=(%s), double_tap=%s", index, p, canceled_state, String(get_position()), double_tap_string);
 }
 
 void InputEventScreenTouch::_bind_methods() {
@@ -1202,13 +1396,14 @@ void InputEventScreenTouch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position"), &InputEventScreenTouch::get_position);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventScreenTouch::set_pressed);
-	//ClassDB::bind_method(D_METHOD("is_pressed"),&InputEventScreenTouch::is_pressed);
+	ClassDB::bind_method(D_METHOD("set_canceled", "canceled"), &InputEventScreenTouch::set_canceled);
 
 	ClassDB::bind_method(D_METHOD("set_double_tap", "double_tap"), &InputEventScreenTouch::set_double_tap);
 	ClassDB::bind_method(D_METHOD("is_double_tap"), &InputEventScreenTouch::is_double_tap);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "canceled"), "set_canceled", "is_canceled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_tap"), "set_double_tap", "is_double_tap");
 }
@@ -1221,6 +1416,30 @@ void InputEventScreenDrag::set_index(int p_index) {
 
 int InputEventScreenDrag::get_index() const {
 	return index;
+}
+
+void InputEventScreenDrag::set_tilt(const Vector2 &p_tilt) {
+	tilt = p_tilt;
+}
+
+Vector2 InputEventScreenDrag::get_tilt() const {
+	return tilt;
+}
+
+void InputEventScreenDrag::set_pressure(float p_pressure) {
+	pressure = p_pressure;
+}
+
+float InputEventScreenDrag::get_pressure() const {
+	return pressure;
+}
+
+void InputEventScreenDrag::set_pen_inverted(bool p_inverted) {
+	pen_inverted = p_inverted;
+}
+
+bool InputEventScreenDrag::get_pen_inverted() const {
+	return pen_inverted;
 }
 
 void InputEventScreenDrag::set_position(const Vector2 &p_pos) {
@@ -1239,12 +1458,28 @@ Vector2 InputEventScreenDrag::get_relative() const {
 	return relative;
 }
 
+void InputEventScreenDrag::set_relative_screen_position(const Vector2 &p_relative) {
+	screen_relative = p_relative;
+}
+
+Vector2 InputEventScreenDrag::get_relative_screen_position() const {
+	return screen_relative;
+}
+
 void InputEventScreenDrag::set_velocity(const Vector2 &p_velocity) {
 	velocity = p_velocity;
 }
 
 Vector2 InputEventScreenDrag::get_velocity() const {
 	return velocity;
+}
+
+void InputEventScreenDrag::set_screen_velocity(const Vector2 &p_velocity) {
+	screen_velocity = p_velocity;
+}
+
+Vector2 InputEventScreenDrag::get_screen_velocity() const {
+	return screen_velocity;
 }
 
 Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
@@ -1256,9 +1491,16 @@ Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, con
 	sd->set_window_id(get_window_id());
 
 	sd->set_index(index);
+	sd->set_pressure(get_pressure());
+	sd->set_pen_inverted(get_pen_inverted());
+	sd->set_tilt(get_tilt());
 	sd->set_position(p_xform.xform(pos + p_local_ofs));
 	sd->set_relative(p_xform.basis_xform(relative));
+	sd->set_relative_screen_position(get_relative_screen_position());
 	sd->set_velocity(p_xform.basis_xform(velocity));
+	sd->set_screen_velocity(get_screen_velocity());
+
+	sd->merge_meta_from(this);
 
 	return sd;
 }
@@ -1268,7 +1510,7 @@ String InputEventScreenDrag::as_text() const {
 }
 
 String InputEventScreenDrag::to_string() {
-	return vformat("InputEventScreenDrag: index=%d, position=(%s), relative=(%s), velocity=(%s)", index, String(get_position()), String(get_relative()), String(get_velocity()));
+	return vformat("InputEventScreenDrag: index=%d, position=(%s), relative=(%s), velocity=(%s), pressure=%.2f, tilt=(%s), pen_inverted=(%s)", index, String(get_position()), String(get_relative()), String(get_velocity()), get_pressure(), String(get_tilt()), get_pen_inverted());
 }
 
 bool InputEventScreenDrag::accumulate(const Ref<InputEvent> &p_event) {
@@ -1283,7 +1525,9 @@ bool InputEventScreenDrag::accumulate(const Ref<InputEvent> &p_event) {
 
 	set_position(drag->get_position());
 	set_velocity(drag->get_velocity());
+	set_screen_velocity(drag->get_screen_velocity());
 	relative += drag->get_relative();
+	screen_relative += drag->get_relative_screen_position();
 
 	return true;
 }
@@ -1292,19 +1536,39 @@ void InputEventScreenDrag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_index", "index"), &InputEventScreenDrag::set_index);
 	ClassDB::bind_method(D_METHOD("get_index"), &InputEventScreenDrag::get_index);
 
+	ClassDB::bind_method(D_METHOD("set_tilt", "tilt"), &InputEventScreenDrag::set_tilt);
+	ClassDB::bind_method(D_METHOD("get_tilt"), &InputEventScreenDrag::get_tilt);
+
+	ClassDB::bind_method(D_METHOD("set_pressure", "pressure"), &InputEventScreenDrag::set_pressure);
+	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventScreenDrag::get_pressure);
+
+	ClassDB::bind_method(D_METHOD("set_pen_inverted", "pen_inverted"), &InputEventScreenDrag::set_pen_inverted);
+	ClassDB::bind_method(D_METHOD("get_pen_inverted"), &InputEventScreenDrag::get_pen_inverted);
+
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventScreenDrag::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &InputEventScreenDrag::get_position);
 
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventScreenDrag::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventScreenDrag::get_relative);
 
+	ClassDB::bind_method(D_METHOD("set_screen_relative", "relative"), &InputEventScreenDrag::set_relative_screen_position);
+	ClassDB::bind_method(D_METHOD("get_screen_relative"), &InputEventScreenDrag::get_relative_screen_position);
+
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventScreenDrag::set_velocity);
 	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventScreenDrag::get_velocity);
 
+	ClassDB::bind_method(D_METHOD("set_screen_velocity", "velocity"), &InputEventScreenDrag::set_screen_velocity);
+	ClassDB::bind_method(D_METHOD("get_screen_velocity"), &InputEventScreenDrag::get_screen_velocity);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pen_inverted"), "set_pen_inverted", "get_pen_inverted");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "screen_relative", PROPERTY_HINT_NONE, "suffix:px"), "set_screen_relative", "get_screen_relative");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "screen_velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_screen_velocity", "get_screen_velocity");
 }
 
 ///////////////////////////////////
@@ -1321,16 +1585,20 @@ void InputEventAction::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
 
-bool InputEventAction::is_pressed() const {
-	return pressed;
-}
-
 void InputEventAction::set_strength(float p_strength) {
 	strength = CLAMP(p_strength, 0.0f, 1.0f);
 }
 
 float InputEventAction::get_strength() const {
 	return strength;
+}
+
+void InputEventAction::set_event_index(int p_index) {
+	event_index = p_index;
+}
+
+int InputEventAction::get_event_index() const {
+	return event_index;
 }
 
 bool InputEventAction::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
@@ -1353,7 +1621,7 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool p_exact
 
 	bool match = action == act->action;
 	if (match) {
-		bool act_pressed = act->pressed;
+		bool act_pressed = act->is_pressed();
 		if (r_pressed != nullptr) {
 			*r_pressed = act_pressed;
 		}
@@ -1369,11 +1637,22 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool p_exact
 }
 
 String InputEventAction::as_text() const {
-	return vformat(RTR("Input Action %s was %s"), action, pressed ? "pressed" : "released");
+	const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(action);
+	if (!events) {
+		return String();
+	}
+
+	for (const Ref<InputEvent> &E : *events) {
+		if (E.is_valid()) {
+			return E->as_text();
+		}
+	}
+
+	return String();
 }
 
 String InputEventAction::to_string() {
-	String p = pressed ? "true" : "false";
+	String p = is_pressed() ? "true" : "false";
 	return vformat("InputEventAction: action=\"%s\", pressed=%s", action, p);
 }
 
@@ -1382,16 +1661,17 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_action"), &InputEventAction::get_action);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventAction::set_pressed);
-	//ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventAction::is_pressed);
 
 	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &InputEventAction::set_strength);
 	ClassDB::bind_method(D_METHOD("get_strength"), &InputEventAction::get_strength);
 
-	//	ClassDB::bind_method(D_METHOD("is_action", "name"), &InputEventAction::is_action);
+	ClassDB::bind_method(D_METHOD("set_event_index", "index"), &InputEventAction::set_event_index);
+	ClassDB::bind_method(D_METHOD("get_event_index"), &InputEventAction::get_event_index);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "event_index", PROPERTY_HINT_RANGE, "-1,31,1"), "set_event_index", "get_event_index"); // The max value equals to Input::MAX_EVENT - 1.
 }
 
 ///////////////////////////////////
@@ -1433,6 +1713,8 @@ Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform,
 	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
 	ev->set_factor(get_factor());
 
+	ev->merge_meta_from(this);
+
 	return ev;
 }
 
@@ -1472,6 +1754,8 @@ Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, con
 
 	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
 	ev->set_delta(get_delta());
+
+	ev->merge_meta_from(this);
 
 	return ev;
 }
@@ -1562,7 +1846,27 @@ String InputEventMIDI::as_text() const {
 }
 
 String InputEventMIDI::to_string() {
-	return vformat("InputEventMIDI: channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d, controller_number=%d, controller_value=%d", channel, message, pitch, velocity, pressure, controller_number, controller_value);
+	String ret;
+	switch (message) {
+		case MIDIMessage::NOTE_ON:
+			ret = vformat("Note On: channel=%d, pitch=%d, velocity=%d", channel, pitch, velocity);
+			break;
+		case MIDIMessage::NOTE_OFF:
+			ret = vformat("Note Off: channel=%d, pitch=%d, velocity=%d", channel, pitch, velocity);
+			break;
+		case MIDIMessage::PITCH_BEND:
+			ret = vformat("Pitch Bend: channel=%d, pitch=%d", channel, pitch);
+			break;
+		case MIDIMessage::CHANNEL_PRESSURE:
+			ret = vformat("Channel Pressure: channel=%d, pressure=%d", channel, pressure);
+			break;
+		case MIDIMessage::CONTROL_CHANGE:
+			ret = vformat("Control Change: channel=%d, controller_number=%d, controller_value=%d", channel, controller_number, controller_value);
+			break;
+		default:
+			ret = vformat("channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d, controller_number=%d, controller_value=%d, instrument=%d", channel, message, pitch, velocity, pressure, controller_number, controller_value, instrument);
+	}
+	return "InputEventMIDI: " + ret;
 }
 
 void InputEventMIDI::_bind_methods() {
@@ -1611,10 +1915,6 @@ void InputEventShortcut::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
 }
 
-bool InputEventShortcut::is_pressed() const {
-	return true;
-}
-
 String InputEventShortcut::as_text() const {
 	ERR_FAIL_COND_V(shortcut.is_null(), "None");
 
@@ -1625,4 +1925,8 @@ String InputEventShortcut::to_string() {
 	ERR_FAIL_COND_V(shortcut.is_null(), "None");
 
 	return vformat("InputEventShortcut: shortcut=%s", shortcut->get_as_text());
+}
+
+InputEventShortcut::InputEventShortcut() {
+	pressed = true;
 }

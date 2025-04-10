@@ -1,42 +1,41 @@
-/*************************************************************************/
-/*  face3.h                                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  face3.h                                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef FACE3_H
-#define FACE3_H
+#pragma once
 
 #include "core/math/aabb.h"
 #include "core/math/plane.h"
 #include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
 
-struct _NO_DISCARD_ Face3 {
+struct [[nodiscard]] Face3 {
 	enum Side {
 		SIDE_OVER,
 		SIDE_UNDER,
@@ -57,18 +56,13 @@ struct _NO_DISCARD_ Face3 {
 	Plane get_plane(ClockDirection p_dir = CLOCKWISE) const;
 	Vector3 get_random_point_inside() const;
 
-	Side get_side_of(const Face3 &p_face, ClockDirection p_clock_dir = CLOCKWISE) const;
-
 	bool is_degenerate() const;
 	real_t get_area() const;
 
-	Vector3 get_median_point() const;
 	Vector3 get_closest_point_to(const Vector3 &p_point) const;
 
 	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection = nullptr) const;
 	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection = nullptr) const;
-
-	ClockDirection get_clock_dir() const; ///< todo, test if this is returning the proper clockwisity
 
 	void get_support(const Vector3 &p_normal, const Transform3D &p_transform, Vector3 *p_vertices, int *p_count, int p_max) const;
 	void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const;
@@ -84,12 +78,9 @@ struct _NO_DISCARD_ Face3 {
 	_FORCE_INLINE_ bool intersects_aabb2(const AABB &p_aabb) const;
 	operator String() const;
 
-	inline Face3() {}
-	inline Face3(const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) {
-		vertex[0] = p_v1;
-		vertex[1] = p_v2;
-		vertex[2] = p_v3;
-	}
+	Face3() = default;
+	constexpr Face3(const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) :
+			vertex{ p_v1, p_v2, p_v3 } {}
 };
 
 bool Face3::intersects_aabb2(const AABB &p_aabb) const {
@@ -243,4 +234,5 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 	return true;
 }
 
-#endif // FACE3_H
+template <>
+struct is_zero_constructible<Face3> : std::true_type {};

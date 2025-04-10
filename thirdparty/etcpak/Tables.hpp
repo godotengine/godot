@@ -23,6 +23,7 @@ extern const uint32_t g_avg2[16];
 extern const uint32_t g_flags[64];
 
 extern const int32_t g_alpha[16][8];
+extern const int32_t g_alpha11Mul[16];
 extern const int32_t g_alphaRange[16];
 
 #ifdef __SSE4_1__

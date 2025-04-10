@@ -1,43 +1,44 @@
-/*************************************************************************/
-/*  editor_build_profile.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_build_profile.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_build_profile.h"
 
-#include "core/io/dir_access.h"
 #include "core/io/json.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/gui/separator.h"
 
 const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
@@ -45,7 +46,7 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	"disable_2d_physics",
 	"disable_3d_physics",
 	"disable_navigation",
-	"openxr",
+	"disable_xr",
 	"rendering_device", // FIXME: there's no scons option to disable rendering device
 	"opengl3",
 	"vulkan",
@@ -71,7 +72,7 @@ const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX
 	false, // TEXT_SERVER_COMPLEX
 	false, // DYNAMIC_FONTS
 	false, // WOFF2_FONTS
-	false, // GRPAHITE_FONTS
+	false, // GRAPHITE_FONTS
 	false, // MSDFGEN
 };
 
@@ -81,7 +82,7 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	true, // PHYSICS_2D
 	true, // PHYSICS_3D
 	true, // NAVIGATION
-	false, // XR
+	true, // XR
 	false, // RENDERING_DEVICE
 	false, // OPENGL
 	false, // VULKAN
@@ -89,7 +90,7 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	false, // TEXT_SERVER_COMPLEX
 	false, // DYNAMIC_FONTS
 	false, // WOFF2_FONTS
-	false, // GRPAHITE_FONTS
+	false, // GRAPHITE_FONTS
 	false, // MSDFGEN
 };
 
@@ -106,7 +107,7 @@ const EditorBuildProfile::BuildOptionCategory EditorBuildProfile::build_option_c
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // TEXT_SERVER_COMPLEX
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // DYNAMIC_FONTS
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // WOFF2_FONTS
-	BUILD_OPTION_CATEGORY_TEXT_SERVER, // GRPAHITE_FONTS
+	BUILD_OPTION_CATEGORY_TEXT_SERVER, // GRAPHITE_FONTS
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // MSDFGEN
 };
 
@@ -296,11 +297,9 @@ Error EditorBuildProfile::load_from_file(const String &p_path) {
 
 	if (data.has("disabled_build_options")) {
 		Dictionary disabled_build_options_arr = data["disabled_build_options"];
-		List<Variant> keys;
-		disabled_build_options_arr.get_key_list(&keys);
 
-		for (const Variant &K : keys) {
-			String key = K;
+		for (const KeyValue<Variant, Variant> &kv : disabled_build_options_arr) {
+			String key = kv.key;
 
 			for (int i = 0; i < BUILD_OPTION_MAX; i++) {
 				String f = build_option_identifiers[i];
@@ -343,7 +342,7 @@ void EditorBuildProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(BUILD_OPTION_TEXT_SERVER_ADVANCED);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_DYNAMIC_FONTS);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_WOFF2_FONTS);
-	BIND_ENUM_CONSTANT(BUILD_OPTION_GRPAHITE_FONTS);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_GRAPHITE_FONTS);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_MSDFGEN);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_MAX);
 
@@ -381,7 +380,7 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 
 	switch (p_action) {
 		case ACTION_RESET: {
-			confirm_dialog->set_text("Reset the edited profile?");
+			confirm_dialog->set_text(TTR("Reset the edited profile?"));
 			confirm_dialog->popup_centered();
 		} break;
 		case ACTION_LOAD: {
@@ -402,11 +401,11 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 			export_profile->set_current_file(profile_path->get_text());
 		} break;
 		case ACTION_NEW: {
-			confirm_dialog->set_text("Create a new profile?");
+			confirm_dialog->set_text(TTR("Create a new profile?"));
 			confirm_dialog->popup_centered();
 		} break;
 		case ACTION_DETECT: {
-			confirm_dialog->set_text("This will scan all files in the current project to detect used classes.");
+			confirm_dialog->set_text(TTR("This will scan all files in the current project to detect used classes."));
 			confirm_dialog->popup_centered();
 		} break;
 		case ACTION_MAX: {
@@ -473,13 +472,13 @@ void EditorBuildProfileManager::_find_files(EditorFileSystemDirectory *p_dir, co
 void EditorBuildProfileManager::_detect_classes() {
 	HashMap<String, DetectedFile> previous_file_cache;
 
-	Ref<FileAccess> f = FileAccess::open("res://.godot/editor/used_class_cache", FileAccess::READ);
+	Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("used_class_cache"), FileAccess::READ);
 	if (f.is_valid()) {
 		while (!f->eof_reached()) {
 			String l = f->get_line();
 			Vector<String> fields = l.split("::");
 			if (fields.size() == 4) {
-				String path = fields[0];
+				const String &path = fields[0];
 				DetectedFile df;
 				df.timestamp = fields[1].to_int();
 				df.md5 = fields[2];
@@ -497,7 +496,7 @@ void EditorBuildProfileManager::_detect_classes() {
 	HashSet<StringName> used_classes;
 
 	// Find classes and update the disk cache in the process.
-	f = FileAccess::open("res://.godot/editor/used_class_cache", FileAccess::WRITE);
+	f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("used_class_cache"), FileAccess::WRITE);
 
 	for (const KeyValue<String, DetectedFile> &E : updated_file_cache) {
 		String l = E.key + "::" + itos(E.value.timestamp) + "::" + E.value.md5 + "::";
@@ -591,15 +590,19 @@ void EditorBuildProfileManager::_action_confirm() {
 	}
 }
 
+void EditorBuildProfileManager::_hide_requested() {
+	_cancel_pressed(); // From AcceptDialog.
+}
+
 void EditorBuildProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected) {
 	TreeItem *class_item = class_list->create_item(p_parent);
 	class_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class, "Node"));
-	String text = p_class;
+	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class));
+	const String &text = p_class;
 
 	bool disabled = edited->is_class_disabled(p_class);
 	if (disabled) {
-		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	}
 
 	class_item->set_text(0, text);
@@ -643,25 +646,11 @@ void EditorBuildProfileManager::_class_list_item_selected() {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
-		String class_name = md;
-		String class_description;
-
-		DocTools *dd = EditorHelp::get_doc_data();
-		HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_name);
-		if (E) {
-			class_description = DTR(E->value.brief_description);
-		}
-
-		description_bit->set_text(class_description);
+	if (md.is_string()) {
+		description_bit->parse_symbol("class|" + md.operator String() + "|");
 	} else if (md.get_type() == Variant::INT) {
-		int build_option_id = md;
-		String build_option_description = EditorBuildProfile::get_build_option_description(EditorBuildProfile::BuildOption(build_option_id));
-
-		description_bit->set_text(TTRGET(build_option_description));
-		return;
-	} else {
-		return;
+		String build_option_description = EditorBuildProfile::get_build_option_description(EditorBuildProfile::BuildOption((int)md));
+		description_bit->set_custom_text(TTR(item->get_text(0)), String(), TTRGET(build_option_description));
 	}
 }
 
@@ -678,7 +667,7 @@ void EditorBuildProfileManager::_class_list_item_edited() {
 	bool checked = item->is_checked(0);
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+	if (md.is_string()) {
 		String class_selected = md;
 		edited->set_disable_class(class_selected, !checked);
 		_update_edited_profile();
@@ -699,7 +688,7 @@ void EditorBuildProfileManager::_class_list_item_collapsed(Object *p_item) {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() != Variant::STRING && md.get_type() != Variant::STRING_NAME) {
+	if (!md.is_string()) {
 		return;
 	}
 
@@ -714,7 +703,7 @@ void EditorBuildProfileManager::_update_edited_profile() {
 
 	if (class_list->get_selected()) {
 		Variant md = class_list->get_selected()->get_metadata(0);
-		if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+		if (md.is_string()) {
 			class_selected = md;
 		} else if (md.get_type() == Variant::INT) {
 			build_option_selected = md;
@@ -819,24 +808,25 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	HBoxContainer *path_hbc = memnew(HBoxContainer);
 	profile_path = memnew(LineEdit);
 	path_hbc->add_child(profile_path);
+	profile_path->set_accessibility_name(TTRC("Profile Path"));
 	profile_path->set_editable(true);
 	profile_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	profile_actions[ACTION_NEW] = memnew(Button(TTR("New")));
 	path_hbc->add_child(profile_actions[ACTION_NEW]);
-	profile_actions[ACTION_NEW]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_NEW));
+	profile_actions[ACTION_NEW]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_NEW));
 
 	profile_actions[ACTION_LOAD] = memnew(Button(TTR("Load")));
 	path_hbc->add_child(profile_actions[ACTION_LOAD]);
-	profile_actions[ACTION_LOAD]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_LOAD));
+	profile_actions[ACTION_LOAD]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_LOAD));
 
 	profile_actions[ACTION_SAVE] = memnew(Button(TTR("Save")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE]);
-	profile_actions[ACTION_SAVE]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE));
+	profile_actions[ACTION_SAVE]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE));
 
 	profile_actions[ACTION_SAVE_AS] = memnew(Button(TTR("Save As")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE_AS]);
-	profile_actions[ACTION_SAVE_AS]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE_AS));
+	profile_actions[ACTION_SAVE_AS]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE_AS));
 
 	main_vbc->add_margin_child(TTR("Profile:"), path_hbc);
 
@@ -846,36 +836,38 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	profile_actions[ACTION_RESET] = memnew(Button(TTR("Reset to Defaults")));
 	profiles_hbc->add_child(profile_actions[ACTION_RESET]);
-	profile_actions[ACTION_RESET]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_RESET));
+	profile_actions[ACTION_RESET]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_RESET));
 
 	profile_actions[ACTION_DETECT] = memnew(Button(TTR("Detect from Project")));
 	profiles_hbc->add_child(profile_actions[ACTION_DETECT]);
-	profile_actions[ACTION_DETECT]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_DETECT));
+	profile_actions[ACTION_DETECT]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_DETECT));
 
 	main_vbc->add_margin_child(TTR("Actions:"), profiles_hbc);
 
 	class_list = memnew(Tree);
+	class_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	class_list->connect("cell_selected", callable_mp(this, &EditorBuildProfileManager::_class_list_item_selected));
 	class_list->connect("item_edited", callable_mp(this, &EditorBuildProfileManager::_class_list_item_edited), CONNECT_DEFERRED);
 	class_list->connect("item_collapsed", callable_mp(this, &EditorBuildProfileManager::_class_list_item_collapsed));
 	// It will be displayed once the user creates or chooses a profile.
-	main_vbc->add_margin_child(TTR("Configure Engine Build Profile:"), class_list, true);
+	main_vbc->add_margin_child(TTR("Configure Engine Compilation Profile:"), class_list, true);
 
 	description_bit = memnew(EditorHelpBit);
-	description_bit->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
+	description_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
+	description_bit->connect("request_hide", callable_mp(this, &EditorBuildProfileManager::_hide_requested));
 	main_vbc->add_margin_child(TTR("Description:"), description_bit, false);
 
 	confirm_dialog = memnew(ConfirmationDialog);
 	add_child(confirm_dialog);
 	confirm_dialog->set_title(TTR("Please Confirm:"));
-	confirm_dialog->connect("confirmed", callable_mp(this, &EditorBuildProfileManager::_action_confirm));
+	confirm_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorBuildProfileManager::_action_confirm));
 
 	import_profile = memnew(EditorFileDialog);
 	add_child(import_profile);
 	import_profile->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	import_profile->add_filter("*.build", TTR("Engine Build Profile"));
+	import_profile->add_filter("*.gdbuild,*.build", TTR("Engine Compilation Profile"));
 	import_profile->connect("files_selected", callable_mp(this, &EditorBuildProfileManager::_import_profile));
 	import_profile->set_title(TTR("Load Profile"));
 	import_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -883,16 +875,17 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_profile->add_filter("*.build", TTR("Engine Build Profile"));
+	export_profile->add_filter("*.gdbuild,*.build", TTR("Engine Compilation Profile"));
 	export_profile->connect("file_selected", callable_mp(this, &EditorBuildProfileManager::_export_profile));
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
 	force_detect_classes = memnew(LineEdit);
-	main_vbc->add_margin_child(TTR("Forced classes on detect:"), force_detect_classes);
-	force_detect_classes->connect("text_changed", callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
+	force_detect_classes->set_accessibility_name(TTRC("Forced Classes"));
+	main_vbc->add_margin_child(TTR("Forced Classes on Detect:"), force_detect_classes);
+	force_detect_classes->connect(SceneStringName(text_changed), callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
 
-	set_title(TTR("Edit Build Configuration Profile"));
+	set_title(TTR("Edit Compilation Configuration Profile"));
 
 	singleton = this;
 }

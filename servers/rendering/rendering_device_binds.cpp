@@ -1,36 +1,43 @@
-/*************************************************************************/
-/*  rendering_device_binds.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  rendering_device_binds.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "rendering_device_binds.h"
 
+#include "shader_include_db.h"
+
 Error RDShaderFile::parse_versions_from_text(const String &p_text, const String p_defines, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {
+	ERR_FAIL_NULL_V_MSG(
+			RenderingDevice::get_singleton(),
+			ERR_UNAVAILABLE,
+			"Cannot import custom .glsl shaders when running without a RenderingDevice. This can happen if you are using the headless more or the Compatibility renderer.");
+
 	Vector<String> lines = p_text.split("\n");
 
 	bool reading_versions = false;
@@ -99,18 +106,18 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 		if (reading_versions) {
 			String l = line.strip_edges();
 			if (!l.is_empty()) {
-				if (!l.contains("=")) {
+				if (!l.contains_char('=')) {
 					base_error = "Missing `=` in '" + l + "'. Version syntax is `version = \"<defines with C escaping>\";`.";
 					break;
 				}
-				if (!l.contains(";")) {
+				if (!l.contains_char(';')) {
 					// We don't require a semicolon per se, but it's needed for clang-format to handle things properly.
 					base_error = "Missing `;` in '" + l + "'. Version syntax is `version = \"<defines with C escaping>\";`.";
 					break;
 				}
-				Vector<String> slices = l.get_slice(";", 0).split("=");
+				Vector<String> slices = l.get_slicec(';', 0).split("=");
 				String version = slices[0].strip_edges();
-				if (!version.is_valid_identifier()) {
+				if (!version.is_valid_ascii_identifier()) {
 					base_error = "Version names must be valid identifiers, found '" + version + "' instead.";
 					break;
 				}
@@ -139,11 +146,17 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 							break;
 						}
 						include = include.substr(1, include.length() - 2).strip_edges();
-						String include_text = p_include_func(include, p_include_func_userdata);
-						if (!include_text.is_empty()) {
-							stage_code[stage] += "\n" + include_text + "\n";
+
+						String include_code = ShaderIncludeDB::get_built_in_include_file(include);
+						if (!include_code.is_empty()) {
+							stage_code[stage] += "\n" + include_code + "\n";
 						} else {
-							base_error = "#include failed for file '" + include + "'";
+							String include_text = p_include_func(include, p_include_func_userdata);
+							if (!include_text.is_empty()) {
+								stage_code[stage] += "\n" + include_text + "\n";
+							} else {
+								base_error = "#include failed for file '" + include + "'.";
+							}
 						}
 					} else {
 						base_error = "#include used, but no include function provided.";
@@ -154,9 +167,6 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 			}
 		}
 	}
-
-	Ref<RDShaderFile> shader_file;
-	shader_file.instantiate();
 
 	if (base_error.is_empty()) {
 		if (stage_found[RD::SHADER_STAGE_COMPUTE] && stages_found > 1) {

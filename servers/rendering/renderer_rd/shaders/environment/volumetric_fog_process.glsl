@@ -190,7 +190,7 @@ params;
 #ifndef MODE_COPY
 layout(set = 0, binding = 15) uniform texture3D prev_density_texture;
 
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 layout(set = 0, binding = 16) buffer density_only_map_buffer {
 	uint density_only_map[];
 };
@@ -287,7 +287,7 @@ void main() {
 	if (any(greaterThanEqual(pos, params.fog_volume_size))) {
 		return; //do not compute
 	}
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint lpos = pos.z * params.fog_volume_size.x * params.fog_volume_size.y + pos.y * params.fog_volume_size.x + pos.x;
 #endif
 
@@ -353,7 +353,7 @@ void main() {
 	vec3 total_light = vec3(0.0);
 
 	float total_density = params.base_density;
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint local_density = density_only_map[lpos];
 #else
 	uint local_density = imageLoad(density_only_map, pos).x;
@@ -362,7 +362,7 @@ void main() {
 	total_density += float(int(local_density)) / DENSITY_SCALE;
 	total_density = max(0.0, total_density);
 
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint scattering_u = light_only_map[lpos];
 #else
 	uint scattering_u = imageLoad(light_only_map, pos).x;
@@ -370,7 +370,7 @@ void main() {
 	vec3 scattering = vec3(scattering_u >> 21, (scattering_u << 11) >> 21, scattering_u % 1024) / vec3(2047.0, 2047.0, 1023.0);
 	scattering += params.base_scattering * params.base_density;
 
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint emission_u = emissive_only_map[lpos];
 #else
 	uint emission_u = imageLoad(emissive_only_map, pos).x;
@@ -416,7 +416,7 @@ void main() {
 					}
 
 					float depth = texture(sampler2D(directional_shadow_atlas, linear_sampler), pssm_coord.xy).r;
-					float shadow = exp(min(0.0, (depth - pssm_coord.z)) * z_range * INV_FOG_FADE);
+					float shadow = exp(min(0.0, (pssm_coord.z - depth)) * z_range * INV_FOG_FADE);
 
 					shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, view_pos.z)); //done with negative values for performance
 
@@ -513,13 +513,14 @@ void main() {
 							shadow_sample.z = 1.0 + abs(shadow_sample.z);
 							vec3 pos = vec3(shadow_sample.xy / shadow_sample.z, shadow_len - omni_lights.data[light_index].shadow_bias);
 							pos.z *= omni_lights.data[light_index].inv_radius;
+							pos.z = 1.0 - pos.z;
 
 							pos.xy = pos.xy * 0.5 + 0.5;
 							pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
 
 							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
 
-							shadow_attenuation = mix(1.0 - omni_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (depth - pos.z)) / omni_lights.data[light_index].inv_radius * INV_FOG_FADE));
+							shadow_attenuation = mix(1.0 - omni_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (pos.z - depth)) / omni_lights.data[light_index].inv_radius * INV_FOG_FADE));
 						}
 						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_pos - view_pos), normalize(view_pos)), params.phase_g) * omni_lights.data[light_index].volumetric_fog_energy;
 					}
@@ -576,8 +577,9 @@ void main() {
 						float attenuation = get_omni_attenuation(d, spot_lights.data[light_index].inv_radius, spot_lights.data[light_index].attenuation);
 
 						vec3 spot_dir = spot_lights.data[light_index].direction;
-						float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_lights.data[light_index].cone_angle);
-						float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_lights.data[light_index].cone_angle));
+						highp float cone_angle = spot_lights.data[light_index].cone_angle;
+						float scos = max(dot(-normalize(light_rel_vec), spot_dir), cone_angle);
+						float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cone_angle));
 						attenuation *= 1.0 - pow(spot_rim, spot_lights.data[light_index].cone_attenuation);
 
 						vec3 light = spot_lights.data[light_index].color;
@@ -585,27 +587,18 @@ void main() {
 						if (spot_lights.data[light_index].shadow_opacity > 0.001) {
 							//has shadow
 							vec4 uv_rect = spot_lights.data[light_index].atlas_rect;
-							vec2 flip_offset = spot_lights.data[light_index].direction.xy;
 
-							vec3 local_vert = (spot_lights.data[light_index].shadow_matrix * vec4(view_pos, 1.0)).xyz;
+							vec4 v = vec4(view_pos, 1.0);
 
-							float shadow_len = length(local_vert); //need to remember shadow len from here
-							vec3 shadow_sample = normalize(local_vert);
+							vec4 splane = (spot_lights.data[light_index].shadow_matrix * v);
+							splane.z -= spot_lights.data[light_index].shadow_bias / (d * spot_lights.data[light_index].inv_radius);
+							splane /= splane.w;
 
-							if (shadow_sample.z >= 0.0) {
-								uv_rect.xy += flip_offset;
-							}
-
-							shadow_sample.z = 1.0 + abs(shadow_sample.z);
-							vec3 pos = vec3(shadow_sample.xy / shadow_sample.z, shadow_len - spot_lights.data[light_index].shadow_bias);
-							pos.z *= spot_lights.data[light_index].inv_radius;
-
-							pos.xy = pos.xy * 0.5 + 0.5;
-							pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
+							vec3 pos = vec3(splane.xy * spot_lights.data[light_index].atlas_rect.zw + spot_lights.data[light_index].atlas_rect.xy, splane.z);
 
 							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
 
-							shadow_attenuation = mix(1.0 - spot_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (depth - pos.z)) / spot_lights.data[light_index].inv_radius * INV_FOG_FADE));
+							shadow_attenuation = mix(1.0 - spot_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (pos.z - depth)) / spot_lights.data[light_index].inv_radius * INV_FOG_FADE));
 						}
 						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_rel_vec), normalize(view_pos)), params.phase_g) * spot_lights.data[light_index].volumetric_fog_energy;
 					}
@@ -718,7 +711,7 @@ void main() {
 	final_density = mix(final_density, reprojected_density, reproject_amount);
 
 	imageStore(density_map, pos, final_density);
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	density_only_map[lpos] = 0;
 	light_only_map[lpos] = 0;
 	emissive_only_map[lpos] = 0;

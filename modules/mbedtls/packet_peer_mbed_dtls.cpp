@@ -1,38 +1,34 @@
-/*************************************************************************/
-/*  packet_peer_mbed_dtls.cpp                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  packet_peer_mbed_dtls.cpp                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "packet_peer_mbed_dtls.h"
-#include "mbedtls/platform_util.h"
-
-#include "core/io/file_access.h"
-#include "core/io/stream_peer_tls.h"
 
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 	if (buf == nullptr || len == 0) {
@@ -41,7 +37,7 @@ int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len
 
 	PacketPeerMbedDTLS *sp = static_cast<PacketPeerMbedDTLS *>(ctx);
 
-	ERR_FAIL_COND_V(sp == nullptr, 0);
+	ERR_FAIL_NULL_V(sp, 0);
 
 	Error err = sp->base->put_packet((const uint8_t *)buf, len);
 	if (err == ERR_BUSY) {
@@ -59,7 +55,7 @@ int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 
 	PacketPeerMbedDTLS *sp = static_cast<PacketPeerMbedDTLS *>(ctx);
 
-	ERR_FAIL_COND_V(sp == nullptr, 0);
+	ERR_FAIL_NULL_V(sp, 0);
 
 	int pc = sp->base->get_available_packet_count();
 	if (pc == 0) {
@@ -114,16 +110,14 @@ Error PacketPeerMbedDTLS::_do_handshake() {
 	return OK;
 }
 
-Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_validate_certs, const String &p_for_hostname, Ref<X509Certificate> p_ca_certs) {
-	ERR_FAIL_COND_V(!p_base.is_valid() || !p_base->is_socket_connected(), ERR_INVALID_PARAMETER);
+Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, const String &p_hostname, Ref<TLSOptions> p_options) {
+	ERR_FAIL_COND_V(p_base.is_null() || !p_base->is_socket_connected(), ERR_INVALID_PARAMETER);
 
-	base = p_base;
-	int authmode = p_validate_certs ? MBEDTLS_SSL_VERIFY_REQUIRED : MBEDTLS_SSL_VERIFY_NONE;
-
-	Error err = tls_ctx->init_client(MBEDTLS_SSL_TRANSPORT_DATAGRAM, authmode, p_ca_certs);
+	Error err = tls_ctx->init_client(MBEDTLS_SSL_TRANSPORT_DATAGRAM, p_hostname, p_options.is_valid() ? p_options : TLSOptions::client());
 	ERR_FAIL_COND_V(err != OK, err);
 
-	mbedtls_ssl_set_hostname(tls_ctx->get_context(), p_for_hostname.utf8().get_data());
+	base = p_base;
+
 	mbedtls_ssl_set_bio(tls_ctx->get_context(), this, bio_send, bio_recv, nullptr);
 	mbedtls_ssl_set_timer_cb(tls_ctx->get_context(), &timer, mbedtls_timing_set_delay, mbedtls_timing_get_delay);
 
@@ -137,8 +131,10 @@ Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_vali
 	return OK;
 }
 
-Error PacketPeerMbedDTLS::accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain, Ref<CookieContextMbedTLS> p_cookies) {
-	Error err = tls_ctx->init_server(MBEDTLS_SSL_TRANSPORT_DATAGRAM, MBEDTLS_SSL_VERIFY_NONE, p_key, p_cert, p_cookies);
+Error PacketPeerMbedDTLS::accept_peer(Ref<PacketPeerUDP> p_base, Ref<TLSOptions> p_options, Ref<CookieContextMbedTLS> p_cookies) {
+	ERR_FAIL_COND_V(p_base.is_null() || !p_base->is_socket_connected(), ERR_INVALID_PARAMETER);
+
+	Error err = tls_ctx->init_server(MBEDTLS_SSL_TRANSPORT_DATAGRAM, p_options, p_cookies);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	base = p_base;
@@ -217,7 +213,7 @@ void PacketPeerMbedDTLS::poll() {
 		return;
 	}
 
-	ERR_FAIL_COND(!base.is_valid());
+	ERR_FAIL_COND(base.is_null());
 
 	int ret = mbedtls_ssl_read(tls_ctx->get_context(), nullptr, 0);
 
@@ -271,8 +267,8 @@ PacketPeerMbedDTLS::Status PacketPeerMbedDTLS::get_status() const {
 	return status;
 }
 
-PacketPeerDTLS *PacketPeerMbedDTLS::_create_func() {
-	return memnew(PacketPeerMbedDTLS);
+PacketPeerDTLS *PacketPeerMbedDTLS::_create_func(bool p_notify_postinitialize) {
+	return static_cast<PacketPeerDTLS *>(ClassDB::creator<PacketPeerMbedDTLS>(p_notify_postinitialize));
 }
 
 void PacketPeerMbedDTLS::initialize_dtls() {

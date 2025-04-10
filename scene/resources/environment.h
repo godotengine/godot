@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  environment.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  environment.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef ENVIRONMENT_H
-#define ENVIRONMENT_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "scene/resources/sky.h"
@@ -67,12 +66,18 @@ public:
 		TONE_MAPPER_REINHARDT,
 		TONE_MAPPER_FILMIC,
 		TONE_MAPPER_ACES,
+		TONE_MAPPER_AGX,
 	};
 
 	enum SDFGIYScale {
 		SDFGI_Y_SCALE_50_PERCENT,
 		SDFGI_Y_SCALE_75_PERCENT,
 		SDFGI_Y_SCALE_100_PERCENT,
+	};
+
+	enum FogMode {
+		FOG_MODE_EXPONENTIAL,
+		FOG_MODE_DEPTH,
 	};
 
 	enum GlowBlendMode {
@@ -172,6 +177,7 @@ private:
 
 	// Fog
 	bool fog_enabled = false;
+	FogMode fog_mode = FOG_MODE_EXPONENTIAL;
 	Color fog_light_color = Color(0.518, 0.553, 0.608);
 	float fog_light_energy = 1.0;
 	float fog_sun_scatter = 0.0;
@@ -182,6 +188,13 @@ private:
 	float fog_sky_affect = 1.0;
 
 	void _update_fog();
+
+	// Depth Fog
+	float fog_depth_curve = 1.0;
+	float fog_depth_begin = 10.0;
+	float fog_depth_end = 100.0;
+
+	void _update_fog_depth();
 
 	// Volumetric Fog
 	bool volumetric_fog_enabled = false;
@@ -361,6 +374,8 @@ public:
 
 	void set_fog_enabled(bool p_enabled);
 	bool is_fog_enabled() const;
+	void set_fog_mode(FogMode p_mode);
+	FogMode get_fog_mode() const;
 	void set_fog_light_color(const Color &p_light_color);
 	Color get_fog_light_color() const;
 	void set_fog_light_energy(float p_amount);
@@ -378,6 +393,14 @@ public:
 	float get_fog_aerial_perspective() const;
 	void set_fog_sky_affect(float p_sky_affect);
 	float get_fog_sky_affect() const;
+
+	// Depth Fog
+	void set_fog_depth_curve(float p_curve);
+	float get_fog_depth_curve() const;
+	void set_fog_depth_begin(float p_begin);
+	float get_fog_depth_begin() const;
+	void set_fog_depth_end(float p_end);
+	float get_fog_depth_end() const;
 
 	// Volumetric Fog
 	void set_volumetric_fog_enabled(bool p_enable);
@@ -429,5 +452,4 @@ VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
-
-#endif // ENVIRONMENT_H
+VARIANT_ENUM_CAST(Environment::FogMode)

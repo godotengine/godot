@@ -1,60 +1,53 @@
-/*************************************************************************/
-/*  dynamic_font_import_settings.h                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  dynamic_font_import_settings.h                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef DYNAMIC_FONT_IMPORT_SETTINGS_H
-#define DYNAMIC_FONT_IMPORT_SETTINGS_H
+#pragma once
 
-#include "editor/import/resource_importer_dynamic_font.h"
+#include "core/io/resource_importer.h"
 
-#include "core/templates/rb_set.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/font.h"
-#include "servers/text_server.h"
 
-class DynamicFontImportSettings;
+class DynamicFontImportSettingsDialog;
 
 class DynamicFontImportSettingsData : public RefCounted {
 	GDCLASS(DynamicFontImportSettingsData, RefCounted)
-	friend class DynamicFontImportSettings;
+	friend class DynamicFontImportSettingsDialog;
 
 	HashMap<StringName, Variant> settings;
 	HashMap<StringName, Variant> defaults;
 	List<ResourceImporter::ImportOption> options;
-	DynamicFontImportSettings *owner = nullptr;
+	DynamicFontImportSettingsDialog *owner = nullptr;
 
 	HashSet<char32_t> selected_chars;
 	HashSet<int32_t> selected_glyphs;
@@ -73,8 +66,8 @@ class EditorFileDialog;
 class EditorInspector;
 class EditorLocaleDialog;
 
-class DynamicFontImportSettings : public ConfirmationDialog {
-	GDCLASS(DynamicFontImportSettings, ConfirmationDialog)
+class DynamicFontImportSettingsDialog : public ConfirmationDialog {
+	GDCLASS(DynamicFontImportSettingsDialog, ConfirmationDialog)
 	friend class DynamicFontImportSettingsData;
 
 	enum ItemButton {
@@ -82,13 +75,15 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 		BUTTON_REMOVE_VAR,
 	};
 
-	static DynamicFontImportSettings *singleton;
+	static DynamicFontImportSettingsDialog *singleton;
 
 	String base_path;
 
 	Ref<DynamicFontImportSettingsData> import_settings_data;
 	List<ResourceImporter::ImportOption> options_variations;
 	List<ResourceImporter::ImportOption> options_general;
+
+	bool is_pixel = false;
 
 	// Root layout
 	Label *label_warn = nullptr;
@@ -172,9 +167,7 @@ protected:
 
 public:
 	void open_settings(const String &p_path);
-	static DynamicFontImportSettings *get_singleton();
+	static DynamicFontImportSettingsDialog *get_singleton();
 
-	DynamicFontImportSettings();
+	DynamicFontImportSettingsDialog();
 };
-
-#endif // DYNAMIC_FONT_IMPORT_SETTINGS_H

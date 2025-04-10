@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  crash_handler_linuxbsd.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  crash_handler_linuxbsd.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "crash_handler_linuxbsd.h"
 
@@ -36,20 +36,29 @@
 #include "core/version.h"
 #include "main/main.h"
 
-#ifdef DEBUG_ENABLED
-#define CRASH_HANDLER_ENABLED 1
+#ifndef DEBUG_ENABLED
+#undef CRASH_HANDLER_ENABLED
 #endif
 
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>
 #include <dlfcn.h>
 #include <execinfo.h>
+#include <link.h>
 #include <signal.h>
 #include <stdlib.h>
 
 static void handle_crash(int sig) {
+	signal(SIGSEGV, SIG_DFL);
+	signal(SIGFPE, SIG_DFL);
+	signal(SIGILL, SIG_DFL);
+
 	if (OS::get_singleton() == nullptr) {
 		abort();
+	}
+
+	if (OS::get_singleton()->is_crash_handler_silent()) {
+		std::_Exit(0);
 	}
 
 	void *bt_buffer[256];
@@ -72,14 +81,40 @@ static void handle_crash(int sig) {
 	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, sig));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).is_empty()) {
-		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
+	if (String(GODOT_VERSION_HASH).is_empty()) {
+		print_error(vformat("Engine version: %s", GODOT_VERSION_FULL_NAME));
 	} else {
-		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
+		print_error(vformat("Engine version: %s (%s)", GODOT_VERSION_FULL_NAME, GODOT_VERSION_HASH));
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 	char **strings = backtrace_symbols(bt_buffer, size);
+	// PIE executable relocation, zero for non-PIE executables
+#ifdef __GLIBC__
+	// This is a glibc only thing apparently.
+	uintptr_t relocation = _r_debug.r_map->l_addr;
+#else
+	// Non glibc systems apparently don't give PIE relocation info.
+	uintptr_t relocation = 0;
+#endif //__GLIBC__
 	if (strings) {
+		List<String> args;
+		for (size_t i = 0; i < size; i++) {
+			char str[1024];
+			snprintf(str, 1024, "%p", (void *)((uintptr_t)bt_buffer[i] - relocation));
+			args.push_back(str);
+		}
+		args.push_back("-e");
+		args.push_back(_execpath);
+
+		// Try to get the file/line number using addr2line
+		int ret;
+		String output = "";
+		Error err = OS::get_singleton()->execute(String("addr2line"), args, &output, &ret);
+		Vector<String> addr2line_results;
+		if (err == OK) {
+			addr2line_results = output.substr(0, output.length() - 1).split("\n", false);
+		}
+
 		for (size_t i = 1; i < size; i++) {
 			char fname[1024];
 			Dl_info info;
@@ -102,24 +137,8 @@ static void handle_crash(int sig) {
 				}
 			}
 
-			List<String> args;
-
-			char str[1024];
-			snprintf(str, 1024, "%p", bt_buffer[i]);
-			args.push_back(str);
-			args.push_back("-e");
-			args.push_back(_execpath);
-
-			String output = "";
-
-			// Try to get the file/line number using addr2line
-			int ret;
-			Error err = OS::get_singleton()->execute(String("addr2line"), args, &output, &ret);
-			if (err == OK) {
-				output = output.substr(0, output.length() - 1);
-			}
-
-			print_error(vformat("[%d] %s (%s)", (int64_t)i, fname, output));
+			// Simplify printed file paths to remove redundant `/./` sections (e.g. `/opt/godot/./core` -> `/opt/godot/core`).
+			print_error(vformat("[%d] %s (%s)", (int64_t)i, fname, err == OK ? addr2line_results[i].replace("/./", "/") : ""));
 		}
 
 		free(strings);
@@ -146,9 +165,9 @@ void CrashHandler::disable() {
 	}
 
 #ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, nullptr);
-	signal(SIGFPE, nullptr);
-	signal(SIGILL, nullptr);
+	signal(SIGSEGV, SIG_DFL);
+	signal(SIGFPE, SIG_DFL);
+	signal(SIGILL, SIG_DFL);
 #endif
 
 	disabled = true;

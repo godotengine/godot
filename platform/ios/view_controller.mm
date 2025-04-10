@@ -1,40 +1,43 @@
-/*************************************************************************/
-/*  view_controller.mm                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  view_controller.mm                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #import "view_controller.h"
-#include "core/config/project_settings.h"
-#include "display_server_ios.h"
+
+#import "display_server_ios.h"
 #import "godot_view.h"
 #import "godot_view_renderer.h"
+#import "key_mapping_ios.h"
 #import "keyboard_input_view.h"
-#include "os_ios.h"
+#import "os_ios.h"
+
+#include "core/config/project_settings.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <GameController/GameController.h>
@@ -52,6 +55,68 @@
 
 - (GodotView *)godotView {
 	return (GodotView *)self.view;
+}
+
+- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+	[super pressesBegan:presses withEvent:event];
+
+	if (!DisplayServerIOS::get_singleton() || DisplayServerIOS::get_singleton()->is_keyboard_active()) {
+		return;
+	}
+	if (@available(iOS 13.4, *)) {
+		for (UIPress *press in presses) {
+			String u32lbl = String::utf8([press.key.charactersIgnoringModifiers UTF8String]);
+			String u32text = String::utf8([press.key.characters UTF8String]);
+			Key key = KeyMappingIOS::remap_key(press.key.keyCode);
+
+			if (press.key.keyCode == 0 && u32text.is_empty() && u32lbl.is_empty()) {
+				continue;
+			}
+
+			char32_t us = 0;
+			if (!u32lbl.is_empty() && !u32lbl.begins_with("UIKey")) {
+				us = u32lbl[0];
+			}
+
+			KeyLocation location = KeyMappingIOS::key_location(press.key.keyCode);
+
+			if (!u32text.is_empty() && !u32text.begins_with("UIKey")) {
+				for (int i = 0; i < u32text.length(); i++) {
+					const char32_t c = u32text[i];
+					DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), c, fix_key_label(us, key), key, press.key.modifierFlags, true, location);
+				}
+			} else {
+				DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), 0, fix_key_label(us, key), key, press.key.modifierFlags, true, location);
+			}
+		}
+	}
+}
+
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+	[super pressesEnded:presses withEvent:event];
+
+	if (!DisplayServerIOS::get_singleton() || DisplayServerIOS::get_singleton()->is_keyboard_active()) {
+		return;
+	}
+	if (@available(iOS 13.4, *)) {
+		for (UIPress *press in presses) {
+			String u32lbl = String::utf8([press.key.charactersIgnoringModifiers UTF8String]);
+			Key key = KeyMappingIOS::remap_key(press.key.keyCode);
+
+			if (press.key.keyCode == 0 && u32lbl.is_empty()) {
+				continue;
+			}
+
+			char32_t us = 0;
+			if (!u32lbl.is_empty() && !u32lbl.begins_with("UIKey")) {
+				us = u32lbl[0];
+			}
+
+			KeyLocation location = KeyMappingIOS::key_location(press.key.keyCode);
+
+			DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), 0, fix_key_label(us, key), key, press.key.modifierFlags, false, location);
+		}
+	}
 }
 
 - (void)loadView {
@@ -91,7 +156,7 @@
 
 - (void)didReceiveMemoryWarning {
 	[super didReceiveMemoryWarning];
-	printf("*********** did receive memory warning!\n");
+	print_verbose("Did receive memory warning!");
 }
 
 - (void)viewDidLoad {
@@ -100,17 +165,15 @@
 	[self observeKeyboard];
 	[self displayLoadingOverlay];
 
-	if (@available(iOS 11.0, *)) {
-		[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
-	}
+	[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
 }
 
 - (void)observeKeyboard {
-	printf("******** setting up keyboard input view\n");
+	print_verbose("Setting up keyboard input view.");
 	self.keyboardView = [GodotKeyboardInputView new];
 	[self.view addSubview:self.keyboardView];
 
-	printf("******** adding observer for keyboard show/hide\n");
+	print_verbose("Adding observer for keyboard show/hide.");
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(keyboardOnScreen:)
@@ -195,7 +258,11 @@
 		case DisplayServer::SCREEN_PORTRAIT:
 			return UIInterfaceOrientationMaskPortrait;
 		case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
-			return UIInterfaceOrientationMaskLandscapeRight;
+			if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+				return UIInterfaceOrientationMaskLandscapeLeft;
+			} else {
+				return UIInterfaceOrientationMaskLandscapeRight;
+			}
 		case DisplayServer::SCREEN_REVERSE_PORTRAIT:
 			return UIInterfaceOrientationMaskPortraitUpsideDown;
 		case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
@@ -205,7 +272,11 @@
 		case DisplayServer::SCREEN_SENSOR:
 			return UIInterfaceOrientationMaskAll;
 		case DisplayServer::SCREEN_LANDSCAPE:
-			return UIInterfaceOrientationMaskLandscapeLeft;
+			if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+				return UIInterfaceOrientationMaskLandscapeRight;
+			} else {
+				return UIInterfaceOrientationMaskLandscapeLeft;
+			}
 	}
 }
 

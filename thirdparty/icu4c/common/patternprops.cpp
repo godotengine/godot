@@ -120,12 +120,12 @@ PatternProps::isSyntax(UChar32 c) {
     if(c<0) {
         return false;
     } else if(c<=0xff) {
-        return (UBool)(latin1[c]>>1)&1;
+        return (latin1[c] >> 1) & 1;
     } else if(c<0x2010) {
         return false;
     } else if(c<=0x3030) {
         uint32_t bits=syntax2000[index2000[(c-0x2000)>>5]];
-        return (UBool)((bits>>(c&0x1f))&1);
+        return (bits >> (c & 0x1f)) & 1;
     } else if(0xfd3e<=c && c<=0xfe46) {
         return c<=0xfd3f || 0xfe45<=c;
     } else {
@@ -138,12 +138,12 @@ PatternProps::isSyntaxOrWhiteSpace(UChar32 c) {
     if(c<0) {
         return false;
     } else if(c<=0xff) {
-        return (UBool)(latin1[c]&1);
+        return latin1[c] & 1;
     } else if(c<0x200e) {
         return false;
     } else if(c<=0x3030) {
         uint32_t bits=syntaxOrWhiteSpace2000[index2000[(c-0x2000)>>5]];
-        return (UBool)((bits>>(c&0x1f))&1);
+        return (bits >> (c & 0x1f)) & 1;
     } else if(0xfd3e<=c && c<=0xfe46) {
         return c<=0xfd3f || 0xfe45<=c;
     } else {
@@ -156,7 +156,7 @@ PatternProps::isWhiteSpace(UChar32 c) {
     if(c<0) {
         return false;
     } else if(c<=0xff) {
-        return (UBool)(latin1[c]>>2)&1;
+        return (latin1[c] >> 2) & 1;
     } else if(0x200e<=c && c<=0x2029) {
         return c<=0x200f || 0x2028<=c;
     } else {
@@ -164,8 +164,8 @@ PatternProps::isWhiteSpace(UChar32 c) {
     }
 }
 
-const UChar *
-PatternProps::skipWhiteSpace(const UChar *s, int32_t length) {
+const char16_t *
+PatternProps::skipWhiteSpace(const char16_t *s, int32_t length) {
     while(length>0 && isWhiteSpace(*s)) {
         ++s;
         --length;
@@ -183,8 +183,8 @@ PatternProps::skipWhiteSpace(const UnicodeString& s, int32_t start) {
     return i;
 }
 
-const UChar *
-PatternProps::trimWhiteSpace(const UChar *s, int32_t &length) {
+const char16_t *
+PatternProps::trimWhiteSpace(const char16_t *s, int32_t &length) {
     if(length<=0 || (!isWhiteSpace(s[0]) && !isWhiteSpace(s[length-1]))) {
         return s;
     }
@@ -205,11 +205,11 @@ PatternProps::trimWhiteSpace(const UChar *s, int32_t &length) {
 }
 
 UBool
-PatternProps::isIdentifier(const UChar *s, int32_t length) {
+PatternProps::isIdentifier(const char16_t *s, int32_t length) {
     if(length<=0) {
         return false;
     }
-    const UChar *limit=s+length;
+    const char16_t *limit=s+length;
     do {
         if(isSyntaxOrWhiteSpace(*s++)) {
             return false;
@@ -218,8 +218,8 @@ PatternProps::isIdentifier(const UChar *s, int32_t length) {
     return true;
 }
 
-const UChar *
-PatternProps::skipIdentifier(const UChar *s, int32_t length) {
+const char16_t *
+PatternProps::skipIdentifier(const char16_t *s, int32_t length) {
     while(length>0 && !isSyntaxOrWhiteSpace(*s)) {
         ++s;
         --length;

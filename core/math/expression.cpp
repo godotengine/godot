@@ -1,41 +1,36 @@
-/*************************************************************************/
-/*  expression.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  expression.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "expression.h"
 
-#include "core/io/marshalls.h"
-#include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
-#include "core/object/ref_counted.h"
-#include "core/os/os.h"
-#include "core/variant/variant_parser.h"
 
 Error Expression::_get_token(Token &r_token) {
 	while (true) {
@@ -355,16 +350,16 @@ Error Expression::_get_token(Token &r_token) {
 							case READING_INT: {
 								if (is_digit(c)) {
 									if (is_first_char && c == '0') {
-										if (next_char == 'b') {
+										if (next_char == 'b' || next_char == 'B') {
 											reading = READING_BIN;
-										} else if (next_char == 'x') {
+										} else if (next_char == 'x' || next_char == 'X') {
 											reading = READING_HEX;
 										}
 									}
 								} else if (c == '.') {
 									reading = READING_DEC;
 									is_float = true;
-								} else if (c == 'e') {
+								} else if (c == 'e' || c == 'E') {
 									reading = READING_EXP;
 									is_float = true;
 								} else {
@@ -375,7 +370,7 @@ Error Expression::_get_token(Token &r_token) {
 							case READING_BIN: {
 								if (bin_beg && !is_binary_digit(c)) {
 									reading = READING_DONE;
-								} else if (c == 'b') {
+								} else if (c == 'b' || c == 'B') {
 									bin_beg = true;
 								}
 
@@ -383,16 +378,15 @@ Error Expression::_get_token(Token &r_token) {
 							case READING_HEX: {
 								if (hex_beg && !is_hex_digit(c)) {
 									reading = READING_DONE;
-								} else if (c == 'x') {
+								} else if (c == 'x' || c == 'X') {
 									hex_beg = true;
 								}
 
 							} break;
 							case READING_DEC: {
 								if (is_digit(c)) {
-								} else if (c == 'e') {
+								} else if (c == 'e' || c == 'E') {
 									reading = READING_EXP;
-
 								} else {
 									reading = READING_DONE;
 								}
@@ -419,7 +413,9 @@ Error Expression::_get_token(Token &r_token) {
 						is_first_char = false;
 					}
 
-					str_ofs--;
+					if (c != 0) {
+						str_ofs--;
+					}
 
 					r_token.type = TK_CONSTANT;
 
@@ -434,14 +430,13 @@ Error Expression::_get_token(Token &r_token) {
 					}
 					return OK;
 
-				} else if (is_ascii_char(cchar) || is_underscore(cchar)) {
-					String id;
-					bool first = true;
+				} else if (is_unicode_identifier_start(cchar)) {
+					String id = String::chr(cchar);
+					cchar = GET_CHAR();
 
-					while (is_ascii_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
+					while (is_unicode_identifier_continue(cchar)) {
 						id += String::chr(cchar);
 						cchar = GET_CHAR();
-						first = false;
 					}
 
 					str_ofs--; //go back one
@@ -478,10 +473,11 @@ Error Expression::_get_token(Token &r_token) {
 					} else if (id == "self") {
 						r_token.type = TK_SELF;
 					} else {
-						for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-							if (id == Variant::get_type_name(Variant::Type(i))) {
+						{
+							const Variant::Type type = Variant::get_type_by_name(id);
+							if (type < Variant::VARIANT_MAX) {
 								r_token.type = TK_BASIC_TYPE;
-								r_token.value = i;
+								r_token.value = type;
 								return OK;
 							}
 						}
@@ -1495,8 +1491,8 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 	return OK;
 }
 
-Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error, bool p_const_calls_only) {
-	ERR_FAIL_COND_V_MSG(error_set, Variant(), "There was previously a parse error: " + error_str + ".");
+Variant Expression::execute(const Array &p_inputs, Object *p_base, bool p_show_error, bool p_const_calls_only) {
+	ERR_FAIL_COND_V_MSG(error_set, Variant(), vformat("There was previously a parse error: %s.", error_str));
 
 	execution_error = false;
 	Variant output;

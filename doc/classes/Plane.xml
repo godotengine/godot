@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Plane" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Plane" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Plane in hessian form.
+		A plane in Hessian normal form.
 	</brief_description>
 	<description>
-		Plane represents a normalized plane equation. Basically, "normal" is the normal of the plane (a,b,c normalized), and "d" is the distance from the origin to the plane (in the direction of "normal"). "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
+		Represents a normalized plane equation. [member normal] is the normal of the plane (a, b, c normalized), and [member d] is the distance from the origin to the plane (in the direction of "normal"). "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
@@ -38,6 +38,7 @@
 			<param index="0" name="normal" type="Vector3" />
 			<description>
 				Creates a plane from the normal vector. The plane will intersect the origin.
+				The [param normal] of the plane must be a unit vector.
 			</description>
 		</constructor>
 		<constructor name="Plane">
@@ -46,6 +47,7 @@
 			<param index="1" name="d" type="float" />
 			<description>
 				Creates a plane from the normal vector and the plane's distance from the origin.
+				The [param normal] of the plane must be a unit vector.
 			</description>
 		</constructor>
 		<constructor name="Plane">
@@ -54,6 +56,7 @@
 			<param index="1" name="point" type="Vector3" />
 			<description>
 				Creates a plane from the normal vector and a point on the plane.
+				The [param normal] of the plane must be a unit vector.
 			</description>
 		</constructor>
 		<constructor name="Plane">
@@ -67,17 +70,17 @@
 		</constructor>
 	</constructors>
 	<methods>
-		<method name="center" qualifiers="const">
-			<return type="Vector3" />
-			<description>
-				Returns the center of the plane.
-			</description>
-		</method>
 		<method name="distance_to" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="point" type="Vector3" />
 			<description>
 				Returns the shortest distance from the plane to the position [param point]. If the point is above the plane, the distance will be positive. If below, the distance will be negative.
+			</description>
+		</method>
+		<method name="get_center" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the center of the plane.
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
@@ -135,7 +138,7 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Plane" />
 			<description>
-				Returns a copy of the plane, normalized.
+				Returns a copy of the plane, with normalized [member normal] (so it's a unit vector). Returns [code]Plane(0, 0, 0, 0)[/code] if [member normal] can't be normalized (it has zero length).
 			</description>
 		</method>
 		<method name="project" qualifiers="const">
@@ -148,12 +151,12 @@
 	</methods>
 	<members>
 		<member name="d" type="float" setter="" getter="" default="0.0">
-			The distance from the origin to the plane, in the direction of [member normal]. This value is typically non-negative.
-			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is [code]d[/code], while the [code](a, b, c)[/code] coordinates are represented by the [member normal] property.
+			The distance from the origin to the plane, expressed in terms of [member normal] (according to its direction and magnitude). Actual absolute distance from the origin to the plane can be calculated as [code]abs(d) / normal.length()[/code] (if [member normal] has zero length then this [Plane] does not represent a valid plane).
+			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is [code skip-lint]d[/code], while the [code](a, b, c)[/code] coordinates are represented by the [member normal] property.
 		</member>
 		<member name="normal" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
-			The normal of the plane, which must be normalized.
-			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is the vector [code](a, b, c)[/code], where [code]d[/code] is the [member d] property.
+			The normal of the plane, typically a unit vector. Shouldn't be a zero vector as [Plane] with such [member normal] does not represent a valid plane.
+			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is the vector [code](a, b, c)[/code], where [code skip-lint]d[/code] is the [member d] property.
 		</member>
 		<member name="x" type="float" setter="" getter="" default="0.0">
 			The X component of the plane's [member normal] vector.
@@ -190,6 +193,7 @@
 			<param index="0" name="right" type="Transform3D" />
 			<description>
 				Inversely transforms (multiplies) the [Plane] by the given [Transform3D] transformation matrix.
+				[code]plane * transform[/code] is equivalent to [code]transform.affine_inverse() * plane[/code]. See [method Transform3D.affine_inverse].
 			</description>
 		</operator>
 		<operator name="operator ==">

@@ -59,15 +59,13 @@ void TParseContextBase::outputMessage(const TSourceLoc& loc, const char* szReaso
     safe_vsprintf(szExtraInfo, maxSize, szExtraInfoFormat, args);
 
     infoSink.info.prefix(prefix);
-    infoSink.info.location(loc);
+    infoSink.info.location(loc, messages & EShMsgAbsolutePath);
     infoSink.info << "'" << szToken <<  "' : " << szReason << " " << szExtraInfo << "\n";
 
     if (prefix == EPrefixError) {
         ++numErrors;
     }
 }
-
-#if !defined(GLSLANG_WEB) || defined(GLSLANG_WEB_DEVEL)
 
 void C_DECL TParseContextBase::error(const TSourceLoc& loc, const char* szReason, const char* szToken,
                                      const char* szExtraInfoFormat, ...)
@@ -118,8 +116,6 @@ void C_DECL TParseContextBase::ppWarn(const TSourceLoc& loc, const char* szReaso
     va_end(args);
 }
 
-#endif
-
 //
 // Both test and if necessary, spit out an error, to see if the node is really
 // an l-value that can be operated on this way.
@@ -140,7 +136,6 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
     case EvqConst:          message = "can't modify a const";        break;
     case EvqConstReadOnly:  message = "can't modify a const";        break;
     case EvqUniform:        message = "can't modify a uniform";      break;
-#ifndef GLSLANG_WEB
     case EvqBuffer:
         if (node->getQualifier().isReadOnly())
             message = "can't modify a readonly buffer";
@@ -151,7 +146,6 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         if (language != EShLangIntersect)
             message = "cannot modify hitAttributeNV in this stage";
         break;
-#endif
 
     default:
         //
@@ -159,12 +153,12 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         //
         switch (node->getBasicType()) {
         case EbtSampler:
-            message = "can't modify a sampler";
+            if (extensionTurnedOn(E_GL_ARB_bindless_texture) == false)
+                message = "can't modify a sampler";
             break;
         case EbtVoid:
             message = "can't modify void";
             break;
-#ifndef GLSLANG_WEB
         case EbtAtomicUint:
             message = "can't modify an atomic_uint";
             break;
@@ -174,7 +168,9 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         case EbtRayQuery:
             message = "can't modify rayQueryEXT";
             break;
-#endif
+        case EbtHitObjectNV:
+            message = "can't modify hitObjectNV";
+            break;
         default:
             break;
         }
@@ -212,7 +208,7 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
     //
     // If we get here, we have an error and a message.
     //
-    const TIntermTyped* leftMostTypeNode = TIntermediate::findLValueBase(node, true);
+    const TIntermTyped* leftMostTypeNode = TIntermediate::traverseLValueBase(node, true);
 
     if (symNode)
         error(loc, " l-value required", op, "\"%s\" (%s)", symbol, message);
@@ -231,14 +227,14 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
 // Test for and give an error if the node can't be read from.
 void TParseContextBase::rValueErrorCheck(const TSourceLoc& loc, const char* op, TIntermTyped* node)
 {
-    TIntermBinary* binaryNode = node->getAsBinaryNode();
-    const TIntermSymbol* symNode = node->getAsSymbolNode();
-
     if (! node)
         return;
 
+    TIntermBinary* binaryNode = node->getAsBinaryNode();
+    const TIntermSymbol* symNode = node->getAsSymbolNode();
+
     if (node->getQualifier().isWriteOnly()) {
-        const TIntermTyped* leftMostTypeNode = TIntermediate::findLValueBase(node, true);
+        const TIntermTyped* leftMostTypeNode = TIntermediate::traverseLValueBase(node, true);
 
         if (symNode != nullptr)
             error(loc, "can't read from writeonly object: ", op, symNode->getName().c_str());
@@ -261,6 +257,7 @@ void TParseContextBase::rValueErrorCheck(const TSourceLoc& loc, const char* op, 
             case EOpVectorSwizzle:
             case EOpMatrixSwizzle:
                 rValueErrorCheck(loc, op, binaryNode->getLeft());
+                break;
             default:
                 break;
             }
@@ -630,10 +627,8 @@ void TParseContextBase::growGlobalUniformBlock(const TSourceLoc& loc, TType& mem
     if (symbol) {
         if (memberType != symbol->getType()) {
             TString err;
-            err += "\"" + memberType.getCompleteString() + "\"";
-            err += " versus ";
-            err += "\"" + symbol->getType().getCompleteString() + "\"";
-            error(loc, "Types must match:", memberType.getFieldName().c_str(), err.c_str());
+            err += "Redeclaration: already declared as \"" + symbol->getType().getCompleteString() + "\"";
+            error(loc, "", memberName.c_str(), err.c_str());
         }
         return;
     }
@@ -727,6 +722,24 @@ void TParseContextBase::finish()
 {
     if (parsingBuiltins)
         return;
+
+    for (const TString& relaxedSymbol : relaxedSymbols)
+    {
+        TSymbol* symbol = symbolTable.find(relaxedSymbol);
+        TType& type = symbol->getWritableType();
+        for (const TTypeLoc& typeLoc : *type.getStruct())
+        {
+            if (typeLoc.type->isOpaque())
+            {
+                typeLoc.type->getSampler() = TSampler{};
+                typeLoc.type->setBasicType(EbtInt);
+                TString fieldName("/*");
+                fieldName.append(typeLoc.type->getFieldName());
+                fieldName.append("*/");
+                typeLoc.type->setFieldName(fieldName);
+            }
+        }
+    }
 
     // Transfer the linkage symbols to AST nodes, preserving order.
     TIntermAggregate* linkage = new TIntermAggregate;

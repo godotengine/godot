@@ -1,40 +1,43 @@
-/*************************************************************************/
-/*  safe_refcount.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  safe_refcount.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef SAFE_REFCOUNT_H
-#define SAFE_REFCOUNT_H
+#pragma once
 
 #include "core/typedefs.h"
 
+#ifdef DEV_ENABLED
+#include "core/error/error_macros.h"
+#endif
+
 #include <atomic>
-#include <type_traits>
+#include <type_traits> // IWYU pragma: keep // Used in macro.
 
 // Design goals for these classes:
 // - No automatic conversions or arithmetic operators,
@@ -46,13 +49,16 @@
 //   value and, as an important benefit, you can be sure the value is properly synchronized
 //   even with threads that are already running.
 
-// This is used in very specific areas of the engine where it's critical that these guarantees are held
+// These are used in very specific areas of the engine where it's critical that these guarantees are held
 #define SAFE_NUMERIC_TYPE_PUN_GUARANTEES(m_type)                    \
 	static_assert(sizeof(SafeNumeric<m_type>) == sizeof(m_type));   \
 	static_assert(alignof(SafeNumeric<m_type>) == alignof(m_type)); \
-	static_assert(std::is_trivially_destructible<std::atomic<m_type>>::value);
+	static_assert(std::is_trivially_destructible_v<std::atomic<m_type>>);
+#define SAFE_FLAG_TYPE_PUN_GUARANTEES                \
+	static_assert(sizeof(SafeFlag) == sizeof(bool)); \
+	static_assert(alignof(SafeFlag) == alignof(bool));
 
-template <class T>
+template <typename T>
 class SafeNumeric {
 	std::atomic<T> value;
 
@@ -98,6 +104,17 @@ public:
 		return value.fetch_sub(p_value, std::memory_order_acq_rel) - p_value;
 	}
 
+	_ALWAYS_INLINE_ T bit_or(T p_value) {
+		return value.fetch_or(p_value, std::memory_order_acq_rel);
+	}
+	_ALWAYS_INLINE_ T bit_and(T p_value) {
+		return value.fetch_and(p_value, std::memory_order_acq_rel);
+	}
+
+	_ALWAYS_INLINE_ T bit_xor(T p_value) {
+		return value.fetch_xor(p_value, std::memory_order_acq_rel);
+	}
+
 	// Returns the original value instead of the new one
 	_ALWAYS_INLINE_ T postsub(T p_value) {
 		return value.fetch_sub(p_value, std::memory_order_acq_rel);
@@ -128,7 +145,7 @@ public:
 		}
 	}
 
-	_ALWAYS_INLINE_ explicit SafeNumeric<T>(T p_value = static_cast<T>(0)) {
+	_ALWAYS_INLINE_ explicit SafeNumeric(T p_value = static_cast<T>(0)) {
 		set(p_value);
 	}
 };
@@ -163,6 +180,16 @@ public:
 class SafeRefCount {
 	SafeNumeric<uint32_t> count;
 
+#ifdef DEV_ENABLED
+	_ALWAYS_INLINE_ void _check_unref_safety() {
+		// This won't catch every misuse, but it's better than nothing.
+		CRASH_COND_MSG(count.get() == 0,
+				"Trying to unreference a SafeRefCount which is already zero is wrong and a symptom of it being misused.\n"
+				"Upon a SafeRefCount reaching zero any object whose lifetime is tied to it, as well as the ref count itself, must be destroyed.\n"
+				"Moreover, to guarantee that, no multiple threads should be racing to do the final unreferencing to zero.");
+	}
+#endif
+
 public:
 	_ALWAYS_INLINE_ bool ref() { // true on success
 		return count.conditional_increment() != 0;
@@ -173,10 +200,16 @@ public:
 	}
 
 	_ALWAYS_INLINE_ bool unref() { // true if must be disposed of
+#ifdef DEV_ENABLED
+		_check_unref_safety();
+#endif
 		return count.decrement() == 0;
 	}
 
 	_ALWAYS_INLINE_ uint32_t unrefval() { // 0 if must be disposed of
+#ifdef DEV_ENABLED
+		_check_unref_safety();
+#endif
 		return count.decrement();
 	}
 
@@ -188,5 +221,3 @@ public:
 		count.set(p_value);
 	}
 };
-
-#endif // SAFE_REFCOUNT_H

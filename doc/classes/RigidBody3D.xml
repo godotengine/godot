@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody3D" inherits="PhysicsBody3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RigidBody3D" inherits="PhysicsBody3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Physics Body which is moved by 3D physics simulation. Useful for objects that have gravity and can be pushed by other objects.
+		A 3D physics body that is moved by a physics simulation.
 	</brief_description>
 	<description>
-		This is the node that implements full 3D physics. This means that you do not control a RigidBody3D directly. Instead, you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
-		You can switch the body's behavior using [member lock_rotation], [member freeze], and [member freeze_mode].
-		[b]Note:[/b] Don't change a RigidBody3D's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed Hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop may result in strange behavior. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
+		[RigidBody3D] implements full 3D physics. It cannot be controlled directly, instead, you must apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, rotation, react to collisions, and affect other physics bodies in its path.
+		The body's behavior can be adjusted via [member lock_rotation], [member freeze], and [member freeze_mode]. By changing various properties of the object, such as [member mass], you can control how the physics simulation acts on it.
+		A rigid body will always maintain its shape and size, even when forces are applied to it. It is useful for objects that can be interacted with in an environment, such as a tree that can be knocked over or a stack of crates that can be pushed around.
 		If you need to override the default physics behavior, you can write a custom force integration function. See [member custom_integrator].
+		[b]Note:[/b] Changing the 3D transform or [member linear_velocity] of a [RigidBody3D] very often may lead to some unpredictable behaviors. If you need to directly affect the body, prefer [method _integrate_forces] as it allows you to directly access the physics state.
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
-		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
-		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/2752</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
 	</tutorials>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="state" type="PhysicsDirectBodyState3D" />
 			<description>
-				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it works in addition to the usual physics behavior, but the [member custom_integrator] property allows you to disable the default behavior and do fully custom force integration for a body.
+				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it is called before the standard force integration, but the [member custom_integrator] property allows you to disable the standard force integration and do fully custom force integration for a body.
 			</description>
 		</method>
 		<method name="add_constant_central_force">
@@ -129,7 +130,7 @@
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.0">
-			Damps the body's rotation. By default, the body will use the [b]Default Angular Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] or any value override set by an [Area3D] the body is in. Depending on [member angular_damp_mode], you can set [member angular_damp] to be added to or to replace the body's damping value.
+			Damps the body's rotation. By default, the body will use the [member ProjectSettings.physics/3d/default_angular_damp] project setting or any value override set by an [Area3D] the body is in. Depending on [member angular_damp_mode], you can set [member angular_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="angular_damp_mode" type="int" setter="set_angular_damp_mode" getter="get_angular_damp_mode" enum="RigidBody3D.DampMode" default="0">
@@ -157,7 +158,7 @@
 			See [method add_constant_torque].
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
-			If [code]true[/code], the RigidBody3D will emit signals when it collides with another RigidBody3D.
+			If [code]true[/code], the RigidBody3D will emit signals when it collides with another body.
 			[b]Note:[/b] By default the maximum contacts reported is set to 0, meaning nothing will be recorded, see [member max_contacts_reported].
 		</member>
 		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection" default="false">
@@ -165,7 +166,8 @@
 			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses fewer impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
-			If [code]true[/code], internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
+			If [code]true[/code], the standard force integration (like gravity or damping) will be disabled for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] method, if that virtual method is overridden.
+			Setting this property will call the method [method PhysicsServer3D.body_set_omit_force_integration] internally.
 		</member>
 		<member name="freeze" type="bool" setter="set_freeze_enabled" getter="is_freeze_enabled" default="false">
 			If [code]true[/code], the body is frozen. Gravity and forces are not applied anymore.
@@ -177,14 +179,36 @@
 			For a body that is always frozen, use [StaticBody3D] or [AnimatableBody3D] instead.
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
-			This is multiplied by the global 3D gravity setting found in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] to produce RigidBody3D's gravity. For example, a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
+			This is multiplied by [member ProjectSettings.physics/3d/default_gravity] to produce this body's gravity. For example, a value of [code]1.0[/code] will apply normal gravity, [code]2.0[/code] will apply double the gravity, and [code]0.5[/code] will apply half the gravity to this body.
 		</member>
 		<member name="inertia" type="Vector3" setter="set_inertia" getter="get_inertia" default="Vector3(0, 0, 0)">
 			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body on each axis. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
-			If set to [code]Vector3.ZERO[/code], inertia is automatically computed (default value).
+			If set to [constant Vector3.ZERO], inertia is automatically computed (default value).
+			[b]Note:[/b] This value does not change when inertia is automatically computed. Use [PhysicsServer3D] to get the computed inertia.
+			[codeblocks]
+			[gdscript]
+			@onready var ball = $Ball
+
+			func get_ball_inertia():
+			    return PhysicsServer3D.body_get_direct_state(ball.get_rid()).inverse_inertia.inverse()
+			[/gdscript]
+			[csharp]
+			private RigidBody3D _ball;
+
+			public override void _Ready()
+			{
+			    _ball = GetNode&lt;RigidBody3D&gt;("Ball");
+			}
+
+			private Vector3 GetBallInertia()
+			{
+			    return PhysicsServer3D.BodyGetDirectState(_ball.GetRid()).InverseInertia.Inverse();
+			}
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.0">
-			Damps the body's movement. By default, the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] or any value override set by an [Area3D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
+			Damps the body's movement. By default, the body will use the [member ProjectSettings.physics/3d/default_linear_damp] project setting or any value override set by an [Area3D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="linear_damp_mode" type="int" setter="set_linear_damp_mode" getter="get_linear_damp_mode" enum="RigidBody3D.DampMode" default="0">
@@ -267,7 +291,7 @@
 			Kinematic body freeze mode. Similar to [constant FREEZE_MODE_STATIC], but collides with other bodies along its path when moved. Useful for a frozen body that needs to be animated.
 		</constant>
 		<constant name="CENTER_OF_MASS_MODE_AUTO" value="0" enum="CenterOfMassMode">
-			In this mode, the body's center of mass is calculated automatically based on its shapes.
+			In this mode, the body's center of mass is calculated automatically based on its shapes. This assumes that the shapes' origins are also their center of mass.
 		</constant>
 		<constant name="CENTER_OF_MASS_MODE_CUSTOM" value="1" enum="CenterOfMassMode">
 			In this mode, the body's center of mass is set through [member center_of_mass]. Defaults to the body's origin position.

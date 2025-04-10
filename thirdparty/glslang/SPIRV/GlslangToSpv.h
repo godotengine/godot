@@ -35,19 +35,25 @@
 
 #pragma once
 
-#if defined(_MSC_VER) && _MSC_VER >= 1900
-    #pragma warning(disable : 4464) // relative include path contains '..'
-#endif
-
-#include "SpvTools.h"
-#include "glslang/Include/intermediate.h"
-
 #include <string>
 #include <vector>
 
 #include "Logger.h"
 
 namespace glslang {
+class TIntermediate;
+
+struct SpvOptions {
+    bool generateDebugInfo {false};
+    bool stripDebugInfo {false};
+    bool disableOptimizer {true};
+    bool optimizeSize {false};
+    bool disassemble {false};
+    bool validate {false};
+    bool emitNonSemanticShaderDebugInfo {false};
+    bool emitNonSemanticShaderDebugSource{ false };
+    bool compileOnly{false};
+};
 
 void GetSpirvVersion(std::string&);
 int GetSpirvGeneratorVersion();
@@ -55,7 +61,7 @@ void GlslangToSpv(const glslang::TIntermediate& intermediate, std::vector<unsign
                   SpvOptions* options = nullptr);
 void GlslangToSpv(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
                   spv::SpvBuildLogger* logger, SpvOptions* options = nullptr);
-void OutputSpvBin(const std::vector<unsigned int>& spirv, const char* baseName);
-void OutputSpvHex(const std::vector<unsigned int>& spirv, const char* baseName, const char* varName);
+bool OutputSpvBin(const std::vector<unsigned int>& spirv, const char* baseName);
+bool OutputSpvHex(const std::vector<unsigned int>& spirv, const char* baseName, const char* varName);
 
 }

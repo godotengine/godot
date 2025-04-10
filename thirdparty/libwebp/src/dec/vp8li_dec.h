@@ -20,6 +20,7 @@
 #include "src/utils/bit_reader_utils.h"
 #include "src/utils/color_cache_utils.h"
 #include "src/utils/huffman_utils.h"
+#include "src/webp/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,7 +52,7 @@ typedef struct {
   uint32_t*       huffman_image_;
   int             num_htree_groups_;
   HTreeGroup*     htree_groups_;
-  HuffmanCode*    huffman_tables_;
+  HuffmanTables   huffman_tables_;
 } VP8LMetadata;
 
 typedef struct VP8LDecoder VP8LDecoder;
@@ -99,25 +100,26 @@ struct ALPHDecoder;  // Defined in dec/alphai.h.
 
 // Decodes image header for alpha data stored using lossless compression.
 // Returns false in case of error.
-int VP8LDecodeAlphaHeader(struct ALPHDecoder* const alph_dec,
-                          const uint8_t* const data, size_t data_size);
+WEBP_NODISCARD int VP8LDecodeAlphaHeader(struct ALPHDecoder* const alph_dec,
+                                         const uint8_t* const data,
+                                         size_t data_size);
 
 // Decodes *at least* 'last_row' rows of alpha. If some of the initial rows are
 // already decoded in previous call(s), it will resume decoding from where it
 // was paused.
 // Returns false in case of bitstream error.
-int VP8LDecodeAlphaImageStream(struct ALPHDecoder* const alph_dec,
-                               int last_row);
+WEBP_NODISCARD int VP8LDecodeAlphaImageStream(
+    struct ALPHDecoder* const alph_dec, int last_row);
 
 // Allocates and initialize a new lossless decoder instance.
-VP8LDecoder* VP8LNew(void);
+WEBP_NODISCARD VP8LDecoder* VP8LNew(void);
 
 // Decodes the image header. Returns false in case of error.
-int VP8LDecodeHeader(VP8LDecoder* const dec, VP8Io* const io);
+WEBP_NODISCARD int VP8LDecodeHeader(VP8LDecoder* const dec, VP8Io* const io);
 
 // Decodes an image. It's required to decode the lossless header before calling
 // this function. Returns false in case of error, with updated dec->status_.
-int VP8LDecodeImage(VP8LDecoder* const dec);
+WEBP_NODISCARD int VP8LDecodeImage(VP8LDecoder* const dec);
 
 // Resets the decoder in its initial state, reclaiming memory.
 // Preserves the dec->status_ value.
@@ -125,6 +127,18 @@ void VP8LClear(VP8LDecoder* const dec);
 
 // Clears and deallocate a lossless decoder instance.
 void VP8LDelete(VP8LDecoder* const dec);
+
+// Helper function for reading the different Huffman codes and storing them in
+// 'huffman_tables' and 'htree_groups'.
+// If mapping is NULL 'num_htree_groups_max' must equal 'num_htree_groups'.
+// If it is not NULL, it maps 'num_htree_groups_max' indices to the
+// 'num_htree_groups' groups. If 'num_htree_groups_max' > 'num_htree_groups',
+// some of those indices map to -1. This is used for non-balanced codes to
+// limit memory usage.
+WEBP_NODISCARD int ReadHuffmanCodesHelper(
+    int color_cache_bits, int num_htree_groups, int num_htree_groups_max,
+    const int* const mapping, VP8LDecoder* const dec,
+    HuffmanTables* const huffman_tables, HTreeGroup** const htree_groups);
 
 //------------------------------------------------------------------------------
 

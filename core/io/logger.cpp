@@ -1,41 +1,45 @@
-/*************************************************************************/
-/*  logger.cpp                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  logger.cpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "logger.h"
 
-#include "core/config/project_settings.h"
 #include "core/core_globals.h"
 #include "core/io/dir_access.h"
-#include "core/os/os.h"
 #include "core/os/time.h"
-#include "core/string/print_string.h"
+#include "core/templates/rb_set.h"
+
+#include "modules/modules_enabled.gen.h" // For regex.
+
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif // MODULE_REGEX_ENABLED
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
@@ -82,11 +86,7 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 		err_details = p_code;
 	}
 
-	if (p_editor_notify) {
-		logf_error("%s: %s\n", err_type, err_details);
-	} else {
-		logf_error("USER %s: %s\n", err_type, err_details);
-	}
+	logf_error("%s: %s\n", err_type, err_details);
 	logf_error("   at: %s (%s:%i)\n", p_function, p_file, p_line);
 }
 
@@ -129,7 +129,9 @@ void RotatedFileLogger::clear_old_backups() {
 
 	da->list_dir_begin();
 	String f = da->get_next();
-	HashSet<String> backups;
+	// backups is a RBSet because it guarantees that iterating on it is done in sorted order.
+	// RotatedFileLogger depends on this behavior to delete the oldest log file first.
+	RBSet<String> backups;
 	while (!f.is_empty()) {
 		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
@@ -138,12 +140,12 @@ void RotatedFileLogger::clear_old_backups() {
 	}
 	da->list_dir_end();
 
-	if (backups.size() > (uint32_t)max_backups) {
+	if (backups.size() > max_backups) {
 		// since backups are appended with timestamp and Set iterates them in sorted order,
 		// first backups are the oldest
 		int to_delete = backups.size() - max_backups;
-		for (HashSet<String>::Iterator E = backups.begin(); E && to_delete > 0; ++E, --to_delete) {
-			da->remove(*E);
+		for (RBSet<String>::Element *E = backups.front(); E && to_delete > 0; E = E->next(), --to_delete) {
+			da->remove(E->get());
 		}
 	}
 }
@@ -180,6 +182,12 @@ RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files)
 		base_path(p_base_path.simplify_path()),
 		max_files(p_max_files > 0 ? p_max_files : 1) {
 	rotate_file();
+
+#ifdef MODULE_REGEX_ENABLED
+	strip_ansi_regex.instantiate();
+	strip_ansi_regex->detach_from_objectdb(); // Note: This RegEx instance will exist longer than ObjectDB, therefore can't be registered in ObjectDB.
+	strip_ansi_regex->compile("\u001b\\[((?:\\d|;)*)([a-zA-Z])");
+#endif // MODULE_REGEX_ENABLED
 }
 
 void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
@@ -199,7 +207,15 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 			vsnprintf(buf, len + 1, p_format, list_copy);
 		}
 		va_end(list_copy);
+
+#ifdef MODULE_REGEX_ENABLED
+		// Strip ANSI escape codes (such as those inserted by `print_rich()`)
+		// before writing to file, as text editors cannot display those
+		// correctly.
+		file->store_string(strip_ansi_regex->sub(String::utf8(buf), "", true));
+#else
 		file->store_buffer((uint8_t *)buf, len);
+#endif // MODULE_REGEX_ENABLED
 
 		if (len >= static_buf_size) {
 			Memory::free_static(buf);
@@ -230,7 +246,7 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	}
 }
 
-CompositeLogger::CompositeLogger(Vector<Logger *> p_loggers) :
+CompositeLogger::CompositeLogger(const Vector<Logger *> &p_loggers) :
 		loggers(p_loggers) {
 }
 

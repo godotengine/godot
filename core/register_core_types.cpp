@@ -1,39 +1,38 @@
-/*************************************************************************/
-/*  register_core_types.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  register_core_types.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "register_core_types.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
-#include "core/core_string_names.h"
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
@@ -46,6 +45,7 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/dtls_server.h"
+#include "core/io/file_access_encrypted.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
@@ -68,8 +68,6 @@
 #include "core/math/a_star.h"
 #include "core/math/a_star_grid_2d.h"
 #include "core/math/expression.h"
-#include "core/math/geometry_2d.h"
-#include "core/math/geometry_3d.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
 #include "core/object/class_db.h"
@@ -80,10 +78,12 @@
 #include "core/os/time.h"
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
+#include "core/string/translation_server.h"
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
 static Ref<ResourceFormatImporter> resource_format_importer;
+static Ref<ResourceFormatImporterSaver> resource_format_importer_saver;
 static Ref<ResourceFormatLoaderImage> resource_format_image;
 static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
@@ -92,18 +92,19 @@ static Ref<GDExtensionResourceLoader> resource_loader_gdextension;
 static Ref<ResourceFormatSaverJSON> resource_saver_json;
 static Ref<ResourceFormatLoaderJSON> resource_loader_json;
 
-static core_bind::ResourceLoader *_resource_loader = nullptr;
-static core_bind::ResourceSaver *_resource_saver = nullptr;
-static core_bind::OS *_os = nullptr;
-static core_bind::Engine *_engine = nullptr;
-static core_bind::special::ClassDB *_classdb = nullptr;
-static core_bind::Marshalls *_marshalls = nullptr;
-static core_bind::EngineDebugger *_engine_debugger = nullptr;
+static CoreBind::ResourceLoader *_resource_loader = nullptr;
+static CoreBind::ResourceSaver *_resource_saver = nullptr;
+static CoreBind::OS *_os = nullptr;
+static CoreBind::Engine *_engine = nullptr;
+static CoreBind::Special::ClassDB *_classdb = nullptr;
+static CoreBind::Marshalls *_marshalls = nullptr;
+static CoreBind::EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
+static Time *_time = nullptr;
 
-static core_bind::Geometry2D *_geometry_2d = nullptr;
-static core_bind::Geometry3D *_geometry_3d = nullptr;
+static CoreBind::Geometry2D *_geometry_2d = nullptr;
+static CoreBind::Geometry3D *_geometry_3d = nullptr;
 
 static WorkerThreadPool *worker_thread_pool = nullptr;
 
@@ -119,12 +120,15 @@ static ResourceUID *resource_uid = nullptr;
 static bool _is_core_extensions_registered = false;
 
 void register_core_types() {
+	OS::get_singleton()->benchmark_begin_measure("Core", "Register Types");
+
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
 
 	ObjectDB::setup();
 
 	StringName::setup();
+	_time = memnew(Time);
 	ResourceLoader::initialize();
 
 	register_global_constants();
@@ -133,8 +137,10 @@ void register_core_types() {
 
 	CoreStringNames::create();
 
-	resource_format_po.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_format_po);
+	if (GD_IS_CLASS_ENABLED(Translation)) {
+		resource_format_po.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_format_po);
+	}
 
 	resource_saver_binary.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_binary);
@@ -144,8 +150,13 @@ void register_core_types() {
 	resource_format_importer.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_importer);
 
-	resource_format_image.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_format_image);
+	resource_format_importer_saver.instantiate();
+	ResourceSaver::add_resource_format_saver(resource_format_importer_saver);
+
+	if (GD_IS_CLASS_ENABLED(Image)) {
+		resource_format_image.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_format_image);
+	}
 
 	GDREGISTER_CLASS(Object);
 
@@ -205,25 +216,32 @@ void register_core_types() {
 	GDREGISTER_CLASS(AESContext);
 	ClassDB::register_custom_instance_class<X509Certificate>();
 	ClassDB::register_custom_instance_class<CryptoKey>();
+	GDREGISTER_ABSTRACT_CLASS(TLSOptions);
 	ClassDB::register_custom_instance_class<HMACContext>();
 	ClassDB::register_custom_instance_class<Crypto>();
 	ClassDB::register_custom_instance_class<StreamPeerTLS>();
 	ClassDB::register_custom_instance_class<PacketPeerDTLS>();
 	ClassDB::register_custom_instance_class<DTLSServer>();
 
-	resource_format_saver_crypto.instantiate();
-	ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
-	resource_format_loader_crypto.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
+	if (GD_IS_CLASS_ENABLED(Crypto)) {
+		resource_format_saver_crypto.instantiate();
+		ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
 
-	resource_loader_json.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_json);
+		resource_format_loader_crypto.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
+	}
 
-	resource_saver_json.instantiate();
-	ResourceSaver::add_resource_format_saver(resource_saver_json);
+	if (GD_IS_CLASS_ENABLED(JSON)) {
+		resource_saver_json.instantiate();
+		ResourceSaver::add_resource_format_saver(resource_saver_json);
+
+		resource_loader_json.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_json);
+	}
 
 	GDREGISTER_CLASS(MainLoop);
 	GDREGISTER_CLASS(Translation);
+	GDREGISTER_CLASS(TranslationDomain);
 	GDREGISTER_CLASS(OptimizedTranslation);
 	GDREGISTER_CLASS(UndoRedo);
 	GDREGISTER_CLASS(TriangleMesh);
@@ -233,9 +251,9 @@ void register_core_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(FileAccess);
 	GDREGISTER_ABSTRACT_CLASS(DirAccess);
-	GDREGISTER_CLASS(core_bind::Thread);
-	GDREGISTER_CLASS(core_bind::Mutex);
-	GDREGISTER_CLASS(core_bind::Semaphore);
+	GDREGISTER_CLASS(CoreBind::Thread);
+	GDREGISTER_CLASS(CoreBind::Mutex);
+	GDREGISTER_CLASS(CoreBind::Semaphore);
 
 	GDREGISTER_CLASS(XMLParser);
 	GDREGISTER_CLASS(JSON);
@@ -268,120 +286,144 @@ void register_core_types() {
 
 	gdextension_manager = memnew(GDExtensionManager);
 
-	resource_loader_gdextension.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_gdextension);
+	if (GD_IS_CLASS_ENABLED(GDExtension)) {
+		resource_loader_gdextension.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_gdextension);
+	}
 
 	ip = IP::create();
 
-	_geometry_2d = memnew(core_bind::Geometry2D);
-	_geometry_3d = memnew(core_bind::Geometry3D);
+	_geometry_2d = memnew(CoreBind::Geometry2D);
+	_geometry_3d = memnew(CoreBind::Geometry3D);
 
-	_resource_loader = memnew(core_bind::ResourceLoader);
-	_resource_saver = memnew(core_bind::ResourceSaver);
-	_os = memnew(core_bind::OS);
-	_engine = memnew(core_bind::Engine);
-	_classdb = memnew(core_bind::special::ClassDB);
-	_marshalls = memnew(core_bind::Marshalls);
-	_engine_debugger = memnew(core_bind::EngineDebugger);
+	_resource_loader = memnew(CoreBind::ResourceLoader);
+	_resource_saver = memnew(CoreBind::ResourceSaver);
+	_os = memnew(CoreBind::OS);
+	_engine = memnew(CoreBind::Engine);
+	_classdb = memnew(CoreBind::Special::ClassDB);
+	_marshalls = memnew(CoreBind::Marshalls);
+	_engine_debugger = memnew(CoreBind::EngineDebugger);
 
 	GDREGISTER_NATIVE_STRUCT(ObjectID, "uint64_t id = 0");
 	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 
 	worker_thread_pool = memnew(WorkerThreadPool);
+
+	OS::get_singleton()->benchmark_end_measure("Core", "Register Types");
 }
 
 void register_core_settings() {
 	// Since in register core types, globals may not be present.
-	GLOBAL_DEF("network/limits/tcp/connect_timeout_seconds", (30));
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/tcp/connect_timeout_seconds", PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"));
-	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/packet_peer_stream/max_buffer_po2", PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"));
-	GLOBAL_DEF("network/tls/certificate_bundle_override", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("network/tls/certificate_bundle_override", PropertyInfo(Variant::STRING, "network/tls/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"));
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"), (30));
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "8,64,1,or_greater"), (16));
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "network/tls/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"), "");
 
-	int worker_threads = GLOBAL_DEF("threading/worker_pool/max_threads", -1);
-	bool low_priority_use_system_threads = GLOBAL_DEF("threading/worker_pool/use_system_threads_for_low_priority_tasks", true);
-	float low_property_ratio = GLOBAL_DEF("threading/worker_pool/low_priority_thread_ratio", 0.3);
+	GLOBAL_DEF("threading/worker_pool/max_threads", -1);
+	GLOBAL_DEF("threading/worker_pool/low_priority_thread_ratio", 0.3);
+}
 
-	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		worker_thread_pool->init();
-	} else {
-		worker_thread_pool->init(worker_threads, low_priority_use_system_threads, low_property_ratio);
-	}
+void register_early_core_singletons() {
+	GDREGISTER_CLASS(CoreBind::Engine);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", CoreBind::Engine::get_singleton()));
+
+	GDREGISTER_CLASS(ProjectSettings);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
+
+	GDREGISTER_CLASS(CoreBind::OS);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", CoreBind::OS::get_singleton()));
+
+	GDREGISTER_CLASS(Time);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 }
 
 void register_core_singletons() {
-	GDREGISTER_CLASS(ProjectSettings);
+	OS::get_singleton()->benchmark_begin_measure("Core", "Register Singletons");
+
 	GDREGISTER_ABSTRACT_CLASS(IP);
-	GDREGISTER_CLASS(core_bind::Geometry2D);
-	GDREGISTER_CLASS(core_bind::Geometry3D);
-	GDREGISTER_CLASS(core_bind::ResourceLoader);
-	GDREGISTER_CLASS(core_bind::ResourceSaver);
-	GDREGISTER_CLASS(core_bind::OS);
-	GDREGISTER_CLASS(core_bind::Engine);
-	GDREGISTER_CLASS(core_bind::special::ClassDB);
-	GDREGISTER_CLASS(core_bind::Marshalls);
+	GDREGISTER_CLASS(CoreBind::Geometry2D);
+	GDREGISTER_CLASS(CoreBind::Geometry3D);
+	GDREGISTER_CLASS(CoreBind::ResourceLoader);
+	GDREGISTER_CLASS(CoreBind::ResourceSaver);
+	GDREGISTER_CLASS(CoreBind::Special::ClassDB);
+	GDREGISTER_CLASS(CoreBind::Marshalls);
 	GDREGISTER_CLASS(TranslationServer);
 	GDREGISTER_ABSTRACT_CLASS(Input);
 	GDREGISTER_CLASS(InputMap);
 	GDREGISTER_CLASS(Expression);
-	GDREGISTER_CLASS(core_bind::EngineDebugger);
-	GDREGISTER_CLASS(Time);
+	GDREGISTER_CLASS(CoreBind::EngineDebugger);
 
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton(), "IP"));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", core_bind::Geometry2D::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", core_bind::Geometry3D::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", core_bind::ResourceLoader::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", core_bind::ResourceSaver::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", core_bind::OS::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", core_bind::Engine::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", CoreBind::Geometry2D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", CoreBind::Geometry3D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", CoreBind::ResourceLoader::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", CoreBind::ResourceSaver::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ClassDB", _classdb));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", core_bind::Marshalls::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", CoreBind::Marshalls::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", core_bind::EngineDebugger::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", CoreBind::EngineDebugger::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GDExtensionManager", GDExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", worker_thread_pool));
+
+	OS::get_singleton()->benchmark_end_measure("Core", "Register Singletons");
 }
 
 void register_core_extensions() {
+	OS::get_singleton()->benchmark_begin_measure("Core", "Register Extensions");
+
 	// Hardcoded for now.
 	GDExtension::initialize_gdextensions();
 	gdextension_manager->load_extensions();
 	gdextension_manager->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
 	_is_core_extensions_registered = true;
+
+	OS::get_singleton()->benchmark_end_measure("Core", "Register Extensions");
 }
 
 void unregister_core_extensions() {
+	OS::get_singleton()->benchmark_begin_measure("Core", "Unregister Extensions");
+
 	if (_is_core_extensions_registered) {
 		gdextension_manager->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
 	}
+	GDExtension::finalize_gdextensions();
+
+	OS::get_singleton()->benchmark_end_measure("Core", "Unregister Extensions");
 }
 
 void unregister_core_types() {
-	memdelete(gdextension_manager);
+	OS::get_singleton()->benchmark_begin_measure("Core", "Unregister Types");
 
-	memdelete(resource_uid);
-	memdelete(_resource_loader);
-	memdelete(_resource_saver);
-	memdelete(_os);
-	memdelete(_engine);
-	memdelete(_classdb);
-	memdelete(_marshalls);
-	memdelete(_engine_debugger);
-
-	memdelete(_geometry_2d);
-	memdelete(_geometry_3d);
+	// Destroy singletons in reverse order to ensure dependencies are not broken.
 
 	memdelete(worker_thread_pool);
 
-	ResourceLoader::remove_resource_format_loader(resource_format_image);
-	resource_format_image.unref();
+	memdelete(_engine_debugger);
+	memdelete(_marshalls);
+	memdelete(_classdb);
+	memdelete(_engine);
+	memdelete(_os);
+	memdelete(_resource_saver);
+	memdelete(_resource_loader);
+
+	memdelete(_geometry_3d);
+	memdelete(_geometry_2d);
+
+	memdelete(gdextension_manager);
+
+	memdelete(resource_uid);
+
+	if (ip) {
+		memdelete(ip);
+	}
+
+	if (GD_IS_CLASS_ENABLED(Image)) {
+		ResourceLoader::remove_resource_format_loader(resource_format_image);
+		resource_format_image.unref();
+	}
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_binary);
 	resource_saver_binary.unref();
@@ -392,38 +434,51 @@ void unregister_core_types() {
 	ResourceLoader::remove_resource_format_loader(resource_format_importer);
 	resource_format_importer.unref();
 
-	ResourceLoader::remove_resource_format_loader(resource_format_po);
-	resource_format_po.unref();
+	ResourceSaver::remove_resource_format_saver(resource_format_importer_saver);
+	resource_format_importer_saver.unref();
 
-	ResourceSaver::remove_resource_format_saver(resource_format_saver_crypto);
-	resource_format_saver_crypto.unref();
-	ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
-	resource_format_loader_crypto.unref();
-
-	ResourceSaver::remove_resource_format_saver(resource_saver_json);
-	resource_saver_json.unref();
-
-	ResourceLoader::remove_resource_format_loader(resource_loader_json);
-	resource_loader_json.unref();
-
-	if (ip) {
-		memdelete(ip);
+	if (GD_IS_CLASS_ENABLED(Translation)) {
+		ResourceLoader::remove_resource_format_loader(resource_format_po);
+		resource_format_po.unref();
 	}
 
-	ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
-	resource_loader_gdextension.unref();
+	if (GD_IS_CLASS_ENABLED(Crypto)) {
+		ResourceSaver::remove_resource_format_saver(resource_format_saver_crypto);
+		resource_format_saver_crypto.unref();
+
+		ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
+		resource_format_loader_crypto.unref();
+	}
+
+	if (GD_IS_CLASS_ENABLED(JSON)) {
+		ResourceSaver::remove_resource_format_saver(resource_saver_json);
+		resource_saver_json.unref();
+
+		ResourceLoader::remove_resource_format_loader(resource_loader_json);
+		resource_loader_json.unref();
+	}
+
+	if (GD_IS_CLASS_ENABLED(GDExtension)) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
+		resource_loader_gdextension.unref();
+	}
 
 	ResourceLoader::finalize();
 
 	ClassDB::cleanup_defaults();
+	memdelete(_time);
 	ObjectDB::cleanup();
 
 	Variant::unregister_types();
 
 	unregister_global_constants();
 
-	ClassDB::cleanup();
 	ResourceCache::clear();
+	ClassDB::cleanup();
 	CoreStringNames::free();
 	StringName::cleanup();
+
+	FileAccessEncrypted::deinitialize();
+
+	OS::get_singleton()->benchmark_end_measure("Core", "Unregister Types");
 }

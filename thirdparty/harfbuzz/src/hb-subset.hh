@@ -33,6 +33,7 @@
 #include "hb-subset.h"
 
 #include "hb-machinery.hh"
+#include "hb-serialize.hh"
 #include "hb-subset-input.hh"
 #include "hb-subset-plan.hh"
 

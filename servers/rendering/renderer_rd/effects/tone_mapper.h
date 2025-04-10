@@ -1,39 +1,37 @@
-/*************************************************************************/
-/*  tone_mapper.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tone_mapper.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef TONE_MAPPER_RD_H
-#define TONE_MAPPER_RD_H
+#pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/tonemap.glsl.gen.h"
-#include "servers/rendering/renderer_scene_render.h"
 
 #include "servers/rendering_server.h"
 
@@ -59,14 +57,23 @@ private:
 		TONEMAP_MODE_MAX
 	};
 
+	enum {
+		TONEMAP_FLAG_USE_BCS = (1 << 0),
+		TONEMAP_FLAG_USE_GLOW = (1 << 1),
+		TONEMAP_FLAG_USE_AUTO_EXPOSURE = (1 << 2),
+		TONEMAP_FLAG_USE_COLOR_CORRECTION = (1 << 3),
+		TONEMAP_FLAG_USE_FXAA = (1 << 4),
+		TONEMAP_FLAG_USE_DEBANDING = (1 << 5),
+		TONEMAP_FLAG_CONVERT_TO_SRGB = (1 << 6),
+	};
+
 	struct TonemapPushConstant {
 		float bcs[3]; // 12 - 12
-		uint32_t use_bcs; //  4 - 16
+		uint32_t flags; //  4 - 16
 
-		uint32_t use_glow; //  4 - 20
-		uint32_t use_auto_exposure; //  4 - 24
-		uint32_t use_color_correction; //  4 - 28
-		uint32_t tonemapper; //  4 - 32
+		float pixel_size[2]; //  8 - 24
+		uint32_t tonemapper; //  4 - 28
+		uint32_t pad; //  4 - 32
 
 		uint32_t glow_texture_size[2]; //  8 - 40
 		float glow_intensity; //  4 - 44
@@ -79,10 +86,6 @@ private:
 		float white; //  4 - 88
 		float auto_exposure_scale; //  4 - 92
 		float luminance_multiplier; //  4 - 96
-
-		float pixel_size[2]; //  8 - 104
-		uint32_t use_fxaa; //  4 - 108
-		uint32_t use_debanding; //  4 - 112
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -141,6 +144,8 @@ public:
 		bool use_debanding = false;
 		Vector2i texture_size;
 		uint32_t view_count = 1;
+
+		bool convert_to_srgb = false;
 	};
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
@@ -148,5 +153,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // TONE_MAPPER_RD_H

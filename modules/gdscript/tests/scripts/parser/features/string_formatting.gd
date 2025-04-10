@@ -13,6 +13,6 @@ func test():
 	print("hello %.02f" % 0.123456 == "hello 0.12")
 
 	# Dynamic padding:
-	# <https://docs.godotengine.org/en/stable/getting_started/scripting/gdscript/gdscript_format_string.html#dynamic-padding>
+	# https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_format_string.html#dynamic-padding
 	print("hello %*.*f" % [7, 3, 0.123456] == "hello   0.123")
 	print("hello %0*.*f" % [7, 3, 0.123456] == "hello 000.123")

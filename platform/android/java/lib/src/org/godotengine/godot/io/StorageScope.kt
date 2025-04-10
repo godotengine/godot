@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  StorageScope.kt                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  StorageScope.kt                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 package org.godotengine.godot.io
 
@@ -34,11 +34,17 @@ import android.content.Context
 import android.os.Build
 import android.os.Environment
 import java.io.File
+import org.godotengine.godot.GodotLib
 
 /**
  * Represents the different storage scopes.
  */
 internal enum class StorageScope {
+	/**
+	 * Covers the 'assets' directory
+	 */
+	ASSETS,
+
 	/**
 	 * Covers internal and external directories accessible to the app without restrictions.
 	 */
@@ -56,12 +62,24 @@ internal enum class StorageScope {
 
 	class Identifier(context: Context) {
 
+		companion object {
+			internal const val ASSETS_PREFIX = "assets://"
+		}
+
 		private val internalAppDir: String? = context.filesDir.canonicalPath
 		private val internalCacheDir: String? = context.cacheDir.canonicalPath
 		private val externalAppDir: String? = context.getExternalFilesDir(null)?.canonicalPath
 		private val sharedDir : String? = Environment.getExternalStorageDirectory().canonicalPath
 		private val downloadsSharedDir: String? = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).canonicalPath
 		private val documentsSharedDir: String? = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).canonicalPath
+
+		/**
+		 * Determine if the given path is accessible.
+		 */
+		fun canAccess(path: String?): Boolean {
+			val storageScope = identifyStorageScope(path)
+			return storageScope == APP || storageScope == SHARED
+		}
 
 		/**
 		 * Determines which [StorageScope] the given path falls under.
@@ -71,9 +89,23 @@ internal enum class StorageScope {
 				return UNKNOWN
 			}
 
-			val pathFile = File(path)
+			if (path.startsWith(ASSETS_PREFIX)) {
+				return ASSETS
+			}
+
+			var pathFile = File(path)
 			if (!pathFile.isAbsolute) {
-				return UNKNOWN
+				pathFile = File(GodotLib.getProjectResourceDir(), path)
+				if (!pathFile.isAbsolute) {
+					return UNKNOWN
+				}
+			}
+
+			// If we have 'All Files Access' permission, we can access all directories without
+			// restriction.
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+				&& Environment.isExternalStorageManager()) {
+				return APP
 			}
 
 			val canonicalPathFile = pathFile.canonicalPath
@@ -90,7 +122,7 @@ internal enum class StorageScope {
 				return APP
 			}
 
-			var rootDir: String? = System.getenv("ANDROID_ROOT")
+			val rootDir: String? = System.getenv("ANDROID_ROOT")
 			if (rootDir != null && canonicalPathFile.startsWith(rootDir)) {
 				return APP
 			}

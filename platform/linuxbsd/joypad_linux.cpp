@@ -1,36 +1,38 @@
-/*************************************************************************/
-/*  joypad_linux.cpp                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  joypad_linux.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifdef JOYDEV_ENABLED
 
 #include "joypad_linux.h"
+
+#include "core/os/os.h"
 
 #include <dirent.h>
 #include <errno.h>
@@ -39,16 +41,28 @@
 #include <unistd.h>
 
 #ifdef UDEV_ENABLED
+#ifdef SOWRAP_ENABLED
 #include "libudev-so_wrap.h"
+#else
+#include <libudev.h>
+#endif
 #endif
 
 #define LONG_BITS (sizeof(long) * 8)
 #define test_bit(nr, addr) (((1UL << ((nr) % LONG_BITS)) & ((addr)[(nr) / LONG_BITS])) != 0)
-#define NBITS(x) ((((x)-1) / LONG_BITS) + 1)
+#define NBITS(x) ((((x) - 1) / LONG_BITS) + 1)
 
 #ifdef UDEV_ENABLED
 static const char *ignore_str = "/dev/input/js";
 #endif
+
+// On Linux with Steam Input Xbox 360 devices have an index appended to their device name, this index is
+// the Steam Input gamepad index
+#define VALVE_GAMEPAD_NAME_PREFIX "Microsoft X-Box 360 pad "
+// IDs used by Steam Input virtual controllers.
+// See https://partner.steamgames.com/doc/features/steam_controller/steam_input_gamepad_emulation_bestpractices
+#define VALVE_GAMEPAD_VID 0x28DE
+#define VALVE_GAMEPAD_PID 0x11FF
 
 JoypadLinux::Joypad::~Joypad() {
 	for (int i = 0; i < MAX_ABS; i++) {
@@ -59,7 +73,7 @@ JoypadLinux::Joypad::~Joypad() {
 }
 
 void JoypadLinux::Joypad::reset() {
-	dpad = HatMask::CENTER;
+	dpad = 0;
 	fd = -1;
 	for (int i = 0; i < MAX_ABS; i++) {
 		abs_map[i] = -1;
@@ -70,20 +84,38 @@ void JoypadLinux::Joypad::reset() {
 
 JoypadLinux::JoypadLinux(Input *in) {
 #ifdef UDEV_ENABLED
-#ifdef DEBUG_ENABLED
-	int dylibloader_verbose = 1;
-#else
-	int dylibloader_verbose = 0;
-#endif
-	use_udev = initialize_libudev(dylibloader_verbose) == 0;
-	if (use_udev) {
-		print_verbose("JoypadLinux: udev enabled and loaded successfully.");
-	} else {
-		print_verbose("JoypadLinux: udev enabled, but couldn't be loaded. Falling back to /dev/input to detect joypads.");
+	if (OS::get_singleton()->is_sandboxed()) {
+		// Linux binaries in sandboxes / containers need special handling because
+		// libudev doesn't work there. So we need to fallback to manual parsing
+		// of /dev/input in such case.
+		use_udev = false;
+		print_verbose("JoypadLinux: udev enabled, but detected incompatible sandboxed mode. Falling back to /dev/input to detect joypads.");
 	}
+#ifdef SOWRAP_ENABLED
+	else {
+#ifdef DEBUG_ENABLED
+		int dylibloader_verbose = 1;
+#else
+		int dylibloader_verbose = 0;
+#endif
+		use_udev = initialize_libudev(dylibloader_verbose) == 0;
+		if (use_udev) {
+			if (!udev_new || !udev_unref || !udev_enumerate_new || !udev_enumerate_add_match_subsystem || !udev_enumerate_scan_devices || !udev_enumerate_get_list_entry || !udev_list_entry_get_next || !udev_list_entry_get_name || !udev_device_new_from_syspath || !udev_device_get_devnode || !udev_device_get_action || !udev_device_unref || !udev_enumerate_unref || !udev_monitor_new_from_netlink || !udev_monitor_filter_add_match_subsystem_devtype || !udev_monitor_enable_receiving || !udev_monitor_get_fd || !udev_monitor_receive_device || !udev_monitor_unref) {
+				// There's no API to check version, check if functions are available instead.
+				use_udev = false;
+				print_verbose("JoypadLinux: Unsupported udev library version!");
+			} else {
+				print_verbose("JoypadLinux: udev enabled and loaded successfully.");
+			}
+		} else {
+			print_verbose("JoypadLinux: udev enabled, but couldn't be loaded. Falling back to /dev/input to detect joypads.");
+		}
+	}
+#endif // SOWRAP_ENABLED
 #else
 	print_verbose("JoypadLinux: udev disabled, parsing /dev/input to detect joypads.");
-#endif
+#endif // UDEV_ENABLED
+
 	input = in;
 	monitor_joypads_thread.start(monitor_joypads_thread_func, this);
 	joypad_events_thread.start(joypad_events_thread_func, this);
@@ -143,7 +175,7 @@ void JoypadLinux::enumerate_joypads(udev *p_udev) {
 
 		if (devnode) {
 			String devnode_str = devnode;
-			if (devnode_str.find(ignore_str) == -1) {
+			if (!devnode_str.contains(ignore_str)) {
 				open_joypad(devnode);
 			}
 		}
@@ -182,7 +214,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				const char *devnode = udev_device_get_devnode(dev);
 				if (devnode) {
 					String devnode_str = devnode;
-					if (devnode_str.find(ignore_str) == -1) {
+					if (!devnode_str.contains(ignore_str)) {
 						if (action == "add") {
 							open_joypad(devnode);
 						} else if (String(action) == "remove") {
@@ -193,7 +225,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				udev_device_unref(dev);
 			}
 		}
-		usleep(50000);
+		OS::get_singleton()->delay_usec(50'000);
 	}
 	udev_monitor_unref(mon);
 }
@@ -212,13 +244,13 @@ void JoypadLinux::monitor_joypads() {
 					continue;
 				}
 				sprintf(fname, "/dev/input/%.*s", 16, current->d_name);
-				if (attached_devices.find(fname) == -1) {
+				if (!attached_devices.has(fname)) {
 					open_joypad(fname);
 				}
 			}
 		}
 		closedir(input_directory);
-		usleep(1000000); // 1s
+		OS::get_singleton()->delay_usec(1'000'000);
 	}
 }
 
@@ -342,8 +374,24 @@ void JoypadLinux::open_joypad(const char *p_path) {
 			name = namebuf;
 		}
 
+		for (const String &word : name.to_lower().split(" ")) {
+			if (banned_words.has(word)) {
+				return;
+			}
+		}
+
 		if (ioctl(fd, EVIOCGID, &inpid) < 0) {
 			close(fd);
+			return;
+		}
+
+		uint16_t vendor = BSWAP16(inpid.vendor);
+		uint16_t product = BSWAP16(inpid.product);
+		uint16_t version = BSWAP16(inpid.version);
+
+		if (input->should_ignore_device(vendor, product)) {
+			// This can be true in cases where Steam is passing information into the game to ignore
+			// original gamepads when using virtual rebindings (See SteamInput).
 			return;
 		}
 
@@ -355,12 +403,23 @@ void JoypadLinux::open_joypad(const char *p_path) {
 		setup_joypad_properties(joypad);
 		sprintf(uid, "%04x%04x", BSWAP16(inpid.bustype), 0);
 		if (inpid.vendor && inpid.product && inpid.version) {
-			uint16_t vendor = BSWAP16(inpid.vendor);
-			uint16_t product = BSWAP16(inpid.product);
-			uint16_t version = BSWAP16(inpid.version);
+			Dictionary joypad_info;
+			joypad_info["vendor_id"] = inpid.vendor;
+			joypad_info["product_id"] = inpid.product;
+			joypad_info["raw_name"] = name;
 
 			sprintf(uid + String(uid).length(), "%04x%04x%04x%04x%04x%04x", vendor, 0, product, 0, version, 0);
-			input->joy_connection_changed(joy_num, true, name, uid);
+
+			if (inpid.vendor == VALVE_GAMEPAD_VID && inpid.product == VALVE_GAMEPAD_PID) {
+				if (name.begins_with(VALVE_GAMEPAD_NAME_PREFIX)) {
+					String idx_str = name.substr(strlen(VALVE_GAMEPAD_NAME_PREFIX));
+					if (idx_str.is_valid_int()) {
+						joypad_info["steam_input_index"] = idx_str.to_int();
+					}
+				}
+			}
+
+			input->joy_connection_changed(joy_num, true, name, uid, joypad_info);
 		} else {
 			String uidname = uid;
 			int uidlen = MIN(name.length(), 11);
@@ -455,7 +514,7 @@ void JoypadLinux::joypad_events_thread_run() {
 			}
 		}
 		if (no_events) {
-			usleep(10000); // 10ms
+			OS::get_singleton()->delay_usec(10'000);
 		}
 	}
 }
@@ -485,27 +544,33 @@ void JoypadLinux::process_joypads() {
 						case ABS_HAT0X:
 							if (joypad_event.value != 0) {
 								if (joypad_event.value < 0) {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::LEFT) & ~HatMask::RIGHT);
+									joypad.dpad.set_flag(HatMask::LEFT);
+									joypad.dpad.clear_flag(HatMask::RIGHT);
 								} else {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::RIGHT) & ~HatMask::LEFT);
+									joypad.dpad.set_flag(HatMask::RIGHT);
+									joypad.dpad.clear_flag(HatMask::LEFT);
 								}
 							} else {
-								joypad.dpad &= ~(HatMask::LEFT | HatMask::RIGHT);
+								joypad.dpad.clear_flag(HatMask::LEFT);
+								joypad.dpad.clear_flag(HatMask::RIGHT);
 							}
-							input->joy_hat(i, (HatMask)joypad.dpad);
+							input->joy_hat(i, joypad.dpad);
 							break;
 
 						case ABS_HAT0Y:
 							if (joypad_event.value != 0) {
 								if (joypad_event.value < 0) {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::UP) & ~HatMask::DOWN);
+									joypad.dpad.set_flag(HatMask::UP);
+									joypad.dpad.clear_flag(HatMask::DOWN);
 								} else {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::DOWN) & ~HatMask::UP);
+									joypad.dpad.set_flag(HatMask::DOWN);
+									joypad.dpad.clear_flag(HatMask::UP);
 								}
 							} else {
-								joypad.dpad &= ~(HatMask::UP | HatMask::DOWN);
+								joypad.dpad.clear_flag(HatMask::UP);
+								joypad.dpad.clear_flag(HatMask::DOWN);
 							}
-							input->joy_hat(i, (HatMask)joypad.dpad);
+							input->joy_hat(i, joypad.dpad);
 							break;
 
 						default:

@@ -1,41 +1,40 @@
-/*************************************************************************/
-/*  godot_lsp.h                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_lsp.h                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef GODOT_LSP_H
-#define GODOT_LSP_H
+#pragma once
 
 #include "core/doc_data.h"
 #include "core/object/class_db.h"
 #include "core/templates/list.h"
 
-namespace lsp {
+namespace LSP {
 
 typedef String DocumentUri;
 
@@ -83,6 +82,14 @@ struct Position {
 	 */
 	int character = 0;
 
+	_FORCE_INLINE_ bool operator==(const Position &p_other) const {
+		return line == p_other.line && character == p_other.character;
+	}
+
+	String to_string() const {
+		return vformat("(%d,%d)", line, character);
+	}
+
 	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		line = p_params["line"];
 		character = p_params["character"];
@@ -111,6 +118,27 @@ struct Range {
 	 * The range's end position.
 	 */
 	Position end;
+
+	_FORCE_INLINE_ bool operator==(const Range &p_other) const {
+		return start == p_other.start && end == p_other.end;
+	}
+
+	bool contains(const Position &p_pos) const {
+		// Inside line range.
+		if (start.line <= p_pos.line && p_pos.line <= end.line) {
+			// If on start line: must come after start char.
+			bool start_ok = p_pos.line == start.line ? start.character <= p_pos.character : true;
+			// If on end line: must come before end char.
+			bool end_ok = p_pos.line == end.line ? p_pos.character <= end.character : true;
+			return start_ok && end_ok;
+		} else {
+			return false;
+		}
+	}
+
+	String to_string() const {
+		return vformat("[%s:%s]", start.to_string(), end.to_string());
+	}
 
 	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		start.load(p_params["start"]);
@@ -171,7 +199,7 @@ struct LocationLink {
 
 	/**
 	 * The range that should be selected and revealed when this link is being followed, e.g the name of a function.
-	 * Must be contained by the the `targetRange`. See also `DocumentSymbol#range`
+	 * Must be contained by the `targetRange`. See also `DocumentSymbol#range`
 	 */
 	Range targetSelectionRange;
 };
@@ -201,6 +229,17 @@ struct TextDocumentPositionParams {
 		dict["position"] = position.to_json();
 		return dict;
 	}
+};
+
+struct ReferenceContext {
+	/**
+	 * Include the declaration of the current symbol.
+	 */
+	bool includeDeclaration = false;
+};
+
+struct ReferenceParams : TextDocumentPositionParams {
+	ReferenceContext context;
 };
 
 struct DocumentLinkParams {
@@ -293,16 +332,6 @@ struct WorkspaceEdit {
 	}
 
 	_FORCE_INLINE_ void add_change(const String &uri, const int &line, const int &start_character, const int &end_character, const String &new_text) {
-		if (HashMap<String, Vector<TextEdit>>::Iterator E = changes.find(uri)) {
-			Vector<TextEdit> edit_list = E->value;
-			for (int i = 0; i < edit_list.size(); ++i) {
-				TextEdit edit = edit_list[i];
-				if (edit.range.start.character == start_character) {
-					return;
-				}
-			}
-		}
-
 		TextEdit new_edit;
 		new_edit.newText = new_text;
 		new_edit.range.start.line = line;
@@ -353,8 +382,8 @@ struct Command {
 	}
 };
 
-// Use namespace instead of enumeration to follow the LSP specifications
-// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
+// Use namespace instead of enumeration to follow the LSP specifications.
+// `LSP::EnumName::EnumValue` is OK but `LSP::EnumValue` is not.
 
 namespace TextDocumentSyncKind {
 /**
@@ -446,7 +475,7 @@ struct RenameOptions {
 	/**
 	 * Renames should be checked and tested before being executed.
 	 */
-	bool prepareProvider = false;
+	bool prepareProvider = true;
 
 	Dictionary to_json() {
 		Dictionary dict;
@@ -804,12 +833,12 @@ static const String Markdown = "markdown";
  */
 struct MarkupContent {
 	/**
-	 * The type of the Markup
+	 * The type of the Markup.
 	 */
 	String kind;
 
 	/**
-	 * The content itself
+	 * The content itself.
 	 */
 	String value;
 
@@ -831,8 +860,8 @@ struct MarkupContent {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications
-// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
-// And here C++ compilers are unhappy with our enumeration name like Color, File, RefCounted etc.
+// `LSP::EnumName::EnumValue` is OK but `LSP::EnumValue` is not.
+// And here C++ compilers are unhappy with our enumeration name like `Color`, `File`, `RefCounted` etc.
 /**
  * The kind of a completion entry.
  */
@@ -864,7 +893,7 @@ static const int Operator = 24;
 static const int TypeParameter = 25;
 }; // namespace CompletionItemKind
 
-// Use namespace instead of enumeration to follow the LSP specifications
+// Use namespace instead of enumeration to follow the LSP specifications.
 /**
  * Defines whether the insert text in a completion item should be interpreted as
  * plain text or a snippet.
@@ -928,28 +957,30 @@ struct CompletionItem {
 
 	/**
 	 * A string that should be used when comparing this item
-	 * with other items. When `falsy` the label is used.
+	 * with other items. When omitted the label is used
+	 * as the filter text for this item.
 	 */
 	String sortText;
 
 	/**
 	 * A string that should be used when filtering a set of
-	 * completion items. When `falsy` the label is used.
+	 * completion items. When omitted the label is used as the
+	 * filter text for this item.
 	 */
 	String filterText;
 
 	/**
 	 * A string that should be inserted into a document when selecting
-	 * this completion. When `falsy` the label is used.
+	 * this completion. When omitted the label is used as the insert text
+	 * for this item.
 	 *
 	 * The `insertText` is subject to interpretation by the client side.
 	 * Some tools might not take the string literally. For example
-	 * VS Code when code complete is requested in this example `con<cursor position>`
-	 * and a completion item with an `insertText` of `console` is provided it
-	 * will only insert `sole`. Therefore it is recommended to use `textEdit` instead
-	 * since it avoids additional client side interpretation.
-	 *
-	 * @deprecated Use textEdit instead.
+	 * VS Code when code complete is requested in this example
+	 * `con<cursor position>` and a completion item with an `insertText` of
+	 * `console` is provided it will only insert `sole`. Therefore it is
+	 * recommended to use `textEdit` instead since it avoids additional client
+	 * side interpretation.
 	 */
 	String insertText;
 
@@ -1004,18 +1035,26 @@ struct CompletionItem {
 		dict["label"] = label;
 		dict["kind"] = kind;
 		dict["data"] = data;
-		dict["insertText"] = insertText;
+		if (!insertText.is_empty()) {
+			dict["insertText"] = insertText;
+		}
 		if (resolved) {
 			dict["detail"] = detail;
 			dict["documentation"] = documentation.to_json();
 			dict["deprecated"] = deprecated;
 			dict["preselect"] = preselect;
-			dict["sortText"] = sortText;
-			dict["filterText"] = filterText;
+			if (!sortText.is_empty()) {
+				dict["sortText"] = sortText;
+			}
+			if (!filterText.is_empty()) {
+				dict["filterText"] = filterText;
+			}
 			if (commitCharacters.size()) {
 				dict["commitCharacters"] = commitCharacters;
 			}
-			dict["command"] = command.to_json();
+			if (!command.command.is_empty()) {
+				dict["command"] = command.to_json();
+			}
 		}
 		return dict;
 	}
@@ -1032,7 +1071,7 @@ struct CompletionItem {
 		}
 		if (p_dict.has("documentation")) {
 			Variant doc = p_dict["documentation"];
-			if (doc.get_type() == Variant::STRING) {
+			if (doc.is_string()) {
 				documentation.value = doc;
 			} else if (doc.get_type() == Variant::DICTIONARY) {
 				Dictionary v = doc;
@@ -1078,8 +1117,8 @@ struct CompletionList {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications
-// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
-// And here C++ compilers are unhappy with our enumeration name like String, Array, Object etc
+// `LSP::EnumName::EnumValue` is OK but `LSP::EnumValue` is not
+// And here C++ compilers are unhappy with our enumeration name like `String`, `Array`, `Object` etc
 /**
  * A symbol kind.
  */
@@ -1113,70 +1152,6 @@ static const int TypeParameter = 26;
 }; // namespace SymbolKind
 
 /**
- * Represents information about programming constructs like variables, classes,
- * interfaces etc.
- */
-struct SymbolInformation {
-	/**
-	 * The name of this symbol.
-	 */
-	String name;
-
-	/**
-	 * The kind of this symbol.
-	 */
-	int kind = SymbolKind::File;
-
-	/**
-	 * Indicates if this symbol is deprecated.
-	 */
-	bool deprecated = false;
-
-	/**
-	 * The location of this symbol. The location's range is used by a tool
-	 * to reveal the location in the editor. If the symbol is selected in the
-	 * tool the range's start information is used to position the cursor. So
-	 * the range usually spans more then the actual symbol's name and does
-	 * normally include things like visibility modifiers.
-	 *
-	 * The range doesn't have to denote a node range in the sense of a abstract
-	 * syntax tree. It can therefore not be used to re-construct a hierarchy of
-	 * the symbols.
-	 */
-	Location location;
-
-	/**
-	 * The name of the symbol containing this symbol. This information is for
-	 * user interface purposes (e.g. to render a qualifier in the user interface
-	 * if necessary). It can't be used to re-infer a hierarchy for the document
-	 * symbols.
-	 */
-	String containerName;
-
-	_FORCE_INLINE_ Dictionary to_json() const {
-		Dictionary dict;
-		dict["name"] = name;
-		dict["kind"] = kind;
-		dict["deprecated"] = deprecated;
-		dict["location"] = location.to_json();
-		dict["containerName"] = containerName;
-		return dict;
-	}
-};
-
-struct DocumentedSymbolInformation : public SymbolInformation {
-	/**
-	 * A human-readable string with additional information
-	 */
-	String detail;
-
-	/**
-	 * A human-readable string that represents a doc-comment.
-	 */
-	String documentation;
-};
-
-/**
  * Represents programming constructs like variables, classes, interfaces etc. that appear in a document. Document symbols can be
  * hierarchical and they have two ranges: one that encloses its definition and one that points to its most interesting range,
  * e.g. the range of an identifier.
@@ -1194,12 +1169,12 @@ struct DocumentSymbol {
 	String detail;
 
 	/**
-	 * Documentation for this symbol
+	 * Documentation for this symbol.
 	 */
 	String documentation;
 
 	/**
-	 * Class name for the native symbols
+	 * Class name for the native symbols.
 	 */
 	String native_class;
 
@@ -1212,6 +1187,13 @@ struct DocumentSymbol {
 	 * Indicates if this symbol is deprecated.
 	 */
 	bool deprecated = false;
+
+	/**
+	 * If `true`: Symbol is local to script and cannot be accessed somewhere else.
+	 *
+	 * For example: local variable inside a `func`.
+	 */
+	bool local = false;
 
 	/**
 	 * The range enclosing this symbol not including leading/trailing whitespace but everything else
@@ -1246,33 +1228,19 @@ struct DocumentSymbol {
 			dict["documentation"] = documentation;
 			dict["native_class"] = native_class;
 		}
-		Array arr;
-		arr.resize(children.size());
-		for (int i = 0; i < children.size(); i++) {
-			arr[i] = children[i].to_json(with_doc);
+		if (!children.is_empty()) {
+			Array arr;
+			for (int i = 0; i < children.size(); i++) {
+				if (children[i].local) {
+					continue;
+				}
+				arr.push_back(children[i].to_json(with_doc));
+			}
+			if (!children.is_empty()) {
+				dict["children"] = arr;
+			}
 		}
-		dict["children"] = arr;
 		return dict;
-	}
-
-	void symbol_tree_as_list(const String &p_uri, Vector<DocumentedSymbolInformation> &r_list, const String &p_container = "", bool p_join_name = false) const {
-		DocumentedSymbolInformation si;
-		if (p_join_name && !p_container.is_empty()) {
-			si.name = p_container + ">" + name;
-		} else {
-			si.name = name;
-		}
-		si.kind = kind;
-		si.containerName = p_container;
-		si.deprecated = deprecated;
-		si.location.uri = p_uri;
-		si.location.range = range;
-		si.detail = detail;
-		si.documentation = documentation;
-		r_list.push_back(si);
-		for (int i = 0; i < children.size(); i++) {
-			children[i].symbol_tree_as_list(p_uri, r_list, si.name, p_join_name);
-		}
 	}
 
 	_FORCE_INLINE_ MarkupContent render() const {
@@ -1290,7 +1258,7 @@ struct DocumentSymbol {
 	}
 
 	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
-		lsp::CompletionItem item;
+		LSP::CompletionItem item;
 		item.label = name;
 
 		if (resolved) {
@@ -1298,33 +1266,33 @@ struct DocumentSymbol {
 		}
 
 		switch (kind) {
-			case lsp::SymbolKind::Enum:
-				item.kind = lsp::CompletionItemKind::Enum;
+			case LSP::SymbolKind::Enum:
+				item.kind = LSP::CompletionItemKind::Enum;
 				break;
-			case lsp::SymbolKind::Class:
-				item.kind = lsp::CompletionItemKind::Class;
+			case LSP::SymbolKind::Class:
+				item.kind = LSP::CompletionItemKind::Class;
 				break;
-			case lsp::SymbolKind::Property:
-				item.kind = lsp::CompletionItemKind::Property;
+			case LSP::SymbolKind::Property:
+				item.kind = LSP::CompletionItemKind::Property;
 				break;
-			case lsp::SymbolKind::Method:
-			case lsp::SymbolKind::Function:
-				item.kind = lsp::CompletionItemKind::Method;
+			case LSP::SymbolKind::Method:
+			case LSP::SymbolKind::Function:
+				item.kind = LSP::CompletionItemKind::Method;
 				break;
-			case lsp::SymbolKind::Event:
-				item.kind = lsp::CompletionItemKind::Event;
+			case LSP::SymbolKind::Event:
+				item.kind = LSP::CompletionItemKind::Event;
 				break;
-			case lsp::SymbolKind::Constant:
-				item.kind = lsp::CompletionItemKind::Constant;
+			case LSP::SymbolKind::Constant:
+				item.kind = LSP::CompletionItemKind::Constant;
 				break;
-			case lsp::SymbolKind::Variable:
-				item.kind = lsp::CompletionItemKind::Variable;
+			case LSP::SymbolKind::Variable:
+				item.kind = LSP::CompletionItemKind::Variable;
 				break;
-			case lsp::SymbolKind::File:
-				item.kind = lsp::CompletionItemKind::File;
+			case LSP::SymbolKind::File:
+				item.kind = LSP::CompletionItemKind::File;
 				break;
 			default:
-				item.kind = lsp::CompletionItemKind::Text;
+				item.kind = LSP::CompletionItemKind::Text;
 				break;
 		}
 
@@ -1468,6 +1436,17 @@ struct CompletionParams : public TextDocumentPositionParams {
 		TextDocumentPositionParams::load(p_params);
 		context.load(p_params["context"]);
 	}
+
+	Dictionary to_json() {
+		Dictionary ctx;
+		ctx["triggerCharacter"] = context.triggerCharacter;
+		ctx["triggerKind"] = context.triggerKind;
+
+		Dictionary dict;
+		dict = TextDocumentPositionParams::to_json();
+		dict["context"] = ctx;
+		return dict;
+	}
 };
 
 /**
@@ -1574,7 +1553,7 @@ struct SignatureHelp {
 	/**
 	 * The active signature. If omitted or the value lies outside the
 	 * range of `signatures` the value defaults to zero or is ignored if
-	 * `signatures.length === 0`. Whenever possible implementors should
+	 * `signatures.length === 0`. Whenever possible implementers should
 	 * make an active decision about the active signature and shouldn't
 	 * rely on a default value.
 	 * In future version of the protocol this property might become
@@ -1758,7 +1737,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides find references support.
 	 */
-	bool referencesProvider = false;
+	bool referencesProvider = true;
 
 	/**
 	 * The server provides document highlight support.
@@ -1773,7 +1752,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides workspace symbol support.
 	 */
-	bool workspaceSymbolProvider = true;
+	bool workspaceSymbolProvider = false;
 
 	/**
 	 * The server supports workspace folder.
@@ -1894,7 +1873,7 @@ struct GodotNativeClassInfo {
 	const DocData::ClassDoc *class_doc = nullptr;
 	const ClassDB::ClassInfo *class_info = nullptr;
 
-	Dictionary to_json() {
+	Dictionary to_json() const {
 		Dictionary dict;
 		dict["name"] = name;
 		dict["inherits"] = class_doc->inherits;
@@ -1909,11 +1888,11 @@ struct GodotCapabilities {
 	 */
 	List<GodotNativeClassInfo> native_classes;
 
-	Dictionary to_json() {
+	Dictionary to_json() const {
 		Dictionary dict;
 		Array classes;
-		for (List<GodotNativeClassInfo>::Element *E = native_classes.front(); E; E = E->next()) {
-			classes.push_back(E->get().to_json());
+		for (const GodotNativeClassInfo &native_class : native_classes) {
+			classes.push_back(native_class.to_json());
 		}
 		dict["native_classes"] = classes;
 		return dict;
@@ -1937,7 +1916,7 @@ static String marked_documentation(const String &p_bbcode) {
 			in_code_block = true;
 			line = "\n";
 		} else if (in_code_block) {
-			line = "\t" + line.substr(code_block_indent, line.length());
+			line = "\t" + line.substr(code_block_indent);
 		}
 
 		if (in_code_block && line.contains("[/codeblock]")) {
@@ -1973,6 +1952,4 @@ static String marked_documentation(const String &p_bbcode) {
 	}
 	return markdown;
 }
-} // namespace lsp
-
-#endif // GODOT_LSP_H
+} // namespace LSP

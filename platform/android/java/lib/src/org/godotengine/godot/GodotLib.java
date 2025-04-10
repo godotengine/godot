@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  GodotLib.java                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  GodotLib.java                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 package org.godotengine.godot;
 
@@ -35,6 +35,7 @@ import org.godotengine.godot.io.directory.DirectoryAccessHandler;
 import org.godotengine.godot.io.file.FileAccessHandler;
 import org.godotengine.godot.tts.GodotTTS;
 import org.godotengine.godot.utils.GodotNetUtils;
+import org.godotengine.godot.variant.Callable;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
@@ -61,8 +62,7 @@ public class GodotLib {
 			GodotNetUtils netUtils,
 			DirectoryAccessHandler directoryAccessHandler,
 			FileAccessHandler fileAccessHandler,
-			boolean use_apk_expansion,
-			GodotTTS tts);
+			boolean use_apk_expansion);
 
 	/**
 	 * Invoked on the main thread to clean up Godot native layer.
@@ -74,7 +74,7 @@ public class GodotLib {
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
 	 * @param p_cmdline Command line arguments used to configure Godot native layer components.
 	 */
-	public static native boolean setup(String[] p_cmdline);
+	public static native boolean setup(String[] p_cmdline, GodotTTS tts);
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface has changed size.
@@ -115,7 +115,7 @@ public class GodotLib {
 	/**
 	 * Dispatch mouse events
 	 */
-	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative);
+	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY);
 
 	public static native void magnify(float x, float y, float factor);
 
@@ -148,7 +148,7 @@ public class GodotLib {
 	/**
 	 * Forward regular key events.
 	 */
-	public static native void key(int p_keycode, int p_physical_keycode, int p_unicode, boolean p_pressed);
+	public static native void key(int p_physical_keycode, int p_unicode, int p_key_label, boolean p_pressed, boolean p_echo);
 
 	/**
 	 * Forward game device's key events.
@@ -190,20 +190,70 @@ public class GodotLib {
 	public static native String getGlobal(String p_key);
 
 	/**
+	 * Used to get info about the current rendering system.
+	 *
+	 * @return A String array with two elements:
+	 *         [0] Rendering driver name.
+	 *         [1] Rendering method.
+	 */
+	public static native String[] getRendererInfo();
+
+	/**
+	 * Used to access Godot's editor settings.
+	 * @param settingKey Setting key
+	 * @return String value of the setting
+	 */
+	public static native String getEditorSetting(String settingKey);
+
+	/**
+	 * Update the 'key' editor setting with the given data. Must be called on the render thread.
+	 * @param key
+	 * @param data
+	 */
+	public static native void setEditorSetting(String key, Object data);
+
+	/**
+	 * Used to access project metadata from the editor settings. Must be accessed on the render thread.
+	 * @param section
+	 * @param key
+	 * @param defaultValue
+	 * @return
+	 */
+	public static native Object getEditorProjectMetadata(String section, String key, Object defaultValue);
+
+	/**
+	 * Set the project metadata to the editor settings. Must be accessed on the render thread.
+	 * @param section
+	 * @param key
+	 * @param data
+	 */
+	public static native void setEditorProjectMetadata(String section, String key, Object data);
+
+	/**
 	 * Invoke method |p_method| on the Godot object specified by |p_id|
 	 * @param p_id Id of the Godot object to invoke
 	 * @param p_method Name of the method to invoke
 	 * @param p_params Parameters to use for method invocation
+	 *
+	 * @deprecated Use {@link Callable#call(long, String, Object...)} instead.
 	 */
-	public static native void callobject(long p_id, String p_method, Object[] p_params);
+	@Deprecated
+	public static void callobject(long p_id, String p_method, Object[] p_params) {
+		Callable.call(p_id, p_method, p_params);
+	}
 
 	/**
 	 * Invoke method |p_method| on the Godot object specified by |p_id| during idle time.
 	 * @param p_id Id of the Godot object to invoke
 	 * @param p_method Name of the method to invoke
 	 * @param p_params Parameters to use for method invocation
+	 *
+	 * @deprecated Use {@link Callable#callDeferred(long, String, Object...)} instead.
 	 */
-	public static native void calldeferred(long p_id, String p_method, Object[] p_params);
+	@Deprecated
+	public static void calldeferred(long p_id, String p_method, Object[] p_params) {
+		Callable.callDeferred(p_id, p_method, p_params);
+	}
 
 	/**
 	 * Forward the results from a permission request.
@@ -212,6 +262,21 @@ public class GodotLib {
 	 * @param p_result True if the permission was granted, false otherwise
 	 */
 	public static native void requestPermissionResult(String p_permission, boolean p_result);
+
+	/**
+	 * Invoked on the theme light/dark mode change.
+	 */
+	public static native void onNightModeChanged();
+
+	/**
+	 * Invoked on the hardware keyboard connected/disconnected.
+	 */
+	public static native void hardwareKeyboardConnected(boolean connected);
+
+	/**
+	 * Invoked on the file picker closed.
+	 */
+	public static native void filePickerCallback(boolean p_ok, String[] p_selected_paths);
 
 	/**
 	 * Invoked on the GL thread to configure the height of the virtual keyboard.
@@ -229,4 +294,19 @@ public class GodotLib {
 	 * @see GodotRenderer#onActivityPaused()
 	 */
 	public static native void onRendererPaused();
+
+	/**
+	 * @return true if input must be dispatched from the render thread. If false, input is
+	 * dispatched from the UI thread.
+	 */
+	public static native boolean shouldDispatchInputToRenderThread();
+
+	/**
+	 * @return the project resource directory
+	 */
+	public static native String getProjectResourceDir();
+
+	static native boolean isEditorHint();
+
+	static native boolean isProjectManagerHint();
 }

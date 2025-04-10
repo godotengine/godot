@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_paths.cpp                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_paths.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_paths.h"
 
@@ -54,6 +54,10 @@ String EditorPaths::get_cache_dir() const {
 	return cache_dir;
 }
 
+String EditorPaths::get_temp_dir() const {
+	return temp_dir;
+}
+
 String EditorPaths::get_project_data_dir() const {
 	return project_data_dir;
 }
@@ -68,6 +72,14 @@ String EditorPaths::get_self_contained_file() const {
 
 String EditorPaths::get_export_templates_dir() const {
 	return get_data_dir().path_join(export_templates_folder);
+}
+
+String EditorPaths::get_debug_keystore_path() const {
+#ifdef ANDROID_ENABLED
+	return "assets://keystores/debug.keystore";
+#else
+	return get_data_dir().path_join("keystores/debug.keystore");
+#endif
 }
 
 String EditorPaths::get_project_settings_dir() const {
@@ -91,13 +103,13 @@ String EditorPaths::get_feature_profiles_dir() const {
 }
 
 void EditorPaths::create() {
-	ERR_FAIL_COND(singleton != nullptr);
-	memnew(EditorPaths());
+	memnew(EditorPaths);
 }
 
 void EditorPaths::free() {
-	ERR_FAIL_COND(singleton == nullptr);
+	ERR_FAIL_NULL(singleton);
 	memdelete(singleton);
+	singleton = nullptr;
 }
 
 void EditorPaths::_bind_methods() {
@@ -111,20 +123,27 @@ void EditorPaths::_bind_methods() {
 }
 
 EditorPaths::EditorPaths() {
+	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
 	project_data_dir = ProjectSettings::get_singleton()->get_project_data_path();
 
 	// Self-contained mode if a `._sc_` or `_sc_` file is present in executable dir.
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
+	Ref<DirAccess> d = DirAccess::create_for_path(exe_path);
+	if (d->file_exists(exe_path + "/._sc_")) {
+		self_contained = true;
+		self_contained_file = exe_path + "/._sc_";
+	} else if (d->file_exists(exe_path + "/_sc_")) {
+		self_contained = true;
+		self_contained_file = exe_path + "/_sc_";
+	}
 
 	// On macOS, look outside .app bundle, since .app bundle is read-only.
+	// Note: This will not work if Gatekeeper path randomization is active.
 	if (OS::get_singleton()->has_feature("macos") && exe_path.ends_with("MacOS") && exe_path.path_join("..").simplify_path().ends_with("Contents")) {
 		exe_path = exe_path.path_join("../../..").simplify_path();
-	}
-	{
-		Ref<DirAccess> d = DirAccess::create_for_path(exe_path);
-
+		d = DirAccess::create_for_path(exe_path);
 		if (d->file_exists(exe_path + "/._sc_")) {
 			self_contained = true;
 			self_contained_file = exe_path + "/._sc_";
@@ -146,6 +165,7 @@ EditorPaths::EditorPaths() {
 		config_dir = data_dir;
 		cache_path = exe_path;
 		cache_dir = data_dir.path_join("cache");
+		temp_dir = data_dir.path_join("temp");
 	} else {
 		// Typically XDG_DATA_HOME or %APPDATA%.
 		data_path = OS::get_singleton()->get_data_path();
@@ -160,6 +180,7 @@ EditorPaths::EditorPaths() {
 		} else {
 			cache_dir = cache_path.path_join(OS::get_singleton()->get_godot_dir_name());
 		}
+		temp_dir = OS::get_singleton()->get_temp_path();
 	}
 
 	paths_valid = (!data_path.is_empty() && !config_path.is_empty() && !cache_path.is_empty());
@@ -216,9 +237,20 @@ EditorPaths::EditorPaths() {
 		}
 	}
 
+	// Temporary dir.
+	{
+		if (dir->change_dir(temp_dir) != OK) {
+			dir->make_dir_recursive(temp_dir);
+			if (dir->change_dir(temp_dir) != OK) {
+				ERR_PRINT("Could not create editor temporary directory: " + temp_dir);
+				paths_valid = false;
+			}
+		}
+	}
+
 	// Validate or create project-specific editor data dir,
 	// including shader cache subdir.
-	if (Engine::get_singleton()->is_project_manager_hint() || Main::is_cmdline_tool()) {
+	if (Engine::get_singleton()->is_project_manager_hint() || (Main::is_cmdline_tool() && !ProjectSettings::get_singleton()->is_project_loaded())) {
 		// Nothing to create, use shared editor data dir for shader cache.
 		Engine::get_singleton()->set_shader_cache_path(data_dir);
 	} else {
@@ -231,7 +263,7 @@ EditorPaths::EditorPaths() {
 			}
 		}
 
-		// Check that the project data directory '.gdignore' file exists
+		// Check that the project data directory `.gdignore` file exists.
 		String project_data_gdignore_file_path = project_data_dir.path_join(".gdignore");
 		if (!FileAccess::exists(project_data_gdignore_file_path)) {
 			// Add an empty .gdignore file to avoid scan.
@@ -239,7 +271,7 @@ EditorPaths::EditorPaths() {
 			if (f.is_valid()) {
 				f->store_line("");
 			} else {
-				ERR_PRINT("Failed to create file " + project_data_gdignore_file_path);
+				ERR_PRINT("Failed to create file " + project_data_gdignore_file_path.quote() + ".");
 			}
 		}
 

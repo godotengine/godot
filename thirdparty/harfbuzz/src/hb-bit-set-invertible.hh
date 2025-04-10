@@ -39,10 +39,10 @@ struct hb_bit_set_invertible_t
 
   hb_bit_set_invertible_t () = default;
   hb_bit_set_invertible_t (const hb_bit_set_invertible_t& o) = default;
-  hb_bit_set_invertible_t (hb_bit_set_invertible_t&& other) : hb_bit_set_invertible_t () { hb_swap (*this, other); }
+  hb_bit_set_invertible_t (hb_bit_set_invertible_t&& other)  noexcept : hb_bit_set_invertible_t () { hb_swap (*this, other); }
   hb_bit_set_invertible_t& operator= (const hb_bit_set_invertible_t& o) = default;
-  hb_bit_set_invertible_t& operator= (hb_bit_set_invertible_t&& other) { hb_swap (*this, other); return *this; }
-  friend void swap (hb_bit_set_invertible_t &a, hb_bit_set_invertible_t &b)
+  hb_bit_set_invertible_t& operator= (hb_bit_set_invertible_t&& other)  noexcept { hb_swap (*this, other); return *this; }
+  friend void swap (hb_bit_set_invertible_t &a, hb_bit_set_invertible_t &b) noexcept
   {
     if (likely (!a.s.successful || !b.s.successful))
       return;
@@ -72,6 +72,11 @@ struct hb_bit_set_invertible_t
   {
     if (likely (s.successful))
       inverted = !inverted;
+  }
+
+  bool is_inverted () const
+  {
+    return inverted;
   }
 
   bool is_empty () const
@@ -121,6 +126,7 @@ struct hb_bit_set_invertible_t
   { unlikely (inverted) ? (void) s.add_range (a, b) : s.del_range (a, b); }
 
   bool get (hb_codepoint_t g) const { return s.get (g) ^ inverted; }
+  bool may_have (hb_codepoint_t g) const { return get (g); }
 
   /* Has interface. */
   bool operator [] (hb_codepoint_t k) const { return get (k); }
@@ -131,8 +137,11 @@ struct hb_bit_set_invertible_t
   /* Sink interface. */
   hb_bit_set_invertible_t& operator << (hb_codepoint_t v)
   { add (v); return *this; }
-  hb_bit_set_invertible_t& operator << (const hb_pair_t<hb_codepoint_t, hb_codepoint_t>& range)
+  hb_bit_set_invertible_t& operator << (const hb_codepoint_pair_t& range)
   { add_range (range.first, range.second); return *this; }
+
+  bool may_intersect (const hb_bit_set_invertible_t &other) const
+  { return inverted || other.inverted || s.intersects (other.s); }
 
   bool intersects (hb_codepoint_t first, hb_codepoint_t last) const
   {
@@ -157,7 +166,7 @@ struct hb_bit_set_invertible_t
       auto it1 = iter ();
       auto it2 = other.iter ();
       return hb_all (+ hb_zip (it1, it2)
-		     | hb_map ([](hb_pair_t<hb_codepoint_t, hb_codepoint_t> _) { return _.first == _.second; }));
+		     | hb_map ([](hb_codepoint_pair_t _) { return _.first == _.second; }));
     }
   }
 
@@ -340,6 +349,7 @@ struct hb_bit_set_invertible_t
   struct iter_t : hb_iter_with_fallback_t<iter_t, hb_codepoint_t>
   {
     static constexpr bool is_sorted_iterator = true;
+    static constexpr bool has_fast_len = true;
     iter_t (const hb_bit_set_invertible_t &s_ = Null (hb_bit_set_invertible_t),
 	    bool init = true) : s (&s_), v (INVALID), l(0)
     {
@@ -353,12 +363,12 @@ struct hb_bit_set_invertible_t
     typedef hb_codepoint_t __item_t__;
     hb_codepoint_t __item__ () const { return v; }
     bool __more__ () const { return v != INVALID; }
-    void __next__ () { s->next (&v); if (l) l--; }
-    void __prev__ () { s->previous (&v); }
+    void __next__ () { s->next (&v); if (likely (l)) l--; }
+    void __prev__ () { s->previous (&v); l++; }
     unsigned __len__ () const { return l; }
     iter_t end () const { return iter_t (*s, false); }
     bool operator != (const iter_t& o) const
-    { return s != o.s || v != o.v; }
+    { return v != o.v || s != o.s; }
 
     protected:
     const hb_bit_set_invertible_t *s;

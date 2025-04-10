@@ -4,7 +4,7 @@
 
 #VERSION_DEFINES
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #endif
@@ -13,9 +13,22 @@
 layout(location = 0) out vec2 uv_interp;
 
 void main() {
-	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
-	uv_interp = base_arr[gl_VertexIndex];
-	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
+	// old code, ARM driver bug on Mali-GXXx GPUs and Vulkan API 1.3.xxx
+	// https://github.com/godotengine/godot/pull/92817#issuecomment-2168625982
+	//vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
+	//gl_Position = vec4(base_arr[gl_VertexIndex], 0.0, 1.0);
+	//uv_interp = clamp(gl_Position.xy, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
+
+	vec2 vertex_base;
+	if (gl_VertexIndex == 0) {
+		vertex_base = vec2(-1.0, -1.0);
+	} else if (gl_VertexIndex == 1) {
+		vertex_base = vec2(-1.0, 3.0);
+	} else {
+		vertex_base = vec2(3.0, -1.0);
+	}
+	gl_Position = vec4(vertex_base, 0.0, 1.0);
+	uv_interp = clamp(vertex_base, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
 }
 
 #[fragment]
@@ -24,27 +37,27 @@ void main() {
 
 #VERSION_DEFINES
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
 #else // has_VK_KHR_multiview
 #define ViewIndex 0
 #endif // has_VK_KHR_multiview
-#endif //MULTIVIEW
+#endif //USE_MULTIVIEW
 
 layout(location = 0) in vec2 uv_interp;
 
 #ifdef SUBPASS
 layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput input_color;
-#elif defined(MULTIVIEW)
+#elif defined(USE_MULTIVIEW)
 layout(set = 0, binding = 0) uniform sampler2DArray source_color;
 #else
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 #endif
 
 layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 layout(set = 2, binding = 0) uniform sampler2DArray source_glow;
 #else
 layout(set = 2, binding = 0) uniform sampler2D source_glow;
@@ -57,14 +70,21 @@ layout(set = 3, binding = 0) uniform sampler2D source_color_correction;
 layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #endif
 
+#define FLAG_USE_BCS (1 << 0)
+#define FLAG_USE_GLOW (1 << 1)
+#define FLAG_USE_AUTO_EXPOSURE (1 << 2)
+#define FLAG_USE_COLOR_CORRECTION (1 << 3)
+#define FLAG_USE_FXAA (1 << 4)
+#define FLAG_USE_DEBANDING (1 << 5)
+#define FLAG_CONVERT_TO_SRGB (1 << 6)
+
 layout(push_constant, std430) uniform Params {
 	vec3 bcs;
-	bool use_bcs;
+	uint flags;
 
-	bool use_glow;
-	bool use_auto_exposure;
-	bool use_color_correction;
+	vec2 pixel_size;
 	uint tonemapper;
+	uint pad;
 
 	uvec2 glow_texture_size;
 	float glow_intensity;
@@ -77,10 +97,6 @@ layout(push_constant, std430) uniform Params {
 	float white;
 	float auto_exposure_scale;
 	float luminance_multiplier;
-
-	vec2 pixel_size;
-	bool use_fxaa;
-	bool use_debanding;
 }
 params;
 
@@ -122,7 +138,7 @@ float h1(float a) {
 	return 1.0f + w3(a) / (w2(a) + w3(a));
 }
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 vec4 texture2D_bicubic(sampler2DArray tex, vec2 uv, int p_lod) {
 	float lod = float(p_lod);
 	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
@@ -150,7 +166,7 @@ vec4 texture2D_bicubic(sampler2DArray tex, vec2 uv, int p_lod) {
 }
 
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
-#else // MULTIVIEW
+#else // USE_MULTIVIEW
 
 vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	float lod = float(p_lod);
@@ -179,17 +195,25 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 }
 
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
-#endif // !MULTIVIEW
+#endif // !USE_MULTIVIEW
 
 #else // USE_GLOW_FILTER_BICUBIC
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, vec3(m_uv, ViewIndex), float(m_lod))
-#else // MULTIVIEW
+#else // USE_MULTIVIEW
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, m_uv, float(m_lod))
-#endif // !MULTIVIEW
+#endif // !USE_MULTIVIEW
 
 #endif // !USE_GLOW_FILTER_BICUBIC
+
+// Based on Reinhard's extended formula, see equation 4 in https://doi.org/cjbgrt
+vec3 tonemap_reinhard(vec3 color, float white) {
+	float white_squared = white * white;
+	vec3 white_squared_color = white_squared * color;
+	// Equivalent to color * (1 + color / white_squared) / (1 + color)
+	return (white_squared_color + color * color) / (white_squared_color + white_squared);
+}
 
 vec3 tonemap_filmic(vec3 color, float white) {
 	// exposure bias: input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
@@ -240,8 +264,77 @@ vec3 tonemap_aces(vec3 color, float white) {
 	return color_tonemapped / white_tonemapped;
 }
 
-vec3 tonemap_reinhard(vec3 color, float white) {
-	return (white * color + color) / (color * white + white);
+// Polynomial approximation of EaryChow's AgX sigmoid curve.
+// x must be within the range [0.0, 1.0]
+vec3 agx_contrast_approx(vec3 x) {
+	// Generated with Excel trendline
+	// Input data: Generated using python sigmoid with EaryChow's configuration and 57 steps
+	// Additional padding values were added to give correct intersections at 0.0 and 1.0
+	// 6th order, intercept of 0.0 to remove an operation and ensure intersection at 0.0
+	vec3 x2 = x * x;
+	vec3 x4 = x2 * x2;
+	return 0.021 * x + 4.0111 * x2 - 25.682 * x2 * x + 70.359 * x4 - 74.778 * x4 * x + 27.069 * x4 * x2;
+}
+
+// This is an approximation and simplification of EaryChow's AgX implementation that is used by Blender.
+// This code is based off of the script that generates the AgX_Base_sRGB.cube LUT that Blender uses.
+// Source: https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBasesRGB.py
+vec3 tonemap_agx(vec3 color) {
+	// Combined linear sRGB to linear Rec 2020 and Blender AgX inset matrices:
+	const mat3 srgb_to_rec2020_agx_inset_matrix = mat3(
+			0.54490813676363087053, 0.14044005884001287035, 0.088827411851915368603,
+			0.37377945959812267119, 0.75410959864013760045, 0.17887712465043811023,
+			0.081384976686407536266, 0.10543358536857773485, 0.73224999956948382528);
+
+	// Combined inverse AgX outset matrix and linear Rec 2020 to linear sRGB matrices.
+	const mat3 agx_outset_rec2020_to_srgb_matrix = mat3(
+			1.9645509602733325934, -0.29932243390911083839, -0.16436833806080403409,
+			-0.85585845117807513559, 1.3264510741502356555, -0.23822464068860595117,
+			-0.10886710826831608324, -0.027084020983874825605, 1.402665347143271889);
+
+	// LOG2_MIN      = -10.0
+	// LOG2_MAX      =  +6.5
+	// MIDDLE_GRAY   =  0.18
+	const float min_ev = -12.4739311883324; // log2(pow(2, LOG2_MIN) * MIDDLE_GRAY)
+	const float max_ev = 4.02606881166759; // log2(pow(2, LOG2_MAX) * MIDDLE_GRAY)
+
+	// Large negative values in one channel and large positive values in other
+	// channels can result in a colour that appears darker and more saturated than
+	// desired after passing it through the inset matrix. For this reason, it is
+	// best to prevent negative input values.
+	// This is done before the Rec. 2020 transform to allow the Rec. 2020
+	// transform to be combined with the AgX inset matrix. This results in a loss
+	// of color information that could be correctly interpreted within the
+	// Rec. 2020 color space as positive RGB values, but it is less common for Godot
+	// to provide this function with negative sRGB values and therefore not worth
+	// the performance cost of an additional matrix multiplication.
+	// A value of 2e-10 intentionally introduces insignificant error to prevent
+	// log2(0.0) after the inset matrix is applied; color will be >= 1e-10 after
+	// the matrix transform.
+	color = max(color, 2e-10);
+
+	// Do AGX in rec2020 to match Blender and then apply inset matrix.
+	color = srgb_to_rec2020_agx_inset_matrix * color;
+
+	// Log2 space encoding.
+	// Must be clamped because agx_contrast_approx may not work
+	// well with values outside of the range [0.0, 1.0]
+	color = clamp(log2(color), min_ev, max_ev);
+	color = (color - min_ev) / (max_ev - min_ev);
+
+	// Apply sigmoid function approximation.
+	color = agx_contrast_approx(color);
+
+	// Convert back to linear before applying outset matrix.
+	color = pow(color, vec3(2.4));
+
+	// Apply outset to make the result more chroma-laden and then go back to linear sRGB.
+	color = agx_outset_rec2020_to_srgb_matrix * color;
+
+	// Blender's lusRGB.compensate_low_side is too complex for this shader, so
+	// simply return the color, even if it has negative components. These negative
+	// components may be useful for subsequent color adjustments.
+	return color;
 }
 
 vec3 linear_to_srgb(vec3 color) {
@@ -255,8 +348,9 @@ vec3 linear_to_srgb(vec3 color) {
 #define TONEMAPPER_REINHARD 1
 #define TONEMAPPER_FILMIC 2
 #define TONEMAPPER_ACES 3
+#define TONEMAPPER_AGX 4
 
-vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always outputs clamped [0;1] color
+vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR
 	// Ensure color values passed to tonemappers are positive.
 	// They can be negative in the case of negative lights, which leads to undesired behavior.
 	if (params.tonemapper == TONEMAPPER_LINEAR) {
@@ -265,16 +359,18 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always o
 		return tonemap_reinhard(max(vec3(0.0f), color), white);
 	} else if (params.tonemapper == TONEMAPPER_FILMIC) {
 		return tonemap_filmic(max(vec3(0.0f), color), white);
-	} else { // TONEMAPPER_ACES
+	} else if (params.tonemapper == TONEMAPPER_ACES) {
 		return tonemap_aces(max(vec3(0.0f), color), white);
+	} else { // TONEMAPPER_AGX
+		return tonemap_agx(color);
 	}
 }
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 vec3 gather_glow(sampler2DArray tex, vec2 uv) { // sample all selected glow levels, view is added to uv later
 #else
 vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
-#endif // defined(MULTIVIEW)
+#endif // defined(USE_MULTIVIEW)
 	vec3 glow = vec3(0.0f);
 
 	if (params.glow_levels[0] > 0.0001) {
@@ -318,10 +414,12 @@ vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blendi
 	if (params.glow_mode == GLOW_MODE_ADD) {
 		return color + glow;
 	} else if (params.glow_mode == GLOW_MODE_SCREEN) {
-		//need color clamping
+		// Needs color clamping.
+		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
 		return max((color + glow) - (color * glow), vec3(0.0));
 	} else if (params.glow_mode == GLOW_MODE_SOFTLIGHT) {
-		//need color clamping
+		// Needs color clamping.
+		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
 		glow = glow * vec3(0.5f) + vec3(0.5f);
 
 		color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
@@ -359,7 +457,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	const float FXAA_REDUCE_MUL = (1.0 / 8.0);
 	const float FXAA_SPAN_MAX = 8.0;
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 	vec3 rgbNW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
 	vec3 rgbNE = textureLod(source_color, vec3(uv_interp + vec2(0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
 	vec3 rgbSW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, 0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
@@ -394,7 +492,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 						  dir * rcpDirMin)) *
 			params.pixel_size;
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 	vec3 rgbA = 0.5 * exposure * (textureLod(source_color, vec3(uv_interp + dir * (1.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * (2.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz) * params.luminance_multiplier;
 	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source_color, vec3(uv_interp + dir * -0.5, ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * 0.5, ViewIndex), 0.0).xyz) * params.luminance_multiplier;
 #else
@@ -425,9 +523,9 @@ vec3 screen_space_dither(vec2 frag_coord) {
 
 void main() {
 #ifdef SUBPASS
-	// SUBPASS and MULTIVIEW can be combined but in that case we're already reading from the correct layer
+	// SUBPASS and USE_MULTIVIEW can be combined but in that case we're already reading from the correct layer
 	vec4 color = subpassLoad(input_color);
-#elif defined(MULTIVIEW)
+#elif defined(USE_MULTIVIEW)
 	vec4 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f);
 #else
 	vec4 color = textureLod(source_color, uv_interp, 0.0f);
@@ -439,7 +537,7 @@ void main() {
 	float exposure = params.exposure;
 
 #ifndef SUBPASS
-	if (params.use_auto_exposure) {
+	if (bool(params.flags & FLAG_USE_AUTO_EXPOSURE)) {
 		exposure *= 1.0 / (texelFetch(source_auto_exposure, ivec2(0, 0), 0).r * params.luminance_multiplier / params.auto_exposure_scale);
 	}
 #endif
@@ -448,12 +546,12 @@ void main() {
 
 	// Early Tonemap & SRGB Conversion
 #ifndef SUBPASS
-	if (params.use_fxaa) {
+	if (bool(params.flags & FLAG_USE_FXAA)) {
 		// FXAA must be performed before glow to preserve the "bleed" effect of glow.
 		color.rgb = do_fxaa(color.rgb, exposure, uv_interp);
 	}
 
-	if (params.use_glow && params.glow_mode == GLOW_MODE_MIX) {
+	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode == GLOW_MODE_MIX) {
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
 		if (params.glow_map_strength > 0.001) {
 			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
@@ -464,11 +562,12 @@ void main() {
 
 	color.rgb = apply_tonemapping(color.rgb, params.white);
 
-	color.rgb = linear_to_srgb(color.rgb); // regular linear -> SRGB conversion
-
+	if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
+	}
 #ifndef SUBPASS
 	// Glow
-	if (params.use_glow && params.glow_mode != GLOW_MODE_MIX) {
+	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_MIX) {
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
 		if (params.glow_map_strength > 0.001) {
 			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
@@ -476,7 +575,9 @@ void main() {
 
 		// high dynamic range -> SRGB
 		glow = apply_tonemapping(glow, params.white);
-		glow = linear_to_srgb(glow);
+		if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+			glow = linear_to_srgb(glow);
+		}
 
 		color.rgb = apply_glow(color.rgb, glow);
 	}
@@ -484,15 +585,15 @@ void main() {
 
 	// Additional effects
 
-	if (params.use_bcs) {
+	if (bool(params.flags & FLAG_USE_BCS)) {
 		color.rgb = apply_bcs(color.rgb, params.bcs);
 	}
 
-	if (params.use_color_correction) {
+	if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
 		color.rgb = apply_color_correction(color.rgb);
 	}
 
-	if (params.use_debanding) {
+	if (bool(params.flags & FLAG_USE_DEBANDING)) {
 		// Debanding should be done at the end of tonemapping, but before writing to the LDR buffer.
 		// Otherwise, we're adding noise to an already-quantized image.
 		color.rgb += screen_space_dither(gl_FragCoord.xy);

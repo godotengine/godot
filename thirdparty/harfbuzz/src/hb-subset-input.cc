@@ -24,49 +24,24 @@
  * Google Author(s): Garret Rieger, Rod Sheeter, Behdad Esfahbod
  */
 
+#include "hb-subset-instancer-solver.hh"
 #include "hb-subset.hh"
 #include "hb-set.hh"
 #include "hb-utf.hh"
-/**
- * hb_subset_input_create_or_fail:
- *
- * Creates a new subset input object.
- *
- * Return value: (transfer full): New subset input, or `NULL` if failed. Destroy
- * with hb_subset_input_destroy().
- *
- * Since: 1.8.0
- **/
-hb_subset_input_t *
-hb_subset_input_create_or_fail (void)
+
+
+hb_subset_input_t::hb_subset_input_t ()
 {
-  hb_subset_input_t *input = hb_object_create<hb_subset_input_t>();
+  for (auto& set : sets_iter ())
+    set = hb::shared_ptr<hb_set_t> (hb_set_create ());
 
-  if (unlikely (!input))
-    return nullptr;
+  if (in_error ())
+    return;
 
-  for (auto& set : input->sets_iter ())
-    set = hb_set_create ();
+  flags = HB_SUBSET_FLAGS_DEFAULT;
 
-  input->axes_location = hb_hashmap_create<hb_tag_t, float> ();
-#ifdef HB_EXPERIMENTAL_API
-  input->name_table_overrides = hb_hashmap_create<hb_ot_name_record_ids_t, hb_bytes_t> ();
-#endif
-
-  if (!input->axes_location ||
-#ifdef HB_EXPERIMENTAL_API
-      !input->name_table_overrides ||
-#endif
-      input->in_error ())
-  {
-    hb_subset_input_destroy (input);
-    return nullptr;
-  }
-
-  input->flags = HB_SUBSET_FLAGS_DEFAULT;
-
-  hb_set_add_range (input->sets.name_ids, 0, 6);
-  hb_set_add (input->sets.name_languages, 0x0409);
+  hb_set_add_range (sets.name_ids, 0, 6);
+  hb_set_add (sets.name_languages, 0x0409);
 
   hb_tag_t default_drop_tables[] = {
     // Layout disabled by default
@@ -76,7 +51,6 @@ hb_subset_input_create_or_fail (void)
     HB_TAG ('k', 'e', 'r', 'n'),
 
     // Copied from fontTools:
-    HB_TAG ('B', 'A', 'S', 'E'),
     HB_TAG ('J', 'S', 'T', 'F'),
     HB_TAG ('D', 'S', 'I', 'G'),
     HB_TAG ('E', 'B', 'D', 'T'),
@@ -92,21 +66,17 @@ hb_subset_input_create_or_fail (void)
     HB_TAG ('S', 'i', 'l', 'f'),
     HB_TAG ('S', 'i', 'l', 'l'),
   };
-  input->sets.drop_tables->add_array (default_drop_tables, ARRAY_LENGTH (default_drop_tables));
+  sets.drop_tables->add_array (default_drop_tables, ARRAY_LENGTH (default_drop_tables));
 
   hb_tag_t default_no_subset_tables[] = {
-    HB_TAG ('a', 'v', 'a', 'r'),
     HB_TAG ('g', 'a', 's', 'p'),
-    HB_TAG ('c', 'v', 't', ' '),
     HB_TAG ('f', 'p', 'g', 'm'),
     HB_TAG ('p', 'r', 'e', 'p'),
     HB_TAG ('V', 'D', 'M', 'X'),
     HB_TAG ('D', 'S', 'I', 'G'),
-    HB_TAG ('M', 'V', 'A', 'R'),
-    HB_TAG ('c', 'v', 'a', 'r'),
   };
-  input->sets.no_subset_tables->add_array (default_no_subset_tables,
-                                         ARRAY_LENGTH (default_no_subset_tables));
+  sets.no_subset_tables->add_array (default_no_subset_tables,
+					 ARRAY_LENGTH (default_no_subset_tables));
 
   //copied from _layout_features_groups in fonttools
   hb_tag_t default_layout_features[] = {
@@ -152,6 +122,12 @@ hb_subset_input_create_or_fail (void)
 
     //justify
     HB_TAG ('j', 'a', 'l', 't'), // HarfBuzz doesn't use; others might
+
+    //East Asian spacing
+    HB_TAG ('c', 'h', 'w', 's'),
+    HB_TAG ('v', 'c', 'h', 'w'),
+    HB_TAG ('h', 'a', 'l', 't'),
+    HB_TAG ('v', 'h', 'a', 'l'),
 
     //private
     HB_TAG ('H', 'a', 'r', 'f'),
@@ -208,15 +184,35 @@ hb_subset_input_create_or_fail (void)
     HB_TAG ('b', 'l', 'w', 'm'),
   };
 
-  input->sets.layout_features->add_array (default_layout_features, ARRAY_LENGTH (default_layout_features));
+  sets.layout_features->add_array (default_layout_features, ARRAY_LENGTH (default_layout_features));
 
-  input->sets.layout_scripts->invert (); // Default to all scripts.
+  sets.layout_scripts->invert (); // Default to all scripts.
+}
+
+/**
+ * hb_subset_input_create_or_fail:
+ *
+ * Creates a new subset input object.
+ *
+ * Return value: (transfer full): New subset input, or `NULL` if failed. Destroy
+ * with hb_subset_input_destroy().
+ *
+ * Since: 1.8.0
+ **/
+hb_subset_input_t *
+hb_subset_input_create_or_fail (void)
+{
+  hb_subset_input_t *input = hb_object_create<hb_subset_input_t>();
+
+  if (unlikely (!input))
+    return nullptr;
 
   if (input->in_error ())
   {
     hb_subset_input_destroy (input);
     return nullptr;
   }
+
   return input;
 }
 
@@ -249,20 +245,6 @@ void
 hb_subset_input_destroy (hb_subset_input_t *input)
 {
   if (!hb_object_destroy (input)) return;
-
-  for (hb_set_t* set : input->sets_iter ())
-    hb_set_destroy (set);
-
-  hb_hashmap_destroy (input->axes_location);
-
-#ifdef HB_EXPERIMENTAL_API
-  if (input->name_table_overrides)
-  {
-    for (auto _ : *input->name_table_overrides)
-      _.second.fini ();
-  }
-  hb_hashmap_destroy (input->name_table_overrides);
-#endif
 
   hb_free (input);
 }
@@ -395,16 +377,97 @@ hb_subset_input_get_user_data (const hb_subset_input_t *input,
   return hb_object_get_user_data (input, key);
 }
 
+/**
+ * hb_subset_input_keep_everything:
+ * @input: a #hb_subset_input_t object
+ *
+ * Configure input object to keep everything in the font face.
+ * That is, all Unicodes, glyphs, names, layout items,
+ * glyph names, etc.
+ *
+ * The input can be tailored afterwards by the caller.
+ *
+ * Since: 7.0.0
+ */
+void
+hb_subset_input_keep_everything (hb_subset_input_t *input)
+{
+  const hb_subset_sets_t indices[] = {HB_SUBSET_SETS_UNICODE,
+				      HB_SUBSET_SETS_GLYPH_INDEX,
+				      HB_SUBSET_SETS_NAME_ID,
+				      HB_SUBSET_SETS_NAME_LANG_ID,
+				      HB_SUBSET_SETS_LAYOUT_FEATURE_TAG,
+				      HB_SUBSET_SETS_LAYOUT_SCRIPT_TAG};
+
+  for (auto idx : hb_iter (indices))
+  {
+    hb_set_t *set = hb_subset_input_set (input, idx);
+    hb_set_clear (set);
+    hb_set_invert (set);
+  }
+
+  // Don't drop any tables
+  hb_set_clear (hb_subset_input_set (input, HB_SUBSET_SETS_DROP_TABLE_TAG));
+
+  hb_subset_input_set_flags (input,
+			     HB_SUBSET_FLAGS_NOTDEF_OUTLINE |
+			     HB_SUBSET_FLAGS_GLYPH_NAMES |
+			     HB_SUBSET_FLAGS_NAME_LEGACY |
+			     HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES |
+                             HB_SUBSET_FLAGS_PASSTHROUGH_UNRECOGNIZED);
+}
+
 #ifndef HB_NO_VAR
+/**
+ * hb_subset_input_pin_all_axes_to_default: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @face: a #hb_face_t object.
+ *
+ * Pin all axes to default locations in the given subset input object.
+ *
+ * All axes in a font must be pinned. Additionally, `CFF2` table, if present,
+ * will be de-subroutinized.
+ *
+ * Return value: `true` if success, `false` otherwise
+ *
+ * Since: 8.3.1
+ **/
+HB_EXTERN hb_bool_t
+hb_subset_input_pin_all_axes_to_default (hb_subset_input_t  *input,
+                                         hb_face_t          *face)
+{
+  unsigned axis_count = hb_ot_var_get_axis_count (face);
+  if (!axis_count) return false;
+
+  hb_ot_var_axis_info_t *axis_infos = (hb_ot_var_axis_info_t *) hb_calloc (axis_count, sizeof (hb_ot_var_axis_info_t));
+  if (unlikely (!axis_infos)) return false;
+
+  (void) hb_ot_var_get_axis_infos (face, 0, &axis_count, axis_infos);
+
+  for (unsigned i = 0; i < axis_count; i++)
+  {
+    hb_tag_t axis_tag = axis_infos[i].tag;
+    double default_val = (double) axis_infos[i].default_value;
+    if (!input->axes_location.set (axis_tag, Triple (default_val, default_val, default_val)))
+    {
+      hb_free (axis_infos);
+      return false;
+    }
+  }
+  hb_free (axis_infos);
+  return true;
+}
+
 /**
  * hb_subset_input_pin_axis_to_default: (skip)
  * @input: a #hb_subset_input_t object.
+ * @face: a #hb_face_t object.
  * @axis_tag: Tag of the axis to be pinned
  *
  * Pin an axis to its default location in the given subset input object.
  *
- * Currently only works for fonts with 'glyf' tables. CFF and CFF2 is not
- * yet supported. Additionally all axes in a font must be pinned.
+ * All axes in a font must be pinned. Additionally, `CFF2` table, if present,
+ * will be de-subroutinized.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -419,19 +482,21 @@ hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  return input->axes_location->set (axis_tag, axis_info.default_value);
+  double default_val = (double) axis_info.default_value;
+  return input->axes_location.set (axis_tag, Triple (default_val, default_val, default_val));
 }
 
 /**
  * hb_subset_input_pin_axis_location: (skip)
  * @input: a #hb_subset_input_t object.
+ * @face: a #hb_face_t object.
  * @axis_tag: Tag of the axis to be pinned
  * @axis_value: Location on the axis to be pinned at
  *
  * Pin an axis to a fixed location in the given subset input object.
  *
- * Currently only works for fonts with 'glyf' tables. CFF and CFF2 is not
- * yet supported. Additionally all axes in a font must be pinned.
+ * All axes in a font must be pinned. Additionally, `CFF2` table, if present,
+ * will be de-subroutinized.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -447,8 +512,227 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  float val = hb_clamp(axis_value, axis_info.min_value, axis_info.max_value);
-  return input->axes_location->set (axis_tag, val);
+  double val = hb_clamp((double) axis_value, (double) axis_info.min_value, (double) axis_info.max_value);
+  return input->axes_location.set (axis_tag, Triple (val, val, val));
+}
+
+/**
+ * hb_subset_input_set_axis_range: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @face: a #hb_face_t object.
+ * @axis_tag: Tag of the axis
+ * @axis_min_value: Minimum value of the axis variation range to set, if NaN the existing min will be used.
+ * @axis_max_value: Maximum value of the axis variation range to set  if NaN the existing max will be used.
+ * @axis_def_value: Default value of the axis variation range to set, if NaN the existing default will be used.
+ *
+ * Restricting the range of variation on an axis in the given subset input object.
+ * New min/default/max values will be clamped if they're not within the fvar axis range.
+ *
+ * If the fvar axis default value is not within the new range, the new default
+ * value will be changed to the new min or max value, whichever is closer to the fvar
+ * axis default.
+ *
+ * Note: input min value can not be bigger than input max value. If the input
+ * default value is not within the new min/max range, it'll be clamped.
+ *
+ * Return value: `true` if success, `false` otherwise
+ *
+ * Since: 8.5.0
+ **/
+HB_EXTERN hb_bool_t
+hb_subset_input_set_axis_range (hb_subset_input_t  *input,
+                                hb_face_t          *face,
+                                hb_tag_t            axis_tag,
+                                float               axis_min_value,
+                                float               axis_max_value,
+                                float               axis_def_value)
+{
+  hb_ot_var_axis_info_t axis_info;
+  if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
+    return false;
+
+  float min = !std::isnan(axis_min_value) ? axis_min_value : axis_info.min_value;
+  float max = !std::isnan(axis_max_value) ? axis_max_value : axis_info.max_value;
+  float def = !std::isnan(axis_def_value) ? axis_def_value : axis_info.default_value;
+
+  if (min > max)
+    return false;
+
+  float new_min_val = hb_clamp(min, axis_info.min_value, axis_info.max_value);
+  float new_max_val = hb_clamp(max, axis_info.min_value, axis_info.max_value);
+  float new_default_val = hb_clamp(def, new_min_val, new_max_val);
+  return input->axes_location.set (axis_tag, Triple ((double) new_min_val, (double) new_default_val, (double) new_max_val));
+}
+
+/**
+ * hb_subset_input_get_axis_range: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @axis_tag: Tag of the axis
+ * @axis_min_value: Set to the previously configured minimum value of the axis variation range.
+ * @axis_max_value: Set to the previously configured maximum value of the axis variation range.
+ * @axis_def_value: Set to the previously configured default value of the axis variation range.
+ *
+ * Gets the axis range assigned by previous calls to hb_subset_input_set_axis_range.
+ *
+ * Return value: `true` if a range has been set for this axis tag, `false` otherwise.
+ *
+ * Since: 8.5.0
+ **/
+HB_EXTERN hb_bool_t
+hb_subset_input_get_axis_range (hb_subset_input_t  *input,
+				hb_tag_t            axis_tag,
+				float              *axis_min_value,
+				float              *axis_max_value,
+				float              *axis_def_value)
+
+{
+  Triple* triple;
+  if (!input->axes_location.has(axis_tag, &triple)) {
+    return false;
+  }
+
+  *axis_min_value = triple->minimum;
+  *axis_def_value = triple->middle;
+  *axis_max_value = triple->maximum;
+  return true;
+}
+
+/**
+ * hb_subset_axis_range_from_string:
+ * @str: a string to parse
+ * @len: length of @str, or -1 if str is NULL terminated
+ * @axis_min_value: (out): the axis min value to initialize with the parsed value
+ * @axis_max_value: (out): the axis max value to initialize with the parsed value
+ * @axis_def_value: (out): the axis default value to initialize with the parse
+ * value
+ *
+ * Parses a string into a subset axis range(min, def, max).
+ * Axis positions string is in the format of min:def:max or min:max
+ * When parsing axis positions, empty values as meaning the existing value for that part
+ * E.g: :300:500
+ * Specifies min = existing, def = 300, max = 500
+ * In the output axis_range, if a value should be set to it's default value,
+ * then it will be set to NaN
+ *
+ * Return value:
+ * `true` if @str is successfully parsed, `false` otherwise
+ *
+ * Since: 10.2.0
+ */
+HB_EXTERN hb_bool_t
+hb_subset_axis_range_from_string (const char *str, int len,
+                                  float *axis_min_value,
+                                  float *axis_max_value,
+                                  float *axis_def_value)
+{
+  if (len < 0)
+    len = strlen (str);
+
+  const char *end = str + len;
+  const char* part = strpbrk (str, ":");
+  if (!part)
+  {
+    // Single value.
+    if (strcmp (str, "drop") == 0)
+    {
+      *axis_min_value = NAN;
+      *axis_def_value = NAN;
+      *axis_max_value = NAN;
+      return true;
+    }
+
+    double v;
+    if (!hb_parse_double (&str, end, &v)) return false;
+
+    *axis_min_value = v;
+    *axis_def_value = v;
+    *axis_max_value = v;
+    return true;
+  }
+
+  float values[3];
+  int count = 0;
+  for (int i = 0; i < 3; i++) {
+    count++;
+    if (!*str || part == str)
+    {
+      values[i] = NAN;
+
+      if (part == NULL) break;
+      str = part + 1;
+      part = strpbrk (str, ":");
+      continue;
+    }
+
+    double v;
+    if (!hb_parse_double (&str, part, &v)) return false;
+    values[i] = v;
+
+    if (part == NULL) break;
+    str = part + 1;
+    part = strpbrk (str, ":");
+  }
+
+  if (count == 2)
+  {
+    *axis_min_value = values[0];
+    *axis_def_value = NAN;
+    *axis_max_value = values[1];
+    return true;
+  }
+  else if (count == 3)
+  {
+    *axis_min_value = values[0];
+    *axis_def_value = values[1];
+    *axis_max_value = values[2];
+    return true;
+  }
+  return false;
+}
+
+/**
+ * hb_subset_axis_range_to_string:
+ * @input: a #hb_subset_input_t object.
+ * @axis_tag: an axis to convert
+ * @buf: (array length=size) (out caller-allocates): output string
+ * @size: the allocated size of @buf
+ *
+ * Converts an axis range into a `NULL`-terminated string in the format
+ * understood by hb_subset_axis_range_from_string(). The client in responsible for
+ * allocating big enough size for @buf, 128 bytes is more than enough.
+ *
+ * Since: 10.2.0
+ */
+HB_EXTERN void
+hb_subset_axis_range_to_string (hb_subset_input_t *input,
+                                hb_tag_t axis_tag,
+                                char *buf, unsigned size)
+{
+  if (unlikely (!size)) return;
+  Triple* triple;
+  if (!input->axes_location.has(axis_tag, &triple)) {
+    return;
+  }
+
+  char s[128];
+  unsigned len = 0;
+
+  hb_locale_t clocale HB_UNUSED;
+  hb_locale_t oldlocale HB_UNUSED;
+  oldlocale = hb_uselocale (clocale = newlocale (LC_ALL_MASK, "C", NULL));
+  len += hb_max (0, snprintf (s, ARRAY_LENGTH (s) - len, "%g", (double) triple->minimum));
+  s[len++] = ':';
+
+  len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%g", (double) triple->middle));
+  s[len++] = ':';
+
+  len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%g", (double) triple->maximum));
+  (void) hb_uselocale (((void) freelocale (clocale), oldlocale));
+
+  assert (len < ARRAY_LENGTH (s));
+  len = hb_min (len, size - 1);
+  hb_memcpy (buf, s, len);
+  buf[len] = '\0';
 }
 #endif
 
@@ -478,39 +762,10 @@ hb_subset_preprocess (hb_face_t *source)
 {
   hb_subset_input_t* input = hb_subset_input_create_or_fail ();
   if (!input)
-    return source;
+    return hb_face_reference (source);
 
-  hb_set_clear (hb_subset_input_set(input, HB_SUBSET_SETS_UNICODE));
-  hb_set_invert (hb_subset_input_set(input, HB_SUBSET_SETS_UNICODE));
+  hb_subset_input_keep_everything (input);
 
-  hb_set_clear (hb_subset_input_set(input, HB_SUBSET_SETS_GLYPH_INDEX));
-  hb_set_invert (hb_subset_input_set(input, HB_SUBSET_SETS_GLYPH_INDEX));
-
-  hb_set_clear (hb_subset_input_set(input,
-                                    HB_SUBSET_SETS_LAYOUT_FEATURE_TAG));
-  hb_set_invert (hb_subset_input_set(input,
-                                     HB_SUBSET_SETS_LAYOUT_FEATURE_TAG));
-
-  hb_set_clear (hb_subset_input_set(input,
-                                    HB_SUBSET_SETS_LAYOUT_SCRIPT_TAG));
-  hb_set_invert (hb_subset_input_set(input,
-                                     HB_SUBSET_SETS_LAYOUT_SCRIPT_TAG));
-
-  hb_set_clear (hb_subset_input_set(input,
-                                    HB_SUBSET_SETS_NAME_ID));
-  hb_set_invert (hb_subset_input_set(input,
-                                     HB_SUBSET_SETS_NAME_ID));
-
-  hb_set_clear (hb_subset_input_set(input,
-                                    HB_SUBSET_SETS_NAME_LANG_ID));
-  hb_set_invert (hb_subset_input_set(input,
-                                     HB_SUBSET_SETS_NAME_LANG_ID));
-
-  hb_subset_input_set_flags(input,
-                            HB_SUBSET_FLAGS_NOTDEF_OUTLINE |
-                            HB_SUBSET_FLAGS_GLYPH_NAMES |
-                            HB_SUBSET_FLAGS_RETAIN_GIDS |
-                            HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES);
   input->attach_accelerator_data = true;
 
   // Always use long loca in the preprocessed version. This allows
@@ -523,10 +778,41 @@ hb_subset_preprocess (hb_face_t *source)
 
   if (!new_source) {
     DEBUG_MSG (SUBSET, nullptr, "Preprocessing failed due to subset failure.");
-    return source;
+    return hb_face_reference (source);
   }
 
   return new_source;
+}
+
+/**
+ * hb_subset_input_old_to_new_glyph_mapping:
+ * @input: a #hb_subset_input_t object.
+ *
+ * Returns a map which can be used to provide an explicit mapping from old to new glyph
+ * id's in the produced subset. The caller should populate the map as desired.
+ * If this map is left empty then glyph ids will be automatically mapped to new
+ * values by the subsetter. If populated, the mapping must be unique. That
+ * is no two original glyph ids can be mapped to the same new id.
+ * Additionally, if a mapping is provided then the retain gids option cannot
+ * be enabled.
+ *
+ * Any glyphs that are retained in the subset which are not specified
+ * in this mapping will be assigned glyph ids after the highest glyph
+ * id in the mapping.
+ *
+ * Note: this will accept and apply non-monotonic mappings, however this
+ * may result in unsorted Coverage tables. Such fonts may not work for all
+ * use cases (for example ots will reject unsorted coverage tables). So it's
+ * recommended, if possible, to supply a monotonic mapping.
+ *
+ * Return value: (transfer none): pointer to the #hb_map_t of the custom glyphs ID map.
+ *
+ * Since: 7.3.0
+ **/
+HB_EXTERN hb_map_t*
+hb_subset_input_old_to_new_glyph_mapping (hb_subset_input_t *input)
+{
+  return &input->glyph_map;
 }
 
 #ifdef HB_EXPERIMENTAL_API
@@ -547,7 +833,7 @@ hb_subset_preprocess (hb_face_t *source)
  * Note: for mac platform, we only support name_str with all ascii characters,
  * name_str with non-ascii characters will be ignored.
  *
- * Since: EXPERIMENTAL
+ * XSince: EXPERIMENTAL
  **/
 HB_EXTERN hb_bool_t
 hb_subset_input_override_name_table (hb_subset_input_t  *input,
@@ -582,7 +868,7 @@ hb_subset_input_override_name_table (hb_subset_input_t  *input,
         src = hb_utf8_t::next (src, src_end, &unicode, replacement);
         if (unicode >= 0x0080u)
         {
-          printf ("Non-ascii character detected, ignored...This API supports acsii characters only for mac platform\n");
+          printf ("Non-ascii character detected, ignored...This API supports ascii characters only for mac platform\n");
           return false;
         }
       }
@@ -593,8 +879,7 @@ hb_subset_input_override_name_table (hb_subset_input_t  *input,
     hb_memcpy (override_name, name_str, str_len);
     name_bytes = hb_bytes_t (override_name, str_len);
   }
-  input->name_table_overrides->set (hb_ot_name_record_ids_t (platform_id, encoding_id, language_id, name_id), name_bytes);
+  input->name_table_overrides.set (hb_ot_name_record_ids_t (platform_id, encoding_id, language_id, name_id), name_bytes);
   return true;
 }
-
 #endif

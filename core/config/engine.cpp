@@ -1,43 +1,42 @@
-/*************************************************************************/
-/*  engine.cpp                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  engine.cpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "engine.h"
 
 #include "core/authors.gen.h"
 #include "core/config/project_settings.h"
 #include "core/donors.gen.h"
-#include "core/io/json.h"
 #include "core/license.gen.h"
-#include "core/os/os.h"
 #include "core/variant/typed_array.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_device.h"
 
 void Engine::set_physics_ticks_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
@@ -70,10 +69,34 @@ double Engine::get_physics_jitter_fix() const {
 
 void Engine::set_max_fps(int p_fps) {
 	_max_fps = p_fps > 0 ? p_fps : 0;
+
+	RenderingDevice *rd = RenderingDevice::get_singleton();
+	if (rd) {
+		rd->_set_max_fps(_max_fps);
+	}
 }
 
 int Engine::get_max_fps() const {
 	return _max_fps;
+}
+
+void Engine::set_audio_output_latency(int p_msec) {
+	_audio_output_latency = p_msec > 1 ? p_msec : 1;
+}
+
+int Engine::get_audio_output_latency() const {
+	return _audio_output_latency;
+}
+
+void Engine::increment_frames_drawn() {
+	if (frame_server_synced) {
+		server_syncs++;
+	} else {
+		server_syncs = 0;
+	}
+	frame_server_synced = false;
+
+	frames_drawn++;
 }
 
 uint64_t Engine::get_frames_drawn() {
@@ -93,21 +116,26 @@ void Engine::set_time_scale(double p_scale) {
 }
 
 double Engine::get_time_scale() const {
+	return freeze_time_scale ? 0 : _time_scale;
+}
+
+double Engine::get_unfrozen_time_scale() const {
 	return _time_scale;
 }
 
 Dictionary Engine::get_version_info() const {
 	Dictionary dict;
-	dict["major"] = VERSION_MAJOR;
-	dict["minor"] = VERSION_MINOR;
-	dict["patch"] = VERSION_PATCH;
-	dict["hex"] = VERSION_HEX;
-	dict["status"] = VERSION_STATUS;
-	dict["build"] = VERSION_BUILD;
-	dict["year"] = VERSION_YEAR;
+	dict["major"] = GODOT_VERSION_MAJOR;
+	dict["minor"] = GODOT_VERSION_MINOR;
+	dict["patch"] = GODOT_VERSION_PATCH;
+	dict["hex"] = GODOT_VERSION_HEX;
+	dict["status"] = GODOT_VERSION_STATUS;
+	dict["build"] = GODOT_VERSION_BUILD;
 
-	String hash = String(VERSION_HASH);
+	String hash = String(GODOT_VERSION_HASH);
 	dict["hash"] = hash.is_empty() ? String("unknown") : hash;
+
+	dict["timestamp"] = GODOT_VERSION_TIMESTAMP;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0) {
@@ -170,14 +198,14 @@ TypedArray<Dictionary> Engine::get_copyright_info() const {
 
 Dictionary Engine::get_donor_info() const {
 	Dictionary donors;
-	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSOR_PLATINUM);
-	donors["gold_sponsors"] = array_from_info(DONORS_SPONSOR_GOLD);
-	donors["silver_sponsors"] = array_from_info(DONORS_SPONSOR_SILVER);
-	donors["bronze_sponsors"] = array_from_info(DONORS_SPONSOR_BRONZE);
-	donors["mini_sponsors"] = array_from_info(DONORS_SPONSOR_MINI);
-	donors["gold_donors"] = array_from_info(DONORS_GOLD);
-	donors["silver_donors"] = array_from_info(DONORS_SILVER);
-	donors["bronze_donors"] = array_from_info(DONORS_BRONZE);
+	donors["patrons"] = array_from_info(DONORS_PATRONS);
+	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSORS_PLATINUM);
+	donors["gold_sponsors"] = array_from_info(DONORS_SPONSORS_GOLD);
+	donors["silver_sponsors"] = array_from_info(DONORS_SPONSORS_SILVER);
+	donors["diamond_members"] = array_from_info(DONORS_MEMBERS_DIAMOND);
+	donors["titanium_members"] = array_from_info(DONORS_MEMBERS_TITANIUM);
+	donors["platinum_members"] = array_from_info(DONORS_MEMBERS_PLATINUM);
+	donors["gold_members"] = array_from_info(DONORS_MEMBERS_GOLD);
 	return donors;
 }
 
@@ -220,6 +248,9 @@ String Engine::get_architecture_name() const {
 	return "ppc";
 #endif
 
+#elif defined(__loongarch64)
+	return "loongarch64";
+
 #elif defined(__wasm__)
 #if defined(__wasm64__)
 	return "wasm64";
@@ -241,6 +272,28 @@ bool Engine::is_validation_layers_enabled() const {
 	return use_validation_layers;
 }
 
+bool Engine::is_generate_spirv_debug_info_enabled() const {
+	return generate_spirv_debug_info;
+}
+
+bool Engine::is_extra_gpu_memory_tracking_enabled() const {
+	return extra_gpu_memory_tracking;
+}
+
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+bool Engine::is_accurate_breadcrumbs_enabled() const {
+	return accurate_breadcrumbs;
+}
+#endif
+
+void Engine::set_print_to_stdout(bool p_enabled) {
+	CoreGlobals::print_line_enabled = p_enabled;
+}
+
+bool Engine::is_printing_to_stdout() const {
+	return CoreGlobals::print_line_enabled;
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	CoreGlobals::print_error_enabled = p_enabled;
 }
@@ -249,15 +302,34 @@ bool Engine::is_printing_error_messages() const {
 	return CoreGlobals::print_error_enabled;
 }
 
+void Engine::print_header(const String &p_string) const {
+	if (_print_header) {
+		print_line(p_string);
+	}
+}
+
+void Engine::print_header_rich(const String &p_string) const {
+	if (_print_header) {
+		print_line_rich(p_string);
+	}
+}
+
 void Engine::add_singleton(const Singleton &p_singleton) {
-	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), "Can't register singleton that already exists: " + String(p_singleton.name));
+	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), vformat("Can't register singleton '%s' because it already exists.", p_singleton.name));
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
 }
 
 Object *Engine::get_singleton_object(const StringName &p_name) const {
 	HashMap<StringName, Object *>::ConstIterator E = singleton_ptrs.find(p_name);
-	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + String(p_name) + "'.");
+	ERR_FAIL_COND_V_MSG(!E, nullptr, vformat("Failed to retrieve non-existent singleton '%s'.", p_name));
+
+#ifdef TOOLS_ENABLED
+	if (!is_editor_hint() && is_singleton_editor_only(p_name)) {
+		ERR_FAIL_V_MSG(nullptr, vformat("Can't retrieve singleton '%s' outside of editor.", p_name));
+	}
+#endif
+
 	return E->value;
 }
 
@@ -272,6 +344,19 @@ bool Engine::is_singleton_user_created(const StringName &p_name) const {
 
 	return false;
 }
+
+bool Engine::is_singleton_editor_only(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!singleton_ptrs.has(p_name), false);
+
+	for (const Singleton &E : singletons) {
+		if (E.name == p_name && E.editor_only) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void Engine::remove_singleton(const StringName &p_name) {
 	ERR_FAIL_COND(!singleton_ptrs.has(p_name));
 
@@ -290,6 +375,12 @@ bool Engine::has_singleton(const StringName &p_name) const {
 
 void Engine::get_singletons(List<Singleton> *p_singletons) {
 	for (const Singleton &E : singletons) {
+#ifdef TOOLS_ENABLED
+		if (!is_editor_hint() && E.editor_only) {
+			continue;
+		}
+#endif
+
 		p_singletons->push_back(E);
 	}
 }
@@ -315,44 +406,30 @@ Engine *Engine::get_singleton() {
 	return singleton;
 }
 
+bool Engine::notify_frame_server_synced() {
+	frame_server_synced = true;
+	return server_syncs > SERVER_SYNC_FRAME_COUNT_WARNING;
+}
+
+void Engine::set_freeze_time_scale(bool p_frozen) {
+	freeze_time_scale = p_frozen;
+}
+
+void Engine::set_embedded_in_editor(bool p_enabled) {
+	embedded_in_editor = p_enabled;
+}
+
+bool Engine::is_embedded_in_editor() const {
+	return embedded_in_editor;
+}
+
 Engine::Engine() {
 	singleton = this;
 }
 
-void Engine::startup_begin() {
-	startup_benchmark_total_from = OS::get_singleton()->get_ticks_usec();
-}
-
-void Engine::startup_benchmark_begin_measure(const String &p_what) {
-	startup_benchmark_section = p_what;
-	startup_benchmark_from = OS::get_singleton()->get_ticks_usec();
-}
-void Engine::startup_benchmark_end_measure() {
-	uint64_t total = OS::get_singleton()->get_ticks_usec() - startup_benchmark_from;
-	double total_f = double(total) / double(1000000);
-
-	startup_benchmark_json[startup_benchmark_section] = total_f;
-}
-
-void Engine::startup_dump(const String &p_to_file) {
-	uint64_t total = OS::get_singleton()->get_ticks_usec() - startup_benchmark_total_from;
-	double total_f = double(total) / double(1000000);
-	startup_benchmark_json["total_time"] = total_f;
-
-	if (!p_to_file.is_empty()) {
-		Ref<FileAccess> f = FileAccess::open(p_to_file, FileAccess::WRITE);
-		if (f.is_valid()) {
-			Ref<JSON> json;
-			json.instantiate();
-			f->store_string(json->stringify(startup_benchmark_json, "\t", false, true));
-		}
-	} else {
-		List<Variant> keys;
-		startup_benchmark_json.get_key_list(&keys);
-		print_line("STARTUP BENCHMARK:");
-		for (const Variant &K : keys) {
-			print_line("\t-", K, ": ", startup_benchmark_json[K], +" sec.");
-		}
+Engine::~Engine() {
+	if (singleton == this) {
+		singleton = nullptr;
 	}
 }
 

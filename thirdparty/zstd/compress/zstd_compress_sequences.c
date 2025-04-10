@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Yann Collet, Facebook, Inc.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -58,7 +58,7 @@ static unsigned ZSTD_useLowProbCount(size_t const nbSeq)
 {
     /* Heuristic: This should cover most blocks <= 16K and
      * start to fade out after 16K to about 32K depending on
-     * comprssibility.
+     * compressibility.
      */
     return nbSeq >= 2048;
 }
@@ -166,7 +166,7 @@ ZSTD_selectEncodingType(
     if (mostFrequent == nbSeq) {
         *repeatMode = FSE_repeat_none;
         if (isDefaultAllowed && nbSeq <= 2) {
-            /* Prefer set_basic over set_rle when there are 2 or less symbols,
+            /* Prefer set_basic over set_rle when there are 2 or fewer symbols,
              * since RLE uses 1 byte, but set_basic uses 5-6 bits per symbol.
              * If basic encoding isn't possible, always choose RLE.
              */

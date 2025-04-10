@@ -1,0 +1,317 @@
+# French translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-23 20:14+0000\n"
+"Last-Translator: Didier Morandi <didier.morandi@gmail.com>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
+"fr/>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "All Recognized"
+msgstr "Tous les types de fichiers reconnus"
+
+msgid "New Code Region"
+msgstr "Nouvelle section de code"
+
+msgid "Pick a color from the screen."
+msgstr "Échantillonner une couleur depuis l'écran."
+
+msgid "Pick a color from the application window."
+msgstr "Échantillonner une couleur depuis la fenêtre de l'application."
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+"Couleur : #%s\n"
+"Clic gauche : Appliquer la couleur\n"
+"Clic droit : Supprimer le préréglage"
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color"
+msgstr ""
+"Couleur : #%s\n"
+"Clic gauche : Appliquer la couleur"
+
+msgid "The changes to this palette have not been saved to a file."
+msgstr ""
+"Les modifications de cette palette n'ont pas été enregistrées dans un fichier."
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "Entrez un code hexadécimal («#ff0000») ou le nom d'une couleur («red»)."
+
+msgid "Save the current color palette to reuse later."
+msgstr ""
+"Enregistrer la palette de couleurs actuelle pour la réutiliser ultérieurement."
+
+msgid "Save the current color palette as a new to reuse later."
+msgstr ""
+"Enregistrer la palette de couleurs actuelle en tant que nouvelle palette pour "
+"la réutiliser ultérieurement."
+
+msgid "Load existing color palette."
+msgstr "Charger une palette de couleurs existante."
+
+msgid "Clear the currently loaded color palettes in the picker."
+msgstr ""
+"Effacer les palettes de couleurs actuellement chargées dans le sélecteur."
+
+msgid "Select a picker shape."
+msgstr "Sélectionnez une forme de sélection."
+
+msgid "Select a picker mode."
+msgstr "Sélectionnez un mode de sélection."
+
+msgid "Colorized Sliders"
+msgstr "Curseurs colorés"
+
+msgid "Hex"
+msgstr "Hex"
+
+msgid "Hex code or named color"
+msgstr "Code hexadécimal ou nom de couleur"
+
+msgid "Swatches"
+msgstr "Nuances"
+
+msgid "Show all options available."
+msgstr "Voir toutes les options disponibles."
+
+msgid "Recent Colors"
+msgstr "Couleurs récentes"
+
+msgid "Add current color as a preset."
+msgstr "Ajouter la couleur courante comme préréglage."
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Alert!"
+msgstr "Alerte !"
+
+msgid "Please Confirm..."
+msgstr "Veuillez confirmer..."
+
+msgid "Network"
+msgstr "Réseau"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Le fichier \"%s\" existe déjà.\n"
+"Voulez-vous l'écraser ?"
+
+msgid "Open"
+msgstr "Ouvrir"
+
+msgid "Select Current Folder"
+msgstr "Sélectionner le dossier courant"
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Select This Folder"
+msgstr "Sélectionner ce dossier"
+
+msgid "Open in File Manager"
+msgstr "Ouvrir dans le gestionnaire de fichiers"
+
+msgid "Show Package Contents"
+msgstr "Voir le contenu du paquet"
+
+msgid "You don't have permission to access contents of this folder."
+msgstr "Vous n'avez pas l'autorisation d'accéder au contenu de ce dossier."
+
+msgid "All Files"
+msgstr "Tous les fichiers"
+
+msgid "Open a File"
+msgstr "Ouvrir un fichier"
+
+msgid "Open File(s)"
+msgstr "Ouvrir un ou plusieurs fichiers"
+
+msgid "Open a Directory"
+msgstr "Ouvrir un répertoire"
+
+msgid "Open a File or Directory"
+msgstr "Ouvrir un fichier ou un répertoire"
+
+msgid "Save a File"
+msgstr "Enregistrer un fichier"
+
+msgid "Go to previous folder."
+msgstr "Aller au dossier précédent."
+
+msgid "Go to next folder."
+msgstr "Aller au dossier suivant."
+
+msgid "Go to parent folder."
+msgstr "Aller au dossier parent."
+
+msgid "Path:"
+msgstr "Chemin :"
+
+msgid "Refresh files."
+msgstr "Rafraîchir les fichiers."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Activer / désactiver la visibilité des fichiers cachés."
+
+msgid "Create a new folder."
+msgstr "Créer un nouveau dossier."
+
+msgid "Directories & Files:"
+msgstr "Répertoires et fichiers :"
+
+msgid "File:"
+msgstr "Fichier :"
+
+msgid "Create Folder"
+msgstr "Créer un dossier"
+
+msgid "Name:"
+msgstr "Nom :"
+
+msgid "Could not create folder."
+msgstr "Impossible de créer le dossier."
+
+msgid "Invalid extension, or empty filename."
+msgstr "Extension invalide ou nom de fichier manquant."
+
+msgid "Zoom Out"
+msgstr "Dézoomer"
+
+msgid "Zoom Reset"
+msgstr "Réinitialiser le zoom"
+
+msgid "Zoom In"
+msgstr "Zoomer"
+
+msgid "Toggle the visual grid."
+msgstr "Activer / désactiver la visibilité de la grille."
+
+msgid "Toggle snapping to the grid."
+msgstr "Activer / désactiver l'aimantation à la grille."
+
+msgid "Change the snapping distance."
+msgstr "Change la distance d'aimantation."
+
+msgid "Toggle the graph minimap."
+msgstr "Activer/Désactiver la mini-carte du graphe."
+
+msgid "Automatically arrange selected nodes."
+msgstr "Réarrangement automatique des nœuds sélectionnés."
+
+msgid "Same as Layout Direction"
+msgstr "Même direction que la disposition"
+
+msgid "Auto-Detect Direction"
+msgstr "Détection automatique de la direction"
+
+msgid "Left-to-Right"
+msgstr "De gauche à droite"
+
+msgid "Right-to-Left"
+msgstr "De droite à gauche"
+
+msgid "Left-to-Right Mark (LRM)"
+msgstr "Marque gauche-à-droite (LRM)"
+
+msgid "Right-to-Left Mark (RLM)"
+msgstr "Marque droite-à-gauche (RLM)"
+
+msgid "Start of Left-to-Right Embedding (LRE)"
+msgstr "Enchâssement gauche-à-droite (LRE)"
+
+msgid "Start of Right-to-Left Embedding (RLE)"
+msgstr "Enchâssement droite-à-gauche (RLE)"
+
+msgid "Start of Left-to-Right Override (LRO)"
+msgstr "Forçage gauche-à-droite (LRO)"
+
+msgid "Start of Right-to-Left Override (RLO)"
+msgstr "Forçage droite-à-gauche (RLO)"
+
+msgid "Pop Direction Formatting (PDF)"
+msgstr "Dépilement de formatage directionnel (PDF)"
+
+msgid "Arabic Letter Mark (ALM)"
+msgstr "Marque de lettre arabe (ALM)"
+
+msgid "Left-to-Right Isolate (LRI)"
+msgstr "Isolat gauche-à-droite (LRI)"
+
+msgid "Right-to-Left Isolate (RLI)"
+msgstr "Isolat droite-à-gauche (RLI)"
+
+msgid "First Strong Isolate (FSI)"
+msgstr "Isolat à direction du premier fort (FSI)"
+
+msgid "Pop Direction Isolate (PDI)"
+msgstr "Dépilement d'isolat directionnel (PDI)"
+
+msgid "Zero-Width Joiner (ZWJ)"
+msgstr "Liant sans chasse (ZWJ)"
+
+msgid "Zero-Width Non-Joiner (ZWNJ)"
+msgstr "Antiliant sans chasse (ZWNJ)"
+
+msgid "Word Joiner (WJ)"
+msgstr "Gluon de mots (WJ)"
+
+msgid "Soft Hyphen (SHY)"
+msgstr "Trait d'union conditionnel (SHY)"
+
+msgid "Emoji & Symbols"
+msgstr "Émojis et symboles"
+
+msgid "Cut"
+msgstr "Couper"
+
+msgid "Copy"
+msgstr "Copier"
+
+msgid "Paste"
+msgstr "Coller"
+
+msgid "Select All"
+msgstr "Tout sélectionner"
+
+msgid "Clear"
+msgstr "Vider"
+
+msgid "Undo"
+msgstr "Annuler"
+
+msgid "Redo"
+msgstr "Refaire"
+
+msgid "Text Writing Direction"
+msgstr "Direction d'écriture du texte"
+
+msgid "Display Control Characters"
+msgstr "Afficher les caractères de contrôle"
+
+msgid "Insert Control Character"
+msgstr "Insérer un caractère de contrôle"
+
+msgid "(Other)"
+msgstr "(Autre)"

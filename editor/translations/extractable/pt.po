@@ -1,0 +1,258 @@
+# Portuguese translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-26 06:02+0000\n"
+"Last-Translator: NamelessGO <66227691+NameLessGO@users.noreply.github.com>\n"
+"Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
+"godot/pt/>\n"
+"Language: pt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "All Recognized"
+msgstr "Todos Reconhecidos"
+
+msgid "New Code Region"
+msgstr "Nova região de código"
+
+msgid "Pick a color from the screen."
+msgstr "Escolha uma cor na tela."
+
+msgid "Pick a color from the application window."
+msgstr "Escolha uma cor na janela da aplicação."
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+"Cor: #%s\n"
+"LMB: Aplica cor\n"
+"RMB: Remove predefinição"
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color"
+msgstr ""
+"Cor: #%s\n"
+"LMB: Aplicar cor"
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "Introduza um código hex (\"#ff0000\") ou nome da cor (\"red\")."
+
+msgid "Select a picker shape."
+msgstr "Selecione a forma do seletor."
+
+msgid "Select a picker mode."
+msgstr "Selecione o modo do seletor."
+
+msgid "Hex code or named color"
+msgstr "Código hex ou nome da cor"
+
+msgid "Add current color as a preset."
+msgstr "Adicionar cor atual como predefinição."
+
+msgid "Network"
+msgstr "Rede"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"O ficheiro \"%s\" já existe.\n"
+"Deseja sobrescreve-lo?"
+
+msgid "Open"
+msgstr "Abrir"
+
+msgid "Select Current Folder"
+msgstr "Selecionar pasta atual"
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Select This Folder"
+msgstr "Selecionar esta Pasta"
+
+msgid "You don't have permission to access contents of this folder."
+msgstr "Não tem permissão para acessar o conteúdo desta pasta."
+
+msgid "All Files"
+msgstr "Todos os Ficheiros"
+
+msgid "Open a File"
+msgstr "Abrir um Ficheiro"
+
+msgid "Open File(s)"
+msgstr "Abrir Ficheiro(s)"
+
+msgid "Open a Directory"
+msgstr "Abrir uma Diretoria"
+
+msgid "Open a File or Directory"
+msgstr "Abrir um Ficheiro ou Diretoria"
+
+msgid "Save a File"
+msgstr "Guardar um Ficheiro"
+
+msgid "Go to previous folder."
+msgstr "Ir para a pasta anterior."
+
+msgid "Go to next folder."
+msgstr "Ir para a pasta seguinte."
+
+msgid "Go to parent folder."
+msgstr "Ir para a pasta acima."
+
+msgid "Path:"
+msgstr "Caminho:"
+
+msgid "Refresh files."
+msgstr "Atualizar ficheiros."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Alternar a visibilidade de ficheiros escondidos."
+
+msgid "Directories & Files:"
+msgstr "Diretorias e Ficheiros:"
+
+msgid "File:"
+msgstr "Ficheiro:"
+
+msgid "Create Folder"
+msgstr "Criar Pasta"
+
+msgid "Name:"
+msgstr "Nome:"
+
+msgid "Could not create folder."
+msgstr "Não consegui criar pasta."
+
+msgid "Invalid extension, or empty filename."
+msgstr "Extensão inválida ou nome de ficheiro vazio."
+
+msgid "Zoom Out"
+msgstr "Diminuir Zoom"
+
+msgid "Zoom Reset"
+msgstr "Reposição do Zoom"
+
+msgid "Zoom In"
+msgstr "Aumentar Zoom"
+
+msgid "Toggle the visual grid."
+msgstr "Alterne a grade visual."
+
+msgid "Toggle snapping to the grid."
+msgstr "Alternar o ajuste à grade."
+
+msgid "Change the snapping distance."
+msgstr "Altere a distância de encaixe."
+
+msgid "Toggle the graph minimap."
+msgstr "Alterne o minimapa do gráfico."
+
+msgid "Automatically arrange selected nodes."
+msgstr "Organize automaticamente os nós selecionados."
+
+msgid "Same as Layout Direction"
+msgstr "Mesma Direção do Layout"
+
+msgid "Auto-Detect Direction"
+msgstr "Auto Detetar Direção"
+
+msgid "Left-to-Right"
+msgstr "Esquerda para Direita"
+
+msgid "Right-to-Left"
+msgstr "Direita para Esquerda"
+
+msgid "Left-to-Right Mark (LRM)"
+msgstr "Marca da Esquerda para a Direita (LRM)"
+
+msgid "Right-to-Left Mark (RLM)"
+msgstr "Marca da Direita para a Esquerda (RLM)"
+
+msgid "Start of Left-to-Right Embedding (LRE)"
+msgstr "Iniciar Incorporação da Esquerda para a Direita (LRE)"
+
+msgid "Start of Right-to-Left Embedding (RLE)"
+msgstr "Iniciar Incorporação da Direita para a Esquerda (RLE)"
+
+msgid "Start of Left-to-Right Override (LRO)"
+msgstr "Iniciar Substituição da Esquerda para a Direita (LRO)"
+
+msgid "Start of Right-to-Left Override (RLO)"
+msgstr "Iniciar Substituição da Direita para a Esquerda (RLO)"
+
+msgid "Pop Direction Formatting (PDF)"
+msgstr "Formatação de Direção Pop (PDF)"
+
+msgid "Arabic Letter Mark (ALM)"
+msgstr "Alinhamento de Letras Árabes (ALM)"
+
+msgid "Left-to-Right Isolate (LRI)"
+msgstr "Isolado da Esquerda para a Direita (LRI)"
+
+msgid "Right-to-Left Isolate (RLI)"
+msgstr "Isolado da Direita para a Esquerda (RLI)"
+
+msgid "First Strong Isolate (FSI)"
+msgstr "Primeiro Isolado Forte (FSI)"
+
+msgid "Pop Direction Isolate (PDI)"
+msgstr "Direção Pop Isolada (PDI)"
+
+msgid "Zero-Width Joiner (ZWJ)"
+msgstr "Junta Largura-Zero (ZWU)"
+
+msgid "Zero-Width Non-Joiner (ZWNJ)"
+msgstr "Largura-Zero Não-Junta (ZWNJ)"
+
+msgid "Word Joiner (WJ)"
+msgstr "Juntador de Palavras (WJ)"
+
+msgid "Soft Hyphen (SHY)"
+msgstr "Hífen Suave (SHY)"
+
+msgid "Cut"
+msgstr "Cortar"
+
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Paste"
+msgstr "Colar"
+
+msgid "Select All"
+msgstr "Selecionar Tudo"
+
+msgid "Clear"
+msgstr "Limpar"
+
+msgid "Undo"
+msgstr "Desfazer"
+
+msgid "Redo"
+msgstr "Refazer"
+
+msgid "Text Writing Direction"
+msgstr "Direção da Escrita do Texto"
+
+msgid "Display Control Characters"
+msgstr "Exibir Caracteres de Controle"
+
+msgid "Insert Control Character"
+msgstr "Inserir Caractere de Controle"
+
+msgid "(Other)"
+msgstr "(Outro)"

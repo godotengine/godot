@@ -85,7 +85,7 @@ struct maxp
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
-
+    hb_barrier ();
     if (version.major == 1)
     {
       const maxpV1Tail &v1 = StructAfter<maxpV1Tail> (*this);
@@ -100,18 +100,32 @@ struct maxp
     maxp *maxp_prime = c->serializer->embed (this);
     if (unlikely (!maxp_prime)) return_trace (false);
 
-    maxp_prime->numGlyphs = c->plan->num_output_glyphs ();
+    maxp_prime->numGlyphs = hb_min (c->plan->num_output_glyphs (), 0xFFFFu);
     if (maxp_prime->version.major == 1)
     {
+      hb_barrier ();
       const maxpV1Tail *src_v1 = &StructAfter<maxpV1Tail> (*this);
       maxpV1Tail *dest_v1 = c->serializer->embed<maxpV1Tail> (src_v1);
       if (unlikely (!dest_v1)) return_trace (false);
 
       if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
 	drop_hint_fields (dest_v1);
+
+      if (c->plan->normalized_coords)
+        instancing_update_fields (c->plan->head_maxp_info, dest_v1);
     }
 
     return_trace (true);
+  }
+
+  void instancing_update_fields (head_maxp_info_t& maxp_info, maxpV1Tail* dest_v1) const
+  {
+    dest_v1->maxPoints = maxp_info.maxPoints;
+    dest_v1->maxContours = maxp_info.maxContours;
+    dest_v1->maxCompositePoints = maxp_info.maxCompositePoints;
+    dest_v1->maxCompositeContours = maxp_info.maxCompositeContours;
+    dest_v1->maxComponentElements = maxp_info.maxComponentElements;
+    dest_v1->maxComponentDepth = maxp_info.maxComponentDepth;
   }
 
   static void drop_hint_fields (maxpV1Tail* dest_v1)

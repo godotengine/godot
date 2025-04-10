@@ -39,10 +39,10 @@ namespace embree
     std::vector<char> str; str.reserve(64);
     while (cin->peek() != EOF && !isSeparator(cin->peek())) {
       int c = cin->get();
-      // -- GODOT start --
-      // if (!isValidChar(c)) throw std::runtime_error("invalid character "+std::string(1,c)+" in input");
-      if (!isValidChar(c)) abort();
-      // -- GODOT end --
+      //if (!isValidChar(c)) throw std::runtime_error("invalid character "+std::string(1,c)+" in input");
+      if (!isValidChar(c)) {
+        abort();
+      }
       str.push_back((char)c);
     }
     str.push_back(0);

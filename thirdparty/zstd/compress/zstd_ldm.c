@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Yann Collet, Facebook, Inc.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -242,11 +242,15 @@ static size_t ZSTD_ldm_fillFastTables(ZSTD_matchState_t* ms,
     switch(ms->cParams.strategy)
     {
     case ZSTD_fast:
-        ZSTD_fillHashTable(ms, iend, ZSTD_dtlm_fast);
+        ZSTD_fillHashTable(ms, iend, ZSTD_dtlm_fast, ZSTD_tfp_forCCtx);
         break;
 
     case ZSTD_dfast:
-        ZSTD_fillDoubleHashTable(ms, iend, ZSTD_dtlm_fast);
+#ifndef ZSTD_EXCLUDE_DFAST_BLOCK_COMPRESSOR
+        ZSTD_fillDoubleHashTable(ms, iend, ZSTD_dtlm_fast, ZSTD_tfp_forCCtx);
+#else
+        assert(0); /* shouldn't be called: cparams should've been adjusted. */
+#endif
         break;
 
     case ZSTD_greedy:
@@ -318,7 +322,9 @@ static void ZSTD_ldm_limitTableUpdate(ZSTD_matchState_t* ms, const BYTE* anchor)
     }
 }
 
-static size_t ZSTD_ldm_generateSequences_internal(
+static
+ZSTD_ALLOW_POINTER_OVERFLOW_ATTR
+size_t ZSTD_ldm_generateSequences_internal(
         ldmState_t* ldmState, rawSeqStore_t* rawSeqStore,
         ldmParams_t const* params, void const* src, size_t srcSize)
 {
@@ -549,7 +555,7 @@ size_t ZSTD_ldm_generateSequences(
          * the window through early invalidation.
          * TODO: * Test the chunk size.
          *       * Try invalidation after the sequence generation and test the
-         *         the offset against maxDist directly.
+         *         offset against maxDist directly.
          *
          * NOTE: Because of dictionaries + sequence splitting we MUST make sure
          * that any offset used is valid at the END of the sequence, since it may
@@ -689,7 +695,6 @@ size_t ZSTD_ldm_blockCompress(rawSeqStore_t* rawSeqStore,
         /* maybeSplitSequence updates rawSeqStore->pos */
         rawSeq const sequence = maybeSplitSequence(rawSeqStore,
                                                    (U32)(iend - ip), minMatch);
-        int i;
         /* End signal */
         if (sequence.offset == 0)
             break;
@@ -702,6 +707,7 @@ size_t ZSTD_ldm_blockCompress(rawSeqStore_t* rawSeqStore,
         /* Run the block compressor */
         DEBUGLOG(5, "pos %u : calling block compressor on segment of size %u", (unsigned)(ip-istart), sequence.litLength);
         {
+            int i;
             size_t const newLitLength =
                 blockCompressor(ms, seqStore, rep, ip, sequence.litLength);
             ip += sequence.litLength;
@@ -711,7 +717,7 @@ size_t ZSTD_ldm_blockCompress(rawSeqStore_t* rawSeqStore,
             rep[0] = sequence.offset;
             /* Store the sequence */
             ZSTD_storeSeq(seqStore, newLitLength, ip - newLitLength, iend,
-                          STORE_OFFSET(sequence.offset),
+                          OFFSET_TO_OFFBASE(sequence.offset),
                           sequence.matchLength);
             ip += sequence.matchLength;
         }

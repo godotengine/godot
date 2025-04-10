@@ -14,29 +14,14 @@
 
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #ifndef MBEDTLS_CHACHAPOLY_H
 #define MBEDTLS_CHACHAPOLY_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 /* for shared error codes */
 #include "mbedtls/poly1305.h"
@@ -50,8 +35,7 @@
 extern "C" {
 #endif
 
-typedef enum
-{
+typedef enum {
     MBEDTLS_CHACHAPOLY_ENCRYPT,     /**< The mode value for performing encryption. */
     MBEDTLS_CHACHAPOLY_DECRYPT      /**< The mode value for performing decryption. */
 }
@@ -61,14 +45,13 @@ mbedtls_chachapoly_mode_t;
 
 #include "mbedtls/chacha20.h"
 
-typedef struct mbedtls_chachapoly_context
-{
-    mbedtls_chacha20_context chacha20_ctx;  /**< The ChaCha20 context. */
-    mbedtls_poly1305_context poly1305_ctx;  /**< The Poly1305 context. */
-    uint64_t aad_len;                       /**< The length (bytes) of the Additional Authenticated Data. */
-    uint64_t ciphertext_len;                /**< The length (bytes) of the ciphertext. */
-    int state;                              /**< The current state of the context. */
-    mbedtls_chachapoly_mode_t mode;         /**< Cipher mode (encrypt or decrypt). */
+typedef struct mbedtls_chachapoly_context {
+    mbedtls_chacha20_context MBEDTLS_PRIVATE(chacha20_ctx);  /**< The ChaCha20 context. */
+    mbedtls_poly1305_context MBEDTLS_PRIVATE(poly1305_ctx);  /**< The Poly1305 context. */
+    uint64_t MBEDTLS_PRIVATE(aad_len);                       /**< The length (bytes) of the Additional Authenticated Data. */
+    uint64_t MBEDTLS_PRIVATE(ciphertext_len);                /**< The length (bytes) of the ciphertext. */
+    int MBEDTLS_PRIVATE(state);                              /**< The current state of the context. */
+    mbedtls_chachapoly_mode_t MBEDTLS_PRIVATE(mode);         /**< Cipher mode (encrypt or decrypt). */
 }
 mbedtls_chachapoly_context;
 
@@ -118,7 +101,7 @@ mbedtls_chachapoly_context;
  *
  * \param ctx       The ChachaPoly context to initialize. Must not be \c NULL.
  */
-void mbedtls_chachapoly_init( mbedtls_chachapoly_context *ctx );
+void mbedtls_chachapoly_init(mbedtls_chachapoly_context *ctx);
 
 /**
  * \brief           This function releases and clears the specified
@@ -127,7 +110,7 @@ void mbedtls_chachapoly_init( mbedtls_chachapoly_context *ctx );
  * \param ctx       The ChachaPoly context to clear. This may be \c NULL, in which
  *                  case this function is a no-op.
  */
-void mbedtls_chachapoly_free( mbedtls_chachapoly_context *ctx );
+void mbedtls_chachapoly_free(mbedtls_chachapoly_context *ctx);
 
 /**
  * \brief           This function sets the ChaCha20-Poly1305
@@ -140,8 +123,8 @@ void mbedtls_chachapoly_free( mbedtls_chachapoly_context *ctx );
  * \return          \c 0 on success.
  * \return          A negative error code on failure.
  */
-int mbedtls_chachapoly_setkey( mbedtls_chachapoly_context *ctx,
-                               const unsigned char key[32] );
+int mbedtls_chachapoly_setkey(mbedtls_chachapoly_context *ctx,
+                              const unsigned char key[32]);
 
 /**
  * \brief           This function starts a ChaCha20-Poly1305 encryption or
@@ -168,9 +151,9 @@ int mbedtls_chachapoly_setkey( mbedtls_chachapoly_context *ctx,
  * \return          \c 0 on success.
  * \return          A negative error code on failure.
  */
-int mbedtls_chachapoly_starts( mbedtls_chachapoly_context *ctx,
-                               const unsigned char nonce[12],
-                               mbedtls_chachapoly_mode_t mode );
+int mbedtls_chachapoly_starts(mbedtls_chachapoly_context *ctx,
+                              const unsigned char nonce[12],
+                              mbedtls_chachapoly_mode_t mode);
 
 /**
  * \brief           This function feeds additional data to be authenticated
@@ -211,9 +194,9 @@ int mbedtls_chachapoly_starts( mbedtls_chachapoly_context *ctx,
  *                  if the operations has not been started or has been
  *                  finished, or if the AAD has been finished.
  */
-int mbedtls_chachapoly_update_aad( mbedtls_chachapoly_context *ctx,
-                                   const unsigned char *aad,
-                                   size_t aad_len );
+int mbedtls_chachapoly_update_aad(mbedtls_chachapoly_context *ctx,
+                                  const unsigned char *aad,
+                                  size_t aad_len);
 
 /**
  * \brief           Thus function feeds data to be encrypted or decrypted
@@ -246,10 +229,10 @@ int mbedtls_chachapoly_update_aad( mbedtls_chachapoly_context *ctx,
  *                  finished.
  * \return          Another negative error code on other kinds of failure.
  */
-int mbedtls_chachapoly_update( mbedtls_chachapoly_context *ctx,
-                               size_t len,
-                               const unsigned char *input,
-                               unsigned char *output );
+int mbedtls_chachapoly_update(mbedtls_chachapoly_context *ctx,
+                              size_t len,
+                              const unsigned char *input,
+                              unsigned char *output);
 
 /**
  * \brief           This function finished the ChaCha20-Poly1305 operation and
@@ -267,8 +250,8 @@ int mbedtls_chachapoly_update( mbedtls_chachapoly_context *ctx,
  *                  finished.
  * \return          Another negative error code on other kinds of failure.
  */
-int mbedtls_chachapoly_finish( mbedtls_chachapoly_context *ctx,
-                               unsigned char mac[16] );
+int mbedtls_chachapoly_finish(mbedtls_chachapoly_context *ctx,
+                              unsigned char mac[16]);
 
 /**
  * \brief           This function performs a complete ChaCha20-Poly1305
@@ -299,14 +282,14 @@ int mbedtls_chachapoly_finish( mbedtls_chachapoly_context *ctx,
  * \return          \c 0 on success.
  * \return          A negative error code on failure.
  */
-int mbedtls_chachapoly_encrypt_and_tag( mbedtls_chachapoly_context *ctx,
-                                        size_t length,
-                                        const unsigned char nonce[12],
-                                        const unsigned char *aad,
-                                        size_t aad_len,
-                                        const unsigned char *input,
-                                        unsigned char *output,
-                                        unsigned char tag[16] );
+int mbedtls_chachapoly_encrypt_and_tag(mbedtls_chachapoly_context *ctx,
+                                       size_t length,
+                                       const unsigned char nonce[12],
+                                       const unsigned char *aad,
+                                       size_t aad_len,
+                                       const unsigned char *input,
+                                       unsigned char *output,
+                                       unsigned char tag[16]);
 
 /**
  * \brief           This function performs a complete ChaCha20-Poly1305
@@ -333,14 +316,14 @@ int mbedtls_chachapoly_encrypt_and_tag( mbedtls_chachapoly_context *ctx,
  *                  if the data was not authentic.
  * \return          Another negative error code on other kinds of failure.
  */
-int mbedtls_chachapoly_auth_decrypt( mbedtls_chachapoly_context *ctx,
-                                     size_t length,
-                                     const unsigned char nonce[12],
-                                     const unsigned char *aad,
-                                     size_t aad_len,
-                                     const unsigned char tag[16],
-                                     const unsigned char *input,
-                                     unsigned char *output );
+int mbedtls_chachapoly_auth_decrypt(mbedtls_chachapoly_context *ctx,
+                                    size_t length,
+                                    const unsigned char nonce[12],
+                                    const unsigned char *aad,
+                                    size_t aad_len,
+                                    const unsigned char tag[16],
+                                    const unsigned char *input,
+                                    unsigned char *output);
 
 #if defined(MBEDTLS_SELF_TEST)
 /**
@@ -349,7 +332,7 @@ int mbedtls_chachapoly_auth_decrypt( mbedtls_chachapoly_context *ctx,
  * \return          \c 0 on success.
  * \return          \c 1 on failure.
  */
-int mbedtls_chachapoly_self_test( int verbose );
+int mbedtls_chachapoly_self_test(int verbose);
 #endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus

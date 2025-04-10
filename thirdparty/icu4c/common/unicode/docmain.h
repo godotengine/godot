@@ -114,7 +114,7 @@
  *   </tr>
  *   <tr>
  *     <td>Locales </td>
- *     <td>uloc.h</a></td>
+ *     <td>uloc.h, ulocale.h, ulocbuilder.h</a></td>
  *     <td>icu::Locale, icu::LocaleBuilder, icu::LocaleMatcher</td>
  *   </tr>
  *   <tr>
@@ -138,9 +138,19 @@
  *     <td>icu::DateFormat</td>
  *   </tr>
  *   <tr>
+ *     <td>Relative Date and Time Formatting</td>
+ *     <td>ureldatefmt.h</td>
+ *     <td>icu::RelativeDateTimeFormatter</td>
+ *   </tr>
+ *   <tr>
  *     <td>Message Formatting</td>
  *     <td>umsg.h</td>
  *     <td>icu::MessageFormat</td>
+ *   </tr>
+ *   <tr>
+ *     <td>Message Formatting 2<br/>(technology preview)</td>
+ *     <td>(no C API)</td>
+ *     <td>icu::message2::MessageFormatter</td>
  *   </tr>
  *   <tr>
  *     <td>List Formatting</td>
@@ -149,8 +159,8 @@
  *   </tr>
  *   <tr>
  *     <td>Number Formatting<br/>(includes currency and unit formatting)</td>
- *     <td>unumberformatter.h, unum.h</td>
- *     <td>icu::number::NumberFormatter (ICU 60+) or icu::NumberFormat (older versions)</td>
+ *     <td>unumberformatter.h, unum.h, usimplenumberformatter.h</td>
+ *     <td>icu::number::NumberFormatter (ICU 60+) or icu::NumberFormat (older versions)<br>icu::number::SimpleNumberFormatter (ICU 73+)</td>
  *   </tr>
  *   <tr>
  *     <td>Number Range Formatting<br />(includes currency and unit ranges)</td>

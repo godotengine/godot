@@ -35,34 +35,28 @@
 #include "../Include/Common.h"
 #include "../Include/PoolAlloc.h"
 
-#include "../Include/InitializeGlobals.h"
-#include "../OSDependent/osinclude.h"
-
 namespace glslang {
 
-// Process-wide TLS index
-OS_TLSIndex PoolIndex;
+namespace {
+thread_local TPoolAllocator* threadPoolAllocator = nullptr;
+
+TPoolAllocator* GetDefaultThreadPoolAllocator()
+{
+    thread_local TPoolAllocator defaultAllocator;
+    return &defaultAllocator;
+}
+} // anonymous namespace
 
 // Return the thread-specific current pool.
 TPoolAllocator& GetThreadPoolAllocator()
 {
-    return *static_cast<TPoolAllocator*>(OS_GetTLSValue(PoolIndex));
+    return *(threadPoolAllocator ? threadPoolAllocator : GetDefaultThreadPoolAllocator());
 }
 
 // Set the thread-specific current pool.
 void SetThreadPoolAllocator(TPoolAllocator* poolAllocator)
 {
-    OS_SetTLSValue(PoolIndex, poolAllocator);
-}
-
-// Process-wide set up of the TLS pool storage.
-bool InitializePoolIndex()
-{
-    // Allocate a TLS index.
-    if ((PoolIndex = OS_AllocTLSIndex()) == OS_INVALID_TLS_INDEX)
-        return false;
-
-    return true;
+    threadPoolAllocator = poolAllocator;
 }
 
 //
@@ -136,16 +130,6 @@ TPoolAllocator::~TPoolAllocator()
         freeList = next;
     }
 }
-
-const unsigned char TAllocation::guardBlockBeginVal = 0xfb;
-const unsigned char TAllocation::guardBlockEndVal   = 0xfe;
-const unsigned char TAllocation::userDataFill       = 0xcd;
-
-#   ifdef GUARD_BLOCKS
-    const size_t TAllocation::guardBlockSize = 16;
-#   else
-    const size_t TAllocation::guardBlockSize = 0;
-#   endif
 
 //
 // Check a single guard block for damage
@@ -267,8 +251,8 @@ void* TPoolAllocator::allocate(size_t numBytes)
         //
         size_t numBytesToAlloc = allocationSize + headerSkip;
         tHeader* memory = reinterpret_cast<tHeader*>(::new char[numBytesToAlloc]);
-        if (memory == 0)
-            return 0;
+        if (memory == nullptr)
+            return nullptr;
 
         // Use placement-new to initialize header
         new(memory) tHeader(inUseList, (numBytesToAlloc + pageSize - 1) / pageSize);
@@ -289,8 +273,8 @@ void* TPoolAllocator::allocate(size_t numBytes)
         freeList = freeList->nextPage;
     } else {
         memory = reinterpret_cast<tHeader*>(::new char[pageSize]);
-        if (memory == 0)
-            return 0;
+        if (memory == nullptr)
+            return nullptr;
     }
 
     // Use placement-new to initialize header
@@ -308,7 +292,7 @@ void* TPoolAllocator::allocate(size_t numBytes)
 //
 void TAllocation::checkAllocList() const
 {
-    for (const TAllocation* alloc = this; alloc != 0; alloc = alloc->prevAlloc)
+    for (const TAllocation* alloc = this; alloc != nullptr; alloc = alloc->prevAlloc)
         alloc->check();
 }
 

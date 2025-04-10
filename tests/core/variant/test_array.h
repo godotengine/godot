@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  test_array.h                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_array.h                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef TEST_ARRAY_H
-#define TEST_ARRAY_H
+#pragma once
 
 #include "core/variant/array.h"
 #include "tests/test_macros.h"
@@ -54,6 +53,26 @@ static inline Dictionary build_dictionary(Variant key, Variant item, Targs... Fa
 	Dictionary d = build_dictionary(Fargs...);
 	d[key] = item;
 	return d;
+}
+
+TEST_CASE("[Array] initializer list") {
+	Array arr = { 0, 1, "test", true, { 0.0, 1.0 } };
+	CHECK(arr.size() == 5);
+	CHECK(arr[0] == Variant(0));
+	CHECK(arr[1] == Variant(1));
+	CHECK(arr[2] == Variant("test"));
+	CHECK(arr[3] == Variant(true));
+	CHECK(arr[4] == Variant({ 0.0, 1.0 }));
+
+	arr = { "reassign" };
+	CHECK(arr.size() == 1);
+	CHECK(arr[0] == Variant("reassign"));
+
+	TypedArray<int> typed_arr = { 0, 1, 2 };
+	CHECK(typed_arr.size() == 3);
+	CHECK(typed_arr[0] == Variant(0));
+	CHECK(typed_arr[1] == Variant(1));
+	CHECK(typed_arr[2] == Variant(2));
 }
 
 TEST_CASE("[Array] size(), clear(), and is_empty()") {
@@ -107,6 +126,12 @@ TEST_CASE("[Array] resize(), insert(), and erase()") {
 	CHECK(int(arr[0]) == 2);
 	arr.erase(2);
 	CHECK(int(arr[0]) == 1);
+
+	// Negative index on insert.
+	CHECK(arr.size() == 3);
+	arr.insert(-1, 3);
+	CHECK(int(arr[2]) == 3);
+	CHECK(arr.size() == 4);
 }
 
 TEST_CASE("[Array] front() and back()") {
@@ -120,9 +145,7 @@ TEST_CASE("[Array] front() and back()") {
 }
 
 TEST_CASE("[Array] has() and count()") {
-	Array arr;
-	arr.push_back(1);
-	arr.push_back(1);
+	Array arr = { 1, 1 };
 	CHECK(arr.has(1));
 	CHECK(!arr.has(2));
 	CHECK(arr.count(1) == 2);
@@ -130,13 +153,20 @@ TEST_CASE("[Array] has() and count()") {
 }
 
 TEST_CASE("[Array] remove_at()") {
-	Array arr;
-	arr.push_back(1);
-	arr.push_back(2);
+	Array arr = { 1, 2 };
 	arr.remove_at(0);
 	CHECK(arr.size() == 1);
 	CHECK(int(arr[0]) == 2);
 	arr.remove_at(0);
+	CHECK(arr.size() == 0);
+
+	// Negative index.
+	arr.push_back(3);
+	arr.push_back(4);
+	arr.remove_at(-1);
+	CHECK(arr.size() == 1);
+	CHECK(int(arr[0]) == 3);
+	arr.remove_at(-1);
 	CHECK(arr.size() == 0);
 
 	// The array is now empty; try to use `remove_at()` again.
@@ -149,18 +179,12 @@ TEST_CASE("[Array] remove_at()") {
 }
 
 TEST_CASE("[Array] get()") {
-	Array arr;
-	arr.push_back(1);
+	Array arr = { 1 };
 	CHECK(int(arr.get(0)) == 1);
 }
 
 TEST_CASE("[Array] sort()") {
-	Array arr;
-
-	arr.push_back(3);
-	arr.push_back(4);
-	arr.push_back(2);
-	arr.push_back(1);
+	Array arr = { 3, 4, 2, 1 };
 	arr.sort();
 	int val = 1;
 	for (int i = 0; i < arr.size(); i++) {
@@ -187,12 +211,7 @@ TEST_CASE("[Array] push_front(), pop_front(), pop_back()") {
 TEST_CASE("[Array] pop_at()") {
 	ErrorDetector ed;
 
-	Array arr;
-	arr.push_back(2);
-	arr.push_back(4);
-	arr.push_back(6);
-	arr.push_back(8);
-	arr.push_back(10);
+	Array arr = { 2, 4, 6, 8, 10 };
 
 	REQUIRE(int(arr.pop_at(2)) == 6);
 	REQUIRE(arr.size() == 4);
@@ -247,12 +266,7 @@ TEST_CASE("[Array] max() and min()") {
 }
 
 TEST_CASE("[Array] slice()") {
-	Array array;
-	array.push_back(0);
-	array.push_back(1);
-	array.push_back(2);
-	array.push_back(3);
-	array.push_back(4);
+	Array array = { 0, 1, 2, 3, 4, 5 };
 
 	Array slice0 = array.slice(0, 0);
 	CHECK(slice0.size() == 0);
@@ -263,43 +277,71 @@ TEST_CASE("[Array] slice()") {
 	CHECK(slice1[1] == Variant(2));
 
 	Array slice2 = array.slice(1, -1);
-	CHECK(slice2.size() == 3);
+	CHECK(slice2.size() == 4);
 	CHECK(slice2[0] == Variant(1));
 	CHECK(slice2[1] == Variant(2));
 	CHECK(slice2[2] == Variant(3));
+	CHECK(slice2[3] == Variant(4));
 
 	Array slice3 = array.slice(3);
-	CHECK(slice3.size() == 2);
+	CHECK(slice3.size() == 3);
 	CHECK(slice3[0] == Variant(3));
 	CHECK(slice3[1] == Variant(4));
+	CHECK(slice3[2] == Variant(5));
 
 	Array slice4 = array.slice(2, -2);
-	CHECK(slice4.size() == 1);
+	CHECK(slice4.size() == 2);
 	CHECK(slice4[0] == Variant(2));
+	CHECK(slice4[1] == Variant(3));
 
 	Array slice5 = array.slice(-2);
 	CHECK(slice5.size() == 2);
-	CHECK(slice5[0] == Variant(3));
-	CHECK(slice5[1] == Variant(4));
+	CHECK(slice5[0] == Variant(4));
+	CHECK(slice5[1] == Variant(5));
 
 	Array slice6 = array.slice(2, 42);
-	CHECK(slice6.size() == 3);
+	CHECK(slice6.size() == 4);
 	CHECK(slice6[0] == Variant(2));
 	CHECK(slice6[1] == Variant(3));
 	CHECK(slice6[2] == Variant(4));
+	CHECK(slice6[3] == Variant(5));
 
 	Array slice7 = array.slice(4, 0, -2);
 	CHECK(slice7.size() == 2);
 	CHECK(slice7[0] == Variant(4));
 	CHECK(slice7[1] == Variant(2));
 
-	ERR_PRINT_OFF;
-	Array slice8 = array.slice(4, 1);
-	CHECK(slice8.size() == 0);
+	Array slice8 = array.slice(5, 0, -2);
+	CHECK(slice8.size() == 3);
+	CHECK(slice8[0] == Variant(5));
+	CHECK(slice8[1] == Variant(3));
+	CHECK(slice8[2] == Variant(1));
 
-	Array slice9 = array.slice(3, -4);
-	CHECK(slice9.size() == 0);
+	Array slice9 = array.slice(10, 0, -2);
+	CHECK(slice9.size() == 3);
+	CHECK(slice9[0] == Variant(5));
+	CHECK(slice9[1] == Variant(3));
+	CHECK(slice9[2] == Variant(1));
+
+	Array slice10 = array.slice(2, -10, -1);
+	CHECK(slice10.size() == 3);
+	CHECK(slice10[0] == Variant(2));
+	CHECK(slice10[1] == Variant(1));
+	CHECK(slice10[2] == Variant(0));
+
+	ERR_PRINT_OFF;
+	Array slice11 = array.slice(4, 1);
+	CHECK(slice11.size() == 0);
+
+	Array slice12 = array.slice(3, -4);
+	CHECK(slice12.size() == 0);
 	ERR_PRINT_ON;
+
+	Array slice13 = Array().slice(1);
+	CHECK(slice13.size() == 0);
+
+	Array slice14 = array.slice(6);
+	CHECK(slice14.size() == 0);
 }
 
 TEST_CASE("[Array] Duplicate array") {
@@ -338,7 +380,7 @@ TEST_CASE("[Array] Duplicate recursive array") {
 	Array a_shallow = a.duplicate(false);
 	CHECK_EQ(a, a_shallow);
 
-	// Deep copy of recursive array endup with recursion limit and return
+	// Deep copy of recursive array ends up with recursion limit and return
 	// an invalid result (multiple nested arrays), the point is we should
 	// not end up with a segfault and an error log should be printed
 	ERR_PRINT_OFF;
@@ -516,6 +558,108 @@ TEST_CASE("[Array] Recursive self comparison") {
 	a2.clear();
 }
 
-} // namespace TestArray
+TEST_CASE("[Array] Iteration") {
+	Array a1 = build_array(1, 2, 3);
+	Array a2 = build_array(1, 2, 3);
 
-#endif // TEST_ARRAY_H
+	int idx = 0;
+	for (Variant &E : a1) {
+		CHECK_EQ(int(a2[idx]), int(E));
+		idx++;
+	}
+
+	CHECK_EQ(idx, a1.size());
+
+	idx = 0;
+
+	for (const Variant &E : (const Array &)a1) {
+		CHECK_EQ(int(a2[idx]), int(E));
+		idx++;
+	}
+
+	CHECK_EQ(idx, a1.size());
+
+	a1.clear();
+}
+
+TEST_CASE("[Array] Iteration and modification") {
+	Array a1 = build_array(1, 2, 3);
+	Array a2 = build_array(2, 3, 4);
+	Array a3 = build_array(1, 2, 3);
+	Array a4 = build_array(1, 2, 3);
+	a3.make_read_only();
+
+	int idx = 0;
+	for (Variant &E : a1) {
+		E = a2[idx];
+		idx++;
+	}
+
+	CHECK_EQ(a1, a2);
+
+	// Ensure read-only is respected.
+	idx = 0;
+	for (Variant &E : a3) {
+		E = a2[idx];
+	}
+
+	CHECK_EQ(a3, a4);
+
+	a1.clear();
+	a2.clear();
+	a4.clear();
+}
+
+TEST_CASE("[Array] Typed copying") {
+	TypedArray<int> a1 = { 1 };
+	TypedArray<double> a2 = { 1.0 };
+
+	Array a3 = a1;
+	TypedArray<int> a4 = a3;
+
+	Array a5 = a2;
+	TypedArray<int> a6 = a5;
+
+	a3[0] = 2;
+	a4[0] = 3;
+
+	// Same typed TypedArray should be shared.
+	CHECK_EQ(a1[0], Variant(3));
+	CHECK_EQ(a3[0], Variant(3));
+	CHECK_EQ(a4[0], Variant(3));
+
+	a5[0] = 2.0;
+	a6[0] = 3.0;
+
+	// Different typed TypedArray should not be shared.
+	CHECK_EQ(a2[0], Variant(2.0));
+	CHECK_EQ(a5[0], Variant(2.0));
+	CHECK_EQ(a6[0], Variant(3.0));
+
+	a1.clear();
+	a2.clear();
+	a3.clear();
+	a4.clear();
+	a5.clear();
+	a6.clear();
+}
+
+static bool _find_custom_callable(const Variant &p_val) {
+	return (int)p_val % 2 == 0;
+}
+
+TEST_CASE("[Array] Test find_custom") {
+	Array a1 = build_array(1, 3, 4, 5, 8, 9);
+	// Find first even number.
+	int index = a1.find_custom(callable_mp_static(_find_custom_callable));
+	CHECK_EQ(index, 2);
+}
+
+TEST_CASE("[Array] Test rfind_custom") {
+	Array a1 = build_array(1, 3, 4, 5, 8, 9);
+	// Find last even number.
+	int index = a1.rfind_custom(callable_mp_static(_find_custom_callable));
+	CHECK_EQ(index, 4);
+}
+
+} // namespace TestArray

@@ -1,0 +1,6972 @@
+# Thai translation of the Godot Engine editor interface.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+# Kaveeta Vivatchai <goodytong@gmail.com>, 2017.
+# Poommetee Ketson (Noshyaar) <poommetee@protonmail.com>, 2017-2018.
+# Thanachart Monpassorn <nunf_2539@hotmail.com>, 2020, 2021.
+# Anonymous <noreply@weblate.org>, 2020.
+# Lon3r <mptube.p@gmail.com>, 2020.
+# Kongfa Warorot <gongpha@hotmail.com>, 2020, 2021.
+# Kongfa Waroros <gongpha@hotmail.com>, 2021.
+# Atirut Wattanamongkol <artjang301@gmail.com>, 2021, 2023, 2024.
+# PT 07 <porton555@gmail.com>, 2021.
+# SysError_ <ictsanook@hotmail.com>, 2021, 2023.
+# Kanda Ninthfish <akkhaporn@gmail.com>, 2022.
+# Absurdnoobman <jakkalin91@gmail.com>, 2022.
+# Nuttapong Nut <nuttapong.510123@gmail.com>, 2023.
+# LadsForTea <jajasamag@gmail.com>, 2023.
+# Satakun Utama <galaxytomostore@gmail.com>, 2023.
+# รัชพล คิดการ <rutchaphon.far@gmail.com>, 2023.
+# Donte <donte5405@outlook.com>, 2024.
+# Mineis Meee <simsfashion694@gmail.com>, 2024.
+# Suvijak Nopparatcharoensuk <guy.suvijak@hotmail.com>, 2025.
+# J Iamsamang <nodtem66@gmail.com>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine editor interface\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2025-02-27 00:43+0000\n"
+"Last-Translator: J Iamsamang <nodtem66@gmail.com>\n"
+"Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
+"th/>\n"
+"Language: th\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.10.2-dev\n"
+
+msgid "Main Thread"
+msgstr "เธรดหลัก"
+
+msgid "Unset"
+msgstr "ยกเลิกการตั้งค่า"
+
+msgid "Physical"
+msgstr "ทางกายภาพ"
+
+msgid "Left Mouse Button"
+msgstr "ปุ่มเมาส์ซ้าย"
+
+msgid "Right Mouse Button"
+msgstr "ปุ่มเมาส์ขวา"
+
+msgid "Middle Mouse Button"
+msgstr "ปุ่มเมาส์กลาง"
+
+msgid "Mouse Wheel Up"
+msgstr "เลื่อนล้อเมาส์ขึ้น"
+
+msgid "Mouse Wheel Down"
+msgstr "เลื่อนล้อเมาส์ลง"
+
+msgid "Mouse Wheel Left"
+msgstr "เลื่อนล้อเมาส์ซ้าย"
+
+msgid "Mouse Wheel Right"
+msgstr "เลื่อนล้อเมาส์ขวา"
+
+msgid "Mouse Thumb Button 1"
+msgstr "ปุ่มเมาส์นิ้วโป้ง 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "ปุ่มเมาส์นิ้วโป้ง 2"
+
+msgid "Button"
+msgstr "ปุ่ม"
+
+msgid "Double Click"
+msgstr "ดับเบิลคลิก"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "การเลื่อนเมาส์ที่ตำแหน่ง (%s) ด้วยอัตราเร็ว (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "จอยสติ๊กซ้าย แกน X, จอยสติ๊กที่ 0 แกน X"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "จอยสติ๊กซ้าย แกน Y, จอยสติ๊กที่ 0 แกน Y"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "จอยสติ๊กขวา แกน X, จอยสติ๊กที่ 1 แกน X"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "จอยสติ๊กขวา แกน Y, จอยสติ๊กที่ 1 แกน Y"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "จอยสติ๊กที่ 2 แกน X, ปุ่ม Left Trigger, จอย Sony L2, จอย Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "จอยสติ๊กที่ 2 แกน Y, ปุ่ม Right Trigger, จอย Sony R2, จอย Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "จอยสติ๊กที่ 3 แกน X"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "จอยสติ๊กที่ 3 แกน Y"
+
+msgid "Joystick 4 X-Axis"
+msgstr "จอยสติ๊กที่ 4 แกน X"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "จอยสติ๊กที่ 4 แกน Y"
+
+msgid "Unknown Joypad Axis"
+msgstr "ระนาบแกนของจอยที่ไม่รู้จัก"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "การเคลื่อนไหวของจอยที่แกน %d (%s) ด้วยค่า %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "ปุ่มจอยสั่งงานล่าง, จอย Sony X, จอย Xbox A, จอย Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "ปุ่มจอยสั่งงานขวา, จอย Sony O, จอย Xbox B, จอย Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "ปุ่มจอยสั่งงานซ้าย, จอย Sony สี่เหลี่ยม, จอย Xbox X, จอย Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "ปุ่มจอยสั่งงานบน, จอย Sony สามเหลี่ยม, จอย Xbox Y, จอย Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "ปุ่มจอยย้อนกลับ, จอย Sony Select, จอย Xbox ย้อนกลับ, จอย Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "ปุ่มจอยนำทาง, จอย Sony ปุ่ม PS, จอย Xbox ปุ่ม Home"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "เริ่ม, หน้าต่าง Xbox, Nintendo พลัส"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "ปุ่มข้างในจอยสติ๊กซ้าย, จอย Sony L3, จอย Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "ปุ่มข้างในจอยสติ๊กขวา, จอย Sony R3, จอย Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "ปุ่มจอยไหล่ซ้าย, จอย Sony L1, จอย Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "ปุ่มจอยไหล่ขวา, จอย Sony R1, จอย Xbox RB"
+
+msgid "D-pad Up"
+msgstr "ปุ่ม D-pad ลูกศรบน"
+
+msgid "D-pad Down"
+msgstr "ปุ่ม D-pad ลูกศรล่าง"
+
+msgid "D-pad Left"
+msgstr "ปุ่ม D-pad ลูกศรซ้าย"
+
+msgid "D-pad Right"
+msgstr "ปุ่ม D-pad ลูกศรขวา"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "ปุ่ม Xbox Share, ปุ่มไมโครโฟน PS5, ปุ่ม Nintendo Capture"
+
+msgid "Xbox Paddle 1"
+msgstr "ปุ่มไม้พาย Xbox 1"
+
+msgid "Xbox Paddle 2"
+msgstr "ปุ่มไม้พาย Xbox 2"
+
+msgid "Xbox Paddle 3"
+msgstr "ปุ่มไม้พาย Xbox 3"
+
+msgid "Xbox Paddle 4"
+msgstr "ปุ่มไม้พาย Xbox 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "ทัชแพดของ PS4/5"
+
+msgid "Joypad Button %d"
+msgstr "ปุ่มจอยที่ %d"
+
+msgid "Pressure:"
+msgstr "แรงกด:"
+
+msgid "touched"
+msgstr "สัมผัส"
+
+msgid "released"
+msgstr "ปล่อย"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "การสั่งงานหน้าจอ %s ที่ตำแหน่ง (s) ด้วยการแตะ %s จุด"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "การลากที่หน้าจอด้วยจุดแตะ %s จุด ณ ตำแหน่ง (%s) ด้วยอัตราเร็ว (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "การขยายหน้าจอที่ตำแหน่ง (%s) ด้วยอัตราขยาย %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "การเลื่อนหน้าจอที่ตำแหน่ง (%s) ด้วยอัตราส่วนต่าง (delta) ที่ (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "อุปกรณ์นำเข้า MIDI ที่ช่องสัญญาณ=%s รหัสข้อความ=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Input Event ด้วยทางลัด=%s"
+
+msgid "Accept"
+msgstr "ยอมรับ"
+
+msgid "Select"
+msgstr "เลือก"
+
+msgid "Cancel"
+msgstr "ยกเลิก"
+
+msgid "Focus Next"
+msgstr "เลือกโฟกัสที่องค์ประกอบถัดไป"
+
+msgid "Focus Prev"
+msgstr "เลือกโฟกัสที่องค์ประกอบก่อนหน้า"
+
+msgid "Left"
+msgstr "ซ้าย"
+
+msgid "Right"
+msgstr "ขวา"
+
+msgid "Up"
+msgstr "บน"
+
+msgid "Down"
+msgstr "ล่าง"
+
+msgid "Page Up"
+msgstr "ปุ่มเลื่อนหน้าขึ้น (PgUp)"
+
+msgid "Page Down"
+msgstr "ปุ่มเลื่อนหน้าขึ้น (PgDn)"
+
+msgid "Home"
+msgstr "ปุ่มเลื่อนไปบนสุด Home"
+
+msgid "End"
+msgstr "ปุ่มเลื่อนไปล่างสุด (End)"
+
+msgid "Cut"
+msgstr "ตัด"
+
+msgid "Copy"
+msgstr "คัดลอก"
+
+msgid "Paste"
+msgstr "วาง"
+
+msgid "Undo"
+msgstr "ยกเลิกการกระทำ"
+
+msgid "Redo"
+msgstr "ทำซ้ำ"
+
+msgid "Completion Query"
+msgstr "ตัวช่วยเติมโค้ด"
+
+msgid "New Line"
+msgstr "สร้างบรรทัดใหม่"
+
+msgid "New Blank Line"
+msgstr "สร้างบรรทัดว่างใหม่"
+
+msgid "New Line Above"
+msgstr "สร้างบรรทัดใหม่ด้านบน"
+
+msgid "Indent"
+msgstr "เพิ่มย่อหน้า"
+
+msgid "Dedent"
+msgstr "ลดย่อหน้า"
+
+msgid "Backspace"
+msgstr "ลบไปทางซ้าย"
+
+msgid "Backspace Word"
+msgstr "ลบไปทางซ้ายทั้งคำ"
+
+msgid "Backspace all to Left"
+msgstr "ลบไปทางซ้ายจนสุดบรรทัด"
+
+msgid "Delete"
+msgstr "ลบไปทางขวา"
+
+msgid "Delete Word"
+msgstr "ลบไปทางขวาทั้งคำ"
+
+msgid "Delete all to Right"
+msgstr "ลบไปทางขวาจนสุดบรรทัด"
+
+msgid "Caret Left"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางซ้าย"
+
+msgid "Caret Word Left"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางซ้ายทั้งคำ"
+
+msgid "Caret Right"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางขวา"
+
+msgid "Caret Word Right"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางขวาทั้งคำ"
+
+msgid "Caret Up"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปด้านบน"
+
+msgid "Caret Down"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปด้านล่าง"
+
+msgid "Caret Line Start"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางซ้ายบรรทัด"
+
+msgid "Caret Line End"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางขวาบรรทัด"
+
+msgid "Caret Page Up"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปด้านบนหนึ่งหน้า"
+
+msgid "Caret Page Down"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปด้านล่างหนึ่งหน้า"
+
+msgid "Caret Document Start"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปบนสุดเอกสาร"
+
+msgid "Caret Document End"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปล่างสุดเอกสาร"
+
+msgid "Caret Add Below"
+msgstr "เพิ่มเคอร์เซอร์พิมพ์ไปด้านล่าง"
+
+msgid "Caret Add Above"
+msgstr "เพิ่มเคอร์เซอร์พิมพ์ไปด้านบน"
+
+msgid "Scroll Up"
+msgstr "เลื่อนไปด้านบน"
+
+msgid "Scroll Down"
+msgstr "เลื่อนไปด้านล่าง"
+
+msgid "Select All"
+msgstr "เลือกทั้งหมด"
+
+msgid "Select Word Under Caret"
+msgstr "เลือกคำใต้เคอร์เซอร์พิมพ์"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "เพิ่มที่เลือกสำหรับการค้นคำจุดถัดไป"
+
+msgid "Clear Carets and Selection"
+msgstr "เคลียร์เคอร์เซอร์พิมพ์และที่เลือก"
+
+msgid "Toggle Insert Mode"
+msgstr "สลับโหมดแทรกข้อความ"
+
+msgid "Submit Text"
+msgstr "ส่งข้อความ"
+
+msgid "Duplicate Nodes"
+msgstr "ทำซ้ำโหนด"
+
+msgid "Delete Nodes"
+msgstr "ลบโหนด"
+
+msgid "Go Up One Level"
+msgstr "เลื่อนขึ้นไปหนึ่งระดับ"
+
+msgid "Refresh"
+msgstr "รีเฟรช"
+
+msgid "Show Hidden"
+msgstr "แสดงที่ซ่อนอยู่"
+
+msgid "Swap Input Direction"
+msgstr "สลับทิศทางอินพุต"
+
+msgid "Start Unicode Character Input"
+msgstr "เริ่มป้อนตัวอักขระแบบ Unicode"
+
+msgid "Invalid input %d (not passed) in expression"
+msgstr "อินพุต %d (ไม่ส่งผ่าน) ใน expression ไม่ถูกต้อง"
+
+msgid "self can't be used because instance is null (not passed)"
+msgstr "คีย์เวิร์ด self ไม่สามารถใช้งานได้เนื่องจาก instance เป็น null (ไม่ส่งผ่าน)"
+
+msgid "Invalid operands to operator %s, %s and %s."
+msgstr "ตัวถูกดำเนินการไม่ถูกต้องสำหรับตัวดำเนินการ %s, %s และ %s"
+
+msgid "Invalid index of type %s for base type %s"
+msgstr "ตำแหน่งดัชนี %s ไม่ถูกต้องสำหรับชนิดของ %s"
+
+msgid "Invalid named index '%s' for base type %s"
+msgstr "ดัชนีชื่อ '%s' ไม่ถูกต้องสำหรับชนิดของ %s"
+
+msgid "Invalid arguments to construct '%s'"
+msgstr "ค่า argument ไม่ถูกต้องสำหรับสร้าง '%s'"
+
+msgid "On call to '%s':"
+msgstr "ขณะเรียก '%s':"
+
+msgid "Built-in script"
+msgstr "สคริปต์แบบฝังโหนด"
+
+msgid "Built-in"
+msgstr "ตั้งให้เป็นสคริปต์แบบฝังโหนด"
+
+msgid "B"
+msgstr "ไบต์"
+
+msgid "KiB"
+msgstr "KiB"
+
+msgid "MiB"
+msgstr "MiB"
+
+msgid "GiB"
+msgstr "GiB"
+
+msgid "TiB"
+msgstr "TiB"
+
+msgid "PiB"
+msgstr "PiB"
+
+msgid "EiB"
+msgstr "EiB"
+
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
+"ชื่อ Action ไม่ถูกต้อง ไม่สามารถเป็นค่าว่างหรือประกอบด้วยสัญลักษณ์ '/', ':', '=', '\\' หรือ "
+"'\"'"
+
+msgid "An action with the name '%s' already exists."
+msgstr "มีชื่อของ Action '%s' อยู่แล้ว"
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "ไม่สามารถเปลี่ยนกลับได้ - การดำเนินการเหมือนกับครั้งแรก"
+
+msgid "Revert Action"
+msgstr "ย้อนกลับ Action"
+
+msgid "Add Event"
+msgstr "เพิ่ม Event"
+
+msgid "Cannot Remove Action"
+msgstr "ไม่สามารถลบ Action ได้"
+
+msgid "Edit Event"
+msgstr "แก้ไข Event"
+
+msgid "Remove Event"
+msgstr "ลบ Event"
+
+msgid "Clear All"
+msgstr "ล้างทั้งหมด"
+
+msgid "Add New Action"
+msgstr "เพิ่ม Action ใหม่"
+
+msgid "Add"
+msgstr "เพิ่ม"
+
+msgid "Show Built-in Actions"
+msgstr "แสดง Action ที่ติดตัวมา"
+
+msgid "Action"
+msgstr "การกระทำ"
+
+msgid "Deadzone"
+msgstr "Deadzone"
+
+msgid "Name:"
+msgstr "ชื่อ:"
+
+msgid "Type:"
+msgstr "ชนิด:"
+
+msgid "Metadata name can't be empty."
+msgstr "ชื่อไม่สามารถปล่อยว่างได้"
+
+msgid "Names starting with _ are reserved for editor-only metadata."
+msgstr "ชื่อที่ขึ้นต้นด้วย _ สงวนไว้ใช้กับ metadata ของ editor"
+
+msgid "Time:"
+msgstr "เวลา:"
+
+msgid "Value:"
+msgstr "ค่า:"
+
+msgid "Update Selected Key Handles"
+msgstr "อัปเดต Key Handle ที่เลือก"
+
+msgid "Insert Key Here"
+msgstr "เพิ่ม Key ที่นี่"
+
+msgid "Duplicate Selected Key(s)"
+msgstr "คัดลอก Key ที่เลือก"
+
+msgid "Delete Selected Key(s)"
+msgstr "ลบ Key ที่เลือก"
+
+msgid "Make Handles Free"
+msgstr "ทำให้ Handles เป็นอิสระ"
+
+msgid "Make Handles Linear"
+msgstr "ทำให้ Handles เป็นค่าเชิงเส้น"
+
+msgid "Make Handles Balanced"
+msgstr "ทำให้ Handles เป็นค่าสมดุล"
+
+msgid "Make Handles Mirrored"
+msgstr "ทำให้ Handles เป็นค่าสะท้อน"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "ทำให้ค่า Handles เป็นค่าสมดุล (Auto Tangent)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "ทำให้ Handles เป็นค่าสะท้อน (Auto Tangent)"
+
+msgid "Add Bezier Point"
+msgstr "เพิ่มจุด Bezier"
+
+msgid "Move Bezier Points"
+msgstr "ย้ายจุด Bezier"
+
+msgid "Animation Duplicate Keys"
+msgstr "ทำซ้ำ Animation Key เหล่านี้"
+
+msgid "Animation Delete Keys"
+msgstr "ลบ Animation Key เหล่านี้"
+
+msgid "Focus"
+msgstr "โฟกัส"
+
+msgid "Select All Keys"
+msgstr "เลือก Key ทั้งหมด"
+
+msgid "Deselect All Keys"
+msgstr "ยกเลิกการเลือก Key ทั้งหมด"
+
+msgid "Animation Change Transition"
+msgstr "เปลี่ยนรูปแบบการเคลื่อนผ่าน (Transition) ของ Animation"
+
+msgid "Animation Change Keyframe Value"
+msgstr "แก้ไขค่า Keyframe ของ Animation"
+
+msgid "Animation Change Call"
+msgstr "แก้ไขค่าเรียกใช้ (Call) ของ Animation"
+
+msgid "Animation Multi Change Transition"
+msgstr "เปลี่ยนรูปแบบการเคลื่อนผ่าน (Transition) ของ Animation หลายตัว"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "แก้ไขค่า Keyframe ของ Animation หลายตัว"
+
+msgid "Animation Multi Change Call"
+msgstr "แก้ไขค่าเรียกใช้ (Call) ของ Animation หลายตัว"
+
+msgid "Change Animation Length"
+msgstr "แก้ไขความยาวของ Animation"
+
+msgid "Change Animation Loop"
+msgstr "เปลี่ยนรูปแบบโหมดวนซ้ำ (Loop) ของ Animation"
+
+msgid "Animation length (frames)"
+msgstr "ความยาว Animation (เฟรม)"
+
+msgid "Animation length (seconds)"
+msgstr "ความยาว Animation (วินาที)"
+
+msgid "Add Track"
+msgstr "เพิ่ม Track"
+
+msgid "Animation Looping"
+msgstr "การวนซ้ำ Animation"
+
+msgid "Functions:"
+msgstr "ฟังก์ชัน:"
+
+msgid "Audio Clips:"
+msgstr "คลิปเสียง:"
+
+msgid "Animation Clips:"
+msgstr "คลิป Animation:"
+
+msgid "Change Track Path"
+msgstr "เปลี่ยนตำแหน่งที่อยู่ Track"
+
+msgid "Toggle this track on/off."
+msgstr "เปิด/ปิด Track นี้"
+
+msgid "Use Blend"
+msgstr "ใช้การ Blend"
+
+msgid "Update Mode (How this property is set)"
+msgstr "อัปเดตโหมด (ตามที่คุณสมบัตินี้ถูกตั้งค่าไว้)"
+
+msgid "Interpolation Mode"
+msgstr "โหมดเหลื่อมค่า (Interpolation)"
+
+msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
+msgstr "โหมดวนซ้ำแบบห่อหุ้ม (เหลื่อมจุดสิ้นสุดด้วยจุดเริ่มต้นบนลูป)"
+
+msgid "Remove this track."
+msgstr "ลบ Track นี้"
+
+msgid "Time (s):"
+msgstr "เวลา (วินาที):"
+
+msgid "Position:"
+msgstr "ตำแหน่ง:"
+
+msgid "Rotation:"
+msgstr "การหมุน:"
+
+msgid "Scale:"
+msgstr "ขนาด:"
+
+msgid "Blend Shape:"
+msgstr "รูปร่างการ Blend:"
+
+msgid "(Invalid, expected type: %s)"
+msgstr "(ไม่ถูกต้อง, ต้องการชนิดของ: %s)"
+
+msgid "Easing:"
+msgstr "ชนิดการ Ease:"
+
+msgid "In-Handle:"
+msgstr "In-Handle:"
+
+msgid "Out-Handle:"
+msgstr "Out-Handle:"
+
+msgid "Handle mode: Free\n"
+msgstr "โหมด Handle: อิสระ\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "โหมด Handle: เชิงเส้น\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "โหมด Handle: สมดุล\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "โหมด Handle: สะท้อน\n"
+
+msgid "Stream:"
+msgstr "การ Stream:"
+
+msgid "Start (s):"
+msgstr "เริ่ม (วิ):"
+
+msgid "End (s):"
+msgstr "สิ้นสุด (วิ):"
+
+msgid "Animation Clip:"
+msgstr "คลิป Animation:"
+
+msgid "Toggle Track Enabled"
+msgstr "เปิด/ปิดการเปิดใช้ Track"
+
+msgid "Don't Use Blend"
+msgstr "ไม่ใช้โหมด Blend"
+
+msgid "Continuous"
+msgstr "ต่อเนื่อง"
+
+msgid "Discrete"
+msgstr "ไม่ต่อเนื่อง"
+
+msgid "Capture"
+msgstr "จับ"
+
+msgid "Nearest"
+msgstr "ใกล้ที่สุด"
+
+msgid "Linear"
+msgstr "เชิงเส้น"
+
+msgid "Cubic"
+msgstr "สมการลูกบาศก์"
+
+msgid "Linear Angle"
+msgstr "เชิงเส้น (Angle)"
+
+msgid "Cubic Angle"
+msgstr "สมการลูกบาศก์ (Angle)"
+
+msgid "Clamp Loop Interp"
+msgstr "ค่าต่ำสุด/สูงสุดของการวนลูป"
+
+msgid "Duplicate Key(s)"
+msgstr "สร้างคีย์ซ้ำอีกอัน"
+
+msgid "Delete Key(s)"
+msgstr "ลบคีย์"
+
+msgid "Change Animation Update Mode"
+msgstr "เปลี่ยนโหมดการอัพเดทแอนิเมชัน"
+
+msgid "Change Animation Interpolation Mode"
+msgstr "เปลี่ยนโหมดการประมาณค่าช่วงของแอนิเมชัน"
+
+msgid "Change Animation Loop Mode"
+msgstr "เปลี่ยนโหมดการวนซ้ำแอนิเมชัน"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"แทร็กที่บีบอัดไม่สามารถแก้ไขหรือลบได้ นำเข้าภาพเคลื่อนไหวอีกครั้งโดยปิดใช้งานการบีบอัดเพื่อแก้ไข"
+
+msgid "Remove Anim Track"
+msgstr "ลบแทร็กแอนิเมชัน"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr "กด Shift ค้างไว้เมื่อคลิกไอคอนรูปกุญแจเพื่อข้ามกล่องโต้ตอบนี้"
+
+msgid "Create"
+msgstr "สร้าง"
+
+msgid "node '%s'"
+msgstr "บนโหนด '%s'"
+
+msgid "AnimationPlayer can't animate itself, only other players."
+msgstr "AnimationPlayer ไม่สามารถเล่นอนิเมชั่นด้วยตัวมันเองได้ เล่นได้เฉพาะตัวเล่นอื่นเท่านั้น"
+
+msgid "property '%s'"
+msgstr "บนคุณสมบัติ '%s'"
+
+msgid "Change Animation Step"
+msgstr "แก้ไขช่วงของแอนิเมชัน"
+
+msgid "Rearrange Tracks"
+msgstr "จัดเรียงแทร็ก"
+
+msgid ""
+"Audio tracks can only point to nodes of type:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
+msgstr ""
+"แทร็กเสียงสามารถชี้ไปยังโหนดชนิดเหล่านี้ได้เท่านั้น:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
+
+msgid "Animation tracks can only point to AnimationPlayer nodes."
+msgstr "แทร็กอนิเมชั่นสามารถติดไว้บนโหนด AnimationPlayer ได้เท่านั้น"
+
+msgid "Not possible to add a new track without a root"
+msgstr "ไม่สามารถที่จะเพิ่มแทร็กใหม่โดยที่ไม่มีรูท"
+
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr "แทร็กผิดพลาดสำหรับเบซิเยร์ (ไม่มีคุณสมบัติย่อยที่เข้ากันได้)"
+
+msgid "Add Bezier Track"
+msgstr "เพิ่มแทร็กเบซิเยร์"
+
+msgid "Track path is invalid, so can't add a key."
+msgstr "ที่อยู่แทร็กผิดพลาด ไม่สามารถเพิ่มคีย์ได้"
+
+msgid "Track path is invalid, so can't add a method key."
+msgstr "ที่อยู่แทร็กผิดพลาด ไม่สามารถเพิ่มคีย์เมธอดได้"
+
+msgid "Add Method Track Key"
+msgstr "เพิ่มคีย์แทร็กเมธอด"
+
+msgid "Method not found in object:"
+msgstr "ไม่พบเมธอดในวัตถุ:"
+
+msgid "Rotation"
+msgstr "ช่วงองศา"
+
+msgid "Scale"
+msgstr "ขนาด"
+
+msgid "Methods"
+msgstr "วิธีการ"
+
+msgid "Bezier"
+msgstr "เบซิเยร์"
+
+msgid "Audio"
+msgstr "เสียง"
+
+msgid "Clipboard is empty!"
+msgstr "คลิปบอร์ดว่างเปล่า!"
+
+msgid "Paste Tracks"
+msgstr "วางแทร็ก"
+
+msgid "Make Easing Keys"
+msgstr "สร้างคีย์ Easing"
+
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"ตัวเลือกบางตัวของ AnimationPlayerEditor ถูกปิดใช้งานเนื่องจากนี่คือ AnimationPlayer "
+"จำลองสำหรับการดูตัวอย่าง\n"
+"\n"
+"ตัวเล่นจำลองจะถูกบังคับให้ทำงาน ไม่แน่นอน และไม่มีแทร็กการเคลื่อนที่หลัก นอกจากนี้ "
+"โหนดดั้งเดิมจะไม่ทำงานชั่วคราว"
+
+msgid "AnimationPlayer is inactive. The playback will not be processed."
+msgstr "AnimationPlayer ไม่ทำงาน การเล่นซ้ำจะไม่ได้รับการประมวลผล"
+
+msgid "Select an AnimationPlayer node to create and edit animations."
+msgstr "เลือกโหนด AnimationPlayer เพื่อสร้างและแก้ไขแอนิเมชัน"
+
+msgid "Warning: Editing imported animation"
+msgstr "คำเตือน: กำลังแก้ไขแอนิเมชันที่นำเข้ามา"
+
+msgid "Dummy Player"
+msgstr "ผู้เล่นดัมมี่"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "สลับไปมาระหว่างตัวแก้ไขเส้นโค้งเบซิเยร์และตัวแก้ไขแทร็ก"
+
+msgid "Only show tracks from nodes selected in tree."
+msgstr "แสดงแทร็กจากโหนดที่เลือกในผังเท่านั้น"
+
+msgid "Group tracks by node or display them as plain list."
+msgstr "จัดกลุ่มแทร็กโดยใช้โนดหรือแสดงเป็นรายการธรรมดา"
+
+msgid "Animation step value."
+msgstr "ค่าของขั้นของแอนิเมชัน"
+
+msgid "Seconds"
+msgstr "วินาที"
+
+msgid "FPS"
+msgstr "เฟรมเรท"
+
+msgid "Edit"
+msgstr "แก้ไข"
+
+msgid "Animation properties."
+msgstr "คุณสมบัติแอนิเมชัน"
+
+msgid "Set Start Offset (Audio)"
+msgstr "ตั้งค่าออฟเซ็ตเริ่มต้น (เสียง)"
+
+msgid "Set End Offset (Audio)"
+msgstr "ตั้งค่าออฟเซ็ตสิ้นสุด (เสียง)"
+
+msgid "Move First Selected Key to Cursor"
+msgstr "ย้ายคีย์ที่เลือกแรกไปที่เคอร์เซอร์"
+
+msgid "Move Last Selected Key to Cursor"
+msgstr "ย้ายคีย์ที่เลือกล่าสุดไปที่เคอร์เซอร์"
+
+msgid "Delete Selection"
+msgstr "ลบที่เลือก"
+
+msgid "Go to Next Step"
+msgstr "ไปยังขั้นถัดไป"
+
+msgid "Go to Previous Step"
+msgstr "ไปยังขั้นก่อนหน้า"
+
+msgid "Use Bezier Curves"
+msgstr "ใช้เส้นโค้งเบซิเยร์"
+
+msgid "Create RESET Track(s)"
+msgstr "สร้างแทร็กรีเซ็ท"
+
+msgid "Optimize"
+msgstr "เพิ่มประสิทธิภาพ"
+
+msgid "Trim keys placed in negative time"
+msgstr "ตัดแต่งคีย์ที่วางอยู่ในจังหวะลบ"
+
+msgid "Trim keys placed exceed the animation length"
+msgstr "ตัดแต่งคีย์ที่วางเกินความยาวของแอนิเมชั่น"
+
+msgid "Remove invalid keys"
+msgstr "ลบคีย์ที่ผิดพลาด"
+
+msgid "Clean-up all animations"
+msgstr "เก็บกวาดแอนิเมชันทั้งหมด"
+
+msgid "Clean-Up Animation(s) (NO UNDO!)"
+msgstr "เก็บกวาดแอนิเมชัน (ย้อนกลับไม่ได้!)"
+
+msgid "Clean-Up"
+msgstr "เก็บกวาด"
+
+msgid "Scale Ratio:"
+msgstr "อัตราส่วนขนาด:"
+
+msgid "Select Transition and Easing"
+msgstr "เลือกการเปลี่ยนผ่านและ Easing"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Sine (อัตราส่วนของด้านตรงข้ามมุมที่กำหนด)"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Quart (เศษหนึ่งส่วนสี่)"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "เด้ง"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "สปริง"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "เข้าออก"
+
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "ออกเข้า"
+
+msgid "Select Tracks to Copy"
+msgstr "เลือกแทร็กที่จะคัดลอก"
+
+msgid "Select All/None"
+msgstr "เลือกทั้งหมด/ไม่เลือก"
+
+msgid "Close"
+msgstr "ปิด"
+
+msgid "Error!"
+msgstr "ผิดพลาด!"
+
+msgid "Add Audio Track Clip"
+msgstr "เพิ่มคลิปแทร็กเสียง"
+
+msgid "Change Audio Track Clip Start Offset"
+msgstr "เปลี่ยนออฟเซ็ตเริ่มต้นของคลิปแทร็กเสียง"
+
+msgid "Change Audio Track Clip End Offset"
+msgstr "เปลี่ยนออฟเซ็ตตอนจบของคลิปแทร็กเสียง"
+
+msgid "Go to Line"
+msgstr "ไปยังบรรทัด"
+
+msgid "Line Number:"
+msgstr "บรรทัดที่:"
+
+msgid "%d replaced."
+msgstr "แทนที่ %d"
+
+msgid "Match Case"
+msgstr "ตรงตามอักษรพิมพ์เล็ก-ใหญ่"
+
+msgid "Whole Words"
+msgstr "ทั้งคำ"
+
+msgid "Replace"
+msgstr "แทนที่"
+
+msgid "Replace All"
+msgstr "แทนที่ทั้งหมด"
+
+msgid "Selection Only"
+msgstr "เฉพาะที่กำลังเลือก"
+
+msgid "Hide"
+msgstr "ซ่อน"
+
+msgid "Toggle Scripts Panel"
+msgstr "เปิด/ปิดแผงสคริปต์"
+
+msgid "Zoom In"
+msgstr "ขยาย"
+
+msgid "Zoom Out"
+msgstr "ย่อ"
+
+msgid "Reset Zoom"
+msgstr "รีเซ็ตซูม"
+
+msgid "Errors"
+msgstr "ข้อผิดพลาด"
+
+msgid "Warnings"
+msgstr "คำเตือน"
+
+msgid "Line and column numbers."
+msgstr "เลขบรรทัดและคอลัมน์"
+
+msgid "Method in target node must be specified."
+msgstr "ต้องระบุเมธอดในโนดเป้าหมาย"
+
+msgid "Method name must be a valid identifier."
+msgstr "ไม่สามารถใช้ชื่อนี้ได้."
+
+msgid ""
+"Target method not found. Specify a valid method or attach a script to the "
+"target node."
+msgstr "ไม่พบเมธอดเป้าหมาย ระบุเมธอดที่ถูกต้องหรือเพิ่มสคริปต์ในโนดเป้าหมาย"
+
+msgid "%s: Callback code won't be generated, please add it manually."
+msgstr "%s: ไม่สามารถสร้างรหัสการโทรกลับได้ กรุณาเพิ่มรหัสด้วยตนเอง"
+
+msgid "Connect to Node:"
+msgstr "เชื่อมต่อกับโนด:"
+
+msgid "Connect to Script:"
+msgstr "เชื่อมต่อสคริปต์:"
+
+msgid "From Signal:"
+msgstr "จากสัญญาณ:"
+
+msgid "Scene does not contain any script."
+msgstr "ไม่มีสคริปต์ในฉาก"
+
+msgid "Select Method"
+msgstr "เลือกเมท็อด"
+
+msgid "No method found matching given filters."
+msgstr "ไม่พบวิธีการที่ตรงกับตัวกรองที่กำหนด"
+
+msgid "Remove"
+msgstr "ลบ"
+
+msgid "Add Extra Call Argument:"
+msgstr "เพิ่มตัวแปร:"
+
+msgid "Extra Call Arguments:"
+msgstr "ตัวแปรเพิ่มเติม:"
+
+msgid "Allows to drop arguments sent by signal emitter."
+msgstr "อนุญาตให้ลบอาร์กิวเมนต์ที่ส่งโดยตัวส่งสัญญาณ"
+
+msgid "Receiver Method:"
+msgstr "ตัวรับเมธอด:"
+
+msgid "Advanced"
+msgstr "ขั้นสูง"
+
+msgid "Deferred"
+msgstr "เรียกภายหลัง"
+
+msgid ""
+"Defers the signal, storing it in a queue and only firing it at idle time."
+msgstr "หน่วงสัญญาณและจัดเก็บเอาไว้ในคิวและจะทำงานในเวลาว่างเท่านั้น"
+
+msgid "Disconnects the signal after its first emission."
+msgstr "ตัดการเชื่อมต่อสัญญาณหลังจากทำงานครั้งแรก"
+
+msgid "Cannot connect signal"
+msgstr "ไม่สามารถเชื่อมต่อสัญญาณได้"
+
+msgid "Connect"
+msgstr "เชื่อม"
+
+msgid "Connect '%s' to '%s'"
+msgstr "เชื่อม '%s' กับ '%s'"
+
+msgid "Disconnect '%s' from '%s'"
+msgstr "ตัดการเชื่อมต่อ '%s' จาก '%s'"
+
+msgid "Disconnect all from signal: '%s'"
+msgstr "ตัดการเชื่อมต่อทั้งหมดจากสัญญาณ: '%s'"
+
+msgid "Connect..."
+msgstr "เชื่อมโยง..."
+
+msgid "Disconnect"
+msgstr "ลบการเชื่อมโยง"
+
+msgid "Connect a Signal to a Method"
+msgstr "เชื่อมต่อสัญญาณไปยังเมธอด"
+
+msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
+msgstr "คุณแน่ใจหรือว่าจะลบการเชื่อมต่อทั้งหมดจากสัญญาณ \"%s\"?"
+
+msgid "Signals"
+msgstr "สัญญาณ"
+
+msgid "Are you sure you want to remove all connections from this signal?"
+msgstr "คุณแน่ใจหรือว่าจะลบการเชื่อมต่อทั้งหมดกับสัญญาณนี้?"
+
+msgid "Open Documentation"
+msgstr "เปิดคู่มือ"
+
+msgid "Disconnect All"
+msgstr "ตัดการเชื่อมต่อทั้งหมด"
+
+msgid "Edit..."
+msgstr "แก้ไข..."
+
+msgid "Go to Method"
+msgstr "ไปยังเมธอด"
+
+msgid "Change"
+msgstr "เปลี่ยน"
+
+msgid "Create New %s"
+msgstr "สร้าง %s ใหม่"
+
+msgid "No results for \"%s\"."
+msgstr "ไม่มีผลลัพธ์สำหรับ \"%s\""
+
+msgid "This class is marked as deprecated."
+msgstr "คลาสนี้ถูกทำเครื่องหมายว่าไม่สนับสนุนอีกต่อไป"
+
+msgid "This class is marked as experimental."
+msgstr "คลาสนี้ถูกทำเครื่องหมายว่าเป็นคลาสทดลอง"
+
+msgid "Favorites:"
+msgstr "ที่ชื่นชอบ:"
+
+msgid "Recent:"
+msgstr "ล่าสุด:"
+
+msgid "Search:"
+msgstr "ค้นหา:"
+
+msgid "Matches:"
+msgstr "พบ:"
+
+msgid "Description:"
+msgstr "รายละเอียด:"
+
+msgid "Remote %s:"
+msgstr "ควบคุม %s:"
+
+msgid "Debugger"
+msgstr "ตัวดีบัก"
+
+msgid "Debug"
+msgstr "ดีบัก"
+
+msgid "Save Branch as Scene"
+msgstr "บันทึกกิ่งเป็นฉาก"
+
+msgid "Copy Node Path"
+msgstr "คัดลอกตำแหน่งโหนด"
+
+msgid "Instance:"
+msgstr "อินสแตนซ์:"
+
+msgid ""
+"This node has been instantiated from a PackedScene file:\n"
+"%s\n"
+"Click to open the original file in the Editor."
+msgstr ""
+"โหนดนี้ถูกสร้างขึ้นจากไฟล์ PackedScene:\n"
+"%s\n"
+"คลิกเพื่อเปิดไฟล์ต้นฉบับใน Editor"
+
+msgid "Toggle Visibility"
+msgstr "ซ่อน/แสดง"
+
+msgid "Clear"
+msgstr "เคลียร์"
+
+msgid "Updating assets on target device:"
+msgstr "การอัปเดตสินทรัพย์บนอุปกรณ์เป้าหมาย:"
+
+msgid "Getting remote file system"
+msgstr "การรับระบบไฟล์ระยะไกล"
+
+msgid "Sending list of changed files:"
+msgstr "ส่งรายการไฟล์ที่เปลี่ยนแปลง:"
+
+msgid "ms"
+msgstr "ms (มิลลิวินาที)"
+
+msgid "Monitors"
+msgstr "มอนิเตอร์"
+
+msgid "Monitor"
+msgstr "ข้อมูล"
+
+msgid "Value"
+msgstr "ค่า"
+
+msgid "Pick one or more items from the list to display the graph."
+msgstr "เลือกข้อมูลจากรายชื่อเพื่อแสดงกราฟ"
+
+msgid "Stop"
+msgstr "หยุด"
+
+msgid "Start"
+msgstr "เริ่ม"
+
+msgid "Measure:"
+msgstr "วัด:"
+
+msgid "Frame %"
+msgstr "เฟรม %"
+
+msgid "Physics Frame %"
+msgstr "% ของเฟรมฟิสิกส์"
+
+msgid "Inclusive"
+msgstr "รวม"
+
+msgid "Self"
+msgstr "ตัวเอง"
+
+msgid ""
+"Inclusive: Includes time from other functions called by this function.\n"
+"Use this to spot bottlenecks.\n"
+"\n"
+"Self: Only count the time spent in the function itself, not in other "
+"functions called by that function.\n"
+"Use this to find individual functions to optimize."
+msgstr ""
+"รวม: รวมเวลาจากฟังก์ชันอื่นที่เรียกใช้โดยฟังก์ชันนี้\n"
+"ใช้สิ่งนี้เพื่อระบุจุดคอขวด\n"
+"\n"
+"ตนเอง: นับเฉพาะเวลาที่ใช้ในฟังก์ชันนั้นเท่านั้น ไม่นับในฟังก์ชันอื่นที่เรียกใช้โดยฟังก์ชันนั้น\n"
+"ใช้สิ่งนี้เพื่อค้นหาฟังก์ชันแต่ละรายการเพื่อเพิ่มประสิทธิภาพ"
+
+msgid "Frame #:"
+msgstr "เฟรมที่:"
+
+msgid "Name"
+msgstr "ชื่อ"
+
+msgid "Time"
+msgstr "เวลา"
+
+msgid "Calls"
+msgstr "จำนวนครั้ง"
+
+msgid "CPU"
+msgstr "ซีพียู"
+
+msgid "GPU"
+msgstr "จีพียู"
+
+msgid "Execution resumed."
+msgstr "การดำเนินการเริ่มต้นอีกครั้ง"
+
+msgid "Bytes:"
+msgstr "ไบต์:"
+
+msgid "Error:"
+msgstr "ผิดพลาด:"
+
+msgid "Stack Trace"
+msgstr "แทร็กสแตค"
+
+msgid "Debug session closed."
+msgstr "เซสชันแก้ไขปิดแล้ว"
+
+msgid "Copy Error"
+msgstr "คัดลอกผิดพลาด"
+
+msgid "Open C++ Source on GitHub"
+msgstr "เปิดซอร์ส C++ บน GitHub"
+
+msgid "C++ Source"
+msgstr "C++ ต้นฉบับ"
+
+msgid "Video RAM"
+msgstr "หน่วยความจำวีดีโอ"
+
+msgid "Skip Breakpoints"
+msgstr "ข้ามเบรกพอยต์"
+
+msgid "Step Into"
+msgstr "คำสั่งต่อไป"
+
+msgid "Step Over"
+msgstr "บรรทัดต่อไป"
+
+msgid "Break"
+msgstr "หยุดพัก"
+
+msgid "Continue"
+msgstr "ทำต่อไป"
+
+msgid "Stack Frames"
+msgstr "สแตค"
+
+msgid "Breakpoints"
+msgstr "เบรกพอยต์"
+
+msgid "Expand All"
+msgstr "ขยายออก"
+
+msgid "Collapse All"
+msgstr "ยุบเข้า"
+
+msgid "Profiler"
+msgstr "ตัวตรวจวิเคราะห์ประสิทธิภาพ (Profiler)"
+
+msgid "List of Video Memory Usage by Resource:"
+msgstr "รายชื่อรีซอร์สที่ใช้หน่วยความจำวีดีโอ:"
+
+msgid "Total:"
+msgstr "ทั้งหมด:"
+
+msgid "Export list to a CSV file"
+msgstr "ส่งออกรายการเป็นไฟล์ CSV"
+
+msgid "Resource Path"
+msgstr "ตำแหน่งรีซอร์ส"
+
+msgid "Type"
+msgstr "ประเภท"
+
+msgid "Format"
+msgstr "รูปแบบ"
+
+msgid "Usage"
+msgstr "การใช้"
+
+msgid "Misc"
+msgstr "อื่น ๆ"
+
+msgid "Clicked Control:"
+msgstr "คอนโทรลที่คลิก:"
+
+msgid "Clicked Control Type:"
+msgstr "ประเภทของคอนโทรลที่คลิก:"
+
+msgid "Live Edit Root:"
+msgstr "รากผังฉาก:"
+
+msgid "Set From Tree"
+msgstr "กำหนดจากผัง"
+
+msgid "Export measures as CSV"
+msgstr "ส่งออกค่าเป็น CSV"
+
+msgid "Search Replacement For:"
+msgstr "หาตัวแทนสำหรับ:"
+
+msgid "Dependencies For:"
+msgstr "การอ้างอิงของ:"
+
+msgid ""
+"Scene '%s' is currently being edited.\n"
+"Changes will only take effect when reloaded."
+msgstr ""
+"ฉาก '%s' กำลังถูกเปิดแก้ไข\n"
+"การแก้ไขจะไม่ส่งผลจนกว่าจะโหลดใหม่"
+
+msgid ""
+"Resource '%s' is in use.\n"
+"Changes will only take effect when reloaded."
+msgstr ""
+"ทรัพยากร '%s' กำลังถูกใช้งาน\n"
+"การแก้ไขจะไม่ส่งผลจนกว่าจะโหลดใหม่"
+
+msgid "Dependencies"
+msgstr "การอ้างอิง"
+
+msgid "Resource"
+msgstr "ทรัพยากร"
+
+msgid "Path"
+msgstr "ตำแหน่ง"
+
+msgid "Dependencies:"
+msgstr "การอ้างอิง:"
+
+msgid "Dependency Editor"
+msgstr "แก้ไขการอ้างอิง"
+
+msgid "Search Replacement Resource:"
+msgstr "ค้นหาทรัพยากรมาแทนที่:"
+
+msgid "Open"
+msgstr "เปิด"
+
+msgid "Owners of: %s (Total: %d)"
+msgstr "เจ้าของ: %s (รวม: %d)"
+
+msgid "Localization remap for path '%s' and locale '%s'."
+msgstr "การรีแมปตำแหน่งสำหรับเส้นทาง '%s' และตำแหน่ง '%s'"
+
+msgid "Cannot remove:"
+msgstr "ไม่สามารถลบ:"
+
+msgid "Error loading:"
+msgstr "ผิดพลาดขณะโหลด:"
+
+msgid "Load failed due to missing dependencies:"
+msgstr "โหลดผิดพลาดเนื่องจากการอ้างอิงสูญหาย:"
+
+msgid "Open Anyway"
+msgstr "ยืนยันเปิดไฟล์"
+
+msgid "Which action should be taken?"
+msgstr "จะทำอย่างไรต่อไป?"
+
+msgid "Fix Dependencies"
+msgstr "ซ่อมแซมการอ้างอิง"
+
+msgid "Errors loading!"
+msgstr "ผิดพลาดขณะโหลด!"
+
+msgid "Permanently delete %d item(s)? (No undo!)"
+msgstr "ลบไอเทม %d ถาวรหรือไม่? (ย้อนกลับไม่ได้!)"
+
+msgid "Show Dependencies"
+msgstr "แสดงการอ้างอิง"
+
+msgid "Orphan Resource Explorer"
+msgstr "ทรัพยากรที่ไม่ได้ใช้"
+
+msgid "Owns"
+msgstr "เป็นเจ้าของ"
+
+msgid "Resources Without Explicit Ownership:"
+msgstr "รีซอร์สที่ไม่มีเจ้าของที่ชัดเจน:"
+
+msgid "Using slashes in folder names will create subfolders recursively."
+msgstr "การใช้เครื่องหมายทับในชื่อโฟลเดอร์จะสร้างโฟลเดอร์ย่อยขึ้นมาซ้ำๆ"
+
+msgid "Double-click to open in browser."
+msgstr "ดับเบิลคลิกเพื่อเปิดในเบราว์เซอร์"
+
+msgid "Thanks from the Godot community!"
+msgstr "ขอขอบคุณจากชุมชนผู้ใช้ Godot!"
+
+msgid "Godot Engine contributors"
+msgstr "ผู้ช่วยพัฒนา Godot Engine"
+
+msgid "Project Founders"
+msgstr "ผู้ริเริ่มโครงการ"
+
+msgid "Lead Developer"
+msgstr "ผู้พัฒนาหลัก"
+
+msgid "Developers"
+msgstr "ผู้พัฒนา"
+
+msgid "Authors"
+msgstr "ทีมงาน"
+
+msgid "Patrons"
+msgstr "ผู้สนับสนุน"
+
+msgid "Platinum Sponsors"
+msgstr "ผู้สนับสนุนระดับทองคำขาว"
+
+msgid "Gold Sponsors"
+msgstr "ผู้สนับสนุนระดับทอง"
+
+msgid "Silver Sponsors"
+msgstr "ผู้บริจาคระดับเงิน"
+
+msgid "Diamond Members"
+msgstr "สมาชิกระดับเพชร"
+
+msgid "Titanium Members"
+msgstr "สมาชิกระดับไททาเนียม"
+
+msgid "Donors"
+msgstr "ผู้บริจาค"
+
+msgid "License"
+msgstr "ลิขสิทธิ์"
+
+msgid "Third-party Licenses"
+msgstr "สัญญาอนุญาตจากบุคคลที่สาม"
+
+msgid ""
+"Godot Engine relies on a number of third-party free and open source "
+"libraries, all compatible with the terms of its MIT license. The following is "
+"an exhaustive list of all such third-party components with their respective "
+"copyright statements and license terms."
+msgstr ""
+"Godot Engine อาศัยไลบรารีต่าง ๆ ที่นำมาใช้ได้อย่างเสรีและเปิดเผยโค้ดเป็นจำนวนมาก "
+"ซึ่งเข้ากันได้กับสัญญาอนุญาต MIT ต่อไปนี้เป็นรายชื่อของไลบรารีทั้งหมดของบุคคลที่สาม "
+"รวมถึงข้อความลิขสิทธิ์ และข้อกำหนดการใช้งานของแต่ละไลบรารี"
+
+msgid "All Components"
+msgstr "ทั้งหมด"
+
+msgid "Components"
+msgstr "ไลบรารี"
+
+msgid "Licenses"
+msgstr "สัญญาอนุญาต"
+
+msgid "%d file conflicts with your project and won't be installed"
+msgid_plural "%d files conflict with your project and won't be installed"
+msgstr[0] "ไฟล์ %d ไฟล์ขัดแย้งกับโครงการของคุณและจะไม่ได้รับการติดตั้ง"
+
+msgid "This asset doesn't have a root directory, so it can't be ignored."
+msgstr "สินทรัพย์นี้ไม่มีไดเร็กทอรีรูท ดังนั้นจึงไม่สามารถละเลยได้"
+
+msgid "Ignore the root directory when extracting files."
+msgstr "ไม่ต้องสนใจไดเร็กทอรีรูทเมื่อแตกไฟล์"
+
+msgid "Uncompressing Assets"
+msgstr "กำลังคลายบีบอัด"
+
+msgid "Asset \"%s\" installed successfully!"
+msgstr "ติดตั้งสินทรัพย์ \"%s\" สำเร็จแล้ว!"
+
+msgid "Success!"
+msgstr "สำเร็จ!"
+
+msgid "Open the list of the asset contents and select which files to install."
+msgstr "เปิดรายการเนื้อหาของสินทรัพย์และเลือกไฟล์ที่จะติดตั้ง"
+
+msgid ""
+"Change the folder where the contents of the asset are going to be installed."
+msgstr "เปลี่ยนโฟลเดอร์ที่จะติดตั้งเนื้อหาของทรัพย์สิน"
+
+msgid "Ignore asset root"
+msgstr "ไม่สนใจรากสินทรัพย์"
+
+msgid "Show contents of the asset and conflicting files."
+msgstr "แสดงเนื้อหาของทรัพย์สินและไฟล์ที่ขัดแย้ง"
+
+msgid "Contents of the asset:"
+msgstr "เนื้อหาของสินทรัพย์:"
+
+msgid "Configure Asset Before Installing"
+msgstr "กำหนดค่าสินทรัพย์ก่อนการติดตั้ง"
+
+msgid "Install"
+msgstr "ติดตั้ง"
+
+msgid "Speakers"
+msgstr "ลำโพง"
+
+msgid "Add Effect"
+msgstr "เพิ่มเอฟเฟกต์"
+
+msgid "Rename Audio Bus"
+msgstr "เปลี่ยนชื่อ Audio Bus"
+
+msgid "Change Audio Bus Volume"
+msgstr "ปรับระดับเสียง Audio Bus"
+
+msgid "Toggle Audio Bus Solo"
+msgstr "สลับ Solo ของ Audio Bus"
+
+msgid "Toggle Audio Bus Mute"
+msgstr "สลับ Mute ของ Audio Bus"
+
+msgid "Toggle Audio Bus Bypass Effects"
+msgstr "สลับ Bypass ของ Audio Bus"
+
+msgid "Select Audio Bus Send"
+msgstr "เลือก Audio Bus ที่ส่งต่อ"
+
+msgid "Add Audio Bus Effect"
+msgstr "เพิ่มเอฟเฟกต์บัสเสียง"
+
+msgid "Move Bus Effect"
+msgstr "ย้ายเอฟเฟกต์บัสเสียง"
+
+msgid "Delete Bus Effect"
+msgstr "ลบเอฟเฟกต์บัสเสียง"
+
+msgid "Drag & drop to rearrange."
+msgstr "ลากและวางเพื่อจัดเรียง"
+
+msgid "Solo"
+msgstr "โซโล"
+
+msgid "Mute"
+msgstr "ปิดเสียง"
+
+msgid "Bypass"
+msgstr "ข้าม"
+
+msgid "Reset Volume"
+msgstr "รีเซ็ตระดับเสียง"
+
+msgid "Delete Effect"
+msgstr "ลบเอฟเฟกต์"
+
+msgid "Add Audio Bus"
+msgstr "เพิ่ม Audio Bus"
+
+msgid "Master bus can't be deleted!"
+msgstr "ลบบัสหลักไม่ได้!"
+
+msgid "Delete Audio Bus"
+msgstr "ลบบัสเสียง"
+
+msgid "Duplicate Audio Bus"
+msgstr "ทำซ้ำบัสเสียง"
+
+msgid "Reset Bus Volume"
+msgstr "รีเซ็ตระดับเสียงบัส"
+
+msgid "Move Audio Bus"
+msgstr "ย้ายบัสเสียง"
+
+msgid "Save Audio Bus Layout As..."
+msgstr "บันทึกเลย์เอาต์ของบัสเสียงเป็น..."
+
+msgid "Location for New Layout..."
+msgstr "ตำแหน่งของเลย์เอาต์ใหม่..."
+
+msgid "Open Audio Bus Layout"
+msgstr "เปิดเลย์เอาต์ของบัสเสียง"
+
+msgid "Error saving file: %s"
+msgstr "ผิดพลาดขณะบันทึกไฟล์: %s"
+
+msgid "Layout:"
+msgstr "เลย์เอาต์:"
+
+msgid "Add Bus"
+msgstr "เพิ่มบัส"
+
+msgid "Add a new Audio Bus to this layout."
+msgstr "เพิ่มบัสเสียงไปยังเลย์เอาต์นี้"
+
+msgid "Load"
+msgstr "โหลด"
+
+msgid "Load an existing Bus Layout."
+msgstr "โหลดเลย์เอาต์บัสจากดิสก์"
+
+msgid "Save As"
+msgstr "บันทึกเป็น"
+
+msgid "Save this Bus Layout to a file."
+msgstr "บันทึกเลย์เอาต์ของบัสนี้เป็นไฟล์"
+
+msgid "Load Default"
+msgstr "โหลดค่าเริ่มต้น"
+
+msgid "Load the default Bus Layout."
+msgstr "โหลดค่าเริ่มต้นเลย์เอาต์บัส"
+
+msgid "Create a new Bus Layout."
+msgstr "สร้างเลย์เอาต์บัสใหม่"
+
+msgid "Must not collide with an existing engine class name."
+msgstr "จะต้องไม่ชนกับชื่อคลาสเครื่องยนต์ที่มีอยู่"
+
+msgid "Must not collide with an existing global script class name."
+msgstr "จะต้องไม่ขัดแย้งกับชื่อคลาสสคริปต์ Global ที่มีอยู่"
+
+msgid "Must not collide with an existing built-in type name."
+msgstr "ต้องไม่ขัดแย้งกับชื่อประเภทที่มีอยู่แล้วภายใน"
+
+msgid "Must not collide with an existing global constant name."
+msgstr "จะต้องไม่ขัดแย้งกับชื่อค่าคงที่ Global ที่มีอยู่"
+
+msgid "Autoload '%s' already exists!"
+msgstr "มีออโต้โหลด '%s' อยู่แล้ว!"
+
+msgid "Rename Autoload"
+msgstr "เปลี่ยนชื่อออโต้โหลด"
+
+msgid "Move Autoload"
+msgstr "เลื่อนออโต้โหลด"
+
+msgid "Remove Autoload"
+msgstr "ลบออโต้โหลด"
+
+msgid "Enable"
+msgstr "เปิด"
+
+msgid "Rearrange Autoloads"
+msgstr "จัดลำดับออโต้โหลด"
+
+msgid "%s is an invalid path. File does not exist."
+msgstr "%s เป็นเส้นทางที่ไม่ถูกต้อง ไฟล์ไม่มีอยู่"
+
+msgid "%s is an invalid path. Not in resource path (res://)."
+msgstr "เส้นทางไฟล์ %s ไม่ถูกต้อง: ไม่มีในเส้นทางไฟล์ (res://)"
+
+msgid "Path:"
+msgstr "ตำแหน่ง:"
+
+msgid "Set path or press \"%s\" to create a script."
+msgstr "ตั้งค่าเส้นทางหรือกด \"%s\" เพื่อสร้างสคริปต์"
+
+msgid "Node Name:"
+msgstr "ชื่อโนด:"
+
+msgid "3D Engine"
+msgstr "เอ็นจิ้น 3D"
+
+msgid "2D Physics"
+msgstr "ฟิสิกส์ 2 มิติ"
+
+msgid "3D Physics"
+msgstr "ฟิสิกส์ 3 มิติ"
+
+msgid "Navigation"
+msgstr "ตัวนำทาง"
+
+msgid "RenderingDevice"
+msgstr "ตัวเรนเดอร์"
+
+msgid "Vulkan"
+msgstr "Vulkan"
+
+msgid "Text Server: Fallback"
+msgstr "ข้อความจากเซิร์ฟเวอร์: สำรอง"
+
+msgid "Text Server: Advanced"
+msgstr "ข้อความจากเซิร์ฟเวอร์: ขั้นสูง"
+
+msgid "TTF, OTF, Type 1, WOFF1 Fonts"
+msgstr "ฟอนต์ TTF, OTF, Type 1, WOFF1"
+
+msgid "SIL Graphite Fonts"
+msgstr "ฟอนต์ SIL Graphite"
+
+msgid "Multi-channel Signed Distance Field Font Rendering"
+msgstr "การเรนเดอร์ฟอนต์ฟิลด์ระยะห่างที่มีการเซ็นชื่อหลายช่องทาง"
+
+msgid "3D Nodes as well as RenderingServer access to 3D features."
+msgstr "3D Nodes รวมถึงการเข้าถึงฟีเจอร์ 3D ของ RenderingServer"
+
+msgid "2D Physics nodes and PhysicsServer2D."
+msgstr "โหนดฟิสิกส์ 2D และ PhysicsServer2D"
+
+msgid ""
+"TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType "
+"library (if disabled, WOFF2 support is also disabled)."
+msgstr ""
+"รองรับรูปแบบฟอนต์ TrueType, OpenType, Type 1 และ WOFF1 โดยใช้ไลบรารี FreeType "
+"(หากปิดใช้งาน การรองรับ WOFF2 จะถูกปิดใช้งานด้วยเช่นกัน)"
+
+msgid "WOFF2 font format support using FreeType and Brotli libraries."
+msgstr "รูปแบบฟอนต์ WOFF2 รองรับการใช้ไลบรารี FreeType และ Brotli"
+
+msgid ""
+"SIL Graphite smart font technology support (supported by Advanced Text Server "
+"only)."
+msgstr ""
+"รองรับเทคโนโลยีฟอนต์อัจฉริยะ SIL Graphite (รองรับโดย Advanced Text Server เท่านั้น)"
+
+msgid ""
+"Multi-channel signed distance field font rendering support using msdfgen "
+"library (pre-rendered MSDF fonts can be used even if this option disabled)."
+msgstr ""
+"รองรับการเรนเดอร์ฟอนต์ฟิลด์ระยะห่างที่ลงนามหลายช่องทางโดยใช้ไลบรารี msdfgen "
+"(สามารถใช้ฟอนต์ MSDF ที่เรนเดอร์ไว้ล่วงหน้าได้ แม้ว่าตัวเลือกนี้จะปิดใช้งานอยู่ก็ตาม)"
+
+msgid "Text Rendering and Font Options:"
+msgstr "ตัวเลือกการแสดงผลข้อความและแบบอักษร:"
+
+msgid "This will scan all files in the current project to detect used classes."
+msgstr "การดำเนินการนี้จะสแกนไฟล์ทั้งหมดในโปรเจ็กต์ปัจจุบันเพื่อตรวจหาคลาสที่ใช้"
+
+msgid "File '%s' format is invalid, import aborted."
+msgstr "นามสกุลของไฟล์ '%s' ผิดพลาด ยกเลิกการนำเข้า"
+
+msgid "Error saving profile to path: '%s'."
+msgstr "ผิดพลาดขณะบันทึกโปรไฟล์ไปยังแพทช์: '%s'"
+
+msgid "New"
+msgstr "ใหม่"
+
+msgid "Save"
+msgstr "บันทึก"
+
+msgid "Reset to Defaults"
+msgstr "รีเซ็ตเป็นค่าเริ่มต้น"
+
+msgid "Export Profile"
+msgstr "ส่งออกโปรไฟล์"
+
+msgid "Forced Classes on Detect:"
+msgstr "คลาสบังคับในการตรวจจับ:"
+
+msgid "Paste Params"
+msgstr "วางตัวแปร"
+
+msgid "Updating Scene"
+msgstr "อัพเดทฉาก"
+
+msgid "Storing local changes..."
+msgstr "เก็บการเปลี่ยนแปลงภายใน..."
+
+msgid "Updating scene..."
+msgstr "อัพเดทฉาก..."
+
+msgid "[empty]"
+msgstr "[ว่างเปล่า]"
+
+msgid "[unsaved]"
+msgstr "[ไฟล์ใหม่]"
+
+msgid "%s - Godot Engine"
+msgstr "%s - Godot Engine"
+
+msgid "Dock Position"
+msgstr "ตำแหน่งแผง"
+
+msgid "Move this dock to the bottom panel."
+msgstr "ย้ายแท่นนี้ไปที่แผงด้านล่าง"
+
+msgid "3D Editor"
+msgstr "ตัวแก้ไข 3D"
+
+msgid "Script Editor"
+msgstr "ตัวแก้ไขสคริปต์"
+
+msgid "Asset Library"
+msgstr "ไลบรารีทรัพยากร"
+
+msgid "Scene Tree Editing"
+msgstr "แก้ไขผังฉาก"
+
+msgid "Node Dock"
+msgstr "หน้าต่างโหนด"
+
+msgid "FileSystem Dock"
+msgstr "หน้าต่างระบบไฟล์"
+
+msgid "Import Dock"
+msgstr "หน้าต่างนำเข้า"
+
+msgid "Allows to view and edit 3D scenes."
+msgstr "สามารถดู และแก้ไขฉาก 3D ได้"
+
+msgid "Allows to edit scripts using the integrated script editor."
+msgstr "สามารถแก้ไขสคริปต์และใช้เครื่องมือแก้ไขที่ติดมากับเอนจินได้"
+
+msgid "Provides built-in access to the Asset Library."
+msgstr "ให้เครื่องมือ built-in ที่ใช้ดาวน์โหลดจาก Asset Library ได้"
+
+msgid "Allows editing the node hierarchy in the Scene dock."
+msgstr "สามารถแก้ไขผังโครงสร้างโหนดในฉากได้"
+
+msgid ""
+"Allows to work with signals and groups of the node selected in the Scene dock."
+msgstr "สามารถจัดการสัญญาณและการจัดกลุ่มของโหนดในฉากได้."
+
+msgid "Allows to browse the local file system via a dedicated dock."
+msgstr "สามารถจัดการไฟล์ในเครื่องผ่านตัวจัดการแยกต่างหากได้"
+
+msgid ""
+"Allows to configure import settings for individual assets. Requires the "
+"FileSystem dock to function."
+msgstr ""
+"สามารถตั้งค่าการนำเข้าการตั้งต่าสำหรับ asset ต่าง ๆ ได้ ต้องการหน้าต่าง FileSystem "
+"เพื่อใช้งานฟังก์ชันนี้"
+
+msgid "Provides an overview of the editor's and each scene's undo history."
+msgstr "ให้ภาพรวมของประวัติการเลิกทำของตัวแก้ไขและแต่ละฉาก"
+
+msgid "(none)"
+msgstr "(ว่าง)"
+
+msgid "Remove currently selected profile, '%s'? Cannot be undone."
+msgstr "ลบโปรไฟล์การตั้งต่าที่เลือก'%s' หรือไม่? หากทำแล้วจะไม่สามารถกู้คืนได้"
+
+msgid "Profile must be a valid filename and must not contain '.'"
+msgstr "โปรไฟล์จะต้องมีชื่อไฟล์ที่ถูกต้อง และต้องไม่มี '.'"
+
+msgid "Profile with this name already exists."
+msgstr "มีโปรไฟล์ที่มีชื่อนี้อยู๋แล้ว"
+
+msgid "(Editor Disabled, Properties Disabled)"
+msgstr "(ตัวแก้ไขถูกปิดการใช้งาน, คุณสมบัติถูกปิดการใช้งาน)"
+
+msgid "(Properties Disabled)"
+msgstr "(ปิดการทำงานคุณสมบัติ)"
+
+msgid "(Editor Disabled)"
+msgstr "(ตัวแก้ไขถูกปิดการใช้งาน)"
+
+msgid "Class Options:"
+msgstr "ตั้งค่าคลาส:"
+
+msgid "Enable Contextual Editor"
+msgstr "เปิดการทำงานตัวแก้ไขตามบริบท"
+
+msgid "Main Features:"
+msgstr "คุณสมบัติหลัก:"
+
+msgid ""
+"Profile '%s' already exists. Remove it first before importing, import aborted."
+msgstr "มีโปรไฟล์ '%s' อยู่แล้ว กรุณาลบก่อนที่จะนำเข้า, การนำเข้าถูกยกเลิก"
+
+msgid "Current Profile:"
+msgstr "โปรไฟล์ปัจจุบัน:"
+
+msgid "Available Profiles:"
+msgstr "โปรไฟล์ที่มีให้ใช้:"
+
+msgid "Make Current"
+msgstr "ทำให้เป็นปัจจุบัน"
+
+msgid "Import"
+msgstr "นำเข้า"
+
+msgid "Export"
+msgstr "ส่งออก"
+
+msgid "Extra Options:"
+msgstr "ตัวเลือกเพิ่มเติม:"
+
+msgid "Create or import a profile to edit available classes and properties."
+msgstr "สร้าง หรือนำเข้าโปรไฟล์การตั้งค่าเพื่อแก้ไขฟังก์ชัน/คลาสและคุณสมบัติต่าง ๆ"
+
+msgid "New profile name:"
+msgstr "ชื่อโปรไฟล์ใหม่:"
+
+msgid "Godot Feature Profile"
+msgstr "รายละเอียดคุณสมบัติ Godot"
+
+msgid "Import Profile(s)"
+msgstr "นำเข้าโปรไฟล์"
+
+msgid "Manage Editor Feature Profiles"
+msgstr "จัดการรายละเอียดคุณสมบัติตัวแก้ไข"
+
+msgid "Restart"
+msgstr "เริ่มใหม่"
+
+msgid "Save & Restart"
+msgstr "บันทึกและเริ่มใหม่"
+
+msgid "ScanSources"
+msgstr "สแกนต้นฉบับ"
+
+msgid ""
+"There are multiple importers for different types pointing to file %s, import "
+"aborted"
+msgstr "มีการนำเข้าไฟล์ %s หลายอัน การนำเข้าถูกยกเลิก"
+
+msgid "(Re)Importing Assets"
+msgstr "กำลังนำเข้าทรัพยากร(อีกครั้ง)"
+
+msgid "Import resources of type: %s"
+msgstr "นำเข้าทรัพยากรประเภท: %s"
+
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr "ค่านี้เป็นจำนวนเต็มที่ประกอบเป็นบิตมาสก์ของแฟล็กต่อไปนี้"
+
+msgid "Constructors"
+msgstr "ตัวสร้าง"
+
+msgid "Operators"
+msgstr "ตัวดำเนินการ"
+
+msgid "Method Descriptions"
+msgstr "รายละเอียดเมท็อด"
+
+msgid "Constructor Descriptions"
+msgstr "รายละเอียดของตัวสร้าง"
+
+msgid "Operator Descriptions"
+msgstr "รายละเอียดของตัวนำเนินการ"
+
+msgid "Top"
+msgstr "บนสุด"
+
+msgid "Class:"
+msgstr "คลาส:"
+
+msgid "Inherits:"
+msgstr "สืบทอด:"
+
+msgid "Inherited by:"
+msgstr "สืบทอดโดย:"
+
+msgid "Description"
+msgstr "รายละเอียด"
+
+msgid "Online Tutorials"
+msgstr "บทสอนออนไลน์"
+
+msgid "Properties"
+msgstr "คุณสมบัติ"
+
+msgid "default:"
+msgstr "ค่าเริ่มต้น:"
+
+msgid "Theme Properties"
+msgstr "คุณสมบัติธีม"
+
+msgid "Constants"
+msgstr "ค่าคงที่"
+
+msgid "Fonts"
+msgstr "ฟอนต์"
+
+msgid "Enumerations"
+msgstr "ค่าคงที่แบบมีความหมาย"
+
+msgid "Property Descriptions"
+msgstr "รายละเอียดของคุณสมบัติ"
+
+msgid "(value)"
+msgstr "(ค่า)"
+
+msgid ""
+"There is currently no description for this property. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr "คุณสมบัตินี้ยังไม่มีคำอธิบาย โปรดช่วย[color=$color][url=$url]แก้ไข[/url][/color]!"
+
+msgid "Editor"
+msgstr "ตัวแก้ไข"
+
+msgid "Show in FileSystem"
+msgstr "แสดงในรูปแบบไฟล์"
+
+msgid "Open in File Manager"
+msgstr "เปิดโฟลเดอร์"
+
+msgid "Class"
+msgstr "คลาส"
+
+msgid "Constant"
+msgstr "คงที่"
+
+msgid "Property"
+msgstr "คุณสมบัติ"
+
+msgid "Theme Property"
+msgstr "คุณสมบัติธีม"
+
+msgid "Method"
+msgstr "เมธอด"
+
+msgid "Signal"
+msgstr "สัญญาณ"
+
+msgid "File"
+msgstr "ไฟล์"
+
+msgid "%d matches."
+msgstr "%d ตรงกัน"
+
+msgid "Search Help"
+msgstr "ค้นหาความช่วยเหลือ"
+
+msgid "Case Sensitive"
+msgstr "ตรงตามอักษรพิมพ์เล็ก-ใหญ่"
+
+msgid "Show Hierarchy"
+msgstr "แสดงลำดับชั้น"
+
+msgid "Display All"
+msgstr "แสดงทั้งหมด"
+
+msgid "Classes Only"
+msgstr "คลาสเท่านั้น"
+
+msgid "Methods Only"
+msgstr "เมท็อดเท่านั้น"
+
+msgid "Signals Only"
+msgstr "สัญญาณเท่านั้น"
+
+msgid "Constants Only"
+msgstr "ค่าคงที่เท่านั้น"
+
+msgid "Properties Only"
+msgstr "คุณสมบัติเท่านั้น"
+
+msgid "Theme Properties Only"
+msgstr "คุณสมบัติธีมเท่านั้น"
+
+msgid "Member Type"
+msgstr "ชนิดสมาชิก"
+
+msgid "Move Up"
+msgstr "เลื่อนขึ้น"
+
+msgid "Move Down"
+msgstr "เลื่อนลง"
+
+msgid "Resize Array"
+msgstr "ปรับขนาดอาร์เรย์"
+
+msgid "New Size:"
+msgstr "ขนาดใหม่:"
+
+msgid "Set %s"
+msgstr "ตั้ง %s"
+
+msgid "Favorites"
+msgstr "ที่ชื่นชอบ"
+
+msgid "Creating Mesh Previews"
+msgstr "กำลังสร้างภาพตัวอย่าง Mesh"
+
+msgid "Thumbnail..."
+msgstr "รูปตัวอย่าง..."
+
+msgid "Changed Locale Filter Mode"
+msgstr "แก้ไขโหมดการกรองภูมิภาค"
+
+msgid "Show All Locales"
+msgstr "แสดงทุกภูมิภาค"
+
+msgid "Show Selected Locales Only"
+msgstr "แสดงเฉพาะภภายในเท่านั้น"
+
+msgid "Edit Filters"
+msgstr "แก้ไขตัวกรอง"
+
+msgid "Language:"
+msgstr "ภาษา:"
+
+msgid "Clear Output"
+msgstr "เคลียร์เอาต์พุต"
+
+msgid "Copy Selection"
+msgstr "คัดลอกที่เลือก"
+
+msgid "Unnamed Project"
+msgstr "โปรเจกต์ไม่มีชื่อ"
+
+msgid "Spins when the editor window redraws."
+msgstr "หมุนเมื่อมีการวาดหน้าต่างโปรแกรมใหม"
+
+msgid "OK"
+msgstr "ตกลง"
+
+msgid ""
+"This resource can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr "ทรัพยากรนี้ไม่สามารถบันทึกได้เพราะว่าไม่ได้เป็นของฉากที่แก้ไข กรุณาทำให้ไม่ซ้ำก่อน"
+
+msgid "Save Resource As..."
+msgstr "บันทึกรีซอร์สเป็น..."
+
+msgid "Saving Scene"
+msgstr "บันทึกฉาก"
+
+msgid "Analyzing"
+msgstr "กำลังวิเคราะห์"
+
+msgid "Creating Thumbnail"
+msgstr "กำลังสร้างรูปตัวอย่าง"
+
+msgid "Save scene before running..."
+msgstr "บันทึกฉากก่อนที่จะรัน..."
+
+msgid "Save All Scenes"
+msgstr "บันทึกฉากทั้งหมด"
+
+msgid "Can't overwrite scene that is still open!"
+msgstr "ไม่สามารถเขียนทับฉากที่กำลังเปิดอยู่ได้!"
+
+msgid "Merge With Existing"
+msgstr "รวมกับที่มีอยู่เดิม"
+
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
+"เกิดข้อผิดพลาดขณะกำลังบันทึกเลเอาต์ของตัวแก้ไข\n"
+"ตรวจสอบให้แน่ใจว่าที่อยู่ข้อมูลผู้ใช้ตัวแก้ไขสามารถแก้ไขได้"
+
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
+"การจัดเค้าโครงตัวแก้ไขดั้งเดิมถูกเขียนทับ\n"
+"เพื่อที่จะกู้คืนเค้าโครงดั้งเดิมไปยังการตั้งค่าพื้นฐาน ใช้การตั้งค่า Delete Layout "
+"และลบเค้าโครงตั้งเดิม"
+
+msgid "Layout name not found!"
+msgstr "ไม่พบชื่อเลย์เอาต์!"
+
+msgid "Restored the Default layout to its base settings."
+msgstr "คืนเลย์เอาต์ดั้งเดิมไปยังการตั้งค่าพื้นฐาน"
+
+msgid ""
+"This resource belongs to a scene that was imported, so it's not editable.\n"
+"Please read the documentation relevant to importing scenes to better "
+"understand this workflow."
+msgstr ""
+"รีซอร์สนี้เป็นของฉากที่ถูกนำเข้า จึงไม่สามารถแก้ไขได้\n"
+"อ่านรายละเอียดเพิ่มเติมได้จากคู่มือในส่วนของการนำเข้าฉาก"
+
+msgid ""
+"This resource was imported, so it's not editable. Change its settings in the "
+"import panel and then re-import."
+msgstr "รีซอร์สนี้ถูกนำเข้าจึงไม่สามารถแก้ไขได้ ปรับตั้งค่าในแผงนำเข้าและนำเข้าใหม่"
+
+msgid "Open Base Scene"
+msgstr "เปิดไฟล์ฉากที่ใช้สืบทอด"
+
+msgid ""
+"A root node is required to save the scene. You can add a root node using the "
+"Scene tree dock."
+msgstr "จำเป็นต้องมีโนดรากในการบันทึกฉาก คุณสามารถเพิ่มโนดรากได้ด้วยแผง Scene tree"
+
+msgid "Save Scene As..."
+msgstr "บันทึกฉากเป็น..."
+
+msgid "Remote Undo: %s"
+msgstr "เลิกทำระยะไกล: %s"
+
+msgid "Can't reload a scene that was never saved."
+msgstr "ฉากยังไม่ได้บันทึก ไม่สามารถโหลดใหม่ได้"
+
+msgid "Reload Saved Scene"
+msgstr "โหลดฉากที่บันทึก"
+
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
+"ฉากนี้ยังมีการแก้ไขที่ไม่ได้บันทึก\n"
+"โหลดฉากที่บันทึกไว้ซ้ำใช่ไหม? การดำเนินการนี้ไม่สามารถยกเลิกได้"
+
+msgid "Save & Quit"
+msgstr "บันทึกและปิด"
+
+msgid "Save changes to the following scene(s) before opening Project Manager?"
+msgstr "บันทึกฉากต่อไปนี้ก่อนกลับสู่ตัวจัดการโปรเจกต์หรือไม่?"
+
+msgid "Pick a Main Scene"
+msgstr "เลือกฉากเริ่มต้น"
+
+msgid "Export Mesh Library"
+msgstr "ส่งออกไลบรารี Mesh"
+
+msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
+msgstr "ไม่สามารถเปิดใช้งานปลั๊กอิน: '%s'"
+
+msgid "Unable to find script field for addon plugin at: '%s'."
+msgstr "ไม่พบไฟล์สคริปต์สำหรับปลั๊กอินที่: '%s'."
+
+msgid "Unable to load addon script from path: '%s'."
+msgstr "ไม่สามารถโหลดสคริปต์จาก: '%s'"
+
+msgid ""
+"Scene '%s' was automatically imported, so it can't be modified.\n"
+"To make changes to it, a new inherited scene can be created."
+msgstr ""
+"ฉาก '%s' ถูกนำเข้าโดยอัตโนมัติจึงไม่สามารถถูกแก้ไข\n"
+"สามารถสืบทอดไปยังฉากใหม่เพื่อทำการแก้ไข"
+
+msgid "Scene '%s' has broken dependencies:"
+msgstr "ฉาก '%s' มีการอ้างอิงสูญหาย:"
+
+msgid "Clear Recent Scenes"
+msgstr "ล้างรายการฉากล่าสุด"
+
+msgid "Default"
+msgstr "ค่าเริ่มต้น"
+
+msgid "Save Layout"
+msgstr "บันทึกเลย์เอาต์"
+
+msgid "Delete Layout"
+msgstr "ลบเลย์เอาต์"
+
+msgid "Save & Close"
+msgstr "บันทึกและปิด"
+
+msgid "%d more files or folders"
+msgstr "และอีก %d ไฟล์หรือโฟลเดอร์"
+
+msgid "%d more folders"
+msgstr "และอีก %d โฟลเดอร์"
+
+msgid "%d more files"
+msgstr "และอีก %d ไฟล์"
+
+msgid "Pan View"
+msgstr "มุมมองแพน"
+
+msgid "Distraction Free Mode"
+msgstr "โหมดไร้สิ่งรบกวน"
+
+msgid "Toggle distraction-free mode."
+msgstr "โหมดไร้สิ่งรบกวน"
+
+msgid "Scene"
+msgstr "ฉาก"
+
+msgid "Operations with scene files."
+msgstr "การจัดการกับไฟล์ฉาก"
+
+msgid "Copy Text"
+msgstr "คัดลอกข้อความ"
+
+msgid "New Scene"
+msgstr "ฉากใหม่"
+
+msgid "New Inherited Scene..."
+msgstr "สืบทอดฉากใหม่..."
+
+msgid "Open Scene..."
+msgstr "เปิดไฟล์ฉาก..."
+
+msgid "Reopen Closed Scene"
+msgstr "เปิดฉากที่ปิดไปใหม่"
+
+msgid "Open Recent"
+msgstr "เปิดไฟล์ล่าสุด"
+
+msgid "Save Scene"
+msgstr "บันทึกฉาก"
+
+msgid "Quick Open..."
+msgstr "เปิดด่วน..."
+
+msgid "Quick Open Scene..."
+msgstr "เปิดฉากด่วน..."
+
+msgid "Quick Open Script..."
+msgstr "เปิดสคริปต์ด่วน..."
+
+msgid "MeshLibrary..."
+msgstr "ไลบรารี Mesh..."
+
+msgid "Close Scene"
+msgstr "ปิดฉาก"
+
+msgid "Quit"
+msgstr "ออก"
+
+msgid "Editor Settings..."
+msgstr "ตั้งค่าตัวแก้ไข"
+
+msgid "Project"
+msgstr "โปรเจกต์"
+
+msgid "Project Settings..."
+msgstr "การตั้งค่าโปรเจกต์..."
+
+msgid "Project Settings"
+msgstr "การตั้งค่าโปรเจกต์"
+
+msgid "Version Control"
+msgstr "เวอร์ชันคอนโทรล"
+
+msgid "Install Android Build Template..."
+msgstr "ติดตั้งเทมเพลตการสร้างของแอนดรอยด์"
+
+msgid "Tools"
+msgstr "เครื่องมือ"
+
+msgid "Orphan Resource Explorer..."
+msgstr "ตัวดูทรัพยากรที่ไม่ได้ใช้"
+
+msgid "Quit to Project List"
+msgstr "ปิดและกลับสู่รายชื่อโปรเจกต์"
+
+msgid "Editor Layout"
+msgstr "เค้าโครงตัวแก้ไข"
+
+msgid "Take Screenshot"
+msgstr "ถ่ายภาพหน้าจอ"
+
+msgid "Toggle Fullscreen"
+msgstr "เปิด/ปิด โหมดเต็มหน้าจอ"
+
+msgid "Open Editor Data/Settings Folder"
+msgstr "เปิดโฟลเดอร์ข้อมูล/ตั้งค่าของตัวแก้ไข"
+
+msgid "Open Editor Data Folder"
+msgstr "เปิดโฟลเดอร์ของตัวแก้ไข"
+
+msgid "Open Editor Settings Folder"
+msgstr "เปิดโฟลเดอร์การตั้งค่าของตัวแก้ไข"
+
+msgid "Manage Editor Features..."
+msgstr "จัดการลักษณะเฉพาะของตัวแก้ไข..."
+
+msgid "Manage Export Templates..."
+msgstr "จัดการเทมเพลตการส่งออก..."
+
+msgid "Help"
+msgstr "ช่วยเหลือ"
+
+msgid "Community"
+msgstr "ชุมชน"
+
+msgid "Report a Bug"
+msgstr "รายงานบั๊ก"
+
+msgid "Send Docs Feedback"
+msgstr "ส่งความคิดเห็นเกี่ยวกับคู่มือ"
+
+msgid "Update Continuously"
+msgstr "อัพเดทอย่างต่อเนื่อง"
+
+msgid "Hide Update Spinner"
+msgstr "ซ่อนตัวหมุนการอัพเดท"
+
+msgid "Inspector"
+msgstr "คุณสมบัติ"
+
+msgid "Node"
+msgstr "โนด"
+
+msgid "Output"
+msgstr "เอาท์พุต"
+
+msgid "Don't Save"
+msgstr "ไม่บันทึก"
+
+msgid "Android build template is missing, please install relevant templates."
+msgstr "เทมเพลตการสร้างบนแอนดรอยด์หายไป กรุณาติดตั้งเทมเพลตที่เกี่ยวข้อง"
+
+msgid "Manage Templates"
+msgstr "จัดการเทมเพลต"
+
+msgid "Show in File Manager"
+msgstr "แสดงในตัวจัดการไฟล์"
+
+msgid "Import Templates From ZIP File"
+msgstr "นำเข้าเทมเพลตจากไฟล์ ZIP"
+
+msgid "Template Package"
+msgstr "แพคเกจเทมเพลต"
+
+msgid "Export Library"
+msgstr "ส่งออกไลบรารี"
+
+msgid "Open & Run a Script"
+msgstr "เปิดและรันสคริปต์"
+
+msgid "Version Control Settings..."
+msgstr "การตั้งค่าระบบจัดการเวอร์ชัน"
+
+msgid "New Inherited"
+msgstr "สืบทอด"
+
+msgid "Load Errors"
+msgstr "โหลดผิดพลาด"
+
+msgid "Open 2D Editor"
+msgstr "เปิดตัวแก้ไข 2D"
+
+msgid "Open 3D Editor"
+msgstr "เปิดตัวแก้ไข 3D"
+
+msgid "Open Script Editor"
+msgstr "เปิดตัวแก้ไขสคริปต์"
+
+msgid "Open Asset Library"
+msgstr "เปิดไลบรารีทรัพยากร"
+
+msgid "Open the next Editor"
+msgstr "เปิดตัวแก้ไขถัดไป"
+
+msgid "Open the previous Editor"
+msgstr "เปิดตัวแก้ไขก่อนหน้า"
+
+msgid "Warning!"
+msgstr "คำเตือน!"
+
+msgid "Edit Text:"
+msgstr "แก้ไขข้อความ:"
+
+msgid "On"
+msgstr "เปิด"
+
+msgid "No name provided."
+msgstr "ไม่ได้ระบุชื่อ"
+
+msgid "Name contains invalid characters."
+msgstr "อักษรบางตัวใช้ไม่ได้"
+
+msgid "Bit %d, value %d"
+msgstr "บิต %d, ค่า %d"
+
+msgid "Rename"
+msgstr "เปลี่ยนชื่อ"
+
+msgid "Assign..."
+msgstr "กำหนด..."
+
+msgid "Invalid RID"
+msgstr "RID ผิดพลาด"
+
+msgid ""
+"Can't create a ViewportTexture on resources saved as a file.\n"
+"Resource needs to belong to a scene."
+msgstr ""
+"ไม่สามารถสร้าง ViewportTexture บนทรัพยากรที่บันทึกเป็นไฟล์\n"
+"ทรัพยากรจำเป็นต้องเป็นของฉาก"
+
+msgid ""
+"Can't create a ViewportTexture on this resource because it's not set as local "
+"to scene.\n"
+"Please switch on the 'local to scene' property on it (and all resources "
+"containing it up to a node)."
+msgstr ""
+"ไม่สามารถสร้าง ViewportTexture บนทรัพยากรนี้ เพราะว่าไม่ได้ถูกตั้งเป็นฉากายใน\n"
+"กรุณาตั้งค่าที่คุณสมบัติ 'local to scene' (และทุกทรัพยากรที่ประกอบอยู่ในโหนด)"
+
+msgid "Pick a Viewport"
+msgstr "เลือกวิวพอร์ต"
+
+msgid "Selected node is not a Viewport!"
+msgstr "โหนดที่เลือกไม่ใช่วิวพอร์ต!"
+
+msgid "New Key:"
+msgstr "คีย์ใหม่:"
+
+msgid "New Value:"
+msgstr "ค่าใหม่:"
+
+msgid "Size:"
+msgstr "ขนาด:"
+
+msgid "Remove Item"
+msgstr "ลบไอเทม"
+
+msgid "Add Key/Value Pair"
+msgstr "เพิ่มคู่ของคีย์/ค่า"
+
+msgid ""
+"The selected resource (%s) does not match any type expected for this property "
+"(%s)."
+msgstr "ทรัพยากรที่เลือก (%s) มีประเทไม่ตรงกับค่าที่ต้องการ (%s)"
+
+msgid "Load..."
+msgstr "โหลด..."
+
+msgid "Make Unique"
+msgstr "ไม่ใช้ร่วมกับวัตถุอื่น"
+
+msgid "Save As..."
+msgstr "บันทึกเป็น..."
+
+msgid "New %s"
+msgstr "%s ใหม่"
+
+msgid "New Script..."
+msgstr "สคริปต์ใหม่..."
+
+msgid ""
+"No runnable export preset found for this platform.\n"
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
+msgstr ""
+"ไม่มีพรีเซ็ตส่งออกที่สามารถรันเกมได้ของแพลตฟอร์มนี้\n"
+"กรุณาเพิ่มพรีเซ็ตส่งออกที่รันเกมได้ในเมนูส่งออกหรือทำให้พรีเซ็ตเดิมสามารถรันได้"
+
+msgid "Write your logic in the _run() method."
+msgstr "เขียนโปรแกรมในเมท็อด _run()"
+
+msgid "None"
+msgstr "ไม่มี"
+
+msgid "Common"
+msgstr "ทั่วไป"
+
+msgid "Editor Settings"
+msgstr "การตั้งค่าตัวแก้ไข"
+
+msgid "General"
+msgstr "ทั่วไป"
+
+msgid "Filter Settings"
+msgstr "กรองการตั้งค่า"
+
+msgid "The editor must be restarted for changes to take effect."
+msgstr "ต้องเปิดตัวแก้ไขใหม่เพื่อให้การเปลี่ยนแปลงมีผล"
+
+msgid "Shortcuts"
+msgstr "ทางลัด"
+
+msgid "Binding"
+msgstr "ปุ่มลัด"
+
+msgid "All Devices"
+msgstr "อุปกรณ์ทั้งหมด"
+
+msgid "Device"
+msgstr "อุปกรณ์"
+
+msgid "Storing File:"
+msgstr "เก็บไฟล์:"
+
+msgid "Could not open file to read from path \"%s\"."
+msgstr "ไม่สามารถเปิดไฟล์ที่จะอ่านจากตำแหน่ง \"%s\" ได้"
+
+msgid "Packing"
+msgstr "กำลังรวบรวม"
+
+msgid "Custom debug template not found."
+msgstr "ไม่พบเทมเพลตการดีบักแบบกำหนดเอง"
+
+msgid "Custom release template not found."
+msgstr "ไม่พบเทมเพลตการเผยแพร่ที่กำหนดเอง"
+
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr "การส่งออกแบบ 32 bit PCK แบบฝังตัวไม่สามารถใหญ่ได้เกิน 4 GiB"
+
+msgid "Error requesting URL:"
+msgstr "ผิดพลาดขณะกำลังร้องขอ URL:"
+
+msgid "Request failed."
+msgstr "ร้องขอผิดพลาด"
+
+msgid "Cannot remove temporary file:"
+msgstr "ไม่สามารถลบไฟล์ชั่วคราวได้:"
+
+msgid ""
+"Templates installation failed.\n"
+"The problematic templates archives can be found at '%s'."
+msgstr ""
+"การติดตั้งเทมเพลตล้มเหลว\n"
+"ดูไฟล์รายงานปัญหาได้ที่ '%s'"
+
+msgid "Error getting the list of mirrors."
+msgstr "ผิดพลาดขณะกำลังรับรายชื่อของ mirrors"
+
+msgid ""
+"No download links found for this version. Direct download is only available "
+"for official releases."
+msgstr "ไม่พบลิงก์ดาวน์โหลดสำหรับรุ่นนี้ มีเฉพาะสำหรับโปรแกรมรุ่นหลัก"
+
+msgid "Connecting..."
+msgstr "กำลังเชื่อมต่อ..."
+
+msgid "Requesting..."
+msgstr "กำลังร้องขอ..."
+
+msgid "Extracting Export Templates"
+msgstr "กำลังคลายเทมเพลตส่งออก"
+
+msgid "Importing:"
+msgstr "กำลังนำเข้า:"
+
+msgid "Official export templates aren't available for development builds."
+msgstr "ไม่มีเทมเพลตการส่งออกอย่างเป็นทางการสำหรับรุ่นผู้พัฒนา"
+
+msgid "Uncompressing Android Build Sources"
+msgstr "กำลังคลาย Android Build Sources"
+
+msgid "Export Template Manager"
+msgstr "จัดการเทมเพลตส่งออก"
+
+msgid "Current Version:"
+msgstr "รุ่นปัจจุบัน:"
+
+msgid "Uninstall"
+msgstr "ถอนการติดตั้ง"
+
+msgid "Select Template File"
+msgstr "เลือกไฟล์เทมเพลต"
+
+msgid "Godot Export Templates"
+msgstr "เทมเพลตการส่งออก Godot"
+
+msgid "Runnable"
+msgstr "สามารถรันได้"
+
+msgid "Delete preset '%s'?"
+msgstr "ลบพรีเซ็ต '%s'?"
+
+msgid "Resources to export:"
+msgstr "รีซอร์สที่จะส่งออก:"
+
+msgid "Export With Debug"
+msgstr "ส่งออกพร้อมการแก้ไขจุดบกพร่อง"
+
+msgid "Release"
+msgstr "เผยแพร่"
+
+msgid "Exporting All"
+msgstr "ส่งออกทั้งหมด"
+
+msgid "Presets"
+msgstr "พรีเซ็ต"
+
+msgid "Add..."
+msgstr "เพิ่ม..."
+
+msgid "Duplicate"
+msgstr "ทำซ้ำ"
+
+msgid ""
+"If checked, the preset will be available for use in one-click deploy.\n"
+"Only one preset per platform may be marked as runnable."
+msgstr ""
+"ถ้าเลือก พรีเซ็ตจะสามารถใช้สำหรับ deploy ในหนึ่งคลิก\n"
+"สามารถใช้พรีเซ็ตได้เพียงหนึ่งอันต่อแพลตฟอร์มเพื่อให้สามารถทำงานได้"
+
+msgid "Advanced Options"
+msgstr "ตัวเลือกขั้นสูง"
+
+msgid "Export Path"
+msgstr "ไดเรกทอรีส่งออก"
+
+msgid "Options"
+msgstr "ตัวเลือก"
+
+msgid "Resources"
+msgstr "ทรัพยากร"
+
+msgid "Export all resources in the project"
+msgstr "ส่งออกทรัพยากรทั้งหมดในโปรเจกต์"
+
+msgid "Export selected scenes (and dependencies)"
+msgstr "ส่งออกฉากที่เลือก (รวมถึงการอ้างอิง)"
+
+msgid "Export selected resources (and dependencies)"
+msgstr "ส่งออกรีซอร์สที่เลือก (รวมถึงการอ้างอิง)"
+
+msgid "Export Mode:"
+msgstr "วิธีการส่งออก:"
+
+msgid "Keep"
+msgstr "เก็บ"
+
+msgid ""
+"Filters to export non-resource files/folders\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
+msgstr ""
+"ตัวกรองไฟล์ที่จะส่งออกเพิ่มเติม\n"
+"(คั่นด้วยจุลภาค ตัวอย่างเช่น: *.json, *.txt, docs/)"
+
+msgid ""
+"Filters to exclude files/folders from project\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
+msgstr ""
+"ตัวกรองไฟล์ที่จะไม่ส่งออก\n"
+"(คั่นด้วยจุลภาค ตัวอย่างเช่น: *.json, *.txt)"
+
+msgid "Features"
+msgstr "ฟีเจอร์"
+
+msgid "Custom (comma-separated):"
+msgstr "กำหนดเอง (คั่นด้วยจุลภาค):"
+
+msgid "Feature List:"
+msgstr "รายชื่อฟีเจอร์:"
+
+msgid "Export All"
+msgstr "ส่งออกทั้งหมด"
+
+msgid "ZIP File"
+msgstr "ไฟล์ ZIP"
+
+msgid "Export templates for this platform are missing:"
+msgstr "ไม่พบเทมเพลตส่งออกสำหรับแพลตฟอร์มนี้:"
+
+msgid "Manage Export Templates"
+msgstr "จัดการเทมเพลตส่งออก"
+
+msgid "Browse"
+msgstr "ค้นหา"
+
+msgid "View items as a grid of thumbnails."
+msgstr "แสดงไอเทมในรูปแบบตาราง"
+
+msgid "View items as a list."
+msgstr "แสดงไอเทมในรูปแบบลิสต์รายชื่อ"
+
+msgid "Status: Import of file failed. Please fix file and reimport manually."
+msgstr "สถานะ: นำเข้าไฟล์ล้มเหลว กรุณาแก้ไขไฟล์และนำเข้าใหม่"
+
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr "การนำเข้าไฟล์นี้ถูกปิด, ดังนั้นจึงไม่สามารถเปิดเพื่อแก้ไขใดๆได้"
+
+msgid "Cannot move/rename resources root."
+msgstr "ไม่สามารถย้าย/เปลี่ยนชื่อโฟลเดอร์ราก"
+
+msgid "Cannot move a folder into itself."
+msgstr "ย้ายโฟลเดอร์มาข้างในตัวมันเองไม่ได้"
+
+msgid "Error moving:"
+msgstr "ผิดพลาดขณะย้าย:"
+
+msgid "Error duplicating:"
+msgstr "ผิดพลาดขณะทำซ้ำ:"
+
+msgid "A file or folder with this name already exists."
+msgstr "มีชื่อกลุ่มนี้อยู่แล้ว"
+
+msgid "Duplicating file:"
+msgstr "ทำซ้ำไฟล์:"
+
+msgid "Duplicating folder:"
+msgstr "ทำซ้ำโฟลเดอร์:"
+
+msgid "Create Folder"
+msgstr "สร้างโฟลเดอร์"
+
+msgid "New Inherited Scene"
+msgstr "ฉากสืบทอดใหม่"
+
+msgid "Open Scenes"
+msgstr "เปิดฉาก"
+
+msgid "Edit Dependencies..."
+msgstr "แก้ไขการอ้างอิง..."
+
+msgid "View Owners..."
+msgstr "ดูเจ้าของ..."
+
+msgid "Add to Favorites"
+msgstr "เพิ่มไปยังที่ชื่นชอบ"
+
+msgid "Remove from Favorites"
+msgstr "ลบจากที่่ชื่นชอบ"
+
+msgid "Reimport"
+msgstr "นำเข้าใหม่"
+
+msgid "New Folder..."
+msgstr "สร้างโฟลเดอร์..."
+
+msgid "New Scene..."
+msgstr "ฉากใหม่..."
+
+msgid "New Resource..."
+msgstr "ทรัพยากรใหม่..."
+
+msgid "Copy Path"
+msgstr "คัดลอกตำแหน่ง"
+
+msgid "Duplicate..."
+msgstr "ทำซ้ำ..."
+
+msgid "Rename..."
+msgstr "เปลี่ยนชื่อ..."
+
+msgid "Re-Scan Filesystem"
+msgstr "สแกนไฟล์ใหม่"
+
+msgid ""
+"Scanning Files,\n"
+"Please Wait..."
+msgstr ""
+"กำลังสแกนไฟล์,\n"
+"กรุณารอ..."
+
+msgid "Overwrite"
+msgstr "เขียนทับ"
+
+msgid "Create Script"
+msgstr "สร้างสคริปต์"
+
+msgid "Find in Files"
+msgstr "ค้นหาในไฟล์"
+
+msgid "Find:"
+msgstr "ค้นหา:"
+
+msgid "Replace:"
+msgstr "แทนที่:"
+
+msgid "Folder:"
+msgstr "โฟลเดอร์:"
+
+msgid "Filters:"
+msgstr "ตัวกรอง:"
+
+msgid "Find..."
+msgstr "ค้นหา..."
+
+msgid "Replace..."
+msgstr "แทนที่..."
+
+msgid "Searching..."
+msgstr "กำลังค้นหา..."
+
+msgid "Rename Group"
+msgstr "เปลี่ยนชื่อกลุ่ม"
+
+msgid "Add to Group"
+msgstr "เพิ่มไปยังกลุ่ม"
+
+msgid "Remove from Group"
+msgstr "ลบออกจากกลุ่ม"
+
+msgid "Expand Bottom Panel"
+msgstr "ขยายแผงด้านล่าง"
+
+msgid "Move"
+msgstr "ย้าย"
+
+msgid "Select Current Folder"
+msgstr "เลือกโฟลเดอร์ปัจจุบัน"
+
+msgid "Select This Folder"
+msgstr "เลือกโฟลเดอร์นี้"
+
+msgid "Open a File"
+msgstr "เปิดไฟล์"
+
+msgid "Open File(s)"
+msgstr "เปิดไฟล์"
+
+msgid "Open a Directory"
+msgstr "เปิดโฟลเดอร์"
+
+msgid "Open a File or Directory"
+msgstr "เปิดไฟล์หรือโฟลเดอร์"
+
+msgid "Save a File"
+msgstr "บันทึกไฟล์"
+
+msgid "Could not create folder."
+msgstr "ไม่สามารถสร้างโฟลเดอร์"
+
+msgid "Go Back"
+msgstr "ย้อนกลับ"
+
+msgid "Go Forward"
+msgstr "ไปหน้า"
+
+msgid "Go Up"
+msgstr "ขึ้นบน"
+
+msgid "Toggle Hidden Files"
+msgstr "เปิด/ปิดไฟล์ที่ซ่อน"
+
+msgid "Toggle Favorite"
+msgstr "เพิ่ม/ลบที่ชอบ"
+
+msgid "Toggle Mode"
+msgstr "สลับโหมด"
+
+msgid "Focus Path"
+msgstr "ตำแหน่งที่สนใจ"
+
+msgid "Move Favorite Up"
+msgstr "เลื่อนโฟลเดอร์ที่ชอบขึ้น"
+
+msgid "Move Favorite Down"
+msgstr "เลื่อนโฟลเดอร์ที่ชอบลง"
+
+msgid "Go to previous folder."
+msgstr "ไปยังโฟลเดอร์ก่อนหน้า"
+
+msgid "Go to next folder."
+msgstr "ไปยังโฟลเดอร์ถัดไป"
+
+msgid "Go to parent folder."
+msgstr "ไปยังโฟลเดอร์หลัก"
+
+msgid "Refresh files."
+msgstr "รีเฟรชไฟล์"
+
+msgid "(Un)favorite current folder."
+msgstr "เพิ่ม/ลบโฟลเดอร์ปัจจุบันไปยังที่ชื่นชอบ"
+
+msgid "Directories & Files:"
+msgstr "ไฟล์และโฟลเดอร์:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "เปิด/ปิดการแสดงไฟล์ที่ซ่อน"
+
+msgid "Preview:"
+msgstr "ตัวอย่าง:"
+
+msgid "File:"
+msgstr "ไฟล์:"
+
+msgid "No sub-resources found."
+msgstr "ไม่พบทรัพยากรย่อย"
+
+msgid "Play the project."
+msgstr "เล่นโปรเจกต์"
+
+msgid "Play the edited scene."
+msgstr "เล่นฉากปัจจุบัน"
+
+msgid "Network Profiler"
+msgstr "โปรไฟล์เน็ตเวิร์ก"
+
+msgid "Play This Scene"
+msgstr "เล่นฉากนี้"
+
+msgid "Close Tab"
+msgstr "ปิดแท็บ"
+
+msgid "Undo Close Tab"
+msgstr "เลิกทำแท็บที่ปิด"
+
+msgid "Close Other Tabs"
+msgstr "ปิดแท็บอื่น"
+
+msgid "Close Tabs to the Right"
+msgstr "ปิดแท็บทางด้านขวา"
+
+msgid "Close All Tabs"
+msgstr "ปิดแท็บทั้งหมด"
+
+msgid "New Window"
+msgstr "หน้าต่างใหม่"
+
+msgid "Add a new scene."
+msgstr "เพิ่มฉากใหม่"
+
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"กด %s ค้างเพื่อปัดเศษเป็นจำนวนเต็ม\n"
+"กด Shift ค้างเพื่อเพิ่มความแม่นยำของการเปลี่ยนแปลง"
+
+msgid "(unknown)"
+msgstr "(ไม่ทราบ)"
+
+msgid "Toggle Visible"
+msgstr "ซ่อน/แสดง"
+
+msgid "Unlock Node"
+msgstr "ปลดล็อคโหนด"
+
+msgid "(Connecting From)"
+msgstr "(เชื่อมต่อจาก)"
+
+msgid "Node configuration warning:"
+msgstr "คำเตือนการตั้งค่าโหนด:"
+
+msgid "Open Script:"
+msgstr "เปิดสคริปต์:"
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"โหนดถูกล็อค\n"
+"คลิกเพื่อปลดล็อค"
+
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
+msgstr ""
+"ปักหมุด AnimationPlayer แล้ว\n"
+"คลิกเพื่อเลิกปักหมุด"
+
+msgid "Open in Editor"
+msgstr "เปิดในโปรแกรมแก้ไข"
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "ชื่อโหนดไม่ถูกต้อง ใช้ตัวอักษรต่อไปนี้ไม่ได้:"
+
+msgid "Scene Tree (Nodes):"
+msgstr "ผังฉาก (โหนด):"
+
+msgid "Node Configuration Warning!"
+msgstr "คำเตือนการตั้งค่าโหนด!"
+
+msgid "Select a Node"
+msgstr "เลือกโหนด"
+
+msgid "Importing Scene..."
+msgstr "กำลังนำเข้าฉาก..."
+
+msgid "Import Scene"
+msgstr "นำเข้าฉาก"
+
+msgid "Running Custom Script..."
+msgstr "กำลังรันสคริปต์..."
+
+msgid "Couldn't load post-import script:"
+msgstr "โหลดสคริปต์หลังนำเข้าไม่ได้:"
+
+msgid "Invalid/broken script for post-import (check console):"
+msgstr "สคริปต์หลังนำเข้าผิดพลาด (ตรวจสอบคอนโซล):"
+
+msgid "Error running post-import script:"
+msgstr "ผิดพลาดขณะรันสคริปต์หลังนำเข้า:"
+
+msgid "Saving..."
+msgstr "กำลังบันทึก..."
+
+msgid "Status"
+msgstr "สถานะ"
+
+msgid "Offset:"
+msgstr "เลื่อน:"
+
+msgid "2D"
+msgstr "2 มิติ"
+
+msgid "3D"
+msgstr "3 มิติ"
+
+msgid "Importer:"
+msgstr "ตัวนำเข้า:"
+
+msgid "%d Files"
+msgstr "ไฟล์ %d"
+
+msgid "Set as Default for '%s'"
+msgstr "กำหนดเป็นค่าเริ่มต้นของ '%s'"
+
+msgid "Clear Default for '%s'"
+msgstr "ลบค่าเริ่มต้นของ '%s'"
+
+msgid "Import As:"
+msgstr "นำเข้าเป็น:"
+
+msgid "Preset"
+msgstr "พรีเซ็ต"
+
+msgid "Device:"
+msgstr "อุปกรณ์:"
+
+msgid "Failed to load resource."
+msgstr "โหลดทรัพยากรไม่ได้"
+
+msgid "Make Sub-Resources Unique"
+msgstr "ไม่ให้ใช้รีซอร์สร่วมกับวัตถุอื่น"
+
+msgid "Create a new resource in memory and edit it."
+msgstr "สร้างรีซอร์สใหม่ในหน่วยความจำและทำการปรับแต่ง"
+
+msgid "Load an existing resource from disk and edit it."
+msgstr "โหลดรีซอร์สที่มีอยู่แล้วในดิสก์และทำการปรับแต่ง"
+
+msgid "Save the currently edited resource."
+msgstr "บันทึกรีซอร์สที่กำลังปรับแต่ง"
+
+msgid "Copy Resource"
+msgstr "คัดลอกรีซอร์ส"
+
+msgid "History of recently edited objects."
+msgstr "ประวัติการปรับแต่งออบเจกต์"
+
+msgid "Remove Translation"
+msgstr "ลบการแปลง"
+
+msgid "Change Resource Remap Language"
+msgstr "เปลี่ยนภาษาที่ใช้แทนที่ไฟล์"
+
+msgid "Remove Resource Remap"
+msgstr "ลบการแทนที่"
+
+msgid "Remove Resource Remap Option"
+msgstr "ลบการแทนที่"
+
+msgid "Translations"
+msgstr "การแปลง"
+
+msgid "Translations:"
+msgstr "การแปลง:"
+
+msgid "Remaps"
+msgstr "การแทนที่"
+
+msgid "Resources:"
+msgstr "ทรัพยากร:"
+
+msgid "Remaps by Locale:"
+msgstr "แทนที่ตามภูมิภาค:"
+
+msgid "Locale"
+msgstr "ภูมิภาค"
+
+msgid "Set %s on %d nodes"
+msgstr "ตั้ง %s บน %d โหนด"
+
+msgid "Groups"
+msgstr "กลุ่ม"
+
+msgid "Select a single node to edit its signals and groups."
+msgstr "เลือกโหนดเพื่อแก้ไขสัญญาณและกลุ่ม"
+
+msgid "Create Polygon"
+msgstr "สร้างโพลีกอน"
+
+msgid "Create points."
+msgstr "สร้างจุด"
+
+msgid ""
+"Edit points.\n"
+"LMB: Move Point\n"
+"RMB: Erase Point"
+msgstr ""
+"แก้ไขจุด:\n"
+"คลิกซ้าย: ย้ายจุด\n"
+"คลิกขวา: ลบจุด"
+
+msgid "Erase points."
+msgstr "ลบจุด"
+
+msgid "Edit Polygon"
+msgstr "แก้ไขรูปหลายเหลี่ยม"
+
+msgid "Insert Point"
+msgstr "แทรกจุด"
+
+msgid "Edit Polygon (Remove Point)"
+msgstr "แก้ไขรูปหลายเหลี่ยม (ลบจุด)"
+
+msgid "Remove Polygon And Point"
+msgstr "ลบรูปหลายเหลี่ยมและจุด"
+
+msgid "Add Animation"
+msgstr "เพิ่มแอนิเมชัน"
+
+msgid "Add %s"
+msgstr "เพิ่ม %s"
+
+msgid "Move Node Point"
+msgstr "สร้างจุดโหนด"
+
+msgid "Change BlendSpace1D Labels"
+msgstr "เปลี่ยนป้ายกำกับ BlendSpace1D"
+
+msgid "This type of node can't be used. Only root nodes are allowed."
+msgstr "โหนดชนิดนี้ไม่สามารถใช้ได้ มีแค่โหนดแม่เท่านั้นที่สามารถใช้ได้"
+
+msgid "Add Node Point"
+msgstr "เพิ่มจุดโหนด"
+
+msgid "Add Animation Point"
+msgstr "เพิ่มจุดแอนิเมชัน"
+
+msgid "Remove BlendSpace1D Point"
+msgstr "ลบจุด BlendSpace1D"
+
+msgid "Move BlendSpace1D Node Point"
+msgstr "ย้ายจุดโหนด BlendSpace1D"
+
+msgid ""
+"AnimationTree is inactive.\n"
+"Activate to enable playback, check node warnings if activation fails."
+msgstr ""
+"AnimationTree ไม่ทำงาน\n"
+"เปิดการทำงานเพื่อที่จะเปิดระบบการเล่น, ตรวจสอบคำเตือนของโหนดถ้าการเปิดทำงานมีการผิดพลาด"
+
+msgid "Set the blending position within the space"
+msgstr "ตั้งตำแหน่ง blending ในช่องว่าง"
+
+msgid "Select and move points, create points with RMB."
+msgstr "เลือกหรือเลื่อนจุด สร้างจุดโดยคลิกขวา"
+
+msgid "Enable snap and show grid."
+msgstr "เปิกการใช้งานการเข้าหาแลแสดงเส้นกริด"
+
+msgid "Blend:"
+msgstr "ผสม:"
+
+msgid "Point"
+msgstr "จุด"
+
+msgid "Open Editor"
+msgstr "เปิดตัวแก้ไข"
+
+msgid "Open Animation Node"
+msgstr "เปิดโหนดแอนิเมชัน"
+
+msgid "Triangle already exists."
+msgstr "มีสามเหลี่ยมอยู่แล้ว"
+
+msgid "Add Triangle"
+msgstr "เพิ่มสามเหลี่ยม"
+
+msgid "Change BlendSpace2D Labels"
+msgstr "แก้ไขป้ายกำกับ BlendSpace2D"
+
+msgid "Remove BlendSpace2D Point"
+msgstr "ลบจุด BlendSpace2D"
+
+msgid "Remove BlendSpace2D Triangle"
+msgstr "ลบสามเหลี่ยม BlendSpace2D"
+
+msgid "No triangles exist, so no blending can take place."
+msgstr "ไม่มีสามเหลี่ยม จึงไม่สามารถใช้ blending ได้"
+
+msgid "Toggle Auto Triangles"
+msgstr "เปิด/ปิดสามเหลี่ยมอัตโนมัติ"
+
+msgid "Create triangles by connecting points."
+msgstr "สร้างสามเหลี่ยมจากการเชื่อมจุด"
+
+msgid "Erase points and triangles."
+msgstr "ลบจุดและสามเหลี่ยม"
+
+msgid "Generate blend triangles automatically (instead of manually)"
+msgstr "สร้างสามเหลี่ยม blend อัตโนมัติ (แทนที่การสร้างแบบปกติ)"
+
+msgid "Output node can't be added to the blend tree."
+msgstr "โหนดเอาซ์พุตไม่สามารถเพิ่มไปยัง blend tree"
+
+msgid "Add Node to BlendTree"
+msgstr "เพิ่มโหนดไปยัง BlendTree"
+
+msgid "Node Moved"
+msgstr "ย้ายโหนดเรียบร้อย"
+
+msgid "Unable to connect, port may be in use or connection may be invalid."
+msgstr "เชื่อมต่อไม่ได้ พอร์ตถูกใช้หรือมีความผิดพลาด"
+
+msgid "Nodes Connected"
+msgstr "เชื่อมต่อโหนดแล้ว"
+
+msgid "Nodes Disconnected"
+msgstr "ตัดการเชื่อมต่อโหนดแล้ว"
+
+msgid "Set Animation"
+msgstr "ตั้งแอนิเมชัน"
+
+msgid "Delete Node"
+msgstr "ลบโหนด"
+
+msgid "Delete Node(s)"
+msgstr "ลบโหนด"
+
+msgid "Toggle Filter On/Off"
+msgstr "เปิด/ปิดตัวกรอง"
+
+msgid "Change Filter"
+msgstr "แก้ไขตัวกรอง"
+
+msgid ""
+"Animation player has no valid root node path, so unable to retrieve track "
+"names."
+msgstr "ตัวเล่นแอนิเมชันมีที่อยู่โหนดรากไม่ถูกต้อง ดังนั้นจึงไม่สามารถหาชื่อแทร็กได้"
+
+msgid "Anim Clips"
+msgstr "คลิปแอนิเมชัน"
+
+msgid "Audio Clips"
+msgstr "คลิปเสียง"
+
+msgid "Functions"
+msgstr "ฟังก์ชัน"
+
+msgid "Edit Filtered Tracks:"
+msgstr "แก้ไขตัวกรองแทร็ก:"
+
+msgid "Node Renamed"
+msgstr "เปลี่ยนชื่อโหนดแล้ว"
+
+msgid "Add Node..."
+msgstr "เพิ่มโหนด..."
+
+msgid "Enable Filtering"
+msgstr "เปิดการใช้งานตัวกรอง"
+
+msgid "Load Animation"
+msgstr "โหลดแอนิเมชัน"
+
+msgid "Animation Name:"
+msgstr "ชื่อแอนิเมชัน:"
+
+msgid "Pasted Animation"
+msgstr "วางแอนิเมชันแล้ว"
+
+msgid "Open in Inspector"
+msgstr "เปิดในตัวตรวจสอบ"
+
+msgid "Toggle Autoplay"
+msgstr "เปิดปิดการเล่นอัตโนมัติ"
+
+msgid "Create New Animation"
+msgstr "สร้างแอนิเมชันใหม่"
+
+msgid "New Animation Name:"
+msgstr "ชื่อแอนิเมชันใหม่:"
+
+msgid "Rename Animation"
+msgstr "เปลี่ยนชื่อแอนิเมชัน"
+
+msgid "Change Animation Name:"
+msgstr "เปลี่ยนชื่อแอนิเมชัน:"
+
+msgid "Remove Animation"
+msgstr "ลบแอนิเมชัน"
+
+msgid "Invalid animation name!"
+msgstr "ชื่อแอนิเมชันไม่ถูกต้อง!"
+
+msgid "Duplicate Animation"
+msgstr "ทำซ้ำแอนิเมชัน"
+
+msgid "Blend Next Changed"
+msgstr "แก้ไขการผสานไปข้างหน้า"
+
+msgid "Change Blend Time"
+msgstr "แก้ไขระยะเวลาการผสาน"
+
+msgid "Animation position (in seconds)."
+msgstr "ตำแหน่งแอนิเมชัน (วินาที)"
+
+msgid "Scale animation playback globally for the node."
+msgstr "ปรับอัตราส่วนเวลาทุกแอนิเมชันของโหนด"
+
+msgid "Animation Tools"
+msgstr "เครื่องมือแอนิเมชัน"
+
+msgid "Animation"
+msgstr "แอนิเมชัน"
+
+msgid "Edit Transitions..."
+msgstr "แก้ไขทรานสิชัน"
+
+msgid "Display list of animations in player."
+msgstr "แสดงรายชื่อแอนิเมชันในตัวเล่น"
+
+msgid "Autoplay on Load"
+msgstr "เล่นอัตโนมัติเมื่อโหลด"
+
+msgid "Enable Onion Skinning"
+msgstr "เปิดภาพเงาการเคลื่อนไหว"
+
+msgid "Onion Skinning Options"
+msgstr "ตั้งค่าโอเนี่ยนสกิน"
+
+msgid "Directions"
+msgstr "ทิศทาง"
+
+msgid "Past"
+msgstr "อดีต"
+
+msgid "Future"
+msgstr "อนาคต"
+
+msgid "Depth"
+msgstr "ความลึก"
+
+msgid "1 step"
+msgstr "1 ระดับ"
+
+msgid "2 steps"
+msgstr "2 ระดับ"
+
+msgid "3 steps"
+msgstr "3 ระดับ"
+
+msgid "Differences Only"
+msgstr "เฉพาะที่แตกต่าง"
+
+msgid "Force White Modulate"
+msgstr "บังคับระดับสีขาว"
+
+msgid "Include Gizmos (3D)"
+msgstr "รวมสัญลักษณ์ (3D)"
+
+msgid "Pin AnimationPlayer"
+msgstr "ปักหมุด AnimationPlayer"
+
+msgid "Cross-Animation Blend Times"
+msgstr "ระยะเวลาการผสาน Cross-Animation"
+
+msgid "Blend Times:"
+msgstr "ระยะเวลาผสาน:"
+
+msgid "Next (Auto Queue):"
+msgstr "ถัดไป (คิวอัตโนมัติ):"
+
+msgid "Move Node"
+msgstr "เคลื่อนย้ายโหนด"
+
+msgid "Transition exists!"
+msgstr "พบทรานสิชัน!"
+
+msgid "Add Transition"
+msgstr "เพิ่มทรานสิชัน"
+
+msgid "Immediate"
+msgstr "ทันที"
+
+msgid "Sync"
+msgstr "ซิงก์"
+
+msgid "At End"
+msgstr "ในตอนท้าย"
+
+msgid "Travel"
+msgstr "การเคลื่อนที่"
+
+msgid "No playback resource set at path: %s."
+msgstr "ไม่ได้ตั้งทรัพยากรการเล่นไว้ที่ที่อยู่: % s"
+
+msgid "Node Removed"
+msgstr "ลบโหนดแล้ว"
+
+msgid "Transition Removed"
+msgstr "ลบทรานสิชัน"
+
+msgid "Create new nodes."
+msgstr "สร้างโหนดใหม่"
+
+msgid "Connect nodes."
+msgstr "เชื่อมต่อโหนด"
+
+msgid "Remove selected node or transition."
+msgstr "ลบโหนดหรือทรานสิชันที่เลือก"
+
+msgid "Transition:"
+msgstr "การเปลี่ยนผ่าน (ทรานสิชั่น):"
+
+msgid "Play Mode:"
+msgstr "โหมดการเล่น:"
+
+msgid "Delete Selected"
+msgstr "ลบสิ่งที่เลือก"
+
+msgid "Version:"
+msgstr "รุ่น:"
+
+msgid "Contents:"
+msgstr "ประกอบด้วย:"
+
+msgid "View Files"
+msgstr "ดูไฟล์"
+
+msgid "Download"
+msgstr "ดาวน์โหลด"
+
+msgid "Connection error, please try again."
+msgstr "เชื่อมต่อไม่ได้ กรุณาลองใหม่"
+
+msgid "Can't connect."
+msgstr "เชื่อมต่อไม่ได้"
+
+msgid "Can't connect to host:"
+msgstr "ไม่สามารถเชื่อมต่อกับโฮสต์:"
+
+msgid "No response from host:"
+msgstr "ไม่มีการตอบกลับจากโฮสต์:"
+
+msgid "No response."
+msgstr "ไม่มีการตอบกลับ"
+
+msgid "Can't resolve hostname:"
+msgstr "ไม่พบตำแหน่งนี้:"
+
+msgid "Can't resolve."
+msgstr "ค้นหาไม่สำเร็จ"
+
+msgid "Request failed, return code:"
+msgstr "การร้องขอผิดพลาด รหัส:"
+
+msgid "Cannot save response to:"
+msgstr "ไม่สามารถบันทึกคำตอบไปยัง:"
+
+msgid "Write error."
+msgstr "เขียนผิดพลาด"
+
+msgid "Request failed, too many redirects"
+msgstr "การร้องขอผิดพลาด เปลี่ยนทางมากเกินไป"
+
+msgid "Redirect loop."
+msgstr "วนรอบการเปลี่ยนเส้นทาง"
+
+msgid "Request failed, timeout"
+msgstr "การร้องขอผิดพลาด ใช้เวลานานเกินไป:"
+
+msgid "Timeout."
+msgstr "หมดเวลา"
+
+msgid "Failed:"
+msgstr "ผิดพลาด:"
+
+msgid "Bad download hash, assuming file has been tampered with."
+msgstr "แฮชผิดพลาด ไฟล์ดาวน์โหลดอาจเสียหาย"
+
+msgid "Got:"
+msgstr "ที่ได้รับ:"
+
+msgid "Failed SHA-256 hash check"
+msgstr "ผิดพลาดในการตรวจสอบแฮช SHA-256"
+
+msgid "Asset Download Error:"
+msgstr "ดาวน์โหลดทรัพยากรผิดพลาด:"
+
+msgid "Downloading (%s / %s)..."
+msgstr "กำลังดาวน์โหลด (%s / %s)..."
+
+msgid "Downloading..."
+msgstr "กำลังดาวน์โหลด..."
+
+msgid "Resolving..."
+msgstr "กำลังแก้ไข..."
+
+msgid "Error making request"
+msgstr "การร้องขอผิดพลาด"
+
+msgid "Idle"
+msgstr "พร้อมใช้งาน"
+
+msgid "Install..."
+msgstr "ติดตั้ง..."
+
+msgid "Retry"
+msgstr "ลองใหม่"
+
+msgid "Download Error"
+msgstr "ดาวน์โหลดผิดพลาด"
+
+msgid "Recently Updated"
+msgstr "อัพเดทล่าสุด"
+
+msgid "Least Recently Updated"
+msgstr "อัพเดทน้อยสุด"
+
+msgid "Name (A-Z)"
+msgstr "ชื่อ (A-Z)"
+
+msgid "Name (Z-A)"
+msgstr "ชื่อ (Z-A)"
+
+msgid "License (A-Z)"
+msgstr "สัญญาอนุญาต (A-Z)"
+
+msgid "License (Z-A)"
+msgstr "สัญญาอนุญาต (Z-A)"
+
+msgid "Testing"
+msgstr "กำลังทดสอบ"
+
+msgid "Loading..."
+msgstr "กำลังโหลด..."
+
+msgid "All"
+msgstr "ทั้งหมด"
+
+msgid "Import..."
+msgstr "นำเข้า..."
+
+msgid "Plugins..."
+msgstr "ปลั๊กอิน..."
+
+msgid "Sort:"
+msgstr "เรียงตาม:"
+
+msgid "Category:"
+msgstr "หมวดหมู่:"
+
+msgid "Site:"
+msgstr "ไซต์:"
+
+msgid "Support"
+msgstr "สนับสนุน..."
+
+msgid "Assets ZIP File"
+msgstr "ทรัพยากรไฟล์ ZIP"
+
+msgid "Preview"
+msgstr "ตัวอย่าง"
+
+msgid "Configure Snap"
+msgstr "ตั้งค่าการจำกัด"
+
+msgid "Grid Offset:"
+msgstr "จุดกำเนิดตาราง:"
+
+msgid "Grid Step:"
+msgstr "ระยะห่างเส้นกริด:"
+
+msgid "Primary Line Every:"
+msgstr "เส้นหลักทุกๆ :"
+
+msgid "Rotation Offset:"
+msgstr "องศาเริ่มต้น:"
+
+msgid "Rotation Step:"
+msgstr "ช่วงองศา:"
+
+msgid "Scale Step:"
+msgstr "ขนาดช่วง:"
+
+msgid "Move Vertical Guide"
+msgstr "เลื่อนเส้นไกด์แนวตั้ง"
+
+msgid "Create Vertical Guide"
+msgstr "สร้างเส้นไกด์แนวตั้ง"
+
+msgid "Remove Vertical Guide"
+msgstr "ลบเส้นไกด์แนวตั้ง"
+
+msgid "Move Horizontal Guide"
+msgstr "เลื่อนเส้นไกด์แนวนอน"
+
+msgid "Create Horizontal Guide"
+msgstr "สร้างเส้นไกด์แนวนอน"
+
+msgid "Remove Horizontal Guide"
+msgstr "ลบเส้นไกด์แนวนอน"
+
+msgid "Create Horizontal and Vertical Guides"
+msgstr "สร้างเส้นไกด์แนวตั้งและแนวนอน"
+
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr "ตั้งออฟเซ็ตจุดหมุน CanvasItem \"%s\" ไปยัง (%d, %d)"
+
+msgid "Rotate %d CanvasItems"
+msgstr "หมุน %d CanvasItem"
+
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "หมุน CanvasItem \"%s\" ไปที่ %d องศา"
+
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "เลื่อนจุดยึด CanvasItem \"%s\""
+
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr "ปรับขนาด Node2D \"%s\" ไปยัง (%s, %s)"
+
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr "ปรับขนาด Control \"%s\" ไปยัง (%d, %d)"
+
+msgid "Scale %d CanvasItems"
+msgstr "ปรับขนาด %d CanvasItem"
+
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "ปรับขนาด CanvasItem \"%s\" ไปยัง (%s, %s)"
+
+msgid "Move %d CanvasItems"
+msgstr "เลื่อน %d CanvasItem"
+
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
+msgstr "เลื่อน CanvasItem \"%s\" ไปยัง (%d, %d)"
+
+msgid "Scaling:"
+msgstr "ขนาด:"
+
+msgid "Lock Selected"
+msgstr "ล็อกที่เลือก"
+
+msgid "Unlock Selected"
+msgstr "ปลดล็อคที่เลือก"
+
+msgid "Group Selected"
+msgstr "จัดกลุ่มที่เลือก"
+
+msgid "Ungroup Selected"
+msgstr "เลิกจัดกลุ่มที่เลือก"
+
+msgid "Paste Pose"
+msgstr "วางท่าทาง"
+
+msgid "Clear Guides"
+msgstr "ล้างเส้นไกด์"
+
+msgid "Select Mode"
+msgstr "โหมดเลือก"
+
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr "Alt+RMB: แสดงรายการโหนดทั้งหมดที่ตำแหน่งคลิก รวมถึงโหนดที่ถูกล็อก"
+
+msgid "Move Mode"
+msgstr "โหมดเคลื่อนย้าย"
+
+msgid "Rotate Mode"
+msgstr "โหมดหมุน"
+
+msgid "Scale Mode"
+msgstr "โหมดปรับขนาด"
+
+msgid "Pan Mode"
+msgstr "โหมดมุมมอง"
+
+msgid "Ruler Mode"
+msgstr "โหมดไม้บรรทัด"
+
+msgid "Toggle smart snapping."
+msgstr "เปิด/ปิด สแนปอัจฉริยะ"
+
+msgid "Use Smart Snap"
+msgstr "ใช้สแนปอัจฉริยะ"
+
+msgid "Toggle grid snapping."
+msgstr "เปิด/ปิดสแนปเส้นกริด"
+
+msgid "Use Grid Snap"
+msgstr "ใช้สแนปเส้นกริด"
+
+msgid "Snapping Options"
+msgstr "ตัวเลือกการสแนป"
+
+msgid "Use Rotation Snap"
+msgstr "สแนปการหมุน"
+
+msgid "Use Scale Snap"
+msgstr "ใช้สแนปขนาด"
+
+msgid "Snap Relative"
+msgstr "จำกัดโดยใช้ตำแหน่งปัจจุบัน"
+
+msgid "Use Pixel Snap"
+msgstr "จำกัดให้ย้ายเป็นพิกเซล"
+
+msgid "Snap to Parent"
+msgstr "สแนปโหนดแม่"
+
+msgid "Snap to Node Anchor"
+msgstr "สแนปจุดยึดโหนด"
+
+msgid "Snap to Node Sides"
+msgstr "สแนปด้านข้างโหนด"
+
+msgid "Snap to Node Center"
+msgstr "สแนปจุดกลางโหนด"
+
+msgid "Snap to Other Nodes"
+msgstr "สแนปโหนดอื่น"
+
+msgid "Snap to Guides"
+msgstr "สแนปเส้นไกด์"
+
+msgid "Smart Snapping"
+msgstr "สแนปอัจฉริยะ"
+
+msgid "Configure Snap..."
+msgstr "ตั้งค่าการจำกัด..."
+
+msgid "Skeleton Options"
+msgstr "ตั้งค่าโครง"
+
+msgid "Show Bones"
+msgstr "แสดงโครง"
+
+msgid "View"
+msgstr "มุมมอง"
+
+msgid "Grid"
+msgstr "เส้นกริด"
+
+msgid "Show Helpers"
+msgstr "แสดงตัวช่วย"
+
+msgid "Show Rulers"
+msgstr "แสดงไม้บรรทัด"
+
+msgid "Show Guides"
+msgstr "แสดงเส้นไกด์"
+
+msgid "Show Origin"
+msgstr "แสดงจุดกำเนิด"
+
+msgid "Show Viewport"
+msgstr "แสดงวิวพอร์ต"
+
+msgid "Gizmos"
+msgstr "กิสโม"
+
+msgid "Center Selection"
+msgstr "ให้สิ่งที่เลือกอยู่ตรงกลาง"
+
+msgid "Frame Selection"
+msgstr "ให้สิ่งที่เลือกเต็มจอ"
+
+msgid "Preview Canvas Scale"
+msgstr "ดูตัวอย่างขนาดแคนวาส"
+
+msgid "Translation mask for inserting keys."
+msgstr "การแปลง mask สำหรับการใส่คีย์"
+
+msgid "Rotation mask for inserting keys."
+msgstr "หมุน mask สำหรับใส่คีย์"
+
+msgid "Scale mask for inserting keys."
+msgstr "ปรับขนาด mask สำหรับใส่คีย์"
+
+msgid "Insert keys (based on mask)."
+msgstr "เพิ่มคีย์ (จาก mask)"
+
+msgid "Insert Key"
+msgstr "เพิ่มคีย์"
+
+msgid ""
+"Auto insert keys when objects are translated, rotated or scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+"แทรกปุ่มอัตโนมัติเมื่อออบเจกต์ถูกแปลง หมุน หรือปรับขนาด (ตาม mask)\n"
+"คีย์จะถูกเพิ่มลงในแทร็กที่มีอยู่เท่านั้นจะไม่มีการสร้างแทร็กใหม่\n"
+"ต้องใส่คีย์ด้วยตนเองในครั้งแรก"
+
+msgid "Auto Insert Key"
+msgstr "ใส่คีย์อัตโนมัติ"
+
+msgid "Animation Key and Pose Options"
+msgstr "ตัวเลือกคีย์แอนิเมชันและโพส"
+
+msgid "Insert Key (Existing Tracks)"
+msgstr "เพิ่มคีย์ (แทร็กที่มีอยู่แล้ว)"
+
+msgid "Copy Pose"
+msgstr "คัดลอกท่าทาง"
+
+msgid "Clear Pose"
+msgstr "ลบท่าทาง"
+
+msgid "Multiply grid step by 2"
+msgstr "เพิ่มความถี่เส้นกริดขึ้น 2 เท่า"
+
+msgid "Divide grid step by 2"
+msgstr "ลดความถี่กริดลงครึ่งหนึ่ง"
+
+msgid "Adding %s..."
+msgstr "กำลังเพิ่ม %s..."
+
+msgid "Create Node"
+msgstr "สร้างโหนด"
+
+msgid "Change Default Type"
+msgstr "เปลี่ยนชนิดเริ่มต้น"
+
+msgid "Set Handle"
+msgstr "ปรับขนาดรูปร่าง"
+
+msgid "Top Left"
+msgstr "บนซ้าย"
+
+msgid "Center Top"
+msgstr "กลางบน"
+
+msgid "Top Right"
+msgstr "บนขวา"
+
+msgid "Top Wide"
+msgstr "ความกว้างบน"
+
+msgid "Center Left"
+msgstr "กลางซ้าย"
+
+msgid "Center"
+msgstr "กลาง"
+
+msgid "Center Right"
+msgstr "กลางขวา"
+
+msgid "HCenter Wide"
+msgstr "ความกว้าง HCenter"
+
+msgid "Bottom Left"
+msgstr "ซ้ายล่าง"
+
+msgid "Center Bottom"
+msgstr "ล่าง"
+
+msgid "Bottom Right"
+msgstr "ล่างขวา"
+
+msgid "Bottom Wide"
+msgstr "ความกว้างด้านล่าง"
+
+msgid "Left Wide"
+msgstr "ความกว้างซ้าย"
+
+msgid "VCenter Wide"
+msgstr "ความกว้าง VCenter"
+
+msgid "Right Wide"
+msgstr "ความกว้างขวา"
+
+msgid "Full Rect"
+msgstr "สี่เหลี่ยมผืนผ้าเต็ม"
+
+msgid "Load Curve Preset"
+msgstr "โหลดพรีเซ็ตเส้นโค้ง"
+
+msgid "Remove Curve Point"
+msgstr "ลบจุดบนเส้นโค้ง"
+
+msgid "Modify Curve Point"
+msgstr "แก้ไขจุดบนเส้นโค้ง"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "กด Shift ค้างเพื่อปรับเส้นสัมผัสแยกกัน"
+
+msgid "Ease In"
+msgstr "เข้านุ่มนวล"
+
+msgid "Ease Out"
+msgstr "ออกนุ่มนวล"
+
+msgid "Smoothstep"
+msgstr "นุ่มนวล"
+
+msgid "Debug with External Editor"
+msgstr "ดีบั๊กด้วยโปรแกรมภายนอก"
+
+msgid "Deploy with Remote Debug"
+msgstr "Deploy พร้อมการแก้ไขจุดบกพร่องผ่านเครือข่าย"
+
+msgid ""
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
+msgstr ""
+"เมื่อเปิดใช้งานตัวเลือกนี้แล้ว การ deploy ด้วยคลิกเดียวจะทำให้โปรแกรมพยายามเชื่อมต่อกับ IP "
+"ของคอมพิวเตอร์เครื่องนี้เพื่อให้สามารถดีบักโปรเจ็กต์ที่กำลังรันอยู่ได้\n"
+"ตัวเลือกนี้มีไว้เพื่อใช้สำหรับการรีโมตดีบัก (โดยทั่วไปจะใช้กับอุปกรณ์เคลื่อนที่)\n"
+"คุณไม่จำเป็นต้องเปิดใช้งานเพื่อใช้ดีบักเกอร์ GDScript ในเครื่อง"
+
+msgid "Small Deploy with Network Filesystem"
+msgstr "Deploy โดยใช้ระบบไฟล์เครือข่าย"
+
+msgid ""
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
+"The filesystem will be provided from the project by the editor over the "
+"network.\n"
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
+msgstr ""
+"ถ้าเปิดตัวเลือกนี้ การใช้ deploy สำหรับแอนดรอยด์จะส่งออกเฉพาะไฟล์ปฏิบัติการ ไม่มีข้อมูลโปรเจกต์\n"
+"ระบบไฟล์จะถูกจัดเตรียมจากโปรเจ็กต์โดยตัวแก้ไขบนเครือข่าย\n"
+"บน Android จะ deploy โดยใช้สาย USB เพื่อประสิทธิภาพที่ดี "
+"ตัวเลือกนี้จะช่วยให้การทดสอบเกมเร็วขึ้น สำหรับโปรเจกต์ขนาดใหญ่"
+
+msgid "Visible Collision Shapes"
+msgstr "ขอบเขตการชนที่มองเห็นได้"
+
+msgid ""
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
+msgstr ""
+"เมื่อเปิดใช้งานตัวเลือกนี้ รูปร่างการชนกันและโหนดเรย์คาสต์ (สำหรับ 2D และ 3D) "
+"จะปรากฏในโปรเจ็กต์ที่กำลังทำงานอยู่"
+
+msgid "Visible Navigation"
+msgstr "แสดงการนำทาง"
+
+msgid "Synchronize Scene Changes"
+msgstr "ซิงค์การเปลี่ยนแปลงฉาก"
+
+msgid ""
+"When this option is enabled, any changes made to the scene in the editor will "
+"be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
+msgstr ""
+"เมื่อเปิดใช้งานตัวเลือกนี้ การเปลี่ยนแปลงใด ๆ "
+"ที่เกิดขึ้นกับฉากในตัวแก้ไขจะปรากฏในโปรเจ็กต์ที่กำลังทำงานอยู่\n"
+"เมื่อรีโมตผ่านอุปกรณ์ นี่จะมีประสิทธิภาพมากขึ้นเมื่อเปิดใช้งานตัวเลือกระบบไฟล์เครือข่าย"
+
+msgid "Synchronize Script Changes"
+msgstr "ซิงค์การเปลี่ยนแปลงสคริปต์"
+
+msgid ""
+"When this option is enabled, any script that is saved will be reloaded in the "
+"running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
+msgstr ""
+"เมื่อเปิดใช้งานตัวเลือกนี้ สคริปต์ที่บันทึกจะถูกโหลดในโปรเจ็กต์ที่กำลังทำงานอยู่\n"
+"เมื่อใช้รีโมตกับอุปกรณ์ จะมีประสิทธิภาพมากขึ้นเมื่อเปิดใช้งานตัวเลือกระบบไฟล์เครือข่าย"
+
+msgid "Edit Plugin"
+msgstr "แก้ไขปลั๊กอิน"
+
+msgid "Installed Plugins:"
+msgstr "ปลั๊กอินที่ติดตั้งแล้ว:"
+
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "แก้ไของศาการเปล่งเสียงของ AudioStreamPlayer3D"
+
+msgid "Change Camera FOV"
+msgstr "ปรับกล้อง FOV"
+
+msgid "Change Camera Size"
+msgstr "เปลี่ยนขนาดกล้อง"
+
+msgid "Change Sphere Shape Radius"
+msgstr "ปรับรัศมีทรงกลม"
+
+msgid "Change Capsule Shape Radius"
+msgstr "ปรับรัศมีทรงแคปซูล"
+
+msgid "Change Capsule Shape Height"
+msgstr "ปรับความสูงทรงแคปซูล"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "ปรับรัศมีทรงแคปซูล"
+
+msgid "Change Cylinder Shape Height"
+msgstr "ปรับความสูงทรงแคปซูล"
+
+msgid "Change Light Radius"
+msgstr "ปรับรัศมีแสง"
+
+msgid "Change Notifier AABB"
+msgstr "แก้ไข Notifier AABB"
+
+msgid "Create Occluder Polygon"
+msgstr "สร้างรูปหลายเหลี่ยมกั้นแสง"
+
+msgid ""
+"Can't determine a save path for lightmap images.\n"
+"Save your scene and try again."
+msgstr ""
+"ไม่สามารถกำหนดตำแหน่งการบันทึกสำหรับภาพไลท์แมป\n"
+"บันทึกฉากของคุณแล้วลองอีกครั้ง"
+
+msgid "Bake Lightmaps"
+msgstr "สร้าง Lightmaps"
+
+msgid "Select lightmap bake file:"
+msgstr "เลือกไฟล์ bake ของ lightmap :"
+
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "ไม่สามารถสร้างรูปร่างการชนแบบตาข่ายสามเหลี่ยม"
+
+msgid "Couldn't create any collision shapes."
+msgstr "ไม่สามารถสร้างรูปร่างขอบเขตการชนได้"
+
+msgid "Mesh is empty!"
+msgstr "Mesh ว่างเปล่า!"
+
+msgid "Contained Mesh is not of type ArrayMesh."
+msgstr "Mesh ไม่ได้เป็นประเภท ArrayMesh"
+
+msgid "UV Unwrap failed, mesh may not be manifold?"
+msgstr "ผิดพลาดขณะสร้างแผ่นคลี่ UV พื้นผิวนี้ไม่สามารถคลี่ได้?"
+
+msgid "No mesh to debug."
+msgstr "ไม่มีพื้นผิวให้แก้ไขจุดบกพร่อง"
+
+msgid "Create Navigation Mesh"
+msgstr "สร้าง Mesh นำทาง"
+
+msgid "Create Outline"
+msgstr "สร้างเส้นรอบรูป"
+
+msgid "Mesh"
+msgstr "Mesh"
+
+msgid "Create Outline Mesh..."
+msgstr "สร้างเส้นขอบ Mesh..."
+
+msgid "View UV1"
+msgstr "แสดง UV1"
+
+msgid "View UV2"
+msgstr "แสดง UV2"
+
+msgid "Unwrap UV2 for Lightmap/AO"
+msgstr "สร้างแผ่นคลี่ UV2 สำหรับ Lightmap/AO"
+
+msgid "Create Outline Mesh"
+msgstr "สร้างเส้นขอบ Mesh"
+
+msgid "Outline Size:"
+msgstr "ขนาดเส้นรอบรูป:"
+
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"สร้างขอบเขตการชนแบบหลายเหลี่ยม\n"
+"นี่จะให้ความแม่นยำสูง (แต่ช้า) ในการตรวจสอบการชน"
+
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+"สร้างรูปทรงนูนแบบเดี่ยว\n"
+"นี่จะเป็นตัวเลือกที่รวดเร็วที่สุด (แต่ความแม่นยำน้อย) สำหรับการตรวจหาการชน"
+
+msgid "UV Channel Debug"
+msgstr "ดีบั๊ก UV"
+
+msgid "Remove item %d?"
+msgstr "ลบไอเทม %d?"
+
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr ""
+"อัพเดตจากฉากที่มีอยู่หรือไม่\n"
+"%s"
+
+msgid "Add Item"
+msgstr "เพิ่มไอเทม"
+
+msgid "Remove Selected Item"
+msgstr "ลบไอเทมที่เลือก"
+
+msgid "Update from Scene"
+msgstr "อัพเดตจากฉาก"
+
+msgid "No mesh source specified (and no MultiMesh set in node)."
+msgstr "ไม่ได้ระบุ mesh ต้นฉบับ (และไม่ได้ระบุ MultiMesh ไว้ในโหนด)"
+
+msgid "No mesh source specified (and MultiMesh contains no Mesh)."
+msgstr "ไม่ได้ระบุ mesh ต้นฉบับ (และ MultiMesh ไม่มี Mesh)"
+
+msgid "Mesh source is invalid (invalid path)."
+msgstr "Mesh ต้นฉบับไม่ถูกต้อง (ที่อยู่ผิดพลาด)"
+
+msgid "Mesh source is invalid (contains no Mesh resource)."
+msgstr "Mesh ต้นฉบับไม่ถูกต้อง (ไม่มีรีซอร์ส Mesh)"
+
+msgid "No surface source specified."
+msgstr "ไม่ได้ระบุพื้นผิวต้นฉบับ"
+
+msgid "Surface source is invalid (invalid path)."
+msgstr "พื้นผิวต้นฉบับไม่ถูกต้อง (ตำแหน่งที่อยู่ไม่ถูกต้อง)"
+
+msgid "Surface source is invalid (no geometry)."
+msgstr "พื้นผิวต้นฉบับไม่ถูกต้อง (ไม่มี geometry)"
+
+msgid "Surface source is invalid (no faces)."
+msgstr "พื้นผิวต้นฉบับไม่ถูกต้อง (ไม่มีหน้า)"
+
+msgid "Select a Source Mesh:"
+msgstr "เลือก Mesh ต้นฉบับ:"
+
+msgid "Select a Target Surface:"
+msgstr "เลือกพื้นผิวปลายทาง:"
+
+msgid "Populate Surface"
+msgstr "สร้างพื้นผิว"
+
+msgid "Populate MultiMesh"
+msgstr "สร้าง MultiMesh"
+
+msgid "Target Surface:"
+msgstr "พื้นผิวปลายทาง:"
+
+msgid "Source Mesh:"
+msgstr "Mesh ต้นฉบับ:"
+
+msgid "X-Axis"
+msgstr "แกน X"
+
+msgid "Y-Axis"
+msgstr "แกน Y"
+
+msgid "Z-Axis"
+msgstr "แกน Z"
+
+msgid "Mesh Up Axis:"
+msgstr "แกนขึ้นของ Mesh:"
+
+msgid "Random Rotation:"
+msgstr "สุ่มการหมุน:"
+
+msgid "Random Tilt:"
+msgstr "สุ่มการเอียง:"
+
+msgid "Random Scale:"
+msgstr "สุ่มขนาด:"
+
+msgid "Amount:"
+msgstr "จำนวน:"
+
+msgid "Populate"
+msgstr "สร้าง"
+
+msgid "Please Confirm..."
+msgstr "กรุณายืนยัน..."
+
+msgid "Create Navigation Polygon"
+msgstr "สร้างรูปทรงนำทาง"
+
+msgid "Transform Aborted."
+msgstr "ยกเลิกการเคลื่อนย้าย"
+
+msgid "Orthogonal"
+msgstr "ภาพเชิงขนาน"
+
+msgid "Perspective"
+msgstr "เพอร์สเปกทีฟ"
+
+msgid "X-Axis Transform."
+msgstr "ย้ายตามแกน X"
+
+msgid "Y-Axis Transform."
+msgstr "ย้ายตามแกน Y"
+
+msgid "Z-Axis Transform."
+msgstr "ย้ายตามแกน Z"
+
+msgid "View Plane Transform."
+msgstr "ดูระนาบการย้าย"
+
+msgid "Keying is disabled (no key inserted)."
+msgstr "ยกเลิกการสร้างคีย์ (ไม่ได้แทรกคีย์)"
+
+msgid "Animation Key Inserted."
+msgstr "แทรกคีย์แอนิเมชัน"
+
+msgid "Objects: %d\n"
+msgstr "วัตถุ: %d\n"
+
+msgid "Translating:"
+msgstr "การเลื่อนตำแหน่ง:"
+
+msgid "Top View."
+msgstr "มุมบน"
+
+msgid "Bottom View."
+msgstr "มุมล่าง"
+
+msgid "Left View."
+msgstr "มุมซ้าย"
+
+msgid "Right View."
+msgstr "มุมขวา"
+
+msgid "Front View."
+msgstr "มุมหน้า"
+
+msgid "Rear View."
+msgstr "มุมหลัง"
+
+msgid "Align Transform with View"
+msgstr "จัดการแปลงให้เข้ากับวิว"
+
+msgid "Align Rotation with View"
+msgstr "จัดการหมุนให้เข้ากับวิว"
+
+msgid "Rotating %s degrees."
+msgstr "หมุน %s องศา"
+
+msgid "Auto Orthogonal Enabled"
+msgstr "เปิดใช้งานออโธโกนอลอัตโนมัติ"
+
+msgid "Lock View Rotation"
+msgstr "ล็อคการหมุนวิว"
+
+msgid "Display Normal"
+msgstr "แสดงปกติ"
+
+msgid "Display Wireframe"
+msgstr "แสดงโครงร่าง"
+
+msgid "Display Overdraw"
+msgstr "แสดงการวาดทับซ้อน"
+
+msgid "Display Unshaded"
+msgstr "แสดงแบบไร้เงา"
+
+msgid "Normal Buffer"
+msgstr "บัฟเฟอร์ปกติ:"
+
+msgid "View Environment"
+msgstr "แสดงสภาพแวดล้อม"
+
+msgid "View Gizmos"
+msgstr "แสดงสัญลักษณ์"
+
+msgid "View Grid"
+msgstr "แสดงเส้นตาราง"
+
+msgid "View Information"
+msgstr "แสดงข้อมูล"
+
+msgid "Half Resolution"
+msgstr "ความละเอียดครื่งหนึ่ง"
+
+msgid "Audio Listener"
+msgstr "ตัวรับเสียง"
+
+msgid "Enable Doppler"
+msgstr "เปิดการใช้งานดอปเลอร์"
+
+msgid "Cinematic Preview"
+msgstr "ดูตัวอย่างแบบภาพยนตร์"
+
+msgid "Freelook Left"
+msgstr "มุมมองอิสระ ไปซ้าย"
+
+msgid "Freelook Right"
+msgstr "มุมมองอิสระ ไปขวา"
+
+msgid "Freelook Forward"
+msgstr "มุมมองอิสระ ไปข้างหน้า"
+
+msgid "Freelook Backwards"
+msgstr "มุมมองอิสระ ถอยหลัง"
+
+msgid "Freelook Up"
+msgstr "มุมมองอิสระ ขึ้น"
+
+msgid "Freelook Down"
+msgstr "มุมมองอิสระ ลง"
+
+msgid "Freelook Speed Modifier"
+msgstr "ปรับความเร็วมุมมองอิสระ"
+
+msgid "Freelook Slow Modifier"
+msgstr "ปรับความเร็วมุมมองอิสระ"
+
+msgid "View Rotation Locked"
+msgstr "ล็อคการหมุนวิวแล้ว"
+
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr "หากต้องการที่จะขยายให้ไกลออกไป ให้เปลี่ยนระนอบการตัดของกล้อง (มุมมอง -> ตั้งค่า...)"
+
+msgid "XForm Dialog"
+msgstr "เครื่องมือเคลื่อนย้าย"
+
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
+"คลิกเพื่อสลับระหว่างสถานะการมองเห็น\n"
+"\n"
+"เปิดตา: มองเห็นกิซโม\n"
+"ปิดตา: ซ่อนกิซโม\n"
+"ตาที่เปิดครึ่งหนึ่ง: กิซโมสามารถมองเห็นได้ผ่านพื้นผิวทึบแสง (\"x-ray\")"
+
+msgid "Couldn't find a solid floor to snap the selection to."
+msgstr "ไม่สามารถหาชั้นแข็งที่จะสแนปกับที่เลือก"
+
+msgid "Use Local Space"
+msgstr "ใช้พื้นที่ภายใน"
+
+msgid "Use Snap"
+msgstr "ใช้สแนป"
+
+msgid "Bottom View"
+msgstr "มุมล่าง"
+
+msgid "Top View"
+msgstr "มุมบน"
+
+msgid "Rear View"
+msgstr "มุมหลัง"
+
+msgid "Front View"
+msgstr "มุมหน้า"
+
+msgid "Left View"
+msgstr "มุมซ้าย"
+
+msgid "Right View"
+msgstr "มุมขวา"
+
+msgid "Switch Perspective/Orthogonal View"
+msgstr "สลับมุมมองเพอร์สเปกทีฟ/ออโธโกนอล"
+
+msgid "Insert Animation Key"
+msgstr "แทรกคีย์แอนิเมชัน"
+
+msgid "Focus Origin"
+msgstr "มองไปที่จุดกำเนิด"
+
+msgid "Focus Selection"
+msgstr "มองวัตถุที่เลือก"
+
+msgid "Toggle Freelook"
+msgstr "เปิด/ปิดมุมมองอิสระ"
+
+msgid "Transform"
+msgstr "การแปลง"
+
+msgid "Snap Object to Floor"
+msgstr "สแนปออบเจกต์กับชั้น"
+
+msgid "Transform Dialog..."
+msgstr "เครื่องมือเคลื่อนย้าย..."
+
+msgid "1 Viewport"
+msgstr "1 วิวพอร์ต"
+
+msgid "2 Viewports"
+msgstr "2 วิวพอร์ต"
+
+msgid "2 Viewports (Alt)"
+msgstr "2 วิวพอร์ต (อีกแบบ)"
+
+msgid "3 Viewports"
+msgstr "3 วิวพอร์ต"
+
+msgid "3 Viewports (Alt)"
+msgstr "3 วิวพอร์ต (อีกแบบ)"
+
+msgid "4 Viewports"
+msgstr "4 วิวพอร์ต"
+
+msgid "View Origin"
+msgstr "แสดงจุดกำเนิด"
+
+msgid "Settings..."
+msgstr "ตั้งค่า..."
+
+msgid "Snap Settings"
+msgstr "ตั้งค่าการจำกัด"
+
+msgid "Translate Snap:"
+msgstr "จำกัดการย้าย:"
+
+msgid "Rotate Snap (deg.):"
+msgstr "จำกัดการหมุน (องศา):"
+
+msgid "Scale Snap (%):"
+msgstr "จำกัดปรับขนาด (%):"
+
+msgid "Viewport Settings"
+msgstr "ตั้งค่ามุมมอง"
+
+msgid "View Z-Near:"
+msgstr "การมองเห็นระยะใกล้:"
+
+msgid "View Z-Far:"
+msgstr "การมองเห็นระยะไกล:"
+
+msgid "Transform Change"
+msgstr "เคลื่อนย้าย"
+
+msgid "Translate:"
+msgstr "เคลื่อนย้าย:"
+
+msgid "Rotate (deg.):"
+msgstr "หมุน (องศา):"
+
+msgid "Scale (ratio):"
+msgstr "ปรับขนาด (อัตราส่วน):"
+
+msgid "Transform Type"
+msgstr "ประเภทการเคลื่อนย้าย"
+
+msgid "Pre"
+msgstr "ก่อน"
+
+msgid "Post"
+msgstr "หลัง"
+
+msgid "Generate Visibility Rect"
+msgstr "สร้างกรอบการมองเห็น"
+
+msgid "Load Emission Mask"
+msgstr "โหลด Mask การปะทุ"
+
+msgid "Solid Pixels"
+msgstr "พิกเซลรวม"
+
+msgid "Border Pixels"
+msgstr "พิกเซลขอบ"
+
+msgid "Directed Border Pixels"
+msgstr "พิกเซลที่ติดกัน"
+
+msgid "Emission Mask"
+msgstr "มาส์กการปะทุ"
+
+msgid "Convert to CPUParticles2D"
+msgstr "แปลงเป็น CPUParticles2D"
+
+msgid "Generation Time (sec):"
+msgstr "เวลาในการสร้าง (วินาที):"
+
+msgid "Generate Visibility AABB"
+msgstr "สร้างการมองเห็น AABB"
+
+msgid "\"%s\" doesn't contain geometry."
+msgstr "\"%s\" ไม่มีรูปทรงเรขาคณิต"
+
+msgid "\"%s\" doesn't contain face geometry."
+msgstr "\"%s\" ไม่มีหน้าของรูปทรงเรขาคณิต"
+
+msgid "Create Emission Points From Node"
+msgstr "สร้างจุดปะทุจากโหนด"
+
+msgid "The geometry's faces don't contain any area."
+msgstr "พื้นผิวของรูปเรขาคณิตไม่มีพื้นที่"
+
+msgid "The geometry doesn't contain any faces."
+msgstr "รูปเรขาคณิตไม่มีหน้า"
+
+msgid "Create Emitter"
+msgstr "สร้างตัวปะทุ"
+
+msgid "Emission Points:"
+msgstr "จุดปะทุ:"
+
+msgid "Surface Points"
+msgstr "จุดพื้นผิว"
+
+msgid "Surface Points+Normal (Directed)"
+msgstr "จุดพื้นผิว+เส้นบอกทิศ"
+
+msgid "Volume"
+msgstr "ระดับเสียง"
+
+msgid "Emission Source:"
+msgstr "แหล่งปะทุ:"
+
+msgid "Remove Point from Curve"
+msgstr "ลบจุดในเส้นโค้ง"
+
+msgid "Remove Out-Control from Curve"
+msgstr "ลบจุดควบคุมขาออกของเส้นโค้ง"
+
+msgid "Remove In-Control from Curve"
+msgstr "ลบจุดควบคุมขาเข้าของเส้นโค้ง"
+
+msgid "Move Point in Curve"
+msgstr "ย้ายจุดในเส้นโค้ง"
+
+msgid "Add Point to Curve"
+msgstr "เพิ่มจุดในเส้นโค้ง"
+
+msgid "Split Curve"
+msgstr "แยกเส้นโค้ง"
+
+msgid "Move In-Control in Curve"
+msgstr "ย้ายจุดควบคุมขาเข้าของเส้นโค้ง"
+
+msgid "Move Out-Control in Curve"
+msgstr "ย้ายจุดควบคุมขาออกของเส้นโค้ง"
+
+msgid "Right Click: Delete Point"
+msgstr "คลิกขวา: ลบจุด"
+
+msgid "Select Control Points (Shift+Drag)"
+msgstr "เลือกเส้นสัมผัส (Shift+ลาก)"
+
+msgid "Delete Point"
+msgstr "ลบจุด"
+
+msgid "Close Curve"
+msgstr "ปิดเส้นโค้ง"
+
+msgid "Mirror Handle Angles"
+msgstr "มุมตัวสะท้อน"
+
+msgid "Mirror Handle Lengths"
+msgstr "ความยาวตัวสะท้อน"
+
+msgid "Curve Point #"
+msgstr "จุดเส้นโค้ง #"
+
+msgid "Set Curve Point Position"
+msgstr "กำหนดพิกัดจุดเส้นโค้ง"
+
+msgid "Set Curve Out Position"
+msgstr "กำหนดเส้นโค้งขาออก"
+
+msgid "Set Curve In Position"
+msgstr "กำหนดเส้นโค้งขาเข้า"
+
+msgid "Split Path"
+msgstr "ตัดเส้น"
+
+msgid "Remove Path Point"
+msgstr "ลบจุด"
+
+msgid "Split Segment (in curve)"
+msgstr "แยกส่วน (ในเส้นโค้ง)"
+
+msgid "Move Joint"
+msgstr "เลื่อนข้อต่อ"
+
+msgid "Edit a Plugin"
+msgstr "แก้ไขปลั๊กอิน"
+
+msgid "Create a Plugin"
+msgstr "สร้างปลั๊กอิน"
+
+msgid "Plugin Name:"
+msgstr "ชื่อปลั๊กอิน:"
+
+msgid "Subfolder:"
+msgstr "โฟลเดอร์ย่อย:"
+
+msgid "Author:"
+msgstr "ผู้สร้าง:"
+
+msgid "Script Name:"
+msgstr "ชื่อสคริปต์:"
+
+msgid "Activate now?"
+msgstr "เปิดใช้งานตอนนี้?"
+
+msgid ""
+"The skeleton property of the Polygon2D does not point to a Skeleton2D node"
+msgstr "คุณสมบัติโครงของ Polygon2D ไม่ได้ชี้ไปที่โหนด Skeleton2D"
+
+msgid "Sync Bones"
+msgstr "ซิงค์โครง"
+
+msgid "Create UV Map"
+msgstr "สร้าง UV Map"
+
+msgid ""
+"Polygon 2D has internal vertices, so it can no longer be edited in the "
+"viewport."
+msgstr "Polygon 2D มีจุดยอดภายใน ดังนั้นจึงไม่สามารถแก้ไขในวิวพอร์ตได้อีกต่อไป"
+
+msgid "Create Polygon & UV"
+msgstr "สร้าง Polygon และ UV"
+
+msgid "Create Internal Vertex"
+msgstr "สร้างจุดยอดภายใน"
+
+msgid "Remove Internal Vertex"
+msgstr "ลบจุดยอดภายใน"
+
+msgid "Invalid Polygon (need 3 different vertices)"
+msgstr "รูปหลายเหลี่ยมผิดพลาด (ต้องการจุดที่ต่างกัน 3 จุด)"
+
+msgid "Add Custom Polygon"
+msgstr "เพิ่มโพลีกอน"
+
+msgid "Remove Custom Polygon"
+msgstr "ลบโพลีกอน"
+
+msgid "Transform UV Map"
+msgstr "เคลื่อนย้าย UV Map"
+
+msgid "Transform Polygon"
+msgstr "เคลื่อนย้ายโพลีกอน"
+
+msgid "Paint Bone Weights"
+msgstr "เติมน้ำหนักโครง"
+
+msgid "Points"
+msgstr "จุด"
+
+msgid "Polygons"
+msgstr "โพลีกอน"
+
+msgid "UV"
+msgstr "UV"
+
+msgid "Bones"
+msgstr "โครง"
+
+msgid "Move Polygon"
+msgstr "ย้ายรูปหลายเหลี่ยม"
+
+msgid "Rotate Polygon"
+msgstr "หมุนรูปหลายเหลี่ยม"
+
+msgid "Scale Polygon"
+msgstr "ปรับขนาดรูปหลายเหลี่ยม"
+
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr "สร้างรูปหลายเหลี่ยมแบบกำหนดเอง เปิดการเรนเดอร์รูปหลายเหลี่ยมแบบกำหนดเอง"
+
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is disabled."
+msgstr ""
+"ลบรูปหลายเหลี่ยมแบบกำหนดเอง "
+"ถ้าไม่มีรูปหลายเหลี่ยมอยู่จะปิดการเรนเดอร์รูปหลายเหลี่ยมแบบกำหนดเอง"
+
+msgid "Paint weights with specified intensity."
+msgstr "ทาสีด้วยความเข้มที่กำหนด"
+
+msgid "Unpaint weights with specified intensity."
+msgstr "ลบน้ำหนักตามที่กำหนด"
+
+msgid "Radius:"
+msgstr "รัศมี:"
+
+msgid "Copy Polygon to UV"
+msgstr "คัดลอกโพลีกอนไปยังยูวี"
+
+msgid "Copy UV to Polygon"
+msgstr "คัดลอกยูวีไปยังโพลีกอน"
+
+msgid "Clear UV"
+msgstr "ลบ UV"
+
+msgid "Grid Settings"
+msgstr "ตั้งค่าเส้นกริด"
+
+msgid "Snap"
+msgstr "จำกัดการเคลื่อนย้าย"
+
+msgid "Enable Snap"
+msgstr "จำกัดการเคลื่อนย้าย"
+
+msgid "Show Grid"
+msgstr "แสดงเส้นกริด"
+
+msgid "Configure Grid:"
+msgstr "ตั้งค่าเส้นกริด:"
+
+msgid "Grid Offset X:"
+msgstr "จุดเริ่มเส้นกริดแกน X:"
+
+msgid "Grid Offset Y:"
+msgstr "จุดเริ่มเส้นกริดแกน Y:"
+
+msgid "Grid Step X:"
+msgstr "ระยะห่างกริดแกน X:"
+
+msgid "Grid Step Y:"
+msgstr "ระยะห่างกริดแกน Y:"
+
+msgid "Sync Bones to Polygon"
+msgstr "ซิงค์โครงกับโพลีกอน"
+
+msgid "Create Polygon3D"
+msgstr "สร้าง Polygon3D"
+
+msgid "Edit Poly"
+msgstr "แก้ไขรูปหลายเหลี่ยม"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "แก้ไขรูปหลายเหลี่ยม (ลบจุด)"
+
+msgid "ERROR: Couldn't load resource!"
+msgstr "ผิดพลาด: โหลดรีซอร์สไม่ได้!"
+
+msgid "Add Resource"
+msgstr "เพิ่มรีซอร์ส"
+
+msgid "Rename Resource"
+msgstr "เปลี่ยนชื่อรีซอร์ส"
+
+msgid "Delete Resource"
+msgstr "ลบรีซอร์ส"
+
+msgid "Resource clipboard is empty!"
+msgstr "คลิปบอร์ดไม่มีรีซอร์ส!"
+
+msgid "Paste Resource"
+msgstr "วางรีซอร์ส"
+
+msgid "Load Resource"
+msgstr "โหลดรีซอร์ส"
+
+msgid "Can't open '%s'. The file could have been moved or deleted."
+msgstr "ไม่สามารถเปิด '%s' เนื่องจากไฟล์ถูกย้ายหรือถูกลบ"
+
+msgid "Close and save changes?"
+msgstr "ปิดและบันทึก?"
+
+msgid "Error Saving"
+msgstr "ผิดพลาดขณะบันทึก"
+
+msgid "Error Importing"
+msgstr "ผิดพลาดขณะนำเข้า"
+
+msgid "New Text File..."
+msgstr "สร้างไฟล์ข้อความใหม่"
+
+msgid "Open File"
+msgstr "เปิดไฟล์"
+
+msgid "Save File As..."
+msgstr "บันทึกไฟล์เป็น..."
+
+msgid "Import Theme"
+msgstr "นำเข้าธีม"
+
+msgid "Error saving"
+msgstr "ผิดพลาดขณะบันทึก"
+
+msgid "Save Theme As..."
+msgstr "บันทึกธีมเป็น"
+
+msgid "Online Docs"
+msgstr "คู่มือ"
+
+msgid "Open Godot online documentation."
+msgstr "เปิดคู่มือออนไลน์"
+
+msgid "%s Class Reference"
+msgstr "%s อ้างอิงคลาส"
+
+msgid "Find Next"
+msgstr "ค้นหาต่อไป"
+
+msgid "Find Previous"
+msgstr "ค้นหาก่อนหน้า"
+
+msgid "Toggle alphabetical sorting of the method list."
+msgstr "สลับการเรียงลำดับตามตัวอักษรของรายการเมธอด"
+
+msgid "Sort"
+msgstr "เรียง"
+
+msgid "Open..."
+msgstr "เปิด..."
+
+msgid "Save All"
+msgstr "บันทึกทั้งหมด"
+
+msgid "Copy Script Path"
+msgstr "คัดลอกตำแหน่งสคริปต์"
+
+msgid "History Previous"
+msgstr "ประวัติก่อนหน้า"
+
+msgid "History Next"
+msgstr "ประวัติถัดไป"
+
+msgid "Import Theme..."
+msgstr "นำเข้าธีม..."
+
+msgid "Reload Theme"
+msgstr "โหลดธีมใหม่"
+
+msgid "Theme"
+msgstr "ธีม"
+
+msgid "Save Theme"
+msgstr "บันทึกธีม"
+
+msgid "Close All"
+msgstr "ปิดทั้งหมด"
+
+msgid "Close Docs"
+msgstr "ปิดคู่มือ"
+
+msgid "Run"
+msgstr "เริ่ม"
+
+msgid "Search"
+msgstr "ค้นหา"
+
+msgid "Search the reference documentation."
+msgstr "ค้นหาคู่มืออ้างอิง"
+
+msgid "Go to previous edited document."
+msgstr "ไปเอกสารที่ถูกเปลี่ยนแปลงก่อนหน้า"
+
+msgid "Go to next edited document."
+msgstr "ไปเอกสารถัดไป"
+
+msgid "Discard"
+msgstr "ละทิ้ง"
+
+msgid "Reopen Closed Script"
+msgstr "เปิดสคริปต์ที่พึ่งปิด"
+
+msgid "Clear Recent Scripts"
+msgstr "ล้างสคริปต์ล่าสุด"
+
+msgid "Uppercase"
+msgstr "ตัวพิมพ์ใหญ่"
+
+msgid "Lowercase"
+msgstr "ตัวพิมพ์เล็ก"
+
+msgid "Capitalize"
+msgstr "อักษรแรกพิมพ์ใหญ่"
+
+msgid "Standard"
+msgstr "มาตรฐาน"
+
+msgid "Connections to method:"
+msgstr "เชื่อมไปยังเมธอด:"
+
+msgid "Source"
+msgstr "ต้นฉบับ"
+
+msgid "Target"
+msgstr "เป้าหมาย"
+
+msgid ""
+"Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
+msgstr "ไม่มีวิธีการเชื่อมต่อ '% s' สำหรับสัญญาณ '% s' จากโหนด '% s' ไปยังโหนด '% s'"
+
+msgid "[Ignore]"
+msgstr "[ละเว้น]"
+
+msgid "Go to Function"
+msgstr "ไปยังฟังก์ชัน"
+
+msgid "Pick Color"
+msgstr "เลือกสี"
+
+msgid "Line"
+msgstr "บรรทัด"
+
+msgid "Convert Case"
+msgstr "แปลงตัวพิมพ์ใหญ่-เล็ก"
+
+msgid "Syntax Highlighter"
+msgstr "ไฮไลท์ไวยากรณ์"
+
+msgid "Bookmarks"
+msgstr "บุ๊คมาร์ค"
+
+msgid "Go To"
+msgstr "ไปยัง"
+
+msgid "Delete Line"
+msgstr "ลบบรรทัด"
+
+msgid "Toggle Comment"
+msgstr "เปิด/ปิด ความคิดเห็น"
+
+msgid "Fold/Unfold Line"
+msgstr "ซ่อน/แสดงบรรทัด"
+
+msgid "Fold All Lines"
+msgstr "ซ่อนทั้งหมด"
+
+msgid "Unfold All Lines"
+msgstr "แสดงทั้งหมด"
+
+msgid "Duplicate Selection"
+msgstr "ทำซ้ำที่เลือก"
+
+msgid "Evaluate Selection"
+msgstr "ประเมินที่เลือก"
+
+msgid "Trim Trailing Whitespace"
+msgstr "ลบตัวอักษรที่มองไม่เห็น"
+
+msgid "Convert Indent to Spaces"
+msgstr "แปลงย่อหน้าเป็นเว้นวรรค"
+
+msgid "Convert Indent to Tabs"
+msgstr "แปลงการเยื้องเป็นแท็บ"
+
+msgid "Auto Indent"
+msgstr "ย่อหน้าอัตโนมัติ"
+
+msgid "Find in Files..."
+msgstr "ค้นหาในไฟล์..."
+
+msgid "Contextual Help"
+msgstr "ค้นหาคำที่เลือกในคู่มือ"
+
+msgid "Toggle Bookmark"
+msgstr "เพิ่ม/ลบบุ๊คมาร์ค"
+
+msgid "Go to Next Bookmark"
+msgstr "ไปบุ๊คมาร์คถัดไป"
+
+msgid "Go to Previous Bookmark"
+msgstr "ไปบุ๊คมาร์คก่อนหน้า"
+
+msgid "Remove All Bookmarks"
+msgstr "ลบบุ๊คมาร์คทั้งหมด"
+
+msgid "Go to Function..."
+msgstr "ไปยังฟังก์ชัน..."
+
+msgid "Go to Line..."
+msgstr "ไปยังบรรทัด..."
+
+msgid "Lookup Symbol"
+msgstr "ค้นหาสัญลักษณ์"
+
+msgid "Toggle Breakpoint"
+msgstr "เปิด/ปิด เบรกพอยต์"
+
+msgid "Remove All Breakpoints"
+msgstr "ลบเบรกพอยต์ทั้งหมด"
+
+msgid "Go to Next Breakpoint"
+msgstr "ไปเบรกพอยต์ถัดไป"
+
+msgid "Go to Previous Breakpoint"
+msgstr "ไปเบรกพอยต์ก่อนหน้า"
+
+msgid "Shader Editor"
+msgstr "ตัวแก้ไขเชเดอร์"
+
+msgid "Toggle Shader Editor Bottom Panel"
+msgstr "เปิด/ปิดแผงตัวแก้ไขเชเดอร์"
+
+msgid "This skeleton has no bones, create some children Bone2D nodes."
+msgstr "โครงหลักนี้ยังไม่มีโครงใดๆ สร้างโหนดลูกของ Bone2D"
+
+msgid "Set Rest Pose to Bones"
+msgstr "ตั้งท่าโพสจากโครง"
+
+msgid "Create Rest Pose from Bones"
+msgstr "สร้างท่าโพสจากโครง"
+
+msgid "Skeleton2D"
+msgstr "Skeleton2D"
+
+msgid "Create physical bones"
+msgstr "สร้างโครงกายภาพ"
+
+msgid "Play IK"
+msgstr "เล่น IK"
+
+msgid "Create Polygon2D"
+msgstr "สร้าง Polygon2D"
+
+msgid "Polygon2D Preview"
+msgstr "ดูตัวอย่าง Polygon2D"
+
+msgid "Create CollisionPolygon2D"
+msgstr "สร้าง CollisionPolygon2D"
+
+msgid "CollisionPolygon2D Preview"
+msgstr "ดูตัวอย่าง CollisionPolygon2D"
+
+msgid "Create LightOccluder2D"
+msgstr "สร้าง LightOccluder2D"
+
+msgid "LightOccluder2D Preview"
+msgstr "ดูตัวอย่าง LightOccluder2D"
+
+msgid "Invalid geometry, can't replace by mesh."
+msgstr "เรขาคณิตผิดพลาด ไม่สามารถแทนที่ด้วย mesh"
+
+msgid "Invalid geometry, can't create polygon."
+msgstr "รูปเรขาคณิตผิดพลาด ไม่สามารถสร้างโพลีกอน"
+
+msgid "Convert to Polygon2D"
+msgstr "แปลงเป็น Polygon2D"
+
+msgid "Invalid geometry, can't create collision polygon."
+msgstr "รูปเรขาคณิตผิดพลาด ไม่สามารถสร้างโพลีกอนขอบเขตการชน"
+
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "สร้างญาติ CollisionPolygon2D"
+
+msgid "Invalid geometry, can't create light occluder."
+msgstr "เรขาคณิตผิดพลาด ไม่สามารถสร้างแสงเงา"
+
+msgid "Create LightOccluder2D Sibling"
+msgstr "สร้างญาติ LightOccluder2D"
+
+msgid "Simplification:"
+msgstr "การทำให้เข้าใจง่าย:"
+
+msgid "Shrink (Pixels):"
+msgstr "การลดขนาด (พิกเซล):"
+
+msgid "Grow (Pixels):"
+msgstr "ขยาย (พิกเซล):"
+
+msgid "Update Preview"
+msgstr "อัพเดทการดูตัวอย่าง"
+
+msgid "Settings:"
+msgstr "ตั้งค่า:"
+
+msgid "No Frames Selected"
+msgstr "ไม่มีเฟรมที่เลือก"
+
+msgid "Add %d Frame(s)"
+msgstr "เพิ่ม %d เฟรม(วินาที)"
+
+msgid "Add Frame"
+msgstr "เพิ่มเฟรม"
+
+msgid "Unable to load images"
+msgstr "โหลดรูปไม่ได้"
+
+msgid "ERROR: Couldn't load frame resource!"
+msgstr "ผิดพลาด: โหลดรีซอร์สเฟรมไม่ได้!"
+
+msgid "Add Empty"
+msgstr "เพิ่มแบบว่างเปล่า"
+
+msgid "Move Frame"
+msgstr "เลื่อนเฟรม"
+
+msgid "Delete Animation?"
+msgstr "ลบแอนิเมชัน?"
+
+msgid "Change Animation FPS"
+msgstr "แก้ไขความเร็วแอนิเมชัน"
+
+msgid "(empty)"
+msgstr "(ว่างเปล่า)"
+
+msgid "Animations:"
+msgstr "แอนิเมชัน:"
+
+msgid "Delete Animation"
+msgstr "ลบแอนิเมชัน"
+
+msgid "Animation Frames:"
+msgstr "เฟรมแอนิเมชัน:"
+
+msgid "Play selected animation backwards from current pos. (A)"
+msgstr "เล่นแอนิเมชันที่เลือกย้อนหลังจากตำแหน่งปัจจุบัน (A)"
+
+msgid "Play selected animation backwards from end. (Shift+A)"
+msgstr "เล่นแอนิเมชันที่เลือกย้อนหลังจากท้ายสุด (Shift+A)"
+
+msgid "Play selected animation from start. (Shift+D)"
+msgstr "เล่นแอนิเมชันที่เลือกจากเริ่มต้น (Shift+D)"
+
+msgid "Play selected animation from current pos. (D)"
+msgstr "เล่นแอนิเมชันที่เลือกจากตำแหน่งปัจจุบัน (D)"
+
+msgid "Zoom Reset"
+msgstr "รีเซ็ตการซูม"
+
+msgid "Select Frames"
+msgstr "เลือกเฟรม"
+
+msgid "Size"
+msgstr "ขนาด"
+
+msgid "Auto Slice"
+msgstr "แบ่งอัตโนมัติ"
+
+msgid "Create Frames from Sprite Sheet"
+msgstr "สร้างเฟรมจากสไปรต์ชีต"
+
+msgid "Reload"
+msgstr "โหลดใหม่"
+
+msgid "Resave"
+msgstr "บันทึกอีกครั้ง"
+
+msgid "Set Region Rect"
+msgstr "กำหนดขอบเขต Texture"
+
+msgid "Set Margin"
+msgstr "ตั้งระยะขอบ"
+
+msgid "Snap Mode:"
+msgstr "โหมดสแนป:"
+
+msgid "Pixel Snap"
+msgstr "สแแนปพิกเซล"
+
+msgid "Grid Snap"
+msgstr "สแนปเส้นกริด"
+
+msgid "Step:"
+msgstr "ขนาด:"
+
+msgid "Separation:"
+msgstr "เว้น:"
+
+msgid "Updating the editor"
+msgstr "อัพเดทตัวแก้ไข"
+
+msgid "Remove Class Items"
+msgstr "ลบไอเทมคลาส"
+
+msgid "Remove All Items"
+msgstr "ลบทั้งหมด"
+
+msgid "Toggle Button"
+msgstr "สลับปุ่ม"
+
+msgid "Disabled Button"
+msgstr "ปิดการทำงานปุ่ม"
+
+msgid "Item"
+msgstr "รายการ"
+
+msgid "Disabled Item"
+msgstr "รายการที่ปิดใช้งาน"
+
+msgid "Check Item"
+msgstr "ทำเครื่องหมายไอเทม"
+
+msgid "Checked Item"
+msgstr "ไอเทมมีเครื่องหมาย"
+
+msgid "Radio Item"
+msgstr "ไอเทมเรดิโอ"
+
+msgid "Checked Radio Item"
+msgstr "เลือกไอเทมเรดิโอ"
+
+msgid "Submenu"
+msgstr "เมนูย่อย"
+
+msgid "Subitem 1"
+msgstr "ไอเทมย่อย 1"
+
+msgid "Subitem 2"
+msgstr "ไอเทมย่อย 2"
+
+msgid "Has"
+msgstr "มี"
+
+msgid "Many"
+msgstr "หลาย"
+
+msgid "Disabled LineEdit"
+msgstr "ปิดใช้งาน LineEdit"
+
+msgid "Tab 1"
+msgstr "แท็บ 1"
+
+msgid "Tab 2"
+msgstr "แท็บ 2"
+
+msgid "Tab 3"
+msgstr "แท็บ 3"
+
+msgid "Editable Item"
+msgstr "ไอเทมที่สามารถแก้ไขได้"
+
+msgid "Subtree"
+msgstr "ผังย่อย"
+
+msgid "Has,Many,Options"
+msgstr "มี,หลาย,ตัวเลือก"
+
+msgid "Rotate Right"
+msgstr "หมุนขวา"
+
+msgid "Rotate Left"
+msgstr "หมุนซ้าย"
+
+msgid "Flip Horizontally"
+msgstr "พลิกแนวนอน"
+
+msgid "Flip Vertically"
+msgstr "พลิกแนวตั้ง"
+
+msgid "Scattering:"
+msgstr "การกระจาย:"
+
+msgid "Rendering"
+msgstr "การเรนเดอร์"
+
+msgid "Physics"
+msgstr "ฟิสิกส์"
+
+msgid "Yes"
+msgstr "ใช่"
+
+msgid "Error"
+msgstr "ผิดพลาด"
+
+msgid "Commit"
+msgstr "Commit"
+
+msgid "Discard changes"
+msgstr "ยกเลิกการแก้ไข"
+
+msgid "Detect new changes"
+msgstr "พบการแก้ไขใหม่"
+
+msgid "Discard all changes"
+msgstr "ยกเลิกการแก้ไขทั้งหมด"
+
+msgid "Commit Changes"
+msgstr "การเปลี่ยนแปลง commit"
+
+msgid "Remote Name"
+msgstr "ชื่อรีโมท"
+
+msgid "Remote URL"
+msgstr "URL รีโมท"
+
+msgid "Modified"
+msgstr "แก้ไขแล้ว"
+
+msgid "Renamed"
+msgstr "เปลี่ยนชื่อแล้ว"
+
+msgid "Deleted"
+msgstr "ลบแล้ว"
+
+msgid "Typechange"
+msgstr "เปลี่ยนชนิด"
+
+msgid "E constant (2.718282). Represents the base of the natural logarithm."
+msgstr "ค่าคงที่ E (2.718282) แสดงในรูปลอกาลิทึมฐานธรรมชาติ"
+
+msgid "Epsilon constant (0.00001). Smallest possible scalar number."
+msgstr "ค่าคงที่เอพซิลอน (0.00001) ค่าที่เล็กที่สุดของสเกลาร์"
+
+msgid "Phi constant (1.618034). Golden ratio."
+msgstr "ค่าฟาย (1.618034) สัดส่วนทองคำ"
+
+msgid "Pi/4 constant (0.785398) or 45 degrees."
+msgstr "ค่าพายส่วน 4 (0.785398) หรือ 45องศา"
+
+msgid "Pi/2 constant (1.570796) or 90 degrees."
+msgstr "ค่าพายส่วน2 (1.570796) หรือ 90 องศา"
+
+msgid "Pi constant (3.141593) or 180 degrees."
+msgstr "ค่าพาย (3.141593) หรือ 180 องศา"
+
+msgid "Tau constant (6.283185) or 360 degrees."
+msgstr "ค่าเทา (6.283185) หรือ 360 องศา"
+
+msgid "Sqrt2 constant (1.414214). Square root of 2."
+msgstr "ค่ารูท2 (1.414214)"
+
+msgid "Add Input"
+msgstr "เพิ่มอินพุต"
+
+msgid "Add Output"
+msgstr "เพิ่มเอาท์พุต"
+
+msgid "Boolean"
+msgstr "บูลีน"
+
+msgid "Sampler"
+msgstr "ตัวอย่าง"
+
+msgid "Add Input Port"
+msgstr "เพิ่มพอร์ตอินพุต"
+
+msgid "Add Output Port"
+msgstr "เพิ่มพอร์ตเอาท์พุต"
+
+msgid "Remove Input Port"
+msgstr "ลบพอร์ตอินพุต"
+
+msgid "Remove Output Port"
+msgstr "ลบพอร์ตเอาต์พุต"
+
+msgid "Set Input Default Port"
+msgstr "กำหนดพอร์ตอินพุตเริ่มต้น"
+
+msgid "Add Node to Visual Shader"
+msgstr "เพิ่มโหนดไปยังเวอร์ชวลเชดเดอร์"
+
+msgid "Visual Shader Input Type Changed"
+msgstr "เปลี่ยนชนิดของอินพุตเวอร์ชวลเชดเดอร์"
+
+msgid "Vertex"
+msgstr "เวอร์เทกซ์"
+
+msgid "Fragment"
+msgstr "แฟรกเมนต์"
+
+msgid "Light"
+msgstr "แสง"
+
+msgid "Add Node"
+msgstr "เพิ่มโหนด"
+
+msgid "Create Shader Node"
+msgstr "สร้างโหนดเชดเดอร์"
+
+msgid "Color function."
+msgstr "ฟังก์ชันสี"
+
+msgid "Color operator."
+msgstr "การดำเนินการสี"
+
+msgid "Grayscale function."
+msgstr "ฟังก์ชันขาว-ดำ"
+
+msgid "Converts HSV vector to RGB equivalent."
+msgstr "แปลงเวกเตอร์ HSV เป็น RGB"
+
+msgid "Converts RGB vector to HSV equivalent."
+msgstr "แปลงเวกเตอร์ RGB เป็น HSV"
+
+msgid "Sepia function."
+msgstr "ฟังก์ชันซีเปีย"
+
+msgid "Burn operator."
+msgstr "ดำเนินการ Burn"
+
+msgid "Darken operator."
+msgstr "ดำเนินการ Darken"
+
+msgid "Difference operator."
+msgstr "ดำเนินการ Difference"
+
+msgid "Dodge operator."
+msgstr "ดำเนินการ Dodge"
+
+msgid "HardLight operator."
+msgstr "ดำเนินการ HardLight"
+
+msgid "Lighten operator."
+msgstr "ดำเนินการ Lighten"
+
+msgid "Overlay operator."
+msgstr "ดำเนินการ Overlay"
+
+msgid "Screen operator."
+msgstr "ดำเนินการ Screen"
+
+msgid "SoftLight operator."
+msgstr "ดำเนินการ SoftLight"
+
+msgid "Color constant."
+msgstr "ค่าคงที่สี"
+
+msgid "Returns the boolean result of the %s comparison between two parameters."
+msgstr "คืนค่าผลบูลีนจากการเปรียบเทียบระหว่างสองตัวแปรของ %s"
+
+msgid "Equal (==)"
+msgstr "เทียบเท่า (==)"
+
+msgid "Greater Than (>)"
+msgstr "มากกว่า (>)"
+
+msgid "Greater Than or Equal (>=)"
+msgstr "มากกว่าหรือเท่ากับ (>=)"
+
+msgid ""
+"Returns an associated vector if the provided scalars are equal, greater or "
+"less."
+msgstr "คืนค่าเวกเตอร์ที่เกี่ยวข้องถ้าสเกลาร์ที่ให้มีค่าเท่ากับ มากกว่าหรือน้อยกว่า"
+
+msgid ""
+"Returns the boolean result of the comparison between INF and a scalar "
+"parameter."
+msgstr "คืนค่าบูลีนจากการเปรียบเทียบค่า INF กับพารามิเตอร์ชนิดสเกลาร์"
+
+msgid ""
+"Returns the boolean result of the comparison between NaN and a scalar "
+"parameter."
+msgstr "คืนค่าบูลีนซึ่งเปรียบเทียบค่าระหว่าง NaN กับพารามิเตอร์สเกลาร์"
+
+msgid "Less Than (<)"
+msgstr "น้อยกว่า(<)"
+
+msgid "Less Than or Equal (<=)"
+msgstr "น้อยกว่าหรือเท่ากับ(<=)"
+
+msgid "Not Equal (!=)"
+msgstr "ไม่เท่ากับ (!=)"
+
+msgid "Returns the boolean result of the comparison between two parameters."
+msgstr "คืนค่าบูลีนจากการเปรียบเทียบพารามิเตอร์สองตัว"
+
+msgid ""
+"Returns the boolean result of the comparison between INF (or NaN) and a "
+"scalar parameter."
+msgstr "คืนค่าบูลีนจากการเปรียบเทียบค่า INF (หรือ NaN) และพารามิเตอร์สเกลาร์"
+
+msgid "Boolean constant."
+msgstr "ค่าคงที่บูลีน"
+
+msgid "'%s' input parameter for all shader modes."
+msgstr "'%s' พารามิเตอร์ของอินพุตสำหรับโหมดเชดเดอร์ทั้งหมด"
+
+msgid "Input parameter."
+msgstr "พารามิเตอร์อินพุต"
+
+msgid "'%s' input parameter for vertex and fragment shader modes."
+msgstr "'%s' พารามิเตอร์อินพุตสำหรับโหมดเวอร์เท็กซ์เชดเดอร์และแฟรกเมนต์เชดเดอร์"
+
+msgid "'%s' input parameter for fragment and light shader modes."
+msgstr "'%s' พารามิเตอร์อินพุตสำหรับโหมดแฟรกเมนต์เชดเดอร์และโหมดไลท์เชดเดอร์"
+
+msgid "'%s' input parameter for fragment shader mode."
+msgstr "'%s' พารามิเตอร์อินพุตสำหรับโหมดแฟรกเมนต์เชดเดอร์"
+
+msgid "'%s' input parameter for light shader mode."
+msgstr "'%s' พารามิเตอร์อินพุตสำหรับโหมดไลท์เชดเดอร์"
+
+msgid "'%s' input parameter for vertex shader mode."
+msgstr "'%s' พารามิเตอร์อินพุตสำหรับโหมดเวอร์เท็กซ์เชดเดอร์"
+
+msgid "Returns the absolute value of the parameter."
+msgstr "คืนค่าสัมบูรณ์ของพารามิเตอร์"
+
+msgid "Returns the arc-cosine of the parameter."
+msgstr "คืนค่า arc-cosine ของพารามิเตอร์"
+
+msgid "Returns the inverse hyperbolic cosine of the parameter."
+msgstr "คืนค่า arc cosh ของพารามิเตอร์"
+
+msgid "Returns the arc-sine of the parameter."
+msgstr "คืนค่า arc sin ของพารามิเตอร์"
+
+msgid "Returns the inverse hyperbolic sine of the parameter."
+msgstr "คืนค่า arc sinh ของพารามิเตอร์"
+
+msgid "Returns the arc-tangent of the parameter."
+msgstr "คืนค่า arc tan ของพารามิเตอร์"
+
+msgid "Returns the arc-tangent of the parameters."
+msgstr "คืนค่า arc tan ของพารามิเตอร์"
+
+msgid "Returns the inverse hyperbolic tangent of the parameter."
+msgstr "คืนค่า arc tanh ของพารามิเตอร์"
+
+msgid ""
+"Finds the nearest integer that is greater than or equal to the parameter."
+msgstr "หาจำนวนเต็มใกล้ที่สุดที่มากกว่าหรือเท่ากับค่าพารามิเตอร์"
+
+msgid "Constrains a value to lie between two further values."
+msgstr "จำกัดค่าไว้ระหว่างอีกสองค่า"
+
+msgid "Returns the cosine of the parameter."
+msgstr "คืนค่า cos ของพารามิเตอร์"
+
+msgid "Returns the hyperbolic cosine of the parameter."
+msgstr "คืนค่า cosh ของพารามิเตอร์"
+
+msgid "Converts a quantity in radians to degrees."
+msgstr "แปลงเรเดียนเป็นองศา"
+
+msgid ""
+"(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
+"differencing."
+msgstr "(โหมดแฟรกเมนต์/แสง เท่านั้น) (สเกลาร์) อนุพันธ์ของ 'x' โดยใช้ค่าความแตกต่างภายใน"
+
+msgid ""
+"(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
+"differencing."
+msgstr "(โหมดแฟรกเมนต์/แสง เท่านั้น) (สเกลาร์) อนุพันธ์ของ 'y' โดยใช้ค่าความแตกต่างภายใน"
+
+msgid "Base-e Exponential."
+msgstr "เลขยกกำลังฐาน e"
+
+msgid "Base-2 Exponential."
+msgstr "เลขยกกำลังฐาน 2"
+
+msgid "Finds the nearest integer less than or equal to the parameter."
+msgstr "หาค่าจำนวนเต็มที่ใกล้ที่สุดที่น้อยกว่าหรือเท่ากับพารามิเตอร์"
+
+msgid "Computes the fractional part of the argument."
+msgstr "คำนวณสัดส่วนจากอากิวเมนต์"
+
+msgid "Returns the inverse of the square root of the parameter."
+msgstr "คืนค่าผกผันรูทสองของพารามิเตอร์"
+
+msgid "Natural logarithm."
+msgstr "ลอกาลิทึมฐานธรรมชาติ"
+
+msgid "Base-2 logarithm."
+msgstr "ลอกาลิทึมฐาน 2"
+
+msgid "Returns the greater of two values."
+msgstr "คืนค่ามากสุด จากสองค่า"
+
+msgid "Returns the lesser of two values."
+msgstr "คืนค่าน้อยสุด จากสองค่า"
+
+msgid "Linear interpolation between two scalars."
+msgstr "ค่าประมาณเชิงเส้นระหว่างสเกลาร์สองค่า"
+
+msgid "Returns the opposite value of the parameter."
+msgstr "คืนค่าตรงกันข้ามจากพารามิเตอร์"
+
+msgid "1.0 - scalar"
+msgstr "1.0 - สเกลาร์"
+
+msgid ""
+"Returns the value of the first parameter raised to the power of the second."
+msgstr "คืนค่าพารามิเตอร์ตัวแรกยกกำลังด้วยพารามิเตอร์ตัวที่สอง"
+
+msgid "Converts a quantity in degrees to radians."
+msgstr "แปลงค่าองศาเป็นเรเดียน"
+
+msgid "1.0 / scalar"
+msgstr "1.0 / สเกลาร์"
+
+msgid "Finds the nearest integer to the parameter."
+msgstr "หาจำนวนเต็มที่ใกล้กับพารามิเตอร์มากที่สุด"
+
+msgid "Finds the nearest even integer to the parameter."
+msgstr "หาเลขคู่ที่ใกล้กับพารามิเตอร์มากที่สุด"
+
+msgid "Clamps the value between 0.0 and 1.0."
+msgstr "จำกัดค่าให้อยู๋ระหว่าง 0.0 กับ 1.0"
+
+msgid "Extracts the sign of the parameter."
+msgstr "หาเครื่องหมายของพาราพิเตอร์ (บวก/ลบ)"
+
+msgid "Returns the sine of the parameter."
+msgstr "คืนค่า sine ของพารามิเตอร์"
+
+msgid "Returns the hyperbolic sine of the parameter."
+msgstr "คืนค่า sinh ของพารามิเตอร์"
+
+msgid "Returns the square root of the parameter."
+msgstr "คืนค่ารูทสองของพารามิเตอร์"
+
+msgid ""
+"SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if x is larger than "
+"'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using "
+"Hermite polynomials."
+msgstr ""
+"SmoothStep function( สเกลาร์(edge0), สเกลาร์(edge1), สเกลาร์(x) )\n"
+"\n"
+"คืนค่า 0.0 ถ้า x น้อยกว่า 'edge0' และ 1.0 ถ้ามากกว่า 'edge1' หรือคืนค่าระหว่าง 0.0 - 1.0 "
+"โดยใช้ Hermite polynomials"
+
+msgid ""
+"Step function( scalar(edge), scalar(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
+msgstr ""
+"Step function( สเกลาร์(edge), สเกลาร์(x) )\n"
+"\n"
+"คืนค่า 0.0 ถ้า x น้อยกว่า edge ถ้าไม่ใช่จะคืนค่า 1.0"
+
+msgid ""
+"(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and 'y'."
+msgstr "(โหมดแฟรกเมนต์/แสง เท่านั้น) (สเกลาร์) ผลรวมของอนุพันธ์สัมบูรณ์ใน 'x' และ 'y'"
+
+msgid "Returns the tangent of the parameter."
+msgstr "คืนค่า tan ของพารามิเตอร์"
+
+msgid "Returns the hyperbolic tangent of the parameter."
+msgstr "คืนค่า tanh ของพารามิเตอร์"
+
+msgid "Finds the truncated value of the parameter."
+msgstr "หาค่าตัดหลักทศนิยม(truncated value) ของพารามิเตอร์"
+
+msgid "Perform the cubic texture lookup."
+msgstr "ทำการค้นหาเทกเจอร์ลูกบาศก์"
+
+msgid "Transform function."
+msgstr "ฟังก์ชันทรานฟอร์ม"
+
+msgid ""
+"Calculate the outer product of a pair of vectors.\n"
+"\n"
+"OuterProduct treats the first parameter 'c' as a column vector (matrix with "
+"one column) and the second parameter 'r' as a row vector (matrix with one "
+"row) and does a linear algebraic matrix multiply 'c * r', yielding a matrix "
+"whose number of rows is the number of components in 'c' and whose number of "
+"columns is the number of components in 'r'."
+msgstr ""
+"คำนวณผลคูณภายนอกของเวกเตอร์คู่หนึ่ง\n"
+"\n"
+"ผลคูณภายนอก ถือว่าพารามิเตอร์ตัวแรก 'c' เป็นเวกเตอร์คอลัมน์ (เมทริกซ์ที่มีหนึ่งคอลัมน์) "
+"และพารามิเตอร์ที่สอง 'r' เป็นเวกเตอร์แถว (เมทริกซ์ที่มีหนึ่งแถว) "
+"และทำการคูณเมทริกซ์พีชคณิตเชิงเส้น 'c * r' โดยให้ a "
+"เมทริกซ์ที่มีจำนวนแถวเป็นจำนวนส่วนประกอบใน 'c' และจำนวนคอลัมน์คือจำนวนส่วนประกอบใน 'r'"
+
+msgid "Composes transform from four vectors."
+msgstr "รวมทรานฟอร์มของสี่เวกเตอร์"
+
+msgid "Decomposes transform to four vectors."
+msgstr "แยกทรานฟอร์มของสี่เวกเตอร์"
+
+msgid "Calculates the determinant of a transform."
+msgstr "คำนวณดีเทอร์มิแนนต์ของทรานฟอร์ม"
+
+msgid "Calculates the inverse of a transform."
+msgstr "คำนวณอินเวอร์สของทรานฟอร์ม"
+
+msgid "Calculates the transpose of a transform."
+msgstr "คำนวณทรานสโพสของทรานฟอร์ม"
+
+msgid "Multiplies vector by transform."
+msgstr "คูณเวกเตอร์ด้วยทรานฟอร์ม"
+
+msgid "Transform constant."
+msgstr "ค่าคงที่ทรานฟอร์ม"
+
+msgid "Vector function."
+msgstr "ฟังก์ชันเวกเตอร์"
+
+msgid "Vector operator."
+msgstr "ตัวดำเนินการเวกเตอร์"
+
+msgid "Calculates the cross product of two vectors."
+msgstr "หาผลคูณเชิงเวกเตอร์(cross product) ของเวกเตอร์สองตัว"
+
+msgid ""
+"(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
+"differencing."
+msgstr "(โหมดแฟรกเมนต์/แสง เท่านั้น) (เวกเตอร์) อนุพันธ์ของ 'x' โดยใช้ค่าความแตกต่างภายใน"
+
+msgid ""
+"(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
+"differencing."
+msgstr "(โหมดแฟรกเมนต์/แสง เท่านั้น) (เวกเตอร์) อนุพันธ์ของ 'y' โดยใช้ค่าความแตกต่างภายใน"
+
+msgid "Returns the distance between two points."
+msgstr "คืนค่าระยะห่างระหว่างสองจุด"
+
+msgid "Calculates the dot product of two vectors."
+msgstr "คำนวณผลคูณเชิงสเกลลาร์ (dot) ของเวกเตอร์สองตัว"
+
+msgid ""
+"Returns the vector that points in the same direction as a reference vector. "
+"The function has three vector parameters : N, the vector to orient, I, the "
+"incident vector, and Nref, the reference vector. If the dot product of I and "
+"Nref is smaller than zero the return value is N. Otherwise -N is returned."
+msgstr ""
+"คืนค่าเวกเตอร์ที่ชี้ไปในทิศทางเดียวกับเวกเตอร์อ้างอิง ฟังก์ชันนี้มีพารามิเตอร์เวกเตอร์สามตัว: N "
+"เวกเตอร์ที่ชี้ไปยีงจุดกำเนิด I เวกเตอร์เหตุการณ์และ Nref เวกเตอร์อ้างอิง "
+"ถ้าผลคูณเชิงสเกลลาร์ของ I และ Nref มีขนาดเล็กกว่าศูนย์จะคืนค่า N หากเป็นนอกจากนั้น จะคืนค่า -N"
+
+msgid ""
+"Returns falloff based on the dot product of surface normal and view direction "
+"of camera (pass associated inputs to it)."
+msgstr ""
+"คืนค่าการลดลงของผลคูณเชิงสเกลาร์ของพื้นผิวปกติและทิศทางการมองของกล้อง "
+"(ส่งผ่านอินพุตที่เกี่ยวข้องไปยังมัน)"
+
+msgid "Calculates the length of a vector."
+msgstr "หาขนาดเวกเตอร์"
+
+msgid "Linear interpolation between two vectors."
+msgstr "การประมาณค่าเชิงเส้นระหว่างสองเวกเตอร์"
+
+msgid "Linear interpolation between two vectors using scalar."
+msgstr "การประมาณค่าเชิงเส้นระหว่างสองเวกเตอร์โดยใช้สเกลาร์"
+
+msgid "Calculates the normalize product of vector."
+msgstr "คำนวณหาเวกเตอร์หน่วยของเวกเตอร์"
+
+msgid "1.0 - vector"
+msgstr "1.0 - เวกเตอร์"
+
+msgid "1.0 / vector"
+msgstr "1.0 / เวกเตอร์"
+
+msgid ""
+"Returns the vector that points in the direction of reflection ( a : incident "
+"vector, b : normal vector )."
+msgstr "คืนค่าเวกเตอร์ในทิศทางการสะท้อน (a: เวกเตอร์ที่คำนวณ, b: เวกเตอร์ทั่วไป)"
+
+msgid "Returns the vector that points in the direction of refraction."
+msgstr "คืนค่าเวกเตอร์ที่มีทิศทางที่เกิดจากการหักเห"
+
+msgid ""
+"SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than "
+"'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using "
+"Hermite polynomials."
+msgstr ""
+"SmoothStep function( เวกเตอร์(edge0), เวกเตอร์(edge1), เวกเตอร์(x) ).\n"
+"\n"
+"คืนค่า 0.0 ถ้า 'x' น้อยกว่า 'edge0' และ 1.0 ถ้า 'x' มากกว่า 'edge1' "
+"นอกนั้นจะคืนค่าระหว่าง 0.0 กับ 1.0 โดยใช้สูตรพหุนามเฮอไมท์ (Hermite polynomials)"
+
+msgid ""
+"SmoothStep function( scalar(edge0), scalar(edge1), vector(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than "
+"'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using "
+"Hermite polynomials."
+msgstr ""
+"SmoothStep function( สเกลาร์(edge0), สเกลาร์(edge1), เวกเตอร์(x) )\n"
+"\n"
+"คืนค่า 0.0 ถ้า 'x' น้อยกว่า 'edge0' และ 1.0 ถ้า 'x' มากกว่า 'edge1' "
+"นอกนั้นจะคืนค่าระหว่าง 0.0 กับ 1.0 โดยใช้สูตรพหุนามเฮอไมท์ (Hermite polynomials)"
+
+msgid ""
+"Step function( vector(edge), vector(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
+msgstr ""
+"Step function( เวกเตอร์(edge), เวกเตอร์(x) ).\n"
+"\n"
+"คืนค่า 0.0 ถ้า x น้อยกว่า edge ถ้าไม่ใช่ คืนค่า 1.0"
+
+msgid ""
+"Step function( scalar(edge), vector(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
+msgstr ""
+"Step function( สเกลาร์(edge), เวกเตอร์(x) ).\n"
+"\n"
+"คืนค่า 0.0 ถ้า 'x' น้อยกว่า 'edge' ถ้าไม่ใช่จะคืนค่า 1.0"
+
+msgid ""
+"(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'."
+msgstr "(โหมดแฟรกเมนต์/แสง เท่านั้น) (เวกเตอร์) ผลรวมของอนุพันธ์สัมบูรณ์ใน 'x' และ 'y'"
+
+msgid ""
+"Custom Godot Shader Language expression, with custom amount of input and "
+"output ports. This is a direct injection of code into the vertex/fragment/"
+"light function, do not use it to write the function declarations inside."
+msgstr ""
+"นิพจน์ภาษาเชดเดอร์ Godot แบบกำหนดเอง พร้อมจำนวนพอร์ตอินพุตและเอาต์พุตที่กำหนดเอง "
+"จำทำการแทรกโค้ดลงในฟังก์ชันเวอร์เทก / แฟรกเมนต์ / แสง "
+"ห้ามใช้เพื่อเขียนการประกาศฟังก์ชันภายใน"
+
+msgid "Visual Shader Mode Changed"
+msgstr "เปลี่ยนโหมดเวอร์ชวลเชดเดอร์แล้ว"
+
+msgid "Bake VoxelGI"
+msgstr "คำณวณ VoxelGI"
+
+msgid "Are you sure to run %d projects at once?"
+msgstr "ยืนยันการรันโปรเจกต์ %d โปรเจกต์ทีเดียว?"
+
+msgid ""
+"The selected project \"%s\" does not specify its supported Godot version in "
+"its configuration file (\"project.godot\").\n"
+"\n"
+"Project path: %s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"\n"
+"Warning: You won't be able to open the project with previous versions of the "
+"engine anymore."
+msgstr ""
+"โปรเจกต์ที่เลือก \"%s\" ไม่ได้ระบุเวอร์ชั่น Godot ที่ซัพพอร์ตเอาไว้ในไฟล์การตั้งค่า (\"project."
+"godot\")\n"
+"\n"
+"ตำแหน่งโปรเจกต์: %s\n"
+"\n"
+"หากคุณเลือกที่จะเปิดโปรเจกต์นี้ต่อไป มันจะถูกแปลงเป็นไฟล์การแก้ใขฟอร์แมทของเวอร์ชั่นปัจจุบัน\n"
+"\n"
+"คำเตือน: คุณจะไม่สามารถเปิดโปรเจกต์ด้วยเวอร์ชั่นเก่ากว่าเวอร์ชั่นปัจจุบันของโปรแกรมได้อีกต่อไป"
+
+msgid "Remove %d projects from the list?"
+msgstr "ลบ %d โปรเจกต์จากรายการหรือไม่"
+
+msgid "Remove this project from the list?"
+msgstr "ลบโปรเจกต์นี้จากรายการหรือไม่"
+
+msgid ""
+"Remove all missing projects from the list?\n"
+"The project folders' contents won't be modified."
+msgstr ""
+"ลบโปรเจกต์ที่หายไปออกจากรายชื่อหรือไม่?\n"
+"เนื้อหาโฟลเดอร์โปรเจกต์จะไม่ถูกแก้ไข"
+
+msgid "New Project"
+msgstr "โปรเจกต์ใหม่"
+
+msgid "Scan"
+msgstr "สแกน"
+
+msgid "Loading, please wait..."
+msgstr "กำลังโหลด โปรดรอ..."
+
+msgid "Filter Projects"
+msgstr "กรองโปรเจ็กต์"
+
+msgid "Tags"
+msgstr "แท็ก"
+
+msgid "You don't have any projects yet."
+msgstr "คุณยังไม่มีโปรเจ็กต์ใดๆ"
+
+msgid ""
+"Get started by creating a new one,\n"
+"importing one that exists, or by downloading a project template from the "
+"Asset Library!"
+msgstr ""
+"เริ่มต้นด้วยการสร้างโปรเจกต์ใหม่,\n"
+"นำเข้าที่มีอยู่แล้ว, หรือดาวน์โหลดเทมเพล็ตโปรเจกต์จาก Asset Library!"
+
+msgid "Create New Project"
+msgstr "สร้างโปรเจกต์ใหม่"
+
+msgid "Import Existing Project"
+msgstr "นำเข้าโปรเจกต์ที่มีอยู่เดิม"
+
+msgid "Rename Project"
+msgstr "เปลี่ยนชื่อโปรเจกต์"
+
+msgid "Manage Tags"
+msgstr "จัดการแท็ก"
+
+msgid "Remove Missing"
+msgstr "ลบที่หายไป"
+
+msgid "Select a Folder to Scan"
+msgstr "เลือกโฟลเดอร์เพื่อสแกน"
+
+msgid "Remove All"
+msgstr "ลบทั้งหมด"
+
+msgid "Manage Project Tags"
+msgstr "จัดการแท็กโปรเจกต์"
+
+msgid "It would be a good idea to name your project."
+msgstr "ควรตั้งชื่อโปรเจกต์"
+
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+msgstr "ไฟล์โปรเจกต์ \".zip\" ผิดพลาด เนื่องจากไม่มีไฟล์ \"project.godot\""
+
+msgid "The path specified doesn't exist."
+msgstr "ไม่พบที่อยู่ที่ระบุเอาไว้"
+
+msgid "New Game Project"
+msgstr "โปรเจกต์เกมใหม่"
+
+msgid "Couldn't create project.godot in project path."
+msgstr "สร้างไฟล์ project.godot ไม่ได้"
+
+msgid "Error opening package file, not in ZIP format."
+msgstr "ผิดพลาดขณะเปิดไฟล์แพคเกจ, ไม่ใช่รูปแบบ zip"
+
+msgid "The following files failed extraction from package:"
+msgstr "ผิดพลาดขณะแยกไฟล์ต่อไปนี้จากแพคเกจ:"
+
+msgid "Install Project:"
+msgstr "ติดตั้งโปรเจกต์:"
+
+msgid "Project Name:"
+msgstr "ชื่อโปรเจกต์:"
+
+msgid "Project Path:"
+msgstr "ที่อยู่โปรเจกต์:"
+
+msgid "Project Installation Path:"
+msgstr "ที่อยู่ที่ใช้ติดตั้งโปรเจกต์:"
+
+msgid "Renderer:"
+msgstr "ตัวเรนเดอร์:"
+
+msgid "Error: Project is missing on the filesystem."
+msgstr "Error:โปรเจกต์หายไปจากระบบไฟล์"
+
+msgid "Missing Project"
+msgstr "โปรเจกต์หายไป"
+
+msgid "Restart Now"
+msgstr "เริ่มใหม่ทันที"
+
+msgid "Delete Item"
+msgstr "ลบไอเทม"
+
+msgid "Add Input Action"
+msgstr "เพิ่มการกระทำ"
+
+msgid "Change Action deadzone"
+msgstr "เปลี่ยน Action deadzone"
+
+msgid "Erase Input Action"
+msgstr "ลบการกระทำ"
+
+msgid "Project Settings (project.godot)"
+msgstr "ตัวเลือกโปรเจกต์ (project.godot)"
+
+msgid "Input Map"
+msgstr "ปุ่มกด"
+
+msgid "Localization"
+msgstr "การแปล"
+
+msgid "Plugins"
+msgstr "ปลั๊กอิน"
+
+msgid "Import Defaults"
+msgstr "นำเข้าค่าเริ่มต้น"
+
+msgid "Select Property"
+msgstr "เลือกคุณสมบัติ"
+
+msgid "Select Virtual Method"
+msgstr "เลือกเมท็อด"
+
+msgid "Batch Rename"
+msgstr "เปลี่ยนชื่อหลายรายการ"
+
+msgid "Prefix:"
+msgstr "คำนำหน้า:"
+
+msgid "Suffix:"
+msgstr "คำต่อท้าย:"
+
+msgid "Use Regular Expressions"
+msgstr "ใช้นิพจน์ทั่วไป"
+
+msgid "Substitute"
+msgstr "การแทนที่"
+
+msgid ""
+"Sequential integer counter.\n"
+"Compare counter options."
+msgstr ""
+"ตัวนับแบบตามลำดับ\n"
+"เปรียบเทียบกับการตั้งค่าตัวนับ"
+
+msgid "Per-level Counter"
+msgstr "ตัวนับต่อเลเวล"
+
+msgid "If set, the counter restarts for each group of child nodes."
+msgstr "หากตั้ง ตัวนับจะรีเริ่มใหม่สำหรับกลุ่มโหนดลูกแต่ละกลุ่ม"
+
+msgid "Step"
+msgstr "ช่วง"
+
+msgid "Padding"
+msgstr "การเว้นช่อง"
+
+msgid ""
+"Minimum number of digits for the counter.\n"
+"Missing digits are padded with leading zeros."
+msgstr ""
+"จำนวนหลักขั้นต่ำสำหรับการนับ\n"
+"ตัวเลขที่ขาดหายไปจะค่าเป็นศูนย์"
+
+msgid "Post-Process"
+msgstr "หลังประมวลผล"
+
+msgid "Style"
+msgstr "รูปแบบ"
+
+msgid "PascalCase to snake_case"
+msgstr "PascalCase ไป snake_case"
+
+msgid "snake_case to PascalCase"
+msgstr "snake_case ไป PascalCase"
+
+msgid "Case"
+msgstr "ตัวพิมพ์ใหญ่เล็ก"
+
+msgid "To Lowercase"
+msgstr "ไปตัวพิมพ์เล็ก"
+
+msgid "To Uppercase"
+msgstr "ไปตัวพิมพ์ใหญ่"
+
+msgid "Reset"
+msgstr "รีเซ็ต"
+
+msgid "Regular Expression Error:"
+msgstr "ข้อผิดพลาดของนิพจน์ทั่วไป:"
+
+msgid "At character %s"
+msgstr "ตัวอักษรที่ใช้ได้ %s"
+
+msgid "Reparent Node"
+msgstr "หาโหนดแม่ใหม่"
+
+msgid "Keep Global Transform"
+msgstr "เก็บ Global Transform"
+
+msgid "Reparent"
+msgstr "เลือกโหนดแม่ใหม่"
+
+msgid "2D Scene"
+msgstr "ฉาก 2D"
+
+msgid "3D Scene"
+msgstr "ฉาก 3D"
+
+msgid "User Interface"
+msgstr "อินเตอร์เฟส"
+
+msgid "Root Name:"
+msgstr "ชื่อราก:"
+
+msgid "Error loading scene from %s"
+msgstr "ผิดพลาดขณะโหลดฉากจาก %s"
+
+msgid "Replace with Branch Scene"
+msgstr "แทนที่ด้วยฉากย่อย"
+
+msgid "Detach Script"
+msgstr "ค้นพบสคริปต์"
+
+msgid "This operation can't be done on the tree root."
+msgstr "ทำกับโหนดรากไม่ได้"
+
+msgid "Duplicate Node(s)"
+msgstr "ทำซ้ำโหนด"
+
+msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
+msgstr ""
+"ไม่สามารถเป็นหาโหนดแม่ใหม่ของโหนดในฉากที่สืบทอดมาได้อีกรอบ "
+"ลำดับของโหนดไม่สามารถเปลี่ยนแปลงได้"
+
+msgid "Node must belong to the edited scene to become root."
+msgstr "โหนดต้องเป็นของฉากที่แก้ไขจึงจะกลายเป็นโหนดแม่"
+
+msgid "Instantiated scenes can't become root"
+msgstr "ฉากอินสแตนซ์ไม่สามารถเป็นฉากแม่ได้"
+
+msgid "Make node as Root"
+msgstr "ทำโหนดให้เป็นโหนดแม่"
+
+msgid "Delete %d nodes?"
+msgstr "ลบโหนด %d ?"
+
+msgid "Delete the root node \"%s\"?"
+msgstr "ลบโหนดแม่ \"%s\"?"
+
+msgid "Delete node \"%s\" and its children?"
+msgstr "ลบโหนด \"%s\" และโหนดลูก?"
+
+msgid "Delete node \"%s\"?"
+msgstr "ลบโหนด \"%s\"?"
+
+msgid "Save New Scene As..."
+msgstr "บันทึกฉากใหม่เป็น..."
+
+msgid ""
+"Disabling \"editable_instance\" will cause all properties of the node to be "
+"reverted to their default."
+msgstr ""
+"การปิดทำงาน \"editable_instance\" จะทำให้คุณสมบัติทั้งหมดของโหนดเปลี่ยนกลับเป็นค่าเริ่มต้น"
+
+msgid "Make Local"
+msgstr "ทำให้เป็นภายใน"
+
+msgid "New Scene Root"
+msgstr "ฉากแม่ใหม่"
+
+msgid "Create Root Node:"
+msgstr "สร้างโหนดแม่:"
+
+msgid "Other Node"
+msgstr "โหนดอื่นๆ"
+
+msgid "Can't operate on nodes from a foreign scene!"
+msgstr "ทำกับโหนดของฉากอื่นไม่ได้!"
+
+msgid "Can't operate on nodes the current scene inherits from!"
+msgstr "ทำกับโหนดที่ฉากปัจจุบันสืบทอดมาไม่ได้!"
+
+msgid "Attach Script"
+msgstr "แนบสคริปต์"
+
+msgid "Remove Node(s)"
+msgstr "ลบโหนด"
+
+msgid "Change type of node(s)"
+msgstr "เปลี่ยนชนิดของโหนด"
+
+msgid "This operation requires a single selected node."
+msgstr "ต้องเลือกเพียงโหนดเดียว"
+
+msgid ""
+"Couldn't save new scene. Likely dependencies (instances) couldn't be "
+"satisfied."
+msgstr "บันทึกฉากใหม่ไม่ได้ อาจจะมีการอ้างอิงไม่สมบูรณ์"
+
+msgid "Error saving scene."
+msgstr "ผิดพลาดขณะบันทึกฉาก"
+
+msgid "Error duplicating scene to save it."
+msgstr "ผิดพลาดขณะทำซ้ำฉากเพื่อบันทึก"
+
+msgid "Sub-Resources"
+msgstr "รีซอร์สย่อย"
+
+msgid "Clear Inheritance"
+msgstr "ลบการสืบทอด"
+
+msgid "Editable Children"
+msgstr "แก้ไขโหนดลูกได้"
+
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+"ไม่สามารถแนบสคริปต์: ไม่มีภาษาที่เปิดใช้\n"
+"อาจเป็นเพราะตัวแก้ไขนี้สร้างขึ้นโดยปิดใช้งานโมดูลภาษาทั้งหมด"
+
+msgid "Can't paste root node into the same scene."
+msgstr "ไม่สามารถวางโหนดรากในฉากเดียวกัน"
+
+msgid "Make Scene Root"
+msgstr "ตั้งเป็นฉากแม่"
+
+msgid "Delete (No Confirm)"
+msgstr "ลบ (ไม่ยืนยัน)"
+
+msgid "Add/Create a New Node."
+msgstr "เพิ่ม/สร้างโหนดใหม่"
+
+msgid "Attach a new or existing script to the selected node."
+msgstr "แนบสคริปต์ใหม่หรือที่มีอยู่กับโหนดที่เลือก"
+
+msgid "Detach the script from the selected node."
+msgstr "ถอดสคริปต์ออกจากโหนดที่เลือก"
+
+msgid "Remote"
+msgstr "ระยะไกล"
+
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
+"หากเลือกไว้ แผงผังฉากจากระยะไกลจะทำให้โปรเจกต์เกิดการกระตุกทุกครั้งที่อัปเดต\n"
+"สลับกลับไปยัง แผงผังฉากจากระยะใกล้เพื่อเพิ่มประสิทธิภาพในการใช้งาน"
+
+msgid "Local"
+msgstr "ระยะใกล้"
+
+msgid "Clear Inheritance? (No Undo!)"
+msgstr "ลบการสืบทอด? (ย้อนกลับไม่ได้!)"
+
+msgid "Path is empty."
+msgstr "ที่อยู่ว่างเปล่า"
+
+msgid "Filename is empty."
+msgstr "ชื่อไฟล์ว่างเปล่า"
+
+msgid "Path is not local."
+msgstr "ตำแหน่งที่อยู่ไม่ใช่ภายใน"
+
+msgid "A directory with the same name exists."
+msgstr "มีไดเรกทอรีชื่อนี้อยู่แล้ว"
+
+msgid "File does not exist."
+msgstr "ไม่พบไฟล์"
+
+msgid "Invalid extension."
+msgstr "นามสกุลไม่ถูกต้อง"
+
+msgid "Template:"
+msgstr "เทมเพลต:"
+
+msgid "Error - Could not create script in filesystem."
+msgstr "ผิดพลาด - สร้างสคริปต์ไม่ได้"
+
+msgid "Error loading script from %s"
+msgstr "ผิดพลาดขณะโหลดสคริปต์จาก %s"
+
+msgid "Open Script / Choose Location"
+msgstr "เปิดสคริปต์ / เลือกที่อยู่"
+
+msgid "Open Script"
+msgstr "เปิดสคริปต์"
+
+msgid "Invalid path."
+msgstr "ตำแหน่งผิดพลาด"
+
+msgid "Invalid inherited parent name or path."
+msgstr "ชื่อหรือตำแหน่งทีสืบทอดไม่ถูกต้อง"
+
+msgid "File exists, it will be reused."
+msgstr "มีไฟล์นี้อยู่แล้ว และจะถูกนำมาใช้"
+
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr "หมายเหตุ: สคริปต์ในตัวมีข้อจำกัด ไม่สามารถแก้ไขได้โดยใช้ตัวแก้ไขภายนอก"
+
+msgid "Built-in script (into scene file)."
+msgstr "บิวท์อินสคริปต์(ในไฟล์ฉาก)"
+
+msgid "Will load an existing script file."
+msgstr "จะทำการโหลดไฟล์สคริปต์ที่มีอยู่"
+
+msgid "Script file already exists."
+msgstr "ไฟล์สคริปต์มีอยู่แล้ว"
+
+msgid "Script path/name is valid."
+msgstr "ที่อยู่/ชื่อของสคริปต์ถูกต้อง"
+
+msgid "Will create a new script file."
+msgstr "จะทำการสร้างสคริปต์ใหม่"
+
+msgid "Built-in Script:"
+msgstr "สคริปต์บิวท์อิน:"
+
+msgid "Attach Node Script"
+msgstr "เชื่อมสคริปต์ให้โหนด"
+
+msgid "N/A"
+msgstr "ไม่มี"
+
+msgid "Invalid base path."
+msgstr "ตำแหน่งฐานไม่ถูกต้อง"
+
+msgid "Wrong extension chosen."
+msgstr "เลือกนามสกุลไม่ถูกต้อง"
+
+msgid "Note: Built-in shaders can't be edited using an external editor."
+msgstr "หมายเหตุ: ไม่สามารถแก้ไขเชเดอร์ในตัวได้โดยใช้ตัวแก้ไขภายนอก"
+
+msgid "Change Torus Inner Radius"
+msgstr "แก้ไขรัศมีภายในของวงแหวน"
+
+msgid "Change Torus Outer Radius"
+msgstr "แก้ไขรัศมีภายนอกของวงแหวน"
+
+msgid "GridMap Delete Selection"
+msgstr "ลบที่เลือกใน GridMap"
+
+msgid "GridMap Fill Selection"
+msgstr "เติมที่เลือกใน GridMap"
+
+msgid "GridMap Paste Selection"
+msgstr "วางที่เลือกใน GridMap"
+
+msgid "GridMap Paint"
+msgstr "วาด GridMap"
+
+msgid "Previous Floor"
+msgstr "ไปชั้นล่าง"
+
+msgid "Next Floor"
+msgstr "ไปชั้นบน"
+
+msgid "Edit X Axis"
+msgstr "แก้ไขแกน X"
+
+msgid "Edit Y Axis"
+msgstr "แก้ไขแกน Y"
+
+msgid "Edit Z Axis"
+msgstr "แก้ไขแกน Z"
+
+msgid "GridMap Settings"
+msgstr "การตั้งค่า GridMap"
+
+msgid "Pick Distance:"
+msgstr "ระยะการเลือก:"
+
+msgid "Cursor Rotate X"
+msgstr "เคอร์เซอร์หมุนตามแกน X"
+
+msgid "Cursor Rotate Y"
+msgstr "เคอร์เซอร์หมุนตามแกน Y"
+
+msgid "Cursor Rotate Z"
+msgstr "เคอร์เซอร์หมุนตามแกน Z"
+
+msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
+msgstr "มอบทรัพยากร MeshLibrary ให้กับ GridMap นี้เพื่อใช้ mesh"
+
+msgid "Begin Bake"
+msgstr "เริ่มต้น Bake"
+
+msgid "Class name can't be a reserved keyword"
+msgstr "ชื่อคลาสไม่สามารถมีคีย์เวิร์ดได้"
+
+msgid "Not enough bytes for decoding bytes, or invalid format."
+msgstr "ไบต์ไม่เพียงพอหรือรูปแบบไม่ถูกต้องสำหรับการถอดรหัสไบต์"
+
+msgid "%s/s"
+msgstr "%s/s"
+
+msgid "Incoming RPC"
+msgstr "RPC กำลังมา"
+
+msgid "Outgoing RPC"
+msgstr "RPC ขาออก"
+
+msgid "Config"
+msgstr "ตั้งค่า"
+
+msgid "Delete Property?"
+msgstr "ลบคุณสมบัติ?"
+
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr "ต้องมี NavigationMesh เพื่อให้โหนดนี้ทำงานได้"
+
+msgid "Invalid public key for APK expansion."
+msgstr "public key ผิดพลาดสำหรับ APK expansion"
+
+msgid "Invalid package name:"
+msgstr "ชื่อแพ็คเกจผิดพลาด:"
+
+msgid "Select device from the list"
+msgstr "เลือกอุปกรณ์จากรายชื่อ"
+
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr "เทมเพลตการสร้างสำหรับแอนดรอยด์ไม่ถูกติดตั้ง สามารถติดตั้งจากเมนูโปรเจกต์"
+
+msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr "ดีบัก Keystore ไม่ได้ถูกตั้งไว้ในตั้งค่าของตัวแก้ไขหรือในพรีเซ็ต"
+
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr "Release keystore กำหนดค่าไว้อย่างไม่ถูกต้องในพรีเซ็ตสำหรับการส่งออก"
+
+msgid "A valid Android SDK path is required in Editor Settings."
+msgstr "ต้องการที่อยู่ของ Android SDK ที่ถูกต้อง ในการตั้งค่าตัวแก้ไข"
+
+msgid "Invalid Android SDK path in Editor Settings."
+msgstr "ที่อยู่ Android SDK ไม่ถูกต้องในการตั้งค่าตัวแก้ไข"
+
+msgid "Missing 'platform-tools' directory!"
+msgstr "ไดเร็กทอรี 'platform-tools' หายไป!"
+
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr "ไม่พบคำสั่ง adb ของ Android SDK platform-tools"
+
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr "กรุณาตรวจสอบในตำแหน่งของ Android SDK ที่ระบุไว้ในการตั้งค่าตัวแก้ไข"
+
+msgid "Missing 'build-tools' directory!"
+msgstr "ไดเร็กทอรี 'build-tools' หายไป!"
+
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr "ไม่พบคำสั่ง apksigner ของ Android SDK build-tools"
+
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr "ชื่อไฟล์ผิดพลาด! แอนดรอยด์แอปบันเดิลจำเป็นต้องมีนามสกุล *.aab"
+
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr "การขยาย APK เข้ากันไม่ได้กับแอนดรอยด์แอปบันเดิล"
+
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr "ชื่อไฟล์ผิดพลาด! แอนดรอยด์ APK จำเป็นต้องมีนามสกุล *.apk"
+
+msgid "Could not export project files to gradle project."
+msgstr "ไม่สามารถส่งออกไฟล์โปรเจคไปยังโปรเจค gradle ได้"
+
+msgid "Building Android Project (gradle)"
+msgstr "กำลังสร้างโปรเจคแอนดรอยด์ (gradle)"
+
+msgid "Moving output"
+msgstr "กำลังย้ายเอาต์พุต"
+
+msgid "Aligning APK..."
+msgstr "จัดเรียง APK..."
+
+msgid "Invalid Identifier:"
+msgstr "ระบุไม่ถูกต้อง:"
+
+msgid "Run in Browser"
+msgstr "รันในเบราเซอร์"
+
+msgid "Stop HTTP Server"
+msgstr "หยุดเซิฟเวอร์ HTTP"
+
+msgid "Run exported HTML in the system's default browser."
+msgstr "รันไฟล์ HTML ที่ส่งออกในเบราเซอร์"
+
+msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"แอนิเมชัน CPUParticles2D จำเป็นต้องใช้ CanvasItemMaterial โดยเปิดการทำงาน "
+"\"Particles Animation\""
+
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr "ไม่ได้กำหนดวัสดุให้กับอนุภาค"
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"แอนิเมชัน Particles2D จำเป็นต้องใช้ CanvasItemMaterial โดยเปิดใช้งาน \"Particles "
+"Animation\""
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr "ต้องระบุเทกเจอร์ที่มีรูปร่างของแสงให้กับคุณสมบัติ \"Texture\"'"
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr "ต้องมีรูปหลายเหลี่ยมเพื่อให้ตัวบังแสงนี้ทำงานได้"
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr "รูปหลายเหลี่ยมของตัวบังแสงนี้ว่างเปล่า กรุณาวาดโพลีกอน"
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr "ParallaxLayer จะทำงานได้ต้องเป็นโหนดลูกของโหนด ParallaxBackground"
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr "PathFollow2D จะทำงานได้ต้องเป็นโหนดลูกของโหนด Path2D"
+
+msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
+"its shape."
+msgstr ""
+"โหนดนี้ไม่มีโหนดรูปทรง จึงไม่สามารถชนหรือมีปฏิสัมพันธ์กับออบเจกต์อื่นได้\n"
+"กรุณาเพิ่ม CollisionShape2D หรือ CollisionPolygon2D "
+"เป็นโหนดลูกเพื่อให้สามารถสร้างรูปทรงได้"
+
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "CollisionPolygon2D ที่ว่างเปล่าจะไม่มีผลทางกายภาพ"
+
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr "โพลีกอนไม่ถูกต้อง ต้องมีอย่างน้อย 3 จุด ในโหมดการสร้างแบบ 'Solids'"
+
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr "โพลีกอนไม่ถูกต้อง ต้องมีอย่างน้อย 2 จุด ในโหมดการสร้างแบบ 'Segments'"
+
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr "ต้องมีรูปทรงเพื่อให้ CollisionShape2D ทำงานได้ กรุณาสร้างรูปทรง!"
+
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr "โหนด A และ โหนด B จะต้องเป็น PhysicsBody2D"
+
+msgid "Node A must be a PhysicsBody2D"
+msgstr "Node A จะต้องเป็น PhysicsBody2D"
+
+msgid "Node B must be a PhysicsBody2D"
+msgstr "Node B จะต้องเป็น PhysicsBody2D"
+
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr "ข้อต่อไม่ได้เชื่อมโยงกับ PhysicsBody2D สองโหนด"
+
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr "โหนด A และโหนด B จะต้องเป็น PhysicsBody2D ที่แตกต่างกัน"
+
+msgid "Path property must point to a valid Node2D node to work."
+msgstr "ต้องแก้ไข Path ให้ชี้ไปยังโหนด Node2D จึงจะทำงานได้"
+
+msgid "This Bone2D chain should end at a Skeleton2D node."
+msgstr "สายการเชื่มโยงของ Bone2D จะต้องสิ้นสุดลงด้วยโหนด Skeleton2D"
+
+msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
+msgstr "Bone2D สามารถทำงานได้กับ Skeleton2D หรือ Bone2D ตัวอื่นโดยเป็นโหนดแม่"
+
+msgid ""
+"This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
+msgstr "โครงนี้ไม่มีท่าทาง REST ไปที่โหนด Skeleton2D และตั้งค่า"
+
+msgid "Nothing is visible because no mesh has been assigned."
+msgstr "ไม่มีสิ่งใดมองเห็นได้เนื่องจากไม่มีการกำหนด mesh"
+
+msgid "Nothing is visible because meshes have not been assigned to draw passes."
+msgstr "ไม่มีการแสดงผลเนื่องจากไม่ได้กำหนด mesh ใน draw pass"
+
+msgid "Generating Probe Volumes"
+msgstr "สร้างพื้นที่โพรบ"
+
+msgid "This body will be ignored until you set a mesh."
+msgstr "วัตถุนี้จะถูกละเว้นจนกว่าจะตั้ง mesh"
+
+msgid "Plotting Meshes"
+msgstr "วางแนว meshes"
+
+msgid "Finishing Plot"
+msgstr "เสร็จสิ้นการวางแนว"
+
+msgid "On BlendTree node '%s', animation not found: '%s'"
+msgstr "ที่โหนด BlendTree '%s' ไม่พบแอนิเมชัน '%s'"
+
+msgid "Animation not found: '%s'"
+msgstr "ไม่พบแอนิเมชัน: '%s'"
+
+msgid "Nothing connected to input '%s' of node '%s'."
+msgstr "ไม่มีการเชื่อมต่อไปที่อินพุต '%s' ของโหนด '%s'."
+
+msgid "No root AnimationNode for the graph is set."
+msgstr "ไม่มีรากสำหรับ AnimationNode สำหรับกราฟที่่ได้ถูกตั้งไว้"
+
+msgid "Switch between hexadecimal and code values."
+msgstr "สลับระหว่างค่าฐานสิบหกและโค้ด"
+
+msgid ""
+"Container by itself serves no purpose unless a script configures its children "
+"placement behavior.\n"
+"If you don't intend to add a script, use a plain Control node instead."
+msgstr ""
+"ตัวคอนเทนเนอร์เองไม่มีบทบาทเว้นแต่คุณจะตั้งค่าลักษณะการทำงานของตำแหน่งรองในสคริปต์\n"
+"หากคุณไม่ต้องการเพิ่มสคริปต์ให้ใช้โหนด Control ปกติแทน"
+
+msgid ""
+"The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
+"\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
+msgstr ""
+"คำแนะนำจะไม่แสดงเนื่องจากตัวกรองเมาส์ของตัวควบคุมถูกตั้งค่าเป็น \"ละเว้น\" "
+"ในการแก้ปัญหานี้ให้ตั้งค่าตัวกรองเมาส์เป็น \"หยุด\" หรือ \"ผ่าน\""
+
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
+msgstr "ถ้า \"Exp Edit\" เปิดใช้งาน \"Min Value\" จะต้องมากกว่า 0"
+
+msgid ""
+"ScrollContainer is intended to work with a single child control.\n"
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
+"minimum size manually."
+msgstr ""
+"ScrollContainer ทำงานได้เมื่อมีโหนดลูกเพียงหนึ่งโหนดเท่านั้น\n"
+"ใช้ container เป็นโหนดลูก (VBox,HBox,ฯลฯ) หรือ Control และปรับขนาดเล็กสุดด้วยตนเอง"
+
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr "พอร์ตตัวอย่างเชื่อมต่ออยู่แต่ไม่ได้ใช้ ควรที่จะเปลี่ยนเป็น \"SamplerPort\""
+
+msgid "Invalid source for preview."
+msgstr "แหล่งที่มาไม่ถูกต้องสำหรับการแสดงตัวอย่าง"
+
+msgid "Invalid source for shader."
+msgstr "ซอร์สไม่ถูกต้องสำหรับเชดเดอร์"
+
+msgid "Invalid comparison function for that type."
+msgstr "ฟังก์ชันการเปรียบเทียบไม่ถูกต้องสำหรับประเภทนั้น"
+
+msgid "Varying may not be assigned in the '%s' function."
+msgstr "การ Varying ไม่สามารถกำหนดใน Function '%s' ได้"
+
+msgid "'%s' cannot be used within the '%s' processor function."
+msgstr "'%s' ไม่สามารถใช้งานภายใน Processor Function '%s' ได้"
+
+msgid ""
+"'%s' cannot be used here, because '%s' is called by the '%s' processor "
+"function (which is not allowed)."
+msgstr ""
+"'%s' ไม่สามารถใช้งานตรงนี้ได้ เพราะ '%s' ถูกเรียกใช้โดย Processor Function '%s' "
+"(ซึ่งไม่สามารถทำได้)"
+
+msgid "Assignment to function."
+msgstr "การกำหนดให้กับ Function"
+
+msgid "Swizzling assignment contains duplicates."
+msgstr "มีส่วนซ้ำของ Swizzling Assignment"
+
+msgid "Assignment to uniform."
+msgstr "การกำหนดให้กับ Uniform"
+
+msgid "Constants cannot be modified."
+msgstr "Constant จะไม่สามารถแก้ไขได้อีก"
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using both built-"
+"ins and uniform textures, this is not supported (use either one or the other)."
+msgstr ""
+"Sampler Argument %d ของ Function '%s' ถูกเรียกมากกว่าหนึ่งครั้งโดยใช้ทั้ง Built-in และ "
+"Uniform Texture ซึ่งไม่รองรับ (เลือกใช้อย่างใดอย่างหนึ่ง)"
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using textures "
+"that differ in either filter, repeat, or texture hint setting."
+msgstr ""
+"Sampler Argument %d ของ Function '%s' ถูกเรียกมากกว่าหนึ่งครั้งโดยใช้ Texture "
+"ที่มีความแตกต่างที่อาจเป็น Filter, Repeat หรือการตั้งค่า Texture Hint"
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using different "
+"built-ins. Only calling with the same built-in is supported."
+msgstr ""
+"Sampler Argument %d ของ Function %s ถูกเรียกใช้มากกว่าหนึ่งครั้งโดยใช้ Built-in "
+"ประเภทที่แตกต่างกัน ระบบรองรับการเรียกใช้งานแบบ Built-in ประเภทเดียวเท่านั้น"
+
+msgid "Array size is already defined."
+msgstr "Array Size ได้ถูกระบุอยู่แล้ว"
+
+msgid "Unknown array size is forbidden in that context."
+msgstr "ไม่อนุญาตให้ใช้ Array Size แบบไม่รู้ขนาดใน Context ดังกล่าว"
+
+msgid "Expected a positive integer constant."
+msgstr "ต้องการ Constant แบบ Integer ค่าจำนวนเต็มบวก"
+
+msgid "Invalid data type for the array."
+msgstr "ประเภทข้อมูลสำหรับ Array ไม่ถูกต้อง"
+
+msgid "Expected array initialization."
+msgstr "ต้องการตัวประกาศ Array"
+
+msgid "Cannot convert from '%s' to '%s'."
+msgstr "ไม่สามารถแปลงข้อมูลจาก '%s' ไป '%s' ได้"
+
+msgid "Expected ')' in expression."
+msgstr "ต้องการเครื่องหมาย ')' ใน Expression"
+
+msgid "Void value not allowed in expression."
+msgstr "ไม่อนุญาตให้ใช้ข้อมูลแบบ Void ใน Expression"
+
+msgid "Expected '(' after the type name."
+msgstr "ต้องการเครื่องหมาย '(' หลังจากชื่อ Type"
+
+msgid "No matching constructor found for: '%s'."
+msgstr "ไม่พบ Constructor สำหรับ: '%s'"
+
+msgid "Expected a function name."
+msgstr "โปรดใส่ชื่อ Function"
+
+msgid "Built-in function '%s' is not supported for the '%s' shader type."
+msgstr "Function แบบ Built-in '%s' ไม่รองรับ Shader Type แบบ '%s'"
+
+msgid "No matching function found for: '%s'."
+msgstr "ไม่พบ Function สำหรับ: '%s'"
+
+msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
+msgstr "การ Varying '%s' ไม่สามารถ Pass สำหรับ Parameter '%s' ใน Context ดังกล่าวได้"
+
+msgid ""
+"Unable to pass a multiview texture sampler as a parameter to custom function. "
+"Consider to sample it in the main function and then pass the vector result to "
+"it."
+msgstr ""
+"ไม่สามารถ Pass ข้อมูล Multiview Texture Sampler ในรูปแบบ Parameter ไปยัง Function "
+"แบบกำหนดเองได้ โปรด Sample ข้อมูลดังกล่าวใน Function หลักและจากนั้นให้ส่งผ่านผลลัพธ์ข้อมูล "
+"Vector ออกมาแทน"
+
+msgid "Unknown identifier in expression: '%s'."
+msgstr "ไม่รู้จัก Identifier ใน Expression: '%s'"
+
+msgid ""
+"%s has been removed in favor of using hint_%s with a uniform.\n"
+"To continue with minimal code changes add 'uniform sampler2D %s : hint_%s, "
+"filter_linear_mipmap;' near the top of your shader."
+msgstr ""
+"%s ได้ถูกนำออก ขอให้ใช้ hint_%s กับข้อมูล Uniform แทน\n"
+"เพื่อให้เกิดการแก้ไขโค้ดน้อยที่สุด ให้เพิ่ม 'uniform sampler2D %s : hint_%s, "
+"filter_linear_mipmap;' ที่โค้ดส่วนบนของ Shader ของคุณแทน"
+
+msgid "Can't use function as identifier: '%s'."
+msgstr "ไม่สามารถใช้ Function'%s' แบบ Identifier ได้"
+
+msgid "Only integer expressions are allowed for indexing."
+msgstr "อนุญาตให้ใช้ Integer Expression สำหรับ Indexing เท่านั้น"
+
+msgid "Index [%d] out of range [%d..%d]."
+msgstr "Index [%d] เกินระยะ [%d..%d] ที่กำหนด"
+
+msgid "Expected expression, found: '%s'."
+msgstr "ต้องการ Expression แต่พบ '%s' แทน"
+
+msgid "Empty statement. Remove ';' to fix this warning."
+msgstr "Statement ว่าง ให้นำ ';' ออกเพื่อแก้ปัญหาคำเตือนนี้"
+
+msgid "Expected an identifier as a member."
+msgstr "ต้องการ Identifier ให้เป็น Member"
+
+msgid "Cannot combine symbols from different sets in expression '.%s'."
+msgstr "ไม่สามารถรวม Symbol ของ Set ที่แตกต่างกันใน Expression '%s' ได้"
+
+msgid "Invalid member for '%s' expression: '.%s'."
+msgstr "Member ของ Expression '%s' ไม่ถูกต้อง: '%s'"
+
+msgid "An object of type '%s' can't be indexed."
+msgstr "Object ของประเภท '%s' ไม่สามารถ Index ได้"
+
+msgid "Invalid base type for increment/decrement operator."
+msgstr "Base Type ของ Increment/Decrement Operator ไม่ถูกต้อง"
+
+msgid "Invalid token for the operator: '%s'."
+msgstr "Token สำหรับ Operator ไม่ถูกต้อง: '%s'"
+
+msgid "Unexpected end of expression."
+msgstr "มีตัวอักษรที่ไม่ถูกต้องที่ท้ายสุดของคำสั่ง"
+
+msgid "Invalid arguments to unary operator '%s': %s."
+msgstr "Argument ถึง Unary Operator '%s' ไม่ถูกต้อง: '%s'"
+
+msgid "Missing matching ':' for select operator."
+msgstr "ตัว Matching ':' ของ Select Operator หายไป"
+
+msgid "Invalid argument to ternary operator: '%s'."
+msgstr "Argument ของ Ternary Operator ไม่ถูกต้อง: '%s'"
+
+msgid "Invalid arguments to operator '%s': '%s'."
+msgstr "Argument ของ Operator '%s' ไม่ถูกต้อง: '%s'"
+
+msgid "A switch may only contain '%s' and '%s' blocks."
+msgstr "สเตตเมนต์ 'switch' สามารถมีบล็อก'%s' และ '%s' ได้เท่านั้น"
+
+msgid "Expected variable type after precision modifier."
+msgstr "ต้องระบุประเภทตัวแปรหลังจาก Precision Modifier"
+
+msgid "Invalid variable type (samplers are not allowed)."
+msgstr "ประเภทตัวแปรไม่ถูกต้อง (ไม่อนุญาตให้ใช้ Samplers)"
+
+msgid "Expected an identifier or '[' after type."
+msgstr "ต้องการ Identifier หรือ '[' หลังจากประเภทข้อมูล"
+
+msgid "Expected an identifier."
+msgstr "ต้องการ Identifier"
+
+msgid "Expected array initializer."
+msgstr "ต้องระบุ Array Initializer"
+
+msgid "Expected data type after precision modifier."
+msgstr "ต้องระบุประเภทข้อมูลหลังจากการระบุ Precision Modifier"
+
+msgid "Expected a constant expression."
+msgstr "ต้องการนิพจน์สำหรับ Constant"
+
+msgid "Expected initialization of constant."
+msgstr "ต้องการข้อมูลเริ่มต้นสำหรับ Constant"
+
+msgid "Expected constant expression for argument %d of function call after '='."
+msgstr ""
+"ต้องการ Constant Expression สำหรับ Argument %d ของ Function Call หลังจากส่วน '='"
+
+msgid "Expected a boolean expression."
+msgstr "ต้องการนิพจน์ Boolean"
+
+msgid "Cases must be defined before default case."
+msgstr "Default Case ต้องประกาศหลังสุดเสมอ"
+
+msgid "Default case must be defined only once."
+msgstr "บล็อก Default Case มีได้อันเดียวเท่านั้น"
+
+msgid "'%s' must be placed within a '%s' block."
+msgstr "'%s' จะต้องอยู่ในบล็อก '%s'"
+
+msgid "Expected an integer constant."
+msgstr "ต้องการ Constant ประเภท Integer"
+
+msgid "Duplicated case label: %d."
+msgstr "Case Label ซ้ำกัน: '%d'"
+
+msgid "Using '%s' in the '%s' processor function is incorrect."
+msgstr "การใช้ '%s' ใน Processor Function '%s' นั้นไม่ถูกต้อง"
+
+msgid "Expected '%s' with an expression of type '%s'."
+msgstr "ต้องการ '%s' สำหรับนิพจน์ของชนิดข้อมูล '%s'"
+
+msgid "Expected return with an expression of type '%s'."
+msgstr "จำเป็นต้อง Return ค่ากลับสำหรับประเภทข้อมูล '%s'"
+
+msgid "'%s' is not allowed outside of a loop or '%s' statement."
+msgstr "'%s' ไม่อนุญาตให้อยู่นอก Loop หรือ Statement '%s'"
+
+msgid "'%s' is not allowed outside of a loop."
+msgstr "'%s' ไม่อนุญาตให้อยู่นอก Loop"
+
+msgid "The left expression is expected to be a variable declaration."
+msgstr "ฝั่งด้านซ้ายของนิพจน์จะต้องเป็นการประกาศตัวแปร"
+
+msgid "The precision modifier cannot be used on structs."
+msgstr "Precision Modifier ไม่สามารถใช้งานกับข้อมูลประเภท Struct ได้"
+
+msgid "The precision modifier cannot be used on boolean types."
+msgstr "Precision Modifier ไม่สามารถใช้งานกับข้อมูลประเภท Boolean ได้"
+
+msgid "Expected '%s' at the beginning of shader. Valid types are: %s."
+msgstr "ต้องการ '%s' ที่จุดเริ่มต้นของ Shader โดยชนิดที่ถูกต้องคือ: %s."
+
+msgid ""
+"Expected an identifier after '%s', indicating the type of shader. Valid types "
+"are: %s."
+msgstr "ต้องการ Identifier หลังจาก '%s' ซึ่งระบุชนิดของ Shader โดยชนิดที่ถูกต้องคือ: '%s'"
+
+msgid "Invalid shader type. Valid types are: %s"
+msgstr "Shader Type ผิด ที่ถูกต้องคือ: %s"
+
+msgid "Expected an identifier for render mode."
+msgstr "ต้องการ Identifier ของ Render Mode"
+
+msgid "Duplicated render mode: '%s'."
+msgstr "Render Mode ซ้ำ: '%s'"
+
+msgid ""
+"Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."
+msgstr "Redefinition ของ Render Mode: '%s'. '%s' ได้ถูกตั้งค่าเป็น '%s' อยู่แล้ว"
+
+msgid "Invalid render mode: '%s'."
+msgstr "โหมด Render ไม่ถูกต้อง: '%s'"
+
+msgid "Unexpected token: '%s'."
+msgstr "Token เกินออกมา: '%s'"
+
+msgid "Expected a struct identifier."
+msgstr "ต้องการ Identifier เพิ่มเติมสำหรับ Struct"
+
+msgid "Nested structs are not allowed."
+msgstr "ไม่อนุญาตให้ประกาศ Struct แบบ Nested"
+
+msgid "Expected data type."
+msgstr "ประเภทข้อมูลหายไป"
+
+msgid "A '%s' data type is not allowed here."
+msgstr "ไม่อนุญาตให้ใช้ข้อมูลประเภท '%s' ตรงนี้"
+
+msgid "Expected an identifier or '['."
+msgstr "Identifier หรือ '[' หายไป"
+
+msgid "Empty structs are not allowed."
+msgstr "ไม่อนุญาตให้ประกาศ Struct แบบว่างเปล่า"
+
+msgid "Uniform instances are not yet implemented for '%s' shaders."
+msgstr "Uniform Instance ยังไม่รองรับสำหรับ Shader '%s' ในขณะนี้"
+
+msgid "Varyings cannot be used in '%s' shaders."
+msgstr "Varyings ไม่สามารถใช้งานกับ Shader '%s' ได้"
+
+msgid "Interpolation qualifiers are not supported for uniforms."
+msgstr "Inperpolation Qualifier ต่าง ๆ ไม่สามารถใช้งานได้กับ Uniform"
+
+msgid "The '%s' data type is not supported for uniforms."
+msgstr "ไม่สามารถรองรับประเภทข้อมูล '%s' สำหรับข้อมูล Uniform"
+
+msgid "The '%s' data type is not allowed here."
+msgstr "ไม่อนุญาตให้ใช้อักขระ '%s' ตรงนี้"
+
+msgid "Interpolation modifier '%s' cannot be used with boolean types."
+msgstr "Interpolation Modifier '%s' ไม่สามารถใช้งานกับข้อมูลชนิด Boolean ได้"
+
+msgid "Invalid data type for varying."
+msgstr "ประเภทข้อมูลสำหรับ varying ไม่ถูกต้อง"
+
+msgid "Invalid argument name."
+msgstr "ชื่อตัวแปรอาร์กูเมนท์ไม่ถูกต้อง"
+
+msgid "Invalid macro argument list."
+msgstr "รายการอาร์กูเมนท์มาโครไม่ถูกต้อง"
+
+msgid "Invalid macro argument."
+msgstr "อาร์กูเมนท์มาโครไม่ถูกต้อง"
+
+msgid "Invalid macro argument count."
+msgstr "จำนวนอาร์กูเมนท์มาโครไม่ถูกต้อง"

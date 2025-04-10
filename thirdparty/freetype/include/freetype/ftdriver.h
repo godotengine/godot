@@ -4,7 +4,7 @@
  *
  *   FreeType API for controlling driver modules (specification only).
  *
- * Copyright (C) 2017-2022 by
+ * Copyright (C) 2017-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -134,7 +134,7 @@ FT_BEGIN_HEADER
    *   each being rounded to the nearest pixel edge, taking care of overshoot
    *   suppression at small sizes, stem darkening, and scaling.
    *
-   *   Hstems (this is, hint values defined in the font to help align
+   *   Hstems (that is, hint values defined in the font to help align
    *   horizontal features) that fall within a blue zone are said to be
    *   'captured' and are aligned to that zone.  Uncaptured stems are moved
    *   in one of four ways, top edge up or down, bottom edge up or down.
@@ -446,7 +446,7 @@ FT_BEGIN_HEADER
    *   at smaller sizes.
    *
    *   For the auto-hinter, stem-darkening is experimental currently and thus
-   *   switched off by default (this is, `no-stem-darkening` is set to TRUE
+   *   switched off by default (that is, `no-stem-darkening` is set to TRUE
    *   by default).  Total consistency with the CFF driver is not achieved
    *   right now because the emboldening method differs and glyphs must be
    *   scaled down on the Y-axis to keep outline points inside their
@@ -651,11 +651,8 @@ FT_BEGIN_HEADER
    *     Windows~98; only grayscale and B/W rasterizing is supported.
    *
    *   TT_INTERPRETER_VERSION_38 ::
-   *     Version~38 corresponds to MS rasterizer v.1.9; it is roughly
-   *     equivalent to the hinting provided by DirectWrite ClearType (as can
-   *     be found, for example, in the Internet Explorer~9 running on
-   *     Windows~7).  It is used in FreeType to select the 'Infinality'
-   *     subpixel hinting code.  The code may be removed in a future version.
+   *     Version~38 is the same Version~40. The original 'Infinality' code is
+   *     no longer available.
    *
    *   TT_INTERPRETER_VERSION_40 ::
    *     Version~40 corresponds to MS rasterizer v.2.1; it is roughly
@@ -818,6 +815,79 @@ FT_BEGIN_HEADER
    *
    * @since:
    *   2.5
+   */
+
+
+  /**************************************************************************
+   *
+   * @property:
+   *   spread
+   *
+   * @description:
+   *   This property of the 'sdf' and 'bsdf' renderers defines how the signed
+   *   distance field (SDF) is represented in the output bitmap.  The output
+   *   values are calculated as follows, '128 * ( SDF / spread + 1 )', with
+   *   the result clamped to the 8-bit range [0..255].  Therefore, 'spread'
+   *   is also the maximum euclidean distance from the edge after which the
+   *   values are clamped.  The spread is specified in pixels with the
+   *   default value of 8.  For accurate SDF texture mapping (interpolation),
+   *   the spread should be large enough to accommodate the target grid unit.
+   *
+   * @example:
+   *   The following example code demonstrates how to set the SDF spread
+   *   (omitting the error handling).
+   *
+   *   ```
+   *     FT_Library  library;
+   *     FT_Int      spread = 2;
+   *
+   *
+   *     FT_Init_FreeType( &library );
+   *
+   *     FT_Property_Set( library, "sdf", "spread", &spread );
+   *   ```
+   *
+   * @note:
+   *   FreeType has two rasterizers for generating SDF, namely:
+   *
+   *   1. `sdf` for generating SDF directly from glyph's outline, and
+   *
+   *   2. `bsdf` for generating SDF from rasterized bitmaps.
+   *
+   *   Depending on the glyph type (i.e., outline or bitmap), one of the two
+   *   rasterizers is chosen at runtime and used for generating SDFs.  To
+   *   force the use of `bsdf` you should render the glyph with any of the
+   *   FreeType's other rendering modes (e.g., `FT_RENDER_MODE_NORMAL`) and
+   *   then re-render with `FT_RENDER_MODE_SDF`.
+   *
+   *   There are some issues with stability and possible failures of the SDF
+   *   renderers (specifically `sdf`).
+   *
+   *   1. The `sdf` rasterizer is sensitive to really small features (e.g.,
+   *      sharp turns that are less than 1~pixel) and imperfections in the
+   *      glyph's outline, causing artifacts in the final output.
+   *
+   *   2. The `sdf` rasterizer has limited support for handling intersecting
+   *      contours and *cannot* handle self-intersecting contours whatsoever.
+   *      Self-intersection happens when a single connected contour
+   *      intersects itself at some point; having these in your font
+   *      definitely poses a problem to the rasterizer and cause artifacts,
+   *      too.
+   *
+   *   3. Generating SDF for really small glyphs may result in undesirable
+   *      output; the pixel grid (which stores distance information) becomes
+   *      too coarse.
+   *
+   *   4. Since the output buffer is normalized, precision at smaller spreads
+   *      is greater than precision at larger spread values because the
+   *      output range of [0..255] gets mapped to a smaller SDF range.  A
+   *      spread of~2 should be sufficient in most cases.
+   *
+   *   Points (1) and (2) can be avoided by using the `bsdf` rasterizer,
+   *   which is more stable than the `sdf` rasterizer in general.
+   *
+   * @since:
+   *   2.11
    */
 
 

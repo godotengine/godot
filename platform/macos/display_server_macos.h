@@ -1,49 +1,57 @@
-/*************************************************************************/
-/*  display_server_macos.h                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  display_server_macos.h                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef DISPLAY_SERVER_MACOS_H
-#define DISPLAY_SERVER_MACOS_H
-
-#define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
+#pragma once
 
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
 #if defined(GLES3_ENABLED)
+#include "gl_manager_macos_angle.h"
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
+#import "native_menu_macos.h"
+
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+
 #if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/macos/vulkan_context_macos.h"
+#import "rendering_context_driver_vulkan_macos.h"
 #endif // VULKAN_ENABLED
+#if defined(METAL_ENABLED)
+#import "drivers/metal/rendering_context_driver_metal.h"
+#endif
+#endif // RD_ENABLED
+
+#define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
 #import <AppKit/AppKit.h>
 #import <AppKit/NSCursor.h>
@@ -56,7 +64,7 @@
 #undef CursorShape
 
 class DisplayServerMacOS : public DisplayServer {
-	GDCLASS(DisplayServerMacOS, DisplayServer)
+	GDCLASS(DisplayServerMacOS, DisplayServer); // Note: required for Object::cast_to.
 
 	_THREAD_SAFE_CLASS_
 
@@ -69,7 +77,9 @@ public:
 		bool raw = false;
 		Key keycode = Key::NONE;
 		Key physical_keycode = Key::NONE;
+		Key key_label = Key::NONE;
 		uint32_t unicode = 0;
+		KeyLocation location = KeyLocation::UNSPECIFIED;
 	};
 
 	struct WindowData {
@@ -81,6 +91,7 @@ public:
 		Vector<Vector2> mpath;
 
 		Point2i mouse_pos;
+		WindowResizeEdge edge = WINDOW_EDGE_MAX;
 
 		Size2i min_size;
 		Size2i max_size;
@@ -99,6 +110,8 @@ public:
 		Callable drop_files_callback;
 
 		ObjectID instance_id;
+		bool fs_transition = false;
+		bool initial_size = true;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
 		bool exclusive = false;
@@ -110,8 +123,15 @@ public:
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
+		bool no_min_btn = false;
+		bool no_max_btn = false;
 		bool no_focus = false;
 		bool is_popup = false;
+		bool mpass = false;
+		bool focused = false;
+		bool is_visible = true;
+		bool extend_to_title = false;
+		bool hide_from_capture = false;
 
 		Rect2i parent_safe_rect;
 	};
@@ -121,17 +141,14 @@ public:
 
 private:
 #if defined(GLES3_ENABLED)
-	GLManager_MacOS *gl_manager = nullptr;
+	GLManagerLegacy_MacOS *gl_manager_legacy = nullptr;
+	GLManagerANGLE_MacOS *gl_manager_angle = nullptr;
 #endif
-#if defined(VULKAN_ENABLED)
-	VulkanContextMacOS *context_vulkan = nullptr;
-	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#if defined(RD_ENABLED)
+	RenderingContextDriver *rendering_context = nullptr;
+	RenderingDevice *rendering_device = nullptr;
 #endif
 	String rendering_driver;
-
-	NSMenu *apple_menu = nullptr;
-	NSMenu *dock_menu = nullptr;
-	HashMap<String, NSMenu *> submenu;
 
 	struct WarpEvent {
 		NSTimeInterval timestamp;
@@ -146,13 +163,17 @@ private:
 
 	id tts = nullptr;
 	id menu_delegate = nullptr;
+	NativeMenuMacOS *native_menu = nullptr;
 
 	Point2i im_selection;
 	String im_text;
 
 	CGEventSourceRef event_source;
 	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
-	MouseButton last_button_state = MouseButton::NONE;
+	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
+	bool mouse_mode_override_enabled = false;
+	void _mouse_update_mode();
 
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
@@ -161,15 +182,16 @@ private:
 		String name;
 		String code;
 	};
-	Vector<LayoutInfo> kbd_layouts;
-	int current_layout = 0;
-	bool keyboard_layout_dirty = true;
+	mutable Vector<LayoutInfo> kbd_layouts;
+	mutable int current_layout = 0;
+	mutable bool keyboard_layout_dirty = true;
 
+	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	float display_max_scale = 1.f;
-	Point2i origin;
-	bool displays_arrangement_dirty = true;
+	mutable Point2i origin;
+	mutable bool displays_arrangement_dirty = true;
 	bool is_resizing = false;
 
 	CursorShape cursor_shape = CURSOR_ARROW;
@@ -178,54 +200,68 @@ private:
 
 	HashMap<WindowID, WindowData> windows;
 
+	struct IndicatorData {
+		id delegate;
+		id item;
+	};
+
+	IndicatorID indicator_id_counter = 0;
+	HashMap<IndicatorID, IndicatorData> indicators;
+
 	IOPMAssertionID screen_keep_on_assertion = kIOPMNullAssertionID;
+
+	Callable help_search_callback;
+	Callable help_action_callback;
 
 	struct MenuCall {
 		Variant tag;
 		Callable callback;
 	};
-	Vector<MenuCall> deferred_menu_calls;
+	List<MenuCall> deferred_menu_calls;
 
-	const NSMenu *_get_menu_root(const String &p_menu_root) const;
-	NSMenu *_get_menu_root(const String &p_menu_root);
+	Callable system_theme_changed;
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
-	void _update_window_style(WindowData p_wd);
-	void _set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
+	void _update_window_style(WindowData p_wd, WindowID p_window);
 
-	void _update_displays_arrangement();
-	Point2i _get_screens_origin() const;
+	void _update_displays_arrangement() const;
 	Point2i _get_native_screen_position(int p_screen) const;
 	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
-
-	WindowID _get_focused_window_or_popup() const;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 	void _push_input(const Ref<InputEvent> &p_event);
 	void _process_key_events();
-	void _update_keyboard_layouts();
+	void _update_keyboard_layouts() const;
 	static void _keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info);
-	NSImage *_convert_to_nsimg(Ref<Image> &p_image) const;
 
 	static NSCursor *_cursor_from_selector(SEL p_selector, SEL p_fallback = nil);
 
-	bool _has_help_menu() const;
-	NSMenuItem *_menu_add_item(const String &p_menu_root, const String &p_label, Key p_accel, int p_index, int *r_out);
+	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
+
+	void initialize_tts() const;
 
 public:
-	NSMenu *get_dock_menu() const;
 	void menu_callback(id p_sender);
+
+	void emit_system_theme_changed();
 
 	bool has_window(WindowID p_window) const;
 	WindowData &get_window(WindowID p_window);
 
+	NSImage *_convert_to_nsimg(Ref<Image> &p_image) const;
+	Point2i _get_screens_origin() const;
+
+	void set_menu_delegate(NSMenu *p_menu);
+
 	void send_event(NSEvent *p_event);
 	void send_window_event(const WindowData &p_wd, WindowEvent p_event);
 	void release_pressed_events();
+	void sync_mouse_state();
 	void get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const;
 	void update_mouse_pos(WindowData &p_wd, NSPoint p_location_in_window);
 	void push_to_key_event_buffer(const KeyEvent &p_event);
+	void pop_last_key_event();
 	void update_im_text(const Point2i &p_selection, const String &p_text);
 	void set_last_focused_window(WindowID p_window);
 	bool mouse_process_popups(bool p_close = false);
@@ -234,64 +270,24 @@ public:
 	void set_is_resizing(bool p_is_resizing);
 	bool get_is_resizing() const;
 	void reparent_check(WindowID p_window);
+	WindowID _get_focused_window_or_popup() const;
+	void mouse_enter_window(WindowID p_window);
+	void mouse_exit_window(WindowID p_window);
+	void update_presentation_mode();
 
-	void window_update(WindowID p_window);
+	bool is_always_on_top_recursive(WindowID p_window) const;
+
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
 	void window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled);
+	void set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 
-	virtual int global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index = -1) override;
-	virtual int global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1) override;
-	virtual int global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1) override;
-	virtual int global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1) override;
-	virtual int global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1) override;
-	virtual int global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1) override;
-	virtual int global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1) override;
-	virtual int global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1) override;
-	virtual int global_menu_add_separator(const String &p_menu_root, int p_index = -1) override;
-
-	virtual int global_menu_get_item_index_from_text(const String &p_menu_root, const String &p_text) const override;
-	virtual int global_menu_get_item_index_from_tag(const String &p_menu_root, const Variant &p_tag) const override;
-
-	virtual bool global_menu_is_item_checked(const String &p_menu_root, int p_idx) const override;
-	virtual bool global_menu_is_item_checkable(const String &p_menu_root, int p_idx) const override;
-	virtual bool global_menu_is_item_radio_checkable(const String &p_menu_root, int p_idx) const override;
-	virtual Callable global_menu_get_item_callback(const String &p_menu_root, int p_idx) const override;
-	virtual Callable global_menu_get_item_key_callback(const String &p_menu_root, int p_idx) const override;
-	virtual Variant global_menu_get_item_tag(const String &p_menu_root, int p_idx) const override;
-	virtual String global_menu_get_item_text(const String &p_menu_root, int p_idx) const override;
-	virtual String global_menu_get_item_submenu(const String &p_menu_root, int p_idx) const override;
-	virtual Key global_menu_get_item_accelerator(const String &p_menu_root, int p_idx) const override;
-	virtual bool global_menu_is_item_disabled(const String &p_menu_root, int p_idx) const override;
-	virtual String global_menu_get_item_tooltip(const String &p_menu_root, int p_idx) const override;
-	virtual int global_menu_get_item_state(const String &p_menu_root, int p_idx) const override;
-	virtual int global_menu_get_item_max_states(const String &p_menu_root, int p_idx) const override;
-	virtual Ref<Texture2D> global_menu_get_item_icon(const String &p_menu_root, int p_idx) const override;
-	virtual int global_menu_get_item_indentation_level(const String &p_menu_root, int p_idx) const override;
-
-	virtual void global_menu_set_item_checked(const String &p_menu_root, int p_idx, bool p_checked) override;
-	virtual void global_menu_set_item_checkable(const String &p_menu_root, int p_idx, bool p_checkable) override;
-	virtual void global_menu_set_item_radio_checkable(const String &p_menu_root, int p_idx, bool p_checkable) override;
-	virtual void global_menu_set_item_callback(const String &p_menu_root, int p_idx, const Callable &p_callback) override;
-	virtual void global_menu_set_item_key_callback(const String &p_menu_root, int p_idx, const Callable &p_key_callback) override;
-	virtual void global_menu_set_item_tag(const String &p_menu_root, int p_idx, const Variant &p_tag) override;
-	virtual void global_menu_set_item_text(const String &p_menu_root, int p_idx, const String &p_text) override;
-	virtual void global_menu_set_item_submenu(const String &p_menu_root, int p_idx, const String &p_submenu) override;
-	virtual void global_menu_set_item_accelerator(const String &p_menu_root, int p_idx, Key p_keycode) override;
-	virtual void global_menu_set_item_disabled(const String &p_menu_root, int p_idx, bool p_disabled) override;
-	virtual void global_menu_set_item_tooltip(const String &p_menu_root, int p_idx, const String &p_tooltip) override;
-	virtual void global_menu_set_item_state(const String &p_menu_root, int p_idx, int p_state) override;
-	virtual void global_menu_set_item_max_states(const String &p_menu_root, int p_idx, int p_max_states) override;
-	virtual void global_menu_set_item_icon(const String &p_menu_root, int p_idx, const Ref<Texture2D> &p_icon) override;
-	virtual void global_menu_set_item_indentation_level(const String &p_menu_root, int p_idx, int p_level) override;
-
-	virtual int global_menu_get_item_count(const String &p_menu_root) const override;
-
-	virtual void global_menu_remove_item(const String &p_menu_root, int p_idx) override;
-	virtual void global_menu_clear(const String &p_menu_root) override;
+	virtual void help_set_search_callbacks(const Callable &p_search_callback = Callable(), const Callable &p_action_callback = Callable()) override;
+	Callable _help_get_search_callback() const;
+	Callable _help_get_action_callback() const;
 
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;
@@ -305,23 +301,38 @@ public:
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
 	virtual Color get_accent_color() const override;
+	virtual Color get_base_color() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
 
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) override;
+
+	virtual void beep() const override;
+
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual void mouse_set_mode_override(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode_override() const override;
+	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
+	virtual bool mouse_is_mode_override_enabled() const override;
 
 	bool update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp);
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
-	void mouse_set_button_state(MouseButton p_state);
-	virtual MouseButton mouse_get_button_state() const override;
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
+	virtual Ref<Image> clipboard_get_image() const override;
+	virtual bool clipboard_has() const override;
+	virtual bool clipboard_has_image() const override;
 
 	virtual int get_screen_count() const override;
+	virtual int get_primary_screen() const override;
+	virtual int get_keyboard_focus_screen() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
@@ -329,12 +340,15 @@ public:
 	virtual float screen_get_max_scale() const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Color screen_get_pixel(const Point2i &p_position) const override;
+	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Ref<Image> screen_get_image_rect(const Rect2i &p_rect) const override;
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
 
 	virtual Vector<int> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID) override;
 	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
 
@@ -349,6 +363,7 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window) const override;
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;
@@ -381,6 +396,9 @@ public:
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual WindowID get_focused_window() const override;
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
 
@@ -403,8 +421,16 @@ public:
 	virtual bool window_maximize_on_title_dbl_click() const override;
 	virtual bool window_minimize_on_title_dbl_click() const override;
 
+	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_start_resize(WindowResizeEdge p_edge, WindowID p_window = MAIN_WINDOW_ID) override;
+
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual int accessibility_should_increase_contrast() const override;
+	virtual int accessibility_should_reduce_animation() const override;
+	virtual int accessibility_should_reduce_transparency() const override;
+	virtual int accessibility_screen_reader_active() const override;
 
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;
@@ -422,24 +448,34 @@ public:
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
+	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
+	virtual void show_emoji_and_symbol_picker() const override;
 
+	void _process_events(bool p_pump);
 	virtual void process_events() override;
 	virtual void force_process_and_drop_events() override;
 
 	virtual void release_rendering_thread() override;
-	virtual void make_rendering_thread() override;
 	virtual void swap_buffers() override;
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
+	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
+	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
+	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) override;
+	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
+	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const override;
+	virtual void delete_status_indicator(IndicatorID p_id) override;
+
+	virtual bool is_window_transparency_available() const override;
+
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 
 	static void register_macos_driver();
 
-	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
+	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerMacOS();
 };
-
-#endif // DISPLAY_SERVER_MACOS_H

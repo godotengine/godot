@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  surface_tool.h                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  surface_tool.h                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef SURFACE_TOOL_H
-#define SURFACE_TOOL_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "scene/resources/mesh.h"
@@ -38,19 +37,28 @@
 class SurfaceTool : public RefCounted {
 	GDCLASS(SurfaceTool, RefCounted);
 
+	static const uint32_t custom_mask[RS::ARRAY_CUSTOM_COUNT];
+	static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT];
+
 public:
 	struct Vertex {
-		Vector3 vertex;
+		// Trivial data for which the hash is computed using hash_buffer.
+		// ----------------------------------------------------------------
+		uint32_t smooth_group = 0; // Must be first.
+
 		Color color;
-		Vector3 normal; // normal, binormal, tangent
+		Vector3 normal; // normal, binormal, tangent.
 		Vector3 binormal;
 		Vector3 tangent;
 		Vector2 uv;
 		Vector2 uv2;
+		Color custom[RS::ARRAY_CUSTOM_COUNT];
+
+		Vector3 vertex; // Must be last.
+		// ----------------------------------------------------------------
+
 		Vector<int> bones;
 		Vector<float> weights;
-		Color custom[RS::ARRAY_CUSTOM_COUNT];
-		uint32_t smooth_group = 0;
 
 		bool operator==(const Vertex &p_vertex) const;
 
@@ -74,16 +82,27 @@ public:
 		SKIN_8_WEIGHTS
 	};
 
+	enum {
+		/* Do not move vertices that are located on the topological border (vertices on triangle edges that don't have a paired triangle). Useful for simplifying portions of the larger mesh. */
+		SIMPLIFY_LOCK_BORDER = 1 << 0, // From meshopt_SimplifyLockBorder
+		/* Improve simplification performance assuming input indices are a sparse subset of the mesh. Note that error becomes relative to subset extents. */
+		SIMPLIFY_SPARSE = 1 << 1, // From meshopt_SimplifySparse
+		/* Treat error limit and resulting error as absolute instead of relative to mesh extents. */
+		SIMPLIFY_ERROR_ABSOLUTE = 1 << 2, // From meshopt_SimplifyErrorAbsolute
+		/* Remove disconnected parts of the mesh during simplification incrementally, regardless of the topological restrictions inside components. */
+		SIMPLIFY_PRUNE = 1 << 3, // From meshopt_SimplifyPrune
+	};
+
 	typedef void (*OptimizeVertexCacheFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
 	static OptimizeVertexCacheFunc optimize_vertex_cache_func;
-	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *r_error);
+	typedef size_t (*OptimizeVertexFetchRemapFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
+	static OptimizeVertexFetchRemapFunc optimize_vertex_fetch_remap_func;
+	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, unsigned int options, float *r_error);
 	static SimplifyFunc simplify_func;
-	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, float *result_error, const float *attributes, const float *attribute_weights, size_t attribute_count);
+	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, const float *attributes, size_t attribute_stride, const float *attribute_weights, size_t attribute_count, const unsigned char *vertex_lock, size_t target_index_count, float target_error, unsigned int options, float *result_error);
 	static SimplifyWithAttribFunc simplify_with_attrib_func;
 	typedef float (*SimplifyScaleFunc)(const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 	static SimplifyScaleFunc simplify_scale_func;
-	typedef size_t (*SimplifySloppyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *out_result_error);
-	static SimplifySloppyFunc simplify_sloppy_func;
 	typedef size_t (*GenerateRemapFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const void *vertices, size_t vertex_count, size_t vertex_size);
 	static GenerateRemapFunc generate_remap_func;
 	typedef void (*RemapVertexFunc)(void *destination, const void *vertices, size_t vertex_count, size_t vertex_size, const unsigned int *remap);
@@ -95,6 +114,21 @@ public:
 private:
 	struct VertexHasher {
 		static _FORCE_INLINE_ uint32_t hash(const Vertex &p_vtx);
+	};
+
+	struct SmoothGroupVertex {
+		Vector3 vertex;
+		uint32_t smooth_group = 0;
+		bool operator==(const SmoothGroupVertex &p_vertex) const;
+
+		SmoothGroupVertex(const Vertex &p_vertex) {
+			vertex = p_vertex.vertex;
+			smooth_group = p_vertex.smooth_group;
+		}
+	};
+
+	struct SmoothGroupVertexHasher {
+		static _FORCE_INLINE_ uint32_t hash(const SmoothGroupVertex &p_vtx);
 	};
 
 	struct TriangleHasher {
@@ -113,7 +147,7 @@ private:
 	bool begun = false;
 	bool first = false;
 	Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_LINES;
-	uint32_t format = 0;
+	uint64_t format = 0;
 	Ref<Material> material;
 	//arrays
 	LocalVector<Vertex> vertex_array;
@@ -135,8 +169,8 @@ private:
 
 	CustomFormat last_custom_format[RS::ARRAY_CUSTOM_COUNT];
 
-	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat);
-	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat);
+	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
+	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
 
 	//mikktspace callbacks
 	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
@@ -146,6 +180,8 @@ private:
 	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
 	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
+
+	void _add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const TypedArray<Plane> &p_tangents = TypedArray<Plane>());
 
 protected:
 	static void _bind_methods();
@@ -191,20 +227,21 @@ public:
 
 	void clear();
 
-	LocalVector<Vertex> &get_vertex_array() { return vertex_array; }
+	LocalVector<Vertex> &get_vertex_array() {
+		return vertex_array;
+	}
 
 	void create_from_triangle_arrays(const Array &p_arrays);
-	static void create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<Vertex> &ret, uint32_t *r_format = nullptr);
+	void create_from_arrays(const Array &p_arrays, Mesh::PrimitiveType p_primitive_type = Mesh::PRIMITIVE_TRIANGLES);
+	static void create_vertex_array_from_arrays(const Array &p_arrays, LocalVector<Vertex> &ret, uint64_t *r_format = nullptr);
 	Array commit_to_arrays();
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name);
 	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform);
-	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_compress_flags = 0);
+	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint64_t p_compress_flags = 0);
 
 	SurfaceTool();
 };
 
 VARIANT_ENUM_CAST(SurfaceTool::CustomFormat)
 VARIANT_ENUM_CAST(SurfaceTool::SkinWeightCount)
-
-#endif // SURFACE_TOOL_H

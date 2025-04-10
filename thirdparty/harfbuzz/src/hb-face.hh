@@ -48,13 +48,17 @@ struct hb_face_t
 {
   hb_object_header_t header;
 
+  unsigned int index;			/* Face index in a collection, zero-based. */
+  mutable hb_atomic_int_t upem;		/* Units-per-EM. */
+  mutable hb_atomic_int_t num_glyphs;	/* Number of glyphs. */
+
   hb_reference_table_func_t  reference_table_func;
   void                      *user_data;
   hb_destroy_func_t          destroy;
 
-  unsigned int index;			/* Face index in a collection, zero-based. */
-  mutable hb_atomic_int_t upem;		/* Units-per-EM. */
-  mutable hb_atomic_int_t num_glyphs;	/* Number of glyphs. */
+  hb_get_table_tags_func_t   get_table_tags_func;
+  void                      *get_table_tags_user_data;
+  hb_destroy_func_t          get_table_tags_destroy;
 
   hb_shaper_object_dataset_t<hb_face_t> data;/* Various shaper data. */
   hb_ot_face_t table;			/* All the face's tables. */
@@ -76,7 +80,7 @@ struct hb_face_t
     if (unlikely (!reference_table_func))
       return hb_blob_get_empty ();
 
-    blob = reference_table_func (/*XXX*/const_cast<hb_face_t *> (this), tag, user_data);
+    blob = reference_table_func (/*Oh, well.*/const_cast<hb_face_t *> (this), tag, user_data);
     if (unlikely (!blob))
       return hb_blob_get_empty ();
 

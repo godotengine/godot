@@ -1,41 +1,43 @@
-/*************************************************************************/
-/*  godot_js.h                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_js.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef GODOT_JS_H
-#define GODOT_JS_H
+#pragma once
+
+#define WASM_EXPORT __attribute__((visibility("default")))
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "stddef.h"
+#include <stddef.h>
+#include <stdint.h>
 
 // Config
 extern void godot_js_config_locale_get(char *p_ptr, int p_ptr_max);
@@ -49,6 +51,7 @@ extern void godot_js_os_fs_sync(void (*p_callback)());
 extern int godot_js_os_execute(const char *p_json);
 extern void godot_js_os_shell_open(const char *p_uri);
 extern int godot_js_os_hw_concurrency_get();
+extern int godot_js_os_has_feature(const char *p_ftr);
 extern int godot_js_pwa_cb(void (*p_callback)());
 extern int godot_js_pwa_update();
 
@@ -60,13 +63,18 @@ extern void godot_js_input_touch_cb(void (*p_callback)(int p_type, int p_count),
 extern void godot_js_input_key_cb(void (*p_callback)(int p_type, int p_repeat, int p_modifiers), char r_code[32], char r_key[32]);
 extern void godot_js_input_vibrate_handheld(int p_duration_ms);
 
+extern void godot_js_set_ime_active(int p_active);
+extern void godot_js_set_ime_position(int p_x, int p_y);
+extern void godot_js_set_ime_cb(void (*p_input)(int p_type, const char *p_text), void (*p_callback)(int p_type, int p_repeat, int p_modifiers), char r_code[32], char r_key[32]);
+extern int godot_js_is_ime_focused();
+
 // Input gamepad
 extern void godot_js_input_gamepad_cb(void (*p_on_change)(int p_index, int p_connected, const char *p_id, const char *p_guid));
 extern int godot_js_input_gamepad_sample();
 extern int godot_js_input_gamepad_sample_count();
 extern int godot_js_input_gamepad_sample_get(int p_idx, float r_btns[16], int32_t *r_btns_num, float r_axes[10], int32_t *r_axes_num, int32_t *r_standard);
 extern void godot_js_input_paste_cb(void (*p_callback)(const char *p_text));
-extern void godot_js_input_drop_files_cb(void (*p_callback)(char **p_filev, int p_filec));
+extern void godot_js_input_drop_files_cb(void (*p_callback)(const char **p_filev, int p_filec));
 
 // TTS
 extern int godot_js_tts_is_speaking();
@@ -127,5 +135,3 @@ extern void godot_js_display_vk_hide();
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_JS_H

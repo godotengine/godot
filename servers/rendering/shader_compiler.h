@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  shader_compiler.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_compiler.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef SHADER_COMPILER_H
-#define SHADER_COMPILER_H
+#pragma once
 
 #include "core/templates/pair.h"
 #include "servers/rendering/shader_language.h"
@@ -52,35 +51,38 @@ public:
 		HashMap<StringName, bool *> usage_flag_pointers;
 		HashMap<StringName, bool *> write_flag_pointers;
 
-		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> *uniforms;
+		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> *uniforms = nullptr;
 	};
 
 	struct GeneratedCode {
 		Vector<String> defines;
 		struct Texture {
 			StringName name;
-			ShaderLanguage::DataType type;
-			ShaderLanguage::ShaderNode::Uniform::Hint hint;
+			ShaderLanguage::DataType type = ShaderLanguage::DataType::TYPE_VOID;
+			ShaderLanguage::ShaderNode::Uniform::Hint hint = ShaderLanguage::ShaderNode::Uniform::Hint::HINT_NONE;
 			bool use_color = false;
-			ShaderLanguage::TextureFilter filter;
-			ShaderLanguage::TextureRepeat repeat;
-			bool global;
-			int array_size;
+			ShaderLanguage::TextureFilter filter = ShaderLanguage::TextureFilter::FILTER_DEFAULT;
+			ShaderLanguage::TextureRepeat repeat = ShaderLanguage::TextureRepeat::REPEAT_DEFAULT;
+			bool global = false;
+			int array_size = 0;
 		};
 
 		Vector<Texture> texture_uniforms;
 
 		Vector<uint32_t> uniform_offsets;
-		uint32_t uniform_total_size;
+		uint32_t uniform_total_size = 0;
 		String uniforms;
 		String stage_globals[STAGE_MAX];
 
 		HashMap<String, String> code;
 
-		bool uses_global_textures;
-		bool uses_fragment_time;
-		bool uses_vertex_time;
-		bool uses_screen_texture_mipmaps;
+		bool uses_global_textures = false;
+		bool uses_fragment_time = false;
+		bool uses_vertex_time = false;
+		bool uses_screen_texture_mipmaps = false;
+		bool uses_screen_texture = false;
+		bool uses_depth_texture = false;
+		bool uses_normal_roughness_texture = false;
 	};
 
 	struct DefaultIdentifierActions {
@@ -88,9 +90,8 @@ public:
 		HashMap<StringName, String> render_mode_defines;
 		HashMap<StringName, String> usage_defines;
 		HashMap<StringName, String> custom_samplers;
-		ShaderLanguage::TextureFilter default_filter;
-		ShaderLanguage::TextureRepeat default_repeat;
-		String sampler_array_name;
+		ShaderLanguage::TextureFilter default_filter = ShaderLanguage::TextureFilter::FILTER_NEAREST;
+		ShaderLanguage::TextureRepeat default_repeat = ShaderLanguage::TextureRepeat::REPEAT_DISABLE;
 		int base_texture_binding_index = 0;
 		int texture_layout_set = 0;
 		String base_uniform_string;
@@ -98,6 +99,7 @@ public:
 		String instance_uniform_index_variable;
 		uint32_t base_varying_index = 0;
 		bool apply_luminance_multiplier = false;
+		bool check_multiview_samplers = false;
 	};
 
 private:
@@ -130,5 +132,3 @@ public:
 	void initialize(DefaultIdentifierActions p_actions);
 	ShaderCompiler();
 };
-
-#endif // SHADER_COMPILER_H

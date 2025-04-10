@@ -48,7 +48,7 @@ public sealed class GodotSerializationInfo : IDisposable
         {
             _signalEvents[name] = serializedData;
         }
-        else if (OS.IsStdoutVerbose())
+        else if (OS.IsStdOutVerbose())
         {
             Console.WriteLine($"Failed to serialize event signal delegate: {name}");
         }
@@ -72,7 +72,7 @@ public sealed class GodotSerializationInfo : IDisposable
 
                 return true;
             }
-            else if (OS.IsStdoutVerbose())
+            else if (OS.IsStdOutVerbose())
             {
                 Console.WriteLine($"Failed to deserialize event signal delegate: {name}");
             }

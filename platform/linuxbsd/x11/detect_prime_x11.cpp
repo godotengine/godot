@@ -1,50 +1,53 @@
-/*************************************************************************/
-/*  detect_prime_x11.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  detect_prime_x11.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifdef X11_ENABLED
-#if defined(GLES3_ENABLED)
+#if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
 #include "detect_prime_x11.h"
 
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 
-#include <stdlib.h>
-
 #include "thirdparty/glad/glad/gl.h"
 #include "thirdparty/glad/glad/glx.h"
 
-#include "dynwrappers/xlib-so_wrap.h"
+#ifdef SOWRAP_ENABLED
+#include "x11/dynwrappers/xlib-so_wrap.h"
+#else
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#endif
 
-#include <cstring>
-
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -54,25 +57,26 @@
 
 typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
 
-struct vendor {
-	const char *glxvendor = nullptr;
-	int priority = 0;
-};
+// To prevent shadowing warnings
+#undef glGetString
 
-vendor vendormap[] = {
-	{ "Advanced Micro Devices, Inc.", 30 },
-	{ "AMD", 30 },
-	{ "NVIDIA Corporation", 30 },
-	{ "X.Org", 30 },
-	{ "Intel Open Source Technology Center", 20 },
-	{ "Intel", 20 },
-	{ "nouveau", 10 },
-	{ "Mesa Project", 0 },
-	{ nullptr, 0 }
-};
+int silent_error_handler(Display *display, XErrorEvent *error) {
+	static char message[1024];
+	XGetErrorText(display, error->error_code, message, sizeof(message));
+	print_verbose(vformat("XServer error: %s"
+						  "\n   Major opcode of failed request: %d"
+						  "\n   Serial number of failed request: %d"
+						  "\n   Current serial number in output stream: %d",
+			String::utf8(message), (uint64_t)error->request_code, (uint64_t)error->minor_code, (uint64_t)error->serial));
+
+	quick_exit(1);
+	return 0;
+}
 
 // Runs inside a child. Exiting will not quit the engine.
-void create_context() {
+void DetectPrimeX11::create_context() {
+	XSetErrorHandler(&silent_error_handler);
+
 	Display *x11_display = XOpenDisplay(nullptr);
 	Window x11_window;
 	GLXContext glx_context;
@@ -131,7 +135,7 @@ void create_context() {
 	XFree(vi);
 }
 
-int detect_prime() {
+int DetectPrimeX11::detect_prime() {
 	pid_t p;
 	int priorities[2] = {};
 	String vendors[2];
@@ -233,7 +237,7 @@ int detect_prime() {
 	}
 
 	for (int i = 1; i >= 0; --i) {
-		vendor *v = vendormap;
+		const Vendor *v = vendor_map;
 		while (v->glxvendor) {
 			if (v->glxvendor == vendors[i]) {
 				priorities[i] = v->priority;
@@ -256,5 +260,4 @@ int detect_prime() {
 	return preferred;
 }
 
-#endif
-#endif
+#endif // X11_ENABLED && GLES3_ENABLED

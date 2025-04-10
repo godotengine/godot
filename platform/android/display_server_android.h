@@ -1,44 +1,45 @@
-/*************************************************************************/
-/*  display_server_android.h                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  display_server_android.h                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef DISPLAY_SERVER_ANDROID_H
-#define DISPLAY_SERVER_ANDROID_H
+#pragma once
 
 #include "servers/display_server.h"
 
-#if defined(VULKAN_ENABLED)
-class VulkanContextAndroid;
-class RenderingDeviceVulkan;
+#if defined(RD_ENABLED)
+class RenderingContextDriver;
+class RenderingDevice;
 #endif
 
 class DisplayServerAndroid : public DisplayServer {
+	GDSOFTCLASS(DisplayServerAndroid, DisplayServer);
+
 	String rendering_driver;
 
 	// https://developer.android.com/reference/android/view/PointerIcon
@@ -64,16 +65,21 @@ class DisplayServerAndroid : public DisplayServer {
 	};
 	const int CURSOR_TYPE_NULL = 0;
 	MouseMode mouse_mode = MouseMode::MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_base = MouseMode::MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_override = MouseMode::MOUSE_MODE_VISIBLE;
+	bool mouse_mode_override_enabled = false;
+	void _mouse_update_mode();
 
 	bool keep_screen_on;
 	bool swap_buffers_flag;
 
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
-#if defined(VULKAN_ENABLED)
-	VulkanContextAndroid *context_vulkan = nullptr;
-	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#if defined(RD_ENABLED)
+	RenderingContextDriver *rendering_context = nullptr;
+	RenderingDevice *rendering_device = nullptr;
 #endif
+	NativeMenu *native_menu = nullptr;
 
 	ObjectID window_attached_instance_id;
 
@@ -81,6 +87,14 @@ class DisplayServerAndroid : public DisplayServer {
 	Callable input_event_callback;
 	Callable input_text_callback;
 	Callable rect_changed_callback;
+
+	Callable system_theme_changed;
+	Callable hardware_keyboard_connection_changed;
+
+	Callable dialog_callback;
+	Callable input_dialog_callback;
+
+	Callable file_picker_callback;
 
 	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
 
@@ -101,9 +115,26 @@ public:
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
 
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
+	void emit_system_theme_changed();
+
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
 	virtual bool clipboard_has() const override;
+
+	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
+	void emit_dialog_callback(int p_button_index);
+
+	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
+	void emit_input_dialog_callback(String p_text);
+
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, const FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) override;
+	void emit_file_picker_callback(bool p_ok, const Vector<String> &p_selected_paths);
+
+	virtual Color get_accent_color() const override;
+	virtual Color get_base_color() const override;
 
 	virtual TypedArray<Rect2> get_display_cutouts() const override;
 	virtual Rect2i get_display_safe_area() const override;
@@ -115,6 +146,7 @@ public:
 	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual int get_screen_count() const override;
+	virtual int get_primary_screen() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
@@ -126,6 +158,9 @@ public:
 	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), VirtualKeyboardType p_type = KEYBOARD_TYPE_DEFAULT, int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1) override;
 	virtual void virtual_keyboard_hide() override;
 	virtual int virtual_keyboard_get_height() const override;
+	virtual bool has_hardware_keyboard() const override;
+	virtual void set_hardware_keyboard_connection_change_callback(const Callable &p_callable) override;
+	void emit_hardware_keyboard_connection_changed(bool p_connected);
 
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
@@ -175,6 +210,7 @@ public:
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
 
@@ -197,8 +233,12 @@ public:
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual void mouse_set_mode_override(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode_override() const override;
+	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
+	virtual bool mouse_is_mode_override_enabled() const override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 	static void register_android_driver();
 
@@ -206,7 +246,7 @@ public:
 	void notify_surface_changed(int p_width, int p_height);
 
 	virtual Point2i mouse_get_position() const override;
-	virtual MouseButton mouse_get_button_state() const override;
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
 	void reset_swap_buffers_flag();
 	bool should_swap_buffers() const;
@@ -215,8 +255,6 @@ public:
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
-	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
+	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerAndroid();
 };
-
-#endif // DISPLAY_SERVER_ANDROID_H

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  time.cpp                                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  time.cpp                                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "time.h"
 
@@ -51,9 +51,6 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 	{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
 	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 };
-
-VARIANT_ENUM_CAST(Time::Month);
-VARIANT_ENUM_CAST(Time::Weekday);
 
 #define UNIX_TIME_TO_HMS                                                     \
 	uint8_t hour, minute, second;                                            \
@@ -192,9 +189,6 @@ VARIANT_ENUM_CAST(Time::Weekday);
 Time *Time::singleton = nullptr;
 
 Time *Time::get_singleton() {
-	if (!singleton) {
-		memnew(Time);
-	}
 	return singleton;
 }
 
@@ -239,15 +233,8 @@ Dictionary Time::get_time_dict_from_unix_time(int64_t p_unix_time_val) const {
 String Time::get_datetime_string_from_unix_time(int64_t p_unix_time_val, bool p_use_space) const {
 	UNIX_TIME_TO_HMS
 	UNIX_TIME_TO_YMD
-	// vformat only supports up to 6 arguments, so we need to split this up into 2 parts.
-	String timestamp = vformat("%04d-%02d-%02d", year, (uint8_t)month, day);
-	if (p_use_space) {
-		timestamp = vformat("%s %02d:%02d:%02d", timestamp, hour, minute, second);
-	} else {
-		timestamp = vformat("%sT%02d:%02d:%02d", timestamp, hour, minute, second);
-	}
-
-	return timestamp;
+	const String format_string = p_use_space ? "%04d-%02d-%02d %02d:%02d:%02d" : "%04d-%02d-%02dT%02d:%02d:%02d";
+	return vformat(format_string, year, (uint8_t)month, day, hour, minute, second);
 }
 
 String Time::get_date_string_from_unix_time(int64_t p_unix_time_val) const {
@@ -261,7 +248,7 @@ String Time::get_time_string_from_unix_time(int64_t p_unix_time_val) const {
 	return vformat("%02d:%02d:%02d", hour, minute, second);
 }
 
-Dictionary Time::get_datetime_dict_from_datetime_string(String p_datetime, bool p_weekday) const {
+Dictionary Time::get_datetime_dict_from_datetime_string(const String &p_datetime, bool p_weekday) const {
 	PARSE_ISO8601_STRING(Dictionary())
 	Dictionary dict;
 	dict[YEAR_KEY] = year;
@@ -279,21 +266,15 @@ Dictionary Time::get_datetime_dict_from_datetime_string(String p_datetime, bool 
 	return dict;
 }
 
-String Time::get_datetime_string_from_datetime_dict(const Dictionary p_datetime, bool p_use_space) const {
+String Time::get_datetime_string_from_datetime_dict(const Dictionary &p_datetime, bool p_use_space) const {
 	ERR_FAIL_COND_V_MSG(p_datetime.is_empty(), "", "Invalid datetime Dictionary: Dictionary is empty.");
 	EXTRACT_FROM_DICTIONARY
 	VALIDATE_YMDHMS("")
-	// vformat only supports up to 6 arguments, so we need to split this up into 2 parts.
-	String timestamp = vformat("%04d-%02d-%02d", year, (uint8_t)month, day);
-	if (p_use_space) {
-		timestamp = vformat("%s %02d:%02d:%02d", timestamp, hour, minute, second);
-	} else {
-		timestamp = vformat("%sT%02d:%02d:%02d", timestamp, hour, minute, second);
-	}
-	return timestamp;
+	const String format_string = p_use_space ? "%04d-%02d-%02d %02d:%02d:%02d" : "%04d-%02d-%02dT%02d:%02d:%02d";
+	return vformat(format_string, year, (uint8_t)month, day, hour, minute, second);
 }
 
-int64_t Time::get_unix_time_from_datetime_dict(const Dictionary p_datetime) const {
+int64_t Time::get_unix_time_from_datetime_dict(const Dictionary &p_datetime) const {
 	ERR_FAIL_COND_V_MSG(p_datetime.is_empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
 	EXTRACT_FROM_DICTIONARY
 	VALIDATE_YMDHMS(0)
@@ -301,7 +282,7 @@ int64_t Time::get_unix_time_from_datetime_dict(const Dictionary p_datetime) cons
 	return day_number * SECONDS_PER_DAY + hour * 3600 + minute * 60 + second;
 }
 
-int64_t Time::get_unix_time_from_datetime_string(String p_datetime) const {
+int64_t Time::get_unix_time_from_datetime_string(const String &p_datetime) const {
 	PARSE_ISO8601_STRING(-1)
 	VALIDATE_YMDHMS(0)
 	YMD_TO_DAY_NUMBER
@@ -358,15 +339,8 @@ Dictionary Time::get_time_dict_from_system(bool p_utc) const {
 
 String Time::get_datetime_string_from_system(bool p_utc, bool p_use_space) const {
 	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
-	// vformat only supports up to 6 arguments, so we need to split this up into 2 parts.
-	String timestamp = vformat("%04d-%02d-%02d", dt.year, (uint8_t)dt.month, dt.day);
-	if (p_use_space) {
-		timestamp = vformat("%s %02d:%02d:%02d", timestamp, dt.hour, dt.minute, dt.second);
-	} else {
-		timestamp = vformat("%sT%02d:%02d:%02d", timestamp, dt.hour, dt.minute, dt.second);
-	}
-
-	return timestamp;
+	const String format_string = p_use_space ? "%04d-%02d-%02d %02d:%02d:%02d" : "%04d-%02d-%02dT%02d:%02d:%02d";
+	return vformat(format_string, dt.year, (uint8_t)dt.month, dt.day, dt.hour, dt.minute, dt.second);
 }
 
 String Time::get_date_string_from_system(bool p_utc) const {
@@ -382,10 +356,10 @@ String Time::get_time_string_from_system(bool p_utc) const {
 
 Dictionary Time::get_time_zone_from_system() const {
 	OS::TimeZoneInfo info = OS::get_singleton()->get_time_zone_info();
-	Dictionary timezone;
-	timezone["bias"] = info.bias;
-	timezone["name"] = info.name;
-	return timezone;
+	Dictionary ret_timezone;
+	ret_timezone["bias"] = info.bias;
+	ret_timezone["name"] = info.name;
+	return ret_timezone;
 }
 
 double Time::get_unix_time_from_system() const {

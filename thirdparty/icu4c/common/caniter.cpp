@@ -64,19 +64,20 @@ U_NAMESPACE_BEGIN
 
 UOBJECT_DEFINE_RTTI_IMPLEMENTATION(CanonicalIterator)
 
+
 /**
  *@param source string to get results for
  */
 CanonicalIterator::CanonicalIterator(const UnicodeString &sourceStr, UErrorCode &status) :
-    pieces(NULL),
+    pieces(nullptr),
     pieces_length(0),
-    pieces_lengths(NULL),
-    current(NULL),
+    pieces_lengths(nullptr),
+    current(nullptr),
     current_length(0),
-    nfd(*Normalizer2::getNFDInstance(status)),
-    nfcImpl(*Normalizer2Factory::getNFCImpl(status))
+    nfd(Normalizer2::getNFDInstance(status)),
+    nfcImpl(Normalizer2Factory::getNFCImpl(status))
 {
-    if(U_SUCCESS(status) && nfcImpl.ensureCanonIterData(status)) {
+    if(U_SUCCESS(status) && nfcImpl->ensureCanonIterData(status)) {
       setSource(sourceStr, status);
     }
 }
@@ -87,23 +88,23 @@ CanonicalIterator::~CanonicalIterator() {
 
 void CanonicalIterator::cleanPieces() {
     int32_t i = 0;
-    if(pieces != NULL) {
+    if(pieces != nullptr) {
         for(i = 0; i < pieces_length; i++) {
-            if(pieces[i] != NULL) {
+            if(pieces[i] != nullptr) {
                 delete[] pieces[i];
             }
         }
         uprv_free(pieces);
-        pieces = NULL;
+        pieces = nullptr;
         pieces_length = 0;
     }
-    if(pieces_lengths != NULL) {
+    if(pieces_lengths != nullptr) {
         uprv_free(pieces_lengths);
-        pieces_lengths = NULL;
+        pieces_lengths = nullptr;
     }
-    if(current != NULL) {
+    if(current != nullptr) {
         uprv_free(current);
-        current = NULL;
+        current = nullptr;
         current_length = 0;
     }
 }
@@ -170,9 +171,9 @@ void CanonicalIterator::setSource(const UnicodeString &newSource, UErrorCode &st
     UChar32 cp = 0;
     int32_t start = 0;
     int32_t i = 0;
-    UnicodeString *list = NULL;
+    UnicodeString *list = nullptr;
 
-    nfd.normalize(newSource, source, status);
+    nfd->normalize(newSource, source, status);
     if(U_FAILURE(status)) {
       return;
     }
@@ -182,19 +183,19 @@ void CanonicalIterator::setSource(const UnicodeString &newSource, UErrorCode &st
 
     // catch degenerate case
     if (newSource.length() == 0) {
-        pieces = (UnicodeString **)uprv_malloc(sizeof(UnicodeString *));
-        pieces_lengths = (int32_t*)uprv_malloc(1 * sizeof(int32_t));
+        pieces = static_cast<UnicodeString**>(uprv_malloc(sizeof(UnicodeString*)));
+        pieces_lengths = static_cast<int32_t*>(uprv_malloc(1 * sizeof(int32_t)));
         pieces_length = 1;
-        current = (int32_t*)uprv_malloc(1 * sizeof(int32_t));
+        current = static_cast<int32_t*>(uprv_malloc(1 * sizeof(int32_t)));
         current_length = 1;
-        if (pieces == NULL || pieces_lengths == NULL || current == NULL) {
+        if (pieces == nullptr || pieces_lengths == nullptr || current == nullptr) {
             status = U_MEMORY_ALLOCATION_ERROR;
             goto CleanPartialInitialization;
         }
         current[0] = 0;
         pieces[0] = new UnicodeString[1];
         pieces_lengths[0] = 1;
-        if (pieces[0] == 0) {
+        if (pieces[0] == nullptr) {
             status = U_MEMORY_ALLOCATION_ERROR;
             goto CleanPartialInitialization;
         }
@@ -203,7 +204,7 @@ void CanonicalIterator::setSource(const UnicodeString &newSource, UErrorCode &st
 
 
     list = new UnicodeString[source.length()];
-    if (list == 0) {
+    if (list == nullptr) {
         status = U_MEMORY_ALLOCATION_ERROR;
         goto CleanPartialInitialization;
     }
@@ -219,7 +220,7 @@ void CanonicalIterator::setSource(const UnicodeString &newSource, UErrorCode &st
     // on the NFD form - see above).
     for (; i < source.length(); i += U16_LENGTH(cp)) {
         cp = source.char32At(i);
-        if (nfcImpl.isCanonSegmentStarter(cp)) {
+        if (nfcImpl->isCanonSegmentStarter(cp)) {
             source.extract(start, i-start, list[list_length++]); // add up to i
             start = i;
         }
@@ -228,12 +229,12 @@ void CanonicalIterator::setSource(const UnicodeString &newSource, UErrorCode &st
 
 
     // allocate the arrays, and find the strings that are CE to each segment
-    pieces = (UnicodeString **)uprv_malloc(list_length * sizeof(UnicodeString *));
+    pieces = static_cast<UnicodeString**>(uprv_malloc(list_length * sizeof(UnicodeString*)));
     pieces_length = list_length;
-    pieces_lengths = (int32_t*)uprv_malloc(list_length * sizeof(int32_t));
-    current = (int32_t*)uprv_malloc(list_length * sizeof(int32_t));
+    pieces_lengths = static_cast<int32_t*>(uprv_malloc(list_length * sizeof(int32_t)));
+    current = static_cast<int32_t*>(uprv_malloc(list_length * sizeof(int32_t)));
     current_length = list_length;
-    if (pieces == NULL || pieces_lengths == NULL || current == NULL) {
+    if (pieces == nullptr || pieces_lengths == nullptr || current == nullptr) {
         status = U_MEMORY_ALLOCATION_ERROR;
         goto CleanPartialInitialization;
     }
@@ -252,9 +253,7 @@ void CanonicalIterator::setSource(const UnicodeString &newSource, UErrorCode &st
     return;
 // Common section to cleanup all local variables and reset object variables.
 CleanPartialInitialization:
-    if (list != NULL) {
-        delete[] list;
-    }
+    delete[] list;
     cleanPieces();
 }
 
@@ -264,8 +263,17 @@ CleanPartialInitialization:
  * @param source the string to find permutations for
  * @return the results in a set.
  */
-void U_EXPORT2 CanonicalIterator::permute(UnicodeString &source, UBool skipZeros, Hashtable *result, UErrorCode &status) {
+void U_EXPORT2 CanonicalIterator::permute(UnicodeString &source, UBool skipZeros, Hashtable *result, UErrorCode &status, int32_t depth) {
     if(U_FAILURE(status)) {
+        return;
+    }
+    // To avoid infinity loop caused by permute, we limit the depth of recursive
+    // call to permute and return U_UNSUPPORTED_ERROR.
+    // We know in some unit test we need at least 4. Set to 8 just in case some
+    // unforseen use cases.
+    constexpr int32_t kPermuteDepthLimit = 8;
+    if (depth > kPermuteDepthLimit) {
+        status = U_UNSUPPORTED_ERROR;
         return;
     }
     //if (PROGRESS) printf("Permute: %s\n", UToS(Tr(source)));
@@ -276,8 +284,8 @@ void U_EXPORT2 CanonicalIterator::permute(UnicodeString &source, UBool skipZeros
     // we check for length < 2 to keep from counting code points all the time
     if (source.length() <= 2 && source.countChar32() <= 1) {
         UnicodeString *toPut = new UnicodeString(source);
-        /* test for NULL */
-        if (toPut == 0) {
+        /* test for nullptr */
+        if (toPut == nullptr) {
             status = U_MEMORY_ALLOCATION_ERROR;
             return;
         }
@@ -295,7 +303,7 @@ void U_EXPORT2 CanonicalIterator::permute(UnicodeString &source, UBool skipZeros
 
     for (i = 0; i < source.length(); i += U16_LENGTH(cp)) {
         cp = source.char32At(i);
-        const UHashElement *ne = NULL;
+        const UHashElement *ne = nullptr;
         int32_t el = UHASH_FIRST;
         UnicodeString subPermuteString = source;
 
@@ -311,7 +319,7 @@ void U_EXPORT2 CanonicalIterator::permute(UnicodeString &source, UBool skipZeros
 
         // see what the permutations of the characters before and after this one are
         //Hashtable *subpermute = permute(source.substring(0,i) + source.substring(i + UTF16.getCharCount(cp)));
-        permute(subPermuteString.remove(i, U16_LENGTH(cp)), skipZeros, &subpermute, status);
+        permute(subPermuteString.remove(i, U16_LENGTH(cp)), skipZeros, &subpermute, status, depth+1);
         /* Test for buffer overflows */
         if(U_FAILURE(status)) {
             return;
@@ -321,11 +329,11 @@ void U_EXPORT2 CanonicalIterator::permute(UnicodeString &source, UBool skipZeros
 
         // prefix this character to all of them
         ne = subpermute.nextElement(el);
-        while (ne != NULL) {
-            UnicodeString *permRes = (UnicodeString *)(ne->value.pointer);
+        while (ne != nullptr) {
+            UnicodeString* permRes = static_cast<UnicodeString*>(ne->value.pointer);
             UnicodeString *chStr = new UnicodeString(cp);
-            //test for  NULL
-            if (chStr == NULL) {
+            //test for nullptr
+            if (chStr == nullptr) {
                 status = U_MEMORY_ALLOCATION_ERROR;
                 return;
             }
@@ -346,42 +354,45 @@ UnicodeString* CanonicalIterator::getEquivalents(const UnicodeString &segment, i
     Hashtable permutations(status);
     Hashtable basic(status);
     if (U_FAILURE(status)) {
-        return 0;
+        return nullptr;
     }
     result.setValueDeleter(uprv_deleteUObject);
     permutations.setValueDeleter(uprv_deleteUObject);
     basic.setValueDeleter(uprv_deleteUObject);
 
-    UChar USeg[256];
+    char16_t USeg[256];
     int32_t segLen = segment.extract(USeg, 256, status);
     getEquivalents2(&basic, USeg, segLen, status);
+    if (U_FAILURE(status)) {
+        return nullptr;
+    }
 
     // now get all the permutations
     // add only the ones that are canonically equivalent
     // TODO: optimize by not permuting any class zero.
 
-    const UHashElement *ne = NULL;
+    const UHashElement *ne = nullptr;
     int32_t el = UHASH_FIRST;
     //Iterator it = basic.iterator();
     ne = basic.nextElement(el);
     //while (it.hasNext())
-    while (ne != NULL) {
+    while (ne != nullptr) {
         //String item = (String) it.next();
-        UnicodeString item = *((UnicodeString *)(ne->value.pointer));
+        UnicodeString item = *static_cast<UnicodeString*>(ne->value.pointer);
 
         permutations.removeAll();
         permute(item, CANITER_SKIP_ZEROES, &permutations, status);
-        const UHashElement *ne2 = NULL;
+        const UHashElement *ne2 = nullptr;
         int32_t el2 = UHASH_FIRST;
         //Iterator it2 = permutations.iterator();
         ne2 = permutations.nextElement(el2);
         //while (it2.hasNext())
-        while (ne2 != NULL) {
+        while (ne2 != nullptr) {
             //String possible = (String) it2.next();
             //UnicodeString *possible = new UnicodeString(*((UnicodeString *)(ne2->value.pointer)));
-            UnicodeString possible(*((UnicodeString *)(ne2->value.pointer)));
+            UnicodeString possible(*static_cast<UnicodeString*>(ne2->value.pointer));
             UnicodeString attempt;
-            nfd.normalize(possible, attempt, status);
+            nfd->normalize(possible, attempt, status);
 
             // TODO: check if operator == is semanticaly the same as attempt.equals(segment)
             if (attempt==segment) {
@@ -399,29 +410,29 @@ UnicodeString* CanonicalIterator::getEquivalents(const UnicodeString &segment, i
 
     /* Test for buffer overflows */
     if(U_FAILURE(status)) {
-        return 0;
+        return nullptr;
     }
     // convert into a String[] to clean up storage
     //String[] finalResult = new String[result.size()];
-    UnicodeString *finalResult = NULL;
+    UnicodeString *finalResult = nullptr;
     int32_t resultCount;
     if((resultCount = result.count()) != 0) {
         finalResult = new UnicodeString[resultCount];
-        if (finalResult == 0) {
+        if (finalResult == nullptr) {
             status = U_MEMORY_ALLOCATION_ERROR;
-            return NULL;
+            return nullptr;
         }
     }
     else {
         status = U_ILLEGAL_ARGUMENT_ERROR;
-        return NULL;
+        return nullptr;
     }
     //result.toArray(finalResult);
     result_len = 0;
     el = UHASH_FIRST;
     ne = result.nextElement(el);
-    while(ne != NULL) {
-        finalResult[result_len++] = *((UnicodeString *)(ne->value.pointer));
+    while(ne != nullptr) {
+        finalResult[result_len++] = *static_cast<UnicodeString*>(ne->value.pointer);
         ne = result.nextElement(el);
     }
 
@@ -429,10 +440,10 @@ UnicodeString* CanonicalIterator::getEquivalents(const UnicodeString &segment, i
     return finalResult;
 }
 
-Hashtable *CanonicalIterator::getEquivalents2(Hashtable *fillinResult, const UChar *segment, int32_t segLen, UErrorCode &status) {
+Hashtable *CanonicalIterator::getEquivalents2(Hashtable *fillinResult, const char16_t *segment, int32_t segLen, UErrorCode &status) {
 
     if (U_FAILURE(status)) {
-        return NULL;
+        return nullptr;
     }
 
     //if (PROGRESS) printf("Adding: %s\n", UToS(Tr(segment)));
@@ -448,7 +459,7 @@ Hashtable *CanonicalIterator::getEquivalents2(Hashtable *fillinResult, const UCh
     for (int32_t i = 0; i < segLen; i += U16_LENGTH(cp)) {
         // see if any character is at the start of some decomposition
         U16_GET(segment, 0, i, segLen, cp);
-        if (!nfcImpl.getCanonStartSet(cp, starts)) {
+        if (!nfcImpl->getCanonStartSet(cp, starts)) {
             continue;
         }
         // if so, see which decompositions match
@@ -457,7 +468,10 @@ Hashtable *CanonicalIterator::getEquivalents2(Hashtable *fillinResult, const UCh
             UChar32 cp2 = iter.getCodepoint();
             Hashtable remainder(status);
             remainder.setValueDeleter(uprv_deleteUObject);
-            if (extract(&remainder, cp2, segment, segLen, i, status) == NULL) {
+            if (extract(&remainder, cp2, segment, segLen, i, status) == nullptr) {
+                if (U_FAILURE(status)) {
+                    return nullptr;
+                }
                 continue;
             }
 
@@ -467,13 +481,13 @@ Hashtable *CanonicalIterator::getEquivalents2(Hashtable *fillinResult, const UCh
 
             int32_t el = UHASH_FIRST;
             const UHashElement *ne = remainder.nextElement(el);
-            while (ne != NULL) {
-                UnicodeString item = *((UnicodeString *)(ne->value.pointer));
+            while (ne != nullptr) {
+                UnicodeString item = *static_cast<UnicodeString*>(ne->value.pointer);
                 UnicodeString *toAdd = new UnicodeString(prefix);
-                /* test for NULL */
-                if (toAdd == 0) {
+                /* test for nullptr */
+                if (toAdd == nullptr) {
                     status = U_MEMORY_ALLOCATION_ERROR;
-                    return NULL;
+                    return nullptr;
                 }
                 *toAdd += item;
                 fillinResult->put(*toAdd, toAdd, status);
@@ -482,12 +496,19 @@ Hashtable *CanonicalIterator::getEquivalents2(Hashtable *fillinResult, const UCh
 
                 ne = remainder.nextElement(el);
             }
+            // ICU-22642 Guards against strings that have so many permutations
+            // that they would otherwise hang the function.
+            constexpr int32_t kResultLimit = 4096;
+            if (fillinResult->count() > kResultLimit) {
+                status = U_UNSUPPORTED_ERROR;
+                return nullptr;
+            }
         }
     }
 
     /* Test for buffer overflows */
     if(U_FAILURE(status)) {
-        return NULL;
+        return nullptr;
     }
     return fillinResult;
 }
@@ -497,27 +518,27 @@ Hashtable *CanonicalIterator::getEquivalents2(Hashtable *fillinResult, const UCh
  * (with canonical rearrangement!)
  * If so, take the remainder, and return the equivalents 
  */
-Hashtable *CanonicalIterator::extract(Hashtable *fillinResult, UChar32 comp, const UChar *segment, int32_t segLen, int32_t segmentPos, UErrorCode &status) {
+Hashtable *CanonicalIterator::extract(Hashtable *fillinResult, UChar32 comp, const char16_t *segment, int32_t segLen, int32_t segmentPos, UErrorCode &status) {
 //Hashtable *CanonicalIterator::extract(UChar32 comp, const UnicodeString &segment, int32_t segLen, int32_t segmentPos, UErrorCode &status) {
     //if (PROGRESS) printf(" extract: %s, ", UToS(Tr(UnicodeString(comp))));
     //if (PROGRESS) printf("%s, %i\n", UToS(Tr(segment)), segmentPos);
 
     if (U_FAILURE(status)) {
-        return NULL;
+        return nullptr;
     }
 
     UnicodeString temp(comp);
     int32_t inputLen=temp.length();
     UnicodeString decompString;
-    nfd.normalize(temp, decompString, status);
+    nfd->normalize(temp, decompString, status);
     if (U_FAILURE(status)) {
-        return NULL;
+        return nullptr;
     }
     if (decompString.isBogus()) {
         status = U_MEMORY_ALLOCATION_ERROR;
-        return NULL;
+        return nullptr;
     }
-    const UChar *decomp=decompString.getBuffer();
+    const char16_t *decomp=decompString.getBuffer();
     int32_t decompLen=decompString.length();
 
     // See if it matches the start of segment (at segmentPos)
@@ -561,7 +582,7 @@ Hashtable *CanonicalIterator::extract(Hashtable *fillinResult, UChar32 comp, con
         }
     }
     if (!ok)
-        return NULL; // we failed, characters left over
+        return nullptr; // we failed, characters left over
 
     //if (PROGRESS) printf("Matches\n");
 
@@ -573,9 +594,9 @@ Hashtable *CanonicalIterator::extract(Hashtable *fillinResult, UChar32 comp, con
     // brute force approach
     // check to make sure result is canonically equivalent
     UnicodeString trial;
-    nfd.normalize(temp, trial, status);
+    nfd->normalize(temp, trial, status);
     if(U_FAILURE(status) || trial.compare(segment+segmentPos, segLen - segmentPos) != 0) {
-        return NULL;
+        return nullptr;
     }
 
     return getEquivalents2(fillinResult, temp.getBuffer()+inputLen, temp.length()-inputLen, status);

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector2i" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Vector2i" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Vector used for 2D math using integer coordinates.
+		A 2D vector using integer coordinates.
 	</brief_description>
 	<description>
-		2-element structure that can be used to represent positions in 2D space or any other pair of numeric values.
+		A 2-element structure that can be used to represent 2D grid coordinates or any other pair of integers.
 		It uses integer coordinates and is therefore preferable to [Vector2] when exact precision is required. Note that the values are limited to 32 bits, and unlike [Vector2] this cannot be configured with an engine build option. Use [int] or [PackedInt64Array] if 64-bit values are needed.
 		[b]Note:[/b] In a boolean context, a Vector2i will evaluate to [code]false[/code] if it's equal to [code]Vector2i(0, 0)[/code]. Otherwise, a Vector2i will always evaluate to [code]true[/code].
 	</description>
@@ -31,7 +31,7 @@
 			<return type="Vector2i" />
 			<param index="0" name="from" type="Vector2" />
 			<description>
-				Constructs a new [Vector2i] from [Vector2]. The floating point coordinates will be truncated.
+				Constructs a new [Vector2i] from the given [Vector2] by truncating components' fractional parts (rounding towards zero). For a different behavior consider passing the result of [method Vector2.ceil], [method Vector2.floor] or [method Vector2.round] to this constructor instead.
 			</description>
 		</constructor>
 		<constructor name="Vector2i">
@@ -64,7 +64,30 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="clampi" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="min" type="int" />
+			<param index="1" name="max" type="int" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="distance_squared_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="Vector2i" />
+			<description>
+				Returns the squared distance between this vector and [param to].
+				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="distance_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector2i" />
+			<description>
+				Returns the distance between this vector and [param to].
+			</description>
+		</method>
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -77,16 +100,44 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="with" type="Vector2i" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector2i(maxi(x, with.x), maxi(y, with.y))[/code].
+			</description>
+		</method>
 		<method name="max_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxi" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="with" type="int" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector2i(maxi(x, with), maxi(y, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="with" type="Vector2i" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector2i(mini(x, with.x), mini(y, with.y))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Y].
+			</description>
+		</method>
+		<method name="mini" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="with" type="int" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector2i(mini(x, with), mini(y, with))[/code].
 			</description>
 		</method>
 		<method name="sign" qualifiers="const">
@@ -102,6 +153,13 @@
 				Returns a new vector with each component snapped to the closest multiple of the corresponding component in [param step].
 			</description>
 		</method>
+		<method name="snappedi" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="step" type="int" />
+			<description>
+				Returns a new vector with each component snapped to the closest multiple of [param step].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="x" type="int" setter="" getter="" default="0">
@@ -112,10 +170,10 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="AXIS_X" value="0">
+		<constant name="AXIS_X" value="0" enum="Axis">
 			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_Y" value="1">
+		<constant name="AXIS_Y" value="1" enum="Axis">
 			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="ZERO" value="Vector2i(0, 0)">
@@ -123,6 +181,12 @@
 		</constant>
 		<constant name="ONE" value="Vector2i(1, 1)">
 			One vector, a vector with all components set to [code]1[/code].
+		</constant>
+		<constant name="MIN" value="Vector2i(-2147483648, -2147483648)">
+			Min vector, a vector with all components equal to [code]INT32_MIN[/code]. Can be used as a negative integer equivalent of [constant Vector2.INF].
+		</constant>
+		<constant name="MAX" value="Vector2i(2147483647, 2147483647)">
+			Max vector, a vector with all components equal to [code]INT32_MAX[/code]. Can be used as an integer equivalent of [constant Vector2.INF].
 		</constant>
 		<constant name="LEFT" value="Vector2i(-1, 0)">
 			Left unit vector. Represents the direction of left.
@@ -151,7 +215,7 @@
 			<description>
 				Gets the remainder of each component of the [Vector2i] with the components of the given [Vector2i]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
 				[codeblock]
-				print(Vector2i(10, -20) % Vector2i(7, 8)) # Prints "(3, -4)"
+				print(Vector2i(10, -20) % Vector2i(7, 8)) # Prints (3, -4)
 				[/codeblock]
 			</description>
 		</operator>
@@ -159,9 +223,9 @@
 			<return type="Vector2i" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Gets the remainder of each component of the [Vector2i] with the the given [int]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
+				Gets the remainder of each component of the [Vector2i] with the given [int]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
 				[codeblock]
-				print(Vector2i(10, -20) % 7) # Prints "(3, -6)"
+				print(Vector2i(10, -20) % 7) # Prints (3, -6)
 				[/codeblock]
 			</description>
 		</operator>
@@ -171,7 +235,7 @@
 			<description>
 				Multiplies each component of the [Vector2i] by the components of the given [Vector2i].
 				[codeblock]
-				print(Vector2i(10, 20) * Vector2i(3, 4)) # Prints "(30, 80)"
+				print(Vector2i(10, 20) * Vector2i(3, 4)) # Prints (30, 80)
 				[/codeblock]
 			</description>
 		</operator>
@@ -181,7 +245,7 @@
 			<description>
 				Multiplies each component of the [Vector2i] by the given [float]. Returns a [Vector2].
 				[codeblock]
-				print(Vector2i(10, 15) * 0.9) # Prints "(9, 13.5)"
+				print(Vector2i(10, 15) * 0.9) # Prints (9.0, 13.5)
 				[/codeblock]
 			</description>
 		</operator>
@@ -198,7 +262,7 @@
 			<description>
 				Adds each component of the [Vector2i] by the components of the given [Vector2i].
 				[codeblock]
-				print(Vector2i(10, 20) + Vector2i(3, 4)) # Prints "(13, 24)"
+				print(Vector2i(10, 20) + Vector2i(3, 4)) # Prints (13, 24)
 				[/codeblock]
 			</description>
 		</operator>
@@ -208,7 +272,7 @@
 			<description>
 				Subtracts each component of the [Vector2i] by the components of the given [Vector2i].
 				[codeblock]
-				print(Vector2i(10, 20) - Vector2i(3, 4)) # Prints "(7, 16)"
+				print(Vector2i(10, 20) - Vector2i(3, 4)) # Prints (7, 16)
 				[/codeblock]
 			</description>
 		</operator>
@@ -218,7 +282,7 @@
 			<description>
 				Divides each component of the [Vector2i] by the components of the given [Vector2i].
 				[codeblock]
-				print(Vector2i(10, 20) / Vector2i(2, 5)) # Prints "(5, 4)"
+				print(Vector2i(10, 20) / Vector2i(2, 5)) # Prints (5, 4)
 				[/codeblock]
 			</description>
 		</operator>
@@ -228,7 +292,7 @@
 			<description>
 				Divides each component of the [Vector2i] by the given [float]. Returns a [Vector2].
 				[codeblock]
-				print(Vector2i(10, 20) / 2.9) # Prints "(5, 10)"
+				print(Vector2i(10, 20) / 2.9) # Prints (5.0, 10.0)
 				[/codeblock]
 			</description>
 		</operator>

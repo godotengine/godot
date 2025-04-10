@@ -1,37 +1,36 @@
-/*************************************************************************/
-/*  config_file.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  config_file.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "config_file.h"
 
 #include "core/io/file_access_encrypted.h"
-#include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "core/variant/variant_parser.h"
 
@@ -81,7 +80,7 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 	}
 }
 
-Variant ConfigFile::get_value(const String &p_section, const String &p_key, Variant p_default) const {
+Variant ConfigFile::get_value(const String &p_section, const String &p_key, const Variant &p_default) const {
 	if (!values.has(p_section) || !values[p_section].has(p_key)) {
 		ERR_FAIL_COND_V_MSG(p_default.get_type() == Variant::NIL, Variant(),
 				vformat("Couldn't find the given section \"%s\" and key \"%s\", and no default was given.", p_section, p_key));
@@ -208,7 +207,7 @@ Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 			file->store_string("\n");
 		}
 		if (!E.key.is_empty()) {
-			file->store_string("[" + E.key + "]\n\n");
+			file->store_string("[" + E.key.replace("]", "\\]") + "]\n\n");
 		}
 
 		for (const KeyValue<String, Variant> &F : E.value) {
@@ -308,7 +307,7 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 		if (!assign.is_empty()) {
 			set_value(section, assign, value);
 		} else if (!next_tag.name.is_empty()) {
-			section = next_tag.name;
+			section = next_tag.name.replace("\\]", "]");
 		}
 	}
 

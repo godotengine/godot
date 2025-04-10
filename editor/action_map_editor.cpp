@@ -1,39 +1,42 @@
-/*************************************************************************/
-/*  action_map_editor.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  action_map_editor.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor/action_map_editor.h"
 
-#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
 static bool _is_action_name_valid(const String &p_name) {
@@ -165,7 +168,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			current_action_name = item->get_meta("__name");
 			current_action_event_index = -1;
 
-			event_config_dialog->popup_and_configure();
+			event_config_dialog->popup_and_configure(Ref<InputEvent>(), current_action_name);
 		} break;
 		case ActionMapEditor::BUTTON_EDIT_EVENT: {
 			// Action and Action name is located on the parent of the event.
@@ -176,7 +179,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 
 			Ref<InputEvent> ie = item->get_meta("__event");
 			if (ie.is_valid()) {
-				event_config_dialog->popup_and_configure(ie);
+				event_config_dialog->popup_and_configure(ie, current_action_name);
 			}
 		} break;
 		case ActionMapEditor::BUTTON_REMOVE_ACTION: {
@@ -194,6 +197,14 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			Array events = action["events"].duplicate();
 			events.remove_at(event_index);
 			action["events"] = events;
+
+			emit_signal(SNAME("action_edited"), action_name, action);
+		} break;
+		case ActionMapEditor::BUTTON_REVERT_ACTION: {
+			ERR_FAIL_COND_MSG(!item->has_meta("__action_initial"), "Tree Item for action which can be reverted is expected to have meta value with initial value of action.");
+
+			Dictionary action = item->get_meta("__action_initial").duplicate();
+			String action_name = item->get_meta("__name");
 
 			emit_signal(SNAME("action_edited"), action_name, action);
 		} break;
@@ -215,6 +226,7 @@ void ActionMapEditor::_tree_item_activated() {
 void ActionMapEditor::set_show_builtin_actions(bool p_show) {
 	show_builtin_actions = p_show;
 	show_builtin_actions_checkbutton->set_pressed(p_show);
+	EditorSettings::get_singleton()->set_project_metadata("project_settings", "show_builtin_actions", show_builtin_actions);
 
 	// Prevent unnecessary updates of action list when cache is empty.
 	if (!actions_cache.is_empty()) {
@@ -242,7 +254,10 @@ Variant ActionMapEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	Label *label = memnew(Label(name));
 	label->set_theme_type_variation("HeaderSmall");
 	label->set_modulate(Color(1, 1, 1, 1.0f));
+	label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	action_tree->set_drag_preview(label);
+
+	get_viewport()->gui_set_drag_description(vformat(RTR("Action %s"), name));
 
 	Dictionary drag_data;
 
@@ -253,6 +268,8 @@ Variant ActionMapEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	if (selected->has_meta("__event")) {
 		drag_data["input_type"] = "event";
 	}
+
+	drag_data["source"] = selected->get_instance_id();
 
 	action_tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
 
@@ -265,9 +282,11 @@ bool ActionMapEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		return false;
 	}
 
+	TreeItem *source = Object::cast_to<TreeItem>(ObjectDB::get_instance(d["source"].operator ObjectID()));
 	TreeItem *selected = action_tree->get_selected();
-	TreeItem *item = action_tree->get_item_at_position(p_point);
-	if (!selected || !item || item == selected) {
+
+	TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? selected : action_tree->get_item_at_position(p_point);
+	if (!selected || !item || item == source) {
 		return false;
 	}
 
@@ -290,12 +309,12 @@ void ActionMapEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	}
 
 	TreeItem *selected = action_tree->get_selected();
-	TreeItem *target = action_tree->get_item_at_position(p_point);
-	bool drop_above = action_tree->get_drop_section_at_position(p_point) == -1;
-
+	TreeItem *target = (p_point == Vector2(INFINITY, INFINITY)) ? selected : action_tree->get_item_at_position(p_point);
 	if (!target) {
 		return;
 	}
+
+	bool drop_above = ((p_point == Vector2(INFINITY, INFINITY)) ? action_tree->get_drop_section_at_position(action_tree->get_item_rect(target).position) : action_tree->get_drop_section_at_position(p_point)) == -1;
 
 	Dictionary d = p_data;
 	if (d["input_type"] == "action") {
@@ -344,7 +363,8 @@ void ActionMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			action_list_search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			if (!actions_cache.is_empty()) {
 				update_action_list();
 			}
@@ -353,19 +373,21 @@ void ActionMapEditor::_notification(int p_what) {
 }
 
 void ActionMapEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &ActionMapEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &ActionMapEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &ActionMapEditor::drop_data_fw);
-
 	ADD_SIGNAL(MethodInfo("action_added", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("action_edited", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::DICTIONARY, "new_action")));
 	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("action_renamed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
 	ADD_SIGNAL(MethodInfo("action_reordered", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::STRING, "relative_to"), PropertyInfo(Variant::BOOL, "before")));
+	ADD_SIGNAL(MethodInfo(SNAME("filter_focused")));
+	ADD_SIGNAL(MethodInfo(SNAME("filter_unfocused")));
 }
 
 LineEdit *ActionMapEditor::get_search_box() const {
 	return action_list_search;
+}
+
+LineEdit *ActionMapEditor::get_path_box() const {
+	return add_edit;
 }
 
 InputEventConfigurationDialog *ActionMapEditor::get_configuration_dialog() {
@@ -413,6 +435,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		// Update Tree...
 
 		TreeItem *action_item = action_tree->create_item(root);
+		ERR_FAIL_NULL(action_item);
 		action_item->set_meta("__action", action_info.action);
 		action_item->set_meta("__name", action_info.name);
 
@@ -428,11 +451,18 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		action_item->set_range(1, deadzone);
 
 		// Third column - buttons
-		action_item->add_button(2, action_tree->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), BUTTON_ADD_EVENT, false, TTR("Add Event"));
-		action_item->add_button(2, action_tree->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_ACTION, !action_info.editable, action_info.editable ? TTR("Remove Action") : TTR("Cannot Remove Action"));
+		if (action_info.has_initial) {
+			bool deadzone_eq = action_info.action_initial["deadzone"] == action_info.action["deadzone"];
+			bool events_eq = Shortcut::is_event_array_equal(action_info.action_initial["events"], action_info.action["events"]);
+			bool action_eq = deadzone_eq && events_eq;
+			action_item->set_meta("__action_initial", action_info.action_initial);
+			action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("ReloadSmall")), BUTTON_REVERT_ACTION, action_eq, action_eq ? TTR("Cannot Revert - Action is same as initial") : TTR("Revert Action"));
+		}
+		action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Add")), BUTTON_ADD_EVENT, false, TTR("Add Event"));
+		action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_ACTION, !action_info.editable, action_info.editable ? TTR("Remove Action") : TTR("Cannot Remove Action"));
 
-		action_item->set_custom_bg_color(0, action_tree->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-		action_item->set_custom_bg_color(1, action_tree->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+		action_item->set_custom_bg_color(0, action_tree->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+		action_item->set_custom_bg_color(1, action_tree->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 		for (int evnt_idx = 0; evnt_idx < events.size(); evnt_idx++) {
 			Ref<InputEvent> event = events[evnt_idx];
@@ -450,35 +480,42 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			// First Column - Icon
 			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
-				if (k->get_physical_keycode() == Key::NONE) {
-					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons")));
+				if (k->get_physical_keycode() == Key::NONE && k->get_keycode() == Key::NONE && k->get_key_label() != Key::NONE) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("KeyboardLabel")));
+				} else if (k->get_keycode() != Key::NONE) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("Keyboard")));
+				} else if (k->get_physical_keycode() != Key::NONE) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("KeyboardPhysical")));
 				} else {
-					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("KeyboardPhysical"), SNAME("EditorIcons")));
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("KeyboardError")));
 				}
 			}
 
 			Ref<InputEventMouseButton> mb = event;
 			if (mb.is_valid()) {
-				event_item->set_icon(0, action_tree->get_theme_icon(SNAME("Mouse"), SNAME("EditorIcons")));
+				event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("Mouse")));
 			}
 
 			Ref<InputEventJoypadButton> jb = event;
 			if (jb.is_valid()) {
-				event_item->set_icon(0, action_tree->get_theme_icon(SNAME("JoyButton"), SNAME("EditorIcons")));
+				event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("JoyButton")));
 			}
 
 			Ref<InputEventJoypadMotion> jm = event;
 			if (jm.is_valid()) {
-				event_item->set_icon(0, action_tree->get_theme_icon(SNAME("JoyAxis"), SNAME("EditorIcons")));
+				event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("JoyAxis")));
 			}
 
 			// Third Column - Buttons
-			event_item->add_button(2, action_tree->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), BUTTON_EDIT_EVENT, false, TTR("Edit Event"));
-			event_item->add_button(2, action_tree->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_EVENT, false, TTR("Remove Event"));
+			event_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Edit")), BUTTON_EDIT_EVENT, false, TTR("Edit Event"), TTR("Edit Event"));
+			event_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_EVENT, false, TTR("Remove Event"), TTR("Remove Event"));
 			event_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 			event_item->set_button_color(2, 1, Color(1, 1, 1, 0.75));
 		}
 	}
+
+	// Update UI.
+	clear_all_search->set_disabled(action_list_search->get_text().is_empty() && action_list_search_by_event->get_event().is_null());
 }
 
 void ActionMapEditor::show_message(const String &p_message) {
@@ -489,7 +526,15 @@ void ActionMapEditor::show_message(const String &p_message) {
 void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
 	memdelete(action_list_search);
 	action_list_search = p_searchbox;
-	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
+	action_list_search->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_search_term_updated));
+}
+
+void ActionMapEditor::_on_filter_focused() {
+	emit_signal(SNAME("filter_focused"));
+}
+
+void ActionMapEditor::_on_filter_unfocused() {
+	emit_signal(SNAME("filter_unfocused"));
 }
 
 ActionMapEditor::ActionMapEditor() {
@@ -503,21 +548,26 @@ ActionMapEditor::ActionMapEditor() {
 
 	action_list_search = memnew(LineEdit);
 	action_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	action_list_search->set_placeholder(TTR("Filter by name..."));
+	action_list_search->set_placeholder(TTR("Filter by Name"));
+	action_list_search->set_accessibility_name(TTRC("Filter by Name"));
 	action_list_search->set_clear_button_enabled(true);
-	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
+	action_list_search->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_search_term_updated));
 	top_hbox->add_child(action_list_search);
 
 	action_list_search_by_event = memnew(EventListenerLineEdit);
 	action_list_search_by_event->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_list_search_by_event->set_stretch_ratio(0.75);
+	action_list_search_by_event->set_accessibility_name(TTRC("Action Event"));
 	action_list_search_by_event->connect("event_changed", callable_mp(this, &ActionMapEditor::_search_by_event));
+	action_list_search_by_event->connect(SceneStringName(focus_entered), callable_mp(this, &ActionMapEditor::_on_filter_focused));
+	action_list_search_by_event->connect(SceneStringName(focus_exited), callable_mp(this, &ActionMapEditor::_on_filter_unfocused));
 	top_hbox->add_child(action_list_search_by_event);
 
-	Button *clear_all_search = memnew(Button);
+	clear_all_search = memnew(Button);
 	clear_all_search->set_text(TTR("Clear All"));
-	clear_all_search->connect("pressed", callable_mp(action_list_search_by_event, &EventListenerLineEdit::clear_event));
-	clear_all_search->connect("pressed", callable_mp(action_list_search, &LineEdit::clear));
+	clear_all_search->set_tooltip_text(TTR("Clear all search filters."));
+	clear_all_search->connect(SceneStringName(pressed), callable_mp(action_list_search_by_event, &EventListenerLineEdit::clear_event));
+	clear_all_search->connect(SceneStringName(pressed), callable_mp(action_list_search, &LineEdit::clear));
 	top_hbox->add_child(clear_all_search);
 
 	// Adding Action line edit + button
@@ -527,29 +577,36 @@ ActionMapEditor::ActionMapEditor() {
 	add_edit = memnew(LineEdit);
 	add_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_edit->set_placeholder(TTR("Add New Action"));
+	add_edit->set_accessibility_name(TTRC("Add New Action"));
 	add_edit->set_clear_button_enabled(true);
-	add_edit->connect("text_changed", callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
-	add_edit->connect("text_submitted", callable_mp(this, &ActionMapEditor::_add_action));
+	add_edit->set_keep_editing_on_text_submit(true);
+	add_edit->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
+	add_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ActionMapEditor::_add_action));
 	add_hbox->add_child(add_edit);
 
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
-	add_button->connect("pressed", callable_mp(this, &ActionMapEditor::_add_action_pressed));
+	add_button->connect(SceneStringName(pressed), callable_mp(this, &ActionMapEditor::_add_action_pressed));
 	add_hbox->add_child(add_button);
 	// Disable the button and set its tooltip.
 	_add_edit_text_changed(add_edit->get_text());
 
+	add_hbox->add_child(memnew(VSeparator));
+
 	show_builtin_actions_checkbutton = memnew(CheckButton);
-	show_builtin_actions_checkbutton->set_pressed(false);
 	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
-	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
+	show_builtin_actions_checkbutton->connect(SceneStringName(toggled), callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
 	add_hbox->add_child(show_builtin_actions_checkbutton);
+
+	show_builtin_actions = EditorSettings::get_singleton()->get_project_metadata("project_settings", "show_builtin_actions", false);
+	show_builtin_actions_checkbutton->set_pressed_no_signal(show_builtin_actions);
 
 	main_vbox->add_child(add_hbox);
 
 	// Action Editor Tree
 	action_tree = memnew(Tree);
 	action_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	action_tree->set_accessibility_name(TTRC("Action Map"));
 	action_tree->set_columns(3);
 	action_tree->set_hide_root(true);
 	action_tree->set_column_titles_visible(true);
@@ -560,16 +617,16 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->set_column_custom_minimum_width(1, 80 * EDSCALE);
 	action_tree->set_column_expand(2, false);
 	action_tree->set_column_custom_minimum_width(2, 50 * EDSCALE);
-	action_tree->connect("item_edited", callable_mp(this, &ActionMapEditor::_action_edited));
+	action_tree->connect("item_edited", callable_mp(this, &ActionMapEditor::_action_edited), CONNECT_DEFERRED);
 	action_tree->connect("item_activated", callable_mp(this, &ActionMapEditor::_tree_item_activated));
 	action_tree->connect("button_clicked", callable_mp(this, &ActionMapEditor::_tree_button_pressed));
 	main_vbox->add_child(action_tree);
 
-	action_tree->set_drag_forwarding(this);
+	SET_DRAG_FORWARDING_GCD(action_tree, ActionMapEditor);
 
 	// Adding event dialog
 	event_config_dialog = memnew(InputEventConfigurationDialog);
-	event_config_dialog->connect("confirmed", callable_mp(this, &ActionMapEditor::_event_config_confirmed));
+	event_config_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ActionMapEditor::_event_config_confirmed));
 	add_child(event_config_dialog);
 
 	message = memnew(AcceptDialog);

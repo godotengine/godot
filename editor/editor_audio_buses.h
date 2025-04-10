@@ -1,37 +1,36 @@
-/*************************************************************************/
-/*  editor_audio_buses.h                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_audio_buses.h                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef EDITOR_AUDIO_BUSES_H
-#define EDITOR_AUDIO_BUSES_H
+#pragma once
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
@@ -146,9 +145,6 @@ class EditorAudioBusDrop : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-
-public:
-	EditorAudioBusDrop();
 };
 
 class EditorAudioBuses : public VBoxContainer {
@@ -172,11 +168,11 @@ class EditorAudioBuses : public VBoxContainer {
 	Timer *save_timer = nullptr;
 	String edited_path;
 
-	void _add_bus();
-	void _update_buses();
+	void _rebuild_buses();
 	void _update_bus(int p_index);
 	void _update_sends();
 
+	void _add_bus();
 	void _delete_bus(Object *p_which);
 	void _duplicate_bus(int p_which);
 	void _reset_bus_volume(Object *p_which);
@@ -241,23 +237,28 @@ private:
 
 	List<AudioNotch> notches;
 
+	struct ThemeCache {
+		Color notch_color;
+
+		Ref<Font> font;
+		int font_size = 0;
+	} theme_cache;
+
 public:
 	const float line_length = 5.0f;
 	const float label_space = 2.0f;
 	const float btm_padding = 9.0f;
 	const float top_padding = 5.0f;
-	Color notch_color;
 
 	void add_notch(float p_normalized_offset, float p_db_value, bool p_render_value = false);
 	Size2 get_minimum_size() const override;
 
 private:
+	virtual void _update_theme_item_cache() override;
+
 	static void _bind_methods();
 	void _notification(int p_what);
 	void _draw_audio_notches();
-
-public:
-	EditorAudioMeterNotches();
 };
 
 class AudioBusesEditorPlugin : public EditorPlugin {
@@ -266,14 +267,11 @@ class AudioBusesEditorPlugin : public EditorPlugin {
 	EditorAudioBuses *audio_bus_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "SampleLibrary"; }
+	virtual String get_plugin_name() const override { return "SampleLibrary"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;
 	virtual void make_visible(bool p_visible) override;
 
 	AudioBusesEditorPlugin(EditorAudioBuses *p_node);
-	~AudioBusesEditorPlugin();
 };
-
-#endif // EDITOR_AUDIO_BUSES_H

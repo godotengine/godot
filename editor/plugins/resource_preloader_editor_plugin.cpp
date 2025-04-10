@@ -1,55 +1,57 @@
-/*************************************************************************/
-/*  resource_preloader_editor_plugin.cpp                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  resource_preloader_editor_plugin.cpp                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "resource_preloader_editor_plugin.h"
 
-#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "editor/editor_file_dialog.h"
+#include "editor/editor_command_palette.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_bottom_panel.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 
 void ResourcePreloaderEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			load->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+			load->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 	}
 }
 
 void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths) {
 	for (int i = 0; i < p_paths.size(); i++) {
-		String path = p_paths[i];
+		const String &path = p_paths[i];
 
 		Ref<Resource> resource;
 		resource = ResourceLoader::load(path);
@@ -71,7 +73,7 @@ void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths)
 			name = basename + " " + itos(counter);
 		}
 
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Add Resource"));
 		undo_redo->add_do_method(preloader, "add_resource", name, resource);
 		undo_redo->add_undo_method(preloader, "remove_resource", name);
@@ -87,8 +89,8 @@ void ResourcePreloaderEditor::_load_pressed() {
 	file->clear_filters();
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("", &extensions);
-	for (int i = 0; i < extensions.size(); i++) {
-		file->add_filter("*." + extensions[i]);
+	for (const String &extension : extensions) {
+		file->add_filter("*." + extension);
 	}
 
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
@@ -110,13 +112,13 @@ void ResourcePreloaderEditor::_item_edited() {
 			return;
 		}
 
-		if (new_name.is_empty() || new_name.contains("\\") || new_name.contains("/") || preloader->has_resource(new_name)) {
+		if (new_name.is_empty() || new_name.contains_char('\\') || new_name.contains_char('/') || preloader->has_resource(new_name)) {
 			s->set_text(0, old_name);
 			return;
 		}
 
 		Ref<Resource> samp = preloader->get_resource(old_name);
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Rename Resource"));
 		undo_redo->add_do_method(preloader, "remove_resource", old_name);
 		undo_redo->add_do_method(preloader, "add_resource", new_name, samp);
@@ -129,7 +131,7 @@ void ResourcePreloaderEditor::_item_edited() {
 }
 
 void ResourcePreloaderEditor::_remove_resource(const String &p_to_remove) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(preloader, "remove_resource", p_to_remove);
 	undo_redo->add_undo_method(preloader, "add_resource", p_to_remove, preloader->get_resource(p_to_remove));
@@ -140,7 +142,7 @@ void ResourcePreloaderEditor::_remove_resource(const String &p_to_remove) {
 
 void ResourcePreloaderEditor::_paste_pressed() {
 	Ref<Resource> r = EditorSettings::get_singleton()->get_resource_clipboard();
-	if (!r.is_valid()) {
+	if (r.is_null()) {
 		dialog->set_text(TTR("Resource clipboard is empty!"));
 		dialog->set_title(TTR("Error!"));
 		dialog->set_ok_button_text(TTR("Close"));
@@ -163,7 +165,7 @@ void ResourcePreloaderEditor::_paste_pressed() {
 		name = basename + " " + itos(counter);
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Paste Resource"));
 	undo_redo->add_do_method(preloader, "add_resource", name, r);
 	undo_redo->add_undo_method(preloader, "remove_resource", name);
@@ -208,11 +210,11 @@ void ResourcePreloaderEditor::_update_library() {
 		ti->set_selectable(1, false);
 
 		if (type == "PackedScene") {
-			ti->add_button(1, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_OPEN_SCENE, false, TTR("Open in Editor"));
+			ti->add_button(1, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_OPEN_SCENE, false, TTR("Open in Editor"));
 		} else {
-			ti->add_button(1, get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), BUTTON_EDIT_RESOURCE, false, TTR("Open in Editor"));
+			ti->add_button(1, get_editor_theme_icon(SNAME("Load")), BUTTON_EDIT_RESOURCE, false, TTR("Open in Editor"));
 		}
-		ti->add_button(1, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE, false, TTR("Remove"));
+		ti->add_button(1, get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE, false, TTR("Remove"));
 	}
 
 	//player->add_resource("default",resource);
@@ -224,7 +226,7 @@ void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column,
 	}
 
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
-	ERR_FAIL_COND(!item);
+	ERR_FAIL_NULL(item);
 
 	if (p_id == BUTTON_OPEN_SCENE) {
 		String rpath = item->get_text(p_column);
@@ -251,7 +253,7 @@ void ResourcePreloaderEditor::edit(ResourcePreloader *p_preloader) {
 }
 
 Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-	TreeItem *ti = tree->get_item_at_position(p_point);
+	TreeItem *ti = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_selected() : tree->get_item_at_position(p_point);
 	if (!ti) {
 		return Variant();
 	}
@@ -259,7 +261,7 @@ Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2 &p_point, Control
 	String name = ti->get_metadata(0);
 
 	Ref<Resource> res = preloader->get_resource(name);
-	if (!res.is_valid()) {
+	if (res.is_null()) {
 		return Variant();
 	}
 
@@ -322,7 +324,7 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 				name = basename + "_" + itos(counter);
 			}
 
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Resource"));
 			undo_redo->add_do_method(preloader, "add_resource", name, r);
 			undo_redo->add_undo_method(preloader, "remove_resource", name);
@@ -342,10 +344,6 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 void ResourcePreloaderEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_library"), &ResourcePreloaderEditor::_update_library);
 	ClassDB::bind_method(D_METHOD("_remove_resource", "to_remove"), &ResourcePreloaderEditor::_remove_resource);
-
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
 }
 
 ResourcePreloaderEditor::ResourcePreloaderEditor() {
@@ -358,6 +356,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	vbc->add_child(hbc);
 
 	load = memnew(Button);
+	load->set_accessibility_name(TTRC("Load Resource"));
 	load->set_tooltip_text(TTR("Load Resource"));
 	hbc->add_child(load);
 
@@ -370,6 +369,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 
 	tree = memnew(Tree);
 	tree->connect("button_clicked", callable_mp(this, &ResourcePreloaderEditor::_cell_button_pressed));
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(2);
 	tree->set_column_expand_ratio(0, 2);
 	tree->set_column_clip_content(0, true);
@@ -379,14 +379,14 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	tree->set_column_expand(1, true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	tree->set_drag_forwarding(this);
+	SET_DRAG_FORWARDING_GCD(tree, ResourcePreloaderEditor);
 	vbc->add_child(tree);
 
 	dialog = memnew(AcceptDialog);
 	add_child(dialog);
 
-	load->connect("pressed", callable_mp(this, &ResourcePreloaderEditor::_load_pressed));
-	paste->connect("pressed", callable_mp(this, &ResourcePreloaderEditor::_paste_pressed));
+	load->connect(SceneStringName(pressed), callable_mp(this, &ResourcePreloaderEditor::_load_pressed));
+	paste->connect(SceneStringName(pressed), callable_mp(this, &ResourcePreloaderEditor::_paste_pressed));
 	file->connect("files_selected", callable_mp(this, &ResourcePreloaderEditor::_files_load_request));
 	tree->connect("item_edited", callable_mp(this, &ResourcePreloaderEditor::_item_edited));
 	loading_scene = false;
@@ -409,11 +409,11 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		//preloader_editor->show();
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(preloader_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(preloader_editor);
 		//preloader_editor->set_process(true);
 	} else {
 		if (preloader_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 		button->hide();
 		//preloader_editor->hide();
@@ -425,9 +425,6 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin() {
 	preloader_editor = memnew(ResourcePreloaderEditor);
 	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item("ResourcePreloader", preloader_editor);
+	button = EditorNode::get_bottom_panel()->add_item("ResourcePreloader", preloader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_resource_preloader_bottom_panel", TTRC("Toggle ResourcePreloader Bottom Panel")));
 	button->hide();
-}
-
-ResourcePreloaderEditorPlugin::~ResourcePreloaderEditorPlugin() {
 }

@@ -1,39 +1,39 @@
-/*************************************************************************/
-/*  audio_stream_editor_plugin.cpp                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_stream_editor_plugin.cpp                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_stream_editor_plugin.h"
 
-#include "core/core_string_names.h"
 #include "editor/audio_stream_preview.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/audio_stream_wav.h"
 
 // AudioStreamEditor
@@ -45,16 +45,16 @@ void AudioStreamEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			Ref<Font> font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
+			Ref<Font> font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
 
-			_current_label->add_theme_font_override(SNAME("font"), font);
-			_duration_label->add_theme_font_override(SNAME("font"), font);
+			_current_label->add_theme_font_override(SceneStringName(font), font);
+			_duration_label->add_theme_font_override(SceneStringName(font), font);
 
-			_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-			_stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
-			_preview->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
+			_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			_stop_button->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
+			_preview->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
 
-			set_color(get_theme_color(SNAME("dark_color_1"), SNAME("Editor")));
+			set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
 
 			_indicator->queue_redraw();
 			_preview->queue_redraw();
@@ -74,27 +74,34 @@ void AudioStreamEditor::_notification(int p_what) {
 }
 
 void AudioStreamEditor::_draw_preview() {
-	Rect2 rect = _preview->get_rect();
 	Size2 size = get_size();
+	int width = size.width;
+	if (width <= 0) {
+		return; // No points to draw.
+	}
+
+	Rect2 rect = _preview->get_rect();
 
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
 	float preview_len = preview->get_length();
 
-	Vector<Vector2> lines;
-	lines.resize(size.width * 2);
+	Vector<Vector2> points;
+	points.resize(width * 2);
 
-	for (int i = 0; i < size.width; i++) {
+	for (int i = 0; i < width; i++) {
 		float ofs = i * preview_len / size.width;
 		float ofs_n = (i + 1) * preview_len / size.width;
 		float max = preview->get_max(ofs, ofs_n) * 0.5 + 0.5;
 		float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 		int idx = i;
-		lines.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
-		lines.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
+		points.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
+		points.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
 	}
 
-	RS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), lines, { get_theme_color(SNAME("contrast_color_2"), SNAME("Editor")) });
+	Vector<Color> colors = { get_theme_color(SNAME("contrast_color_2"), EditorStringName(Editor)) };
+
+	RS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), points, colors);
 }
 
 void AudioStreamEditor::_preview_changed(ObjectID p_which) {
@@ -114,26 +121,26 @@ void AudioStreamEditor::_play() {
 	if (_player->is_playing()) {
 		_pausing = true;
 		_player->stop();
-		_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+		_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 		set_process(false);
 	} else {
 		_pausing = false;
 		_player->play(_current);
-		_play_button->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
+		_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 		set_process(true);
 	}
 }
 
 void AudioStreamEditor::_stop() {
 	_player->stop();
-	_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	_current = 0;
 	_indicator->queue_redraw();
 	set_process(false);
 }
 
 void AudioStreamEditor::_on_finished() {
-	_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	if (!_pausing) {
 		_current = 0;
 		_indicator->queue_redraw();
@@ -151,8 +158,8 @@ void AudioStreamEditor::_draw_indicator() {
 	Rect2 rect = _preview->get_rect();
 	float len = stream->get_length();
 	float ofs_x = _current / len * rect.size.width;
-	const Color col = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-	Ref<Texture2D> icon = get_theme_icon(SNAME("TimelineIndicator"), SNAME("EditorIcons"));
+	const Color col = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("TimelineIndicator"));
 	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), col, Math::round(2 * EDSCALE));
 	_indicator->draw_texture(
 			icon,
@@ -188,7 +195,7 @@ void AudioStreamEditor::_seek_to(real_t p_x) {
 
 void AudioStreamEditor::set_stream(const Ref<AudioStream> &p_stream) {
 	if (stream.is_valid()) {
-		stream->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &AudioStreamEditor::_stream_changed));
+		stream->disconnect_changed(callable_mp(this, &AudioStreamEditor::_stream_changed));
 	}
 
 	stream = p_stream;
@@ -196,7 +203,7 @@ void AudioStreamEditor::set_stream(const Ref<AudioStream> &p_stream) {
 		hide();
 		return;
 	}
-	stream->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &AudioStreamEditor::_stream_changed));
+	stream->connect_changed(callable_mp(this, &AudioStreamEditor::_stream_changed));
 
 	_player->set_stream(stream);
 	_current = 0;
@@ -211,7 +218,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
 
 	_player = memnew(AudioStreamPlayer);
-	_player->connect(SNAME("finished"), callable_mp(this, &AudioStreamEditor::_on_finished));
+	_player->connect(SceneStringName(finished), callable_mp(this, &AudioStreamEditor::_on_finished));
 	add_child(_player);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
@@ -220,13 +227,13 @@ AudioStreamEditor::AudioStreamEditor() {
 
 	_preview = memnew(ColorRect);
 	_preview->set_v_size_flags(SIZE_EXPAND_FILL);
-	_preview->connect(SNAME("draw"), callable_mp(this, &AudioStreamEditor::_draw_preview));
+	_preview->connect(SceneStringName(draw), callable_mp(this, &AudioStreamEditor::_draw_preview));
 	vbox->add_child(_preview);
 
 	_indicator = memnew(Control);
 	_indicator->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	_indicator->connect(SNAME("draw"), callable_mp(this, &AudioStreamEditor::_draw_indicator));
-	_indicator->connect(SNAME("gui_input"), callable_mp(this, &AudioStreamEditor::_on_input_indicator));
+	_indicator->connect(SceneStringName(draw), callable_mp(this, &AudioStreamEditor::_draw_indicator));
+	_indicator->connect(SceneStringName(gui_input), callable_mp(this, &AudioStreamEditor::_on_input_indicator));
 	_preview->add_child(_indicator);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
@@ -237,14 +244,16 @@ AudioStreamEditor::AudioStreamEditor() {
 	hbox->add_child(_play_button);
 	_play_button->set_flat(true);
 	_play_button->set_focus_mode(Control::FOCUS_NONE);
-	_play_button->connect(SNAME("pressed"), callable_mp(this, &AudioStreamEditor::_play));
-	_play_button->set_shortcut(ED_SHORTCUT("audio_stream_editor/audio_preview_play_pause", TTR("Audio Preview Play/Pause"), Key::SPACE));
+	_play_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamEditor::_play));
+	_play_button->set_shortcut(ED_SHORTCUT("audio_stream_editor/audio_preview_play_pause", TTRC("Audio Preview Play/Pause"), Key::SPACE));
+	_play_button->set_accessibility_name(TTRC("Play"));
 
 	_stop_button = memnew(Button);
 	hbox->add_child(_stop_button);
 	_stop_button->set_flat(true);
 	_stop_button->set_focus_mode(Control::FOCUS_NONE);
-	_stop_button->connect(SNAME("pressed"), callable_mp(this, &AudioStreamEditor::_stop));
+	_stop_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamEditor::_stop));
+	_stop_button->set_accessibility_name(TTRC("Stop"));
 
 	_current_label = memnew(Label);
 	_current_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);

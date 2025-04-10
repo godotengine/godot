@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  script_language_extension.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  script_language_extension.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "script_language_extension.h"
 
@@ -36,6 +36,7 @@ void ScriptExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_can_instantiate);
 	GDVIRTUAL_BIND(_get_base_script);
+	GDVIRTUAL_BIND(_get_global_name);
 	GDVIRTUAL_BIND(_inherits_script, "script");
 
 	GDVIRTUAL_BIND(_get_instance_base_type);
@@ -50,13 +51,20 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_set_source_code, "code");
 	GDVIRTUAL_BIND(_reload, "keep_state");
 
+	GDVIRTUAL_BIND(_get_doc_class_name);
 	GDVIRTUAL_BIND(_get_documentation);
+	GDVIRTUAL_BIND(_get_class_icon_path);
 
 	GDVIRTUAL_BIND(_has_method, "method");
+	GDVIRTUAL_BIND(_has_static_method, "method");
+
+	GDVIRTUAL_BIND(_get_script_method_argument_count, "method");
+
 	GDVIRTUAL_BIND(_get_method_info, "method");
 
 	GDVIRTUAL_BIND(_is_tool);
 	GDVIRTUAL_BIND(_is_valid);
+	GDVIRTUAL_BIND(_is_abstract);
 	GDVIRTUAL_BIND(_get_language);
 
 	GDVIRTUAL_BIND(_has_script_signal, "signal");
@@ -83,12 +91,12 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_init);
 	GDVIRTUAL_BIND(_get_type);
 	GDVIRTUAL_BIND(_get_extension);
-	GDVIRTUAL_BIND(_execute_file, "path");
 	GDVIRTUAL_BIND(_finish);
 
 	GDVIRTUAL_BIND(_get_reserved_words);
 	GDVIRTUAL_BIND(_is_control_flow_keyword, "keyword");
 	GDVIRTUAL_BIND(_get_comment_delimiters);
+	GDVIRTUAL_BIND(_get_doc_comment_delimiters);
 	GDVIRTUAL_BIND(_get_string_delimiters);
 	GDVIRTUAL_BIND(_make_template, "template", "class_name", "base_class_name");
 	GDVIRTUAL_BIND(_get_built_in_templates, "object");
@@ -97,14 +105,18 @@ void ScriptLanguageExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_validate_path, "path");
 	GDVIRTUAL_BIND(_create_script);
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_has_named_classes);
+#endif
 	GDVIRTUAL_BIND(_supports_builtin_mode);
 	GDVIRTUAL_BIND(_supports_documentation);
 	GDVIRTUAL_BIND(_can_inherit_from_file);
-	GDVIRTUAL_BIND(_find_function, "class_name", "function_name");
+	GDVIRTUAL_BIND(_find_function, "function", "code");
 	GDVIRTUAL_BIND(_make_function, "class_name", "function_name", "function_args");
+	GDVIRTUAL_BIND(_can_make_function);
 	GDVIRTUAL_BIND(_open_in_external_editor, "script", "line", "column");
 	GDVIRTUAL_BIND(_overrides_external_editor);
+	GDVIRTUAL_BIND(_preferred_file_name_casing);
 
 	GDVIRTUAL_BIND(_complete_code, "code", "path", "owner");
 	GDVIRTUAL_BIND(_lookup_code, "code", "symbol", "path", "owner");
@@ -121,6 +133,7 @@ void ScriptLanguageExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_debug_get_stack_level_line, "level");
 	GDVIRTUAL_BIND(_debug_get_stack_level_function, "level");
+	GDVIRTUAL_BIND(_debug_get_stack_level_source, "level");
 	GDVIRTUAL_BIND(_debug_get_stack_level_locals, "level", "max_subitems", "max_depth");
 	GDVIRTUAL_BIND(_debug_get_stack_level_members, "level", "max_subitems", "max_depth");
 	GDVIRTUAL_BIND(_debug_get_stack_level_instance, "level");
@@ -130,6 +143,7 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_debug_get_current_stack_info);
 
 	GDVIRTUAL_BIND(_reload_all_scripts);
+	GDVIRTUAL_BIND(_reload_scripts, "scripts", "soft_reload");
 	GDVIRTUAL_BIND(_reload_tool_script, "script", "soft_reload");
 
 	GDVIRTUAL_BIND(_get_recognized_extensions);
@@ -139,15 +153,10 @@ void ScriptLanguageExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_profiling_start);
 	GDVIRTUAL_BIND(_profiling_stop);
+	GDVIRTUAL_BIND(_profiling_set_save_native_calls, "enable");
 
 	GDVIRTUAL_BIND(_profiling_get_accumulated_data, "info_array", "info_max");
 	GDVIRTUAL_BIND(_profiling_get_frame_data, "info_array", "info_max");
-
-	GDVIRTUAL_BIND(_alloc_instance_binding_data, "object");
-	GDVIRTUAL_BIND(_free_instance_binding_data, "data");
-
-	GDVIRTUAL_BIND(_refcount_incremented_instance_binding, "object");
-	GDVIRTUAL_BIND(_refcount_decremented_instance_binding, "object");
 
 	GDVIRTUAL_BIND(_frame);
 
@@ -161,8 +170,10 @@ void ScriptLanguageExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_METHOD);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_SIGNAL);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_ENUM);
-	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE);
+	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE); // Deprecated.
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_ANNOTATION);
+	BIND_ENUM_CONSTANT(LOOKUP_RESULT_LOCAL_CONSTANT);
+	BIND_ENUM_CONSTANT(LOOKUP_RESULT_LOCAL_VARIABLE);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_MAX);
 
 	BIND_ENUM_CONSTANT(LOCATION_LOCAL);

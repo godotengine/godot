@@ -240,10 +240,6 @@ FT_BEGIN_HEADER
   bdf_free_font( bdf_font_t*  font );
 
   FT_LOCAL( bdf_property_t * )
-  bdf_get_property( char*        name,
-                    bdf_font_t*  font );
-
-  FT_LOCAL( bdf_property_t * )
   bdf_get_font_property( bdf_font_t*  font,
                          const char*  name );
 

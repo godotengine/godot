@@ -40,6 +40,11 @@
  * Buffers serve a dual role in HarfBuzz; before shaping, they hold
  * the input characters that are passed to hb_shape(), and after
  * shaping they hold the output glyphs.
+ *
+ * The input buffer is a sequence of Unicode codepoints, with
+ * associated attributes such as direction and script.  The output
+ * buffer is a sequence of glyphs, with associated attributes such
+ * as position and cluster.
  **/
 
 
@@ -263,9 +268,10 @@ hb_buffer_t::similar (const hb_buffer_t &src)
   unicode = hb_unicode_funcs_reference (src.unicode);
   flags = src.flags;
   cluster_level = src.cluster_level;
-  replacement = src.invisible;
+  replacement = src.replacement;
   invisible = src.invisible;
   not_found = src.not_found;
+  not_found_variation_selector = src.not_found_variation_selector;
 }
 
 void
@@ -278,6 +284,7 @@ hb_buffer_t::reset ()
   replacement = HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT;
   invisible = 0;
   not_found = 0;
+  not_found_variation_selector = HB_CODEPOINT_INVALID;
 
   clear ();
 }
@@ -304,6 +311,7 @@ hb_buffer_t::clear ()
 
   deallocate_var_all ();
   serial = 0;
+  random_state = 1;
   scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
 }
 
@@ -494,11 +502,11 @@ hb_buffer_t::set_masks (hb_mask_t    value,
 			unsigned int cluster_start,
 			unsigned int cluster_end)
 {
-  hb_mask_t not_mask = ~mask;
-  value &= mask;
-
   if (!mask)
     return;
+
+  hb_mask_t not_mask = ~mask;
+  value &= mask;
 
   unsigned int count = len;
   for (unsigned int i = 0; i < count; i++)
@@ -522,15 +530,17 @@ hb_buffer_t::merge_clusters_impl (unsigned int start,
     cluster = hb_min (cluster, info[i].cluster);
 
   /* Extend end */
-  while (end < len && info[end - 1].cluster == info[end].cluster)
-    end++;
+  if (cluster != info[end - 1].cluster)
+    while (end < len && info[end - 1].cluster == info[end].cluster)
+      end++;
 
   /* Extend start */
-  while (idx < start && info[start - 1].cluster == info[start].cluster)
-    start--;
+  if (cluster != info[start].cluster)
+    while (idx < start && info[start - 1].cluster == info[start].cluster)
+      start--;
 
   /* If we hit the start of buffer, continue in out-buffer. */
-  if (idx == start)
+  if (idx == start && info[start].cluster != cluster)
     for (unsigned int i = out_len; i && out_info[i - 1].cluster == info[start].cluster; i--)
       set_cluster (out_info[i - 1], cluster);
 
@@ -697,6 +707,7 @@ DEFINE_NULL_INSTANCE (hb_buffer_t) =
   HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT,
   0, /* invisible */
   0, /* not_found */
+  HB_CODEPOINT_INVALID, /* not_found_variation_selector */
 
 
   HB_BUFFER_CONTENT_TYPE_INVALID,
@@ -849,7 +860,7 @@ hb_buffer_destroy (hb_buffer_t *buffer)
  * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
- * Attaches a user-data key/data pair to the specified buffer. 
+ * Attaches a user-data key/data pair to the specified buffer.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -892,6 +903,32 @@ hb_buffer_get_user_data (const hb_buffer_t  *buffer,
  *
  * Sets the type of @buffer contents. Buffers are either empty, contain
  * characters (before shaping), or contain glyphs (the result of shaping).
+ *
+ * You rarely need to call this function, since a number of other
+ * functions transition the content type for you. Namely:
+ *
+ * - A newly created buffer starts with content type
+ *   %HB_BUFFER_CONTENT_TYPE_INVALID. Calling hb_buffer_reset(),
+ *   hb_buffer_clear_contents(), as well as calling hb_buffer_set_length()
+ *   with an argument of zero all set the buffer content type to invalid
+ *   as well.
+ *
+ * - Calling hb_buffer_add_utf8(), hb_buffer_add_utf16(),
+ *   hb_buffer_add_utf32(), hb_buffer_add_codepoints() and
+ *   hb_buffer_add_latin1() expect that buffer is either empty and
+ *   have a content type of invalid, or that buffer content type is
+ *   %HB_BUFFER_CONTENT_TYPE_UNICODE, and they also set the content
+ *   type to Unicode if they added anything to an empty buffer.
+ *
+ * - Finally hb_shape() and hb_shape_full() expect that the buffer
+ *   is either empty and have content type of invalid, or that buffer
+ *   content type is %HB_BUFFER_CONTENT_TYPE_UNICODE, and upon
+ *   success they set the buffer content type to
+ *   %HB_BUFFER_CONTENT_TYPE_GLYPHS.
+ *
+ * The above transitions are designed such that one can use a buffer
+ * in a loop of "reset : add-text : shape" without needing to ever
+ * modify the content type manually.
  *
  * Since: 0.9.5
  **/
@@ -1172,7 +1209,7 @@ hb_buffer_get_flags (const hb_buffer_t *buffer)
  * @cluster_level: The cluster level to set on the buffer
  *
  * Sets the cluster level of a buffer. The #hb_buffer_cluster_level_t
- * dictates one aspect of how HarfBuzz will treat non-base characters 
+ * dictates one aspect of how HarfBuzz will treat non-base characters
  * during shaping.
  *
  * Since: 0.9.42
@@ -1192,7 +1229,7 @@ hb_buffer_set_cluster_level (hb_buffer_t               *buffer,
  * @buffer: An #hb_buffer_t
  *
  * Fetches the cluster level of a buffer. The #hb_buffer_cluster_level_t
- * dictates one aspect of how HarfBuzz will treat non-base characters 
+ * dictates one aspect of how HarfBuzz will treat non-base characters
  * during shaping.
  *
  * Return value: The cluster level of @buffer
@@ -1294,7 +1331,7 @@ hb_buffer_get_invisible_glyph (const hb_buffer_t *buffer)
  * Sets the #hb_codepoint_t that replaces characters not found in
  * the font during shaping.
  *
- * The not-found glyph defaults to zero, sometimes knows as the
+ * The not-found glyph defaults to zero, sometimes known as the
  * ".notdef" glyph.  This API allows for differentiating the two.
  *
  * Since: 3.1.0
@@ -1326,6 +1363,89 @@ hb_buffer_get_not_found_glyph (const hb_buffer_t *buffer)
   return buffer->not_found;
 }
 
+/**
+ * hb_buffer_set_not_found_variation_selector_glyph:
+ * @buffer: An #hb_buffer_t
+ * @not_found_variation_selector: the not-found-variation-selector #hb_codepoint_t
+ *
+ * Sets the #hb_codepoint_t that replaces variation-selector characters not resolved
+ * in the font during shaping.
+ *
+ * The not-found-variation-selector glyph defaults to #HB_CODEPOINT_INVALID,
+ * in which case an unresolved variation-selector will be removed from the glyph
+ * string during shaping. This API allows for changing that and retaining a glyph,
+ * such that the situation can be detected by the client and handled accordingly
+ * (e.g. by using a different font).
+ *
+ * Since: 10.0.0
+ **/
+void
+hb_buffer_set_not_found_variation_selector_glyph (hb_buffer_t    *buffer,
+						  hb_codepoint_t  not_found_variation_selector)
+{
+  buffer->not_found_variation_selector = not_found_variation_selector;
+}
+
+/**
+ * hb_buffer_get_not_found_variation_selector_glyph:
+ * @buffer: An #hb_buffer_t
+ *
+ * See hb_buffer_set_not_found_variation_selector_glyph().
+ *
+ * Return value:
+ * The @buffer not-found-variation-selector #hb_codepoint_t
+ *
+ * Since: 10.0.0
+ **/
+hb_codepoint_t
+hb_buffer_get_not_found_variation_selector_glyph (const hb_buffer_t *buffer)
+{
+  return buffer->not_found_variation_selector;
+}
+
+/**
+ * hb_buffer_set_random_state:
+ * @buffer: An #hb_buffer_t
+ * @state: the new random state
+ *
+ * Sets the random state of the buffer. The state changes
+ * every time a glyph uses randomness (eg. the `rand`
+ * OpenType feature). This function together with
+ * hb_buffer_get_random_state() allow for transferring
+ * the current random state to a subsequent buffer, to
+ * get better randomness distribution.
+ *
+ * Defaults to 1 and when buffer contents are cleared.
+ * A value of 0 disables randomness during shaping.
+ *
+ * Since: 8.4.0
+ **/
+void
+hb_buffer_set_random_state (hb_buffer_t    *buffer,
+			    unsigned        state)
+{
+  if (unlikely (hb_object_is_immutable (buffer)))
+    return;
+
+  buffer->random_state = state;
+}
+
+/**
+ * hb_buffer_get_random_state:
+ * @buffer: An #hb_buffer_t
+ *
+ * See hb_buffer_set_random_state().
+ *
+ * Return value:
+ * The @buffer random state
+ *
+ * Since: 8.4.0
+ **/
+unsigned
+hb_buffer_get_random_state (const hb_buffer_t *buffer)
+{
+  return buffer->random_state;
+}
 
 /**
  * hb_buffer_clear_contents:
@@ -1863,7 +1983,7 @@ hb_buffer_add_codepoints (hb_buffer_t          *buffer,
  * @buffer: An #hb_buffer_t
  * @source: source #hb_buffer_t
  * @start: start index into source buffer to copy.  Use 0 to copy from start of buffer.
- * @end: end index into source buffer to copy.  Use @HB_FEATURE_GLOBAL_END to copy to end of buffer.
+ * @end: end index into source buffer to copy.  Use @UINT_MAX (or ((unsigned int) -1)) to copy to end of buffer.
  *
  * Append (part of) contents of another buffer to this buffer.
  *
@@ -2043,7 +2163,7 @@ hb_buffer_t::sort (unsigned int start, unsigned int end, int(*compar)(const hb_g
  * hb_buffer_diff:
  * @buffer: a buffer.
  * @reference: other buffer to compare to.
- * @dottedcircle_glyph: glyph id of U+25CC DOTTED CIRCLE, or (hb_codepont_t) -1.
+ * @dottedcircle_glyph: glyph id of U+25CC DOTTED CIRCLE, or (hb_codepoint_t) -1.
  * @position_fuzz: allowed absolute difference in position values.
  *
  * If dottedcircle_glyph is (hb_codepoint_t) -1 then #HB_BUFFER_DIFF_FLAG_DOTTED_CIRCLE_PRESENT

@@ -4,7 +4,7 @@
  *
  *   Objects manager (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -115,7 +115,7 @@
   FT_LOCAL_DEF( FT_Error )
   tt_glyphzone_new( FT_Memory     memory,
                     FT_UShort     maxPoints,
-                    FT_Short      maxContours,
+                    FT_UShort     maxContours,
                     TT_GlyphZone  zone )
   {
     FT_Error  error;
@@ -152,18 +152,20 @@
   static const FT_String*
   tt_skip_pdffont_random_tag( const FT_String*  name )
   {
-    unsigned int  i;
+    if ( ft_isupper( name[0] ) &&
+         ft_isupper( name[1] ) &&
+         ft_isupper( name[2] ) &&
+         ft_isupper( name[3] ) &&
+         ft_isupper( name[4] ) &&
+         ft_isupper( name[5] ) &&
+              '+' == name[6]   &&
+                     name[7]   )
+    {
+      FT_TRACE7(( "name without randomization tag: %s\n", name + 7 ));
+      return name + 7;
+    }
 
-
-    if ( ft_strlen( name ) < 8 || name[6] != '+' )
-      return name;
-
-    for ( i = 0; i < 6; i++ )
-      if ( !ft_isupper( name[i] ) )
-        return name;
-
-    FT_TRACE7(( "name without randomization tag: %s\n", name + 7 ));
-    return name + 7;
+    return name;
   }
 
 
@@ -254,17 +256,20 @@
   {
     FT_Error   error;
     FT_UInt32  checksum = 0;
-    FT_UInt    i;
+    FT_Byte*   p;
+    FT_Int     shift;
 
 
     if ( FT_FRAME_ENTER( length ) )
       return 0;
 
-    for ( ; length > 3; length -= 4 )
-      checksum += (FT_UInt32)FT_GET_ULONG();
+    p = (FT_Byte*)stream->cursor;
 
-    for ( i = 3; length > 0; length--, i-- )
-      checksum += (FT_UInt32)FT_GET_BYTE() << ( i * 8 );
+    for ( ; length > 3; length -= 4 )
+      checksum += FT_NEXT_ULONG( p );
+
+    for ( shift = 24; length > 0; length--, shift -=8 )
+      checksum += (FT_UInt32)FT_NEXT_BYTE( p ) << shift;
 
     FT_FRAME_EXIT();
 
@@ -312,7 +317,8 @@
 #define TRICK_SFNT_IDS_NUM_FACES  31
 
     static const tt_sfnt_id_rec sfnt_id[TRICK_SFNT_IDS_NUM_FACES]
-                                       [TRICK_SFNT_IDS_PER_FACE] = {
+                                       [TRICK_SFNT_IDS_PER_FACE] =
+    {
 
 #define TRICK_SFNT_ID_cvt   0
 #define TRICK_SFNT_ID_fpgm  1
@@ -581,7 +587,7 @@
     FT_Bool   result = FALSE;
 
     TT_Face   face = (TT_Face)ttface;
-    FT_UInt   asize;
+    FT_ULong  asize;
     FT_ULong  i;
     FT_ULong  glyph_index = 0;
     FT_UInt   count       = 0;
@@ -589,7 +595,7 @@
 
     for( i = 0; i < face->num_locations; i++ )
     {
-      tt_face_get_location( face, i, &asize );
+      tt_face_get_location( ttface, i, &asize );
       if ( asize > 0 )
       {
         count += 1;
@@ -777,22 +783,17 @@
     }
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-
     {
       FT_UInt  instance_index = (FT_UInt)face_index >> 16;
 
 
-      if ( FT_HAS_MULTIPLE_MASTERS( ttface ) &&
-           instance_index > 0                )
+      if ( FT_HAS_MULTIPLE_MASTERS( ttface ) )
       {
-        error = TT_Set_Named_Instance( face, instance_index );
+        error = FT_Set_Named_Instance( ttface, instance_index );
         if ( error )
           goto Exit;
-
-        tt_apply_mvar( face );
       }
     }
-
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
 
     /* initialize standard glyph loading routines */
@@ -858,7 +859,7 @@
     face->cvt_program_size  = 0;
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-    tt_done_blend( face );
+    tt_done_blend( ttface );
     face->blend = NULL;
 #endif
   }
@@ -993,18 +994,18 @@
     FT_Error        error;
     FT_UInt         i;
 
-    /* unscaled CVT values are already stored in 26.6 format */
-    FT_Fixed  scale = size->ttmetrics.scale >> 6;
-
 
     /* Scale the cvt values to the new ppem.            */
     /* By default, we use the y ppem value for scaling. */
     FT_TRACE6(( "CVT values:\n" ));
     for ( i = 0; i < size->cvt_size; i++ )
     {
-      size->cvt[i] = FT_MulFix( face->cvt[i], scale );
+      /* Unscaled CVT values are already stored in 26.6 format.            */
+      /* Note that this scaling operation is very sensitive to rounding;   */
+      /* the integer division by 64 must be applied to the first argument. */
+      size->cvt[i] = FT_MulFix( face->cvt[i] / 64, size->ttmetrics.scale );
       FT_TRACE6(( "  %3d: %f (%f)\n",
-                  i, face->cvt[i] / 64.0, size->cvt[i] / 64.0 ));
+                  i, (double)face->cvt[i] / 64, (double)size->cvt[i] / 64 ));
     }
     FT_TRACE6(( "\n" ));
 
@@ -1338,38 +1339,28 @@
   /**************************************************************************
    *
    * @Function:
-   *   tt_size_reset
+   *   tt_size_reset_height
    *
    * @Description:
-   *   Reset a TrueType size when resolutions and character dimensions
-   *   have been changed.
+   *   Recompute a TrueType size's ascender, descender, and height
+   *   when resolutions and character dimensions have been changed.
+   *   Used for variation fonts as an iterator function.
    *
    * @Input:
-   *   size ::
-   *     A handle to the target size object.
-   *
-   *   only_height ::
-   *     Only recompute ascender, descender, and height;
-   *     this flag is used for variation fonts where
-   *     `tt_size_reset' is used as an iterator function.
+   *   ft_size ::
+   *     A handle to the target TT_Size object. This function will be called
+   *     through a `FT_Size_Reset_Func` pointer which takes `FT_Size`. This
+   *     function must take `FT_Size` as a result. The passed `FT_Size` is
+   *     expected to point to a `TT_Size`.
    */
   FT_LOCAL_DEF( FT_Error )
-  tt_size_reset( TT_Size  size,
-                 FT_Bool  only_height )
+  tt_size_reset_height( FT_Size  ft_size )
   {
-    TT_Face           face;
-    FT_Size_Metrics*  size_metrics;
-
-
-    face = (TT_Face)size->root.face;
-
-    /* nothing to do for CFF2 */
-    if ( face->is_cff2 )
-      return FT_Err_Ok;
+    TT_Size           size         = (TT_Size)ft_size;
+    TT_Face           face         = (TT_Face)size->root.face;
+    FT_Size_Metrics*  size_metrics = &size->hinted_metrics;
 
     size->ttmetrics.valid = FALSE;
-
-    size_metrics = &size->hinted_metrics;
 
     /* copy the result from base layer */
     *size_metrics = size->root.metrics;
@@ -1397,12 +1388,34 @@
 
     size->ttmetrics.valid = TRUE;
 
-    if ( only_height )
-    {
-      /* we must not recompute the scaling values here since       */
-      /* `tt_size_reset' was already called (with only_height = 0) */
-      return FT_Err_Ok;
-    }
+    return FT_Err_Ok;
+  }
+
+
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_size_reset
+   *
+   * @Description:
+   *   Reset a TrueType size when resolutions and character dimensions
+   *   have been changed.
+   *
+   * @Input:
+   *   size ::
+   *     A handle to the target size object.
+   */
+  FT_LOCAL_DEF( FT_Error )
+  tt_size_reset( TT_Size  size )
+  {
+    FT_Error          error;
+    TT_Face           face         = (TT_Face)size->root.face;
+    FT_Size_Metrics*  size_metrics = &size->hinted_metrics;
+
+
+    error = tt_size_reset_height( (FT_Size)size );
+    if ( error )
+      return error;
 
     if ( face->header.Flags & 8 )
     {
@@ -1472,9 +1485,6 @@
     TT_Driver  driver = (TT_Driver)ttdriver;
 
     driver->interpreter_version = TT_INTERPRETER_VERSION_35;
-#ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
-    driver->interpreter_version = TT_INTERPRETER_VERSION_38;
-#endif
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
     driver->interpreter_version = TT_INTERPRETER_VERSION_40;
 #endif

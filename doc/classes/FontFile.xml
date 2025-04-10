@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FontFile" inherits="Font" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FontFile" inherits="Font" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Font source data and prerendered glyph cache, imported from dynamic or bitmap font.
+		Holds font source data and prerendered glyph cache, imported from a dynamic or a bitmap font.
 	</brief_description>
 	<description>
 		[FontFile] contains a set of glyphs to represent Unicode characters imported from a font file, as well as a cache of rasterized glyphs, and a set of fallback [Font]s to use.
@@ -12,22 +12,23 @@
 		- Bitmap font importer: AngelCode BMFont (.fnt, .font), text and binary (version 3) format variants.
 		- Monospace image font importer: All supported image formats.
 		[b]Note:[/b] A character is a symbol that represents an item (letter, digit etc.) in an abstract way.
-		[b]Note:[/b] A glyph is a bitmap or shape used to draw a one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
-		[b]Note:[/b] If a none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
+		[b]Note:[/b] A glyph is a bitmap or a shape used to draw one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
+		[b]Note:[/b] If none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
 		[codeblocks]
 		[gdscript]
 		var f = load("res://BarlowCondensed-Bold.ttf")
-		$"Label".set("custom_fonts/font", f)
-		$"Label".set("custom_fonts/font_size", 64)
+		$Label.add_theme_font_override("font", f)
+		$Label.add_theme_font_size_override("font_size", 64)
 		[/gdscript]
 		[csharp]
 		var f = ResourceLoader.Load&lt;FontFile&gt;("res://BarlowCondensed-Bold.ttf");
-		GetNode("Label").Set("custom_fonts/font", f);
-		GetNode("Label").Set("custom_font_sizes/font_size", 64);
+		GetNode("Label").AddThemeFontOverride("font", f);
+		GetNode("Label").AddThemeFontSizeOverride("font_size", 64);
 		[/csharp]
 		[/codeblocks]
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
 		<method name="clear_cache">
@@ -41,7 +42,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="Vector2i" />
 			<description>
-				Removes all rendered glyphs information from the cache entry.
+				Removes all rendered glyph information from the cache entry.
 				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
 			</description>
 		</method>
@@ -57,7 +58,7 @@
 			<return type="void" />
 			<param index="0" name="cache_index" type="int" />
 			<description>
-				Removes all font sizes from the cache entry
+				Removes all font sizes from the cache entry.
 			</description>
 		</method>
 		<method name="clear_textures">
@@ -88,6 +89,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns the font descent (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="get_cache_scale" qualifiers="const">
@@ -95,6 +97,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns scaling factor of the color bitmap font.
 			</description>
 		</method>
 		<method name="get_cache_underline_position" qualifiers="const">
@@ -102,6 +105,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns pixel offset of the underline below the baseline.
 			</description>
 		</method>
 		<method name="get_cache_underline_thickness" qualifiers="const">
@@ -109,6 +113,15 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="get_char_from_glyph_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="size" type="int" />
+			<param index="1" name="glyph_index" type="int" />
+			<description>
+				Returns character code associated with [param glyph_index], or [code]0[/code] if [param glyph_index] is invalid. See [method get_glyph_index].
 			</description>
 		</method>
 		<method name="get_embolden" qualifiers="const">
@@ -118,11 +131,26 @@
 				Returns embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
 			</description>
 		</method>
+		<method name="get_extra_baseline_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Returns extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
+		<method name="get_extra_spacing" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+				Returns spacing for [param spacing] (see [enum TextServer.SpacingType]) in pixels (not relative to the font size).
+			</description>
+		</method>
 		<method name="get_face_index" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="cache_index" type="int" />
 			<description>
-				Recturns an active face index in the TrueType / OpenType collection.
+				Returns an active face index in the TrueType / OpenType collection.
 			</description>
 		</method>
 		<method name="get_glyph_advance" qualifiers="const">
@@ -235,7 +263,7 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="cache_index" type="int" />
 			<description>
-				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
+				Returns list of the font sizes in the cache. Each size is [Vector2i] with font size and outline size.
 			</description>
 		</method>
 		<method name="get_texture_count" qualifiers="const">
@@ -377,6 +405,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="ascent" type="float" />
 			<description>
+				Sets the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
 		<method name="set_cache_descent">
@@ -385,6 +414,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="descent" type="float" />
 			<description>
+				Sets the font descent (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="set_cache_scale">
@@ -393,6 +423,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="scale" type="float" />
 			<description>
+				Sets scaling factor of the color bitmap font.
 			</description>
 		</method>
 		<method name="set_cache_underline_position">
@@ -401,6 +432,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="underline_position" type="float" />
 			<description>
+				Sets pixel offset of the underline below the baseline.
 			</description>
 		</method>
 		<method name="set_cache_underline_thickness">
@@ -409,6 +441,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="underline_thickness" type="float" />
 			<description>
+				Sets thickness of the underline in pixels.
 			</description>
 		</method>
 		<method name="set_embolden">
@@ -417,6 +450,23 @@
 			<param index="1" name="strength" type="float" />
 			<description>
 				Sets embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
+			</description>
+		</method>
+		<method name="set_extra_baseline_offset">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="baseline_offset" type="float" />
+			<description>
+				Sets extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
+		<method name="set_extra_spacing">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="2" name="value" type="int" />
+			<description>
+				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
 			</description>
 		</method>
 		<method name="set_face_index">
@@ -529,7 +579,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
-				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
+				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping, and rotating glyphs.
 			</description>
 		</method>
 		<method name="set_variation_coordinates">
@@ -551,11 +601,14 @@
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contents of the dynamic font source file.
 		</member>
-		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
-			Array of fallback [Font]s.
+		<member name="disable_embedded_bitmaps" type="bool" setter="set_disable_embedded_bitmaps" getter="get_disable_embedded_bitmaps" default="true">
+			If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
 		</member>
 		<member name="fixed_size" type="int" setter="set_fixed_size" getter="get_fixed_size" default="0">
 			Font size, used only for the bitmap fonts.
+		</member>
+		<member name="fixed_size_scale_mode" type="int" setter="set_fixed_size_scale_mode" getter="get_fixed_size_scale_mode" enum="TextServer.FixedSizeScaleMode" default="0">
+			Scaling mode, used only for the bitmap fonts with [member fixed_size] greater than zero.
 		</member>
 		<member name="font_name" type="String" setter="set_font_name" getter="get_font_name" default="&quot;&quot;">
 			Font family name.
@@ -563,14 +616,14 @@
 		<member name="font_stretch" type="int" setter="set_font_stretch" getter="get_font_stretch" default="100">
 			Font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
 		</member>
-		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" enum="TextServer.FontStyle" default="0">
+		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" enum="TextServer.FontStyle" is_bitfield="true" default="0">
 			Font style flags, see [enum TextServer.FontStyle].
 		</member>
 		<member name="font_weight" type="int" setter="set_font_weight" getter="get_font_weight" default="400">
 			Weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
 		</member>
 		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="is_force_autohinter" default="false">
-			If set to [code]true[/code], auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only.
+			If set to [code]true[/code], auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only (MSDF fonts don't support hinting).
 		</member>
 		<member name="generate_mipmaps" type="bool" setter="set_generate_mipmaps" getter="get_generate_mipmaps" default="false">
 			If set to [code]true[/code], generate mipmaps for the font textures.
@@ -578,26 +631,34 @@
 		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="TextServer.Hinting" default="1">
 			Font hinting mode. Used by dynamic fonts only.
 		</member>
+		<member name="keep_rounding_remainders" type="bool" setter="set_keep_rounding_remainders" getter="get_keep_rounding_remainders" default="true">
+			If set to [code]true[/code], when aligning glyphs to the pixel boundaries rounding remainders are accumulated to ensure more uniform glyph distribution. This setting has no effect if subpixel positioning is enabled.
+		</member>
+		<member name="modulate_color_glyphs" type="bool" setter="set_modulate_color_glyphs" getter="is_modulate_color_glyphs" default="false">
+			If set to [code]true[/code], color modulation is applied when drawing colored glyphs, otherwise it's applied to the monochrome glyphs only.
+		</member>
 		<member name="msdf_pixel_range" type="int" setter="set_msdf_pixel_range" getter="get_msdf_pixel_range" default="16">
-			The width of the range around the shape between the minimum and maximum representable signed distance.
+			The width of the range around the shape between the minimum and maximum representable signed distance. If using font outlines, [member msdf_pixel_range] must be set to at least [i]twice[/i] the size of the largest font outline. The default [member msdf_pixel_range] value of [code]16[/code] allows outline sizes up to [code]8[/code] to look correct.
 		</member>
 		<member name="msdf_size" type="int" setter="set_msdf_size" getter="get_msdf_size" default="48">
-			Source font size used to generate MSDF textures.
+			Source font size used to generate MSDF textures. Higher values allow for more precision, but are slower to render and require more memory. Only increase this value if you notice a visible lack of precision in glyph rendering.
 		</member>
 		<member name="multichannel_signed_distance_field" type="bool" setter="set_multichannel_signed_distance_field" getter="is_multichannel_signed_distance_field" default="false">
-			If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data.
+			If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field (MSDF) generated from the dynamic font vector data. Since this approach does not rely on rasterizing the font every time its size changes, this allows for resizing the font in real-time without any performance penalty. Text will also not look grainy for [Control]s that are scaled down (or for [Label3D]s viewed from a long distance). As a downside, font hinting is not available with MSDF. The lack of font hinting may result in less crisp and less readable fonts at small sizes.
+			[b]Note:[/b] If using font outlines, [member msdf_pixel_range] must be set to at least [i]twice[/i] the size of the largest font outline.
+			[b]Note:[/b] MSDF font rendering does not render glyphs with overlapping shapes correctly. Overlapping shapes are not valid per the OpenType standard, but are still commonly found in many font files, especially those converted by Google Fonts. To avoid issues with overlapping glyphs, consider downloading the font file directly from the type foundry instead of relying on Google Fonts.
 		</member>
 		<member name="opentype_feature_overrides" type="Dictionary" setter="set_opentype_feature_overrides" getter="get_opentype_feature_overrides" default="{}">
 			Font OpenType feature set override.
 		</member>
 		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="0.0">
-			Font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
+			Font oversampling factor. If set to [code]0.0[/code], the global oversampling factor is used instead. Used by dynamic fonts only (MSDF fonts ignore oversampling).
 		</member>
 		<member name="style_name" type="String" setter="set_font_style_name" getter="get_font_style_name" default="&quot;&quot;">
 			Font style name.
 		</member>
 		<member name="subpixel_positioning" type="int" setter="set_subpixel_positioning" getter="get_subpixel_positioning" enum="TextServer.SubpixelPositioning" default="1">
-			Font glyph subpixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of memory usage and font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
+			Font glyph subpixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of higher memory usage and lower font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
 		</member>
 	</members>
 </class>

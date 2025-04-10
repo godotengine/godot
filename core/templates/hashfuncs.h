@@ -1,41 +1,47 @@
-/*************************************************************************/
-/*  hashfuncs.h                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  hashfuncs.h                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef HASHFUNCS_H
-#define HASHFUNCS_H
+#pragma once
 
 #include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/projection.h"
+#include "core/math/quaternion.h"
 #include "core/math/rect2.h"
 #include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector2i.h"
 #include "core/math/vector3.h"
@@ -48,6 +54,10 @@
 #include "core/string/ustring.h"
 #include "core/templates/rid.h"
 #include "core/typedefs.h"
+
+#ifdef _MSC_VER
+#include <intrin.h> // Needed for `__umulh` below.
+#endif
 
 /**
  * Hashing functions
@@ -101,6 +111,16 @@ static _FORCE_INLINE_ uint32_t hash_one_uint64(const uint64_t p_int) {
 	v = v + (v << 6);
 	v = v ^ (v >> 22);
 	return uint32_t(v);
+}
+
+static _FORCE_INLINE_ uint64_t hash64_murmur3_64(uint64_t key, uint64_t seed) {
+	key ^= seed;
+	key ^= key >> 33;
+	key *= 0xff51afd7ed558ccd;
+	key ^= key >> 33;
+	key *= 0xc4ceb9fe1a85ec53;
+	key ^= key >> 33;
+	return key;
 }
 
 #define HASH_MURMUR3_SEED 0x7F07C65
@@ -248,7 +268,7 @@ static _FORCE_INLINE_ uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev 
 	return ((p_prev << 5) + p_prev) + hash_one_uint64(u.i);
 }
 
-template <class T>
+template <typename T>
 static _FORCE_INLINE_ uint32_t hash_make_uint32_t(T p_in) {
 	union {
 		T t;
@@ -281,7 +301,7 @@ static _FORCE_INLINE_ uint64_t hash_djb2_one_64(uint64_t p_in, uint64_t p_prev =
 	return ((p_prev << 5) + p_prev) ^ p_in;
 }
 
-template <class T>
+template <typename T>
 static _FORCE_INLINE_ uint64_t hash_make_uint64_t(T p_in) {
 	union {
 		T t;
@@ -293,54 +313,54 @@ static _FORCE_INLINE_ uint64_t hash_make_uint64_t(T p_in) {
 	return _u._u64;
 }
 
-template <class T>
+template <typename T>
 class Ref;
 
 struct HashMapHasherDefault {
 	// Generic hash function for any type.
-	template <class T>
+	template <typename T>
 	static _FORCE_INLINE_ uint32_t hash(const T *p_pointer) { return hash_one_uint64((uint64_t)p_pointer); }
 
-	template <class T>
+	template <typename T>
 	static _FORCE_INLINE_ uint32_t hash(const Ref<T> &p_ref) { return hash_one_uint64((uint64_t)p_ref.operator->()); }
 
 	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_djb2(p_cstr); }
-	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar) { return hash_fmix32(p_wchar); }
-	static _FORCE_INLINE_ uint32_t hash(const char16_t p_uchar) { return hash_fmix32(p_uchar); }
-	static _FORCE_INLINE_ uint32_t hash(const char32_t p_uchar) { return hash_fmix32(p_uchar); }
+	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar) { return hash_fmix32(uint32_t(p_wchar)); }
+	static _FORCE_INLINE_ uint32_t hash(const char16_t p_uchar) { return hash_fmix32(uint32_t(p_uchar)); }
+	static _FORCE_INLINE_ uint32_t hash(const char32_t p_uchar) { return hash_fmix32(uint32_t(p_uchar)); }
 	static _FORCE_INLINE_ uint32_t hash(const RID &p_rid) { return hash_one_uint64(p_rid.get_id()); }
-	static _FORCE_INLINE_ uint32_t hash(const CharString &p_char_string) { return hash_djb2(p_char_string.ptr()); }
+	static _FORCE_INLINE_ uint32_t hash(const CharString &p_char_string) { return hash_djb2(p_char_string.get_data()); }
 	static _FORCE_INLINE_ uint32_t hash(const StringName &p_string_name) { return p_string_name.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const NodePath &p_path) { return p_path.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const ObjectID &p_id) { return hash_one_uint64(p_id); }
 
 	static _FORCE_INLINE_ uint32_t hash(const uint64_t p_int) { return hash_one_uint64(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const int64_t p_int) { return hash_one_uint64(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const int64_t p_int) { return hash_one_uint64(uint64_t(p_int)); }
 	static _FORCE_INLINE_ uint32_t hash(const float p_float) { return hash_murmur3_one_float(p_float); }
 	static _FORCE_INLINE_ uint32_t hash(const double p_double) { return hash_murmur3_one_double(p_double); }
 	static _FORCE_INLINE_ uint32_t hash(const uint32_t p_int) { return hash_fmix32(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const int32_t p_int) { return hash_fmix32(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const uint16_t p_int) { return hash_fmix32(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const int16_t p_int) { return hash_fmix32(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int) { return hash_fmix32(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int) { return hash_fmix32(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const int32_t p_int) { return hash_fmix32(uint32_t(p_int)); }
+	static _FORCE_INLINE_ uint32_t hash(const uint16_t p_int) { return hash_fmix32(uint32_t(p_int)); }
+	static _FORCE_INLINE_ uint32_t hash(const int16_t p_int) { return hash_fmix32(uint32_t(p_int)); }
+	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int) { return hash_fmix32(uint32_t(p_int)); }
+	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int) { return hash_fmix32(uint32_t(p_int)); }
 	static _FORCE_INLINE_ uint32_t hash(const Vector2i &p_vec) {
-		uint32_t h = hash_murmur3_one_32(p_vec.x);
-		h = hash_murmur3_one_32(p_vec.y, h);
+		uint32_t h = hash_murmur3_one_32(uint32_t(p_vec.x));
+		h = hash_murmur3_one_32(uint32_t(p_vec.y), h);
 		return hash_fmix32(h);
 	}
 	static _FORCE_INLINE_ uint32_t hash(const Vector3i &p_vec) {
-		uint32_t h = hash_murmur3_one_32(p_vec.x);
-		h = hash_murmur3_one_32(p_vec.y, h);
-		h = hash_murmur3_one_32(p_vec.z, h);
+		uint32_t h = hash_murmur3_one_32(uint32_t(p_vec.x));
+		h = hash_murmur3_one_32(uint32_t(p_vec.y), h);
+		h = hash_murmur3_one_32(uint32_t(p_vec.z), h);
 		return hash_fmix32(h);
 	}
 	static _FORCE_INLINE_ uint32_t hash(const Vector4i &p_vec) {
-		uint32_t h = hash_murmur3_one_32(p_vec.x);
-		h = hash_murmur3_one_32(p_vec.y, h);
-		h = hash_murmur3_one_32(p_vec.z, h);
-		h = hash_murmur3_one_32(p_vec.w, h);
+		uint32_t h = hash_murmur3_one_32(uint32_t(p_vec.x));
+		h = hash_murmur3_one_32(uint32_t(p_vec.y), h);
+		h = hash_murmur3_one_32(uint32_t(p_vec.z), h);
+		h = hash_murmur3_one_32(uint32_t(p_vec.w), h);
 		return hash_fmix32(h);
 	}
 	static _FORCE_INLINE_ uint32_t hash(const Vector2 &p_vec) {
@@ -362,10 +382,10 @@ struct HashMapHasherDefault {
 		return hash_fmix32(h);
 	}
 	static _FORCE_INLINE_ uint32_t hash(const Rect2i &p_rect) {
-		uint32_t h = hash_murmur3_one_32(p_rect.position.x);
-		h = hash_murmur3_one_32(p_rect.position.y, h);
-		h = hash_murmur3_one_32(p_rect.size.x, h);
-		h = hash_murmur3_one_32(p_rect.size.y, h);
+		uint32_t h = hash_murmur3_one_32(uint32_t(p_rect.position.x));
+		h = hash_murmur3_one_32(uint32_t(p_rect.position.y), h);
+		h = hash_murmur3_one_32(uint32_t(p_rect.size.x), h);
+		h = hash_murmur3_one_32(uint32_t(p_rect.size.y), h);
 		return hash_fmix32(h);
 	}
 	static _FORCE_INLINE_ uint32_t hash(const Rect2 &p_rect) {
@@ -386,6 +406,19 @@ struct HashMapHasherDefault {
 	}
 };
 
+struct HashHasher {
+	static _FORCE_INLINE_ uint32_t hash(const int32_t hash) { return hash; }
+	static _FORCE_INLINE_ uint32_t hash(const uint32_t hash) { return hash; }
+	static _FORCE_INLINE_ uint64_t hash(const int64_t hash) { return hash; }
+	static _FORCE_INLINE_ uint64_t hash(const uint64_t hash) { return hash; }
+};
+
+// TODO: Fold this into HashMapHasherDefault once C++20 concepts are allowed
+template <typename T>
+struct HashableHasher {
+	static _FORCE_INLINE_ uint32_t hash(const T &hashable) { return hashable.hash(); }
+};
+
 template <typename T>
 struct HashMapComparatorDefault {
 	static bool compare(const T &p_lhs, const T &p_rhs) {
@@ -396,34 +429,104 @@ struct HashMapComparatorDefault {
 template <>
 struct HashMapComparatorDefault<float> {
 	static bool compare(const float &p_lhs, const float &p_rhs) {
-		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
+		return Math::is_same(p_lhs, p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<double> {
 	static bool compare(const double &p_lhs, const double &p_rhs) {
-		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
+		return Math::is_same(p_lhs, p_rhs);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Color> {
+	static bool compare(const Color &p_lhs, const Color &p_rhs) {
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Vector2> {
 	static bool compare(const Vector2 &p_lhs, const Vector2 &p_rhs) {
-		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y)));
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Vector3> {
 	static bool compare(const Vector3 &p_lhs, const Vector3 &p_rhs) {
-		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y))) && ((p_lhs.z == p_rhs.z) || (Math::is_nan(p_lhs.z) && Math::is_nan(p_rhs.z)));
+		return p_lhs.is_same(p_rhs);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Vector4> {
+	static bool compare(const Vector4 &p_lhs, const Vector4 &p_rhs) {
+		return p_lhs.is_same(p_rhs);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Rect2> {
+	static bool compare(const Rect2 &p_lhs, const Rect2 &p_rhs) {
+		return p_lhs.is_same(p_rhs);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<AABB> {
+	static bool compare(const AABB &p_lhs, const AABB &p_rhs) {
+		return p_lhs.is_same(p_rhs);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Plane> {
+	static bool compare(const Plane &p_lhs, const Plane &p_rhs) {
+		return p_lhs.is_same(p_rhs);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Transform2D> {
+	static bool compare(const Transform2D &p_lhs, const Transform2D &p_rhs) {
+		return p_lhs.is_same(p_rhs);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Basis> {
+	static bool compare(const Basis &p_lhs, const Basis &p_rhs) {
+		return p_lhs.is_same(p_rhs);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Transform3D> {
+	static bool compare(const Transform3D &p_lhs, const Transform3D &p_rhs) {
+		return p_lhs.is_same(p_rhs);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Projection> {
+	static bool compare(const Projection &p_lhs, const Projection &p_rhs) {
+		return p_lhs.is_same(p_rhs);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Quaternion> {
+	static bool compare(const Quaternion &p_lhs, const Quaternion &p_rhs) {
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 constexpr uint32_t HASH_TABLE_SIZE_MAX = 29;
 
-const uint32_t hash_table_size_primes[HASH_TABLE_SIZE_MAX] = {
+inline constexpr uint32_t hash_table_size_primes[HASH_TABLE_SIZE_MAX] = {
 	5,
 	13,
 	23,
@@ -456,7 +559,7 @@ const uint32_t hash_table_size_primes[HASH_TABLE_SIZE_MAX] = {
 };
 
 // Computed with elem_i = UINT64_C (0 x FFFFFFFF FFFFFFFF ) / d_i + 1, where d_i is the i-th element of the above array.
-const uint64_t hash_table_size_primes_inv[HASH_TABLE_SIZE_MAX] = {
+inline constexpr uint64_t hash_table_size_primes_inv[HASH_TABLE_SIZE_MAX] = {
 	3689348814741910324,
 	1418980313362273202,
 	802032351030850071,
@@ -516,5 +619,3 @@ static _FORCE_INLINE_ uint32_t fastmod(const uint32_t n, const uint64_t c, const
 #endif // __SIZEOF_INT128__
 #endif // _MSC_VER
 }
-
-#endif // HASHFUNCS_H

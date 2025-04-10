@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RegEx" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="RegEx" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Class for searching text for patterns using regular expressions.
 	</brief_description>
@@ -10,7 +10,7 @@
 		var regex = RegEx.new()
 		regex.compile("\\w-(\\d+)")
 		[/codeblock]
-		The search pattern must be escaped first for GDScript before it is escaped for the expression. For example, [code]compile("\\d+")[/code] would be read by RegEx as [code]\d+[/code]. Similarly, [code]compile("\"(?:\\\\.|[^\"])*\"")[/code] would be read as [code]"(?:\\.|[^"])*"[/code].
+		The search pattern must be escaped first for GDScript before it is escaped for the expression. For example, [code]compile("\\d+")[/code] would be read by RegEx as [code]\d+[/code]. Similarly, [code]compile("\"(?:\\\\.|[^\"])*\"")[/code] would be read as [code]"(?:\\.|[^"])*"[/code]. In GDScript, you can also use raw string literals (r-strings). For example, [code]compile(r'"(?:\\.|[^"])*"')[/code] would be read the same.
 		Using [method search], you can find the pattern within the given text. If a pattern is found, [RegExMatch] is returned and you can retrieve details of the results using methods such as [method RegExMatch.get_string] and [method RegExMatch.get_start].
 		[codeblock]
 		var regex = RegEx.new()
@@ -34,14 +34,14 @@
 		    print(result.get_string("digit"))
 		# Would print 01 03 0 3f 42
 		[/codeblock]
-		[b]Example of splitting a string using a RegEx:[/b]
+		[b]Example:[/b] Split a string using a RegEx:
 		[codeblock]
 		var regex = RegEx.new()
 		regex.compile("\\S+") # Negated whitespace character class.
 		var results = []
 		for result in regex.search_all("One  Two \n\tThree"):
 		    results.push_back(result.get_string())
-		# The `results` array now contains "One", "Two", "Three".
+		# The `results` array now contains "One", "Two", and "Three".
 		[/codeblock]
 		[b]Note:[/b] Godot's regex implementation is based on the [url=https://www.pcre.org/]PCRE2[/url] library. You can view the full pattern reference [url=https://www.pcre.org/current/doc/html/pcre2pattern.html]here[/url].
 		[b]Tip:[/b] You can use [url=https://regexr.com/]Regexr[/url] to test regular expressions online.
@@ -58,15 +58,17 @@
 		<method name="compile">
 			<return type="int" enum="Error" />
 			<param index="0" name="pattern" type="String" />
+			<param index="1" name="show_error" type="bool" default="true" />
 			<description>
-				Compiles and assign the search pattern to use. Returns [constant OK] if the compilation is successful. If an error is encountered, details are printed to standard output and an error is returned.
+				Compiles and assign the search pattern to use. Returns [constant OK] if the compilation is successful. If compilation fails, returns [constant FAILED] and when [param show_error] is [code]true[/code], details are printed to standard output.
 			</description>
 		</method>
 		<method name="create_from_string" qualifiers="static">
 			<return type="RegEx" />
 			<param index="0" name="pattern" type="String" />
+			<param index="1" name="show_error" type="bool" default="true" />
 			<description>
-				Creates and compiles a new [RegEx] object.
+				Creates and compiles a new [RegEx] object. See also [method compile].
 			</description>
 		</method>
 		<method name="get_group_count" qualifiers="const">

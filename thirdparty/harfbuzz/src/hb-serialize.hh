@@ -36,9 +36,7 @@
 #include "hb-map.hh"
 #include "hb-pool.hh"
 
-#ifdef HB_EXPERIMENTAL_API
-#include "hb-subset-repacker.h"
-#endif
+#include "hb-subset-serialize.h"
 
 /*
  * Serialize
@@ -75,23 +73,41 @@ struct hb_serialize_context_t
 
     object_t () = default;
 
-#ifdef HB_EXPERIMENTAL_API
-    object_t (const hb_object_t &o)
+    object_t (const hb_subset_serialize_object_t &o)
     {
       head = o.head;
       tail = o.tail;
       next = nullptr;
-      real_links.alloc (o.num_real_links);
+      real_links.alloc_exact (o.num_real_links);
       for (unsigned i = 0 ; i < o.num_real_links; i++)
         real_links.push (o.real_links[i]);
 
-      virtual_links.alloc (o.num_virtual_links);
+      virtual_links.alloc_exact (o.num_virtual_links);
       for (unsigned i = 0; i < o.num_virtual_links; i++)
         virtual_links.push (o.virtual_links[i]);
     }
-#endif
 
-    friend void swap (object_t& a, object_t& b)
+    bool add_virtual_link (objidx_t objidx)
+    {
+      if (!objidx)
+        return false;
+
+      auto& link = *virtual_links.push ();
+      if (virtual_links.in_error ())
+        return false;
+
+      link.objidx = objidx;
+      // Remaining fields were previously zero'd by push():
+      // link.width = 0;
+      // link.is_signed = 0;
+      // link.whence = 0;
+      // link.position = 0;
+      // link.bias = 0;
+
+      return true;
+    }
+
+    friend void swap (object_t& a, object_t& b) noexcept
     {
       hb_swap (a.head, b.head);
       hb_swap (a.tail, b.tail);
@@ -113,7 +129,7 @@ struct hb_serialize_context_t
     {
       // Virtual links aren't considered for equality since they don't affect the functionality
       // of the object.
-      return hb_bytes_t (head, tail - head).hash () ^
+      return hb_bytes_t (head, hb_min (128, tail - head)).hash () ^
           real_links.as_bytes ().hash ();
     }
 
@@ -128,8 +144,7 @@ struct hb_serialize_context_t
 
       link_t () = default;
 
-#ifdef HB_EXPERIMENTAL_API
-      link_t (const hb_link_t &o)
+      link_t (const hb_subset_serialize_link_t &o)
       {
         width = o.width;
         is_signed = 0;
@@ -138,7 +153,6 @@ struct hb_serialize_context_t
         bias = 0;
         objidx = o.objidx;
       }
-#endif
 
       HB_INTERNAL static int cmp (const void* a, const void* b)
       {
@@ -156,9 +170,9 @@ struct hb_serialize_context_t
     object_t *next;
 
     auto all_links () const HB_AUTO_RETURN
-        (( hb_concat (this->real_links, this->virtual_links) ));
+        (( hb_concat (real_links, virtual_links) ));
     auto all_links_writer () HB_AUTO_RETURN
-        (( hb_concat (this->real_links.writer (), this->virtual_links.writer ()) ));
+        (( hb_concat (real_links.writer (), virtual_links.writer ()) ));
   };
 
   struct snapshot_t
@@ -172,8 +186,14 @@ struct hb_serialize_context_t
   };
 
   snapshot_t snapshot ()
-  { return snapshot_t {
-      head, tail, current, current->real_links.length, current->virtual_links.length, errors }; }
+  {
+    return snapshot_t {
+      head, tail, current,
+      current ? current->real_links.length : 0,
+      current ? current->virtual_links.length : 0,
+      errors
+     };
+  }
 
   hb_serialize_context_t (void *start_, unsigned int size) :
     start ((char *) start_),
@@ -260,7 +280,8 @@ struct hb_serialize_context_t
 	   propagate_error (std::forward<Ts> (os)...); }
 
   /* To be called around main operation. */
-  template <typename Type>
+  template <typename Type=char>
+  __attribute__((returns_nonnull))
   Type *start_serialize ()
   {
     DEBUG_MSG_LEVEL (SERIALIZE, this->start, 0, +1,
@@ -303,6 +324,7 @@ struct hb_serialize_context_t
   }
 
   template <typename Type = void>
+  __attribute__((returns_nonnull))
   Type *push ()
   {
     if (unlikely (in_error ())) return start_embed<Type> ();
@@ -323,6 +345,8 @@ struct hb_serialize_context_t
   {
     object_t *obj = current;
     if (unlikely (!obj)) return;
+    // Allow cleanup when we've error'd out on int overflows which don't compromise
+    // the serializer state.
     if (unlikely (in_error() && !only_overflow ())) return;
 
     current = current->next;
@@ -340,7 +364,9 @@ struct hb_serialize_context_t
   {
     object_t *obj = current;
     if (unlikely (!obj)) return 0;
-    if (unlikely (in_error())) return 0;
+    // Allow cleanup when we've error'd out on int overflows which don't compromise
+    // the serializer state.
+    if (unlikely (in_error()  && !only_overflow ())) return 0;
 
     current = current->next;
     obj->tail = head;
@@ -368,6 +394,7 @@ struct hb_serialize_context_t
       {
         merge_virtual_links (obj, objidx);
 	obj->fini ();
+        object_pool.release (obj);
 	return objidx;
       }
     }
@@ -405,8 +432,11 @@ struct hb_serialize_context_t
     // Overflows that happened after the snapshot will be erased by the revert.
     if (unlikely (in_error () && !only_overflow ())) return;
     assert (snap.current == current);
-    current->real_links.shrink (snap.num_real_links);
-    current->virtual_links.shrink (snap.num_virtual_links);
+    if (current)
+    {
+      current->real_links.shrink (snap.num_real_links);
+      current->virtual_links.shrink (snap.num_virtual_links);
+    }
     errors = snap.errors;
     revert (snap.head, snap.tail);
   }
@@ -428,9 +458,11 @@ struct hb_serialize_context_t
     while (packed.length > 1 &&
 	   packed.tail ()->head < tail)
     {
-      packed_map.del (packed.tail ());
-      assert (!packed.tail ()->next);
-      packed.tail ()->fini ();
+      object_t *obj = packed.tail ();
+      packed_map.del (obj);
+      assert (!obj->next);
+      obj->fini ();
+      object_pool.release (obj);
       packed.pop ();
     }
     if (packed.length > 1)
@@ -454,16 +486,40 @@ struct hb_serialize_context_t
 
     assert (current);
 
-    auto& link = *current->virtual_links.push ();
-    if (current->virtual_links.in_error ())
+    if (!current->add_virtual_link(objidx))
       err (HB_SERIALIZE_ERROR_OTHER);
+  }
 
-    link.width = 0;
-    link.objidx = objidx;
-    link.is_signed = 0;
-    link.whence = 0;
-    link.position = 0;
-    link.bias = 0;
+  objidx_t last_added_child_index() const {
+    if (unlikely (in_error ())) return (objidx_t) -1;
+
+    assert (current);
+    if (!bool(current->real_links)) {
+      return (objidx_t) -1;
+    }
+
+    return current->real_links[current->real_links.length - 1].objidx;
+  }
+
+  // For the current object ensure that the sub-table bytes for child objidx are always placed
+  // after the subtable bytes for any other existing children. This only ensures that the
+  // repacker will not move the target subtable before the other children
+  // (by adding virtual links). It is up to the caller to ensure the initial serialization
+  // order is correct.
+  void repack_last(objidx_t objidx) {
+    if (unlikely (in_error ())) return;
+
+    if (!objidx)
+      return;
+
+    assert (current);
+    for (auto& l : current->real_links) {
+      if (l.objidx == objidx) {
+        continue;
+      }
+
+      packed[l.objidx]->add_virtual_link(objidx);
+    }
   }
 
   template <typename T>
@@ -563,13 +619,15 @@ struct hb_serialize_context_t
   {
     unsigned int l = length () % alignment;
     if (l)
-      allocate_size<void> (alignment - l);
+      (void) allocate_size<void> (alignment - l);
   }
 
   template <typename Type = void>
+  __attribute__((returns_nonnull))
   Type *start_embed (const Type *obj HB_UNUSED = nullptr) const
   { return reinterpret_cast<Type *> (this->head); }
   template <typename Type>
+  __attribute__((returns_nonnull))
   Type *start_embed (const Type &obj) const
   { return start_embed (std::addressof (obj)); }
 
@@ -597,6 +655,7 @@ struct hb_serialize_context_t
   }
 
   template <typename Type>
+  HB_NODISCARD
   Type *allocate_size (size_t size, bool clear = true)
   {
     if (unlikely (in_error ())) return nullptr;
@@ -618,6 +677,7 @@ struct hb_serialize_context_t
   { return this->allocate_size<Type> (Type::min_size); }
 
   template <typename Type>
+  HB_NODISCARD
   Type *embed (const Type *obj)
   {
     unsigned int size = obj->get_size ();
@@ -627,8 +687,16 @@ struct hb_serialize_context_t
     return ret;
   }
   template <typename Type>
+  HB_NODISCARD
   Type *embed (const Type &obj)
   { return embed (std::addressof (obj)); }
+  char *embed (const char *obj, unsigned size)
+  {
+    char *ret = this->allocate_size<char> (size, false);
+    if (unlikely (!ret)) return nullptr;
+    hb_memcpy (ret, obj, size);
+    return ret;
+  }
 
   template <typename Type, typename ...Ts> auto
   _copy (const Type &src, hb_priority<1>, Ts&&... ds) HB_RETURN

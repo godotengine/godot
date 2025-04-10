@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_plugin_config.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_plugin_config.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_plugin_config.h"
 
@@ -169,7 +169,7 @@ uint64_t PluginConfigIOS::get_plugin_modification_time(const PluginConfigIOS &pl
 PluginConfigIOS PluginConfigIOS::load_plugin_config(Ref<ConfigFile> config_file, const String &path) {
 	PluginConfigIOS plugin_config = {};
 
-	if (!config_file.is_valid()) {
+	if (config_file.is_null()) {
 		return plugin_config;
 	}
 
@@ -212,8 +212,8 @@ PluginConfigIOS PluginConfigIOS::load_plugin_config(Ref<ConfigFile> config_file,
 		List<String> keys;
 		config_file->get_section_keys(PluginConfigIOS::PLIST_SECTION, &keys);
 
-		for (int i = 0; i < keys.size(); i++) {
-			Vector<String> key_components = keys[i].split(":");
+		for (const String &key : keys) {
+			Vector<String> key_components = key.split(":");
 
 			String key_value = "";
 			PluginConfigIOS::PlistItemType key_type = PluginConfigIOS::PlistItemType::UNKNOWN;
@@ -245,29 +245,29 @@ PluginConfigIOS PluginConfigIOS::load_plugin_config(Ref<ConfigFile> config_file,
 
 			switch (key_type) {
 				case PluginConfigIOS::PlistItemType::STRING: {
-					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], String());
+					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, key, String());
 					value = "<string>" + raw_value + "</string>";
 				} break;
 				case PluginConfigIOS::PlistItemType::INTEGER: {
-					int raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], 0);
+					int raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, key, 0);
 					Dictionary value_dictionary;
 					String value_format = "<integer>$value</integer>";
 					value_dictionary["value"] = raw_value;
 					value = value_format.format(value_dictionary, "$_");
 				} break;
 				case PluginConfigIOS::PlistItemType::BOOLEAN:
-					if (config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], false)) {
+					if (config_file->get_value(PluginConfigIOS::PLIST_SECTION, key, false)) {
 						value = "<true/>";
 					} else {
 						value = "<false/>";
 					}
 					break;
 				case PluginConfigIOS::PlistItemType::RAW: {
-					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], String());
+					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, key, String());
 					value = raw_value;
 				} break;
 				case PluginConfigIOS::PlistItemType::STRING_INPUT: {
-					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], String());
+					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, key, String());
 					value = raw_value;
 				} break;
 				default:

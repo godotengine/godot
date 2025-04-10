@@ -1,44 +1,47 @@
-/*************************************************************************/
-/*  grid_map.h                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  grid_map.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef GRID_MAP_H
-#define GRID_MAP_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/mesh_library.h"
+#include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/multimesh.h"
 
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
 
+class NavigationMesh;
+class NavigationMeshSourceGeometryData3D;
+#ifndef PHYSICS_3D_DISABLED
 class PhysicsMaterial;
+#endif // PHYSICS_3D_DISABLED
 
 class GridMap : public Node3D {
 	GDCLASS(GridMap, Node3D);
@@ -99,6 +102,7 @@ class GridMap : public Node3D {
 			RID region;
 			Transform3D xform;
 			RID navigation_mesh_debug_instance;
+			uint32_t navigation_layers = 1;
 		};
 
 		struct MultimeshInstance {
@@ -148,12 +152,14 @@ class GridMap : public Node3D {
 		OctantKey() {}
 	};
 
+#ifndef PHYSICS_3D_DISABLED
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
+	real_t collision_priority = 1.0;
 	Ref<PhysicsMaterial> physics_material;
+#endif // PHYSICS_3D_DISABLED
 	bool bake_navigation = false;
 	RID map_override;
-	uint32_t navigation_layers = 1;
 
 	Transform3D last_transform;
 
@@ -185,23 +191,28 @@ class GridMap : public Node3D {
 		return Vector3(p_key.x, p_key.y, p_key.z) * cell_size * octant_size;
 	}
 
-	void _reset_physic_bodies_collision_filters();
+#ifndef PHYSICS_3D_DISABLED
+	void _update_physics_bodies_collision_properties();
+	void _update_physics_bodies_characteristics();
+#endif // PHYSICS_3D_DISABLED
 	void _octant_enter_world(const OctantKey &p_key);
 	void _octant_exit_world(const OctantKey &p_key);
 	bool _octant_update(const OctantKey &p_key);
 	void _octant_clean_up(const OctantKey &p_key);
 	void _octant_transform(const OctantKey &p_key);
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 	void _update_octant_navigation_debug_edge_connections_mesh(const OctantKey &p_key);
 	void _navigation_map_changed(RID p_map);
 	void _update_navigation_debug_edge_connections();
-#endif // DEBUG_ENABLED
+#endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 	bool awaiting_update = false;
 
 	void _queue_octants_dirty();
 	void _update_octants_callback();
 
+#ifndef DISABLE_DEPRECATED
 	void resource_changed(const Ref<Resource> &p_res);
+#endif
 
 	void _clear_internal();
 
@@ -228,6 +239,7 @@ public:
 		INVALID_CELL_ITEM = -1
 	};
 
+#ifndef PHYSICS_3D_DISABLED
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;
 
@@ -240,22 +252,22 @@ public:
 	void set_collision_mask_value(int p_layer_number, bool p_value);
 	bool get_collision_mask_value(int p_layer_number) const;
 
+	void set_collision_priority(real_t p_priority);
+	real_t get_collision_priority() const;
+
 	void set_physics_material(Ref<PhysicsMaterial> p_material);
 	Ref<PhysicsMaterial> get_physics_material() const;
 
 	Array get_collision_shapes() const;
+#endif // PHYSICS_3D_DISABLED
 
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
 
+#ifndef NAVIGATION_3D_DISABLED
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
-
-	void set_navigation_layers(uint32_t p_navigation_layers);
-	uint32_t get_navigation_layers() const;
-
-	void set_navigation_layer_value(int p_layer_number, bool p_value);
-	bool get_navigation_layer_value(int p_layer_number) const;
+#endif // NAVIGATION_3D_DISABLED
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;
@@ -299,8 +311,18 @@ public:
 	Array get_bake_meshes();
 	RID get_bake_mesh_instance(int p_idx);
 
+#ifndef NAVIGATION_3D_DISABLED
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+#endif // NAVIGATION_3D_DISABLED
+
+public:
+#ifndef NAVIGATION_3D_DISABLED
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_3D_DISABLED
+
 	GridMap();
 	~GridMap();
 };
-
-#endif // GRID_MAP_H

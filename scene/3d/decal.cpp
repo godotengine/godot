@@ -1,49 +1,63 @@
-/*************************************************************************/
-/*  decal.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  decal.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "decal.h"
 
-void Decal::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
-	RS::get_singleton()->decal_set_extents(decal, p_extents);
+void Decal::set_size(const Vector3 &p_size) {
+	size = p_size.maxf(0.001);
+	RS::get_singleton()->decal_set_size(decal, size);
 	update_gizmos();
 }
 
-Vector3 Decal::get_extents() const {
-	return extents;
+Vector3 Decal::get_size() const {
+	return size;
 }
 
 void Decal::set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_INDEX(p_type, TEXTURE_MAX);
 	textures[p_type] = p_texture;
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+
+#ifdef DEBUG_ENABLED
+	if (p_texture.is_valid() &&
+			(p_texture->is_class("AnimatedTexture") ||
+					p_texture->is_class("AtlasTexture") ||
+					p_texture->is_class("CameraTexture") ||
+					p_texture->is_class("CanvasTexture") ||
+					p_texture->is_class("MeshTexture") ||
+					p_texture->is_class("Texture2DRD") ||
+					p_texture->is_class("ViewportTexture"))) {
+		WARN_PRINT(vformat("%s cannot be used as a Decal texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
+	}
+#endif
+
 	RS::get_singleton()->decal_set_texture(decal, RS::DecalTexture(p_type), texture_rid);
 	update_configuration_warnings();
 }
@@ -147,8 +161,8 @@ uint32_t Decal::get_cull_mask() const {
 
 AABB Decal::get_aabb() const {
 	AABB aabb;
-	aabb.position = -extents;
-	aabb.size = extents * 2.0;
+	aabb.position = -size / 2;
+	aabb.size = size;
 	return aabb;
 }
 
@@ -156,10 +170,19 @@ void Decal::_validate_property(PropertyInfo &p_property) const {
 	if (!distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
+
+	if (p_property.name == "sorting_offset") {
+		p_property.usage = PROPERTY_USAGE_DEFAULT;
+	}
 }
 
 PackedStringArray Decal::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
+
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy") {
+		warnings.push_back(RTR("Decals are only available when using the Forward+ or Mobile renderers."));
+		return warnings;
+	}
 
 	if (textures[TEXTURE_ALBEDO].is_null() && textures[TEXTURE_NORMAL].is_null() && textures[TEXTURE_ORM].is_null() && textures[TEXTURE_EMISSION].is_null()) {
 		warnings.push_back(RTR("The decal has no textures loaded into any of its texture properties, and will therefore not be visible."));
@@ -177,8 +200,8 @@ PackedStringArray Decal::get_configuration_warnings() const {
 }
 
 void Decal::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &Decal::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &Decal::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &Decal::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &Decal::get_size);
 
 	ClassDB::bind_method(D_METHOD("set_texture", "type", "texture"), &Decal::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture", "type"), &Decal::get_texture);
@@ -213,16 +236,18 @@ void Decal::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Decal::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Decal::get_cull_mask);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,suffix:m"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,suffix:m"), "set_size", "get_size");
 
 	ADD_GROUP("Textures", "texture_");
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_albedo", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_ALBEDO);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_NORMAL);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_orm", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_ORM);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_emission", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_EMISSION);
+	// Only allow texture types that display correctly.
+	const String texture_hint = "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture";
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_albedo", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_ALBEDO);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_NORMAL);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_orm", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_ORM);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_emission", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_EMISSION);
 
 	ADD_GROUP("Parameters", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_emission_energy", "get_emission_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_emission_energy", "get_emission_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "albedo_mix", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_albedo_mix", "get_albedo_mix");
 	// A Normal Fade of 1.0 causes the decal to be invisible even if fully perpendicular to a surface.
@@ -248,11 +273,30 @@ void Decal::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_MAX);
 }
 
+#ifndef DISABLE_DEPRECATED
+bool Decal::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		set_size((Vector3)p_value * 2);
+		return true;
+	}
+	return false;
+}
+
+bool Decal::_get(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		r_property = size / 2;
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
 Decal::Decal() {
 	decal = RenderingServer::get_singleton()->decal_create();
 	RS::get_singleton()->instance_set_base(get_instance(), decal);
 }
 
 Decal::~Decal() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(decal);
 }

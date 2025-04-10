@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,14 @@
 
 #ifdef _WIN32
     #include <malloc.h>
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__ZEPHYR__)
     #include <alloca.h>
 #else
     #include <stdlib.h>
 #endif
 
 #include "tvgXmlParser.h"
+#include "tvgStr.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
@@ -170,10 +171,11 @@ static const char* _simpleXmlFindStartTag(const char* itr, const char* itrEnd)
 
 static const char* _simpleXmlFindEndTag(const char* itr, const char* itrEnd)
 {
-    bool insideQuote = false;
+    bool insideQuote[2] = {false, false}; // 0: ", 1: '
     for (; itr < itrEnd; itr++) {
-        if (*itr == '"') insideQuote = !insideQuote;
-        if (!insideQuote) {
+        if (*itr == '"' && !insideQuote[1]) insideQuote[0] = !insideQuote[0];
+        if (*itr == '\'' && !insideQuote[0]) insideQuote[1] = !insideQuote[1];
+        if (!insideQuote[0] && !insideQuote[1]) {
             if ((*itr == '>') || (*itr == '<'))
                 return itr;
         }
@@ -238,14 +240,6 @@ static SimpleXMLType _getXMLType(const char* itr, const char* itrEnd, size_t &to
 }
 
 
-static char* _strndup(const char* src, unsigned len)
-{
-    auto ret = (char*)malloc(len + 1);
-    if (!ret) return nullptr;
-    ret[len] = '\0';
-    return (char*)memcpy(ret, src, len);
-}
-
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
@@ -304,38 +298,41 @@ bool isIgnoreUnsupportedLogElements(TVG_UNUSED const char* tagName)
 bool simpleXmlParseAttributes(const char* buf, unsigned bufLength, simpleXMLAttributeCb func, const void* data)
 {
     const char *itr = buf, *itrEnd = buf + bufLength;
-    char* tmpBuf = (char*)alloca(bufLength + 1);
+    char* tmpBuf = (char*)malloc(bufLength + 1);
 
-    if (!buf || !func) return false;
+    if (!buf || !func || !tmpBuf) goto error;
 
     while (itr < itrEnd) {
         const char* p = _skipWhiteSpacesAndXmlEntities(itr, itrEnd);
         const char *key, *keyEnd, *value, *valueEnd;
         char* tval;
 
-        if (p == itrEnd) return true;
+        if (p == itrEnd) goto success;
 
         key = p;
         for (keyEnd = key; keyEnd < itrEnd; keyEnd++) {
             if ((*keyEnd == '=') || (isspace((unsigned char)*keyEnd))) break;
         }
-        if (keyEnd == itrEnd) return false;
-        if (keyEnd == key) continue;
+        if (keyEnd == itrEnd) goto error;
+        if (keyEnd == key) {  // There is no key. This case is invalid, but explores the following syntax.
+            itr = keyEnd + 1;
+            continue;
+        }
 
         if (*keyEnd == '=') value = keyEnd + 1;
         else {
             value = (const char*)memchr(keyEnd, '=', itrEnd - keyEnd);
-            if (!value) return false;
+            if (!value) goto error;
             value++;
         }
         keyEnd = _simpleXmlUnskipXmlEntities(keyEnd, key);
 
         value = _skipWhiteSpacesAndXmlEntities(value, itrEnd);
-        if (value == itrEnd) return false;
+        if (value == itrEnd) goto error;
 
         if ((*value == '"') || (*value == '\'')) {
             valueEnd = (const char*)memchr(value + 1, *value, itrEnd - value);
-            if (!valueEnd) return false;
+            if (!valueEnd) goto error;
             value++;
         } else {
             valueEnd = _simpleXmlFindWhiteSpace(value, itrEnd);
@@ -364,7 +361,14 @@ bool simpleXmlParseAttributes(const char* buf, unsigned bufLength, simpleXMLAttr
             }
         }
     }
+
+success:
+    free(tmpBuf);
     return true;
+
+error:
+    free(tmpBuf);
+    return false;
 }
 
 
@@ -488,13 +492,13 @@ bool simpleXmlParseW3CAttribute(const char* buf, unsigned bufLength, simpleXMLAt
         key[0] = '\0';
         val[0] = '\0';
 
-        if (next == nullptr && sep != nullptr) {
+        if (sep != nullptr && next == nullptr) {
             memcpy(key, buf, sep - buf);
             key[sep - buf] = '\0';
 
             memcpy(val, sep + 1, end - sep - 1);
             val[end - sep - 1] = '\0';
-        } else if (sep < next && sep != nullptr) {
+        } else if (sep != nullptr && sep < next) {
             memcpy(key, buf, sep - buf);
             key[sep - buf] = '\0';
 
@@ -518,8 +522,9 @@ bool simpleXmlParseW3CAttribute(const char* buf, unsigned bufLength, simpleXMLAt
             }
         }
 
+        if (!next) break;
         buf = next + 1;
-    } while (next != nullptr);
+    } while (true);
 
     return true;
 }
@@ -557,10 +562,10 @@ const char* simpleXmlParseCSSAttribute(const char* buf, unsigned bufLength, char
     }
 
     if (p == itr) *tag = strdup("all");
-    else *tag = _strndup(itr, p - itr);
+    else *tag = strDuplicate(itr, p - itr);
 
     if (p == itrEnd) *name = nullptr;
-    else *name = _strndup(p + 1, itrEnd - p - 1);
+    else *name = strDuplicate(p + 1, itrEnd - p - 1);
 
     return (nextElement ? nextElement + 1 : nullptr);
 }

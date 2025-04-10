@@ -79,7 +79,7 @@ struct CoverageFormat1_3
   {
     if (glyphArray.len > glyphs->get_population () * hb_bit_storage ((unsigned) glyphArray.len) / 2)
     {
-      for (hb_codepoint_t g = HB_SET_VALUE_INVALID; glyphs->next (&g);)
+      for (auto g : *glyphs)
         if (get_coverage (g) != NOT_COVERED)
 	  return true;
       return false;
@@ -102,6 +102,8 @@ struct CoverageFormat1_3
       if (glyphs.has (glyphArray[i]))
         intersect_glyphs << glyphArray[i];
   }
+
+  unsigned cost () const { return hb_bit_storage ((unsigned) glyphArray.len); /* bsearch cost */ }
 
   template <typename set_t>
   bool collect_coverage (set_t *glyphs) const

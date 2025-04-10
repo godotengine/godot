@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptEditorBase" inherits="VBoxContainer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ScriptEditorBase" inherits="VBoxContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base editor for editing scripts in the [ScriptEditor].
 	</brief_description>
 	<description>
-		Base editor for editing scripts in the [ScriptEditor], this does not include documentation items.
+		Base editor for editing scripts in the [ScriptEditor]. This does not include documentation items.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -69,6 +69,12 @@
 		<signal name="request_save_history">
 			<description>
 				Emitted when the user contextual goto and the item is in the same script.
+			</description>
+		</signal>
+		<signal name="request_save_previous_state">
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Emitted when the user changes current script or moves caret by 10 or more columns within the same script.
 			</description>
 		</signal>
 		<signal name="search_in_files_requested">

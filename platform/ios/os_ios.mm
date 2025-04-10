@@ -1,47 +1,49 @@
-/*************************************************************************/
-/*  os_ios.mm                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  os_ios.mm                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#import "os_ios.h"
 
 #ifdef IOS_ENABLED
 
-#include "os_ios.h"
-
 #import "app_delegate.h"
+#import "display_server_ios.h"
+#import "godot_view.h"
+#import "ios_terminal_logger.h"
+#import "view_controller.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
-#include "display_server_ios.h"
 #include "drivers/unix/syslog_logger.h"
-#import "godot_view.h"
 #include "main/main.h"
-#import "view_controller.h"
 
 #import <AudioToolbox/AudioServices.h>
 #import <CoreText/CoreText.h>
@@ -49,14 +51,13 @@
 #import <dlfcn.h>
 #include <sys/sysctl.h>
 
-#if defined(VULKAN_ENABLED)
+#if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #import <QuartzCore/CAMetalLayer.h>
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/godot_vulkan.h"
+#endif // VULKAN_ENABLED
 #endif
 
 // Initialization order between compilation units is not guaranteed,
@@ -70,20 +71,59 @@ HashMap<String, void *> OS_IOS::dynamic_symbol_lookup_table;
 
 void add_ios_init_callback(init_callback cb) {
 	if (ios_init_callbacks_count == ios_init_callbacks_capacity) {
-		void *new_ptr = realloc(ios_init_callbacks, sizeof(cb) * 32);
+		void *new_ptr = realloc(ios_init_callbacks, sizeof(cb) * (ios_init_callbacks_capacity + 32));
 		if (new_ptr) {
 			ios_init_callbacks = (init_callback *)(new_ptr);
 			ios_init_callbacks_capacity += 32;
+		} else {
+			ERR_FAIL_MSG("Unable to allocate memory for extension callbacks.");
 		}
 	}
-	if (ios_init_callbacks_capacity > ios_init_callbacks_count) {
-		ios_init_callbacks[ios_init_callbacks_count] = cb;
-		++ios_init_callbacks_count;
-	}
+	ios_init_callbacks[ios_init_callbacks_count++] = cb;
 }
 
 void register_dynamic_symbol(char *name, void *address) {
 	OS_IOS::dynamic_symbol_lookup_table[String(name)] = address;
+}
+
+Rect2 fit_keep_aspect_centered(const Vector2 &p_container, const Vector2 &p_rect) {
+	real_t available_ratio = p_container.width / p_container.height;
+	real_t fit_ratio = p_rect.width / p_rect.height;
+	Rect2 result;
+	if (fit_ratio < available_ratio) {
+		// Fit height - we'll have horizontal gaps
+		result.size.height = p_container.height;
+		result.size.width = p_container.height * fit_ratio;
+		result.position.y = 0;
+		result.position.x = (p_container.width - result.size.width) * 0.5f;
+	} else {
+		// Fit width - we'll have vertical gaps
+		result.size.width = p_container.width;
+		result.size.height = p_container.width / fit_ratio;
+		result.position.x = 0;
+		result.position.y = (p_container.height - result.size.height) * 0.5f;
+	}
+	return result;
+}
+
+Rect2 fit_keep_aspect_covered(const Vector2 &p_container, const Vector2 &p_rect) {
+	real_t available_ratio = p_container.width / p_container.height;
+	real_t fit_ratio = p_rect.width / p_rect.height;
+	Rect2 result;
+	if (fit_ratio < available_ratio) {
+		// Need to scale up to fit width, and crop height
+		result.size.width = p_container.width;
+		result.size.height = p_container.width / fit_ratio;
+		result.position.x = 0;
+		result.position.y = (p_container.height - result.size.height) * 0.5f;
+	} else {
+		// Need to scale up to fit height, and crop width
+		result.size.width = p_container.height * fit_ratio;
+		result.size.height = p_container.height;
+		result.position.x = (p_container.width - result.size.width) * 0.5f;
+		result.position.y = 0;
+	}
+	return result;
 }
 
 OS_IOS *OS_IOS::get_singleton() {
@@ -102,12 +142,7 @@ OS_IOS::OS_IOS() {
 	main_loop = nullptr;
 
 	Vector<Logger *> loggers;
-	loggers.push_back(memnew(SyslogLogger));
-#ifdef DEBUG_ENABLED
-	// it seems iOS app's stdout/stderr is only obtainable if you launch it from
-	// Xcode
-	loggers.push_back(memnew(StdLogger));
-#endif
+	loggers.push_back(memnew(IOSTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 	AudioDriverManager::add_driver(&audio_driver);
@@ -131,16 +166,18 @@ void OS_IOS::initialize() {
 	initialize_core();
 }
 
+void OS_IOS::initialize_joypads() {
+	joypad_apple = memnew(JoypadApple);
+}
+
 void OS_IOS::initialize_modules() {
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
-
-	joypad_ios = memnew(JoypadIOS);
 }
 
 void OS_IOS::deinitialize_modules() {
-	if (joypad_ios) {
-		memdelete(joypad_ios);
+	if (joypad_apple) {
+		memdelete(joypad_apple);
 	}
 
 	if (ios) {
@@ -150,10 +187,6 @@ void OS_IOS::deinitialize_modules() {
 
 void OS_IOS::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
-
-	if (main_loop) {
-		main_loop->initialize();
-	}
 }
 
 MainLoop *OS_IOS::get_main_loop() const {
@@ -178,14 +211,14 @@ bool OS_IOS::iterate() {
 		DisplayServer::get_singleton()->process_events();
 	}
 
+	joypad_apple->process_joypads();
+
 	return Main::iteration();
 }
 
 void OS_IOS::start() {
-	Main::start();
-
-	if (joypad_ios) {
-		joypad_ios->start_processing();
+	if (Main::start() == EXIT_SUCCESS) {
+		main_loop->initialize();
 	}
 }
 
@@ -220,13 +253,13 @@ _FORCE_INLINE_ String OS_IOS::get_framework_executable(const String &p_path) {
 	return p_path;
 }
 
-Error OS_IOS::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_IOS::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	if (p_path.length() == 0) {
 		// Static xcframework.
 		p_library_handle = RTLD_SELF;
 
-		if (r_resolved_path != nullptr) {
-			*r_resolved_path = p_path;
+		if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+			*p_data->r_resolved_path = p_path;
 		}
 
 		return OK;
@@ -240,15 +273,27 @@ Error OS_IOS::open_dynamic_library(const String p_path, void *&p_library_handle,
 	}
 
 	if (!FileAccess::exists(path)) {
+		// Load .dylib converted to framework from within the executable path.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join(p_path.get_file().get_basename() + ".framework"));
+	}
+
+	if (!FileAccess::exists(path)) {
 		// Load .dylib or framework from a standard iOS location.
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file()));
 	}
 
-	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+	if (!FileAccess::exists(path)) {
+		// Load .dylib converted to framework from a standard iOS location.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file().get_basename() + ".framework"));
+	}
 
-	if (r_resolved_path != nullptr) {
-		*r_resolved_path = path;
+	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+
+	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
+
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
 	}
 
 	return OK;
@@ -261,7 +306,7 @@ Error OS_IOS::close_dynamic_library(void *p_library_handle) {
 	return OS_Unix::close_dynamic_library(p_library_handle);
 }
 
-Error OS_IOS::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
+Error OS_IOS::get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional) {
 	if (p_library_handle == RTLD_SELF) {
 		void **ptr = OS_IOS::dynamic_symbol_lookup_table.getptr(p_name);
 		if (ptr) {
@@ -294,7 +339,7 @@ String OS_IOS::get_model_name() const {
 	return OS_Unix::get_model_name();
 }
 
-Error OS_IOS::shell_open(String p_uri) {
+Error OS_IOS::shell_open(const String &p_uri) {
 	NSString *urlPath = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *url = [NSURL URLWithString:urlPath];
 
@@ -302,19 +347,19 @@ Error OS_IOS::shell_open(String p_uri) {
 		return ERR_CANT_OPEN;
 	}
 
-	printf("opening url %s\n", p_uri.utf8().get_data());
+	print_verbose(vformat("Opening URL %s", p_uri));
 
 	[[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
 
 	return OK;
 }
 
-String OS_IOS::get_user_data_dir() const {
+String OS_IOS::get_user_data_dir(const String &p_user_dir) const {
 	static String ret;
 	if (ret.is_empty()) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-			ret.parse_utf8([[paths firstObject] UTF8String]);
+			ret.append_utf8([[paths firstObject] UTF8String]);
 		}
 	}
 	return ret;
@@ -325,17 +370,30 @@ String OS_IOS::get_cache_path() const {
 	if (ret.is_empty()) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-			ret.parse_utf8([[paths firstObject] UTF8String]);
+			ret.append_utf8([[paths firstObject] UTF8String]);
+		}
+	}
+	return ret;
+}
+
+String OS_IOS::get_temp_path() const {
+	static String ret;
+	if (ret.is_empty()) {
+		NSURL *url = [NSURL fileURLWithPath:NSTemporaryDirectory()
+								isDirectory:YES];
+		if (url) {
+			ret = String::utf8([url.path UTF8String]);
+			ret = ret.trim_prefix("file://");
 		}
 	}
 	return ret;
 }
 
 String OS_IOS::get_locale() const {
-	NSString *preferedLanguage = [NSLocale preferredLanguages].firstObject;
+	NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject;
 
-	if (preferedLanguage) {
-		return String::utf8([preferedLanguage UTF8String]).replace("-", "_");
+	if (preferredLanguage) {
+		return String::utf8([preferredLanguage UTF8String]).replace("-", "_");
 	}
 
 	NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
@@ -350,7 +408,7 @@ String OS_IOS::get_unique_id() const {
 String OS_IOS::get_processor_name() const {
 	char buffer[256];
 	size_t buffer_len = 256;
-	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, nullptr, 0) == 0) {
 		return String::utf8(buffer, buffer_len);
 	}
 	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
@@ -476,23 +534,26 @@ Vector<String> OS_IOS::get_system_font_path_for_text(const String &p_font_name, 
 	CTFontDescriptorRef font = CTFontDescriptorCreateWithAttributes(attributes);
 	if (font) {
 		CTFontRef family = CTFontCreateWithFontDescriptor(font, 0, nullptr);
-		CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
-		CFRange range = CFRangeMake(0, CFStringGetLength(string));
-		CTFontRef fallback_family = CTFontCreateForString(family, string, range);
-		if (fallback_family) {
-			CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
-			if (fallback_font) {
-				CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
-				if (url) {
-					NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
-					ret.push_back(String::utf8([font_path UTF8String]));
-					CFRelease(url);
+		if (family) {
+			CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
+			CFRange range = CFRangeMake(0, CFStringGetLength(string));
+			CTFontRef fallback_family = CTFontCreateForString(family, string, range);
+			if (fallback_family) {
+				CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
+				if (fallback_font) {
+					CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
+					if (url) {
+						NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
+						ret.push_back(String::utf8([font_path UTF8String]));
+						CFRelease(url);
+					}
+					CFRelease(fallback_font);
 				}
-				CFRelease(fallback_font);
+				CFRelease(fallback_family);
 			}
-			CFRelease(fallback_family);
+			CFRelease(string);
+			CFRelease(family);
 		}
-		CFRelease(string);
 		CFRelease(font);
 	}
 
@@ -562,9 +623,13 @@ String OS_IOS::get_system_font_path(const String &p_font_name, int p_weight, int
 	return ret;
 }
 
-void OS_IOS::vibrate_handheld(int p_duration_ms) {
+void OS_IOS::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	if (ios->supports_haptic_engine()) {
-		ios->vibrate_haptic_engine((float)p_duration_ms / 1000.f);
+		if (p_amplitude > 0.0) {
+			p_amplitude = CLAMP(p_amplitude, 0.0, 1.0);
+		}
+
+		ios->vibrate_haptic_engine((float)p_duration_ms / 1000.f, p_amplitude);
 	} else {
 		// iOS <13 does not support duration for vibration
 		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
@@ -590,6 +655,10 @@ void OS_IOS::on_focus_out() {
 			DisplayServerIOS::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 		}
 
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+		}
+
 		[AppDelegate.viewController.godotView stopRendering];
 
 		audio_driver.stop();
@@ -604,9 +673,50 @@ void OS_IOS::on_focus_in() {
 			DisplayServerIOS::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
 		}
 
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+		}
+
 		[AppDelegate.viewController.godotView startRendering];
 
 		audio_driver.start();
+	}
+}
+
+void OS_IOS::on_enter_background() {
+	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
+	}
+
+	on_focus_out();
+}
+
+void OS_IOS::on_exit_background() {
+	if (!is_focused) {
+		on_focus_in();
+
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
+		}
+	}
+}
+
+Rect2 OS_IOS::calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const {
+	String scalemodestr = GLOBAL_GET("ios/launch_screen_image_mode");
+
+	if (scalemodestr == "scaleAspectFit") {
+		return fit_keep_aspect_centered(p_window_size, p_imgrect_size);
+	} else if (scalemodestr == "scaleAspectFill") {
+		return fit_keep_aspect_covered(p_window_size, p_imgrect_size);
+	} else if (scalemodestr == "scaleToFill") {
+		return Rect2(Point2(), p_window_size);
+	} else if (scalemodestr == "center") {
+		return OS_Unix::calculate_boot_screen_rect(p_window_size, p_imgrect_size);
+	} else {
+		WARN_PRINT(vformat("Boot screen scale mode mismatch between iOS and Godot: %s not supported", scalemodestr));
+		return OS_Unix::calculate_boot_screen_rect(p_window_size, p_imgrect_size);
 	}
 }
 

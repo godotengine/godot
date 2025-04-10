@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <PublishAot>true</PublishAot>
+    <PublishAotUsingRuntimePack>true</PublishAotUsingRuntimePack>
+    <UseNativeAOTRuntime>true</UseNativeAOTRuntime>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+  </PropertyGroup>
+</Project>

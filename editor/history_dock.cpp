@@ -1,36 +1,39 @@
-/*************************************************************************/
-/*  history_dock.cpp                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  history_dock.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "history_dock.h"
 
+#include "core/io/config_file.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/item_list.h"
@@ -55,7 +58,8 @@ void HistoryDock::refresh_history() {
 	bool include_global = global_history_checkbox->is_pressed();
 
 	if (!include_scene && !include_global) {
-		action_list->add_item(TTR("The Beginning"));
+		action_list->add_item(TTRC("The Beginning"));
+		action_list->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 		return;
 	}
 
@@ -100,11 +104,12 @@ void HistoryDock::refresh_history() {
 	for (const EditorUndoRedoManager::Action &E : full_history) {
 		action_list->add_item(E.action_name);
 		if (E.history_id == EditorUndoRedoManager::GLOBAL_HISTORY) {
-			action_list->set_item_custom_fg_color(-1, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
+			action_list->set_item_custom_fg_color(-1, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 		}
 	}
 
-	action_list->add_item(TTR("The Beginning"));
+	action_list->add_item(TTRC("The Beginning"));
+	action_list->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 	refresh_version();
 }
 
@@ -170,6 +175,17 @@ void HistoryDock::refresh_version() {
 	action_list->set_current(idx);
 }
 
+void HistoryDock::_save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
+	p_layout->set_value(p_section, "dock_history_include_scene", current_scene_checkbox->is_pressed());
+	p_layout->set_value(p_section, "dock_history_include_global", global_history_checkbox->is_pressed());
+}
+
+void HistoryDock::_load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	current_scene_checkbox->set_pressed_no_signal(p_layout->get_value(p_section, "dock_history_include_scene", true));
+	global_history_checkbox->set_pressed_no_signal(p_layout->get_value(p_section, "dock_history_include_global", true));
+	refresh_history();
+}
+
 void HistoryDock::seek_history(int p_index) {
 	bool include_scene = current_scene_checkbox->is_pressed();
 	bool include_global = global_history_checkbox->is_pressed();
@@ -218,10 +234,15 @@ void HistoryDock::_notification(int p_notification) {
 	}
 }
 
+void HistoryDock::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_save_layout_to_config"), &HistoryDock::_save_layout_to_config);
+	ClassDB::bind_method(D_METHOD("_load_layout_from_config"), &HistoryDock::_load_layout_from_config);
+}
+
 HistoryDock::HistoryDock() {
 	set_name("History");
 
-	ur_manager = EditorNode::get_undo_redo();
+	ur_manager = EditorUndoRedoManager::get_singleton();
 	ur_manager->connect("history_changed", callable_mp(this, &HistoryDock::on_history_changed));
 	ur_manager->connect("version_changed", callable_mp(this, &HistoryDock::on_version_changed));
 
@@ -231,23 +252,24 @@ HistoryDock::HistoryDock() {
 	current_scene_checkbox = memnew(CheckBox);
 	mode_hb->add_child(current_scene_checkbox);
 	current_scene_checkbox->set_flat(true);
-	current_scene_checkbox->set_pressed(true);
-	current_scene_checkbox->set_text(TTR("Scene"));
+	current_scene_checkbox->set_text(TTRC("Scene"));
 	current_scene_checkbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	current_scene_checkbox->set_clip_text(true);
-	current_scene_checkbox->connect("toggled", callable_mp(this, &HistoryDock::refresh_history).unbind(1));
+	current_scene_checkbox->set_pressed(true);
+	current_scene_checkbox->connect(SceneStringName(toggled), callable_mp(this, &HistoryDock::refresh_history).unbind(1));
 
 	global_history_checkbox = memnew(CheckBox);
 	mode_hb->add_child(global_history_checkbox);
 	global_history_checkbox->set_flat(true);
-	global_history_checkbox->set_pressed(true);
-	global_history_checkbox->set_text(TTR("Global"));
+	global_history_checkbox->set_text(TTRC("Global"));
 	global_history_checkbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	global_history_checkbox->set_clip_text(true);
-	global_history_checkbox->connect("toggled", callable_mp(this, &HistoryDock::refresh_history).unbind(1));
+	global_history_checkbox->set_pressed(true);
+	global_history_checkbox->connect(SceneStringName(toggled), callable_mp(this, &HistoryDock::refresh_history).unbind(1));
 
 	action_list = memnew(ItemList);
+	action_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(action_list);
 	action_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	action_list->connect("item_selected", callable_mp(this, &HistoryDock::seek_history));
+	action_list->connect(SceneStringName(item_selected), callable_mp(this, &HistoryDock::seek_history));
 }

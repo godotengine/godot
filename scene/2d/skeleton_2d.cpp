@@ -1,34 +1,36 @@
-/*************************************************************************/
-/*  skeleton_2d.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  skeleton_2d.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "skeleton_2d.h"
+
+#include "core/math/transform_interpolator.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_data.h"
@@ -37,45 +39,45 @@
 #endif //TOOLS_ENABLED
 
 bool Bone2D::_set(const StringName &p_path, const Variant &p_value) {
-	String path = p_path;
-
-	if (path.begins_with("auto_calculate_length_and_angle")) {
+	if (p_path == SNAME("auto_calculate_length_and_angle")) {
 		set_autocalculate_length_and_angle(p_value);
-	} else if (path.begins_with("length")) {
+	} else if (p_path == SNAME("length")) {
 		set_length(p_value);
-	} else if (path.begins_with("bone_angle")) {
+	} else if (p_path == SNAME("bone_angle")) {
 		set_bone_angle(Math::deg_to_rad(real_t(p_value)));
-	} else if (path.begins_with("default_length")) {
+	} else if (p_path == SNAME("default_length")) {
 		set_length(p_value);
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor_settings/show_bone_gizmo")) {
+	else if (p_path == SNAME("editor_settings/show_bone_gizmo")) {
 		_editor_set_show_bone_gizmo(p_value);
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
 
 bool Bone2D::_get(const StringName &p_path, Variant &r_ret) const {
-	String path = p_path;
-
-	if (path.begins_with("auto_calculate_length_and_angle")) {
+	if (p_path == SNAME("auto_calculate_length_and_angle")) {
 		r_ret = get_autocalculate_length_and_angle();
-	} else if (path.begins_with("length")) {
+	} else if (p_path == SNAME("length")) {
 		r_ret = get_length();
-	} else if (path.begins_with("bone_angle")) {
+	} else if (p_path == SNAME("bone_angle")) {
 		r_ret = Math::rad_to_deg(get_bone_angle());
-	} else if (path.begins_with("default_length")) {
+	} else if (p_path == SNAME("default_length")) {
 		r_ret = get_length();
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor_settings/show_bone_gizmo")) {
+	else if (p_path == SNAME("editor_settings/show_bone_gizmo")) {
 		r_ret = _editor_get_show_bone_gizmo();
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
@@ -115,6 +117,7 @@ void Bone2D::_notification(int p_what) {
 				bone.bone = this;
 				skeleton->bones.push_back(bone);
 				skeleton->_make_bone_setup_dirty();
+				get_parent()->connect(SNAME("child_order_changed"), callable_mp(skeleton, &Skeleton2D::_make_bone_setup_dirty), CONNECT_REFERENCE_COUNTED);
 			}
 
 			cache_transform = get_transform();
@@ -154,25 +157,16 @@ void Bone2D::_notification(int p_what) {
 #endif // TOOLS_ENABLED
 		} break;
 
-		case NOTIFICATION_MOVED_IN_PARENT: {
-			if (skeleton) {
-				skeleton->_make_bone_setup_dirty();
-			}
-			if (copy_transform_to_cache) {
-				cache_transform = get_transform();
-			}
-		} break;
-
 		case NOTIFICATION_EXIT_TREE: {
 			if (skeleton) {
-				for (int i = 0; i < skeleton->bones.size(); i++) {
+				for (uint32_t i = 0; i < skeleton->bones.size(); i++) {
 					if (skeleton->bones[i].bone == this) {
 						skeleton->bones.remove_at(i);
 						break;
 					}
 				}
 				skeleton->_make_bone_setup_dirty();
-				skeleton = nullptr;
+				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(skeleton, &Skeleton2D::_make_bone_setup_dirty));
 			}
 			parent_bone = nullptr;
 			set_transform(cache_transform);
@@ -317,8 +311,8 @@ void Bone2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p_outline_shape, Bone2D *p_other_bone) {
-	int bone_width = EDITOR_GET("editors/2d/bone_width");
-	int bone_outline_width = EDITOR_GET("editors/2d/bone_outline_size");
+	float bone_width = EDITOR_GET("editors/2d/bone_width");
+	float bone_outline_width = EDITOR_GET("editors/2d/bone_outline_size");
 
 	if (!is_inside_tree()) {
 		return false; //may have been removed
@@ -332,9 +326,7 @@ bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p
 		rel = (p_other_bone->get_global_position() - get_global_position());
 		rel = rel.rotated(-get_global_rotation()); // Undo Bone2D node's rotation so its drawn correctly regardless of the node's rotation
 	} else {
-		real_t angle_to_use = get_rotation() + bone_angle;
-		rel = Vector2(cos(angle_to_use), sin(angle_to_use)) * (length * MIN(get_global_scale().x, get_global_scale().y));
-		rel = rel.rotated(-get_rotation()); // Undo Bone2D node's rotation so its drawn correctly regardless of the node's rotation
+		rel = Vector2(Math::cos(bone_angle), Math::sin(bone_angle)) * length * get_global_scale();
 	}
 
 	Vector2 relt = rel.rotated(Math_PI * 0.5).normalized() * bone_width;
@@ -378,9 +370,6 @@ void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skeleton_rest"), &Bone2D::get_skeleton_rest);
 	ClassDB::bind_method(D_METHOD("get_index_in_skeleton"), &Bone2D::get_index_in_skeleton);
 
-	ClassDB::bind_method(D_METHOD("set_default_length", "default_length"), &Bone2D::set_default_length);
-	ClassDB::bind_method(D_METHOD("get_default_length"), &Bone2D::get_default_length);
-
 	ClassDB::bind_method(D_METHOD("set_autocalculate_length_and_angle", "auto_calculate"), &Bone2D::set_autocalculate_length_and_angle);
 	ClassDB::bind_method(D_METHOD("get_autocalculate_length_and_angle"), &Bone2D::get_autocalculate_length_and_angle);
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &Bone2D::set_length);
@@ -416,24 +405,14 @@ void Bone2D::apply_rest() {
 	set_transform(rest);
 }
 
-void Bone2D::set_default_length(real_t p_length) {
-	WARN_DEPRECATED_MSG("set_default_length is deprecated. Please use set_length instead!");
-	set_length(p_length);
-}
-
-real_t Bone2D::get_default_length() const {
-	WARN_DEPRECATED_MSG("get_default_length is deprecated. Please use get_length instead!");
-	return get_length();
-}
-
 int Bone2D::get_index_in_skeleton() const {
-	ERR_FAIL_COND_V(!skeleton, -1);
+	ERR_FAIL_NULL_V(skeleton, -1);
 	skeleton->_update_bone_setup();
 	return skeleton_index;
 }
 
 PackedStringArray Bone2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 	if (!skeleton) {
 		if (parent_bone) {
 			warnings.push_back(RTR("This Bone2D chain should end at a Skeleton2D node."));
@@ -450,29 +429,23 @@ PackedStringArray Bone2D::get_configuration_warnings() const {
 }
 
 void Bone2D::calculate_length_and_rotation() {
-	// if there is at least a single child Bone2D node, we can calculate
+	// If there is at least a single child Bone2D node, we can calculate
 	// the length and direction. We will always just use the first Bone2D for this.
-	bool calculated = false;
 	int child_count = get_child_count();
-	if (child_count > 0) {
-		for (int i = 0; i < child_count; i++) {
-			Bone2D *child = Object::cast_to<Bone2D>(get_child(i));
-			if (child) {
-				Vector2 child_local_pos = to_local(child->get_global_position());
-				length = child_local_pos.length();
-				bone_angle = child_local_pos.normalized().angle();
-				calculated = true;
-				break;
-			}
+	Transform2D global_inv = get_global_transform().affine_inverse();
+
+	for (int i = 0; i < child_count; i++) {
+		Bone2D *child = Object::cast_to<Bone2D>(get_child(i));
+		if (child) {
+			Vector2 child_local_pos = global_inv.xform(child->get_global_position());
+			length = child_local_pos.length();
+			bone_angle = child_local_pos.angle();
+			return; // Finished!
 		}
 	}
-	if (calculated) {
-		return; // Finished!
-	} else {
-		WARN_PRINT("No Bone2D children of node " + get_name() + ". Cannot calculate bone length or angle reliably.\nUsing transform rotation for bone angle");
-		bone_angle = get_transform().get_rotation();
-		return;
-	}
+
+	WARN_PRINT("No Bone2D children of node " + get_name() + ". Cannot calculate bone length or angle reliably.\nUsing transform rotation for bone angle.");
+	bone_angle = get_transform().get_rotation();
 }
 
 void Bone2D::set_autocalculate_length_and_angle(bool p_autocalculate) {
@@ -519,6 +492,7 @@ Bone2D::Bone2D() {
 	bone_angle = 0;
 	autocalculate_length_and_angle = true;
 	set_notify_local_transform(true);
+	set_hide_clip_children(true);
 	//this is a clever hack so the bone knows no rest has been set yet, allowing to show an error.
 	for (int i = 0; i < 3; i++) {
 		rest[i] = Vector2(0, 0);
@@ -529,6 +503,7 @@ Bone2D::Bone2D() {
 Bone2D::~Bone2D() {
 #ifdef TOOLS_ENABLED
 	if (!editor_gizmo_rid.is_null()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RenderingServer::get_singleton()->free(editor_gizmo_rid);
 	}
 #endif // TOOLS_ENABLED
@@ -537,23 +512,19 @@ Bone2D::~Bone2D() {
 //////////////////////////////////////
 
 bool Skeleton2D::_set(const StringName &p_path, const Variant &p_value) {
-	String path = p_path;
-
-	if (path.begins_with("modification_stack")) {
+	if (p_path == SNAME("modification_stack")) {
 		set_modification_stack(p_value);
 		return true;
 	}
-	return true;
+	return false;
 }
 
 bool Skeleton2D::_get(const StringName &p_path, Variant &r_ret) const {
-	String path = p_path;
-
-	if (path.begins_with("modification_stack")) {
+	if (p_path == SNAME("modification_stack")) {
 		r_ret = get_modification_stack();
 		return true;
 	}
-	return true;
+	return false;
 }
 
 void Skeleton2D::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -561,7 +532,7 @@ void Skeleton2D::_get_property_list(List<PropertyInfo> *p_list) const {
 			PropertyInfo(Variant::OBJECT, PNAME("modification_stack"),
 					PROPERTY_HINT_RESOURCE_TYPE,
 					"SkeletonModificationStack2D",
-					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
+					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 }
 
 void Skeleton2D::_make_bone_setup_dirty() {
@@ -570,7 +541,7 @@ void Skeleton2D::_make_bone_setup_dirty() {
 	}
 	bone_setup_dirty = true;
 	if (is_inside_tree()) {
-		call_deferred(SNAME("_update_bone_setup"));
+		callable_mp(this, &Skeleton2D::_update_bone_setup).call_deferred();
 	}
 }
 
@@ -584,17 +555,17 @@ void Skeleton2D::_update_bone_setup() {
 
 	bones.sort(); //sorting so that they are always in the same order/index
 
-	for (int i = 0; i < bones.size(); i++) {
-		bones.write[i].rest_inverse = bones[i].bone->get_skeleton_rest().affine_inverse(); //bind pose
-		bones.write[i].bone->skeleton_index = i;
+	for (uint32_t i = 0; i < bones.size(); i++) {
+		bones[i].rest_inverse = bones[i].bone->get_skeleton_rest().affine_inverse(); //bind pose
+		bones[i].bone->skeleton_index = i;
 		Bone2D *parent_bone = Object::cast_to<Bone2D>(bones[i].bone->get_parent());
 		if (parent_bone) {
-			bones.write[i].parent_index = parent_bone->skeleton_index;
+			bones[i].parent_index = parent_bone->skeleton_index;
 		} else {
-			bones.write[i].parent_index = -1;
+			bones[i].parent_index = -1;
 		}
 
-		bones.write[i].local_pose_override = bones[i].bone->get_skeleton_rest();
+		bones[i].local_pose_override = bones[i].bone->get_skeleton_rest();
 	}
 
 	transform_dirty = true;
@@ -608,7 +579,7 @@ void Skeleton2D::_make_transform_dirty() {
 	}
 	transform_dirty = true;
 	if (is_inside_tree()) {
-		call_deferred(SNAME("_update_transform"));
+		callable_mp(this, &Skeleton2D::_update_transform).call_deferred();
 	}
 }
 
@@ -623,16 +594,16 @@ void Skeleton2D::_update_transform() {
 
 	transform_dirty = false;
 
-	for (int i = 0; i < bones.size(); i++) {
-		ERR_CONTINUE(bones[i].parent_index >= i);
+	for (uint32_t i = 0; i < bones.size(); i++) {
+		ERR_CONTINUE(bones[i].parent_index >= (int)i);
 		if (bones[i].parent_index >= 0) {
-			bones.write[i].accum_transform = bones[bones[i].parent_index].accum_transform * bones[i].bone->get_transform();
+			bones[i].accum_transform = bones[bones[i].parent_index].accum_transform * bones[i].bone->get_transform();
 		} else {
-			bones.write[i].accum_transform = bones[i].bone->get_transform();
+			bones[i].accum_transform = bones[i].bone->get_transform();
 		}
 	}
 
-	for (int i = 0; i < bones.size(); i++) {
+	for (uint32_t i = 0; i < bones.size(); i++) {
 		Transform2D final_xform = bones[i].accum_transform * bones[i].rest_inverse;
 		RS::get_singleton()->skeleton_bone_set_transform_2d(skeleton, i, final_xform);
 	}
@@ -642,6 +613,7 @@ int Skeleton2D::get_bone_count() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), 0);
 
 	if (bone_setup_dirty) {
+		// TODO: Is this necessary? It doesn't seem to change bones.size()
 		const_cast<Skeleton2D *>(this)->_update_bone_setup();
 	}
 
@@ -650,42 +622,111 @@ int Skeleton2D::get_bone_count() const {
 
 Bone2D *Skeleton2D::get_bone(int p_idx) {
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
-	ERR_FAIL_INDEX_V(p_idx, bones.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_idx, (int)bones.size(), nullptr);
 
 	return bones[p_idx].bone;
 }
 
-void Skeleton2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		if (bone_setup_dirty) {
-			_update_bone_setup();
-		}
-		if (transform_dirty) {
-			_update_transform();
-		}
-		request_ready();
+void Skeleton2D::_update_process_mode() {
+	bool process = modification_stack.is_valid() && is_inside_tree();
+	if (!process) {
+		// We might have another reason to process.
+		process = is_physics_interpolated_and_enabled() && is_visible_in_tree();
 	}
 
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
-	} else if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (modification_stack.is_valid()) {
-			execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
-		}
-	} else if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		if (modification_stack.is_valid()) {
-			execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
-		}
+	set_process_internal(process);
+	set_physics_process_internal(process);
+}
+
+void Skeleton2D::_ensure_update_interpolation_data() {
+	uint64_t tick = Engine::get_singleton()->get_physics_frames();
+
+	if (_interpolation_data.last_update_physics_tick != tick) {
+		_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+		_interpolation_data.last_update_physics_tick = tick;
 	}
-#ifdef TOOLS_ENABLED
-	else if (p_what == NOTIFICATION_DRAW) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			if (modification_stack.is_valid()) {
-				modification_stack->draw_editor_gizmos();
+}
+
+void Skeleton2D::_physics_interpolated_changed() {
+	_update_process_mode();
+}
+
+void Skeleton2D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			if (bone_setup_dirty) {
+				_update_bone_setup();
 			}
-		}
-	}
+			if (transform_dirty) {
+				_update_transform();
+			}
+			request_ready();
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			_update_process_mode();
+
+			if (is_physics_interpolated_and_enabled()) {
+				_interpolation_data.xform_curr = get_global_transform();
+				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+			}
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (is_physics_interpolated_and_enabled()) {
+				_ensure_update_interpolation_data();
+				if (Engine::get_singleton()->is_in_physics_frame()) {
+					_interpolation_data.xform_curr = get_global_transform();
+				}
+			} else {
+				RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
+			}
+		} break;
+
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			_interpolation_data.xform_curr = get_global_transform();
+			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (is_physics_interpolated_and_enabled()) {
+				Transform2D res;
+				TransformInterpolator::interpolate_transform_2d(_interpolation_data.xform_prev, _interpolation_data.xform_curr, res, Engine::get_singleton()->get_physics_interpolation_fraction());
+				RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, res);
+			}
+			if (modification_stack.is_valid()) {
+				execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (is_physics_interpolated_and_enabled()) {
+				_ensure_update_interpolation_data();
+				_interpolation_data.xform_curr = get_global_transform();
+			}
+			if (modification_stack.is_valid()) {
+				execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
+			}
+		} break;
+
+		case NOTIFICATION_POST_ENTER_TREE: {
+			set_modification_stack(modification_stack);
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_update_process_mode();
+		} break;
+
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_DRAW: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				if (modification_stack.is_valid()) {
+					modification_stack->draw_editor_gizmos();
+				}
+			}
+		} break;
 #endif // TOOLS_ENABLED
+	}
 }
 
 RID Skeleton2D::get_skeleton() const {
@@ -693,14 +734,14 @@ RID Skeleton2D::get_skeleton() const {
 }
 
 void Skeleton2D::set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, real_t p_amount, bool p_persistent) {
-	ERR_FAIL_INDEX_MSG(p_bone_idx, bones.size(), "Bone index is out of range!");
-	bones.write[p_bone_idx].local_pose_override = p_override;
-	bones.write[p_bone_idx].local_pose_override_amount = p_amount;
-	bones.write[p_bone_idx].local_pose_override_persistent = p_persistent;
+	ERR_FAIL_INDEX_MSG(p_bone_idx, (int)bones.size(), "Bone index is out of range!");
+	bones[p_bone_idx].local_pose_override = p_override;
+	bones[p_bone_idx].local_pose_override_amount = p_amount;
+	bones[p_bone_idx].local_pose_override_persistent = p_persistent;
 }
 
 Transform2D Skeleton2D::get_bone_local_pose_override(int p_bone_idx) {
-	ERR_FAIL_INDEX_V_MSG(p_bone_idx, bones.size(), Transform2D(), "Bone index is out of range!");
+	ERR_FAIL_INDEX_V_MSG(p_bone_idx, (int)bones.size(), Transform2D(), "Bone index is out of range!");
 	return bones[p_bone_idx].local_pose_override;
 }
 
@@ -708,22 +749,17 @@ void Skeleton2D::set_modification_stack(Ref<SkeletonModificationStack2D> p_stack
 	if (modification_stack.is_valid()) {
 		modification_stack->is_setup = false;
 		modification_stack->set_skeleton(nullptr);
-
-		set_process_internal(false);
-		set_physics_process_internal(false);
 	}
 	modification_stack = p_stack;
-	if (modification_stack.is_valid()) {
+	if (modification_stack.is_valid() && is_inside_tree()) {
 		modification_stack->set_skeleton(this);
 		modification_stack->setup();
-
-		set_process_internal(true);
-		set_physics_process_internal(true);
 
 #ifdef TOOLS_ENABLED
 		modification_stack->set_editor_gizmos_dirty(true);
 #endif // TOOLS_ENABLED
 	}
+	_update_process_mode();
 }
 
 Ref<SkeletonModificationStack2D> Skeleton2D::get_modification_stack() const {
@@ -731,12 +767,12 @@ Ref<SkeletonModificationStack2D> Skeleton2D::get_modification_stack() const {
 }
 
 void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
-	if (!modification_stack.is_valid()) {
+	if (modification_stack.is_null()) {
 		return;
 	}
 
 	// Do not cache the transform changes caused by the modifications!
-	for (int i = 0; i < bones.size(); i++) {
+	for (uint32_t i = 0; i < bones.size(); i++) {
 		bones[i].bone->copy_transform_to_cache = false;
 	}
 
@@ -748,7 +784,7 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 
 	// Only apply the local pose override on _process. Otherwise, just calculate the local_pose_override and reset the transform.
 	if (p_execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process) {
-		for (int i = 0; i < bones.size(); i++) {
+		for (uint32_t i = 0; i < bones.size(); i++) {
 			if (bones[i].local_pose_override_amount > 0) {
 				bones[i].bone->set_meta("_local_pose_override_enabled_", true);
 
@@ -758,7 +794,7 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 				bones[i].bone->propagate_call("force_update_transform");
 
 				if (bones[i].local_pose_override_persistent) {
-					bones.write[i].local_pose_override_amount = 0.0;
+					bones[i].local_pose_override_amount = 0.0;
 				}
 			} else {
 				// TODO: see if there is a way to undo the override without having to resort to setting every bone's transform.
@@ -769,7 +805,7 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 	}
 
 	// Cache any future transform changes
-	for (int i = 0; i < bones.size(); i++) {
+	for (uint32_t i = 0; i < bones.size(); i++) {
 		bones[i].bone->copy_transform_to_cache = true;
 	}
 
@@ -779,9 +815,6 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 }
 
 void Skeleton2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_bone_setup"), &Skeleton2D::_update_bone_setup);
-	ClassDB::bind_method(D_METHOD("_update_transform"), &Skeleton2D::_update_transform);
-
 	ClassDB::bind_method(D_METHOD("get_bone_count"), &Skeleton2D::get_bone_count);
 	ClassDB::bind_method(D_METHOD("get_bone", "idx"), &Skeleton2D::get_bone);
 
@@ -800,8 +833,10 @@ void Skeleton2D::_bind_methods() {
 Skeleton2D::Skeleton2D() {
 	skeleton = RS::get_singleton()->skeleton_create();
 	set_notify_transform(true);
+	set_hide_clip_children(true);
 }
 
 Skeleton2D::~Skeleton2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(skeleton);
 }

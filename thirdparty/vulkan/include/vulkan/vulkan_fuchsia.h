@@ -2,7 +2,7 @@
 #define VULKAN_FUCHSIA_H_ 1
 
 /*
-** Copyright 2015-2022 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -19,6 +19,7 @@ extern "C" {
 
 
 
+// VK_FUCHSIA_imagepipe_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_FUCHSIA_imagepipe_surface 1
 #define VK_FUCHSIA_IMAGEPIPE_SURFACE_SPEC_VERSION 1
 #define VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME "VK_FUCHSIA_imagepipe_surface"
@@ -41,6 +42,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateImagePipeSurfaceFUCHSIA(
 #endif
 
 
+// VK_FUCHSIA_external_memory is a preprocessor guard. Do not pass it to API calls.
 #define VK_FUCHSIA_external_memory 1
 #define VK_FUCHSIA_EXTERNAL_MEMORY_SPEC_VERSION 1
 #define VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME "VK_FUCHSIA_external_memory"
@@ -81,6 +83,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetMemoryZirconHandlePropertiesFUCHSIA(
 #endif
 
 
+// VK_FUCHSIA_external_semaphore is a preprocessor guard. Do not pass it to API calls.
 #define VK_FUCHSIA_external_semaphore 1
 #define VK_FUCHSIA_EXTERNAL_SEMAPHORE_SPEC_VERSION 1
 #define VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME "VK_FUCHSIA_external_semaphore"
@@ -115,6 +118,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetSemaphoreZirconHandleFUCHSIA(
 #endif
 
 
+// VK_FUCHSIA_buffer_collection is a preprocessor guard. Do not pass it to API calls.
 #define VK_FUCHSIA_buffer_collection 1
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkBufferCollectionFUCHSIA)
 #define VK_FUCHSIA_BUFFER_COLLECTION_SPEC_VERSION 2

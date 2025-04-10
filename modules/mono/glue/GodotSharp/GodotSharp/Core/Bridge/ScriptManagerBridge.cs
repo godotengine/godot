@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -10,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Runtime.Serialization;
+using System.Text;
 using Godot.NativeInterop;
 
 namespace Godot.Bridge
@@ -28,7 +30,8 @@ namespace Godot.Bridge
                 foreach (var type in typesInAlc.Keys)
                 {
                     if (_scriptTypeBiMap.RemoveByScriptType(type, out IntPtr scriptPtr) &&
-                        !_pathTypeBiMap.TryGetScriptPath(type, out _))
+                        (!_pathTypeBiMap.TryGetScriptPath(type, out string? scriptPath) ||
+                         scriptPath.StartsWith("csharp://", StringComparison.Ordinal)))
                     {
                         // For scripts without a path, we need to keep the class qualified name for reloading
                         _scriptDataForReload.TryAdd(scriptPtr,
@@ -87,30 +90,17 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe IntPtr CreateManagedForGodotObjectBinding(godot_string_name* nativeTypeName,
-            IntPtr godotObject)
+        internal static unsafe IntPtr CreateManagedForGodotObjectBinding(godot_string_name* nativeTypeName, IntPtr godotObject)
         {
-            // TODO: Optimize with source generators and delegate pointers
-
             try
             {
                 using var stringName = StringName.CreateTakingOwnershipOfDisposableValue(
                     NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(nativeTypeName)));
                 string nativeTypeNameStr = stringName.ToString();
 
-                Type nativeType = TypeGetProxyClass(nativeTypeNameStr) ?? throw new InvalidOperationException(
-                    "Wrapper class not found for type: " + nativeTypeNameStr);
-                var obj = (Object)FormatterServices.GetUninitializedObject(nativeType);
+                var instance = Constructors.Invoke(nativeTypeNameStr, godotObject);
 
-                var ctor = nativeType.GetConstructor(
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
-                    null, Type.EmptyTypes, null);
-
-                obj.NativePtr = godotObject;
-
-                _ = ctor!.Invoke(obj, null);
-
-                return GCHandle.ToIntPtr(CustomGCHandle.AllocStrong(obj));
+                return GCHandle.ToIntPtr(CustomGCHandle.AllocStrong(instance));
             }
             catch (Exception e)
             {
@@ -124,12 +114,14 @@ namespace Godot.Bridge
             IntPtr godotObject,
             godot_variant** args, int argCount)
         {
-            // TODO: Optimize with source generators and delegate pointers
+            // TODO: Optimize with source generators and delegate pointers.
 
             try
             {
                 // Performance is not critical here as this will be replaced with source generators.
                 Type scriptType = _scriptTypeBiMap.GetScriptType(scriptPtr);
+
+                Debug.Assert(!scriptType.IsAbstract, $"Cannot create script instance. The class '{scriptType.FullName}' is abstract.");
 
                 var ctor = scriptType
                     .GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
@@ -146,11 +138,11 @@ namespace Godot.Bridge
                     else
                     {
                         throw new MissingMemberException(
-                            $"The class '{scriptType.FullName}' does not define a constructor that takes x parameters.");
+                            $"The class '{scriptType.FullName}' does not define a constructor that takes {argCount} parameters.");
                     }
                 }
 
-                var obj = (Object)FormatterServices.GetUninitializedObject(scriptType);
+                var obj = (GodotObject)RuntimeHelpers.GetUninitializedObject(scriptType);
 
                 var parameters = ctor.GetParameters();
                 int paramCount = parameters.Length;
@@ -189,18 +181,7 @@ namespace Godot.Bridge
                     return;
                 }
 
-                var native = Object.InternalGetClassNativeBase(scriptType);
-
-                var field = native?.GetField("NativeName", BindingFlags.DeclaredOnly | BindingFlags.Static |
-                                                           BindingFlags.Public | BindingFlags.NonPublic);
-
-                if (field == null)
-                {
-                    *outRes = default;
-                    return;
-                }
-
-                var nativeName = (StringName?)field.GetValue(null);
+                var nativeName = GodotObject.InternalGetClassNativeBaseName(scriptType);
 
                 if (nativeName == null)
                 {
@@ -218,11 +199,92 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
+        internal static unsafe void GetGlobalClassName(godot_string* scriptPath, godot_string* outBaseType, godot_string* outIconPath, godot_bool* outIsAbstract, godot_bool* outIsTool, godot_string* outClassName)
+        {
+            // This method must always return the outBaseType for every script, even if the script is
+            // not a global class. But if the script is not a global class it must return an empty
+            // outClassName string since it should not have a name.
+            string scriptPathStr = Marshaling.ConvertStringToManaged(*scriptPath);
+            Debug.Assert(!string.IsNullOrEmpty(scriptPathStr), "Script path can't be empty.");
+
+            if (!_pathTypeBiMap.TryGetScriptType(scriptPathStr, out Type? scriptType))
+            {
+                // Script at the given path does not exist, or it's not a C# type.
+                // This is fine, it may be a path to a generic script and those can't be global classes.
+                *outClassName = default;
+                return;
+            }
+
+            if (outIconPath != null)
+            {
+                IconAttribute? iconAttr = scriptType.GetCustomAttributes(inherit: false)
+                    .OfType<IconAttribute>()
+                    .FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(iconAttr?.Path))
+                {
+                    string iconPath = iconAttr.Path.IsAbsolutePath()
+                        ? iconAttr.Path.SimplifyPath()
+                        : scriptPathStr.GetBaseDir().PathJoin(iconAttr.Path).SimplifyPath();
+                    *outIconPath = Marshaling.ConvertStringToNative(iconPath);
+                }
+            }
+
+            if (outBaseType != null)
+            {
+                bool foundGlobalBaseScript = false;
+
+                Type native = GodotObject.InternalGetClassNativeBase(scriptType);
+                Type? top = scriptType.BaseType;
+
+                while (top != null && top != native)
+                {
+                    if (IsGlobalClass(top))
+                    {
+                        *outBaseType = Marshaling.ConvertStringToNative(top.Name);
+                        foundGlobalBaseScript = true;
+                        break;
+                    }
+
+                    top = top.BaseType;
+                }
+                if (!foundGlobalBaseScript)
+                {
+                    *outBaseType = Marshaling.ConvertStringToNative(native.Name);
+                }
+            }
+
+            if (outIsAbstract != null)
+            {
+                *outIsAbstract = scriptType.IsAbstract.ToGodotBool();
+            }
+
+            if (outIsTool != null)
+            {
+                *outIsTool = Attribute.IsDefined(scriptType, typeof(ToolAttribute)).ToGodotBool();
+            }
+
+            if (!IsGlobalClass(scriptType))
+            {
+                // Scripts that are not global classes should not have a name.
+                // Return an empty string to prevent the class from being registered
+                // as a global class in the editor.
+                *outClassName = default;
+                return;
+            }
+
+            *outClassName = Marshaling.ConvertStringToNative(scriptType.Name);
+
+            static bool IsGlobalClass(Type scriptType) =>
+                scriptType.IsDefined(typeof(GlobalClassAttribute), inherit: false);
+        }
+
+        [UnmanagedCallersOnly]
         internal static void SetGodotObjectPtr(IntPtr gcHandlePtr, IntPtr newPtr)
         {
             try
             {
-                var target = (Object?)GCHandle.FromIntPtr(gcHandlePtr).Target;
+                var target = (GodotObject?)GCHandle.FromIntPtr(gcHandlePtr).Target;
                 if (target != null)
                     target.NativePtr = newPtr;
             }
@@ -230,33 +292,6 @@ namespace Godot.Bridge
             {
                 ExceptionUtils.LogException(e);
             }
-        }
-
-        private static Type? TypeGetProxyClass(string nativeTypeNameStr)
-        {
-            // Performance is not critical here as this will be replaced with a generated dictionary.
-
-            if (nativeTypeNameStr[0] == '_')
-                nativeTypeNameStr = nativeTypeNameStr.Substring(1);
-
-            Type? wrapperType = typeof(Object).Assembly.GetType("Godot." + nativeTypeNameStr);
-
-            if (wrapperType == null)
-            {
-                wrapperType = AppDomain.CurrentDomain.GetAssemblies()
-                    .FirstOrDefault(a => a.GetName().Name == "GodotSharpEditor")?
-                    .GetType("Godot." + nativeTypeNameStr);
-            }
-
-            static bool IsStatic(Type type) => type.IsAbstract && type.IsSealed;
-
-            if (wrapperType != null && IsStatic(wrapperType))
-            {
-                // A static class means this is a Godot singleton class. If an instance is needed we use Godot.Object.
-                return typeof(Object);
-            }
-
-            return wrapperType;
         }
 
         // Called from GodotPlugins
@@ -293,7 +328,7 @@ namespace Godot.Bridge
                 // such as when disabling C# source generators (for whatever reason) or when using a
                 // language other than C# that has nothing similar to source generators to automate it.
 
-                var typeOfGodotObject = typeof(Object);
+                var typeOfGodotObject = typeof(GodotObject);
 
                 foreach (var type in assembly.GetTypes())
                 {
@@ -314,10 +349,21 @@ namespace Godot.Bridge
 
                 if (scriptTypes != null)
                 {
-                    for (int i = 0; i < scriptTypes.Length; i++)
+                    foreach (var type in scriptTypes)
                     {
-                        LookupScriptForClass(scriptTypes[i]);
+                        LookupScriptForClass(type);
                     }
+                }
+            }
+
+            // This method may be called before initialization.
+            if (NativeFuncs.godotsharp_dotnet_module_is_initialized().ToBool() && Engine.IsEditorHint())
+            {
+                if (_pathTypeBiMap.Paths.Count > 0)
+                {
+                    string[] scriptPaths = _pathTypeBiMap.Paths.ToArray();
+                    using godot_packed_string_array scriptPathsNative = Marshaling.ConvertSystemArrayToNativePackedStringArray(scriptPaths);
+                    NativeFuncs.godotsharp_internal_editor_file_system_update_files(scriptPathsNative);
                 }
             }
         }
@@ -328,7 +374,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var owner = (Object?)GCHandle.FromIntPtr(ownerGCHandlePtr).Target;
+                var owner = (GodotObject?)GCHandle.FromIntPtr(ownerGCHandlePtr).Target;
 
                 if (owner == null)
                 {
@@ -373,26 +419,43 @@ namespace Godot.Bridge
         {
             try
             {
-                lock (_scriptTypeBiMap.ReadWriteLock)
-                {
-                    if (!_scriptTypeBiMap.IsScriptRegistered(scriptPtr))
-                    {
-                        string scriptPathStr = Marshaling.ConvertStringToManaged(*scriptPath);
-
-                        if (!_pathTypeBiMap.TryGetScriptType(scriptPathStr, out Type? scriptType))
-                            return godot_bool.False;
-
-                        _scriptTypeBiMap.Add(scriptPtr, scriptType);
-                    }
-                }
-
-                return godot_bool.True;
+                string scriptPathStr = Marshaling.ConvertStringToManaged(*scriptPath);
+                return AddScriptBridgeCore(scriptPtr, scriptPathStr).ToGodotBool();
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
                 return godot_bool.False;
             }
+        }
+
+        private static unsafe bool AddScriptBridgeCore(IntPtr scriptPtr, string scriptPath)
+        {
+            _scriptTypeBiMap.ReadWriteLock.EnterUpgradeableReadLock();
+            try
+            {
+                if (!_scriptTypeBiMap.IsScriptRegistered(scriptPtr))
+                {
+                    if (!_pathTypeBiMap.TryGetScriptType(scriptPath, out Type? scriptType))
+                        return false;
+
+                    _scriptTypeBiMap.ReadWriteLock.EnterWriteLock();
+                    try
+                    {
+                        _scriptTypeBiMap.Add(scriptPtr, scriptType);
+                    }
+                    finally
+                    {
+                        _scriptTypeBiMap.ReadWriteLock.ExitWriteLock();
+                    }
+                }
+            }
+            finally
+            {
+                _scriptTypeBiMap.ReadWriteLock.ExitUpgradeableReadLock();
+            }
+
+            return true;
         }
 
         [UnmanagedCallersOnly]
@@ -406,12 +469,15 @@ namespace Godot.Bridge
                 return;
             }
 
+            Debug.Assert(!scriptType.IsGenericTypeDefinition, $"Cannot get or create script for a generic type definition '{scriptType.FullName}'. Path: '{scriptPathStr}'.");
+
             GetOrCreateScriptBridgeForType(scriptType, outScript);
         }
 
         private static unsafe void GetOrCreateScriptBridgeForType(Type scriptType, godot_ref* outScript)
         {
-            lock (_scriptTypeBiMap.ReadWriteLock)
+            _scriptTypeBiMap.ReadWriteLock.EnterUpgradeableReadLock();
+            try
             {
                 if (_scriptTypeBiMap.TryGetScriptPtr(scriptType, out IntPtr scriptPtr))
                 {
@@ -423,6 +489,10 @@ namespace Godot.Bridge
                 // This path is slower, but it's only executed for the first instantiation of the type
                 CreateScriptBridgeForType(scriptType, outScript);
             }
+            finally
+            {
+                _scriptTypeBiMap.ReadWriteLock.ExitUpgradeableReadLock();
+            }
         }
 
         internal static unsafe void GetOrLoadOrCreateScriptForType(Type scriptType, godot_ref* outScript)
@@ -430,7 +500,8 @@ namespace Godot.Bridge
             static bool GetPathOtherwiseGetOrCreateScript(Type scriptType, godot_ref* outScript,
                 [MaybeNullWhen(false)] out string scriptPath)
             {
-                lock (_scriptTypeBiMap.ReadWriteLock)
+                _scriptTypeBiMap.ReadWriteLock.EnterUpgradeableReadLock();
+                try
                 {
                     if (_scriptTypeBiMap.TryGetScriptPtr(scriptType, out IntPtr scriptPtr))
                     {
@@ -445,15 +516,63 @@ namespace Godot.Bridge
                     if (_pathTypeBiMap.TryGetScriptPath(scriptType, out scriptPath))
                         return true;
 
+                    if (scriptType.IsConstructedGenericType)
+                    {
+                        // If the script type is generic, also try looking for the path of the generic type definition
+                        // since we can use it to create the script.
+                        Type genericTypeDefinition = scriptType.GetGenericTypeDefinition();
+                        if (_pathTypeBiMap.TryGetGenericTypeDefinitionPath(genericTypeDefinition, out scriptPath))
+                            return true;
+                    }
+
                     CreateScriptBridgeForType(scriptType, outScript);
                     scriptPath = null;
                     return false;
                 }
+                finally
+                {
+                    _scriptTypeBiMap.ReadWriteLock.ExitUpgradeableReadLock();
+                }
+            }
+
+            static string GetVirtualConstructedGenericTypeScriptPath(Type scriptType, string scriptPath)
+            {
+                // Constructed generic types all have the same path which is not allowed by Godot
+                // (every Resource must have a unique path). So we create a unique "virtual" path
+                // for each type.
+
+                if (!scriptPath.StartsWith("res://", StringComparison.Ordinal))
+                {
+                    throw new ArgumentException("Script path must start with 'res://'.", nameof(scriptPath));
+                }
+
+                scriptPath = scriptPath.Substring("res://".Length);
+                return $"csharp://{scriptPath}:{scriptType}.cs";
             }
 
             if (GetPathOtherwiseGetOrCreateScript(scriptType, outScript, out string? scriptPath))
             {
                 // This path is slower, but it's only executed for the first instantiation of the type
+
+                if (scriptType.IsConstructedGenericType && !scriptPath.StartsWith("csharp://", StringComparison.Ordinal))
+                {
+                    // If the script type is generic it can't be loaded using the real script path.
+                    // Construct a virtual path unique to this constructed generic type and add it
+                    // to the path bimap so they can be found later by their virtual path.
+                    // IMPORTANT: The virtual path must be added to _pathTypeBiMap before the first
+                    // load of the script, otherwise the loaded script won't be added to _scriptTypeBiMap.
+                    scriptPath = GetVirtualConstructedGenericTypeScriptPath(scriptType, scriptPath);
+
+                    _scriptTypeBiMap.ReadWriteLock.EnterWriteLock();
+                    try
+                    {
+                        _pathTypeBiMap.Add(scriptPath, scriptType);
+                    }
+                    finally
+                    {
+                        _scriptTypeBiMap.ReadWriteLock.ExitWriteLock();
+                    }
+                }
 
                 // This must be done outside the read-write lock, as the script resource loading can lock it
                 using godot_string scriptPathIn = Marshaling.ConvertStringToNative(scriptPath);
@@ -465,120 +584,184 @@ namespace Godot.Bridge
                     // with no path, as we do for types without an associated script file.
                     GetOrCreateScriptBridgeForType(scriptType, outScript);
                 }
+
+                if (scriptType.IsConstructedGenericType)
+                {
+                    // When reloading generic scripts they won't be added to the script bimap because their
+                    // virtual path won't be in the path bimap yet. The current method executes when a derived type
+                    // is trying to get or create the script for their base type. The code above has now added
+                    // the virtual path to the path bimap and loading the script with that path should retrieve
+                    // any existing script, so now we have a chance to make sure it's added to the script bimap.
+                    AddScriptBridgeCore(outScript->Reference, scriptPath);
+                }
             }
         }
 
         private static unsafe void CreateScriptBridgeForType(Type scriptType, godot_ref* outScript)
         {
-            NativeFuncs.godotsharp_internal_new_csharp_script(outScript);
-            IntPtr scriptPtr = outScript->Reference;
+            Debug.Assert(!scriptType.IsGenericTypeDefinition, $"Script type must be a constructed generic type or not generic at all. Type: {scriptType}.");
 
-            // Caller takes care of locking
-            _scriptTypeBiMap.Add(scriptPtr, scriptType);
+            _scriptTypeBiMap.ReadWriteLock.EnterWriteLock();
+            try
+            {
+                NativeFuncs.godotsharp_internal_new_csharp_script(outScript);
+                IntPtr scriptPtr = outScript->Reference;
 
-            NativeFuncs.godotsharp_internal_reload_registered_script(scriptPtr);
+                _scriptTypeBiMap.Add(scriptPtr, scriptType);
+            }
+            finally
+            {
+                _scriptTypeBiMap.ReadWriteLock.ExitWriteLock();
+            }
+
+            NativeFuncs.godotsharp_internal_reload_registered_script(outScript->Reference);
         }
 
         [UnmanagedCallersOnly]
         internal static void RemoveScriptBridge(IntPtr scriptPtr)
         {
+            _scriptTypeBiMap.ReadWriteLock.EnterWriteLock();
             try
             {
-                lock (_scriptTypeBiMap.ReadWriteLock)
-                {
-                    _scriptTypeBiMap.Remove(scriptPtr);
-                }
+                _scriptTypeBiMap.Remove(scriptPtr);
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
+            }
+            finally
+            {
+                _scriptTypeBiMap.ReadWriteLock.ExitWriteLock();
             }
         }
 
         [UnmanagedCallersOnly]
         internal static godot_bool TryReloadRegisteredScriptWithClass(IntPtr scriptPtr)
         {
+            _scriptTypeBiMap.ReadWriteLock.EnterUpgradeableReadLock();
             try
             {
-                lock (_scriptTypeBiMap.ReadWriteLock)
+                if (_scriptTypeBiMap.TryGetScriptType(scriptPtr, out _))
                 {
-                    if (_scriptTypeBiMap.TryGetScriptType(scriptPtr, out _))
-                    {
-                        // NOTE:
-                        // Currently, we reload all scripts, not only the ones from the unloaded ALC.
-                        // As such, we need to handle this case instead of treating it as an error.
-                        NativeFuncs.godotsharp_internal_reload_registered_script(scriptPtr);
-                        return godot_bool.True;
-                    }
-
-                    if (!_scriptDataForReload.TryGetValue(scriptPtr, out var dataForReload))
-                    {
-                        GD.PushError("Missing class qualified name for reloading script");
-                        return godot_bool.False;
-                    }
-
-                    _ = _scriptDataForReload.TryRemove(scriptPtr, out _);
-
-                    if (dataForReload.assemblyName == null)
-                    {
-                        GD.PushError(
-                            $"Missing assembly name of class '{dataForReload.classFullName}' for reloading script");
-                        return godot_bool.False;
-                    }
-
-                    var scriptType = ReflectionUtils.FindTypeInLoadedAssemblies(dataForReload.assemblyName,
-                        dataForReload.classFullName);
-
-                    if (scriptType == null)
-                    {
-                        // The class was removed, can't reload
-                        return godot_bool.False;
-                    }
-
-                    // ReSharper disable once RedundantNameQualifier
-                    if (!typeof(Godot.Object).IsAssignableFrom(scriptType))
-                    {
-                        // The class no longer inherits Godot.Object, can't reload
-                        return godot_bool.False;
-                    }
-
-                    _scriptTypeBiMap.Add(scriptPtr, scriptType);
-
+                    // NOTE:
+                    // Currently, we reload all scripts, not only the ones from the unloaded ALC.
+                    // As such, we need to handle this case instead of treating it as an error.
                     NativeFuncs.godotsharp_internal_reload_registered_script(scriptPtr);
-
                     return godot_bool.True;
                 }
+
+                if (!_scriptDataForReload.TryGetValue(scriptPtr, out var dataForReload))
+                {
+                    GD.PushError("Missing class qualified name for reloading script");
+                    return godot_bool.False;
+                }
+
+                _ = _scriptDataForReload.TryRemove(scriptPtr, out _);
+
+                if (dataForReload.assemblyName == null)
+                {
+                    GD.PushError(
+                        $"Missing assembly name of class '{dataForReload.classFullName}' for reloading script");
+                    return godot_bool.False;
+                }
+
+                var scriptType = ReflectionUtils.FindTypeInLoadedAssemblies(dataForReload.assemblyName,
+                    dataForReload.classFullName);
+
+                if (scriptType == null)
+                {
+                    // The class was removed, can't reload
+                    return godot_bool.False;
+                }
+
+                if (!typeof(GodotObject).IsAssignableFrom(scriptType))
+                {
+                    // The class no longer inherits GodotObject, can't reload
+                    return godot_bool.False;
+                }
+
+                _scriptTypeBiMap.ReadWriteLock.EnterWriteLock();
+                try
+                {
+                    _scriptTypeBiMap.Add(scriptPtr, scriptType);
+                }
+                finally
+                {
+                    _scriptTypeBiMap.ReadWriteLock.ExitWriteLock();
+                }
+
+                NativeFuncs.godotsharp_internal_reload_registered_script(scriptPtr);
+
+                return godot_bool.True;
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
                 return godot_bool.False;
             }
+            finally
+            {
+                _scriptTypeBiMap.ReadWriteLock.ExitUpgradeableReadLock();
+            }
+        }
+
+        private static unsafe void GetScriptTypeInfo(Type scriptType, godot_csharp_type_info* outTypeInfo)
+        {
+            godot_string className = Marshaling.ConvertStringToNative(ReflectionUtils.ConstructTypeName(scriptType));
+
+            StringName? nativeBase = GodotObject.InternalGetClassNativeBaseName(scriptType);
+
+            godot_string_name nativeBaseName = nativeBase != null
+                ? NativeFuncs.godotsharp_string_name_new_copy((godot_string_name)nativeBase.NativeValue)
+                : default;
+
+            bool isTool = scriptType.IsDefined(typeof(ToolAttribute), inherit: false);
+
+            // If the type is nested and the parent type is a tool script,
+            // consider the nested type a tool script as well.
+            if (!isTool && scriptType.IsNested)
+            {
+                isTool = scriptType.DeclaringType?.IsDefined(typeof(ToolAttribute), inherit: false) ?? false;
+            }
+
+            // Every script in the GodotTools assembly is a tool script.
+            if (!isTool && scriptType.Assembly.GetName().Name == "GodotTools")
+            {
+                isTool = true;
+            }
+
+            bool isGlobalClass = scriptType.IsDefined(typeof(GlobalClassAttribute), inherit: false);
+
+            var iconAttr = scriptType.GetCustomAttributes(inherit: false)
+                .OfType<IconAttribute>()
+                .FirstOrDefault();
+
+            godot_string iconPath = Marshaling.ConvertStringToNative(iconAttr?.Path);
+
+            outTypeInfo->ClassName = className;
+            outTypeInfo->NativeBaseName = nativeBaseName;
+            outTypeInfo->IconPath = iconPath;
+            outTypeInfo->IsTool = isTool.ToGodotBool();
+            outTypeInfo->IsGlobalClass = isGlobalClass.ToGodotBool();
+            outTypeInfo->IsAbstract = scriptType.IsAbstract.ToGodotBool();
+            outTypeInfo->IsGenericTypeDefinition = scriptType.IsGenericTypeDefinition.ToGodotBool();
+            outTypeInfo->IsConstructedGenericType = scriptType.IsConstructedGenericType.ToGodotBool();
+
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void UpdateScriptClassInfo(IntPtr scriptPtr, godot_bool* outTool,
-            godot_array* outMethodsDest, godot_dictionary* outRpcFunctionsDest,
-            godot_dictionary* outEventSignalsDest, godot_ref* outBaseScript)
+        internal static unsafe void UpdateScriptClassInfo(IntPtr scriptPtr, godot_csharp_type_info* outTypeInfo,
+            godot_array* outMethodsDest, godot_dictionary* outRpcFunctionsDest, godot_dictionary* outEventSignalsDest, godot_ref* outBaseScript)
         {
             try
             {
                 // Performance is not critical here as this will be replaced with source generators.
                 var scriptType = _scriptTypeBiMap.GetScriptType(scriptPtr);
+                Debug.Assert(!scriptType.IsGenericTypeDefinition, $"Script type must be a constructed generic type or not generic at all. Type: {scriptType}.");
 
-                *outTool = scriptType.GetCustomAttributes(inherit: false)
-                    .OfType<ToolAttribute>()
-                    .Any().ToGodotBool();
+                GetScriptTypeInfo(scriptType, outTypeInfo);
 
-                if (!(*outTool).ToBool() && scriptType.IsNested)
-                {
-                    *outTool = (scriptType.DeclaringType?.GetCustomAttributes(inherit: false)
-                        .OfType<ToolAttribute>()
-                        .Any() ?? false).ToGodotBool();
-                }
-
-                if (!(*outTool).ToBool() && scriptType.Assembly.GetName().Name == "GodotTools")
-                    *outTool = godot_bool.True;
+                Type native = GodotObject.InternalGetClassNativeBase(scriptType);
 
                 // Methods
 
@@ -586,11 +769,9 @@ namespace Godot.Bridge
                 using var methods = new Collections.Array();
 
                 Type? top = scriptType;
-                Type native = Object.InternalGetClassNativeBase(top);
-
-                while (top != null && top != native)
+                if (scriptType != native)
                 {
-                    var methodList = GetMethodListForType(top);
+                    var methodList = GetMethodListForType(scriptType);
 
                     if (methodList != null)
                     {
@@ -600,28 +781,47 @@ namespace Godot.Bridge
 
                             methodInfo.Add("name", method.Name);
 
+                            var returnVal = new Collections.Dictionary()
+                            {
+                                { "name", method.ReturnVal.Name },
+                                { "type", (int)method.ReturnVal.Type },
+                                { "usage", (int)method.ReturnVal.Usage }
+                            };
+                            if (method.ReturnVal.ClassName != null)
+                            {
+                                returnVal["class_name"] = method.ReturnVal.ClassName;
+                            }
+
+                            methodInfo.Add("return_val", returnVal);
+
                             var methodParams = new Collections.Array();
 
                             if (method.Arguments != null)
                             {
                                 foreach (var param in method.Arguments)
                                 {
-                                    methodParams.Add(new Collections.Dictionary()
+                                    var pinfo = new Collections.Dictionary()
                                     {
                                         { "name", param.Name },
                                         { "type", (int)param.Type },
                                         { "usage", (int)param.Usage }
-                                    });
+                                    };
+                                    if (param.ClassName != null)
+                                    {
+                                        pinfo["class_name"] = param.ClassName;
+                                    }
+
+                                    methodParams.Add(pinfo);
                                 }
                             }
 
                             methodInfo.Add("params", methodParams);
 
+                            methodInfo.Add("flags", (int)method.Flags);
+
                             methods.Add(methodInfo);
                         }
                     }
-
-                    top = top.BaseType;
                 }
 
                 *outMethodsDest = NativeFuncs.godotsharp_array_new_copy(
@@ -647,7 +847,7 @@ namespace Godot.Bridge
                             continue;
 
                         var rpcAttr = method.GetCustomAttributes(inherit: false)
-                            .OfType<RPCAttribute>().FirstOrDefault();
+                            .OfType<RpcAttribute>().FirstOrDefault();
 
                         if (rpcAttr == null)
                             continue;
@@ -666,18 +866,16 @@ namespace Godot.Bridge
                 }
 
                 *outRpcFunctionsDest = NativeFuncs.godotsharp_dictionary_new_copy(
-                    (godot_dictionary)(rpcFunctions).NativeValue);
+                    (godot_dictionary)rpcFunctions.NativeValue);
 
                 // Event signals
 
                 // Performance is not critical here as this will be replaced with source generators.
                 using var signals = new Collections.Dictionary();
 
-                top = scriptType;
-
-                while (top != null && top != native)
+                if (scriptType != native)
                 {
-                    var signalList = GetSignalListForType(top);
+                    var signalList = GetSignalListForType(scriptType);
 
                     if (signalList != null)
                     {
@@ -694,20 +892,24 @@ namespace Godot.Bridge
                             {
                                 foreach (var param in signal.Arguments)
                                 {
-                                    signalParams.Add(new Collections.Dictionary()
+                                    var pinfo = new Collections.Dictionary()
                                     {
                                         { "name", param.Name },
                                         { "type", (int)param.Type },
                                         { "usage", (int)param.Usage }
-                                    });
+                                    };
+                                    if (param.ClassName != null)
+                                    {
+                                        pinfo["class_name"] = param.ClassName;
+                                    }
+
+                                    signalParams.Add(pinfo);
                                 }
                             }
 
                             signals.Add(signalName, signalParams);
                         }
                     }
-
-                    top = top.BaseType;
                 }
 
                 *outEventSignalsDest = NativeFuncs.godotsharp_dictionary_new_copy(
@@ -728,7 +930,8 @@ namespace Godot.Bridge
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                *outTool = godot_bool.False;
+                *outTypeInfo = default;
+                *outMethodsDest = NativeFuncs.godotsharp_array_new();
                 *outRpcFunctionsDest = NativeFuncs.godotsharp_dictionary_new();
                 *outEventSignalsDest = NativeFuncs.godotsharp_dictionary_new();
                 *outBaseScript = default;
@@ -761,8 +964,9 @@ namespace Godot.Bridge
             return (List<MethodInfo>?)getGodotMethodListMethod.Invoke(null, null);
         }
 
+#pragma warning disable IDE1006 // Naming rule violation
         // ReSharper disable once InconsistentNaming
-        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
+        // ReSharper disable once NotAccessedField.Local
         [StructLayout(LayoutKind.Sequential)]
         private ref struct godotsharp_property_info
         {
@@ -779,6 +983,7 @@ namespace Godot.Bridge
                 HintString.Dispose();
             }
         }
+#pragma warning restore IDE1006
 
         [UnmanagedCallersOnly]
         internal static unsafe void GetPropertyInfoList(IntPtr scriptPtr,
@@ -817,9 +1022,9 @@ namespace Godot.Bridge
                 int length = properties.Count;
 
                 // There's no recursion here, so it's ok to go with a big enough number for most cases
-                // stackMaxSize = stackMaxLength * sizeof(godotsharp_property_info)
-                const int stackMaxLength = 32;
-                bool useStack = length < stackMaxLength;
+                // StackMaxSize = StackMaxLength * sizeof(godotsharp_property_info)
+                const int StackMaxLength = 32;
+                bool useStack = length < StackMaxLength;
 
                 godotsharp_property_info* interopProperties;
 
@@ -827,7 +1032,7 @@ namespace Godot.Bridge
                 {
                     // Weird limitation, hence the need for aux:
                     // "In the case of pointer types, you can use a stackalloc expression only in a local variable declaration to initialize the variable."
-                    var aux = stackalloc godotsharp_property_info[stackMaxLength];
+                    var aux = stackalloc godotsharp_property_info[StackMaxLength];
                     interopProperties = aux;
                 }
                 else
@@ -855,7 +1060,7 @@ namespace Godot.Bridge
                         interopProperties[i] = interopProperty;
                     }
 
-                    using godot_string currentClassName = Marshaling.ConvertStringToNative(type.Name);
+                    using godot_string currentClassName = Marshaling.ConvertStringToNative(ReflectionUtils.ConstructTypeName(type));
 
                     addPropInfoFunc(scriptPtr, &currentClassName, interopProperties, length);
 
@@ -878,14 +1083,64 @@ namespace Godot.Bridge
             }
         }
 
+#pragma warning disable IDE1006 // Naming rule violation
         // ReSharper disable once InconsistentNaming
-        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
+        // ReSharper disable once NotAccessedField.Local
         [StructLayout(LayoutKind.Sequential)]
         private ref struct godotsharp_property_def_val_pair
         {
             // Careful with padding...
             public godot_string_name Name; // Not owned
             public godot_variant Value; // Not owned
+        }
+#pragma warning restore IDE1006
+
+        private delegate bool InvokeGodotClassStaticMethodDelegate(in godot_string_name method, NativeVariantPtrArgs args, out godot_variant ret);
+
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool CallStatic(IntPtr scriptPtr, godot_string_name* method,
+            godot_variant** args, int argCount, godot_variant_call_error* refCallError, godot_variant* ret)
+        {
+            // TODO: Optimize with source generators and delegate pointers.
+
+            try
+            {
+                Type scriptType = _scriptTypeBiMap.GetScriptType(scriptPtr);
+
+                Type? top = scriptType;
+                Type native = GodotObject.InternalGetClassNativeBase(top);
+
+                while (top != null && top != native)
+                {
+                    var invokeGodotClassStaticMethod = top.GetMethod(
+                        "InvokeGodotClassStaticMethod",
+                        BindingFlags.DeclaredOnly | BindingFlags.Static |
+                        BindingFlags.NonPublic | BindingFlags.Public);
+
+                    if (invokeGodotClassStaticMethod != null)
+                    {
+                        var invoked = invokeGodotClassStaticMethod.CreateDelegate<InvokeGodotClassStaticMethodDelegate>()(
+                            CustomUnsafe.AsRef(method), new NativeVariantPtrArgs(args, argCount), out godot_variant retValue);
+                        if (invoked)
+                        {
+                            *ret = retValue;
+                            return godot_bool.True;
+                        }
+                    }
+
+                    top = top.BaseType;
+                }
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *ret = default;
+                return godot_bool.False;
+            }
+
+            *ret = default;
+            (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD;
+            return godot_bool.False;
         }
 
         [UnmanagedCallersOnly]
@@ -895,7 +1150,7 @@ namespace Godot.Bridge
             try
             {
                 Type? top = _scriptTypeBiMap.GetScriptType(scriptPtr);
-                Type native = Object.InternalGetClassNativeBase(top);
+                Type native = GodotObject.InternalGetClassNativeBase(top);
 
                 while (top != null && top != native)
                 {
@@ -958,9 +1213,9 @@ namespace Godot.Bridge
                 int length = defaultValues.Count;
 
                 // There's no recursion here, so it's ok to go with a big enough number for most cases
-                // stackMaxSize = stackMaxLength * sizeof(godotsharp_property_def_val_pair)
-                const int stackMaxLength = 32;
-                bool useStack = length < stackMaxLength;
+                // StackMaxSize = StackMaxLength * sizeof(godotsharp_property_def_val_pair)
+                const int StackMaxLength = 32;
+                bool useStack = length < StackMaxLength;
 
                 godotsharp_property_def_val_pair* interopDefaultValues;
 
@@ -968,7 +1223,7 @@ namespace Godot.Bridge
                 {
                     // Weird limitation, hence the need for aux:
                     // "In the case of pointer types, you can use a stackalloc expression only in a local variable declaration to initialize the variable."
-                    var aux = stackalloc godotsharp_property_def_val_pair[stackMaxLength];
+                    var aux = stackalloc godotsharp_property_def_val_pair[StackMaxLength];
                     interopDefaultValues = aux;
                 }
                 else

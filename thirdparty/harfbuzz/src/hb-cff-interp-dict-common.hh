@@ -35,10 +35,8 @@ using namespace OT;
 /* an opstr and the parsed out dict value(s) */
 struct dict_val_t : op_str_t
 {
-  void init () { single_val.set_int (0); }
+  void init () {}
   void fini () {}
-
-  number_t	      single_val;
 };
 
 typedef dict_val_t num_dict_val_t;
@@ -56,8 +54,8 @@ struct top_dict_values_t : dict_values_t<OPSTR>
   }
   void fini () { dict_values_t<OPSTR>::fini (); }
 
-  unsigned int  charStringsOffset;
-  unsigned int  FDArrayOffset;
+  int  charStringsOffset;
+  int  FDArrayOffset;
 };
 
 struct dict_opset_t : opset_t<number_t>
@@ -86,7 +84,7 @@ struct dict_opset_t : opset_t<number_t>
 
     enum Nibble { DECIMAL=10, EXP_POS, EXP_NEG, RESERVED, NEG, END };
 
-    char buf[32];
+    char buf[32] = {0};
     unsigned char byte = 0;
     for (unsigned i = 0, count = 0; count < ARRAY_LENGTH (buf); ++i, ++count)
     {
@@ -159,11 +157,11 @@ struct top_dict_opset_t : dict_opset_t
   {
     switch (op) {
       case OpCode_CharStrings:
-	dictval.charStringsOffset = env.argStack.pop_uint ();
+	dictval.charStringsOffset = env.argStack.pop_int ();
 	env.clear_args ();
 	break;
       case OpCode_FDArray:
-	dictval.FDArrayOffset = env.argStack.pop_uint ();
+	dictval.FDArrayOffset = env.argStack.pop_int ();
 	env.clear_args ();
 	break;
       case OpCode_FontMatrix:

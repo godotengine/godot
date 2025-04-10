@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  renderer_scene_occlusion_cull.h                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  renderer_scene_occlusion_cull.h                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef RENDERER_SCENE_OCCLUSION_CULL_H
-#define RENDERER_SCENE_OCCLUSION_CULL_H
+#pragma once
 
 #include "core/math/projection.h"
 #include "core/templates/local_vector.h"
@@ -53,19 +52,15 @@ public:
 		PackedByteArray debug_data;
 		float debug_tex_range = 0.0f;
 
-	public:
-		bool is_empty() const;
-		virtual void clear();
-		virtual void resize(const Size2i &p_size);
+		uint64_t occlusion_frame = 0;
+		Size2i occlusion_buffer_size;
 
-		void update_mips();
-
-		_FORCE_INLINE_ bool is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near) const {
+		_FORCE_INLINE_ bool _is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near) const {
 			if (is_empty()) {
 				return false;
 			}
 
-			Vector3 closest_point = Vector3(CLAMP(p_cam_position.x, p_bounds[0], p_bounds[3]), CLAMP(p_cam_position.y, p_bounds[1], p_bounds[4]), CLAMP(p_cam_position.z, p_bounds[2], p_bounds[5]));
+			Vector3 closest_point = p_cam_position.clamp(Vector3(p_bounds[0], p_bounds[1], p_bounds[2]), Vector3(p_bounds[3], p_bounds[4], p_bounds[5]));
 
 			if (closest_point == p_cam_position) {
 				return false;
@@ -76,7 +71,7 @@ public:
 				return false;
 			}
 
-			float min_depth = -closest_point_view.z * 0.95f;
+			float min_depth = (closest_point - p_cam_position).length();
 
 			Vector2 rect_min = Vector2(FLT_MAX, FLT_MAX);
 			Vector2 rect_max = Vector2(FLT_MIN, FLT_MIN);
@@ -86,6 +81,10 @@ public:
 				Vector3 nc = Vector3(1, 1, 1) - c;
 				Vector3 corner = Vector3(p_bounds[0] * c.x + p_bounds[3] * nc.x, p_bounds[1] * c.y + p_bounds[4] * nc.y, p_bounds[2] * c.z + p_bounds[5] * nc.z);
 				Vector3 view = p_cam_inv_transform.xform(corner);
+
+				if (p_cam_projection.is_orthogonal()) {
+					min_depth = MIN(min_depth, -view.z);
+				}
 
 				Plane vp = Plane(view, 1.0);
 				Plane projected = p_cam_projection.xform4(vp);
@@ -102,8 +101,8 @@ public:
 				rect_max = rect_max.max(normalized);
 			}
 
-			rect_max = rect_max.min(Vector2(1, 1));
-			rect_min = rect_min.max(Vector2(0, 0));
+			rect_max = rect_max.minf(1);
+			rect_min = rect_min.maxf(0);
 
 			int mip_count = mips.size();
 
@@ -154,9 +153,49 @@ public:
 			return !visible;
 		}
 
-		RID get_debug_texture();
+	public:
+		static bool occlusion_jitter_enabled;
 
-		virtual ~HZBuffer(){};
+		bool is_empty() const;
+		virtual void clear();
+		virtual void resize(const Size2i &p_size);
+
+		void update_mips();
+
+		// Thin wrapper around _is_occluded(),
+		// allowing occlusion timers to delay the disappearance
+		// of objects to prevent flickering when using jittering.
+		_FORCE_INLINE_ bool is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near, uint64_t &r_occlusion_timeout) const {
+			bool occluded = _is_occluded(p_bounds, p_cam_position, p_cam_inv_transform, p_cam_projection, p_near);
+
+			// Special case, temporal jitter disabled,
+			// so we don't use occlusion timers.
+			if (!occlusion_jitter_enabled) {
+				return occluded;
+			}
+
+			if (!occluded) {
+//#define DEBUG_RASTER_OCCLUSION_JITTER
+#ifdef DEBUG_RASTER_OCCLUSION_JITTER
+				r_occlusion_timeout = occlusion_frame + 1;
+#else
+				r_occlusion_timeout = occlusion_frame + 9;
+#endif
+			} else if (r_occlusion_timeout) {
+				// Regular timeout, allow occlusion culling
+				// to proceed as normal after the delay.
+				if (occlusion_frame >= r_occlusion_timeout) {
+					r_occlusion_timeout = 0;
+				}
+			}
+
+			return occluded && !r_occlusion_timeout;
+		}
+
+		RID get_debug_texture();
+		const Size2i &get_occlusion_buffer_size() const { return occlusion_buffer_size; }
+
+		virtual ~HZBuffer() {}
 	};
 
 	static RendererSceneOcclusionCull *get_singleton() { return singleton; }
@@ -194,11 +233,9 @@ public:
 
 	RendererSceneOcclusionCull() {
 		singleton = this;
-	};
+	}
 
 	virtual ~RendererSceneOcclusionCull() {
 		singleton = nullptr;
-	};
+	}
 };
-
-#endif // RENDERER_SCENE_OCCLUSION_CULL_H

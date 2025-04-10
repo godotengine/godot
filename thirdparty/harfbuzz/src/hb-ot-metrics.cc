@@ -196,7 +196,7 @@ hb_ot_metrics_get_position (hb_font_t           *font,
 	*position *= mult;
 
 	if (font->slant)
-	  *position += _hb_roundf (mult * font->slant_xy * rise);
+	  *position += roundf (mult * font->slant_xy * rise);
       }
 
       return ret;

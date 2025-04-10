@@ -1,39 +1,38 @@
-/*************************************************************************/
-/*  pair.h                                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  pair.h                                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef PAIR_H
-#define PAIR_H
+#pragma once
 
 #include "core/templates/hashfuncs.h"
 #include "core/typedefs.h"
-template <class F, class S>
+template <typename F, typename S>
 struct Pair {
 	F first;
 	S second;
@@ -49,17 +48,17 @@ struct Pair {
 	}
 };
 
-template <class F, class S>
+template <typename F, typename S>
 bool operator==(const Pair<F, S> &pair, const Pair<F, S> &other) {
 	return (pair.first == other.first) && (pair.second == other.second);
 }
 
-template <class F, class S>
+template <typename F, typename S>
 bool operator!=(const Pair<F, S> &pair, const Pair<F, S> &other) {
 	return (pair.first != other.first) || (pair.second != other.second);
 }
 
-template <class F, class S>
+template <typename F, typename S>
 struct PairSort {
 	bool operator()(const Pair<F, S> &A, const Pair<F, S> &B) const {
 		if (A.first != B.first) {
@@ -69,7 +68,7 @@ struct PairSort {
 	}
 };
 
-template <class F, class S>
+template <typename F, typename S>
 struct PairHash {
 	static uint32_t hash(const Pair<F, S> &P) {
 		uint64_t h1 = HashMapHasherDefault::hash(P.first);
@@ -78,7 +77,11 @@ struct PairHash {
 	}
 };
 
-template <class K, class V>
+// Pair is zero-constructible if and only if both constrained types are zero-constructible.
+template <typename F, typename S>
+struct is_zero_constructible<Pair<F, S>> : std::conjunction<is_zero_constructible<F>, is_zero_constructible<S>> {};
+
+template <typename K, typename V>
 struct KeyValue {
 	const K key;
 	V value;
@@ -94,21 +97,23 @@ struct KeyValue {
 	}
 };
 
-template <class K, class V>
+template <typename K, typename V>
 bool operator==(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
 	return (pair.key == other.key) && (pair.value == other.value);
 }
 
-template <class K, class V>
+template <typename K, typename V>
 bool operator!=(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
 	return (pair.key != other.key) || (pair.value != other.value);
 }
 
-template <class K, class V>
+template <typename K, typename V>
 struct KeyValueSort {
 	bool operator()(const KeyValue<K, V> &A, const KeyValue<K, V> &B) const {
 		return A.key < B.key;
 	}
 };
 
-#endif // PAIR_H
+// KeyValue is zero-constructible if and only if both constrained types are zero-constructible.
+template <typename K, typename V>
+struct is_zero_constructible<KeyValue<K, V>> : std::conjunction<is_zero_constructible<K>, is_zero_constructible<V>> {};

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  FileSystemDirectoryAccess.kt                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  FilesystemDirectoryAccess.kt                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 package org.godotengine.godot.io.directory
 
@@ -45,7 +45,7 @@ import java.io.File
 /**
  * Handles directories access with the internal and external filesystem.
  */
-internal class FilesystemDirectoryAccess(private val context: Context):
+internal class FilesystemDirectoryAccess(private val context: Context, private val storageScopeIdentifier: StorageScope.Identifier):
 	DirectoryAccessHandler.DirectoryAccess {
 
 	companion object {
@@ -54,7 +54,6 @@ internal class FilesystemDirectoryAccess(private val context: Context):
 
 	private data class DirData(val dirFile: File, val files: Array<File>, var current: Int = 0)
 
-	private val storageScopeIdentifier = StorageScope.Identifier(context)
 	private val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 	private var lastDirId = STARTING_DIR_ID
 	private val dirs = SparseArray<DirData>()
@@ -63,7 +62,8 @@ internal class FilesystemDirectoryAccess(private val context: Context):
 		// Directory access is available for shared storage on Android 11+
 		// On Android 10, access is also available as long as the `requestLegacyExternalStorage`
 		// tag is available.
-		return storageScopeIdentifier.identifyStorageScope(path) != StorageScope.UNKNOWN
+		val storageScope = storageScopeIdentifier.identifyStorageScope(path)
+		return storageScope != StorageScope.UNKNOWN && storageScope != StorageScope.ASSETS
 	}
 
 	override fun hasDirId(dirId: Int) = dirs.indexOfKey(dirId) >= 0

@@ -4,7 +4,7 @@
  *
  *   WOFF format management (base).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -18,6 +18,7 @@
 
 #include "sfwoff.h"
 #include <freetype/tttags.h>
+#include <freetype/internal/ftcalc.h>
 #include <freetype/internal/ftdebug.h>
 #include <freetype/internal/ftstream.h>
 #include <freetype/ftgzip.h>
@@ -149,6 +150,7 @@
     /* Miscellaneous checks. */
     if ( woff.length != stream->size                              ||
          woff.num_tables == 0                                     ||
+         woff.num_tables >  0xFFFU                                ||
          44 + woff.num_tables * 20UL >= woff.length               ||
          12 + woff.num_tables * 16UL >= woff.totalSfntSize        ||
          ( woff.totalSfntSize & 3 ) != 0                          ||
@@ -162,28 +164,17 @@
     }
 
     /* Don't trust `totalSfntSize' before thorough checks. */
-    if ( FT_QALLOC( sfnt, 12 + woff.num_tables * 16UL ) ||
-         FT_NEW( sfnt_stream )                          )
+    if ( FT_QALLOC( sfnt, 12 ) || FT_NEW( sfnt_stream ) )
       goto Exit;
 
     sfnt_header = sfnt;
 
     /* Write sfnt header. */
     {
-      FT_UInt  searchRange, entrySelector, rangeShift, x;
+      FT_Int  entrySelector = FT_MSB( woff.num_tables );
+      FT_Int  searchRange   = ( 1 << entrySelector ) * 16;
+      FT_Int  rangeShift    = woff.num_tables * 16 - searchRange;
 
-
-      x             = woff.num_tables;
-      entrySelector = 0;
-      while ( x )
-      {
-        x            >>= 1;
-        entrySelector += 1;
-      }
-      entrySelector--;
-
-      searchRange = ( 1 << entrySelector ) * 16;
-      rangeShift  = woff.num_tables * 16 - searchRange;
 
       WRITE_ULONG ( sfnt_header, woff.flavor );
       WRITE_USHORT( sfnt_header, woff.num_tables );
@@ -196,8 +187,8 @@
     /* tag value, the tables themselves are not.  We thus have to */
     /* sort them by offset and check that they don't overlap.     */
 
-    if ( FT_NEW_ARRAY( tables, woff.num_tables )  ||
-         FT_NEW_ARRAY( indices, woff.num_tables ) )
+    if ( FT_QNEW_ARRAY( tables, woff.num_tables )  ||
+         FT_QNEW_ARRAY( indices, woff.num_tables ) )
       goto Exit;
 
     FT_TRACE2(( "\n" ));
@@ -328,9 +319,7 @@
     }
 
     /* Now use `totalSfntSize'. */
-    if ( FT_REALLOC( sfnt,
-                     12 + woff.num_tables * 16UL,
-                     woff.totalSfntSize ) )
+    if ( FT_QREALLOC( sfnt, 12, woff.totalSfntSize ) )
       goto Exit;
 
     sfnt_header = sfnt + 12;
@@ -429,7 +418,7 @@
 #else /* !FT_CONFIG_OPTION_USE_ZLIB */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _sfwoff_dummy;
+  typedef int  sfwoff_dummy_;
 
 #endif /* !FT_CONFIG_OPTION_USE_ZLIB */
 

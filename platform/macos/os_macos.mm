@@ -1,59 +1,71 @@
-/*************************************************************************/
-/*  os_macos.mm                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  os_macos.mm                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#include "os_macos.h"
+#import "os_macos.h"
 
+#import "dir_access_macos.h"
+#import "display_server_macos.h"
+#import "godot_application.h"
+#import "godot_application_delegate.h"
+#import "macos_terminal_logger.h"
+
+#include "core/crypto/crypto_core.h"
 #include "core/version_generated.gen.h"
 #include "main/main.h"
 
-#include "dir_access_macos.h"
-#include "display_server_macos.h"
-#include "godot_application.h"
-#include "godot_application_delegate.h"
-#include "macos_terminal_logger.h"
-
 #include <dlfcn.h>
 #include <libproc.h>
-#include <mach-o/dyld.h>
+#import <mach-o/dyld.h>
 #include <os/log.h>
 #include <sys/sysctl.h>
 
 void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
-	// Prevent main loop from sleeping and redraw window during modal popup display.
-	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates.
+	OS_MacOS *os = static_cast<OS_MacOS *>(OS::get_singleton());
 
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (get_singleton()->get_main_loop() && ds && (get_singleton()->get_render_thread_mode() != RENDER_SEPARATE_THREAD) && !ds->get_is_resizing()) {
-		Main::force_redraw();
-		if (!Main::is_iterating()) { // Avoid cyclic loop.
-			Main::iteration();
+	@autoreleasepool {
+		@try {
+			// Get rid of pending events.
+			DisplayServer *ds = DisplayServer::get_singleton();
+			DisplayServerMacOS *ds_mac = Object::cast_to<DisplayServerMacOS>(ds);
+			if (ds_mac) {
+				ds_mac->_process_events(false);
+			} else if (ds) {
+				ds->process_events();
+			}
+			os->joypad_apple->process_joypads();
+
+			if (Main::iteration()) {
+				os->terminate();
+			}
+		} @catch (NSException *exception) {
+			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 		}
 	}
 
@@ -66,13 +78,51 @@ void OS_MacOS::initialize() {
 	initialize_core();
 }
 
+String OS_MacOS::get_model_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("hw.model", &buffer, &buffer_len, nullptr, 0) == 0 && buffer_len != 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	return OS_Unix::get_model_name();
+}
+
 String OS_MacOS::get_processor_name() const {
 	char buffer[256];
 	size_t buffer_len = 256;
-	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, nullptr, 0) == 0) {
 		return String::utf8(buffer, buffer_len);
 	}
 	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+}
+
+bool OS_MacOS::is_sandboxed() const {
+	return has_environment("APP_SANDBOX_CONTAINER_ID");
+}
+
+Vector<String> OS_MacOS::get_granted_permissions() const {
+	Vector<String> ret;
+
+	if (is_sandboxed()) {
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				String url_string = String::utf8([[url path] UTF8String]);
+				ret.push_back(url_string);
+			}
+		}
+	}
+
+	return ret;
+}
+
+void OS_MacOS::revoke_granted_permissions() {
+	if (is_sandboxed()) {
+		[[NSUserDefaults standardUserDefaults] setObject:nil forKey:@"sec_bookmarks"];
+	}
 }
 
 void OS_MacOS::initialize_core() {
@@ -84,19 +134,31 @@ void OS_MacOS::initialize_core() {
 }
 
 void OS_MacOS::finalize() {
+	if (is_sandboxed()) {
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				[url stopAccessingSecurityScopedResource];
+			}
+		}
+	}
+
 #ifdef COREMIDI_ENABLED
 	midi_driver.close();
 #endif
 
 	delete_main_loop();
 
-	if (joypad_macos) {
-		memdelete(joypad_macos);
+	if (joypad_apple) {
+		memdelete(joypad_apple);
 	}
 }
 
 void OS_MacOS::initialize_joypads() {
-	joypad_macos = memnew(JoypadMacOS(Input::get_singleton()));
+	joypad_apple = memnew(JoypadApple());
 }
 
 void OS_MacOS::set_main_loop(MainLoop *p_main_loop) {
@@ -131,6 +193,33 @@ String OS_MacOS::get_distribution_name() const {
 String OS_MacOS::get_version() const {
 	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
 	return vformat("%d.%d.%d", (int64_t)ver.majorVersion, (int64_t)ver.minorVersion, (int64_t)ver.patchVersion);
+}
+
+String OS_MacOS::get_version_alias() const {
+	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
+	String macos_string;
+	if (ver.majorVersion == 15) {
+		macos_string += "Sequoia";
+	} else if (ver.majorVersion == 14) {
+		macos_string += "Sonoma";
+	} else if (ver.majorVersion == 13) {
+		macos_string += "Ventura";
+	} else if (ver.majorVersion == 12) {
+		macos_string += "Monterey";
+	} else if (ver.majorVersion == 11 || (ver.majorVersion == 10 && ver.minorVersion == 16)) {
+		// Big Sur was 10.16 during beta, but it became 11 for the stable version.
+		macos_string += "Big Sur";
+	} else if (ver.majorVersion == 10 && ver.minorVersion == 15) {
+		macos_string += "Catalina";
+	} else if (ver.majorVersion == 10 && ver.minorVersion == 14) {
+		macos_string += "Mojave";
+	} else if (ver.majorVersion == 10 && ver.minorVersion == 13) {
+		macos_string += "High Sierra";
+	} else {
+		macos_string += "Unknown";
+	}
+	// macOS versions older than 10.13 cannot run Godot.
+	return vformat("%s (%s)", macos_string, get_version());
 }
 
 void OS_MacOS::alert(const String &p_alert, const String &p_title) {
@@ -174,7 +263,7 @@ _FORCE_INLINE_ String OS_MacOS::get_framework_executable(const String &p_path) {
 	return p_path;
 }
 
-Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_MacOS::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	String path = get_framework_executable(p_path);
 
 	if (!FileAccess::exists(path)) {
@@ -187,11 +276,16 @@ Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handl
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("../Frameworks").path_join(p_path.get_file()));
 	}
 
-	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+	if (!FileAccess::exists(path)) {
+		// Try using path as is. macOS system libraries with `/usr/lib/*` path do not exist as physical files and are loaded from shared cache.
+		path = p_path;
+	}
 
-	if (r_resolved_path != nullptr) {
-		*r_resolved_path = path;
+	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
+
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
 	}
 
 	return OK;
@@ -219,13 +313,26 @@ String OS_MacOS::get_cache_path() const {
 	return get_config_path();
 }
 
+String OS_MacOS::get_temp_path() const {
+	static String ret;
+	if (ret.is_empty()) {
+		NSURL *url = [NSURL fileURLWithPath:NSTemporaryDirectory()
+								isDirectory:YES];
+		if (url) {
+			ret = String::utf8([url.path UTF8String]);
+			ret = ret.trim_prefix("file://");
+		}
+	}
+	return ret;
+}
+
 String OS_MacOS::get_bundle_resource_dir() const {
 	String ret;
 
 	NSBundle *main = [NSBundle mainBundle];
 	if (main) {
 		NSString *resource_path = [main resourcePath];
-		ret.parse_utf8([resource_path UTF8String]);
+		ret.append_utf8([resource_path UTF8String]);
 	}
 	return ret;
 }
@@ -237,7 +344,7 @@ String OS_MacOS::get_bundle_icon_path() const {
 	if (main) {
 		NSString *icon_path = [[main infoDictionary] objectForKey:@"CFBundleIconFile"];
 		if (icon_path) {
-			ret.parse_utf8([icon_path UTF8String]);
+			ret.append_utf8([icon_path UTF8String]);
 		}
 	}
 	return ret;
@@ -245,7 +352,7 @@ String OS_MacOS::get_bundle_icon_path() const {
 
 // Get properly capitalized engine name for system paths
 String OS_MacOS::get_godot_dir_name() const {
-	return String(VERSION_SHORT_NAME).capitalize();
+	return String(GODOT_VERSION_SHORT_NAME).capitalize();
 }
 
 String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
@@ -280,18 +387,42 @@ String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	if (found) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(id, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-			ret.parse_utf8([[paths firstObject] UTF8String]);
+			ret.append_utf8([[paths firstObject] UTF8String]);
 		}
 	}
 
 	return ret;
 }
 
-Error OS_MacOS::shell_open(String p_uri) {
+Error OS_MacOS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	bool open_folder = false;
+	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
+		open_folder = true;
+	}
+
+	if (!p_path.begins_with("file://")) {
+		p_path = String("file://") + p_path;
+	}
+
+	NSString *string = [NSString stringWithUTF8String:p_path.utf8().get_data()];
+	NSURL *uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
+
+	if (open_folder) {
+		[[NSWorkspace sharedWorkspace] openURL:uri];
+	} else {
+		[[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:@[ uri ]];
+	}
+	return OK;
+}
+
+Error OS_MacOS::shell_open(const String &p_uri) {
 	NSString *string = [NSString stringWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *uri = [[NSURL alloc] initWithString:string];
-	// Escape special characters in filenames
 	if (!uri || !uri.scheme || [uri.scheme isEqual:@"file"]) {
+		// No scheme set, assume "file://" and escape special characters.
+		if (!p_uri.begins_with("file://")) {
+			string = [NSString stringWithUTF8String:("file://" + p_uri).utf8().get_data()];
+		}
 		uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
 	}
 	[[NSWorkspace sharedWorkspace] openURL:uri];
@@ -423,23 +554,26 @@ Vector<String> OS_MacOS::get_system_font_path_for_text(const String &p_font_name
 	CTFontDescriptorRef font = CTFontDescriptorCreateWithAttributes(attributes);
 	if (font) {
 		CTFontRef family = CTFontCreateWithFontDescriptor(font, 0, nullptr);
-		CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
-		CFRange range = CFRangeMake(0, CFStringGetLength(string));
-		CTFontRef fallback_family = CTFontCreateForString(family, string, range);
-		if (fallback_family) {
-			CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
-			if (fallback_font) {
-				CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
-				if (url) {
-					NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
-					ret.push_back(String::utf8([font_path UTF8String]));
-					CFRelease(url);
+		if (family) {
+			CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
+			CFRange range = CFRangeMake(0, CFStringGetLength(string));
+			CTFontRef fallback_family = CTFontCreateForString(family, string, range);
+			if (fallback_family) {
+				CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
+				if (fallback_font) {
+					CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
+					if (url) {
+						NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
+						ret.push_back(String::utf8([font_path UTF8String]));
+						CFRelease(url);
+					}
+					CFRelease(fallback_font);
 				}
-				CFRelease(fallback_font);
+				CFRelease(fallback_family);
 			}
-			CFRelease(fallback_family);
+			CFRelease(string);
+			CFRelease(family);
 		}
-		CFRelease(string);
 		CFRelease(font);
 	}
 
@@ -516,10 +650,7 @@ String OS_MacOS::get_executable_path() const {
 	if (ret <= 0) {
 		return OS::get_executable_path();
 	} else {
-		String path;
-		path.parse_utf8(pathbuf);
-
-		return path;
+		return String::utf8(pathbuf);
 	}
 }
 
@@ -532,7 +663,9 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 		for (const String &arg : p_arguments) {
 			[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
 		}
+#if defined(__x86_64__)
 		if (@available(macOS 10.15, *)) {
+#endif
 			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
 			[configuration setArguments:arguments];
 			[configuration setCreatesNewApplicationInstance:YES];
@@ -561,6 +694,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 			}
 
 			return err;
+#if defined(__x86_64__)
 		} else {
 			Error err = ERR_TIMEOUT;
 			NSError *error = nullptr;
@@ -576,6 +710,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 			}
 			return err;
 		}
+#endif
 	} else {
 		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
 	}
@@ -585,12 +720,20 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname != nil) {
-		String path;
-		path.parse_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+		String path = String::utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
 		return create_process(path, p_arguments, r_child_id, false);
 	} else {
 		return create_process(get_executable_path(), p_arguments, r_child_id, false);
 	}
+}
+
+bool OS_MacOS::is_process_running(const ProcessID &p_pid) const {
+	NSRunningApplication *app = [NSRunningApplication runningApplicationWithProcessIdentifier:(pid_t)p_pid];
+	if (!app) {
+		return OS_Unix::is_process_running(p_pid);
+	}
+
+	return ![app isTerminated];
 }
 
 String OS_MacOS::get_unique_id() const {
@@ -611,7 +754,7 @@ String OS_MacOS::get_unique_id() const {
 		}
 
 		if (serial_number_ns_string) {
-			serial_number.parse_utf8([serial_number_ns_string UTF8String]);
+			serial_number.append_utf8([serial_number_ns_string UTF8String]);
 		}
 	}
 
@@ -650,33 +793,126 @@ Error OS_MacOS::move_to_trash(const String &p_path) {
 	return OK;
 }
 
-void OS_MacOS::run() {
-	if (!main_loop) {
-		return;
-	}
+String OS_MacOS::get_system_ca_certificates() {
+	CFArrayRef result;
+	SecCertificateRef item;
+	CFDataRef der;
 
-	main_loop->initialize();
+	OSStatus ret = SecTrustCopyAnchorCertificates(&result);
+	ERR_FAIL_COND_V(ret != noErr, "");
 
-	bool quit = false;
-	while (!quit) {
-		@try {
-			if (DisplayServer::get_singleton()) {
-				DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
-			}
-			joypad_macos->process_joypads();
-
-			if (Main::iteration()) {
-				quit = true;
-			}
-		} @catch (NSException *exception) {
-			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
+	CFIndex l = CFArrayGetCount(result);
+	String certs;
+	PackedByteArray pba;
+	for (CFIndex i = 0; i < l; i++) {
+		item = (SecCertificateRef)CFArrayGetValueAtIndex(result, i);
+		der = SecCertificateCopyData(item);
+		int derlen = CFDataGetLength(der);
+		if (pba.size() < derlen * 3) {
+			pba.resize(derlen * 3);
 		}
+		size_t b64len = 0;
+		Error err = CryptoCore::b64_encode(pba.ptrw(), pba.size(), &b64len, (unsigned char *)CFDataGetBytePtr(der), derlen);
+		CFRelease(der);
+		ERR_CONTINUE(err != OK);
+		// Certificate is bas64 encoded, aka ascii.
+		certs += "-----BEGIN CERTIFICATE-----\n" + String::ascii(Span((char *)pba.ptr(), b64len)) + "\n-----END CERTIFICATE-----\n";
 	}
-
-	main_loop->finalize();
+	CFRelease(result);
+	return certs;
 }
 
-OS_MacOS::OS_MacOS() {
+OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
+	// macOS supports both formats on ARM. Prefer S3TC/BPTC
+	// for better compatibility with x86 platforms.
+	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
+}
+
+void OS_MacOS::run() {
+	[NSApp run];
+}
+
+void OS_MacOS::start_main() {
+	Error err;
+	@autoreleasepool {
+		err = Main::setup(execpath, argc, argv);
+	}
+
+	if (err == OK) {
+		main_stared = true;
+
+		int ret;
+		@autoreleasepool {
+			ret = Main::start();
+		}
+		if (ret == EXIT_SUCCESS) {
+			if (main_loop) {
+				@autoreleasepool {
+					main_loop->initialize();
+				}
+				pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
+				CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+				return;
+			}
+		} else {
+			set_exit_code(EXIT_FAILURE);
+		}
+	} else if (err == ERR_HELP) { // Returned by --help and --version, so success.
+		set_exit_code(EXIT_SUCCESS);
+	} else {
+		set_exit_code(EXIT_FAILURE);
+	}
+
+	terminate();
+}
+
+void OS_MacOS::activate() {
+	[delegate activate];
+}
+
+void OS_MacOS::terminate() {
+	if (pre_wait_observer) {
+		CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+		CFRelease(pre_wait_observer);
+		pre_wait_observer = nil;
+	}
+
+	should_terminate = true;
+	[NSApp terminate:nil];
+}
+
+void OS_MacOS::cleanup() {
+	if (main_loop) {
+		main_loop->finalize();
+	}
+	if (main_stared) {
+		@autoreleasepool {
+			Main::cleanup();
+		}
+	}
+}
+
+OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
+	execpath = p_execpath;
+	argc = p_argc;
+	argv = p_argv;
+	if (is_sandboxed()) {
+		// Load security-scoped bookmarks, request access, remove stale or invalid bookmarks.
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		NSMutableArray *new_bookmarks = [[NSMutableArray alloc] init];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				if ([url startAccessingSecurityScopedResource]) {
+					[new_bookmarks addObject:bookmark];
+				}
+			}
+		}
+		[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+	}
+
 	main_loop = nullptr;
 
 	Vector<Logger *> loggers;
@@ -693,7 +929,7 @@ OS_MacOS::OS_MacOS() {
 	[GodotApplication sharedApplication];
 
 	// In case we are unbundled, make us a proper UI application.
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
 
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
@@ -701,34 +937,13 @@ OS_MacOS::OS_MacOS() {
 
 	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
 	[NSApp setMainMenu:main_menu];
-	[NSApp finishLaunching];
 
-	id delegate = [[GodotApplicationDelegate alloc] init];
-	ERR_FAIL_COND(!delegate);
+	delegate = [[GodotApplicationDelegate alloc] init];
+	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
-
-	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
-	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-
-	// Process application:openFile: event.
-	while (true) {
-		NSEvent *event = [NSApp
-				nextEventMatchingMask:NSEventMaskAny
-							untilDate:[NSDate distantPast]
-							   inMode:NSDefaultRunLoopMode
-							  dequeue:YES];
-
-		if (event == nil) {
-			break;
-		}
-
-		[NSApp sendEvent:event];
-	}
-
-	[NSApp activateIgnoringOtherApps:YES];
+	[NSApp registerUserInterfaceItemSearchHandler:delegate];
 }
 
 OS_MacOS::~OS_MacOS() {
-	CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-	CFRelease(pre_wait_observer);
+	// NOP
 }

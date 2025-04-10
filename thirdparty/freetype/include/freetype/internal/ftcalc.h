@@ -4,7 +4,7 @@
  *
  *   Arithmetic computations (specification).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -278,6 +278,40 @@ FT_BEGIN_HEADER
                       FT_Long  c );
 
 
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_MulAddFix
+   *
+   * @description:
+   *   Compute `(s[0] * f[0] + s[1] * f[1] + ...) / 0x10000`, where `s[n]` is
+   *   usually a 16.16 scalar.
+   *
+   * @input:
+   *   s ::
+   *     The array of scalars.
+   *   f ::
+   *     The array of factors.
+   *   count ::
+   *     The number of entries in the array.
+   *
+   * @return:
+   *   The result of `(s[0] * f[0] + s[1] * f[1] + ...) / 0x10000`.
+   *
+   * @note:
+   *   This function is currently used for the scaled delta computation of
+   *   variation stores.  It internally uses 64-bit data types when
+   *   available, otherwise it emulates 64-bit math by using 32-bit
+   *   operations, which produce a correct result but most likely at a slower
+   *   performance in comparison to the implementation base on `int64_t`.
+   *
+   */
+  FT_BASE( FT_Int32 )
+  FT_MulAddFix( FT_Fixed*  s,
+                FT_Int32*  f,
+                FT_UInt    count );
+
+
   /*
    * A variant of FT_Matrix_Multiply which scales its result afterwards.  The
    * idea is that both `a' and `b' are scaled by factors of 10 so that the
@@ -298,9 +332,9 @@ FT_BEGIN_HEADER
    * Based on geometric considerations we use the following inequality to
    * identify a degenerate matrix.
    *
-   *   50 * abs(xx*yy - xy*yx) < xx^2 + xy^2 + yx^2 + yy^2
+   *   32 * abs(xx*yy - xy*yx) < xx^2 + xy^2 + yx^2 + yy^2
    *
-   * Value 50 is heuristic.
+   * Value 32 is heuristic.
    */
   FT_BASE( FT_Bool )
   FT_Matrix_Check( const FT_Matrix*  matrix );
@@ -381,7 +415,7 @@ FT_BEGIN_HEADER
 
 #define FT_MSB( x )  ( 31 - _CountLeadingZeros( x ) )
 
-#elif defined( _M_ARM64 ) || defined( _M_ARM )
+#elif defined( _M_ARM64 ) || defined( _M_ARM ) || defined( _M_ARM64EC )
 
 #include <intrin.h>
 #pragma intrinsic( _CountLeadingZeros )
@@ -413,13 +447,19 @@ FT_BEGIN_HEADER
   extern __inline FT_Int32
   FT_MSB_i386( FT_UInt32  x );
 
-#pragma aux FT_MSB_i386 =     \
-  "bsr eax, eax"              \
-  parm [eax] nomemory         \
-  value [eax]                 \
-  modify exact [eax] nomemory;
+#pragma aux FT_MSB_i386 =             \
+  "bsr eax, eax"                      \
+  __parm [__eax] __nomemory           \
+  __value [__eax]                     \
+  __modify __exact [__eax] __nomemory;
 
 #define FT_MSB( x )  FT_MSB_i386( x )
+
+#elif defined( __SunOS_5_11 )
+
+#include <string.h>
+
+#define FT_MSB( x )  ( fls( x ) - 1 )
 
 #elif defined( __DECC ) || defined( __DECCXX )
 
@@ -455,8 +495,6 @@ FT_BEGIN_HEADER
             FT_Fixed  y );
 
 
-#if 0
-
   /**************************************************************************
    *
    * @function:
@@ -473,12 +511,11 @@ FT_BEGIN_HEADER
    *   The result of 'sqrt(x)'.
    *
    * @note:
-   *   This function is not very fast.
+   *   This function is slow and should be avoided.  Consider @FT_Hypot or
+   *   @FT_Vector_NormLen instead.
    */
-  FT_BASE( FT_Int32 )
-  FT_SqrtFixed( FT_Int32  x );
-
-#endif /* 0 */
+  FT_BASE( FT_UInt32 )
+  FT_SqrtFixed( FT_UInt32  x );
 
 
 #define INT_TO_F26DOT6( x )    ( (FT_Long)(x) * 64  )    /* << 6  */

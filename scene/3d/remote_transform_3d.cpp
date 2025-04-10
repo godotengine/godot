@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  remote_transform_3d.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  remote_transform_3d.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "remote_transform_3d.h"
 
@@ -34,7 +34,7 @@ void RemoteTransform3D::_update_cache() {
 	cache = ObjectID();
 	if (has_node(remote_node)) {
 		Node *node = get_node(remote_node);
-		if (!node || this == node || node->is_ancestor_of(this) || this->is_ancestor_of(node)) {
+		if (!node || this == node || node->is_ancestor_of(this) || is_ancestor_of(node)) {
 			return;
 		}
 
@@ -51,58 +51,50 @@ void RemoteTransform3D::_update_remote() {
 		return;
 	}
 
-	Node3D *n = Object::cast_to<Node3D>(ObjectDB::get_instance(cache));
-	if (!n) {
+	Node3D *target_node = ObjectDB::get_instance<Node3D>(cache);
+	if (!target_node) {
 		return;
 	}
 
-	if (!n->is_inside_tree()) {
+	if (!target_node->is_inside_tree()) {
 		return;
 	}
 
-	//todo make faster
-	if (use_global_coordinates) {
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_global_transform(get_global_transform());
+	Transform3D our_trans = use_global_coordinates ? get_global_transform() : get_transform();
+
+	if (update_remote_position && update_remote_rotation && update_remote_scale) {
+		if (use_global_coordinates) {
+			target_node->set_global_transform(our_trans);
 		} else {
-			Transform3D our_trans = get_global_transform();
+			target_node->set_transform(our_trans);
+		}
+	} else {
+		Transform3D target_trans = use_global_coordinates ? target_node->get_global_transform() : target_node->get_transform();
 
-			if (update_remote_rotation) {
-				n->set_rotation(our_trans.basis.get_euler_normalized(EulerOrder(n->get_rotation_order())));
+		if (update_remote_rotation && update_remote_scale) {
+			target_trans.basis = our_trans.basis;
+		} else if (update_remote_rotation) {
+			for (int i = 0; i < 3; i++) {
+				Vector3 our_col = our_trans.basis.get_column(i);
+				Vector3 target_col = target_trans.basis.get_column(i);
+				target_trans.basis.set_column(i, our_col.normalized() * target_col.length());
 			}
-
-			if (update_remote_scale) {
-				n->set_scale(our_trans.basis.get_scale());
-			}
-
-			if (update_remote_position) {
-				Transform3D n_trans = n->get_global_transform();
-
-				n_trans.set_origin(our_trans.get_origin());
-				n->set_global_transform(n_trans);
+		} else if (update_remote_scale) {
+			for (int i = 0; i < 3; i++) {
+				Vector3 our_col = our_trans.basis.get_column(i);
+				Vector3 target_col = target_trans.basis.get_column(i);
+				target_trans.basis.set_column(i, target_col.normalized() * our_col.length());
 			}
 		}
 
-	} else {
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_transform(get_transform());
+		if (update_remote_position) {
+			target_trans.origin = our_trans.origin;
+		}
+
+		if (use_global_coordinates) {
+			target_node->set_global_transform(target_trans);
 		} else {
-			Transform3D our_trans = get_transform();
-
-			if (update_remote_rotation) {
-				n->set_rotation(our_trans.basis.get_euler_normalized(EulerOrder(n->get_rotation_order())));
-			}
-
-			if (update_remote_scale) {
-				n->set_scale(our_trans.basis.get_scale());
-			}
-
-			if (update_remote_position) {
-				Transform3D n_trans = n->get_transform();
-
-				n_trans.set_origin(our_trans.get_origin());
-				n->set_transform(n_trans);
-			}
+			target_node->set_transform(target_trans);
 		}
 	}
 }
@@ -113,6 +105,17 @@ void RemoteTransform3D::_notification(int p_what) {
 			_update_cache();
 		} break;
 
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (cache.is_valid()) {
+				_update_remote();
+				Node3D *n = ObjectDB::get_instance<Node3D>(cache);
+				if (n) {
+					n->reset_physics_interpolation();
+				}
+			}
+		} break;
+
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (!is_inside_tree()) {
 				break;
@@ -126,6 +129,10 @@ void RemoteTransform3D::_notification(int p_what) {
 }
 
 void RemoteTransform3D::set_remote_node(const NodePath &p_remote_node) {
+	if (remote_node == p_remote_node) {
+		return;
+	}
+
 	remote_node = p_remote_node;
 	if (is_inside_tree()) {
 		_update_cache();
@@ -140,7 +147,15 @@ NodePath RemoteTransform3D::get_remote_node() const {
 }
 
 void RemoteTransform3D::set_use_global_coordinates(const bool p_enable) {
+	if (use_global_coordinates == p_enable) {
+		return;
+	}
+
 	use_global_coordinates = p_enable;
+
+	set_notify_transform(use_global_coordinates);
+	set_notify_local_transform(!use_global_coordinates);
+	_update_remote();
 }
 
 bool RemoteTransform3D::get_use_global_coordinates() const {
@@ -148,6 +163,9 @@ bool RemoteTransform3D::get_use_global_coordinates() const {
 }
 
 void RemoteTransform3D::set_update_position(const bool p_update) {
+	if (update_remote_position == p_update) {
+		return;
+	}
 	update_remote_position = p_update;
 	_update_remote();
 }
@@ -157,6 +175,9 @@ bool RemoteTransform3D::get_update_position() const {
 }
 
 void RemoteTransform3D::set_update_rotation(const bool p_update) {
+	if (update_remote_rotation == p_update) {
+		return;
+	}
 	update_remote_rotation = p_update;
 	_update_remote();
 }
@@ -166,6 +187,9 @@ bool RemoteTransform3D::get_update_rotation() const {
 }
 
 void RemoteTransform3D::set_update_scale(const bool p_update) {
+	if (update_remote_scale == p_update) {
+		return;
+	}
 	update_remote_scale = p_update;
 	_update_remote();
 }
@@ -179,7 +203,7 @@ void RemoteTransform3D::force_update_cache() {
 }
 
 PackedStringArray RemoteTransform3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node3D>(get_node(remote_node))) {
 		warnings.push_back(RTR("The \"Remote Path\" property must point to a valid Node3D or Node3D-derived node to work."));
@@ -213,5 +237,6 @@ void RemoteTransform3D::_bind_methods() {
 }
 
 RemoteTransform3D::RemoteTransform3D() {
-	set_notify_transform(true);
+	set_notify_transform(use_global_coordinates);
+	set_notify_local_transform(!use_global_coordinates);
 }

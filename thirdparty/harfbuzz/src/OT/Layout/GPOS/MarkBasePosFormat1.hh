@@ -90,6 +90,25 @@ struct MarkBasePosFormat1_2
 
   const Coverage &get_coverage () const { return this+markCoverage; }
 
+  static inline bool accept (hb_buffer_t *buffer, unsigned idx)
+  {
+    /* We only want to attach to the first of a MultipleSubst sequence.
+     * https://github.com/harfbuzz/harfbuzz/issues/740
+     * Reject others...
+     * ...but stop if we find a mark in the MultipleSubst sequence:
+     * https://github.com/harfbuzz/harfbuzz/issues/1020 */
+    return !_hb_glyph_info_multiplied (&buffer->info[idx]) ||
+	   0 == _hb_glyph_info_get_lig_comp (&buffer->info[idx]) ||
+	   (idx == 0 ||
+	    _hb_glyph_info_is_mark (&buffer->info[idx - 1]) ||
+	    !_hb_glyph_info_multiplied (&buffer->info[idx - 1]) ||
+	    _hb_glyph_info_get_lig_id (&buffer->info[idx]) !=
+	    _hb_glyph_info_get_lig_id (&buffer->info[idx - 1]) ||
+	    _hb_glyph_info_get_lig_comp (&buffer->info[idx]) !=
+	    _hb_glyph_info_get_lig_comp (&buffer->info[idx - 1]) + 1
+	    );
+  }
+
   bool apply (hb_ot_apply_context_t *c) const
   {
     TRACE_APPLY (this);
@@ -97,48 +116,54 @@ struct MarkBasePosFormat1_2
     unsigned int mark_index = (this+markCoverage).get_coverage  (buffer->cur().codepoint);
     if (likely (mark_index == NOT_COVERED)) return_trace (false);
 
-    /* Now we search backwards for a non-mark glyph */
+    /* Now we search backwards for a non-mark glyph.
+     * We don't use skippy_iter.prev() to avoid O(n^2) behavior. */
+
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-    skippy_iter.reset (buffer->idx, 1);
     skippy_iter.set_lookup_props (LookupFlag::IgnoreMarks);
-    do {
-      unsigned unsafe_from;
-      if (!skippy_iter.prev (&unsafe_from))
-      {
-        buffer->unsafe_to_concat_from_outbuffer (unsafe_from, buffer->idx + 1);
-        return_trace (false);
-      }
 
-      /* We only want to attach to the first of a MultipleSubst sequence.
-       * https://github.com/harfbuzz/harfbuzz/issues/740
-       * Reject others...
-       * ...but stop if we find a mark in the MultipleSubst sequence:
-       * https://github.com/harfbuzz/harfbuzz/issues/1020 */
-      if (!_hb_glyph_info_multiplied (&buffer->info[skippy_iter.idx]) ||
-          0 == _hb_glyph_info_get_lig_comp (&buffer->info[skippy_iter.idx]) ||
-          (skippy_iter.idx == 0 ||
-           _hb_glyph_info_is_mark (&buffer->info[skippy_iter.idx - 1]) ||
-           !_hb_glyph_info_multiplied (&buffer->info[skippy_iter.idx - 1]) ||
-           _hb_glyph_info_get_lig_id (&buffer->info[skippy_iter.idx]) !=
-           _hb_glyph_info_get_lig_id (&buffer->info[skippy_iter.idx - 1]) ||
-           _hb_glyph_info_get_lig_comp (&buffer->info[skippy_iter.idx]) !=
-           _hb_glyph_info_get_lig_comp (&buffer->info[skippy_iter.idx - 1]) + 1
-           ))
-        break;
-      skippy_iter.reject ();
-    } while (true);
-
-    /* Checking that matched glyph is actually a base glyph by GDEF is too strong; disabled */
-    //if (!_hb_glyph_info_is_base_glyph (&buffer->info[skippy_iter.idx])) { return_trace (false); }
-
-    unsigned int base_index = (this+baseCoverage).get_coverage  (buffer->info[skippy_iter.idx].codepoint);
-    if (base_index == NOT_COVERED)
+    if (c->last_base_until > buffer->idx)
     {
-      buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
+      c->last_base_until = 0;
+      c->last_base = -1;
+    }
+    unsigned j;
+    for (j = buffer->idx; j > c->last_base_until; j--)
+    {
+      auto match = skippy_iter.match (buffer->info[j - 1]);
+      if (match == skippy_iter.MATCH)
+      {
+        // https://github.com/harfbuzz/harfbuzz/issues/4124
+	if (!accept (buffer, j - 1) &&
+	    NOT_COVERED == (this+baseCoverage).get_coverage  (buffer->info[j - 1].codepoint))
+	  match = skippy_iter.SKIP;
+      }
+      if (match == skippy_iter.MATCH)
+      {
+	c->last_base = (signed) j - 1;
+	break;
+      }
+    }
+    c->last_base_until = buffer->idx;
+    if (c->last_base == -1)
+    {
+      buffer->unsafe_to_concat_from_outbuffer (0, buffer->idx + 1);
       return_trace (false);
     }
 
-    return_trace ((this+markArray).apply (c, mark_index, base_index, this+baseArray, classCount, skippy_iter.idx));
+    unsigned idx = (unsigned) c->last_base;
+
+    /* Checking that matched glyph is actually a base glyph by GDEF is too strong; disabled */
+    //if (!_hb_glyph_info_is_base_glyph (&buffer->info[idx])) { return_trace (false); }
+
+    unsigned int base_index = (this+baseCoverage).get_coverage  (buffer->info[idx].codepoint);
+    if (base_index == NOT_COVERED)
+    {
+      buffer->unsafe_to_concat_from_outbuffer (idx, buffer->idx + 1);
+      return_trace (false);
+    }
+
+    return_trace ((this+markArray).apply (c, mark_index, base_index, this+baseArray, classCount, idx));
   }
 
   bool subset (hb_subset_context_t *c) const
@@ -172,9 +197,10 @@ struct MarkBasePosFormat1_2
     if (!out->markCoverage.serialize_serialize (c->serializer, new_coverage.iter ()))
       return_trace (false);
 
-    out->markArray.serialize_subset (c, markArray, this,
-                                     (this+markCoverage).iter (),
-                                     &klass_mapping);
+    if (unlikely (!out->markArray.serialize_subset (c, markArray, this,
+						    (this+markCoverage).iter (),
+						    &klass_mapping)))
+      return_trace (false);
 
     unsigned basecount = (this+baseArray).rows;
     auto base_iter =
@@ -203,11 +229,9 @@ struct MarkBasePosFormat1_2
       ;
     }
 
-    out->baseArray.serialize_subset (c, baseArray, this,
-                                     base_iter.len (),
-                                     base_indexes.iter ());
-
-    return_trace (true);
+    return_trace (out->baseArray.serialize_subset (c, baseArray, this,
+						   base_iter.len (),
+						   base_indexes.iter ()));
   }
 };
 

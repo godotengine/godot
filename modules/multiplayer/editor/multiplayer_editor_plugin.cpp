@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  multiplayer_editor_plugin.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  multiplayer_editor_plugin.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "multiplayer_editor_plugin.h"
 
@@ -34,7 +34,10 @@
 #include "editor_network_profiler.h"
 #include "replication_editor.h"
 
+#include "editor/editor_command_palette.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
+#include "editor/gui/editor_bottom_panel.h"
 
 void MultiplayerEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("open_request", PropertyInfo(Variant::STRING, "path")));
@@ -103,6 +106,8 @@ void MultiplayerEditorDebugger::setup_session(int p_session_id) {
 	profiler->connect("enable_profiling", callable_mp(this, &MultiplayerEditorDebugger::_profiler_activate).bind(p_session_id));
 	profiler->connect("open_request", callable_mp(this, &MultiplayerEditorDebugger::_open_request));
 	profiler->set_name(TTR("Network Profiler"));
+	session->connect("started", callable_mp(profiler, &EditorNetworkProfiler::started));
+	session->connect("stopped", callable_mp(profiler, &EditorNetworkProfiler::stopped));
 	session->add_session_tab(profiler);
 	profilers[p_session_id] = profiler;
 }
@@ -111,15 +116,15 @@ void MultiplayerEditorDebugger::setup_session(int p_session_id) {
 
 MultiplayerEditorPlugin::MultiplayerEditorPlugin() {
 	repl_editor = memnew(ReplicationEditor);
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Replication"), repl_editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("Replication"), repl_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_replication_bottom_panel", TTRC("Toggle Replication Bottom Panel")));
 	button->hide();
-	repl_editor->get_pin()->connect("pressed", callable_mp(this, &MultiplayerEditorPlugin::_pinned));
+	repl_editor->get_pin()->connect(SceneStringName(pressed), callable_mp(this, &MultiplayerEditorPlugin::_pinned));
 	debugger.instantiate();
 	debugger->connect("open_request", callable_mp(this, &MultiplayerEditorPlugin::_open_request));
 }
 
 void MultiplayerEditorPlugin::_open_request(const String &p_path) {
-	get_editor_interface()->open_scene_from_path(p_path);
+	EditorInterface::get_singleton()->open_scene_from_path(p_path);
 }
 
 void MultiplayerEditorPlugin::_notification(int p_what) {
@@ -138,7 +143,7 @@ void MultiplayerEditorPlugin::_node_removed(Node *p_node) {
 	if (p_node && p_node == repl_editor->get_current()) {
 		repl_editor->edit(nullptr);
 		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 		button->hide();
 		repl_editor->get_pin()->set_pressed(false);
@@ -146,9 +151,9 @@ void MultiplayerEditorPlugin::_node_removed(Node *p_node) {
 }
 
 void MultiplayerEditorPlugin::_pinned() {
-	if (!repl_editor->get_pin()->is_pressed()) {
+	if (!repl_editor->get_pin()->is_pressed() && repl_editor->get_current() == nullptr) {
 		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 		button->hide();
 	}
@@ -165,10 +170,10 @@ bool MultiplayerEditorPlugin::handles(Object *p_object) const {
 void MultiplayerEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(repl_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(repl_editor);
 	} else if (!repl_editor->get_pin()->is_pressed()) {
 		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 		button->hide();
 	}

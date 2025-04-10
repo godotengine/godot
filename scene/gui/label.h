@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  label.h                                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  label.h                                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef LABEL_H
-#define LABEL_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/resources/label_settings.h"
@@ -38,21 +37,42 @@ class Label : public Control {
 	GDCLASS(Label, Control);
 
 private:
+	enum LabelDrawStep {
+		DRAW_STEP_SHADOW_OUTLINE,
+		DRAW_STEP_SHADOW,
+		DRAW_STEP_OUTLINE,
+		DRAW_STEP_TEXT,
+		DRAW_STEP_MAX,
+	};
+
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;
 	String xl_text;
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
+	BitField<TextServer::LineBreakFlag> autowrap_flags_trim = TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES;
+	BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 	bool clip = false;
+	String el_char = U"…";
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
-	Size2 minsize;
+	mutable Size2 minsize;
 	bool uppercase = false;
 
-	bool lines_dirty = true;
-	bool dirty = true;
-	bool font_dirty = true;
-	RID text_rid;
-	Vector<RID> lines_rid;
+	struct Paragraph {
+		bool lines_dirty = true;
+		bool dirty = true;
+		int start = 0;
+
+		String text;
+		RID text_rid;
+		Vector<RID> lines_rid;
+	};
+	mutable bool dirty = true;
+	mutable bool font_dirty = true;
+	mutable bool text_dirty = true;
+	mutable Vector<Paragraph> paragraphs;
+	mutable int total_line_count = 0;
+	String paragraph_separator = "\\n";
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
@@ -64,15 +84,18 @@ private:
 	float visible_ratio = 1.0;
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
+	PackedFloat32Array tab_stops;
 
 	Ref<LabelSettings> settings;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal_style;
+		Ref<StyleBox> focus_style;
 		Ref<Font> font;
 
 		int font_size = 0;
 		int line_spacing = 0;
+		int paragraph_spacing = 0;
 		Color font_color;
 		Color font_shadow_color;
 		Point2 font_shadow_offset;
@@ -81,15 +104,22 @@ private:
 		int font_shadow_outline_size;
 	} theme_cache;
 
-	void _update_visible();
-	void _shape();
+	Rect2 _get_line_rect(int p_para, int p_line) const;
+	void _ensure_shaped() const;
+	void _update_visible() const;
+	void _shape() const;
 	void _invalidate();
 
 protected:
-	virtual void _update_theme_item_cache() override;
+	RID get_line_rid(int p_line) const;
+	Rect2 get_line_rect(int p_line) const;
+	int get_layout_data(Vector2 &r_offset, int &r_last_line, int &r_line_spacing) const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif
 
 public:
 	virtual Size2 get_minimum_size() const override;
@@ -113,6 +143,9 @@ public:
 	void set_language(const String &p_language);
 	String get_language() const;
 
+	void set_paragraph_separator(const String &p_paragraph_separator);
+	String get_paragraph_separator() const;
+
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
@@ -121,6 +154,12 @@ public:
 
 	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
 	TextServer::AutowrapMode get_autowrap_mode() const;
+
+	void set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags);
+	BitField<TextServer::LineBreakFlag> get_autowrap_trim_flags() const;
+
+	void set_justification_flags(BitField<TextServer::JustificationFlag> p_flags);
+	BitField<TextServer::JustificationFlag> get_justification_flags() const;
 
 	void set_uppercase(bool p_uppercase);
 	bool is_uppercase() const;
@@ -138,8 +177,14 @@ public:
 	void set_clip_text(bool p_clip);
 	bool is_clipping_text() const;
 
+	void set_tab_stops(const PackedFloat32Array &p_tab_stops);
+	PackedFloat32Array get_tab_stops() const;
+
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;
+
+	void set_ellipsis_char(const String &p_char);
+	String get_ellipsis_char() const;
 
 	void set_lines_skipped(int p_lines);
 	int get_lines_skipped() const;
@@ -151,8 +196,8 @@ public:
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
+	Rect2 get_character_bounds(int p_pos) const;
+
 	Label(const String &p_text = String());
 	~Label();
 };
-
-#endif // LABEL_H

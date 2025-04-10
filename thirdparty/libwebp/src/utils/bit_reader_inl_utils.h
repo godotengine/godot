@@ -148,9 +148,9 @@ int VP8GetSigned(VP8BitReader* WEBP_RESTRICT const br, int v,
     const range_t value = (range_t)(br->value_ >> pos);
     const int32_t mask = (int32_t)(split - value) >> 31;  // -1 or 0
     br->bits_ -= 1;
-    br->range_ += mask;
+    br->range_ += (range_t)mask;
     br->range_ |= 1;
-    br->value_ -= (bit_t)((split + 1) & mask) << pos;
+    br->value_ -= (bit_t)((split + 1) & (uint32_t)mask) << pos;
     BT_TRACK(br);
     return (v ^ mask) - mask;
   }

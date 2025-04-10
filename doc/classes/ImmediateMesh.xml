@@ -1,12 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImmediateMesh" inherits="Mesh" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ImmediateMesh" inherits="Mesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Mesh optimized for creating geometry manually.
 	</brief_description>
 	<description>
-		Mesh optimized for creating geometry manually, similar to OpenGL1.x immediate mode.
+		A mesh type optimized for creating geometry manually, similar to OpenGL 1.x immediate mode.
+		Here's a sample on how to generate a triangular face:
+		[codeblocks]
+		[gdscript]
+		var mesh = ImmediateMesh.new()
+		mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
+		mesh.surface_add_vertex(Vector3.LEFT)
+		mesh.surface_add_vertex(Vector3.FORWARD)
+		mesh.surface_add_vertex(Vector3.ZERO)
+		mesh.surface_end()
+		[/gdscript]
+		[csharp]
+		var mesh = new ImmediateMesh();
+		mesh.SurfaceBegin(Mesh.PrimitiveType.Triangles);
+		mesh.SurfaceAddVertex(Vector3.Left);
+		mesh.SurfaceAddVertex(Vector3.Forward);
+		mesh.SurfaceAddVertex(Vector3.Zero);
+		mesh.SurfaceEnd();
+		[/csharp]
+		[/codeblocks]
+		[b]Note:[/b] Generating complex geometries with [ImmediateMesh] is highly inefficient. Instead, it is designed to generate simple geometry that changes often.
 	</description>
 	<tutorials>
+		<link title="Using ImmediateMesh">$DOCS_URL/tutorials/3d/procedural_geometry/immediatemesh.html</link>
 	</tutorials>
 	<methods>
 		<method name="clear_surfaces">

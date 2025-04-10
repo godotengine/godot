@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gi.cpp                                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gi.cpp                                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gi.h"
 
@@ -64,7 +64,7 @@ void GI::voxel_gi_initialize(RID p_voxel_gi) {
 
 void GI::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	if (voxel_gi->octree_buffer.is_valid()) {
 		RD::get_singleton()->free(voxel_gi->octree_buffer);
@@ -191,20 +191,20 @@ void GI::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xfo
 
 AABB GI::voxel_gi_get_bounds(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, AABB());
+	ERR_FAIL_NULL_V(voxel_gi, AABB());
 
 	return voxel_gi->bounds;
 }
 
 Vector3i GI::voxel_gi_get_octree_size(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector3i());
+	ERR_FAIL_NULL_V(voxel_gi, Vector3i());
 	return voxel_gi->octree_size;
 }
 
 Vector<uint8_t> GI::voxel_gi_get_octree_cells(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(voxel_gi, Vector<uint8_t>());
 
 	if (voxel_gi->octree_buffer.is_valid()) {
 		return RD::get_singleton()->buffer_get_data(voxel_gi->octree_buffer);
@@ -214,7 +214,7 @@ Vector<uint8_t> GI::voxel_gi_get_octree_cells(RID p_voxel_gi) const {
 
 Vector<uint8_t> GI::voxel_gi_get_data_cells(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(voxel_gi, Vector<uint8_t>());
 
 	if (voxel_gi->data_buffer.is_valid()) {
 		return RD::get_singleton()->buffer_get_data(voxel_gi->data_buffer);
@@ -224,7 +224,7 @@ Vector<uint8_t> GI::voxel_gi_get_data_cells(RID p_voxel_gi) const {
 
 Vector<uint8_t> GI::voxel_gi_get_distance_field(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(voxel_gi, Vector<uint8_t>());
 
 	if (voxel_gi->data_buffer.is_valid()) {
 		return RD::get_singleton()->texture_get_data(voxel_gi->sdf_texture, 0);
@@ -234,21 +234,21 @@ Vector<uint8_t> GI::voxel_gi_get_distance_field(RID p_voxel_gi) const {
 
 Vector<int> GI::voxel_gi_get_level_counts(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<int>());
+	ERR_FAIL_NULL_V(voxel_gi, Vector<int>());
 
 	return voxel_gi->level_counts;
 }
 
 Transform3D GI::voxel_gi_get_to_cell_xform(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Transform3D());
+	ERR_FAIL_NULL_V(voxel_gi, Transform3D());
 
 	return voxel_gi->to_cell_xform;
 }
 
 void GI::voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->dynamic_range = p_range;
 	voxel_gi->version++;
@@ -256,14 +256,14 @@ void GI::voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) {
 
 float GI::voxel_gi_get_dynamic_range(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 
 	return voxel_gi->dynamic_range;
 }
 
 void GI::voxel_gi_set_propagation(RID p_voxel_gi, float p_range) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->propagation = p_range;
 	voxel_gi->version++;
@@ -271,72 +271,72 @@ void GI::voxel_gi_set_propagation(RID p_voxel_gi, float p_range) {
 
 float GI::voxel_gi_get_propagation(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->propagation;
 }
 
 void GI::voxel_gi_set_energy(RID p_voxel_gi, float p_energy) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->energy = p_energy;
 }
 
 float GI::voxel_gi_get_energy(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->energy;
 }
 
 void GI::voxel_gi_set_baked_exposure_normalization(RID p_voxel_gi, float p_baked_exposure) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->baked_exposure = p_baked_exposure;
 }
 
 float GI::voxel_gi_get_baked_exposure_normalization(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->baked_exposure;
 }
 
 void GI::voxel_gi_set_bias(RID p_voxel_gi, float p_bias) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->bias = p_bias;
 }
 
 float GI::voxel_gi_get_bias(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->bias;
 }
 
 void GI::voxel_gi_set_normal_bias(RID p_voxel_gi, float p_normal_bias) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->normal_bias = p_normal_bias;
 }
 
 float GI::voxel_gi_get_normal_bias(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->normal_bias;
 }
 
 void GI::voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->interior = p_enable;
 }
 
 void GI::voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->use_two_bounces = p_enable;
 	voxel_gi->version++;
@@ -344,56 +344,70 @@ void GI::voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) {
 
 bool GI::voxel_gi_is_using_two_bounces(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, false);
+	ERR_FAIL_NULL_V(voxel_gi, false);
 	return voxel_gi->use_two_bounces;
 }
 
 bool GI::voxel_gi_is_interior(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, false);
 	return voxel_gi->interior;
 }
 
 uint32_t GI::voxel_gi_get_version(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->version;
 }
 
 uint32_t GI::voxel_gi_get_data_version(RID p_voxel_gi) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->data_version;
 }
 
 RID GI::voxel_gi_get_octree_buffer(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, RID());
+	ERR_FAIL_NULL_V(voxel_gi, RID());
 	return voxel_gi->octree_buffer;
 }
 
 RID GI::voxel_gi_get_data_buffer(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, RID());
+	ERR_FAIL_NULL_V(voxel_gi, RID());
 	return voxel_gi->data_buffer;
 }
 
 RID GI::voxel_gi_get_sdf_texture(RID p_voxel_gi) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, RID());
+	ERR_FAIL_NULL_V(voxel_gi, RID());
 
 	return voxel_gi->sdf_texture;
 }
 
 Dependency *GI::voxel_gi_get_dependency(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, nullptr);
+	ERR_FAIL_NULL_V(voxel_gi, nullptr);
 
 	return &voxel_gi->dependency;
 }
 
+void GI::sdfgi_reset() {
+	sdfgi_current_version++;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SDFGI
+
+static RID create_clear_texture(const RD::TextureFormat &p_format, const String &p_name) {
+	RID texture = RD::get_singleton()->texture_create(p_format, RD::TextureView());
+	ERR_FAIL_COND_V_MSG(texture.is_null(), RID(), String("Cannot create texture: ") + p_name);
+
+	RD::get_singleton()->set_resource_name(texture, p_name);
+	RD::get_singleton()->texture_clear(texture, Color(0, 0, 0, 0), 0, p_format.mipmaps, 0, p_format.array_layers);
+
+	return texture;
+}
 
 void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
@@ -406,6 +420,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	y_scale_mode = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_y_scale(p_env);
 	static const float y_scale[3] = { 2.0, 1.5, 1.0 };
 	y_mult = y_scale[y_scale_mode];
+	version = gi->sdfgi_current_version;
 	cascades.resize(num_cascades);
 	probe_axis_count = SDFGI::PROBE_DIVISOR + 1;
 	solid_cell_ratio = gi->sdfgi_solid_cell_ratio;
@@ -424,39 +439,31 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	{
 		RD::TextureFormat tf_render = tf_sdf;
 		tf_render.format = RD::DATA_FORMAT_R16_UINT;
-		render_albedo = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_albedo, "VoxelGI Render Albedo");
+		render_albedo = create_clear_texture(tf_render, "SDFGI Render Albedo");
+
 		tf_render.format = RD::DATA_FORMAT_R32_UINT;
-		render_emission = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_emission, "VoxelGI Render Emission");
-		render_emission_aniso = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_emission_aniso, "VoxelGI Render Emission Aniso");
+		render_emission = create_clear_texture(tf_render, "SDFGI Render Emission");
+		render_emission_aniso = create_clear_texture(tf_render, "SDFGI Render Emission Aniso");
 
 		tf_render.format = RD::DATA_FORMAT_R8_UNORM; //at least its easy to visualize
 
 		for (int i = 0; i < 8; i++) {
-			render_occlusion[i] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-			RD::get_singleton()->set_resource_name(render_occlusion[i], String("VoxelGI Render Occlusion ") + itos(i));
+			render_occlusion[i] = create_clear_texture(tf_render, String("SDFGI Render Occlusion ") + itos(i));
 		}
 
 		tf_render.format = RD::DATA_FORMAT_R32_UINT;
-		render_geom_facing = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_geom_facing, "VoxelGI Render Geometry Facing");
+		render_geom_facing = create_clear_texture(tf_render, "SDFGI Render Geometry Facing");
 
 		tf_render.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
-		render_sdf[0] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_sdf[0], "VoxelGI Render SDF 0");
-		render_sdf[1] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_sdf[1], "VoxelGI Render SDF 1");
+		render_sdf[0] = create_clear_texture(tf_render, "SDFGI Render SDF 0");
+		render_sdf[1] = create_clear_texture(tf_render, "SDFGI Render SDF 1");
 
 		tf_render.width /= 2;
 		tf_render.height /= 2;
 		tf_render.depth /= 2;
 
-		render_sdf_half[0] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_sdf_half[0], "VoxelGI Render SDF Half 0");
-		render_sdf_half[1] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_sdf_half[1], "VoxelGI Render SDF Half 1");
+		render_sdf_half[0] = create_clear_texture(tf_render, "SDFGI Render SDF Half 0");
+		render_sdf_half[1] = create_clear_texture(tf_render, "SDFGI Render SDF Half 1");
 	}
 
 	RD::TextureFormat tf_occlusion = tf_sdf;
@@ -496,10 +503,8 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	tf_probe_average.format = RD::DATA_FORMAT_R32G32B32A32_SINT; //signed integer because SH are signed
 	tf_probe_average.texture_type = RD::TEXTURE_TYPE_2D;
 
-	lightprobe_history_scroll = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
-	RD::get_singleton()->set_resource_name(lightprobe_history_scroll, "VoxelGI LightProbe History Scroll");
-	lightprobe_average_scroll = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
-	RD::get_singleton()->set_resource_name(lightprobe_average_scroll, "VoxelGI LightProbe Average Scroll");
+	lightprobe_history_scroll = create_clear_texture(tf_probe_history, "SDFGI LightProbe History Scroll");
+	lightprobe_average_scroll = create_clear_texture(tf_probe_average, "SDFGI LightProbe Average Scroll");
 
 	{
 		//octahedral lightprobes
@@ -512,8 +517,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		tf_octprobes.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
 		//lightprobe texture is an octahedral texture
 
-		lightprobe_data = RD::get_singleton()->texture_create(tf_octprobes, RD::TextureView());
-		RD::get_singleton()->set_resource_name(lightprobe_data, "VoxelGI LightProbe Data");
+		lightprobe_data = create_clear_texture(tf_octprobes, "SDFGI LightProbe Data");
 		RD::TextureView tv;
 		tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
 		lightprobe_texture = RD::get_singleton()->texture_create_shared(tv, lightprobe_data);
@@ -526,44 +530,32 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		tf_ambient.height = probe_axis_count;
 		tf_ambient.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 		//lightprobe texture is an octahedral texture
-		ambient_texture = RD::get_singleton()->texture_create(tf_ambient, RD::TextureView());
-		RD::get_singleton()->set_resource_name(ambient_texture, "VoxelGI Ambient Texture");
+		ambient_texture = create_clear_texture(tf_ambient, "SDFGI Ambient Texture");
 	}
 
 	cascades_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES);
 
-	occlusion_data = RD::get_singleton()->texture_create(tf_occlusion, RD::TextureView());
-	RD::get_singleton()->set_resource_name(occlusion_data, "VoxelGI Occlusion Data");
+	occlusion_data = create_clear_texture(tf_occlusion, "SDFGI Occlusion Data");
 	{
 		RD::TextureView tv;
 		tv.format_override = RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16;
 		occlusion_texture = RD::get_singleton()->texture_create_shared(tv, occlusion_data);
 	}
 
-	for (uint32_t i = 0; i < cascades.size(); i++) {
-		SDFGI::Cascade &cascade = cascades[i];
-
+	for (SDFGI::Cascade &cascade : cascades) {
 		/* 3D Textures */
 
-		cascade.sdf_tex = RD::get_singleton()->texture_create(tf_sdf, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.sdf_tex, "VoxelGI Cascade SDF Texture");
+		cascade.sdf_tex = create_clear_texture(tf_sdf, "SDFGI Cascade SDF Texture");
 
-		cascade.light_data = RD::get_singleton()->texture_create(tf_light, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.light_data, "VoxelGI Cascade Light Data");
+		cascade.light_data = create_clear_texture(tf_light, "SDFGI Cascade Light Data");
 
-		cascade.light_aniso_0_tex = RD::get_singleton()->texture_create(tf_aniso0, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.light_aniso_0_tex, "VoxelGI Cascade Light Aniso 0 Texture");
-		cascade.light_aniso_1_tex = RD::get_singleton()->texture_create(tf_aniso1, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.light_aniso_1_tex, "VoxelGI Cascade Light Aniso 1 Texture");
+		cascade.light_aniso_0_tex = create_clear_texture(tf_aniso0, "SDFGI Cascade Light Aniso 0 Texture");
+		cascade.light_aniso_1_tex = create_clear_texture(tf_aniso1, "SDFGI Cascade Light Aniso 1 Texture");
 
 		{
 			RD::TextureView tv;
 			tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
 			cascade.light_tex = RD::get_singleton()->texture_create_shared(tv, cascade.light_data);
-
-			RD::get_singleton()->texture_clear(cascade.light_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-			RD::get_singleton()->texture_clear(cascade.light_aniso_0_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-			RD::get_singleton()->texture_clear(cascade.light_aniso_1_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
 		}
 
 		cascade.cell_size = base_cell_size;
@@ -581,17 +573,18 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		/* Probe History */
 
 		cascade.lightprobe_history_tex = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.lightprobe_history_tex, "VoxelGI Cascade LightProbe History Texture");
+		RD::get_singleton()->set_resource_name(cascade.lightprobe_history_tex, "SDFGI Cascade LightProbe History Texture");
 		RD::get_singleton()->texture_clear(cascade.lightprobe_history_tex, Color(0, 0, 0, 0), 0, 1, 0, tf_probe_history.array_layers); //needs to be cleared for average to work
 
 		cascade.lightprobe_average_tex = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.lightprobe_average_tex, "VoxelGI Cascade LightProbe Average Texture");
+		RD::get_singleton()->set_resource_name(cascade.lightprobe_average_tex, "SDFGI Cascade LightProbe Average Texture");
 		RD::get_singleton()->texture_clear(cascade.lightprobe_average_tex, Color(0, 0, 0, 0), 0, 1, 0, 1); //needs to be cleared for average to work
 
 		/* Buffers */
 
 		cascade.solid_cell_buffer = RD::get_singleton()->storage_buffer_create(sizeof(SDFGI::Cascade::SolidCell) * solid_cell_count);
-		cascade.solid_cell_dispatch_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, Vector<uint8_t>(), RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
+		cascade.solid_cell_dispatch_buffer_storage = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, Vector<uint8_t>());
+		cascade.solid_cell_dispatch_buffer_call = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, Vector<uint8_t>(), RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
 		cascade.lights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(SDFGIShader::Light) * MAX(SDFGI::MAX_STATIC_LIGHTS, SDFGI::MAX_DYNAMIC_LIGHTS));
 		{
 			Vector<RD::Uniform> uniforms;
@@ -658,7 +651,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 10;
-				u.append_id(cascade.solid_cell_dispatch_buffer);
+				u.append_id(cascade.solid_cell_dispatch_buffer_storage);
 				uniforms.push_back(u);
 			}
 			{
@@ -706,7 +699,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 5;
-				u.append_id(cascade.solid_cell_dispatch_buffer);
+				u.append_id(cascade.solid_cell_dispatch_buffer_storage);
 				uniforms.push_back(u);
 			}
 			{
@@ -743,9 +736,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	}
 
 	//direct light
-	for (uint32_t i = 0; i < cascades.size(); i++) {
-		SDFGI::Cascade &cascade = cascades[i];
-
+	for (SDFGI::Cascade &cascade : cascades) {
 		Vector<RD::Uniform> uniforms;
 		{
 			RD::Uniform u;
@@ -771,7 +762,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 			RD::Uniform u;
 			u.binding = 3;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(cascade.solid_cell_dispatch_buffer);
+			u.append_id(cascade.solid_cell_dispatch_buffer_storage);
 			uniforms.push_back(u);
 		}
 		{
@@ -1134,13 +1125,13 @@ void GI::SDFGI::free_data() {
 }
 
 GI::SDFGI::~SDFGI() {
-	for (uint32_t i = 0; i < cascades.size(); i++) {
-		const SDFGI::Cascade &c = cascades[i];
+	for (const SDFGI::Cascade &c : cascades) {
 		RD::get_singleton()->free(c.light_data);
 		RD::get_singleton()->free(c.light_aniso_0_tex);
 		RD::get_singleton()->free(c.light_aniso_1_tex);
 		RD::get_singleton()->free(c.sdf_tex);
-		RD::get_singleton()->free(c.solid_cell_dispatch_buffer);
+		RD::get_singleton()->free(c.solid_cell_dispatch_buffer_storage);
+		RD::get_singleton()->free(c.solid_cell_dispatch_buffer_call);
 		RD::get_singleton()->free(c.solid_cell_buffer);
 		RD::get_singleton()->free(c.lightprobe_history_tex);
 		RD::get_singleton()->free(c.lightprobe_average_tex);
@@ -1198,8 +1189,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 
 	int32_t drag_margin = (cascade_size / SDFGI::PROBE_DIVISOR) / 2;
 
-	for (uint32_t i = 0; i < cascades.size(); i++) {
-		SDFGI::Cascade &cascade = cascades[i];
+	for (SDFGI::Cascade &cascade : cascades) {
 		cascade.dirty_regions = Vector3i();
 
 		Vector3 probe_half_size = Vector3(1, 1, 1) * cascade.cell_size * float(cascade_size / SDFGI::PROBE_DIVISOR) * 0.5;
@@ -1224,7 +1214,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 
 			if (cascade.dirty_regions[j] == 0) {
 				continue; // not dirty
-			} else if (uint32_t(ABS(cascade.dirty_regions[j])) >= cascade_size) {
+			} else if (uint32_t(Math::abs(cascade.dirty_regions[j])) >= cascade_size) {
 				//moved too much, just redraw everything (make all dirty)
 				cascade.dirty_regions = SDFGI::Cascade::DIRTY_ALL;
 				break;
@@ -1236,7 +1226,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 			uint32_t total_volume = cascade_size * cascade_size * cascade_size;
 			uint32_t safe_volume = 1;
 			for (int j = 0; j < 3; j++) {
-				safe_volume *= cascade_size - ABS(cascade.dirty_regions[j]);
+				safe_volume *= cascade_size - Math::abs(cascade.dirty_regions[j]);
 			}
 			uint32_t dirty_volume = total_volume - safe_volume;
 			if (dirty_volume > (safe_volume / 2)) {
@@ -1249,6 +1239,10 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 
 void GI::SDFGI::update_light() {
 	RD::get_singleton()->draw_command_begin_label("SDFGI Update dynamic Light");
+
+	for (uint32_t i = 0; i < cascades.size(); i++) {
+		RD::get_singleton()->buffer_copy(cascades[i].solid_cell_dispatch_buffer_storage, cascades[i].solid_cell_dispatch_buffer_call, 0, 0, sizeof(uint32_t) * 4);
+	}
 
 	/* Update dynamic light */
 
@@ -1288,9 +1282,9 @@ void GI::SDFGI::update_light() {
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascade.sdf_direct_light_dynamic_uniform_set, 0);
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::DirectLightPushConstant));
-		RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascade.solid_cell_dispatch_buffer, 0);
+		RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascade.solid_cell_dispatch_buffer_call, 0);
 	}
-	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_COMPUTE);
+	RD::get_singleton()->compute_list_end();
 	RD::get_singleton()->draw_command_end_label();
 }
 
@@ -1313,24 +1307,24 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 	push_constant.store_ambient_texture = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_enabled(p_env);
 
 	RID sky_uniform_set = gi->sdfgi_shader.integrate_default_sky_uniform_set;
-	push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_DISABLED;
+	push_constant.sky_flags = 0;
 	push_constant.y_mult = y_mult;
 
 	if (reads_sky && p_env.is_valid()) {
 		push_constant.sky_energy = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy_multiplier(p_env);
 
 		if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_CLEAR_COLOR) {
-			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
 			Color c = RSG::texture_storage->get_default_clear_color().srgb_to_linear();
-			push_constant.sky_color[0] = c.r;
-			push_constant.sky_color[1] = c.g;
-			push_constant.sky_color[2] = c.b;
+			push_constant.sky_color_or_orientation[0] = c.r;
+			push_constant.sky_color_or_orientation[1] = c.g;
+			push_constant.sky_color_or_orientation[2] = c.b;
 		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_COLOR) {
-			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
 			Color c = RendererSceneRenderRD::get_singleton()->environment_get_bg_color(p_env);
-			push_constant.sky_color[0] = c.r;
-			push_constant.sky_color[1] = c.g;
-			push_constant.sky_color[2] = c.b;
+			push_constant.sky_color_or_orientation[0] = c.r;
+			push_constant.sky_color_or_orientation[1] = c.g;
+			push_constant.sky_color_or_orientation[2] = c.b;
 
 		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_SKY) {
 			if (p_sky && p_sky->radiance.is_valid()) {
@@ -1356,14 +1350,23 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 					integrate_sky_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.integrate.version_get_shader(gi->sdfgi_shader.integrate_shader, 0), 1);
 				}
 				sky_uniform_set = integrate_sky_uniform_set;
-				push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_SKY;
+				push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_SKY;
+
+				// Encode sky orientation as quaternion in existing push constants.
+				const Basis sky_basis = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
+				const Quaternion sky_quaternion = sky_basis.get_quaternion().inverse();
+				push_constant.sky_color_or_orientation[0] = sky_quaternion.x;
+				push_constant.sky_color_or_orientation[1] = sky_quaternion.y;
+				push_constant.sky_color_or_orientation[2] = sky_quaternion.z;
+				// Ideally we would reconstruct the largest component for least error, but sky contribution to GI is low frequency so just needs to get the idea across.
+				push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_ORIENTATION_SIGN * (sky_quaternion.w < 0.0 ? 0 : 1);
 			}
 		}
 	}
 
 	render_pass++;
 
-	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin(true);
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_PROCESS]);
 
 	int32_t probe_divisor = cascade_size / SDFGI::PROBE_DIVISOR;
@@ -1380,14 +1383,11 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count, probe_axis_count, 1);
 	}
 
-	//end later after raster to avoid barriering on layout changes
-	//RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER);
-
+	RD::get_singleton()->compute_list_end();
 	RD::get_singleton()->draw_command_end_label();
 }
 
 void GI::SDFGI::store_probes() {
-	RD::get_singleton()->barrier(RD::BARRIER_MASK_COMPUTE, RD::BARRIER_MASK_COMPUTE);
 	RD::get_singleton()->draw_command_begin_label("SDFGI Store Probes");
 
 	SDFGIShader::IntegratePushConstant push_constant;
@@ -1405,7 +1405,7 @@ void GI::SDFGI::store_probes() {
 	push_constant.image_size[1] = probe_axis_count;
 	push_constant.store_ambient_texture = false;
 
-	push_constant.sky_mode = 0;
+	push_constant.sky_flags = 0;
 	push_constant.y_mult = y_mult;
 
 	// Then store values into the lightprobe texture. Separating these steps has a small performance hit, but it allows for multiple bounces
@@ -1426,7 +1426,7 @@ void GI::SDFGI::store_probes() {
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, 1);
 	}
 
-	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_COMPUTE);
+	RD::get_singleton()->compute_list_end();
 
 	RD::get_singleton()->draw_command_end_label();
 }
@@ -1505,7 +1505,7 @@ void GI::SDFGI::update_cascades() {
 		cascade_data[i].pad = 0;
 	}
 
-	RD::get_singleton()->buffer_update(cascades_ubo, 0, sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES, cascade_data, RD::BARRIER_MASK_COMPUTE);
+	RD::get_singleton()->buffer_update(cascades_ubo, 0, sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES, cascade_data);
 }
 
 void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views) {
@@ -1648,7 +1648,7 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 	copy_effects->copy_to_fb_rect(p_texture, texture_storage->render_target_get_rd_framebuffer(p_render_target), Rect2i(Point2i(), rtsize), true, false, false, false, RID(), p_view_count > 1);
 }
 
-void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth) {
+void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	// setup scene data
@@ -1663,7 +1663,7 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 			RendererRD::MaterialStorage::store_camera(p_camera_with_transforms[v], scene_data.projection[v]);
 		}
 
-		RD::get_singleton()->buffer_update(debug_probes_scene_data_ubo, 0, sizeof(SDFGIShader::DebugProbesSceneData), &scene_data, RD::BARRIER_MASK_RASTER);
+		RD::get_singleton()->buffer_update(debug_probes_scene_data_ubo, 0, sizeof(SDFGIShader::DebugProbesSceneData), &scene_data);
 	}
 
 	// setup push constant
@@ -1730,7 +1730,7 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 
 	SDFGIShader::ProbeDebugMode mode = p_view_count > 1 ? SDFGIShader::PROBE_DEBUG_PROBES_MULTIVIEW : SDFGIShader::PROBE_DEBUG_PROBES;
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CONTINUE, p_will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, p_will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer);
 	RD::get_singleton()->draw_command_begin_label("Debug SDFGI");
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, gi->sdfgi_shader.debug_probes_pipeline[mode].get_render_pipeline(RD::INVALID_FORMAT_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
@@ -1799,6 +1799,10 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 }
 
 void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data) {
+	if (p_render_data->sdfgi_update_data == nullptr) {
+		return;
+	}
+
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	/* Update general SDFGI Buffer */
 
@@ -1873,7 +1877,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 		}
 	}
 
-	RD::get_singleton()->buffer_update(gi->sdfgi_ubo, 0, sizeof(SDFGIData), &sdfgi_data, RD::BARRIER_MASK_COMPUTE);
+	RD::get_singleton()->buffer_update(gi->sdfgi_ubo, 0, sizeof(SDFGIData), &sdfgi_data);
 
 	/* Update dynamic lights in SDFGI cascades */
 
@@ -1995,7 +1999,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 		}
 
 		if (idx > 0) {
-			RD::get_singleton()->buffer_update(cascade.lights_buffer, 0, idx * sizeof(SDFGIShader::Light), lights, RD::BARRIER_MASK_COMPUTE);
+			RD::get_singleton()->buffer_update(cascade.lights_buffer, 0, idx * sizeof(SDFGIShader::Light), lights);
 		}
 
 		cascade_dynamic_light_count[i] = idx;
@@ -2058,6 +2062,8 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 		push_constant.cascade = cascade;
 
 		if (cascades[cascade].dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
+			RD::get_singleton()->buffer_copy(cascades[cascade].solid_cell_dispatch_buffer_storage, cascades[cascade].solid_cell_dispatch_buffer_call, 0, 0, sizeof(uint32_t) * 4);
+
 			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
 			//must pre scroll existing data because not all is dirty
@@ -2065,7 +2071,7 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].scroll_uniform_set, 0);
 
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascades[cascade].solid_cell_dispatch_buffer, 0);
+			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascades[cascade].solid_cell_dispatch_buffer_call, 0);
 			// no barrier do all together
 
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_SCROLL_OCCLUSION]);
@@ -2073,9 +2079,9 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 
 			Vector3i dirty = cascades[cascade].dirty_regions;
 			Vector3i groups;
-			groups.x = cascade_size - ABS(dirty.x);
-			groups.y = cascade_size - ABS(dirty.y);
-			groups.z = cascade_size - ABS(dirty.z);
+			groups.x = cascade_size - Math::abs(dirty.x);
+			groups.y = cascade_size - Math::abs(dirty.y);
+			groups.z = cascade_size - Math::abs(dirty.z);
 
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, groups.x, groups.y, groups.z);
@@ -2095,11 +2101,11 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 				ipush_constant.history_size = history_size;
 				ipush_constant.ray_count = 0;
 				ipush_constant.ray_bias = 0;
-				ipush_constant.sky_mode = 0;
+				ipush_constant.sky_flags = 0;
 				ipush_constant.sky_energy = 0;
-				ipush_constant.sky_color[0] = 0;
-				ipush_constant.sky_color[1] = 0;
-				ipush_constant.sky_color[2] = 0;
+				ipush_constant.sky_color_or_orientation[0] = 0;
+				ipush_constant.sky_color_or_orientation[1] = 0;
+				ipush_constant.sky_color_or_orientation[2] = 0;
 				ipush_constant.y_mult = y_mult;
 				ipush_constant.store_ambient_texture = false;
 
@@ -2153,8 +2159,8 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 		}
 
 		//clear dispatch indirect data
-		uint32_t dispatch_indirct_data[4] = { 0, 0, 0, 0 };
-		RD::get_singleton()->buffer_update(cascades[cascade].solid_cell_dispatch_buffer, 0, sizeof(uint32_t) * 4, dispatch_indirct_data);
+		uint32_t dispatch_indirect_data[4] = { 0, 0, 0, 0 };
+		RD::get_singleton()->buffer_update(cascades[cascade].solid_cell_dispatch_buffer_storage, 0, sizeof(uint32_t) * 4, dispatch_indirect_data);
 
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
@@ -2221,7 +2227,7 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
 			RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-			//run one pass of fullsize jumpflood to fix up half size arctifacts
+			//run one pass of fullsize jumpflood to fix up half size artifacts
 
 			push_constant.half_size = false;
 			push_constant.step_size = 1;
@@ -2463,6 +2469,15 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 		}
 	}
 
+	for (uint32_t i = 0; i < p_cascade_count; i++) {
+		ERR_CONTINUE(p_cascade_indices[i] >= cascades.size());
+
+		SDFGI::Cascade &cc = cascades[p_cascade_indices[i]];
+		if (light_count[i] > 0) {
+			RD::get_singleton()->buffer_copy(cc.solid_cell_dispatch_buffer_storage, cc.solid_cell_dispatch_buffer_call, 0, 0, sizeof(uint32_t) * 4);
+		}
+	}
+
 	/* Static Lights */
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
@@ -2494,7 +2509,7 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 		if (dl_push_constant.light_count > 0) {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cc.sdf_direct_light_static_uniform_set, 0);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &dl_push_constant, sizeof(SDFGIShader::DirectLightPushConstant));
-			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cc.solid_cell_dispatch_buffer, 0);
+			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cc.solid_cell_dispatch_buffer_call, 0);
 		}
 	}
 
@@ -2661,13 +2676,13 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					dtf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 					dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						dtf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 					}
 					dmap.texture = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					RD::get_singleton()->set_resource_name(dmap.texture, "VoxelGI Instance DMap Texture");
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						// Render depth for first one.
 						// Use 16-bit depth when supported to improve performance.
 						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D16_UNORM, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
@@ -2683,7 +2698,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					dmap.depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					RD::get_singleton()->set_resource_name(dmap.depth, "VoxelGI Instance DMap Depth");
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						dtf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 						dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 						dmap.albedo = RD::get_singleton()->texture_create(dtf, RD::TextureView());
@@ -2983,7 +2998,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 						push_constant.cell_offset = mipmaps[i].cell_offset;
 						push_constant.cell_count = mipmaps[i].cell_count;
 
-						int64_t wg_todo = (mipmaps[i].cell_count - 1) / wg_size + 1;
+						int64_t wg_todo = (mipmaps[i].cell_count + wg_size - 1) / wg_size;
 						while (wg_todo) {
 							int64_t wg_count = MIN(wg_todo, wg_limit_x);
 							RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIPushConstant));
@@ -3004,7 +3019,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					push_constant.cell_offset = mipmaps[i].cell_offset;
 					push_constant.cell_count = mipmaps[i].cell_count;
 
-					int64_t wg_todo = (mipmaps[i].cell_count - 1) / wg_size + 1;
+					int64_t wg_todo = (mipmaps[i].cell_count + wg_size - 1) / wg_size;
 					while (wg_todo) {
 						int64_t wg_count = MIN(wg_todo, wg_limit_x);
 						RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIPushConstant));
@@ -3155,7 +3170,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->voxel_gi_lighting_shader_version_pipelines[VOXEL_GI_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING]);
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dynamic_maps[0].uniform_set, 0);
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIDynamicPushConstant));
-				RD::get_singleton()->compute_list_dispatch(compute_list, (rect.size.x - 1) / 8 + 1, (rect.size.y - 1) / 8 + 1, 1);
+				RD::get_singleton()->compute_list_dispatch(compute_list, Math::division_round_up(rect.size.x, 8), Math::division_round_up(rect.size.y, 8), 1);
 				//print_line("rect: " + itos(i) + ": " + rect);
 
 				for (int k = 1; k < dynamic_maps.size(); k++) {
@@ -3217,7 +3232,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					}
 					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dynamic_maps[k].uniform_set, 0);
 					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIDynamicPushConstant));
-					RD::get_singleton()->compute_list_dispatch(compute_list, (rect.size.x - 1) / 8 + 1, (rect.size.y - 1) / 8 + 1, 1);
+					RD::get_singleton()->compute_list_dispatch(compute_list, Math::division_round_up(rect.size.x, 8), Math::division_round_up(rect.size.y, 8), 1);
 				}
 
 				RD::get_singleton()->compute_list_end();
@@ -3264,7 +3279,7 @@ void GI::VoxelGIInstance::free_resources() {
 void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
-	if (mipmaps.size() == 0) {
+	if (mipmaps.is_empty()) {
 		return;
 	}
 
@@ -3405,7 +3420,7 @@ void GI::init(SkyRD *p_sky) {
 			RD::PipelineDepthStencilState ds;
 			ds.enable_depth_test = true;
 			ds.enable_depth_write = true;
-			ds.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+			ds.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 
 			voxel_gi_debug_shader_version_pipelines[i].setup(voxel_gi_debug_shader_version_shaders[i], RD::RENDER_PRIMITIVE_TRIANGLES, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
 		}
@@ -3499,6 +3514,9 @@ void GI::init(SkyRD *p_sky) {
 		if (RendererSceneRenderRD::get_singleton()->is_vrs_supported()) {
 			defines += "\n#define USE_VRS\n";
 		}
+		if (!RD::get_singleton()->sampler_is_format_supported_for_filter(RD::DATA_FORMAT_R8G8_UINT, RD::SAMPLER_FILTER_LINEAR)) {
+			defines += "\n#define SAMPLE_VOXEL_GI_NEAREST\n";
+		}
 
 		Vector<String> gi_modes;
 
@@ -3570,7 +3588,7 @@ void GI::init(SkyRD *p_sky) {
 			RD::PipelineDepthStencilState ds;
 			ds.enable_depth_test = true;
 			ds.enable_depth_write = true;
-			ds.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+			ds.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 			for (int i = 0; i < SDFGIShader::PROBE_DEBUG_MAX; i++) {
 				// TODO check if version is enabled
 
@@ -3584,18 +3602,40 @@ void GI::init(SkyRD *p_sky) {
 }
 
 void GI::free() {
-	RD::get_singleton()->free(default_voxel_gi_buffer);
-	RD::get_singleton()->free(voxel_gi_lights_uniform);
-	RD::get_singleton()->free(sdfgi_ubo);
+	if (default_voxel_gi_buffer.is_valid()) {
+		RD::get_singleton()->free(default_voxel_gi_buffer);
+	}
+	if (voxel_gi_lights_uniform.is_valid()) {
+		RD::get_singleton()->free(voxel_gi_lights_uniform);
+	}
+	if (sdfgi_ubo.is_valid()) {
+		RD::get_singleton()->free(sdfgi_ubo);
+	}
 
-	voxel_gi_debug_shader.version_free(voxel_gi_debug_shader_version);
-	voxel_gi_shader.version_free(voxel_gi_lighting_shader_version);
-	shader.version_free(shader_version);
-	sdfgi_shader.debug_probes.version_free(sdfgi_shader.debug_probes_shader);
-	sdfgi_shader.debug.version_free(sdfgi_shader.debug_shader);
-	sdfgi_shader.direct_light.version_free(sdfgi_shader.direct_light_shader);
-	sdfgi_shader.integrate.version_free(sdfgi_shader.integrate_shader);
-	sdfgi_shader.preprocess.version_free(sdfgi_shader.preprocess_shader);
+	if (voxel_gi_debug_shader_version.is_valid()) {
+		voxel_gi_debug_shader.version_free(voxel_gi_debug_shader_version);
+	}
+	if (voxel_gi_lighting_shader_version.is_valid()) {
+		voxel_gi_shader.version_free(voxel_gi_lighting_shader_version);
+	}
+	if (shader_version.is_valid()) {
+		shader.version_free(shader_version);
+	}
+	if (sdfgi_shader.debug_probes_shader.is_valid()) {
+		sdfgi_shader.debug_probes.version_free(sdfgi_shader.debug_probes_shader);
+	}
+	if (sdfgi_shader.debug_shader.is_valid()) {
+		sdfgi_shader.debug.version_free(sdfgi_shader.debug_shader);
+	}
+	if (sdfgi_shader.direct_light_shader.is_valid()) {
+		sdfgi_shader.direct_light.version_free(sdfgi_shader.direct_light_shader);
+	}
+	if (sdfgi_shader.integrate_shader.is_valid()) {
+		sdfgi_shader.integrate.version_free(sdfgi_shader.integrate_shader);
+	}
+	if (sdfgi_shader.preprocess_shader.is_valid()) {
+		sdfgi_shader.preprocess.version_free(sdfgi_shader.preprocess_shader);
+	}
 
 	if (voxel_gi_lights) {
 		memdelete_arr(voxel_gi_lights);
@@ -3698,24 +3738,18 @@ void GI::setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBu
 			}
 			rbgi->uniform_set[v] = RID();
 		}
-		if (p_render_buffers->has_custom_data(RB_SCOPE_FOG)) {
-			Ref<Fog::VolumetricFog> fog = p_render_buffers->get_custom_data(RB_SCOPE_FOG);
 
-			if (RD::get_singleton()->uniform_set_is_valid(fog->fog_uniform_set)) {
-				RD::get_singleton()->free(fog->fog_uniform_set);
-				RD::get_singleton()->free(fog->process_uniform_set);
-				RD::get_singleton()->free(fog->process_uniform_set2);
-			}
-			fog->fog_uniform_set = RID();
-			fog->process_uniform_set = RID();
-			fog->process_uniform_set2 = RID();
+		if (p_render_buffers->has_custom_data(RB_SCOPE_FOG)) {
+			// VoxelGI instances have changed, so we need to update volumetric fog.
+			Ref<RendererRD::Fog::VolumetricFog> fog = p_render_buffers->get_custom_data(RB_SCOPE_FOG);
+			fog->sync_gi_dependent_sets_validity(true);
 		}
 	}
 
 	if (p_voxel_gi_instances.size() > 0) {
 		RD::get_singleton()->draw_command_begin_label("VoxelGIs Setup");
 
-		RD::get_singleton()->buffer_update(voxel_gi_buffer, 0, sizeof(VoxelGIData) * MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size()), voxel_gi_data, RD::BARRIER_MASK_COMPUTE);
+		RD::get_singleton()->buffer_update(voxel_gi_buffer, 0, sizeof(VoxelGIData) * MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size()), voxel_gi_data);
 
 		RD::get_singleton()->draw_command_end_label();
 	}
@@ -3789,8 +3823,13 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 			rbgi->scene_data_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SceneData));
 		}
 
+		Projection correction;
+		correction.set_depth_correction(false);
+
 		for (uint32_t v = 0; v < p_view_count; v++) {
-			RendererRD::MaterialStorage::store_camera(p_projections[v].inverse(), scene_data.inv_projection[v]);
+			Projection temp = correction * p_projections[v];
+
+			RendererRD::MaterialStorage::store_camera(temp.inverse(), scene_data.inv_projection[v]);
 			scene_data.eye_offset[v][0] = p_eye_offsets[v].x;
 			scene_data.eye_offset[v][1] = p_eye_offsets[v].y;
 			scene_data.eye_offset[v][2] = p_eye_offsets[v].z;
@@ -3803,11 +3842,11 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 		scene_data.screen_size[0] = internal_size.x;
 		scene_data.screen_size[1] = internal_size.y;
 
-		RD::get_singleton()->buffer_update(rbgi->scene_data_ubo, 0, sizeof(SceneData), &scene_data, RD::BARRIER_MASK_COMPUTE);
+		RD::get_singleton()->buffer_update(rbgi->scene_data_ubo, 0, sizeof(SceneData), &scene_data);
 	}
 
 	// Now compute the contents of our buffers.
-	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin(true);
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
 	// Render each eye separately.
 	// We need to look into whether we can make our compute shader use Multiview but not sure that works or makes a difference..
@@ -3935,7 +3974,6 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 				uniforms.push_back(u);
 			}
-
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -4038,8 +4076,7 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 		}
 	}
 
-	//do barrier later to allow oeverlap
-	//RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER); //no barriers, let other compute, raster and transfer happen at the same time
+	RD::get_singleton()->compute_list_end();
 	RD::get_singleton()->draw_command_end_label();
 }
 
@@ -4059,28 +4096,28 @@ void GI::voxel_gi_instance_free(RID p_rid) {
 
 void GI::voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) {
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->transform = p_xform;
 }
 
 bool GI::voxel_gi_needs_update(RID p_probe) const {
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
-	ERR_FAIL_COND_V(!voxel_gi, false);
+	ERR_FAIL_NULL_V(voxel_gi, false);
 
 	return voxel_gi->last_probe_version != voxel_gi_get_version(voxel_gi->probe);
 }
 
 void GI::voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects) {
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->update(p_update_light_instances, p_light_instances, p_dynamic_objects);
 }
 
 void GI::debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->debug(p_draw_list, p_framebuffer, p_camera_with_transform, p_lighting, p_emission, p_alpha);
 }

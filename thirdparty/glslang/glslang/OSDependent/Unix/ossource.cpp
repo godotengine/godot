@@ -36,119 +36,14 @@
 // This file contains the Linux-specific functions
 //
 #include "../osinclude.h"
-#include "../../../OGLCompilersDLL/InitializeDll.h"
 
-#include <pthread.h>
-#include <semaphore.h>
-#include <assert.h>
-#include <errno.h>
-#include <stdint.h>
 #include <cstdio>
-#include <sys/time.h>
 
 #if !defined(__Fuchsia__)
 #include <sys/resource.h>
 #endif
 
 namespace glslang {
-
-//
-// Thread cleanup
-//
-
-//
-// Thread Local Storage Operations
-//
-inline OS_TLSIndex PthreadKeyToTLSIndex(pthread_key_t key)
-{
-    return (OS_TLSIndex)((uintptr_t)key + 1);
-}
-
-inline pthread_key_t TLSIndexToPthreadKey(OS_TLSIndex nIndex)
-{
-    return (pthread_key_t)((uintptr_t)nIndex - 1);
-}
-
-OS_TLSIndex OS_AllocTLSIndex()
-{
-    pthread_key_t pPoolIndex;
-
-    //
-    // Create global pool key.
-    //
-    if ((pthread_key_create(&pPoolIndex, NULL)) != 0) {
-        assert(0 && "OS_AllocTLSIndex(): Unable to allocate Thread Local Storage");
-        return OS_INVALID_TLS_INDEX;
-    }
-    else
-        return PthreadKeyToTLSIndex(pPoolIndex);
-}
-
-bool OS_SetTLSValue(OS_TLSIndex nIndex, void *lpvValue)
-{
-    if (nIndex == OS_INVALID_TLS_INDEX) {
-        assert(0 && "OS_SetTLSValue(): Invalid TLS Index");
-        return false;
-    }
-
-    if (pthread_setspecific(TLSIndexToPthreadKey(nIndex), lpvValue) == 0)
-        return true;
-    else
-        return false;
-}
-
-void* OS_GetTLSValue(OS_TLSIndex nIndex)
-{
-    //
-    // This function should return 0 if nIndex is invalid.
-    //
-    assert(nIndex != OS_INVALID_TLS_INDEX);
-    return pthread_getspecific(TLSIndexToPthreadKey(nIndex));
-}
-
-bool OS_FreeTLSIndex(OS_TLSIndex nIndex)
-{
-    if (nIndex == OS_INVALID_TLS_INDEX) {
-        assert(0 && "OS_SetTLSValue(): Invalid TLS Index");
-        return false;
-    }
-
-    //
-    // Delete the global pool key.
-    //
-    if (pthread_key_delete(TLSIndexToPthreadKey(nIndex)) == 0)
-        return true;
-    else
-        return false;
-}
-
-namespace {
-    pthread_mutex_t gMutex;
-}
-
-static void InitMutex(void)
-{
-  pthread_mutexattr_t mutexattr;
-  pthread_mutexattr_init(&mutexattr);
-  pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
-  pthread_mutex_init(&gMutex, &mutexattr);
-}
-
-void InitGlobalLock()
-{
-  static pthread_once_t once = PTHREAD_ONCE_INIT;
-  pthread_once(&once, InitMutex);
-}
-
-void GetGlobalLock()
-{
-  pthread_mutex_lock(&gMutex);
-}
-
-void ReleaseGlobalLock()
-{
-  pthread_mutex_unlock(&gMutex);
-}
 
 // #define DUMP_COUNTERS
 

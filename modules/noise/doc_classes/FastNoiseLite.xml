@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FastNoiseLite" inherits="Noise" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="FastNoiseLite" inherits="Noise" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Generates noise using the FastNoiseLite library.
 	</brief_description>
 	<description>
 		This class generates noise using the FastNoiseLite library, which is a collection of several noise algorithms including Cellular, Perlin, Value, and more.
-		Most generated noise values are in the range of [code][-1,1][/code], however not always. Some of the cellular noise algorithms return results above [code]1[/code].
+		Most generated noise values are in the range of [code][-1, 1][/code], but not always. Some of the cellular noise algorithms return results above [code]1[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,7 +13,7 @@
 		<member name="cellular_distance_function" type="int" setter="set_cellular_distance_function" getter="get_cellular_distance_function" enum="FastNoiseLite.CellularDistanceFunction" default="0">
 			Determines how the distance to the nearest/second-nearest point is computed. See [enum CellularDistanceFunction] for options.
 		</member>
-		<member name="cellular_jitter" type="float" setter="set_cellular_jitter" getter="get_cellular_jitter" default="0.45">
+		<member name="cellular_jitter" type="float" setter="set_cellular_jitter" getter="get_cellular_jitter" default="1.0">
 			Maximum distance a point can move off of its grid position. Set to [code]0[/code] for an even grid.
 		</member>
 		<member name="cellular_return_type" type="int" setter="set_cellular_return_type" getter="get_cellular_return_type" enum="FastNoiseLite.CellularReturnType" default="1">
@@ -91,10 +91,10 @@
 			Cellular includes both Worley noise and Voronoi diagrams which creates various regions of the same value.
 		</constant>
 		<constant name="TYPE_SIMPLEX" value="0" enum="NoiseType">
-			As opposed to [constant TYPE_PERLIN], gradients exist in a simplex lattice rather than a grid lattice, avoiding directional artifacts.
+			As opposed to [constant TYPE_PERLIN], gradients exist in a simplex lattice rather than a grid lattice, avoiding directional artifacts. Internally uses FastNoiseLite's OpenSimplex2 noise type.
 		</constant>
 		<constant name="TYPE_SIMPLEX_SMOOTH" value="1" enum="NoiseType">
-			Modified, higher quality version of [constant TYPE_SIMPLEX], but slower.
+			Modified, higher quality version of [constant TYPE_SIMPLEX], but slower. Internally uses FastNoiseLite's OpenSimplex2S noise type.
 		</constant>
 		<constant name="FRACTAL_NONE" value="0" enum="FractalType">
 			No fractal noise.
@@ -118,7 +118,7 @@
 			Manhattan distance (taxicab metric) to the nearest point.
 		</constant>
 		<constant name="DISTANCE_HYBRID" value="3" enum="CellularDistanceFunction">
-			Blend of [constant DISTANCE_EUCLIDEAN] and [constant DISTANCE_MANHATTAN] to give curved cell boundaries
+			Blend of [constant DISTANCE_EUCLIDEAN] and [constant DISTANCE_MANHATTAN] to give curved cell boundaries.
 		</constant>
 		<constant name="RETURN_CELL_VALUE" value="0" enum="CellularReturnType">
 			The cellular distance function will return the same value for all points within a cell.

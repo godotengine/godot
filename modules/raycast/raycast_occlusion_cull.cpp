@@ -1,34 +1,35 @@
-/*************************************************************************/
-/*  raycast_occlusion_cull.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  raycast_occlusion_cull.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "raycast_occlusion_cull.h"
+
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/local_vector.h"
@@ -79,30 +80,22 @@ void RaycastOcclusionCull::RaycastHZBuffer::resize(const Size2i &p_size) {
 	memset(camera_ray_masks.ptr(), ~0, camera_rays_tile_count * TILE_RAYS * sizeof(uint32_t));
 }
 
-void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {
+void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D &p_cam_transform, const Vector3 &p_near_bottom_left, const Vector2 &p_near_extents, real_t p_z_far, bool p_cam_orthogonal) {
 	CameraRayThreadData td;
 	td.thread_count = WorkerThreadPool::get_singleton()->get_thread_count();
 
-	td.z_near = p_cam_projection.get_z_near();
-	td.z_far = p_cam_projection.get_z_far() * 1.05f;
+	td.z_near = -p_near_bottom_left.z;
+	td.z_far = p_z_far * 1.05f;
 	td.camera_pos = p_cam_transform.origin;
 	td.camera_dir = -p_cam_transform.basis.get_column(2);
 	td.camera_orthogonal = p_cam_orthogonal;
 
-	Projection inv_camera_matrix = p_cam_projection.inverse();
-	Vector3 camera_corner_proj = Vector3(-1.0f, -1.0f, -1.0f);
-	Vector3 camera_corner_view = inv_camera_matrix.xform(camera_corner_proj);
-	td.pixel_corner = p_cam_transform.xform(camera_corner_view);
+	// Calculate the world coordinates of the viewport.
+	td.pixel_corner = p_cam_transform.xform(p_near_bottom_left);
+	Vector3 top_corner_world = p_cam_transform.xform(p_near_bottom_left + Vector3(0, p_near_extents.y, 0));
+	Vector3 right_corner_world = p_cam_transform.xform(p_near_bottom_left + Vector3(p_near_extents.x, 0, 0));
 
-	Vector3 top_corner_proj = Vector3(-1.0f, 1.0f, -1.0f);
-	Vector3 top_corner_view = inv_camera_matrix.xform(top_corner_proj);
-	Vector3 top_corner_world = p_cam_transform.xform(top_corner_view);
-
-	Vector3 left_corner_proj = Vector3(1.0f, -1.0f, -1.0f);
-	Vector3 left_corner_view = inv_camera_matrix.xform(left_corner_proj);
-	Vector3 left_corner_world = p_cam_transform.xform(left_corner_view);
-
-	td.pixel_u_interp = left_corner_world - td.pixel_corner;
+	td.pixel_u_interp = right_corner_world - td.pixel_corner;
 	td.pixel_v_interp = top_corner_world - td.pixel_corner;
 
 	debug_tex_range = td.z_far;
@@ -139,7 +132,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::_generate_camera_rays(const CameraRa
 
 			Vector3 dir;
 			if (p_data->camera_orthogonal) {
-				dir = -p_data->camera_dir;
+				dir = p_data->camera_dir;
 				tile.ray.org_x[j] = pixel_pos.x - dir.x * p_data->z_near;
 				tile.ray.org_y[j] = pixel_pos.y - dir.y * p_data->z_near;
 				tile.ray.org_z[j] = pixel_pos.z - dir.z * p_data->z_near;
@@ -180,17 +173,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::sort_rays(const Vector3 &p_camera_di
 					}
 					int k = tile_i * TILE_SIZE + tile_j;
 					int tile_index = i * tile_grid_size.x + j;
-					float d = camera_rays[tile_index].ray.tfar[k];
-
-					if (!p_orthogonal) {
-						const float &dir_x = camera_rays[tile_index].ray.dir_x[k];
-						const float &dir_y = camera_rays[tile_index].ray.dir_y[k];
-						const float &dir_z = camera_rays[tile_index].ray.dir_z[k];
-						float cos_theta = p_camera_dir.x * dir_x + p_camera_dir.y * dir_y + p_camera_dir.z * dir_z;
-						d *= cos_theta;
-					}
-
-					mips[0][y * buffer_size.x + x] = d;
+					mips[0][y * buffer_size.x + x] = camera_rays[tile_index].ray.tfar[k];
 				}
 			}
 		}
@@ -220,7 +203,7 @@ void RaycastOcclusionCull::occluder_initialize(RID p_occluder) {
 
 void RaycastOcclusionCull::occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) {
 	Occluder *occluder = occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 
 	occluder->vertices = p_vertices;
 	occluder->indices = p_indices;
@@ -241,7 +224,7 @@ void RaycastOcclusionCull::occluder_set_mesh(RID p_occluder, const PackedVector3
 
 void RaycastOcclusionCull::free_occluder(RID p_occluder) {
 	Occluder *occluder = occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 	memdelete(occluder);
 	occluder_owner.free(p_occluder);
 }
@@ -249,17 +232,15 @@ void RaycastOcclusionCull::free_occluder(RID p_occluder) {
 ////////////////////////////////////////////////////////
 
 void RaycastOcclusionCull::add_scenario(RID p_scenario) {
-	if (scenarios.has(p_scenario)) {
-		scenarios[p_scenario].removed = false;
-	} else {
-		scenarios[p_scenario] = Scenario();
-	}
+	ERR_FAIL_COND(scenarios.has(p_scenario));
+	scenarios[p_scenario] = Scenario();
 }
 
 void RaycastOcclusionCull::remove_scenario(RID p_scenario) {
-	ERR_FAIL_COND(!scenarios.has(p_scenario));
-	Scenario &scenario = scenarios[p_scenario];
-	scenario.removed = true;
+	Scenario *scenario = scenarios.getptr(p_scenario);
+	ERR_FAIL_NULL(scenario);
+	scenario->free();
+	scenarios.erase(p_scenario);
 }
 
 void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance, RID p_occluder, const Transform3D &p_xform, bool p_enabled) {
@@ -290,7 +271,7 @@ void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance,
 
 		if (p_occluder.is_valid()) {
 			Occluder *occluder = occluder_owner.get_or_null(p_occluder);
-			ERR_FAIL_COND(!occluder);
+			ERR_FAIL_NULL(occluder);
 			occluder->users.insert(InstanceID(p_scenario, p_instance));
 		}
 		changed = true;
@@ -352,10 +333,10 @@ void RaycastOcclusionCull::Scenario::_update_dirty_instance(int p_idx, RID *p_in
 	int vertices_size = occ->vertices.size();
 
 	// Embree requires the last element to be readable by a 16-byte SSE load instruction, so we add padding to be safe.
-	occ_inst->xformed_vertices.resize(vertices_size + 1);
+	occ_inst->xformed_vertices.resize(3 * vertices_size + 3);
 
 	const Vector3 *read_ptr = occ->vertices.ptr();
-	Vector3 *write_ptr = occ_inst->xformed_vertices.ptr();
+	float *write_ptr = occ_inst->xformed_vertices.ptr();
 
 	if (vertices_size > 1024) {
 		TransformThreadData td;
@@ -383,9 +364,31 @@ void RaycastOcclusionCull::Scenario::_transform_vertices_thread(uint32_t p_threa
 	_transform_vertices_range(p_data->read, p_data->write, p_data->xform, from, to);
 }
 
-void RaycastOcclusionCull::Scenario::_transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform3D &p_xform, int p_from, int p_to) {
+void RaycastOcclusionCull::Scenario::_transform_vertices_range(const Vector3 *p_read, float *p_write, const Transform3D &p_xform, int p_from, int p_to) {
+	float *floats_w = p_write + 3 * p_from;
 	for (int i = p_from; i < p_to; i++) {
-		p_write[i] = p_xform.xform(p_read[i]);
+		const Vector3 p = p_xform.xform(p_read[i]);
+		floats_w[0] = p.x;
+		floats_w[1] = p.y;
+		floats_w[2] = p.z;
+		floats_w += 3;
+	}
+}
+
+void RaycastOcclusionCull::Scenario::free() {
+	if (commit_thread) {
+		if (commit_thread->is_started()) {
+			commit_thread->wait_to_finish();
+		}
+		memdelete(commit_thread);
+		commit_thread = nullptr;
+	}
+
+	for (int i = 0; i < 2; i++) {
+		if (ebr_scene[i]) {
+			rtcReleaseScene(ebr_scene[i]);
+			ebr_scene[i] = nullptr;
+		}
 	}
 }
 
@@ -396,8 +399,8 @@ void RaycastOcclusionCull::Scenario::_commit_scene(void *p_ud) {
 	scenario->commit_done = true;
 }
 
-bool RaycastOcclusionCull::Scenario::update() {
-	ERR_FAIL_COND_V(singleton == nullptr, false);
+void RaycastOcclusionCull::Scenario::update() {
+	ERR_FAIL_NULL(singleton);
 
 	if (commit_thread == nullptr) {
 		commit_thread = memnew(Thread);
@@ -408,26 +411,16 @@ bool RaycastOcclusionCull::Scenario::update() {
 			commit_thread->wait_to_finish();
 			current_scene_idx = 1 - current_scene_idx;
 		} else {
-			return false;
+			return;
 		}
-	}
-
-	if (removed) {
-		if (ebr_scene[0]) {
-			rtcReleaseScene(ebr_scene[0]);
-		}
-		if (ebr_scene[1]) {
-			rtcReleaseScene(ebr_scene[1]);
-		}
-		return true;
 	}
 
 	if (!dirty && removed_instances.is_empty() && dirty_instances_array.is_empty()) {
-		return false;
+		return;
 	}
 
-	for (unsigned int i = 0; i < removed_instances.size(); i++) {
-		instances.erase(removed_instances[i]);
+	for (const RID &scenario : removed_instances) {
+		instances.erase(scenario);
 	}
 
 	if (dirty_instances_array.size() / WorkerThreadPool::get_singleton()->get_thread_count() > 128) {
@@ -469,7 +462,7 @@ bool RaycastOcclusionCull::Scenario::update() {
 		}
 
 		RTCGeometry geom = rtcNewGeometry(raycast_singleton->ebr_device, RTC_GEOMETRY_TYPE_TRIANGLE);
-		rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, occ_inst->xformed_vertices.ptr(), 0, sizeof(Vector3), occ_inst->xformed_vertices.size());
+		rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, occ_inst->xformed_vertices.ptr(), 0, sizeof(float) * 3, occ_inst->xformed_vertices.size() / 3);
 		rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, occ_inst->indices.ptr(), 0, sizeof(uint32_t) * 3, occ_inst->indices.size() / 3);
 		rtcCommitGeometry(geom);
 		rtcAttachGeometry(next_scene, geom);
@@ -479,19 +472,20 @@ bool RaycastOcclusionCull::Scenario::update() {
 	dirty = false;
 	commit_done = false;
 	commit_thread->start(&Scenario::_commit_scene, this);
-	return false;
 }
 
 void RaycastOcclusionCull::Scenario::_raycast(uint32_t p_idx, const RaycastThreadData *p_raycast_data) const {
-	RTCIntersectContext ctx;
-	rtcInitIntersectContext(&ctx);
-	ctx.flags = RTC_INTERSECT_CONTEXT_FLAG_COHERENT;
-
-	rtcIntersect16((const int *)&p_raycast_data->masks[p_idx * TILE_RAYS], ebr_scene[current_scene_idx], &ctx, &p_raycast_data->rays[p_idx]);
+	RTCRayQueryContext context;
+	rtcInitRayQueryContext(&context);
+	RTCIntersectArguments args;
+	rtcInitIntersectArguments(&args);
+	args.flags = RTC_RAY_QUERY_FLAG_COHERENT;
+	args.context = &context;
+	rtcIntersect16((const int *)&p_raycast_data->masks[p_idx * TILE_RAYS], ebr_scene[current_scene_idx], &p_raycast_data->rays[p_idx], &args);
 }
 
 void RaycastOcclusionCull::Scenario::raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count) const {
-	ERR_FAIL_COND(singleton == nullptr);
+	ERR_FAIL_NULL(singleton);
 	if (raycast_singleton->ebr_device == nullptr) {
 		return; // Embree is initialized on demand when there is some scenario with occluders in it.
 	}
@@ -531,6 +525,71 @@ void RaycastOcclusionCull::buffer_set_size(RID p_buffer, const Vector2i &p_size)
 	buffers[p_buffer].resize(p_size);
 }
 
+Vector2 RaycastOcclusionCull::_get_jitter(const Rect2 &p_viewport_rect, const Size2i &p_buffer_size) {
+	if (!_jitter_enabled) {
+		return Vector2();
+	}
+
+	// Prevent divide by zero when using NULL viewport.
+	if ((p_buffer_size.x <= 0) || (p_buffer_size.y <= 0)) {
+		return Vector2();
+	}
+
+	int32_t frame = Engine::get_singleton()->get_frames_drawn();
+	frame %= 9;
+
+	Vector2 jitter;
+
+	switch (frame) {
+		default:
+			break;
+		case 1: {
+			jitter = Vector2(-1, -1);
+		} break;
+		case 2: {
+			jitter = Vector2(1, -1);
+		} break;
+		case 3: {
+			jitter = Vector2(-1, 1);
+		} break;
+		case 4: {
+			jitter = Vector2(1, 1);
+		} break;
+		case 5: {
+			jitter = Vector2(-0.5f, -0.5f);
+		} break;
+		case 6: {
+			jitter = Vector2(0.5f, -0.5f);
+		} break;
+		case 7: {
+			jitter = Vector2(-0.5f, 0.5f);
+		} break;
+		case 8: {
+			jitter = Vector2(0.5f, 0.5f);
+		} break;
+	}
+	Vector2 half_extents = p_viewport_rect.get_size() * 0.5;
+	jitter *= Vector2(half_extents.x / (float)p_buffer_size.x, half_extents.y / (float)p_buffer_size.y);
+
+	// The multiplier here determines the jitter magnitude in pixels.
+	// It seems like a value of 0.66 matches well the above jittering pattern as it generates subpixel samples at 0, 1/3 and 2/3
+	// Higher magnitude gives fewer false hidden, but more false shown.
+	// False hidden is obvious to viewer, false shown is not.
+	// False shown can lower percentage that are occluded, and therefore performance.
+	jitter *= 0.66f;
+
+	return jitter;
+}
+
+Rect2 _get_viewport_rect(const Projection &p_cam_projection) {
+	// NOTE: This assumes a rectangular projection plane, i.e. that:
+	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
+	// - the projection plane is rectangular (i.e. columns[0][2] and [1][2] == 0 if columns[2][3] != 0)
+	Size2 half_extents = p_cam_projection.get_viewport_half_extents();
+	Point2 bottom_left = -half_extents * Vector2(p_cam_projection.columns[3][0] * p_cam_projection.columns[3][3] + p_cam_projection.columns[2][0] * p_cam_projection.columns[2][3] + 1, p_cam_projection.columns[3][1] * p_cam_projection.columns[3][3] + p_cam_projection.columns[2][1] * p_cam_projection.columns[2][3] + 1);
+	return Rect2(bottom_left, 2 * half_extents);
+}
+
 void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {
 	if (!buffers.has(p_buffer)) {
 		return;
@@ -543,15 +602,14 @@ void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_
 	}
 
 	Scenario &scenario = scenarios[buffer.scenario_rid];
+	scenario.update();
 
-	bool removed = scenario.update();
+	Rect2 vp_rect = _get_viewport_rect(p_cam_projection);
+	Vector2 bottom_left = vp_rect.position;
+	bottom_left += _get_jitter(vp_rect, buffer.get_occlusion_buffer_size());
+	Vector3 near_bottom_left = Vector3(bottom_left.x, bottom_left.y, -p_cam_projection.get_z_near());
 
-	if (removed) {
-		scenarios.erase(buffer.scenario_rid);
-		return;
-	}
-
-	buffer.update_camera_rays(p_cam_transform, p_cam_projection, p_cam_orthogonal);
+	buffer.update_camera_rays(p_cam_transform, near_bottom_left, vp_rect.get_size(), p_cam_projection.get_z_far(), p_cam_orthogonal);
 
 	scenario.raycast(buffer.camera_rays, buffer.camera_ray_masks.ptr(), buffer.camera_rays_tile_count);
 	buffer.sort_rays(-p_cam_transform.basis.get_column(2), p_cam_orthogonal);
@@ -597,22 +655,13 @@ void RaycastOcclusionCull::_init_embree() {
 RaycastOcclusionCull::RaycastOcclusionCull() {
 	raycast_singleton = this;
 	int default_quality = GLOBAL_GET("rendering/occlusion_culling/bvh_build_quality");
+	_jitter_enabled = GLOBAL_GET("rendering/occlusion_culling/jitter_projection");
 	build_quality = RS::ViewportOcclusionCullingBuildQuality(default_quality);
 }
 
 RaycastOcclusionCull::~RaycastOcclusionCull() {
 	for (KeyValue<RID, Scenario> &K : scenarios) {
-		Scenario &scenario = K.value;
-		if (scenario.commit_thread) {
-			scenario.commit_thread->wait_to_finish();
-			memdelete(scenario.commit_thread);
-		}
-
-		for (int i = 0; i < 2; i++) {
-			if (scenario.ebr_scene[i]) {
-				rtcReleaseScene(scenario.ebr_scene[i]);
-			}
-		}
+		K.value.free();
 	}
 
 	if (ebr_device != nullptr) {

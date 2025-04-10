@@ -33,12 +33,10 @@ extern "C" {
 #include <stdlib.h>
 #include <sys/types.h>
 
-/* GODOT ADDITTION */
 #if defined(_MSC_VER)
 #include <BaseTsd.h>
 typedef SSIZE_T ssize_t;
 #endif
-/* GODOT END */
 
 /*
  * wslay/wslayver.h is generated from wslay/wslayver.h.in by
@@ -485,7 +483,7 @@ void wslay_event_config_set_max_recv_msg_length(wslay_event_context_ptr ctx,
                                                 uint64_t val);
 
 /*
- * Sets callbacks to ctx. The callbacks previouly set by this function
+ * Sets callbacks to ctx. The callbacks previously set by this function
  * or wslay_event_context_server_init() or
  * wslay_event_context_client_init() are replaced with callbacks.
  */

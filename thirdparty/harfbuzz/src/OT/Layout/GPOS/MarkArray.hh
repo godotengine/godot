@@ -28,7 +28,7 @@ struct MarkArray : Array16Of<MarkRecord>        /* Array of MarkRecords--in Cove
 
     const Anchor& mark_anchor = this + record.markAnchor;
     bool found;
-    const Anchor& glyph_anchor = anchors.get_anchor (glyph_index, mark_class, class_count, &found);
+    const Anchor& glyph_anchor = anchors.get_anchor (c, glyph_index, mark_class, class_count, &found);
     /* If this subtable doesn't have an anchor for this base and this class,
      * return false such that the subsequent subtables have a chance at it. */
     if (unlikely (!found)) return_trace (false);
@@ -42,7 +42,7 @@ struct MarkArray : Array16Of<MarkRecord>        /* Array of MarkRecords--in Cove
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "attaching mark glyph at %d to glyph at %d",
+			  "attaching mark glyph at %u to glyph at %u",
 			  c->buffer->idx, glyph_pos);
     }
 
@@ -56,7 +56,7 @@ struct MarkArray : Array16Of<MarkRecord>        /* Array of MarkRecords--in Cove
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "attached mark glyph at %d to glyph at %d",
+			  "attached mark glyph at %u to glyph at %u",
 			  c->buffer->idx, glyph_pos);
     }
 
@@ -82,10 +82,10 @@ struct MarkArray : Array16Of<MarkRecord>        /* Array of MarkRecords--in Cove
     | hb_map (hb_second)
     ;
 
+    bool ret = false;
     unsigned new_length = 0;
     for (const auto& mark_record : mark_iter) {
-      if (unlikely (!mark_record.subset (c, this, klass_mapping)))
-        return_trace (false);
+      ret |= mark_record.subset (c, this, klass_mapping);
       new_length++;
     }
 
@@ -93,7 +93,7 @@ struct MarkArray : Array16Of<MarkRecord>        /* Array of MarkRecords--in Cove
                                                 HB_SERIALIZE_ERROR_ARRAY_OVERFLOW)))
       return_trace (false);
 
-    return_trace (true);
+    return_trace (ret);
   }
 };
 

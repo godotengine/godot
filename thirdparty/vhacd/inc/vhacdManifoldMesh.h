@@ -18,6 +18,9 @@ All rights reserved.
 #include "vhacdCircularList.h"
 #include "vhacdSArray.h"
 #include "vhacdVector.h"
+
+#include <cstdint>
+
 namespace VHACD {
 class TMMTriangle;
 class TMMEdge;

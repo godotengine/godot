@@ -26,8 +26,8 @@ static int DispatchAlpha_SSE2(const uint8_t* WEBP_RESTRICT alpha,
   uint32_t alpha_and = 0xff;
   int i, j;
   const __m128i zero = _mm_setzero_si128();
-  const __m128i rgb_mask = _mm_set1_epi32(0xffffff00u);  // to preserve RGB
-  const __m128i all_0xff = _mm_set_epi32(0, 0, ~0u, ~0u);
+  const __m128i rgb_mask = _mm_set1_epi32((int)0xffffff00);  // to preserve RGB
+  const __m128i all_0xff = _mm_set_epi32(0, 0, ~0, ~0);
   __m128i all_alphas = all_0xff;
 
   // We must be able to access 3 extra bytes after the last written byte
@@ -106,8 +106,8 @@ static int ExtractAlpha_SSE2(const uint8_t* WEBP_RESTRICT argb, int argb_stride,
   // value is not 0xff if any of the alpha[] is not equal to 0xff.
   uint32_t alpha_and = 0xff;
   int i, j;
-  const __m128i a_mask = _mm_set1_epi32(0xffu);  // to preserve alpha
-  const __m128i all_0xff = _mm_set_epi32(0, 0, ~0u, ~0u);
+  const __m128i a_mask = _mm_set1_epi32(0xff);  // to preserve alpha
+  const __m128i all_0xff = _mm_set_epi32(0, 0, ~0, ~0);
   __m128i all_alphas = all_0xff;
 
   // We must be able to access 3 extra bytes after the last written byte
@@ -144,6 +144,46 @@ static int ExtractAlpha_SSE2(const uint8_t* WEBP_RESTRICT argb, int argb_stride,
   return (alpha_and == 0xff);
 }
 
+static void ExtractGreen_SSE2(const uint32_t* WEBP_RESTRICT argb,
+                              uint8_t* WEBP_RESTRICT alpha, int size) {
+  int i;
+  const __m128i mask = _mm_set1_epi32(0xff);
+  const __m128i* src = (const __m128i*)argb;
+
+  for (i = 0; i + 16 <= size; i += 16, src += 4) {
+    const __m128i a0 = _mm_loadu_si128(src + 0);
+    const __m128i a1 = _mm_loadu_si128(src + 1);
+    const __m128i a2 = _mm_loadu_si128(src + 2);
+    const __m128i a3 = _mm_loadu_si128(src + 3);
+    const __m128i b0 = _mm_srli_epi32(a0, 8);
+    const __m128i b1 = _mm_srli_epi32(a1, 8);
+    const __m128i b2 = _mm_srli_epi32(a2, 8);
+    const __m128i b3 = _mm_srli_epi32(a3, 8);
+    const __m128i c0 = _mm_and_si128(b0, mask);
+    const __m128i c1 = _mm_and_si128(b1, mask);
+    const __m128i c2 = _mm_and_si128(b2, mask);
+    const __m128i c3 = _mm_and_si128(b3, mask);
+    const __m128i d0 = _mm_packs_epi32(c0, c1);
+    const __m128i d1 = _mm_packs_epi32(c2, c3);
+    const __m128i e = _mm_packus_epi16(d0, d1);
+    // store
+    _mm_storeu_si128((__m128i*)&alpha[i], e);
+  }
+  if (i + 8 <= size) {
+    const __m128i a0 = _mm_loadu_si128(src + 0);
+    const __m128i a1 = _mm_loadu_si128(src + 1);
+    const __m128i b0 = _mm_srli_epi32(a0, 8);
+    const __m128i b1 = _mm_srli_epi32(a1, 8);
+    const __m128i c0 = _mm_and_si128(b0, mask);
+    const __m128i c1 = _mm_and_si128(b1, mask);
+    const __m128i d = _mm_packs_epi32(c0, c1);
+    const __m128i e = _mm_packus_epi16(d, d);
+    _mm_storel_epi64((__m128i*)&alpha[i], e);
+    i += 8;
+  }
+  for (; i < size; ++i) alpha[i] = argb[i] >> 8;
+}
+
 //------------------------------------------------------------------------------
 // Non-dither premultiplied modes
 
@@ -178,7 +218,7 @@ static int ExtractAlpha_SSE2(const uint8_t* WEBP_RESTRICT argb, int argb_stride,
 static void ApplyAlphaMultiply_SSE2(uint8_t* rgba, int alpha_first,
                                     int w, int h, int stride) {
   const __m128i zero = _mm_setzero_si128();
-  const __m128i kMult = _mm_set1_epi16(0x8081u);
+  const __m128i kMult = _mm_set1_epi16((short)0x8081);
   const __m128i kMask = _mm_set_epi16(0, 0xff, 0xff, 0, 0, 0xff, 0xff, 0);
   const int kSpan = 4;
   while (h-- > 0) {
@@ -267,7 +307,7 @@ static int HasAlpha32b_SSE2(const uint8_t* src, int length) {
 }
 
 static void AlphaReplace_SSE2(uint32_t* src, int length, uint32_t color) {
-  const __m128i m_color = _mm_set1_epi32(color);
+  const __m128i m_color = _mm_set1_epi32((int)color);
   const __m128i zero = _mm_setzero_si128();
   int i = 0;
   for (; i + 8 <= length; i += 8) {
@@ -354,6 +394,7 @@ WEBP_TSAN_IGNORE_FUNCTION void WebPInitAlphaProcessingSSE2(void) {
   WebPDispatchAlpha = DispatchAlpha_SSE2;
   WebPDispatchAlphaToGreen = DispatchAlphaToGreen_SSE2;
   WebPExtractAlpha = ExtractAlpha_SSE2;
+  WebPExtractGreen = ExtractGreen_SSE2;
 
   WebPHasAlpha8b = HasAlpha8b_SSE2;
   WebPHasAlpha32b = HasAlpha32b_SSE2;

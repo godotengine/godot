@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamMP3" inherits="AudioStream" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="AudioStreamMP3" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		MP3 audio stream driver.
 	</brief_description>
 	<description>
 		MP3 audio stream driver. See [member data] if you want to load an MP3 file at run-time.
+		[b]Note:[/b] This class can optionally support legacy MP1 and MP2 formats, provided that the engine is compiled with the [code]minimp3_extra_formats=yes[/code] SCons option. These extra formats are not enabled by default.
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="load_from_buffer" qualifiers="static">
+			<return type="AudioStreamMP3" />
+			<param index="0" name="stream_data" type="PackedByteArray" />
+			<description>
+				Creates a new [AudioStreamMP3] instance from the given buffer. The buffer must contain MP3 data.
+			</description>
+		</method>
+		<method name="load_from_file" qualifiers="static">
+			<return type="AudioStreamMP3" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Creates a new [AudioStreamMP3] instance from the given file path. The file must be in MP3 format.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="bar_beats" type="int" setter="set_bar_beats" getter="get_bar_beats" default="4">
 		</member>
@@ -21,21 +38,17 @@
 			[codeblocks]
 			[gdscript]
 			func load_mp3(path):
-			    var file = File.new()
-			    file.open(path, File.READ)
+			    var file = FileAccess.open(path, FileAccess.READ)
 			    var sound = AudioStreamMP3.new()
 			    sound.data = file.get_buffer(file.get_length())
-			    file.close()
 			    return sound
 			[/gdscript]
 			[csharp]
 			public AudioStreamMP3 LoadMP3(string path)
 			{
-			    var file = new File();
-			    file.Open(path, File.READ);
+			    using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
 			    var sound = new AudioStreamMP3();
 			    sound.Data = file.GetBuffer(file.GetLength());
-			    file.Close();
 			    return sound;
 			}
 			[/csharp]

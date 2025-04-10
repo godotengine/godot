@@ -1,101 +1,54 @@
-/*************************************************************************/
-/*  renderer_scene_render_rd.h                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  renderer_scene_render_rd.h                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef RENDERER_SCENE_RENDER_RD_H
-#define RENDERER_SCENE_RENDER_RD_H
+#pragma once
 
-#include "core/templates/local_vector.h"
-#include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
+#include "servers/rendering/renderer_rd/effects/debug_effects.h"
 #include "servers/rendering/renderer_rd/effects/fsr.h"
+#include "servers/rendering/renderer_rd/effects/luminance.h"
+#ifdef METAL_ENABLED
+#include "servers/rendering/renderer_rd/effects/metal_fx.h"
+#endif
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/effects/vrs.h"
-#include "servers/rendering/renderer_rd/environment/fog.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
 #include "servers/rendering/renderer_rd/environment/sky.h"
-#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
-#include "servers/rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_method.h"
-
-// For RenderDataRD, possibly inherited from RefCounted and add proper getters for our implementation classes
-
-struct RenderDataRD {
-	Ref<RenderSceneBuffersRD> render_buffers;
-	RenderSceneDataRD *scene_data;
-
-	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
-	const PagedArray<RID> *lights = nullptr;
-	const PagedArray<RID> *reflection_probes = nullptr;
-	const PagedArray<RID> *voxel_gi_instances = nullptr;
-	const PagedArray<RID> *decals = nullptr;
-	const PagedArray<RID> *lightmaps = nullptr;
-	const PagedArray<RID> *fog_volumes = nullptr;
-	RID environment;
-	RID camera_attributes;
-	RID shadow_atlas;
-	RID occluder_debug_tex;
-	RID reflection_atlas;
-	RID reflection_probe;
-	int reflection_probe_pass = 0;
-
-	RID cluster_buffer;
-	uint32_t cluster_size = 0;
-	uint32_t cluster_max_elements = 0;
-
-	uint32_t directional_light_count = 0;
-	bool directional_light_soft_shadows = false;
-
-	RenderingMethod::RenderInfo *render_info = nullptr;
-
-	/* Shadow data */
-	const RendererSceneRender::RenderShadowData *render_shadows = nullptr;
-	int render_shadow_count = 0;
-
-	LocalVector<int> cube_shadows;
-	LocalVector<int> shadows;
-	LocalVector<int> directional_shadows;
-
-	/* GI info */
-	const RendererSceneRender::RenderSDFGIData *render_sdfgi_regions = nullptr;
-	int render_sdfgi_region_count = 0;
-	const RendererSceneRender::RenderSDFGIUpdateData *sdfgi_update_data = nullptr;
-
-	uint32_t voxel_gi_count = 0;
-};
 
 class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererRD::SkyRD;
@@ -105,9 +58,14 @@ protected:
 	RendererRD::ForwardIDStorage *forward_id_storage = nullptr;
 	RendererRD::BokehDOF *bokeh_dof = nullptr;
 	RendererRD::CopyEffects *copy_effects = nullptr;
+	RendererRD::DebugEffects *debug_effects = nullptr;
+	RendererRD::Luminance *luminance = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
 	RendererRD::FSR *fsr = nullptr;
 	RendererRD::VRS *vrs = nullptr;
+#ifdef METAL_ENABLED
+	RendererRD::MFXSpatialEffect *mfx_spatial = nullptr;
+#endif
 	double time = 0.0;
 	double time_step = 0.0;
 
@@ -119,29 +77,31 @@ protected:
 
 	////////////////////////////////
 
-	virtual RendererRD::ForwardIDStorage *create_forward_id_storage() { return memnew(RendererRD::ForwardIDStorage); };
+	virtual RendererRD::ForwardIDStorage *create_forward_id_storage() { return memnew(RendererRD::ForwardIDStorage); }
 
 	void _update_vrs(Ref<RenderSceneBuffersRD> p_render_buffers);
 
 	virtual void setup_render_buffer_data(Ref<RenderSceneBuffersRD> p_render_buffers) = 0;
 
 	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_color) = 0;
-	virtual void _render_buffers_debug_draw(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer);
+	virtual void _render_buffers_debug_draw(const RenderDataRD *p_render_data);
 
 	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) = 0;
 	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) = 0;
 	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) = 0;
 
-	void _debug_sdfgi_probes(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_framebuffer, uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
+	void _debug_sdfgi_probes(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_framebuffer, uint32_t p_view_count, const Projection *p_camera_with_transforms);
 
 	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) = 0;
 	virtual RID _render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) = 0;
 
 	bool _needs_post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi);
 	void _post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi);
-	void _pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi);
 
+	bool _compositor_effects_has_flag(const RenderDataRD *p_render_data, RS::CompositorEffectFlags p_flag, RS::CompositorEffectCallbackType p_callback_type = RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY);
+	bool _has_compositor_effect(RS::CompositorEffectCallbackType p_callback_type, const RenderDataRD *p_render_data);
+	void _process_compositor_effects(RS::CompositorEffectCallbackType p_callback_type, const RenderDataRD *p_render_data);
 	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data);
@@ -156,6 +116,7 @@ protected:
 	RendererRD::GI gi;
 
 	virtual void _update_shader_quality_settings() {}
+	static bool _debug_draw_can_use_effects(RS::ViewportDebugDraw p_debug_draw);
 
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
@@ -171,6 +132,7 @@ private:
 	float *directional_soft_shadow_kernel = nullptr;
 	float *penumbra_shadow_kernel = nullptr;
 	float *soft_shadow_kernel = nullptr;
+	bool lightmap_filter_bicubic = false;
 	int directional_penumbra_shadow_samples = 0;
 	int directional_soft_shadow_samples = 0;
 	int penumbra_shadow_samples = 0;
@@ -179,9 +141,6 @@ private:
 	RS::LightProjectorFilter light_projectors_filter = RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS;
 
 	/* RENDER BUFFERS */
-
-	// TODO move into effects/luminance.h/cpp
-	void _allocate_luminance_textures(Ref<RenderSceneBuffersRD> rb);
 
 	/* GI */
 	bool screen_space_roughness_limiter = false;
@@ -205,9 +164,9 @@ public:
 
 	/* LIGHTING */
 
-	virtual void setup_added_reflection_probe(const Transform3D &p_transform, const Vector3 &p_half_extents){};
-	virtual void setup_added_light(const RS::LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture){};
-	virtual void setup_added_decal(const Transform3D &p_transform, const Vector3 &p_half_extents){};
+	virtual void setup_added_reflection_probe(const Transform3D &p_transform, const Vector3 &p_half_size) {}
+	virtual void setup_added_light(const RS::LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture) {}
+	virtual void setup_added_decal(const Transform3D &p_transform, const Vector3 &p_half_size) {}
 
 	/* GI */
 
@@ -216,14 +175,6 @@ public:
 	/* SKY */
 
 	RendererRD::SkyRD *get_sky() { return &sky; }
-
-	/* SDFGI UPDATE */
-
-	virtual void sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override;
-	virtual int sdfgi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const override;
-	virtual AABB sdfgi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override;
-	virtual uint32_t sdfgi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override;
-	RID sdfgi_get_ubo() const { return gi.sdfgi_ubo; }
 
 	/* SKY API */
 
@@ -287,9 +238,8 @@ public:
 	RID render_buffers_get_default_voxel_gi_buffer();
 
 	virtual void base_uniforms_changed() = 0;
-	virtual void update_uniform_sets(){};
 
-	virtual void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
+	virtual void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
 
 	virtual void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 
@@ -312,6 +262,7 @@ public:
 
 	virtual void decals_set_filter(RS::DecalFilter p_filter) override;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
+	virtual void lightmaps_set_bicubic_filter(bool p_enable) override;
 
 	_FORCE_INLINE_ RS::ShadowQuality shadows_quality_get() const {
 		return shadows_quality;
@@ -341,6 +292,9 @@ public:
 
 	_FORCE_INLINE_ int directional_penumbra_shadow_samples_get() const {
 		return directional_penumbra_shadow_samples;
+	}
+	_FORCE_INLINE_ bool lightmap_filter_bicubic_get() const {
+		return lightmap_filter_bicubic;
 	}
 	_FORCE_INLINE_ int directional_soft_shadow_samples_get() const {
 		return directional_soft_shadow_samples;
@@ -387,5 +341,3 @@ public:
 	RendererSceneRenderRD();
 	~RendererSceneRenderRD();
 };
-
-#endif // RENDERER_SCENE_RENDER_RD_H

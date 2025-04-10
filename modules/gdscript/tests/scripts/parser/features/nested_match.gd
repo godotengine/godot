@@ -8,11 +8,10 @@ func test():
 				1234:
 					print("2")
 					match number:
-						1234:
-							print("3")
-							continue
+						4321:
+							print("Should not be printed")
 						_:
-							print("Should also be printed")
+							print("3")
 							match number:
 								1234:
 									print("4")

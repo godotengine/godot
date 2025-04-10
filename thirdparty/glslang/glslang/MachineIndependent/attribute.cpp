@@ -34,8 +34,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef GLSLANG_WEB
-
 #include "attribute.h"
 #include "../Include/intermediate.h"
 #include "ParseHelper.h"
@@ -125,6 +123,10 @@ TAttributeType TParseContext::attributeFromName(const TString& name) const
         return EatPartialCount;
     else if (name == "subgroup_uniform_control_flow")
         return EatSubgroupUniformControlFlow;
+    else if (name == "export")
+        return EatExport;
+    else if (name == "maximally_reconverges")
+        return EatMaximallyReconverges;
     else
         return EatNone;
 }
@@ -357,7 +359,12 @@ void TParseContext::handleFunctionAttributes(const TSourceLoc& loc, const TAttri
 
         switch (it->name) {
         case EatSubgroupUniformControlFlow:
+            requireExtensions(loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
             intermediate.setSubgroupUniformControlFlow();
+            break;
+        case EatMaximallyReconverges:
+            requireExtensions(loc, 1, &E_GL_EXT_maximal_reconvergence, "attribute");
+            intermediate.setMaximallyReconverges();
             break;
         default:
             warn(loc, "attribute does not apply to a function", "", "");
@@ -367,5 +374,3 @@ void TParseContext::handleFunctionAttributes(const TSourceLoc& loc, const TAttri
 }
 
 } // end namespace glslang
-
-#endif // GLSLANG_WEB

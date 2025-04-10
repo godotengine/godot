@@ -1,40 +1,42 @@
-/*************************************************************************/
-/*  test_image.h                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_image.h                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef TEST_IMAGE_H
-#define TEST_IMAGE_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/os/os.h"
 
 #include "tests/test_utils.h"
+
+#include "modules/modules_enabled.gen.h"
+
 #include "thirdparty/doctest/doctest.h"
 
 namespace TestImage {
@@ -78,8 +80,8 @@ TEST_CASE("[Image] Instantiation") {
 
 TEST_CASE("[Image] Saving and loading") {
 	Ref<Image> image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
-	const String save_path_png = OS::get_singleton()->get_cache_path().path_join("image.png");
-	const String save_path_exr = OS::get_singleton()->get_cache_path().path_join("image.exr");
+	const String save_path_png = TestUtils::get_temp_path("image.png");
+	const String save_path_exr = TestUtils::get_temp_path("image.exr");
 
 	// Save PNG
 	Error err;
@@ -88,11 +90,14 @@ TEST_CASE("[Image] Saving and loading") {
 			err == OK,
 			"The image should be saved successfully as a .png file.");
 
+	// Only available on editor builds.
+#ifdef TOOLS_ENABLED
 	// Save EXR
 	err = image->save_exr(save_path_exr, false);
 	CHECK_MESSAGE(
 			err == OK,
 			"The image should be saved successfully as an .exr file.");
+#endif // TOOLS_ENABLED
 
 	// Load using load()
 	Ref<Image> image_load = memnew(Image());
@@ -104,39 +109,49 @@ TEST_CASE("[Image] Saving and loading") {
 			image->get_data() == image_load->get_data(),
 			"The loaded image should have the same data as the one that got saved.");
 
+#ifdef MODULE_BMP_ENABLED
 	// Load BMP
 	Ref<Image> image_bmp = memnew(Image());
 	Ref<FileAccess> f_bmp = FileAccess::open(TestUtils::get_data_path("images/icon.bmp"), FileAccess::READ, &err);
+	REQUIRE(f_bmp.is_valid());
 	PackedByteArray data_bmp;
 	data_bmp.resize(f_bmp->get_length() + 1);
 	f_bmp->get_buffer(data_bmp.ptrw(), f_bmp->get_length());
 	CHECK_MESSAGE(
 			image_bmp->load_bmp_from_buffer(data_bmp) == OK,
 			"The BMP image should load successfully.");
+#endif // MODULE_BMP_ENABLED
 
+#ifdef MODULE_JPG_ENABLED
 	// Load JPG
 	Ref<Image> image_jpg = memnew(Image());
 	Ref<FileAccess> f_jpg = FileAccess::open(TestUtils::get_data_path("images/icon.jpg"), FileAccess::READ, &err);
+	REQUIRE(f_jpg.is_valid());
 	PackedByteArray data_jpg;
 	data_jpg.resize(f_jpg->get_length() + 1);
 	f_jpg->get_buffer(data_jpg.ptrw(), f_jpg->get_length());
 	CHECK_MESSAGE(
 			image_jpg->load_jpg_from_buffer(data_jpg) == OK,
 			"The JPG image should load successfully.");
+#endif // MODULE_JPG_ENABLED
 
+#ifdef MODULE_WEBP_ENABLED
 	// Load WebP
 	Ref<Image> image_webp = memnew(Image());
 	Ref<FileAccess> f_webp = FileAccess::open(TestUtils::get_data_path("images/icon.webp"), FileAccess::READ, &err);
+	REQUIRE(f_webp.is_valid());
 	PackedByteArray data_webp;
 	data_webp.resize(f_webp->get_length() + 1);
 	f_webp->get_buffer(data_webp.ptrw(), f_webp->get_length());
 	CHECK_MESSAGE(
 			image_webp->load_webp_from_buffer(data_webp) == OK,
 			"The WebP image should load successfully.");
+#endif // MODULE_WEBP_ENABLED
 
 	// Load PNG
 	Ref<Image> image_png = memnew(Image());
 	Ref<FileAccess> f_png = FileAccess::open(TestUtils::get_data_path("images/icon.png"), FileAccess::READ, &err);
+	REQUIRE(f_png.is_valid());
 	PackedByteArray data_png;
 	data_png.resize(f_png->get_length() + 1);
 	f_png->get_buffer(data_png.ptrw(), f_png->get_length());
@@ -144,15 +159,18 @@ TEST_CASE("[Image] Saving and loading") {
 			image_png->load_png_from_buffer(data_png) == OK,
 			"The PNG image should load successfully.");
 
+#ifdef MODULE_TGA_ENABLED
 	// Load TGA
 	Ref<Image> image_tga = memnew(Image());
 	Ref<FileAccess> f_tga = FileAccess::open(TestUtils::get_data_path("images/icon.tga"), FileAccess::READ, &err);
+	REQUIRE(f_tga.is_valid());
 	PackedByteArray data_tga;
 	data_tga.resize(f_tga->get_length() + 1);
 	f_tga->get_buffer(data_tga.ptrw(), f_tga->get_length());
 	CHECK_MESSAGE(
 			image_tga->load_tga_from_buffer(data_tga) == OK,
 			"The TGA image should load successfully.");
+#endif // MODULE_TGA_ENABLED
 }
 
 TEST_CASE("[Image] Basic getters") {
@@ -247,9 +265,7 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 
 		for (const Rect2i &rect : rects) {
 			Ref<Image> img = memnew(Image(img_width, img_height, false, Image::FORMAT_RGBA8));
-			CHECK_NOTHROW_MESSAGE(
-					img->fill_rect(rect, Color(1, 1, 1, 1)),
-					"fill_rect() shouldn't throw for any rect.");
+			img->fill_rect(rect, Color(1, 1, 1, 1));
 			for (int y = 0; y < img->get_height(); y++) {
 				for (int x = 0; x < img->get_width(); x++) {
 					if (rect.abs().has_point(Point2(x, y))) {
@@ -298,7 +314,132 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 	CHECK_MESSAGE(
 			image3->get_pixel(1, 0).is_equal_approx(Color(0, 0, 0, 0)),
 			"flip_y() should not leave old pixels behind.");
-}
-} // namespace TestImage
 
-#endif // TEST_IMAGE_H
+	// Pre-multiply Alpha then Convert from RGBA to L8, checking alpha
+	{
+		Ref<Image> gray_image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
+		gray_image->fill_rect(Rect2i(0, 0, 3, 3), Color(1, 1, 1, 0));
+		gray_image->set_pixel(1, 1, Color(1, 1, 1, 1));
+		gray_image->set_pixel(1, 2, Color(0.5, 0.5, 0.5, 0.5));
+		gray_image->set_pixel(2, 1, Color(0.25, 0.05, 0.5, 1.0));
+		gray_image->set_pixel(2, 2, Color(0.5, 0.25, 0.95, 0.75));
+		gray_image->premultiply_alpha();
+		gray_image->convert(Image::FORMAT_L8);
+		CHECK_MESSAGE(gray_image->get_pixel(0, 0).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
+		CHECK_MESSAGE(gray_image->get_pixel(0, 1).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
+		CHECK_MESSAGE(gray_image->get_pixel(0, 2).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
+		CHECK_MESSAGE(gray_image->get_pixel(1, 0).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
+		CHECK_MESSAGE(gray_image->get_pixel(1, 1).is_equal_approx(Color(1, 1, 1, 1)), "convert() RGBA to L8 should be white.");
+		CHECK_MESSAGE(gray_image->get_pixel(1, 2).is_equal_approx(Color(0.250980407, 0.250980407, 0.250980407, 1)), "convert() RGBA to L8 should be around 0.250980407 (64).");
+		CHECK_MESSAGE(gray_image->get_pixel(2, 0).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
+		CHECK_MESSAGE(gray_image->get_pixel(2, 1).is_equal_approx(Color(0.121568628, 0.121568628, 0.121568628, 1)), "convert() RGBA to L8 should be around 0.121568628 (31).");
+		CHECK_MESSAGE(gray_image->get_pixel(2, 2).is_equal_approx(Color(0.266666681, 0.266666681, 0.266666681, 1)), "convert() RGBA to L8 should be around 0.266666681 (68).");
+	}
+}
+
+TEST_CASE("[Image] Custom mipmaps") {
+	Ref<Image> image = memnew(Image(100, 100, false, Image::FORMAT_RGBA8));
+
+	REQUIRE(!image->has_mipmaps());
+	image->generate_mipmaps();
+	REQUIRE(image->has_mipmaps());
+
+	const int mipmaps = image->get_mipmap_count() + 1;
+	REQUIRE(mipmaps == 7);
+
+	// Initialize reference mipmap data.
+	// Each byte is given value "mipmap_index * 5".
+
+	{
+		PackedByteArray data = image->get_data();
+		uint8_t *data_ptr = data.ptrw();
+
+		for (int mip = 0; mip < mipmaps; mip++) {
+			int64_t mip_offset = 0;
+			int64_t mip_size = 0;
+			image->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
+
+			for (int i = 0; i < mip_size; i++) {
+				data_ptr[mip_offset + i] = mip * 5;
+			}
+		}
+		image->set_data(image->get_width(), image->get_height(), image->has_mipmaps(), image->get_format(), data);
+	}
+
+	// Byte format conversion.
+
+	for (int format = Image::FORMAT_L8; format <= Image::FORMAT_RGBA8; format++) {
+		Ref<Image> image_bytes = memnew(Image());
+		image_bytes->copy_internals_from(image);
+		image_bytes->convert((Image::Format)format);
+		REQUIRE(image_bytes->has_mipmaps());
+
+		PackedByteArray data = image_bytes->get_data();
+		const uint8_t *data_ptr = data.ptr();
+
+		for (int mip = 0; mip < mipmaps; mip++) {
+			int64_t mip_offset = 0;
+			int64_t mip_size = 0;
+			image_bytes->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
+
+			for (int i = 0; i < mip_size; i++) {
+				if (data_ptr[mip_offset + i] != mip * 5) {
+					REQUIRE_MESSAGE(false, "Byte format conversion error.");
+				}
+			}
+		}
+	}
+
+	// Floating point format conversion.
+
+	for (int format = Image::FORMAT_RF; format <= Image::FORMAT_RGBAF; format++) {
+		Ref<Image> image_rgbaf = memnew(Image());
+		image_rgbaf->copy_internals_from(image);
+		image_rgbaf->convert((Image::Format)format);
+		REQUIRE(image_rgbaf->has_mipmaps());
+
+		PackedByteArray data = image_rgbaf->get_data();
+		const uint8_t *data_ptr = data.ptr();
+
+		for (int mip = 0; mip < mipmaps; mip++) {
+			int64_t mip_offset = 0;
+			int64_t mip_size = 0;
+			image_rgbaf->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
+
+			for (int i = 0; i < mip_size; i += 4) {
+				float value = *(float *)(data_ptr + mip_offset + i);
+				if (!Math::is_equal_approx(value * 255.0f, mip * 5)) {
+					REQUIRE_MESSAGE(false, "Floating point conversion error.");
+				}
+			}
+		}
+	}
+}
+
+TEST_CASE("[Image] Convert image") {
+	for (int format = Image::FORMAT_RF; format < Image::FORMAT_RGBE9995; format++) {
+		for (int new_format = Image::FORMAT_RF; new_format < Image::FORMAT_RGBE9995; new_format++) {
+			Ref<Image> image = memnew(Image(4, 4, false, (Image::Format)format));
+			image->convert((Image::Format)new_format);
+			String format_string = Image::format_names[(Image::Format)format];
+			String new_format_string = Image::format_names[(Image::Format)new_format];
+			format_string = "Error converting from " + format_string + " to " + new_format_string + ".";
+			CHECK_MESSAGE(image->get_format() == new_format, format_string);
+		}
+	}
+
+	Ref<Image> image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+	PackedByteArray image_data = image->get_data();
+	ERR_PRINT_OFF;
+	image->convert((Image::Format)-1);
+	ERR_PRINT_ON;
+	CHECK_MESSAGE(image->get_data() == image_data, "Image conversion to invalid type (-1) should not alter image.");
+	Ref<Image> image2 = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+	image_data = image2->get_data();
+	ERR_PRINT_OFF;
+	image2->convert((Image::Format)(Image::FORMAT_MAX + 1));
+	ERR_PRINT_ON;
+	CHECK_MESSAGE(image2->get_data() == image_data, "Image conversion to invalid type (Image::FORMAT_MAX + 1) should not alter image.");
+}
+
+} // namespace TestImage

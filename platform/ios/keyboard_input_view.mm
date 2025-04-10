@@ -1,38 +1,39 @@
-/*************************************************************************/
-/*  keyboard_input_view.mm                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  keyboard_input_view.mm                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #import "keyboard_input_view.h"
 
+#import "display_server_ios.h"
+#import "os_ios.h"
+
 #include "core/os/keyboard.h"
-#include "display_server_ios.h"
-#include "os_ios.h"
 
 @interface GodotKeyboardInputView () <UITextViewDelegate>
 
@@ -115,14 +116,13 @@
 
 - (void)deleteText:(NSInteger)charactersToDelete {
 	for (int i = 0; i < charactersToDelete; i++) {
-		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, true);
-		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, false);
+		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, Key::BACKSPACE, Key::NONE, 0, true, KeyLocation::UNSPECIFIED);
+		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, Key::BACKSPACE, Key::NONE, 0, false, KeyLocation::UNSPECIFIED);
 	}
 }
 
 - (void)enterText:(NSString *)substring {
-	String characters;
-	characters.parse_utf8([substring UTF8String]);
+	String characters = String::utf8([substring UTF8String]);
 
 	for (int i = 0; i < characters.size(); i++) {
 		int character = characters[i];
@@ -134,20 +134,10 @@
 			key = Key::ENTER;
 		} else if (character == 0x2006) {
 			key = Key::SPACE;
-		} else if (character == U'¥') {
-			key = Key::YEN;
-		} else if (character == U'§') {
-			key = Key::SECTION;
-		} else if (character >= 0x20 && character <= 0x7E) { // ASCII.
-			if (character > 0x60 && character < 0x7B) { // Lowercase ASCII.
-				key = (Key)(character - 32);
-			} else {
-				key = (Key)character;
-			}
 		}
 
-		DisplayServerIOS::get_singleton()->key(key, character, true);
-		DisplayServerIOS::get_singleton()->key(key, character, false);
+		DisplayServerIOS::get_singleton()->key(key, character, key, Key::NONE, 0, true, KeyLocation::UNSPECIFIED);
+		DisplayServerIOS::get_singleton()->key(key, character, key, Key::NONE, 0, false, KeyLocation::UNSPECIFIED);
 	}
 }
 
@@ -158,23 +148,18 @@
 		return;
 	}
 
+	NSString *substringToDelete = nil;
 	if (self.previousSelectedRange.length == 0) {
-		// We are deleting all text before cursor if no range was selected.
-		// This way any inserted or changed text will be updated.
-		NSString *substringToDelete = [self.previousText substringToIndex:self.previousSelectedRange.location];
-		[self deleteText:substringToDelete.length];
+		// Get previous text to delete.
+		substringToDelete = [self.previousText substringToIndex:self.previousSelectedRange.location];
 	} else {
-		// If text was previously selected
-		// we are sending only one `backspace`.
-		// It will remove all text from text input.
+		// If text was previously selected we are sending only one `backspace`. It will remove all text from text input.
 		[self deleteText:1];
 	}
 
-	NSString *substringToEnter;
-
+	NSString *substringToEnter = nil;
 	if (self.selectedRange.length == 0) {
-		// If previous cursor had a selection
-		// we have to calculate an inserted text.
+		// If previous cursor had a selection we have to calculate an inserted text.
 		if (self.previousSelectedRange.length != 0) {
 			NSInteger rangeEnd = self.selectedRange.location + self.selectedRange.length;
 			NSInteger rangeStart = MIN(self.previousSelectedRange.location, self.selectedRange.location);
@@ -196,7 +181,18 @@
 		substringToEnter = [self.text substringWithRange:self.selectedRange];
 	}
 
-	[self enterText:substringToEnter];
+	NSInteger skip = 0;
+	if (substringToDelete != nil) {
+		for (NSUInteger i = 0; i < MIN([substringToDelete length], [substringToEnter length]); i++) {
+			if ([substringToDelete characterAtIndex:i] == [substringToEnter characterAtIndex:i]) {
+				skip++;
+			} else {
+				break;
+			}
+		}
+		[self deleteText:[substringToDelete length] - skip]; // Delete changed part of previous text.
+	}
+	[self enterText:[substringToEnter substringFromIndex:skip]]; // Enter changed part of new text.
 
 	self.previousText = self.text;
 	self.previousSelectedRange = self.selectedRange;

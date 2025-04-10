@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectSpaceState3DExtension" inherits="PhysicsDirectSpaceState3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsDirectSpaceState3DExtension" inherits="PhysicsDirectSpaceState3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Provides virtual methods that can be overridden to create custom [PhysicsDirectSpaceState3D] implementations.
 	</brief_description>
 	<description>
+		This class extends [PhysicsDirectSpaceState3D] by providing additional virtual methods that can be overridden. When these methods are overridden, they will be called instead of the internal methods of the physics server.
+		Intended for use with GDExtension to create custom implementations of [PhysicsDirectSpaceState3D].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -64,7 +67,8 @@
 			<param index="4" name="collide_with_areas" type="bool" />
 			<param index="5" name="hit_from_inside" type="bool" />
 			<param index="6" name="hit_back_faces" type="bool" />
-			<param index="7" name="result" type="PhysicsServer3DExtensionRayResult*" />
+			<param index="7" name="pick_ray" type="bool" />
+			<param index="8" name="result" type="PhysicsServer3DExtensionRayResult*" />
 			<description>
 			</description>
 		</method>
@@ -92,6 +96,12 @@
 			<param index="5" name="collide_with_bodies" type="bool" />
 			<param index="6" name="collide_with_areas" type="bool" />
 			<param index="7" name="rest_info" type="PhysicsServer3DExtensionShapeRestInfo*" />
+			<description>
+			</description>
+		</method>
+		<method name="is_body_excluded_from_query" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
 			<description>
 			</description>
 		</method>

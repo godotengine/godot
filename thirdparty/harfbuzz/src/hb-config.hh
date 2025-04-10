@@ -37,25 +37,25 @@
 
 #ifndef HB_EXPERIMENTAL_API
 #define HB_NO_BEYOND_64K
+#define HB_NO_CUBIC_GLYF
 #define HB_NO_VAR_COMPOSITES
 #endif
 
 #ifdef HB_TINY
 #define HB_LEAN
 #define HB_MINI
+#define HB_OPTIMIZE_SIZE
+#define HB_OPTIMIZE_SIZE_MORE
+#define HB_MINIMIZE_MEMORY_USAGE
 #define HB_NO_MT
 #define HB_NO_UCD_UNASSIGNED
 #ifndef NDEBUG
 #define NDEBUG
 #endif
-#ifndef __OPTIMIZE_SIZE__
-#define __OPTIMIZE_SIZE__
-#endif
 #endif
 
 #ifdef HB_LEAN
 #define HB_DISABLE_DEPRECATED
-#define HB_NDEBUG
 #define HB_NO_ATEXIT
 #define HB_NO_BUFFER_MESSAGE
 #define HB_NO_BUFFER_SERIALIZE
@@ -68,8 +68,6 @@
 #define HB_NO_FACE_COLLECT_UNICODES
 #define HB_NO_GETENV
 #define HB_NO_HINTING
-#define HB_NO_LANGUAGE_LONG
-#define HB_NO_LANGUAGE_PRIVATE_SUBTAG
 #define HB_NO_LAYOUT_FEATURE_PARAMS
 #define HB_NO_LAYOUT_COLLECT_GLYPHS
 #define HB_NO_LAYOUT_RARELY_USED
@@ -80,9 +78,10 @@
 #define HB_NO_MMAP
 #define HB_NO_NAME
 #define HB_NO_OPEN
-#define HB_NO_SETLOCALE
 #define HB_NO_OT_FONT_GLYPH_NAMES
 #define HB_NO_OT_SHAPE_FRACTIONS
+#define HB_NO_PAINT
+#define HB_NO_SETLOCALE
 #define HB_NO_STYLE
 #define HB_NO_SUBSET_LAYOUT
 #define HB_NO_VERTICAL
@@ -93,6 +92,12 @@
 #define HB_NO_AAT
 #define HB_NO_LEGACY
 #define HB_NO_BORING_EXPANSION
+#endif
+
+#ifdef __OPTIMIZE_SIZE__
+#ifndef HB_OPTIMIZE_SIZE
+#define HB_OPTIMIZE_SIZE
+#endif
 #endif
 
 #if defined(HAVE_CONFIG_OVERRIDE_H) || defined(HB_CONFIG_OVERRIDE_H)
@@ -106,7 +111,12 @@
 
 #ifdef HB_NO_BORING_EXPANSION
 #define HB_NO_BEYOND_64K
-#define HB_NO_AVAR2
+#define HB_NO_CUBIC_GLYF
+#define HB_NO_VAR_COMPOSITES
+#endif
+
+#ifdef HB_NO_VAR
+#define HB_NO_VAR_COMPOSITES
 #endif
 
 #ifdef HB_DISABLE_DEPRECATED
@@ -134,6 +144,10 @@
 #define HB_NO_SUBSET_CFF
 #endif
 
+#ifdef HB_NO_DRAW
+#define HB_NO_OUTLINE
+#endif
+
 #ifdef HB_NO_GETENV
 #define HB_NO_UNISCRIBE_BUG_COMPATIBLE
 #endif
@@ -143,6 +157,7 @@
 #define HB_NO_FALLBACK_SHAPE
 #define HB_NO_OT_KERN
 #define HB_NO_OT_LAYOUT_BLOCKLIST
+#define HB_NO_AAT_LAYOUT_BLOCKLIST
 #define HB_NO_OT_SHAPE_FALLBACK
 #endif
 
@@ -169,21 +184,27 @@
 #define HB_NO_OT_SHAPER_MYANMAR_ZAWGYI
 #endif
 
-#ifdef NDEBUG
-#ifndef HB_NDEBUG
-#define HB_NDEBUG
-#endif
+#ifdef HB_OPTIMIZE_SIZE_MORE
+#define HB_NO_OT_RULESETS_FAST_PATH
 #endif
 
-#ifdef __OPTIMIZE_SIZE__
-#ifndef HB_OPTIMIZE_SIZE
-#define HB_OPTIMIZE_SIZE
-#endif
+#ifdef HB_MINIMIZE_MEMORY_USAGE
+#define HB_NO_GDEF_CACHE
+#define HB_NO_OT_LAYOUT_LOOKUP_CACHE
+#define HB_NO_OT_FONT_ADVANCE_CACHE
+#define HB_NO_OT_FONT_CMAP_CACHE
 #endif
 
 #ifdef HB_OPTIMIZE_SIZE
-#define HB_NO_OT_LAYOUT_LOOKUP_CACHE
+#define HB_OPTIMIZE_SIZE_VAL 1
+#else
+#define HB_OPTIMIZE_SIZE_VAL 0
 #endif
 
+#ifdef HB_MINIMIZE_MEMORY_USAGE
+#define HB_MINIMIZE_MEMORY_USAGE_VAL 1
+#else
+#define HB_MINIMIZE_MEMORY_USAGE_VAL 0
+#endif
 
 #endif /* HB_CONFIG_HH */

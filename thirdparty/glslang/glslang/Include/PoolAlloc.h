@@ -37,7 +37,7 @@
 #ifndef _POOLALLOC_INCLUDED_
 #define _POOLALLOC_INCLUDED_
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 #  define GUARD_BLOCKS  // define to enable guard block sanity checking
 #endif
 
@@ -74,7 +74,7 @@ namespace glslang {
 
 class TAllocation {
 public:
-    TAllocation(size_t size, unsigned char* mem, TAllocation* prev = 0) :
+    TAllocation(size_t size, unsigned char* mem, TAllocation* prev = nullptr) :
         size(size), mem(mem), prevAlloc(prev) {
         // Allocations are bracketed:
         //    [allocationHeader][initialGuardBlock][userData][finalGuardBlock]
@@ -118,11 +118,16 @@ private:
     unsigned char* mem;           // beginning of our allocation (pts to header)
     TAllocation* prevAlloc;       // prior allocation in the chain
 
-    const static unsigned char guardBlockBeginVal;
-    const static unsigned char guardBlockEndVal;
-    const static unsigned char userDataFill;
+    static inline constexpr unsigned char guardBlockBeginVal = 0xfb;
+    static inline constexpr unsigned char guardBlockEndVal = 0xfe;
+    static inline constexpr unsigned char userDataFill = 0xcd;
 
-    const static size_t guardBlockSize;
+#   ifdef GUARD_BLOCKS
+    static inline constexpr size_t guardBlockSize = 16;
+#   else
+    static inline constexpr size_t guardBlockSize = 0;
+#   endif
+
 #   ifdef GUARD_BLOCKS
     inline static size_t headerSize() { return sizeof(TAllocation); }
 #   else
@@ -171,7 +176,7 @@ public:
     void popAll();
 
     //
-    // Call allocate() to actually acquire memory.  Returns 0 if no memory
+    // Call allocate() to actually acquire memory.  Returns nullptr if no memory
     // available, otherwise a properly aligned pointer to 'numBytes' of memory.
     //
     void* allocate(size_t numBytes);
@@ -189,7 +194,7 @@ protected:
     struct tHeader {
         tHeader(tHeader* nextPage, size_t pageCount) :
 #ifdef GUARD_BLOCKS
-        lastAllocation(0),
+        lastAllocation(nullptr),
 #endif
         nextPage(nextPage), pageCount(pageCount) { }
 

@@ -5,28 +5,13 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_X509_CRL_H
 #define MBEDTLS_X509_CRL_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include "mbedtls/x509.h"
 
@@ -46,17 +31,28 @@ extern "C" {
 /**
  * Certificate revocation list entry.
  * Contains the CA-specific serial numbers and revocation dates.
+ *
+ * Some fields of this structure are publicly readable. Do not modify
+ * them except via Mbed TLS library functions: the effect of modifying
+ * those fields or the data that those fields points to is unspecified.
  */
-typedef struct mbedtls_x509_crl_entry
-{
+typedef struct mbedtls_x509_crl_entry {
+    /** Direct access to the whole entry inside the containing buffer. */
     mbedtls_x509_buf raw;
-
+    /** The serial number of the revoked certificate. */
     mbedtls_x509_buf serial;
-
+    /** The revocation date of this entry. */
     mbedtls_x509_time revocation_date;
-
+    /** Direct access to the list of CRL entry extensions
+     * (an ASN.1 constructed sequence).
+     *
+     * If there are no extensions, `entry_ext.len == 0` and
+     * `entry_ext.p == NULL`. */
     mbedtls_x509_buf entry_ext;
 
+    /** Next element in the linked list of entries.
+     * \p NULL indicates the end of the list.
+     * Do not modify this field directly. */
     struct mbedtls_x509_crl_entry *next;
 }
 mbedtls_x509_crl_entry;
@@ -65,8 +61,7 @@ mbedtls_x509_crl_entry;
  * Certificate revocation list structure.
  * Every CRL may have multiple entries.
  */
-typedef struct mbedtls_x509_crl
-{
+typedef struct mbedtls_x509_crl {
     mbedtls_x509_buf raw;           /**< The raw certificate data (DER). */
     mbedtls_x509_buf tbs;           /**< The raw certificate body (DER). The part that is To Be Signed. */
 
@@ -84,18 +79,25 @@ typedef struct mbedtls_x509_crl
 
     mbedtls_x509_buf crl_ext;
 
-    mbedtls_x509_buf sig_oid2;
-    mbedtls_x509_buf sig;
-    mbedtls_md_type_t sig_md;           /**< Internal representation of the MD algorithm of the signature algorithm, e.g. MBEDTLS_MD_SHA256 */
-    mbedtls_pk_type_t sig_pk;           /**< Internal representation of the Public Key algorithm of the signature algorithm, e.g. MBEDTLS_PK_RSA */
-    void *sig_opts;             /**< Signature options to be passed to mbedtls_pk_verify_ext(), e.g. for RSASSA-PSS */
+    mbedtls_x509_buf MBEDTLS_PRIVATE(sig_oid2);
+    mbedtls_x509_buf MBEDTLS_PRIVATE(sig);
+    mbedtls_md_type_t MBEDTLS_PRIVATE(sig_md);           /**< Internal representation of the MD algorithm of the signature algorithm, e.g. MBEDTLS_MD_SHA256 */
+    mbedtls_pk_type_t MBEDTLS_PRIVATE(sig_pk);           /**< Internal representation of the Public Key algorithm of the signature algorithm, e.g. MBEDTLS_PK_RSA */
+    void *MBEDTLS_PRIVATE(sig_opts);             /**< Signature options to be passed to mbedtls_pk_verify_ext(), e.g. for RSASSA-PSS */
 
+    /** Next element in the linked list of CRL.
+     * \p NULL indicates the end of the list.
+     * Do not modify this field directly. */
     struct mbedtls_x509_crl *next;
 }
 mbedtls_x509_crl;
 
 /**
  * \brief          Parse a DER-encoded CRL and append it to the chained list
+ *
+ * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
+ *                 subsystem must have been initialized by calling
+ *                 psa_crypto_init() before calling this function.
  *
  * \param chain    points to the start of the chain
  * \param buf      buffer holding the CRL data in DER format
@@ -104,12 +106,16 @@ mbedtls_x509_crl;
  *
  * \return         0 if successful, or a specific X509 or PEM error code
  */
-int mbedtls_x509_crl_parse_der( mbedtls_x509_crl *chain,
-                        const unsigned char *buf, size_t buflen );
+int mbedtls_x509_crl_parse_der(mbedtls_x509_crl *chain,
+                               const unsigned char *buf, size_t buflen);
 /**
  * \brief          Parse one or more CRLs and append them to the chained list
  *
  * \note           Multiple CRLs are accepted only if using PEM format
+ *
+ * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
+ *                 subsystem must have been initialized by calling
+ *                 psa_crypto_init() before calling this function.
  *
  * \param chain    points to the start of the chain
  * \param buf      buffer holding the CRL data in PEM or DER format
@@ -118,7 +124,7 @@ int mbedtls_x509_crl_parse_der( mbedtls_x509_crl *chain,
  *
  * \return         0 if successful, or a specific X509 or PEM error code
  */
-int mbedtls_x509_crl_parse( mbedtls_x509_crl *chain, const unsigned char *buf, size_t buflen );
+int mbedtls_x509_crl_parse(mbedtls_x509_crl *chain, const unsigned char *buf, size_t buflen);
 
 #if defined(MBEDTLS_FS_IO)
 /**
@@ -126,14 +132,19 @@ int mbedtls_x509_crl_parse( mbedtls_x509_crl *chain, const unsigned char *buf, s
  *
  * \note           Multiple CRLs are accepted only if using PEM format
  *
+ * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
+ *                 subsystem must have been initialized by calling
+ *                 psa_crypto_init() before calling this function.
+ *
  * \param chain    points to the start of the chain
  * \param path     filename to read the CRLs from (in PEM or DER encoding)
  *
  * \return         0 if successful, or a specific X509 or PEM error code
  */
-int mbedtls_x509_crl_parse_file( mbedtls_x509_crl *chain, const char *path );
+int mbedtls_x509_crl_parse_file(mbedtls_x509_crl *chain, const char *path);
 #endif /* MBEDTLS_FS_IO */
 
+#if !defined(MBEDTLS_X509_REMOVE_INFO)
 /**
  * \brief          Returns an informational string about the CRL.
  *
@@ -145,22 +156,23 @@ int mbedtls_x509_crl_parse_file( mbedtls_x509_crl *chain, const char *path );
  * \return         The length of the string written (not including the
  *                 terminated nul byte), or a negative error code.
  */
-int mbedtls_x509_crl_info( char *buf, size_t size, const char *prefix,
-                   const mbedtls_x509_crl *crl );
+int mbedtls_x509_crl_info(char *buf, size_t size, const char *prefix,
+                          const mbedtls_x509_crl *crl);
+#endif /* !MBEDTLS_X509_REMOVE_INFO */
 
 /**
  * \brief          Initialize a CRL (chain)
  *
  * \param crl      CRL chain to initialize
  */
-void mbedtls_x509_crl_init( mbedtls_x509_crl *crl );
+void mbedtls_x509_crl_init(mbedtls_x509_crl *crl);
 
 /**
  * \brief          Unallocate all CRL data
  *
  * \param crl      CRL chain to free
  */
-void mbedtls_x509_crl_free( mbedtls_x509_crl *crl );
+void mbedtls_x509_crl_free(mbedtls_x509_crl *crl);
 
 /** \} name Structures and functions for parsing CRLs */
 /** \} addtogroup x509_module */

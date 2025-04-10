@@ -6,6 +6,9 @@ var property:
 	set(value):
 		_backing = value - 1000
 
+var property_2:
+	get(): # Allow parentheses.
+		return 123
 
 func test():
 	print("Not using self:")
@@ -35,3 +38,5 @@ func test():
 	self.property = 5000
 	print(self.property)
 	print(self._backing)
+
+	print(property_2)

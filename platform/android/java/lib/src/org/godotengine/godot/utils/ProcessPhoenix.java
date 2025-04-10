@@ -24,6 +24,7 @@ package org.godotengine.godot.utils;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -44,6 +45,9 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
  */
 public final class ProcessPhoenix extends Activity {
   private static final String KEY_RESTART_INTENTS = "phoenix_restart_intents";
+  // -- GODOT start --
+  private static final String KEY_RESTART_ACTIVITY_OPTIONS = "phoenix_restart_activity_options";
+  // -- GODOT end --
   private static final String KEY_MAIN_PROCESS_PID = "phoenix_main_process_pid";
 
   /**
@@ -56,12 +60,23 @@ public final class ProcessPhoenix extends Activity {
     triggerRebirth(context, getRestartIntent(context));
   }
 
+  // -- GODOT start --
   /**
    * Call to restart the application process using the specified intents.
    * <p>
    * Behavior of the current process after invoking this method is undefined.
    */
   public static void triggerRebirth(Context context, Intent... nextIntents) {
+    triggerRebirth(context, null, nextIntents);
+  }
+
+  /**
+   * Call to restart the application process using the specified intents launched with the given
+   * {@link ActivityOptions}.
+   * <p>
+   * Behavior of the current process after invoking this method is undefined.
+   */
+  public static void triggerRebirth(Context context, Bundle activityOptions, Intent... nextIntents) {
     if (nextIntents.length < 1) {
       throw new IllegalArgumentException("intents cannot be empty");
     }
@@ -72,10 +87,12 @@ public final class ProcessPhoenix extends Activity {
     intent.addFlags(FLAG_ACTIVITY_NEW_TASK); // In case we are called with non-Activity context.
     intent.putParcelableArrayListExtra(KEY_RESTART_INTENTS, new ArrayList<>(Arrays.asList(nextIntents)));
     intent.putExtra(KEY_MAIN_PROCESS_PID, Process.myPid());
+    if (activityOptions != null) {
+      intent.putExtra(KEY_RESTART_ACTIVITY_OPTIONS, activityOptions);
+    }
     context.startActivity(intent);
   }
 
-  // -- GODOT start --
   /**
    * Finish the activity and kill its process
    */
@@ -90,7 +107,7 @@ public final class ProcessPhoenix extends Activity {
    */
   public static void forceQuit(Activity activity, int pid) {
     Process.killProcess(pid); // Kill original main process
-    activity.finish();
+    activity.finishAndRemoveTask();
     Runtime.getRuntime().exit(0); // Kill kill kill!
   }
 
@@ -112,15 +129,17 @@ public final class ProcessPhoenix extends Activity {
     super.onCreate(savedInstanceState);
 
     // -- GODOT start --
-    ArrayList<Intent> intents = getIntent().getParcelableArrayListExtra(KEY_RESTART_INTENTS);
-    startActivities(intents.toArray(new Intent[intents.size()]));
-    forceQuit(this, getIntent().getIntExtra(KEY_MAIN_PROCESS_PID, -1));
+    Intent launchIntent = getIntent();
+    ArrayList<Intent> intents = launchIntent.getParcelableArrayListExtra(KEY_RESTART_INTENTS);
+    Bundle activityOptions = launchIntent.getBundleExtra(KEY_RESTART_ACTIVITY_OPTIONS);
+    startActivities(intents.toArray(new Intent[intents.size()]), activityOptions);
+    forceQuit(this, launchIntent.getIntExtra(KEY_MAIN_PROCESS_PID, -1));
     // -- GODOT end --
   }
 
   /**
    * Checks if the current process is a temporary Phoenix Process.
-   * This can be used to avoid initialisation of unused resources or to prevent running code that
+   * This can be used to avoid initialization of unused resources or to prevent running code that
    * is not multi-process ready.
    *
    * @return true if the current process is a temporary Phoenix Process

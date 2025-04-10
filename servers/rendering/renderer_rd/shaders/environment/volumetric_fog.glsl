@@ -6,19 +6,6 @@
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
-#define SAMPLER_NEAREST_CLAMP 0
-#define SAMPLER_LINEAR_CLAMP 1
-#define SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP 2
-#define SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP 3
-#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP 4
-#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP 5
-#define SAMPLER_NEAREST_REPEAT 6
-#define SAMPLER_LINEAR_REPEAT 7
-#define SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT 8
-#define SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT 9
-#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
-#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
-
 #define DENSITY_SCALE 1024.0
 
 #include "../cluster_data_inc.glsl"
@@ -26,7 +13,7 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 #define M_PI 3.14159265359
 
-layout(set = 0, binding = 1) uniform sampler material_samplers[12];
+#include "../samplers_inc.glsl"
 
 layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
@@ -37,7 +24,7 @@ layout(push_constant, std430) uniform Params {
 	vec3 position;
 	float pad;
 
-	vec3 extents;
+	vec3 size;
 	float pad2;
 
 	ivec3 corner;
@@ -47,7 +34,7 @@ layout(push_constant, std430) uniform Params {
 }
 params;
 
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 layout(set = 1, binding = 1) volatile buffer emissive_only_map_buffer {
 	uint emissive_only_map[];
 };
@@ -77,7 +64,7 @@ layout(set = 1, binding = 2, std140) uniform SceneParams {
 }
 scene_params;
 
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 layout(set = 1, binding = 3) volatile buffer density_only_map_buffer {
 	uint density_only_map[];
 };
@@ -90,9 +77,11 @@ layout(r32ui, set = 1, binding = 4) uniform volatile uimage3D light_only_map;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 2, binding = 0, std140) uniform MaterialUniforms{
+/* clang-format off */
+layout(set = 2, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
+/* clang-format on */
 #endif
 
 #GLOBALS
@@ -130,7 +119,7 @@ void main() {
 	if (any(greaterThanEqual(pos, scene_params.fog_volume_size))) {
 		return; //do not compute
 	}
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint lpos = pos.z * scene_params.fog_volume_size.x * scene_params.fog_volume_size.y + pos.y * scene_params.fog_volume_size.x + pos.x;
 #endif
 
@@ -184,36 +173,37 @@ void main() {
 	vec4 local_pos = params.transform * world;
 	local_pos.xyz /= local_pos.w;
 
+	vec3 half_size = params.size / 2.0;
 	float sdf = -1.0;
 	if (params.shape == 0) {
 		// Ellipsoid
 		// https://www.shadertoy.com/view/tdS3DG
-		float k0 = length(local_pos.xyz / params.extents);
-		float k1 = length(local_pos.xyz / (params.extents * params.extents));
+		float k0 = length(local_pos.xyz / half_size);
+		float k1 = length(local_pos.xyz / (half_size * half_size));
 		sdf = k0 * (k0 - 1.0) / k1;
 	} else if (params.shape == 1) {
 		// Cone
 		// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 
-		// Compute the cone angle automatically to fit within the volume's extents.
-		float inv_height = 1.0 / max(0.001, params.extents.y);
-		float radius = 1.0 / max(0.001, (min(params.extents.x, params.extents.z) * 0.5));
+		// Compute the cone angle automatically to fit within the volume's size.
+		float inv_height = 1.0 / max(0.001, half_size.y);
+		float radius = 1.0 / max(0.001, (min(half_size.x, half_size.z) * 0.5));
 		float hypotenuse = sqrt(radius * radius + inv_height * inv_height);
 		float rsin = radius / hypotenuse;
 		float rcos = inv_height / hypotenuse;
 		vec2 c = vec2(rsin, rcos);
 
 		float q = length(local_pos.xz);
-		sdf = max(dot(c, vec2(q, local_pos.y - params.extents.y)), -params.extents.y - local_pos.y);
+		sdf = max(dot(c, vec2(q, local_pos.y - half_size.y)), -half_size.y - local_pos.y);
 	} else if (params.shape == 2) {
 		// Cylinder
 		// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
-		vec2 d = abs(vec2(length(local_pos.xz), local_pos.y)) - vec2(min(params.extents.x, params.extents.z), params.extents.y);
+		vec2 d = abs(vec2(length(local_pos.xz), local_pos.y)) - vec2(min(half_size.x, half_size.z), half_size.y);
 		sdf = min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
 	} else if (params.shape == 3) {
 		// Box
 		// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
-		vec3 q = abs(local_pos.xyz) - params.extents;
+		vec3 q = abs(local_pos.xyz) - half_size;
 		sdf = length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 	}
 
@@ -222,7 +212,7 @@ void main() {
 #ifndef SDF_USED
 		cull_mask = 1.0 - smoothstep(-0.1, 0.0, sdf);
 #endif
-		uvw = clamp((local_pos.xyz + params.extents) / (2.0 * params.extents), 0.0, 1.0);
+		uvw = clamp((local_pos.xyz + half_size) / params.size, 0.0, 1.0);
 	}
 
 	if (cull_mask > 0.0) {
@@ -234,7 +224,7 @@ void main() {
 		density *= cull_mask;
 		if (abs(density) > 0.001) {
 			int final_density = int(density * DENSITY_SCALE);
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 			atomicAdd(density_only_map[lpos], uint(final_density));
 #else
 			imageAtomicAdd(density_only_map, pos, uint(final_density));
@@ -248,7 +238,7 @@ void main() {
 				uvec3 emission_u = uvec3(emission.r * 511.0, emission.g * 511.0, emission.b * 255.0);
 				// R and G have 11 bits each and B has 10. Then pack them into a 32 bit uint
 				uint final_emission = emission_u.r << 21 | emission_u.g << 10 | emission_u.b;
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 				uint prev_emission = atomicAdd(emissive_only_map[lpos], final_emission);
 #else
 				uint prev_emission = imageAtomicAdd(emissive_only_map, pos, final_emission);
@@ -264,7 +254,7 @@ void main() {
 				if (any(overflowing)) {
 					uvec3 overflow_factor = mix(uvec3(0), uvec3(2047 << 21, 2047 << 10, 1023), overflowing);
 					uint force_max = overflow_factor.r | overflow_factor.g | overflow_factor.b;
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 					atomicOr(emissive_only_map[lpos], force_max);
 #else
 					imageAtomicOr(emissive_only_map, pos, force_max);
@@ -279,7 +269,7 @@ void main() {
 				uvec3 scattering_u = uvec3(scattering.r * 2047.0, scattering.g * 2047.0, scattering.b * 1023.0);
 				// R and G have 11 bits each and B has 10. Then pack them into a 32 bit uint
 				uint final_scattering = scattering_u.r << 21 | scattering_u.g << 10 | scattering_u.b;
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 				uint prev_scattering = atomicAdd(light_only_map[lpos], final_scattering);
 #else
 				uint prev_scattering = imageAtomicAdd(light_only_map, pos, final_scattering);
@@ -295,7 +285,7 @@ void main() {
 				if (any(overflowing)) {
 					uvec3 overflow_factor = mix(uvec3(0), uvec3(2047 << 21, 2047 << 10, 1023), overflowing);
 					uint force_max = overflow_factor.r | overflow_factor.g | overflow_factor.b;
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 					atomicOr(light_only_map[lpos], force_max);
 #else
 					imageAtomicOr(light_only_map, pos, force_max);

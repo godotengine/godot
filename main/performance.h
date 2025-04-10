@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  performance.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  performance.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef PERFORMANCE_H
-#define PERFORMANCE_H
+#pragma once
 
 #include "core/object/class_db.h"
 #include "core/templates/hash_map.h"
@@ -50,6 +49,7 @@ class Performance : public Object {
 
 	double _process_time;
 	double _physics_process_time;
+	double _navigation_process_time;
 
 	class MonitorCall {
 		Callable _callable;
@@ -69,6 +69,7 @@ public:
 		TIME_FPS,
 		TIME_PROCESS,
 		TIME_PHYSICS_PROCESS,
+		TIME_NAVIGATION_PROCESS,
 		MEMORY_STATIC,
 		MEMORY_STATIC_MAX,
 		MEMORY_MESSAGE_BUFFER_MAX,
@@ -89,6 +90,41 @@ public:
 		PHYSICS_3D_COLLISION_PAIRS,
 		PHYSICS_3D_ISLAND_COUNT,
 		AUDIO_OUTPUT_LATENCY,
+		NAVIGATION_ACTIVE_MAPS,
+		NAVIGATION_REGION_COUNT,
+		NAVIGATION_AGENT_COUNT,
+		NAVIGATION_LINK_COUNT,
+		NAVIGATION_POLYGON_COUNT,
+		NAVIGATION_EDGE_COUNT,
+		NAVIGATION_EDGE_MERGE_COUNT,
+		NAVIGATION_EDGE_CONNECTION_COUNT,
+		NAVIGATION_EDGE_FREE_COUNT,
+		NAVIGATION_OBSTACLE_COUNT,
+		PIPELINE_COMPILATIONS_CANVAS,
+		PIPELINE_COMPILATIONS_MESH,
+		PIPELINE_COMPILATIONS_SURFACE,
+		PIPELINE_COMPILATIONS_DRAW,
+		PIPELINE_COMPILATIONS_SPECIALIZATION,
+		NAVIGATION_2D_ACTIVE_MAPS,
+		NAVIGATION_2D_REGION_COUNT,
+		NAVIGATION_2D_AGENT_COUNT,
+		NAVIGATION_2D_LINK_COUNT,
+		NAVIGATION_2D_POLYGON_COUNT,
+		NAVIGATION_2D_EDGE_COUNT,
+		NAVIGATION_2D_EDGE_MERGE_COUNT,
+		NAVIGATION_2D_EDGE_CONNECTION_COUNT,
+		NAVIGATION_2D_EDGE_FREE_COUNT,
+		NAVIGATION_2D_OBSTACLE_COUNT,
+		NAVIGATION_3D_ACTIVE_MAPS,
+		NAVIGATION_3D_REGION_COUNT,
+		NAVIGATION_3D_AGENT_COUNT,
+		NAVIGATION_3D_LINK_COUNT,
+		NAVIGATION_3D_POLYGON_COUNT,
+		NAVIGATION_3D_EDGE_COUNT,
+		NAVIGATION_3D_EDGE_MERGE_COUNT,
+		NAVIGATION_3D_EDGE_CONNECTION_COUNT,
+		NAVIGATION_3D_EDGE_FREE_COUNT,
+		NAVIGATION_3D_OBSTACLE_COUNT,
 		MONITOR_MAX
 	};
 
@@ -105,6 +141,7 @@ public:
 
 	void set_process_time(double p_pt);
 	void set_physics_process_time(double p_pt);
+	void set_navigation_process_time(double p_pt);
 
 	void add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args);
 	void remove_custom_monitor(const StringName &p_id);
@@ -120,5 +157,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Performance::Monitor);
-
-#endif // PERFORMANCE_H

@@ -1,42 +1,50 @@
-/*************************************************************************/
-/*  test_object.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_object.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef TEST_OBJECT_H
-#define TEST_OBJECT_H
+#pragma once
 
-#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"
 
 #include "tests/test_macros.h"
+
+#ifdef SANITIZERS_ENABLED
+#ifdef __has_feature
+#if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
+#define ASAN_OR_TSAN_ENABLED
+#endif
+#elif defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+#define ASAN_OR_TSAN_ENABLED
+#endif
+#endif
 
 // Declared in global namespace because of GDCLASS macro warning (Windows):
 // "Unqualified friend declaration referring to type outside of the nearest enclosing namespace
@@ -82,21 +90,29 @@ public:
 	Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const override {
 		return Variant::PACKED_FLOAT32_ARRAY;
 	}
+	virtual void validate_property(PropertyInfo &p_property) const override {
+	}
 	bool property_can_revert(const StringName &p_name) const override {
 		return false;
-	};
+	}
 	bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
 		return false;
-	};
+	}
 	void get_method_list(List<MethodInfo> *p_list) const override {
 	}
 	bool has_method(const StringName &p_method) const override {
 		return false;
 	}
+	int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		return Variant();
 	}
-	void notification(int p_notification) override {
+	void notification(int p_notification, bool p_reversed = false) override {
 	}
 	Ref<Script> get_script() const override {
 		return Ref<Script>();
@@ -127,15 +143,6 @@ TEST_CASE("[Object] Core getters") {
 	CHECK_MESSAGE(
 			object.get_save_class() == "Object",
 			"The returned save class should match the expected value.");
-
-	List<String> inheritance_list;
-	object.get_inheritance_list_static(&inheritance_list);
-	CHECK_MESSAGE(
-			inheritance_list.size() == 1,
-			"The inheritance list should consist of Object only");
-	CHECK_MESSAGE(
-			inheritance_list[0] == "Object",
-			"The inheritance list should consist of Object only");
 }
 
 TEST_CASE("[Object] Metadata") {
@@ -167,6 +174,31 @@ TEST_CASE("[Object] Metadata") {
 	CHECK_MESSAGE(
 			meta_list2.size() == 0,
 			"The metadata list should contain 0 items after removing all metadata items.");
+
+	Object other;
+	object.set_meta("conflicting_meta", "string");
+	object.set_meta("not_conflicting_meta", 123);
+	other.set_meta("conflicting_meta", Color(0, 1, 0));
+	other.set_meta("other_meta", "other");
+	object.merge_meta_from(&other);
+
+	CHECK_MESSAGE(
+			Color(object.get_meta("conflicting_meta")).is_equal_approx(Color(0, 1, 0)),
+			"String meta should be overwritten with Color after merging.");
+
+	CHECK_MESSAGE(
+			int(object.get_meta("not_conflicting_meta")) == 123,
+			"Not conflicting meta on destination should be kept intact.");
+
+	CHECK_MESSAGE(
+			object.get_meta("other_meta", String()) == "other",
+			"Not conflicting meta name on source should merged.");
+
+	List<StringName> meta_list3;
+	object.get_meta_list(&meta_list3);
+	CHECK_MESSAGE(
+			meta_list3.size() == 3,
+			"The metadata list should contain 3 items after merging meta from two objects.");
 }
 
 TEST_CASE("[Object] Construction") {
@@ -243,7 +275,7 @@ TEST_CASE("[Object] Script property setter") {
 	Variant script;
 
 	bool valid = false;
-	object.set(CoreStringNames::get_singleton()->_script, script, &valid);
+	object.set(CoreStringName(script), script, &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			object.get_script() == script,
@@ -256,7 +288,7 @@ TEST_CASE("[Object] Script property getter") {
 	object.set_script(script);
 
 	bool valid = false;
-	const Variant &actual_value = object.get(CoreStringNames::get_singleton()->_script, &valid);
+	const Variant &actual_value = object.get(CoreStringName(script), &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == script,
@@ -281,6 +313,285 @@ TEST_CASE("[Object] Absent name getter") {
 			actual_value == Variant(),
 			"The returned value should equal nil variant.");
 }
-} // namespace TestObject
 
-#endif // TEST_OBJECT_H
+TEST_CASE("[Object] Signals") {
+	Object object;
+
+	CHECK_FALSE(object.has_signal("my_custom_signal"));
+
+	List<MethodInfo> signals_before;
+	object.get_signal_list(&signals_before);
+
+	object.add_user_signal(MethodInfo("my_custom_signal"));
+
+	CHECK(object.has_signal("my_custom_signal"));
+
+	List<MethodInfo> signals_after;
+	object.get_signal_list(&signals_after);
+
+	// Should be one more signal.
+	CHECK_EQ(signals_before.size() + 1, signals_after.size());
+
+	SUBCASE("Adding the same user signal again should not have any effect") {
+		CHECK(object.has_signal("my_custom_signal"));
+		ERR_PRINT_OFF;
+		object.add_user_signal(MethodInfo("my_custom_signal"));
+		ERR_PRINT_ON;
+		CHECK(object.has_signal("my_custom_signal"));
+
+		List<MethodInfo> signals_after_existing_added;
+		object.get_signal_list(&signals_after_existing_added);
+
+		CHECK_EQ(signals_after.size(), signals_after_existing_added.size());
+	}
+
+	SUBCASE("Trying to add a preexisting signal should not have any effect") {
+		CHECK(object.has_signal("script_changed"));
+		ERR_PRINT_OFF;
+		object.add_user_signal(MethodInfo("script_changed"));
+		ERR_PRINT_ON;
+		CHECK(object.has_signal("script_changed"));
+
+		List<MethodInfo> signals_after_existing_added;
+		object.get_signal_list(&signals_after_existing_added);
+
+		CHECK_EQ(signals_after.size(), signals_after_existing_added.size());
+	}
+
+	SUBCASE("Adding an empty signal should not have any effect") {
+		CHECK_FALSE(object.has_signal(""));
+		ERR_PRINT_OFF;
+		object.add_user_signal(MethodInfo(""));
+		ERR_PRINT_ON;
+		CHECK_FALSE(object.has_signal(""));
+
+		List<MethodInfo> signals_after_empty_added;
+		object.get_signal_list(&signals_after_empty_added);
+
+		CHECK_EQ(signals_after.size(), signals_after_empty_added.size());
+	}
+
+	SUBCASE("Deleting an object with connected signals should disconnect them") {
+		List<Object::Connection> signal_connections;
+
+		{
+			Object target;
+			target.add_user_signal(MethodInfo("my_custom_signal"));
+
+			ERR_PRINT_OFF;
+			target.connect("nonexistent_signal1", callable_mp(&object, &Object::notify_property_list_changed));
+			target.connect("my_custom_signal", callable_mp(&object, &Object::notify_property_list_changed));
+			target.connect("nonexistent_signal2", callable_mp(&object, &Object::notify_property_list_changed));
+			ERR_PRINT_ON;
+
+			signal_connections.clear();
+			object.get_all_signal_connections(&signal_connections);
+			CHECK(signal_connections.size() == 0);
+			signal_connections.clear();
+			object.get_signals_connected_to_this(&signal_connections);
+			CHECK(signal_connections.size() == 1);
+
+			ERR_PRINT_OFF;
+			object.connect("nonexistent_signal1", callable_mp(&target, &Object::notify_property_list_changed));
+			object.connect("my_custom_signal", callable_mp(&target, &Object::notify_property_list_changed));
+			object.connect("nonexistent_signal2", callable_mp(&target, &Object::notify_property_list_changed));
+			ERR_PRINT_ON;
+
+			signal_connections.clear();
+			object.get_all_signal_connections(&signal_connections);
+			CHECK(signal_connections.size() == 1);
+			signal_connections.clear();
+			object.get_signals_connected_to_this(&signal_connections);
+			CHECK(signal_connections.size() == 1);
+		}
+
+		signal_connections.clear();
+		object.get_all_signal_connections(&signal_connections);
+		CHECK(signal_connections.size() == 0);
+		signal_connections.clear();
+		object.get_signals_connected_to_this(&signal_connections);
+		CHECK(signal_connections.size() == 0);
+	}
+
+	SUBCASE("Emitting a non existing signal will return an error") {
+		Error err = object.emit_signal("some_signal");
+		CHECK(err == ERR_UNAVAILABLE);
+	}
+
+	SUBCASE("Emitting an existing signal should call the connected method") {
+		Array empty_signal_args = { {} };
+
+		SIGNAL_WATCH(&object, "my_custom_signal");
+		SIGNAL_CHECK_FALSE("my_custom_signal");
+
+		Error err = object.emit_signal("my_custom_signal");
+		CHECK(err == OK);
+
+		SIGNAL_CHECK("my_custom_signal", empty_signal_args);
+		SIGNAL_UNWATCH(&object, "my_custom_signal");
+	}
+
+	SUBCASE("Connecting and then disconnecting many signals should not leave anything behind") {
+		List<Object::Connection> signal_connections;
+		Object targets[100];
+
+		for (int i = 0; i < 10; i++) {
+			ERR_PRINT_OFF;
+			for (Object &target : targets) {
+				object.connect("my_custom_signal", callable_mp(&target, &Object::notify_property_list_changed));
+			}
+			ERR_PRINT_ON;
+			signal_connections.clear();
+			object.get_all_signal_connections(&signal_connections);
+			CHECK(signal_connections.size() == 100);
+		}
+
+		for (Object &target : targets) {
+			object.disconnect("my_custom_signal", callable_mp(&target, &Object::notify_property_list_changed));
+		}
+		signal_connections.clear();
+		object.get_all_signal_connections(&signal_connections);
+		CHECK(signal_connections.size() == 0);
+	}
+}
+
+class NotificationObjectSuperclass : public Object {
+	GDCLASS(NotificationObjectSuperclass, Object);
+
+protected:
+	void _notification(int p_what) {
+		order_superclass = ++order_global;
+	}
+
+public:
+	static inline int order_global = 0;
+	int order_superclass = -1;
+};
+
+class NotificationObjectSubclass : public NotificationObjectSuperclass {
+	GDCLASS(NotificationObjectSubclass, NotificationObjectSuperclass);
+
+protected:
+	void _notification(int p_what) {
+		order_subclass = ++order_global;
+	}
+
+public:
+	int order_subclass = -1;
+};
+
+class NotificationScriptInstance : public _MockScriptInstance {
+	void notification(int p_notification, bool p_reversed) override {
+		order_script = ++NotificationObjectSuperclass::order_global;
+	}
+
+public:
+	int order_script = -1;
+};
+
+TEST_CASE("[Object] Notification order") { // GH-52325
+	NotificationObjectSubclass *object = memnew(NotificationObjectSubclass);
+
+	NotificationScriptInstance *script = memnew(NotificationScriptInstance);
+	object->set_script_instance(script);
+
+	SUBCASE("regular order") {
+		NotificationObjectSubclass::order_global = 0;
+		object->order_superclass = -1;
+		object->order_subclass = -1;
+		script->order_script = -1;
+		object->notification(12345, false);
+
+		CHECK_EQ(object->order_superclass, 1);
+		CHECK_EQ(object->order_subclass, 2);
+		// TODO If an extension is attached, it should come here.
+		CHECK_EQ(script->order_script, 3);
+		CHECK_EQ(NotificationObjectSubclass::order_global, 3);
+	}
+
+	SUBCASE("reverse order") {
+		NotificationObjectSubclass::order_global = 0;
+		object->order_superclass = -1;
+		object->order_subclass = -1;
+		script->order_script = -1;
+		object->notification(12345, true);
+
+		CHECK_EQ(script->order_script, 1);
+		// TODO If an extension is attached, it should come here.
+		CHECK_EQ(object->order_subclass, 2);
+		CHECK_EQ(object->order_superclass, 3);
+		CHECK_EQ(NotificationObjectSubclass::order_global, 3);
+	}
+
+	memdelete(object);
+}
+
+TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
+	Object *object = memnew(Object);
+	ObjectID obj_id = object->get_instance_id();
+
+	class _SelfDestroyingScriptInstance : public _MockScriptInstance {
+		Object *self = nullptr;
+
+		// This has to be static because ~Object() also destroys the script instance.
+		static void free_self(Object *p_self) {
+#if defined(ASAN_OR_TSAN_ENABLED)
+			// Regular deletion is enough becausa asan/tsan will catch a potential heap-after-use.
+			memdelete(p_self);
+#else
+			// Without asan/tsan, try at least to force a crash by replacing the otherwise seemingly good data with garbage.
+			// Operations such as dereferencing pointers or decreasing a refcount would fail.
+			// Unfortunately, we may not poison the memory after the deletion, because the memory would no longer belong to us
+			// and on doing so we may cause a more generalized crash on some platforms (allocator implementations).
+			p_self->~Object();
+			memset((void *)p_self, 0, sizeof(Object));
+			Memory::free_static(p_self, false);
+#endif
+		}
+
+	public:
+		Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
+			free_self(self);
+			return Variant();
+		}
+		Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
+			free_self(self);
+			return Variant();
+		}
+		bool has_method(const StringName &p_method) const override {
+			return p_method == "some_method";
+		}
+
+	public:
+		_SelfDestroyingScriptInstance(Object *p_self) :
+				self(p_self) {}
+	};
+
+	_SelfDestroyingScriptInstance *script_instance = memnew(_SelfDestroyingScriptInstance(object));
+	object->set_script_instance(script_instance);
+
+	SUBCASE("Within callp()") {
+		SUBCASE("Through call()") {
+			object->call("some_method");
+		}
+		SUBCASE("Through callv()") {
+			object->callv("some_method", Array());
+		}
+	}
+	SUBCASE("Within call_const()") {
+		Callable::CallError call_error;
+		object->call_const("some_method", nullptr, 0, call_error);
+	}
+	SUBCASE("Within signal handling (from emit_signalp(), through emit_signal())") {
+		Object emitter;
+		emitter.add_user_signal(MethodInfo("some_signal"));
+		emitter.connect("some_signal", Callable(object, "some_method"));
+		emitter.emit_signal("some_signal");
+	}
+
+	CHECK_MESSAGE(
+			ObjectDB::get_instance(obj_id) == nullptr,
+			"Object was tail-deleted without crashes.");
+}
+
+} // namespace TestObject

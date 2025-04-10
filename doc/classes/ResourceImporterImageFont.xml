@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterImageFont" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Imports a bitmap font where all glyphs have the same width and height.
+	</brief_description>
+	<description>
+		This image-based workflow can be easier to use than [ResourceImporterBMFont], but it requires all glyphs to have the same width and height, glyph advances and drawing offsets can be customized. This makes [ResourceImporterImageFont] most suited to fixed-width fonts.
+		See also [ResourceImporterDynamicFont].
+	</description>
+	<tutorials>
+		<link title="Bitmap fonts - Using fonts">$DOCS_URL/tutorials/ui/gui_using_fonts.html#bitmap-fonts</link>
+	</tutorials>
+	<members>
+		<member name="ascent" type="int" setter="" getter="" default="0">
+			Font ascent (number of pixels above the baseline). If set to [code]0[/code], half of the character height is used.
+		</member>
+		<member name="character_margin" type="Rect2i" setter="" getter="" default="Rect2i(0, 0, 0, 0)">
+			Margin applied around every imported glyph. If your font image contains guides (in the form of lines between glyphs) or if spacing between characters appears incorrect, try adjusting [member character_margin].
+		</member>
+		<member name="character_ranges" type="PackedStringArray" setter="" getter="" default="PackedStringArray()">
+			The character ranges to import from the font image. This is an array that maps each position on the image (in tile coordinates, not pixels). The font atlas is traversed from left to right and top to bottom. Characters can be specified with decimal numbers (127), hexadecimal numbers ([code]0x007f[/code], or [code]U+007f[/code]) or between single quotes ([code]'~'[/code]). Ranges can be specified with a hyphen between characters.
+			For example, [code]0-127[/code] represents the full ASCII range. It can also be written as [code]0x0000-0x007f[/code] (or [code]U+0000-U+007f[/code]). As another example, [code]' '-'~'[/code] is equivalent to [code]32-127[/code] and represents the range of printable (visible) ASCII characters.
+			For any range, the character advance and offset can be customized by appending three space-separated integer values (additional advance, x offset, y offset) to the end. For example [code]'a'-'b' 4 5 2[/code] sets the advance to [code]char_width + 4[/code] and offset to [code]Vector2(5, 2)[/code] for both `a` and `b` characters.
+			Make sure [member character_ranges] doesn't exceed the number of [member columns] * [member rows] defined. Otherwise, the font will fail to import.
+		</member>
+		<member name="columns" type="int" setter="" getter="" default="1">
+			Number of columns in the font image. See also [member rows].
+		</member>
+		<member name="compress" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], uses lossless compression for the resulting font.
+		</member>
+		<member name="descent" type="int" setter="" getter="" default="0">
+			Font descent (number of pixels below the baseline). If set to [code]0[/code], half of the character height is used.
+		</member>
+		<member name="fallbacks" type="Array" setter="" getter="" default="[]">
+			List of font fallbacks to use if a glyph isn't found in this bitmap font. Fonts at the beginning of the array are attempted first.
+		</member>
+		<member name="image_margin" type="Rect2i" setter="" getter="" default="Rect2i(0, 0, 0, 0)">
+			Margin to cut on the sides of the entire image. This can be used to cut parts of the image that contain attribution information or similar.
+		</member>
+		<member name="kerning_pairs" type="PackedStringArray" setter="" getter="" default="PackedStringArray()">
+			Kerning pairs for the font. Kerning pair adjust the spacing between two characters.
+			Each string consist of three space separated values: "from" string, "to" string and integer offset. Each combination form the two string for a kerning pair, e.g, [code]ab cd -3[/code] will create kerning pairs [code]ac[/code], [code]ad[/code], [code]bc[/code], and [code]bd[/code] with offset [code]-3[/code]. [code]\uXXXX[/code] escape sequences can be used to add Unicode characters.
+		</member>
+		<member name="rows" type="int" setter="" getter="" default="1">
+			Number of rows in the font image. See also [member columns].
+		</member>
+		<member name="scaling_mode" type="int" setter="" getter="" default="2">
+			Font scaling mode.
+		</member>
+	</members>
+</class>

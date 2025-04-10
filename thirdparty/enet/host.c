@@ -96,6 +96,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     host -> totalSentPackets = 0;
     host -> totalReceivedData = 0;
     host -> totalReceivedPackets = 0;
+    host -> totalQueued = 0;
 
     host -> connectedPeers = 0;
     host -> bandwidthLimitedPeers = 0;
@@ -123,8 +124,8 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
 
        enet_list_clear (& currentPeer -> acknowledgements);
        enet_list_clear (& currentPeer -> sentReliableCommands);
-       enet_list_clear (& currentPeer -> sentUnreliableCommands);
        enet_list_clear (& currentPeer -> outgoingCommands);
+       enet_list_clear (& currentPeer -> outgoingSendReliableCommands);
        enet_list_clear (& currentPeer -> dispatchedCommands);
 
        enet_peer_reset (currentPeer);
@@ -158,6 +159,16 @@ enet_host_destroy (ENetHost * host)
 
     enet_free (host -> peers);
     enet_free (host);
+}
+
+enet_uint32
+enet_host_random (ENetHost * host)
+{
+    /* Mulberry32 by Tommy Ettinger */
+    enet_uint32 n = (host -> randomSeed += 0x6D2B79F5U);
+    n = (n ^ (n >> 15)) * (n | 1U);
+    n ^= n + (n ^ (n >> 7)) * (n | 61U);
+    return n ^ (n >> 14);
 }
 
 /** Initiates a connection to a foreign host.
@@ -199,7 +210,8 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
     currentPeer -> channelCount = channelCount;
     currentPeer -> state = ENET_PEER_STATE_CONNECTING;
     currentPeer -> address = * address;
-    currentPeer -> connectID = ++ host -> randomSeed;
+    currentPeer -> connectID = enet_host_random (host);
+    currentPeer -> mtu = host -> mtu;
 
     if (host -> outgoingBandwidth == 0)
       currentPeer -> windowSize = ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE;

@@ -1,36 +1,36 @@
-/*************************************************************************/
-/*  websocket_peer.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  websocket_peer.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "websocket_peer.h"
 
-WebSocketPeer *(*WebSocketPeer::_create)() = nullptr;
+WebSocketPeer *(*WebSocketPeer::_create)(bool p_notify_postinitialize) = nullptr;
 
 WebSocketPeer::WebSocketPeer() {
 }
@@ -39,7 +39,7 @@ WebSocketPeer::~WebSocketPeer() {
 }
 
 void WebSocketPeer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "verify_tls", "trusted_tls_certificate"), &WebSocketPeer::connect_to_url, DEFVAL(true), DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "tls_client_options"), &WebSocketPeer::connect_to_url, DEFVAL(Ref<TLSOptions>()));
 	ClassDB::bind_method(D_METHOD("accept_stream", "stream"), &WebSocketPeer::accept_stream);
 	ClassDB::bind_method(D_METHOD("send", "message", "write_mode"), &WebSocketPeer::_send_bind, DEFVAL(WRITE_MODE_BINARY));
 	ClassDB::bind_method(D_METHOD("send_text", "message"), &WebSocketPeer::send_text);
@@ -70,6 +70,9 @@ void WebSocketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_queued_packets", "buffer_size"), &WebSocketPeer::set_max_queued_packets);
 	ClassDB::bind_method(D_METHOD("get_max_queued_packets"), &WebSocketPeer::get_max_queued_packets);
 
+	ClassDB::bind_method(D_METHOD("set_heartbeat_interval", "interval"), &WebSocketPeer::set_heartbeat_interval);
+	ClassDB::bind_method(D_METHOD("get_heartbeat_interval"), &WebSocketPeer::get_heartbeat_interval);
+
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "supported_protocols"), "set_supported_protocols", "get_supported_protocols");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "handshake_headers"), "set_handshake_headers", "get_handshake_headers");
 
@@ -77,6 +80,8 @@ void WebSocketPeer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "outbound_buffer_size"), "set_outbound_buffer_size", "get_outbound_buffer_size");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_queued_packets"), "set_max_queued_packets", "get_max_queued_packets");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "heartbeat_interval"), "set_heartbeat_interval", "get_heartbeat_interval");
 
 	BIND_ENUM_CONSTANT(WRITE_MODE_TEXT);
 	BIND_ENUM_CONSTANT(WRITE_MODE_BINARY);
@@ -150,4 +155,13 @@ void WebSocketPeer::set_max_queued_packets(int p_max_queued_packets) {
 
 int WebSocketPeer::get_max_queued_packets() const {
 	return max_queued_packets;
+}
+
+double WebSocketPeer::get_heartbeat_interval() const {
+	return heartbeat_interval_msec / 1000.0;
+}
+
+void WebSocketPeer::set_heartbeat_interval(double p_interval) {
+	ERR_FAIL_COND(p_interval < 0);
+	heartbeat_interval_msec = p_interval * 1000.0;
 }

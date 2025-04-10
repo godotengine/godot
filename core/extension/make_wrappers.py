@@ -10,7 +10,6 @@ _FORCE_INLINE_ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 def generate_mod_version(argcount, const=False, returns=False):
     s = proto_mod
     sproto = str(argcount)
-    method_info = ""
     if returns:
         sproto += "R"
         s = s.replace("$RETTYPE", "m_ret, ")
@@ -56,10 +55,10 @@ def generate_mod_version(argcount, const=False, returns=False):
 
 proto_ex = """
 #define EXBIND$VER($RETTYPE m_name$ARG) \\
-GDVIRTUAL$VER($RETTYPE_##m_name$ARG)\\
+GDVIRTUAL$VER_REQUIRED($RETTYPE_##m_name$ARG)\\
 virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
     $RETPRE\\
-    GDVIRTUAL_REQUIRED_CALL(_##m_name$CALLARGS$RETREF);\\
+    GDVIRTUAL_CALL(_##m_name$CALLARGS$RETREF);\\
     $RETPOST\\
 }
 """
@@ -68,7 +67,6 @@ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 def generate_ex_version(argcount, const=False, returns=False):
     s = proto_ex
     sproto = str(argcount)
-    method_info = ""
     if returns:
         sproto += "R"
         s = s.replace("$RETTYPE", "m_ret, ")
@@ -121,10 +119,7 @@ def generate_ex_version(argcount, const=False, returns=False):
 def run(target, source, env):
     max_versions = 12
 
-    txt = """
-#ifndef GDEXTENSION_WRAPPERS_GEN_H
-#define GDEXTENSION_WRAPPERS_GEN_H
-"""
+    txt = "#pragma once"
 
     for i in range(max_versions + 1):
         txt += "\n/* Extension Wrapper " + str(i) + " Arguments */\n"
@@ -140,13 +135,5 @@ def run(target, source, env):
         txt += generate_mod_version(i, True, False)
         txt += generate_mod_version(i, True, True)
 
-    txt += "\n#endif\n"
-
-    with open(target[0], "w") as f:
+    with open(str(target[0]), "w", encoding="utf-8", newline="\n") as f:
         f.write(txt)
-
-
-if __name__ == "__main__":
-    from platform_methods import subprocess_main
-
-    subprocess_main(globals())

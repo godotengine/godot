@@ -1,42 +1,41 @@
-/*************************************************************************/
-/*  skeleton_2d_editor_plugin.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  skeleton_2d_editor_plugin.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "skeleton_2d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "scene/2d/mesh_instance_2d.h"
-#include "scene/gui/box_container.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
-#include "thirdparty/misc/clipper.hpp"
 
 void Skeleton2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -61,7 +60,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Set Rest Pose to Bones"));
 			for (int i = 0; i < node->get_bone_count(); i++) {
 				Bone2D *bone = node->get_bone(i);
@@ -77,7 +76,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Create Rest Pose from Bones"));
 			for (int i = 0; i < node->get_bone_count(); i++) {
 				Bone2D *bone = node->get_bone(i);
@@ -90,16 +89,13 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 	}
 }
 
-void Skeleton2DEditor::_bind_methods() {
-}
-
 Skeleton2DEditor::Skeleton2DEditor() {
 	options = memnew(MenuButton);
 
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton2D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton2D"), SNAME("EditorIcons")));
+	options->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Skeleton2D"), EditorStringName(EditorIcons)));
 
 	options->get_popup()->add_item(TTR("Reset to Rest Pose"), MENU_OPTION_SET_REST);
 	options->get_popup()->add_separator();
@@ -107,7 +103,7 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	options->get_popup()->add_item(TTR("Overwrite Rest Pose"), MENU_OPTION_MAKE_REST);
 	options->set_switch_on_hover(true);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &Skeleton2DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Skeleton2DEditor::_menu_option));
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
@@ -132,11 +128,8 @@ void Skeleton2DEditorPlugin::make_visible(bool p_visible) {
 
 Skeleton2DEditorPlugin::Skeleton2DEditorPlugin() {
 	sprite_editor = memnew(Skeleton2DEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(sprite_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();
-}
-
-Skeleton2DEditorPlugin::~Skeleton2DEditorPlugin() {
 }

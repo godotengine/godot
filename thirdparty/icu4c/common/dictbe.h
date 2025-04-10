@@ -16,11 +16,13 @@
 
 #include "brkeng.h"
 #include "hash.h"
+#include "mlbe.h"
 #include "uvectr32.h"
 
 U_NAMESPACE_BEGIN
 
 class DictionaryMatcher;
+class MlBreakEngine;
 class Normalizer2;
 
 /*******************************************************************
@@ -60,10 +62,11 @@ class DictionaryBreakEngine : public LanguageBreakEngine {
    * a particular kind of break.</p>
    *
    * @param c A character which begins a run that the engine might handle
+   * @param locale The locale.
    * @return true if this engine handles the particular character and break
    * type.
    */
-  virtual UBool handles(UChar32 c) const override;
+  virtual UBool handles(UChar32 c, const char* locale) const override;
 
   /**
    * <p>Find any breaks within a run in the supplied text.</p>
@@ -374,6 +377,8 @@ class CjkBreakEngine : public DictionaryBreakEngine {
 
   DictionaryMatcher        *fDictionary;
   const Normalizer2        *nfkcNorm2;
+  MlBreakEngine            *fMlBreakEngine;
+  bool                      isCj;
 
  private:
   // Load Japanese extensions.

@@ -1,47 +1,36 @@
-/*************************************************************************/
-/*  static_raycaster.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  static_raycaster.h                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef STATIC_RAYCASTER_H
-#define STATIC_RAYCASTER_H
+#pragma once
 
 #include "core/object/ref_counted.h"
-
-#if !defined(__aligned)
-
-#if defined(_WIN32) && defined(_MSC_VER)
-#define __aligned(...) __declspec(align(__VA_ARGS__))
-#else
-#define __aligned(...) __attribute__((aligned(__VA_ARGS__)))
-#endif
-
-#endif
 
 class StaticRaycaster : public RefCounted {
 	GDCLASS(StaticRaycaster, RefCounted)
@@ -49,8 +38,8 @@ protected:
 	static StaticRaycaster *(*create_function)();
 
 public:
-	// compatible with embree3 rays
-	struct __aligned(16) Ray {
+	// Compatible with embree4 rays.
+	struct alignas(16) Ray {
 		const static unsigned int INVALID_GEOMETRY_ID = ((unsigned int)-1); // from rtcore_common.h
 
 		/*! Default construction does nothing. */
@@ -59,15 +48,15 @@ public:
 
 		/*! Constructs a ray from origin, direction, and ray segment. Near
 		 *  has to be smaller than far. */
-		_FORCE_INLINE_ Ray(const Vector3 &org,
-				const Vector3 &dir,
-				float tnear = 0.0f,
-				float tfar = INFINITY) :
-				org(org),
-				tnear(tnear),
-				dir(dir),
+		_FORCE_INLINE_ Ray(const Vector3 &p_org,
+				const Vector3 &p_dir,
+				float p_tnear = 0.0f,
+				float p_tfar = INFINITY) :
+				org(p_org),
+				tnear(p_tnear),
+				dir(p_dir),
 				time(0.0f),
-				tfar(tfar),
+				tfar(p_tfar),
 				mask(-1),
 				u(0.0),
 				v(0.0),
@@ -107,5 +96,3 @@ public:
 
 	static Ref<StaticRaycaster> create();
 };
-
-#endif // STATIC_RAYCASTER_H

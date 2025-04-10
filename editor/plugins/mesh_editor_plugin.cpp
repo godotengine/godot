@@ -1,52 +1,49 @@
-/*************************************************************************/
-/*  mesh_editor_plugin.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  mesh_editor_plugin.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "mesh_editor_plugin.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_scale.h"
-#include "scene/gui/texture_button.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/gui/button.h"
 #include "scene/main/viewport.h"
 
 void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+	if (mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 		rot_x -= mm->get_relative().y * 0.01;
 		rot_y -= mm->get_relative().x * 0.01;
-		if (rot_x < -Math_PI / 2) {
-			rot_x = -Math_PI / 2;
-		} else if (rot_x > Math_PI / 2) {
-			rot_x = Math_PI / 2;
-		}
+
+		rot_x = CLAMP(rot_x, -Math_PI / 2, Math_PI / 2);
 		_update_rotation();
 	}
 }
@@ -54,19 +51,15 @@ void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
 void MeshEditor::_update_theme_item_cache() {
 	SubViewportContainer::_update_theme_item_cache();
 
-	theme_cache.light_1_on = get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons"));
-	theme_cache.light_1_off = get_theme_icon(SNAME("MaterialPreviewLight1Off"), SNAME("EditorIcons"));
-	theme_cache.light_2_on = get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons"));
-	theme_cache.light_2_off = get_theme_icon(SNAME("MaterialPreviewLight2Off"), SNAME("EditorIcons"));
+	theme_cache.light_1_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
+	theme_cache.light_2_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
 }
 
 void MeshEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			light_1_switch->set_texture_normal(theme_cache.light_1_on);
-			light_1_switch->set_texture_pressed(theme_cache.light_1_off);
-			light_2_switch->set_texture_normal(theme_cache.light_2_on);
-			light_2_switch->set_texture_pressed(theme_cache.light_2_off);
+			light_1_switch->set_button_icon(theme_cache.light_1_icon);
+			light_2_switch->set_button_icon(theme_cache.light_2_icon);
 		} break;
 	}
 }
@@ -100,21 +93,19 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 	}
 }
 
-void MeshEditor::_button_pressed(Node *p_button) {
-	if (p_button == light_1_switch) {
-		light1->set_visible(!light_1_switch->is_pressed());
-	}
+void MeshEditor::_on_light_1_switch_pressed() {
+	light1->set_visible(light_1_switch->is_pressed());
+}
 
-	if (p_button == light_2_switch) {
-		light2->set_visible(!light_2_switch->is_pressed());
-	}
+void MeshEditor::_on_light_2_switch_pressed() {
+	light2->set_visible(light_2_switch->is_pressed());
 }
 
 MeshEditor::MeshEditor() {
 	viewport = memnew(SubViewport);
 	Ref<World3D> world_3d;
 	world_3d.instantiate();
-	viewport->set_world_3d(world_3d); //use own world
+	viewport->set_world_3d(world_3d); // Use own world.
 	add_child(viewport);
 	viewport->set_disable_input(true);
 	viewport->set_msaa_3d(Viewport::MSAA_4X);
@@ -154,15 +145,21 @@ MeshEditor::MeshEditor() {
 	VBoxContainer *vb_light = memnew(VBoxContainer);
 	hb->add_child(vb_light);
 
-	light_1_switch = memnew(TextureButton);
+	light_1_switch = memnew(Button);
+	light_1_switch->set_theme_type_variation("PreviewLightButton");
 	light_1_switch->set_toggle_mode(true);
+	light_1_switch->set_pressed(true);
+	light_1_switch->set_accessibility_name(TTRC("First Light"));
 	vb_light->add_child(light_1_switch);
-	light_1_switch->connect("pressed", callable_mp(this, &MeshEditor::_button_pressed).bind(light_1_switch));
+	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &MeshEditor::_on_light_1_switch_pressed));
 
-	light_2_switch = memnew(TextureButton);
+	light_2_switch = memnew(Button);
+	light_2_switch->set_theme_type_variation("PreviewLightButton");
 	light_2_switch->set_toggle_mode(true);
+	light_2_switch->set_pressed(true);
+	light_2_switch->set_accessibility_name(TTRC("Second Light"));
 	vb_light->add_child(light_2_switch);
-	light_2_switch->connect("pressed", callable_mp(this, &MeshEditor::_button_pressed).bind(light_2_switch));
+	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &MeshEditor::_on_light_2_switch_pressed));
 
 	rot_x = 0;
 	rot_y = 0;

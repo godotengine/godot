@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  class_db.h                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  class_db.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef CLASS_DB_H
-#define CLASS_DB_H
+#pragma once
 
 #include "core/object/method_bind.h"
 #include "core/object/object.h"
@@ -40,7 +39,10 @@
 #include "core/object/callable_method_pointer.h"
 #include "core/templates/hash_set.h"
 
+#include <type_traits>
+
 #define DEFVAL(m_defval) (m_defval)
+#define DEFVAL_ARRAY DEFVAL(ClassDB::default_array_arg)
 
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -76,6 +78,8 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 #endif
 
 class ClassDB {
+	friend class Object;
+
 public:
 	enum APIType {
 		API_CORE,
@@ -103,6 +107,7 @@ public:
 		ObjectGDExtension *gdextension = nullptr;
 
 		HashMap<StringName, MethodBind *> method_map;
+		HashMap<StringName, LocalVector<MethodBind *>> method_map_compatibility;
 		HashMap<StringName, int64_t> constant_map;
 		struct EnumInfo {
 			List<StringName> constants;
@@ -123,37 +128,74 @@ public:
 		HashMap<StringName, List<StringName>> linked_properties;
 #endif
 		HashMap<StringName, PropertySetGet> property_setget;
+		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
 		StringName inherits;
 		StringName name;
 		bool disabled = false;
 		bool exposed = false;
+		bool reloadable = false;
 		bool is_virtual = false;
-		Object *(*creation_func)() = nullptr;
+		bool is_runtime = false;
+		// The bool argument indicates the need to postinitialize.
+		Object *(*creation_func)(bool) = nullptr;
 
 		ClassInfo() {}
 		~ClassInfo() {}
 	};
 
-	template <class T>
-	static Object *creator() {
-		return memnew(T);
+	template <typename T>
+	static Object *creator(bool p_notify_postinitialize) {
+		Object *ret = new ("") T;
+		ret->_initialize();
+		if (p_notify_postinitialize) {
+			ret->_postinitialize();
+		}
+		return ret;
 	}
 
-	static RWLock lock;
+	// We need a recursive r/w lock because there are various code paths
+	// that may in turn invoke other entry points with require locking.
+	class Locker {
+	public:
+		enum State {
+			STATE_UNLOCKED,
+			STATE_READ,
+			STATE_WRITE,
+		};
+
+	private:
+		inline static RWLock lock;
+		inline thread_local static State thread_state = STATE_UNLOCKED;
+
+	public:
+		class Lock {
+			State state = STATE_UNLOCKED;
+
+		public:
+			explicit Lock(State p_state);
+			~Lock();
+		};
+	};
+
 	static HashMap<StringName, ClassInfo> classes;
 	static HashMap<StringName, StringName> resource_base_extensions;
 	static HashMap<StringName, StringName> compat_classes;
 
+#ifdef TOOLS_ENABLED
+	static HashMap<StringName, ObjectGDExtension> placeholder_extensions;
+#endif
+
 #ifdef DEBUG_METHODS_ENABLED
-	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
+	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
 #else
-	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const char *method_name, const Variant **p_defs, int p_defcount);
+	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount);
 #endif
 
 	static APIType current_api;
+	static HashMap<APIType, uint32_t> api_hashes_cache;
 
-	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
+	static void _add_class(const StringName &p_class, const StringName &p_inherits);
 
 	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
 	static HashSet<StringName> default_values_cached;
@@ -165,24 +207,29 @@ public:
 	};
 	static HashMap<StringName, NativeStruct> native_structs;
 
+	static Array default_array_arg;
+	static bool is_default_array_arg(const Array &p_array);
+
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.
 	static StringName _get_parent_class(const StringName &p_class);
 	static bool _is_parent_class(const StringName &p_class, const StringName &p_inherits);
+	static void _bind_compatibility(ClassInfo *type, MethodBind *p_method);
+	static MethodBind *_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility);
+	static void _bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility);
+
+	static Object *_instantiate_internal(const StringName &p_class, bool p_require_real_class = false, bool p_notify_postinitialize = true, bool p_exposed_only = true);
+
+	static bool _can_instantiate(ClassInfo *p_class_info, bool p_exposed_only = true);
 
 public:
-	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
-	template <class T>
-	static void _add_class() {
-		_add_class2(T::get_class_static(), T::get_parent_class_static());
-	}
-
-	template <class T>
+	template <typename T>
 	static void register_class(bool p_virtual = false) {
-		GLOBAL_LOCK_FUNCTION;
+		Locker::Lock lock(Locker::STATE_WRITE);
+		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_COND(!t);
+		ERR_FAIL_NULL(t);
 		t->creation_func = &creator<T>;
 		t->exposed = true;
 		t->is_virtual = p_virtual;
@@ -191,32 +238,66 @@ public:
 		T::register_custom_data_to_otdb();
 	}
 
-	template <class T>
+	template <typename T>
 	static void register_abstract_class() {
-		GLOBAL_LOCK_FUNCTION;
+		Locker::Lock lock(Locker::STATE_WRITE);
+		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_COND(!t);
+		ERR_FAIL_NULL(t);
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
 		//nothing
 	}
 
-	static void register_extension_class(ObjectGDExtension *p_extension);
-	static void unregister_extension_class(const StringName &p_class);
-
-	template <class T>
-	static Object *_create_ptr_func() {
-		return T::create();
-	}
-
-	template <class T>
-	static void register_custom_instance_class() {
-		GLOBAL_LOCK_FUNCTION;
+	template <typename T>
+	static void register_internal_class() {
+		Locker::Lock lock(Locker::STATE_WRITE);
+		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_COND(!t);
+		ERR_FAIL_NULL(t);
+		t->creation_func = &creator<T>;
+		t->exposed = false;
+		t->is_virtual = false;
+		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
+		T::register_custom_data_to_otdb();
+	}
+
+	template <typename T>
+	static void register_runtime_class() {
+		Locker::Lock lock(Locker::STATE_WRITE);
+		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
+		T::initialize_class();
+		ClassInfo *t = classes.getptr(T::get_class_static());
+		ERR_FAIL_NULL(t);
+		ERR_FAIL_COND_MSG(t->inherits_ptr && !t->inherits_ptr->creation_func, vformat("Cannot register runtime class '%s' that descends from an abstract parent class.", T::get_class_static()));
+		t->creation_func = &creator<T>;
+		t->exposed = true;
+		t->is_virtual = false;
+		t->is_runtime = true;
+		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
+		T::register_custom_data_to_otdb();
+	}
+
+	static void register_extension_class(ObjectGDExtension *p_extension);
+	static void unregister_extension_class(const StringName &p_class, bool p_free_method_binds = true);
+
+	template <typename T>
+	static Object *_create_ptr_func(bool p_notify_postinitialize) {
+		return T::create(p_notify_postinitialize);
+	}
+
+	template <typename T>
+	static void register_custom_instance_class() {
+		Locker::Lock lock(Locker::STATE_WRITE);
+		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
+		T::initialize_class();
+		ClassInfo *t = classes.getptr(T::get_class_static());
+		ERR_FAIL_NULL(t);
 		t->creation_func = &_create_ptr_func<T>;
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
@@ -225,23 +306,50 @@ public:
 	}
 
 	static void get_class_list(List<StringName> *p_classes);
-	static void get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
+#ifdef TOOLS_ENABLED
+	static void get_extensions_class_list(List<StringName> *p_classes);
+	static void get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes);
+	static ObjectGDExtension *get_placeholder_extension(const StringName &p_class);
+#endif
+	static void get_inheriters_from_class(const StringName &p_class, LocalVector<StringName> &p_classes);
 	static void get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static StringName get_parent_class_nocheck(const StringName &p_class);
+	static bool get_inheritance_chain_nocheck(const StringName &p_class, Vector<StringName> &r_result);
 	static StringName get_parent_class(const StringName &p_class);
 	static StringName get_compatibility_remapped_class(const StringName &p_class);
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instantiate(const StringName &p_class);
+	static bool is_abstract(const StringName &p_class);
 	static bool is_virtual(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
+	static Object *instantiate_no_placeholders(const StringName &p_class);
+	static Object *instantiate_without_postinitialization(const StringName &p_class);
 	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
 
 	static APIType get_api_type(const StringName &p_class);
 
-	static uint64_t get_api_hash(APIType p_api);
+	static uint32_t get_api_hash(APIType p_api);
 
-	template <class N, class M, typename... VarArgs>
+	template <typename>
+	struct member_function_traits;
+
+	template <typename R, typename T, typename... Args>
+	struct member_function_traits<R (T::*)(Args...)> {
+		using return_type = R;
+	};
+
+	template <typename R, typename T, typename... Args>
+	struct member_function_traits<R (T::*)(Args...) const> {
+		using return_type = R;
+	};
+
+	template <typename R, typename... Args>
+	struct member_function_traits<R (*)(Args...)> {
+		using return_type = R;
+	};
+
+	template <typename N, typename M, typename... VarArgs>
 	static MethodBind *bind_method(N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 		const Variant *argptrs[sizeof...(p_args) + 1];
@@ -249,10 +357,13 @@ public:
 			argptrs[i] = &args[i];
 		}
 		MethodBind *bind = create_method_bind(p_method);
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
+			bind->set_return_type_is_raw_object_ptr(true);
+		}
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, false, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	template <class N, class M, typename... VarArgs>
+	template <typename N, typename M, typename... VarArgs>
 	static MethodBind *bind_static_method(const StringName &p_class, N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 		const Variant *argptrs[sizeof...(p_args) + 1];
@@ -261,43 +372,69 @@ public:
 		}
 		MethodBind *bind = create_static_method_bind(p_method);
 		bind->set_instance_class(p_class);
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
+			bind->set_return_type_is_raw_object_ptr(true);
+		}
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, false, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	template <class M>
+	template <typename N, typename M, typename... VarArgs>
+	static MethodBind *bind_compatibility_method(N p_method_name, M p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		MethodBind *bind = create_method_bind(p_method);
+		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
+			bind->set_return_type_is_raw_object_ptr(true);
+		}
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, true, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
+	template <typename N, typename M, typename... VarArgs>
+	static MethodBind *bind_compatibility_static_method(const StringName &p_class, N p_method_name, M p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		MethodBind *bind = create_static_method_bind(p_method);
+		bind->set_instance_class(p_class);
+		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
+			bind->set_return_type_is_raw_object_ptr(true);
+		}
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, true, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
+	template <typename M>
 	static MethodBind *bind_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
-		GLOBAL_LOCK_FUNCTION;
+		Locker::Lock lock(Locker::STATE_WRITE);
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
-		ERR_FAIL_COND_V(!bind, nullptr);
+		ERR_FAIL_NULL_V(bind, nullptr);
 
-		bind->set_name(p_name);
-		bind->set_default_arguments(p_default_args);
-
-		String instance_type = bind->get_instance_class();
-
-		ClassInfo *type = classes.getptr(instance_type);
-		if (!type) {
-			memdelete(bind);
-			ERR_FAIL_COND_V(!type, nullptr);
+		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
+			bind->set_return_type_is_raw_object_ptr(true);
 		}
+		return _bind_vararg_method(bind, p_name, p_default_args, false);
+	}
 
-		if (type->method_map.has(p_name)) {
-			memdelete(bind);
-			// Overloading not supported
-			ERR_FAIL_V_MSG(nullptr, "Method already bound: " + instance_type + "::" + p_name + ".");
+	template <typename M>
+	static MethodBind *bind_compatibility_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
+		Locker::Lock lock(Locker::STATE_WRITE);
+
+		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
+		ERR_FAIL_NULL_V(bind, nullptr);
+
+		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
+			bind->set_return_type_is_raw_object_ptr(true);
 		}
-		type->method_map[p_name] = bind;
-#ifdef DEBUG_METHODS_ENABLED
-		// FIXME: <reduz> set_return_type is no longer in MethodBind, so I guess it should be moved to vararg method bind
-		//bind->set_return_type("Variant");
-		type->method_order.push_back(p_name);
-#endif
-
-		return bind;
+		return _bind_vararg_method(bind, p_name, p_default_args, true);
 	}
 
 	static void bind_method_custom(const StringName &p_class, MethodBind *p_method);
+	static void bind_compatibility_method_custom(const StringName &p_class, MethodBind *p_method);
 
 	static void add_signal(const StringName &p_class, const MethodInfo &p_signal);
 	static bool has_signal(const StringName &p_class, const StringName &p_signal, bool p_no_inheritance = false);
@@ -326,11 +463,18 @@ public:
 	static void set_method_flags(const StringName &p_class, const StringName &p_method, int p_flags);
 
 	static void get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static void get_method_list_with_compatibility(const StringName &p_class, List<Pair<MethodInfo, uint32_t>> *p_methods_with_hash, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static bool get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static int get_method_argument_count(const StringName &p_class, const StringName &p_method, bool *r_is_valid = nullptr, bool p_no_inheritance = false);
 	static MethodBind *get_method(const StringName &p_class, const StringName &p_name);
+	static MethodBind *get_method_with_compatibility(const StringName &p_class, const StringName &p_name, uint64_t p_hash, bool *r_method_exists = nullptr, bool *r_is_deprecated = nullptr);
+	static Vector<uint32_t> get_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
 
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
+	static void add_virtual_compatibility_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
+	static void add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info);
+	static Vector<uint32_t> get_virtual_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
 
 	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
@@ -352,6 +496,8 @@ public:
 	static bool is_class_enabled(const StringName &p_class);
 
 	static bool is_class_exposed(const StringName &p_class);
+	static bool is_class_reloadable(const StringName &p_class);
+	static bool is_class_runtime(const StringName &p_class);
 
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
 	static void get_resource_base_extensions(List<String> *p_extensions);
@@ -370,18 +516,20 @@ public:
 	static void get_native_struct_list(List<StringName> *r_names);
 	static String get_native_struct_code(const StringName &p_name);
 	static uint64_t get_native_struct_size(const StringName &p_name); // Used for asserting
+
+	static Object *_instantiate_allow_unexposed(const StringName &p_class); // Used to create unexposed classes from GDExtension, typically for unexposed EditorPlugin.
 };
-
-#ifdef DEBUG_METHODS_ENABLED
-
-#define BIND_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #define BIND_ENUM_CONSTANT(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
 
 #define BIND_BITFIELD_FLAG(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant, #m_constant), #m_constant, m_constant, true);
+
+#define BIND_CONSTANT(m_constant) \
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+
+#ifdef DEBUG_METHODS_ENABLED
 
 _FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr) {
 }
@@ -390,13 +538,13 @@ _FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err) {
 	arr.push_back(p_err);
 }
 
-template <class... P>
+template <typename... P>
 _FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err, P... p_args) {
 	arr.push_back(p_err);
 	errarray_add_str(arr, p_args...);
 }
 
-template <class... P>
+template <typename... P>
 _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 	Vector<Error> arr;
 	errarray_add_str(arr, p_args...);
@@ -407,15 +555,6 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 	::ClassDB::set_method_error_return_values(get_class_static(), m_method, errarray(__VA_ARGS__));
 
 #else
-
-#define BIND_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
-
-#define BIND_ENUM_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
-
-#define BIND_BITFIELD_FLAG(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant, true);
 
 #define BIND_METHOD_ERR_RETURN_DOC(m_method, ...)
 
@@ -433,9 +572,14 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 	if (m_class::_class_is_enabled) {                  \
 		::ClassDB::register_abstract_class<m_class>(); \
 	}
+#define GDREGISTER_INTERNAL_CLASS(m_class)             \
+	if (m_class::_class_is_enabled) {                  \
+		::ClassDB::register_internal_class<m_class>(); \
+	}
+
+#define GDREGISTER_RUNTIME_CLASS(m_class)             \
+	if (m_class::_class_is_enabled) {                 \
+		::ClassDB::register_runtime_class<m_class>(); \
+	}
 
 #define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))
-
-#include "core/disabled_classes.gen.h"
-
-#endif // CLASS_DB_H

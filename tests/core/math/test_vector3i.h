@@ -1,45 +1,46 @@
-/*************************************************************************/
-/*  test_vector3i.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_vector3i.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef TEST_VECTOR3I_H
-#define TEST_VECTOR3I_H
+#pragma once
 
 #include "core/math/vector3i.h"
 #include "tests/test_macros.h"
 
+#define Math_SQRT3 1.7320508075688772935274463415059
+
 namespace TestVector3i {
 
 TEST_CASE("[Vector3i] Constructor methods") {
-	const Vector3i vector_empty = Vector3i();
-	const Vector3i vector_zero = Vector3i(0, 0, 0);
-	CHECK_MESSAGE(
+	constexpr Vector3i vector_empty = Vector3i();
+	constexpr Vector3i vector_zero = Vector3i(0, 0, 0);
+	static_assert(
 			vector_empty == vector_zero,
 			"Vector3i Constructor with no inputs should return a zero Vector3i.");
 }
@@ -66,7 +67,7 @@ TEST_CASE("[Vector3i] Axis methods") {
 }
 
 TEST_CASE("[Vector3i] Clamp method") {
-	const Vector3i vector = Vector3i(10, 10, 10);
+	constexpr Vector3i vector = Vector3i(10, 10, 10);
 	CHECK_MESSAGE(
 			Vector3i(-5, 5, 15).clamp(Vector3i(), vector) == Vector3i(0, 5, 10),
 			"Vector3i clamp should work as expected.");
@@ -76,8 +77,8 @@ TEST_CASE("[Vector3i] Clamp method") {
 }
 
 TEST_CASE("[Vector3i] Length methods") {
-	const Vector3i vector1 = Vector3i(10, 10, 10);
-	const Vector3i vector2 = Vector3i(20, 30, 40);
+	constexpr Vector3i vector1 = Vector3i(10, 10, 10);
+	constexpr Vector3i vector2 = Vector3i(20, 30, 40);
 	CHECK_MESSAGE(
 			vector1.length_squared() == 300,
 			"Vector3i length_squared should work as expected and return exact result.");
@@ -90,29 +91,35 @@ TEST_CASE("[Vector3i] Length methods") {
 	CHECK_MESSAGE(
 			vector2.length() == doctest::Approx(53.8516480713450403125),
 			"Vector3i length should work as expected.");
+	CHECK_MESSAGE(
+			vector1.distance_squared_to(vector2) == 1400,
+			"Vector3i distance_squared_to should work as expected and return exact result.");
+	CHECK_MESSAGE(
+			vector1.distance_to(vector2) == doctest::Approx(37.41657386773941385584),
+			"Vector3i distance_to should work as expected.");
 }
 
 TEST_CASE("[Vector3i] Operators") {
-	const Vector3i vector1 = Vector3i(4, 5, 9);
-	const Vector3i vector2 = Vector3i(1, 2, 3);
+	constexpr Vector3i vector1 = Vector3i(4, 5, 9);
+	constexpr Vector3i vector2 = Vector3i(1, 2, 3);
 
-	CHECK_MESSAGE(
+	static_assert(
 			(vector1 + vector2) == Vector3i(5, 7, 12),
 			"Vector3i addition with integers should give exact results.");
-	CHECK_MESSAGE(
+	static_assert(
 			(vector1 - vector2) == Vector3i(3, 3, 6),
 			"Vector3i subtraction with integers should give exact results.");
-	CHECK_MESSAGE(
+	static_assert(
 			(vector1 * vector2) == Vector3i(4, 10, 27),
 			"Vector3i multiplication with integers should give exact results.");
-	CHECK_MESSAGE(
+	static_assert(
 			(vector1 / vector2) == Vector3i(4, 2, 3),
 			"Vector3i division with integers should give exact results.");
 
-	CHECK_MESSAGE(
+	static_assert(
 			(vector1 * 2) == Vector3i(8, 10, 18),
 			"Vector3i multiplication with integers should give exact results.");
-	CHECK_MESSAGE(
+	static_assert(
 			(vector1 / 2) == Vector3i(2, 2, 4),
 			"Vector3i division with integers should give exact results.");
 
@@ -128,7 +135,14 @@ TEST_CASE("[Vector3i] Operators") {
 }
 
 TEST_CASE("[Vector3i] Other methods") {
-	const Vector3i vector = Vector3i(1, 3, -7);
+	constexpr Vector3i vector = Vector3i(1, 3, -7);
+
+	CHECK_MESSAGE(
+			vector.min(Vector3i(3, 2, 5)) == Vector3i(1, 2, -7),
+			"Vector3i min should return expected value.");
+	CHECK_MESSAGE(
+			vector.max(Vector3i(5, 2, 4)) == Vector3i(5, 3, 4),
+			"Vector3i max should return expected value.");
 
 	CHECK_MESSAGE(
 			vector.snapped(Vector3i(4, 2, 5)) == Vector3i(0, 4, -5),
@@ -136,8 +150,8 @@ TEST_CASE("[Vector3i] Other methods") {
 }
 
 TEST_CASE("[Vector3i] Abs and sign methods") {
-	const Vector3i vector1 = Vector3i(1, 3, 5);
-	const Vector3i vector2 = Vector3i(1, -3, -5);
+	constexpr Vector3i vector1 = Vector3i(1, 3, 5);
+	constexpr Vector3i vector2 = Vector3i(1, -3, -5);
 	CHECK_MESSAGE(
 			vector1.abs() == vector1,
 			"Vector3i abs should work as expected.");
@@ -153,5 +167,3 @@ TEST_CASE("[Vector3i] Abs and sign methods") {
 			"Vector3i sign should work as expected.");
 }
 } // namespace TestVector3i
-
-#endif // TEST_VECTOR3I_H

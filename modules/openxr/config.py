@@ -1,8 +1,8 @@
 def can_build(env, platform):
-    if platform in ("linuxbsd", "windows", "android"):
-        return env["openxr"] and not env["disable_3d"]
+    if platform in ("linuxbsd", "windows", "android", "macos"):
+        return not env["disable_xr"]
     else:
-        # not supported on these platforms
+        # Not supported on these platforms.
         return False
 
 
@@ -16,9 +16,30 @@ def get_doc_classes():
         "OpenXRAction",
         "OpenXRActionSet",
         "OpenXRActionMap",
+        "OpenXRAPIExtension",
+        "OpenXRExtensionWrapper",
+        "OpenXRExtensionWrapperExtension",
+        "OpenXRFutureResult",
+        "OpenXRFutureExtension",
         "OpenXRInteractionProfile",
+        "OpenXRInteractionProfileMetadata",
         "OpenXRIPBinding",
         "OpenXRHand",
+        "OpenXRVisibilityMask",
+        "OpenXRCompositionLayer",
+        "OpenXRCompositionLayerQuad",
+        "OpenXRCompositionLayerCylinder",
+        "OpenXRCompositionLayerEquirect",
+        "OpenXRBindingModifier",
+        "OpenXRIPBindingModifier",
+        "OpenXRActionBindingModifier",
+        "OpenXRAnalogThresholdModifier",
+        "OpenXRDpadBindingModifier",
+        "OpenXRInteractionProfileEditorBase",
+        "OpenXRInteractionProfileEditor",
+        "OpenXRBindingModifierEditor",
+        "OpenXRHapticBase",
+        "OpenXRHapticVibration",
     ]
 
 

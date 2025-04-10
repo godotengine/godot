@@ -1,3 +1,7 @@
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming rule violation
+// ReSharper disable InconsistentNaming
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -24,7 +28,6 @@ namespace Godot.NativeInterop
     }
 
     // Apparently a struct with a byte is not blittable? It crashes when calling a UnmanagedCallersOnly function ptr.
-    // ReSharper disable once InconsistentNaming
     public enum godot_bool : byte
     {
         True = 1,
@@ -32,7 +35,6 @@ namespace Godot.NativeInterop
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_ref
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -62,7 +64,6 @@ namespace Godot.NativeInterop
         }
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public enum godot_variant_call_error_error
     {
         GODOT_CALL_ERROR_CALL_OK = 0,
@@ -71,10 +72,10 @@ namespace Godot.NativeInterop
         GODOT_CALL_ERROR_CALL_ERROR_TOO_MANY_ARGUMENTS,
         GODOT_CALL_ERROR_CALL_ERROR_TOO_FEW_ARGUMENTS,
         GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL,
+        GODOT_CALL_ERROR_CALL_ERROR_METHOD_NOT_CONST,
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_variant_call_error
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -104,8 +105,68 @@ namespace Godot.NativeInterop
         }
     }
 
-    [StructLayout(LayoutKind.Explicit)]
-    // ReSharper disable once InconsistentNaming
+    [StructLayout(LayoutKind.Sequential)]
+    public ref struct godot_csharp_type_info
+    {
+        private godot_string _className;
+        private godot_string_name _nativeBaseName;
+        private godot_string _iconPath;
+        private godot_bool _isTool;
+        private godot_bool _isGlobalClass;
+        private godot_bool _isAbstract;
+        private godot_bool _isConstructedGenericType;
+        private godot_bool _isGenericTypeDefinition;
+
+        public godot_string ClassName
+        {
+            readonly get => _className;
+            set => _className = value;
+        }
+
+        public godot_string_name NativeBaseName
+        {
+            readonly get => _nativeBaseName;
+            set => _nativeBaseName = value;
+        }
+
+        public godot_string IconPath
+        {
+            readonly get => _iconPath;
+            set => _iconPath = value;
+        }
+
+        public godot_bool IsTool
+        {
+            readonly get => _isTool;
+            set => _isTool = value;
+        }
+
+        public godot_bool IsGlobalClass
+        {
+            readonly get => _isGlobalClass;
+            set => _isGlobalClass = value;
+        }
+
+        public godot_bool IsAbstract
+        {
+            readonly get => _isAbstract;
+            set => _isAbstract = value;
+        }
+
+        public godot_bool IsConstructedGenericType
+        {
+            readonly get => _isConstructedGenericType;
+            set => _isConstructedGenericType = value;
+        }
+
+        public godot_bool IsGenericTypeDefinition
+        {
+            readonly get => _isGenericTypeDefinition;
+            set => _isGenericTypeDefinition = value;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public ref struct godot_variant
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -113,23 +174,23 @@ namespace Godot.NativeInterop
             => (godot_variant*)Unsafe.AsPointer(ref Unsafe.AsRef(in _typeField));
 
         // Variant.Type is generated as an enum of type long, so we can't use for the field as it must only take 32-bits.
-        [FieldOffset(0)] private int _typeField;
+        // The native enum actually has no fixed underlying type, so it is only at least 6 bits long.
+        private int _typeField;
 
         // There's padding here
 
-        [FieldOffset(8)] private godot_variant_data _data;
+        private godot_variant_data _data;
 
         [StructLayout(LayoutKind.Explicit)]
-        // ReSharper disable once InconsistentNaming
         private unsafe ref struct godot_variant_data
         {
             [FieldOffset(0)] public godot_bool _bool;
             [FieldOffset(0)] public long _int;
             [FieldOffset(0)] public double _float;
-            [FieldOffset(0)] public Transform2D* _transform2D;
-            [FieldOffset(0)] public AABB* _aabb;
+            [FieldOffset(0)] public Transform2D* _transform2d;
+            [FieldOffset(0)] public Aabb* _aabb;
             [FieldOffset(0)] public Basis* _basis;
-            [FieldOffset(0)] public Transform3D* _transform3D;
+            [FieldOffset(0)] public Transform3D* _transform3d;
             [FieldOffset(0)] public Projection* _projection;
             [FieldOffset(0)] private godot_variant_data_mem _mem;
 
@@ -137,18 +198,18 @@ namespace Godot.NativeInterop
             [FieldOffset(0)] public godot_string_name _m_string_name;
             [FieldOffset(0)] public godot_string _m_string;
             [FieldOffset(0)] public Vector4 _m_vector4;
-            [FieldOffset(0)] public Vector4i _m_vector4i;
+            [FieldOffset(0)] public Vector4I _m_vector4i;
             [FieldOffset(0)] public Vector3 _m_vector3;
-            [FieldOffset(0)] public Vector3i _m_vector3i;
+            [FieldOffset(0)] public Vector3I _m_vector3i;
             [FieldOffset(0)] public Vector2 _m_vector2;
-            [FieldOffset(0)] public Vector2i _m_vector2i;
+            [FieldOffset(0)] public Vector2I _m_vector2i;
             [FieldOffset(0)] public Rect2 _m_rect2;
-            [FieldOffset(0)] public Rect2i _m_rect2i;
+            [FieldOffset(0)] public Rect2I _m_rect2i;
             [FieldOffset(0)] public Plane _m_plane;
             [FieldOffset(0)] public Quaternion _m_quaternion;
             [FieldOffset(0)] public Color _m_color;
             [FieldOffset(0)] public godot_node_path _m_node_path;
-            [FieldOffset(0)] public RID _m_rid;
+            [FieldOffset(0)] public Rid _m_rid;
             [FieldOffset(0)] public godot_variant_obj_data _m_obj_data;
             [FieldOffset(0)] public godot_callable _m_callable;
             [FieldOffset(0)] public godot_signal _m_signal;
@@ -156,7 +217,6 @@ namespace Godot.NativeInterop
             [FieldOffset(0)] public godot_array _m_array;
 
             [StructLayout(LayoutKind.Sequential)]
-            // ReSharper disable once InconsistentNaming
             public struct godot_variant_obj_data
             {
                 public ulong id;
@@ -164,7 +224,6 @@ namespace Godot.NativeInterop
             }
 
             [StructLayout(LayoutKind.Sequential)]
-            // ReSharper disable once InconsistentNaming
             public struct godot_variant_data_mem
             {
 #pragma warning disable 169
@@ -211,10 +270,10 @@ namespace Godot.NativeInterop
         public readonly unsafe Transform2D* Transform2D
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _data._transform2D;
+            get => _data._transform2d;
         }
 
-        public readonly unsafe AABB* AABB
+        public readonly unsafe Aabb* Aabb
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data._aabb;
@@ -229,7 +288,7 @@ namespace Godot.NativeInterop
         public readonly unsafe Transform3D* Transform3D
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _data._transform3D;
+            get => _data._transform3d;
         }
 
         public readonly unsafe Projection* Projection
@@ -262,7 +321,7 @@ namespace Godot.NativeInterop
             set => _data._m_vector4 = value;
         }
 
-        public Vector4i Vector4i
+        public Vector4I Vector4I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => _data._m_vector4i;
@@ -278,7 +337,7 @@ namespace Godot.NativeInterop
             set => _data._m_vector3 = value;
         }
 
-        public Vector3i Vector3i
+        public Vector3I Vector3I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => _data._m_vector3i;
@@ -294,7 +353,7 @@ namespace Godot.NativeInterop
             set => _data._m_vector2 = value;
         }
 
-        public Vector2i Vector2i
+        public Vector2I Vector2I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => _data._m_vector2i;
@@ -310,7 +369,7 @@ namespace Godot.NativeInterop
             set => _data._m_rect2 = value;
         }
 
-        public Rect2i Rect2i
+        public Rect2I Rect2I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => _data._m_rect2i;
@@ -350,7 +409,7 @@ namespace Godot.NativeInterop
             set => _data._m_node_path = value;
         }
 
-        public RID RID
+        public Rid Rid
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => _data._m_rid;
@@ -396,6 +455,12 @@ namespace Godot.NativeInterop
             get => _data._m_obj_data.obj;
         }
 
+        public readonly ulong ObjectId
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _data._m_obj_data.id;
+        }
+
         public void Dispose()
         {
             switch (Type)
@@ -405,13 +470,13 @@ namespace Godot.NativeInterop
                 case Variant.Type.Int:
                 case Variant.Type.Float:
                 case Variant.Type.Vector2:
-                case Variant.Type.Vector2i:
+                case Variant.Type.Vector2I:
                 case Variant.Type.Rect2:
-                case Variant.Type.Rect2i:
+                case Variant.Type.Rect2I:
                 case Variant.Type.Vector3:
-                case Variant.Type.Vector3i:
+                case Variant.Type.Vector3I:
                 case Variant.Type.Vector4:
-                case Variant.Type.Vector4i:
+                case Variant.Type.Vector4I:
                 case Variant.Type.Plane:
                 case Variant.Type.Quaternion:
                 case Variant.Type.Color:
@@ -423,9 +488,10 @@ namespace Godot.NativeInterop
             Type = Variant.Type.Nil;
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Explicit)]
-        // ReSharper disable once InconsistentNaming
         internal struct movable
+#pragma warning restore CS8981
         {
             // Variant.Type is generated as an enum of type long, so we can't use for the field as it must only take 32-bits.
             [FieldOffset(0)] private int _typeField;
@@ -446,7 +512,6 @@ namespace Godot.NativeInterop
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_string
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -473,12 +538,11 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != IntPtr.Zero ? *((int*)_ptr - 1) : 0;
+            get => _ptr != IntPtr.Zero ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_string_name
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -533,9 +597,10 @@ namespace Godot.NativeInterop
             return _data.GetHashCode();
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Sequential)]
-        // ReSharper disable once InconsistentNaming
         internal struct movable
+#pragma warning restore CS8981
         {
             private IntPtr _data;
 
@@ -551,7 +616,6 @@ namespace Godot.NativeInterop
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_node_path
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -581,9 +645,10 @@ namespace Godot.NativeInterop
             get => _data == IntPtr.Zero;
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Sequential)]
-        // ReSharper disable once InconsistentNaming
         internal struct movable
+#pragma warning restore CS8981
         {
             private IntPtr _data;
 
@@ -599,7 +664,6 @@ namespace Godot.NativeInterop
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_signal
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -642,7 +706,6 @@ namespace Godot.NativeInterop
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_callable
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -680,7 +743,6 @@ namespace Godot.NativeInterop
     // Don't pass a C# default constructed `godot_array` to native code, unless it's going to
     // be re-assigned a new value (the copy constructor checks if `_p` is null so that's fine).
     [StructLayout(LayoutKind.Explicit)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_array
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -697,12 +759,21 @@ namespace Godot.NativeInterop
             private uint _safeRefCount;
 
             public VariantVector _arrayVector;
+
+            private unsafe godot_variant* _readOnly;
+
             // There are more fields here, but we don't care as we never store this in C#
 
             public readonly int Size
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get => _arrayVector.Size;
+            }
+
+            public readonly unsafe bool IsReadOnly
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _readOnly != null;
             }
         }
 
@@ -715,7 +786,7 @@ namespace Godot.NativeInterop
             public readonly unsafe int Size
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => _ptr != null ? *((int*)_ptr - 1) : 0;
+                get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
             }
         }
 
@@ -737,6 +808,12 @@ namespace Godot.NativeInterop
             get => _p != null ? _p->Size : 0;
         }
 
+        public readonly unsafe bool IsReadOnly
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _p != null && _p->IsReadOnly;
+        }
+
         public unsafe void Dispose()
         {
             if (_p == null)
@@ -745,9 +822,10 @@ namespace Godot.NativeInterop
             _p = null;
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Sequential)]
-        // ReSharper disable once InconsistentNaming
         internal struct movable
+#pragma warning restore CS8981
         {
             private unsafe ArrayPrivate* _p;
 
@@ -766,35 +844,59 @@ namespace Godot.NativeInterop
     // A correctly constructed value needs to call the native default constructor to allocate `_p`.
     // Don't pass a C# default constructed `godot_dictionary` to native code, unless it's going to
     // be re-assigned a new value (the copy constructor checks if `_p` is null so that's fine).
-    [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
+    [StructLayout(LayoutKind.Explicit)]
     public ref struct godot_dictionary
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal readonly unsafe godot_dictionary* GetUnsafeAddress()
-            => (godot_dictionary*)Unsafe.AsPointer(ref Unsafe.AsRef(in _p));
+            => (godot_dictionary*)Unsafe.AsPointer(ref Unsafe.AsRef(in _getUnsafeAddressHelper));
 
-        private IntPtr _p;
+        [FieldOffset(0)] private byte _getUnsafeAddressHelper;
 
-        public readonly bool IsAllocated
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _p != IntPtr.Zero;
-        }
-
-        public void Dispose()
-        {
-            if (_p == IntPtr.Zero)
-                return;
-            NativeFuncs.godotsharp_dictionary_destroy(ref this);
-            _p = IntPtr.Zero;
-        }
+        [FieldOffset(0)] private unsafe DictionaryPrivate* _p;
 
         [StructLayout(LayoutKind.Sequential)]
-        // ReSharper disable once InconsistentNaming
-        internal struct movable
+        private struct DictionaryPrivate
         {
-            private IntPtr _p;
+            private uint _safeRefCount;
+
+            private unsafe godot_variant* _readOnly;
+
+            // There are more fields here, but we don't care as we never store this in C#
+
+            public readonly unsafe bool IsReadOnly
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _readOnly != null;
+            }
+        }
+
+        public readonly unsafe bool IsAllocated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _p != null;
+        }
+
+        public readonly unsafe bool IsReadOnly
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _p != null && _p->IsReadOnly;
+        }
+
+        public unsafe void Dispose()
+        {
+            if (_p == null)
+                return;
+            NativeFuncs.godotsharp_dictionary_destroy(ref this);
+            _p = null;
+        }
+
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct movable
+#pragma warning restore CS8981
+        {
+            private unsafe DictionaryPrivate* _p;
 
             public static unsafe explicit operator movable(in godot_dictionary value)
                 => *(movable*)CustomUnsafe.AsPointer(ref CustomUnsafe.AsRef(value));
@@ -808,7 +910,6 @@ namespace Godot.NativeInterop
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_byte_array
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -835,12 +936,11 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_int32_array
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -867,12 +967,11 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *(_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_int64_array
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -899,12 +998,11 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_float32_array
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -931,12 +1029,11 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_float64_array
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -963,12 +1060,11 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_string_array
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -995,12 +1091,11 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_vector2_array
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1027,12 +1122,11 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_vector3_array
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1059,7 +1153,39 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    // ReSharper disable once InconsistentNaming
+    public ref struct godot_packed_vector4_array
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal readonly unsafe godot_packed_vector4_array* GetUnsafeAddress()
+            => (godot_packed_vector4_array*)Unsafe.AsPointer(ref Unsafe.AsRef(in _writeProxy));
+
+        private IntPtr _writeProxy;
+        private unsafe Vector4* _ptr;
+
+        public unsafe void Dispose()
+        {
+            if (_ptr == null)
+                return;
+            NativeFuncs.godotsharp_packed_vector4_array_destroy(ref this);
+            _ptr = null;
+        }
+
+        public readonly unsafe Vector4* Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
@@ -1091,7 +1217,15 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
+    }
+
+    public enum godot_error_handler_type
+    {
+        ERR_HANDLER_ERROR = 0,
+        ERR_HANDLER_WARNING,
+        ERR_HANDLER_SCRIPT,
+        ERR_HANDLER_SHADER,
     }
 }

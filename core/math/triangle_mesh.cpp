@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  triangle_mesh.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  triangle_mesh.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "triangle_mesh.h"
 
@@ -133,7 +133,7 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces, const Vector<int32_t> 
 
 			for (int j = 0; j < 3; j++) {
 				int vidx = -1;
-				Vector3 vs = v[j].snapped(Vector3(0.0001, 0.0001, 0.0001));
+				Vector3 vs = v[j].snappedf(0.0001);
 				HashMap<Vector3, int>::Iterator E = db.find(vs);
 				if (E) {
 					vidx = E->value;
@@ -182,91 +182,11 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces, const Vector<int32_t> 
 	valid = true;
 }
 
-Vector3 TriangleMesh::get_area_normal(const AABB &p_aabb) const {
-	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
-
-	enum {
-		TEST_AABB_BIT = 0,
-		VISIT_LEFT_BIT = 1,
-		VISIT_RIGHT_BIT = 2,
-		VISIT_DONE_BIT = 3,
-		VISITED_BIT_SHIFT = 29,
-		NODE_IDX_MASK = (1 << VISITED_BIT_SHIFT) - 1,
-		VISITED_BIT_MASK = ~NODE_IDX_MASK,
-
-	};
-
-	int n_count = 0;
-	Vector3 n;
-
-	int level = 0;
-
-	const Triangle *triangleptr = triangles.ptr();
-	//	const Vector3 *verticesr = vertices.ptr();
-	const BVH *bvhptr = bvh.ptr();
-
-	int pos = bvh.size() - 1;
-
-	stack[0] = pos;
-	while (true) {
-		uint32_t node = stack[level] & NODE_IDX_MASK;
-		const BVH &b = bvhptr[node];
-		bool done = false;
-
-		switch (stack[level] >> VISITED_BIT_SHIFT) {
-			case TEST_AABB_BIT: {
-				if (!b.aabb.intersects(p_aabb)) {
-					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				} else {
-					if (b.face_index >= 0) {
-						const Triangle &s = triangleptr[b.face_index];
-						n += s.normal;
-						n_count++;
-
-						stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-
-					} else {
-						stack[level] = (VISIT_LEFT_BIT << VISITED_BIT_SHIFT) | node;
-					}
-				}
-				continue;
-			}
-			case VISIT_LEFT_BIT: {
-				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				level++;
-				stack[level] = b.left | TEST_AABB_BIT;
-				continue;
-			}
-			case VISIT_RIGHT_BIT: {
-				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				level++;
-				stack[level] = b.right | TEST_AABB_BIT;
-				continue;
-			}
-			case VISIT_DONE_BIT: {
-				if (level == 0) {
-					done = true;
-					break;
-				} else {
-					level--;
-				}
-				continue;
-			}
-		}
-
-		if (done) {
-			break;
-		}
+bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index, int32_t *r_face_index) const {
+	if (!valid) {
+		return false;
 	}
 
-	if (n_count > 0) {
-		n /= n_count;
-	}
-
-	return n;
-}
-
-bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
 	enum {
@@ -318,6 +238,9 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 								if (r_surf_index) {
 									*r_surf_index = s.surface_index;
 								}
+								if (r_face_index) {
+									*r_face_index = b.face_index;
+								}
 								inters = true;
 							}
 						}
@@ -367,7 +290,11 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 	return inters;
 }
 
-bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index) const {
+bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index, int32_t *r_face_index) const {
+	if (!valid) {
+		return false;
+	}
+
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
 	enum {
@@ -419,6 +346,9 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 								if (r_surf_index) {
 									*r_surf_index = s.surface_index;
 								}
+								if (r_face_index) {
+									*r_face_index = b.face_index;
+								}
 								inters = true;
 							}
 						}
@@ -468,119 +398,11 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 	return inters;
 }
 
-bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const {
-	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
-
-	//p_fully_inside = true;
-
-	enum {
-		TEST_AABB_BIT = 0,
-		VISIT_LEFT_BIT = 1,
-		VISIT_RIGHT_BIT = 2,
-		VISIT_DONE_BIT = 3,
-		VISITED_BIT_SHIFT = 29,
-		NODE_IDX_MASK = (1 << VISITED_BIT_SHIFT) - 1,
-		VISITED_BIT_MASK = ~NODE_IDX_MASK,
-
-	};
-
-	int level = 0;
-
-	const Triangle *triangleptr = triangles.ptr();
-	const Vector3 *vertexptr = vertices.ptr();
-	const BVH *bvhptr = bvh.ptr();
-
-	int pos = bvh.size() - 1;
-
-	stack[0] = pos;
-	while (true) {
-		uint32_t node = stack[level] & NODE_IDX_MASK;
-		const BVH &b = bvhptr[node];
-		bool done = false;
-
-		switch (stack[level] >> VISITED_BIT_SHIFT) {
-			case TEST_AABB_BIT: {
-				if (!b.aabb.intersects_convex_shape(p_planes, p_plane_count, p_points, p_point_count)) {
-					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				} else {
-					if (b.face_index >= 0) {
-						const Triangle &s = triangleptr[b.face_index];
-
-						for (int j = 0; j < 3; ++j) {
-							const Vector3 &point = vertexptr[s.indices[j]];
-							const Vector3 &next_point = vertexptr[s.indices[(j + 1) % 3]];
-							Vector3 res;
-							bool over = true;
-							for (int i = 0; i < p_plane_count; i++) {
-								const Plane &p = p_planes[i];
-
-								if (p.intersects_segment(point, next_point, &res)) {
-									bool inisde = true;
-									for (int k = 0; k < p_plane_count; k++) {
-										if (k == i) {
-											continue;
-										}
-										const Plane &pp = p_planes[k];
-										if (pp.is_point_over(res)) {
-											inisde = false;
-											break;
-										}
-									}
-									if (inisde) {
-										return true;
-									}
-								}
-
-								if (p.is_point_over(point)) {
-									over = false;
-									break;
-								}
-							}
-							if (over) {
-								return true;
-							}
-						}
-
-						stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-
-					} else {
-						stack[level] = (VISIT_LEFT_BIT << VISITED_BIT_SHIFT) | node;
-					}
-				}
-				continue;
-			}
-			case VISIT_LEFT_BIT: {
-				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				level++;
-				stack[level] = b.left | TEST_AABB_BIT;
-				continue;
-			}
-			case VISIT_RIGHT_BIT: {
-				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				level++;
-				stack[level] = b.right | TEST_AABB_BIT;
-				continue;
-			}
-			case VISIT_DONE_BIT: {
-				if (level == 0) {
-					done = true;
-					break;
-				} else {
-					level--;
-				}
-				continue;
-			}
-		}
-
-		if (done) {
-			break;
-		}
+bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, Vector3 p_scale) const {
+	if (!valid) {
+		return false;
 	}
 
-	return false;
-}
-
-bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, Vector3 p_scale) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
 	enum {
@@ -697,6 +519,85 @@ Vector<Face3> TriangleMesh::get_faces() const {
 	}
 
 	return faces;
+}
+
+bool TriangleMesh::create_from_faces(const Vector<Vector3> &p_faces) {
+	create(p_faces);
+	return is_valid();
+}
+
+Dictionary TriangleMesh::intersect_segment_scriptwrap(const Vector3 &p_begin, const Vector3 &p_end) const {
+	if (!valid) {
+		return Dictionary();
+	}
+
+	Vector3 r_point;
+	Vector3 r_normal;
+	int32_t r_face_index = -1;
+
+	bool intersected = intersect_segment(p_begin, p_end, r_point, r_normal, nullptr, &r_face_index);
+	if (!intersected) {
+		return Dictionary();
+	}
+
+	Dictionary result;
+	result["position"] = r_point;
+	result["normal"] = r_normal;
+	result["face_index"] = r_face_index;
+
+	return result;
+}
+
+Dictionary TriangleMesh::intersect_ray_scriptwrap(const Vector3 &p_begin, const Vector3 &p_dir) const {
+	if (!valid) {
+		return Dictionary();
+	}
+
+	Vector3 r_point;
+	Vector3 r_normal;
+	int32_t r_face_index = -1;
+
+	bool intersected = intersect_ray(p_begin, p_dir, r_point, r_normal, nullptr, &r_face_index);
+	if (!intersected) {
+		return Dictionary();
+	}
+
+	Dictionary result;
+	result["position"] = r_point;
+	result["normal"] = r_normal;
+	result["face_index"] = r_face_index;
+
+	return result;
+}
+
+Vector<Vector3> TriangleMesh::get_faces_scriptwrap() const {
+	if (!valid) {
+		return Vector<Vector3>();
+	}
+
+	Vector<Vector3> faces;
+	int ts = triangles.size();
+	faces.resize(triangles.size() * 3);
+
+	Vector3 *w = faces.ptrw();
+	const Triangle *r = triangles.ptr();
+	const Vector3 *rv = vertices.ptr();
+
+	for (int i = 0; i < ts; i++) {
+		for (int j = 0; j < 3; j++) {
+			w[i * 3 + j] = rv[r[i].indices[j]];
+		}
+	}
+
+	return faces;
+}
+
+void TriangleMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("create_from_faces", "faces"), &TriangleMesh::create_from_faces);
+	ClassDB::bind_method(D_METHOD("get_faces"), &TriangleMesh::get_faces_scriptwrap);
+
+	ClassDB::bind_method(D_METHOD("intersect_segment", "begin", "end"), &TriangleMesh::intersect_segment_scriptwrap);
+	ClassDB::bind_method(D_METHOD("intersect_ray", "begin", "dir"), &TriangleMesh::intersect_ray_scriptwrap);
 }
 
 TriangleMesh::TriangleMesh() {

@@ -1,59 +1,54 @@
-/*************************************************************************/
-/*  shader_gles3.h                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_gles3.h                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef SHADER_GLES3_H
-#define SHADER_GLES3_H
+#pragma once
 
 #include "core/math/projection.h"
 #include "core/os/mutex.h"
 #include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
-#include "core/variant/variant.h"
 #include "servers/rendering_server.h"
 
 #ifdef GLES3_ENABLED
 
-// This must come first to avoid windows.h mess
-#include "platform_config.h"
-#ifndef OPENGL_INCLUDE_H
-#include <GLES3/gl3.h>
-#else
-#include OPENGL_INCLUDE_H
-#endif
-
-#include <stdio.h>
+#include "platform_gl.h"
 
 class ShaderGLES3 {
+public:
+	struct TextureUniformData {
+		StringName name;
+		int array_size;
+	};
+
 protected:
 	struct TexUnitPair {
 		const char *name;
@@ -85,7 +80,7 @@ private:
 	// Specializations use #ifdefs to toggle behavior on and off for performance, on supporting hardware, they will compile a version with everything enabled, and then compile more copies to improve performance
 	// Use specializations to enable and disabled advanced features, use variants to toggle behavior when different data may be used (e.g. using a samplerArray vs a sampler, or doing a depth prepass vs a color pass)
 	struct Version {
-		Vector<StringName> texture_uniforms;
+		LocalVector<TextureUniformData> texture_uniforms;
 		CharString uniforms;
 		CharString vertex_globals;
 		CharString fragment_globals;
@@ -98,7 +93,6 @@ private:
 			GLuint frag_id;
 			LocalVector<GLint> uniform_location;
 			LocalVector<GLint> texture_uniform_locations;
-			HashMap<StringName, GLint> custom_uniform_locations;
 			bool build_queued = false;
 			bool ok = false;
 			Specialization() {
@@ -113,6 +107,7 @@ private:
 
 	Mutex variant_set_mutex;
 
+	void _get_uniform_locations(Version::Specialization &spec, Version *p_version);
 	void _compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);
 
 	void _clear_version(Version *p_version);
@@ -191,9 +186,9 @@ protected:
 		ERR_FAIL_INDEX_V(p_variant, variant_count, false);
 
 		Version *version = version_owner.get_or_null(p_version);
-		ERR_FAIL_COND_V(!version, false);
+		ERR_FAIL_NULL_V(version, false);
 
-		if (version->variants.size() == 0) {
+		if (version->variants.is_empty()) {
 			_initialize_version(version); //may lack initialization
 		}
 
@@ -209,6 +204,9 @@ protected:
 				_compile_specialization(s, p_variant, version, p_specialization);
 				version->variants[p_variant].insert(p_specialization, s);
 				spec = version->variants[p_variant].lookup_ptr(p_specialization);
+				if (shader_cache_dir_valid) {
+					_save_to_cache(version);
+				}
 			}
 		} else if (spec->build_queued) {
 			// Still queued, wait
@@ -228,10 +226,10 @@ protected:
 	_FORCE_INLINE_ int _version_get_uniform(int p_which, RID p_version, int p_variant, uint64_t p_specialization) {
 		ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
 		Version *version = version_owner.get_or_null(p_version);
-		ERR_FAIL_COND_V(!version, -1);
+		ERR_FAIL_NULL_V(version, -1);
 		ERR_FAIL_INDEX_V(p_variant, int(version->variants.size()), -1);
 		Version::Specialization *spec = version->variants[p_variant].lookup_ptr(p_specialization);
-		ERR_FAIL_COND_V(!spec, -1);
+		ERR_FAIL_NULL_V(spec, -1);
 		ERR_FAIL_INDEX_V(p_which, int(spec->uniform_location.size()), -1);
 		return spec->uniform_location[p_which];
 	}
@@ -241,7 +239,7 @@ protected:
 public:
 	RID version_create();
 
-	void version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize = false);
+	void version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const LocalVector<ShaderGLES3::TextureUniformData> &p_texture_uniforms, bool p_initialize = false);
 
 	bool version_is_valid(RID p_version);
 
@@ -259,5 +257,3 @@ public:
 };
 
 #endif // GLES3_ENABLED
-
-#endif // SHADER_GLES3_H

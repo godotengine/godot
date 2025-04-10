@@ -35,7 +35,10 @@ typedef struct BrotliSharedDictionaryStruct BrotliSharedDictionary;
 typedef enum BrotliSharedDictionaryType {
   /** Raw LZ77 prefix dictionary. */
   BROTLI_SHARED_DICTIONARY_RAW = 0,
-  /** Serialized shared dictionary. */
+  /** Serialized shared dictionary.
+   *
+   * DO NOT USE: methods accepting this value will fail.
+   */
   BROTLI_SHARED_DICTIONARY_SERIALIZED = 1
 } BrotliSharedDictionaryType;
 

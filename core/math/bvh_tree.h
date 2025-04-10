@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  bvh_tree.h                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  bvh_tree.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef BVH_TREE_H
-#define BVH_TREE_H
+#pragma once
 
 // BVH Tree
 // This is an implementation of a dynamic BVH with templated leaf size.
@@ -41,7 +40,6 @@
 
 #include "core/math/aabb.h"
 #include "core/math/bvh_abb.h"
-#include "core/math/geometry_3d.h"
 #include "core/math/vector3.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/pooled_list.h"
@@ -106,12 +104,10 @@ struct BVHHandle {
 };
 
 // helper class to make iterative versions of recursive functions
-template <class T>
+template <typename T>
 class BVH_IterativeInfo {
 public:
-	enum {
-		ALLOCA_STACK_SIZE = 128
-	};
+	constexpr static const size_t ALLOCA_STACK_SIZE = 128;
 
 	int32_t depth = 1;
 	int32_t threshold = ALLOCA_STACK_SIZE - 2;
@@ -152,7 +148,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class BVH_DummyPairTestFunction {
 public:
 	static bool user_collision_check(T *p_a, T *p_b) {
@@ -161,7 +157,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class BVH_DummyCullTestFunction {
 public:
 	static bool user_cull_check(T *p_a, T *p_b) {
@@ -170,7 +166,7 @@ public:
 	}
 };
 
-template <class T, int NUM_TREES, int MAX_CHILDREN, int MAX_ITEMS, class USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, class USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, bool USE_PAIRS = false, class BOUNDS = AABB, class POINT = Vector3>
+template <typename T, int NUM_TREES, int MAX_CHILDREN, int MAX_ITEMS, typename USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, typename USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, bool USE_PAIRS = false, typename BOUNDS = AABB, typename POINT = Vector3>
 class BVH_Tree {
 	friend class BVH;
 
@@ -456,5 +452,3 @@ private:
 };
 
 #undef VERBOSE_PRINT
-
-#endif // BVH_TREE_H

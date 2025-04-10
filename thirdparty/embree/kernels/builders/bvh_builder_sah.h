@@ -7,13 +7,8 @@
 #include "heuristic_spatial_array.h"
 #include "heuristic_openmerge_array.h"
 
-#if defined(__AVX512F__) && !defined(__AVX512VL__) // KNL
-#  define NUM_OBJECT_BINS 16
-#  define NUM_SPATIAL_BINS 16
-#else
-#  define NUM_OBJECT_BINS 32
-#  define NUM_SPATIAL_BINS 16
-#endif
+#define NUM_OBJECT_BINS 32
+#define NUM_SPATIAL_BINS 16
 
 namespace embree
 {

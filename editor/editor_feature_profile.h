@@ -1,42 +1,39 @@
-/*************************************************************************/
-/*  editor_feature_profile.h                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_feature_profile.h                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef EDITOR_FEATURE_PROFILE_H
-#define EDITOR_FEATURE_PROFILE_H
+#pragma once
 
-#include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 #include "editor/editor_help.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
@@ -55,6 +52,7 @@ public:
 		FEATURE_FILESYSTEM_DOCK,
 		FEATURE_IMPORT_DOCK,
 		FEATURE_HISTORY_DOCK,
+		FEATURE_GAME,
 		FEATURE_MAX
 	};
 
@@ -142,11 +140,13 @@ class EditorFeatureProfileManager : public AcceptDialog {
 
 	void _profile_action(int p_action);
 	void _profile_selected(int p_what);
+	void _hide_requested();
 
 	String current_profile;
 	void _update_profile_list(const String &p_select_profile = String());
 	void _update_selected_profile();
-	void _fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected);
+	void _update_profile_tree_from(TreeItem *p_edited);
+	void _fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected, int p_class_insert_index = -1);
 
 	Ref<EditorFeatureProfile> current;
 	Ref<EditorFeatureProfile> edited;
@@ -177,10 +177,10 @@ protected:
 
 public:
 	Ref<EditorFeatureProfile> get_current_profile();
+	String get_current_profile_name() const;
+	void set_current_profile(const String &p_profile_name, bool p_validate_profile);
 	void notify_changed();
 
 	static EditorFeatureProfileManager *get_singleton() { return singleton; }
 	EditorFeatureProfileManager();
 };
-
-#endif // EDITOR_FEATURE_PROFILE_H

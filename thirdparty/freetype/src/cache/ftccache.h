@@ -4,7 +4,7 @@
  *
  *   FreeType internal cache interface (specification).
  *
- * Copyright (C) 2000-2022 by
+ * Copyright (C) 2000-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -72,11 +72,12 @@ FT_BEGIN_HEADER
 #define FTC_NODE_NEXT( x )  FTC_NODE( (x)->mru.next )
 #define FTC_NODE_PREV( x )  FTC_NODE( (x)->mru.prev )
 
+  /* address the hash table entries */
 #ifdef FTC_INLINE
-#define FTC_NODE_TOP_FOR_HASH( cache, hash )                      \
-        ( ( cache )->buckets +                                    \
-            ( ( ( ( hash ) &   ( cache )->mask ) < ( cache )->p ) \
-              ? ( ( hash ) & ( ( cache )->mask * 2 + 1 ) )        \
+#define FTC_NODE_TOP_FOR_HASH( cache, hash )                       \
+        ( ( cache )->buckets +                                     \
+            ( ( ( ( hash ) &   ( cache )->mask ) >= ( cache )->p ) \
+              ? ( ( hash ) & ( ( cache )->mask >> 1 ) )            \
               : ( ( hash ) &   ( cache )->mask ) ) )
 #else
   FT_LOCAL( FTC_Node* )
@@ -85,6 +86,10 @@ FT_BEGIN_HEADER
 #define FTC_NODE_TOP_FOR_HASH( cache, hash )             \
         ftc_get_top_node_for_hash( ( cache ), ( hash ) )
 #endif
+
+  FT_LOCAL( void )
+  ftc_node_destroy( FTC_Node     node,
+                    FTC_Manager  manager );
 
 
   /*************************************************************************/
@@ -139,11 +144,13 @@ FT_BEGIN_HEADER
   } FTC_CacheClassRec;
 
 
-  /* each cache really implements a dynamic hash table to manage its nodes */
+  /* each cache really implements a hash table to manage its nodes    */
+  /* the number of the table entries (buckets) can change dynamically */
+  /* each bucket contains a linked lists of nodes for a given hash    */
   typedef struct  FTC_CacheRec_
   {
-    FT_UFast           p;
-    FT_UFast           mask;
+    FT_UFast           p;           /* hash table counter     */
+    FT_UFast           mask;        /* hash table index range */
     FT_Long            slack;
     FTC_Node*          buckets;
 

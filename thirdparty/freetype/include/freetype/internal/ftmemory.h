@@ -4,7 +4,7 @@
  *
  *   The FreeType memory management macros (specification).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg
  *
  * This file is part of the FreeType project, and may only be used,
@@ -96,15 +96,15 @@ extern "C++"
 
 #ifdef FT_DEBUG_MEMORY
 
-  FT_BASE( const char* )  _ft_debug_file;
-  FT_BASE( long )         _ft_debug_lineno;
+  FT_BASE( const char* )  ft_debug_file_;
+  FT_BASE( long )         ft_debug_lineno_;
 
-#define FT_DEBUG_INNER( exp )  ( _ft_debug_file   = __FILE__, \
-                                 _ft_debug_lineno = __LINE__, \
+#define FT_DEBUG_INNER( exp )  ( ft_debug_file_   = __FILE__, \
+                                 ft_debug_lineno_ = __LINE__, \
                                  (exp) )
 
-#define FT_ASSIGNP_INNER( p, exp )  ( _ft_debug_file   = __FILE__, \
-                                      _ft_debug_lineno = __LINE__, \
+#define FT_ASSIGNP_INNER( p, exp )  ( ft_debug_file_   = __FILE__, \
+                                      ft_debug_lineno_ = __LINE__, \
                                       FT_ASSIGNP( p, exp ) )
 
 #else /* !FT_DEBUG_MEMORY */
@@ -371,8 +371,11 @@ extern "C++"
 #define FT_STRDUP( dst, str )                           \
           FT_MEM_SET_ERROR( FT_MEM_STRDUP( dst, str ) )
 
-#define FT_MEM_DUP( dst, address, size )                                    \
-          (dst) = ft_mem_dup( memory, (address), (FT_ULong)(size), &error )
+#define FT_MEM_DUP( dst, address, size )                       \
+          FT_ASSIGNP_INNER( dst, ft_mem_dup( memory,           \
+                                             (address),        \
+                                             (FT_ULong)(size), \
+                                             &error ) )
 
 #define FT_DUP( dst, address, size )                           \
           FT_MEM_SET_ERROR( FT_MEM_DUP( dst, address, size ) )

@@ -1,37 +1,37 @@
-/*************************************************************************/
-/*  range.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  range.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "range.h"
 
 PackedStringArray Range::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Control::get_configuration_warnings();
 
 	if (shared->exp_ratio && shared->min <= 0) {
 		warnings.push_back(RTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."));
@@ -43,10 +43,49 @@ PackedStringArray Range::get_configuration_warnings() const {
 void Range::_value_changed(double p_value) {
 	GDVIRTUAL_CALL(_value_changed, p_value);
 }
+
 void Range::_value_changed_notify() {
 	_value_changed(shared->val);
-	emit_signal(SNAME("value_changed"), shared->val);
+	emit_signal(SceneStringName(value_changed), shared->val);
+	queue_accessibility_update();
 	queue_redraw();
+}
+
+void Range::_accessibility_action_inc(const Variant &p_data) {
+	double step = ((shared->step > 0) ? shared->step : 1);
+	set_value(shared->val + step);
+}
+
+void Range::_accessibility_action_dec(const Variant &p_data) {
+	double step = ((shared->step > 0) ? shared->step : 1);
+	set_value(shared->val - step);
+}
+
+void Range::_accessibility_action_set_value(const Variant &p_data) {
+	double new_val = p_data;
+	set_value(new_val);
+}
+
+void Range::_notification(int p_what) {
+	ERR_MAIN_THREAD_GUARD;
+	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPIN_BUTTON);
+			DisplayServer::get_singleton()->accessibility_update_set_num_value(ae, shared->val);
+			DisplayServer::get_singleton()->accessibility_update_set_num_range(ae, shared->min, shared->max);
+			if (shared->step > 0) {
+				DisplayServer::get_singleton()->accessibility_update_set_num_step(ae, shared->step);
+			} else {
+				DisplayServer::get_singleton()->accessibility_update_set_num_step(ae, 1);
+			}
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_DECREMENT, callable_mp(this, &Range::_accessibility_action_dec));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_INCREMENT, callable_mp(this, &Range::_accessibility_action_inc));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &Range::_accessibility_action_set_value));
+		} break;
+	}
 }
 
 void Range::Shared::emit_value_changed() {
@@ -60,7 +99,7 @@ void Range::Shared::emit_value_changed() {
 }
 
 void Range::_changed_notify(const char *p_what) {
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 	queue_redraw();
 }
 
@@ -74,16 +113,32 @@ void Range::Shared::emit_changed(const char *p_what) {
 	}
 }
 
+void Range::Shared::redraw_owners() {
+	for (Range *E : owners) {
+		Range *r = E;
+		if (!r->is_inside_tree()) {
+			continue;
+		}
+		r->queue_accessibility_update();
+		r->queue_redraw();
+	}
+}
+
 void Range::set_value(double p_val) {
 	double prev_val = shared->val;
-	set_value_no_signal(p_val);
+	_set_value_no_signal(p_val);
 
 	if (shared->val != prev_val) {
 		shared->emit_value_changed();
 	}
+	queue_accessibility_update();
 }
 
-void Range::set_value_no_signal(double p_val) {
+void Range::_set_value_no_signal(double p_val) {
+	if (!Math::is_finite(p_val)) {
+		return;
+	}
+
 	if (shared->step > 0) {
 		p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
 	}
@@ -107,6 +162,15 @@ void Range::set_value_no_signal(double p_val) {
 	shared->val = p_val;
 }
 
+void Range::set_value_no_signal(double p_val) {
+	double prev_val = shared->val;
+	_set_value_no_signal(p_val);
+
+	if (shared->val != prev_val) {
+		shared->redraw_owners();
+	}
+}
+
 void Range::set_min(double p_min) {
 	if (shared->min == p_min) {
 		return;
@@ -120,6 +184,8 @@ void Range::set_min(double p_min) {
 	shared->emit_changed("min");
 
 	update_configuration_warnings();
+
+	queue_accessibility_update();
 }
 
 void Range::set_max(double p_max) {
@@ -133,6 +199,8 @@ void Range::set_max(double p_max) {
 	set_value(shared->val);
 
 	shared->emit_changed("max");
+
+	queue_accessibility_update();
 }
 
 void Range::set_step(double p_step) {
@@ -142,6 +210,8 @@ void Range::set_step(double p_step) {
 
 	shared->step = p_step;
 	shared->emit_changed("step");
+
+	queue_accessibility_update();
 }
 
 void Range::set_page(double p_page) {
@@ -154,6 +224,8 @@ void Range::set_page(double p_page) {
 	set_value(shared->val);
 
 	shared->emit_changed("page");
+
+	queue_accessibility_update();
 }
 
 double Range::get_value() const {
@@ -217,7 +289,7 @@ double Range::get_as_ratio() const {
 
 void Range::_share(Node *p_range) {
 	Range *r = Object::cast_to<Range>(p_range);
-	ERR_FAIL_COND(!r);
+	ERR_FAIL_NULL(r);
 	share(r);
 }
 
@@ -241,6 +313,7 @@ void Range::unshare() {
 	nshared->allow_lesser = shared->allow_lesser;
 	_unref_shared();
 	_ref_shared(nshared);
+	queue_accessibility_update();
 }
 
 void Range::_ref_shared(Shared *p_shared) {
@@ -256,7 +329,7 @@ void Range::_ref_shared(Shared *p_shared) {
 void Range::_unref_shared() {
 	if (shared) {
 		shared->owners.erase(this);
-		if (shared->owners.size() == 0) {
+		if (shared->owners.is_empty()) {
 			memdelete(shared);
 			shared = nullptr;
 		}

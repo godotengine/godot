@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VoxelGIData" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VoxelGIData" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Contains baked voxel global illumination data for use in a [VoxelGI] node.
 	</brief_description>
@@ -8,7 +8,7 @@
 		[b]Note:[/b] To prevent text-based scene files ([code].tscn[/code]) from growing too much and becoming slow to load and save, always save [VoxelGIData] to an external binary resource file ([code].res[/code]) instead of embedding it within the scene. This can be done by clicking the dropdown arrow next to the [VoxelGIData] resource, choosing [b]Edit[/b], clicking the floppy disk icon at the top of the Inspector then choosing [b]Save As...[/b].
 	</description>
 	<tutorials>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
 		<method name="allocate">
@@ -26,8 +26,8 @@
 		<method name="get_bounds" qualifiers="const">
 			<return type="AABB" />
 			<description>
-				Returns the bounds of the baked voxel data as an [AABB], which should match [member VoxelGI.extents] after being baked (which only contains the size as a [Vector3]).
-				[b]Note:[/b] If the extents were modified without baking the VoxelGI data, then the value of [method get_bounds] and [member VoxelGI.extents] will not match.
+				Returns the bounds of the baked voxel data as an [AABB], which should match [member VoxelGI.size] after being baked (which only contains the size as a [Vector3]).
+				[b]Note:[/b] If the size was modified without baking the VoxelGI data, then the value of [method get_bounds] and [member VoxelGI.size] will not match.
 			</description>
 		</method>
 		<method name="get_data_cells" qualifiers="const">

@@ -1,41 +1,41 @@
-/*************************************************************************/
-/*  sky.h                                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  sky.h                                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef SKY_RD_H
-#define SKY_RD_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sky.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/shader_compiler.h"
@@ -53,8 +53,9 @@ public:
 		SKY_SET_MATERIAL,
 		SKY_SET_TEXTURES,
 		SKY_SET_FOG,
-		SKY_SET_MAX
 	};
+
+	const int SAMPLERS_BINDING_FIRST_INDEX = 4;
 
 	// Skys need less info from Directional Lights than the normal shaders
 	struct SkyDirectionalLightData {
@@ -68,9 +69,6 @@ public:
 
 private:
 	RD::DataFormat texture_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-
-	RID index_buffer;
-	RID index_array;
 
 	enum SkyTextureSetVersion {
 		SKY_TEXTURE_SET_BACKGROUND,
@@ -99,11 +97,12 @@ private:
 
 	struct SkyPushConstant {
 		float orientation[12]; // 48 - 48
-		float projections[RendererSceneRender::MAX_RENDER_VIEWS][4]; // 2 x 16 - 80
-		float position[3]; // 12 - 92
-		float time; // 4 - 96
-		float pad[3]; // 12 - 108
-		float luminance_multiplier; // 4 - 112
+		float projection[4]; // 16 - 64
+		float position[3]; // 12 - 76
+		float time; // 4 - 80
+		float pad[2]; // 8 - 88
+		float luminance_multiplier; // 4 - 92
+		float brightness_multiplier; // 4 - 96
 		// 128 is the max size of a push constant. We can replace "pad" but we can't add any more.
 	};
 
@@ -134,31 +133,39 @@ private:
 		virtual ~SkyShaderData();
 	};
 
-	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, uint32_t p_view_count, const Projection *p_projections, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier);
+	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier, float p_brightness_modifier);
 
 public:
 	struct SkySceneState {
 		struct UBO {
-			uint32_t volumetric_fog_enabled; // 4 - 4
-			float volumetric_fog_inv_length; // 4 - 8
-			float volumetric_fog_detail_spread; // 4 - 12
-			float volumetric_fog_sky_affect; // 4 - 16
+			float combined_reprojection[RendererSceneRender::MAX_RENDER_VIEWS][16]; // 2 x 64 - 128
+			float view_inv_projections[RendererSceneRender::MAX_RENDER_VIEWS][16]; // 2 x 64 - 256
+			float view_eye_offsets[RendererSceneRender::MAX_RENDER_VIEWS][4]; // 2 x 16 - 288
 
-			uint32_t fog_enabled; // 4 - 20
-			float fog_sky_affect; // 4 - 24
-			float fog_density; // 4 - 28
-			float fog_sun_scatter; // 4 - 32
+			uint32_t volumetric_fog_enabled; // 4 - 292
+			float volumetric_fog_inv_length; // 4 - 296
+			float volumetric_fog_detail_spread; // 4 - 300
+			float volumetric_fog_sky_affect; // 4 - 304
 
-			float fog_light_color[3]; // 12 - 44
-			float fog_aerial_perspective; // 4 - 48
+			uint32_t fog_enabled; // 4 - 308
+			float fog_sky_affect; // 4 - 312
+			float fog_density; // 4 - 316
+			float fog_sun_scatter; // 4 - 320
 
-			float z_far; // 4 - 52
-			uint32_t directional_light_count; // 4 - 56
-			uint32_t pad1; // 4 - 60
-			uint32_t pad2; // 4 - 64
+			float fog_light_color[3]; // 12 - 332
+			float fog_aerial_perspective; // 4 - 336
+
+			float z_far; // 4 - 340
+			uint32_t directional_light_count; // 4 - 344
+			uint32_t pad1; // 4 - 348
+			uint32_t pad2; // 4 - 352
 		};
 
 		UBO ubo;
+
+		uint32_t view_count = 1;
+		Transform3D cam_transform;
+		Projection cam_projection;
 
 		SkyDirectionalLightData *directional_lights = nullptr;
 		SkyDirectionalLightData *last_frame_directional_lights = nullptr;
@@ -238,13 +245,10 @@ public:
 
 	struct Sky {
 		RID radiance;
-		RID half_res_pass;
-		RID half_res_framebuffer;
 		RID quarter_res_pass;
 		RID quarter_res_framebuffer;
 		Size2i screen_size;
 
-		RID texture_uniform_sets[SKY_TEXTURE_SET_MAX];
 		RID uniform_set;
 
 		RID material;
@@ -267,7 +271,7 @@ public:
 
 		void free();
 
-		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd);
+		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, Ref<RenderSceneBuffersRD> p_render_buffers);
 		bool set_radiance_size(int p_radiance_size);
 		bool set_mode(RS::SkyMode p_mode);
 		bool set_material(RID p_material);
@@ -291,11 +295,10 @@ public:
 	void set_texture_format(RD::DataFormat p_texture_format);
 	~SkyRD();
 
-	void setup(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
-	void update(RID p_env, const Projection &p_projection, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
-	void draw(RID p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0); // only called by clustered renderer
-	void update_res_buffers(RID p_env, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
-	void draw(RD::DrawListID p_draw_list, RID p_env, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
+	void setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_size);
+	void update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, const Vector3 &p_global_pos, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
+	void update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
+	void draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, RID p_fb, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
 
 	void invalidate_sky(Sky *p_sky);
 	void update_dirty_skys();
@@ -315,5 +318,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // SKY_RD_H

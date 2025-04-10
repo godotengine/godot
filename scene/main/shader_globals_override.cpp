@@ -1,37 +1,36 @@
-/*************************************************************************/
-/*  shader_globals_override.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_globals_override.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "shader_globals_override.h"
 
-#include "scene/3d/node_3d.h"
-#include "scene/scene_string_names.h"
+#include "scene/main/node.h"
 
 StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
 	StringName *r = param_remaps.getptr(p_name);
@@ -41,7 +40,7 @@ StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
 		if (p.begins_with("params/")) {
 			String q = p.replace_first("params/", "");
 			param_remaps[p] = q;
-			r = param_remaps.getptr(q);
+			r = param_remaps.getptr(p);
 		}
 	}
 
@@ -128,7 +127,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 				pinfo.type = Variant::VECTOR3I;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_IVEC4: {
-				pinfo.type = Variant::PACKED_INT32_ARRAY;
+				pinfo.type = Variant::VECTOR4I;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_RECT2I: {
 				pinfo.type = Variant::RECT2I;
@@ -143,7 +142,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 				pinfo.type = Variant::VECTOR3I;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_UVEC4: {
-				pinfo.type = Variant::PACKED_INT32_ARRAY;
+				pinfo.type = Variant::VECTOR4I;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_FLOAT: {
 				pinfo.type = Variant::FLOAT;
@@ -164,7 +163,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 				pinfo.type = Variant::COLOR;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_MAT2: {
-				pinfo.type = Variant::PACKED_INT32_ARRAY;
+				pinfo.type = Variant::PACKED_FLOAT32_ARRAY;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_MAT3: {
 				pinfo.type = Variant::BASIS;
@@ -198,6 +197,11 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 				pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
 				pinfo.hint_string = "Cubemap";
 			} break;
+			case RS::GLOBAL_VAR_TYPE_SAMPLEREXT: {
+				pinfo.type = Variant::OBJECT;
+				pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pinfo.hint_string = "ExternalTexture";
+			} break;
 			default: {
 			} break;
 		}
@@ -223,11 +227,11 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 void ShaderGlobalsOverride::_activate() {
 	ERR_FAIL_NULL(get_tree());
 	List<Node *> nodes;
-	get_tree()->get_nodes_in_group(SceneStringNames::get_singleton()->shader_overrides_group_active, &nodes);
-	if (nodes.size() == 0) {
+	get_tree()->get_nodes_in_group(SceneStringName(shader_overrides_group_active), &nodes);
+	if (nodes.is_empty()) {
 		//good we are the only override, enable all
 		active = true;
-		add_to_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
+		add_to_group(SceneStringName(shader_overrides_group_active));
 
 		for (const KeyValue<StringName, Override> &E : overrides) {
 			const Override *o = &E.value;
@@ -247,12 +251,12 @@ void ShaderGlobalsOverride::_activate() {
 
 void ShaderGlobalsOverride::_notification(int p_what) {
 	switch (p_what) {
-		case Node3D::NOTIFICATION_ENTER_TREE: {
-			add_to_group(SceneStringNames::get_singleton()->shader_overrides_group);
+		case Node::NOTIFICATION_ENTER_TREE: {
+			add_to_group(SceneStringName(shader_overrides_group));
 			_activate();
 		} break;
 
-		case Node3D::NOTIFICATION_EXIT_TREE: {
+		case Node::NOTIFICATION_EXIT_TREE: {
 			if (active) {
 				//remove overrides
 				for (const KeyValue<StringName, Override> &E : overrides) {
@@ -263,9 +267,9 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 				}
 			}
 
-			remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
-			remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group);
-			get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->shader_overrides_group, "_activate"); //another may want to activate when this is removed
+			remove_from_group(SceneStringName(shader_overrides_group_active));
+			remove_from_group(SceneStringName(shader_overrides_group));
+			get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(shader_overrides_group), "_activate"); //another may want to activate when this is removed
 			active = false;
 		} break;
 	}

@@ -1,39 +1,37 @@
-/*************************************************************************/
-/*  a_star.h                                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  a_star.h                                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef A_STAR_H
-#define A_STAR_H
+#pragma once
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
-#include "core/object/script_language.h"
 #include "core/templates/oa_hash_map.h"
 
 /**
@@ -52,7 +50,7 @@ class AStar3D : public RefCounted {
 		real_t weight_scale = 0;
 		bool enabled = false;
 
-		OAHashMap<int64_t, Point *> neighbours = 4u;
+		OAHashMap<int64_t, Point *> neighbors = 4u;
 		OAHashMap<int64_t, Point *> unlinked_neighbours = 4u;
 
 		// Used for pathfinding.
@@ -61,6 +59,10 @@ class AStar3D : public RefCounted {
 		real_t f_score = 0;
 		uint64_t open_pass = 0;
 		uint64_t closed_pass = 0;
+
+		// Used for getting closest_point_of_last_pathing_call.
+		real_t abs_g_score = 0;
+		real_t abs_f_score = 0;
 	};
 
 	struct SortPoints {
@@ -105,22 +107,29 @@ class AStar3D : public RefCounted {
 		}
 	};
 
-	int64_t last_free_id = 0;
+	mutable int64_t last_free_id = 0;
 	uint64_t pass = 1;
 
 	OAHashMap<int64_t, Point *> points;
 	HashSet<Segment, Segment> segments;
+	Point *last_closest_point = nullptr;
 
-	bool _solve(Point *begin_point, Point *end_point);
+	bool _solve(Point *begin_point, Point *end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_to_id);
+	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
+
+#ifndef DISABLE_DEPRECATED
+	Vector<int64_t> _get_id_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector3> _get_point_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	int64_t get_available_point_id() const;
@@ -150,8 +159,8 @@ public:
 	int64_t get_closest_point(const Vector3 &p_point, bool p_include_disabled = false) const;
 	Vector3 get_closest_position_in_segment(const Vector3 &p_point) const;
 
-	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id);
-	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
+	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 
 	AStar3D() {}
 	~AStar3D();
@@ -161,16 +170,22 @@ class AStar2D : public RefCounted {
 	GDCLASS(AStar2D, RefCounted);
 	AStar3D astar;
 
-	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point);
+	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_to_id);
+	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
+
+#ifndef DISABLE_DEPRECATED
+	Vector<int64_t> _get_id_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector2> _get_point_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	int64_t get_available_point_id() const;
@@ -200,11 +215,9 @@ public:
 	int64_t get_closest_point(const Vector2 &p_point, bool p_include_disabled = false) const;
 	Vector2 get_closest_position_in_segment(const Vector2 &p_point) const;
 
-	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id);
-	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
+	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 
 	AStar2D() {}
 	~AStar2D() {}
 };
-
-#endif // A_STAR_H

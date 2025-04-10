@@ -4,7 +4,7 @@
  *
  *   Auxiliary data for Signed Distance Field support (body).
  *
- * Copyright (C) 2020-2022 by
+ * Copyright (C) 2020-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.
@@ -24,56 +24,13 @@
 
   /**************************************************************************
    *
-   * common functions
-   *
-   */
-
-  /*
-   * Original algorithm:
-   *
-   *   https://github.com/chmike/fpsqrt
-   *
-   * Use this to compute the square root of a 16.16 fixed point number.
-   */
-  FT_LOCAL_DEF( FT_16D16 )
-  square_root( FT_16D16  val )
-  {
-    FT_ULong  t, q, b, r;
-
-
-    r = (FT_ULong)val;
-    b = 0x40000000L;
-    q = 0;
-
-    while ( b > 0x40L )
-    {
-      t = q + b;
-
-      if ( r >= t )
-      {
-        r -= t;
-        q  = t + b;
-      }
-
-      r <<= 1;
-      b >>= 1;
-    }
-
-    q >>= 8;
-
-    return (FT_16D16)q;
-  }
-
-
-  /**************************************************************************
-   *
    * format and sign manipulating functions
    *
    */
 
   /*
-   * Convert 16.16 fixed point values to the desired output format.
-   * In this case we reduce 16.16 fixed point values to normalized
+   * Convert 16.16 fixed-point values to the desired output format.
+   * In this case we reduce 16.16 fixed-point values to normalized
    * 8-bit values.
    *
    * The `max_value` in the parameter is the maximum value in the

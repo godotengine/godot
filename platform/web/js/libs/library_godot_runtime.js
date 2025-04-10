@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  library_godot_runtime.js                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  library_godot_runtime.js                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 const GodotRuntime = {
 	$GodotRuntime: {
@@ -34,7 +34,7 @@ const GodotRuntime = {
 		 * Functions
 		 */
 		get_func: function (ptr) {
-			return wasmTable.get(ptr); // eslint-disable-line no-undef
+			return wasmTable.get(ptr);
 		},
 
 		/*
@@ -52,19 +52,19 @@ const GodotRuntime = {
 		 * Memory
 		 */
 		malloc: function (p_size) {
-			return _malloc(p_size); // eslint-disable-line no-undef
+			return _malloc(p_size);
 		},
 
 		free: function (p_ptr) {
-			_free(p_ptr); // eslint-disable-line no-undef
+			_free(p_ptr);
 		},
 
 		getHeapValue: function (p_ptr, p_type) {
-			return getValue(p_ptr, p_type); // eslint-disable-line no-undef
+			return getValue(p_ptr, p_type);
 		},
 
 		setHeapValue: function (p_ptr, p_value, p_type) {
-			setValue(p_ptr, p_value, p_type); // eslint-disable-line no-undef
+			setValue(p_ptr, p_value, p_type);
 		},
 
 		heapSub: function (p_heap, p_ptr, p_len) {
@@ -86,7 +86,7 @@ const GodotRuntime = {
 		 * Strings
 		 */
 		parseString: function (p_ptr) {
-			return UTF8ToString(p_ptr); // eslint-disable-line no-undef
+			return UTF8ToString(p_ptr);
 		},
 
 		parseStringArray: function (p_ptr, p_size) {
@@ -99,13 +99,13 @@ const GodotRuntime = {
 		},
 
 		strlen: function (p_str) {
-			return lengthBytesUTF8(p_str); // eslint-disable-line no-undef
+			return lengthBytesUTF8(p_str);
 		},
 
 		allocString: function (p_str) {
 			const length = GodotRuntime.strlen(p_str) + 1;
 			const c_str = GodotRuntime.malloc(length);
-			stringToUTF8(p_str, c_str, length); // eslint-disable-line no-undef
+			stringToUTF8(p_str, c_str, length);
 			return c_str;
 		},
 
@@ -126,7 +126,7 @@ const GodotRuntime = {
 		},
 
 		stringToHeap: function (p_str, p_ptr, p_len) {
-			return stringToUTF8Array(p_str, HEAP8, p_ptr, p_len); // eslint-disable-line no-undef
+			return stringToUTF8Array(p_str, HEAP8, p_ptr, p_len);
 		},
 	},
 };

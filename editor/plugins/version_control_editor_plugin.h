@@ -1,44 +1,41 @@
-/*************************************************************************/
-/*  version_control_editor_plugin.h                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  version_control_editor_plugin.h                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef VERSION_CONTROL_EDITOR_PLUGIN_H
-#define VERSION_CONTROL_EDITOR_PLUGIN_H
+#pragma once
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_vcs_interface.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/check_button.h"
-#include "scene/gui/container.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
 
@@ -73,8 +70,6 @@ private:
 	AcceptDialog *set_up_dialog = nullptr;
 	CheckButton *toggle_vcs_choice = nullptr;
 	OptionButton *set_up_choice = nullptr;
-	LineEdit *project_path_input = nullptr;
-	Button *select_project_path_button = nullptr;
 	VBoxContainer *set_up_vbc = nullptr;
 	VBoxContainer *set_up_settings_vbc = nullptr;
 	LineEdit *set_up_username = nullptr;
@@ -85,6 +80,8 @@ private:
 	FileDialog *set_up_ssh_public_key_file_dialog = nullptr;
 	FileDialog *set_up_ssh_private_key_file_dialog = nullptr;
 	Label *set_up_warning_text = nullptr;
+
+	AcceptDialog *discard_all_confirm = nullptr;
 
 	OptionButton *commit_list_size_button = nullptr;
 
@@ -142,21 +139,22 @@ private:
 	void _initialize_vcs();
 	void _set_vcs_ui_state(bool p_enabled);
 	void _set_credentials();
-	void _ssh_public_key_selected(String p_path);
-	void _ssh_private_key_selected(String p_path);
+	void _ssh_public_key_selected(const String &p_path);
+	void _ssh_private_key_selected(const String &p_path);
 	void _populate_available_vcs_names();
 	void _update_remotes_list();
-	void _update_set_up_warning(String p_new_text);
+	void _update_set_up_warning(const String &p_new_text);
 	void _update_opened_tabs();
 	void _update_extra_options();
 
-	bool _load_plugin(String p_name, String p_project_path);
+	bool _load_plugin(const String &p_name);
 
 	void _pull();
 	void _push();
 	void _force_push();
 	void _fetch();
 	void _commit();
+	void _confirm_discard_all();
 	void _discard_all();
 	void _refresh_stage_area();
 	void _refresh_branch_list();
@@ -171,8 +169,8 @@ private:
 	void _item_activated(Object *p_tree);
 	void _create_branch();
 	void _create_remote();
-	void _update_branch_create_button(String p_new_text);
-	void _update_remote_create_button(String p_new_text);
+	void _update_branch_create_button(const String &p_new_text);
+	void _update_remote_create_button(const String &p_new_text);
 	void _branch_item_selected(int p_index);
 	void _remote_selected(int p_index);
 	void _remove_branch();
@@ -182,18 +180,17 @@ private:
 	void _move_item(Tree *p_tree, TreeItem *p_itme);
 	void _display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
 	void _display_diff_unified_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
-	void _discard_file(String p_file_path, EditorVCSInterface::ChangeType p_change);
+	void _discard_file(const String &p_file_path, EditorVCSInterface::ChangeType p_change);
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, int p_mouse_button_index);
-	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType p_change);
+	void _add_new_item(Tree *p_tree, const String &p_file_path, EditorVCSInterface::ChangeType p_change);
 	void _update_commit_button();
 	void _commit_message_gui_input(const Ref<InputEvent> &p_event);
 	void _extra_option_selected(int p_index);
 	bool _is_staging_area_empty();
 	String _get_date_string_from(int64_t p_unix_timestamp, int64_t p_offset_minutes) const;
 	void _create_vcs_metadata_files();
-	void _popup_file_dialog(Variant p_file_dialog_variant);
+	void _popup_file_dialog(const Variant &p_file_dialog_variant);
 	void _toggle_vcs_integration(bool p_toggled);
-	void _project_path_selected(String p_project_path);
 
 	friend class EditorVCSInterface;
 
@@ -215,5 +212,3 @@ public:
 	VersionControlEditorPlugin();
 	~VersionControlEditorPlugin();
 };
-
-#endif // VERSION_CONTROL_EDITOR_PLUGIN_H

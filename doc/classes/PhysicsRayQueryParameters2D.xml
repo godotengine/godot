@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsRayQueryParameters2D" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsRayQueryParameters2D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Parameters to be sent to a 2D ray physics query.
+		Provides parameters for [method PhysicsDirectSpaceState2D.intersect_ray].
 	</brief_description>
 	<description>
-		This class contains the ray position and other parameters to be used for [method PhysicsDirectSpaceState2D.intersect_ray].
+		By changing various properties of this object, such as the ray position, you can configure the parameters for [method PhysicsDirectSpaceState2D.intersect_ray].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -36,6 +36,7 @@
 		</member>
 		<member name="exclude" type="RID[]" setter="set_exclude" getter="get_exclude" default="[]">
 			The list of object [RID]s that will be excluded from collisions. Use [method CollisionObject2D.get_rid] to get the [RID] associated with a [CollisionObject2D]-derived node.
+			[b]Note:[/b] The returned array is copied and any changes to it will not update the original property value. To update the value you need to modify the returned array, and then assign it to the property again.
 		</member>
 		<member name="from" type="Vector2" setter="set_from" getter="get_from" default="Vector2(0, 0)">
 			The starting point of the ray being queried for, in global coordinates.

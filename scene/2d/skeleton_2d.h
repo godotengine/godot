@@ -1,38 +1,37 @@
-/*************************************************************************/
-/*  skeleton_2d.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  skeleton_2d.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef SKELETON_2D_H
-#define SKELETON_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 
 class Skeleton2D;
 
@@ -80,9 +79,6 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
-	void set_default_length(real_t p_length);
-	real_t get_default_length() const;
-
 	void set_autocalculate_length_and_angle(bool p_autocalculate);
 	bool get_autocalculate_length_and_angle() const;
 	void set_length(real_t p_length);
@@ -126,7 +122,7 @@ class Skeleton2D : public Node2D {
 		bool local_pose_override_persistent = false;
 	};
 
-	Vector<Bone> bones;
+	LocalVector<Bone> bones;
 
 	bool bone_setup_dirty = true;
 	void _make_bone_setup_dirty();
@@ -140,7 +136,21 @@ class Skeleton2D : public Node2D {
 
 	Ref<SkeletonModificationStack2D> modification_stack;
 
+	///////////////////////////////////////////////////////
+	// INTERPOLATION
+	struct InterpolationData {
+		Transform2D xform_curr;
+		Transform2D xform_prev;
+		uint32_t last_update_physics_tick = UINT32_MAX; // Ensure tick 0 is detected as a change.
+	} _interpolation_data;
+
+	void _update_process_mode();
+	void _ensure_update_interpolation_data();
+
 protected:
+	virtual void _physics_interpolated_changed() override;
+	///////////////////////////////////////////////////////
+
 	void _notification(int p_what);
 	static void _bind_methods();
 	bool _set(const StringName &p_path, const Variant &p_value);
@@ -163,5 +173,3 @@ public:
 	Skeleton2D();
 	~Skeleton2D();
 };
-
-#endif // SKELETON_2D_H

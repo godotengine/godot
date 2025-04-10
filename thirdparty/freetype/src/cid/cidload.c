@@ -4,7 +4,7 @@
  *
  *   CID-keyed Type1 font loader (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -155,23 +155,24 @@
 
 
   FT_CALLBACK_DEF( void )
-  cid_parse_font_matrix( CID_Face     face,
-                         CID_Parser*  parser )
+  cid_parse_font_matrix( FT_Face  face,     /* CID_Face */
+                         void*    parser_ )
   {
+    CID_Face      cidface = (CID_Face)face;
+    CID_Parser*   parser  = (CID_Parser*)parser_;
     CID_FaceDict  dict;
-    FT_Face       root = (FT_Face)&face->root;
     FT_Fixed      temp[6];
     FT_Fixed      temp_scale;
 
 
-    if ( parser->num_dict < face->cid.num_dicts )
+    if ( parser->num_dict < cidface->cid.num_dicts )
     {
       FT_Matrix*  matrix;
       FT_Vector*  offset;
       FT_Int      result;
 
 
-      dict   = face->cid.font_dicts + parser->num_dict;
+      dict   = cidface->cid.font_dicts + parser->num_dict;
       matrix = &dict->font_matrix;
       offset = &dict->font_offset;
 
@@ -204,7 +205,7 @@
       if ( temp_scale != 0x10000L )
       {
         /* set units per EM based on FontMatrix values */
-        root->units_per_EM = (FT_UShort)FT_DivFix( 1000, temp_scale );
+        face->units_per_EM = (FT_UShort)FT_DivFix( 1000, temp_scale );
 
         temp[0] = FT_DivFix( temp[0], temp_scale );
         temp[1] = FT_DivFix( temp[1], temp_scale );
@@ -237,13 +238,15 @@
 
 
   FT_CALLBACK_DEF( void )
-  parse_fd_array( CID_Face     face,
-                  CID_Parser*  parser )
+  parse_fd_array( FT_Face  face,     /* CID_Face */
+                  void*    parser_ )
   {
-    CID_FaceInfo  cid    = &face->cid;
-    FT_Memory     memory = face->root.memory;
-    FT_Stream     stream = parser->stream;
-    FT_Error      error  = FT_Err_Ok;
+    CID_Face      cidface = (CID_Face)face;
+    CID_Parser*   parser  = (CID_Parser*)parser_;
+    CID_FaceInfo  cid     = &cidface->cid;
+    FT_Memory     memory  = FT_FACE_MEMORY( face );
+    FT_Stream     stream  = parser->stream;
+    FT_Error      error   = FT_Err_Ok;
     FT_Long       num_dicts, max_dicts;
 
 
@@ -313,18 +316,20 @@
 
   /* By mistake, `expansion_factor' appears both in PS_PrivateRec */
   /* and CID_FaceDictRec (both are public header files and can't  */
-  /* changed).  We simply copy the value.                         */
+  /* be thus changed).  We simply copy the value.                 */
 
   FT_CALLBACK_DEF( void )
-  parse_expansion_factor( CID_Face     face,
-                          CID_Parser*  parser )
+  parse_expansion_factor( FT_Face  face,    /* CID_Face */
+                          void*    parser_ )
   {
+    CID_Face      cidface = (CID_Face)face;
+    CID_Parser*   parser  = (CID_Parser*)parser_;
     CID_FaceDict  dict;
 
 
-    if ( parser->num_dict < face->cid.num_dicts )
+    if ( parser->num_dict < cidface->cid.num_dicts )
     {
-      dict = face->cid.font_dicts + parser->num_dict;
+      dict = cidface->cid.font_dicts + parser->num_dict;
 
       dict->expansion_factor              = cid_parser_to_fixed( parser, 0 );
       dict->private_dict.expansion_factor = dict->expansion_factor;
@@ -341,11 +346,15 @@
   /* to catch it for producing better trace output.                */
 
   FT_CALLBACK_DEF( void )
-  parse_font_name( CID_Face     face,
-                   CID_Parser*  parser )
+  parse_font_name( FT_Face  face,     /* CID_Face */
+                   void*    parser_ )
   {
 #ifdef FT_DEBUG_LEVEL_TRACE
-    if ( parser->num_dict < face->cid.num_dicts )
+    CID_Face      cidface = (CID_Face)face;
+    CID_Parser*   parser  = (CID_Parser*)parser_;
+
+
+    if ( parser->num_dict < cidface->cid.num_dicts )
     {
       T1_TokenRec  token;
       FT_UInt      len;
@@ -361,7 +370,7 @@
     }
 #else
     FT_UNUSED( face );
-    FT_UNUSED( parser );
+    FT_UNUSED( parser_ );
 #endif
 
     return;
@@ -379,7 +388,7 @@
     T1_FIELD_CALLBACK( "ExpansionFactor", parse_expansion_factor, 0 )
     T1_FIELD_CALLBACK( "FontName",        parse_font_name, 0 )
 
-    { 0, T1_FIELD_LOCATION_CID_INFO, T1_FIELD_TYPE_NONE, 0, 0, 0, 0, 0, 0 }
+    T1_FIELD_ZERO
   };
 
 
@@ -460,36 +469,23 @@
             T1_Field  keyword = (T1_Field)cid_field_records;
 
 
-            for (;;)
+            while ( keyword->len )
             {
-              FT_Byte*  name;
+              FT_Byte*  name = (FT_Byte*)keyword->ident;
 
 
-              name = (FT_Byte*)keyword->ident;
-              if ( !name )
-                break;
-
-              if ( cur[0] == name[0]                     &&
-                   len == ft_strlen( (const char*)name ) )
+              if ( keyword->len == len              &&
+                   ft_memcmp( cur, name, len ) == 0 )
               {
-                FT_UInt  n;
-
-
-                for ( n = 1; n < len; n++ )
-                  if ( cur[n] != name[n] )
-                    break;
-
-                if ( n >= len )
-                {
-                  /* we found it - run the parsing callback */
-                  parser->root.error = cid_load_keyword( face,
-                                                         loader,
-                                                         keyword );
-                  if ( parser->root.error )
-                    return parser->root.error;
-                  break;
-                }
+                /* we found it - run the parsing callback */
+                parser->root.error = cid_load_keyword( face,
+                                                       loader,
+                                                       keyword );
+                if ( parser->root.error )
+                  return parser->root.error;
+                break;
               }
+
               keyword++;
             }
           }

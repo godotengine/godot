@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  library_godot_websocket.js                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  library_godot_websocket.js                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 const GodotWebSocket = {
 	// Our socket implementation that forwards events to C++.
@@ -124,7 +124,7 @@ const GodotWebSocket = {
 			const ref = IDHandler.get(p_id);
 			if (ref && ref.readyState < ref.CLOSING) {
 				const code = p_code;
-				const reason = GodotRuntime.parseString(p_reason);
+				const reason = p_reason;
 				ref.close(code, reason);
 			}
 		},
@@ -144,6 +144,7 @@ const GodotWebSocket = {
 		},
 	},
 
+	godot_js_websocket_create__proxy: 'sync',
 	godot_js_websocket_create__sig: 'iiiiiiii',
 	godot_js_websocket_create: function (p_ref, p_url, p_proto, p_on_open, p_on_message, p_on_error, p_on_close) {
 		const on_open = GodotRuntime.get_func(p_on_open).bind(null, p_ref);
@@ -166,6 +167,7 @@ const GodotWebSocket = {
 		return GodotWebSocket.create(socket, on_open, on_message, on_error, on_close);
 	},
 
+	godot_js_websocket_send__proxy: 'sync',
 	godot_js_websocket_send__sig: 'iiiii',
 	godot_js_websocket_send: function (p_id, p_buf, p_buf_len, p_raw) {
 		const bytes_array = new Uint8Array(p_buf_len);
@@ -180,11 +182,13 @@ const GodotWebSocket = {
 		return GodotWebSocket.send(p_id, out);
 	},
 
+	godot_js_websocket_buffered_amount__proxy: 'sync',
 	godot_js_websocket_buffered_amount__sig: 'ii',
 	godot_js_websocket_buffered_amount: function (p_id) {
 		return GodotWebSocket.bufferedAmount(p_id);
 	},
 
+	godot_js_websocket_close__proxy: 'sync',
 	godot_js_websocket_close__sig: 'viii',
 	godot_js_websocket_close: function (p_id, p_code, p_reason) {
 		const code = p_code;
@@ -192,6 +196,7 @@ const GodotWebSocket = {
 		GodotWebSocket.close(p_id, code, reason);
 	},
 
+	godot_js_websocket_destroy__proxy: 'sync',
 	godot_js_websocket_destroy__sig: 'vi',
 	godot_js_websocket_destroy: function (p_id) {
 		GodotWebSocket.destroy(p_id);

@@ -1,36 +1,36 @@
-/*************************************************************************/
-/*  link_button.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  link_button.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "link_button.h"
 
-#include "core/string/translation.h"
+#include "scene/theme/theme_db.h"
 
 void LinkButton::_shape() {
 	Ref<Font> font = theme_cache.font;
@@ -44,6 +44,8 @@ void LinkButton::_shape() {
 	}
 	TS->shaped_text_set_bidi_override(text_buf->get_rid(), structured_text_parser(st_parser, st_args, xl_text));
 	text_buf->add_string(xl_text, font, font_size, language);
+
+	queue_accessibility_update();
 }
 
 void LinkButton::set_text(const String &p_text) {
@@ -109,7 +111,10 @@ String LinkButton::get_language() const {
 }
 
 void LinkButton::set_uri(const String &p_uri) {
-	uri = p_uri;
+	if (uri != p_uri) {
+		uri = p_uri;
+		queue_accessibility_update();
+	}
 }
 
 String LinkButton::get_uri() const {
@@ -129,6 +134,10 @@ LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
 	return underline_mode;
 }
 
+Ref<Font> LinkButton::get_button_font() const {
+	return theme_cache.font;
+}
+
 void LinkButton::pressed() {
 	if (uri.is_empty()) {
 		return;
@@ -141,28 +150,19 @@ Size2 LinkButton::get_minimum_size() const {
 	return text_buf->get_size();
 }
 
-void LinkButton::_update_theme_item_cache() {
-	BaseButton::_update_theme_item_cache();
-
-	theme_cache.focus = get_theme_stylebox(SNAME("focus"));
-
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_focus_color = get_theme_color(SNAME("font_focus_color"));
-	theme_cache.font_pressed_color = get_theme_color(SNAME("font_pressed_color"));
-	theme_cache.font_hover_color = get_theme_color(SNAME("font_hover_color"));
-	theme_cache.font_hover_pressed_color = get_theme_color(SNAME("font_hover_pressed_color"));
-	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-
-	theme_cache.underline_spacing = get_theme_constant(SNAME("underline_spacing"));
-}
-
 void LinkButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LINK);
+			if (!xl_text.is_empty() && get_accessibility_name().is_empty()) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, xl_text);
+			}
+			DisplayServer::get_singleton()->accessibility_update_set_url(ae, uri);
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			xl_text = atr(text);
 			_shape();
@@ -243,11 +243,12 @@ void LinkButton::_notification(int p_what) {
 			if (do_underline) {
 				int underline_spacing = theme_cache.underline_spacing + text_buf->get_line_underline_position();
 				int y = text_buf->get_line_ascent() + underline_spacing;
+				int underline_thickness = MAX(1, text_buf->get_line_underline_thickness());
 
 				if (is_layout_rtl()) {
-					draw_line(Vector2(size.width - width, y), Vector2(size.width, y), color, text_buf->get_line_underline_thickness());
+					draw_line(Vector2(size.width - width, y), Vector2(size.width, y), color, underline_thickness);
 				} else {
-					draw_line(Vector2(0, y), Vector2(width, y), color, text_buf->get_line_underline_thickness());
+					draw_line(Vector2(0, y), Vector2(width, y), color, underline_thickness);
 				}
 			}
 		} break;
@@ -283,11 +284,27 @@ void LinkButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, LinkButton, focus);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_focus_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_hover_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_hover_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_disabled_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, LinkButton, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, LinkButton, font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LinkButton, outline_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LinkButton, underline_spacing);
 }
 
 LinkButton::LinkButton(const String &p_text) {
 	text_buf.instantiate();
-	set_focus_mode(FOCUS_NONE);
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
 
 	set_text(p_text);

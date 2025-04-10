@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-import atexit
-import os
-import sys
+# ruff: noqa: F821
+
 import methods
-import time
 
 # For the reference:
 # - CCFLAGS are compilation flags shared between C and C++
@@ -12,8 +10,6 @@ import time
 # - CPPFLAGS are for pre-processor flags
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
-
-time_at_start = time.time()
 
 env = SConscript("./godot-cpp/SConstruct")
 env.__class__.disable_warnings = methods.disable_warnings
@@ -27,9 +23,6 @@ opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", Fa
 
 opts.Update(env)
 
-if not env["verbose"]:
-    methods.no_verbose(sys, env)
-
 # ThorVG
 if env["thorvg_enabled"] and env["freetype_enabled"]:
     env_tvg = env.Clone()
@@ -37,68 +30,82 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
 
     thirdparty_tvg_dir = "../../../thirdparty/thorvg/"
     thirdparty_tvg_sources = [
-        "src/lib/sw_engine/tvgSwFill.cpp",
-        "src/lib/sw_engine/tvgSwImage.cpp",
-        "src/lib/sw_engine/tvgSwMath.cpp",
-        "src/lib/sw_engine/tvgSwMemPool.cpp",
-        "src/lib/sw_engine/tvgSwRaster.cpp",
-        "src/lib/sw_engine/tvgSwRenderer.cpp",
-        "src/lib/sw_engine/tvgSwRle.cpp",
-        "src/lib/sw_engine/tvgSwShape.cpp",
-        "src/lib/sw_engine/tvgSwStroke.cpp",
-        "src/lib/tvgAccessor.cpp",
-        "src/lib/tvgBezier.cpp",
-        "src/lib/tvgCanvas.cpp",
-        "src/lib/tvgFill.cpp",
-        "src/lib/tvgGlCanvas.cpp",
-        "src/lib/tvgInitializer.cpp",
-        "src/lib/tvgLinearGradient.cpp",
-        "src/lib/tvgLoader.cpp",
-        "src/lib/tvgLzw.cpp",
-        "src/lib/tvgPaint.cpp",
-        "src/lib/tvgPicture.cpp",
-        "src/lib/tvgRadialGradient.cpp",
-        "src/lib/tvgRender.cpp",
-        "src/lib/tvgSaver.cpp",
-        "src/lib/tvgScene.cpp",
-        "src/lib/tvgShape.cpp",
-        "src/lib/tvgSwCanvas.cpp",
-        "src/lib/tvgTaskScheduler.cpp",
-        "src/loaders/external_png/tvgPngLoader.cpp",
-        "src/loaders/jpg/tvgJpgd.cpp",
-        "src/loaders/jpg/tvgJpgLoader.cpp",
-        "src/loaders/raw/tvgRawLoader.cpp",
+        # common
+        "src/common/tvgCompressor.cpp",
+        "src/common/tvgLines.cpp",
+        "src/common/tvgMath.cpp",
+        "src/common/tvgStr.cpp",
+        # SVG parser
         "src/loaders/svg/tvgSvgCssStyle.cpp",
         "src/loaders/svg/tvgSvgLoader.cpp",
         "src/loaders/svg/tvgSvgPath.cpp",
         "src/loaders/svg/tvgSvgSceneBuilder.cpp",
         "src/loaders/svg/tvgSvgUtil.cpp",
         "src/loaders/svg/tvgXmlParser.cpp",
-        "src/loaders/tvg/tvgTvgBinInterpreter.cpp",
-        "src/loaders/tvg/tvgTvgLoader.cpp",
-        "src/savers/tvg/tvgTvgSaver.cpp",
+        "src/loaders/raw/tvgRawLoader.cpp",
+        # image loaders
+        "src/loaders/external_png/tvgPngLoader.cpp",
+        "src/loaders/jpg/tvgJpgd.cpp",
+        "src/loaders/jpg/tvgJpgLoader.cpp",
+        # renderer common
+        "src/renderer/tvgAccessor.cpp",
+        # "src/renderer/tvgAnimation.cpp",
+        "src/renderer/tvgCanvas.cpp",
+        "src/renderer/tvgFill.cpp",
+        # "src/renderer/tvgGlCanvas.cpp",
+        "src/renderer/tvgInitializer.cpp",
+        "src/renderer/tvgLoader.cpp",
+        "src/renderer/tvgPaint.cpp",
+        "src/renderer/tvgPicture.cpp",
+        "src/renderer/tvgRender.cpp",
+        # "src/renderer/tvgSaver.cpp",
+        "src/renderer/tvgScene.cpp",
+        "src/renderer/tvgShape.cpp",
+        "src/renderer/tvgSwCanvas.cpp",
+        "src/renderer/tvgTaskScheduler.cpp",
+        "src/renderer/tvgText.cpp",
+        # "src/renderer/tvgWgCanvas.cpp",
+        # renderer sw_engine
+        "src/renderer/sw_engine/tvgSwFill.cpp",
+        "src/renderer/sw_engine/tvgSwImage.cpp",
+        "src/renderer/sw_engine/tvgSwMath.cpp",
+        "src/renderer/sw_engine/tvgSwMemPool.cpp",
+        "src/renderer/sw_engine/tvgSwRaster.cpp",
+        "src/renderer/sw_engine/tvgSwRenderer.cpp",
+        "src/renderer/sw_engine/tvgSwRle.cpp",
+        "src/renderer/sw_engine/tvgSwShape.cpp",
+        "src/renderer/sw_engine/tvgSwStroke.cpp",
     ]
     thirdparty_tvg_sources = [thirdparty_tvg_dir + file for file in thirdparty_tvg_sources]
 
     env_tvg.Append(
         CPPPATH=[
             "../../../thirdparty/thorvg/inc",
-            "../../../thirdparty/thorvg/src/lib",
-            "../../../thirdparty/thorvg/src/lib/sw_engine",
+            "../../../thirdparty/thorvg/src/common",
+            "../../../thirdparty/thorvg/src/renderer",
+            "../../../thirdparty/thorvg/src/renderer/sw_engine",
+            "../../../thirdparty/thorvg/src/loaders/svg",
+            "../../../thirdparty/thorvg/src/loaders/raw",
             "../../../thirdparty/thorvg/src/loaders/external_png",
             "../../../thirdparty/thorvg/src/loaders/jpg",
-            "../../../thirdparty/thorvg/src/loaders/raw",
-            "../../../thirdparty/thorvg/src/loaders/svg",
-            "../../../thirdparty/thorvg/src/loaders/tvg",
-            "../../../thirdparty/thorvg/src/savers/tvg",
             "../../../thirdparty/libpng",
         ]
     )
-    env.Append(CPPPATH=["../../../thirdparty/thorvg/inc", "../../../thirdparty/thorvg/src/lib"])
+
+    # Enable ThorVG static object linking.
+    env_tvg.Append(CPPDEFINES=["TVG_STATIC"])
+
+    env.Append(
+        CPPPATH=[
+            "../../../thirdparty/thorvg/inc",
+            "../../../thirdparty/thorvg/src/common",
+            "../../../thirdparty/thorvg/src/renderer",
+        ]
+    )
     env.Append(CPPDEFINES=["MODULE_SVG_ENABLED"])
 
     lib = env_tvg.Library(
-        f'tvg_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"tvg_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_tvg_sources,
     )
     env.Append(LIBS=[lib])
@@ -111,33 +118,39 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     thirdparty_msdfgen_dir = "../../../thirdparty/msdfgen/"
     thirdparty_msdfgen_sources = [
         "core/Contour.cpp",
+        "core/DistanceMapping.cpp",
         "core/EdgeHolder.cpp",
         "core/MSDFErrorCorrection.cpp",
         "core/Projection.cpp",
         "core/Scanline.cpp",
         "core/Shape.cpp",
-        "core/SignedDistance.cpp",
-        "core/Vector2.cpp",
         "core/contour-combiners.cpp",
         "core/edge-coloring.cpp",
         "core/edge-segments.cpp",
         "core/edge-selectors.cpp",
         "core/equation-solver.cpp",
+        # "core/export-svg.cpp",
         "core/msdf-error-correction.cpp",
         "core/msdfgen.cpp",
         "core/rasterization.cpp",
         "core/render-sdf.cpp",
+        # "core/save-bmp.cpp",
+        # "core/save-fl32.cpp",
+        # "core/save-rgba.cpp",
+        # "core/save-tiff.cpp",
         "core/sdf-error-estimation.cpp",
         "core/shape-description.cpp",
     ]
     thirdparty_msdfgen_sources = [thirdparty_msdfgen_dir + file for file in thirdparty_msdfgen_sources]
 
+    env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env_msdfgen.Append(CPPPATH=["../../../thirdparty/freetype/include", "../../../thirdparty/msdfgen"])
     env.Append(CPPPATH=["../../../thirdparty/msdfgen"])
+    env.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(
-        f'msdfgen_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"msdfgen_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_msdfgen_sources,
     )
     env.Append(LIBS=[lib])
@@ -222,7 +235,6 @@ if env["freetype_enabled"]:
         "compress.c",
         "crc32.c",
         "deflate.c",
-        "infback.c",
         "inffast.c",
         "inflate.c",
         "inftrees.c",
@@ -258,7 +270,6 @@ if env["freetype_enabled"]:
         CPPDEFINES=[
             "FT2_BUILD_LIBRARY",
             "FT_CONFIG_OPTION_USE_PNG",
-            ("PNG_ARM_NEON_OPT", 0),
             "FT_CONFIG_OPTION_SYSTEM_ZLIB",
         ]
     )
@@ -268,7 +279,7 @@ if env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_FREETYPE_ENABLED"])
 
     lib = env_freetype.Library(
-        f'freetype_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"freetype_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_freetype_sources,
     )
     env.Append(LIBS=[lib])
@@ -280,28 +291,21 @@ sources = Glob("../*.cpp")
 
 if env["platform"] == "macos":
     methods.write_macos_plist(
-        f'./bin/libtextserver_fallback.macos.{env["target"]}.framework',
-        f'libtextserver_fallback.macos.{env["target"]}',
+        f"./bin/libtextserver_fallback.macos.{env['target']}.framework",
+        f"libtextserver_fallback.macos.{env['target']}",
         "org.godotengine.textserver_fallback",
         "Fallback Text Server",
     )
     library = env.SharedLibrary(
-        f'./bin/libtextserver_fallback.macos.{env["target"]}.framework/libtextserver_fallback.macos.{env["target"]}',
+        f"./bin/libtextserver_fallback.macos.{env['target']}.framework/libtextserver_fallback.macos.{env['target']}",
         source=sources,
     )
 else:
     library = env.SharedLibrary(
-        f'./bin/libtextserver_fallback{env["suffix"]}{env["SHLIBSUFFIX"]}',
+        f"./bin/libtextserver_fallback{env['suffix']}{env['SHLIBSUFFIX']}",
         source=sources,
     )
 
 Default(library)
 
-
-def print_elapsed_time():
-    elapsed_time_sec = round(time.time() - time_at_start, 3)
-    time_ms = round((elapsed_time_sec % 1) * 1000)
-    print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
-
-
-atexit.register(print_elapsed_time)
+methods.prepare_timer()

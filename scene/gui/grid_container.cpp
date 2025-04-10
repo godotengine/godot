@@ -1,42 +1,37 @@
-/*************************************************************************/
-/*  grid_container.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  grid_container.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "grid_container.h"
+
 #include "core/templates/rb_set.h"
-
-void GridContainer::_update_theme_item_cache() {
-	Container::_update_theme_item_cache();
-
-	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
-}
+#include "scene/theme/theme_db.h"
 
 void GridContainer::_notification(int p_what) {
 	switch (p_what) {
@@ -49,11 +44,8 @@ void GridContainer::_notification(int p_what) {
 			// Compute the per-column/per-row data.
 			int valid_controls_index = 0;
 			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i));
-				if (!c || !c->is_visible_in_tree()) {
-					continue;
-				}
-				if (c->is_set_as_top_level()) {
+				Control *c = as_sortable_control(get_child(i));
+				if (!c) {
 					continue;
 				}
 
@@ -73,10 +65,10 @@ void GridContainer::_notification(int p_what) {
 					row_minh[row] = ms.height;
 				}
 
-				if (c->get_h_size_flags() & SIZE_EXPAND) {
+				if (c->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 					col_expanded.insert(col);
 				}
-				if (c->get_v_size_flags() & SIZE_EXPAND) {
+				if (c->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 					row_expanded.insert(row);
 				}
 			}
@@ -191,8 +183,8 @@ void GridContainer::_notification(int p_what) {
 
 			valid_controls_index = 0;
 			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i));
-				if (!c || !c->is_visible_in_tree()) {
+				Control *c = as_sortable_control(get_child(i));
+				if (!c) {
 					continue;
 				}
 				int row = valid_controls_index / columns;
@@ -264,11 +256,18 @@ int GridContainer::get_columns() const {
 	return columns;
 }
 
+int GridContainer::get_h_separation() const {
+	return theme_cache.h_separation;
+}
+
 void GridContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_columns", "columns"), &GridContainer::set_columns);
 	ClassDB::bind_method(D_METHOD("get_columns"), &GridContainer::get_columns);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "columns", PROPERTY_HINT_RANGE, "1,1024,1"), "set_columns", "get_columns");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GridContainer, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GridContainer, v_separation);
 }
 
 Size2 GridContainer::get_minimum_size() const {
@@ -280,8 +279,8 @@ Size2 GridContainer::get_minimum_size() const {
 
 	int valid_controls_index = 0;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible()) {
+		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
+		if (!c) {
 			continue;
 		}
 		int row = valid_controls_index / columns;

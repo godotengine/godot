@@ -20,9 +20,7 @@
 #endif
 
 #include <assert.h>
-#include <limits.h>
 
-#include "src/dsp/dsp.h"
 #include "src/webp/types.h"
 
 #ifdef __cplusplus
@@ -64,7 +62,8 @@ WEBP_EXTERN void WebPSafeFree(void* const ptr);
 // Alignment
 
 #define WEBP_ALIGN_CST 31
-#define WEBP_ALIGN(PTR) (((uintptr_t)(PTR) + WEBP_ALIGN_CST) & ~WEBP_ALIGN_CST)
+#define WEBP_ALIGN(PTR) (((uintptr_t)(PTR) + WEBP_ALIGN_CST) & \
+                         ~(uintptr_t)WEBP_ALIGN_CST)
 
 #include <string.h>
 // memcpy() is the safe way of moving potentially unaligned 32b memory.
@@ -73,8 +72,17 @@ static WEBP_INLINE uint32_t WebPMemToUint32(const uint8_t* const ptr) {
   memcpy(&A, ptr, sizeof(A));
   return A;
 }
+
+static WEBP_INLINE int32_t WebPMemToInt32(const uint8_t* const ptr) {
+  return (int32_t)WebPMemToUint32(ptr);
+}
+
 static WEBP_INLINE void WebPUint32ToMem(uint8_t* const ptr, uint32_t val) {
   memcpy(ptr, &val, sizeof(val));
+}
+
+static WEBP_INLINE void WebPInt32ToMem(uint8_t* const ptr, int val) {
+  WebPUint32ToMem(ptr, (uint32_t)val);
 }
 
 //------------------------------------------------------------------------------
@@ -188,6 +196,7 @@ WEBP_EXTERN void WebPCopyPixels(const struct WebPPicture* const src,
 // MAX_PALETTE_SIZE, also outputs the actual unique colors into 'palette'.
 // Note: 'palette' is assumed to be an array already allocated with at least
 // MAX_PALETTE_SIZE elements.
+// TODO(vrabaud) remove whenever we can break the ABI.
 WEBP_EXTERN int WebPGetColorPalette(const struct WebPPicture* const pic,
                                     uint32_t* const palette);
 

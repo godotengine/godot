@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  GodotTextInputWrapper.java                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  GodotTextInputWrapper.java                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 package org.godotengine.godot.input;
 
@@ -93,8 +93,8 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	@Override
 	public void beforeTextChanged(final CharSequence pCharSequence, final int start, final int count, final int after) {
 		for (int i = 0; i < count; ++i) {
-			GodotLib.key(0, KeyEvent.KEYCODE_DEL, 0, true);
-			GodotLib.key(0, KeyEvent.KEYCODE_DEL, 0, false);
+			mRenderView.getInputHandler().handleKeyEvent(KeyEvent.KEYCODE_DEL, 0, 0, true, false);
+			mRenderView.getInputHandler().handleKeyEvent(KeyEvent.KEYCODE_DEL, 0, 0, false, false);
 
 			if (mHasSelection) {
 				mHasSelection = false;
@@ -110,13 +110,13 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			newChars[i - start] = pCharSequence.charAt(i);
 		}
 		for (int i = 0; i < count; ++i) {
-			int key = newChars[i];
-			if ((key == '\n') && !(mEdit.getKeyboardType() == GodotEditText.VirtualKeyboardType.KEYBOARD_TYPE_MULTILINE)) {
+			final int character = newChars[i];
+			if ((character == '\n') && !(mEdit.getKeyboardType() == GodotEditText.VirtualKeyboardType.KEYBOARD_TYPE_MULTILINE)) {
 				// Return keys are handled through action events
 				continue;
 			}
-			GodotLib.key(key, 0, key, true);
-			GodotLib.key(key, 0, key, false);
+			mRenderView.getInputHandler().handleKeyEvent(0, character, 0, true, false);
+			mRenderView.getInputHandler().handleKeyEvent(0, character, 0, false, false);
 		}
 	}
 
@@ -124,20 +124,19 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	public boolean onEditorAction(final TextView pTextView, final int pActionID, final KeyEvent pKeyEvent) {
 		if (mEdit == pTextView && isFullScreenEdit() && pKeyEvent != null) {
 			final String characters = pKeyEvent.getCharacters();
-
-			for (int i = 0; i < characters.length(); i++) {
-				final int ch = characters.codePointAt(i);
-				GodotLib.key(ch, 0, ch, true);
-				GodotLib.key(ch, 0, ch, false);
+			if (characters != null) {
+				for (int i = 0; i < characters.length(); i++) {
+					final int character = characters.codePointAt(i);
+					mRenderView.getInputHandler().handleKeyEvent(0, character, 0, true, false);
+					mRenderView.getInputHandler().handleKeyEvent(0, character, 0, false, false);
+				}
 			}
 		}
 
 		if (pActionID == EditorInfo.IME_ACTION_DONE) {
 			// Enter key has been pressed
-			mRenderView.queueOnRenderThread(() -> {
-				GodotLib.key(0, KeyEvent.KEYCODE_ENTER, 0, true);
-				GodotLib.key(0, KeyEvent.KEYCODE_ENTER, 0, false);
-			});
+			mRenderView.getInputHandler().handleKeyEvent(KeyEvent.KEYCODE_ENTER, 0, 0, true, false);
+			mRenderView.getInputHandler().handleKeyEvent(KeyEvent.KEYCODE_ENTER, 0, 0, false, false);
 			mRenderView.getView().requestFocus();
 			return true;
 		}

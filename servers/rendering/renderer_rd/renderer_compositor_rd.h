@@ -1,44 +1,41 @@
-/*************************************************************************/
-/*  renderer_compositor_rd.h                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  renderer_compositor_rd.h                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef RENDERER_COMPOSITOR_RD_H
-#define RENDERER_COMPOSITOR_RD_H
+#pragma once
 
-#include "core/os/os.h"
+#include "core/io/image.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_rd/effects_rd.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
-#include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
-#include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
+#include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
@@ -60,7 +57,6 @@ protected:
 	RendererRD::ParticlesStorage *particles_storage = nullptr;
 	RendererRD::TextureStorage *texture_storage = nullptr;
 	RendererRD::Fog *fog = nullptr;
-	EffectsRD *effects = nullptr;
 	RendererSceneRenderRD *scene = nullptr;
 
 	enum BlitMode {
@@ -75,6 +71,10 @@ protected:
 		float src_rect[4];
 		float dst_rect[4];
 
+		float rotation_sin;
+		float rotation_cos;
+		float pad[2];
+
 		float eye_center[2];
 		float k1;
 		float k2;
@@ -82,7 +82,7 @@ protected:
 		float upscale;
 		float aspect_ratio;
 		uint32_t layer;
-		uint32_t pad1;
+		uint32_t convert_to_srgb;
 	};
 
 	struct Blit {
@@ -101,9 +101,10 @@ protected:
 	double delta = 0.0;
 
 	static uint64_t frame;
+	static RendererCompositorRD *singleton;
 
 public:
-	RendererUtilities *get_utilities() { return utilities; };
+	RendererUtilities *get_utilities() { return utilities; }
 	RendererLightStorage *get_light_storage() { return light_storage; }
 	RendererMaterialStorage *get_material_storage() { return material_storage; }
 	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
@@ -114,7 +115,6 @@ public:
 		return scene->get_gi();
 	}
 	RendererFog *get_fog() { return fog; }
-	EffectsRD *get_effects() { return effects; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
 
@@ -122,15 +122,17 @@ public:
 
 	void initialize();
 	void begin_frame(double frame_step);
-	void prepare_for_blitting_render_targets();
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
-	void end_frame(bool p_swap_buffers);
+	bool is_opengl() { return false; }
+	void gl_end_frame(bool p_swap_buffers) {}
+	void end_frame(bool p_present);
 	void finalize();
 
 	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
 	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
 	_ALWAYS_INLINE_ double get_total_time() const { return time; }
+	_ALWAYS_INLINE_ bool can_create_resources_async() const { return true; }
 
 	static Error is_viable() {
 		return OK;
@@ -145,9 +147,7 @@ public:
 		low_end = false;
 	}
 
-	static RendererCompositorRD *singleton;
+	static RendererCompositorRD *get_singleton() { return singleton; }
 	RendererCompositorRD();
 	~RendererCompositorRD();
 };
-
-#endif // RENDERER_COMPOSITOR_RD_H

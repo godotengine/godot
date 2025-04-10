@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  gi.h                                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gi.h                                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef GI_RD_H
-#define GI_RD_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
@@ -56,7 +55,7 @@
 #define RB_TEX_REFLECTION SNAME("reflection")
 
 // Forward declare RenderDataRD and RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
-struct RenderDataRD;
+class RenderDataRD;
 class RendererSceneRenderRD;
 
 namespace RendererRD {
@@ -392,9 +391,9 @@ private:
 		};
 		struct IntegratePushConstant {
 			enum {
-				SKY_MODE_DISABLED,
-				SKY_MODE_COLOR,
-				SKY_MODE_SKY,
+				SKY_FLAGS_MODE_COLOR = 0x01,
+				SKY_FLAGS_MODE_SKY = 0x02,
+				SKY_FLAGS_ORIENTATION_SIGN = 0x04,
 			};
 
 			float grid_size[3];
@@ -410,12 +409,12 @@ private:
 			int32_t image_size[2];
 
 			int32_t world_offset[3];
-			uint32_t sky_mode;
+			uint32_t sky_flags;
 
 			int32_t scroll[3];
 			float sky_energy;
 
-			float sky_color[3];
+			float sky_color_or_orientation[3];
 			float y_mult;
 
 			uint32_t store_ambient_texture;
@@ -461,13 +460,13 @@ public:
 
 		RID get_voxel_gi_buffer();
 
-		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override;
 	};
 
 	/* VOXEL GI API */
 
-	bool owns_voxel_gi(RID p_rid) { return voxel_gi_owner.owns(p_rid); };
+	bool owns_voxel_gi(RID p_rid) { return voxel_gi_owner.owns(p_rid); }
 
 	virtual RID voxel_gi_allocate() override;
 	virtual void voxel_gi_free(RID p_voxel_gi) override;
@@ -522,16 +521,16 @@ public:
 
 	_FORCE_INLINE_ RID voxel_gi_instance_get_texture(RID p_probe) {
 		VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
-		ERR_FAIL_COND_V(!voxel_gi, RID());
+		ERR_FAIL_NULL_V(voxel_gi, RID());
 		return voxel_gi->texture;
-	};
+	}
 
 	_FORCE_INLINE_ void voxel_gi_instance_set_render_index(RID p_probe, uint32_t p_index) {
 		VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
 		ERR_FAIL_NULL(voxel_gi);
 
 		voxel_gi->render_index = p_index;
-	};
+	}
 
 	bool voxel_gi_instance_owns(RID p_rid) const {
 		return voxel_gi_instance_owner.owns(p_rid);
@@ -584,7 +583,9 @@ public:
 				uint32_t static_light_aniso;
 			};
 
-			RID solid_cell_dispatch_buffer; //buffer for indirect compute dispatch
+			// Buffers for indirect compute dispatch.
+			RID solid_cell_dispatch_buffer_storage;
+			RID solid_cell_dispatch_buffer_call;
 			RID solid_cell_buffer;
 
 			RID lightprobe_history_tex;
@@ -667,12 +668,13 @@ public:
 
 		float y_mult = 1.0;
 
+		uint32_t version = 0;
 		uint32_t render_pass = 0;
 
 		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]; //used dynamically
 		RID integrate_sky_uniform_set;
 
-		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override;
 		~SDFGI();
 
@@ -685,7 +687,7 @@ public:
 		void update_cascades();
 
 		void debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views);
-		void debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
+		void debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms);
 
 		void pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data);
 		void render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, float p_exposure_normalization);
@@ -701,10 +703,13 @@ public:
 	Vector3 sdfgi_debug_probe_dir;
 	bool sdfgi_debug_probe_enabled = false;
 	Vector3i sdfgi_debug_probe_index;
+	uint32_t sdfgi_current_version = 0;
 
 	/* SDFGI UPDATE */
 
 	int sdfgi_get_lightprobe_octahedron_size() const { return SDFGI::LIGHTPROBE_OCT_SIZE; }
+
+	virtual void sdfgi_reset() override;
 
 	struct SDFGIData {
 		float grid_size[3];
@@ -823,5 +828,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // GI_RD_H

@@ -11,7 +11,7 @@ packaging macOS export templates.
 
 ## Documentation
 
-- [Compiling for macOS](https://docs.godotengine.org/en/latest/development/compiling/compiling_for_macos.html)
+- [Compiling for macOS](https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_macos.html)
   - Instructions on building this platform port from source.
 - [Exporting for macOS](https://docs.godotengine.org/en/latest/tutorials/export/exporting_for_macos.html)
   - Instructions on using the compiled export templates to export a project.

@@ -1,39 +1,39 @@
-/*************************************************************************/
-/*  resource_importer_csv_translation.cpp                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  resource_importer_csv_translation.cpp                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "resource_importer_csv_translation.h"
 
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "core/string/optimized_translation.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 
 String ResourceImporterCSVTranslation::get_importer_name() const {
 	return "csv_translation";
@@ -72,7 +72,7 @@ void ResourceImporterCSVTranslation::get_import_options(const String &p_path, Li
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "delimiter", PROPERTY_HINT_ENUM, "Comma,Semicolon,Tab"), 0));
 }
 
-Error ResourceImporterCSVTranslation::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool compress = p_options["compress"];
 
 	String delimiter;
@@ -96,9 +96,18 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 
 	Vector<String> locales;
 	Vector<Ref<Translation>> translations;
+	HashSet<int> skipped_locales;
 
 	for (int i = 1; i < line.size(); i++) {
 		String locale = TranslationServer::get_singleton()->standardize_locale(line[i]);
+
+		if (line[i].left(1) == "_") {
+			skipped_locales.insert(i);
+			continue;
+		} else if (locale.is_empty()) {
+			skipped_locales.insert(i);
+			ERR_CONTINUE_MSG(true, vformat("Error importing CSV translation: Invalid locale format '%s', should be 'language_Script_COUNTRY_VARIANT@extra'. This column will be ignored.", line[i]));
+		}
 
 		locales.push_back(locale);
 		Ref<Translation> translation;
@@ -107,18 +116,21 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 		translations.push_back(translation);
 	}
 
-	line = f->get_csv_line(delimiter);
-
-	while (line.size() == locales.size() + 1) {
+	do {
+		line = f->get_csv_line(delimiter);
 		String key = line[0];
 		if (!key.is_empty()) {
+			ERR_CONTINUE_MSG(line.size() != locales.size() + (int)skipped_locales.size() + 1, vformat("Error importing CSV translation: expected %d locale(s), but the '%s' key has %d locale(s).", locales.size(), key, line.size() - 1));
+
+			int write_index = 0; // Keep track of translations written in case some locales are skipped.
 			for (int i = 1; i < line.size(); i++) {
-				translations.write[i - 1]->add_message(key, line[i].c_unescape());
+				if (skipped_locales.has(i)) {
+					continue;
+				}
+				translations.write[write_index++]->add_message(key, line[i].c_unescape());
 			}
 		}
-
-		line = f->get_csv_line(delimiter);
-	}
+	} while (!f->eof_reached());
 
 	for (int i = 0; i < translations.size(); i++) {
 		Ref<Translation> xlt = translations[i];
@@ -130,15 +142,23 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 		}
 
 		String save_path = p_source_file.get_basename() + "." + translations[i]->get_locale() + ".translation";
+		ResourceUID::ID save_id = hash64_murmur3_64(translations[i]->get_locale().hash64(), p_source_id) & 0x7FFFFFFFFFFFFFFF;
+		bool uid_already_exists = ResourceUID::get_singleton()->has_id(save_id);
+		if (uid_already_exists) {
+			// Avoid creating a new file with a duplicate UID.
+			// Always use this UID, even if the user has moved it to a different path.
+			save_path = ResourceUID::get_singleton()->get_id_path(save_id);
+		}
 
 		ResourceSaver::save(xlt, save_path);
 		if (r_gen_files) {
 			r_gen_files->push_back(save_path);
 		}
+		if (!uid_already_exists) {
+			// No need to call set_uid if save_path already refers to save_id.
+			ResourceSaver::set_uid(save_path, save_id);
+		}
 	}
 
 	return OK;
-}
-
-ResourceImporterCSVTranslation::ResourceImporterCSVTranslation() {
 }

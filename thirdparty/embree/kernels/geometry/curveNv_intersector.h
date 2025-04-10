@@ -17,7 +17,7 @@ namespace embree
       typedef CurvePrecalculations1 Precalculations;
 
       template<typename Intersector, typename Epilog>
-        static __forceinline void intersect_t(const Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive& prim)
+        static __forceinline void intersect_t(const Precalculations& pre, RayHit& ray, RayQueryContext* context, const Primitive& prim)
       {
         vfloat<M> tNear;
         vbool<M> valid = CurveNiIntersector1<M>::intersect(ray,prim,tNear);
@@ -54,7 +54,7 @@ namespace embree
       }
 
       template<typename Intersector, typename Epilog>
-        static __forceinline bool occluded_t(const Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive& prim)
+        static __forceinline bool occluded_t(const Precalculations& pre, Ray& ray, RayQueryContext* context, const Primitive& prim)
       {
         vfloat<M> tNear;
         vbool<M> valid = CurveNiIntersector1<M>::intersect(ray,prim,tNear);
@@ -101,7 +101,7 @@ namespace embree
       typedef CurvePrecalculationsK<K> Precalculations;
 
       template<typename Intersector, typename Epilog>
-        static __forceinline void intersect_t(Precalculations& pre, RayHitK<K>& ray, const size_t k, IntersectContext* context, const Primitive& prim)
+        static __forceinline void intersect_t(Precalculations& pre, RayHitK<K>& ray, const size_t k, RayQueryContext* context, const Primitive& prim)
       {
         vfloat<M> tNear;
         vbool<M> valid = CurveNiIntersectorK<M,K>::intersect(ray,k,prim,tNear);
@@ -138,7 +138,7 @@ namespace embree
       }
 
       template<typename Intersector, typename Epilog>
-        static __forceinline bool occluded_t(Precalculations& pre, RayK<K>& ray, const size_t k, IntersectContext* context, const Primitive& prim)
+        static __forceinline bool occluded_t(Precalculations& pre, RayK<K>& ray, const size_t k, RayQueryContext* context, const Primitive& prim)
       {
         vfloat<M> tNear;
         vbool<M> valid = CurveNiIntersectorK<M,K>::intersect(ray,k,prim,tNear);

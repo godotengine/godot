@@ -15,9 +15,11 @@
 
 #if defined(WEBP_USE_SSE41)
 
-#include "src/dsp/common_sse41.h"
 #include <stdlib.h>
 #include <smmintrin.h>
+
+#include "src/dsp/common_sse41.h"
+#include "src/utils/utils.h"
 
 //-----------------------------------------------------------------------------
 // Convert spans of 32 pixels to various RGB formats for the fancy upsampler.
@@ -74,7 +76,7 @@ static WEBP_INLINE __m128i Load_HI_16_SSE41(const uint8_t* src) {
 // Load and replicate the U/V samples
 static WEBP_INLINE __m128i Load_UV_HI_8_SSE41(const uint8_t* src) {
   const __m128i zero = _mm_setzero_si128();
-  const __m128i tmp0 = _mm_cvtsi32_si128(*(const uint32_t*)src);
+  const __m128i tmp0 = _mm_cvtsi32_si128(WebPMemToInt32(src));
   const __m128i tmp1 = _mm_unpacklo_epi8(zero, tmp0);
   return _mm_unpacklo_epi16(tmp1, tmp1);   // replicate samples
 }

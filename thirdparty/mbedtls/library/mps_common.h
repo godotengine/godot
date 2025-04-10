@@ -1,20 +1,6 @@
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 /**
@@ -99,41 +85,41 @@
 
 #if defined(MBEDTLS_MPS_STATE_VALIDATION)
 
-#define MBEDTLS_MPS_STATE_VALIDATE_RAW( cond, string )                         \
+#define MBEDTLS_MPS_STATE_VALIDATE_RAW(cond, string)                         \
     do                                                                         \
     {                                                                          \
-        if( !(cond) )                                                          \
+        if (!(cond))                                                          \
         {                                                                      \
-            MBEDTLS_MPS_TRACE( MBEDTLS_MPS_TRACE_TYPE_ERROR, string );         \
-            MBEDTLS_MPS_TRACE_RETURN( MBEDTLS_ERR_MPS_OPERATION_UNEXPECTED );  \
+            MBEDTLS_MPS_TRACE(MBEDTLS_MPS_TRACE_TYPE_ERROR, string);         \
+            MBEDTLS_MPS_TRACE_RETURN(MBEDTLS_ERR_MPS_OPERATION_UNEXPECTED);  \
         }                                                                      \
-    } while( 0 )
+    } while (0)
 
 #else /* MBEDTLS_MPS_STATE_VALIDATION */
 
-#define MBEDTLS_MPS_STATE_VALIDATE_RAW( cond, string )           \
+#define MBEDTLS_MPS_STATE_VALIDATE_RAW(cond, string)           \
     do                                                           \
     {                                                            \
-        ( cond );                                                \
-    } while( 0 )
+        (cond);                                                \
+    } while (0)
 
 #endif /* MBEDTLS_MPS_STATE_VALIDATION */
 
 #if defined(MBEDTLS_MPS_ENABLE_ASSERTIONS)
 
-#define MBEDTLS_MPS_ASSERT_RAW( cond, string )                          \
+#define MBEDTLS_MPS_ASSERT_RAW(cond, string)                          \
     do                                                                  \
     {                                                                   \
-        if( !(cond) )                                                   \
+        if (!(cond))                                                   \
         {                                                               \
-            MBEDTLS_MPS_TRACE( MBEDTLS_MPS_TRACE_TYPE_ERROR, string );  \
-            MBEDTLS_MPS_TRACE_RETURN( MBEDTLS_ERR_MPS_INTERNAL_ERROR ); \
+            MBEDTLS_MPS_TRACE(MBEDTLS_MPS_TRACE_TYPE_ERROR, string);  \
+            MBEDTLS_MPS_TRACE_RETURN(MBEDTLS_ERR_MPS_INTERNAL_ERROR); \
         }                                                               \
-    } while( 0 )
+    } while (0)
 
 #else /* MBEDTLS_MPS_ENABLE_ASSERTIONS */
 
-#define MBEDTLS_MPS_ASSERT_RAW( cond, string ) do {} while( 0 )
+#define MBEDTLS_MPS_ASSERT_RAW(cond, string) do {} while (0)
 
 #endif /* MBEDTLS_MPS_ENABLE_ASSERTIONS */
 
@@ -169,7 +155,7 @@
  *
  */
 typedef size_t mbedtls_mps_stored_size_t;
-#define MBEDTLS_MPS_STORED_SIZE_MAX  ( (mbedtls_mps_stored_size_t) -1 )
+#define MBEDTLS_MPS_STORED_SIZE_MAX  (SIZE_MAX)
 
 /** \brief The type of buffer sizes and offsets used in the MPS API
  *         and implementation.
@@ -183,7 +169,7 @@ typedef size_t mbedtls_mps_stored_size_t;
  *         so almost 10%.
  */
 typedef size_t mbedtls_mps_size_t;
-#define MBEDTLS_MPS_SIZE_MAX  ( (mbedtls_mps_size_t) -1 )
+#define MBEDTLS_MPS_SIZE_MAX  (SIZE_MAX)
 
 #if MBEDTLS_MPS_STORED_SIZE_MAX > MBEDTLS_MPS_SIZE_MAX
 #error "Misconfiguration of mbedtls_mps_size_t and mbedtls_mps_stored_size_t."

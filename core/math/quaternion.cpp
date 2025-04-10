@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  quaternion.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  quaternion.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "quaternion.h"
 
@@ -35,34 +35,23 @@
 
 real_t Quaternion::angle_to(const Quaternion &p_to) const {
 	real_t d = dot(p_to);
-	return Math::acos(CLAMP(d * d * 2 - 1, -1, 1));
+	// acos does clamping.
+	return Math::acos(d * d * 2 - 1);
 }
 
 Vector3 Quaternion::get_euler(EulerOrder p_order) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector3(0, 0, 0), "The quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector3(0, 0, 0), "The quaternion " + operator String() + " must be normalized.");
 #endif
 	return Basis(*this).get_euler(p_order);
 }
 
-void Quaternion::operator*=(const Quaternion &p_q) {
-	real_t xx = w * p_q.x + x * p_q.w + y * p_q.z - z * p_q.y;
-	real_t yy = w * p_q.y + y * p_q.w + z * p_q.x - x * p_q.z;
-	real_t zz = w * p_q.z + z * p_q.w + x * p_q.y - y * p_q.x;
-	w = w * p_q.w - x * p_q.x - y * p_q.y - z * p_q.z;
-	x = xx;
-	y = yy;
-	z = zz;
-}
-
-Quaternion Quaternion::operator*(const Quaternion &p_q) const {
-	Quaternion r = *this;
-	r *= p_q;
-	return r;
-}
-
 bool Quaternion::is_equal_approx(const Quaternion &p_quaternion) const {
 	return Math::is_equal_approx(x, p_quaternion.x) && Math::is_equal_approx(y, p_quaternion.y) && Math::is_equal_approx(z, p_quaternion.z) && Math::is_equal_approx(w, p_quaternion.w);
+}
+
+bool Quaternion::is_same(const Quaternion &p_quaternion) const {
+	return Math::is_same(x, p_quaternion.x) && Math::is_same(y, p_quaternion.y) && Math::is_same(z, p_quaternion.z) && Math::is_same(w, p_quaternion.w);
 }
 
 bool Quaternion::is_finite() const {
@@ -87,7 +76,7 @@ bool Quaternion::is_normalized() const {
 
 Quaternion Quaternion::inverse() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The quaternion " + operator String() + " must be normalized.");
 #endif
 	return Quaternion(-x, -y, -z, w);
 }
@@ -109,10 +98,10 @@ Quaternion Quaternion::exp() const {
 	return Quaternion(src_v, theta);
 }
 
-Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) const {
+Quaternion Quaternion::slerp(const Quaternion &p_to, real_t p_weight) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion " + operator String() + " must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion " + p_to.operator String() + " must be normalized.");
 #endif
 	Quaternion to1;
 	real_t omega, cosom, sinom, scale0, scale1;
@@ -150,10 +139,10 @@ Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) con
 			scale0 * w + scale1 * to1.w);
 }
 
-Quaternion Quaternion::slerpni(const Quaternion &p_to, const real_t &p_weight) const {
+Quaternion Quaternion::slerpni(const Quaternion &p_to, real_t p_weight) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion " + operator String() + " must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion " + p_to.operator String() + " must be normalized.");
 #endif
 	const Quaternion &from = *this;
 
@@ -174,10 +163,10 @@ Quaternion Quaternion::slerpni(const Quaternion &p_to, const real_t &p_weight) c
 			invFactor * from.w + newFactor * p_to.w);
 }
 
-Quaternion Quaternion::spherical_cubic_interpolate(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const {
+Quaternion Quaternion::spherical_cubic_interpolate(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, real_t p_weight) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion " + operator String() + " must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion " + p_b.operator String() + " must be normalized.");
 #endif
 	Quaternion from_q = *this;
 	Quaternion pre_q = p_pre_a;
@@ -220,15 +209,15 @@ Quaternion Quaternion::spherical_cubic_interpolate(const Quaternion &p_b, const 
 	ln.z = Math::cubic_interpolate(ln_from.z, ln_to.z, ln_pre.z, ln_post.z, p_weight);
 	Quaternion q2 = to_q * ln.exp();
 
-	// To cancel error made by Expmap ambiguity, do blends.
+	// To cancel error made by Expmap ambiguity, do blending.
 	return q1.slerp(q2, p_weight);
 }
 
-Quaternion Quaternion::spherical_cubic_interpolate_in_time(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight,
-		const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const {
+Quaternion Quaternion::spherical_cubic_interpolate_in_time(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, real_t p_weight,
+		real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion " + operator String() + " must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion " + p_b.operator String() + " must be normalized.");
 #endif
 	Quaternion from_q = *this;
 	Quaternion pre_q = p_pre_a;
@@ -271,7 +260,7 @@ Quaternion Quaternion::spherical_cubic_interpolate_in_time(const Quaternion &p_b
 	ln.z = Math::cubic_interpolate_in_time(ln_from.z, ln_to.z, ln_pre.z, ln_post.z, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
 	Quaternion q2 = to_q * ln.exp();
 
-	// To cancel error made by Expmap ambiguity, do blends.
+	// To cancel error made by Expmap ambiguity, do blending.
 	return q1.slerp(q2, p_weight);
 }
 
@@ -293,7 +282,7 @@ real_t Quaternion::get_angle() const {
 
 Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");
+	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 " + p_axis.operator String() + " must be normalized.");
 #endif
 	real_t d = p_axis.length();
 	if (d == 0) {

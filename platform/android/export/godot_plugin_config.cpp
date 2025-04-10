@@ -1,34 +1,37 @@
-/*************************************************************************/
-/*  godot_plugin_config.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_plugin_config.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_plugin_config.h"
+
+#ifndef DISABLE_DEPRECATED
+
 /*
  * Set of prebuilt plugins.
  * Currently unused, this is just for future reference:
@@ -144,10 +147,8 @@ PluginConfigAndroid PluginConfigAndroid::load_plugin_config(Ref<ConfigFile> conf
 	return plugin_config;
 }
 
-String PluginConfigAndroid::get_plugins_binaries(String binary_type, Vector<PluginConfigAndroid> plugins_configs) {
-	String plugins_binaries;
+void PluginConfigAndroid::get_plugins_binaries(String binary_type, Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result) {
 	if (!plugins_configs.is_empty()) {
-		Vector<String> binaries;
 		for (int i = 0; i < plugins_configs.size(); i++) {
 			PluginConfigAndroid config = plugins_configs[i];
 			if (!config.valid_config) {
@@ -155,56 +156,44 @@ String PluginConfigAndroid::get_plugins_binaries(String binary_type, Vector<Plug
 			}
 
 			if (config.binary_type == binary_type) {
-				binaries.push_back(config.binary);
+				r_result.push_back(config.binary);
 			}
 
 			if (binary_type == PluginConfigAndroid::BINARY_TYPE_LOCAL) {
-				binaries.append_array(config.local_dependencies);
+				r_result.append_array(config.local_dependencies);
 			}
 
 			if (binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE) {
-				binaries.append_array(config.remote_dependencies);
+				r_result.append_array(config.remote_dependencies);
 			}
 		}
-
-		plugins_binaries = String(PluginConfigAndroid::PLUGIN_VALUE_SEPARATOR).join(binaries);
 	}
-
-	return plugins_binaries;
 }
 
-String PluginConfigAndroid::get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs) {
-	String custom_maven_repos;
+void PluginConfigAndroid::get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result) {
 	if (!plugins_configs.is_empty()) {
-		Vector<String> repos_urls;
 		for (int i = 0; i < plugins_configs.size(); i++) {
 			PluginConfigAndroid config = plugins_configs[i];
 			if (!config.valid_config) {
 				continue;
 			}
 
-			repos_urls.append_array(config.custom_maven_repos);
+			r_result.append_array(config.custom_maven_repos);
 		}
-
-		custom_maven_repos = String(PluginConfigAndroid::PLUGIN_VALUE_SEPARATOR).join(repos_urls);
 	}
-	return custom_maven_repos;
 }
 
-String PluginConfigAndroid::get_plugins_names(Vector<PluginConfigAndroid> plugins_configs) {
-	String plugins_names;
+void PluginConfigAndroid::get_plugins_names(Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result) {
 	if (!plugins_configs.is_empty()) {
-		Vector<String> names;
 		for (int i = 0; i < plugins_configs.size(); i++) {
 			PluginConfigAndroid config = plugins_configs[i];
 			if (!config.valid_config) {
 				continue;
 			}
 
-			names.push_back(config.name);
+			r_result.push_back(config.name);
 		}
-		plugins_names = String(PluginConfigAndroid::PLUGIN_VALUE_SEPARATOR).join(names);
 	}
-
-	return plugins_names;
 }
+
+#endif // DISABLE_DEPRECATED

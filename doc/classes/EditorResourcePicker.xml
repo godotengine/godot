@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorResourcePicker" inherits="HBoxContainer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorResourcePicker" inherits="HBoxContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's control for selecting [Resource] type properties.
 	</brief_description>
@@ -43,7 +43,7 @@
 		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" default="&quot;&quot;">
 			The base type of allowed resource types. Can be a comma-separated list of several options.
 		</member>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]true[/code], the value can be selected and edited.
 		</member>
 		<member name="edited_resource" type="Resource" setter="set_edited_resource" getter="get_edited_resource">

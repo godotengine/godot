@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  label_3d.h                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  label_3d.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef LABEL_3D_H
-#define LABEL_3D_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/font.h"
@@ -51,7 +50,9 @@ public:
 	enum AlphaCutMode {
 		ALPHA_CUT_DISABLED,
 		ALPHA_CUT_DISCARD,
-		ALPHA_CUT_OPAQUE_PREPASS
+		ALPHA_CUT_OPAQUE_PREPASS,
+		ALPHA_CUT_HASH,
+		ALPHA_CUT_MAX
 	};
 
 private:
@@ -59,6 +60,9 @@ private:
 	bool flags[FLAG_MAX] = {};
 	AlphaCutMode alpha_cut = ALPHA_CUT_DISABLED;
 	float alpha_scissor_threshold = 0.5;
+	float alpha_hash_scale = 1.0;
+	StandardMaterial3D::AlphaAntiAliasing alpha_antialiasing_mode = StandardMaterial3D::ALPHA_ANTIALIASING_OFF;
+	float alpha_antialiasing_edge = 0.0f;
 
 	AABB aabb;
 
@@ -107,6 +111,8 @@ private:
 	bool uppercase = false;
 
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
+	BitField<TextServer::LineBreakFlag> autowrap_flags_trim = TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES;
+	BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 	float width = 500.0;
 
 	int font_size = 32;
@@ -143,7 +149,7 @@ private:
 	void _generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, const Color &p_modulate, int p_priority = 0, int p_outline_size = 0);
 
 protected:
-	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
+	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
 
 	void _notification(int p_what);
 
@@ -210,6 +216,12 @@ public:
 	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
 	TextServer::AutowrapMode get_autowrap_mode() const;
 
+	void set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags);
+	BitField<TextServer::LineBreakFlag> get_autowrap_trim_flags() const;
+
+	void set_justification_flags(BitField<TextServer::JustificationFlag> p_flags);
+	BitField<TextServer::JustificationFlag> get_justification_flags() const;
+
 	void set_width(float p_width);
 	float get_width() const;
 
@@ -228,6 +240,15 @@ public:
 	void set_alpha_scissor_threshold(float p_threshold);
 	float get_alpha_scissor_threshold() const;
 
+	void set_alpha_hash_scale(float p_hash_scale);
+	float get_alpha_hash_scale() const;
+
+	void set_alpha_antialiasing(BaseMaterial3D::AlphaAntiAliasing p_alpha_aa);
+	BaseMaterial3D::AlphaAntiAliasing get_alpha_antialiasing() const;
+
+	void set_alpha_antialiasing_edge(float p_edge);
+	float get_alpha_antialiasing_edge() const;
+
 	void set_billboard_mode(StandardMaterial3D::BillboardMode p_mode);
 	StandardMaterial3D::BillboardMode get_billboard_mode() const;
 
@@ -235,7 +256,7 @@ public:
 	StandardMaterial3D::TextureFilter get_texture_filter() const;
 
 	virtual AABB get_aabb() const override;
-	Ref<TriangleMesh> generate_triangle_mesh() const;
+	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
 
 	Label3D();
 	~Label3D();
@@ -243,5 +264,3 @@ public:
 
 VARIANT_ENUM_CAST(Label3D::DrawFlags);
 VARIANT_ENUM_CAST(Label3D::AlphaCutMode);
-
-#endif // LABEL_3D_H

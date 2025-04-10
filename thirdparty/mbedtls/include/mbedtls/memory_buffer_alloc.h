@@ -5,28 +5,12 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_MEMORY_BUFFER_ALLOC_H
 #define MBEDTLS_MEMORY_BUFFER_ALLOC_H
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include <stddef.h>
 
@@ -34,7 +18,7 @@
  * \name SECTION: Module settings
  *
  * The configuration options you can set for this module are in this section.
- * Either change them in config.h or define them on the compiler command line.
+ * Either change them in mbedtls_config.h or define them on the compiler command line.
  * \{
  */
 
@@ -47,7 +31,8 @@
 #define MBEDTLS_MEMORY_VERIFY_NONE         0
 #define MBEDTLS_MEMORY_VERIFY_ALLOC        (1 << 0)
 #define MBEDTLS_MEMORY_VERIFY_FREE         (1 << 1)
-#define MBEDTLS_MEMORY_VERIFY_ALWAYS       (MBEDTLS_MEMORY_VERIFY_ALLOC | MBEDTLS_MEMORY_VERIFY_FREE)
+#define MBEDTLS_MEMORY_VERIFY_ALWAYS       (MBEDTLS_MEMORY_VERIFY_ALLOC | \
+                                            MBEDTLS_MEMORY_VERIFY_FREE)
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,12 +53,12 @@ extern "C" {
  * \param buf   buffer to use as heap
  * \param len   size of the buffer
  */
-void mbedtls_memory_buffer_alloc_init( unsigned char *buf, size_t len );
+void mbedtls_memory_buffer_alloc_init(unsigned char *buf, size_t len);
 
 /**
  * \brief   Free the mutex for thread-safety and clear remaining memory
  */
-void mbedtls_memory_buffer_alloc_free( void );
+void mbedtls_memory_buffer_alloc_free(void);
 
 /**
  * \brief   Determine when the allocator should automatically verify the state
@@ -83,7 +68,7 @@ void mbedtls_memory_buffer_alloc_free( void );
  * \param verify    One of MBEDTLS_MEMORY_VERIFY_NONE, MBEDTLS_MEMORY_VERIFY_ALLOC,
  *                  MBEDTLS_MEMORY_VERIFY_FREE or MBEDTLS_MEMORY_VERIFY_ALWAYS
  */
-void mbedtls_memory_buffer_set_verify( int verify );
+void mbedtls_memory_buffer_set_verify(int verify);
 
 #if defined(MBEDTLS_MEMORY_DEBUG)
 /**
@@ -92,7 +77,15 @@ void mbedtls_memory_buffer_set_verify( int verify );
  *          Prints out a list of 'still allocated' blocks and their stack
  *          trace if MBEDTLS_MEMORY_BACKTRACE is defined.
  */
-void mbedtls_memory_buffer_alloc_status( void );
+void mbedtls_memory_buffer_alloc_status(void);
+
+/**
+ * \brief   Get the number of alloc/free so far.
+ *
+ * \param alloc_count   Number of allocations.
+ * \param free_count    Number of frees.
+ */
+void mbedtls_memory_buffer_alloc_count_get(size_t *alloc_count, size_t *free_count);
 
 /**
  * \brief   Get the peak heap usage so far
@@ -102,12 +95,12 @@ void mbedtls_memory_buffer_alloc_status( void );
  *                      into smaller blocks but larger than the requested size.
  * \param max_blocks    Peak number of blocks in use, including free and used
  */
-void mbedtls_memory_buffer_alloc_max_get( size_t *max_used, size_t *max_blocks );
+void mbedtls_memory_buffer_alloc_max_get(size_t *max_used, size_t *max_blocks);
 
 /**
  * \brief   Reset peak statistics
  */
-void mbedtls_memory_buffer_alloc_max_reset( void );
+void mbedtls_memory_buffer_alloc_max_reset(void);
 
 /**
  * \brief   Get the current heap usage
@@ -117,7 +110,7 @@ void mbedtls_memory_buffer_alloc_max_reset( void );
  *                      into smaller blocks but larger than the requested size.
  * \param cur_blocks    Current number of blocks in use, including free and used
  */
-void mbedtls_memory_buffer_alloc_cur_get( size_t *cur_used, size_t *cur_blocks );
+void mbedtls_memory_buffer_alloc_cur_get(size_t *cur_used, size_t *cur_blocks);
 #endif /* MBEDTLS_MEMORY_DEBUG */
 
 /**
@@ -131,7 +124,7 @@ void mbedtls_memory_buffer_alloc_cur_get( size_t *cur_used, size_t *cur_blocks )
  *
  * \return             0 if verified, 1 otherwise
  */
-int mbedtls_memory_buffer_alloc_verify( void );
+int mbedtls_memory_buffer_alloc_verify(void);
 
 #if defined(MBEDTLS_SELF_TEST)
 /**
@@ -139,7 +132,7 @@ int mbedtls_memory_buffer_alloc_verify( void );
  *
  * \return         0 if successful, or 1 if a test failed
  */
-int mbedtls_memory_buffer_alloc_self_test( int verbose );
+int mbedtls_memory_buffer_alloc_self_test(int verbose);
 #endif
 
 #ifdef __cplusplus

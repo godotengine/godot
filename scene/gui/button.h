@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  button.h                                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  button.h                                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef BUTTON_H
-#define BUTTON_H
+#pragma once
 
 #include "scene/gui/base_button.h"
 #include "scene/resources/text_paragraph.h"
@@ -45,13 +44,16 @@ private:
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
+	BitField<TextServer::LineBreakFlag> autowrap_flags_trim = TextServer::BREAK_TRIM_END_EDGE_SPACES;
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 
 	Ref<Texture2D> icon;
 	bool expand_icon = false;
 	bool clip_text = false;
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_CENTER;
-	HorizontalAlignment icon_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	HorizontalAlignment horizontal_icon_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	VerticalAlignment vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER;
 	float _internal_margin[4] = {};
 
 	struct ThemeCache {
@@ -66,6 +68,14 @@ private:
 		Ref<StyleBox> disabled;
 		Ref<StyleBox> disabled_mirrored;
 		Ref<StyleBox> focus;
+
+		Size2 max_style_size;
+		float style_margin_left = 0;
+		float style_margin_right = 0;
+		float style_margin_top = 0;
+		float style_margin_bottom = 0;
+
+		bool align_to_largest_stylebox = false;
 
 		Color font_color;
 		Color font_focus_color;
@@ -89,13 +99,23 @@ private:
 		Ref<Texture2D> icon;
 
 		int h_separation = 0;
+		int icon_max_width = 0;
+		int line_spacing = 0;
 	} theme_cache;
 
-	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "");
+	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "") const;
+	void _texture_changed();
 
 protected:
-	void _set_internal_margin(Side p_side, float p_value);
 	virtual void _update_theme_item_cache() override;
+
+	void _set_internal_margin(Side p_side, float p_value);
+	virtual void _queue_update_size_cache();
+	virtual String _get_translated_text(const String &p_text) const;
+
+	Size2 _fit_icon_size(const Size2 &p_size) const;
+	Ref<StyleBox> _get_current_stylebox() const;
+	Size2 _get_largest_stylebox_size() const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -110,14 +130,20 @@ public:
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
+
+	void set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags);
+	BitField<TextServer::LineBreakFlag> get_autowrap_trim_flags() const;
+
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
 
 	void set_language(const String &p_language);
 	String get_language() const;
 
-	void set_icon(const Ref<Texture2D> &p_icon);
-	Ref<Texture2D> get_icon() const;
+	void set_button_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_button_icon() const;
 
 	void set_expand_icon(bool p_enabled);
 	bool is_expand_icon() const;
@@ -132,10 +158,10 @@ public:
 	HorizontalAlignment get_text_alignment() const;
 
 	void set_icon_alignment(HorizontalAlignment p_alignment);
+	void set_vertical_icon_alignment(VerticalAlignment p_alignment);
 	HorizontalAlignment get_icon_alignment() const;
+	VerticalAlignment get_vertical_icon_alignment() const;
 
 	Button(const String &p_text = String());
 	~Button();
 };
-
-#endif // BUTTON_H

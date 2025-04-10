@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  physics_server_3d_extension.cpp                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  physics_server_3d_extension.cpp                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "physics_server_3d_extension.h"
 
@@ -37,7 +37,9 @@ bool PhysicsDirectSpaceState3DExtension::is_body_excluded_from_query(const RID &
 thread_local const HashSet<RID> *PhysicsDirectSpaceState3DExtension::exclude = nullptr;
 
 void PhysicsDirectSpaceState3DExtension::_bind_methods() {
-	GDVIRTUAL_BIND(_intersect_ray, "from", "to", "collision_mask", "collide_with_bodies", "collide_with_areas", "hit_from_inside", "hit_back_faces", "result");
+	ClassDB::bind_method(D_METHOD("is_body_excluded_from_query", "body"), &PhysicsDirectSpaceState3DExtension::is_body_excluded_from_query);
+
+	GDVIRTUAL_BIND(_intersect_ray, "from", "to", "collision_mask", "collide_with_bodies", "collide_with_areas", "hit_from_inside", "hit_back_faces", "pick_ray", "result");
 	GDVIRTUAL_BIND(_intersect_point, "position", "collision_mask", "collide_with_bodies", "collide_with_areas", "results", "max_results");
 	GDVIRTUAL_BIND(_intersect_shape, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "result_count", "max_results");
 	GDVIRTUAL_BIND(_cast_motion, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "closest_safe", "closest_unsafe", "info");
@@ -100,6 +102,7 @@ void PhysicsDirectBodyState3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_contact_local_normal, "contact_idx");
 	GDVIRTUAL_BIND(_get_contact_impulse, "contact_idx");
 	GDVIRTUAL_BIND(_get_contact_local_shape, "contact_idx");
+	GDVIRTUAL_BIND(_get_contact_local_velocity_at_position, "contact_idx");
 	GDVIRTUAL_BIND(_get_contact_collider, "contact_idx");
 	GDVIRTUAL_BIND(_get_contact_collider_position, "contact_idx");
 	GDVIRTUAL_BIND(_get_contact_collider_id, "contact_idx");
@@ -206,6 +209,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	/* BODY API */
 
+	ClassDB::bind_method(D_METHOD("body_test_motion_is_excluding_body", "body"), &PhysicsServer3DExtension::body_test_motion_is_excluding_body);
+	ClassDB::bind_method(D_METHOD("body_test_motion_is_excluding_object", "object"), &PhysicsServer3DExtension::body_test_motion_is_excluding_object);
+
 	GDVIRTUAL_BIND(_body_create);
 
 	GDVIRTUAL_BIND(_body_set_space, "body", "space");
@@ -293,7 +299,7 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_body_set_ray_pickable, "body", "enable");
 
-	GDVIRTUAL_BIND(_body_test_motion, "body", "from", "motion", "margin", "max_collisions", "collide_separation_ray", "result");
+	GDVIRTUAL_BIND(_body_test_motion, "body", "from", "motion", "margin", "max_collisions", "collide_separation_ray", "recovery_as_collision", "result");
 
 	GDVIRTUAL_BIND(_body_get_direct_state, "body");
 
@@ -399,6 +405,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_joint_set_solver_priority, "joint", "priority");
 	GDVIRTUAL_BIND(_joint_get_solver_priority, "joint");
+
+	GDVIRTUAL_BIND(_joint_disable_collisions_between_bodies, "joint", "disable");
+	GDVIRTUAL_BIND(_joint_is_disabled_collisions_between_bodies, "joint");
 
 	GDVIRTUAL_BIND(_free_rid, "rid");
 

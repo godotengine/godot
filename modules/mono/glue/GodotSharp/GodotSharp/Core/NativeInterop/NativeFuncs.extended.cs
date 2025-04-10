@@ -1,10 +1,12 @@
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming rule violation
 // ReSharper disable InconsistentNaming
 
 namespace Godot.NativeInterop
 {
     public static partial class NativeFuncs
     {
-        public static godot_variant godotsharp_variant_new_copy(in godot_variant src)
+        public static godot_variant godotsharp_variant_new_copy(scoped in godot_variant src)
         {
             switch (src.Type)
             {
@@ -18,20 +20,20 @@ namespace Godot.NativeInterop
                     return new godot_variant() { Float = src.Float, Type = Variant.Type.Float };
                 case Variant.Type.Vector2:
                     return new godot_variant() { Vector2 = src.Vector2, Type = Variant.Type.Vector2 };
-                case Variant.Type.Vector2i:
-                    return new godot_variant() { Vector2i = src.Vector2i, Type = Variant.Type.Vector2i };
+                case Variant.Type.Vector2I:
+                    return new godot_variant() { Vector2I = src.Vector2I, Type = Variant.Type.Vector2I };
                 case Variant.Type.Rect2:
                     return new godot_variant() { Rect2 = src.Rect2, Type = Variant.Type.Rect2 };
-                case Variant.Type.Rect2i:
-                    return new godot_variant() { Rect2i = src.Rect2i, Type = Variant.Type.Rect2i };
+                case Variant.Type.Rect2I:
+                    return new godot_variant() { Rect2I = src.Rect2I, Type = Variant.Type.Rect2I };
                 case Variant.Type.Vector3:
                     return new godot_variant() { Vector3 = src.Vector3, Type = Variant.Type.Vector3 };
-                case Variant.Type.Vector3i:
-                    return new godot_variant() { Vector3i = src.Vector3i, Type = Variant.Type.Vector3i };
+                case Variant.Type.Vector3I:
+                    return new godot_variant() { Vector3I = src.Vector3I, Type = Variant.Type.Vector3I };
                 case Variant.Type.Vector4:
                     return new godot_variant() { Vector4 = src.Vector4, Type = Variant.Type.Vector4 };
-                case Variant.Type.Vector4i:
-                    return new godot_variant() { Vector4i = src.Vector4i, Type = Variant.Type.Vector4i };
+                case Variant.Type.Vector4I:
+                    return new godot_variant() { Vector4I = src.Vector4I, Type = Variant.Type.Vector4I };
                 case Variant.Type.Plane:
                     return new godot_variant() { Plane = src.Plane, Type = Variant.Type.Plane };
                 case Variant.Type.Quaternion:
@@ -39,14 +41,14 @@ namespace Godot.NativeInterop
                 case Variant.Type.Color:
                     return new godot_variant() { Color = src.Color, Type = Variant.Type.Color };
                 case Variant.Type.Rid:
-                    return new godot_variant() { RID = src.RID, Type = Variant.Type.Rid };
+                    return new godot_variant() { Rid = src.Rid, Type = Variant.Type.Rid };
             }
 
             godotsharp_variant_new_copy(out godot_variant ret, src);
             return ret;
         }
 
-        public static godot_string_name godotsharp_string_name_new_copy(in godot_string_name src)
+        public static godot_string_name godotsharp_string_name_new_copy(scoped in godot_string_name src)
         {
             if (src.IsEmpty)
                 return default;
@@ -54,7 +56,7 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        public static godot_node_path godotsharp_node_path_new_copy(in godot_node_path src)
+        public static godot_node_path godotsharp_node_path_new_copy(scoped in godot_node_path src)
         {
             if (src.IsEmpty)
                 return default;
@@ -68,7 +70,7 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        public static godot_array godotsharp_array_new_copy(in godot_array src)
+        public static godot_array godotsharp_array_new_copy(scoped in godot_array src)
         {
             godotsharp_array_new_copy(out godot_array ret, src);
             return ret;
@@ -80,7 +82,7 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        public static godot_dictionary godotsharp_dictionary_new_copy(in godot_dictionary src)
+        public static godot_dictionary godotsharp_dictionary_new_copy(scoped in godot_dictionary src)
         {
             godotsharp_dictionary_new_copy(out godot_dictionary ret, src);
             return ret;

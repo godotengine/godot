@@ -5,7 +5,7 @@
  *   Basic Type1/Type2 type definitions and interface (specification
  *   only).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -21,7 +21,7 @@
 #define T1TYPES_H_
 
 
-#include <freetype/t1tables.h>
+#include <freetype/ftmm.h>
 #include <freetype/internal/pshints.h>
 #include <freetype/internal/ftserv.h>
 #include <freetype/internal/fthash.h>
@@ -137,6 +137,54 @@ FT_BEGIN_HEADER
   } CID_SubrsRec, *CID_Subrs;
 
 
+  /* this structure is used to store the BlendDesignMap entry for an axis */
+  typedef struct  PS_DesignMap_
+  {
+    FT_Byte    num_points;
+    FT_Long*   design_points;
+    FT_Fixed*  blend_points;
+
+  } PS_DesignMapRec, *PS_DesignMap;
+
+  /* backward compatible definition */
+  typedef PS_DesignMapRec  T1_DesignMap;
+
+
+  typedef struct  PS_BlendRec_
+  {
+    FT_UInt          num_designs;
+    FT_UInt          num_axis;
+
+    FT_String*       axis_names[T1_MAX_MM_AXIS];
+    FT_Fixed*        design_pos[T1_MAX_MM_DESIGNS];
+    PS_DesignMapRec  design_map[T1_MAX_MM_AXIS];
+
+    FT_Fixed*        weight_vector;
+    FT_Fixed*        default_weight_vector;
+
+    PS_FontInfo      font_infos[T1_MAX_MM_DESIGNS + 1];
+    PS_Private       privates  [T1_MAX_MM_DESIGNS + 1];
+
+    FT_ULong         blend_bitflags;
+
+    FT_BBox*         bboxes    [T1_MAX_MM_DESIGNS + 1];
+
+    /* since 2.3.0 */
+
+    /* undocumented, optional: the default design instance;   */
+    /* corresponds to default_weight_vector --                */
+    /* num_default_design_vector == 0 means it is not present */
+    /* in the font and associated metrics files               */
+    FT_UInt          default_design_vector[T1_MAX_MM_DESIGNS];
+    FT_UInt          num_default_design_vector;
+
+  } PS_BlendRec, *PS_Blend;
+
+
+  /* backward compatible definition */
+  typedef PS_BlendRec  T1_Blend;
+
+
   /*************************************************************************/
   /*************************************************************************/
   /*************************************************************************/
@@ -172,8 +220,8 @@ FT_BEGIN_HEADER
   {
     FT_Bool        IsCIDFont;
     FT_BBox        FontBBox;
-    FT_Fixed       Ascender;
-    FT_Fixed       Descender;
+    FT_Fixed       Ascender;     /* optional, mind the zero */
+    FT_Fixed       Descender;    /* optional, mind the zero */
     AFM_TrackKern  TrackKerns;   /* free if non-NULL */
     FT_UInt        NumTrackKern;
     AFM_KernPair   KernPairs;    /* free if non-NULL */
@@ -201,30 +249,30 @@ FT_BEGIN_HEADER
 
   typedef struct  T1_FaceRec_
   {
-    FT_FaceRec      root;
-    T1_FontRec      type1;
-    const void*     psnames;
-    const void*     psaux;
-    const void*     afm_data;
-    FT_CharMapRec   charmaprecs[2];
-    FT_CharMap      charmaps[2];
+    FT_FaceRec     root;
+    T1_FontRec     type1;
+    const void*    psnames;
+    const void*    psaux;
+    const void*    afm_data;
+    FT_CharMapRec  charmaprecs[2];
+    FT_CharMap     charmaps[2];
 
     /* support for Multiple Masters fonts */
-    PS_Blend        blend;
+    PS_Blend       blend;
 
     /* undocumented, optional: indices of subroutines that express      */
     /* the NormalizeDesignVector and the ConvertDesignVector procedure, */
     /* respectively, as Type 2 charstrings; -1 if keywords not present  */
-    FT_Int           ndv_idx;
-    FT_Int           cdv_idx;
+    FT_Int         ndv_idx;
+    FT_Int         cdv_idx;
 
     /* undocumented, optional: has the same meaning as len_buildchar */
     /* for Type 2 fonts; manipulated by othersubrs 19, 24, and 25    */
-    FT_UInt          len_buildchar;
-    FT_Long*         buildchar;
+    FT_UInt        len_buildchar;
+    FT_Long*       buildchar;
 
     /* since version 2.1 - interface to PostScript hinter */
-    const void*     pshinter;
+    const void*    pshinter;
 
   } T1_FaceRec;
 

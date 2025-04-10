@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  multiplayer_debugger.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  multiplayer_debugger.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "multiplayer_debugger.h"
 
@@ -89,7 +89,7 @@ Error MultiplayerDebugger::_capture(void *p_user, const String &p_msg, const Arr
 // BandwidthProfiler
 
 int MultiplayerDebugger::BandwidthProfiler::bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer) {
-	ERR_FAIL_COND_V(p_buffer.size() == 0, 0);
+	ERR_FAIL_COND_V(p_buffer.is_empty(), 0);
 	int total_bandwidth = 0;
 
 	uint64_t timestamp = OS::get_singleton()->get_ticks_msec();
@@ -150,9 +150,7 @@ void MultiplayerDebugger::BandwidthProfiler::tick(double p_frame_time, double p_
 		int incoming_bandwidth = bandwidth_usage(bandwidth_in, bandwidth_in_ptr);
 		int outgoing_bandwidth = bandwidth_usage(bandwidth_out, bandwidth_out_ptr);
 
-		Array arr;
-		arr.push_back(incoming_bandwidth);
-		arr.push_back(outgoing_bandwidth);
+		Array arr = { incoming_bandwidth, outgoing_bandwidth };
 		EngineDebugger::get_singleton()->send_message("multiplayer:bandwidth", arr);
 	}
 }
@@ -160,8 +158,7 @@ void MultiplayerDebugger::BandwidthProfiler::tick(double p_frame_time, double p_
 // RPCProfiler
 
 Array MultiplayerDebugger::RPCFrame::serialize() {
-	Array arr;
-	arr.push_back(infos.size() * 6);
+	Array arr = { infos.size() * 6 };
 	for (int i = 0; i < infos.size(); ++i) {
 		arr.push_back(uint64_t(infos[i].node));
 		arr.push_back(infos[i].node_path);
@@ -174,7 +171,7 @@ Array MultiplayerDebugger::RPCFrame::serialize() {
 }
 
 bool MultiplayerDebugger::RPCFrame::deserialize(const Array &p_arr) {
-	ERR_FAIL_COND_V(p_arr.size() < 1, false);
+	ERR_FAIL_COND_V(p_arr.is_empty(), false);
 	uint32_t size = p_arr[0];
 	ERR_FAIL_COND_V(size % 6, false);
 	ERR_FAIL_COND_V((uint32_t)p_arr.size() != size + 1, false);
@@ -198,7 +195,7 @@ void MultiplayerDebugger::RPCProfiler::init_node(const ObjectID p_node) {
 	}
 	rpc_node_data.insert(p_node, RPCNodeInfo());
 	rpc_node_data[p_node].node = p_node;
-	rpc_node_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();
+	rpc_node_data[p_node].node_path = ObjectDB::get_instance<Node>(p_node)->get_path();
 }
 
 void MultiplayerDebugger::RPCProfiler::toggle(bool p_enable, const Array &p_opts) {
@@ -237,10 +234,10 @@ void MultiplayerDebugger::RPCProfiler::tick(double p_frame_time, double p_proces
 // ReplicationProfiler
 
 MultiplayerDebugger::SyncInfo::SyncInfo(MultiplayerSynchronizer *p_sync) {
-	ERR_FAIL_COND(!p_sync);
+	ERR_FAIL_NULL(p_sync);
 	synchronizer = p_sync->get_instance_id();
-	if (p_sync->get_replication_config().is_valid()) {
-		config = p_sync->get_replication_config()->get_instance_id();
+	if (p_sync->get_replication_config_ptr()) {
+		config = p_sync->get_replication_config_ptr()->get_instance_id();
 	}
 	if (p_sync->get_root_node()) {
 		root_node = p_sync->get_root_node()->get_instance_id();
@@ -270,8 +267,7 @@ bool MultiplayerDebugger::SyncInfo::read_from_array(const Array &p_arr, int p_of
 }
 
 Array MultiplayerDebugger::ReplicationFrame::serialize() {
-	Array arr;
-	arr.push_back(infos.size() * 7);
+	Array arr = { infos.size() * 7 };
 	for (const KeyValue<ObjectID, SyncInfo> &E : infos) {
 		E.value.write_to_array(arr);
 	}
@@ -279,7 +275,7 @@ Array MultiplayerDebugger::ReplicationFrame::serialize() {
 }
 
 bool MultiplayerDebugger::ReplicationFrame::deserialize(const Array &p_arr) {
-	ERR_FAIL_COND_V(p_arr.size() < 1, false);
+	ERR_FAIL_COND_V(p_arr.is_empty(), false);
 	uint32_t size = p_arr[0];
 	ERR_FAIL_COND_V(size % 7, false);
 	ERR_FAIL_COND_V((uint32_t)p_arr.size() != size + 1, false);
@@ -304,8 +300,8 @@ void MultiplayerDebugger::ReplicationProfiler::add(const Array &p_data) {
 	const String what = p_data[0];
 	const ObjectID id = p_data[1];
 	const uint64_t size = p_data[2];
-	MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(ObjectDB::get_instance(id));
-	ERR_FAIL_COND(!sync);
+	MultiplayerSynchronizer *sync = ObjectDB::get_instance<MultiplayerSynchronizer>(id);
+	ERR_FAIL_NULL(sync);
 	if (!sync_data.has(id)) {
 		sync_data[id] = SyncInfo(sync);
 	}

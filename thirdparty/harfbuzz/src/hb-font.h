@@ -34,17 +34,9 @@
 #include "hb-common.h"
 #include "hb-face.h"
 #include "hb-draw.h"
+#include "hb-paint.h"
 
 HB_BEGIN_DECLS
-
-/**
- * hb_font_t:
- *
- * Data type for holding fonts.
- *
- */
-typedef struct hb_font_t hb_font_t;
-
 
 /*
  * hb_font_funcs_t
@@ -97,7 +89,7 @@ HB_EXTERN hb_bool_t
 hb_font_funcs_is_immutable (hb_font_funcs_t *ffuncs);
 
 
-/* font and glyph extents */
+/* font extents */
 
 /**
  * hb_font_extents_t:
@@ -125,24 +117,6 @@ typedef struct hb_font_extents_t {
   hb_position_t reserved2;
   hb_position_t reserved1;
 } hb_font_extents_t;
-
-/**
- * hb_glyph_extents_t:
- * @x_bearing: Distance from the x-origin to the left extremum of the glyph.
- * @y_bearing: Distance from the top extremum of the glyph to the y-origin.
- * @width: Distance from the left extremum of the glyph to the right extremum.
- * @height: Distance from the top extremum of the glyph to the bottom extremum.
- *
- * Glyph extent values, measured in font units.
- *
- * Note that @height is negative, in coordinate systems that grow up.
- **/
-typedef struct hb_glyph_extents_t {
-  hb_position_t x_bearing;
-  hb_position_t y_bearing;
-  hb_position_t width;
-  hb_position_t height;
-} hb_glyph_extents_t;
 
 /* func types */
 
@@ -512,7 +486,7 @@ typedef hb_bool_t (*hb_font_get_glyph_from_name_func_t) (hb_font_t *font, void *
 							 void *user_data);
 
 /**
- * hb_font_get_glyph_shape_func_t:
+ * hb_font_draw_glyph_func_t:
  * @font: #hb_font_t to work upon
  * @font_data: @font user data pointer
  * @glyph: The glyph ID to query
@@ -522,14 +496,35 @@ typedef hb_bool_t (*hb_font_get_glyph_from_name_func_t) (hb_font_t *font, void *
  *
  * A virtual method for the #hb_font_funcs_t of an #hb_font_t object.
  *
- * Since: 4.0.0
+ * Since: 7.0.0
  *
  **/
-typedef void (*hb_font_get_glyph_shape_func_t) (hb_font_t *font, void *font_data,
-						hb_codepoint_t glyph,
-						hb_draw_funcs_t *draw_funcs, void *draw_data,
-						void *user_data);
+typedef void (*hb_font_draw_glyph_func_t) (hb_font_t *font, void *font_data,
+                                           hb_codepoint_t glyph,
+                                           hb_draw_funcs_t *draw_funcs, void *draw_data,
+                                           void *user_data);
 
+/**
+ * hb_font_paint_glyph_func_t:
+ * @font: #hb_font_t to work upon
+ * @font_data: @font user data pointer
+ * @glyph: The glyph ID to query
+ * @paint_funcs: The paint functions to use
+ * @paint_data: The data accompanying the paint functions
+ * @palette_index: The color palette to use
+ * @foreground: The foreground color
+ * @user_data: User data pointer passed by the caller
+ *
+ * A virtual method for the #hb_font_funcs_t of an #hb_font_t object.
+ *
+ * Since: 7.0.0
+ */
+typedef void (*hb_font_paint_glyph_func_t) (hb_font_t *font, void *font_data,
+                                            hb_codepoint_t glyph,
+                                            hb_paint_funcs_t *paint_funcs, void *paint_data,
+                                            unsigned int palette_index,
+                                            hb_color_t foreground,
+                                            void *user_data);
 
 /* func setters */
 
@@ -790,20 +785,36 @@ hb_font_funcs_set_glyph_from_name_func (hb_font_funcs_t *ffuncs,
 					void *user_data, hb_destroy_func_t destroy);
 
 /**
- * hb_font_funcs_set_glyph_shape_func:
+ * hb_font_funcs_set_draw_glyph_func:
  * @ffuncs: A font-function structure
  * @func: (closure user_data) (destroy destroy) (scope notified): The callback function to assign
  * @user_data: Data to pass to @func
  * @destroy: (nullable): The function to call when @user_data is not needed anymore
  *
- * Sets the implementation function for #hb_font_get_glyph_shape_func_t.
+ * Sets the implementation function for #hb_font_draw_glyph_func_t.
  *
- * Since: 4.0.0
+ * Since: 7.0.0
  **/
 HB_EXTERN void
-hb_font_funcs_set_glyph_shape_func (hb_font_funcs_t *ffuncs,
-				    hb_font_get_glyph_shape_func_t func,
-				    void *user_data, hb_destroy_func_t destroy);
+hb_font_funcs_set_draw_glyph_func (hb_font_funcs_t *ffuncs,
+                                   hb_font_draw_glyph_func_t func,
+                                   void *user_data, hb_destroy_func_t destroy);
+
+/**
+ * hb_font_funcs_set_paint_glyph_func:
+ * @ffuncs: A font-function structure
+ * @func: (closure user_data) (destroy destroy) (scope notified): The callback function to assign
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): The function to call when @user_data is no longer needed
+ *
+ * Sets the implementation function for #hb_font_paint_glyph_func_t.
+ *
+ * Since: 7.0.0
+ */
+HB_EXTERN void
+hb_font_funcs_set_paint_glyph_func (hb_font_funcs_t *ffuncs,
+                                    hb_font_paint_glyph_func_t func,
+                                    void *user_data, hb_destroy_func_t destroy);
 
 /* func dispatch */
 
@@ -886,10 +897,16 @@ hb_font_get_glyph_from_name (hb_font_t *font,
 			     hb_codepoint_t *glyph);
 
 HB_EXTERN void
-hb_font_get_glyph_shape (hb_font_t *font,
-			 hb_codepoint_t glyph,
-			 hb_draw_funcs_t *dfuncs, void *draw_data);
+hb_font_draw_glyph (hb_font_t *font,
+                    hb_codepoint_t glyph,
+                    hb_draw_funcs_t *dfuncs, void *draw_data);
 
+HB_EXTERN void
+hb_font_paint_glyph (hb_font_t *font,
+                     hb_codepoint_t glyph,
+                     hb_paint_funcs_t *pfuncs, void *paint_data,
+                     unsigned int palette_index,
+                     hb_color_t foreground);
 
 /* high-level funcs, with fallback */
 
@@ -1070,6 +1087,16 @@ HB_EXTERN float
 hb_font_get_ptem (hb_font_t *font);
 
 HB_EXTERN void
+hb_font_set_synthetic_bold (hb_font_t *font,
+			    float x_embolden, float y_embolden,
+			    hb_bool_t in_place);
+
+HB_EXTERN void
+hb_font_get_synthetic_bold (hb_font_t *font,
+			    float *x_embolden, float *y_embolden,
+			    hb_bool_t *in_place);
+
+HB_EXTERN void
 hb_font_set_synthetic_slant (hb_font_t *font, float slant);
 
 HB_EXTERN float
@@ -1079,6 +1106,11 @@ HB_EXTERN void
 hb_font_set_variations (hb_font_t *font,
 			const hb_variation_t *variations,
 			unsigned int variations_length);
+
+HB_EXTERN void
+hb_font_set_variation (hb_font_t *font,
+		       hb_tag_t tag,
+		       float    value);
 
 HB_EXTERN void
 hb_font_set_var_coords_design (hb_font_t *font,
@@ -1098,10 +1130,23 @@ HB_EXTERN const int *
 hb_font_get_var_coords_normalized (hb_font_t *font,
 				   unsigned int *length);
 
+/**
+ * HB_FONT_NO_VAR_NAMED_INSTANCE:
+ *
+ * Constant signifying that a font does not have any
+ * named-instance index set.  This is the default of
+ * a font.
+ *
+ * Since: 7.0.0
+ */
+#define HB_FONT_NO_VAR_NAMED_INSTANCE 0xFFFFFFFF
+
 HB_EXTERN void
 hb_font_set_var_named_instance (hb_font_t *font,
-				unsigned instance_index);
+				unsigned int instance_index);
 
+HB_EXTERN unsigned int
+hb_font_get_var_named_instance (hb_font_t *font);
 
 HB_END_DECLS
 

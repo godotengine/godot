@@ -1,39 +1,38 @@
-/*************************************************************************/
-/*  environment.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  environment.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "environment.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
+#include "scene/resources/gradient_texture.h"
 #include "servers/rendering_server.h"
-#include "texture.h"
 
 RID Environment::get_rid() const {
 	return environment;
@@ -131,10 +130,7 @@ int Environment::get_canvas_max_layer() const {
 
 void Environment::set_camera_feed_id(int p_id) {
 	bg_camera_feed_id = p_id;
-// FIXME: Disabled during Vulkan refactoring, should be ported.
-#if 0
-	RS::get_singleton()->environment_set_camera_feed_id(environment, camera_feed_id);
-#endif
+	RS::get_singleton()->environment_set_camera_feed_id(environment, bg_camera_feed_id);
 }
 
 int Environment::get_camera_feed_id() const {
@@ -767,6 +763,21 @@ bool Environment::is_fog_enabled() const {
 	return fog_enabled;
 }
 
+void Environment::set_fog_mode(FogMode p_mode) {
+	if (fog_mode != p_mode && p_mode == FogMode::FOG_MODE_EXPONENTIAL) {
+		set_fog_density(0.01);
+	} else {
+		set_fog_density(1.0);
+	}
+	fog_mode = p_mode;
+	_update_fog();
+	notify_property_list_changed();
+}
+
+Environment::FogMode Environment::get_fog_mode() const {
+	return fog_mode;
+}
+
 void Environment::set_fog_light_color(const Color &p_light_color) {
 	fog_light_color = p_light_color;
 	_update_fog();
@@ -838,7 +849,51 @@ void Environment::_update_fog() {
 			fog_height,
 			fog_height_density,
 			fog_aerial_perspective,
-			fog_sky_affect);
+			fog_sky_affect,
+			RS::EnvironmentFogMode(fog_mode));
+}
+
+// Depth Fog
+
+void Environment::set_fog_depth_curve(float p_curve) {
+	fog_depth_curve = p_curve;
+	_update_fog_depth();
+}
+
+float Environment::get_fog_depth_curve() const {
+	return fog_depth_curve;
+}
+
+void Environment::set_fog_depth_begin(float p_begin) {
+	fog_depth_begin = p_begin;
+	if (fog_depth_begin > fog_depth_end) {
+		set_fog_depth_end(fog_depth_begin);
+	}
+	_update_fog_depth();
+}
+
+float Environment::get_fog_depth_begin() const {
+	return fog_depth_begin;
+}
+
+void Environment::set_fog_depth_end(float p_end) {
+	fog_depth_end = p_end;
+	if (fog_depth_end < fog_depth_begin) {
+		set_fog_depth_begin(fog_depth_end);
+	}
+	_update_fog_depth();
+}
+
+float Environment::get_fog_depth_end() const {
+	return fog_depth_end;
+}
+
+void Environment::_update_fog_depth() {
+	RS::get_singleton()->environment_set_fog_depth(
+			environment,
+			fog_depth_curve,
+			fog_depth_begin,
+			fog_depth_end);
 }
 
 // Volumetric Fog
@@ -1004,9 +1059,7 @@ void Environment::set_adjustment_color_correction(Ref<Texture> p_color_correctio
 	adjustment_color_correction = p_color_correction;
 	Ref<GradientTexture1D> grad_tex = p_color_correction;
 	if (grad_tex.is_valid()) {
-		if (!grad_tex->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment))) {
-			grad_tex->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment));
-		}
+		grad_tex->connect_changed(callable_mp(this, &Environment::_update_adjustment));
 	}
 	Ref<Texture2D> adjustment_texture_2d = adjustment_color_correction;
 	if (adjustment_texture_2d.is_valid()) {
@@ -1043,13 +1096,32 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
+	if (p_property.name == "fog_depth_curve" || p_property.name == "fog_depth_begin" || p_property.name == "fog_depth_end") {
+		if (fog_mode == FOG_MODE_EXPONENTIAL) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
+	if (p_property.name == "ambient_light_color" || p_property.name == "ambient_light_energy") {
+		if (ambient_source == AMBIENT_SOURCE_DISABLED) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
+	if (p_property.name == "ambient_light_sky_contribution") {
+		if (ambient_source == AMBIENT_SOURCE_DISABLED || ambient_source == AMBIENT_SOURCE_COLOR) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
 	if (p_property.name == "fog_aerial_perspective") {
 		if (bg_mode != BG_SKY) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (p_property.name == "tonemap_white" && tone_mapper == TONE_MAPPER_LINEAR) {
+	if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR || tone_mapper == TONE_MAPPER_AGX)) {
+		// Whitepoint adjustment is not available with AgX or linear as it's hardcoded there.
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -1057,8 +1129,15 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (p_property.name == "glow_mix" && glow_blend_mode != GLOW_BLEND_MODE_MIX) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		// Hide glow properties we do not support in GL Compatibility.
+		if (p_property.name.begins_with("glow_levels") || p_property.name == "glow_normalized" || p_property.name == "glow_strength" || p_property.name == "glow_mix" || p_property.name == "glow_blend_mode" || p_property.name == "glow_map_strength" || p_property.name == "glow_map") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else {
+		if (p_property.name == "glow_mix" && glow_blend_mode != GLOW_BLEND_MODE_MIX) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 
 	if (p_property.name == "background_color") {
@@ -1096,13 +1175,6 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 
 	};
 
-	static const char *high_end_prefixes[] = {
-		"ssr_",
-		"ssao_",
-		nullptr
-
-	};
-
 	const char **prefixes = hide_prefixes;
 	while (*prefixes) {
 		String prefix = String(*prefixes);
@@ -1114,20 +1186,6 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		prefixes++;
-	}
-
-	if (RenderingServer::get_singleton()->is_low_end()) {
-		prefixes = high_end_prefixes;
-		while (*prefixes) {
-			String prefix = String(*prefixes);
-
-			if (p_property.name.begins_with(prefix)) {
-				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-				return;
-			}
-
-			prefixes++;
-		}
 	}
 }
 
@@ -1184,7 +1242,7 @@ void Environment::_bind_methods() {
 	ADD_GROUP("Sky", "sky_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), "set_sky_custom_fov", "get_sky_custom_fov");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "sky_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians"), "set_sky_rotation", "get_sky_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "sky_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees"), "set_sky_rotation", "get_sky_rotation");
 
 	// Ambient light
 
@@ -1218,7 +1276,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tonemap_white"), &Environment::get_tonemap_white);
 
 	ADD_GROUP("Tonemap", "tonemap_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES"), "set_tonemapper", "get_tonemapper");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES,AgX"), "set_tonemapper", "get_tonemapper");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_white", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_white", "get_tonemap_white");
 
@@ -1389,6 +1447,8 @@ void Environment::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_fog_enabled", "enabled"), &Environment::set_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_fog_enabled"), &Environment::is_fog_enabled);
+	ClassDB::bind_method(D_METHOD("set_fog_mode", "mode"), &Environment::set_fog_mode);
+	ClassDB::bind_method(D_METHOD("get_fog_mode"), &Environment::get_fog_mode);
 	ClassDB::bind_method(D_METHOD("set_fog_light_color", "light_color"), &Environment::set_fog_light_color);
 	ClassDB::bind_method(D_METHOD("get_fog_light_color"), &Environment::get_fog_light_color);
 	ClassDB::bind_method(D_METHOD("set_fog_light_energy", "light_energy"), &Environment::set_fog_light_energy);
@@ -1411,8 +1471,16 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fog_sky_affect", "sky_affect"), &Environment::set_fog_sky_affect);
 	ClassDB::bind_method(D_METHOD("get_fog_sky_affect"), &Environment::get_fog_sky_affect);
 
+	ClassDB::bind_method(D_METHOD("set_fog_depth_curve", "curve"), &Environment::set_fog_depth_curve);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_curve"), &Environment::get_fog_depth_curve);
+	ClassDB::bind_method(D_METHOD("set_fog_depth_begin", "begin"), &Environment::set_fog_depth_begin);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_begin"), &Environment::get_fog_depth_begin);
+	ClassDB::bind_method(D_METHOD("set_fog_depth_end", "end"), &Environment::set_fog_depth_end);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_end"), &Environment::get_fog_depth_end);
+
 	ADD_GROUP("Fog", "fog_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_enabled"), "set_fog_enabled", "is_fog_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fog_mode", PROPERTY_HINT_ENUM, "Exponential,Depth"), "set_fog_mode", "get_fog_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "fog_light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_fog_light_color", "get_fog_light_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_fog_light_energy", "get_fog_light_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_sun_scatter", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_fog_sun_scatter", "get_fog_sun_scatter");
@@ -1422,6 +1490,10 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_sky_affect", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_sky_affect", "get_fog_sky_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_less,or_greater,suffix:m"), "set_fog_height", "get_fog_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "-16,16,0.0001,or_less,or_greater"), "set_fog_height_density", "get_fog_height_density");
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_curve", PROPERTY_HINT_EXP_EASING), "set_fog_depth_curve", "get_fog_depth_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_begin", PROPERTY_HINT_RANGE, "0,4000,0.1,or_greater,or_less,suffix:m"), "set_fog_depth_begin", "get_fog_depth_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_end", PROPERTY_HINT_RANGE, "0,4000,0.1,or_greater,or_less,suffix:m"), "set_fog_depth_end", "get_fog_depth_end");
 
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_enabled", "enabled"), &Environment::set_volumetric_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_volumetric_fog_enabled"), &Environment::is_volumetric_fog_enabled);
@@ -1458,7 +1530,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_emission_energy", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_emission_energy", "get_volumetric_fog_emission_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_gi_inject", PROPERTY_HINT_RANGE, "0.0,16,0.01,exp"), "set_volumetric_fog_gi_inject", "get_volumetric_fog_gi_inject");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_anisotropy", PROPERTY_HINT_RANGE, "-0.9,0.9,0.01"), "set_volumetric_fog_anisotropy", "get_volumetric_fog_anisotropy");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_length", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_length", "get_volumetric_fog_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_length", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_volumetric_fog_length", "get_volumetric_fog_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_detail_spread", PROPERTY_HINT_EXP_EASING, "positive_only"), "set_volumetric_fog_detail_spread", "get_volumetric_fog_detail_spread");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_ambient_inject", PROPERTY_HINT_RANGE, "0.0,16,0.01,exp"), "set_volumetric_fog_ambient_inject", "get_volumetric_fog_ambient_inject");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_sky_affect", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_volumetric_fog_sky_affect", "get_volumetric_fog_sky_affect");
@@ -1509,12 +1581,16 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(TONE_MAPPER_REINHARDT);
 	BIND_ENUM_CONSTANT(TONE_MAPPER_FILMIC);
 	BIND_ENUM_CONSTANT(TONE_MAPPER_ACES);
+	BIND_ENUM_CONSTANT(TONE_MAPPER_AGX);
 
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_ADDITIVE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_SCREEN);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_SOFTLIGHT);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_REPLACE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_MIX);
+
+	BIND_ENUM_CONSTANT(FOG_MODE_EXPONENTIAL);
+	BIND_ENUM_CONSTANT(FOG_MODE_DEPTH);
 
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_50_PERCENT);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_75_PERCENT);
@@ -1550,5 +1626,6 @@ Environment::Environment() {
 }
 
 Environment::~Environment() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(environment);
 }

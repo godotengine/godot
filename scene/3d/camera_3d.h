@@ -1,39 +1,39 @@
-/*************************************************************************/
-/*  camera_3d.h                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  camera_3d.h                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef CAMERA_3D_H
-#define CAMERA_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/resources/camera_attributes.h"
+#include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
 
 class Camera3D : public Node3D {
@@ -67,8 +67,9 @@ private:
 	real_t fov = 75.0;
 	real_t size = 1.0;
 	Vector2 frustum_offset;
-	real_t near = 0.05;
-	real_t far = 4000.0;
+	// _ prefix to avoid conflict with Windows defines.
+	real_t _near = 0.05;
+	real_t _far = 4000.0;
 	real_t v_offset = 0.0;
 	real_t h_offset = 0.0;
 	KeepAspect keep_aspect = KEEP_HEIGHT;
@@ -82,6 +83,7 @@ private:
 
 	Ref<Environment> environment;
 	Ref<CameraAttributes> attributes;
+	Ref<Compositor> compositor;
 	void _attributes_changed();
 
 	// void _camera_make_current(Node *p_camera);
@@ -92,10 +94,44 @@ private:
 	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	Ref<VelocityTracker3D> velocity_tracker;
 
+#ifndef PHYSICS_3D_DISABLED
 	RID pyramid_shape;
 	Vector<Vector3> pyramid_shape_points;
+#endif // PHYSICS_3D_DISABLED
+
+	///////////////////////////////////////////////////////
+	// INTERPOLATION FUNCTIONS
+	void _physics_interpolation_ensure_transform_calculated(bool p_force = false) const;
+	void _physics_interpolation_ensure_data_flipped();
+
+	// These can be set by derived Camera3Ds, if they wish to do processing
+	// (while still allowing physics interpolation to function).
+	bool _desired_process_internal = false;
+	bool _desired_physics_process_internal = false;
+
+	mutable struct InterpolationData {
+		Transform3D xform_curr;
+		Transform3D xform_prev;
+		Transform3D xform_interpolated;
+		Transform3D camera_xform_interpolated; // After modification according to camera type.
+		uint32_t last_update_physics_tick = 0;
+		uint32_t last_update_frame = UINT32_MAX;
+	} _interpolation_data;
+
+	void _update_process_mode();
 
 protected:
+	// Use from derived classes to set process modes instead of setting directly.
+	// This is because physics interpolation may need to request process modes additionally.
+	void set_desired_process_modes(bool p_process_internal, bool p_physics_process_internal);
+
+	// Opportunity for derived classes to interpolate extra attributes.
+	virtual void physics_interpolation_flip_data() {}
+
+	virtual void _physics_interpolated_changed() override;
+	virtual Transform3D _get_adjusted_camera_transform(const Transform3D &p_xform) const;
+	///////////////////////////////////////////////////////
+
 	void _update_camera();
 	virtual void _request_camera_update();
 	void _update_camera_mode();
@@ -104,6 +140,8 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
+
+	Projection _get_camera_projection(real_t p_near) const;
 
 public:
 	enum {
@@ -138,6 +176,7 @@ public:
 	void set_frustum_offset(Vector2 p_offset);
 
 	virtual Transform3D get_camera_transform() const;
+	virtual Projection get_camera_projection() const;
 
 	virtual Vector3 project_ray_normal(const Point2 &p_pos) const;
 	virtual Vector3 project_ray_origin(const Point2 &p_pos) const;
@@ -163,6 +202,9 @@ public:
 	void set_attributes(const Ref<CameraAttributes> &p_effects);
 	Ref<CameraAttributes> get_attributes() const;
 
+	void set_compositor(const Ref<Compositor> &p_compositor);
+	Ref<Compositor> get_compositor() const;
+
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;
 
@@ -177,7 +219,9 @@ public:
 
 	Vector3 get_doppler_tracked_velocity() const;
 
+#ifndef PHYSICS_3D_DISABLED
 	RID get_pyramid_shape_rid();
+#endif // PHYSICS_3D_DISABLED
 
 	Camera3D();
 	~Camera3D();
@@ -186,5 +230,3 @@ public:
 VARIANT_ENUM_CAST(Camera3D::ProjectionType);
 VARIANT_ENUM_CAST(Camera3D::KeepAspect);
 VARIANT_ENUM_CAST(Camera3D::DopplerTracking);
-
-#endif // CAMERA_3D_H

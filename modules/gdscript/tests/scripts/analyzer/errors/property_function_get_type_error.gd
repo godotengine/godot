@@ -1,7 +1,7 @@
-var _prop : int
+var _prop: int
 
 # Getter function has wrong return type.
-var prop : String:
+var prop: String:
 	get = get_prop
 
 func get_prop():

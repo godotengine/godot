@@ -1,43 +1,43 @@
-/*************************************************************************/
-/*  openxr_action_map_editor.h                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  openxr_action_map_editor.h                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef OPENXR_ACTION_MAP_EDITOR_H
-#define OPENXR_ACTION_MAP_EDITOR_H
+#pragma once
 
 #include "../action_map/openxr_action_map.h"
-#include "../editor/openxr_action_set_editor.h"
-#include "../editor/openxr_interaction_profile_editor.h"
-#include "../editor/openxr_select_interaction_profile_dialog.h"
+#include "openxr_action_set_editor.h"
+#include "openxr_interaction_profile_editor.h"
+#include "openxr_select_interaction_profile_dialog.h"
 
-#include "editor/editor_plugin.h"
+#include "core/templates/hash_map.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -48,7 +48,10 @@ class OpenXRActionMapEditor : public VBoxContainer {
 	GDCLASS(OpenXRActionMapEditor, VBoxContainer);
 
 private:
-	Ref<EditorUndoRedoManager> undo_redo;
+	static HashMap<String, String> interaction_profile_editors; // interaction profile path, interaction profile editor
+	static HashMap<String, String> binding_modifier_editors; // binding modifier class, binding modifiers editor
+
+	EditorUndoRedoManager *undo_redo;
 	String edited_path;
 	Ref<OpenXRActionMap> action_map;
 
@@ -100,10 +103,11 @@ protected:
 	void _do_remove_interaction_profile_editor(OpenXRInteractionProfileEditorBase *p_interaction_profile_editor);
 
 public:
+	static void register_interaction_profile_editor(const String &p_for_path, const String &p_editor_class);
+	static void register_binding_modifier_editor(const String &p_binding_modifier_class, const String &p_editor_class);
+	static String get_binding_modifier_editor_class(const String &p_binding_modifier_class);
+
 	void open_action_map(String p_path);
 
 	OpenXRActionMapEditor();
-	~OpenXRActionMapEditor();
 };
-
-#endif // OPENXR_ACTION_MAP_EDITOR_H

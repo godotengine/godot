@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  utilities.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  utilities.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "utilities.h"
 #include "../environment/fog.h"
@@ -175,46 +175,42 @@ void Utilities::visibility_notifier_free(RID p_notifier) {
 
 void Utilities::visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb) {
 	VisibilityNotifier *vn = visibility_notifier_owner.get_or_null(p_notifier);
-	ERR_FAIL_COND(!vn);
+	ERR_FAIL_NULL(vn);
 	vn->aabb = p_aabb;
 	vn->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 void Utilities::visibility_notifier_set_callbacks(RID p_notifier, const Callable &p_enter_callbable, const Callable &p_exit_callable) {
 	VisibilityNotifier *vn = visibility_notifier_owner.get_or_null(p_notifier);
-	ERR_FAIL_COND(!vn);
+	ERR_FAIL_NULL(vn);
 	vn->enter_callback = p_enter_callbable;
 	vn->exit_callback = p_exit_callable;
 }
 
 AABB Utilities::visibility_notifier_get_aabb(RID p_notifier) const {
 	const VisibilityNotifier *vn = visibility_notifier_owner.get_or_null(p_notifier);
-	ERR_FAIL_COND_V(!vn, AABB());
+	ERR_FAIL_NULL_V(vn, AABB());
 	return vn->aabb;
 }
 
 void Utilities::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) {
 	VisibilityNotifier *vn = visibility_notifier_owner.get_or_null(p_notifier);
-	ERR_FAIL_COND(!vn);
+	ERR_FAIL_NULL(vn);
 
 	if (p_enter) {
-		if (!vn->enter_callback.is_null()) {
+		if (vn->enter_callback.is_valid()) {
 			if (p_deferred) {
 				vn->enter_callback.call_deferred();
 			} else {
-				Variant r;
-				Callable::CallError ce;
-				vn->enter_callback.callp(nullptr, 0, r, ce);
+				vn->enter_callback.call();
 			}
 		}
 	} else {
-		if (!vn->exit_callback.is_null()) {
+		if (vn->exit_callback.is_valid()) {
 			if (p_deferred) {
 				vn->exit_callback.call_deferred();
 			} else {
-				Variant r;
-				Callable::CallError ce;
-				vn->exit_callback.callp(nullptr, 0, r, ce);
+				vn->exit_callback.call();
 			}
 		}
 	}
@@ -282,7 +278,15 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 		return true;
 	}
 
-	if ((p_feature == "etc" || p_feature == "etc2") && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+	if (p_feature == "etc2" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		return true;
+	}
+
+	if (p_feature == "astc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_4x4_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		return true;
+	}
+
+	if (p_feature == "astc_hdr" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
 		return true;
 	}
 
@@ -328,4 +332,12 @@ Size2i Utilities::get_maximum_viewport_size() const {
 	int max_x = device->limit_get(RenderingDevice::LIMIT_MAX_VIEWPORT_DIMENSIONS_X);
 	int max_y = device->limit_get(RenderingDevice::LIMIT_MAX_VIEWPORT_DIMENSIONS_Y);
 	return Size2i(max_x, max_y);
+}
+
+uint32_t Utilities::get_maximum_shader_varyings() const {
+	return RenderingDevice::get_singleton()->limit_get(RenderingDevice::LIMIT_MAX_SHADER_VARYINGS);
+}
+
+uint64_t Utilities::get_maximum_uniform_buffer_size() const {
+	return RenderingDevice::get_singleton()->limit_get(RenderingDevice::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
 }

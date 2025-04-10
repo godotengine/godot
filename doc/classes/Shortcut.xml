@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Shortcut" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Shortcut" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A shortcut for binding input.
 	</brief_description>
 	<description>
 		Shortcuts are commonly used for interacting with a [Control] element from an [InputEvent] (also known as hotkeys).
-		One shortcut can contain multiple [InputEvent]'s, allowing the possibility of triggering one action with multiple different inputs.
+		One shortcut can contain multiple [InputEvent]s, allowing the possibility of triggering one action with multiple different inputs.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,7 +26,7 @@
 			<return type="bool" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Returns whether any [InputEvent] in [member events] equals [param event].
+				Returns whether any [InputEvent] in [member events] equals [param event]. This uses [method InputEvent.is_match] to compare events.
 			</description>
 		</method>
 	</methods>

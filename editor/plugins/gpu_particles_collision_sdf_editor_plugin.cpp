@@ -1,37 +1,39 @@
-/*************************************************************************/
-/*  gpu_particles_collision_sdf_editor_plugin.cpp                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gpu_particles_collision_sdf_editor_plugin.cpp                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gpu_particles_collision_sdf_editor_plugin.h"
 
-#include "editor/editor_file_dialog.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
+#include "editor/gui/editor_file_dialog.h"
 
 void GPUParticlesCollisionSDF3DEditorPlugin::_bake() {
 	if (col_sdf) {
@@ -77,7 +79,7 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_notification(int p_what) {
 
 			const Vector3i size = col_sdf->get_estimated_cell_size();
 
-			const Vector3 extents = col_sdf->get_extents();
+			const Vector3 extents = col_sdf->get_size() / 2;
 
 			int data_size = 2;
 			const double size_mb = size.x * size.y * size.z * data_size / (1024.0 * 1024.0);
@@ -92,8 +94,8 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_notification(int p_what) {
 			}
 
 			String text;
-			text += vformat(TTR("Subdivisions: %s"), vformat(String::utf8("%d × %d × %d"), size.x, size.y, size.z)) + "\n";
-			text += vformat(TTR("Cell size: %s"), vformat(String::utf8("%.3f × %.3f × %.3f"), extents.x / size.x, extents.y / size.y, extents.z / size.z)) + "\n";
+			text += vformat(TTR("Subdivisions: %s"), vformat(U"%d × %d × %d", size.x, size.y, size.z)) + "\n";
+			text += vformat(TTR("Cell size: %s"), vformat(U"%.3f × %.3f × %.3f", extents.x / size.x, extents.y / size.y, extents.z / size.z)) + "\n";
 			text += vformat(TTR("Video RAM size: %s MB (%s)"), String::num(size_mb, 2), size_quality);
 
 			// Only update the tooltip when needed to avoid constant redrawing.
@@ -125,12 +127,12 @@ void GPUParticlesCollisionSDF3DEditorPlugin::bake_func_begin(int p_steps) {
 }
 
 void GPUParticlesCollisionSDF3DEditorPlugin::bake_func_step(int p_step, const String &p_description) {
-	ERR_FAIL_COND(tmp_progress == nullptr);
+	ERR_FAIL_NULL(tmp_progress);
 	tmp_progress->step(p_description, p_step, false);
 }
 
 void GPUParticlesCollisionSDF3DEditorPlugin::bake_func_end() {
-	ERR_FAIL_COND(tmp_progress == nullptr);
+	ERR_FAIL_NULL(tmp_progress);
 	memdelete(tmp_progress);
 	tmp_progress = nullptr;
 }
@@ -173,18 +175,15 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_sdf_save_path_and_bake(const Strin
 	}
 }
 
-void GPUParticlesCollisionSDF3DEditorPlugin::_bind_methods() {
-}
-
 GPUParticlesCollisionSDF3DEditorPlugin::GPUParticlesCollisionSDF3DEditorPlugin() {
 	bake_hb = memnew(HBoxContainer);
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_hb->hide();
 	bake = memnew(Button);
-	bake->set_flat(true);
-	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
+	bake->set_theme_type_variation(SceneStringName(FlatButton));
+	bake->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
 	bake->set_text(TTR("Bake SDF"));
-	bake->connect("pressed", callable_mp(this, &GPUParticlesCollisionSDF3DEditorPlugin::_bake));
+	bake->connect(SceneStringName(pressed), callable_mp(this, &GPUParticlesCollisionSDF3DEditorPlugin::_bake));
 	bake_hb->add_child(bake);
 
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake_hb);
@@ -193,13 +192,10 @@ GPUParticlesCollisionSDF3DEditorPlugin::GPUParticlesCollisionSDF3DEditorPlugin()
 	probe_file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	probe_file->add_filter("*.exr");
 	probe_file->connect("file_selected", callable_mp(this, &GPUParticlesCollisionSDF3DEditorPlugin::_sdf_save_path_and_bake));
-	get_editor_interface()->get_base_control()->add_child(probe_file);
+	EditorInterface::get_singleton()->get_base_control()->add_child(probe_file);
 	probe_file->set_title(TTR("Select path for SDF Texture"));
 
 	GPUParticlesCollisionSDF3D::bake_begin_function = bake_func_begin;
 	GPUParticlesCollisionSDF3D::bake_step_function = bake_func_step;
 	GPUParticlesCollisionSDF3D::bake_end_function = bake_func_end;
-}
-
-GPUParticlesCollisionSDF3DEditorPlugin::~GPUParticlesCollisionSDF3DEditorPlugin() {
 }

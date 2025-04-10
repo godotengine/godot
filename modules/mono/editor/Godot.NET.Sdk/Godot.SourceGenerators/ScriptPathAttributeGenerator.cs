@@ -14,7 +14,7 @@ namespace Godot.SourceGenerators
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.AreGodotSourceGeneratorsDisabled())
+            if (context.IsGodotSourceGeneratorDisabled("ScriptPathAttribute"))
                 return;
 
             if (context.IsGodotToolsProject())
@@ -22,10 +22,17 @@ namespace Godot.SourceGenerators
 
             // NOTE: NotNullWhen diagnostics don't work on projects targeting .NET Standard 2.0
             // ReSharper disable once ReplaceWithStringIsNullOrEmpty
-            if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDir", out string? godotProjectDir)
-                || godotProjectDir!.Length == 0)
+            if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDirBase64", out string? godotProjectDir) || godotProjectDir!.Length == 0)
             {
-                throw new InvalidOperationException("Property 'GodotProjectDir' is null or empty.");
+                if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDir", out godotProjectDir) || godotProjectDir!.Length == 0)
+                {
+                    throw new InvalidOperationException("Property 'GodotProjectDir' is null or empty.");
+                }
+            }
+            else
+            {
+                // Workaround for https://github.com/dotnet/roslyn/issues/51692
+                godotProjectDir = Encoding.UTF8.GetString(Convert.FromBase64String(godotProjectDir));
             }
 
             Dictionary<INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>> godotClasses = context
@@ -41,18 +48,19 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                                 return true;
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                 )
-                // Ignore classes whose name is not the same as the file name
-                .Where(x => Path.GetFileNameWithoutExtension(x.cds.SyntaxTree.FilePath) == x.symbol.Name)
-                .GroupBy(x => x.symbol)
-                .ToDictionary(g => g.Key, g => g.Select(x => x.cds));
+                .Where(x =>
+                    // Ignore classes whose name is not the same as the file name
+                    Path.GetFileNameWithoutExtension(x.cds.SyntaxTree.FilePath) == x.symbol.Name)
+                .GroupBy<(ClassDeclarationSyntax cds, INamedTypeSymbol symbol), INamedTypeSymbol>(x => x.symbol, SymbolEqualityComparer.Default)
+                .ToDictionary<IGrouping<INamedTypeSymbol, (ClassDeclarationSyntax cds, INamedTypeSymbol symbol)>, INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>>(g => g.Key, g => g.Select(x => x.cds), SymbolEqualityComparer.Default);
 
+            var usedPaths = new HashSet<string>();
             foreach (var godotClass in godotClasses)
             {
-                VisitGodotScriptClass(context, godotProjectDir,
+                VisitGodotScriptClass(context, godotProjectDir, usedPaths,
                     symbol: godotClass.Key,
                     classDeclarations: godotClass.Value);
             }
@@ -66,6 +74,7 @@ namespace Godot.SourceGenerators
         private static void VisitGodotScriptClass(
             GeneratorExecutionContext context,
             string godotProjectDir,
+            HashSet<string> usedPaths,
             INamedTypeSymbol symbol,
             IEnumerable<ClassDeclarationSyntax> classDeclarations
         )
@@ -85,8 +94,19 @@ namespace Godot.SourceGenerators
                 if (attributes.Length != 0)
                     attributes.Append("\n");
 
+                string scriptPath = RelativeToDir(cds.SyntaxTree.FilePath, godotProjectDir);
+                if (!usedPaths.Add(scriptPath))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.MultipleClassesInGodotScriptRule,
+                        cds.Identifier.GetLocation(),
+                        symbol.Name
+                    ));
+                    return;
+                }
+
                 attributes.Append(@"[ScriptPathAttribute(""res://");
-                attributes.Append(RelativeToDir(cds.SyntaxTree.FilePath, godotProjectDir));
+                attributes.Append(scriptPath);
                 attributes.Append(@""")]");
             }
 

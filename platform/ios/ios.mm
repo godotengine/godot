@@ -1,34 +1,34 @@
-/*************************************************************************/
-/*  ios.mm                                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  ios.mm                                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#include "ios.h"
+#import "ios.h"
 
 #import "app_delegate.h"
 #import "view_controller.h"
@@ -42,7 +42,7 @@ void iOS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("supports_haptic_engine"), &iOS::supports_haptic_engine);
 	ClassDB::bind_method(D_METHOD("start_haptic_engine"), &iOS::start_haptic_engine);
 	ClassDB::bind_method(D_METHOD("stop_haptic_engine"), &iOS::stop_haptic_engine);
-};
+}
 
 bool iOS::supports_haptic_engine() {
 	if (@available(iOS 13, *)) {
@@ -69,26 +69,46 @@ CHHapticEngine *iOS::get_haptic_engine_instance() API_AVAILABLE(ios(13)) {
 	return haptic_engine;
 }
 
-void iOS::vibrate_haptic_engine(float p_duration_seconds) API_AVAILABLE(ios(13)) {
+void iOS::vibrate_haptic_engine(float p_duration_seconds, float p_amplitude) API_AVAILABLE(ios(13)) {
 	if (@available(iOS 13, *)) { // We need the @available check every time to make the compiler happy...
 		if (supports_haptic_engine()) {
-			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
-			if (haptic_engine) {
-				NSDictionary *hapticDict = @{
-					CHHapticPatternKeyPattern : @[
-						@{CHHapticPatternKeyEvent : @{
-							CHHapticPatternKeyEventType : CHHapticEventTypeHapticContinuous,
-							CHHapticPatternKeyTime : @(CHHapticTimeImmediate),
-							CHHapticPatternKeyEventDuration : @(p_duration_seconds)
-						},
-						},
-					],
-				};
+			CHHapticEngine *cur_haptic_engine = get_haptic_engine_instance();
+			if (cur_haptic_engine) {
+				NSDictionary *hapticDict;
+				if (p_amplitude < 0) {
+					hapticDict = @{
+						CHHapticPatternKeyPattern : @[
+							@{CHHapticPatternKeyEvent : @{
+								CHHapticPatternKeyEventType : CHHapticEventTypeHapticContinuous,
+								CHHapticPatternKeyTime : @(CHHapticTimeImmediate),
+								CHHapticPatternKeyEventDuration : @(p_duration_seconds),
+							},
+							},
+						],
+					};
+				} else {
+					hapticDict = @{
+						CHHapticPatternKeyPattern : @[
+							@{CHHapticPatternKeyEvent : @{
+								CHHapticPatternKeyEventType : CHHapticEventTypeHapticContinuous,
+								CHHapticPatternKeyTime : @(CHHapticTimeImmediate),
+								CHHapticPatternKeyEventDuration : @(p_duration_seconds),
+								CHHapticPatternKeyEventParameters : @[
+									@{
+										CHHapticPatternKeyParameterID : @("HapticIntensity"),
+										CHHapticPatternKeyParameterValue : @(p_amplitude)
+									},
+								],
+							},
+							},
+						],
+					};
+				}
 
 				NSError *error;
 				CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithDictionary:hapticDict error:&error];
 
-				[[haptic_engine createPlayerWithPattern:pattern error:&error] startAtTime:0 error:&error];
+				[[cur_haptic_engine createPlayerWithPattern:pattern error:&error] startAtTime:0 error:&error];
 
 				NSLog(@"Could not vibrate using haptic engine: %@", error);
 			}
@@ -103,9 +123,9 @@ void iOS::vibrate_haptic_engine(float p_duration_seconds) API_AVAILABLE(ios(13))
 void iOS::start_haptic_engine() {
 	if (@available(iOS 13, *)) {
 		if (supports_haptic_engine()) {
-			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
-			if (haptic_engine) {
-				[haptic_engine startWithCompletionHandler:^(NSError *returnedError) {
+			CHHapticEngine *cur_haptic_engine = get_haptic_engine_instance();
+			if (cur_haptic_engine) {
+				[cur_haptic_engine startWithCompletionHandler:^(NSError *returnedError) {
 					if (returnedError) {
 						NSLog(@"Could not start haptic engine: %@", returnedError);
 					}
@@ -122,9 +142,9 @@ void iOS::start_haptic_engine() {
 void iOS::stop_haptic_engine() {
 	if (@available(iOS 13, *)) {
 		if (supports_haptic_engine()) {
-			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
-			if (haptic_engine) {
-				[haptic_engine stopWithCompletionHandler:^(NSError *returnedError) {
+			CHHapticEngine *cur_haptic_engine = get_haptic_engine_instance();
+			if (cur_haptic_engine) {
+				[cur_haptic_engine stopWithCompletionHandler:^(NSError *returnedError) {
 					if (returnedError) {
 						NSLog(@"Could not stop haptic engine: %@", returnedError);
 					}
@@ -171,9 +191,9 @@ String iOS::get_model() const {
 String iOS::get_rate_url(int p_app_id) const {
 	String app_url_path = "itms-apps://itunes.apple.com/app/idAPP_ID";
 
-	String ret = app_url_path.replace("APP_ID", String::num(p_app_id));
+	String ret = app_url_path.replace("APP_ID", String::num_int64(p_app_id));
 
-	printf("returning rate url %s\n", ret.utf8().get_data());
+	print_verbose(vformat("Returning rate url %s", ret));
 	return ret;
 }
 

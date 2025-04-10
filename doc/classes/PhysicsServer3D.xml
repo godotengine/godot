@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsServer3D" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsServer3D" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Server interface for low-level physics access.
+		A server interface for low-level 3D physics access.
 	</brief_description>
 	<description>
-		PhysicsServer3D is the server responsible for all 3D physics. It can create many kinds of physics objects, but does not insert them on the node tree.
+		PhysicsServer3D is the server responsible for all 3D physics. It can directly create and manipulate all physics objects:
+		- A [i]space[/i] is a self-contained world for a physics simulation. It contains bodies, areas, and joints. Its state can be queried for collision and intersection information, and several parameters of the simulation can be modified.
+		- A [i]shape[/i] is a geometric shape such as a sphere, a box, a cylinder, or a polygon. It can be used for collision detection by adding it to a body/area, possibly with an extra transformation relative to the body/area's origin. Bodies/areas can have multiple (transformed) shapes added to them, and a single shape can be added to bodies/areas multiple times with different local transformations.
+		- A [i]body[/i] is a physical object which can be in static, kinematic, or rigid mode. Its state (such as position and velocity) can be queried and updated. A force integration callback can be set to customize the body's physics.
+		- An [i]area[/i] is a region in space which can be used to detect bodies and areas entering and exiting it. A body monitoring callback can be set to report entering/exiting body shapes, and similarly an area monitoring callback can be set. Gravity and damping can be overridden within the area by setting area parameters.
+		- A [i]joint[/i] is a constraint, either between two bodies or on one body relative to a point. Parameters such as the joint bias and the rest length of a spring joint can be adjusted.
+		Physics objects in [PhysicsServer3D] may be created and manipulated independently; they do not have to be tied to nodes in the scene tree.
+		[b]Note:[/b] All the 3D physics nodes use the physics server internally. Adding a physics node to the scene tree will cause a corresponding physics object to be created in the physics server. A rigid body node registers a callback that updates the node's transform with the transform of the respective body object in the physics server (every physics update). An area node registers a callback to inform the area node about overlaps with the respective area object in the physics server. The raycast node queries the direct state of the relevant space in the physics server.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -37,7 +44,8 @@
 		<method name="area_create">
 			<return type="RID" />
 			<description>
-				Creates an [Area3D].
+				Creates a 3D area object in the physics server, and returns the [RID] that identifies it. The default settings for the created area include a collision layer and mask set to [code]1[/code], and [code]monitorable[/code] set to [code]false[/code].
+				Use [method area_add_shape] to add shapes to it, use [method area_set_transform] to set its transform, and use [method area_set_space] to add the area to a space. If you want the area to be detectable use [method area_set_monitorable].
 			</description>
 		</method>
 		<method name="area_get_collision_layer" qualifiers="const">
@@ -119,6 +127,13 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
+				Sets the area's area monitor callback. This callback will be called when any other (shape of an) area enters or exits (a shape of) the given area, and must take the following five parameters:
+				1. an integer [code]status[/code]: either [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED] depending on whether the other area's shape entered or exited the area,
+				2. an [RID] [code]area_rid[/code]: the [RID] of the other area that entered or exited the area,
+				3. an integer [code]instance_id[/code]: the [code]ObjectID[/code] attached to the other area,
+				4. an integer [code]area_shape_idx[/code]: the index of the shape of the other area that entered or exited the area,
+				5. an integer [code]self_shape_idx[/code]: the index of the shape of the area where the other area entered or exited.
+				By counting (or keeping track of) the shapes that enter and exit, it can be determined if an area (with all its shapes) is entering for the first time or exiting for the last time.
 			</description>
 		</method>
 		<method name="area_set_collision_layer">
@@ -142,12 +157,13 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
-				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
-				1: [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED], depending on whether the object entered or exited the area.
-				2: [RID] of the object that entered/exited the area.
-				3: Instance ID of the object that entered/exited the area.
-				4: The shape index of the object that entered/exited the area.
-				5: The shape index of the area where the object entered/exited.
+				Sets the area's body monitor callback. This callback will be called when any other (shape of a) body enters or exits (a shape of) the given area, and must take the following five parameters:
+				1. an integer [code]status[/code]: either [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED] depending on whether the other body shape entered or exited the area,
+				2. an [RID] [code]body_rid[/code]: the [RID] of the body that entered or exited the area,
+				3. an integer [code]instance_id[/code]: the [code]ObjectID[/code] attached to the body,
+				4. an integer [code]body_shape_idx[/code]: the index of the shape of the body that entered or exited the area,
+				5. an integer [code]self_shape_idx[/code]: the index of the shape of the area where the body entered or exited.
+				By counting (or keeping track of) the shapes that enter and exit, it can be determined if a body (with all its shapes) is entering for the first time or exiting for the last time.
 			</description>
 		</method>
 		<method name="area_set_monitorable">
@@ -336,6 +352,8 @@
 		<method name="body_create">
 			<return type="RID" />
 			<description>
+				Creates a 3D body object in the physics server, and returns the [RID] that identifies it. The default settings for the created area include a collision layer and mask set to [code]1[/code], and body mode set to [constant BODY_MODE_RIGID].
+				Use [method body_add_shape] to add shapes to it, use [method body_set_state] to set its transform, and use [method body_set_space] to add the body to a space.
 			</description>
 		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
@@ -467,7 +485,7 @@
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Returns [code]true[/code] if the body is omitting the standard force integration. See [method body_set_omit_force_integration].
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
@@ -567,10 +585,12 @@
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="userdata" type="Variant" default="null" />
 			<description>
-				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
-				The force integration function takes 2 arguments:
-				[code]state:[/code] [PhysicsDirectBodyState3D] used to retrieve and modify the body's state.
-				[code]userdata:[/code] Optional user data, if it was passed when calling [code]body_set_force_integration_callback[/code].
+				Sets the body's custom force integration callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback.
+				The function [param callable] will be called every physics tick, before the standard force integration (see [method body_set_omit_force_integration]). It can be used for example to update the body's linear and angular velocity based on contact with other bodies.
+				If [param userdata] is not [code]null[/code], the function [param callable] must take the following two parameters:
+				1. [code]state[/code]: a [PhysicsDirectBodyState3D], used to retrieve and modify the body's state,
+				2. [code skip-lint]userdata[/code]: a [Variant]; its value will be the [param userdata] passed into this method.
+				If [param userdata] is [code]null[/code], then [param callable] must take only the [code]state[/code] parameter.
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -594,7 +614,8 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Sets whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Sets whether the body omits the standard force integration. If [param enable] is [code]true[/code], the body will not automatically use applied forces, torques, and damping to update the body's linear and angular velocity. In this case, [method body_set_force_integration_callback] can be used to manually update the linear and angular velocity instead.
+				This method is called when the property [member RigidBody3D.custom_integrator] is set.
 			</description>
 		</method>
 		<method name="body_set_param">
@@ -655,6 +676,17 @@
 			<param index="2" name="value" type="Variant" />
 			<description>
 				Sets a body state (see [enum BodyState] constants).
+			</description>
+		</method>
+		<method name="body_set_state_sync_callback">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+				Sets the body's state synchronization callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the callback.
+				The function [param callable] will be called every physics frame, assuming that the body was active during the previous physics tick, and can be used to fetch the latest state from the physics server.
+				The function [param callable] must take the following parameters:
+				1. [code]state[/code]: a [PhysicsDirectBodyState3D], used to retrieve the body's state.
 			</description>
 		</method>
 		<method name="body_test_motion">
@@ -726,7 +758,7 @@
 			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
 			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
 			<description>
-				Gets a generic_6_DOF_joint flag (see [enum G6DOFJointAxisFlag] constants).
+				Returns the value of a generic 6DOF joint flag. See [enum G6DOFJointAxisFlag] for the list of available flags.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_get_param" qualifiers="const">
@@ -735,7 +767,7 @@
 			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
 			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
 			<description>
-				Gets a generic_6_DOF_joint parameter (see [enum G6DOFJointAxisParam] constants).
+				Returns the value of a generic 6DOF joint parameter. See [enum G6DOFJointAxisParam] for the list of available parameters.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_set_flag">
@@ -745,7 +777,7 @@
 			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
 			<param index="3" name="enable" type="bool" />
 			<description>
-				Sets a generic_6_DOF_joint flag (see [enum G6DOFJointAxisFlag] constants).
+				Sets the value of a given generic 6DOF joint flag. See [enum G6DOFJointAxisFlag] for the list of available flags.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_set_param">
@@ -755,7 +787,7 @@
 			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
 			<param index="3" name="value" type="float" />
 			<description>
-				Sets a generic_6_DOF_joint parameter (see [enum G6DOFJointAxisParam] constants).
+				Sets the value of a given generic 6DOF joint parameter. See [enum G6DOFJointAxisParam] for the list of available parameters.
 			</description>
 		</method>
 		<method name="get_process_info">
@@ -815,6 +847,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="joint_disable_collisions_between_bodies">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="disable" type="bool" />
+			<description>
+				Sets whether the bodies attached to the [Joint3D] will collide with each other.
+			</description>
+		</method>
 		<method name="joint_get_solver_priority" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="joint" type="RID" />
@@ -827,6 +867,13 @@
 			<param index="0" name="joint" type="RID" />
 			<description>
 				Returns the type of the Joint3D.
+			</description>
+		</method>
+		<method name="joint_is_disabled_collisions_between_bodies" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns whether the bodies attached to the [Joint3D] will collide with each other.
 			</description>
 		</method>
 		<method name="joint_make_cone_twist">
@@ -847,6 +894,7 @@
 			<param index="3" name="body_B" type="RID" />
 			<param index="4" name="local_ref_B" type="Transform3D" />
 			<description>
+				Make the joint a generic six degrees of freedom (6DOF) joint. Use [method generic_6dof_joint_set_flag] and [method generic_6dof_joint_set_param] to set the joint's flags and parameters respectively.
 			</description>
 		</method>
 		<method name="joint_make_hinge">
@@ -953,6 +1001,14 @@
 				Returns the shape data.
 			</description>
 		</method>
+		<method name="shape_get_margin" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="shape" type="RID" />
+			<description>
+				Returns the collision margin for the shape.
+				[b]Note:[/b] This is not used in Godot Physics, so will always return [code]0[/code].
+			</description>
+		</method>
 		<method name="shape_get_type" qualifiers="const">
 			<return type="int" enum="PhysicsServer3D.ShapeType" />
 			<param index="0" name="shape" type="RID" />
@@ -966,6 +1022,15 @@
 			<param index="1" name="data" type="Variant" />
 			<description>
 				Sets the shape data that defines its shape and size. The data to be passed depends on the kind of shape created [method shape_get_type].
+			</description>
+		</method>
+		<method name="shape_set_margin">
+			<return type="void" />
+			<param index="0" name="shape" type="RID" />
+			<param index="1" name="margin" type="float" />
+			<description>
+				Sets the collision margin for the shape.
+				[b]Note:[/b] This is not used in Godot Physics.
 			</description>
 		</method>
 		<method name="slider_joint_get_param" qualifiers="const">
@@ -985,10 +1050,262 @@
 				Gets a slider_joint parameter (see [enum SliderJointParam] constants).
 			</description>
 		</method>
+		<method name="soft_body_add_collision_exception">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="body_b" type="RID" />
+			<description>
+				Adds the given body to the list of bodies exempt from collisions.
+			</description>
+		</method>
+		<method name="soft_body_create">
+			<return type="RID" />
+			<description>
+				Creates a new soft body and returns its internal [RID].
+			</description>
+		</method>
 		<method name="soft_body_get_bounds" qualifiers="const">
 			<return type="AABB" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Returns the bounds of the given soft body in global coordinates.
+			</description>
+		</method>
+		<method name="soft_body_get_collision_layer" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the physics layer or layers that the given soft body belongs to.
+			</description>
+		</method>
+		<method name="soft_body_get_collision_mask" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the physics layer or layers that the given soft body can collide with.
+			</description>
+		</method>
+		<method name="soft_body_get_damping_coefficient" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the damping coefficient of the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_get_drag_coefficient" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the drag coefficient of the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_get_linear_stiffness" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the linear stiffness of the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_get_point_global_position" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="point_index" type="int" />
+			<description>
+				Returns the current position of the given soft body point in global coordinates.
+			</description>
+		</method>
+		<method name="soft_body_get_pressure_coefficient" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the pressure coefficient of the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_get_simulation_precision" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the simulation precision of the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_get_space" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the [RID] of the space assigned to the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_get_state" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
+			<description>
+				Returns the given soft body state (see [enum BodyState] constants).
+				[b]Note:[/b] Godot's default physics implementation does not support [constant BODY_STATE_LINEAR_VELOCITY], [constant BODY_STATE_ANGULAR_VELOCITY], [constant BODY_STATE_SLEEPING], or [constant BODY_STATE_CAN_SLEEP].
+			</description>
+		</method>
+		<method name="soft_body_get_total_mass" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the total mass assigned to the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_is_point_pinned" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="point_index" type="int" />
+			<description>
+				Returns whether the given soft body point is pinned.
+			</description>
+		</method>
+		<method name="soft_body_move_point">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="point_index" type="int" />
+			<param index="2" name="global_position" type="Vector3" />
+			<description>
+				Moves the given soft body point to a position in global coordinates.
+			</description>
+		</method>
+		<method name="soft_body_pin_point">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="point_index" type="int" />
+			<param index="2" name="pin" type="bool" />
+			<description>
+				Pins or unpins the given soft body point based on the value of [param pin].
+				[b]Note:[/b] Pinning a point effectively makes it kinematic, preventing it from being affected by forces, but you can still move it using [method soft_body_move_point].
+			</description>
+		</method>
+		<method name="soft_body_remove_all_pinned_points">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Unpins all points of the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_remove_collision_exception">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="body_b" type="RID" />
+			<description>
+				Removes the given body from the list of bodies exempt from collisions.
+			</description>
+		</method>
+		<method name="soft_body_set_collision_layer">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<description>
+				Sets the physics layer or layers the given soft body belongs to.
+			</description>
+		</method>
+		<method name="soft_body_set_collision_mask">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="mask" type="int" />
+			<description>
+				Sets the physics layer or layers the given soft body can collide with.
+			</description>
+		</method>
+		<method name="soft_body_set_damping_coefficient">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="damping_coefficient" type="float" />
+			<description>
+				Sets the damping coefficient of the given soft body. Higher values will slow down the body more noticeably when forces are applied.
+			</description>
+		</method>
+		<method name="soft_body_set_drag_coefficient">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="drag_coefficient" type="float" />
+			<description>
+				Sets the drag coefficient of the given soft body. Higher values increase this body's air resistance.
+				[b]Note:[/b] This value is currently unused by Godot's default physics implementation.
+			</description>
+		</method>
+		<method name="soft_body_set_linear_stiffness">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="stiffness" type="float" />
+			<description>
+				Sets the linear stiffness of the given soft body. Higher values will result in a stiffer body, while lower values will increase the body's ability to bend. The value can be between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+			</description>
+		</method>
+		<method name="soft_body_set_mesh">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="mesh" type="RID" />
+			<description>
+				Sets the mesh of the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_set_pressure_coefficient">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="pressure_coefficient" type="float" />
+			<description>
+				Sets the pressure coefficient of the given soft body. Simulates pressure build-up from inside this body. Higher values increase the strength of this effect.
+			</description>
+		</method>
+		<method name="soft_body_set_ray_pickable">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Sets whether the given soft body will be pickable when using object picking.
+			</description>
+		</method>
+		<method name="soft_body_set_simulation_precision">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="simulation_precision" type="int" />
+			<description>
+				Sets the simulation precision of the given soft body. Increasing this value will improve the resulting simulation, but can affect performance. Use with care.
+			</description>
+		</method>
+		<method name="soft_body_set_space">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="space" type="RID" />
+			<description>
+				Assigns a space to the given soft body (see [method space_create]).
+			</description>
+		</method>
+		<method name="soft_body_set_state">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
+			<param index="2" name="variant" type="Variant" />
+			<description>
+				Sets the given body state for the given body (see [enum BodyState] constants).
+				[b]Note:[/b] Godot's default physics implementation does not support [constant BODY_STATE_LINEAR_VELOCITY], [constant BODY_STATE_ANGULAR_VELOCITY], [constant BODY_STATE_SLEEPING], or [constant BODY_STATE_CAN_SLEEP].
+			</description>
+		</method>
+		<method name="soft_body_set_total_mass">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="total_mass" type="float" />
+			<description>
+				Sets the total mass for the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_set_transform">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="transform" type="Transform3D" />
+			<description>
+				Sets the global transform of the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_update_rendering_server">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="rendering_server_handler" type="PhysicsServer3DRenderingServerHandler" />
+			<description>
+				Requests that the physics server updates the rendering server with the latest positions of the given soft body's points through the [param rendering_server_handler] interface.
 			</description>
 		</method>
 		<method name="space_create">
@@ -1116,7 +1433,7 @@
 			A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION" value="3" enum="SliderJointParam">
-			The amount of restitution once the limits are surpassed. The lower, the more velocityenergy gets lost.
+			The amount of restitution once the limits are surpassed. The lower, the more velocity-energy gets lost.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_DAMPING" value="4" enum="SliderJointParam">
 			The amount of damping once the slider limits are surpassed.
@@ -1216,6 +1533,12 @@
 		<constant name="G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="G6DOFJointAxisParam">
 			The maximum force that the linear motor can apply while trying to reach the target velocity.
 		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_SPRING_STIFFNESS" value="7" enum="G6DOFJointAxisParam">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_SPRING_DAMPING" value="8" enum="G6DOFJointAxisParam">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT" value="9" enum="G6DOFJointAxisParam">
+		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="10" enum="G6DOFJointAxisParam">
 			The minimum rotation in negative direction to break loose and rotate around the axes.
 		</constant>
@@ -1226,7 +1549,7 @@
 			A factor that gets multiplied onto all rotations across the axes.
 		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="13" enum="G6DOFJointAxisParam">
-			The amount of rotational damping across the axes. The lower, the more dampening occurs.
+			The amount of rotational damping across the axes. The lower, the more damping occurs.
 		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="14" enum="G6DOFJointAxisParam">
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
@@ -1243,17 +1566,33 @@
 		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="18" enum="G6DOFJointAxisParam">
 			Maximum acceleration for the motor at the axes.
 		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS" value="19" enum="G6DOFJointAxisParam">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_SPRING_DAMPING" value="20" enum="G6DOFJointAxisParam">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT" value="21" enum="G6DOFJointAxisParam">
+		</constant>
+		<constant name="G6DOF_JOINT_MAX" value="22" enum="G6DOFJointAxisParam">
+			Represents the size of the [enum G6DOFJointAxisParam] enum.
+		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="G6DOFJointAxisFlag">
 			If set, linear motion is possible within the given limits.
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1" enum="G6DOFJointAxisFlag">
 			If set, rotational motion is possible.
 		</constant>
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING" value="2" enum="G6DOFJointAxisFlag">
+		</constant>
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING" value="3" enum="G6DOFJointAxisFlag">
+		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="4" enum="G6DOFJointAxisFlag">
 			If set, there is a rotational motor across these axes.
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR" value="5" enum="G6DOFJointAxisFlag">
 			If set, there is a linear motor on this axis that targets a specific velocity.
+		</constant>
+		<constant name="G6DOF_JOINT_FLAG_MAX" value="6" enum="G6DOFJointAxisFlag">
+			Represents the size of the [enum G6DOFJointAxisFlag] enum.
 		</constant>
 		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">
 			The [Shape3D] is a [WorldBoundaryShape3D].
@@ -1300,37 +1639,35 @@
 		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="3" enum="AreaParameter">
 			Constant to set/get whether the gravity vector of an area is a direction, or a center point.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="4" enum="AreaParameter">
-			Constant to set/get the falloff factor for point gravity of an area. The greater this value is, the faster the strength of gravity decreases with the square of distance.
+		<constant name="AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE" value="4" enum="AreaParameter">
+			Constant to set/get the distance at which the gravity strength is equal to the gravity controlled by [constant AREA_PARAM_GRAVITY]. For example, on a planet 100 meters in radius with a surface gravity of 4.0 m/s², set the gravity to 4.0 and the unit distance to 100.0. The gravity will have falloff according to the inverse square law, so in the example, at 200 meters from the center the gravity will be 1.0 m/s² (twice the distance, 1/4th the gravity), at 50 meters it will be 16.0 m/s² (half the distance, 4x the gravity), and so on.
+			The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="5" enum="AreaParameter">
-			This constant was used to set/get the falloff factor for point gravity. It has been superseded by [constant AREA_PARAM_GRAVITY_DISTANCE_SCALE].
-		</constant>
-		<constant name="AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE" value="6" enum="AreaParameter">
+		<constant name="AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE" value="5" enum="AreaParameter">
 			Constant to set/get linear damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
 		</constant>
-		<constant name="AREA_PARAM_LINEAR_DAMP" value="7" enum="AreaParameter">
+		<constant name="AREA_PARAM_LINEAR_DAMP" value="6" enum="AreaParameter">
 			Constant to set/get the linear damping factor of an area.
 		</constant>
-		<constant name="AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE" value="8" enum="AreaParameter">
+		<constant name="AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE" value="7" enum="AreaParameter">
 			Constant to set/get angular damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
 		</constant>
-		<constant name="AREA_PARAM_ANGULAR_DAMP" value="9" enum="AreaParameter">
+		<constant name="AREA_PARAM_ANGULAR_DAMP" value="8" enum="AreaParameter">
 			Constant to set/get the angular damping factor of an area.
 		</constant>
-		<constant name="AREA_PARAM_PRIORITY" value="10" enum="AreaParameter">
+		<constant name="AREA_PARAM_PRIORITY" value="9" enum="AreaParameter">
 			Constant to set/get the priority (order of processing) of an area.
 		</constant>
-		<constant name="AREA_PARAM_WIND_FORCE_MAGNITUDE" value="11" enum="AreaParameter">
-			Constant to set/get the magnitude of area-specific wind force.
+		<constant name="AREA_PARAM_WIND_FORCE_MAGNITUDE" value="10" enum="AreaParameter">
+			Constant to set/get the magnitude of area-specific wind force. This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
 		</constant>
-		<constant name="AREA_PARAM_WIND_SOURCE" value="12" enum="AreaParameter">
+		<constant name="AREA_PARAM_WIND_SOURCE" value="11" enum="AreaParameter">
 			Constant to set/get the 3D vector that specifies the origin from which an area-specific wind blows.
 		</constant>
-		<constant name="AREA_PARAM_WIND_DIRECTION" value="13" enum="AreaParameter">
+		<constant name="AREA_PARAM_WIND_DIRECTION" value="12" enum="AreaParameter">
 			Constant to set/get the 3D vector that specifies the direction in which an area-specific wind blows.
 		</constant>
-		<constant name="AREA_PARAM_WIND_ATTENUATION_FACTOR" value="14" enum="AreaParameter">
+		<constant name="AREA_PARAM_WIND_ATTENUATION_FACTOR" value="13" enum="AreaParameter">
 			Constant to set/get the exponential rate at which wind force decreases with distance from its origin.
 		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0" enum="AreaSpaceOverrideMode">
@@ -1379,16 +1716,16 @@
 			Constant to set/get a body's gravity multiplier.
 		</constant>
 		<constant name="BODY_PARAM_LINEAR_DAMP_MODE" value="6" enum="BodyParameter">
-			Constant to set/get a body's linear dampening mode. See [enum BodyDampMode] for possible values.
+			Constant to set/get a body's linear damping mode. See [enum BodyDampMode] for possible values.
 		</constant>
 		<constant name="BODY_PARAM_ANGULAR_DAMP_MODE" value="7" enum="BodyParameter">
-			Constant to set/get a body's angular dampening mode. See [enum BodyDampMode] for possible values.
+			Constant to set/get a body's angular damping mode. See [enum BodyDampMode] for possible values.
 		</constant>
 		<constant name="BODY_PARAM_LINEAR_DAMP" value="8" enum="BodyParameter">
-			Constant to set/get a body's linear dampening factor.
+			Constant to set/get a body's linear damping factor.
 		</constant>
 		<constant name="BODY_PARAM_ANGULAR_DAMP" value="9" enum="BodyParameter">
-			Constant to set/get a body's angular dampening factor.
+			Constant to set/get a body's angular damping factor.
 		</constant>
 		<constant name="BODY_PARAM_MAX" value="10" enum="BodyParameter">
 			Represents the size of the [enum BodyParameter] enum.

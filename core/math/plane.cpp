@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  plane.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  plane.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "plane.h"
 
@@ -58,7 +58,7 @@ Vector3 Plane::get_any_perpendicular_normal() const {
 	static const Vector3 p2 = Vector3(0, 1, 0);
 	Vector3 p;
 
-	if (ABS(normal.dot(p1)) > 0.99f) { // if too similar to p1
+	if (Math::abs(normal.dot(p1)) > 0.99f) { // if too similar to p1
 		p = p2; // use p2
 	} else {
 		p = p1; // use p1
@@ -98,13 +98,11 @@ bool Plane::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 
 	Vector3 segment = p_dir;
 	real_t den = normal.dot(segment);
 
-	//printf("den is %i\n",den);
 	if (Math::is_zero_approx(den)) {
 		return false;
 	}
 
 	real_t dist = (normal.dot(p_from) - d) / den;
-	//printf("dist is %i\n",dist);
 
 	if (dist > (real_t)CMP_EPSILON) { //this is a ray, before the emitting pos (p_from) doesn't exist
 
@@ -121,13 +119,11 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 	Vector3 segment = p_begin - p_end;
 	real_t den = normal.dot(segment);
 
-	//printf("den is %i\n",den);
 	if (Math::is_zero_approx(den)) {
 		return false;
 	}
 
 	real_t dist = (normal.dot(p_begin) - d) / den;
-	//printf("dist is %i\n",dist);
 
 	if (dist < (real_t)-CMP_EPSILON || dist > (1.0f + (real_t)CMP_EPSILON)) {
 		return false;
@@ -174,6 +170,10 @@ bool Plane::is_equal_approx_any_side(const Plane &p_plane) const {
 
 bool Plane::is_equal_approx(const Plane &p_plane) const {
 	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d);
+}
+
+bool Plane::is_same(const Plane &p_plane) const {
+	return normal.is_same(p_plane.normal) && Math::is_same(d, p_plane.d);
 }
 
 bool Plane::is_finite() const {

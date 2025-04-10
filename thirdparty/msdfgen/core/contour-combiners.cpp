@@ -1,18 +1,26 @@
 
 #include "contour-combiners.h"
 
+#include <cfloat>
 #include "arithmetics.hpp"
 
 namespace msdfgen {
 
 static void initDistance(double &distance) {
-    distance = SignedDistance::INFINITE.distance;
+    distance = -DBL_MAX;
 }
 
 static void initDistance(MultiDistance &distance) {
-    distance.r = SignedDistance::INFINITE.distance;
-    distance.g = SignedDistance::INFINITE.distance;
-    distance.b = SignedDistance::INFINITE.distance;
+    distance.r = -DBL_MAX;
+    distance.g = -DBL_MAX;
+    distance.b = -DBL_MAX;
+}
+
+static void initDistance(MultiAndTrueDistance &distance) {
+    distance.r = -DBL_MAX;
+    distance.g = -DBL_MAX;
+    distance.b = -DBL_MAX;
+    distance.a = -DBL_MAX;
 }
 
 static double resolveDistance(double distance) {
@@ -32,7 +40,7 @@ void SimpleContourCombiner<EdgeSelector>::reset(const Point2 &p) {
 }
 
 template <class EdgeSelector>
-EdgeSelector & SimpleContourCombiner<EdgeSelector>::edgeSelector(int) {
+EdgeSelector &SimpleContourCombiner<EdgeSelector>::edgeSelector(int) {
     return shapeEdgeSelector;
 }
 
@@ -42,7 +50,7 @@ typename SimpleContourCombiner<EdgeSelector>::DistanceType SimpleContourCombiner
 }
 
 template class SimpleContourCombiner<TrueDistanceSelector>;
-template class SimpleContourCombiner<PseudoDistanceSelector>;
+template class SimpleContourCombiner<PerpendicularDistanceSelector>;
 template class SimpleContourCombiner<MultiDistanceSelector>;
 template class SimpleContourCombiner<MultiAndTrueDistanceSelector>;
 
@@ -62,7 +70,7 @@ void OverlappingContourCombiner<EdgeSelector>::reset(const Point2 &p) {
 }
 
 template <class EdgeSelector>
-EdgeSelector & OverlappingContourCombiner<EdgeSelector>::edgeSelector(int i) {
+EdgeSelector &OverlappingContourCombiner<EdgeSelector>::edgeSelector(int i) {
     return edgeSelectors[i];
 }
 
@@ -126,7 +134,7 @@ typename OverlappingContourCombiner<EdgeSelector>::DistanceType OverlappingConto
 }
 
 template class OverlappingContourCombiner<TrueDistanceSelector>;
-template class OverlappingContourCombiner<PseudoDistanceSelector>;
+template class OverlappingContourCombiner<PerpendicularDistanceSelector>;
 template class OverlappingContourCombiner<MultiDistanceSelector>;
 template class OverlappingContourCombiner<MultiAndTrueDistanceSelector>;
 

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  camera_attributes.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  camera_attributes.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "camera_attributes.h"
 
@@ -122,7 +122,7 @@ void CameraAttributes::_bind_methods() {
 
 	ADD_GROUP("Exposure", "exposure_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_sensitivity", PROPERTY_HINT_RANGE, "0.1,32000.0,0.1,suffix:ISO"), "set_exposure_sensitivity", "get_exposure_sensitivity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_multiplier", PROPERTY_HINT_RANGE, "0.0,2048.0,0.001"), "set_exposure_multiplier", "get_exposure_multiplier");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_multiplier", PROPERTY_HINT_RANGE, "0.0,8.0,0.001,or_greater"), "set_exposure_multiplier", "get_exposure_multiplier");
 
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_exposure_enabled"), "set_auto_exposure_enabled", "is_auto_exposure_enabled");
@@ -135,6 +135,7 @@ CameraAttributes::CameraAttributes() {
 }
 
 CameraAttributes::~CameraAttributes() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(camera_attributes);
 }
 
@@ -285,10 +286,10 @@ void CameraAttributesPractical::_bind_methods() {
 	ADD_GROUP("DOF Blur", "dof_blur_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dof_blur_far_enabled"), "set_dof_blur_far_enabled", "is_dof_blur_far_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_distance", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp,suffix:m"), "set_dof_blur_far_distance", "get_dof_blur_far_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_transition", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp"), "set_dof_blur_far_transition", "get_dof_blur_far_transition");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_transition", PROPERTY_HINT_RANGE, "-1,8192,0.01"), "set_dof_blur_far_transition", "get_dof_blur_far_transition");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dof_blur_near_enabled"), "set_dof_blur_near_enabled", "is_dof_blur_near_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_near_distance", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp,suffix:m"), "set_dof_blur_near_distance", "get_dof_blur_near_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_near_transition", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp"), "set_dof_blur_near_transition", "get_dof_blur_near_transition");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_near_transition", PROPERTY_HINT_RANGE, "-1,8192,0.01"), "set_dof_blur_near_transition", "get_dof_blur_near_transition");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dof_blur_amount", "get_dof_blur_amount");
 
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
@@ -387,12 +388,19 @@ void CameraAttributesPhysical::_update_frustum() {
 	// that it is not picked up by the camera sensors.
 	// To be properly physically-based, we would run the DoF shader at all depths. To be efficient, we are only running it where the CoC
 	// will be visible, this introduces some value shifts in the near field that we have to compensate for below.
-	float near = ((hyperfocal_length * u) / (hyperfocal_length + (u - frustum_focal_length))) / 1000.0; // In meters.
-	float far = ((hyperfocal_length * u) / (hyperfocal_length - (u - frustum_focal_length))) / 1000.0; // In meters.
+	float depth_near = ((hyperfocal_length * u) / (hyperfocal_length + (u - frustum_focal_length))) / 1000.0; // In meters.
+	float depth_far = ((hyperfocal_length * u) / (hyperfocal_length - (u - frustum_focal_length))) / 1000.0; // In meters.
 	float scale = (frustum_focal_length / (u - frustum_focal_length)) * (frustum_focal_length / exposure_aperture);
 
-	bool use_far = (far < frustum_far) && (far > 0.0);
-	bool use_near = near > frustum_near;
+	bool use_far = (depth_far < frustum_far) && (depth_far > 0.0);
+	bool use_near = depth_near > frustum_near;
+#ifdef DEBUG_ENABLED
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		// Force disable DoF in editor builds to suppress warnings.
+		use_far = false;
+		use_near = false;
+	}
+#endif
 	RS::get_singleton()->camera_attributes_set_dof_blur(
 			get_rid(),
 			use_far,
@@ -479,7 +487,7 @@ void CameraAttributesPhysical::_bind_methods() {
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_min_exposure_value", PROPERTY_HINT_RANGE, "-16.0,16.0,0.01,or_greater,suffix:EV100"), "set_auto_exposure_min_exposure_value", "get_auto_exposure_min_exposure_value");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_max_exposure_value", PROPERTY_HINT_RANGE, "-16.0,16.0,0.01,or_greater,suffix:EV100"), "set_auto_exposure_max_exposure_value", "get_auto_exposure_max_exposure_value");
-};
+}
 
 CameraAttributesPhysical::CameraAttributesPhysical() {
 	_update_exposure();

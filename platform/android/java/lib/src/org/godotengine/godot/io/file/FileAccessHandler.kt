@@ -1,40 +1,43 @@
-/*************************************************************************/
-/*  FileAccessHandler.kt                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  FileAccessHandler.kt                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 package org.godotengine.godot.io.file
 
 import android.content.Context
 import android.util.Log
 import android.util.SparseArray
+import org.godotengine.godot.error.Error
 import org.godotengine.godot.io.StorageScope
 import java.io.FileNotFoundException
+import java.io.InputStream
+import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
 
 /**
@@ -45,9 +48,20 @@ class FileAccessHandler(val context: Context) {
 	companion object {
 		private val TAG = FileAccessHandler::class.java.simpleName
 
-		private const val FILE_NOT_FOUND_ERROR_ID = -1
 		private const val INVALID_FILE_ID = 0
 		private const val STARTING_FILE_ID = 1
+		private val FILE_OPEN_FAILED = Pair(Error.FAILED, INVALID_FILE_ID)
+
+		internal fun getInputStream(context: Context, storageScopeIdentifier: StorageScope.Identifier, path: String?): InputStream? {
+			val storageScope = storageScopeIdentifier.identifyStorageScope(path)
+			return try {
+				path?.let {
+					DataAccess.getInputStream(storageScope, context, path)
+				}
+			} catch (e: Exception) {
+				null
+			}
+		}
 
 		internal fun fileExists(context: Context, storageScopeIdentifier: StorageScope.Identifier, path: String?): Boolean {
 			val storageScope = storageScopeIdentifier.identifyStorageScope(path)
@@ -56,7 +70,9 @@ class FileAccessHandler(val context: Context) {
 			}
 
 			return try {
-				DataAccess.fileExists(storageScope, context, path!!)
+				path?.let {
+					DataAccess.fileExists(storageScope, context, it)
+				} ?: false
 			} catch (e: SecurityException) {
 				false
 			}
@@ -69,49 +85,77 @@ class FileAccessHandler(val context: Context) {
 			}
 
 			return try {
-				DataAccess.removeFile(storageScope, context, path!!)
+				path?.let {
+					DataAccess.removeFile(storageScope, context, it)
+				} ?: false
 			} catch (e: Exception) {
 				false
 			}
 		}
 
-		internal fun renameFile(context: Context, storageScopeIdentifier: StorageScope.Identifier, from: String?, to: String?): Boolean {
+		internal fun renameFile(context: Context, storageScopeIdentifier: StorageScope.Identifier, from: String, to: String): Boolean {
 			val storageScope = storageScopeIdentifier.identifyStorageScope(from)
 			if (storageScope == StorageScope.UNKNOWN) {
 				return false
 			}
 
 			return try {
-				DataAccess.renameFile(storageScope, context, from!!, to!!)
+				DataAccess.renameFile(storageScope, context, from, to)
 			} catch (e: Exception) {
 				false
 			}
 		}
 	}
 
-	private val storageScopeIdentifier = StorageScope.Identifier(context)
+	internal val storageScopeIdentifier = StorageScope.Identifier(context)
 	private val files = SparseArray<DataAccess>()
 	private var lastFileId = STARTING_FILE_ID
 
 	private fun hasFileId(fileId: Int) = files.indexOfKey(fileId) >= 0
 
+	fun canAccess(filePath: String?): Boolean {
+		return storageScopeIdentifier.canAccess(filePath)
+	}
+
+	/**
+	 * Returns a positive (> 0) file id when the operation succeeds.
+	 * Otherwise, returns a negative value of [Error].
+	 */
 	fun fileOpen(path: String?, modeFlags: Int): Int {
-		val storageScope = storageScopeIdentifier.identifyStorageScope(path)
-		if (storageScope == StorageScope.UNKNOWN) {
-			return INVALID_FILE_ID
+		val (fileError, fileId) = fileOpen(path, FileAccessFlags.fromNativeModeFlags(modeFlags))
+		return if (fileError == Error.OK) {
+			fileId
+		} else {
+			// Return the negative of the [Error#toNativeValue()] value to differentiate from the
+			// positive file id.
+			-fileError.toNativeValue()
+		}
+	}
+
+	internal fun fileOpen(path: String?, accessFlag: FileAccessFlags?): Pair<Error, Int> {
+		if (accessFlag == null) {
+			return FILE_OPEN_FAILED
 		}
 
-		try {
-			val accessFlag = FileAccessFlags.fromNativeModeFlags(modeFlags) ?: return INVALID_FILE_ID
-			val dataAccess = DataAccess.generateDataAccess(storageScope, context, path!!, accessFlag) ?: return INVALID_FILE_ID
+		val storageScope = storageScopeIdentifier.identifyStorageScope(path)
+		if (storageScope == StorageScope.UNKNOWN) {
+			return FILE_OPEN_FAILED
+		}
 
-			files.put(++lastFileId, dataAccess)
-			return lastFileId
+		return try {
+			path?.let {
+				val dataAccess = DataAccess.generateDataAccess(storageScope, context, it, accessFlag) ?: return FILE_OPEN_FAILED
+
+				files.put(++lastFileId, dataAccess)
+				Pair(Error.OK, lastFileId)
+			} ?: FILE_OPEN_FAILED
 		} catch (e: FileNotFoundException) {
-			return FILE_NOT_FOUND_ERROR_ID
+			Pair(Error.ERR_FILE_NOT_FOUND, INVALID_FILE_ID)
+		} catch (e: UnsupportedOperationException) {
+			Pair(Error.ERR_UNAVAILABLE, INVALID_FILE_ID)
 		} catch (e: Exception) {
 			Log.w(TAG, "Error while opening $path", e)
-			return INVALID_FILE_ID
+			FILE_OPEN_FAILED
 		}
 	}
 
@@ -147,12 +191,12 @@ class FileAccessHandler(val context: Context) {
 		return files[fileId].read(byteBuffer)
 	}
 
-	fun fileWrite(fileId: Int, byteBuffer: ByteBuffer?) {
+	fun fileWrite(fileId: Int, byteBuffer: ByteBuffer?): Boolean {
 		if (!hasFileId(fileId) || byteBuffer == null) {
-			return
+			return false
 		}
 
-		files[fileId].write(byteBuffer)
+		return files[fileId].write(byteBuffer)
 	}
 
 	fun fileFlush(fileId: Int) {
@@ -163,6 +207,10 @@ class FileAccessHandler(val context: Context) {
 		files[fileId].flush()
 	}
 
+	fun getInputStream(path: String?) = Companion.getInputStream(context, storageScopeIdentifier, path)
+
+	fun renameFile(from: String, to: String) = Companion.renameFile(context, storageScopeIdentifier, from, to)
+
 	fun fileExists(path: String?) = Companion.fileExists(context, storageScopeIdentifier, path)
 
 	fun fileLastModified(filepath: String?): Long {
@@ -172,9 +220,49 @@ class FileAccessHandler(val context: Context) {
 		}
 
 		return try {
-			DataAccess.fileLastModified(storageScope, context, filepath!!)
+			filepath?.let {
+				DataAccess.fileLastModified(storageScope, context, it)
+			} ?: 0L
 		} catch (e: SecurityException) {
 			0L
+		}
+	}
+
+	fun fileLastAccessed(filepath: String?): Long {
+		val storageScope = storageScopeIdentifier.identifyStorageScope(filepath)
+		if (storageScope == StorageScope.UNKNOWN) {
+			return 0L
+		}
+
+		return try {
+			filepath?.let {
+				DataAccess.fileLastAccessed(storageScope, context, it)
+			} ?: 0L
+		} catch (e: SecurityException) {
+			0L
+		}
+	}
+
+	fun fileResize(fileId: Int, length: Long): Int {
+		if (!hasFileId(fileId)) {
+			return Error.FAILED.toNativeValue()
+		}
+
+		return files[fileId].resize(length).toNativeValue()
+	}
+
+	fun fileSize(filepath: String?): Long {
+		val storageScope = storageScopeIdentifier.identifyStorageScope(filepath)
+		if (storageScope == StorageScope.UNKNOWN) {
+			return -1L
+		}
+
+		return try {
+			filepath?.let {
+				DataAccess.fileSize(storageScope, context, it)
+			} ?: -1L
+		} catch (e: SecurityException) {
+			-1L
 		}
 	}
 

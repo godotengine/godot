@@ -10,10 +10,10 @@ namespace GodotTools.Ides
 {
     public sealed partial class GodotIdeManager : Node, ISerializationListener
     {
-        private MessagingServer _messagingServer;
+        private MessagingServer? _messagingServer;
 
-        private MonoDevelop.Instance _monoDevelInstance;
-        private MonoDevelop.Instance _vsForMacInstance;
+        private MonoDevelop.Instance? _monoDevelInstance;
+        private MonoDevelop.Instance? _vsForMacInstance;
 
         private MessagingServer GetRunningOrNewServer()
         {
@@ -21,7 +21,8 @@ namespace GodotTools.Ides
                 return _messagingServer;
 
             _messagingServer?.Dispose();
-            _messagingServer = new MessagingServer(OS.GetExecutablePath(), ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
+            _messagingServer = new MessagingServer(OS.GetExecutablePath(),
+                ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
 
             _ = _messagingServer.Listen();
 
@@ -58,7 +59,7 @@ namespace GodotTools.Ides
             switch (editorId)
             {
                 case ExternalEditorId.None:
-                    return null;
+                    return string.Empty;
                 case ExternalEditorId.VisualStudio:
                     return "VisualStudio";
                 case ExternalEditorId.VsCode:
@@ -69,6 +70,8 @@ namespace GodotTools.Ides
                     return "VisualStudioForMac";
                 case ExternalEditorId.MonoDevelop:
                     return "MonoDevelop";
+                case ExternalEditorId.CustomEditor:
+                    return "CustomEditor";
                 default:
                     throw new NotImplementedException();
             }
@@ -76,8 +79,8 @@ namespace GodotTools.Ides
 
         public async Task<EditorPick?> LaunchIdeAsync(int millisecondsTimeout = 10000)
         {
-            var editorId = (ExternalEditorId)(int)GodotSharpEditor.Instance.GetEditorInterface()
-                .GetEditorSettings().GetSetting("mono/editor/external_editor");
+            var editorSettings = EditorInterface.Singleton.GetEditorSettings();
+            var editorId = editorSettings.GetSetting(GodotSharpEditor.Settings.ExternalEditor).As<ExternalEditorId>();
             string editorIdentity = GetExternalEditorIdentity(editorId);
 
             var runningServer = GetRunningOrNewServer();
@@ -104,6 +107,7 @@ namespace GodotTools.Ides
                 case ExternalEditorId.VisualStudio:
                 case ExternalEditorId.VsCode:
                 case ExternalEditorId.Rider:
+                case ExternalEditorId.CustomEditor:
                     throw new NotSupportedException();
                 case ExternalEditorId.VisualStudioForMac:
                     goto case ExternalEditorId.MonoDevelop;
@@ -200,13 +204,13 @@ namespace GodotTools.Ides
         {
             public void LogDebug(string message)
             {
-                if (OS.IsStdoutVerbose())
+                if (OS.IsStdOutVerbose())
                     Console.WriteLine(message);
             }
 
             public void LogInfo(string message)
             {
-                if (OS.IsStdoutVerbose())
+                if (OS.IsStdOutVerbose())
                     Console.WriteLine(message);
             }
 

@@ -1,37 +1,38 @@
-/*************************************************************************/
-/*  audio_stream_randomizer_editor_plugin.cpp                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_stream_randomizer_editor_plugin.cpp                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_stream_randomizer_editor_plugin.h"
 
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "servers/audio/audio_stream.h"
 
 void AudioStreamRandomizerEditorPlugin::edit(Object *p_object) {
 }
@@ -43,9 +44,9 @@ bool AudioStreamRandomizerEditorPlugin::handles(Object *p_object) const {
 void AudioStreamRandomizerEditorPlugin::make_visible(bool p_visible) {
 }
 
-void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
-	Ref<EditorUndoRedoManager> undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
-	ERR_FAIL_COND(undo_redo_man.is_null());
+void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos) {
+	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_NULL(undo_redo_man);
 
 	AudioStreamRandomizer *randomizer = Object::cast_to<AudioStreamRandomizer>(p_edited);
 	if (!randomizer) {
@@ -81,7 +82,7 @@ void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_und
 	if (p_from_index < 0) {
 		undo_redo_man->add_undo_method(randomizer, "remove_stream", p_to_pos < 0 ? randomizer->get_streams_count() : p_to_pos);
 	} else if (p_to_pos < 0) {
-		undo_redo_man->add_undo_method(randomizer, "add_stream", p_from_index);
+		undo_redo_man->add_undo_method(randomizer, "add_stream", p_from_index, Ref<AudioStream>());
 	}
 
 	List<PropertyInfo> properties;
@@ -107,7 +108,7 @@ void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_und
 #undef ADD_UNDO
 
 	if (p_from_index < 0) {
-		undo_redo_man->add_do_method(randomizer, "add_stream", p_to_pos);
+		undo_redo_man->add_do_method(randomizer, "add_stream", p_to_pos, Ref<AudioStream>());
 	} else if (p_to_pos < 0) {
 		undo_redo_man->add_do_method(randomizer, "remove_stream", p_from_index);
 	} else {
@@ -116,7 +117,5 @@ void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_und
 }
 
 AudioStreamRandomizerEditorPlugin::AudioStreamRandomizerEditorPlugin() {
-	EditorNode::get_singleton()->get_editor_data().add_move_array_element_function(SNAME("AudioStreamRandomizer"), callable_mp(this, &AudioStreamRandomizerEditorPlugin::_move_stream_array_element));
+	EditorNode::get_editor_data().add_move_array_element_function(SNAME("AudioStreamRandomizer"), callable_mp(this, &AudioStreamRandomizerEditorPlugin::_move_stream_array_element));
 }
-
-AudioStreamRandomizerEditorPlugin::~AudioStreamRandomizerEditorPlugin() {}

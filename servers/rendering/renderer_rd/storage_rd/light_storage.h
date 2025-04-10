@@ -1,35 +1,34 @@
-/*************************************************************************/
-/*  light_storage.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  light_storage.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef LIGHT_STORAGE_RD_H
-#define LIGHT_STORAGE_RD_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_array.h"
@@ -38,17 +37,18 @@
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/environment/sky.h"
 #include "servers/rendering/renderer_rd/storage_rd/forward_id_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
-struct RenderDataRD;
+class RenderDataRD;
 
 namespace RendererRD {
 
 class LightStorage : public RendererLightStorage {
 public:
-	enum ShadowAtlastQuadrant {
+	enum ShadowAtlastQuadrant : uint32_t {
 		QUADRANT_SHIFT = 27,
 		OMNI_LIGHT_FLAG = 1 << 26,
 		SHADOW_INDEX_MASK = OMNI_LIGHT_FLAG - 1,
@@ -71,6 +71,7 @@ private:
 		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
 		uint32_t max_sdfgi_cascade = 2;
 		uint32_t cull_mask = 0xFFFFFFFF;
+		uint32_t shadow_caster_mask = 0xFFFFFFFF;
 		bool distance_fade = false;
 		real_t distance_fade_begin = 40.0;
 		real_t distance_fade_shadow = 50.0;
@@ -92,11 +93,11 @@ private:
 		struct ShadowTransform {
 			Projection camera;
 			Transform3D transform;
-			float farplane;
-			float split;
-			float bias_scale;
-			float shadow_texel_size;
-			float range_begin;
+			float farplane = 0.0;
+			float split = 0.0;
+			float bias_scale = 0.0;
+			float shadow_texel_size = 0.0;
+			float range_begin = 0.0;
 			Rect2 atlas_rect;
 			Vector2 uv_scale;
 		};
@@ -221,16 +222,18 @@ private:
 		RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
 		int resolution = 256;
 		float intensity = 1.0;
+		float blend_distance = 1.0;
 		RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
 		Color ambient_color;
 		float ambient_color_energy = 1.0;
 		float max_distance = 0;
-		Vector3 extents = Vector3(1, 1, 1);
+		Vector3 size = Vector3(20, 20, 20);
 		Vector3 origin_offset;
 		bool interior = false;
 		bool box_projection = false;
 		bool enable_shadows = false;
 		uint32_t cull_mask = (1 << 20) - 1;
+		uint32_t reflection_mask = (1 << 20) - 1;
 		float mesh_lod_threshold = 0.01;
 		float baked_exposure = 1.0;
 
@@ -256,6 +259,8 @@ private:
 
 		Vector<Reflection> reflections;
 
+		Ref<RenderSceneBuffersRD> render_buffers; // Further render buffers used.
+
 		ClusterBuilderRD *cluster_builder = nullptr; // only used if cluster builder is supported by the renderer.
 	};
 
@@ -273,7 +278,6 @@ private:
 		int processing_layer = 1;
 		int processing_side = 0;
 
-		uint32_t render_step = 0;
 		uint64_t last_pass = 0;
 		uint32_t cull_mask = 0;
 
@@ -299,18 +303,22 @@ private:
 		uint32_t mask;
 		float ambient[3]; // ambient color,
 		float intensity;
+		float blend_distance;
 		uint32_t exterior;
 		uint32_t box_project;
 		uint32_t ambient_mode;
 		float exposure_normalization;
+		uint32_t pad0;
+		uint32_t pad1;
+		uint32_t pad2;
 		float local_matrix[16]; // up to here for spot and omni, rest is for directional
 	};
 
 	struct ReflectionProbeInstanceSort {
-		float depth;
+		float size;
 		ReflectionProbeInstance *probe_instance;
 		bool operator<(const ReflectionProbeInstanceSort &p_sort) const {
-			return depth < p_sort.depth;
+			return size < p_sort.size;
 		}
 	};
 
@@ -325,10 +333,13 @@ private:
 
 	struct Lightmap {
 		RID light_texture;
+		RID shadow_texture;
+		RS::ShadowmaskMode shadowmask_mode = RS::SHADOWMASK_MODE_NONE;
 		bool uses_spherical_harmonics = false;
 		bool interior = false;
 		AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
 		float baked_exposure = 1.0;
+		Vector2i light_texture_size;
 		int32_t array_index = -1; //unassigned
 		PackedVector3Array points;
 		PackedColorArray point_sh;
@@ -350,6 +361,8 @@ private:
 	float lightmap_probe_capture_update_speed = 4;
 
 	mutable RID_Owner<Lightmap, true> lightmap_owner;
+
+	Vector<RID> shadowmask_textures;
 
 	/* LIGHTMAP INSTANCE */
 
@@ -430,6 +443,11 @@ private:
 	HashMap<int, ShadowCubemap> shadow_cubemaps;
 	ShadowCubemap *_get_shadow_cubemap(int p_size);
 
+	/* PIPELINE HINTS */
+
+	bool shadow_cubemaps_used = false;
+	bool shadow_dual_paraboloid_used = false;
+
 public:
 	static LightStorage *get_singleton();
 
@@ -448,7 +466,7 @@ public:
 
 	/* LIGHT */
 
-	bool owns_light(RID p_rid) { return light_owner.owns(p_rid); };
+	bool owns_light(RID p_rid) { return light_owner.owns(p_rid); }
 
 	void _light_initialize(RID p_rid, RS::LightType p_type);
 
@@ -471,6 +489,8 @@ public:
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) override;
 	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) override;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) override;
+	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) override;
+	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override;
 	virtual void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) override;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override;
 
@@ -487,7 +507,7 @@ public:
 
 	virtual RS::LightType light_get_type(RID p_light) const override {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+		ERR_FAIL_NULL_V(light, RS::LIGHT_DIRECTIONAL);
 
 		return light->type;
 	}
@@ -495,30 +515,23 @@ public:
 
 	virtual float light_get_param(RID p_light, RS::LightParam p_param) override {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, 0);
+		ERR_FAIL_NULL_V(light, 0);
 
 		return light->param[p_param];
 	}
 
 	_FORCE_INLINE_ RID light_get_projector(RID p_light) {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, RID());
+		ERR_FAIL_NULL_V(light, RID());
 
 		return light->projector;
 	}
 
 	virtual Color light_get_color(RID p_light) override {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, Color());
+		ERR_FAIL_NULL_V(light, Color());
 
 		return light->color;
-	}
-
-	_FORCE_INLINE_ uint32_t light_get_cull_mask(RID p_light) {
-		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, 0);
-
-		return light->cull_mask;
 	}
 
 	_FORCE_INLINE_ bool light_is_distance_fade_enabled(RID p_light) {
@@ -543,41 +556,49 @@ public:
 
 	virtual bool light_has_shadow(RID p_light) const override {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+		ERR_FAIL_NULL_V(light, RS::LIGHT_DIRECTIONAL);
 
 		return light->shadow;
 	}
 
 	virtual bool light_has_projector(RID p_light) const override {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+		ERR_FAIL_NULL_V(light, RS::LIGHT_DIRECTIONAL);
 
 		return TextureStorage::get_singleton()->owns_texture(light->projector);
 	}
 
 	_FORCE_INLINE_ bool light_is_negative(RID p_light) const {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+		ERR_FAIL_NULL_V(light, RS::LIGHT_DIRECTIONAL);
 
 		return light->negative;
 	}
 
 	_FORCE_INLINE_ float light_get_transmittance_bias(RID p_light) const {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, 0.0);
+		ERR_FAIL_NULL_V(light, 0.0);
 
 		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
+	}
+
+	virtual bool light_get_reverse_cull_face_mode(RID p_light) const override {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_NULL_V(light, false);
+
+		return light->reverse_cull;
 	}
 
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) override;
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override;
 	virtual uint64_t light_get_version(RID p_light) const override;
+	virtual uint32_t light_get_cull_mask(RID p_light) const override;
 
 	Dependency *light_get_dependency(RID p_light) const;
 
 	/* LIGHT INSTANCE API */
 
-	bool owns_light_instance(RID p_rid) { return light_instance_owner.owns(p_rid); };
+	bool owns_light_instance(RID p_rid) { return light_instance_owner.owns(p_rid); }
 
 	virtual RID light_instance_create(RID p_light) override;
 	virtual void light_instance_free(RID p_light) override;
@@ -585,6 +606,29 @@ public:
 	virtual void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override;
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
 	virtual void light_instance_mark_visible(RID p_light_instance) override;
+
+	virtual bool light_instance_is_shadow_visible_at_position(RID p_light_instance, const Vector3 &p_position) const override {
+		const LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
+		ERR_FAIL_NULL_V(light_instance, false);
+		const Light *light = light_owner.get_or_null(light_instance->light);
+		ERR_FAIL_NULL_V(light, false);
+
+		if (!light->shadow) {
+			return false;
+		}
+
+		if (!light->distance_fade) {
+			return true;
+		}
+
+		real_t distance = p_position.distance_to(light_instance->transform.origin);
+
+		if (distance > light->distance_fade_shadow + light->distance_fade_length) {
+			return false;
+		}
+
+		return true;
+	}
 
 	_FORCE_INLINE_ RID light_instance_get_base_light(RID p_light_instance) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
@@ -653,7 +697,7 @@ public:
 		ERR_FAIL_COND_V(!li->shadow_atlases.has(p_shadow_atlas), 0);
 #endif
 		ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_shadow_atlas);
-		ERR_FAIL_COND_V(!shadow_atlas, 0);
+		ERR_FAIL_NULL_V(shadow_atlas, 0);
 #ifdef DEBUG_ENABLED
 		ERR_FAIL_COND_V(!shadow_atlas->shadow_owners.has(p_light_instance), 0);
 #endif
@@ -673,8 +717,7 @@ public:
 		return li->shadow_transform[p_index].camera;
 	}
 
-	_FORCE_INLINE_ Transform3D
-	light_instance_get_shadow_transform(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ Transform3D light_instance_get_shadow_transform(RID p_light_instance, int p_index) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		return li->shadow_transform[p_index].transform;
 	}
@@ -764,6 +807,16 @@ public:
 	RID get_spot_light_buffer() { return spot_light_buffer; }
 	RID get_directional_light_buffer() { return directional_light_buffer; }
 	uint32_t get_max_directional_lights() { return max_directional_lights; }
+	uint32_t get_directional_light_blend_splits(uint32_t p_directional_light_count) const {
+		uint32_t blend_splits = 0;
+		for (uint32_t i = 0; i < p_directional_light_count; i++) {
+			if (directional_lights[i].blend_splits) {
+				blend_splits |= 1U << i;
+			}
+		}
+
+		return blend_splits;
+	}
 	bool has_directional_shadows(const uint32_t p_directional_light_count) {
 		for (uint32_t i = 0; i < p_directional_light_count; i++) {
 			if (directional_lights[i].shadow_opacity > 0.001) {
@@ -776,7 +829,7 @@ public:
 
 	/* REFLECTION PROBE */
 
-	bool owns_reflection_probe(RID p_rid) { return reflection_probe_owner.owns(p_rid); };
+	bool owns_reflection_probe(RID p_rid) { return reflection_probe_owner.owns(p_rid); }
 
 	virtual RID reflection_probe_allocate() override;
 	virtual void reflection_probe_initialize(RID p_reflection_probe) override;
@@ -784,16 +837,18 @@ public:
 
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) override;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) override;
+	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) override;
 	virtual void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) override;
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) override;
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) override;
 	virtual void reflection_probe_set_max_distance(RID p_probe, float p_distance) override;
-	virtual void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) override;
+	virtual void reflection_probe_set_size(RID p_probe, const Vector3 &p_size) override;
 	virtual void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) override;
 	virtual void reflection_probe_set_as_interior(RID p_probe, bool p_enable) override;
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) override;
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) override;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) override;
+	virtual void reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) override;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) override;
 	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override;
 
@@ -802,7 +857,8 @@ public:
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const override;
 	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override;
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const override;
-	virtual Vector3 reflection_probe_get_extents(RID p_probe) const override;
+	virtual uint32_t reflection_probe_get_reflection_mask(RID p_probe) const override;
+	virtual Vector3 reflection_probe_get_size(RID p_probe) const override;
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const override;
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override;
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override;
@@ -812,6 +868,7 @@ public:
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const override;
 
 	float reflection_probe_get_intensity(RID p_probe) const;
+	float reflection_probe_get_blend_distance(RID p_probe) const;
 	bool reflection_probe_is_interior(RID p_probe) const;
 	bool reflection_probe_is_box_projection(RID p_probe) const;
 	RS::ReflectionProbeAmbientMode reflection_probe_get_ambient_mode(RID p_probe) const;
@@ -831,7 +888,7 @@ public:
 
 	_FORCE_INLINE_ RID reflection_atlas_get_texture(RID p_ref_atlas) {
 		ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_ref_atlas);
-		ERR_FAIL_COND_V(!atlas, RID());
+		ERR_FAIL_NULL_V(atlas, RID());
 		return atlas->reflection;
 	}
 
@@ -842,10 +899,12 @@ public:
 	virtual RID reflection_probe_instance_create(RID p_probe) override;
 	virtual void reflection_probe_instance_free(RID p_instance) override;
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override;
+	virtual bool reflection_probe_has_atlas_index(RID p_instance) override;
 	virtual void reflection_probe_release_atlas_index(RID p_instance) override;
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override;
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override;
 	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) override;
+	virtual Ref<RenderSceneBuffers> reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) override;
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) override;
 
 	uint32_t reflection_probe_instance_get_resolution(RID p_instance);
@@ -854,47 +913,47 @@ public:
 
 	_FORCE_INLINE_ RID reflection_probe_instance_get_probe(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
-		ERR_FAIL_COND_V(!rpi, RID());
+		ERR_FAIL_NULL_V(rpi, RID());
 
 		return rpi->probe;
 	}
 
 	_FORCE_INLINE_ RendererRD::ForwardID reflection_probe_instance_get_forward_id(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
-		ERR_FAIL_COND_V(!rpi, 0);
+		ERR_FAIL_NULL_V(rpi, 0);
 
 		return rpi->forward_id;
 	}
 
 	_FORCE_INLINE_ void reflection_probe_instance_set_cull_mask(RID p_instance, uint32_t p_render_pass) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
-		ERR_FAIL_COND(!rpi);
+		ERR_FAIL_NULL(rpi);
 		rpi->cull_mask = p_render_pass;
 	}
 
 	_FORCE_INLINE_ void reflection_probe_instance_set_render_pass(RID p_instance, uint32_t p_render_pass) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
-		ERR_FAIL_COND(!rpi);
+		ERR_FAIL_NULL(rpi);
 		rpi->last_pass = p_render_pass;
 	}
 
 	_FORCE_INLINE_ uint32_t reflection_probe_instance_get_render_pass(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
-		ERR_FAIL_COND_V(!rpi, 0);
+		ERR_FAIL_NULL_V(rpi, 0);
 
 		return rpi->last_pass;
 	}
 
 	_FORCE_INLINE_ Transform3D reflection_probe_instance_get_transform(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
-		ERR_FAIL_COND_V(!rpi, Transform3D());
+		ERR_FAIL_NULL_V(rpi, Transform3D());
 
 		return rpi->transform;
 	}
 
 	_FORCE_INLINE_ int reflection_probe_instance_get_atlas_index(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
-		ERR_FAIL_COND_V(!rpi, -1);
+		ERR_FAIL_NULL_V(rpi, -1);
 
 		return rpi->atlas_index;
 	}
@@ -907,10 +966,14 @@ public:
 	void set_max_reflection_probes(const uint32_t p_max_reflection_probes);
 	RID get_reflection_probe_buffer() { return reflection_buffer; }
 	void update_reflection_probe_buffer(RenderDataRD *p_render_data, const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment);
+	static RD::DataFormat get_reflection_probe_color_format();
+	static uint32_t get_reflection_probe_color_usage_bits();
+	static RD::DataFormat get_reflection_probe_depth_format();
+	static uint32_t get_reflection_probe_depth_usage_bits();
 
 	/* LIGHTMAP */
 
-	bool owns_lightmap(RID p_rid) { return lightmap_owner.owns(p_rid); };
+	bool owns_lightmap(RID p_rid) { return lightmap_owner.owns(p_rid); }
 
 	virtual RID lightmap_allocate() override;
 	virtual void lightmap_initialize(RID p_lightmap) override;
@@ -932,17 +995,21 @@ public:
 
 	Dependency *lightmap_get_dependency(RID p_lightmap) const;
 
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override;
+	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override;
+	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) override;
+
 	virtual float lightmap_get_probe_capture_update_speed() const override {
 		return lightmap_probe_capture_update_speed;
 	}
 	_FORCE_INLINE_ RID lightmap_get_texture(RID p_lightmap) const {
 		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
-		ERR_FAIL_COND_V(!lm, RID());
+		ERR_FAIL_NULL_V(lm, RID());
 		return lm->light_texture;
 	}
 	_FORCE_INLINE_ float lightmap_get_baked_exposure_normalization(RID p_lightmap) const {
 		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
-		ERR_FAIL_COND_V(!lm, 1.0);
+		ERR_FAIL_NULL_V(lm, 1.0);
 		return lm->baked_exposure;
 	}
 	_FORCE_INLINE_ int32_t lightmap_get_array_index(RID p_lightmap) const {
@@ -954,6 +1021,10 @@ public:
 		ERR_FAIL_COND_V(!using_lightmap_array, false); //only for arrays
 		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		return lm->uses_spherical_harmonics;
+	}
+	_FORCE_INLINE_ Vector2i lightmap_get_light_texture_size(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+		return lm->light_texture_size;
 	}
 	_FORCE_INLINE_ uint64_t lightmap_array_get_version() const {
 		ERR_FAIL_COND_V(!using_lightmap_array, 0); //only for arrays
@@ -970,9 +1041,15 @@ public:
 		return lightmap_textures;
 	}
 
+	_FORCE_INLINE_ RID shadowmask_get_texture(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+		ERR_FAIL_NULL_V(lm, RID());
+		return lm->shadow_texture;
+	}
+
 	/* LIGHTMAP INSTANCE */
 
-	bool owns_lightmap_instance(RID p_rid) { return lightmap_instance_owner.owns(p_rid); };
+	bool owns_lightmap_instance(RID p_rid) { return lightmap_instance_owner.owns(p_rid); }
 
 	virtual RID lightmap_instance_create(RID p_lightmap) override;
 	virtual void lightmap_instance_free(RID p_lightmap) override;
@@ -992,7 +1069,7 @@ public:
 
 	/* SHADOW ATLAS API */
 
-	bool owns_shadow_atlas(RID p_rid) { return shadow_atlas_owner.owns(p_rid); };
+	bool owns_shadow_atlas(RID p_rid) { return shadow_atlas_owner.owns(p_rid); }
 
 	virtual RID shadow_atlas_create() override;
 	virtual void shadow_atlas_free(RID p_atlas) override;
@@ -1000,55 +1077,57 @@ public:
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override;
 	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) override;
-	_FORCE_INLINE_ bool shadow_atlas_owns_light_instance(RID p_atlas, RID p_light_intance) {
+	_FORCE_INLINE_ bool shadow_atlas_owns_light_instance(RID p_atlas, RID p_light_instance) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
-		ERR_FAIL_COND_V(!atlas, false);
-		return atlas->shadow_owners.has(p_light_intance);
+		ERR_FAIL_NULL_V(atlas, false);
+		return atlas->shadow_owners.has(p_light_instance);
 	}
-	_FORCE_INLINE_ uint32_t shadow_atlas_get_light_instance_key(RID p_atlas, RID p_light_intance) {
+	_FORCE_INLINE_ uint32_t shadow_atlas_get_light_instance_key(RID p_atlas, RID p_light_instance) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
-		ERR_FAIL_COND_V(!atlas, -1);
-		return atlas->shadow_owners[p_light_intance];
+		ERR_FAIL_NULL_V(atlas, -1);
+		return atlas->shadow_owners[p_light_instance];
 	}
 
 	_FORCE_INLINE_ RID shadow_atlas_get_texture(RID p_atlas) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
-		ERR_FAIL_COND_V(!atlas, RID());
+		ERR_FAIL_NULL_V(atlas, RID());
 		return atlas->depth;
 	}
 
 	_FORCE_INLINE_ int shadow_atlas_get_size(RID p_atlas) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
-		ERR_FAIL_COND_V(!atlas, 0);
+		ERR_FAIL_NULL_V(atlas, 0);
 		return atlas->size;
 	}
 
 	_FORCE_INLINE_ int shadow_atlas_get_quadrant_shadow_size(RID p_atlas, uint32_t p_quadrant) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
-		ERR_FAIL_COND_V(!atlas, 0);
+		ERR_FAIL_NULL_V(atlas, 0);
 		ERR_FAIL_UNSIGNED_INDEX_V(p_quadrant, 4, 0);
 		return atlas->quadrants[p_quadrant].shadows.size();
 	}
 
 	_FORCE_INLINE_ uint32_t shadow_atlas_get_quadrant_subdivision(RID p_atlas, uint32_t p_quadrant) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
-		ERR_FAIL_COND_V(!atlas, 0);
+		ERR_FAIL_NULL_V(atlas, 0);
 		ERR_FAIL_UNSIGNED_INDEX_V(p_quadrant, 4, 0);
 		return atlas->quadrants[p_quadrant].subdivision;
 	}
 
 	_FORCE_INLINE_ RID shadow_atlas_get_fb(RID p_atlas) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
-		ERR_FAIL_COND_V(!atlas, RID());
+		ERR_FAIL_NULL_V(atlas, RID());
 		return atlas->fb;
 	}
 
 	virtual void shadow_atlas_update(RID p_atlas) override;
+	static RD::DataFormat get_shadow_atlas_depth_format(bool p_16_bits);
+	static uint32_t get_shadow_atlas_depth_usage_bits();
 
 	/* DIRECTIONAL SHADOW */
 
 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override;
-	virtual int get_directional_light_shadow_size(RID p_light_intance) override;
+	virtual int get_directional_light_shadow_size(RID p_light_instance) override;
 	virtual void set_directional_shadow_count(int p_count) override;
 
 	Rect2i get_directional_shadow_rect();
@@ -1074,8 +1153,13 @@ public:
 
 	RID get_cubemap(int p_size);
 	RID get_cubemap_fb(int p_size, int p_pass);
+	static RD::DataFormat get_cubemap_depth_format();
+	static uint32_t get_cubemap_depth_usage_bits();
+
+	/* PIPELINE HINTS */
+
+	bool get_shadow_cubemaps_used() const;
+	bool get_shadow_dual_paraboloid_used() const;
 };
 
 } // namespace RendererRD
-
-#endif // LIGHT_STORAGE_RD_H

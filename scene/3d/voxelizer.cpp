@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  voxelizer.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  voxelizer.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "voxelizer.h"
 
@@ -86,7 +86,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 		for (int i = 0; i < 3; i++) {
 			Vector3 axis;
 			axis[i] = 1.0;
-			real_t dot = ABS(normal.dot(axis));
+			real_t dot = Math::abs(normal.dot(axis));
 			if (i == 0 || dot > closest_dot) {
 				closest_axis = i;
 				closest_dot = dot;
@@ -136,7 +136,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector3 intersection;
 
 				if (!plane.intersects_segment(ray_from, ray_to, &intersection)) {
-					if (ABS(plane.distance_to(ray_from)) < ABS(plane.distance_to(ray_to))) {
+					if (Math::abs(plane.distance_to(ray_from)) < Math::abs(plane.distance_to(ray_to))) {
 						intersection = plane.project(ray_from);
 					} else {
 						intersection = plane.project(ray_to);
@@ -346,25 +346,29 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 		} else {
 			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo()); // no albedo texture, color is additive
 		}
+		if (mat->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
+			Ref<Texture2D> emission_tex = mat->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 
-		Ref<Texture2D> emission_tex = mat->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
+			Color emission_col = mat->get_emission();
+			float emission_energy = mat->get_emission_energy_multiplier() * exposure_normalization;
+			if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+				emission_energy *= mat->get_emission_intensity();
+			}
 
-		Color emission_col = mat->get_emission();
-		float emission_energy = mat->get_emission_energy_multiplier() * exposure_normalization;
-		if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
-			emission_energy *= mat->get_emission_intensity();
-		}
+			Ref<Image> img_emission;
 
-		Ref<Image> img_emission;
+			if (emission_tex.is_valid()) {
+				img_emission = emission_tex->get_image();
+			}
 
-		if (emission_tex.is_valid()) {
-			img_emission = emission_tex->get_image();
-		}
-
-		if (mat->get_emission_operator() == BaseMaterial3D::EMISSION_OP_ADD) {
-			mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1) * emission_energy, emission_col * emission_energy);
+			if (mat->get_emission_operator() == BaseMaterial3D::EMISSION_OP_ADD) {
+				mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1) * emission_energy, emission_col * emission_energy);
+			} else {
+				mc.emission = _get_bake_texture(img_emission, emission_col * emission_energy, Color(0, 0, 0));
+			}
 		} else {
-			mc.emission = _get_bake_texture(img_emission, emission_col * emission_energy, Color(0, 0, 0));
+			Ref<Image> empty;
+			mc.emission = _get_bake_texture(empty, Color(0, 0, 0), Color(0, 0, 0));
 		}
 
 	} else {
@@ -378,7 +382,28 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 	return mc;
 }
 
-void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
+int Voxelizer::get_bake_steps(Ref<Mesh> &p_mesh) const {
+	int bake_total = 0;
+	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
+			continue; // Only triangles.
+		}
+		Array a = p_mesh->surface_get_arrays(i);
+		Vector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
+		Vector<int> index = a[Mesh::ARRAY_INDEX];
+		bake_total += (index.size() > 0 ? index.size() : vertices.size()) / 3;
+	}
+	return bake_total;
+}
+
+Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material, BakeStepFunc p_bake_step_func) {
+	ERR_FAIL_COND_V_MSG(!p_xform.is_finite(), BAKE_RESULT_INVALID_PARAMETER, "Invalid mesh bake transform.");
+
+	// Precalculate for transforming vertex normals
+	Basis normal_xform = p_xform.basis.inverse().transposed();
+
+	int bake_total = get_bake_steps(p_mesh), bake_current = 0;
+
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; //only triangles
@@ -422,6 +447,13 @@ void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const V
 				Vector2 uvs[3];
 				Vector3 normal[3];
 
+				bake_current++;
+				if (p_bake_step_func != nullptr && (bake_current & 2047) == 1) {
+					if (p_bake_step_func(bake_current, bake_total)) {
+						return BAKE_RESULT_CANCELLED;
+					}
+				}
+
 				for (int k = 0; k < 3; k++) {
 					vtxs[k] = p_xform.xform(vr[ir[j * 3 + k]]);
 				}
@@ -434,7 +466,7 @@ void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const V
 
 				if (nr) {
 					for (int k = 0; k < 3; k++) {
-						normal[k] = nr[ir[j * 3 + k]];
+						normal[k] = normal_xform.xform(nr[ir[j * 3 + k]]).normalized();
 					}
 				}
 
@@ -453,6 +485,13 @@ void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const V
 				Vector3 vtxs[3];
 				Vector2 uvs[3];
 				Vector3 normal[3];
+
+				bake_current++;
+				if (p_bake_step_func != nullptr && (bake_current & 2047) == 1) {
+					if (p_bake_step_func(bake_current, bake_total)) {
+						return BAKE_RESULT_CANCELLED;
+					}
+				}
 
 				for (int k = 0; k < 3; k++) {
 					vtxs[k] = p_xform.xform(vr[j * 3 + k]);
@@ -481,6 +520,8 @@ void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const V
 	}
 
 	max_original_cells = bake_cells.size();
+
+	return BAKE_RESULT_OK;
 }
 
 void Voxelizer::_sort() {
@@ -815,7 +856,7 @@ static void edt(float *f, int stride, int n) {
 
 #undef square
 
-Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
+Voxelizer::BakeResult Voxelizer::get_sdf_3d_image(Vector<uint8_t> &r_image, BakeStepFunc p_bake_step_function) const {
 	Vector3i octree_size = get_voxel_gi_octree_size();
 
 	uint32_t float_count = octree_size.x * octree_size.y * octree_size.z;
@@ -833,7 +874,7 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 		uint32_t cell_count = bake_cells.size();
 
 		for (uint32_t i = 0; i < cell_count; i++) {
-			if (cells[i].level < (cell_subdiv - 1)) {
+			if (cells[i].level < cell_subdiv) {
 				continue; //do not care about this level
 			}
 
@@ -843,9 +884,17 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 
 	//process in each direction
 
+	int bake_total = octree_size.x * 2 + octree_size.y, bake_current = 0;
+
 	//xy->z
 
-	for (int i = 0; i < octree_size.x; i++) {
+	for (int i = 0; i < octree_size.x; i++, bake_current++) {
+		if (p_bake_step_function) {
+			if (p_bake_step_function(bake_current, bake_total)) {
+				memdelete_arr(work_memory);
+				return BAKE_RESULT_CANCELLED;
+			}
+		}
 		for (int j = 0; j < octree_size.y; j++) {
 			edt(&work_memory[i + j * y_mult], z_mult, octree_size.z);
 		}
@@ -853,23 +902,34 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 
 	//xz->y
 
-	for (int i = 0; i < octree_size.x; i++) {
+	for (int i = 0; i < octree_size.x; i++, bake_current++) {
+		if (p_bake_step_function) {
+			if (p_bake_step_function(bake_current, bake_total)) {
+				memdelete_arr(work_memory);
+				return BAKE_RESULT_CANCELLED;
+			}
+		}
 		for (int j = 0; j < octree_size.z; j++) {
 			edt(&work_memory[i + j * z_mult], y_mult, octree_size.y);
 		}
 	}
 
 	//yz->x
-	for (int i = 0; i < octree_size.y; i++) {
+	for (int i = 0; i < octree_size.y; i++, bake_current++) {
+		if (p_bake_step_function) {
+			if (p_bake_step_function(bake_current, bake_total)) {
+				memdelete_arr(work_memory);
+				return BAKE_RESULT_CANCELLED;
+			}
+		}
 		for (int j = 0; j < octree_size.z; j++) {
 			edt(&work_memory[i * y_mult + j * z_mult], 1, octree_size.x);
 		}
 	}
 
-	Vector<uint8_t> image3d;
-	image3d.resize(float_count);
+	r_image.resize(float_count);
 	{
-		uint8_t *w = image3d.ptrw();
+		uint8_t *w = r_image.ptrw();
 		for (uint32_t i = 0; i < float_count; i++) {
 			uint32_t d = uint32_t(Math::sqrt(work_memory[i]));
 			if (d == 0) {
@@ -880,7 +940,9 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 		}
 	}
 
-	return image3d;
+	memdelete_arr(work_memory);
+
+	return BAKE_RESULT_OK;
 }
 
 #undef INF
@@ -986,6 +1048,7 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 		fsm->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		fsm->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		fsm->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		fsm->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 		fsm->set_albedo(Color(1, 1, 1, 1));
 
 		mesh->surface_set_material(0, fsm);

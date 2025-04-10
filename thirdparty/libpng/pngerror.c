@@ -1,7 +1,6 @@
-
 /* pngerror.c - stub functions for i/o and memory allocation
  *
- * Copyright (c) 2018 Cosmin Truta
+ * Copyright (c) 2018-2024 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -20,13 +19,14 @@
 
 #if defined(PNG_READ_SUPPORTED) || defined(PNG_WRITE_SUPPORTED)
 
-static PNG_FUNCTION(void, png_default_error,PNGARG((png_const_structrp png_ptr,
-    png_const_charp error_message)),PNG_NORETURN);
+static PNG_FUNCTION(void /* PRIVATE */,
+png_default_error,(png_const_structrp png_ptr, png_const_charp error_message),
+    PNG_NORETURN);
 
 #ifdef PNG_WARNINGS_SUPPORTED
 static void /* PRIVATE */
-png_default_warning PNGARG((png_const_structrp png_ptr,
-    png_const_charp warning_message));
+png_default_warning(png_const_structrp png_ptr,
+    png_const_charp warning_message);
 #endif /* WARNINGS */
 
 /* This function is called whenever there is a fatal error.  This function
@@ -255,7 +255,7 @@ void
 png_warning_parameter_unsigned(png_warning_parameters p, int number, int format,
     png_alloc_size_t value)
 {
-   char buffer[PNG_NUMBER_BUFFER_SIZE];
+   char buffer[PNG_NUMBER_BUFFER_SIZE] = {0};
    png_warning_parameter(p, number, PNG_FORMAT_NUMBER(buffer, format, value));
 }
 
@@ -265,7 +265,7 @@ png_warning_parameter_signed(png_warning_parameters p, int number, int format,
 {
    png_alloc_size_t u;
    png_charp str;
-   char buffer[PNG_NUMBER_BUFFER_SIZE];
+   char buffer[PNG_NUMBER_BUFFER_SIZE] = {0};
 
    /* Avoid overflow by doing the negate in a png_alloc_size_t: */
    u = (png_alloc_size_t)value;
@@ -858,7 +858,7 @@ png_get_error_ptr(png_const_structrp png_ptr)
    if (png_ptr == NULL)
       return NULL;
 
-   return ((png_voidp)png_ptr->error_ptr);
+   return (png_voidp)png_ptr->error_ptr;
 }
 
 
@@ -933,31 +933,39 @@ png_safe_warning(png_structp png_nonconst_ptr, png_const_charp warning_message)
 #endif
 
 int /* PRIVATE */
-png_safe_execute(png_imagep image_in, int (*function)(png_voidp), png_voidp arg)
+png_safe_execute(png_imagep image, int (*function)(png_voidp), png_voidp arg)
 {
-   volatile png_imagep image = image_in;
-   volatile int result;
-   volatile png_voidp saved_error_buf;
+   const png_voidp saved_error_buf = image->opaque->error_buf;
    jmp_buf safe_jmpbuf;
 
-   /* Safely execute function(arg) with png_error returning to this function. */
-   saved_error_buf = image->opaque->error_buf;
-   result = setjmp(safe_jmpbuf) == 0;
-
-   if (result != 0)
+   /* Safely execute function(arg), with png_error returning back here. */
+   if (setjmp(safe_jmpbuf) == 0)
    {
+      int result;
 
       image->opaque->error_buf = safe_jmpbuf;
       result = function(arg);
+      image->opaque->error_buf = saved_error_buf;
+
+      if (result)
+         return 1; /* success */
    }
 
+   /* The function failed either because of a caught png_error and a regular
+    * return of false above or because of an uncaught png_error from the
+    * function itself.  Ensure that the error_buf is always set back to the
+    * value saved above:
+    */
    image->opaque->error_buf = saved_error_buf;
 
-   /* And do the cleanup prior to any failure return. */
-   if (result == 0)
+   /* On the final false return, when about to return control to the caller, the
+    * image is freed (png_image_free does this check but it is duplicated here
+    * for clarity:
+    */
+   if (saved_error_buf == NULL)
       png_image_free(image);
 
-   return result;
+   return 0; /* failure */
 }
 #endif /* SIMPLIFIED READ || SIMPLIFIED_WRITE */
 #endif /* READ || WRITE */
