@@ -69,12 +69,18 @@ int GodotPhysicsDirectSpaceState2D::intersect_point(const PointParameters &p_par
 
 	int cc = 0;
 
+	const bool include_filter_enabled = !p_parameters.include.is_empty();
+
 	for (int i = 0; i < amount; i++) {
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
 			continue;
 		}
 
 		if (p_parameters.exclude.has(space->intersection_query_results[i]->get_self())) {
+			continue;
+		}
+
+		if (include_filter_enabled && !p_parameters.include.has(space->intersection_query_results[i]->get_self())) {
 			continue;
 		}
 
@@ -134,12 +140,18 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 	const GodotCollisionObject2D *res_obj = nullptr;
 	real_t min_d = 1e10;
 
+	const bool include_filter_enabled = !p_parameters.include.is_empty();
+
 	for (int i = 0; i < amount; i++) {
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
 			continue;
 		}
 
 		if (p_parameters.exclude.has(space->intersection_query_results[i]->get_self())) {
+			continue;
+		}
+
+		if (include_filter_enabled && !p_parameters.include.has(space->intersection_query_results[i]->get_self())) {
 			continue;
 		}
 
@@ -221,6 +233,8 @@ int GodotPhysicsDirectSpaceState2D::intersect_shape(const ShapeParameters &p_par
 
 	int cc = 0;
 
+	const bool include_filter_enabled = !p_parameters.include.is_empty();
+
 	for (int i = 0; i < amount; i++) {
 		if (cc >= p_result_max) {
 			break;
@@ -231,6 +245,10 @@ int GodotPhysicsDirectSpaceState2D::intersect_shape(const ShapeParameters &p_par
 		}
 
 		if (p_parameters.exclude.has(space->intersection_query_results[i]->get_self())) {
+			continue;
+		}
+
+		if (include_filter_enabled && !p_parameters.include.has(space->intersection_query_results[i]->get_self())) {
 			continue;
 		}
 
@@ -267,6 +285,8 @@ bool GodotPhysicsDirectSpaceState2D::cast_motion(const ShapeParameters &p_parame
 	real_t best_safe = 1;
 	real_t best_unsafe = 1;
 
+	const bool include_filter_enabled = !p_parameters.include.is_empty();
+
 	for (int i = 0; i < amount; i++) {
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
 			continue;
@@ -274,6 +294,10 @@ bool GodotPhysicsDirectSpaceState2D::cast_motion(const ShapeParameters &p_parame
 
 		if (p_parameters.exclude.has(space->intersection_query_results[i]->get_self())) {
 			continue; //ignore excluded
+		}
+
+		if (include_filter_enabled && !p_parameters.include.has(space->intersection_query_results[i]->get_self())) {
+			continue;
 		}
 
 		const GodotCollisionObject2D *col_obj = space->intersection_query_results[i];

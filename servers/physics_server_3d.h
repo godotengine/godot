@@ -137,6 +137,7 @@ public:
 		Vector3 from;
 		Vector3 to;
 		HashSet<RID> exclude;
+		HashSet<RID> include;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -170,6 +171,7 @@ public:
 	struct PointParameters {
 		Vector3 position;
 		HashSet<RID> exclude;
+		HashSet<RID> include;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -184,6 +186,7 @@ public:
 		Vector3 motion;
 		real_t margin = 0.0;
 		HashSet<RID> exclude;
+		HashSet<RID> include;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -850,6 +853,9 @@ public:
 
 	void set_exclude(const TypedArray<RID> &p_exclude);
 	TypedArray<RID> get_exclude() const;
+
+	void set_include(const TypedArray<RID> &p_include);
+	TypedArray<RID> get_include() const;
 };
 
 class PhysicsPointQueryParameters3D : public RefCounted {
@@ -877,6 +883,9 @@ public:
 
 	void set_exclude(const TypedArray<RID> &p_exclude);
 	TypedArray<RID> get_exclude() const;
+
+	void set_include(const TypedArray<RID> &p_include);
+	TypedArray<RID> get_include() const;
 };
 
 class PhysicsShapeQueryParameters3D : public RefCounted {
@@ -918,6 +927,9 @@ public:
 
 	void set_exclude(const TypedArray<RID> &p_exclude);
 	TypedArray<RID> get_exclude() const;
+
+	void set_include(const TypedArray<RID> &p_include);
+	TypedArray<RID> get_include() const;
 };
 
 class PhysicsTestMotionParameters3D : public RefCounted {

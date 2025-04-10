@@ -133,6 +133,7 @@ public:
 		Vector2 from;
 		Vector2 to;
 		HashSet<RID> exclude;
+		HashSet<RID> include;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -163,6 +164,7 @@ public:
 		Vector2 position;
 		ObjectID canvas_instance_id;
 		HashSet<RID> exclude;
+		HashSet<RID> include;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -179,6 +181,7 @@ public:
 		Vector2 motion;
 		real_t margin = 0.0;
 		HashSet<RID> exclude;
+		HashSet<RID> include;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -646,6 +649,9 @@ public:
 
 	void set_exclude(const TypedArray<RID> &p_exclude);
 	TypedArray<RID> get_exclude() const;
+
+	void set_include(const TypedArray<RID> &p_include);
+	TypedArray<RID> get_include() const;
 };
 
 class PhysicsPointQueryParameters2D : public RefCounted {
@@ -676,6 +682,9 @@ public:
 
 	void set_exclude(const TypedArray<RID> &p_exclude);
 	TypedArray<RID> get_exclude() const;
+
+	void set_include(const TypedArray<RID> &p_include);
+	TypedArray<RID> get_include() const;
 };
 
 class PhysicsShapeQueryParameters2D : public RefCounted {
@@ -717,6 +726,9 @@ public:
 
 	void set_exclude(const TypedArray<RID> &p_exclude);
 	TypedArray<RID> get_exclude() const;
+
+	void set_include(const TypedArray<RID> &p_include);
+	TypedArray<RID> get_include() const;
 };
 
 class PhysicsTestMotionParameters2D : public RefCounted {
