@@ -37,6 +37,7 @@
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/fuzzy_search.h"
 #include "core/version.h"
 #include "editor/code_editor.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -2051,12 +2052,35 @@ void ScriptEditor::_update_members_overview() {
 		functions.sort();
 	}
 
-	for (int i = 0; i < functions.size(); i++) {
-		String filter = filter_methods->get_text();
-		String name = functions[i].get_slicec(':', 0);
-		if (filter.is_empty() || filter.is_subsequence_ofn(name)) {
+	String filter = filter_methods->get_text();
+	if (filter.is_empty()) {
+		for (int i = 0; i < functions.size(); i++) {
+			String name = functions[i].get_slicec(':', 0);
 			members_overview->add_item(name);
 			members_overview->set_item_metadata(-1, functions[i].get_slicec(':', 1).to_int() - 1);
+		}
+	} else {
+		HashMap<String, int> name_to_line;
+		PackedStringArray search_names;
+
+		for (int i = 0; i < functions.size(); i++) {
+			String name = functions[i].get_slicec(':', 0);
+			int line = functions[i].get_slicec(':', 1).to_int() - 1;
+			name_to_line[name] = line;
+			search_names.append(name);
+		}
+
+		Vector<FuzzySearchResult> results;
+		FuzzySearch fuzzy;
+		fuzzy.set_query(filter);
+		fuzzy.case_sensitive = false;
+		fuzzy.search_all(search_names, results);
+
+		for (const FuzzySearchResult &res : results) {
+			if (name_to_line.has(res.target)) {
+				members_overview->add_item(res.target);
+				members_overview->set_item_metadata(-1, name_to_line[res.target]);
+			}
 		}
 	}
 
