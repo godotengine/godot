@@ -1950,33 +1950,37 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					bool node_selected = get_selected_count() > 0;
 
-					if (node_selected && ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE)) {
-						begin_transform(TRANSFORM_ROTATE, false);
-						break;
-					}
-
-					if (node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
-						begin_transform(TRANSFORM_TRANSLATE, false);
-						break;
-					}
-
-					if (node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
-						begin_transform(TRANSFORM_SCALE, false);
-						break;
-					}
-
-					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM && !b->is_alt_pressed()) {
 						// Single item selection.
 						clicked = _select_ray(b->get_position());
 
-						selection_in_progress = true;
+						if (clicked.is_valid() && !editor_selection->is_selected(ObjectDB::get_instance<Node>(clicked))) {
+							selection_in_progress = true;
+							break;
+						}
 
 						if (clicked.is_null()) {
 							// Default to region select.
 							cursor.region_select = true;
 							cursor.region_begin = b->get_position();
 							cursor.region_end = b->get_position();
+							break;
 						}
+					}
+
+					if (!clicked_wants_append && node_selected && ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE)) {
+						begin_transform(TRANSFORM_ROTATE, false);
+						break;
+					}
+
+					if (!clicked_wants_append && node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
+						begin_transform(TRANSFORM_TRANSLATE, false);
+						break;
+					}
+
+					if (!clicked_wants_append && node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
+						begin_transform(TRANSFORM_SCALE, false);
+						break;
 					}
 
 					surface->queue_redraw();
@@ -2034,7 +2038,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						set_message("");
 						spatial_editor->update_transform_gizmo();
 					}
-					surface->queue_redraw();
 				}
 
 			} break;
@@ -2120,12 +2123,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 
-				if (selection_in_progress && movement_threshold_passed && clicked.is_valid()) {
-					if (clicked_wants_append || !editor_selection->is_selected(ObjectDB::get_instance<Node>(clicked))) {
-						cursor.region_select = true;
-						cursor.region_begin = _edit.original_mouse_pos;
-						clicked = ObjectID();
-					}
+				if ((selection_in_progress || clicked_wants_append) && movement_threshold_passed && clicked.is_valid()) {
+					cursor.region_select = true;
+					cursor.region_begin = _edit.original_mouse_pos;
+					clicked = ObjectID();
 				}
 
 				if (cursor.region_select) {
@@ -2134,7 +2135,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (clicked.is_valid() && movement_threshold_passed) {
+				if (clicked.is_valid() && movement_threshold_passed && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE)) {
 					_compute_edit(_edit.original_mouse_pos);
 					clicked = ObjectID();
 					_edit.mode = TRANSFORM_TRANSLATE;
@@ -2144,7 +2145,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				update_transform(_get_key_modifier(m) == Key::SHIFT);
+				if (!selection_in_progress) {
+					update_transform(_get_key_modifier(m) == Key::SHIFT);
+				}
 			}
 		} else if (m->get_button_mask().has_flag(MouseButtonMask::RIGHT) || freelook_active) {
 			NavigationMode change_nav_from_shortcut = _get_nav_mode_from_shortcut_check(NAVIGATION_RIGHT_MOUSE, shortcut_check_sets, false);
