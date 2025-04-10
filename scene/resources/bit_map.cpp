@@ -705,8 +705,8 @@ void BitMap::blit(const Vector2i &p_pos, const Ref<BitMap> &p_bitmap) {
 }
 
 void BitMap::bitwise_and(const Ref<BitMap> &p_other) {
-	ERR_FAIL_COND_MSG(p_other.is_null(), "Null reference to supplied BitMap other.");
-	ERR_FAIL_COND_MSG(get_size() != p_other->get_size(), "The given bitmap is not the expected size for the specified operation.");
+	ERR_FAIL_COND_MSG(p_other.is_null(), "The BitMap passed as the \"other\" parameter is null.");
+	ERR_FAIL_COND_MSG(get_size() != p_other->get_size(), "Both bitmaps need to have the same size.");
 
 	int ds = bitmask.size();
 	uint8_t *d = bitmask.ptrw();
@@ -738,7 +738,7 @@ void BitMap::bitwise_not() {
 		d[i] = ~d[i];
 	}
 
-	// mask "hidden" bits for true bit count
+	// Reset extraneous trailing bits we may have accidentally set during the previous loops.
 	int hidden_count = (ds << 3) - (width * height);
 	if (hidden_count > 0) {
 		d[ds - 1] &= 0xFF << hidden_count;
