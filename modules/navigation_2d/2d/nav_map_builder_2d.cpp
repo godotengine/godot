@@ -268,16 +268,13 @@ void NavMapBuilder2D::_build_step_navlink_connections(NavMapIterationBuild2D &r_
 
 	real_t link_connection_radius = r_build.link_connection_radius;
 
-	LocalVector<Polygon> &link_polygons = map_iteration->link_polygons;
 	LocalVector<NavLinkIteration2D> &links = map_iteration->link_iterations;
 	int polygon_count = r_build.polygon_count;
 
 	real_t link_connection_radius_sqr = link_connection_radius * link_connection_radius;
-	uint32_t link_poly_idx = 0;
-	link_polygons.resize(links.size());
 
 	// Search for polygons within range of a nav link.
-	for (const NavLinkIteration2D &link : links) {
+	for (NavLinkIteration2D &link : links) {
 		if (!link.get_enabled()) {
 			continue;
 		}
@@ -334,7 +331,9 @@ void NavMapBuilder2D::_build_step_navlink_connections(NavMapIterationBuild2D &r_
 
 		// If we have both a start and end point, then create a synthetic polygon to route through.
 		if (closest_start_polygon && closest_end_polygon) {
-			Polygon &new_polygon = link_polygons[link_poly_idx++];
+			link.navmesh_polygons.clear();
+			link.navmesh_polygons.resize(1);
+			Polygon &new_polygon = link.navmesh_polygons[0];
 			new_polygon.id = polygon_count++;
 			new_polygon.owner = &link;
 
@@ -383,22 +382,21 @@ void NavMapBuilder2D::_build_step_navlink_connections(NavMapIterationBuild2D &r_
 			}
 		}
 	}
+
+	r_build.polygon_count = polygon_count;
 }
 
 void NavMapBuilder2D::_build_update_map_iteration(NavMapIterationBuild2D &r_build) {
 	NavMapIteration2D *map_iteration = r_build.map_iteration;
 
-	LocalVector<Polygon> &link_polygons = map_iteration->link_polygons;
-
 	map_iteration->navmesh_polygon_count = r_build.polygon_count;
-	map_iteration->link_polygon_count = link_polygons.size();
 
 	map_iteration->path_query_slots_mutex.lock();
 	for (NavMeshQueries2D::PathQuerySlot &p_path_query_slot : map_iteration->path_query_slots) {
 		p_path_query_slot.traversable_polys.clear();
 		p_path_query_slot.traversable_polys.reserve(map_iteration->navmesh_polygon_count * 0.25);
 		p_path_query_slot.path_corridor.clear();
-		p_path_query_slot.path_corridor.resize(map_iteration->navmesh_polygon_count + map_iteration->link_polygon_count);
+		p_path_query_slot.path_corridor.resize(map_iteration->navmesh_polygon_count);
 	}
 	map_iteration->path_query_slots_mutex.unlock();
 }
