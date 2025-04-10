@@ -26,6 +26,7 @@ Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/unregi
 Switched from `OpenXRExtensionWrapperExtension` to parent `OpenXRExtensionWrapper`. Compatibility methods registered.
 
 
+=======
 GH-104890
 ---------
 Validate extension JSON: API was removed: classes/JSONRPC/methods/set_scope
@@ -48,3 +49,9 @@ GH-71542
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorExportPlatform/methods/get_forced_export_files': arguments
 
 Optional argument added. Compatibility methods registered.
+
+
+GH-10736
+---------
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/body_set_shape_as_one_way_collision/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/PhysicsServer2DExtension/methods/_body_set_shape_as_one_way_collision/arguments': size changed value in new API, from 4 to 5.
