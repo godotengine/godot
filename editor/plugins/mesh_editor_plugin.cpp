@@ -43,7 +43,7 @@ void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
 		rot_x -= mm->get_relative().y * 0.01;
 		rot_y -= mm->get_relative().x * 0.01;
 
-		rot_x = CLAMP(rot_x, -Math_PI / 2, Math_PI / 2);
+		rot_x = CLAMP(rot_x, -Math::PI / 2, Math::PI / 2);
 		_update_rotation();
 	}
 }

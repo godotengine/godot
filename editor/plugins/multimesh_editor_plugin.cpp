@@ -174,10 +174,10 @@ void MultiMeshEditor::_populate() {
 
 	Transform3D axis_xform;
 	if (axis == Vector3::AXIS_Z) {
-		axis_xform.rotate(Vector3(1, 0, 0), -Math_PI * 0.5);
+		axis_xform.rotate(Vector3(1, 0, 0), -Math::PI * 0.5);
 	}
 	if (axis == Vector3::AXIS_X) {
-		axis_xform.rotate(Vector3(0, 0, 1), -Math_PI * 0.5);
+		axis_xform.rotate(Vector3(0, 0, 1), -Math::PI * 0.5);
 	}
 
 	for (int i = 0; i < instance_count; i++) {
@@ -203,9 +203,9 @@ void MultiMeshEditor::_populate() {
 
 		Basis post_xform;
 
-		post_xform.rotate(xform.basis.get_column(1), -Math::random(-_rotate_random, _rotate_random) * Math_PI);
-		post_xform.rotate(xform.basis.get_column(2), -Math::random(-_tilt_random, _tilt_random) * Math_PI);
-		post_xform.rotate(xform.basis.get_column(0), -Math::random(-_tilt_random, _tilt_random) * Math_PI);
+		post_xform.rotate(xform.basis.get_column(1), -Math::random(-_rotate_random, _rotate_random) * Math::PI);
+		post_xform.rotate(xform.basis.get_column(2), -Math::random(-_tilt_random, _tilt_random) * Math::PI);
+		post_xform.rotate(xform.basis.get_column(0), -Math::random(-_tilt_random, _tilt_random) * Math::PI);
 
 		xform.basis = post_xform * xform.basis;
 		//xform.basis.orthonormalize();

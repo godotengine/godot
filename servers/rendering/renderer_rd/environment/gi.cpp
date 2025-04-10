@@ -1674,7 +1674,7 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 	push_constant.band_power = 4;
 	push_constant.sections_in_band = ((band_points / 2) - 1);
 	push_constant.band_mask = band_points - 2;
-	push_constant.section_arc = Math_TAU / float(push_constant.sections_in_band);
+	push_constant.section_arc = Math::TAU / float(push_constant.sections_in_band);
 	push_constant.y_mult = y_mult;
 
 	uint32_t total_points = push_constant.sections_in_band * band_points;
@@ -1977,11 +1977,11 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 
 				// Convert from Luminous Power to Luminous Intensity
 				if (lights[idx].type == RS::LIGHT_OMNI) {
-					lights[idx].energy *= 1.0 / (Math_PI * 4.0);
+					lights[idx].energy *= 1.0 / (Math::PI * 4.0);
 				} else if (lights[idx].type == RS::LIGHT_SPOT) {
 					// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 					// We make this assumption to keep them easy to control.
-					lights[idx].energy *= 1.0 / Math_PI;
+					lights[idx].energy *= 1.0 / Math::PI;
 				}
 			}
 
@@ -2440,11 +2440,11 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 
 					// Convert from Luminous Power to Luminous Intensity
 					if (lights[idx].type == RS::LIGHT_OMNI) {
-						lights[idx].energy *= 1.0 / (Math_PI * 4.0);
+						lights[idx].energy *= 1.0 / (Math::PI * 4.0);
 					} else if (lights[idx].type == RS::LIGHT_SPOT) {
 						// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 						// We make this assumption to keep them easy to control.
-						lights[idx].energy *= 1.0 / Math_PI;
+						lights[idx].energy *= 1.0 / Math::PI;
 					}
 				}
 
@@ -2906,11 +2906,11 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 					// Convert from Luminous Power to Luminous Intensity
 					if (l.type == RS::LIGHT_OMNI) {
-						l.energy *= 1.0 / (Math_PI * 4.0);
+						l.energy *= 1.0 / (Math::PI * 4.0);
 					} else if (l.type == RS::LIGHT_SPOT) {
 						// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 						// We make this assumption to keep them easy to control.
-						l.energy *= 1.0 / Math_PI;
+						l.energy *= 1.0 / Math::PI;
 					}
 				}
 

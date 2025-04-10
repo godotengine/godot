@@ -123,8 +123,8 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	int stack_count = 8;
 	int sector_count = 16;
 
-	float sector_step = (Math_PI * 2.0) / sector_count;
-	float stack_step = Math_PI / stack_count;
+	float sector_step = (Math::PI * 2.0) / sector_count;
+	float stack_step = Math::PI / stack_count;
 
 	Vector<Vector3> vertices;
 	Vector<Color> colors;
@@ -141,7 +141,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 
 		for (int i = 0; i <= stack_count; ++i) {
-			float stack_angle = Math_PI / 2 - i * stack_step; // starting from pi/2 to -pi/2
+			float stack_angle = Math::PI / 2 - i * stack_step; // starting from pi/2 to -pi/2
 			float xy = radius * Math::cos(stack_angle); // r * cos(u)
 			float z = radius * Math::sin(stack_angle); // r * sin(u)
 

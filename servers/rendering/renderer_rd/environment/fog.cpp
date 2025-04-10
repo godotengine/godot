@@ -205,9 +205,9 @@ void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_lay
 		ShaderCompiler::DefaultIdentifierActions actions;
 
 		actions.renames["TIME"] = "scene_params.time";
-		actions.renames["PI"] = _MKSTR(Math_PI);
-		actions.renames["TAU"] = _MKSTR(Math_TAU);
-		actions.renames["E"] = _MKSTR(Math_E);
+		actions.renames["PI"] = _MKSTR(Math::PI);
+		actions.renames["TAU"] = _MKSTR(Math::TAU);
+		actions.renames["E"] = _MKSTR(Math::E);
 		actions.renames["WORLD_POSITION"] = "world.xyz";
 		actions.renames["OBJECT_POSITION"] = "params.position";
 		actions.renames["UVW"] = "uvw";

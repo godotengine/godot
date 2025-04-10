@@ -345,7 +345,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 
 	// If the center is filled, we do not draw the border and directly use the inner ring as reference. Because all calls to this
 	// method either draw a ring or a filled rounded rectangle, but not both.
-	const real_t quarter_arc_rad = Math_PI / 2.0;
+	const real_t quarter_arc_rad = Math::PI / 2.0;
 	const Point2 style_rect_center = style_rect.get_center();
 
 	const int colors_size = colors.size();
@@ -364,7 +364,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 				idx_ofs *= 2;
 			}
 
-			const real_t pt_angle = (corner_idx + detail / (double)adapted_corner_detail) * quarter_arc_rad + Math_PI;
+			const real_t pt_angle = (corner_idx + detail / (double)adapted_corner_detail) * quarter_arc_rad + Math::PI;
 			const real_t angle_cosine = Math::cos(pt_angle);
 			const real_t angle_sine = Math::sin(pt_angle);
 

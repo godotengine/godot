@@ -36,7 +36,7 @@
 
 Vector<Vector2> CapsuleShape2D::_get_points() const {
 	Vector<Vector2> points;
-	const real_t turn_step = Math_TAU / 24.0;
+	const real_t turn_step = Math::TAU / 24.0;
 	for (int i = 0; i < 24; i++) {
 		Vector2 ofs = Vector2(0, (i > 6 && i <= 18) ? -height * 0.5 + radius : height * 0.5 - radius);
 

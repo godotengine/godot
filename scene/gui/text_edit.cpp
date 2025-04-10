@@ -3401,7 +3401,7 @@ bool TextEdit::can_drop_data(const Point2 &p_point, const Variant &p_data) const
 void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 	Control::drop_data(p_point, p_data);
 
-	if (p_point == Vector2(INFINITY, INFINITY)) {
+	if (p_point == Vector2(Math::INF, Math::INF)) {
 		insert_text_at_caret(p_data);
 	} else if (p_data.is_string() && is_editable()) {
 		Point2i pos = get_line_column_at_pos(get_local_mouse_pos());

@@ -75,10 +75,10 @@ _ALWAYS_INLINE_ float sinc(float p_x) {
 }
 
 _ALWAYS_INLINE_ double sincn(double p_x) {
-	return sinc(Math_PI * p_x);
+	return sinc(PI * p_x);
 }
 _ALWAYS_INLINE_ float sincn(float p_x) {
-	return sinc((float)Math_PI * p_x);
+	return sinc((float)PI * p_x);
 }
 
 _ALWAYS_INLINE_ double cosh(double p_x) {
@@ -97,18 +97,18 @@ _ALWAYS_INLINE_ float tanh(float p_x) {
 
 // Always does clamping so always safe to use.
 _ALWAYS_INLINE_ double asin(double p_x) {
-	return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : ::asin(p_x));
+	return p_x < -1 ? (-PI / 2) : (p_x > 1 ? (PI / 2) : ::asin(p_x));
 }
 _ALWAYS_INLINE_ float asin(float p_x) {
-	return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : ::asinf(p_x));
+	return p_x < -1 ? (-(float)PI / 2) : (p_x > 1 ? ((float)PI / 2) : ::asinf(p_x));
 }
 
 // Always does clamping so always safe to use.
 _ALWAYS_INLINE_ double acos(double p_x) {
-	return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : ::acos(p_x));
+	return p_x < -1 ? PI : (p_x > 1 ? 0 : ::acos(p_x));
 }
 _ALWAYS_INLINE_ float acos(float p_x) {
-	return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : ::acosf(p_x));
+	return p_x < -1 ? (float)PI : (p_x > 1 ? 0 : ::acosf(p_x));
 }
 
 _ALWAYS_INLINE_ double atan(double p_x) {
@@ -142,10 +142,10 @@ _ALWAYS_INLINE_ float acosh(float p_x) {
 
 // Always does clamping so always safe to use.
 _ALWAYS_INLINE_ double atanh(double p_x) {
-	return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanh(p_x));
+	return p_x <= -1 ? -INF : (p_x >= 1 ? INF : ::atanh(p_x));
 }
 _ALWAYS_INLINE_ float atanh(float p_x) {
-	return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanhf(p_x));
+	return p_x <= -1 ? (float)-INF : (p_x >= 1 ? (float)INF : ::atanhf(p_x));
 }
 
 _ALWAYS_INLINE_ double sqrt(double p_x) {
@@ -383,17 +383,17 @@ _ALWAYS_INLINE_ int64_t posmod(int64_t p_x, int64_t p_y) {
 }
 
 _ALWAYS_INLINE_ double deg_to_rad(double p_y) {
-	return p_y * (Math_PI / 180.0);
+	return p_y * (PI / 180.0);
 }
 _ALWAYS_INLINE_ float deg_to_rad(float p_y) {
-	return p_y * (float)(Math_PI / 180.0);
+	return p_y * ((float)PI / 180.0f);
 }
 
 _ALWAYS_INLINE_ double rad_to_deg(double p_y) {
-	return p_y * (180.0 / Math_PI);
+	return p_y * (180.0 / PI);
 }
 _ALWAYS_INLINE_ float rad_to_deg(float p_y) {
-	return p_y * (float)(180.0 / Math_PI);
+	return p_y * (180.0f / (float)PI);
 }
 
 _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) {
@@ -419,31 +419,31 @@ _ALWAYS_INLINE_ float cubic_interpolate(float p_from, float p_to, float p_pre, f
 }
 
 _ALWAYS_INLINE_ double cubic_interpolate_angle(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
-	double from_rot = fmod(p_from, Math_TAU);
+	double from_rot = fmod(p_from, TAU);
 
-	double pre_diff = fmod(p_pre - from_rot, Math_TAU);
-	double pre_rot = from_rot + fmod(2.0 * pre_diff, Math_TAU) - pre_diff;
+	double pre_diff = fmod(p_pre - from_rot, TAU);
+	double pre_rot = from_rot + fmod(2.0 * pre_diff, TAU) - pre_diff;
 
-	double to_diff = fmod(p_to - from_rot, Math_TAU);
-	double to_rot = from_rot + fmod(2.0 * to_diff, Math_TAU) - to_diff;
+	double to_diff = fmod(p_to - from_rot, TAU);
+	double to_rot = from_rot + fmod(2.0 * to_diff, TAU) - to_diff;
 
-	double post_diff = fmod(p_post - to_rot, Math_TAU);
-	double post_rot = to_rot + fmod(2.0 * post_diff, Math_TAU) - post_diff;
+	double post_diff = fmod(p_post - to_rot, TAU);
+	double post_rot = to_rot + fmod(2.0 * post_diff, TAU) - post_diff;
 
 	return cubic_interpolate(from_rot, to_rot, pre_rot, post_rot, p_weight);
 }
 
 _ALWAYS_INLINE_ float cubic_interpolate_angle(float p_from, float p_to, float p_pre, float p_post, float p_weight) {
-	float from_rot = fmod(p_from, (float)Math_TAU);
+	float from_rot = fmod(p_from, (float)TAU);
 
-	float pre_diff = fmod(p_pre - from_rot, (float)Math_TAU);
-	float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)Math_TAU) - pre_diff;
+	float pre_diff = fmod(p_pre - from_rot, (float)TAU);
+	float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)TAU) - pre_diff;
 
-	float to_diff = fmod(p_to - from_rot, (float)Math_TAU);
-	float to_rot = from_rot + fmod(2.0f * to_diff, (float)Math_TAU) - to_diff;
+	float to_diff = fmod(p_to - from_rot, (float)TAU);
+	float to_rot = from_rot + fmod(2.0f * to_diff, (float)TAU) - to_diff;
 
-	float post_diff = fmod(p_post - to_rot, (float)Math_TAU);
-	float post_rot = to_rot + fmod(2.0f * post_diff, (float)Math_TAU) - post_diff;
+	float post_diff = fmod(p_post - to_rot, (float)TAU);
+	float post_rot = to_rot + fmod(2.0f * post_diff, (float)TAU) - post_diff;
 
 	return cubic_interpolate(from_rot, to_rot, pre_rot, post_rot, p_weight);
 }
@@ -473,31 +473,31 @@ _ALWAYS_INLINE_ float cubic_interpolate_in_time(float p_from, float p_to, float 
 
 _ALWAYS_INLINE_ double cubic_interpolate_angle_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
 		double p_to_t, double p_pre_t, double p_post_t) {
-	double from_rot = fmod(p_from, Math_TAU);
+	double from_rot = fmod(p_from, TAU);
 
-	double pre_diff = fmod(p_pre - from_rot, Math_TAU);
-	double pre_rot = from_rot + fmod(2.0 * pre_diff, Math_TAU) - pre_diff;
+	double pre_diff = fmod(p_pre - from_rot, TAU);
+	double pre_rot = from_rot + fmod(2.0 * pre_diff, TAU) - pre_diff;
 
-	double to_diff = fmod(p_to - from_rot, Math_TAU);
-	double to_rot = from_rot + fmod(2.0 * to_diff, Math_TAU) - to_diff;
+	double to_diff = fmod(p_to - from_rot, TAU);
+	double to_rot = from_rot + fmod(2.0 * to_diff, TAU) - to_diff;
 
-	double post_diff = fmod(p_post - to_rot, Math_TAU);
-	double post_rot = to_rot + fmod(2.0 * post_diff, Math_TAU) - post_diff;
+	double post_diff = fmod(p_post - to_rot, TAU);
+	double post_rot = to_rot + fmod(2.0 * post_diff, TAU) - post_diff;
 
 	return cubic_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, p_weight, p_to_t, p_pre_t, p_post_t);
 }
 _ALWAYS_INLINE_ float cubic_interpolate_angle_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
 		float p_to_t, float p_pre_t, float p_post_t) {
-	float from_rot = fmod(p_from, (float)Math_TAU);
+	float from_rot = fmod(p_from, (float)TAU);
 
-	float pre_diff = fmod(p_pre - from_rot, (float)Math_TAU);
-	float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)Math_TAU) - pre_diff;
+	float pre_diff = fmod(p_pre - from_rot, (float)TAU);
+	float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)TAU) - pre_diff;
 
-	float to_diff = fmod(p_to - from_rot, (float)Math_TAU);
-	float to_rot = from_rot + fmod(2.0f * to_diff, (float)Math_TAU) - to_diff;
+	float to_diff = fmod(p_to - from_rot, (float)TAU);
+	float to_rot = from_rot + fmod(2.0f * to_diff, (float)TAU) - to_diff;
 
-	float post_diff = fmod(p_post - to_rot, (float)Math_TAU);
-	float post_rot = to_rot + fmod(2.0f * post_diff, (float)Math_TAU) - post_diff;
+	float post_diff = fmod(p_post - to_rot, (float)TAU);
+	float post_rot = to_rot + fmod(2.0f * post_diff, (float)TAU) - post_diff;
 
 	return cubic_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, p_weight, p_to_t, p_pre_t, p_post_t);
 }
@@ -543,12 +543,12 @@ _ALWAYS_INLINE_ float bezier_derivative(float p_start, float p_control_1, float 
 }
 
 _ALWAYS_INLINE_ double angle_difference(double p_from, double p_to) {
-	double difference = fmod(p_to - p_from, Math_TAU);
-	return fmod(2.0 * difference, Math_TAU) - difference;
+	double difference = fmod(p_to - p_from, TAU);
+	return fmod(2.0 * difference, TAU) - difference;
 }
 _ALWAYS_INLINE_ float angle_difference(float p_from, float p_to) {
-	float difference = fmod(p_to - p_from, (float)Math_TAU);
-	return fmod(2.0f * difference, (float)Math_TAU) - difference;
+	float difference = fmod(p_to - p_from, (float)TAU);
+	return fmod(2.0f * difference, (float)TAU) - difference;
 }
 
 _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
@@ -662,13 +662,13 @@ _ALWAYS_INLINE_ double rotate_toward(double p_from, double p_to, double p_delta)
 	double difference = angle_difference(p_from, p_to);
 	double abs_difference = abs(difference);
 	// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
-	return p_from + CLAMP(p_delta, abs_difference - Math_PI, abs_difference) * (difference >= 0.0 ? 1.0 : -1.0);
+	return p_from + CLAMP(p_delta, abs_difference - PI, abs_difference) * (difference >= 0.0 ? 1.0 : -1.0);
 }
 _ALWAYS_INLINE_ float rotate_toward(float p_from, float p_to, float p_delta) {
 	float difference = angle_difference(p_from, p_to);
 	float abs_difference = abs(difference);
 	// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
-	return p_from + CLAMP(p_delta, abs_difference - (float)Math_PI, abs_difference) * (difference >= 0.0f ? 1.0f : -1.0f);
+	return p_from + CLAMP(p_delta, abs_difference - (float)PI, abs_difference) * (difference >= 0.0f ? 1.0f : -1.0f);
 }
 
 _ALWAYS_INLINE_ double linear_to_db(double p_linear) {

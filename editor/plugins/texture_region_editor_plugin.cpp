@@ -171,7 +171,7 @@ void TextureRegionEditor::_texture_overlay_draw() {
 		int next = (i + 1) % 4;
 
 		Vector2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
-		ofs *= Math_SQRT2 * (select_handle->get_size().width / 2);
+		ofs *= Math::SQRT2 * (select_handle->get_size().width / 2);
 
 		texture_overlay->draw_line(endpoints[i] - draw_ofs * draw_zoom, endpoints[next] - draw_ofs * draw_zoom, color, 2);
 

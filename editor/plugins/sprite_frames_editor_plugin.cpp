@@ -1662,7 +1662,7 @@ Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 	}
 
 	int idx = -1;
-	if (p_point == Vector2(INFINITY, INFINITY)) {
+	if (p_point == Vector2(Math::INF, Math::INF)) {
 		if (frame_list->is_anything_selected()) {
 			idx = frame_list->get_selected_items()[0];
 		}
@@ -1744,7 +1744,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	int at_pos = -1;
-	if (p_point == Vector2(INFINITY, INFINITY)) {
+	if (p_point == Vector2(Math::INF, Math::INF)) {
 		if (frame_list->is_anything_selected()) {
 			at_pos = frame_list->get_selected_items()[0];
 		}

@@ -759,7 +759,7 @@ Variant EditorSettingsDialog::get_drag_data_fw(const Point2 &p_point, Control *p
 
 bool EditorSettingsDialog::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	TreeItem *selected = shortcuts->get_selected();
-	TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? shortcuts->get_selected() : shortcuts->get_item_at_position(p_point);
+	TreeItem *item = (p_point == Vector2(Math::INF, Math::INF)) ? shortcuts->get_selected() : shortcuts->get_item_at_position(p_point);
 	if (!selected || !item || item == selected || (String)item->get_meta("type", "") != "event") {
 		return false;
 	}
@@ -778,7 +778,7 @@ void EditorSettingsDialog::drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	TreeItem *selected = shortcuts->get_selected();
-	TreeItem *target = (p_point == Vector2(INFINITY, INFINITY)) ? shortcuts->get_selected() : shortcuts->get_item_at_position(p_point);
+	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? shortcuts->get_selected() : shortcuts->get_item_at_position(p_point);
 
 	if (!target) {
 		return;

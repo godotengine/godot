@@ -6930,8 +6930,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 						if (is_using_angle) {
 							real_t a = from_v;
 							real_t b = to_v;
-							real_t to_diff = fmod(b - a, Math_TAU);
-							to_v = a + fmod(2.0 * to_diff, Math_TAU) - to_diff;
+							real_t to_diff = fmod(b - a, Math::TAU);
+							to_v = a + fmod(2.0 * to_diff, Math::TAU) - to_diff;
 						}
 						Variant delta_v = Animation::subtract_variant(to_v, from_v);
 						double duration = to_t - from_t;
@@ -8791,8 +8791,8 @@ PackedStringArray AnimationMarkerEdit::get_selected_section() const {
 		PackedStringArray arr;
 		arr.push_back(""); // Marker with smallest time.
 		arr.push_back(""); // Marker with largest time.
-		double min_time = INFINITY;
-		double max_time = -INFINITY;
+		double min_time = Math::INF;
+		double max_time = -Math::INF;
 		for (const StringName &marker_name : selection) {
 			double time = animation->get_marker_time(marker_name);
 			if (time < min_time) {

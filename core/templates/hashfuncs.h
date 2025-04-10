@@ -149,7 +149,7 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_one_float(float p_in, uint32_t p_see
 	if (p_in == 0.0f) {
 		u.f = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.f = NAN;
+		u.f = Math::NaN;
 	} else {
 		u.f = p_in;
 	}
@@ -172,7 +172,7 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_one_double(double p_in, uint32_t p_s
 	if (p_in == 0.0f) {
 		u.d = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.d = NAN;
+		u.d = Math::NaN;
 	} else {
 		u.d = p_in;
 	}
@@ -260,7 +260,7 @@ static _FORCE_INLINE_ uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev 
 	if (p_in == 0.0f) {
 		u.d = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.d = NAN;
+		u.d = Math::NaN;
 	} else {
 		u.d = p_in;
 	}
@@ -289,7 +289,7 @@ static _FORCE_INLINE_ uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_pr
 	if (p_in == 0.0f) {
 		u.d = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.d = NAN;
+		u.d = Math::NaN;
 	} else {
 		u.d = p_in;
 	}

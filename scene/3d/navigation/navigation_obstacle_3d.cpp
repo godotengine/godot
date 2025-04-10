@@ -464,7 +464,7 @@ void NavigationObstacle3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 
 		obstruction_circle_vertices.resize(circle_points);
 		Vector3 *circle_vertices_ptrw = obstruction_circle_vertices.ptrw();
-		const real_t circle_point_step = Math_TAU / circle_points;
+		const real_t circle_point_step = Math::TAU / circle_points;
 
 		for (int i = 0; i < circle_points; i++) {
 			const float angle = i * circle_point_step;
@@ -581,15 +581,15 @@ void NavigationObstacle3D::_update_fake_agent_radius_debug() {
 		float w;
 
 		v /= (rings + 1);
-		w = sin(Math_PI * v);
-		y = (radius)*cos(Math_PI * v);
+		w = sin(Math::PI * v);
+		y = (radius)*cos(Math::PI * v);
 
 		for (i = 0; i <= radial_segments; i++) {
 			float u = i;
 			u /= radial_segments;
 
-			x = sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			x = sin(u * Math::TAU);
+			z = cos(u * Math::TAU);
 
 			Vector3 p = Vector3(x * radius * w, y, z * radius * w);
 			face_vertex_array.push_back(p);

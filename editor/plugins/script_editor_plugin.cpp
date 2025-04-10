@@ -3273,7 +3273,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 			int new_index = 0;
 			if (script_list->get_item_count() > 0) {
 				int pos = 0;
-				if (p_point == Vector2(INFINITY, INFINITY)) {
+				if (p_point == Vector2(Math::INF, Math::INF)) {
 					if (script_list->is_anything_selected()) {
 						pos = script_list->get_selected_items()[0];
 					}
@@ -3301,7 +3301,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 			int new_index = 0;
 			if (script_list->get_item_count() > 0) {
 				int pos = 0;
-				if (p_point == Vector2(INFINITY, INFINITY)) {
+				if (p_point == Vector2(Math::INF, Math::INF)) {
 					if (script_list->is_anything_selected()) {
 						pos = script_list->get_selected_items()[0];
 					}
@@ -3322,7 +3322,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		int new_index = 0;
 		if (script_list->get_item_count() > 0) {
 			int pos = 0;
-			if (p_point == Vector2(INFINITY, INFINITY)) {
+			if (p_point == Vector2(Math::INF, Math::INF)) {
 				if (script_list->is_anything_selected()) {
 					pos = script_list->get_selected_items()[0];
 				}

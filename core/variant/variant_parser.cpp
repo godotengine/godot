@@ -147,12 +147,12 @@ const char *VariantParser::tk_name[TK_MAX] = {
 
 static double stor_fix(const String &p_str) {
 	if (p_str == "inf") {
-		return INFINITY;
+		return Math::INF;
 	} else if (p_str == "-inf" || p_str == "inf_neg") {
 		// inf_neg kept for compatibility.
-		return -INFINITY;
+		return -Math::INF;
 	} else if (p_str == "nan") {
-		return NAN;
+		return Math::NaN;
 	}
 	return -1;
 }
@@ -698,12 +698,12 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		} else if (id == "null" || id == "nil") {
 			value = Variant();
 		} else if (id == "inf") {
-			value = INFINITY;
+			value = Math::INF;
 		} else if (id == "-inf" || id == "inf_neg") {
 			// inf_neg kept for compatibility.
-			value = -INFINITY;
+			value = -Math::INF;
 		} else if (id == "nan") {
-			value = NAN;
+			value = Math::NaN;
 		} else if (id == "Vector2") {
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);

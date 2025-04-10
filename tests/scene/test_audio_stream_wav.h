@@ -46,7 +46,7 @@ constexpr int WAV_COUNT = WAV_RATE;
 
 float gen_wav(float frequency, float wav_rate, int wav_number) {
 	// formula for generating a sin wave with given frequency.
-	return Math::sin((Math_TAU * frequency / wav_rate) * wav_number);
+	return Math::sin((Math::TAU * frequency / wav_rate) * wav_number);
 }
 
 /* Generates a 440Hz sin wave in channel 0 (mono channel or left stereo channel)
