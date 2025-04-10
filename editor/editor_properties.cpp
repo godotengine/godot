@@ -159,7 +159,6 @@ void EditorPropertyText::set_secret(bool p_enabled) {
 	is_secret = p_enabled;
 	if (p_enabled) {
 		show_secret = memnew(Button);
-		show_secret->set_clip_text(true);
 		show_secret->set_toggle_mode(true);
 		show_secret->set_tooltip_text(TTRC("Show secret text."));
 		text->get_parent()->add_child(show_secret);
@@ -171,7 +170,6 @@ void EditorPropertyText::set_secret(bool p_enabled) {
 	text->set_secret(p_enabled);
 	if (show_secret != nullptr) {
 		show_secret->set_visible(p_enabled);
-		show_secret->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
 		show_secret->set_pressed_no_signal(false);
 	}
 }
