@@ -168,6 +168,8 @@ void OS_IOS::initialize() {
 
 void OS_IOS::initialize_joypads() {
 	joypad_apple = memnew(JoypadApple);
+
+	virtual_controller = memnew(IOSVirtualController);
 }
 
 void OS_IOS::initialize_modules() {
@@ -176,6 +178,10 @@ void OS_IOS::initialize_modules() {
 }
 
 void OS_IOS::deinitialize_modules() {
+	if (virtual_controller) {
+		memdelete(virtual_controller);
+	}
+
 	if (joypad_apple) {
 		memdelete(joypad_apple);
 	}
@@ -219,6 +225,10 @@ bool OS_IOS::iterate() {
 void OS_IOS::start() {
 	if (Main::start() == EXIT_SUCCESS) {
 		main_loop->initialize();
+	}
+
+	if (virtual_controller) {
+		virtual_controller->update_state();
 	}
 }
 
@@ -647,6 +657,10 @@ bool OS_IOS::_check_internal_feature_support(const String &p_feature) {
 	return false;
 }
 
+VirtualController *OS_IOS::get_virtual_controller() const {
+	return virtual_controller;
+}
+
 void OS_IOS::on_focus_out() {
 	if (is_focused) {
 		is_focused = false;
@@ -717,6 +731,18 @@ Rect2 OS_IOS::calculate_boot_screen_rect(const Size2 &p_window_size, const Size2
 	} else {
 		WARN_PRINT(vformat("Boot screen scale mode mismatch between iOS and Godot: %s not supported", scalemodestr));
 		return OS_Unix::calculate_boot_screen_rect(p_window_size, p_imgrect_size);
+	}
+}
+
+void OS_IOS::controller_connected() const {
+	if (virtual_controller) {
+		virtual_controller->controller_connected();
+	}
+}
+
+void OS_IOS::controller_disconnected() const {
+	if (virtual_controller) {
+		virtual_controller->controller_disconnected();
 	}
 }
 
