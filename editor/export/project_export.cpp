@@ -746,7 +746,7 @@ void ProjectExportDialog::_delete_preset_confirm() {
 Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (p_from == presets) {
 		int pos = -1;
-		if (p_point == Vector2(INFINITY, INFINITY)) {
+		if (p_point == Vector2(Math::INF, Math::INF)) {
 			if (presets->is_anything_selected()) {
 				pos = presets->get_selected_items()[0];
 			}
@@ -773,7 +773,7 @@ Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_
 			return d;
 		}
 	} else if (p_from == patches) {
-		TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? patches->get_selected() : patches->get_item_at_position(p_point);
+		TreeItem *item = (p_point == Vector2(Math::INF, Math::INF)) ? patches->get_selected() : patches->get_item_at_position(p_point);
 
 		if (item) {
 			int item_metadata = item->get_metadata(0);
@@ -800,7 +800,7 @@ bool ProjectExportDialog::can_drop_data_fw(const Point2 &p_point, const Variant 
 
 		int pos = -1;
 		bool end = true;
-		if (p_point == Vector2(INFINITY, INFINITY)) {
+		if (p_point == Vector2(Math::INF, Math::INF)) {
 			if (presets->is_anything_selected()) {
 				pos = presets->get_selected_items()[0];
 			}
@@ -818,7 +818,7 @@ bool ProjectExportDialog::can_drop_data_fw(const Point2 &p_point, const Variant 
 			return false;
 		}
 
-		TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? patches->get_selected() : patches->get_item_at_position(p_point);
+		TreeItem *item = (p_point == Vector2(Math::INF, Math::INF)) ? patches->get_selected() : patches->get_item_at_position(p_point);
 		if (!item) {
 			return false;
 		}
@@ -838,7 +838,7 @@ void ProjectExportDialog::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		int pos = -1;
 		bool end = true;
-		if (p_point == Vector2(INFINITY, INFINITY)) {
+		if (p_point == Vector2(Math::INF, Math::INF)) {
 			if (presets->is_anything_selected()) {
 				pos = presets->get_selected_items()[0];
 			}
@@ -875,7 +875,7 @@ void ProjectExportDialog::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		Dictionary d = p_data;
 		int from_pos = d["patch"];
 
-		TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? patches->get_selected() : patches->get_item_at_position(p_point);
+		TreeItem *item = (p_point == Vector2(Math::INF, Math::INF)) ? patches->get_selected() : patches->get_item_at_position(p_point);
 		if (!item) {
 			return;
 		}
@@ -883,7 +883,7 @@ void ProjectExportDialog::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		int to_pos = item->get_metadata(0);
 
 		int pos = -1;
-		if (p_point == Vector2(INFINITY, INFINITY)) {
+		if (p_point == Vector2(Math::INF, Math::INF)) {
 			pos = patches->get_drop_section_at_position(patches->get_item_rect(item).position);
 		} else {
 			pos = patches->get_drop_section_at_position(p_point);

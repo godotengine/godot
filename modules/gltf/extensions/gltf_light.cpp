@@ -232,7 +232,7 @@ Dictionary GLTFLight::to_dictionary() const {
 	if (intensity != 1.0f) {
 		d["intensity"] = intensity;
 	}
-	if (light_type != "directional" && range != INFINITY) {
+	if (light_type != "directional" && range != Math::INF) {
 		d["range"] = range;
 	}
 	if (light_type == "spot") {

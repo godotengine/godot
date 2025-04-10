@@ -2783,7 +2783,7 @@ void EditorInspectorArray::drop_data_fw(const Point2 &p_point, const Variant &p_
 	Dictionary dict = p_data;
 
 	int to_drop = dict["index"];
-	int drop_position = (p_point == Vector2(INFINITY, INFINITY)) ? selected : _drop_position();
+	int drop_position = (p_point == Vector2(Math::INF, Math::INF)) ? selected : _drop_position();
 	if (drop_position < 0) {
 		return;
 	}
@@ -2801,7 +2801,7 @@ bool EditorInspectorArray::can_drop_data_fw(const Point2 &p_point, const Variant
 		return false;
 	}
 	Dictionary dict = p_data;
-	int drop_position = (p_point == Vector2(INFINITY, INFINITY)) ? selected : _drop_position();
+	int drop_position = (p_point == Vector2(Math::INF, Math::INF)) ? selected : _drop_position();
 	if (!dict.has("type") || dict["type"] != "property_array_element" || String(dict["property_array_prefix"]) != array_element_prefix || drop_position < 0) {
 		return false;
 	}

@@ -579,12 +579,12 @@ TEST_CASE("[String] Number to string") {
 #ifdef REAL_T_IS_DOUBLE
 	CHECK_MESSAGE(String::num_real(real_t(123.456789)) == "123.456789", "Prints the appropriate amount of digits for real_t = double.");
 	CHECK_MESSAGE(String::num_real(real_t(-123.456789)) == "-123.456789", "Prints the appropriate amount of digits for real_t = double.");
-	CHECK_MESSAGE(String::num_real(real_t(Math_PI)) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
+	CHECK_MESSAGE(String::num_real(real_t(Math::PI)) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
 	CHECK_MESSAGE(String::num_real(real_t(3.1415f)) == "3.1414999961853", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double) and no trailing zero.");
 #else
 	CHECK_MESSAGE(String::num_real(real_t(123.456789)) == "123.4568", "Prints the appropriate amount of digits for real_t = float.");
 	CHECK_MESSAGE(String::num_real(real_t(-123.456789)) == "-123.4568", "Prints the appropriate amount of digits for real_t = float.");
-	CHECK_MESSAGE(String::num_real(real_t(Math_PI)) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");
+	CHECK_MESSAGE(String::num_real(real_t(Math::PI)) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");
 	CHECK_MESSAGE(String::num_real(real_t(3.1415f)) == "3.1415", "Prints only reliable digits of 32-bit float when real_t = float.");
 #endif // REAL_T_IS_DOUBLE
 
@@ -690,15 +690,15 @@ TEST_CASE("[String] String to float") {
 	CHECK(String("-1e308").to_float() == -1e308);
 
 	// Exponent is so high that value is INFINITY/-INFINITY.
-	CHECK(String("1e309").to_float() == INFINITY);
-	CHECK(String("1e511").to_float() == INFINITY);
-	CHECK(String("-1e309").to_float() == -INFINITY);
-	CHECK(String("-1e511").to_float() == -INFINITY);
+	CHECK(String("1e309").to_float() == Math::INF);
+	CHECK(String("1e511").to_float() == Math::INF);
+	CHECK(String("-1e309").to_float() == -Math::INF);
+	CHECK(String("-1e511").to_float() == -Math::INF);
 
 	// Exponent is so high that a warning message is printed. Value is INFINITY/-INFINITY.
 	ERR_PRINT_OFF
-	CHECK(String("1e512").to_float() == INFINITY);
-	CHECK(String("-1e512").to_float() == -INFINITY);
+	CHECK(String("1e512").to_float() == Math::INF);
+	CHECK(String("-1e512").to_float() == -Math::INF);
 	ERR_PRINT_ON
 }
 
@@ -1003,7 +1003,7 @@ TEST_CASE("[String] sprintf") {
 	// Real (infinity) left-padded
 	format = "fish %11f frog";
 	args.clear();
-	args.push_back(INFINITY);
+	args.push_back(Math::INF);
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish         inf frog"));
@@ -1127,7 +1127,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector left-padded with inf/nan
 	format = "fish %11v frog";
 	args.clear();
-	args.push_back(Variant(Vector2(INFINITY, NAN)));
+	args.push_back(Variant(Vector2(Math::INF, Math::NaN)));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (        inf,         nan) frog"));

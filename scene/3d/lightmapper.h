@@ -63,7 +63,7 @@ public:
 		_FORCE_INLINE_ Ray(const Vector3 &p_org,
 				const Vector3 &p_dir,
 				float p_tnear = 0.0f,
-				float p_tfar = INFINITY) :
+				float p_tfar = Math::INF) :
 				org(p_org),
 				tnear(p_tnear),
 				dir(p_dir),

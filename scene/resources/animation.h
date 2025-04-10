@@ -335,7 +335,7 @@ private:
 	 * data for X / Blend Shape, Y and Z must be normalized first: unorm = float(data) / 65535.0
 	 * **Blend Shape**: (unorm * 2.0 - 1.0) * Compression::BLEND_SHAPE_RANGE
 	 * **Pos/Scale**: unorm_vec3 * bounds[track].size + bounds[track].position
-	 * **Rotation**: Quaternion(Vector3::octahedron_decode(unorm_vec3.xy),unorm_vec3.z * Math_PI * 2.0)
+	 * **Rotation**: Quaternion(Vector3::octahedron_decode(unorm_vec3.xy),unorm_vec3.z * Math::PI * 2.0)
 	 * **Frame**: page.time_offset + frame * (1.0/fps)
 	 */
 

@@ -2059,7 +2059,7 @@ void Control::accessibility_drag() {
 	Viewport *vp = get_viewport();
 
 	vp->_gui_force_drag_start();
-	Variant dnd_data = get_drag_data(Vector2(INFINITY, INFINITY));
+	Variant dnd_data = get_drag_data(Vector2(Math::INF, Math::INF));
 	if (dnd_data.get_type() != Variant::NIL) {
 		Window *w = Window::get_from_id(get_window()->get_window_id());
 		if (w) {
@@ -2077,7 +2077,7 @@ void Control::accessibility_drop() {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!get_viewport()->gui_is_dragging());
 
-	get_viewport()->gui_perform_drop_at(Vector2(INFINITY, INFINITY), this);
+	get_viewport()->gui_perform_drop_at(Vector2(Math::INF, Math::INF), this);
 
 	queue_accessibility_update();
 }
@@ -3603,7 +3603,7 @@ void Control::_notification(int p_notification) {
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_HIDE_TOOLTIP, callable_mp(this, &Control::_accessibility_action_hide_tooltip));
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &Control::_accessibility_action_scroll_into_view));
 			if (is_inside_tree() && get_viewport()->gui_is_dragging()) {
-				if (can_drop_data(Vector2(INFINITY, INFINITY), get_viewport()->gui_get_drag_data())) {
+				if (can_drop_data(Vector2(Math::INF, Math::INF), get_viewport()->gui_get_drag_data())) {
 					DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(RTR("%s can be dropped here. Use %s to drop, use %s to cancel."), get_viewport()->gui_get_drag_description(), InputMap::get_singleton()->get_action_description("ui_accessibility_drag_and_drop"), InputMap::get_singleton()->get_action_description("ui_cancel")));
 				} else {
 					DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(RTR("%s can not be dropped here. Use %s to cancel."), get_viewport()->gui_get_drag_description(), InputMap::get_singleton()->get_action_description("ui_cancel")));

@@ -2254,10 +2254,10 @@ void GDScriptLanguage::init() {
 		_add_global(StaticCString::create(CoreConstants::get_global_constant_name(i)), CoreConstants::get_global_constant_value(i));
 	}
 
-	_add_global(StaticCString::create("PI"), Math_PI);
-	_add_global(StaticCString::create("TAU"), Math_TAU);
-	_add_global(StaticCString::create("INF"), INFINITY);
-	_add_global(StaticCString::create("NAN"), NAN);
+	_add_global(StaticCString::create("PI"), Math::PI);
+	_add_global(StaticCString::create("TAU"), Math::TAU);
+	_add_global(StaticCString::create("INF"), Math::INF);
+	_add_global(StaticCString::create("NAN"), Math::NaN);
 
 	//populate native classes
 

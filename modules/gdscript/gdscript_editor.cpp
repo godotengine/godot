@@ -488,22 +488,22 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 void GDScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_constants) const {
 	Pair<String, Variant> pi;
 	pi.first = "PI";
-	pi.second = Math_PI;
+	pi.second = Math::PI;
 	p_constants->push_back(pi);
 
 	Pair<String, Variant> tau;
 	tau.first = "TAU";
-	tau.second = Math_TAU;
+	tau.second = Math::TAU;
 	p_constants->push_back(tau);
 
 	Pair<String, Variant> infinity;
 	infinity.first = "INF";
-	infinity.second = INFINITY;
+	infinity.second = Math::INF;
 	p_constants->push_back(infinity);
 
 	Pair<String, Variant> nan;
 	nan.first = "NAN";
-	nan.second = NAN;
+	nan.second = Math::NaN;
 	p_constants->push_back(nan);
 }
 

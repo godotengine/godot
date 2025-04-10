@@ -744,7 +744,7 @@ Vector<Plane> Geometry3D::build_cylinder_planes(real_t p_radius, real_t p_height
 
 	Vector<Plane> planes;
 
-	const double sides_step = Math_TAU / p_sides;
+	const double sides_step = Math::TAU / p_sides;
 	for (int i = 0; i < p_sides; i++) {
 		Vector3 normal;
 		normal[(p_axis + 1) % 3] = Math::cos(i * sides_step);
@@ -775,7 +775,7 @@ Vector<Plane> Geometry3D::build_sphere_planes(real_t p_radius, int p_lats, int p
 	axis_neg[(p_axis + 2) % 3] = 1.0;
 	axis_neg[p_axis] = -1.0;
 
-	const double lon_step = Math_TAU / p_lons;
+	const double lon_step = Math::TAU / p_lons;
 	for (int i = 0; i < p_lons; i++) {
 		Vector3 normal;
 		normal[(p_axis + 1) % 3] = Math::cos(i * lon_step);
@@ -806,7 +806,7 @@ Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height,
 	axis_neg[(p_axis + 2) % 3] = 1.0;
 	axis_neg[p_axis] = -1.0;
 
-	const double sides_step = Math_TAU / p_sides;
+	const double sides_step = Math::TAU / p_sides;
 	for (int i = 0; i < p_sides; i++) {
 		Vector3 normal;
 		normal[(p_axis + 1) % 3] = Math::cos(i * sides_step);
@@ -862,7 +862,6 @@ Vector<Vector3> Geometry3D::compute_convex_mesh_points(const Plane *p_planes, in
 }
 
 #define square(m_s) ((m_s) * (m_s))
-#define INF 1e20
 
 /* dt of 1d function using squared distance */
 static void edt(float *f, int stride, int n) {
@@ -872,8 +871,8 @@ static void edt(float *f, int stride, int n) {
 
 	int k = 0;
 	v[0] = 0;
-	z[0] = -INF;
-	z[1] = +INF;
+	z[0] = -Math::INF;
+	z[1] = +Math::INF;
 	for (int q = 1; q <= n - 1; q++) {
 		float s = ((f[q * stride] + square(q)) - (f[v[k] * stride] + square(v[k]))) / (2 * q - 2 * v[k]);
 		while (s <= z[k]) {
@@ -884,7 +883,7 @@ static void edt(float *f, int stride, int n) {
 		v[k] = q;
 
 		z[k] = s;
-		z[k + 1] = +INF;
+		z[k + 1] = +Math::INF;
 	}
 
 	k = 0;
@@ -909,7 +908,7 @@ Vector<uint32_t> Geometry3D::generate_edf(const Vector<bool> &p_voxels, const Ve
 
 	float *work_memory = memnew_arr(float, float_count);
 	for (uint32_t i = 0; i < float_count; i++) {
-		work_memory[i] = INF;
+		work_memory[i] = Math::INF;
 	}
 
 	uint32_t y_mult = p_size.x;

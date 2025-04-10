@@ -826,7 +826,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				SeparationRayShape3D *rayShape = memnew(SeparationRayShape3D);
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
-				Object::cast_to<Node3D>(sb)->rotate_x(Math_PI / 2);
+				Object::cast_to<Node3D>(sb)->rotate_x(Math::PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
 				WorldBoundaryShape3D *world_boundary_shape = memnew(WorldBoundaryShape3D);
 				colshape->set_shape(world_boundary_shape);

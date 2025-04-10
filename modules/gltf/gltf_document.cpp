@@ -6973,7 +6973,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 		animation->set_loop_mode(Animation::LOOP_LINEAR);
 	}
 
-	double anim_start = p_trimming ? INFINITY : 0.0;
+	double anim_start = p_trimming ? Math::INF : 0.0;
 	double anim_end = 0.0;
 
 	for (const KeyValue<int, GLTFAnimation::NodeTrack> &track_i : anim->get_node_tracks()) {
@@ -7660,7 +7660,7 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 						} else {
 							Vector3 rotation_euler = p_godot_animation->track_get_key_value(p_godot_anim_track_index, key_i);
 							if (node_prop == "rotation_degrees") {
-								rotation_euler *= Math_TAU / 360.0;
+								rotation_euler *= Math::TAU / 360.0;
 							}
 							rotation_quaternion = Quaternion::from_euler(rotation_euler);
 						}

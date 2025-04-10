@@ -824,8 +824,8 @@ void AnimationBezierTrackEdit::set_filtered(bool p_filtered) {
 
 void AnimationBezierTrackEdit::auto_fit_vertically() {
 	int track_count = animation->get_track_count();
-	real_t minimum_value = INFINITY;
-	real_t maximum_value = -INFINITY;
+	real_t minimum_value = Math::INF;
+	real_t maximum_value = -Math::INF;
 
 	int nb_track_visible = 0;
 	for (int i = 0; i < track_count; ++i) {
@@ -1036,10 +1036,10 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 
-			real_t minimum_time = INFINITY;
-			real_t maximum_time = -INFINITY;
-			real_t minimum_value = INFINITY;
-			real_t maximum_value = -INFINITY;
+			real_t minimum_time = Math::INF;
+			real_t maximum_time = -Math::INF;
+			real_t minimum_value = Math::INF;
+			real_t maximum_value = -Math::INF;
 
 			for (const IntPair &E : focused_keys) {
 				IntPair key_pair = E;

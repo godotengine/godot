@@ -1348,14 +1348,14 @@ CSGBrush *CSGSphere3D::_build_brush() {
 
 		// We want to follow an order that's convenient for UVs.
 		// For latitude step we start at the top and move down like in an image.
-		const double latitude_step = -Math_PI / rings;
-		const double longitude_step = Math_TAU / radial_segments;
+		const double latitude_step = -Math::PI / rings;
+		const double longitude_step = Math::TAU / radial_segments;
 		int face = 0;
 		for (int i = 0; i < rings; i++) {
 			double cos0 = 0;
 			double sin0 = 1;
 			if (i > 0) {
-				double latitude0 = latitude_step * i + Math_TAU / 4;
+				double latitude0 = latitude_step * i + Math::TAU / 4;
 				cos0 = Math::cos(latitude0);
 				sin0 = Math::sin(latitude0);
 			}
@@ -1364,7 +1364,7 @@ CSGBrush *CSGSphere3D::_build_brush() {
 			double cos1 = 0;
 			double sin1 = -1;
 			if (i < rings - 1) {
-				double latitude1 = latitude_step * (i + 1) + Math_TAU / 4;
+				double latitude1 = latitude_step * (i + 1) + Math::TAU / 4;
 				cos1 = Math::cos(latitude1);
 				sin1 = Math::sin(latitude1);
 			}
@@ -1727,8 +1727,8 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					inc_n = 0;
 				}
 
-				float ang = inc * Math_TAU;
-				float ang_n = inc_n * Math_TAU;
+				float ang = inc * Math::TAU;
+				float ang_n = inc_n * Math::TAU;
 
 				Vector3 face_base(Math::cos(ang), 0, Math::sin(ang));
 				Vector3 face_base_n(Math::cos(ang_n), 0, Math::sin(ang_n));
@@ -1970,8 +1970,8 @@ CSGBrush *CSGTorus3D::_build_brush() {
 					inci_n = 0;
 				}
 
-				float angi = inci * Math_TAU;
-				float angi_n = inci_n * Math_TAU;
+				float angi = inci * Math::TAU;
+				float angi_n = inci_n * Math::TAU;
 
 				Vector3 normali = Vector3(Math::cos(angi), 0, Math::sin(angi));
 				Vector3 normali_n = Vector3(Math::cos(angi_n), 0, Math::sin(angi_n));
@@ -1983,8 +1983,8 @@ CSGBrush *CSGTorus3D::_build_brush() {
 						incj_n = 0;
 					}
 
-					float angj = incj * Math_TAU;
-					float angj_n = incj_n * Math_TAU;
+					float angj = incj * Math::TAU;
+					float angj_n = incj_n * Math::TAU;
 
 					Vector2 normalj = Vector2(Math::cos(angj), Math::sin(angj)) * radius + Vector2(min_radius + radius, 0);
 					Vector2 normalj_n = Vector2(Math::cos(angj_n), Math::sin(angj_n)) * radius + Vector2(min_radius + radius, 0);
