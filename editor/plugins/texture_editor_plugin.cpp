@@ -166,7 +166,9 @@ void TexturePreview::_update_metadata_label_text() {
 
 	const String format_name = format != Image::FORMAT_MAX ? Image::get_format_name(format) : texture->get_class();
 
-	const Vector2i resolution = texture->get_size();
+	const Ref<Image> img = texture->get_image();
+	ERR_FAIL_COND(img.is_null());
+	const Vector2i resolution = img->get_size();
 	const int mipmaps = get_texture_mipmaps_count(texture);
 
 	if (format != Image::FORMAT_MAX) {
