@@ -305,8 +305,8 @@ void Light2D::_bind_methods() {
 	ADD_GROUP("Range", "range_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_min", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_min", "get_z_range_min");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_max", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_max", "get_z_range_max");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_min", PROPERTY_HINT_RANGE, "-512,512,1"), "set_layer_range_min", "get_layer_range_min");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_max", PROPERTY_HINT_RANGE, "-512,512,1"), "set_layer_range_max", "get_layer_range_max");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_min", PROPERTY_HINT_RANGE, itos(RS::CANVAS_LAYER_MIN) + "," + itos(RS::CANVAS_LAYER_MAX) + ",1"), "set_layer_range_min", "get_layer_range_min");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_max", PROPERTY_HINT_RANGE, itos(RS::CANVAS_LAYER_MIN) + "," + itos(RS::CANVAS_LAYER_MAX) + ",1"), "set_layer_range_max", "get_layer_range_max");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_cull_mask", "get_item_cull_mask");
 
 	ADD_GROUP("Shadow", "shadow_");
