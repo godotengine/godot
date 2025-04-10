@@ -123,7 +123,7 @@ typedef struct _xrr_monitor_info {
 #undef CursorShape
 
 class DisplayServerX11 : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerX11, DisplayServer);
 
 	_THREAD_SAFE_CLASS_
 

@@ -366,7 +366,7 @@ class DropTargetWindows;
 #endif
 
 class DisplayServerWindows : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerWindows, DisplayServer);
 
 	friend class DropTargetWindows;
 

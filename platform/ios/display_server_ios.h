@@ -56,7 +56,7 @@
 #import <QuartzCore/CAMetalLayer.h>
 
 class DisplayServerIOS : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerIOS, DisplayServer);
 
 	_THREAD_SAFE_CLASS_
 
