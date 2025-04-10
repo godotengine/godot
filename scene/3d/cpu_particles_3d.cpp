@@ -89,12 +89,6 @@ void CPUParticles3D::set_amount(int p_amount) {
 }
 
 void CPUParticles3D::set_amount_ratio(float p_amount_ratio) {
-	if (p_amount_ratio == 0) {
-		set_emitting(false);
-	} else if (!emitting && amount_ratio == 0) {
-		set_emitting(true);
-	}
-
 	amount_ratio = p_amount_ratio;
 
 	float tot = 1;
