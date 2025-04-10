@@ -67,7 +67,8 @@
 #undef CursorShape
 
 class DisplayServerWayland : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerWayland, DisplayServer);
+
 	struct WindowData {
 		WindowID id = INVALID_WINDOW_ID;
 
