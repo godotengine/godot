@@ -315,32 +315,6 @@ void RendererSceneRenderRD::_process_compositor_effects(RS::CompositorEffectCall
 	}
 }
 
-void RendererSceneRenderRD::_render_buffers_ensure_screen_texture(const RenderDataRD *p_render_data) {
-	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
-	ERR_FAIL_COND(rb.is_null());
-
-	if (!rb->has_internal_texture()) {
-		// We're likely rendering reflection probes where we can't use our backbuffers.
-		return;
-	}
-
-	bool can_use_storage = _render_buffers_can_be_storage();
-	Size2i size = rb->get_internal_size();
-
-	// When upscaling, the blur texture needs to be at the target size for post-processing to work. We prefer to use a
-	// dedicated backbuffer copy texture instead if the blur texture is not an option so shader effects work correctly.
-	Size2i target_size = rb->get_target_size();
-	bool internal_size_matches = (size.width == target_size.width) && (size.height == target_size.height);
-	bool reuse_blur_texture = !rb->has_upscaled_texture() || internal_size_matches;
-	if (reuse_blur_texture) {
-		rb->allocate_blur_textures();
-	} else {
-		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-		usage_bits |= can_use_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-		rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR, rb->get_base_data_format(), usage_bits);
-	}
-}
-
 void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderDataRD *p_render_data) {
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
@@ -362,8 +336,12 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 	bool internal_size_matches = (size.width == target_size.width) && (size.height == target_size.height);
 	bool reuse_blur_texture = !rb->has_upscaled_texture() || internal_size_matches;
 	if (reuse_blur_texture) {
+		rb->allocate_blur_textures();
 		texture_name = RB_TEX_BLUR_0;
 	} else {
+		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		usage_bits |= can_use_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR, rb->get_base_data_format(), usage_bits);
 		texture_name = RB_TEX_BACK_COLOR;
 	}
 
@@ -395,23 +373,6 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RendererSceneRenderRD::_render_buffers_ensure_depth_texture(const RenderDataRD *p_render_data) {
-	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
-	ERR_FAIL_COND(rb.is_null());
-
-	if (!rb->has_depth_texture()) {
-		// We're likely rendering reflection probes where we can't use our backbuffers.
-		return;
-	}
-
-	// Note, this only creates our back depth texture if we haven't already created it.
-	uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
-	usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-	usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT; // Set this as color attachment because we're copying data into it, it's not actually used as a depth buffer
-
-	rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, RD::DATA_FORMAT_R32_SFLOAT, usage_bits, RD::TEXTURE_SAMPLES_1);
-}
-
 void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataRD *p_render_data) {
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
@@ -422,6 +383,13 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 	}
 
 	RD::get_singleton()->draw_command_begin_label("Copy depth texture");
+
+	// note, this only creates our back depth texture if we haven't already created it.
+	uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
+	usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+	usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT; // set this as color attachment because we're copying data into it, it's not actually used as a depth buffer
+
+	rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, RD::DATA_FORMAT_R32_SFLOAT, usage_bits, RD::TEXTURE_SAMPLES_1);
 
 	bool can_use_storage = _render_buffers_can_be_storage();
 	Size2i size = rb->get_internal_size();
