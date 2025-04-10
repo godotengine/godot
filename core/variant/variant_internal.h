@@ -534,221 +534,36 @@ public:
 	}
 };
 
-/// Types that can be stored in Variant.
-template <typename T, typename = void>
-struct VariantGetInternalPtr;
-
-template <typename T>
-struct VariantGetInternalPtr<T, std::enable_if_t<!std::is_same_v<T, GetSimpleTypeT<T>>>> : VariantGetInternalPtr<GetSimpleTypeT<T>> {};
-
-template <typename T>
-struct _VariantGetInternalPtrLocal {
-	using type = T;
-	static constexpr bool is_local = true;
-	static _FORCE_INLINE_ T *get_ptr(Variant *v) { return reinterpret_cast<T *>(v->_data._mem); }
-	static _FORCE_INLINE_ const T *get_ptr(const Variant *v) { return reinterpret_cast<const T *>(v->_data._mem); }
-};
-
-template <typename T>
-struct _VariantGetInternalPtrElsewhere {
-	using type = T;
-	static constexpr bool is_local = false;
-	static _FORCE_INLINE_ T *get_ptr(Variant *v) { return reinterpret_cast<T *>(v->_data._ptr); }
-	static _FORCE_INLINE_ const T *get_ptr(const Variant *v) { return reinterpret_cast<const T *>(v->_data._ptr); }
-};
-
-template <typename T>
-struct _VariantGetInternalPtrPackedArrayRef {
-	using type = Vector<T>;
-	static constexpr bool is_local = false;
-	static _FORCE_INLINE_ Vector<T> *get_ptr(Variant *v) { return &static_cast<Variant::PackedArrayRef<T> *>(v->_data.packed_array)->array; }
-	static _FORCE_INLINE_ const Vector<T> *get_ptr(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<T> *>(v->_data.packed_array)->array; }
-};
-
-template <>
-struct VariantGetInternalPtr<bool> : _VariantGetInternalPtrLocal<bool> {};
-
-template <>
-struct VariantGetInternalPtr<int64_t> : _VariantGetInternalPtrLocal<int64_t> {};
-
-template <>
-struct VariantGetInternalPtr<double> : _VariantGetInternalPtrLocal<double> {};
-
-template <>
-struct VariantGetInternalPtr<String> : _VariantGetInternalPtrLocal<String> {};
-
-template <>
-struct VariantGetInternalPtr<Vector2> : _VariantGetInternalPtrLocal<Vector2> {};
-
-template <>
-struct VariantGetInternalPtr<Vector2i> : _VariantGetInternalPtrLocal<Vector2i> {};
-
-template <>
-struct VariantGetInternalPtr<Rect2> : _VariantGetInternalPtrLocal<Rect2> {};
-
-template <>
-struct VariantGetInternalPtr<Rect2i> : _VariantGetInternalPtrLocal<Rect2i> {};
-
-template <>
-struct VariantGetInternalPtr<Vector3> : _VariantGetInternalPtrLocal<Vector3> {};
-
-template <>
-struct VariantGetInternalPtr<Vector3i> : _VariantGetInternalPtrLocal<Vector3i> {};
-
-template <>
-struct VariantGetInternalPtr<Vector4> : _VariantGetInternalPtrLocal<Vector4> {};
-
-template <>
-struct VariantGetInternalPtr<Vector4i> : _VariantGetInternalPtrLocal<Vector4i> {};
-
-template <>
-struct VariantGetInternalPtr<Transform2D> : _VariantGetInternalPtrElsewhere<Transform2D> {};
-
-template <>
-struct VariantGetInternalPtr<Transform3D> : _VariantGetInternalPtrElsewhere<Transform3D> {};
-
-template <>
-struct VariantGetInternalPtr<Projection> : _VariantGetInternalPtrElsewhere<Projection> {};
-
-template <>
-struct VariantGetInternalPtr<Plane> : _VariantGetInternalPtrLocal<Plane> {};
-
-template <>
-struct VariantGetInternalPtr<Quaternion> : _VariantGetInternalPtrLocal<Quaternion> {};
-
-template <>
-struct VariantGetInternalPtr<::AABB> : _VariantGetInternalPtrElsewhere<::AABB> {};
-
-template <>
-struct VariantGetInternalPtr<Basis> : _VariantGetInternalPtrElsewhere<Basis> {};
-
-template <>
-struct VariantGetInternalPtr<Color> : _VariantGetInternalPtrLocal<Color> {};
-
-template <>
-struct VariantGetInternalPtr<StringName> : _VariantGetInternalPtrLocal<StringName> {};
-
-template <>
-struct VariantGetInternalPtr<NodePath> : _VariantGetInternalPtrLocal<NodePath> {};
-
-template <>
-struct VariantGetInternalPtr<::RID> : _VariantGetInternalPtrLocal<::RID> {};
-
-// template <>
-// struct VariantGetInternalPtr<Variant::ObjData> : _VariantGetInternalPtrLocal<Variant::ObjData> {};
-
-template <>
-struct VariantGetInternalPtr<Callable> : _VariantGetInternalPtrLocal<Callable> {};
-
-template <>
-struct VariantGetInternalPtr<Signal> : _VariantGetInternalPtrLocal<Signal> {};
-
-template <>
-struct VariantGetInternalPtr<Dictionary> : _VariantGetInternalPtrLocal<Dictionary> {};
-
-template <>
-struct VariantGetInternalPtr<Array> : _VariantGetInternalPtrLocal<Array> {};
-
-template <>
-struct VariantGetInternalPtr<PackedByteArray> : _VariantGetInternalPtrPackedArrayRef<uint8_t> {};
-
-template <>
-struct VariantGetInternalPtr<PackedInt32Array> : _VariantGetInternalPtrPackedArrayRef<int32_t> {};
-
-template <>
-struct VariantGetInternalPtr<PackedInt64Array> : _VariantGetInternalPtrPackedArrayRef<int64_t> {};
-
-template <>
-struct VariantGetInternalPtr<PackedFloat32Array> : _VariantGetInternalPtrPackedArrayRef<float> {};
-
-template <>
-struct VariantGetInternalPtr<PackedFloat64Array> : _VariantGetInternalPtrPackedArrayRef<double> {};
-
-template <>
-struct VariantGetInternalPtr<PackedStringArray> : _VariantGetInternalPtrPackedArrayRef<String> {};
-
-template <>
-struct VariantGetInternalPtr<PackedVector2Array> : _VariantGetInternalPtrPackedArrayRef<Vector2> {};
-
-template <>
-struct VariantGetInternalPtr<PackedVector3Array> : _VariantGetInternalPtrPackedArrayRef<Vector3> {};
-
-template <>
-struct VariantGetInternalPtr<PackedColorArray> : _VariantGetInternalPtrPackedArrayRef<Color> {};
-
-template <>
-struct VariantGetInternalPtr<PackedVector4Array> : _VariantGetInternalPtrPackedArrayRef<Vector4> {};
-
-template <typename T, typename = std::void_t<>>
-struct IsVariantType : std::false_type {};
-
-template <typename T>
-struct IsVariantType<T, std::void_t<typename VariantGetInternalPtr<T>::type>> : std::true_type {};
-
-template <typename T>
-constexpr bool IsVariantTypeT = IsVariantType<T>::value;
-
-/// Types that can be implicitly converted to and from Variant,
-///  using another type to store the actual value.
-template <typename T, typename = void>
-struct VariantImplicitConvert;
-
-template <typename T, typename S>
-struct _VariantImplicitConvertCast {
-	using EncodeT = S;
-	static _FORCE_INLINE_ T read(const Variant &p_variant) {
-		return T(*VariantGetInternalPtr<S>::get_ptr(&p_variant));
-	}
-	static _FORCE_INLINE_ T read(Variant &p_variant) {
-		return T(*VariantGetInternalPtr<S>::get_ptr(&p_variant));
-	}
-	static _FORCE_INLINE_ void write(T p_val, Variant &p_variant) {
-		*VariantGetInternalPtr<S>::get_ptr(&p_variant) = S(std::move(p_val));
-	}
-};
-
-// Integer types.
-template <typename T>
-struct VariantImplicitConvert<T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool> && !std::is_same_v<T, int64_t>>> : _VariantImplicitConvertCast<T, int64_t> {};
-template <typename T>
-struct VariantImplicitConvert<T, std::enable_if_t<std::is_enum_v<T>>> : _VariantImplicitConvertCast<T, int64_t> {};
-template <typename T>
-struct VariantImplicitConvert<BitField<T>, std::enable_if_t<std::is_enum_v<T>>> : _VariantImplicitConvertCast<BitField<T>, int64_t> {};
-
-template <>
-struct VariantImplicitConvert<ObjectID> : _VariantImplicitConvertCast<ObjectID, int64_t> {};
-
-// Float types.
-template <>
-struct VariantImplicitConvert<float> : _VariantImplicitConvertCast<float, double> {};
-
-template <typename T, typename = std::void_t<>>
-struct IsVariantImplicitConversionType : std::false_type {};
-
-template <typename T>
-struct IsVariantImplicitConversionType<T, std::void_t<typename VariantImplicitConvert<T>::EncodeT>> : std::true_type {};
-
-template <typename T>
-constexpr bool IsVariantImplicitConversionTypeT = IsVariantImplicitConversionType<T>::value;
-
 template <typename T, typename = void>
 struct VariantInternalAccessor;
 
 template <typename T>
-struct VariantInternalAccessor<T, std::enable_if_t<IsVariantTypeT<T>>> {
-	static _FORCE_INLINE_ T &get(Variant *v) { return *VariantGetInternalPtr<T>::get_ptr(v); }
-	static _FORCE_INLINE_ const T &get(const Variant *v) { return *VariantGetInternalPtr<T>::get_ptr(v); }
-	static _FORCE_INLINE_ void set(Variant *v, T p_value) { *VariantGetInternalPtr<T>::get_ptr(v) = std::move(p_value); }
-};
-
-template <typename T>
-struct VariantInternalAccessor<T, std::enable_if_t<IsVariantImplicitConversionTypeT<T>>> {
-	static _FORCE_INLINE_ T get(const Variant *v) { return VariantImplicitConvert<T>::read(*v); }
-	static _FORCE_INLINE_ void set(Variant *v, T p_value) { VariantImplicitConvert<T>::write(std::move(p_value), *v); }
-};
-
-template <typename T>
 struct VariantInternalAccessor<T, std::enable_if_t<!std::is_same_v<T, GetSimpleTypeT<T>>>> : VariantInternalAccessor<GetSimpleTypeT<T>> {};
+
+template <typename T>
+struct _VariantInternalAccessorLocal {
+	using declared_when_native_type = void;
+	static constexpr bool is_local = true;
+	static _FORCE_INLINE_ T &get(Variant *v) { return *reinterpret_cast<T *>(v->_data._mem); }
+	static _FORCE_INLINE_ const T &get(const Variant *v) { return *reinterpret_cast<const T *>(v->_data._mem); }
+	static _FORCE_INLINE_ void set(Variant *v, T p_value) { *reinterpret_cast<T *>(v->_data._mem) = std::move(p_value); }
+};
+
+template <typename T>
+struct _VariantInternalAccessorElsewhere {
+	using declared_when_native_type = void;
+	static _FORCE_INLINE_ T &get(Variant *v) { return *reinterpret_cast<T *>(v->_data._ptr); }
+	static _FORCE_INLINE_ const T &get(const Variant *v) { return *reinterpret_cast<const T *>(v->_data._ptr); }
+	static _FORCE_INLINE_ void set(Variant *v, T p_value) { *reinterpret_cast<T *>(v->_data._ptr) = std::move(p_value); }
+};
+
+template <typename T>
+struct _VariantInternalAccessorPackedArrayRef {
+	using declared_when_native_type = void;
+	static _FORCE_INLINE_ Vector<T> &get(Variant *v) { return static_cast<Variant::PackedArrayRef<T> *>(v->_data.packed_array)->array; }
+	static _FORCE_INLINE_ const Vector<T> &get(const Variant *v) { return static_cast<const Variant::PackedArrayRef<T> *>(v->_data.packed_array)->array; }
+	static _FORCE_INLINE_ void set(Variant *v, Vector<T> p_value) { static_cast<Variant::PackedArrayRef<T> *>(v->_data.packed_array)->array = std::move(p_value); }
+};
 
 template <typename T>
 struct VariantInternalAccessor<T *> {
@@ -802,15 +617,163 @@ struct VariantInternalAccessor<Vector<Variant>> {
 	}
 };
 
+template <>
+struct VariantInternalAccessor<bool> : _VariantInternalAccessorLocal<bool> {};
+
+template <>
+struct VariantInternalAccessor<int64_t> : _VariantInternalAccessorLocal<int64_t> {};
+
+template <>
+struct VariantInternalAccessor<double> : _VariantInternalAccessorLocal<double> {};
+
+template <>
+struct VariantInternalAccessor<String> : _VariantInternalAccessorLocal<String> {};
+
+template <>
+struct VariantInternalAccessor<Vector2> : _VariantInternalAccessorLocal<Vector2> {};
+
+template <>
+struct VariantInternalAccessor<Vector2i> : _VariantInternalAccessorLocal<Vector2i> {};
+
+template <>
+struct VariantInternalAccessor<Rect2> : _VariantInternalAccessorLocal<Rect2> {};
+
+template <>
+struct VariantInternalAccessor<Rect2i> : _VariantInternalAccessorLocal<Rect2i> {};
+
+template <>
+struct VariantInternalAccessor<Vector3> : _VariantInternalAccessorLocal<Vector3> {};
+
+template <>
+struct VariantInternalAccessor<Vector3i> : _VariantInternalAccessorLocal<Vector3i> {};
+
+template <>
+struct VariantInternalAccessor<Vector4> : _VariantInternalAccessorLocal<Vector4> {};
+
+template <>
+struct VariantInternalAccessor<Vector4i> : _VariantInternalAccessorLocal<Vector4i> {};
+
+template <>
+struct VariantInternalAccessor<Transform2D> : _VariantInternalAccessorElsewhere<Transform2D> {};
+
+template <>
+struct VariantInternalAccessor<Transform3D> : _VariantInternalAccessorElsewhere<Transform3D> {};
+
+template <>
+struct VariantInternalAccessor<Projection> : _VariantInternalAccessorElsewhere<Projection> {};
+
+template <>
+struct VariantInternalAccessor<Plane> : _VariantInternalAccessorLocal<Plane> {};
+
+template <>
+struct VariantInternalAccessor<Quaternion> : _VariantInternalAccessorLocal<Quaternion> {};
+
+template <>
+struct VariantInternalAccessor<::AABB> : _VariantInternalAccessorElsewhere<::AABB> {};
+
+template <>
+struct VariantInternalAccessor<Basis> : _VariantInternalAccessorElsewhere<Basis> {};
+
+template <>
+struct VariantInternalAccessor<Color> : _VariantInternalAccessorLocal<Color> {};
+
+template <>
+struct VariantInternalAccessor<StringName> : _VariantInternalAccessorLocal<StringName> {};
+
+template <>
+struct VariantInternalAccessor<NodePath> : _VariantInternalAccessorLocal<NodePath> {};
+
+template <>
+struct VariantInternalAccessor<::RID> : _VariantInternalAccessorLocal<::RID> {};
+
+// template <>
+// struct VariantInternalAccessor<Variant::ObjData> : _VariantInternalAccessorLocal<Variant::ObjData> {};
+
+template <>
+struct VariantInternalAccessor<Callable> : _VariantInternalAccessorLocal<Callable> {};
+
+template <>
+struct VariantInternalAccessor<Signal> : _VariantInternalAccessorLocal<Signal> {};
+
+template <>
+struct VariantInternalAccessor<Dictionary> : _VariantInternalAccessorLocal<Dictionary> {};
+
+template <>
+struct VariantInternalAccessor<Array> : _VariantInternalAccessorLocal<Array> {};
+
+template <>
+struct VariantInternalAccessor<PackedByteArray> : _VariantInternalAccessorPackedArrayRef<uint8_t> {};
+
+template <>
+struct VariantInternalAccessor<PackedInt32Array> : _VariantInternalAccessorPackedArrayRef<int32_t> {};
+
+template <>
+struct VariantInternalAccessor<PackedInt64Array> : _VariantInternalAccessorPackedArrayRef<int64_t> {};
+
+template <>
+struct VariantInternalAccessor<PackedFloat32Array> : _VariantInternalAccessorPackedArrayRef<float> {};
+
+template <>
+struct VariantInternalAccessor<PackedFloat64Array> : _VariantInternalAccessorPackedArrayRef<double> {};
+
+template <>
+struct VariantInternalAccessor<PackedStringArray> : _VariantInternalAccessorPackedArrayRef<String> {};
+
+template <>
+struct VariantInternalAccessor<PackedVector2Array> : _VariantInternalAccessorPackedArrayRef<Vector2> {};
+
+template <>
+struct VariantInternalAccessor<PackedVector3Array> : _VariantInternalAccessorPackedArrayRef<Vector3> {};
+
+template <>
+struct VariantInternalAccessor<PackedColorArray> : _VariantInternalAccessorPackedArrayRef<Color> {};
+
+template <>
+struct VariantInternalAccessor<PackedVector4Array> : _VariantInternalAccessorPackedArrayRef<Vector4> {};
+
+template <typename T, typename = std::void_t<>>
+struct IsVariantType : std::false_type {};
+
+template <typename T>
+struct IsVariantType<T, std::void_t<typename VariantInternalAccessor<T>::declared_when_native_type>> : std::true_type {};
+
+template <typename T>
+constexpr bool IsVariantTypeT = IsVariantType<T>::value;
+
+template <typename T, typename S>
+struct _VariantInternalAccessorConvert {
+	static _FORCE_INLINE_ T get(const Variant *v) {
+		return T(VariantInternalAccessor<S>::get(v));
+	}
+	static _FORCE_INLINE_ void set(Variant *v, const T p_value) {
+		VariantInternalAccessor<S>::get(v) = S(std::move(p_value));
+	}
+};
+
+// Integer types.
+template <typename T>
+struct VariantInternalAccessor<T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool> && !std::is_same_v<T, int64_t>>> : _VariantInternalAccessorConvert<T, int64_t> {};
+template <typename T>
+struct VariantInternalAccessor<T, std::enable_if_t<std::is_enum_v<T>>> : _VariantInternalAccessorConvert<T, int64_t> {};
+template <typename T>
+struct VariantInternalAccessor<BitField<T>, std::enable_if_t<std::is_enum_v<T>>> : _VariantInternalAccessorConvert<BitField<T>, int64_t> {};
+
+template <>
+struct VariantInternalAccessor<ObjectID> : _VariantInternalAccessorConvert<ObjectID, int64_t> {};
+
+// Float types.
+template <>
+struct VariantInternalAccessor<float> : _VariantInternalAccessorConvert<float, double> {};
+
 template <typename T, typename = void>
 struct VariantInitializer {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<T>(v); }
 };
 
 template <typename T>
-struct VariantInitializer<T, std::enable_if_t<VariantGetInternalPtr<T>::is_local>> {
+struct VariantInitializer<T, std::enable_if_t<VariantInternalAccessor<T>::is_local>> {
 	static _FORCE_INLINE_ void init(Variant *v) {
-		memnew_placement(VariantGetInternalPtr<T>::get_ptr(v), T);
+		memnew_placement(&VariantInternalAccessor<T>::get(v), T);
 		VariantInternal::set_type(*v, GetTypeInfo<T>::VARIANT_TYPE);
 	}
 };
@@ -902,7 +865,7 @@ struct VariantDefaultInitializer;
 template <typename T>
 struct VariantDefaultInitializer<T, std::enable_if_t<IsVariantTypeT<T>>> {
 	static _FORCE_INLINE_ void init(Variant *v) {
-		*VariantGetInternalPtr<T>::get_ptr(v) = T();
+		VariantInternalAccessor<T>::get(v) = T();
 	}
 };
 

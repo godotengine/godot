@@ -174,11 +174,11 @@ private:
 	friend struct _VariantCall;
 	friend class VariantInternal;
 	template <typename>
-	friend struct _VariantGetInternalPtrLocal;
+	friend struct _VariantInternalAccessorLocal;
 	template <typename>
-	friend struct _VariantGetInternalPtrElsewhere;
+	friend struct _VariantInternalAccessorElsewhere;
 	template <typename>
-	friend struct _VariantGetInternalPtrPackedArrayRef;
+	friend struct _VariantInternalAccessorPackedArrayRef;
 	// Variant takes 24 bytes when real_t is float, and 40 bytes if double.
 	// It only allocates extra memory for AABB/Transform2D (24, 48 if double),
 	// Basis/Transform3D (48, 96 if double), Projection (64, 128 if double),
