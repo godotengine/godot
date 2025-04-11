@@ -1773,9 +1773,9 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["CANVAS_MATRIX"] = "canvas_data.canvas_transform";
 		actions.renames["SCREEN_MATRIX"] = "canvas_data.screen_transform";
 		actions.renames["TIME"] = "canvas_data.time";
-		actions.renames["PI"] = _MKSTR(Math::PI);
-		actions.renames["TAU"] = _MKSTR(Math::TAU);
-		actions.renames["E"] = _MKSTR(Math::E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 		actions.renames["AT_LIGHT_PASS"] = "false";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 

@@ -1143,9 +1143,9 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["CANVAS_MATRIX"] = "canvas_transform";
 		actions.renames["SCREEN_MATRIX"] = "screen_transform";
 		actions.renames["TIME"] = "time";
-		actions.renames["PI"] = _MKSTR(Math::PI);
-		actions.renames["TAU"] = _MKSTR(Math::TAU);
-		actions.renames["E"] = _MKSTR(Math::E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 		actions.renames["AT_LIGHT_PASS"] = "false";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 
@@ -1238,9 +1238,9 @@ MaterialStorage::MaterialStorage() {
 
 		actions.renames["TIME"] = "scene_data.time";
 		actions.renames["EXPOSURE"] = "(1.0 / scene_data.emissive_exposure_normalization)";
-		actions.renames["PI"] = _MKSTR(Math::PI);
-		actions.renames["TAU"] = _MKSTR(Math::TAU);
-		actions.renames["E"] = _MKSTR(Math::E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
 		actions.renames["VIEWPORT_SIZE"] = "scene_data.viewport_size";
@@ -1406,9 +1406,9 @@ MaterialStorage::MaterialStorage() {
 		}
 		actions.renames["TRANSFORM"] = "xform";
 		actions.renames["TIME"] = "time";
-		actions.renames["PI"] = _MKSTR(Math::PI);
-		actions.renames["TAU"] = _MKSTR(Math::TAU);
-		actions.renames["E"] = _MKSTR(Math::E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 		actions.renames["LIFETIME"] = "lifetime";
 		actions.renames["DELTA"] = "local_delta";
 		actions.renames["NUMBER"] = "particle_number";
@@ -1463,9 +1463,9 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["SCREEN_UV"] = "uv";
 		actions.renames["TIME"] = "time";
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
-		actions.renames["PI"] = _MKSTR(Math::PI);
-		actions.renames["TAU"] = _MKSTR(Math::TAU);
-		actions.renames["E"] = _MKSTR(Math::E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 		actions.renames["HALF_RES_COLOR"] = "half_res_color";
 		actions.renames["QUARTER_RES_COLOR"] = "quarter_res_color";
 		actions.renames["RADIANCE"] = "radiance";

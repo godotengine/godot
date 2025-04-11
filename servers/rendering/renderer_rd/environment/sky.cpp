@@ -783,9 +783,9 @@ void SkyRD::init() {
 		actions.renames["SCREEN_UV"] = "uv";
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["TIME"] = "params.time";
-		actions.renames["PI"] = _MKSTR(Math::PI);
-		actions.renames["TAU"] = _MKSTR(Math::TAU);
-		actions.renames["E"] = _MKSTR(Math::E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 		actions.renames["HALF_RES_COLOR"] = "half_res_color";
 		actions.renames["QUARTER_RES_COLOR"] = "quarter_res_color";
 		actions.renames["RADIANCE"] = "radiance";
