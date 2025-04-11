@@ -82,6 +82,8 @@ void NoiseTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_noise", "noise"), &NoiseTexture2D::set_noise);
 	ClassDB::bind_method(D_METHOD("get_noise"), &NoiseTexture2D::get_noise);
 
+	ClassDB::bind_method(D_METHOD("get_image"), &NoiseTexture2D::get_image);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert"), "set_invert", "get_invert");
@@ -388,7 +390,12 @@ RID NoiseTexture2D::get_rid() const {
 
 Ref<Image> NoiseTexture2D::get_image() const {
 	if (image.is_null()) {
-		const_cast<NoiseTexture2D *>(this)->_update_texture();
+		const_cast<NoiseTexture2D *>(this)->_generate_image_now(); // const_cast here is necessary since we are going to modify the image
 	}
 	return image;
+}
+
+void NoiseTexture2D::_generate_image_now() {
+	Ref<Image> new_image = _generate_texture();
+	_set_texture_image(new_image);
 }
