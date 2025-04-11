@@ -1210,7 +1210,6 @@ TextShaderEditor::TextShaderEditor() {
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &TextShaderEditor::_bookmark_item_pressed));
 
 	add_child(main_container);
-	main_container->add_child(hbc);
 	hbc->add_child(edit_menu);
 	hbc->add_child(search_menu);
 	hbc->add_child(goto_menu);
