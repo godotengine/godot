@@ -996,6 +996,14 @@
 				Returns the enter cost of this [param region].
 			</description>
 		</method>
+		<method name="region_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns the current iteration id of the navigation region. Every time the navigation region changes and synchronizes the iteration id increases. An iteration id of 0 means the navigation region has never synchronized.
+				[b]Note:[/b] The iteration id will wrap back to 1 after reaching its range limit.
+			</description>
+		</method>
 		<method name="region_get_map" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="region" type="RID" />
