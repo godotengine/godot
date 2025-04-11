@@ -79,7 +79,7 @@ class StringName {
 	friend void register_core_types();
 	friend void unregister_core_types();
 	friend class Main;
-	static inline Mutex mutex;
+	static inline BinaryMutex mutex;
 	static void setup();
 	static void cleanup();
 	static uint32_t get_empty_hash();
@@ -231,8 +231,6 @@ public:
 	StringName(const String &p_name, bool p_static = false);
 	StringName(const StaticCString &p_static_string, bool p_static = false);
 	StringName() {}
-
-	static void assign_static_unique_class_name(StringName *ptr, const char *p_name);
 
 #ifdef SIZE_EXTRA
 	_NO_INLINE_
