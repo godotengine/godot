@@ -167,6 +167,22 @@ _FORCE_INLINE_ uint64_t *_get_element_count_ptr(uint8_t *p_ptr) {
 	return (uint64_t *)(p_ptr - Memory::DATA_OFFSET + Memory::ELEMENT_OFFSET);
 }
 
+// Fast alternative to a loop constructor pattern.
+template <bool p_ensure_zero = false, typename T>
+_FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
+	if constexpr (std::is_trivially_constructible_v<T> && !p_ensure_zero) {
+		// Don't need to do anything :)
+	} else if constexpr (is_zero_constructible_v<T>) {
+		// Can optimize with memset.
+		memset(static_cast<void *>(p_start), 0, p_num * sizeof(T));
+	} else {
+		// Need to use a for loop.
+		for (size_t i = 0; i < p_num; i++) {
+			memnew_placement(p_start + i, T);
+		}
+	}
+}
+
 template <typename T>
 T *memnew_arr_template(size_t p_elements) {
 	if (p_elements == 0) {
@@ -182,33 +198,9 @@ T *memnew_arr_template(size_t p_elements) {
 
 	uint64_t *_elem_count_ptr = _get_element_count_ptr(mem);
 	*(_elem_count_ptr) = p_elements;
-
-	if constexpr (!std::is_trivially_constructible_v<T>) {
-		T *elems = (T *)mem;
-
-		/* call operator new */
-		for (size_t i = 0; i < p_elements; i++) {
-			::new (&elems[i]) T;
-		}
-	}
+	memnew_arr_placement((T *)mem, p_elements);
 
 	return (T *)mem;
-}
-
-// Fast alternative to a loop constructor pattern.
-template <bool p_ensure_zero = false, typename T>
-_FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
-	if constexpr (std::is_trivially_constructible_v<T> && !p_ensure_zero) {
-		// Don't need to do anything :)
-	} else if constexpr (is_zero_constructible_v<T>) {
-		// Can optimize with memset.
-		memset(static_cast<void *>(p_start), 0, p_num * sizeof(T));
-	} else {
-		// Need to use a for loop.
-		for (size_t i = 0; i < p_num; i++) {
-			memnew_placement(p_start + i, T);
-		}
-	}
 }
 
 /**
