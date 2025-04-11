@@ -50,6 +50,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="alignment" type="Vector2" setter="set_alignment" getter="get_alignment" default="Vector2(0, 0)">
+			The texture's drawing offset relative to the texture size.
+			For example, setting this to [code]Vector2(0.5, -0.5)[/code] would align the sprite's bottom-left corner with its pivot position (assuming [member centered] is [code]true[/code]).
+			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when [code]alignment.x[/code] or [code]alignment.y[/code] is not a whole number. This is caused by their position being between pixels. To prevent this, use only whole numbers with this property, or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
+			See also [member offset].
+		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
 			If [code]true[/code], texture is centered.
 			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, set this property to [code]false[/code], or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
@@ -70,7 +76,8 @@
 			The number of columns in the sprite sheet. When this property is changed, [member frame] is adjusted so that the same visual frame is maintained (same row and column). If that's impossible, [member frame] is reset to [code]0[/code].
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
-			The texture's drawing offset.
+			The texture's drawing offset in pixels.
+			See also [member alignment].
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region_enabled" getter="is_region_enabled" default="false">
 			If [code]true[/code], texture is cut from a larger atlas texture. See [member region_rect].
