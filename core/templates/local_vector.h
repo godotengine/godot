@@ -146,6 +146,7 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return count == 0; }
 	_FORCE_INLINE_ U get_capacity() const { return capacity; }
 	_FORCE_INLINE_ void reserve(U p_size) {
+		ERR_FAIL_COND_MSG(p_size < size(), "reserve() called with a capacity smaller than the current size. This is likely a bug.");
 		p_size = tight ? p_size : nearest_power_of_2_templated(p_size);
 		if (p_size > capacity) {
 			capacity = p_size;
