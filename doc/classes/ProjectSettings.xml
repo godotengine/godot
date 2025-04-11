@@ -1125,7 +1125,7 @@
 		</member>
 		<member name="filesystem/import/blender/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Blender 3D scene files with the [code].blend[/code] extension will be imported by converting them to glTF 2.0.
-			This requires configuring a path to a Blender executable in the editor settings at [code]filesystem/import/blender/blender_path[/code]. Blender 3.0 or later is required.
+			This requires configuring a path to a Blender executable in the [member EditorSettings.filesystem/import/blender/blender_path] setting. Blender 3.0 or later is required.
 		</member>
 		<member name="filesystem/import/blender/enabled.android" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/blender/enabled] on Android where Blender can't easily be accessed from Godot.
@@ -3160,11 +3160,11 @@
 		</member>
 		<member name="rendering/rendering_device/fallback_to_opengl3" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the forward renderer will fall back to OpenGL 3 if Direct3D 12, Metal, and Vulkan are not supported.
-			[b]Note:[/b] This setting is implemented only on Windows, Android, macOS, iOS, and Linux/X11.
+			[b]Note:[/b] This setting is implemented on Windows, Android, macOS, iOS, and Linux/X11.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_vulkan" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 (on Windows) or Metal (on macOS x86_64) are not supported. The fallback is always attempted regardless of this setting if Direct3D 12 (Windows) or Metal (macOS) driver support was disabled at compile time.
-			[b]Note:[/b] This setting is implemented only on Windows and macOS.
+			[b]Note:[/b] This setting is implemented on Windows and macOS.
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/enable" type="bool" setter="" getter="" default="true">
 			Enable the pipeline cache that is saved to disk if the graphics API supports it.
