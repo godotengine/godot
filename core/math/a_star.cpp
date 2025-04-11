@@ -356,6 +356,13 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 				continue;
 			}
 
+			{
+				bool filtered;
+				if (GDVIRTUAL_CALL(_filter_neighbor, p->id, e->id, filtered) && filtered) {
+					continue;
+				}
+			}
+
 			real_t tentative_g_score = p->g_score + _compute_cost(p->id, e->id) * e->weight_scale;
 
 			bool new_point = false;
@@ -573,6 +580,7 @@ void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_point_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_id_path, DEFVAL(false));
 
+	GDVIRTUAL_BIND(_filter_neighbor, "from_id", "neighbor_id")
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
@@ -853,6 +861,13 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 				continue;
 			}
 
+			{
+				bool filtered;
+				if (GDVIRTUAL_CALL(_filter_neighbor, p->id, e->id, filtered) && filtered) {
+					continue;
+				}
+			}
+
 			real_t tentative_g_score = p->g_score + _compute_cost(p->id, e->id) * e->weight_scale;
 
 			bool new_point = false;
@@ -912,6 +927,7 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_point_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_id_path, DEFVAL(false));
 
+	GDVIRTUAL_BIND(_filter_neighbor, "from_id", "neighbor_id")
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
