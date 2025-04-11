@@ -79,7 +79,8 @@ public:
 		virtual void set_code(const String &p_Code) = 0;
 		virtual bool is_animated() const = 0;
 		virtual bool casts_shadows() const = 0;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const = 0;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const = 0;
 
 		virtual ~ShaderData() {}
 
@@ -220,12 +221,15 @@ private:
 		ShaderType type;
 		HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
 		HashSet<Material *> owners;
+		bool embedded = false;
 	};
 
 	typedef ShaderData *(*ShaderDataRequestFunction)();
 	ShaderDataRequestFunction shader_data_request_func[SHADER_TYPE_MAX];
 
 	mutable RID_Owner<Shader, true> shader_owner;
+	HashSet<RID> embedded_set;
+	Mutex embedded_set_mutex;
 	Shader *get_shader(RID p_rid) { return shader_owner.get_or_null(p_rid); }
 
 	/* MATERIAL API */
@@ -406,7 +410,7 @@ public:
 	bool owns_shader(RID p_rid) { return shader_owner.owns(p_rid); }
 
 	virtual RID shader_allocate() override;
-	virtual void shader_initialize(RID p_shader) override;
+	virtual void shader_initialize(RID p_shader, bool p_embedded = true) override;
 	virtual void shader_free(RID p_rid) override;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
@@ -418,8 +422,12 @@ public:
 	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index) const override;
 	virtual Variant shader_get_parameter_default(RID p_shader, const StringName &p_param) const override;
 	void shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function);
+	ShaderData *shader_get_data(RID p_shader) const;
 
 	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override;
+	virtual void shader_embedded_set_lock() override;
+	virtual const HashSet<RID> &shader_embedded_set_get() const override;
+	virtual void shader_embedded_set_unlock() override;
 
 	/* MATERIAL API */
 

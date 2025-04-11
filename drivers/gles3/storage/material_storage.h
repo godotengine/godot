@@ -481,6 +481,7 @@ private:
 	mutable RID_Owner<Material, true> material_owner;
 
 	SelfList<Material>::List material_update_list;
+	HashSet<RID> dummy_embedded_set;
 
 public:
 	static MaterialStorage *get_singleton();
@@ -573,7 +574,7 @@ public:
 	void _shader_make_dirty(Shader *p_shader);
 
 	virtual RID shader_allocate() override;
-	virtual void shader_initialize(RID p_rid) override;
+	virtual void shader_initialize(RID p_rid, bool p_embedded = true) override;
 	virtual void shader_free(RID p_rid) override;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
@@ -586,6 +587,9 @@ public:
 	virtual Variant shader_get_parameter_default(RID p_shader, const StringName &p_name) const override;
 
 	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override;
+	virtual void shader_embedded_set_lock() override {}
+	virtual const HashSet<RID> &shader_embedded_set_get() const override { return dummy_embedded_set; }
+	virtual void shader_embedded_set_unlock() override {}
 
 	/* MATERIAL API */
 

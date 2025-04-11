@@ -673,6 +673,10 @@ public:
 	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) override;
 	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override;
 
+	/* SHADER LIBRARY */
+
+	virtual void enable_features(BitField<FeatureBits> p_feature_bits) override;
+
 	virtual bool free(RID p_rid) override;
 
 	virtual void update() override;

@@ -368,6 +368,11 @@ RS::ShaderNativeSourceCode Fog::FogShaderData::get_native_source_code() const {
 	return fog_singleton->volumetric_fog.shader.version_get_native_source_code(version);
 }
 
+Pair<ShaderRD *, RID> Fog::FogShaderData::get_native_shader_and_version() const {
+	Fog *fog_singleton = Fog::get_singleton();
+	return { &fog_singleton->volumetric_fog.shader, version };
+}
+
 Fog::FogShaderData::~FogShaderData() {
 	Fog *fog_singleton = Fog::get_singleton();
 	ERR_FAIL_NULL(fog_singleton);

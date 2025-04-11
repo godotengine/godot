@@ -70,7 +70,8 @@ typedef NS_OPTIONS(NSUInteger, SampleCount) {
 };
 
 struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
-	uint32_t mslVersion = 0;
+	uint32_t mslVersionMajor = 0;
+	uint32_t mslVersionMinor = 0;
 	MTLGPUFamily highestFamily = MTLGPUFamilyApple4;
 	bool supportsBCTextureCompression = false;
 	bool supportsDepth24Stencil8 = false;
@@ -143,6 +144,7 @@ private:
 public:
 	MetalFeatures features;
 	MetalLimits limits;
+	id<MTLDevice> device;
 
 	SampleCount find_nearest_supported_sample_count(RenderingDevice::TextureSamples p_samples) const;
 
