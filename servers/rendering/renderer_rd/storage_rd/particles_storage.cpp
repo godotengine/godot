@@ -80,9 +80,9 @@ ParticlesStorage::ParticlesStorage() {
 		}
 		actions.renames["TRANSFORM"] = "PARTICLE.xform";
 		actions.renames["TIME"] = "frame_history.data[0].time";
-		actions.renames["PI"] = _MKSTR(Math::PI);
-		actions.renames["TAU"] = _MKSTR(Math::TAU);
-		actions.renames["E"] = _MKSTR(Math::E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 		actions.renames["LIFETIME"] = "params.lifetime";
 		actions.renames["DELTA"] = "local_delta";
 		actions.renames["NUMBER"] = "particle_number";
