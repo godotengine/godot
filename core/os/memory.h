@@ -37,6 +37,13 @@
 #include <new> // IWYU pragma: keep // `new` operators.
 #include <type_traits>
 
+/// Behavior when allocating new values.
+enum struct OnAllocInit {
+	DEFAULT, // Initialize unless trivially constructible.
+	ALWAYS, // Always initialize to a known value.
+	NEVER, // Skip initialization if possible (when not trivially destructible).
+};
+
 class Memory {
 #ifdef DEBUG_ENABLED
 	static SafeNumeric<uint64_t> mem_usage;
@@ -196,17 +203,20 @@ T *memnew_arr_template(size_t p_elements) {
 }
 
 // Fast alternative to a loop constructor pattern.
-template <bool p_ensure_zero = false, typename T>
+template <OnAllocInit p_init = OnAllocInit::DEFAULT, typename T>
 _FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
-	if constexpr (std::is_trivially_constructible_v<T> && !p_ensure_zero) {
+	if constexpr (p_init == OnAllocInit::NEVER || (std::is_trivially_constructible_v<T> && p_init != OnAllocInit::ALWAYS)) {
+		static_assert(std::is_trivially_destructible_v<T>, "T needs to be trivially destructible, otherwise not initializing it would be UB.");
 		// Don't need to do anything :)
+		// Trivially constructible types only need to initialize when explicitly requested.
+		// Not trivially destructible types are unsafe to initialize with garbage data.
 	} else if constexpr (is_zero_constructible_v<T>) {
 		// Can optimize with memset.
 		memset(static_cast<void *>(p_start), 0, p_num * sizeof(T));
 	} else {
 		// Need to use a for loop.
 		for (size_t i = 0; i < p_num; i++) {
-			memnew_placement(p_start + i, T);
+			memnew_placement(p_start + i, T());
 		}
 	}
 }

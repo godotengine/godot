@@ -1256,3 +1256,7 @@ public:
 	ShaderLanguage();
 	~ShaderLanguage();
 };
+
+// Scalar is a union; this will set all cases to false / 0.
+template <>
+struct is_zero_constructible<ShaderLanguage::Scalar> : std::true_type {};
