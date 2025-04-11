@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLOR_MODE_H
-#define COLOR_MODE_H
+#pragma once
 
 #include "scene/gui/color_picker.h"
 
-struct Color;
+class GradientTexture2D;
 
 class ColorMode {
 public:
@@ -54,7 +53,6 @@ public:
 
 	virtual void slider_draw(int p_which) = 0;
 	virtual bool apply_theme() const { return false; }
-	virtual ColorPicker::PickerShapeType get_shape_override() const { return ColorPicker::SHAPE_MAX; }
 
 	ColorMode(ColorPicker *p_color_picker);
 	virtual ~ColorMode() {}
@@ -131,6 +129,7 @@ public:
 	float slider_max[4] = { 359, 100, 100, 255 };
 	float cached_hue = 0.0;
 	float cached_saturation = 0.0;
+	Ref<GradientTexture2D> hue_texture = nullptr;
 
 	virtual String get_name() const override { return "OKHSL"; }
 
@@ -144,12 +143,7 @@ public:
 	virtual void _value_changed() override;
 
 	virtual void slider_draw(int p_which) override;
-	virtual ColorPicker::PickerShapeType get_shape_override() const override { return ColorPicker::SHAPE_OKHSL_CIRCLE; }
 
 	ColorModeOKHSL(ColorPicker *p_color_picker) :
 			ColorMode(p_color_picker) {}
-
-	~ColorModeOKHSL() {}
 };
-
-#endif // COLOR_MODE_H

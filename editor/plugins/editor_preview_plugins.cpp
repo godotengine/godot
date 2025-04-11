@@ -31,11 +31,9 @@
 #include "editor_preview_plugins.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/file_access_memory.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
-#include "core/os/os.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -77,7 +75,7 @@ void post_process_preview(Ref<Image> p_image) {
 }
 
 bool EditorTexturePreviewPlugin::handles(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Texture2D") || ClassDB::is_parent_class(p_type, "Texture3D") || ClassDB::is_parent_class(p_type, "TextureLayered");
+	return ClassDB::is_parent_class(p_type, "Texture");
 }
 
 bool EditorTexturePreviewPlugin::generate_small_preview_automatically() const {
@@ -93,13 +91,20 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 
 	if (tex_atlas.is_valid()) {
 		Ref<Texture2D> tex = tex_atlas->get_atlas();
-		if (!tex.is_valid()) {
+		if (tex.is_null()) {
 			return Ref<Texture2D>();
 		}
 
 		Ref<Image> atlas = tex->get_image();
-		if (!atlas.is_valid()) {
+		if (atlas.is_null()) {
 			return Ref<Texture2D>();
+		}
+
+		if (atlas->is_compressed()) {
+			atlas = atlas->duplicate();
+			if (atlas->decompress() != OK) {
+				return Ref<Texture2D>();
+			}
 		}
 
 		if (!tex_atlas->get_region().has_area()) {
@@ -177,9 +182,6 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 	return ImageTexture::create_from_image(img);
 }
 
-EditorTexturePreviewPlugin::EditorTexturePreviewPlugin() {
-}
-
 ////////////////////////////////////////////////////////////////////////////
 
 bool EditorImagePreviewPlugin::handles(const String &p_type) const {
@@ -215,9 +217,6 @@ Ref<Texture2D> EditorImagePreviewPlugin::generate(const Ref<Resource> &p_from, c
 	post_process_preview(img);
 
 	return ImageTexture::create_from_image(img);
-}
-
-EditorImagePreviewPlugin::EditorImagePreviewPlugin() {
 }
 
 bool EditorImagePreviewPlugin::generate_small_preview_automatically() const {
@@ -282,9 +281,6 @@ bool EditorBitmapPreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
 
-EditorBitmapPreviewPlugin::EditorBitmapPreviewPlugin() {
-}
-
 ///////////////////////////////////////////////////////////////////////////
 
 bool EditorPackedScenePreviewPlugin::handles(const String &p_type) const {
@@ -320,9 +316,6 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	}
 }
 
-EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
-}
-
 //////////////////////////////////////////////////////////////////
 
 void EditorMaterialPreviewPlugin::abort() {
@@ -349,7 +342,7 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const Ref<Resource> &p_from
 		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 		RS::get_singleton()->mesh_surface_set_material(sphere, 0, RID());
 
-		ERR_FAIL_COND_V(!img.is_valid(), Ref<ImageTexture>());
+		ERR_FAIL_COND_V(img.is_null(), Ref<ImageTexture>());
 
 		img->convert(Image::FORMAT_RGBA8);
 		int thumbnail_size = MAX(p_size.x, p_size.y);
@@ -644,9 +637,6 @@ Ref<Texture2D> EditorScriptPreviewPlugin::_generate_from_source_code(const Scrip
 	return ImageTexture::create_from_image(img);
 }
 
-EditorScriptPreviewPlugin::EditorScriptPreviewPlugin() {
-}
-
 ///////////////////////////////////////////////////////////////////
 
 bool EditorAudioStreamPreviewPlugin::handles(const String &p_type) const {
@@ -724,9 +714,6 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 
 	Ref<Image> image = Image::create_from_data(w, h, false, Image::FORMAT_RGB8, img);
 	return ImageTexture::create_from_image(image);
-}
-
-EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -946,7 +933,4 @@ Ref<Texture2D> EditorGradientPreviewPlugin::generate(const Ref<Resource> &p_from
 		return ImageTexture::create_from_image(ptex->get_image());
 	}
 	return Ref<Texture2D>();
-}
-
-EditorGradientPreviewPlugin::EditorGradientPreviewPlugin() {
 }

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_TREE_H
-#define SCENE_TREE_H
+#pragma once
 
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
@@ -74,7 +73,7 @@ public:
 	bool is_process_in_physics();
 
 	void set_ignore_time_scale(bool p_ignore);
-	bool is_ignore_time_scale();
+	bool is_ignoring_time_scale();
 
 	void release_connections();
 
@@ -179,6 +178,11 @@ private:
 
 	List<ObjectID> delete_queue;
 
+	uint64_t accessibility_upd_per_sec = 0;
+	bool accessibility_force_update = true;
+	HashSet<ObjectID> accessibility_change_queue;
+	uint64_t accessibility_last_update = 0;
+
 	HashMap<UGCall, Vector<Variant>, UGCall> unique_group_calls;
 	bool ugc_locked = false;
 	void _flush_ugc();
@@ -188,8 +192,8 @@ private:
 	TypedArray<Node> _get_nodes_in_group(const StringName &p_group);
 
 	Node *current_scene = nullptr;
-	Node *prev_scene = nullptr;
-	Node *pending_new_scene = nullptr;
+	ObjectID prev_scene_id;
+	ObjectID pending_new_scene_id;
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
@@ -321,6 +325,13 @@ public:
 
 	void flush_transform_notifications();
 
+	bool is_accessibility_enabled() const;
+	bool is_accessibility_supported() const;
+	void _accessibility_force_update();
+	void _accessibility_notify_change(const Node *p_node, bool p_remove = false);
+	void _flush_accessibility_changes();
+	void _process_accessibility_changes(DisplayServer::WindowID p_window_id);
+
 	virtual void initialize() override;
 
 	virtual void iteration_prepare() override;
@@ -411,6 +422,7 @@ public:
 
 	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
 	Ref<Tween> create_tween();
+	void remove_tween(const Ref<Tween> &p_tween);
 	TypedArray<Tween> get_processed_tweens();
 
 	//used by Main::start, don't use otherwise
@@ -447,5 +459,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(SceneTree::GroupCallFlags);
-
-#endif // SCENE_TREE_H

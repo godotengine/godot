@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_EVENT_H
-#define INPUT_EVENT_H
+#pragma once
 
 #include "core/input/input_enums.h"
 #include "core/io/resource.h"
@@ -62,9 +61,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	inline static constexpr int DEVICE_ID_EMULATION = -1;
-	inline static constexpr int DEVICE_ID_INTERNAL = -2;
-	inline static constexpr int DEVICE_ID_ALL_DEVICES = -3; // Signify that a given Action can be triggered by any device.
+	static const int DEVICE_ID_EMULATION;
+	static const int DEVICE_ID_INTERNAL;
 
 	void set_device(int p_device);
 	int get_device() const;
@@ -596,5 +594,3 @@ public:
 
 	InputEventShortcut();
 };
-
-#endif // INPUT_EVENT_H

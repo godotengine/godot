@@ -30,22 +30,37 @@
 
 #include "resource.h"
 
-#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
-#include "core/object/script_language.h"
+#include "core/math/random_pcg.h"
 #include "core/os/os.h"
 #include "scene/main/node.h" //only so casting works
 
-#include <stdio.h>
-
 void Resource::emit_changed() {
+	if (emit_changed_state != EMIT_CHANGED_UNBLOCKED) {
+		emit_changed_state = EMIT_CHANGED_BLOCKED_PENDING_EMIT;
+		return;
+	}
 	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
 		ResourceLoader::resource_changed_emit(this);
 		return;
 	}
 
 	emit_signal(CoreStringName(changed));
+}
+
+void Resource::_block_emit_changed() {
+	if (emit_changed_state == EMIT_CHANGED_UNBLOCKED) {
+		emit_changed_state = EMIT_CHANGED_BLOCKED;
+	}
+}
+
+void Resource::_unblock_emit_changed() {
+	bool emit = (emit_changed_state == EMIT_CHANGED_BLOCKED_PENDING_EMIT);
+	emit_changed_state = EMIT_CHANGED_UNBLOCKED;
+	if (emit) {
+		emit_changed();
+	}
 }
 
 void Resource::_resource_path_changed() {
@@ -99,7 +114,7 @@ void Resource::set_path_cache(const String &p_path) {
 	GDVIRTUAL_CALL(_set_path_cache, p_path);
 }
 
-static thread_local RandomPCG unique_id_gen(0, RandomPCG::DEFAULT_INC);
+static thread_local RandomPCG unique_id_gen = RandomPCG(0);
 
 void Resource::seed_scene_unique_id(uint32_t p_seed) {
 	unique_id_gen.seed(p_seed);
@@ -209,6 +224,8 @@ Error Resource::copy_from(const Ref<Resource> &p_resource) {
 		return ERR_INVALID_PARAMETER;
 	}
 
+	_block_emit_changed();
+
 	reset_state(); // May want to reset state.
 
 	List<PropertyInfo> pi;
@@ -224,6 +241,9 @@ Error Resource::copy_from(const Ref<Resource> &p_resource) {
 
 		set(E.name, p_resource->get(E.name));
 	}
+
+	_unblock_emit_changed();
+
 	return OK;
 }
 
@@ -235,7 +255,7 @@ void Resource::reload_from_file() {
 
 	Ref<Resource> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 
-	if (!s.is_valid()) {
+	if (s.is_null()) {
 		return;
 	}
 
@@ -252,9 +272,7 @@ void Resource::_dupe_sub_resources(Variant &r_variant, Node *p_for_scene, HashMa
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = r_variant;
-			List<Variant> keys;
-			d.get_key_list(&keys);
-			for (Variant &k : keys) {
+			for (Variant &k : d.get_key_list()) {
 				if (k.get_type() == Variant::OBJECT) {
 					// Replace in dictionary key.
 					Ref<Resource> sr = k;
@@ -326,11 +344,9 @@ void Resource::_find_sub_resources(const Variant &p_variant, HashSet<Ref<Resourc
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = p_variant;
-			List<Variant> keys;
-			d.get_key_list(&keys);
-			for (const Variant &k : keys) {
-				_find_sub_resources(k, p_resources_found);
-				_find_sub_resources(d[k], p_resources_found);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				_find_sub_resources(kv.key, p_resources_found);
+				_find_sub_resources(kv.value, p_resources_found);
 			}
 		} break;
 		case Variant::OBJECT: {
@@ -655,7 +671,7 @@ Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 			ref = Ref<Resource>(*res);
 		}
 
-		if (res && !ref.is_valid()) {
+		if (res && ref.is_null()) {
 			// This resource is in the process of being deleted, ignore its existence
 			(*res)->path_cache = String();
 			resources.erase(p_path);
@@ -674,7 +690,7 @@ void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	for (KeyValue<String, Resource *> &E : resources) {
 		Ref<Resource> ref = Ref<Resource>(E.value);
 
-		if (!ref.is_valid()) {
+		if (ref.is_null()) {
 			// This resource is in the process of being deleted, ignore its existence
 			E.value->path_cache = String();
 			to_remove.push_back(E.key);

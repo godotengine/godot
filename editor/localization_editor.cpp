@@ -32,12 +32,14 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/translation_server.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/pot_generator.h"
 #include "scene/gui/control.h"
+#include "scene/gui/tab_container.h"
 
 void LocalizationEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -399,6 +401,7 @@ void LocalizationEditor::_pot_add_builtin_toggled() {
 }
 
 void LocalizationEditor::_pot_generate(const String &p_file) {
+	EditorSettings::get_singleton()->set_project_metadata("pot_generator", "last_pot_path", p_file);
 	POTGenerator::get_singleton()->generate_pot(p_file);
 }
 
@@ -436,12 +439,12 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 
 	// Check for the Array elements of the values.
 	Array remap_keys = remaps.keys();
-	for (int i = 0; i < remap_keys.size(); i++) {
-		PackedStringArray remapped_files = remaps[remap_keys[i]];
+	for (const Variant &remap_key : remap_keys) {
+		PackedStringArray remapped_files = remaps[remap_key];
 		bool remapped_files_updated = false;
 
 		for (int j = 0; j < remapped_files.size(); j++) {
-			int splitter_pos = remapped_files[j].rfind(":");
+			int splitter_pos = remapped_files[j].rfind_char(':');
 			String res_path = remapped_files[j].substr(0, splitter_pos);
 
 			if (res_path == p_old_file) {
@@ -451,12 +454,12 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 				remapped_files.remove_at(j + 1);
 				remaps_changed = true;
 				remapped_files_updated = true;
-				print_verbose(vformat("Changed remap value \"%s\" to \"%s\" of key \"%s\" due to a moved file.", res_path + ":" + locale_name, remapped_files[j], remap_keys[i]));
+				print_verbose(vformat("Changed remap value \"%s\" to \"%s\" of key \"%s\" due to a moved file.", res_path + ":" + locale_name, remapped_files[j], remap_key));
 			}
 		}
 
 		if (remapped_files_updated) {
-			remaps[remap_keys[i]] = remapped_files;
+			remaps[remap_key] = remapped_files;
 		}
 	}
 
@@ -482,7 +485,7 @@ void LocalizationEditor::_filesystem_file_removed(const String &p_file) {
 		for (int i = 0; i < remap_keys.size() && !remaps_changed; i++) {
 			PackedStringArray remapped_files = remaps[remap_keys[i]];
 			for (int j = 0; j < remapped_files.size() && !remaps_changed; j++) {
-				int splitter_pos = remapped_files[j].rfind(":");
+				int splitter_pos = remapped_files[j].rfind_char(':');
 				String res_path = remapped_files[j].substr(0, splitter_pos);
 				remaps_changed = p_file == res_path;
 				if (remaps_changed) {
@@ -538,11 +541,9 @@ void LocalizationEditor::update_translations() {
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
 		Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
-		List<Variant> rk;
-		remaps.get_key_list(&rk);
 		Vector<String> keys;
-		for (const Variant &E : rk) {
-			keys.push_back(E);
+		for (const KeyValue<Variant, Variant> &kv : remaps) {
+			keys.push_back(kv.key);
 		}
 		keys.sort();
 
@@ -567,9 +568,9 @@ void LocalizationEditor::update_translations() {
 				PackedStringArray selected = remaps[keys[i]];
 				for (int j = 0; j < selected.size(); j++) {
 					const String &s2 = selected[j];
-					int qp = s2.rfind(":");
+					int qp = s2.rfind_char(':');
 					String path = s2.substr(0, qp);
-					String locale = s2.substr(qp + 1, s2.length());
+					String locale = s2.substr(qp + 1);
 
 					TreeItem *t2 = translation_remap_options->create_item(root2);
 					t2->set_editable(0, false);
@@ -762,6 +763,7 @@ LocalizationEditor::LocalizationEditor() {
 
 		pot_generate_dialog = memnew(EditorFileDialog);
 		pot_generate_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+		pot_generate_dialog->set_current_path(EditorSettings::get_singleton()->get_project_metadata("pot_generator", "last_pot_path", String()));
 		pot_generate_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_pot_generate));
 		add_child(pot_generate_dialog);
 

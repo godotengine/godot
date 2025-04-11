@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_LANGUAGE_EXTENSION_H
-#define SCRIPT_LANGUAGE_EXTENSION_H
+#pragma once
 
 #include "core/extension/ext_wrappers.gen.inc"
 #include "core/object/gdvirtual.gen.inc"
@@ -76,9 +75,16 @@ public:
 	EXBIND1(set_source_code, const String &)
 	EXBIND1R(Error, reload, bool)
 
+	GDVIRTUAL0RC_REQUIRED(StringName, _get_doc_class_name)
 	GDVIRTUAL0RC_REQUIRED(TypedArray<Dictionary>, _get_documentation)
 	GDVIRTUAL0RC(String, _get_class_icon_path)
 #ifdef TOOLS_ENABLED
+	virtual StringName get_doc_class_name() const override {
+		StringName ret;
+		GDVIRTUAL_CALL(_get_doc_class_name, ret);
+		return ret;
+	}
+
 	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		TypedArray<Dictionary> doc;
 		GDVIRTUAL_CALL(_get_documentation, doc);
@@ -186,10 +192,8 @@ public:
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override {
 		Dictionary constants;
 		GDVIRTUAL_CALL(_get_constants, constants);
-		List<Variant> keys;
-		constants.get_key_list(&keys);
-		for (const Variant &K : keys) {
-			p_constants->insert(K, constants[K]);
+		for (const KeyValue<Variant, Variant> &kv : constants) {
+			p_constants->insert(kv.key, kv.value);
 		}
 	}
 	GDVIRTUAL0RC_REQUIRED(TypedArray<StringName>, _get_members)
@@ -454,22 +458,31 @@ public:
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_lookup_code, p_code, p_symbol, p_path, p_owner, ret);
-		if (!ret.has("result")) {
-			return ERR_UNAVAILABLE;
-		}
+
+		ERR_FAIL_COND_V(!ret.has("result"), ERR_UNAVAILABLE);
+		const Error result = Error(int(ret["result"]));
 
 		ERR_FAIL_COND_V(!ret.has("type"), ERR_UNAVAILABLE);
 		r_result.type = LookupResultType(int(ret["type"]));
-		ERR_FAIL_COND_V(!ret.has("script"), ERR_UNAVAILABLE);
-		r_result.script = ret["script"];
-		ERR_FAIL_COND_V(!ret.has("class_name"), ERR_UNAVAILABLE);
-		r_result.class_name = ret["class_name"];
-		ERR_FAIL_COND_V(!ret.has("class_path"), ERR_UNAVAILABLE);
-		r_result.class_path = ret["class_path"];
-		ERR_FAIL_COND_V(!ret.has("location"), ERR_UNAVAILABLE);
-		r_result.location = ret["location"];
 
-		Error result = Error(int(ret["result"]));
+		r_result.class_name = ret.get("class_name", "");
+		r_result.class_member = ret.get("class_member", "");
+
+		r_result.description = ret.get("description", "");
+		r_result.is_deprecated = ret.get("is_deprecated", false);
+		r_result.deprecated_message = ret.get("deprecated_message", "");
+		r_result.is_deprecated = ret.get("is_deprecated", false);
+		r_result.experimental_message = ret.get("experimental_message", "");
+
+		r_result.doc_type = ret.get("doc_type", "");
+		r_result.enumeration = ret.get("enumeration", "");
+		r_result.is_bitfield = ret.get("is_bitfield", false);
+
+		r_result.value = ret.get("value", "");
+
+		r_result.script = ret.get("script", Ref<Script>());
+		r_result.script_path = ret.get("script_path", "");
+		r_result.location = ret.get("location", -1);
 
 		return result;
 	}
@@ -500,7 +513,7 @@ public:
 	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_stack_level_locals, p_level, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_locals != nullptr && ret.has("locals")) {
@@ -520,7 +533,7 @@ public:
 	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_stack_level_members, p_level, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_members != nullptr && ret.has("members")) {
@@ -547,7 +560,7 @@ public:
 	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_globals, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_globals != nullptr && ret.has("globals")) {
@@ -656,7 +669,7 @@ public:
 
 	GDVIRTUAL1RC_REQUIRED(Dictionary, _get_global_class_name, const String &)
 
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override {
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_get_global_class_name, p_path, ret);
 		if (!ret.has("name")) {
@@ -667,6 +680,12 @@ public:
 		}
 		if (r_icon_path != nullptr && ret.has("icon_path")) {
 			*r_icon_path = ret["icon_path"];
+		}
+		if (r_is_abstract != nullptr && ret.has("is_abstract")) {
+			*r_is_abstract = ret["is_abstract"];
+		}
+		if (r_is_tool != nullptr && ret.has("is_tool")) {
+			*r_is_tool = ret["is_tool"];
 		}
 		return ret["name"];
 	}
@@ -692,11 +711,7 @@ public:
 
 	GDExtensionScriptInstanceDataPtr instance = nullptr;
 
-// There should not be warnings on explicit casts.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#endif
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wignored-qualifiers") // There should not be warnings on explicit casts.
 
 	virtual bool set(const StringName &p_name, const Variant &p_value) override {
 		if (native_info->set_func) {
@@ -944,9 +959,5 @@ public:
 #endif // DISABLE_DEPRECATED
 	}
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+	GODOT_GCC_WARNING_POP
 };
-
-#endif // SCRIPT_LANGUAGE_EXTENSION_H

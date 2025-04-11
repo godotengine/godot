@@ -28,19 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "display_server_macos.h"
+#import "display_server_macos.h"
 
-#include "godot_button_view.h"
-#include "godot_content_view.h"
-#include "godot_menu_delegate.h"
-#include "godot_menu_item.h"
-#include "godot_open_save_delegate.h"
-#include "godot_status_item.h"
-#include "godot_window.h"
-#include "godot_window_delegate.h"
-#include "key_mapping_macos.h"
-#include "os_macos.h"
-#include "tts_macos.h"
+#import "godot_application_delegate.h"
+#import "godot_button_view.h"
+#import "godot_content_view.h"
+#import "godot_menu_delegate.h"
+#import "godot_menu_item.h"
+#import "godot_open_save_delegate.h"
+#import "godot_status_item.h"
+#import "godot_window.h"
+#import "godot_window_delegate.h"
+#import "key_mapping_macos.h"
+#import "os_macos.h"
+#import "tts_macos.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -50,12 +51,20 @@
 #include "main/main.h"
 #include "scene/resources/image_texture.h"
 
+#include <AppKit/AppKit.h>
+
+#include "servers/rendering/dummy/rasterizer_dummy.h"
+
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#endif
+
+#if defined(ACCESSKIT_ENABLED)
+#include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
 #import <Carbon/Carbon.h>
@@ -66,14 +75,15 @@
 #import <IOKit/hid/IOHIDLib.h>
 
 DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect) {
-	WindowID id;
 	const float scale = screen_get_max_scale();
+
+	WindowID id = window_id_counter;
 	{
-		WindowData wd;
+		WindowData &wd = windows[id];
 
 		wd.window_delegate = [[GodotWindowDelegate alloc] init];
 		ERR_FAIL_NULL_V_MSG(wd.window_delegate, INVALID_WINDOW_ID, "Can't create a window delegate");
-		[wd.window_delegate setWindowID:window_id_counter];
+		[wd.window_delegate setWindowID:id];
 
 		int rq_screen = get_screen_from_rect(p_rect);
 		if (rq_screen < 0) {
@@ -98,12 +108,15 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 							backing:NSBackingStoreBuffered
 							  defer:NO];
 		ERR_FAIL_NULL_V_MSG(wd.window_object, INVALID_WINDOW_ID, "Can't create a window");
-		[wd.window_object setWindowID:window_id_counter];
+		[wd.window_object setWindowID:id];
 		[wd.window_object setReleasedWhenClosed:NO];
 
 		wd.window_view = [[GodotContentView alloc] init];
-		ERR_FAIL_NULL_V_MSG(wd.window_view, INVALID_WINDOW_ID, "Can't create a window view");
-		[wd.window_view setWindowID:window_id_counter];
+		if (wd.window_view == nil) {
+			windows.erase(id);
+			ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Can't create a window view");
+		}
+		[wd.window_view setWindowID:id];
 		[wd.window_view setWantsLayer:TRUE];
 
 		[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
@@ -112,6 +125,16 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		[wd.window_object setAcceptsMouseMovedEvents:YES];
 		[wd.window_object setRestorable:NO];
 		[wd.window_object setColorSpace:[NSColorSpace sRGBColorSpace]];
+
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver && !accessibility_driver->window_create(id, (__bridge void *)wd.window_object)) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+			}
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+#endif
 
 		if ([wd.window_object respondsToSelector:@selector(setTabbingMode:)]) {
 			[wd.window_object setTabbingMode:NSWindowTabbingModeDisallowed];
@@ -154,23 +177,43 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			}
 #endif
 			Error err = rendering_context->window_create(window_id_counter, &wpd);
+#ifdef ACCESSKIT_ENABLED
+			if (err != OK && accessibility_driver) {
+				accessibility_driver->window_destroy(id);
+			}
+#endif
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s context", rendering_driver));
 
 			rendering_context->window_set_size(window_id_counter, p_rect.size.width, p_rect.size.height);
 			rendering_context->window_set_vsync_mode(window_id_counter, p_vsync_mode);
 		}
 #endif
+
 #if defined(GLES3_ENABLED)
+		bool gl_failed = false;
 		if (gl_manager_legacy) {
 			Error err = gl_manager_legacy->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context.");
+			if (err != OK) {
+				gl_failed = true;
+			}
 		}
 		if (gl_manager_angle) {
 			CALayer *layer = [(NSView *)wd.window_view layer];
 			Error err = gl_manager_angle->window_create(window_id_counter, nullptr, (__bridge void *)layer, p_rect.size.width, p_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context.");
+			if (err != OK) {
+				gl_failed = true;
+			}
 		}
-		window_set_vsync_mode(p_vsync_mode, window_id_counter);
+		if (gl_failed) {
+#ifdef ACCESSKIT_ENABLED
+			if (accessibility_driver) {
+				accessibility_driver->window_destroy(id);
+			}
+#endif
+			windows.erase(id);
+			ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Can't create an OpenGL context.");
+		}
+		window_set_vsync_mode(p_vsync_mode, id);
 #endif
 		[wd.window_view updateLayerDelegate];
 
@@ -182,10 +225,8 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		offset.y = (nsrect.origin.y + nsrect.size.height);
 		offset.y -= (windowRect.origin.y + windowRect.size.height);
 		[wd.window_object setFrameTopLeftPoint:NSMakePoint(wpos.x - offset.x, wpos.y - offset.y)];
-
-		id = window_id_counter++;
-		windows[id] = wd;
 	}
+	window_id_counter++;
 
 	WindowData &wd = windows[id];
 	window_set_mode(p_mode, id);
@@ -211,7 +252,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 	return id;
 }
 
-void DisplayServerMacOS::_update_window_style(WindowData p_wd) {
+void DisplayServerMacOS::_update_window_style(WindowData p_wd, WindowID p_window) {
 	bool borderless_full = false;
 
 	if (p_wd.borderless) {
@@ -231,13 +272,28 @@ void DisplayServerMacOS::_update_window_style(WindowData p_wd) {
 		[(NSWindow *)p_wd.window_object setHidesOnDeactivate:YES];
 	} else {
 		// Reset these when our window is not a borderless window that covers up the screen.
-		if (p_wd.on_top && !p_wd.fullscreen) {
+		if (is_always_on_top_recursive(p_window) && !p_wd.fullscreen) {
 			[(NSWindow *)p_wd.window_object setLevel:NSFloatingWindowLevel];
 		} else {
 			[(NSWindow *)p_wd.window_object setLevel:NSNormalWindowLevel];
 		}
 		[(NSWindow *)p_wd.window_object setHidesOnDeactivate:NO];
 	}
+}
+
+bool DisplayServerMacOS::is_always_on_top_recursive(WindowID p_window) const {
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+
+	const WindowData &wd = windows[p_window];
+	if (wd.on_top) {
+		return true;
+	}
+
+	if (wd.transient_parent != INVALID_WINDOW_ID) {
+		return is_always_on_top_recursive(wd.transient_parent);
+	}
+
+	return false;
 }
 
 void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window) {
@@ -248,9 +304,15 @@ void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enable
 		return;
 	}
 	if (p_enabled) {
-		[wd.window_object setBackgroundColor:[NSColor clearColor]];
 		[wd.window_object setOpaque:NO];
-		[wd.window_object setHasShadow:NO];
+		if (wd.borderless) {
+			[wd.window_object setBackgroundColor:[NSColor clearColor]];
+			[wd.window_object setHasShadow:NO];
+		} else {
+			// Note: transparent and not borderless - set alpha to non-zero value to ensure window shadow is rendered correctly.
+			[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.004f]];
+			[wd.window_object setHasShadow:YES];
+		}
 		CALayer *layer = [(NSView *)wd.window_view layer];
 		if (layer) {
 			[layer setBackgroundColor:[NSColor clearColor].CGColor];
@@ -269,7 +331,9 @@ void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enable
 		}
 		[wd.window_object setBackgroundColor:bg_color];
 		[wd.window_object setOpaque:YES];
-		[wd.window_object setHasShadow:YES];
+		if (!wd.borderless) {
+			[wd.window_object setHasShadow:YES];
+		}
 		CALayer *layer = [(NSView *)wd.window_view layer];
 		if (layer) {
 			[layer setBackgroundColor:bg_color.CGColor];
@@ -283,7 +347,7 @@ void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enable
 	}
 }
 
-void DisplayServerMacOS::_update_displays_arrangement() {
+void DisplayServerMacOS::_update_displays_arrangement() const {
 	origin = Point2i();
 
 	for (int i = 0; i < get_screen_count(); i++) {
@@ -309,7 +373,7 @@ Point2i DisplayServerMacOS::_get_screens_origin() const {
 	// to convert between macOS native screen coordinates and the ones expected by Godot.
 
 	if (displays_arrangement_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_displays_arrangement();
+		_update_displays_arrangement();
 	}
 
 	return origin;
@@ -394,12 +458,16 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else {
-			// Send to all windows.
+			// Send to all windows. Copy all pending callbacks, since callback can erase window.
+			Vector<Callable> cbs;
 			for (KeyValue<WindowID, WindowData> &E : windows) {
 				Callable callable = E.value.input_event_callback;
 				if (callable.is_valid()) {
-					callable.call(p_event);
+					cbs.push_back(callable);
 				}
+			}
+			for (const Callable &cb : cbs) {
+				cb.call(p_event);
 			}
 		}
 		in_dispatch_input_event = false;
@@ -470,7 +538,7 @@ void DisplayServerMacOS::_process_key_events() {
 	key_event_pos = 0;
 }
 
-void DisplayServerMacOS::_update_keyboard_layouts() {
+void DisplayServerMacOS::_update_keyboard_layouts() const {
 	kbd_layouts.clear();
 	current_layout = 0;
 
@@ -484,10 +552,10 @@ void DisplayServerMacOS::_update_keyboard_layouts() {
 	for (NSUInteger i = 0; i < [list_ime count]; i++) {
 		LayoutInfo ly;
 		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
-		ly.name.parse_utf8([name UTF8String]);
+		ly.name.append_utf8([name UTF8String]);
 
 		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyInputSourceLanguages);
-		ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		ly.code.append_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
 		kbd_layouts.push_back(ly);
 
 		if ([name isEqualToString:cur_name]) {
@@ -501,10 +569,10 @@ void DisplayServerMacOS::_update_keyboard_layouts() {
 	for (NSUInteger i = 0; i < [list_kbd count]; i++) {
 		LayoutInfo ly;
 		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
-		ly.name.parse_utf8([name UTF8String]);
+		ly.name.append_utf8([name UTF8String]);
 
 		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyInputSourceLanguages);
-		ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		ly.code.append_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
 		kbd_layouts.push_back(ly);
 
 		if ([name isEqualToString:cur_name]) {
@@ -652,6 +720,38 @@ void DisplayServerMacOS::release_pressed_events() {
 	}
 }
 
+void DisplayServerMacOS::sync_mouse_state() {
+	_THREAD_SAFE_METHOD_
+	if (Input::get_singleton()) {
+		Vector2i pos = Input::get_singleton()->get_mouse_position();
+		BitField<MouseButtonMask> in_mask = Input::get_singleton()->get_mouse_button_mask();
+		BitField<MouseButtonMask> ds_mask = mouse_get_button_state();
+		for (int btn = (int)MouseButton::LEFT; btn <= (int)MouseButton::MB_XBUTTON2; btn++) {
+			MouseButtonMask mbm = mouse_button_to_mask(MouseButton(btn));
+			if (in_mask.has_flag(mbm) && !ds_mask.has_flag(mbm)) {
+				Ref<InputEventMouseButton> mb;
+				mb.instantiate();
+				mb->set_button_index(MouseButton(btn));
+				mb->set_pressed(false);
+				mb->set_position(pos);
+				mb->set_global_position(pos);
+				mb->set_button_mask(ds_mask);
+				Input::get_singleton()->parse_input_event(mb);
+			}
+			if (!in_mask.has_flag(mbm) && ds_mask.has_flag(mbm)) {
+				Ref<InputEventMouseButton> mb;
+				mb.instantiate();
+				mb->set_button_index(MouseButton(btn));
+				mb->set_pressed(true);
+				mb->set_position(pos);
+				mb->set_global_position(pos);
+				mb->set_button_mask(ds_mask);
+				Input::get_singleton()->parse_input_event(mb);
+			}
+		}
+	}
+}
+
 void DisplayServerMacOS::get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const {
 	r_state->set_shift_pressed((p_macos_state & NSEventModifierFlagShift));
 	r_state->set_ctrl_pressed((p_macos_state & NSEventModifierFlagControl));
@@ -701,6 +801,8 @@ bool DisplayServerMacOS::get_is_resizing() const {
 }
 
 void DisplayServerMacOS::window_destroy(WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+
 #if defined(GLES3_ENABLED)
 	if (gl_manager_legacy) {
 		gl_manager_legacy->window_destroy(p_window);
@@ -715,7 +817,16 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 		rendering_context->window_destroy(p_window);
 	}
 #endif
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		accessibility_driver->window_destroy(p_window);
+	}
+#endif
 	windows.erase(p_window);
+
+	if (last_focused_window == p_window) {
+		last_focused_window = INVALID_WINDOW_ID;
+	}
 	update_presentation_mode();
 }
 
@@ -753,6 +864,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_DIALOG_INPUT:
 		case FEATURE_NATIVE_DIALOG_FILE:
 		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		case FEATURE_IME:
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_HIDPI:
@@ -765,7 +877,15 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_NATIVE_HELP:
+		case FEATURE_WINDOW_DRAG:
+		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
+		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 			return true;
+#ifdef ACCESSKIT_ENABLED
+		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return (accessibility_driver != nullptr);
+		} break;
+#endif
 		default: {
 		}
 	}
@@ -789,38 +909,63 @@ Callable DisplayServerMacOS::_help_get_action_callback() const {
 	return help_action_callback;
 }
 
+void DisplayServerMacOS::initialize_tts() const {
+	const_cast<DisplayServerMacOS *>(this)->tts = [[TTS_MacOS alloc] init];
+}
+
 bool DisplayServerMacOS::tts_is_speaking() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return [tts isSpeaking];
 }
 
 bool DisplayServerMacOS::tts_is_paused() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return [tts isPaused];
 }
 
 TypedArray<Dictionary> DisplayServerMacOS::tts_get_voices() const {
-	ERR_FAIL_NULL_V_MSG(tts, Array(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, TypedArray<Dictionary>());
 	return [tts getVoices];
 }
 
 void DisplayServerMacOS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
 }
 
 void DisplayServerMacOS::tts_pause() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts pauseSpeaking];
 }
 
 void DisplayServerMacOS::tts_resume() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts resumeSpeaking];
 }
 
 void DisplayServerMacOS::tts_stop() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts stopSpeaking];
 }
 
@@ -874,7 +1019,7 @@ Color DisplayServerMacOS::get_base_color() const {
 		__block NSColor *color = nullptr;
 		if (@available(macOS 11.0, *)) {
 			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
-				color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+				color = [[NSColor windowBackgroundColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
 			}];
 		} else {
 			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
@@ -950,21 +1095,25 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 	return OK;
 }
 
-Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
-	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false, p_window_id);
 }
 
-Error DisplayServerMacOS::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
-	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true);
+Error DisplayServerMacOS::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true, p_window_id);
 }
 
-Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
+Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX_V(int(p_mode), FILE_DIALOG_MODE_SAVE_MAX, FAILED);
 
 	NSString *url = [NSString stringWithUTF8String:p_current_directory.utf8().get_data()];
-	WindowID prev_focus = last_focused_window;
+
+	NSWindow *nswindow = nullptr;
+	if (windows.has(p_window_id) && !windows[p_window_id].is_popup) {
+		nswindow = windows[p_window_id].window_object;
+	}
 
 	GodotOpenSaveDelegate *panel_delegate = [[GodotOpenSaveDelegate alloc] init];
 	if (p_root.length() > 0) {
@@ -986,98 +1135,102 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 			[panel setNameFieldStringValue:fileurl];
 		}
 
-		[panel beginSheetModalForWindow:[[NSApplication sharedApplication] mainWindow]
-					  completionHandler:^(NSInteger ret) {
-						  if (ret == NSModalResponseOK) {
-							  // Save bookmark for folder.
-							  if (OS::get_singleton()->is_sandboxed()) {
-								  NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
-								  bool skip = false;
-								  for (id bookmark in bookmarks) {
-									  NSError *error = nil;
-									  BOOL isStale = NO;
-									  NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
-									  if (!error && !isStale && ([[exurl path] compare:[[panel directoryURL] path]] == NSOrderedSame)) {
-										  skip = true;
-										  break;
-									  }
-								  }
-								  if (!skip) {
-									  NSError *error = nil;
-									  NSData *bookmark = [[panel directoryURL] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
-									  if (!error) {
-										  NSArray *new_bookmarks = [bookmarks arrayByAddingObject:bookmark];
-										  [[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
-									  }
-								  }
-							  }
-							  // Callback.
-							  Vector<String> files;
-							  String url;
-							  url.parse_utf8([[[panel URL] path] UTF8String]);
-							  files.push_back(url);
-							  if (callback.is_valid()) {
-								  if (p_options_in_cb) {
-									  Variant v_result = true;
-									  Variant v_files = files;
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant v_opt = [panel_delegate getSelection];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
+		void (^completion_handler)(NSInteger ret) = ^(NSInteger ret) {
+			if (ret == NSModalResponseOK) {
+				// Save bookmark for folder.
+				if (OS::get_singleton()->is_sandboxed()) {
+					NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+					bool skip = false;
+					for (id bookmark in bookmarks) {
+						NSError *error = nil;
+						BOOL isStale = NO;
+						NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+						if (!error && !isStale && ([[exurl path] compare:[[panel directoryURL] path]] == NSOrderedSame)) {
+							skip = true;
+							break;
+						}
+					}
+					if (!skip) {
+						NSError *error = nil;
+						NSData *bookmark = [[panel directoryURL] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
+						if (!error) {
+							NSArray *new_bookmarks = [bookmarks arrayByAddingObject:bookmark];
+							[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+						}
+					}
+				}
+				// Callback.
+				Vector<String> files;
+				String url;
+				url.append_utf8([[[panel URL] path] UTF8String]);
+				files.push_back(url);
+				if (callback.is_valid()) {
+					if (p_options_in_cb) {
+						Variant v_result = true;
+						Variant v_files = files;
+						Variant v_index = [panel_delegate getIndex];
+						Variant v_opt = [panel_delegate getSelection];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-									  callback.callp(args, 4, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
-									  }
-								  } else {
-									  Variant v_result = true;
-									  Variant v_files = files;
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+						callback.callp(args, 4, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+						}
+					} else {
+						Variant v_result = true;
+						Variant v_files = files;
+						Variant v_index = [panel_delegate getIndex];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[3] = { &v_result, &v_files, &v_index };
 
-									  callback.callp(args, 3, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
-									  }
-								  }
-							  }
-						  } else {
-							  if (callback.is_valid()) {
-								  if (p_options_in_cb) {
-									  Variant v_result = false;
-									  Variant v_files = Vector<String>();
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant v_opt = [panel_delegate getSelection];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
+						callback.callp(args, 3, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+						}
+					}
+				}
+			} else {
+				if (callback.is_valid()) {
+					if (p_options_in_cb) {
+						Variant v_result = false;
+						Variant v_files = Vector<String>();
+						Variant v_index = [panel_delegate getIndex];
+						Variant v_opt = [panel_delegate getSelection];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-									  callback.callp(args, 4, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
-									  }
-								  } else {
-									  Variant v_result = false;
-									  Variant v_files = Vector<String>();
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+						callback.callp(args, 4, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+						}
+					} else {
+						Variant v_result = false;
+						Variant v_files = Vector<String>();
+						Variant v_index = [panel_delegate getIndex];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[3] = { &v_result, &v_files, &v_index };
 
-									  callback.callp(args, 3, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
-									  }
-								  }
-							  }
-						  }
-						  if (prev_focus != INVALID_WINDOW_ID) {
-							  callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
-						  }
-					  }];
+						callback.callp(args, 3, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+						}
+					}
+				}
+			}
+			if (p_window_id != INVALID_WINDOW_ID) {
+				callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(p_window_id);
+			}
+		};
+		if (nswindow) {
+			[panel beginSheetModalForWindow:nswindow completionHandler:completion_handler];
+		} else {
+			[panel beginWithCompletionHandler:completion_handler];
+		}
 	} else {
 		NSOpenPanel *panel = [NSOpenPanel openPanel];
 
@@ -1096,107 +1249,115 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 		}
 		[panel setAllowsMultipleSelection:(p_mode == FILE_DIALOG_MODE_OPEN_FILES)];
 
-		[panel beginSheetModalForWindow:[[NSApplication sharedApplication] mainWindow]
-					  completionHandler:^(NSInteger ret) {
-						  if (ret == NSModalResponseOK) {
-							  // Save bookmark for folder.
-							  NSArray *urls = [(NSOpenPanel *)panel URLs];
-							  if (OS::get_singleton()->is_sandboxed()) {
-								  NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
-								  NSMutableArray *new_bookmarks = [bookmarks mutableCopy];
-								  for (NSUInteger i = 0; i != [urls count]; ++i) {
-									  bool skip = false;
-									  for (id bookmark in bookmarks) {
-										  NSError *error = nil;
-										  BOOL isStale = NO;
-										  NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
-										  if (!error && !isStale && ([[exurl path] compare:[[urls objectAtIndex:i] path]] == NSOrderedSame)) {
-											  skip = true;
-											  break;
-										  }
-									  }
-									  if (!skip) {
-										  NSError *error = nil;
-										  NSData *bookmark = [[urls objectAtIndex:i] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
-										  if (!error) {
-											  [new_bookmarks addObject:bookmark];
-										  }
-									  }
-								  }
-								  [[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
-							  }
-							  // Callback.
-							  Vector<String> files;
-							  for (NSUInteger i = 0; i != [urls count]; ++i) {
-								  String url;
-								  url.parse_utf8([[[urls objectAtIndex:i] path] UTF8String]);
-								  files.push_back(url);
-							  }
-							  if (callback.is_valid()) {
-								  if (p_options_in_cb) {
-									  Variant v_result = true;
-									  Variant v_files = files;
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant v_opt = [panel_delegate getSelection];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
+		void (^completion_handler)(NSInteger ret) = ^(NSInteger ret) {
+			if (ret == NSModalResponseOK) {
+				// Save bookmark for folder.
+				NSArray *urls = [(NSOpenPanel *)panel URLs];
+				if (OS::get_singleton()->is_sandboxed()) {
+					NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+					NSMutableArray *new_bookmarks = [bookmarks mutableCopy];
+					for (NSUInteger i = 0; i != [urls count]; ++i) {
+						bool skip = false;
+						for (id bookmark in bookmarks) {
+							NSError *error = nil;
+							BOOL isStale = NO;
+							NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+							if (!error && !isStale && ([[exurl path] compare:[[urls objectAtIndex:i] path]] == NSOrderedSame)) {
+								skip = true;
+								break;
+							}
+						}
+						if (!skip) {
+							NSError *error = nil;
+							NSData *bookmark = [[urls objectAtIndex:i] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
+							if (!error) {
+								[new_bookmarks addObject:bookmark];
+							}
+						}
+					}
+					[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+				}
+				// Callback.
+				Vector<String> files;
+				for (NSUInteger i = 0; i != [urls count]; ++i) {
+					String url;
+					url.append_utf8([[[urls objectAtIndex:i] path] UTF8String]);
+					files.push_back(url);
+				}
+				if (callback.is_valid()) {
+					if (p_options_in_cb) {
+						Variant v_result = true;
+						Variant v_files = files;
+						Variant v_index = [panel_delegate getIndex];
+						Variant v_opt = [panel_delegate getSelection];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-									  callback.callp(args, 4, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
-									  }
-								  } else {
-									  Variant v_result = true;
-									  Variant v_files = files;
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+						callback.callp(args, 4, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+						}
+					} else {
+						Variant v_result = true;
+						Variant v_files = files;
+						Variant v_index = [panel_delegate getIndex];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[3] = { &v_result, &v_files, &v_index };
 
-									  callback.callp(args, 3, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
-									  }
-								  }
-							  }
-						  } else {
-							  if (callback.is_valid()) {
-								  if (p_options_in_cb) {
-									  Variant v_result = false;
-									  Variant v_files = Vector<String>();
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant v_opt = [panel_delegate getSelection];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
+						callback.callp(args, 3, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+						}
+					}
+				}
+			} else {
+				if (callback.is_valid()) {
+					if (p_options_in_cb) {
+						Variant v_result = false;
+						Variant v_files = Vector<String>();
+						Variant v_index = [panel_delegate getIndex];
+						Variant v_opt = [panel_delegate getSelection];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-									  callback.callp(args, 4, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
-									  }
-								  } else {
-									  Variant v_result = false;
-									  Variant v_files = Vector<String>();
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+						callback.callp(args, 4, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+						}
+					} else {
+						Variant v_result = false;
+						Variant v_files = Vector<String>();
+						Variant v_index = [panel_delegate getIndex];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[3] = { &v_result, &v_files, &v_index };
 
-									  callback.callp(args, 3, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
-									  }
-								  }
-							  }
-						  }
-						  if (prev_focus != INVALID_WINDOW_ID) {
-							  callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
-						  }
-					  }];
+						callback.callp(args, 3, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+						}
+					}
+				}
+			}
+			if (p_window_id != INVALID_WINDOW_ID) {
+				callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(p_window_id);
+			}
+		};
+		if (nswindow) {
+			[panel beginSheetModalForWindow:nswindow completionHandler:completion_handler];
+		} else {
+			[panel beginWithCompletionHandler:completion_handler];
+		}
 	}
 
 	return OK;
+}
+
+void DisplayServerMacOS::beep() const {
+	NSBeep();
 }
 
 Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
@@ -1218,7 +1379,7 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	[window runModal];
 
 	String ret;
-	ret.parse_utf8([[input stringValue] UTF8String]);
+	ret.append_utf8([[input stringValue] UTF8String]);
 
 	if (p_callback.is_valid()) {
 		Variant v_result = ret;
@@ -1235,10 +1396,14 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	return OK;
 }
 
-void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
+void DisplayServerMacOS::_mouse_update_mode() {
 	_THREAD_SAFE_METHOD_
 
-	if (p_mode == mouse_mode) {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	if (wanted_mouse_mode == mouse_mode) {
 		return;
 	}
 
@@ -1248,7 +1413,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 	}
 	WindowData &wd = windows[window_id];
 
-	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool show_cursor = (wanted_mouse_mode == MOUSE_MODE_VISIBLE || wanted_mouse_mode == MOUSE_MODE_CONFINED);
 	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
 
 	if (show_cursor && !previously_shown) {
@@ -1256,7 +1421,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		mouse_enter_window(window_id);
 	}
 
-	if (p_mode == MOUSE_MODE_CAPTURED) {
+	if (wanted_mouse_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
 		// https://developer.apple.com/library/mac/documentation/graphicsimaging/reference/Quartz_Services_Ref/Reference/reference.html
@@ -1270,17 +1435,17 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 		CGWarpMouseCursorPosition(lMouseWarpPos);
-	} else if (p_mode == MOUSE_MODE_HIDDEN) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:YES];
 		CGAssociateMouseAndMouseCursorPosition(true);
-	} else if (p_mode == MOUSE_MODE_CONFINED) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_CONFINED) {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		[wd.window_object setMovable:NO];
 		CGAssociateMouseAndMouseCursorPosition(false);
-	} else if (p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
@@ -1295,15 +1460,49 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 	last_warp = [[NSProcessInfo processInfo] systemUptime];
 	ignore_warp = true;
 	warp_events.clear();
-	mouse_mode = p_mode;
+	mouse_mode = wanted_mouse_mode;
 
 	if (show_cursor) {
 		cursor_update_shape();
 	}
 }
 
+void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
+}
+
 DisplayServer::MouseMode DisplayServerMacOS::mouse_get_mode() const {
 	return mouse_mode;
+}
+
+void DisplayServerMacOS::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerMacOS::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerMacOS::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerMacOS::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 bool DisplayServerMacOS::update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp) {
@@ -1464,7 +1663,7 @@ String DisplayServerMacOS::clipboard_get() const {
 	NSString *string = [objectsToPaste objectAtIndex:0];
 
 	String ret;
-	ret.parse_utf8([string UTF8String]);
+	ret.append_utf8([string UTF8String]);
 	return ret;
 }
 
@@ -1604,35 +1803,41 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 }
 
 Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
-	Point2i position = p_position;
-	// macOS native y-coordinate relative to _get_screens_origin() is negative,
-	// Godot passes a positive value.
-	position.y *= -1;
-	position += _get_screens_origin();
+	HashSet<CGWindowID> exclude_windows;
+	for (HashMap<WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
+		if (E->value.hide_from_capture) {
+			exclude_windows.insert([E->value.window_object windowNumber]);
+		}
+	}
+
+	CFArrayRef on_screen_windows = CGWindowListCreate(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
+	CFMutableArrayRef capture_windows = CFArrayCreateMutableCopy(nullptr, 0, on_screen_windows);
+	for (long i = CFArrayGetCount(on_screen_windows) - 1; i >= 0; i--) {
+		CGWindowID window = (CGWindowID)(uintptr_t)CFArrayGetValueAtIndex(capture_windows, i);
+		if (exclude_windows.has(window)) {
+			CFArrayRemoveValueAtIndex(capture_windows, i);
+		}
+	}
+
+	Point2i position = p_position - Vector2i(1, 1);
+	position -= screen_get_position(0); // Note: coordinates where the screen origin is in the upper-left corner of the main display and y-axis values increase downward.
 	position /= screen_get_max_scale();
 
 	Color color;
-	for (NSScreen *screen in [NSScreen screens]) {
-		NSRect frame = [screen frame];
-		if (NSMouseInRect(NSMakePoint(position.x, position.y), frame, NO)) {
-			NSDictionary *screenDescription = [screen deviceDescription];
-			CGDirectDisplayID display_id = [[screenDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
-			CGImageRef image = CGDisplayCreateImageForRect(display_id, CGRectMake(position.x - frame.origin.x, frame.size.height - (position.y - frame.origin.y), 1, 1));
-			if (image) {
-				CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
-				if (color_space) {
-					uint8_t img_data[4];
-					CGContextRef context = CGBitmapContextCreate(img_data, 1, 1, 8, 4, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-					if (context) {
-						CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), image);
-						color = Color(img_data[0] / 255.0f, img_data[1] / 255.0f, img_data[2] / 255.0f, img_data[3] / 255.0f);
-						CGContextRelease(context);
-					}
-					CGColorSpaceRelease(color_space);
-				}
-				CGImageRelease(image);
+	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, 1, 1), capture_windows, kCGWindowListOptionAll);
+	if (image) {
+		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+		if (color_space) {
+			uint8_t img_data[4];
+			CGContextRef context = CGBitmapContextCreate(img_data, 1, 1, 8, 4, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			if (context) {
+				CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), image);
+				color = Color(img_data[0] / 255.0f, img_data[1] / 255.0f, img_data[2] / 255.0f, img_data[3] / 255.0f);
+				CGContextRelease(context);
 			}
+			CGColorSpaceRelease(color_space);
 		}
+		CGImageRelease(image);
 	}
 	return color;
 }
@@ -1640,42 +1845,97 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 Ref<Image> DisplayServerMacOS::screen_get_image(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
+	HashSet<CGWindowID> exclude_windows;
+	for (HashMap<WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
+		if (E->value.hide_from_capture) {
+			exclude_windows.insert([E->value.window_object windowNumber]);
+		}
 	}
 
-	Ref<Image> img;
-	NSArray *screenArray = [NSScreen screens];
-	if ((NSUInteger)p_screen < [screenArray count]) {
-		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
-		NSDictionary *screenDescription = [[screenArray objectAtIndex:p_screen] deviceDescription];
-		CGDirectDisplayID display_id = [[screenDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
-		CGImageRef image = CGDisplayCreateImageForRect(display_id, CGRectMake(0, 0, nsrect.size.width, nsrect.size.height));
-		if (image) {
-			CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
-			if (color_space) {
-				NSUInteger width = CGImageGetWidth(image);
-				NSUInteger height = CGImageGetHeight(image);
-
-				Vector<uint8_t> img_data;
-				img_data.resize(height * width * 4);
-				CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-				if (context) {
-					CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
-					img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
-					CGContextRelease(context);
-				}
-				CGColorSpaceRelease(color_space);
-			}
-			CGImageRelease(image);
+	CFArrayRef on_screen_windows = CGWindowListCreate(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
+	CFMutableArrayRef capture_windows = CFArrayCreateMutableCopy(nullptr, 0, on_screen_windows);
+	for (long i = CFArrayGetCount(on_screen_windows) - 1; i >= 0; i--) {
+		CGWindowID window = (CGWindowID)(uintptr_t)CFArrayGetValueAtIndex(capture_windows, i);
+		if (exclude_windows.has(window)) {
+			CFArrayRemoveValueAtIndex(capture_windows, i);
 		}
+	}
+
+	Point2i position = screen_get_position(p_screen);
+	position -= screen_get_position(0); // Note: coordinates where the screen origin is in the upper-left corner of the main display and y-axis values increase downward.
+	position /= screen_get_max_scale();
+
+	Size2i size = screen_get_size(p_screen);
+	size /= screen_get_max_scale();
+
+	Ref<Image> img;
+	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, size.width, size.height), capture_windows, kCGWindowListOptionAll);
+	if (image) {
+		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+		if (color_space) {
+			NSUInteger width = CGImageGetWidth(image);
+			NSUInteger height = CGImageGetHeight(image);
+
+			Vector<uint8_t> img_data;
+			img_data.resize(height * width * 4);
+			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			if (context) {
+				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+				CGContextRelease(context);
+				img->resize(screen_get_size(p_screen).x, screen_get_size(p_screen).y, Image::INTERPOLATE_NEAREST);
+			}
+			CGColorSpaceRelease(color_space);
+		}
+		CGImageRelease(image);
+	}
+	return img;
+}
+
+Ref<Image> DisplayServerMacOS::screen_get_image_rect(const Rect2i &p_rect) const {
+	HashSet<CGWindowID> exclude_windows;
+	for (HashMap<WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
+		if (E->value.hide_from_capture) {
+			exclude_windows.insert([E->value.window_object windowNumber]);
+		}
+	}
+
+	CFArrayRef on_screen_windows = CGWindowListCreate(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
+	CFMutableArrayRef capture_windows = CFArrayCreateMutableCopy(nullptr, 0, on_screen_windows);
+	for (long i = CFArrayGetCount(on_screen_windows) - 1; i >= 0; i--) {
+		CGWindowID window = (CGWindowID)(uintptr_t)CFArrayGetValueAtIndex(capture_windows, i);
+		if (exclude_windows.has(window)) {
+			CFArrayRemoveValueAtIndex(capture_windows, i);
+		}
+	}
+
+	Point2i position = p_rect.position;
+	position -= screen_get_position(0); // Note: coordinates where the screen origin is in the upper-left corner of the main display and y-axis values increase downward.
+	position /= screen_get_max_scale();
+
+	Size2i size = p_rect.size;
+	size /= screen_get_max_scale();
+
+	Ref<Image> img;
+	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, size.width, size.height), capture_windows, kCGWindowListOptionAll);
+	if (image) {
+		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+		if (color_space) {
+			NSUInteger width = CGImageGetWidth(image);
+			NSUInteger height = CGImageGetHeight(image);
+
+			Vector<uint8_t> img_data;
+			img_data.resize_zeroed(height * width * 4);
+			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			if (context) {
+				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+				CGContextRelease(context);
+				img->resize(p_rect.size.x, p_rect.size.y, Image::INTERPOLATE_NEAREST);
+			}
+			CGColorSpaceRelease(color_space);
+		}
+		CGImageRelease(image);
 	}
 	return img;
 }
@@ -1749,6 +2009,11 @@ DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode,
 void DisplayServerMacOS::show_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
+	if (p_id == MAIN_WINDOW_ID) {
+		[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+		static_cast<OS_MacOS *>(OS::get_singleton())->activate();
+	}
+
 	popup_open(p_id);
 	if ([wd.window_object isMiniaturized]) {
 		return;
@@ -1769,6 +2034,8 @@ void DisplayServerMacOS::delete_sub_window(WindowID p_id) {
 
 	[wd.window_object setContentView:nil];
 	[wd.window_object close];
+
+	mouse_enter_window(get_window_at_screen_position(mouse_get_position()));
 }
 
 void DisplayServerMacOS::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
@@ -2044,7 +2311,7 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 
 	[wd.window_object setFrameTopLeftPoint:NSMakePoint(position.x - offset.x, position.y - offset.y)];
 
-	_update_window_style(wd);
+	_update_window_style(wd, p_window);
 	update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 }
 
@@ -2182,7 +2449,7 @@ void DisplayServerMacOS::window_set_size(const Size2i p_size, WindowID p_window)
 
 	[wd.window_object setFrame:new_frame display:YES];
 
-	_update_window_style(wd);
+	_update_window_style(wd, p_window);
 }
 
 Size2i DisplayServerMacOS::window_get_size(WindowID p_window) const {
@@ -2238,6 +2505,10 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			if (wd.resize_disabled) { // Restore resize disabled.
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
 			}
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!wd.no_max_btn];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
 			if (wd.min_size != Size2i()) {
 				Size2i size = wd.min_size / screen_get_max_scale();
 				[wd.window_object setContentMinSize:NSMakeSize(size.x, size.y)];
@@ -2323,7 +2594,10 @@ DisplayServer::WindowMode DisplayServerMacOS::window_get_mode(WindowID p_window)
 }
 
 bool DisplayServerMacOS::window_is_maximize_allowed(WindowID p_window) const {
-	return true;
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
+
+	return [wd.window_object standardWindowButton:NSWindowZoomButton].enabled;
 }
 
 bool DisplayServerMacOS::window_maximize_on_title_dbl_click() const {
@@ -2340,6 +2614,26 @@ bool DisplayServerMacOS::window_minimize_on_title_dbl_click() const {
 		return [value isEqualToString:@"Minimize"];
 	}
 	return false;
+}
+
+void DisplayServerMacOS::window_start_drag(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	NSEvent *event = [NSEvent mouseEventWithType:NSEventTypeLeftMouseDown location:((NSWindow *)wd.window_object).mouseLocationOutsideOfEventStream modifierFlags:0 timestamp:[[NSProcessInfo processInfo] systemUptime] windowNumber:((NSWindow *)wd.window_object).windowNumber context:nil eventNumber:0 clickCount:1 pressure:1.0f];
+	[wd.window_object performWindowDragWithEvent:event];
+}
+
+void DisplayServerMacOS::window_start_resize(WindowResizeEdge p_edge, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX(int(p_edge), WINDOW_EDGE_MAX);
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	wd.edge = p_edge;
 }
 
 void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window) {
@@ -2396,11 +2690,14 @@ void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool
 		p_wd.window_button_view = [[GodotButtonView alloc] initWithFrame:NSZeroRect];
 		[p_wd.window_button_view initButtons:window_buttons_spacing offset:NSMakePoint(p_wd.wb_offset.x, p_wd.wb_offset.y) rtl:is_rtl];
 		[p_wd.window_view addSubview:p_wd.window_button_view];
+
+		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
+		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
 	} else {
 		[p_wd.window_object setTitleVisibility:NSWindowTitleVisible];
 		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:NO];
-		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:NO];
-		[[p_wd.window_object standardWindowButton:NSWindowCloseButton] setHidden:NO];
+		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
+		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
 	}
 }
 
@@ -2411,6 +2708,18 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 	WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			wd.no_min_btn = p_enabled;
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!p_enabled];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+		} break;
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			wd.no_max_btn = p_enabled;
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!p_enabled];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			wd.resize_disabled = p_enabled;
 			if (wd.fullscreen) { // Fullscreen window should be resizable, style will be applied on exiting fullscreen.
@@ -2418,11 +2727,13 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			}
 			if (p_enabled) {
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
-				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:NO];
 			} else {
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskResizable];
-				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:YES];
 			}
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!wd.no_max_btn];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
 		} break;
 		case WINDOW_FLAG_EXTEND_TO_TITLE: {
 			NSRect rect = [wd.window_object frame];
@@ -2458,18 +2769,25 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			wd.borderless = p_enabled;
 			if (p_enabled) {
 				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
-			} else {
+				[wd.window_object setHasShadow:NO];
 				if (wd.layered_window) {
-					wd.layered_window = false;
-					set_window_per_pixel_transparency_enabled(false, p_window);
+					[wd.window_object setBackgroundColor:[NSColor clearColor]];
 				}
+			} else {
 				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+				[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
+				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!wd.no_max_btn];
+				[wd.window_object setHasShadow:YES];
+				if (wd.layered_window) {
+					// Note: transparent and not borderless - set alpha to non-zero value to ensure window shadow is rendered correctly.
+					[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.004f]];
+				}
 				// Force update of the window styles.
 				NSRect frameRect = [wd.window_object frame];
 				[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
 				[wd.window_object setFrame:frameRect display:NO];
 			}
-			_update_window_style(wd);
+			_update_window_style(wd, p_window);
 			if (was_visible || [wd.window_object isVisible]) {
 				if ([wd.window_object isMiniaturized]) {
 					return;
@@ -2495,11 +2813,6 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			if (wd.fullscreen) {
 				return;
 			}
-			if (p_enabled) {
-				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless]; // Force borderless.
-			} else if (!wd.borderless) {
-				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
-			}
 			wd.layered_window = p_enabled;
 			set_window_per_pixel_transparency_enabled(p_enabled, p_window);
 			// Force update of the window styles.
@@ -2512,6 +2825,14 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 
 			NSWindow *w = wd.window_object;
 			w.excludedFromWindowsMenu = wd.is_popup || wd.no_focus;
+		} break;
+		case WINDOW_FLAG_EXCLUDE_FROM_CAPTURE: {
+			if (p_enabled) {
+				[wd.window_object setSharingType:NSWindowSharingNone];
+			} else {
+				[wd.window_object setSharingType:NSWindowSharingReadWrite];
+			}
+			wd.hide_from_capture = p_enabled;
 		} break;
 		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
 			wd.mpass = p_enabled;
@@ -2536,6 +2857,12 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 	const WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			return wd.no_max_btn;
+		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			return wd.no_min_btn;
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			return wd.resize_disabled;
 		} break;
@@ -2546,17 +2873,16 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 			return [wd.window_object styleMask] == NSWindowStyleMaskBorderless;
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
-			if (wd.fullscreen) {
-				return wd.on_top;
-			} else {
-				return [(NSWindow *)wd.window_object level] == NSFloatingWindowLevel;
-			}
+			return wd.on_top;
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 			return wd.layered_window;
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_EXCLUDE_FROM_CAPTURE: {
+			return wd.hide_from_capture;
 		} break;
 		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
 			return wd.mpass;
@@ -2756,6 +3082,22 @@ DisplayServer::VSyncMode DisplayServerMacOS::window_get_vsync_mode(WindowID p_wi
 	return DisplayServer::VSYNC_ENABLED;
 }
 
+int DisplayServerMacOS::accessibility_should_increase_contrast() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getHighContrast];
+}
+
+int DisplayServerMacOS::accessibility_should_reduce_animation() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getReduceMotion];
+}
+
+int DisplayServerMacOS::accessibility_should_reduce_transparency() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getReduceTransparency];
+}
+
+int DisplayServerMacOS::accessibility_screen_reader_active() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getVoiceOver];
+}
+
 Point2i DisplayServerMacOS::ime_get_selection() const {
 	return im_selection;
 }
@@ -2935,14 +3277,14 @@ bool DisplayServerMacOS::get_swap_cancel_ok() {
 
 int DisplayServerMacOS::keyboard_get_layout_count() const {
 	if (keyboard_layout_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_keyboard_layouts();
+		_update_keyboard_layouts();
 	}
 	return kbd_layouts.size();
 }
 
 void DisplayServerMacOS::keyboard_set_current_layout(int p_index) {
 	if (keyboard_layout_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_keyboard_layouts();
+		_update_keyboard_layouts();
 	}
 
 	ERR_FAIL_INDEX(p_index, kbd_layouts.size());
@@ -2972,7 +3314,7 @@ void DisplayServerMacOS::keyboard_set_current_layout(int p_index) {
 
 int DisplayServerMacOS::keyboard_get_current_layout() const {
 	if (keyboard_layout_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_keyboard_layouts();
+		_update_keyboard_layouts();
 	}
 
 	return current_layout;
@@ -2980,7 +3322,7 @@ int DisplayServerMacOS::keyboard_get_current_layout() const {
 
 String DisplayServerMacOS::keyboard_get_layout_language(int p_index) const {
 	if (keyboard_layout_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_keyboard_layouts();
+		_update_keyboard_layouts();
 	}
 
 	ERR_FAIL_INDEX_V(p_index, kbd_layouts.size(), "");
@@ -2989,7 +3331,7 @@ String DisplayServerMacOS::keyboard_get_layout_language(int p_index) const {
 
 String DisplayServerMacOS::keyboard_get_layout_name(int p_index) const {
 	if (keyboard_layout_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_keyboard_layouts();
+		_update_keyboard_layouts();
 	}
 
 	ERR_FAIL_INDEX_V(p_index, kbd_layouts.size(), "");
@@ -3018,21 +3360,31 @@ Key DisplayServerMacOS::keyboard_get_label_from_physical(Key p_keycode) const {
 	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0, true) | modifiers);
 }
 
+void DisplayServerMacOS::show_emoji_and_symbol_picker() const {
+	[[NSApplication sharedApplication] orderFrontCharacterPalette:nil];
+}
+
 void DisplayServerMacOS::process_events() {
+	_process_events(true);
+}
+
+void DisplayServerMacOS::_process_events(bool p_pump) {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
-	while (true) {
-		NSEvent *event = [NSApp
-				nextEventMatchingMask:NSEventMaskAny
-							untilDate:[NSDate distantPast]
-							   inMode:NSDefaultRunLoopMode
-							  dequeue:YES];
+	if (p_pump) {
+		while (true) {
+			NSEvent *event = [NSApp
+					nextEventMatchingMask:NSEventMaskAny
+								untilDate:[NSDate distantPast]
+								   inMode:NSDefaultRunLoopMode
+								  dequeue:YES];
 
-		if (event == nil) {
-			break;
+			if (event == nil) {
+				break;
+			}
+
+			[NSApp sendEvent:event];
 		}
-
-		[NSApp sendEvent:event];
 	}
 
 	// Process "menu_callback"s.
@@ -3299,8 +3651,8 @@ bool DisplayServerMacOS::is_window_transparency_available() const {
 	return OS::get_singleton()->is_layered_allowed();
 }
 
-DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
+DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_command;
@@ -3339,6 +3691,7 @@ Vector<String> DisplayServerMacOS::get_rendering_drivers_func() {
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_angle");
 #endif
+	drivers.push_back("dummy");
 
 	return drivers;
 }
@@ -3494,7 +3847,7 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 	return closed;
 }
 
-DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	KeyMappingMacOS::initialize();
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
@@ -3525,10 +3878,20 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	// Init TTS
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
-		tts = [[TTS_MacOS alloc] init];
+		initialize_tts();
 	}
 
 	native_menu = memnew(NativeMenuMacOS);
+
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		accessibility_driver = memnew(AccessibilityDriverAccessKit);
+		if (accessibility_driver->init() != OK) {
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+	}
+#endif
 
 	NSMenuItem *menu_item;
 	NSString *title;
@@ -3626,6 +3989,17 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
+#if defined(__x86_64__)
+	bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
+	if (!fallback_to_vulkan) {
+		WARN_PRINT("Metal is not supported on Intel Macs, switching to Vulkan.");
+	}
+	// Metal rendering driver not available on Intel.
+	if (rendering_driver == "metal") {
+		rendering_driver = "vulkan";
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+	}
+#endif
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
 	}
@@ -3708,8 +4082,11 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
-	show_window(MAIN_WINDOW_ID);
 	force_process_and_drop_events();
+
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
+	}
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
@@ -3779,7 +4156,11 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 		rendering_context = nullptr;
 	}
 #endif
-
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		memdelete(accessibility_driver);
+	}
+#endif
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), nullptr, kTISNotifySelectedKeyboardInputSourceChanged, nullptr);
 	CGDisplayRemoveReconfigurationCallback(_displays_arrangement_changed, nullptr);
 

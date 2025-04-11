@@ -1214,7 +1214,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 
 			if (cascade.dirty_regions[j] == 0) {
 				continue; // not dirty
-			} else if (uint32_t(ABS(cascade.dirty_regions[j])) >= cascade_size) {
+			} else if (uint32_t(Math::abs(cascade.dirty_regions[j])) >= cascade_size) {
 				//moved too much, just redraw everything (make all dirty)
 				cascade.dirty_regions = SDFGI::Cascade::DIRTY_ALL;
 				break;
@@ -1226,7 +1226,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 			uint32_t total_volume = cascade_size * cascade_size * cascade_size;
 			uint32_t safe_volume = 1;
 			for (int j = 0; j < 3; j++) {
-				safe_volume *= cascade_size - ABS(cascade.dirty_regions[j]);
+				safe_volume *= cascade_size - Math::abs(cascade.dirty_regions[j]);
 			}
 			uint32_t dirty_volume = total_volume - safe_volume;
 			if (dirty_volume > (safe_volume / 2)) {
@@ -1307,24 +1307,24 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 	push_constant.store_ambient_texture = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_enabled(p_env);
 
 	RID sky_uniform_set = gi->sdfgi_shader.integrate_default_sky_uniform_set;
-	push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_DISABLED;
+	push_constant.sky_flags = 0;
 	push_constant.y_mult = y_mult;
 
 	if (reads_sky && p_env.is_valid()) {
 		push_constant.sky_energy = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy_multiplier(p_env);
 
 		if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_CLEAR_COLOR) {
-			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
 			Color c = RSG::texture_storage->get_default_clear_color().srgb_to_linear();
-			push_constant.sky_color[0] = c.r;
-			push_constant.sky_color[1] = c.g;
-			push_constant.sky_color[2] = c.b;
+			push_constant.sky_color_or_orientation[0] = c.r;
+			push_constant.sky_color_or_orientation[1] = c.g;
+			push_constant.sky_color_or_orientation[2] = c.b;
 		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_COLOR) {
-			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
 			Color c = RendererSceneRenderRD::get_singleton()->environment_get_bg_color(p_env);
-			push_constant.sky_color[0] = c.r;
-			push_constant.sky_color[1] = c.g;
-			push_constant.sky_color[2] = c.b;
+			push_constant.sky_color_or_orientation[0] = c.r;
+			push_constant.sky_color_or_orientation[1] = c.g;
+			push_constant.sky_color_or_orientation[2] = c.b;
 
 		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_SKY) {
 			if (p_sky && p_sky->radiance.is_valid()) {
@@ -1350,7 +1350,16 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 					integrate_sky_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.integrate.version_get_shader(gi->sdfgi_shader.integrate_shader, 0), 1);
 				}
 				sky_uniform_set = integrate_sky_uniform_set;
-				push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_SKY;
+				push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_SKY;
+
+				// Encode sky orientation as quaternion in existing push constants.
+				const Basis sky_basis = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
+				const Quaternion sky_quaternion = sky_basis.get_quaternion().inverse();
+				push_constant.sky_color_or_orientation[0] = sky_quaternion.x;
+				push_constant.sky_color_or_orientation[1] = sky_quaternion.y;
+				push_constant.sky_color_or_orientation[2] = sky_quaternion.z;
+				// Ideally we would reconstruct the largest component for least error, but sky contribution to GI is low frequency so just needs to get the idea across.
+				push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_ORIENTATION_SIGN * (sky_quaternion.w < 0.0 ? 0 : 1);
 			}
 		}
 	}
@@ -1396,7 +1405,7 @@ void GI::SDFGI::store_probes() {
 	push_constant.image_size[1] = probe_axis_count;
 	push_constant.store_ambient_texture = false;
 
-	push_constant.sky_mode = 0;
+	push_constant.sky_flags = 0;
 	push_constant.y_mult = y_mult;
 
 	// Then store values into the lightprobe texture. Separating these steps has a small performance hit, but it allows for multiple bounces
@@ -1721,7 +1730,7 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 
 	SDFGIShader::ProbeDebugMode mode = p_view_count > 1 ? SDFGIShader::PROBE_DEBUG_PROBES_MULTIVIEW : SDFGIShader::PROBE_DEBUG_PROBES;
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer);
 	RD::get_singleton()->draw_command_begin_label("Debug SDFGI");
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, gi->sdfgi_shader.debug_probes_pipeline[mode].get_render_pipeline(RD::INVALID_FORMAT_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
@@ -2070,9 +2079,9 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 
 			Vector3i dirty = cascades[cascade].dirty_regions;
 			Vector3i groups;
-			groups.x = cascade_size - ABS(dirty.x);
-			groups.y = cascade_size - ABS(dirty.y);
-			groups.z = cascade_size - ABS(dirty.z);
+			groups.x = cascade_size - Math::abs(dirty.x);
+			groups.y = cascade_size - Math::abs(dirty.y);
+			groups.z = cascade_size - Math::abs(dirty.z);
 
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, groups.x, groups.y, groups.z);
@@ -2092,11 +2101,11 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 				ipush_constant.history_size = history_size;
 				ipush_constant.ray_count = 0;
 				ipush_constant.ray_bias = 0;
-				ipush_constant.sky_mode = 0;
+				ipush_constant.sky_flags = 0;
 				ipush_constant.sky_energy = 0;
-				ipush_constant.sky_color[0] = 0;
-				ipush_constant.sky_color[1] = 0;
-				ipush_constant.sky_color[2] = 0;
+				ipush_constant.sky_color_or_orientation[0] = 0;
+				ipush_constant.sky_color_or_orientation[1] = 0;
+				ipush_constant.sky_color_or_orientation[2] = 0;
 				ipush_constant.y_mult = y_mult;
 				ipush_constant.store_ambient_texture = false;
 
@@ -2150,8 +2159,8 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 		}
 
 		//clear dispatch indirect data
-		uint32_t dispatch_indirct_data[4] = { 0, 0, 0, 0 };
-		RD::get_singleton()->buffer_update(cascades[cascade].solid_cell_dispatch_buffer_storage, 0, sizeof(uint32_t) * 4, dispatch_indirct_data);
+		uint32_t dispatch_indirect_data[4] = { 0, 0, 0, 0 };
+		RD::get_singleton()->buffer_update(cascades[cascade].solid_cell_dispatch_buffer_storage, 0, sizeof(uint32_t) * 4, dispatch_indirect_data);
 
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
@@ -2667,13 +2676,13 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					dtf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 					dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						dtf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 					}
 					dmap.texture = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					RD::get_singleton()->set_resource_name(dmap.texture, "VoxelGI Instance DMap Texture");
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						// Render depth for first one.
 						// Use 16-bit depth when supported to improve performance.
 						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D16_UNORM, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
@@ -2689,7 +2698,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					dmap.depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					RD::get_singleton()->set_resource_name(dmap.depth, "VoxelGI Instance DMap Depth");
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						dtf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 						dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 						dmap.albedo = RD::get_singleton()->texture_create(dtf, RD::TextureView());
@@ -3270,7 +3279,7 @@ void GI::VoxelGIInstance::free_resources() {
 void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
-	if (mipmaps.size() == 0) {
+	if (mipmaps.is_empty()) {
 		return;
 	}
 

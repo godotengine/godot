@@ -35,8 +35,6 @@
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/io/file_access_compressed.h"
-#include "core/io/file_access_encrypted.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
@@ -44,7 +42,7 @@
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
-namespace core_bind {
+namespace CoreBind {
 
 ////// ResourceLoader //////
 
@@ -115,12 +113,12 @@ PackedStringArray ResourceLoader::get_dependencies(const String &p_path) {
 }
 
 bool ResourceLoader::has_cached(const String &p_path) {
-	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	String local_path = ::ResourceLoader::_validate_local_path(p_path);
 	return ResourceCache::has(local_path);
 }
 
 Ref<Resource> ResourceLoader::get_cached_ref(const String &p_path) {
-	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	String local_path = ::ResourceLoader::_validate_local_path(p_path);
 	return ResourceCache::get_ref(local_path);
 }
 
@@ -424,6 +422,10 @@ String OS::get_version() const {
 	return ::OS::get_singleton()->get_version();
 }
 
+String OS::get_version_alias() const {
+	return ::OS::get_singleton()->get_version_alias();
+}
+
 Vector<String> OS::get_video_adapter_driver_info() const {
 	return ::OS::get_singleton()->get_video_adapter_driver_info();
 }
@@ -464,8 +466,8 @@ bool OS::is_restart_on_exit_set() const {
 Vector<String> OS::get_restart_on_exit_arguments() const {
 	List<String> args = ::OS::get_singleton()->get_restart_on_exit_arguments();
 	Vector<String> args_vector;
-	for (List<String>::Element *E = args.front(); E; E = E->next()) {
-		args_vector.push_back(E->get());
+	for (const String &arg : args) {
+		args_vector.push_back(arg);
 	}
 
 	return args_vector;
@@ -577,6 +579,11 @@ String OS::get_cache_dir() const {
 	return ::OS::get_singleton()->get_cache_path();
 }
 
+String OS::get_temp_dir() const {
+	// Exposed as `get_temp_dir()` instead of `get_temp_path()` for consistency with other exposed OS methods.
+	return ::OS::get_singleton()->get_temp_path();
+}
+
 bool OS::is_debug_build() const {
 #ifdef DEBUG_ENABLED
 	return true;
@@ -650,8 +657,8 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_font_path_for_text", "font_name", "text", "locale", "script", "weight", "stretch", "italic"), &OS::get_system_font_path_for_text, DEFVAL(String()), DEFVAL(String()), DEFVAL(400), DEFVAL(100), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 
-	ClassDB::bind_method(D_METHOD("read_string_from_stdin", "buffer_size"), &OS::read_string_from_stdin);
-	ClassDB::bind_method(D_METHOD("read_buffer_from_stdin", "buffer_size"), &OS::read_buffer_from_stdin);
+	ClassDB::bind_method(D_METHOD("read_string_from_stdin", "buffer_size"), &OS::read_string_from_stdin, DEFVAL(1024));
+	ClassDB::bind_method(D_METHOD("read_buffer_from_stdin", "buffer_size"), &OS::read_buffer_from_stdin, DEFVAL(1024));
 	ClassDB::bind_method(D_METHOD("get_stdin_type"), &OS::get_stdin_type);
 	ClassDB::bind_method(D_METHOD("get_stdout_type"), &OS::get_stdout_type);
 	ClassDB::bind_method(D_METHOD("get_stderr_type"), &OS::get_stderr_type);
@@ -675,6 +682,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_distribution_name"), &OS::get_distribution_name);
 	ClassDB::bind_method(D_METHOD("get_version"), &OS::get_version);
+	ClassDB::bind_method(D_METHOD("get_version_alias"), &OS::get_version_alias);
 	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &OS::get_cmdline_args);
 	ClassDB::bind_method(D_METHOD("get_cmdline_user_args"), &OS::get_cmdline_user_args);
 
@@ -705,6 +713,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_config_dir"), &OS::get_config_dir);
 	ClassDB::bind_method(D_METHOD("get_data_dir"), &OS::get_data_dir);
 	ClassDB::bind_method(D_METHOD("get_cache_dir"), &OS::get_cache_dir);
+	ClassDB::bind_method(D_METHOD("get_temp_dir"), &OS::get_temp_dir);
 	ClassDB::bind_method(D_METHOD("get_unique_id"), &OS::get_unique_id);
 
 	ClassDB::bind_method(D_METHOD("get_keycode_string", "code"), &OS::get_keycode_string);
@@ -797,13 +806,11 @@ Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p
 }
 
 Vector2 Geometry2D::get_closest_point_to_segment(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-	Vector2 s[2] = { p_a, p_b };
-	return ::Geometry2D::get_closest_point_to_segment(p_point, s);
+	return ::Geometry2D::get_closest_point_to_segment(p_point, p_a, p_b);
 }
 
 Vector2 Geometry2D::get_closest_point_to_segment_uncapped(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-	Vector2 s[2] = { p_a, p_b };
-	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, s);
+	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
 bool Geometry2D::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
@@ -1060,13 +1067,11 @@ Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p
 }
 
 Vector3 Geometry3D::get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return ::Geometry3D::get_closest_point_to_segment(p_point, s);
+	return ::Geometry3D::get_closest_point_to_segment(p_point, p_a, p_b);
 }
 
 Vector3 Geometry3D::get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, s);
+	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
 Vector3 Geometry3D::get_triangle_barycentric_coords(const Vector3 &p_point, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
@@ -1232,6 +1237,9 @@ Vector<uint8_t> Marshalls::base64_to_raw(const String &p_str) {
 }
 
 String Marshalls::utf8_to_base64(const String &p_str) {
+	if (p_str.is_empty()) {
+		return String();
+	}
 	CharString cstr = p_str.utf8();
 	String ret = CryptoCore::b64_encode_str((unsigned char *)cstr.get_data(), cstr.length());
 	ERR_FAIL_COND_V(ret.is_empty(), ret);
@@ -1331,6 +1339,7 @@ void Thread::_start_func(void *ud) {
 	// When the call returns, we will reference the thread again if possible.
 	ObjectID th_instance_id = t->get_instance_id();
 	Callable target_callable = t->target_callable;
+	String id = t->get_id();
 	t = Ref<Thread>();
 
 	Callable::CallError ce;
@@ -1338,7 +1347,7 @@ void Thread::_start_func(void *ud) {
 	target_callable.callp(nullptr, 0, ret, ce);
 	// If script properly kept a reference to the thread, we should be able to re-reference it now
 	// (well, or if the call failed, since we had to break chains anyway because the outcome isn't known upfront).
-	t = Ref<Thread>(ObjectDB::get_instance(th_instance_id));
+	t = ObjectDB::get_ref<Thread>(th_instance_id);
 	if (t.is_valid()) {
 		t->ret = ret;
 		t->running.clear();
@@ -1348,7 +1357,7 @@ void Thread::_start_func(void *ud) {
 	}
 
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_MSG(vformat("Could not call function '%s' to start thread %d: %s.", func_name, t->get_id(), Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce)));
+		ERR_FAIL_MSG(vformat("Could not call function '%s' to start thread %s: %s.", func_name, id, Variant::get_callable_error_text(target_callable, nullptr, 0, ce)));
 	}
 }
 
@@ -1410,7 +1419,7 @@ void Thread::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRIORITY_HIGH);
 }
 
-namespace special {
+namespace Special {
 
 ////// ClassDB //////
 
@@ -1429,8 +1438,8 @@ PackedStringArray ClassDB::get_class_list() const {
 }
 
 PackedStringArray ClassDB::get_inheriters_from_class(const StringName &p_class) const {
-	List<StringName> classes;
-	::ClassDB::get_inheriters_from_class(p_class, &classes);
+	LocalVector<StringName> classes;
+	::ClassDB::get_inheriters_from_class(p_class, classes);
 
 	PackedStringArray ret;
 	ret.resize(classes.size());
@@ -1737,7 +1746,7 @@ void ClassDB::_bind_methods() {
 	BIND_ENUM_CONSTANT(API_NONE);
 }
 
-} // namespace special
+} // namespace Special
 
 ////// Engine //////
 
@@ -1867,8 +1876,8 @@ Vector<String> Engine::get_singleton_list() const {
 	List<::Engine::Singleton> singletons;
 	::Engine::get_singleton()->get_singletons(&singletons);
 	Vector<String> ret;
-	for (List<::Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
-		ret.push_back(E->get().name);
+	for (const ::Engine::Singleton &E : singletons) {
+		ret.push_back(E.name);
 	}
 	return ret;
 }
@@ -1895,6 +1904,10 @@ void Engine::set_editor_hint(bool p_enabled) {
 
 bool Engine::is_editor_hint() const {
 	return ::Engine::get_singleton()->is_editor_hint();
+}
+
+bool Engine::is_embedded_in_editor() const {
+	return ::Engine::get_singleton()->is_embedded_in_editor();
 }
 
 String Engine::get_write_movie_path() const {
@@ -1974,6 +1987,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
 
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
+	ClassDB::bind_method(D_METHOD("is_embedded_in_editor"), &Engine::is_embedded_in_editor);
 
 	ClassDB::bind_method(D_METHOD("get_write_movie_path"), &Engine::get_write_movie_path);
 
@@ -2176,4 +2190,4 @@ void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_breakpoints"), &EngineDebugger::clear_breakpoints);
 }
 
-} // namespace core_bind
+} // namespace CoreBind

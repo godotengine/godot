@@ -38,7 +38,6 @@
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/project_settings_editor.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
@@ -112,14 +111,12 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 		return false;
 	}
 
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (Variant::get_type_name(Variant::Type(i)) == p_name) {
-			if (r_error) {
-				*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing built-in type name.");
-			}
-
-			return false;
+	if (Variant::get_type_by_name(p_name) < Variant::VARIANT_MAX) {
+		if (r_error) {
+			*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing built-in type name.");
 		}
+
+		return false;
 	}
 
 	for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
@@ -190,7 +187,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 
 	if (column == 0) {
 		String name = ti->get_text(0);
-		String old_name = selected_autoload.get_slice("/", 1);
+		String old_name = selected_autoload.get_slicec('/', 1);
 
 		if (name == old_name) {
 			return;
@@ -245,7 +242,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 		String scr_path = GLOBAL_GET(base);
 
 		if (scr_path.begins_with("*")) {
-			scr_path = scr_path.substr(1, scr_path.length());
+			scr_path = scr_path.substr(1);
 		}
 
 		// Singleton autoloads are represented with a leading "*" in their path.
@@ -352,11 +349,7 @@ void EditorAutoloadSettings::_autoload_activated() {
 }
 
 void EditorAutoloadSettings::_autoload_open(const String &fpath) {
-	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-		EditorNode::get_singleton()->open_request(fpath);
-	} else {
-		EditorNode::get_singleton()->load_resource(fpath);
-	}
+	EditorNode::get_singleton()->load_scene_or_resource(fpath);
 	ProjectSettingsEditor::get_singleton()->hide();
 }
 
@@ -398,7 +391,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		scn.instantiate();
 		scn->set_path(p_path);
 		scn->reload_from_file();
-		ERR_FAIL_COND_V_MSG(!scn.is_valid(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
+		ERR_FAIL_COND_V_MSG(scn.is_null(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
 
 		if (scn.is_valid()) {
 			n = scn->instantiate();
@@ -486,7 +479,7 @@ void EditorAutoloadSettings::update_autoload() {
 			continue;
 		}
 
-		String name = pi.name.get_slice("/", 1);
+		String name = pi.name.get_slicec('/', 1);
 		String scr_path = GLOBAL_GET(pi.name);
 
 		if (name.is_empty()) {
@@ -497,7 +490,7 @@ void EditorAutoloadSettings::update_autoload() {
 		info.is_singleton = scr_path.begins_with("*");
 
 		if (info.is_singleton) {
-			scr_path = scr_path.substr(1, scr_path.length());
+			scr_path = scr_path.substr(1);
 		}
 
 		info.name = name;
@@ -628,7 +621,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 		next = tree->get_next_selected(next);
 	}
 
-	if (autoloads.size() == 0 || autoloads.size() == autoload_cache.size()) {
+	if (autoloads.is_empty() || autoloads.size() == autoload_cache.size()) {
 		return Variant();
 	}
 
@@ -666,13 +659,13 @@ bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Varia
 	}
 
 	if (drop_data.has("type")) {
-		TreeItem *ti = tree->get_item_at_position(p_point);
+		TreeItem *ti = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_selected() : tree->get_item_at_position(p_point);
 
 		if (!ti) {
 			return false;
 		}
 
-		int section = tree->get_drop_section_at_position(p_point);
+		int section = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
 
 		return section >= -1;
 	}
@@ -681,13 +674,13 @@ bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Varia
 }
 
 void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) {
-	TreeItem *ti = tree->get_item_at_position(p_point);
+	TreeItem *ti = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_selected() : tree->get_item_at_position(p_point);
 
 	if (!ti) {
 		return;
 	}
 
-	int section = tree->get_drop_section_at_position(p_point);
+	int section = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
 
 	if (section < -1) {
 		return;
@@ -718,6 +711,15 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	Dictionary drop_data = p_data;
 	PackedStringArray autoloads = drop_data["autoloads"];
 
+	// Store the initial order of the autoloads for comparison.
+	Vector<int> initial_orders;
+	initial_orders.resize(autoload_cache.size());
+	int idx = 0;
+	for (const AutoloadInfo &F : autoload_cache) {
+		initial_orders.write[idx++] = F.order;
+	}
+
+	// Perform the drag-and-drop operation.
 	Vector<int> orders;
 	orders.resize(autoload_cache.size());
 
@@ -737,10 +739,14 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 		}
 	}
 
-	int i = 0;
-
+	idx = 0;
 	for (const AutoloadInfo &F : autoload_cache) {
-		orders.write[i++] = F.order;
+		orders.write[idx++] = F.order;
+	}
+
+	// If the order didn't change, we shouldn't create undo/redo actions.
+	if (orders == initial_orders) {
+		return;
 	}
 
 	orders.sort();
@@ -749,10 +755,9 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	undo_redo->create_action(TTR("Rearrange Autoloads"));
 
-	i = 0;
-
+	idx = 0;
 	for (const AutoloadInfo &F : autoload_cache) {
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, orders[i++]);
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, orders[idx++]);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, F.order);
 	}
 
@@ -853,7 +858,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 			continue;
 		}
 
-		String name = pi.name.get_slice("/", 1);
+		String name = pi.name.get_slicec('/', 1);
 		String scr_path = GLOBAL_GET(pi.name);
 
 		if (name.is_empty()) {
@@ -864,7 +869,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		info.is_singleton = scr_path.begins_with("*");
 
 		if (info.is_singleton) {
-			scr_path = scr_path.substr(1, scr_path.length());
+			scr_path = scr_path.substr(1);
 		}
 
 		info.name = name;
@@ -896,6 +901,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	autoload_add_path = memnew(LineEdit);
 	hbc->add_child(autoload_add_path);
+	autoload_add_path->set_accessibility_name(TTRC("Autoload Path"));
 	autoload_add_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	autoload_add_path->set_clear_button_enabled(true);
 	autoload_add_path->set_placeholder(vformat(TTR("Set path or press \"%s\" to create a script."), TTR("Add")));
@@ -903,6 +909,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	browse_button = memnew(Button);
 	hbc->add_child(browse_button);
+	browse_button->set_accessibility_name(TTRC("Select Autoload Path"));
 	browse_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAutoloadSettings::_browse_autoload_add_path));
 
 	file_dialog = memnew(EditorFileDialog);
@@ -920,8 +927,9 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	hbc->add_child(l);
 
 	autoload_add_name = memnew(LineEdit);
+	autoload_add_name->set_accessibility_name(TTRC("Node Name"));
 	autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
-	autoload_add_name->connect("text_submitted", callable_mp(this, &EditorAutoloadSettings::_autoload_text_submitted));
+	autoload_add_name->connect(SceneStringName(text_submitted), callable_mp(this, &EditorAutoloadSettings::_autoload_text_submitted));
 	autoload_add_name->connect(SceneStringName(text_changed), callable_mp(this, &EditorAutoloadSettings::_autoload_text_changed));
 	hbc->add_child(autoload_add_name);
 
@@ -933,6 +941,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	hbc->add_child(add_autoload);
 
 	tree = memnew(Tree);
+	tree->set_accessibility_name(TTRC("Autoloads"));
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_allow_reselect(true);
@@ -975,7 +984,7 @@ EditorAutoloadSettings::~EditorAutoloadSettings() {
 
 void EditorAutoloadSettings::_set_autoload_add_path(const String &p_text) {
 	autoload_add_path->set_text(p_text);
-	autoload_add_path->emit_signal(SNAME("text_submitted"), p_text);
+	autoload_add_path->emit_signal(SceneStringName(text_submitted), p_text);
 }
 
 void EditorAutoloadSettings::_browse_autoload_add_path() {

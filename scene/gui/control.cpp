@@ -32,9 +32,13 @@
 
 #include "container.h"
 #include "core/config/project_settings.h"
+#include "core/input/input_map.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
+#include "scene/gui/label.h"
+#include "scene/gui/panel.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -56,18 +60,10 @@ Dictionary Control::_edit_get_state() const {
 	s["scale"] = get_scale();
 	s["pivot"] = get_pivot_offset();
 
-	Array anchors;
-	anchors.push_back(get_anchor(SIDE_LEFT));
-	anchors.push_back(get_anchor(SIDE_TOP));
-	anchors.push_back(get_anchor(SIDE_RIGHT));
-	anchors.push_back(get_anchor(SIDE_BOTTOM));
+	Array anchors = { get_anchor(SIDE_LEFT), get_anchor(SIDE_TOP), get_anchor(SIDE_RIGHT), get_anchor(SIDE_BOTTOM) };
 	s["anchors"] = anchors;
 
-	Array offsets;
-	offsets.push_back(get_offset(SIDE_LEFT));
-	offsets.push_back(get_offset(SIDE_TOP));
-	offsets.push_back(get_offset(SIDE_RIGHT));
-	offsets.push_back(get_offset(SIDE_BOTTOM));
+	Array offsets = { get_offset(SIDE_LEFT), get_offset(SIDE_TOP), get_offset(SIDE_RIGHT), get_offset(SIDE_BOTTOM) };
 	s["offsets"] = offsets;
 
 	s["layout_mode"] = _get_layout_mode();
@@ -249,6 +245,27 @@ PackedStringArray Control::get_configuration_warnings() const {
 
 	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
 		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
+	}
+
+	return warnings;
+}
+
+PackedStringArray Control::get_accessibility_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
+
+	String ac_name = get_accessibility_name().strip_edges();
+	if (ac_name.is_empty()) {
+		warnings.push_back(RTR("Accessibility Name must not be empty, or contain only spaces."));
+	}
+	if (ac_name.contains(get_class_name())) {
+		warnings.push_back(RTR("Accessibility Name must not include Node class name."));
+	}
+	for (int i = 0; i < ac_name.length(); i++) {
+		if (is_control(ac_name[i])) {
+			warnings.push_back(RTR("Accessibility Name must not include control character."));
+			break;
+		}
 	}
 
 	return warnings;
@@ -481,9 +498,9 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	// Validate which positioning properties should be displayed depending on the parent and the layout mode.
-	Node *parent_node = get_parent_control();
-	if (!parent_node) {
-		// If there is no parent, display both anchor and container options.
+	Control *parent_control = get_parent_control();
+	if (!parent_control) {
+		// If there is no parent control, display both anchor and container options.
 
 		// Set the layout mode to be disabled with the proper value.
 		if (p_property.name == "layout_mode") {
@@ -496,7 +513,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		if (!use_custom_anchors && (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_"))) {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
-	} else if (Object::cast_to<Container>(parent_node)) {
+	} else if (Object::cast_to<Container>(parent_control)) {
 		// If the parent is a container, display only container-related properties.
 		if (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_") || p_property.name == "anchors_preset") {
 			p_property.usage ^= PROPERTY_USAGE_DEFAULT;
@@ -508,7 +525,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		} else if (p_property.name == "size_flags_horizontal" || p_property.name == "size_flags_vertical") {
 			// Filter allowed size flags based on the parent container configuration.
-			Container *parent_container = Object::cast_to<Container>(parent_node);
+			Container *parent_container = Object::cast_to<Container>(parent_control);
 			Vector<int> size_flags;
 			if (p_property.name == "size_flags_horizontal") {
 				size_flags = parent_container->get_allowed_size_flags_horizontal();
@@ -548,7 +565,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 			}
 		}
 	} else {
-		// If the parent is NOT a container or not a control at all, display only anchoring-related properties.
+		// If the parent is a non-container control, display only anchoring-related properties.
 		if (p_property.name.begins_with("size_flags_")) {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 
@@ -570,7 +587,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	// Disable the property if it's managed by the parent container.
-	if (!Object::cast_to<Container>(parent_node)) {
+	if (!Object::cast_to<Container>(parent_control)) {
 		return;
 	}
 	bool property_is_managed_by_container = false;
@@ -607,11 +624,6 @@ bool Control::_property_get_revert(const StringName &p_name, Variant &r_property
 
 // Global relations.
 
-bool Control::is_top_level_control() const {
-	ERR_READ_THREAD_GUARD_V(false);
-	return is_inside_tree() && (!data.parent_canvas_item && !data.RI && is_set_as_top_level());
-}
-
 Control *Control::get_parent_control() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
 	return data.parent_control;
@@ -631,10 +643,6 @@ Control *Control::get_root_parent_control() const {
 		const Control *c = Object::cast_to<Control>(ci);
 		if (c) {
 			root = c;
-
-			if (c->data.RI || c->is_top_level_control()) {
-				break;
-			}
 		}
 
 		ci = ci->get_parent_item();
@@ -875,6 +883,13 @@ void Control::_compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (
 	r_offsets[3] = p_rect.position.y + p_rect.size.y - (p_anchors[3] * parent_rect_size.y);
 }
 
+void Control::_compute_edge_positions(Rect2 p_rect, real_t (&r_edge_positions)[4]) {
+	for (int i = 0; i < 4; i++) {
+		real_t area = p_rect.size[i & 1];
+		r_edge_positions[i] = data.offset[i] + (data.anchor[i] * area);
+	}
+}
+
 /// Presets and layout modes.
 
 void Control::_set_layout_mode(LayoutMode p_mode) {
@@ -905,11 +920,11 @@ void Control::_update_layout_mode() {
 }
 
 Control::LayoutMode Control::_get_layout_mode() const {
-	Node *parent_node = get_parent_control();
+	Control *parent_control = get_parent_control();
 	// In these modes the property is read-only.
-	if (!parent_node) {
+	if (!parent_control) {
 		return LayoutMode::LAYOUT_MODE_UNCONTROLLED;
-	} else if (Object::cast_to<Container>(parent_node)) {
+	} else if (Object::cast_to<Container>(parent_control)) {
 		return LayoutMode::LAYOUT_MODE_CONTAINER;
 	}
 
@@ -918,20 +933,25 @@ Control::LayoutMode Control::_get_layout_mode() const {
 		return LayoutMode::LAYOUT_MODE_ANCHORS;
 	}
 
-	// Otherwise fallback on what's stored.
-	return data.stored_layout_mode;
+	// Only position/anchors modes are valid for non-container control parent.
+	if (data.stored_layout_mode == LayoutMode::LAYOUT_MODE_POSITION || data.stored_layout_mode == LayoutMode::LAYOUT_MODE_ANCHORS) {
+		return data.stored_layout_mode;
+	}
+
+	// Otherwise fallback to position mode.
+	return LayoutMode::LAYOUT_MODE_POSITION;
 }
 
 Control::LayoutMode Control::_get_default_layout_mode() const {
-	Node *parent_node = get_parent_control();
+	Control *parent_control = get_parent_control();
 	// In these modes the property is read-only.
-	if (!parent_node) {
+	if (!parent_control) {
 		return LayoutMode::LAYOUT_MODE_UNCONTROLLED;
-	} else if (Object::cast_to<Container>(parent_node)) {
+	} else if (Object::cast_to<Container>(parent_control)) {
 		return LayoutMode::LAYOUT_MODE_CONTAINER;
 	}
 
-	// Otherwise fallback on the position mode.
+	// Otherwise fallback to the position mode.
 	return LayoutMode::LAYOUT_MODE_POSITION;
 }
 
@@ -1400,10 +1420,13 @@ void Control::set_position(const Point2 &p_point, bool p_keep_offsets) {
 	}
 #endif // TOOLS_ENABLED
 
+	real_t edge_pos[4];
+	_compute_edge_positions(get_parent_anchorable_rect(), edge_pos);
+	Size2 offset_size(edge_pos[2] - edge_pos[0], edge_pos[3] - edge_pos[1]);
 	if (p_keep_offsets) {
-		_compute_anchors(Rect2(p_point, data.size_cache), data.offset, data.anchor);
+		_compute_anchors(Rect2(p_point, offset_size), data.offset, data.anchor);
 	} else {
-		_compute_offsets(Rect2(p_point, data.size_cache), data.anchor, data.offset);
+		_compute_offsets(Rect2(p_point, offset_size), data.anchor, data.offset);
 	}
 	_size_changed();
 }
@@ -1537,6 +1560,7 @@ void Control::set_scale(const Vector2 &p_scale) {
 	}
 	queue_redraw();
 	_notify_transform();
+	queue_accessibility_update();
 }
 
 Vector2 Control::get_scale() const {
@@ -1553,6 +1577,7 @@ void Control::set_rotation(real_t p_radians) {
 	data.rotation = p_radians;
 	queue_redraw();
 	_notify_transform();
+	queue_accessibility_update();
 }
 
 void Control::set_rotation_degrees(real_t p_degrees) {
@@ -1579,6 +1604,7 @@ void Control::set_pivot_offset(const Vector2 &p_pivot) {
 	data.pivot_offset = p_pivot;
 	queue_redraw();
 	_notify_transform();
+	queue_accessibility_update();
 }
 
 Vector2 Control::get_pivot_offset() const {
@@ -1672,7 +1698,7 @@ Size2 Control::get_custom_minimum_size() const {
 	return data.custom_minimum_size;
 }
 
-void Control::_update_minimum_size_cache() {
+void Control::_update_minimum_size_cache() const {
 	Size2 minsize = get_minimum_size();
 	minsize = minsize.max(data.custom_minimum_size);
 
@@ -1683,21 +1709,15 @@ void Control::_update_minimum_size_cache() {
 Size2 Control::get_combined_minimum_size() const {
 	ERR_READ_THREAD_GUARD_V(Size2());
 	if (!data.minimum_size_valid) {
-		const_cast<Control *>(this)->_update_minimum_size_cache();
+		_update_minimum_size_cache();
 	}
 	return data.minimum_size_cache;
 }
 
 void Control::_size_changed() {
 	Rect2 parent_rect = get_parent_anchorable_rect();
-
 	real_t edge_pos[4];
-
-	for (int i = 0; i < 4; i++) {
-		real_t area = parent_rect.size[i & 1];
-		edge_pos[i] = data.offset[i] + (data.anchor[i] * area);
-	}
-
+	_compute_edge_positions(parent_rect, edge_pos);
 	Point2 new_pos_cache = Point2(edge_pos[0], edge_pos[1]);
 	Size2 new_size_cache = Point2(edge_pos[2], edge_pos[3]) - new_pos_cache;
 
@@ -1727,8 +1747,11 @@ void Control::_size_changed() {
 		new_size_cache.height = minimum_size.height;
 	}
 
-	bool pos_changed = !new_pos_cache.is_equal_approx(data.pos_cache);
-	bool size_changed = !new_size_cache.is_equal_approx(data.size_cache);
+	bool pos_changed = new_pos_cache != data.pos_cache;
+	bool size_changed = new_size_cache != data.size_cache;
+	// Below helps in getting rid of floating point errors for signaling resized.
+	bool approx_pos_changed = !new_pos_cache.is_equal_approx(data.pos_cache);
+	bool approx_size_changed = !new_size_cache.is_equal_approx(data.size_cache);
 
 	if (pos_changed) {
 		data.pos_cache = new_pos_cache;
@@ -1738,13 +1761,13 @@ void Control::_size_changed() {
 	}
 
 	if (is_inside_tree()) {
-		if (pos_changed || size_changed) {
+		if (approx_pos_changed || approx_size_changed) {
 			// Ensure global transform is marked as dirty before `NOTIFICATION_RESIZED` / `item_rect_changed` signal
 			// so an up to date global transform could be obtained when handling these.
 			_notify_transform();
 
-			item_rect_changed(size_changed);
-			if (size_changed) {
+			item_rect_changed(approx_size_changed);
+			if (approx_size_changed) {
 				notification(NOTIFICATION_RESIZED);
 			}
 		}
@@ -1752,6 +1775,8 @@ void Control::_size_changed() {
 		if (pos_changed && !size_changed) {
 			_update_canvas_item_transform();
 		}
+
+		queue_accessibility_update();
 	} else if (pos_changed) {
 		_notify_transform();
 	}
@@ -1864,6 +1889,46 @@ void Control::set_mouse_filter(MouseFilter p_filter) {
 Control::MouseFilter Control::get_mouse_filter() const {
 	ERR_READ_THREAD_GUARD_V(MOUSE_FILTER_IGNORE);
 	return data.mouse_filter;
+}
+
+Control::MouseFilter Control::get_mouse_filter_with_recursive() const {
+	ERR_READ_THREAD_GUARD_V(MOUSE_FILTER_IGNORE);
+	if (_is_parent_mouse_disabled()) {
+		return MOUSE_FILTER_IGNORE;
+	}
+	return data.mouse_filter;
+}
+
+void Control::set_mouse_recursive_behavior(RecursiveBehavior p_recursive_mouse_behavior) {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_INDEX((int)p_recursive_mouse_behavior, 4);
+	if (data.mouse_recursive_behavior == p_recursive_mouse_behavior) {
+		return;
+	}
+	_set_mouse_recursive_behavior_ignore_cache(p_recursive_mouse_behavior);
+}
+
+void Control::_set_mouse_recursive_behavior_ignore_cache(RecursiveBehavior p_recursive_mouse_behavior) {
+	data.mouse_recursive_behavior = p_recursive_mouse_behavior;
+	if (p_recursive_mouse_behavior == RECURSIVE_BEHAVIOR_INHERITED) {
+		Control *parent = get_parent_control();
+		if (parent) {
+			_propagate_mouse_behavior_recursively(parent->data.parent_mouse_recursive_behavior, false);
+		} else {
+			_propagate_mouse_behavior_recursively(RECURSIVE_BEHAVIOR_ENABLED, false);
+		}
+	} else {
+		_propagate_mouse_behavior_recursively(p_recursive_mouse_behavior, false);
+	}
+
+	if (get_viewport()) {
+		get_viewport()->_gui_update_mouse_over();
+	}
+}
+
+Control::RecursiveBehavior Control::get_mouse_recursive_behavior() const {
+	ERR_READ_THREAD_GUARD_V(RECURSIVE_BEHAVIOR_INHERITED);
+	return data.mouse_recursive_behavior;
 }
 
 void Control::set_force_pass_scroll_events(bool p_force_pass_scroll_events) {
@@ -1981,7 +2046,40 @@ void Control::force_drag(const Variant &p_data, Control *p_control) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(p_data.get_type() == Variant::NIL);
 
-	get_viewport()->_gui_force_drag(this, p_data, p_control);
+	Viewport *vp = get_viewport();
+
+	vp->_gui_force_drag_start();
+	vp->_gui_force_drag(this, p_data, p_control);
+}
+
+void Control::accessibility_drag() {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_COND(!is_inside_tree());
+
+	Viewport *vp = get_viewport();
+
+	vp->_gui_force_drag_start();
+	Variant dnd_data = get_drag_data(Vector2(INFINITY, INFINITY));
+	if (dnd_data.get_type() != Variant::NIL) {
+		Window *w = Window::get_from_id(get_window()->get_window_id());
+		if (w) {
+			w->accessibility_announcement(vformat(RTR("%s grabbed. Select target and use %s to drop, use %s to cancel."), vp->gui_get_drag_description(), InputMap::get_singleton()->get_action_description("ui_accessibility_drag_and_drop"), InputMap::get_singleton()->get_action_description("ui_cancel")));
+		}
+		vp->_gui_force_drag(this, dnd_data, nullptr);
+		queue_accessibility_update();
+	} else {
+		vp->_gui_force_drag_cancel();
+	}
+}
+
+void Control::accessibility_drop() {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND(!get_viewport()->gui_is_dragging());
+
+	get_viewport()->gui_perform_drop_at(Vector2(INFINITY, INFINITY), this);
+
+	queue_accessibility_update();
 }
 
 void Control::set_drag_preview(Control *p_control) {
@@ -2000,7 +2098,7 @@ bool Control::is_drag_successful() const {
 
 void Control::set_focus_mode(FocusMode p_focus_mode) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX((int)p_focus_mode, 3);
+	ERR_FAIL_INDEX((int)p_focus_mode, 4);
 
 	if (is_inside_tree() && p_focus_mode == FOCUS_NONE && data.focus_mode != FOCUS_NONE && has_focus()) {
 		release_focus();
@@ -2012,6 +2110,42 @@ void Control::set_focus_mode(FocusMode p_focus_mode) {
 Control::FocusMode Control::get_focus_mode() const {
 	ERR_READ_THREAD_GUARD_V(FOCUS_NONE);
 	return data.focus_mode;
+}
+
+Control::FocusMode Control::get_focus_mode_with_recursive() const {
+	ERR_READ_THREAD_GUARD_V(FOCUS_NONE);
+	if (_is_focus_disabled_recursively()) {
+		return FOCUS_NONE;
+	}
+	return data.focus_mode;
+}
+
+void Control::set_focus_recursive_behavior(RecursiveBehavior p_recursive_focus_behavior) {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_INDEX((int)p_recursive_focus_behavior, 4);
+	if (data.focus_recursive_behavior == p_recursive_focus_behavior) {
+		return;
+	}
+	_set_focus_recursive_behavior_ignore_cache(p_recursive_focus_behavior);
+}
+
+void Control::_set_focus_recursive_behavior_ignore_cache(RecursiveBehavior p_recursive_focus_behavior) {
+	data.focus_recursive_behavior = p_recursive_focus_behavior;
+	if (p_recursive_focus_behavior == RECURSIVE_BEHAVIOR_INHERITED) {
+		Control *parent = get_parent_control();
+		if (parent) {
+			_propagate_focus_behavior_recursively(parent->data.parent_focus_recursive_behavior, false);
+		} else {
+			_propagate_focus_behavior_recursively(RECURSIVE_BEHAVIOR_ENABLED, false);
+		}
+	} else {
+		_propagate_focus_behavior_recursively(p_recursive_focus_behavior, false);
+	}
+}
+
+Control::RecursiveBehavior Control::get_focus_recursive_behavior() const {
+	ERR_READ_THREAD_GUARD_V(RECURSIVE_BEHAVIOR_INHERITED);
+	return data.focus_recursive_behavior;
 }
 
 bool Control::has_focus() const {
@@ -2054,7 +2188,7 @@ static Control *_next_control(Control *p_from) {
 		return nullptr; // Can't go above.
 	}
 
-	Control *parent = Object::cast_to<Control>(p_from->get_parent());
+	Control *parent = p_from->get_parent_control();
 
 	if (!parent) {
 		return nullptr;
@@ -2077,21 +2211,25 @@ static Control *_next_control(Control *p_from) {
 
 Control *Control::find_next_valid_focus() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
+
+	// If the focus property is manually overwritten, attempt to use it.
+	if (!data.focus_next.is_empty()) {
+		Node *n = get_node_or_null(data.focus_next);
+		ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + data.focus_next + "'.");
+		Control *c = Object::cast_to<Control>(n);
+		ERR_FAIL_NULL_V_MSG(c, nullptr, "Next focus node is not a control: '" + n->get_name() + "'.");
+		if (c->is_visible_in_tree() && c->get_focus_mode_with_recursive() != FOCUS_NONE) {
+			return c;
+		}
+	}
+
 	Control *from = const_cast<Control *>(this);
+	bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
+
+	// Index of the current `Control` subtree within the containing `Window`.
+	int window_next = -1;
 
 	while (true) {
-		// If the focus property is manually overwritten, attempt to use it.
-
-		if (!data.focus_next.is_empty()) {
-			Node *n = get_node_or_null(data.focus_next);
-			ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + data.focus_next + "'.");
-			Control *c = Object::cast_to<Control>(n);
-			ERR_FAIL_NULL_V_MSG(c, nullptr, "Next focus node is not a control: '" + n->get_name() + "'.");
-			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE) {
-				return c;
-			}
-		}
-
 		// Find next child.
 
 		Control *next_child = nullptr;
@@ -2110,83 +2248,121 @@ Control *Control::find_next_valid_focus() const {
 			next_child = _next_control(from);
 			if (!next_child) { // Nothing else. Go up and find either window or subwindow.
 				next_child = const_cast<Control *>(this);
-				while (next_child && !next_child->is_set_as_top_level()) {
-					next_child = cast_to<Control>(next_child->get_parent());
+
+				while (next_child) {
+					if (next_child->is_set_as_top_level()) {
+						break;
+					}
+
+					if (next_child->data.RI) {
+						break;
+					}
+					next_child = next_child->data.parent_control;
 				}
 
-				if (!next_child) {
-					next_child = const_cast<Control *>(this);
-					while (next_child) {
-						if (next_child->data.RI) {
-							break;
+				Window *win = next_child == nullptr ? nullptr : next_child->data.parent_window;
+				if (win) { // Cycle through `Control` subtrees of the parent window
+					if (window_next == -1) {
+						window_next = next_child->get_index();
+						ERR_FAIL_INDEX_V(window_next, win->get_child_count(), nullptr);
+					}
+
+					for (int i = 1; i < win->get_child_count() + 1; i++) {
+						int next = Math::wrapi(window_next + i, 0, win->get_child_count());
+						Control *c = Object::cast_to<Control>(win->get_child(next));
+						if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+							continue;
 						}
-						next_child = next_child->get_parent_control();
+						window_next = next;
+						next_child = c;
+						break;
 					}
 				}
 			}
 		}
 
-		if (next_child == from || next_child == this) { // No next control.
-			return (get_focus_mode() == FOCUS_ALL) ? next_child : nullptr;
-		}
-		if (next_child) {
-			if (next_child->get_focus_mode() == FOCUS_ALL) {
-				return next_child;
-			}
-			from = next_child;
-		} else {
+		if (!next_child) {
 			break;
 		}
+
+		if ((next_child->get_focus_mode_with_recursive() == FOCUS_ALL) || (ac_enabled && next_child->get_focus_mode_with_recursive() == FOCUS_ACCESSIBILITY)) {
+			return next_child;
+		}
+
+		if (next_child == from || next_child == this) {
+			return nullptr; // Stuck in a loop with no next control.
+		}
+
+		from = next_child; // Try to find the next control with focus mode FOCUS_ALL.
 	}
 
 	return nullptr;
 }
 
 static Control *_prev_control(Control *p_from) {
-	Control *child = nullptr;
 	for (int i = p_from->get_child_count() - 1; i >= 0; i--) {
 		Control *c = Object::cast_to<Control>(p_from->get_child(i));
 		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 			continue;
 		}
 
-		child = c;
-		break;
+		// Find the last child as prev, try the same in the last child.
+		return _prev_control(c);
 	}
 
-	if (!child) {
-		return p_from;
-	}
-
-	// No prev in parent, try the same in parent.
-	return _prev_control(child);
+	return p_from; // Not found in the children, return itself.
 }
 
 Control *Control::find_prev_valid_focus() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
+
+	// If the focus property is manually overwritten, attempt to use it.
+	if (!data.focus_prev.is_empty()) {
+		Node *n = get_node_or_null(data.focus_prev);
+		ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + data.focus_prev + "'.");
+		Control *c = Object::cast_to<Control>(n);
+		ERR_FAIL_NULL_V_MSG(c, nullptr, "Previous focus node is not a control: '" + n->get_name() + "'.");
+		if (c->is_visible_in_tree() && c->get_focus_mode_with_recursive() != FOCUS_NONE) {
+			return c;
+		}
+	}
+
 	Control *from = const_cast<Control *>(this);
+	bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
+
+	// Index of the current `Control` subtree within the containing `Window`.
+	int window_prev = -1;
 
 	while (true) {
-		// If the focus property is manually overwritten, attempt to use it.
-
-		if (!data.focus_prev.is_empty()) {
-			Node *n = get_node_or_null(data.focus_prev);
-			ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + data.focus_prev + "'.");
-			Control *c = Object::cast_to<Control>(n);
-			ERR_FAIL_NULL_V_MSG(c, nullptr, "Previous focus node is not a control: '" + n->get_name() + "'.");
-			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE) {
-				return c;
-			}
-		}
-
 		// Find prev child.
 
 		Control *prev_child = nullptr;
 
-		if (from->is_set_as_top_level() || !Object::cast_to<Control>(from->get_parent())) {
+		if (from->is_set_as_top_level() || !from->data.parent_control) {
 			// Find last of the children.
 
-			prev_child = _prev_control(from);
+			Window *win = from->data.parent_window;
+			if (win) { // Cycle through `Control` subtrees of the parent window
+				if (window_prev == -1) {
+					window_prev = from->get_index();
+					ERR_FAIL_INDEX_V(window_prev, win->get_child_count(), nullptr);
+				}
+
+				for (int i = 1; i < win->get_child_count() + 1; i++) {
+					int prev = Math::wrapi(window_prev - i, 0, win->get_child_count());
+					Control *c = Object::cast_to<Control>(win->get_child(prev));
+					if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+						continue;
+					}
+					window_prev = prev;
+					prev_child = _prev_control(c);
+					break;
+				}
+			}
+
+			if (!prev_child) {
+				prev_child = _prev_control(from); // Wrap start here.
+			}
 
 		} else {
 			for (int i = (from->get_index() - 1); i >= 0; i--) {
@@ -2201,21 +2377,21 @@ Control *Control::find_prev_valid_focus() const {
 			}
 
 			if (!prev_child) {
-				prev_child = Object::cast_to<Control>(from->get_parent());
+				prev_child = from->data.parent_control;
 			} else {
 				prev_child = _prev_control(prev_child);
 			}
 		}
 
-		if (prev_child == from || prev_child == this) { // No prev control.
-			return (get_focus_mode() == FOCUS_ALL) ? prev_child : nullptr;
-		}
-
-		if (prev_child->get_focus_mode() == FOCUS_ALL) {
+		if ((prev_child->get_focus_mode_with_recursive() == FOCUS_ALL) || (ac_enabled && prev_child->get_focus_mode_with_recursive() == FOCUS_ACCESSIBILITY)) {
 			return prev_child;
 		}
 
-		from = prev_child;
+		if (prev_child == from || prev_child == this) {
+			return nullptr; // Stuck in a loop with no prev control.
+		}
+
+		from = prev_child; // Try to find the prev control with focus mode FOCUS_ALL.
 	}
 
 	return nullptr;
@@ -2266,14 +2442,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		ERR_FAIL_NULL_V_MSG(n, nullptr, "Neighbor focus node path is invalid: '" + data.focus_neighbor[p_side] + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Neighbor focus node is not a control: '" + n->get_name() + "'.");
-		bool valid = true;
-		if (!c->is_visible()) {
-			valid = false;
-		}
-		if (c->get_focus_mode() == FOCUS_NONE) {
-			valid = false;
-		}
-		if (valid) {
+		if (c->is_visible_in_tree() && c->get_focus_mode_with_recursive() != FOCUS_NONE) {
 			return c;
 		}
 
@@ -2281,17 +2450,8 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		return c;
 	}
 
-	real_t dist = 1e7;
+	real_t square_of_dist = 1e14;
 	Control *result = nullptr;
-
-	Point2 points[4];
-
-	Transform2D xform = get_global_transform();
-
-	points[0] = xform.xform(Point2());
-	points[1] = xform.xform(Point2(get_size().x, 0));
-	points[2] = xform.xform(get_size());
-	points[3] = xform.xform(Point2(0, get_size().y));
 
 	const Vector2 dir[4] = {
 		Vector2(-1, 0),
@@ -2302,18 +2462,73 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 
 	Vector2 vdir = dir[p_side];
 
-	real_t maxd = -1e7;
+	Rect2 r = get_global_rect();
+	real_t begin_d = vdir.dot(r.get_position());
+	real_t end_d = vdir.dot(r.get_end());
+	real_t maxd = MAX(begin_d, end_d);
 
-	for (int i = 0; i < 4; i++) {
-		real_t d = vdir.dot(points[i]);
-		if (d > maxd) {
-			maxd = d;
-		}
-	}
+	Rect2 clamp = Rect2(-1e7, -1e7, 2e7, 2e7);
+	Rect2 result_rect;
 
 	Node *base = this;
 
 	while (base) {
+		ScrollContainer *sc = Object::cast_to<ScrollContainer>(base);
+
+		if (sc) {
+			Rect2 sc_r = sc->get_global_rect();
+			bool follow_focus = sc->is_following_focus();
+
+			if (result && !follow_focus && !sc_r.intersects(result_rect)) {
+				result = nullptr; // Skip invisible control.
+			}
+
+			if (result == nullptr) {
+				real_t sc_begin_d = vdir.dot(sc_r.get_position());
+				real_t sc_end_d = vdir.dot(sc_r.get_end());
+				real_t sc_maxd = sc_begin_d;
+				real_t sc_mind = sc_end_d;
+				if (sc_begin_d < sc_end_d) {
+					sc_maxd = sc_end_d;
+					sc_mind = sc_begin_d;
+				}
+
+				if (!follow_focus && maxd < sc_mind) {
+					// Reposition to find visible control.
+					maxd = sc_mind;
+					r.set_position(r.get_position() + (sc_mind - maxd) * vdir);
+				}
+
+				if (follow_focus || sc_maxd > maxd) {
+					_window_find_focus_neighbor(vdir, base, r, clamp, maxd, square_of_dist, &result);
+				}
+
+				if (result == nullptr) {
+					// Reposition to search upwards.
+					maxd = sc_maxd;
+					r.set_position(r.get_position() + (sc_maxd - maxd) * vdir);
+				} else {
+					result_rect = result->get_global_rect();
+					if (follow_focus) {
+						real_t r_begin_d = vdir.dot(result_rect.get_position());
+						real_t r_end_d = vdir.dot(result_rect.get_end());
+						real_t r_maxd = r_begin_d;
+						real_t r_mind = r_end_d;
+						if (r_begin_d < r_end_d) {
+							r_maxd = r_end_d;
+							r_mind = r_begin_d;
+						}
+
+						if (r_maxd > sc_maxd) {
+							result_rect.set_position(result_rect.get_position() + (sc_maxd - r_maxd) * vdir);
+						} else if (r_mind < sc_mind) {
+							result_rect.set_position(result_rect.get_position() + (sc_mind - r_mind) * vdir);
+						}
+					}
+				}
+			}
+		}
+
 		Control *c = Object::cast_to<Control>(base);
 		if (c) {
 			if (c->data.RI) {
@@ -2323,85 +2538,156 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		base = base->get_parent();
 	}
 
+	if (result) {
+		return result;
+	}
+
 	if (!base) {
 		return nullptr;
 	}
 
-	_window_find_focus_neighbor(vdir, base, points, maxd, dist, &result);
+	_window_find_focus_neighbor(vdir, base, r, clamp, maxd, square_of_dist, &result);
 
 	return result;
+}
+
+bool Control::_is_focus_disabled_recursively() const {
+	switch (data.focus_recursive_behavior) {
+		case RECURSIVE_BEHAVIOR_INHERITED:
+			return data.parent_focus_recursive_behavior == RECURSIVE_BEHAVIOR_DISABLED;
+		case RECURSIVE_BEHAVIOR_DISABLED:
+			return true;
+		case RECURSIVE_BEHAVIOR_ENABLED:
+			return false;
+	}
+	return false;
+}
+
+void Control::_propagate_focus_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_skip_non_inherited) {
+	if (is_inside_tree() && (data.focus_recursive_behavior == RECURSIVE_BEHAVIOR_DISABLED || (data.focus_recursive_behavior == RECURSIVE_BEHAVIOR_INHERITED && p_focus_recursive_behavior == RECURSIVE_BEHAVIOR_DISABLED)) && has_focus()) {
+		release_focus();
+	}
+
+	if (p_skip_non_inherited && data.focus_recursive_behavior != RECURSIVE_BEHAVIOR_INHERITED) {
+		return;
+	}
+
+	data.parent_focus_recursive_behavior = p_focus_recursive_behavior;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *control = Object::cast_to<Control>(get_child(i));
+		if (control) {
+			control->_propagate_focus_behavior_recursively(p_focus_recursive_behavior, true);
+		}
+	}
+}
+
+bool Control::_is_parent_mouse_disabled() const {
+	switch (data.mouse_recursive_behavior) {
+		case RECURSIVE_BEHAVIOR_INHERITED:
+			return data.parent_mouse_recursive_behavior == RECURSIVE_BEHAVIOR_DISABLED;
+		case RECURSIVE_BEHAVIOR_DISABLED:
+			return true;
+		case RECURSIVE_BEHAVIOR_ENABLED:
+			return false;
+	}
+	return false;
+}
+
+void Control::_propagate_mouse_behavior_recursively(RecursiveBehavior p_mouse_recursive_behavior, bool p_skip_non_inherited) {
+	if (p_skip_non_inherited && data.mouse_recursive_behavior != RECURSIVE_BEHAVIOR_INHERITED) {
+		return;
+	}
+
+	data.parent_mouse_recursive_behavior = p_mouse_recursive_behavior;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *control = Object::cast_to<Control>(get_child(i));
+		if (control) {
+			control->_propagate_mouse_behavior_recursively(p_mouse_recursive_behavior, true);
+		}
+	}
 }
 
 Control *Control::find_valid_focus_neighbor(Side p_side) const {
 	return const_cast<Control *>(this)->_get_focus_neighbor(p_side);
 }
 
-void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, real_t p_min, real_t &r_closest_dist, Control **r_closest) {
+void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest) {
 	if (Object::cast_to<Viewport>(p_at)) {
-		return; //bye
+		return; // Bye.
 	}
 
+	bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
+
 	Control *c = Object::cast_to<Control>(p_at);
+	Container *container = Object::cast_to<Container>(p_at);
+	bool in_container = container ? container->is_ancestor_of(this) : false;
 
-	if (c && c != this && c->get_focus_mode() == FOCUS_ALL && c->is_visible_in_tree()) {
-		Point2 points[4];
+	if (c && c != this && ((c->get_focus_mode_with_recursive() == FOCUS_ALL) || (ac_enabled && c->get_focus_mode_with_recursive() == FOCUS_ACCESSIBILITY)) && !in_container && p_clamp.intersects(c->get_global_rect())) {
+		Rect2 r_c = c->get_global_rect();
+		r_c = r_c.intersection(p_clamp);
+		real_t begin_d = p_dir.dot(r_c.get_position());
+		real_t end_d = p_dir.dot(r_c.get_end());
+		real_t max = MAX(begin_d, end_d);
 
-		Transform2D xform = c->get_global_transform();
+		// Use max to allow navigation to overlapping controls (for ScrollContainer case).
+		if (max > (p_min + CMP_EPSILON)) {
+			// Calculate the shortest distance. (No shear transform)
+			// Flip along axis(es) so that C falls in the first quadrant of c (as origin) for easy calculation.
+			// The same transformation would put the direction vector in the positive direction (+x or +y).
+			//       |           -------------
+			//       |           |     |     |
+			//       |           |-----C-----|
+			//   ----|---a       |     |     |
+			//   |   |   |       b------------
+			//  -|---c---|----------------------->
+			//   |   |   |
+			//   ----|----
+			// cC = ca + ab + bC
+			// The shortest distance is the vector ab's length or its positive projection length.
 
-		points[0] = xform.xform(Point2());
-		points[1] = xform.xform(Point2(c->get_size().x, 0));
-		points[2] = xform.xform(c->get_size());
-		points[3] = xform.xform(Point2(0, c->get_size().y));
+			Vector2 cC_origin = r_c.get_center() - p_rect.get_center();
+			Vector2 cC = cC_origin.abs(); // Converted to fall in the first quadrant of c.
 
-		// Tie-breaking aims to address situations where a potential focus neighbor's bounding rect
-		// is right next to the currently focused control (e.g. in BoxContainer with
-		// separation overridden to 0). This needs specific handling so that the correct
-		// focus neighbor is selected.
+			Vector2 ab = cC - 0.5 * r_c.get_size() - 0.5 * p_rect.get_size();
 
-		// Calculate centers of the potential neighbor, currently focused, and closest controls.
-		Point2 center = xform.xform(0.5 * c->get_size());
-		// We only have the points, not an actual reference.
-		Point2 p_center = 0.25 * (p_points[0] + p_points[1] + p_points[2] + p_points[3]);
-		Point2 closest_center;
-		bool should_tiebreak = false;
-		if (*r_closest != nullptr) {
-			should_tiebreak = true;
-			Control *closest = *r_closest;
-			Transform2D closest_xform = closest->get_global_transform();
-			closest_center = closest_xform.xform(0.5 * closest->get_size());
-		}
+			real_t min_d_squared = 0.0;
+			if (ab.x > 0.0) {
+				min_d_squared += ab.x * ab.x;
+			}
+			if (ab.y > 0.0) {
+				min_d_squared += ab.y * ab.y;
+			}
 
-		real_t min = 1e7;
+			if (min_d_squared < r_closest_dist_squared || *r_closest == nullptr) {
+				r_closest_dist_squared = min_d_squared;
+				*r_closest = c;
+			} else if (min_d_squared == r_closest_dist_squared) {
+				// Tie-breaking aims to address situations where a potential focus neighbor's bounding rect
+				// is right next to the currently focused control (e.g. in BoxContainer with
+				// separation overridden to 0). This needs specific handling so that the correct
+				// focus neighbor is selected.
 
-		for (int i = 0; i < 4; i++) {
-			real_t d = p_dir.dot(points[i]);
-			if (d < min) {
-				min = d;
+				Point2 p_center = p_rect.get_center();
+				Control *closest = *r_closest;
+				Point2 closest_center = closest->get_global_rect().get_center();
+
+				// Tie-break in favor of the control most aligned with p_dir.
+				if (Math::abs(p_dir.cross(cC_origin)) < Math::abs(p_dir.cross(closest_center - p_center))) {
+					*r_closest = c;
+				}
 			}
 		}
+	}
 
-		if (min > (p_min - CMP_EPSILON)) {
-			for (int i = 0; i < 4; i++) {
-				Vector2 la = p_points[i];
-				Vector2 lb = p_points[(i + 1) % 4];
-
-				for (int j = 0; j < 4; j++) {
-					Vector2 fa = points[j];
-					Vector2 fb = points[(j + 1) % 4];
-
-					Vector2 pa, pb;
-					real_t d = Geometry2D::get_closest_points_between_segments(la, lb, fa, fb, pa, pb);
-					if (d < r_closest_dist) {
-						r_closest_dist = d;
-						*r_closest = c;
-					} else if (should_tiebreak && d == r_closest_dist) {
-						// Tie-break in favor of the control most aligned with p_dir.
-						if (p_dir.dot((center - p_center).normalized()) > p_dir.dot((closest_center - p_center).normalized())) {
-							r_closest_dist = d;
-							*r_closest = c;
-						}
-					}
-				}
+	ScrollContainer *sc = Object::cast_to<ScrollContainer>(c);
+	Rect2 intersection = p_clamp;
+	if (sc) {
+		if (!sc->is_following_focus() || !in_container) {
+			intersection = p_clamp.intersection(sc->get_global_rect());
+			if (!intersection.has_area()) {
+				return;
 			}
 		}
 	}
@@ -2409,10 +2695,18 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	for (int i = 0; i < p_at->get_child_count(); i++) {
 		Node *child = p_at->get_child(i);
 		Control *childc = Object::cast_to<Control>(child);
-		if (childc && childc->data.RI) {
-			continue; //subwindow, ignore
+		if (childc) {
+			if (childc->data.RI) {
+				continue; // Subwindow, ignore.
+			}
+			if (!childc->is_visible_in_tree()) {
+				continue; // Skip invisible node trees.
+			}
+			if (Object::cast_to<ScrollContainer>(childc) && childc->is_ancestor_of(this)) {
+				continue; // Already searched in it, skip it.
+			}
 		}
-		_window_find_focus_neighbor(p_dir, p_at->get_child(i), p_points, p_min, r_closest_dist, r_closest);
+		_window_find_focus_neighbor(p_dir, child, p_rect, intersection, p_min, r_closest_dist_squared, r_closest);
 	}
 }
 
@@ -2743,6 +3037,44 @@ Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p
 	return Variant();
 }
 
+Variant Control::get_used_theme_item(const String &p_full_name, const StringName &p_theme_type) const {
+	if (p_full_name.begins_with("theme_override_icons/")) {
+		String name = p_full_name.substr(strlen("theme_override_icons/"));
+		if (has_theme_icon(name)) { // Exclude cached and default ones.
+			return get_theme_icon(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_styles/")) {
+		String name = p_full_name.substr(strlen("theme_override_styles/"));
+		if (has_theme_stylebox(name)) {
+			return get_theme_stylebox(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_fonts/")) {
+		String name = p_full_name.substr(strlen("theme_override_fonts/"));
+		if (has_theme_font(name)) {
+			return get_theme_font(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_font_sizes/")) {
+		String name = p_full_name.substr(strlen("theme_override_font_sizes/"));
+		if (has_theme_font_size(name)) {
+			return get_theme_font_size(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_colors/")) {
+		String name = p_full_name.substr(strlen("theme_override_colors/"));
+		if (has_theme_color(name)) {
+			return get_theme_color(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_constants/")) {
+		String name = p_full_name.substr(strlen("theme_override_constants/"));
+		if (has_theme_constant(name)) {
+			return get_theme_constant(name);
+		}
+	} else {
+		ERR_FAIL_V_MSG(Variant(), vformat("The property %s is not a theme item.", p_full_name));
+	}
+
+	return Variant();
+}
+
 #ifdef TOOLS_ENABLED
 Ref<Texture2D> Control::get_editor_theme_icon(const StringName &p_name) const {
 	return get_theme_icon(p_name, SNAME("EditorIcons"));
@@ -2855,7 +3187,7 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 
 void Control::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!p_icon.is_valid());
+	ERR_FAIL_COND(p_icon.is_null());
 
 	if (data.theme_icon_override.has(p_name)) {
 		data.theme_icon_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
@@ -2868,7 +3200,7 @@ void Control::add_theme_icon_override(const StringName &p_name, const Ref<Textur
 
 void Control::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!p_style.is_valid());
+	ERR_FAIL_COND(p_style.is_null());
 
 	if (data.theme_style_override.has(p_name)) {
 		data.theme_style_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
@@ -2881,7 +3213,7 @@ void Control::add_theme_style_override(const StringName &p_name, const Ref<Style
 
 void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!p_font.is_valid());
+	ERR_FAIL_COND(p_font.is_null());
 
 	if (data.theme_font_override.has(p_name)) {
 		data.theme_font_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
@@ -3059,11 +3391,11 @@ Control::LayoutDirection Control::get_layout_direction() const {
 bool Control::is_layout_rtl() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (data.is_rtl_dirty) {
-		const_cast<Control *>(this)->data.is_rtl_dirty = false;
+		data.is_rtl_dirty = false;
 		if (data.layout_dir == LAYOUT_DIRECTION_INHERITED) {
 #ifdef TOOLS_ENABLED
 			if (is_part_of_edited_scene() && GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
-				const_cast<Control *>(this)->data.is_rtl = true;
+				data.is_rtl = true;
 				return data.is_rtl;
 			}
 			if (is_inside_tree()) {
@@ -3071,22 +3403,22 @@ bool Control::is_layout_rtl() const {
 				if (edited_scene_root == this) {
 					int proj_root_layout_direction = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
 					if (proj_root_layout_direction == 1) {
-						const_cast<Control *>(this)->data.is_rtl = false;
+						data.is_rtl = false;
 					} else if (proj_root_layout_direction == 2) {
-						const_cast<Control *>(this)->data.is_rtl = true;
+						data.is_rtl = true;
 					} else if (proj_root_layout_direction == 3) {
 						String locale = OS::get_singleton()->get_locale();
-						const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+						data.is_rtl = TS->is_locale_right_to_left(locale);
 					} else {
 						String locale = TranslationServer::get_singleton()->get_tool_locale();
-						const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+						data.is_rtl = TS->is_locale_right_to_left(locale);
 					}
 					return data.is_rtl;
 				}
 			}
 #else
 			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
-				const_cast<Control *>(this)->data.is_rtl = true;
+				data.is_rtl = true;
 				return data.is_rtl;
 			}
 #endif // TOOLS_ENABLED
@@ -3094,35 +3426,35 @@ bool Control::is_layout_rtl() const {
 			while (parent_node) {
 				Control *parent_control = Object::cast_to<Control>(parent_node);
 				if (parent_control) {
-					const_cast<Control *>(this)->data.is_rtl = parent_control->is_layout_rtl();
+					data.is_rtl = parent_control->is_layout_rtl();
 					return data.is_rtl;
 				}
 
 				Window *parent_window = Object::cast_to<Window>(parent_node);
 				if (parent_window) {
-					const_cast<Control *>(this)->data.is_rtl = parent_window->is_layout_rtl();
+					data.is_rtl = parent_window->is_layout_rtl();
 					return data.is_rtl;
 				}
 				parent_node = parent_node->get_parent();
 			}
 
 			if (root_layout_direction == 1) {
-				const_cast<Control *>(this)->data.is_rtl = false;
+				data.is_rtl = false;
 			} else if (root_layout_direction == 2) {
-				const_cast<Control *>(this)->data.is_rtl = true;
+				data.is_rtl = true;
 			} else if (root_layout_direction == 3) {
 				String locale = OS::get_singleton()->get_locale();
-				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+				data.is_rtl = TS->is_locale_right_to_left(locale);
 			} else {
 				String locale = TranslationServer::get_singleton()->get_tool_locale();
-				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+				data.is_rtl = TS->is_locale_right_to_left(locale);
 			}
 		} else if (data.layout_dir == LAYOUT_DIRECTION_APPLICATION_LOCALE) {
 			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
-				const_cast<Control *>(this)->data.is_rtl = true;
+				data.is_rtl = true;
 			} else {
 				String locale = TranslationServer::get_singleton()->get_tool_locale();
-				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+				data.is_rtl = TS->is_locale_right_to_left(locale);
 			}
 		} else if (data.layout_dir == LAYOUT_DIRECTION_SYSTEM_LOCALE) {
 			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
@@ -3132,7 +3464,7 @@ bool Control::is_layout_rtl() const {
 				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
 			}
 		} else {
-			const_cast<Control *>(this)->data.is_rtl = (data.layout_dir == LAYOUT_DIRECTION_RTL);
+			data.is_rtl = (data.layout_dir == LAYOUT_DIRECTION_RTL);
 		}
 	}
 	return data.is_rtl;
@@ -3198,6 +3530,13 @@ String Control::get_tooltip(const Point2 &p_pos) const {
 	return data.tooltip;
 }
 
+String Control::accessibility_get_contextual_info() const {
+	ERR_READ_THREAD_GUARD_V(String());
+	String ret;
+	GDVIRTUAL_CALL(_accessibility_get_contextual_info, ret);
+	return ret;
+}
+
 Control *Control::make_custom_tooltip(const String &p_text) const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
 	Object *ret = nullptr;
@@ -3206,6 +3545,35 @@ Control *Control::make_custom_tooltip(const String &p_text) const {
 }
 
 // Base object overrides.
+
+void Control::_accessibility_action_foucs(const Variant &p_data) {
+	grab_focus();
+}
+
+void Control::_accessibility_action_blur(const Variant &p_data) {
+	release_focus();
+}
+
+void Control::_accessibility_action_show_tooltip(const Variant &p_data) {
+	Viewport *vp = get_viewport();
+	if (vp) {
+		vp->show_tooltip(this);
+	}
+}
+
+void Control::_accessibility_action_hide_tooltip(const Variant &p_data) {
+	Viewport *vp = get_viewport();
+	if (vp) {
+		vp->cancel_tooltip();
+	}
+}
+
+void Control::_accessibility_action_scroll_into_view(const Variant &p_data) {
+	ScrollContainer *sc = Object::cast_to<ScrollContainer>(get_parent());
+	if (sc) {
+		sc->ensure_control_visible(this);
+	}
+}
 
 void Control::_notification(int p_notification) {
 	ERR_MAIN_THREAD_GUARD;
@@ -3218,6 +3586,31 @@ void Control::_notification(int p_notification) {
 			saving = false;
 		} break;
 #endif // TOOLS_ENABLED
+
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
+			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Vector2(), data.size_cache));
+			DisplayServer::get_singleton()->accessibility_update_set_tooltip(ae, data.tooltip);
+			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_CLIPS_CHILDREN, data.clip_contents);
+			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_TOUCH_PASSTHROUGH, data.mouse_filter == MOUSE_FILTER_PASS);
+
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Control::_accessibility_action_foucs));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &Control::_accessibility_action_blur));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_TOOLTIP, callable_mp(this, &Control::_accessibility_action_show_tooltip));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_HIDE_TOOLTIP, callable_mp(this, &Control::_accessibility_action_hide_tooltip));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &Control::_accessibility_action_scroll_into_view));
+			if (is_inside_tree() && get_viewport()->gui_is_dragging()) {
+				if (can_drop_data(Vector2(INFINITY, INFINITY), get_viewport()->gui_get_drag_data())) {
+					DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(RTR("%s can be dropped here. Use %s to drop, use %s to cancel."), get_viewport()->gui_get_drag_description(), InputMap::get_singleton()->get_action_description("ui_accessibility_drag_and_drop"), InputMap::get_singleton()->get_action_description("ui_cancel")));
+				} else {
+					DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(RTR("%s can not be dropped here. Use %s to cancel."), get_viewport()->gui_get_drag_description(), InputMap::get_singleton()->get_action_description("ui_cancel")));
+				}
+			}
+		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			data.initialized = true;
 
@@ -3233,6 +3626,9 @@ void Control::_notification(int p_notification) {
 			data.theme_owner->assign_theme_on_parented(this);
 
 			_update_layout_mode();
+
+			_set_focus_recursive_behavior_ignore_cache(data.focus_recursive_behavior);
+			_set_mouse_recursive_behavior_ignore_cache(data.mouse_recursive_behavior);
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
@@ -3453,6 +3849,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_rect"), &Control::get_global_rect);
 	ClassDB::bind_method(D_METHOD("set_focus_mode", "mode"), &Control::set_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_focus_mode"), &Control::get_focus_mode);
+	ClassDB::bind_method(D_METHOD("get_focus_mode_with_recursive"), &Control::get_focus_mode_with_recursive);
+	ClassDB::bind_method(D_METHOD("set_focus_recursive_behavior", "focus_recursive_behavior"), &Control::set_focus_recursive_behavior);
+	ClassDB::bind_method(D_METHOD("get_focus_recursive_behavior"), &Control::get_focus_recursive_behavior);
 	ClassDB::bind_method(D_METHOD("has_focus"), &Control::has_focus);
 	ClassDB::bind_method(D_METHOD("grab_focus"), &Control::grab_focus);
 	ClassDB::bind_method(D_METHOD("release_focus"), &Control::release_focus);
@@ -3546,8 +3945,15 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview"), &Control::force_drag);
 
+	ClassDB::bind_method(D_METHOD("accessibility_drag"), &Control::accessibility_drag);
+	ClassDB::bind_method(D_METHOD("accessibility_drop"), &Control::accessibility_drop);
+
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
+	ClassDB::bind_method(D_METHOD("get_mouse_filter_with_recursive"), &Control::get_mouse_filter_with_recursive);
+
+	ClassDB::bind_method(D_METHOD("set_mouse_recursive_behavior", "mouse_recursive_behavior"), &Control::set_mouse_recursive_behavior);
+	ClassDB::bind_method(D_METHOD("get_mouse_recursive_behavior"), &Control::get_mouse_recursive_behavior);
 
 	ClassDB::bind_method(D_METHOD("set_force_pass_scroll_events", "force_pass_scroll_events"), &Control::set_force_pass_scroll_events);
 	ClassDB::bind_method(D_METHOD("is_force_pass_scroll_events"), &Control::is_force_pass_scroll_events);
@@ -3602,10 +4008,10 @@ void Control::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_bottom", PROPERTY_HINT_RANGE, "0,1,0.001,or_less,or_greater"), "_set_anchor", "get_anchor", SIDE_BOTTOM);
 
 	ADD_SUBGROUP_INDENT("Anchor Offsets", "offset_", 1);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_left", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_top", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_right", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_bottom", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "offset_left", PROPERTY_HINT_RANGE, "-4096,4096,1,or_less,or_greater,suffix:px"), "set_offset", "get_offset", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "offset_top", PROPERTY_HINT_RANGE, "-4096,4096,1,or_less,or_greater,suffix:px"), "set_offset", "get_offset", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "offset_right", PROPERTY_HINT_RANGE, "-4096,4096,1,or_less,or_greater,suffix:px"), "set_offset", "get_offset", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "offset_bottom", PROPERTY_HINT_RANGE, "-4096,4096,1,or_less,or_greater,suffix:px"), "set_offset", "get_offset", SIDE_BOTTOM);
 
 	ADD_SUBGROUP_INDENT("Grow Direction", "grow_", 1);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_horizontal", PROPERTY_HINT_ENUM, "Left,Right,Both"), "set_h_grow_direction", "get_h_grow_direction");
@@ -3643,10 +4049,12 @@ void Control::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::NODE_PATH, "focus_neighbor_bottom", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbor", "get_focus_neighbor", SIDE_BOTTOM);
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "focus_next", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_next", "get_focus_next");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "focus_previous", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_previous", "get_focus_previous");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All,Accessibility"), "set_focus_mode", "get_focus_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_recursive_behavior", PROPERTY_HINT_ENUM, "Inherited,Disabled,Enabled"), "set_focus_recursive_behavior", "get_focus_recursive_behavior");
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass (Propagate Up),Ignore"), "set_mouse_filter", "get_mouse_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_recursive_behavior", PROPERTY_HINT_ENUM, "Inherited,Disabled,Enabled"), "set_mouse_recursive_behavior", "get_mouse_recursive_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_force_pass_scroll_events"), "set_force_pass_scroll_events", "is_force_pass_scroll_events");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
 
@@ -3660,6 +4068,11 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(FOCUS_NONE);
 	BIND_ENUM_CONSTANT(FOCUS_CLICK);
 	BIND_ENUM_CONSTANT(FOCUS_ALL);
+	BIND_ENUM_CONSTANT(FOCUS_ACCESSIBILITY);
+
+	BIND_ENUM_CONSTANT(RECURSIVE_BEHAVIOR_INHERITED);
+	BIND_ENUM_CONSTANT(RECURSIVE_BEHAVIOR_DISABLED);
+	BIND_ENUM_CONSTANT(RECURSIVE_BEHAVIOR_ENABLED);
 
 	BIND_CONSTANT(NOTIFICATION_RESIZED);
 	BIND_CONSTANT(NOTIFICATION_MOUSE_ENTER);
@@ -3765,6 +4178,8 @@ void Control::_bind_methods() {
 	GDVIRTUAL_BIND(_can_drop_data, "at_position", "data");
 	GDVIRTUAL_BIND(_drop_data, "at_position", "data");
 	GDVIRTUAL_BIND(_make_custom_tooltip, "for_text");
+
+	GDVIRTUAL_BIND(_accessibility_get_contextual_info);
 
 	GDVIRTUAL_BIND(_gui_input, "event");
 }

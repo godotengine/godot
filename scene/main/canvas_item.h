@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CANVAS_ITEM_H
-#define CANVAS_ITEM_H
+#pragma once
 
 #include "scene/main/node.h"
-#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/font.h"
 
 class CanvasLayer;
@@ -116,6 +114,8 @@ private:
 	TextureRepeat texture_repeat = TEXTURE_REPEAT_PARENT_NODE;
 
 	Ref<Material> material;
+	mutable HashMap<StringName, Variant> instance_shader_parameters;
+	mutable HashMap<StringName, StringName> instance_shader_parameter_property_remap;
 
 	mutable Transform2D global_transform;
 	mutable MTFlag global_invalid;
@@ -150,8 +150,13 @@ private:
 	void _update_texture_filter_changed(bool p_propagate);
 
 	void _notify_transform_deferred();
+	const StringName *_instance_shader_parameter_get_remap(const StringName &p_name) const;
 
 protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat);
 	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter);
 
@@ -163,6 +168,8 @@ protected:
 	}
 
 	void item_rect_changed(bool p_size_changed = true);
+
+	void set_canvas_item_use_identity_transform(bool p_enable);
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -333,6 +340,7 @@ public:
 	virtual Transform2D get_transform() const = 0;
 
 	virtual Transform2D get_global_transform() const;
+	virtual Transform2D get_global_transform_const() const;
 	virtual Transform2D get_global_transform_with_canvas() const;
 	virtual Transform2D get_screen_transform() const;
 
@@ -354,6 +362,9 @@ public:
 
 	virtual void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+
+	void set_instance_shader_parameter(const StringName &p_name, const Variant &p_value);
+	Variant get_instance_shader_parameter(const StringName &p_name) const;
 
 	virtual void set_use_parent_material(bool p_use_parent_material);
 	bool get_use_parent_material() const;
@@ -386,6 +397,8 @@ public:
 
 	int get_canvas_layer() const;
 	CanvasLayer *get_canvas_layer_node() const;
+
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	CanvasItem();
 	~CanvasItem();
@@ -448,5 +461,3 @@ public:
 	CanvasTexture();
 	~CanvasTexture();
 };
-
-#endif // CANVAS_ITEM_H

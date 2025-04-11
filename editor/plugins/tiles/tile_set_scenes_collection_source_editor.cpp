@@ -104,7 +104,7 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_b
 }
 
 void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(p_tile_set.is_null());
 	ERR_FAIL_NULL(p_tile_set_scenes_collection_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_scenes_collection_source);
@@ -233,7 +233,7 @@ void TileSetScenesCollectionSourceEditor::_scene_thumbnail_done(const String &p_
 void TileSetScenesCollectionSourceEditor::_scenes_list_item_activated(int p_index) {
 	Ref<PackedScene> packed_scene = tile_set_scenes_collection_source->get_scene_tile_scene(scene_tiles_list->get_item_metadata(p_index));
 	if (packed_scene.is_valid()) {
-		EditorNode::get_singleton()->open_request(packed_scene->get_path());
+		EditorNode::get_singleton()->load_scene(packed_scene->get_path());
 	}
 }
 
@@ -302,7 +302,7 @@ void TileSetScenesCollectionSourceEditor::_update_tile_inspector() {
 
 void TileSetScenesCollectionSourceEditor::_update_action_buttons() {
 	Vector<int> selected_indices = scene_tiles_list->get_selected_items();
-	scene_tile_delete_button->set_disabled(selected_indices.size() <= 0 || read_only);
+	scene_tile_delete_button->set_disabled(selected_indices.is_empty() || read_only);
 }
 
 void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
@@ -398,7 +398,7 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 }
 
 void TileSetScenesCollectionSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(p_tile_set.is_null());
 	ERR_FAIL_NULL(p_tile_set_scenes_collection_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_scenes_collection_source);
@@ -483,7 +483,7 @@ bool TileSetScenesCollectionSourceEditor::_can_drop_data_fw(const Point2 &p_poin
 		if (String(d["type"]) == "files") {
 			Vector<String> files = d["files"];
 
-			if (files.size() == 0) {
+			if (files.is_empty()) {
 				return false;
 			}
 
@@ -571,14 +571,16 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	right_vbox_container->add_child(scenes_bottom_actions);
 
 	scene_tile_add_button = memnew(Button);
-	scene_tile_add_button->set_theme_type_variation("FlatButton");
+	scene_tile_add_button->set_theme_type_variation(SceneStringName(FlatButton));
 	scene_tile_add_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_add_pressed));
+	scene_tile_add_button->set_accessibility_name(TTRC("Add"));
 	scenes_bottom_actions->add_child(scene_tile_add_button);
 
 	scene_tile_delete_button = memnew(Button);
-	scene_tile_delete_button->set_theme_type_variation("FlatButton");
+	scene_tile_delete_button->set_theme_type_variation(SceneStringName(FlatButton));
 	scene_tile_delete_button->set_disabled(true);
 	scene_tile_delete_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_delete_pressed));
+	scene_tile_delete_button->set_accessibility_name(TTRC("Delete"));
 	scenes_bottom_actions->add_child(scene_tile_delete_button);
 
 	EditorInspector::add_inspector_plugin(memnew(TileSourceInspectorPlugin));

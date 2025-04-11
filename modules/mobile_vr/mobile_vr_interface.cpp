@@ -33,7 +33,7 @@
 #include "core/input/input.h"
 #include "core/os/os.h"
 #include "servers/display_server.h"
-#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/renderer_compositor.h"
 
 StringName MobileVRInterface::get_name() const {
 	return "Native mobile";
@@ -135,7 +135,6 @@ void MobileVRInterface::set_position_from_sensors() {
 	// few things we need
 	Input *input = Input::get_singleton();
 	Vector3 down(0.0, -1.0, 0.0); // Down is Y negative
-	Vector3 north(0.0, 0.0, 1.0); // North is Z positive
 
 	// make copies of our inputs
 	bool has_grav = false;

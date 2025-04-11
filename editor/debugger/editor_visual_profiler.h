@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_VISUAL_PROFILER_H
-#define EDITOR_VISUAL_PROFILER_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -98,6 +97,9 @@ private:
 
 	float graph_limit = 1000.0f / 60;
 
+	String cpu_name;
+	String gpu_name;
+
 	bool seeking = false;
 
 	Timer *frame_delay = nullptr;
@@ -136,6 +138,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_hardware_info(const String &p_cpu_name, const String &p_gpu_name);
 	void add_frame_metric(const Metric &p_metric);
 	void set_enabled(bool p_enable);
 	void set_profiling(bool p_profiling);
@@ -149,5 +152,3 @@ public:
 
 	EditorVisualProfiler();
 };
-
-#endif // EDITOR_VISUAL_PROFILER_H

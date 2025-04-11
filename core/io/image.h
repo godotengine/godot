@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IMAGE_H
-#define IMAGE_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/math/color.h"
-#include "core/math/rect2.h"
 
 /**
  * Image storage class. This is used to store an image in user memory, as well as
@@ -60,6 +58,9 @@ typedef Vector<uint8_t> (*SaveWebPBufferFunc)(const Ref<Image> &p_img, const boo
 typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
 typedef Vector<uint8_t> (*SaveEXRBufferFunc)(const Ref<Image> &p_img, bool p_grayscale);
 
+typedef Error (*SaveDDSFunc)(const String &p_path, const Ref<Image> &p_img);
+typedef Vector<uint8_t> (*SaveDDSBufferFunc)(const Ref<Image> &p_img);
+
 class Image : public Resource {
 	GDCLASS(Image, Resource);
 
@@ -70,7 +71,7 @@ public:
 		MAX_PIXELS = 268435456 // 16384 ^ 2
 	};
 
-	enum Format {
+	enum Format : int32_t {
 		FORMAT_L8, // Luminance
 		FORMAT_LA8, // Luminance-Alpha
 		FORMAT_R8,
@@ -187,10 +188,12 @@ public:
 	static SaveJPGFunc save_jpg_func;
 	static SaveEXRFunc save_exr_func;
 	static SaveWebPFunc save_webp_func;
+	static SaveDDSFunc save_dds_func;
 	static SavePNGBufferFunc save_png_buffer_func;
 	static SaveEXRBufferFunc save_exr_buffer_func;
 	static SaveJPGBufferFunc save_jpg_buffer_func;
 	static SaveWebPBufferFunc save_webp_buffer_func;
+	static SaveDDSBufferFunc save_dds_buffer_func;
 
 	// External loader function pointers.
 
@@ -202,6 +205,7 @@ public:
 	static ImageMemLoadFunc _bmp_mem_loader_func;
 	static ScalableImageMemLoadFunc _svg_scalable_mem_loader_func;
 	static ImageMemLoadFunc _ktx_mem_loader_func;
+	static ImageMemLoadFunc _dds_mem_loader_func;
 
 	// External VRAM compression function pointers.
 
@@ -252,7 +256,6 @@ private:
 	_FORCE_INLINE_ void _get_mipmap_offset_and_size(int p_mipmap, int64_t &r_offset, int &r_width, int &r_height) const; // Get where the mipmap begins in data.
 
 	static int64_t _get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps = -1, int *r_mm_width = nullptr, int *r_mm_height = nullptr);
-	bool _can_modify(Format p_format) const;
 
 	_FORCE_INLINE_ void _get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest, Rect2i &r_clipped_src_rect, Rect2i &r_clipped_dest_rect) const;
 
@@ -265,6 +268,8 @@ private:
 	Dictionary _get_data() const;
 
 	Error _load_from_buffer(const Vector<uint8_t> &p_array, ImageMemLoadFunc p_loader);
+
+	_FORCE_INLINE_ void _generate_mipmap_from_format(Image::Format p_format, const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height, bool p_renormalize = false);
 
 	static void average_4_uint8(uint8_t &p_out, const uint8_t &p_a, const uint8_t &p_b, const uint8_t &p_c, const uint8_t &p_d);
 	static void average_4_float(float &p_out, const float &p_a, const float &p_b, const float &p_c, const float &p_d);
@@ -333,9 +338,11 @@ public:
 	static Ref<Image> load_from_file(const String &p_path);
 	Error save_png(const String &p_path) const;
 	Error save_jpg(const String &p_path, float p_quality = 0.75) const;
+	Error save_dds(const String &p_path) const;
 	Vector<uint8_t> save_png_to_buffer() const;
 	Vector<uint8_t> save_jpg_to_buffer(float p_quality = 0.75) const;
 	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale = false) const;
+	Vector<uint8_t> save_dds_to_buffer() const;
 	Error save_exr(const String &p_path, bool p_grayscale = false) const;
 	Error save_webp(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
 	Vector<uint8_t> save_webp_to_buffer(const bool p_lossy = false, const float p_quality = 0.75f) const;
@@ -372,6 +379,8 @@ public:
 	bool is_compressed() const;
 	static bool is_format_compressed(Format p_format);
 
+	static bool can_decompress(const String &p_format_tag);
+
 	void fix_alpha_edges();
 	void premultiply_alpha();
 	void srgb_to_linear();
@@ -393,9 +402,8 @@ public:
 	Rect2i get_used_rect() const;
 	Ref<Image> get_region(const Rect2i &p_area) const;
 
-	static void set_compress_bc_func(void (*p_compress_func)(Image *, UsedChannels));
-	static void set_compress_bptc_func(void (*p_compress_func)(Image *, UsedChannels));
 	static String get_format_name(Format p_format);
+	static uint32_t get_format_component_mask(Format p_format);
 
 	Error load_png_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_jpg_from_buffer(const Vector<uint8_t> &p_array);
@@ -403,6 +411,7 @@ public:
 	Error load_tga_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_bmp_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_ktx_from_buffer(const Vector<uint8_t> &p_array);
+	Error load_dds_from_buffer(const Vector<uint8_t> &p_array);
 
 	Error load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale = 1.0);
 	Error load_svg_from_string(const String &p_svg_str, float scale = 1.0);
@@ -442,5 +451,3 @@ VARIANT_ENUM_CAST(Image::UsedChannels)
 VARIANT_ENUM_CAST(Image::AlphaMode)
 VARIANT_ENUM_CAST(Image::RoughnessChannel)
 VARIANT_ENUM_CAST(Image::ASTCFormat)
-
-#endif // IMAGE_H

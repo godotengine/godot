@@ -33,6 +33,9 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 
+#include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
+#include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
+
 void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
 	Error err = RD::get_singleton()->screen_prepare_for_drawing(p_screen);
 	if (err != OK) {
@@ -47,7 +50,8 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		RID rd_texture = texture_storage->render_target_get_rd_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(rd_texture.is_null());
 
-		if (!render_target_descriptors.has(rd_texture) || !RD::get_singleton()->uniform_set_is_valid(render_target_descriptors[rd_texture])) {
+		HashMap<RID, RID>::Iterator it = render_target_descriptors.find(rd_texture);
+		if (it == render_target_descriptors.end() || !RD::get_singleton()->uniform_set_is_valid(it->value)) {
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
@@ -57,14 +61,14 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 			uniforms.push_back(u);
 			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
 
-			render_target_descriptors[rd_texture] = uniform_set;
+			it = render_target_descriptors.insert(rd_texture, uniform_set);
 		}
 
 		Size2 screen_size(RD::get_singleton()->screen_get_width(p_screen), RD::get_singleton()->screen_get_height(p_screen));
 		BlitMode mode = p_render_targets[i].lens_distortion.apply ? BLIT_MODE_LENS : (p_render_targets[i].multi_view.use_layer ? BLIT_MODE_USE_LAYER : BLIT_MODE_NORMAL);
 		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[mode]);
 		RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_target_descriptors[rd_texture], 0);
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, it->value, 0);
 
 		// We need to invert the phone rotation.
 		const int screen_rotation_degrees = -RD::get_singleton()->screen_get_pre_rotation_degrees(p_screen);
@@ -112,10 +116,8 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 	scene->set_time(time, frame_step);
 }
 
-void RendererCompositorRD::end_frame(bool p_swap_buffers) {
-	if (p_swap_buffers) {
-		RD::get_singleton()->swap_buffers();
-	}
+void RendererCompositorRD::end_frame(bool p_present) {
+	RD::get_singleton()->swap_buffers(p_present);
 }
 
 void RendererCompositorRD::initialize() {
@@ -133,6 +135,9 @@ void RendererCompositorRD::initialize() {
 
 		for (int i = 0; i < BLIT_MODE_MAX; i++) {
 			blit.pipelines[i] = RD::get_singleton()->render_pipeline_create(blit.shader.version_get_shader(blit.shader_version, i), RD::get_singleton()->screen_get_framebuffer_format(DisplayServer::MAIN_WINDOW_ID), RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), i == BLIT_MODE_NORMAL_ALPHA ? RenderingDevice::PipelineColorBlendState::create_blend() : RenderingDevice::PipelineColorBlendState::create_disabled(), 0);
+
+			// Unload shader modules to save memory.
+			RD::get_singleton()->shader_destroy_modules(blit.shader.version_get_shader(blit.shader_version, i));
 		}
 
 		//create index array for copy shader
@@ -212,18 +217,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
 	if (p_scale) {
-		if (window_size.width > window_size.height) {
-			//scale horizontally
-			screenrect.size.y = window_size.height;
-			screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
-			screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
-
-		} else {
-			//scale vertically
-			screenrect.size.x = window_size.width;
-			screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
-			screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
-		}
+		screenrect = OS::get_singleton()->calculate_boot_screen_rect(window_size, imgrect.size);
 	} else {
 		screenrect = imgrect;
 		screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
@@ -264,7 +258,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	RD::get_singleton()->draw_list_end();
 
-	RD::get_singleton()->swap_buffers();
+	RD::get_singleton()->swap_buffers(true);
 
 	texture_storage->texture_free(texture);
 	RD::get_singleton()->free(sampler);

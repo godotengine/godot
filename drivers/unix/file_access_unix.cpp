@@ -46,10 +46,18 @@
 #include <stdlib.h>
 #endif
 
-void FileAccessUnix::check_errors() const {
+void FileAccessUnix::check_errors(bool p_write) const {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
 
-	if (feof(f)) {
+	last_error = OK;
+	if (ferror(f)) {
+		if (p_write) {
+			last_error = ERR_FILE_CANT_WRITE;
+		} else {
+			last_error = ERR_FILE_CANT_READ;
+		}
+	}
+	if (!p_write && feof(f)) {
 		last_error = ERR_FILE_EOF;
 	}
 }
@@ -118,7 +126,7 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 			last_error = ERR_FILE_CANT_OPEN;
 			return last_error;
 		}
-		fchmod(fd, 0666);
+		fchmod(fd, 0644);
 		path = String::utf8(cs.ptr());
 
 		f = fdopen(fd, mode_string);
@@ -203,7 +211,7 @@ String FileAccessUnix::get_real_path() const {
 	}
 
 	String result;
-	Error parse_ok = result.parse_utf8(resolved_path);
+	Error parse_ok = result.append_utf8(resolved_path);
 	::free(resolved_path);
 
 	if (parse_ok != OK) {
@@ -217,7 +225,6 @@ String FileAccessUnix::get_real_path() const {
 void FileAccessUnix::seek(uint64_t p_position) {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
 
-	last_error = OK;
 	if (fseeko(f, p_position, SEEK_SET)) {
 		check_errors();
 	}
@@ -256,7 +263,7 @@ uint64_t FileAccessUnix::get_length() const {
 }
 
 bool FileAccessUnix::eof_reached() const {
-	return last_error == ERR_FILE_EOF;
+	return feof(f);
 }
 
 uint64_t FileAccessUnix::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
@@ -295,25 +302,25 @@ void FileAccessUnix::flush() {
 	fflush(f);
 }
 
-void FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-	ERR_FAIL_COND(!p_src && p_length > 0);
-	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != p_length);
+bool FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_NULL_V_MSG(f, false, "File must be opened before use.");
+	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
+	bool res = fwrite(p_src, 1, p_length, f) == p_length;
+	check_errors(true);
+	return res;
 }
 
 bool FileAccessUnix::file_exists(const String &p_path) {
-	int err;
 	struct stat st = {};
-	String filename = fix_path(p_path);
+	const CharString filename_utf8 = fix_path(p_path).utf8();
 
 	// Does the name exist at all?
-	err = stat(filename.utf8().get_data(), &st);
-	if (err) {
+	if (stat(filename_utf8.get_data(), &st)) {
 		return false;
 	}
 
 	// See if we have access to the file
-	if (access(filename.utf8().get_data(), F_OK)) {
+	if (access(filename_utf8.get_data(), F_OK)) {
 		return false;
 	}
 
@@ -329,14 +336,53 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 
 uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	String file = fix_path(p_file);
-	struct stat status = {};
-	int err = stat(file.utf8().get_data(), &status);
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
 
 	if (!err) {
-		return status.st_mtime;
+		uint64_t modified_time = 0;
+		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG || (st.st_mode & S_IFDIR) == S_IFDIR) {
+			modified_time = st.st_mtime;
+		}
+#ifdef ANDROID_ENABLED
+		// Workaround for GH-101007
+		//FIXME: After saving, all timestamps (st_mtime, st_ctime, st_atime) are set to the same value.
+		// After exporting or after some time, only 'modified_time' resets to a past timestamp.
+		uint64_t created_time = st.st_ctime;
+		if (modified_time < created_time) {
+			modified_time = created_time;
+		}
+#endif
+		return modified_time;
 	} else {
 		return 0;
 	}
+}
+
+uint64_t FileAccessUnix::_get_access_time(const String &p_file) {
+	String file = fix_path(p_file);
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
+
+	if (!err) {
+		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG || (st.st_mode & S_IFDIR) == S_IFDIR) {
+			return st.st_atime;
+		}
+	}
+	ERR_FAIL_V_MSG(0, "Failed to get access time for: " + p_file + "");
+}
+
+int64_t FileAccessUnix::_get_size(const String &p_file) {
+	String file = fix_path(p_file);
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
+
+	if (!err) {
+		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG) {
+			return st.st_size;
+		}
+	}
+	ERR_FAIL_V_MSG(-1, "Failed to get size for: " + p_file + "");
 }
 
 BitField<FileAccess::UnixPermissionFlags> FileAccessUnix::_get_unix_permissions(const String &p_file) {
@@ -434,7 +480,7 @@ void FileAccessUnix::close() {
 	_close();
 }
 
-CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
+FileAccessUnix::CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
 
 FileAccessUnix::~FileAccessUnix() {
 	_close();

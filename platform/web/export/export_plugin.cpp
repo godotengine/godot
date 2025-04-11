@@ -41,10 +41,8 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
-#include "modules/modules_enabled.gen.h" // For mono and svg.
-#ifdef MODULE_SVG_ENABLED
+#include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
-#endif
 
 Error EditorExportPlatformWeb::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
 	Ref<FileAccess> io_fa;
@@ -166,10 +164,16 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	const String custom_head_include = p_preset->get("html/head_include");
 	HashMap<String, String> replaces;
 	replaces["$GODOT_URL"] = p_name + ".js";
-	replaces["$GODOT_PROJECT_NAME"] = GLOBAL_GET("application/config/name");
+	replaces["$GODOT_PROJECT_NAME"] = get_project_setting(p_preset, "application/config/name");
 	replaces["$GODOT_HEAD_INCLUDE"] = head_include + custom_head_include;
 	replaces["$GODOT_CONFIG"] = str_config;
-	replaces["$GODOT_SPLASH_COLOR"] = "#" + Color(GLOBAL_GET("application/boot_splash/bg_color")).to_html(false);
+	replaces["$GODOT_SPLASH_COLOR"] = "#" + Color(get_project_setting(p_preset, "application/boot_splash/bg_color")).to_html(false);
+
+	LocalVector<String> godot_splash_classes;
+	godot_splash_classes.push_back("show-image--" + String(get_project_setting(p_preset, "application/boot_splash/show_image")));
+	godot_splash_classes.push_back("fullsize--" + String(get_project_setting(p_preset, "application/boot_splash/fullsize")));
+	godot_splash_classes.push_back("use-filter--" + String(get_project_setting(p_preset, "application/boot_splash/use_filter")));
+	replaces["$GODOT_SPLASH_CLASSES"] = String(" ").join(godot_splash_classes);
 	replaces["$GODOT_SPLASH"] = p_name + ".png";
 
 	if (p_preset->get("variant/thread_support")) {
@@ -181,16 +185,16 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	_replace_strings(replaces, p_html);
 }
 
-Error EditorExportPlatformWeb::_add_manifest_icon(const String &p_path, const String &p_icon, int p_size, Array &r_arr) {
+Error EditorExportPlatformWeb::_add_manifest_icon(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_icon, int p_size, Array &r_arr) {
 	const String name = p_path.get_file().get_basename();
 	const String icon_name = vformat("%s.%dx%d.png", name, p_size, p_size);
 	const String icon_dest = p_path.get_base_dir().path_join(icon_name);
 
 	Ref<Image> icon;
 	if (!p_icon.is_empty()) {
-		icon.instantiate();
-		const Error err = ImageLoader::load_image(p_icon, icon);
-		if (err != OK) {
+		Error err = OK;
+		icon = _load_icon_or_splash_image(p_icon, &err);
+		if (err != OK || icon.is_null() || icon->is_empty()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not read file: \"%s\"."), p_icon));
 			return err;
 		}
@@ -198,7 +202,7 @@ Error EditorExportPlatformWeb::_add_manifest_icon(const String &p_path, const St
 			icon->resize(p_size, p_size);
 		}
 	} else {
-		icon = _get_project_icon();
+		icon = _get_project_icon(p_preset);
 		icon->resize(p_size, p_size);
 	}
 	const Error err = icon->save_png(icon_dest);
@@ -215,10 +219,7 @@ Error EditorExportPlatformWeb::_add_manifest_icon(const String &p_path, const St
 }
 
 Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects) {
-	List<String> preset_features;
-	get_preset_features(p_preset, &preset_features);
-
-	String proj_name = GLOBAL_GET("application/config/name");
+	String proj_name = get_project_setting(p_preset, "application/config/name");
 	if (proj_name.is_empty()) {
 		proj_name = "Godot Game";
 	}
@@ -235,26 +236,25 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	replaces["___GODOT_ENSURE_CROSSORIGIN_ISOLATION_HEADERS___"] = ensure_crossorigin_isolation_headers ? "true" : "false";
 
 	// Files cached during worker install.
-	Array cache_files;
-	cache_files.push_back(name + ".html");
-	cache_files.push_back(name + ".js");
-	cache_files.push_back(name + ".offline.html");
+	Array cache_files = {
+		name + ".html",
+		name + ".js",
+		name + ".offline.html"
+	};
 	if (p_preset->get("html/export_icon")) {
 		cache_files.push_back(name + ".icon.png");
 		cache_files.push_back(name + ".apple-touch-icon.png");
 	}
 
-	if (preset_features.find("threads")) {
-		cache_files.push_back(name + ".worker.js");
-	}
 	cache_files.push_back(name + ".audio.worklet.js");
 	cache_files.push_back(name + ".audio.position.worklet.js");
 	replaces["___GODOT_CACHE___"] = Variant(cache_files).to_json_string();
 
 	// Heavy files that are cached on demand.
-	Array opt_cache_files;
-	opt_cache_files.push_back(name + ".wasm");
-	opt_cache_files.push_back(name + ".pck");
+	Array opt_cache_files = {
+		name + ".wasm",
+		name + ".pck"
+	};
 	if (extensions) {
 		opt_cache_files.push_back(name + ".side.wasm");
 		for (int i = 0; i < p_shared_objects.size(); i++) {
@@ -308,19 +308,19 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 
 	Array icons_arr;
 	const String icon144_path = p_preset->get("progressive_web_app/icon_144x144");
-	err = _add_manifest_icon(p_path, icon144_path, 144, icons_arr);
+	err = _add_manifest_icon(p_preset, p_path, icon144_path, 144, icons_arr);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
 		return err;
 	}
 	const String icon180_path = p_preset->get("progressive_web_app/icon_180x180");
-	err = _add_manifest_icon(p_path, icon180_path, 180, icons_arr);
+	err = _add_manifest_icon(p_preset, p_path, icon180_path, 180, icons_arr);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
 		return err;
 	}
 	const String icon512_path = p_preset->get("progressive_web_app/icon_512x512");
-	err = _add_manifest_icon(p_path, icon512_path, 512, icons_arr);
+	err = _add_manifest_icon(p_preset, p_path, icon512_path, 512, icons_arr);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
 		return err;
@@ -340,9 +340,11 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	if (p_preset->get("vram_texture_compression/for_desktop")) {
 		r_features->push_back("s3tc");
+		r_features->push_back("bptc");
 	}
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
 		r_features->push_back("etc2");
+		r_features->push_back("astc");
 	}
 	if (p_preset->get("variant/thread_support").operator bool()) {
 		r_features->push_back("threads");
@@ -376,6 +378,16 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_180x180", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_512x512", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "progressive_web_app/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
+}
+
+bool EditorExportPlatformWeb::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
+	if (p_option == "custom_template/debug" ||
+			p_option == "custom_template/release") {
+		return advanced_options_enabled;
+	}
+
+	return true;
 }
 
 String EditorExportPlatformWeb::get_name() const {
@@ -549,7 +561,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	html.resize(0);
 
 	// Export splash (why?)
-	Ref<Image> splash = _get_project_splash();
+	Ref<Image> splash = _get_project_splash(p_preset);
 	const String splash_png_path = base_path + ".png";
 	if (splash->save_png(splash_png_path) != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), splash_png_path));
@@ -559,7 +571,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	// Save a favicon that can be accessed without waiting for the project to finish loading.
 	// This way, the favicon can be displayed immediately when loading the page.
 	if (export_icon) {
-		Ref<Image> favicon = _get_project_icon();
+		Ref<Image> favicon = _get_project_icon(p_preset);
 		const String favicon_png_path = base_path + ".icon.png";
 		if (favicon->save_png(favicon_png_path) != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), favicon_png_path));
@@ -823,7 +835,7 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 }
 
 Error EditorExportPlatformWeb::_export_project(const Ref<EditorExportPreset> &p_preset, int p_debug_flags) {
-	const String dest = EditorPaths::get_singleton()->get_cache_dir().path_join("web");
+	const String dest = EditorPaths::get_singleton()->get_temp_dir().path_join("web");
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(dest)) {
 		Error err = da->make_dir_recursive(dest);
@@ -840,7 +852,6 @@ Error EditorExportPlatformWeb::_export_project(const Ref<EditorExportPreset> &p_
 		DirAccess::remove_file_or_error(basepath + ".html");
 		DirAccess::remove_file_or_error(basepath + ".offline.html");
 		DirAccess::remove_file_or_error(basepath + ".js");
-		DirAccess::remove_file_or_error(basepath + ".worker.js");
 		DirAccess::remove_file_or_error(basepath + ".audio.worklet.js");
 		DirAccess::remove_file_or_error(basepath + ".audio.position.worklet.js");
 		DirAccess::remove_file_or_error(basepath + ".service.worker.js");
@@ -895,7 +906,6 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 	if (EditorNode::get_singleton()) {
 		server.instantiate();
 
-#ifdef MODULE_SVG_ENABLED
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
@@ -904,7 +914,6 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 
 		ImageLoaderSVG::create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
-#endif
 
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {

@@ -28,16 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_ABOUT_H
-#define EDITOR_ABOUT_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
@@ -65,7 +61,4 @@ protected:
 
 public:
 	EditorAbout();
-	~EditorAbout();
 };
-
-#endif // EDITOR_ABOUT_H

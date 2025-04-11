@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "xr_interface.h"
-#include "servers/rendering/renderer_compositor.h"
 
 void XRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("play_area_changed", PropertyInfo(Variant::INT, "mode")));
@@ -104,6 +103,7 @@ void XRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(XR_PLAY_AREA_SITTING);
 	BIND_ENUM_CONSTANT(XR_PLAY_AREA_ROOMSCALE);
 	BIND_ENUM_CONSTANT(XR_PLAY_AREA_STAGE);
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_CUSTOM);
 
 	BIND_ENUM_CONSTANT(XR_ENV_BLEND_MODE_OPAQUE);
 	BIND_ENUM_CONSTANT(XR_ENV_BLEND_MODE_ADDITIVE);
@@ -187,6 +187,18 @@ RID XRInterface::get_velocity_texture() {
 	return RID();
 }
 
+RID XRInterface::get_velocity_depth_texture() {
+	return RID();
+}
+
+Size2i XRInterface::get_velocity_target_size() {
+	return Size2i();
+}
+
+Rect2i XRInterface::get_render_region() {
+	return Rect2i();
+}
+
 PackedStringArray XRInterface::get_suggested_tracker_names() const {
 	PackedStringArray arr;
 
@@ -207,7 +219,6 @@ void XRInterface::trigger_haptic_pulse(const String &p_action_name, const String
 }
 
 Array XRInterface::get_supported_environment_blend_modes() {
-	Array default_blend_modes;
-	default_blend_modes.push_back(XR_ENV_BLEND_MODE_OPAQUE);
+	Array default_blend_modes = { XR_ENV_BLEND_MODE_OPAQUE };
 	return default_blend_modes;
 }

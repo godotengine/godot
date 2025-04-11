@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_3D_H
-#define SKELETON_3D_H
+#pragma once
 
 #include "core/templates/a_hash_map.h"
 #include "scene/3d/node_3d.h"
@@ -38,7 +37,6 @@
 typedef int BoneId;
 
 class Skeleton3D;
-class SkeletonModifier3D;
 
 class SkinReference : public RefCounted {
 	GDCLASS(SkinReference, RefCounted)
@@ -67,16 +65,21 @@ public:
 class Skeleton3D : public Node3D {
 	GDCLASS(Skeleton3D, Node3D);
 
-#ifndef DISABLE_DEPRECATED
+#ifdef TOOLS_ENABLED
+	bool saving = false;
+#endif //TOOLS_ENABLED
+
+#if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 	bool animate_physical_bones = true;
 	Node *simulator = nullptr;
 	void setup_simulator();
-#endif // _DISABLE_DEPRECATED
+#endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
 
 public:
 	enum ModifierCallbackModeProcess {
 		MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS,
 		MODIFIER_CALLBACK_MODE_PROCESS_IDLE,
+		MODIFIER_CALLBACK_MODE_PROCESS_MANUAL,
 	};
 
 private:
@@ -91,6 +94,7 @@ private:
 	void _update_deferred(UpdateFlag p_update_flag = UPDATE_FLAG_POSE);
 	uint8_t update_flags = UPDATE_FLAG_NONE;
 	bool updating = false; // Is updating now?
+	double update_delta = 0.0;
 
 	struct Bone {
 		String name;
@@ -156,25 +160,25 @@ private:
 	HashSet<SkinReference *> skin_bindings;
 	void _skin_changed();
 
-	LocalVector<Bone> bones;
-	bool process_order_dirty = false;
+	mutable LocalVector<Bone> bones;
+	mutable bool process_order_dirty = false;
 
-	Vector<int> parentless_bones;
+	mutable Vector<int> parentless_bones;
 	AHashMap<String, int> name_to_bone_index;
 
 	mutable StringName concatenated_bone_names;
 	void _update_bone_names() const;
 
 	void _make_dirty();
-	bool dirty = false;
-	bool rest_dirty = false;
+	mutable bool dirty = false;
+	mutable bool rest_dirty = false;
 
 	bool show_rest_only = false;
 	float motion_scale = 1.0;
 
 	uint64_t version = 1;
 
-	void _update_process_order();
+	void _update_process_order() const;
 
 	// To process modifiers.
 	ModifierCallbackModeProcess modifier_callback_mode_process = MODIFIER_CALLBACK_MODE_PROCESS_IDLE;
@@ -184,16 +188,15 @@ private:
 	void _process_modifiers();
 	void _process_changed();
 	void _make_modifiers_dirty();
-	LocalVector<BonePoseBackup> bones_backup;
 
 	// Global bone pose calculation.
-	LocalVector<int> nested_set_offset_to_bone_index; // Map from Bone::nested_set_offset to bone index.
-	LocalVector<bool> bone_global_pose_dirty; // Indexable with Bone::nested_set_offset.
-	void _update_bones_nested_set();
-	int _update_bone_nested_set(int p_bone, int p_offset);
-	void _make_bone_global_poses_dirty();
-	void _make_bone_global_pose_subtree_dirty(int p_bone);
-	void _update_bone_global_pose(int p_bone);
+	mutable LocalVector<int> nested_set_offset_to_bone_index; // Map from Bone::nested_set_offset to bone index.
+	mutable LocalVector<bool> bone_global_pose_dirty; // Indexable with Bone::nested_set_offset.
+	void _update_bones_nested_set() const;
+	int _update_bone_nested_set(int p_bone, int p_offset) const;
+	void _make_bone_global_poses_dirty() const;
+	void _make_bone_global_pose_subtree_dirty(int p_bone) const;
+	void _update_bone_global_pose(int p_bone) const;
 
 #ifndef DISABLE_DEPRECATED
 	void _add_bone_bind_compat_88791(const String &p_name);
@@ -222,6 +225,7 @@ public:
 	// Skeleton creation API
 	uint64_t get_version() const;
 	int add_bone(const String &p_name);
+	void remove_bone(int p_bone);
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
 	void set_bone_name(int p_bone, const String &p_name);
@@ -282,12 +286,17 @@ public:
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
 
 	void force_update_all_dirty_bones();
+	void _force_update_all_dirty_bones() const;
 	void force_update_all_bone_transforms();
+	void _force_update_all_bone_transforms() const;
 	void force_update_bone_children_transforms(int bone_idx);
+	void _force_update_bone_children_transforms(int bone_idx) const;
 	void force_update_deferred();
 
 	void set_modifier_callback_mode_process(ModifierCallbackModeProcess p_mode);
 	ModifierCallbackModeProcess get_modifier_callback_mode_process() const;
+
+	void advance(double p_delta);
 
 #ifndef DISABLE_DEPRECATED
 	Transform3D get_bone_global_pose_no_override(int p_bone) const;
@@ -296,12 +305,14 @@ public:
 	void set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent = false);
 
 	Node *get_simulator();
+#ifndef PHYSICS_3D_DISABLED
 	void set_animate_physical_bones(bool p_enabled);
 	bool get_animate_physical_bones() const;
 	void physical_bones_stop_simulation();
 	void physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones);
 	void physical_bones_add_collision_exception(RID p_exception);
 	void physical_bones_remove_collision_exception(RID p_exception);
+#endif // PHYSICS_3D_DISABLED
 #endif // _DISABLE_DEPRECATED
 
 public:
@@ -310,5 +321,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Skeleton3D::ModifierCallbackModeProcess);
-
-#endif // SKELETON_3D_H

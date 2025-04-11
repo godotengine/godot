@@ -61,11 +61,8 @@ subject to the following restrictions:
 #include "core/error/error_macros.h"
 #include "core/math/aabb.h"
 #include "core/math/math_defs.h"
-#include "core/os/memory.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/paged_allocator.h"
-
-#include <string.h>
 
 //#define DEBUG_CONVEX_HULL
 //#define SHOW_ITERATIONS
@@ -2152,10 +2149,11 @@ static int32_t get_vertex_copy(ConvexHullInternal::Vertex *p_vertex, LocalVector
 }
 
 real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, real_t p_shrink, real_t p_shrink_clamp) {
+	vertices.clear();
+	edges.clear();
+	faces.clear();
+
 	if (p_count <= 0) {
-		vertices.clear();
-		edges.clear();
-		faces.clear();
 		return 0;
 	}
 
@@ -2164,15 +2162,8 @@ real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, rea
 
 	real_t shift = 0;
 	if ((p_shrink > 0) && ((shift = hull.shrink(p_shrink, p_shrink_clamp)) < 0)) {
-		vertices.clear();
-		edges.clear();
-		faces.clear();
 		return shift;
 	}
-
-	vertices.clear();
-	edges.clear();
-	faces.clear();
 
 	LocalVector<ConvexHullInternal::Vertex *> old_vertices;
 	get_vertex_copy(hull.vertex_list, old_vertices);
@@ -2246,7 +2237,7 @@ real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, rea
 Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_mesh) {
 	r_mesh = Geometry3D::MeshData(); // clear
 
-	if (p_points.size() == 0) {
+	if (p_points.is_empty()) {
 		return FAILED; // matches QuickHull
 	}
 

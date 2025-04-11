@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_application_delegate.h"
+#import "godot_application_delegate.h"
 
-#include "display_server_macos.h"
-#include "native_menu_macos.h"
-#include "os_macos.h"
+#import "display_server_macos.h"
+#import "native_menu_macos.h"
+#import "os_macos.h"
 
 @implementation GodotApplicationDelegate
 
@@ -48,7 +48,7 @@
 - (void)searchForItemsWithSearchString:(NSString *)searchString resultLimit:(NSInteger)resultLimit matchedItemHandler:(void (^)(NSArray *items))handleMatchedItems {
 	NSMutableArray *found_items = [[NSMutableArray alloc] init];
 
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds && ds->_help_get_search_callback().is_valid()) {
 		Callable cb = ds->_help_get_search_callback();
 
@@ -77,7 +77,7 @@
 }
 
 - (void)performActionForItem:(id)item {
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds && ds->_help_get_action_callback().is_valid()) {
 		Callable cb = ds->_help_get_action_callback();
 
@@ -118,13 +118,19 @@
 }
 
 - (void)system_theme_changed:(NSNotification *)notification {
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds) {
 		ds->emit_system_theme_changed();
 	}
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)notice {
+- (void)applicationDidFinishLaunching:(NSNotification *)notification {
+	static_cast<OS_MacOS *>(OS::get_singleton())->start_main();
+}
+
+- (void)activate {
+	[NSApp activateIgnoringOtherApps:YES];
+
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	const char *bundled_id = getenv("__CFBundleIdentifier");
 	NSString *nsbundleid_env = [NSString stringWithUTF8String:(bundled_id != nullptr) ? bundled_id : ""];
@@ -137,12 +143,17 @@
 	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleColorPreferencesChangedNotification" object:nil];
 }
 
+static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
+
 - (id)init {
 	self = [super init];
 
-	NSAppleEventManager *aem = [NSAppleEventManager sharedAppleEventManager];
-	[aem setEventHandler:self andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
-	[aem setEventHandler:self andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEOpenDocuments];
+	[[NSWorkspace sharedWorkspace] addObserver:self forKeyPath:@"voiceOverEnabled" options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld) context:(void *)godot_ac_ctx];
+	[[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self selector:@selector(accessibilityDisplayOptionsChange:) name:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification object:nil];
+	high_contrast = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldIncreaseContrast];
+	reduce_motion = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
+	reduce_transparency = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
+	voice_over = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
 
 	return self;
 }
@@ -150,38 +161,78 @@
 - (void)dealloc {
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"AppleInterfaceThemeChangedNotification" object:nil];
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"AppleColorPreferencesChangedNotification" object:nil];
+	[[NSWorkspace sharedWorkspace] removeObserver:self forKeyPath:@"voiceOverEnabled" context:(void *)godot_ac_ctx];
 }
 
-- (void)handleAppleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+	if (context == (void *)godot_ac_ctx) {
+		voice_over = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
+	} else {
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+	}
+}
+
+- (void)accessibilityDisplayOptionsChange:(NSNotification *)notification {
+	high_contrast = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldIncreaseContrast];
+	reduce_motion = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
+	reduce_transparency = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
+}
+
+- (bool)getHighContrast {
+	return high_contrast;
+}
+
+- (bool)getReduceMotion {
+	return reduce_motion;
+}
+
+- (bool)getReduceTransparency {
+	return reduce_transparency;
+}
+
+- (bool)getVoiceOver {
+	return voice_over;
+}
+
+- (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls {
 	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
-	if (!event || !os) {
+	if (!os) {
 		return;
 	}
-
 	List<String> args;
-	if (([event eventClass] == kInternetEventClass) && ([event eventID] == kAEGetURL)) {
-		// Opening URL scheme.
-		NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-		args.push_back(vformat("--uri=\"%s\"", String::utf8([url UTF8String])));
-	}
-
-	if (([event eventClass] == kCoreEventClass) && ([event eventID] == kAEOpenDocuments)) {
-		// Opening file association.
-		NSAppleEventDescriptor *files = [event paramDescriptorForKeyword:keyDirectObject];
-		if (files) {
-			NSInteger count = [files numberOfItems];
-			for (NSInteger i = 1; i <= count; i++) {
-				NSURL *url = [NSURL URLWithString:[[files descriptorAtIndex:i] stringValue]];
-				args.push_back(String::utf8([url.path UTF8String]));
-			}
+	for (NSURL *url in urls) {
+		if ([url isFileURL]) {
+			args.push_back(String::utf8([url.path UTF8String]));
+		} else {
+			args.push_back(vformat("--uri=\"%s\"", String::utf8([url.absoluteString UTF8String])));
 		}
 	}
-
 	if (!args.is_empty()) {
 		if (os->get_main_loop()) {
 			// Application is already running, open a new instance with the URL/files as command line arguments.
 			os->create_instance(args);
-		} else {
+		} else if (os->get_cmd_argc() == 0) {
+			// Application is just started, add to the list of command line arguments and continue.
+			os->set_cmdline_platform_args(args);
+		}
+	}
+}
+
+- (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames {
+	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
+	if (!os) {
+		return;
+	}
+	List<String> args;
+	for (NSString *filename in filenames) {
+		NSURL *url = [NSURL URLWithString:filename];
+		args.push_back(String::utf8([url.path UTF8String]));
+	}
+	if (!args.is_empty()) {
+		if (os->get_main_loop()) {
+			// Application is already running, open a new instance with the URL/files as command line arguments.
+			os->create_instance(args);
+		} else if (os->get_cmd_argc() == 0) {
 			// Application is just started, add to the list of command line arguments and continue.
 			os->set_cmdline_platform_args(args);
 		}
@@ -189,7 +240,7 @@
 }
 
 - (void)applicationDidResignActive:(NSNotification *)notification {
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds) {
 		ds->mouse_process_popups(true);
 	}
@@ -205,7 +256,7 @@
 }
 
 - (void)globalMenuCallback:(id)sender {
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds) {
 		return ds->menu_callback(sender);
 	}
@@ -220,10 +271,22 @@
 	}
 }
 
+- (void)applicationWillTerminate:(NSNotification *)notification {
+	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
+	if (os) {
+		os->cleanup();
+		exit(os->get_exit_code());
+	}
+}
+
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (ds) {
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
+	if (ds && ds->has_window(DisplayServerMacOS::MAIN_WINDOW_ID)) {
 		ds->send_window_event(ds->get_window(DisplayServerMacOS::MAIN_WINDOW_ID), DisplayServerMacOS::WINDOW_EVENT_CLOSE_REQUEST);
+	}
+	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
+	if (!os || os->os_should_terminate()) {
+		return NSTerminateNow;
 	}
 	return NSTerminateCancel;
 }

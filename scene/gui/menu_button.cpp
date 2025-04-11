@@ -30,7 +30,6 @@
 
 #include "menu_button.h"
 
-#include "core/os/keyboard.h"
 #include "scene/main/window.h"
 
 void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {
@@ -127,6 +126,14 @@ int MenuButton::get_item_count() const {
 
 void MenuButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_MENU);
+		} break;
+
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
 		} break;
@@ -138,7 +145,7 @@ void MenuButton::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			MenuButton *menu_btn_other = Object::cast_to<MenuButton>(get_viewport()->gui_find_control(get_viewport()->get_mouse_position()));
+			MenuButton *menu_btn_other = Object::cast_to<MenuButton>(get_viewport()->gui_get_hovered_control());
 
 			if (menu_btn_other && menu_btn_other != this && menu_btn_other->is_switch_on_hover() && !menu_btn_other->is_disabled() &&
 					(get_parent()->is_ancestor_of(menu_btn_other) || menu_btn_other->get_parent()->is_ancestor_of(popup))) {
@@ -205,13 +212,21 @@ void MenuButton::set_disable_shortcuts(bool p_disabled) {
 	disable_shortcuts = p_disabled;
 }
 
+#ifdef TOOLS_ENABLED
+PackedStringArray MenuButton::get_configuration_warnings() const {
+	PackedStringArray warnings = Button::get_configuration_warnings();
+	warnings.append_array(popup->get_configuration_warnings());
+	return warnings;
+}
+#endif
+
 MenuButton::MenuButton(const String &p_text) :
 		Button(p_text) {
 	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
 	set_process_shortcut_input(true);
-	set_focus_mode(FOCUS_NONE);
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
 	popup = memnew(PopupMenu);

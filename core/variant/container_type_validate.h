@@ -28,11 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONTAINER_TYPE_VALIDATE_H
-#define CONTAINER_TYPE_VALIDATE_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/variant/variant.h"
+
+struct ContainerType {
+	Variant::Type builtin_type = Variant::NIL;
+	StringName class_name;
+	Ref<Script> script;
+};
 
 struct ContainerTypeValidate {
 	Variant::Type type = Variant::NIL;
@@ -142,5 +147,3 @@ struct ContainerTypeValidate {
 		return true;
 	}
 };
-
-#endif // CONTAINER_TYPE_VALIDATE_H

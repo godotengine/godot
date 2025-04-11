@@ -32,7 +32,6 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
-#include "servers/navigation_server_2d.h"
 
 #include "thirdparty/misc/polypartition.h"
 
@@ -397,9 +396,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	vertices.clear();
 
 	HashMap<Vector2, int> points;
-	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-		TPPLPoly &tp = I->get();
-
+	for (const TPPLPoly &tp : out_poly) {
 		Vector<int> p;
 
 		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {

@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_H
-#define NODE_H
+#pragma once
 
 #include "core/string/node_path.h"
-#include "core/templates/rb_map.h"
 #include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
@@ -108,7 +106,8 @@ public:
 	enum NameCasing {
 		NAME_CASING_PASCAL_CASE,
 		NAME_CASING_CAMEL_CASE,
-		NAME_CASING_SNAKE_CASE
+		NAME_CASING_SNAKE_CASE,
+		NAME_CASING_KEBAB_CASE,
 	};
 
 	enum InternalMode {
@@ -187,6 +186,16 @@ private:
 
 		Viewport *viewport = nullptr;
 
+		mutable RID accessibility_element;
+
+		String accessibility_name;
+		String accessibility_description;
+		DisplayServer::AccessibilityLiveMode accessibility_live = DisplayServer::AccessibilityLiveMode::LIVE_OFF;
+		TypedArray<NodePath> accessibility_controls_nodes;
+		TypedArray<NodePath> accessibility_described_by_nodes;
+		TypedArray<NodePath> accessibility_labeled_by_nodes;
+		TypedArray<NodePath> accessibility_flow_to_nodes;
+
 		HashMap<StringName, GroupData> grouped;
 		List<Node *>::Element *OW = nullptr; // Owned element.
 		List<Node *> owned;
@@ -240,8 +249,6 @@ private:
 		// RenderingServer, and specify the mesh in world space.
 		bool use_identity_transform : 1;
 
-		bool parent_owned : 1;
-		bool in_constructor : 1;
 		bool use_placeholder : 1;
 
 		bool display_folded : 1;
@@ -331,6 +338,13 @@ private:
 	Variant _call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_thread_safe_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
+	// Editor only signal to keep the SceneTreeEditor in sync.
+#ifdef TOOLS_ENABLED
+	void _emit_editor_state_changed();
+#else
+	void _emit_editor_state_changed() {}
+#endif
+
 protected:
 	void _block() { data.blocked++; }
 	void _unblock() { data.blocked--; }
@@ -383,12 +397,16 @@ protected:
 	GDVIRTUAL0(_enter_tree)
 	GDVIRTUAL0(_exit_tree)
 	GDVIRTUAL0(_ready)
+	GDVIRTUAL0RC(Vector<String>, _get_accessibility_configuration_warnings)
 	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 
 	GDVIRTUAL1(_input, Ref<InputEvent>)
 	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
+
+	GDVIRTUAL0RC(RID, _get_focused_accessibility_element)
+	GDVIRTUAL1RC(String, _get_accessibility_container_name, const Node *)
 
 public:
 	enum {
@@ -415,6 +433,10 @@ public:
 		NOTIFICATION_ENABLED = 29,
 		NOTIFICATION_RESET_PHYSICS_INTERPOLATION = 2001, // A GodotSpace Odyssey.
 		// Keep these linked to Node.
+
+		NOTIFICATION_ACCESSIBILITY_UPDATE = 3000,
+		NOTIFICATION_ACCESSIBILITY_INVALIDATE = 3001,
+
 		NOTIFICATION_WM_MOUSE_ENTER = 1002,
 		NOTIFICATION_WM_MOUSE_EXIT = 1003,
 		NOTIFICATION_WM_WINDOW_FOCUS_IN = 1004,
@@ -425,6 +447,7 @@ public:
 		NOTIFICATION_WM_DPI_CHANGE = 1009,
 		NOTIFICATION_VP_MOUSE_ENTER = 1010,
 		NOTIFICATION_VP_MOUSE_EXIT = 1011,
+		NOTIFICATION_WM_POSITION_CHANGED = 1012,
 
 		NOTIFICATION_OS_MEMORY_WARNING = MainLoop::NOTIFICATION_OS_MEMORY_WARNING,
 		NOTIFICATION_TRANSLATION_CHANGED = MainLoop::NOTIFICATION_TRANSLATION_CHANGED,
@@ -480,6 +503,7 @@ public:
 	}
 
 	_FORCE_INLINE_ bool is_inside_tree() const { return data.inside_tree; }
+	bool is_internal() const { return data.internal_mode != INTERNAL_MODE_DISABLED; }
 
 	bool is_ancestor_of(const Node *p_node) const;
 	bool is_greater_than(const Node *p_node) const;
@@ -640,6 +664,36 @@ public:
 	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
 	BitField<ProcessThreadMessages> get_process_thread_messages() const;
 
+	void set_accessibility_name(const String &p_name);
+	String get_accessibility_name() const;
+
+	void set_accessibility_description(const String &p_description);
+	String get_accessibility_description() const;
+
+	void set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode);
+	DisplayServer::AccessibilityLiveMode get_accessibility_live() const;
+
+	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_controls_nodes() const;
+
+	void set_accessibility_described_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_described_by_nodes() const;
+
+	void set_accessibility_labeled_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_labeled_by_nodes() const;
+
+	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
+
+	void queue_accessibility_update();
+
+	virtual RID get_accessibility_element() const;
+	virtual RID get_focused_accessibility_element() const;
+	virtual String get_accessibility_container_name(const Node *p_node) const;
+	virtual bool accessibility_override_tree_hierarchy() const { return false; }
+
+	virtual PackedStringArray get_accessibility_configuration_warnings() const;
+
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 #ifdef TOOLS_ENABLED
 	Node *duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) const;
@@ -698,8 +752,6 @@ public:
 
 	//hacks for speed
 	static void init_node_hrcr();
-
-	void force_parent_owned() { data.parent_owned = true; } //hack to avoid duplicate nodes
 
 	void set_import_path(const NodePath &p_import_path); //path used when imported, used by scene editors to keep tracking
 	NodePath get_import_path() const;
@@ -858,5 +910,3 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 // Add these macro to your class's 'get_configuration_warnings' function to have warnings show up in the scene tree inspector.
 #define DEPRECATED_NODE_WARNING warnings.push_back(RTR("This node is marked as deprecated and will be removed in future versions.\nPlease check the Godot documentation for information about migration."));
 #define EXPERIMENTAL_NODE_WARNING warnings.push_back(RTR("This node is marked as experimental and may be subject to removal or major changes in future versions."));
-
-#endif // NODE_H

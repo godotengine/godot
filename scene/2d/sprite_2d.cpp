@@ -30,7 +30,7 @@
 
 #include "sprite_2d.h"
 
-#include "scene/main/window.h"
+#include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Sprite2D::_edit_get_state() const {
@@ -115,6 +115,17 @@ void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_c
 
 void Sprite2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			Rect2 dst_rect = get_rect();
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_IMAGE);
+			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
+			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, dst_rect);
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (texture.is_null()) {
 				return;
@@ -423,7 +434,7 @@ void Sprite2D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 
-	if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip")) {
+	if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip_enabled")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

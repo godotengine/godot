@@ -30,9 +30,6 @@
 
 #include "grid_map_editor_plugin.h"
 
-#ifdef TOOLS_ENABLED
-
-#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_main_screen.h"
@@ -343,6 +340,41 @@ void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const 
 	}
 }
 
+AABB GridMapEditor::_get_selection() const {
+	AABB ret;
+	if (selection.active) {
+		ret.position = selection.begin;
+		ret.size = selection.end - selection.begin;
+	} else {
+		ret.position.zero();
+		ret.size.zero();
+	}
+	return ret;
+}
+
+bool GridMapEditor::_has_selection() const {
+	return node != nullptr && selection.active;
+}
+
+Array GridMapEditor::_get_selected_cells() const {
+	Array ret;
+	if (node != nullptr && selection.active) {
+		for (int i = selection.begin.x; i <= selection.end.x; i++) {
+			for (int j = selection.begin.y; j <= selection.end.y; j++) {
+				for (int k = selection.begin.z; k <= selection.end.z; k++) {
+					Vector3i selected = Vector3i(i, j, k);
+					int itm = node->get_cell_item(selected);
+					if (itm == GridMap::INVALID_CELL_ITEM) {
+						continue;
+					}
+					ret.append(selected);
+				}
+			}
+		}
+	}
+	return ret;
+}
+
 bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click) {
 	if (!spatial_editor) {
 		return false;
@@ -640,7 +672,9 @@ void GridMapEditor::_show_viewports_transform_gizmo(bool p_value) {
 }
 
 EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
-	if (!node) {
+	// If the mouse is currently captured, we are most likely in freelook mode.
+	// In this case, disable shortcuts to avoid conflicts with freelook navigation.
+	if (!node || Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
 		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}
 
@@ -833,7 +867,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			const real_t delta = pan_gesture->get_delta().y * 0.5;
 			accumulated_floor_delta += delta;
 			int step = 0;
-			if (ABS(accumulated_floor_delta) > 1.0) {
+			if (Math::abs(accumulated_floor_delta) > 1.0) {
 				step = SIGN(accumulated_floor_delta);
 				accumulated_floor_delta -= step;
 			}
@@ -967,7 +1001,7 @@ void GridMapEditor::update_palette() {
 		}
 
 		mesh_library_palette->add_item("");
-		if (!preview.is_null()) {
+		if (preview.is_valid()) {
 			mesh_library_palette->set_item_icon(item, preview);
 			mesh_library_palette->set_item_tooltip(item, name);
 		}
@@ -1199,6 +1233,8 @@ void GridMapEditor::_notification(int p_what) {
 					RS::get_singleton()->instance_set_transform(grid_instance[i], xf * edit_grid_xform);
 				}
 				grid_xform = xf;
+				_update_cursor_transform();
+				_update_selection_transform();
 			}
 		} break;
 
@@ -1214,6 +1250,13 @@ void GridMapEditor::_notification(int p_what) {
 				release->set_button_index(MouseButton::LEFT);
 				forward_spatial_input_event(nullptr, release);
 			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			indicator_mat->set_albedo(EDITOR_GET("editors/3d_gizmos/gizmo_colors/gridmap_grid"));
+
+			// Take Preview Size changes into account.
+			update_palette();
 		} break;
 	}
 }
@@ -1231,8 +1274,10 @@ void GridMapEditor::_update_cursor_instance() {
 	if (mode_buttons_group->get_pressed_button() == paint_mode_button) {
 		if (selected_palette >= 0 && node && node->get_mesh_library().is_valid()) {
 			Ref<Mesh> mesh = node->get_mesh_library()->get_item_mesh(selected_palette);
-			if (!mesh.is_null() && mesh->get_rid().is_valid()) {
+			if (mesh.is_valid() && mesh->get_rid().is_valid()) {
 				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world_3d()->get_scenario());
+				RS::ShadowCastingSetting cast_shadows = (RS::ShadowCastingSetting)node->get_mesh_library()->get_item_mesh_cast_shadow(selected_palette);
+				RS::get_singleton()->instance_geometry_set_cast_shadows_setting(cursor_instance, cast_shadows);
 			}
 		}
 	} else if (mode_buttons_group->get_pressed_button() == select_mode_button) {
@@ -1248,6 +1293,10 @@ void GridMapEditor::_update_cursor_instance() {
 		cursor_outer_mat->set_albedo(Color(pick_color, 0.8));
 		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
 	}
+
+	// Make the cursor translucent so that it can be distinguished from already-placed tiles.
+	RenderingServer::get_singleton()->instance_geometry_set_transparency(cursor_instance, 0.5);
+
 	_update_cursor_transform();
 }
 
@@ -1283,16 +1332,16 @@ void GridMapEditor::_bind_methods() {
 }
 
 GridMapEditor::GridMapEditor() {
-	ED_SHORTCUT("grid_map/previous_floor", TTR("Previous Floor"), Key::KEY_1, true);
-	ED_SHORTCUT("grid_map/next_floor", TTR("Next Floor"), Key::KEY_3, true);
-	ED_SHORTCUT("grid_map/edit_x_axis", TTR("Edit X Axis"), KeyModifierMask::SHIFT + Key::Z, true);
-	ED_SHORTCUT("grid_map/edit_y_axis", TTR("Edit Y Axis"), KeyModifierMask::SHIFT + Key::X, true);
-	ED_SHORTCUT("grid_map/edit_z_axis", TTR("Edit Z Axis"), KeyModifierMask::SHIFT + Key::C, true);
-	ED_SHORTCUT("grid_map/keep_selected", TTR("Keep Selection"));
-	ED_SHORTCUT("grid_map/clear_rotation", TTR("Clear Rotation"));
+	ED_SHORTCUT("grid_map/previous_floor", TTRC("Previous Floor"), Key::KEY_1, true);
+	ED_SHORTCUT("grid_map/next_floor", TTRC("Next Floor"), Key::KEY_3, true);
+	ED_SHORTCUT("grid_map/edit_x_axis", TTRC("Edit X Axis"), KeyModifierMask::SHIFT + Key::Z, true);
+	ED_SHORTCUT("grid_map/edit_y_axis", TTRC("Edit Y Axis"), KeyModifierMask::SHIFT + Key::X, true);
+	ED_SHORTCUT("grid_map/edit_z_axis", TTRC("Edit Z Axis"), KeyModifierMask::SHIFT + Key::C, true);
+	ED_SHORTCUT("grid_map/keep_selected", TTRC("Keep Selection"));
+	ED_SHORTCUT("grid_map/clear_rotation", TTRC("Clear Rotation"));
 
 	options = memnew(MenuButton);
-	options->set_theme_type_variation("FlatButton");
+	options->set_theme_type_variation(SceneStringName(FlatButton));
 	options->get_popup()->add_separator();
 	options->get_popup()->add_radio_check_shortcut(ED_GET_SHORTCUT("grid_map/edit_x_axis"), MENU_OPTION_X_AXIS);
 	options->get_popup()->add_radio_check_shortcut(ED_GET_SHORTCUT("grid_map/edit_y_axis"), MENU_OPTION_Y_AXIS);
@@ -1318,6 +1367,7 @@ GridMapEditor::GridMapEditor() {
 	settings_pick_distance->set_min(500.0f);
 	settings_pick_distance->set_step(1.0f);
 	settings_pick_distance->set_value(EDITOR_GET("editors/grid_map/pick_distance"));
+	settings_pick_distance->set_accessibility_name(TTRC("Pick Distance"));
 	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
 
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GridMapEditor::_menu_option));
@@ -1331,10 +1381,11 @@ GridMapEditor::GridMapEditor() {
 	mode_buttons_group.instantiate();
 
 	transform_mode_button = memnew(Button);
-	transform_mode_button->set_theme_type_variation("FlatButton");
+	transform_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
 	transform_mode_button->set_toggle_mode(true);
 	transform_mode_button->set_button_group(mode_buttons_group);
-	transform_mode_button->set_shortcut(ED_SHORTCUT("grid_map/transform_tool", TTR("Transform"), Key::T, true));
+	transform_mode_button->set_shortcut(ED_SHORTCUT("grid_map/transform_tool", TTRC("Transform"), Key::T, true));
+	transform_mode_button->set_accessibility_name(TTRC("Transform"));
 	transform_mode_button->connect(SceneStringName(toggled),
 			callable_mp(this, &GridMapEditor::_on_tool_mode_changed).unbind(1));
 	mode_buttons->add_child(transform_mode_button);
@@ -1343,41 +1394,44 @@ GridMapEditor::GridMapEditor() {
 	mode_buttons->add_child(vsep);
 
 	select_mode_button = memnew(Button);
-	select_mode_button->set_theme_type_variation("FlatButton");
+	select_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
 	select_mode_button->set_toggle_mode(true);
 	select_mode_button->set_button_group(mode_buttons_group);
-	select_mode_button->set_shortcut(ED_SHORTCUT("grid_map/selection_tool", TTR("Selection"), Key::Q, true));
+	select_mode_button->set_shortcut(ED_SHORTCUT("grid_map/selection_tool", TTRC("Selection"), Key::Q, true));
+	select_mode_button->set_accessibility_name(TTRC("Select"));
 	select_mode_button->connect(SceneStringName(toggled),
 			callable_mp(this, &GridMapEditor::_on_tool_mode_changed).unbind(1));
 	mode_buttons->add_child(select_mode_button);
 	viewport_shortcut_buttons.push_back(select_mode_button);
-	select_mode_button->set_pressed(true);
 
 	erase_mode_button = memnew(Button);
-	erase_mode_button->set_theme_type_variation("FlatButton");
+	erase_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
 	erase_mode_button->set_toggle_mode(true);
 	erase_mode_button->set_button_group(mode_buttons_group);
-	erase_mode_button->set_shortcut(ED_SHORTCUT("grid_map/erase_tool", TTR("Erase"), Key::W, true));
+	erase_mode_button->set_shortcut(ED_SHORTCUT("grid_map/erase_tool", TTRC("Erase"), Key::W, true));
+	erase_mode_button->set_accessibility_name(TTRC("Erase"));
 	mode_buttons->add_child(erase_mode_button);
 	erase_mode_button->connect(SceneStringName(toggled),
 			callable_mp(this, &GridMapEditor::_on_tool_mode_changed).unbind(1));
 	viewport_shortcut_buttons.push_back(erase_mode_button);
 
 	paint_mode_button = memnew(Button);
-	paint_mode_button->set_theme_type_variation("FlatButton");
+	paint_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
 	paint_mode_button->set_toggle_mode(true);
 	paint_mode_button->set_button_group(mode_buttons_group);
-	paint_mode_button->set_shortcut(ED_SHORTCUT("grid_map/paint_tool", TTR("Paint"), Key::E, true));
+	paint_mode_button->set_shortcut(ED_SHORTCUT("grid_map/paint_tool", TTRC("Paint"), Key::E, true));
+	paint_mode_button->set_accessibility_name(TTRC("Paint"));
 	paint_mode_button->connect(SceneStringName(toggled),
 			callable_mp(this, &GridMapEditor::_on_tool_mode_changed).unbind(1));
 	mode_buttons->add_child(paint_mode_button);
 	viewport_shortcut_buttons.push_back(paint_mode_button);
 
 	pick_mode_button = memnew(Button);
-	pick_mode_button->set_theme_type_variation("FlatButton");
+	pick_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
 	pick_mode_button->set_toggle_mode(true);
 	pick_mode_button->set_button_group(mode_buttons_group);
-	pick_mode_button->set_shortcut(ED_SHORTCUT("grid_map/pick_tool", TTR("Pick"), Key::R, true));
+	pick_mode_button->set_shortcut(ED_SHORTCUT("grid_map/pick_tool", TTRC("Pick"), Key::R, true));
+	pick_mode_button->set_accessibility_name(TTRC("Pick"));
 	pick_mode_button->connect(SceneStringName(toggled),
 			callable_mp(this, &GridMapEditor::_on_tool_mode_changed).unbind(1));
 	mode_buttons->add_child(pick_mode_button);
@@ -1390,32 +1444,36 @@ GridMapEditor::GridMapEditor() {
 	toolbar->add_child(action_buttons);
 
 	fill_action_button = memnew(Button);
-	fill_action_button->set_theme_type_variation("FlatButton");
-	fill_action_button->set_shortcut(ED_SHORTCUT("grid_map/fill_tool", TTR("Fill"), Key::Z, true));
+	fill_action_button->set_theme_type_variation(SceneStringName(FlatButton));
+	fill_action_button->set_shortcut(ED_SHORTCUT("grid_map/fill_tool", TTRC("Fill"), Key::Z, true));
+	fill_action_button->set_accessibility_name(TTRC("Fill"));
 	fill_action_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_SELECTION_FILL));
 	action_buttons->add_child(fill_action_button);
 	viewport_shortcut_buttons.push_back(fill_action_button);
 
 	move_action_button = memnew(Button);
-	move_action_button->set_theme_type_variation("FlatButton");
-	move_action_button->set_shortcut(ED_SHORTCUT("grid_map/move_tool", TTR("Move"), Key::X, true));
+	move_action_button->set_theme_type_variation(SceneStringName(FlatButton));
+	move_action_button->set_shortcut(ED_SHORTCUT("grid_map/move_tool", TTRC("Move"), Key::X, true));
+	fill_action_button->set_accessibility_name(TTRC("Move"));
 	move_action_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_SELECTION_CUT));
 	action_buttons->add_child(move_action_button);
 	viewport_shortcut_buttons.push_back(move_action_button);
 
 	duplicate_action_button = memnew(Button);
-	duplicate_action_button->set_theme_type_variation("FlatButton");
-	duplicate_action_button->set_shortcut(ED_SHORTCUT("grid_map/duplicate_tool", TTR("Duplicate"), Key::C, true));
+	duplicate_action_button->set_theme_type_variation(SceneStringName(FlatButton));
+	duplicate_action_button->set_shortcut(ED_SHORTCUT("grid_map/duplicate_tool", TTRC("Duplicate"), Key::C, true));
+	duplicate_action_button->set_accessibility_name(TTRC("Duplicate"));
 	duplicate_action_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_SELECTION_DUPLICATE));
 	action_buttons->add_child(duplicate_action_button);
 	viewport_shortcut_buttons.push_back(duplicate_action_button);
 
 	delete_action_button = memnew(Button);
-	delete_action_button->set_theme_type_variation("FlatButton");
-	delete_action_button->set_shortcut(ED_SHORTCUT("grid_map/delete_tool", TTR("Delete"), Key::V, true));
+	delete_action_button->set_theme_type_variation(SceneStringName(FlatButton));
+	delete_action_button->set_shortcut(ED_SHORTCUT("grid_map/delete_tool", TTRC("Delete"), Key::V, true));
+	delete_action_button->set_accessibility_name(TTRC("Delete"));
 	delete_action_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_SELECTION_CLEAR));
 	action_buttons->add_child(delete_action_button);
@@ -1428,24 +1486,26 @@ GridMapEditor::GridMapEditor() {
 	toolbar->add_child(rotation_buttons);
 
 	rotate_x_button = memnew(Button);
-	rotate_x_button->set_theme_type_variation("FlatButton");
-	rotate_x_button->set_shortcut(ED_SHORTCUT("grid_map/cursor_rotate_x", TTR("Cursor Rotate X"), Key::A, true));
+	rotate_x_button->set_theme_type_variation(SceneStringName(FlatButton));
+	rotate_x_button->set_shortcut(ED_SHORTCUT("grid_map/cursor_rotate_x", TTRC("Cursor Rotate X"), Key::A, true));
+	rotate_x_button->set_accessibility_name(TTRC("Rotate X"));
 	rotate_x_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_CURSOR_ROTATE_X));
 	rotation_buttons->add_child(rotate_x_button);
 	viewport_shortcut_buttons.push_back(rotate_x_button);
 
 	rotate_y_button = memnew(Button);
-	rotate_y_button->set_theme_type_variation("FlatButton");
-	rotate_y_button->set_shortcut(ED_SHORTCUT("grid_map/cursor_rotate_y", TTR("Cursor Rotate Y"), Key::S, true));
+	rotate_y_button->set_theme_type_variation(SceneStringName(FlatButton));
+	rotate_y_button->set_shortcut(ED_SHORTCUT("grid_map/cursor_rotate_y", TTRC("Cursor Rotate Y"), Key::S, true));
+	rotate_y_button->set_accessibility_name(TTRC("Rotate Y"));
 	rotate_y_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_CURSOR_ROTATE_Y));
 	rotation_buttons->add_child(rotate_y_button);
 	viewport_shortcut_buttons.push_back(rotate_y_button);
 
 	rotate_z_button = memnew(Button);
-	rotate_z_button->set_theme_type_variation("FlatButton");
-	rotate_z_button->set_shortcut(ED_SHORTCUT("grid_map/cursor_rotate_z", TTR("Cursor Rotate Z"), Key::D, true));
+	rotate_z_button->set_theme_type_variation(SceneStringName(FlatButton));
+	rotate_z_button->set_shortcut(ED_SHORTCUT("grid_map/cursor_rotate_z", TTRC("Cursor Rotate Z"), Key::D, true));
 	rotate_z_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_CURSOR_ROTATE_Z));
 	rotation_buttons->add_child(rotate_z_button);
@@ -1461,6 +1521,7 @@ GridMapEditor::GridMapEditor() {
 	floor->set_min(-32767);
 	floor->set_max(32767);
 	floor->set_step(1);
+	floor->set_accessibility_name(TTRC("Grid Floor"));
 	floor->set_tooltip_text(
 			vformat(TTR("Change Grid Floor:\nPrevious Plane (%s)\nNext Plane (%s)"),
 					ED_GET_SHORTCUT("grid_map/previous_floor")->get_as_text(),
@@ -1475,6 +1536,7 @@ GridMapEditor::GridMapEditor() {
 	search_box = memnew(LineEdit);
 	search_box->add_theme_constant_override("minimum_character_width", 10);
 	search_box->set_placeholder(TTR("Filter Meshes"));
+	search_box->set_accessibility_name(TTRC("Filter Meshes"));
 	search_box->set_clear_button_enabled(true);
 	toolbar->add_child(search_box);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &GridMapEditor::_text_changed));
@@ -1489,15 +1551,17 @@ GridMapEditor::GridMapEditor() {
 	zoom_widget->set_shortcut_context(this);
 
 	mode_thumbnail = memnew(Button);
-	mode_thumbnail->set_theme_type_variation("FlatButton");
+	mode_thumbnail->set_theme_type_variation(SceneStringName(FlatButton));
 	mode_thumbnail->set_toggle_mode(true);
+	mode_thumbnail->set_accessibility_name(TTRC("View as Thumbnails"));
 	mode_thumbnail->set_pressed(true);
 	toolbar->add_child(mode_thumbnail);
 	mode_thumbnail->connect(SceneStringName(pressed), callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_THUMBNAIL));
 
 	mode_list = memnew(Button);
-	mode_list->set_theme_type_variation("FlatButton");
+	mode_list->set_theme_type_variation(SceneStringName(FlatButton));
 	mode_list->set_toggle_mode(true);
+	mode_list->set_accessibility_name(TTRC("View as List"));
 	mode_list->set_pressed(false);
 	toolbar->add_child(mode_list);
 	mode_list->connect(SceneStringName(pressed), callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_LIST));
@@ -1676,7 +1740,7 @@ GridMapEditor::GridMapEditor() {
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	indicator_mat->set_albedo(Color(0.8, 0.5, 0.1));
+	indicator_mat->set_albedo(EDITOR_GET("editors/3d_gizmos/gizmo_colors/gridmap_grid"));
 }
 
 GridMapEditor::~GridMapEditor() {
@@ -1714,7 +1778,40 @@ GridMapEditor::~GridMapEditor() {
 	}
 }
 
+void GridMapEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			grid_map_editor = memnew(GridMapEditor);
+			grid_map_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			grid_map_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+			grid_map_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
+			grid_map_editor->hide();
+
+			panel_button = EditorNode::get_bottom_panel()->add_item(TTR("GridMap"), grid_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_grid_map_bottom_panel", TTRC("Toggle GridMap Bottom Panel")));
+			panel_button->hide();
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			EditorNode::get_bottom_panel()->remove_item(grid_map_editor);
+			memdelete_notnull(grid_map_editor);
+			grid_map_editor = nullptr;
+			panel_button = nullptr;
+		} break;
+	}
+}
+
+void GridMapEditorPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_current_grid_map"), &GridMapEditorPlugin::get_current_grid_map);
+	ClassDB::bind_method(D_METHOD("set_selection", "begin", "end"), &GridMapEditorPlugin::set_selection);
+	ClassDB::bind_method(D_METHOD("clear_selection"), &GridMapEditorPlugin::clear_selection);
+	ClassDB::bind_method(D_METHOD("get_selection"), &GridMapEditorPlugin::get_selection);
+	ClassDB::bind_method(D_METHOD("has_selection"), &GridMapEditorPlugin::has_selection);
+	ClassDB::bind_method(D_METHOD("get_selected_cells"), &GridMapEditorPlugin::get_selected_cells);
+	ClassDB::bind_method(D_METHOD("set_selected_palette_item", "item"), &GridMapEditorPlugin::set_selected_palette_item);
+	ClassDB::bind_method(D_METHOD("get_selected_palette_item"), &GridMapEditorPlugin::get_selected_palette_item);
+}
+
 void GridMapEditorPlugin::edit(Object *p_object) {
+	ERR_FAIL_NULL(grid_map_editor);
 	grid_map_editor->edit(Object::cast_to<GridMap>(p_object));
 }
 
@@ -1723,7 +1820,12 @@ bool GridMapEditorPlugin::handles(Object *p_object) const {
 }
 
 void GridMapEditorPlugin::make_visible(bool p_visible) {
+	ERR_FAIL_NULL(grid_map_editor);
 	if (p_visible) {
+		BaseButton *button = grid_map_editor->mode_buttons_group->get_pressed_button();
+		if (button == nullptr) {
+			grid_map_editor->select_mode_button->set_pressed(true);
+		}
 		grid_map_editor->_on_tool_mode_changed();
 		panel_button->show();
 		EditorNode::get_bottom_panel()->make_item_visible(grid_map_editor);
@@ -1738,18 +1840,56 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-GridMapEditorPlugin::GridMapEditorPlugin() {
-	grid_map_editor = memnew(GridMapEditor);
-	grid_map_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	grid_map_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	grid_map_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
-	grid_map_editor->hide();
-
-	panel_button = EditorNode::get_bottom_panel()->add_item(TTR("GridMap"), grid_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_grid_map_bottom_panel", TTR("Toggle GridMap Bottom Panel")));
-	panel_button->hide();
+GridMap *GridMapEditorPlugin::get_current_grid_map() const {
+	ERR_FAIL_NULL_V(grid_map_editor, nullptr);
+	return grid_map_editor->node;
 }
 
-GridMapEditorPlugin::~GridMapEditorPlugin() {
+void GridMapEditorPlugin::set_selection(const Vector3i &p_begin, const Vector3i &p_end) {
+	ERR_FAIL_NULL(grid_map_editor);
+	grid_map_editor->_set_selection(true, p_begin, p_end);
 }
 
-#endif // TOOLS_ENABLED
+void GridMapEditorPlugin::clear_selection() {
+	ERR_FAIL_NULL(grid_map_editor);
+	grid_map_editor->_set_selection(false);
+}
+
+AABB GridMapEditorPlugin::get_selection() const {
+	ERR_FAIL_NULL_V(grid_map_editor, AABB());
+	return grid_map_editor->_get_selection();
+}
+
+bool GridMapEditorPlugin::has_selection() const {
+	ERR_FAIL_NULL_V(grid_map_editor, false);
+	return grid_map_editor->_has_selection();
+}
+
+Array GridMapEditorPlugin::get_selected_cells() const {
+	ERR_FAIL_NULL_V(grid_map_editor, Array());
+	return grid_map_editor->_get_selected_cells();
+}
+
+void GridMapEditorPlugin::set_selected_palette_item(int p_item) const {
+	ERR_FAIL_NULL(grid_map_editor);
+	if (grid_map_editor->node && grid_map_editor->node->get_mesh_library().is_valid()) {
+		if (p_item < -1) {
+			p_item = -1;
+		} else if (p_item >= grid_map_editor->node->get_mesh_library()->get_item_list().size()) {
+			p_item = grid_map_editor->node->get_mesh_library()->get_item_list().size() - 1;
+		}
+		if (p_item != grid_map_editor->selected_palette) {
+			grid_map_editor->selected_palette = p_item;
+			grid_map_editor->update_palette();
+		}
+	}
+}
+
+int GridMapEditorPlugin::get_selected_palette_item() const {
+	ERR_FAIL_NULL_V(grid_map_editor, 0);
+	if (grid_map_editor->selected_palette >= 0 && grid_map_editor->node && grid_map_editor->node->get_mesh_library().is_valid()) {
+		return grid_map_editor->selected_palette;
+	} else {
+		return -1;
+	}
+}

@@ -45,7 +45,7 @@ PackedStringArray SkeletonModifier3D::get_configuration_warnings() const {
 /* Skeleton3D */
 
 Skeleton3D *SkeletonModifier3D::get_skeleton() const {
-	return Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeleton_id));
+	return ObjectDB::get_instance<Skeleton3D>(skeleton_id);
 }
 
 void SkeletonModifier3D::_update_skeleton_path() {
@@ -113,16 +113,23 @@ real_t SkeletonModifier3D::get_influence() const {
 	return influence;
 }
 
-void SkeletonModifier3D::process_modification() {
+void SkeletonModifier3D::process_modification(double p_delta) {
 	if (!active) {
 		return;
 	}
-	_process_modification();
+	_process_modification(p_delta);
 	emit_signal(SNAME("modification_processed"));
 }
 
-void SkeletonModifier3D::_process_modification() {
-	GDVIRTUAL_CALL(_process_modification);
+void SkeletonModifier3D::_process_modification(double p_delta) {
+	if (GDVIRTUAL_CALL(_process_modification_with_delta, p_delta)) {
+		return;
+	}
+#ifndef DISABLE_DEPRECATED
+	if (GDVIRTUAL_CALL(_process_modification)) {
+		return;
+	}
+#endif // DISABLE_DEPRECATED
 }
 
 void SkeletonModifier3D::_notification(int p_what) {
@@ -151,7 +158,77 @@ void SkeletonModifier3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "influence", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_influence", "get_influence");
 
 	ADD_SIGNAL(MethodInfo("modification_processed"));
+	GDVIRTUAL_BIND(_process_modification_with_delta, "delta");
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_process_modification);
+#endif
+
+	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_X);
+	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_X);
+	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_Y);
+	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_Y);
+	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_Z);
+	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_Z);
+}
+
+Vector3 SkeletonModifier3D::get_vector_from_bone_axis(BoneAxis p_axis) {
+	Vector3 ret;
+	switch (p_axis) {
+		case BONE_AXIS_PLUS_X: {
+			ret = Vector3(1, 0, 0);
+		} break;
+		case BONE_AXIS_MINUS_X: {
+			ret = Vector3(-1, 0, 0);
+		} break;
+		case BONE_AXIS_PLUS_Y: {
+			ret = Vector3(0, 1, 0);
+		} break;
+		case BONE_AXIS_MINUS_Y: {
+			ret = Vector3(0, -1, 0);
+		} break;
+		case BONE_AXIS_PLUS_Z: {
+			ret = Vector3(0, 0, 1);
+		} break;
+		case BONE_AXIS_MINUS_Z: {
+			ret = Vector3(0, 0, -1);
+		} break;
+	}
+	return ret;
+}
+
+Vector3 SkeletonModifier3D::get_vector_from_axis(Vector3::Axis p_axis) {
+	Vector3 ret;
+	switch (p_axis) {
+		case Vector3::AXIS_X: {
+			ret = Vector3(1, 0, 0);
+		} break;
+		case Vector3::AXIS_Y: {
+			ret = Vector3(0, 1, 0);
+		} break;
+		case Vector3::AXIS_Z: {
+			ret = Vector3(0, 0, 1);
+		} break;
+	}
+	return ret;
+}
+
+Vector3::Axis SkeletonModifier3D::get_axis_from_bone_axis(BoneAxis p_axis) {
+	Vector3::Axis ret = Vector3::AXIS_X;
+	switch (p_axis) {
+		case BONE_AXIS_PLUS_X:
+		case BONE_AXIS_MINUS_X: {
+			ret = Vector3::AXIS_X;
+		} break;
+		case BONE_AXIS_PLUS_Y:
+		case BONE_AXIS_MINUS_Y: {
+			ret = Vector3::AXIS_Y;
+		} break;
+		case BONE_AXIS_PLUS_Z:
+		case BONE_AXIS_MINUS_Z: {
+			ret = Vector3::AXIS_Z;
+		} break;
+	}
+	return ret;
 }
 
 SkeletonModifier3D::SkeletonModifier3D() {

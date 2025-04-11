@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_EDIT_H
-#define TEXT_EDIT_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
@@ -110,6 +109,7 @@ public:
 		MENU_INSERT_ZWNJ,
 		MENU_INSERT_WJ,
 		MENU_INSERT_SHY,
+		MENU_EMOJI_AND_SYMBOL,
 		MENU_MAX
 
 	};
@@ -144,18 +144,25 @@ private:
 			Color color = Color(1, 1, 1);
 		};
 
+		mutable int64_t next_item_id = 0;
+
 		struct Line {
 			Vector<Gutter> gutters;
 
 			String data;
 			Array bidi_override;
 			Ref<TextParagraph> data_buf;
+			Vector<RID> accessibility_text_root_element;
+
+			String ime_data;
+			Array ime_bidi_override;
 
 			Color background_color = Color(0, 0, 0, 0);
 			bool hidden = false;
 			int line_count = 0;
 			int height = 0;
 			int width = 0;
+			float indent_ofs = -1.0;
 
 			Line() {
 				data_buf.instantiate();
@@ -190,9 +197,6 @@ private:
 		int gutter_count = 0;
 		bool indent_wrapped_lines = false;
 
-		void _calculate_line_height() const;
-		void _calculate_max_line_width() const;
-
 	public:
 		void set_tab_size(int p_tab_size);
 		int get_tab_size() const;
@@ -215,7 +219,6 @@ private:
 		void set_use_custom_word_separators(bool p_enabled);
 		bool is_custom_word_separators_enabled() const;
 
-		void set_word_separators(const String &p_separators);
 		void set_custom_word_separators(const String &p_separators);
 		String get_enabled_word_separators() const;
 		String get_custom_word_separators() const;
@@ -227,10 +230,20 @@ private:
 		BitField<TextServer::LineBreakFlag> get_brk_flags() const;
 		int get_line_wrap_amount(int p_line) const;
 
+		const Vector<RID> get_accessibility_elements(int p_line);
+		void update_accessibility(int p_line, RID p_root);
+		void clear_accessibility() {
+			for (int i = 0; i < text.size(); i++) {
+				text.write[i].accessibility_text_root_element.clear();
+			}
+		}
+
 		Vector<Vector2i> get_line_wrap_ranges(int p_line) const;
 		const Ref<TextParagraph> get_line_data(int p_line) const;
+		float get_indent_offset(int p_line, bool p_rtl) const;
 
 		void set(int p_line, const String &p_text, const Array &p_bidi_override);
+		void set_ime(int p_line, const String &p_text, const Array &p_bidi_override);
 		void set_hidden(int p_line, bool p_hidden);
 		bool is_hidden(int p_line) const;
 		void insert(int p_at, const Vector<String> &p_text, const Vector<Array> &p_bidi_override);
@@ -238,12 +251,13 @@ private:
 		int size() const { return text.size(); }
 		void clear();
 
-		void invalidate_cache(int p_line, int p_column = -1, bool p_text_changed = false, const String &p_ime_text = String(), const Array &p_bidi_override = Array());
+		void invalidate_cache(int p_line, bool p_text_changed = false);
 		void invalidate_font();
 		void invalidate_all();
 		void invalidate_all_lines();
 
 		_FORCE_INLINE_ String operator[](int p_line) const;
+		_FORCE_INLINE_ const String &get_text_with_ime(int p_line) const;
 
 		/* Gutters. */
 		void add_gutter(int p_at);
@@ -272,12 +286,21 @@ private:
 
 	/* Text */
 	Text text;
-
 	bool setting_text = false;
 
+	enum AltInputMode {
+		ALT_INPUT_NONE,
+		ALT_INPUT_UNICODE,
+		ALT_INPUT_OEM,
+		ALT_INPUT_WIN,
+	};
+
+	AltInputMode alt_mode = ALT_INPUT_NONE;
 	bool alt_start = false;
 	bool alt_start_no_hold = false;
 	uint32_t alt_code = 0;
+
+	bool tab_input_mode = true;
 
 	// Text properties.
 	String ime_text = "";
@@ -290,7 +313,7 @@ private:
 	int placeholder_line_height = -1;
 	int placeholder_max_width = -1;
 
-	Vector<String> placeholder_wraped_rows;
+	Vector<String> placeholder_wrapped_rows;
 
 	void _update_placeholder();
 	bool _using_placeholder() const;
@@ -316,6 +339,7 @@ private:
 	// User control.
 	bool overtype_mode = false;
 	bool context_menu_enabled = true;
+	bool emoji_menu_enabled = true;
 	bool shortcut_keys_enabled = true;
 	bool virtual_keyboard_enabled = true;
 	bool middle_mouse_paste_enabled = true;
@@ -536,6 +560,8 @@ private:
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
+	void _adjust_viewport_to_caret_horizontally(int p_caret = 0, bool p_maximize_selection = true);
+
 	// Minimap.
 	bool draw_minimap = false;
 
@@ -563,6 +589,7 @@ private:
 	Vector2i hovered_gutter = Vector2i(-1, -1); // X = gutter index, Y = row.
 
 	void _update_gutter_width();
+	Vector2i _get_hovered_gutter(const Point2 &p_mouse_pos) const;
 
 	/* Syntax highlighting. */
 	Ref<SyntaxHighlighter> syntax_highlighter;
@@ -621,6 +648,8 @@ private:
 	bool draw_tabs = false;
 	bool draw_spaces = false;
 
+	RID accessibility_text_root_element_nl;
+
 	/*** Super internal Core API. Everything builds on it. ***/
 	bool text_changed_dirty = false;
 	void _text_changed();
@@ -656,6 +685,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	void _set_selection_mode_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
+	Point2i _get_line_column_at_pos_bind_compat_100913(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -688,6 +718,8 @@ protected:
 	void _unhide_all_lines();
 	virtual void _unhide_carets();
 
+	int _get_wrapped_indent_level(int p_line, int &r_first_wrap) const;
+
 	// Symbol lookup.
 	String lookup_symbol_word;
 	void _set_symbol_lookup_word(const String &p_symbol);
@@ -707,6 +739,17 @@ protected:
 	virtual void _copy_internal(int p_caret);
 	virtual void _paste_internal(int p_caret);
 	virtual void _paste_primary_clipboard_internal(int p_caret);
+
+	void _accessibility_action_set_selection(const Variant &p_data);
+	void _accessibility_action_replace_selected(const Variant &p_data);
+	void _accessibility_action_set_value(const Variant &p_data);
+	void _accessibility_action_menu(const Variant &p_data);
+	void _accessibility_scroll_down(const Variant &p_data);
+	void _accessibility_scroll_left(const Variant &p_data);
+	void _accessibility_scroll_right(const Variant &p_data);
+	void _accessibility_scroll_up(const Variant &p_data);
+	void _accessibility_scroll_set(const Variant &p_data);
+	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_line, int p_wrap);
 
 	GDVIRTUAL2(_handle_unicode_input, int, int)
 	GDVIRTUAL1(_backspace, int)
@@ -755,12 +798,20 @@ public:
 	void set_indent_wrapped_lines(bool p_enabled);
 	bool is_indent_wrapped_lines() const;
 
+	void set_tab_input_mode(bool p_enabled);
+	bool get_tab_input_mode() const;
+
 	// User controls
 	void set_overtype_mode_enabled(bool p_enabled);
 	bool is_overtype_mode_enabled() const;
 
 	void set_context_menu_enabled(bool p_enabled);
 	bool is_context_menu_enabled() const;
+
+	void show_emoji_and_symbol_picker();
+
+	void set_emoji_menu_enabled(bool p_enabled);
+	bool is_emoji_menu_enabled() const;
 
 	void set_shortcut_keys_enabled(bool p_enabled);
 	bool is_shortcut_keys_enabled() const;
@@ -787,6 +838,7 @@ public:
 
 	void set_line(int p_line, const String &p_new_text);
 	String get_line(int p_line) const;
+	String get_line_with_ime(int p_line) const;
 
 	int get_line_width(int p_line, int p_wrap_index = -1) const;
 	int get_line_height() const;
@@ -853,7 +905,7 @@ public:
 
 	String get_word_at_pos(const Vector2 &p_pos) const;
 
-	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
+	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line = true, bool p_clamp_column = true) const;
 	Point2i get_pos_at_line_column(int p_line, int p_column) const;
 	Rect2i get_rect_at_line_column(int p_line, int p_column) const;
 
@@ -1125,5 +1177,3 @@ VARIANT_ENUM_CAST(TextEdit::SelectionMode);
 VARIANT_ENUM_CAST(TextEdit::GutterType);
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
-
-#endif // TEXT_EDIT_H

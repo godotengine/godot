@@ -38,13 +38,12 @@
 #include <transcoder/basisu_transcoder.h>
 #ifdef TOOLS_ENABLED
 #include <encoder/basisu_comp.h>
+
+static Mutex init_mutex;
+static bool initialized = false;
 #endif
 
 void basis_universal_init() {
-#ifdef TOOLS_ENABLED
-	basisu::basisu_encoder_init();
-#endif
-
 	basist::basisu_transcoder_init();
 }
 
@@ -80,6 +79,13 @@ inline void _basisu_pad_mipmap(const uint8_t *p_image_mip_data, Vector<uint8_t> 
 }
 
 Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels) {
+	init_mutex.lock();
+	if (!initialized) {
+		basisu::basisu_encoder_init();
+		initialized = true;
+	}
+	init_mutex.unlock();
+
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	Ref<Image> image = p_image->duplicate();
@@ -269,6 +275,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 	bool rgtc_supported = RS::get_singleton()->has_os_feature("rgtc");
 	bool s3tc_supported = RS::get_singleton()->has_os_feature("s3tc");
 	bool etc2_supported = RS::get_singleton()->has_os_feature("etc2");
+	bool astc_hdr_supported = RS::get_singleton()->has_os_feature("astc_hdr");
 
 	bool needs_ra_rg_swap = false;
 	bool needs_rg_trim = false;
@@ -373,7 +380,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 			if (bptc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFBC6H;
 				image_format = Image::FORMAT_BPTC_RGBFU;
-			} else if (astc_supported) {
+			} else if (astc_hdr_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFASTC_HDR_4x4_RGBA;
 				image_format = Image::FORMAT_ASTC_4x4_HDR;
 			} else {

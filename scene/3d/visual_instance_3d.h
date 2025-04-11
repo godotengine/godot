@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VISUAL_INSTANCE_3D_H
-#define VISUAL_INSTANCE_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 
@@ -202,6 +201,8 @@ public:
 	void set_ignore_occlusion_culling(bool p_enabled);
 	bool is_ignoring_occlusion_culling();
 
+	virtual Ref<TriangleMesh> generate_triangle_mesh() const;
+
 	PackedStringArray get_configuration_warnings() const override;
 	GeometryInstance3D();
 	virtual ~GeometryInstance3D();
@@ -211,5 +212,3 @@ VARIANT_ENUM_CAST(GeometryInstance3D::ShadowCastingSetting);
 VARIANT_ENUM_CAST(GeometryInstance3D::GIMode);
 VARIANT_ENUM_CAST(GeometryInstance3D::LightmapScale);
 VARIANT_ENUM_CAST(GeometryInstance3D::VisibilityRangeFadeMode);
-
-#endif // VISUAL_INSTANCE_3D_H

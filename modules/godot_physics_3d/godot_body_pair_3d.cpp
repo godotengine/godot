@@ -33,8 +33,6 @@
 #include "godot_collision_solver_3d.h"
 #include "godot_space_3d.h"
 
-#include "core/os/os.h"
-
 #define MIN_VELOCITY 0.0001
 #define MAX_BIAS_ROTATION (Math_PI / 8)
 
@@ -257,7 +255,7 @@ real_t combine_bounce(GodotBody3D *A, GodotBody3D *B) {
 }
 
 real_t combine_friction(GodotBody3D *A, GodotBody3D *B) {
-	return ABS(MIN(A->get_friction(), B->get_friction()));
+	return Math::abs(MIN(A->get_friction(), B->get_friction()));
 }
 
 bool GodotBodyPair3D::setup(real_t p_step) {

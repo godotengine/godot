@@ -28,7 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
 #include <alloca.h>
+
+#define PLATFORM_THREAD_OVERRIDE
 
 #define PTHREAD_RENAME_SELF
 

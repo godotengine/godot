@@ -264,7 +264,7 @@ ALBEDO = vec3(1.0);
 			uniforms.push_back(u);
 		}
 
-		uniforms.append_array(material_storage->samplers_rd_get_default().get_uniforms(SAMPLERS_BINDING_FIRST_INDEX));
+		material_storage->samplers_rd_get_default().append_uniforms(uniforms, SAMPLERS_BINDING_FIRST_INDEX);
 
 		volumetric_fog.base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.default_shader_rd, VolumetricFogShader::FogSet::FOG_SET_BASE);
 	}
@@ -437,8 +437,7 @@ void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader) {
 
 #if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	Vector<uint8_t> dm;
-	dm.resize(fog_size.x * fog_size.y * fog_size.z * 4);
-	dm.fill(0);
+	dm.resize_zeroed(fog_size.x * fog_size.y * fog_size.z * 4);
 
 	density_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm);
 	RD::get_singleton()->set_resource_name(density_map, "Fog density map");

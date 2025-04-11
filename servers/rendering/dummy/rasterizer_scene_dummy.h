@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RASTERIZER_SCENE_DUMMY_H
-#define RASTERIZER_SCENE_DUMMY_H
+#pragma once
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "storage/utilities.h"
 
 class RasterizerSceneDummy : public RendererSceneRender {
@@ -196,5 +196,3 @@ public:
 	RasterizerSceneDummy() {}
 	~RasterizerSceneDummy() {}
 };
-
-#endif // RASTERIZER_SCENE_DUMMY_H

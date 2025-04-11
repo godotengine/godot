@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TRANSLATION_SERVER_H
-#define TRANSLATION_SERVER_H
+#pragma once
 
 #include "core/string/translation.h"
 #include "core/string/translation_domain.h"
@@ -52,9 +51,13 @@ class TranslationServer : public Object {
 
 	static inline TranslationServer *singleton = nullptr;
 	bool _load_translations(const String &p_from);
-	String _standardize_locale(const String &p_locale, bool p_add_defaults) const;
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	String _standardize_locale_bind_compat_98972(const String &p_locale) const;
+	static void _bind_compatibility_methods();
+#endif
 
 	struct LocaleScriptInfo {
 		String name;
@@ -129,7 +132,7 @@ public:
 	void set_pseudolocalization_enabled(bool p_enabled);
 	void reload_pseudolocalization();
 
-	String standardize_locale(const String &p_locale) const;
+	String standardize_locale(const String &p_locale, bool p_add_defaults = false) const;
 
 	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
 
@@ -156,5 +159,3 @@ public:
 
 	TranslationServer();
 };
-
-#endif // TRANSLATION_SERVER_H

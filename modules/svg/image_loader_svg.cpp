@@ -53,7 +53,7 @@ void ImageLoaderSVG::_replace_color_property(const HashMap<Color, Color> &p_colo
 	int pos = r_string.find(p_prefix);
 	while (pos != -1) {
 		pos += prefix_len; // Skip prefix.
-		int end_pos = r_string.find("\"", pos);
+		int end_pos = r_string.find_char('"', pos);
 		ERR_FAIL_COND_MSG(end_pos == -1, vformat("Malformed SVG string after property \"%s\".", p_prefix));
 		const String color_code = r_string.substr(pos, end_pos - pos);
 		if (color_code != "none" && !color_code.begins_with("url(")) {
@@ -161,7 +161,7 @@ Error ImageLoaderSVG::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileacces
 	p_fileaccess->get_buffer(buffer.ptrw(), buffer.size());
 
 	String svg;
-	Error err = svg.parse_utf8((const char *)buffer.ptr(), buffer.size());
+	Error err = svg.append_utf8((const char *)buffer.ptr(), buffer.size());
 	if (err != OK) {
 		return err;
 	}

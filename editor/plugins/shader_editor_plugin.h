@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_EDITOR_PLUGIN_H
-#define SHADER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 
@@ -41,6 +40,7 @@ class ShaderEditor;
 class TabContainer;
 class TextShaderEditor;
 class VBoxContainer;
+class HBoxContainer;
 class VisualShaderEditor;
 class WindowWrapper;
 
@@ -75,6 +75,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 		CLOSE_OTHER_TABS,
 		SHOW_IN_FILE_SYSTEM,
 		COPY_PATH,
+		TOGGLE_FILES_PANEL,
 	};
 
 	enum PopupMenuType {
@@ -85,6 +86,8 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	HSplitContainer *main_split = nullptr;
 	VBoxContainer *left_panel = nullptr;
+	HBoxContainer *menu_hb = nullptr;
+
 	ItemList *shader_list = nullptr;
 	TabContainer *shader_tabs = nullptr;
 
@@ -125,12 +128,13 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _window_changed(bool p_visible);
 
 	void _set_text_shader_zoom_factor(float p_zoom_factor);
+	void _switch_to_editor(ShaderEditor *p_editor);
 
 protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_name() const override { return "Shader"; }
+	virtual String get_plugin_name() const override { return "Shader"; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
@@ -146,7 +150,4 @@ public:
 	virtual void apply_changes() override;
 
 	ShaderEditorPlugin();
-	~ShaderEditorPlugin();
 };
-
-#endif // SHADER_EDITOR_PLUGIN_H

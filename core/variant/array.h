@@ -28,18 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ARRAY_H
-#define ARRAY_H
+#pragma once
 
 #include "core/typedefs.h"
 
 #include <climits>
+#include <initializer_list>
 
-class Variant;
-class ArrayPrivate;
-class Object;
-class StringName;
 class Callable;
+class StringName;
+class Variant;
+
+struct ArrayPrivate;
+struct ContainerType;
 
 class Array {
 	mutable ArrayPrivate *_p;
@@ -56,21 +57,19 @@ public:
 		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return element_ptr == p_other.element_ptr; }
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return element_ptr != p_other.element_ptr; }
 
-		_FORCE_INLINE_ ConstIterator(const Variant *p_element_ptr, Variant *p_read_only = nullptr) :
-				element_ptr(p_element_ptr), read_only(p_read_only) {}
+		_FORCE_INLINE_ ConstIterator(const Variant *p_element_ptr) :
+				element_ptr(p_element_ptr) {}
 		_FORCE_INLINE_ ConstIterator() {}
 		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_other) :
-				element_ptr(p_other.element_ptr), read_only(p_other.read_only) {}
+				element_ptr(p_other.element_ptr) {}
 
 		_FORCE_INLINE_ ConstIterator &operator=(const ConstIterator &p_other) {
 			element_ptr = p_other.element_ptr;
-			read_only = p_other.read_only;
 			return *this;
 		}
 
 	private:
 		const Variant *element_ptr = nullptr;
-		Variant *read_only = nullptr;
 	};
 
 	struct Iterator {
@@ -96,7 +95,7 @@ public:
 		}
 
 		operator ConstIterator() const {
-			return ConstIterator(element_ptr, read_only);
+			return ConstIterator(element_ptr);
 		}
 
 	private:
@@ -185,10 +184,14 @@ public:
 
 	const void *id() const;
 
+	void set_typed(const ContainerType &p_element_type);
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+
 	bool is_typed() const;
 	bool is_same_typed(const Array &p_other) const;
 	bool is_same_instance(const Array &p_other) const;
+
+	ContainerType get_element_type() const;
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
@@ -199,8 +202,7 @@ public:
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
+	Array(std::initializer_list<Variant> p_init);
 	Array();
 	~Array();
 };
-
-#endif // ARRAY_H

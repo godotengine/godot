@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_DRIVER_H
-#define RENDERING_DEVICE_DRIVER_H
+#pragma once
 
 // ***********************************************************************************
 // RenderingDeviceDriver - Design principles
@@ -48,7 +47,6 @@
 
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
-#include "servers/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
 
@@ -126,20 +124,28 @@ public:
 				id(p_id) {}
 	};
 
-#define DEFINE_ID(m_name)                                                                             \
-	struct m_name##ID : public ID {                                                                   \
-		_ALWAYS_INLINE_ explicit operator bool() const { return id != 0; }                            \
-		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) {                                   \
-			id = p_other.id;                                                                          \
-			return *this;                                                                             \
-		}                                                                                             \
-		_ALWAYS_INLINE_ bool operator<(const m_name##ID &p_other) const { return id < p_other.id; }   \
-		_ALWAYS_INLINE_ bool operator==(const m_name##ID &p_other) const { return id == p_other.id; } \
-		_ALWAYS_INLINE_ bool operator!=(const m_name##ID &p_other) const { return id != p_other.id; } \
-		_ALWAYS_INLINE_ m_name##ID(const m_name##ID &p_other) : ID(p_other.id) {}                     \
-		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {}                            \
-		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((uint64_t)p_ptr) {}                     \
-		_ALWAYS_INLINE_ m_name##ID() = default;                                                       \
+#define DEFINE_ID(m_name)                                                         \
+	struct m_name##ID : public ID {                                               \
+		_ALWAYS_INLINE_ explicit operator bool() const {                          \
+			return id != 0;                                                       \
+		}                                                                         \
+		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) {               \
+			id = p_other.id;                                                      \
+			return *this;                                                         \
+		}                                                                         \
+		_ALWAYS_INLINE_ bool operator<(const m_name##ID &p_other) const {         \
+			return id < p_other.id;                                               \
+		}                                                                         \
+		_ALWAYS_INLINE_ bool operator==(const m_name##ID &p_other) const {        \
+			return id == p_other.id;                                              \
+		}                                                                         \
+		_ALWAYS_INLINE_ bool operator!=(const m_name##ID &p_other) const {        \
+			return id != p_other.id;                                              \
+		}                                                                         \
+		_ALWAYS_INLINE_ m_name##ID(const m_name##ID &p_other) : ID(p_other.id) {} \
+		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {}        \
+		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((uint64_t)p_ptr) {} \
+		_ALWAYS_INLINE_ m_name##ID() = default;                                   \
 	};
 
 	// Id types declared before anything else to prevent cyclic dependencies between the different concerns.
@@ -190,6 +196,7 @@ public:
 		BUFFER_USAGE_INDEX_BIT = (1 << 6),
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
+		BUFFER_USAGE_DEVICE_ADDRESS_BIT = (1 << 17),
 	};
 
 	enum {
@@ -203,6 +210,8 @@ public:
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) = 0;
 	virtual uint8_t *buffer_map(BufferID p_buffer) = 0;
 	virtual void buffer_unmap(BufferID p_buffer) = 0;
+	// Only for a buffer with BUFFER_USAGE_DEVICE_ADDRESS_BIT.
+	virtual uint64_t buffer_get_device_address(BufferID p_buffer) = 0;
 
 	/*****************/
 	/**** TEXTURE ****/
@@ -228,7 +237,8 @@ public:
 		TEXTURE_LAYOUT_COPY_DST_OPTIMAL,
 		TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL,
 		TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL,
-		TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL,
+		TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL,
+		TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL,
 		TEXTURE_LAYOUT_MAX
 	};
 
@@ -237,6 +247,11 @@ public:
 		TEXTURE_ASPECT_DEPTH = 1,
 		TEXTURE_ASPECT_STENCIL = 2,
 		TEXTURE_ASPECT_MAX
+	};
+
+	enum TextureUsageMethod {
+		TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT = TEXTURE_USAGE_MAX_BIT << 1,
+		TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT = TEXTURE_USAGE_MAX_BIT << 2,
 	};
 
 	enum TextureAspectBits {
@@ -325,6 +340,8 @@ public:
 		PIPELINE_STAGE_ALL_GRAPHICS_BIT = (1 << 15),
 		PIPELINE_STAGE_ALL_COMMANDS_BIT = (1 << 16),
 		PIPELINE_STAGE_CLEAR_STORAGE_BIT = (1 << 17),
+		PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT = (1 << 22),
+		PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT = (1 << 23),
 	};
 
 	enum BarrierAccessBits {
@@ -346,8 +363,9 @@ public:
 		BARRIER_ACCESS_MEMORY_READ_BIT = (1 << 15),
 		BARRIER_ACCESS_MEMORY_WRITE_BIT = (1 << 16),
 		BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT = (1 << 23),
-		BARRIER_ACCESS_RESOLVE_READ_BIT = (1 << 24),
-		BARRIER_ACCESS_RESOLVE_WRITE_BIT = (1 << 25),
+		BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACHMENT_READ_BIT = (1 << 24),
+		BARRIER_ACCESS_RESOLVE_READ_BIT = (1 << 25),
+		BARRIER_ACCESS_RESOLVE_WRITE_BIT = (1 << 26),
 		BARRIER_ACCESS_STORAGE_CLEAR_BIT = (1 << 27),
 	};
 
@@ -426,6 +444,7 @@ public:
 	};
 
 	virtual CommandPoolID command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) = 0;
+	virtual bool command_pool_reset(CommandPoolID p_cmd_pool) = 0;
 	virtual void command_pool_free(CommandPoolID p_cmd_pool) = 0;
 
 	// ----- BUFFER -----
@@ -478,7 +497,21 @@ public:
 
 	virtual String shader_get_binary_cache_key() = 0;
 	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) = 0;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) = 0;
+
+	struct ImmutableSampler {
+		UniformType type = UNIFORM_TYPE_MAX;
+		uint32_t binding = 0xffffffff; // Binding index as specified in shader.
+		LocalVector<ID> ids;
+	};
+	/** Creates a Pipeline State Object (PSO) out of the shader and all the input data it needs.
+	@param p_shader_binary		Shader binary bytecode (e.g. SPIR-V).
+	@param r_shader_desc		TBD.
+	@param r_name				TBD.
+	@param p_immutable_samplers	Immutable samplers can be embedded when creating the pipeline layout on the condition they
+								remain valid and unchanged, so they don't need to be specified when creating uniform sets.
+	@return						PSO resource for binding.
+	*/
+	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) = 0;
 	// Only meaningful if API_TRAIT_SHADER_CHANGE_INVALIDATION is SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH.
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) { return 0; }
 	virtual void shader_free(ShaderID p_shader) = 0;
@@ -497,10 +530,15 @@ public:
 		UniformType type = UNIFORM_TYPE_MAX;
 		uint32_t binding = 0xffffffff; // Binding index as specified in shader.
 		LocalVector<ID> ids;
+		// Flag to indicate  that this is an immutable sampler so it is skipped when creating uniform
+		// sets, as it would be set previously when creating the pipeline layout.
+		bool immutable_sampler = false;
 	};
 
-	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) = 0;
+	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) = 0;
+	virtual void linear_uniform_set_pools_reset(int p_linear_pool_index) {}
 	virtual void uniform_set_free(UniformSetID p_uniform_set) = 0;
+	virtual bool uniform_sets_have_linear_pools() const { return false; }
 
 	// ----- COMMANDS -----
 
@@ -599,7 +637,8 @@ public:
 		AttachmentReference depth_stencil_reference;
 		LocalVector<AttachmentReference> resolve_references;
 		LocalVector<uint32_t> preserve_attachments;
-		AttachmentReference vrs_reference;
+		AttachmentReference fragment_shading_rate_reference;
+		Size2i fragment_shading_rate_texel_size;
 	};
 
 	struct SubpassDependency {
@@ -611,7 +650,7 @@ public:
 		BitField<BarrierAccessBits> dst_access;
 	};
 
-	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) = 0;
+	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) = 0;
 	virtual void render_pass_free(RenderPassID p_render_pass) = 0;
 
 	// ----- COMMANDS -----
@@ -642,6 +681,7 @@ public:
 	// Binding.
 	virtual void command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
 	virtual void command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
+	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) = 0;
 
 	// Drawing.
 	virtual void command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) = 0;
@@ -684,6 +724,7 @@ public:
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
 	virtual void command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
+	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) = 0;
 
 	// Dispatching.
 	virtual void command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
@@ -692,6 +733,12 @@ public:
 	// ----- PIPELINE -----
 
 	virtual PipelineID compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) = 0;
+
+	/******************/
+	/**** CALLBACK ****/
+	/******************/
+
+	typedef void (*DriverCallback)(RenderingDeviceDriver *p_driver, CommandBufferID p_command_buffer, void *p_userdata);
 
 	/*****************/
 	/**** QUERIES ****/
@@ -749,6 +796,26 @@ public:
 		uint32_t max_instance_count = 0;
 	};
 
+	struct FragmentShadingRateCapabilities {
+		Size2i min_texel_size;
+		Size2i max_texel_size;
+		Size2i max_fragment_size;
+		bool pipeline_supported = false;
+		bool primitive_supported = false;
+		bool attachment_supported = false;
+	};
+
+	struct FragmentDensityMapCapabilities {
+		Size2i min_texel_size;
+		Size2i max_texel_size;
+		Size2i offset_granularity;
+		bool attachment_supported = false;
+		bool dynamic_attachment_supported = false;
+		bool non_subsampled_images_supported = false;
+		bool invocations_supported = false;
+		bool offset_supported = false;
+	};
+
 	enum ApiTrait {
 		API_TRAIT_HONORS_PIPELINE_BARRIERS,
 		API_TRAIT_SHADER_CHANGE_INVALIDATION,
@@ -785,10 +852,13 @@ public:
 	virtual void set_object_name(ObjectType p_type, ID p_driver_id, const String &p_name) = 0;
 	virtual uint64_t get_resource_native_handle(DriverResource p_type, ID p_driver_id) = 0;
 	virtual uint64_t get_total_memory_used() = 0;
+	virtual uint64_t get_lazily_memory_used() = 0;
 	virtual uint64_t limit_get(Limit p_limit) = 0;
 	virtual uint64_t api_trait_get(ApiTrait p_trait);
 	virtual bool has_feature(Features p_feature) = 0;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() = 0;
+	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() = 0;
+	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() = 0;
 	virtual String get_api_name() const = 0;
 	virtual String get_api_version() const = 0;
 	virtual String get_pipeline_cache_uuid() const = 0;
@@ -802,5 +872,3 @@ public:
 };
 
 using RDD = RenderingDeviceDriver;
-
-#endif // RENDERING_DEVICE_DRIVER_H

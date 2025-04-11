@@ -47,6 +47,7 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/3d/fog_material.h"
 #include "scene/resources/3d/sky_material.h"
+#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/particle_process_material.h"
 
 void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
@@ -127,7 +128,7 @@ void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_en
 	camera->set_environment(p_env);
 
 	is_unsupported_shader_mode = false;
-	if (!material.is_null()) {
+	if (material.is_valid()) {
 		Shader::Mode mode = p_material->get_shader_mode();
 		switch (mode) {
 			case Shader::MODE_CANVAS_ITEM:
@@ -309,18 +310,21 @@ MaterialEditor::MaterialEditor() {
 	sphere_switch = memnew(Button);
 	sphere_switch->set_theme_type_variation("PreviewLightButton");
 	sphere_switch->set_toggle_mode(true);
+	sphere_switch->set_accessibility_name(TTRC("Sphere"));
 	vb_shape->add_child(sphere_switch);
 	sphere_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_sphere_switch_pressed));
 
 	box_switch = memnew(Button);
 	box_switch->set_theme_type_variation("PreviewLightButton");
 	box_switch->set_toggle_mode(true);
+	box_switch->set_accessibility_name(TTRC("Box"));
 	vb_shape->add_child(box_switch);
 	box_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_box_switch_pressed));
 
 	quad_switch = memnew(Button);
 	quad_switch->set_theme_type_variation("PreviewLightButton");
 	quad_switch->set_toggle_mode(true);
+	quad_switch->set_accessibility_name(TTRC("Quad"));
 	vb_shape->add_child(quad_switch);
 	quad_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_quad_switch_pressed));
 
@@ -333,6 +337,7 @@ MaterialEditor::MaterialEditor() {
 	light_1_switch->set_theme_type_variation("PreviewLightButton");
 	light_1_switch->set_toggle_mode(true);
 	light_1_switch->set_pressed(true);
+	light_1_switch->set_accessibility_name(TTRC("First Light"));
 	vb_light->add_child(light_1_switch);
 	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_light_1_switch_pressed));
 
@@ -340,6 +345,7 @@ MaterialEditor::MaterialEditor() {
 	light_2_switch->set_theme_type_variation("PreviewLightButton");
 	light_2_switch->set_toggle_mode(true);
 	light_2_switch->set_pressed(true);
+	light_2_switch->set_accessibility_name(TTRC("Second Light"));
 	vb_light->add_child(light_2_switch);
 	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_light_2_switch_pressed));
 
@@ -448,7 +454,7 @@ bool StandardMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource
 
 Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<StandardMaterial3D> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -494,7 +500,7 @@ bool ORMMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource) con
 
 Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<ORMMaterial3D> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -540,7 +546,7 @@ bool ParticleProcessMaterialConversionPlugin::handles(const Ref<Resource> &p_res
 
 Ref<Resource> ParticleProcessMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<ParticleProcessMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -579,7 +585,7 @@ bool CanvasItemMaterialConversionPlugin::handles(const Ref<Resource> &p_resource
 
 Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<CanvasItemMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -618,7 +624,7 @@ bool ProceduralSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resou
 
 Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<ProceduralSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -657,7 +663,7 @@ bool PanoramaSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resourc
 
 Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<PanoramaSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -696,7 +702,7 @@ bool PhysicalSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resourc
 
 Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<PhysicalSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -735,7 +741,7 @@ bool FogMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const
 
 Ref<Resource> FogMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<FogMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();

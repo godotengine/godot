@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_INTERFACE_H
-#define GDEXTENSION_INTERFACE_H
+#pragma once
 
 /* This is a C class header, you can copy it and use it directly in your own binders.
  * Together with the JSON file, you should be able to generate any binder.
@@ -198,6 +197,7 @@ typedef struct {
 
 typedef void (*GDExtensionVariantFromTypeConstructorFunc)(GDExtensionUninitializedVariantPtr, GDExtensionTypePtr);
 typedef void (*GDExtensionTypeFromVariantConstructorFunc)(GDExtensionUninitializedTypePtr, GDExtensionVariantPtr);
+typedef void *(*GDExtensionVariantGetInternalPtrFunc)(GDExtensionVariantPtr);
 typedef void (*GDExtensionPtrOperatorEvaluator)(GDExtensionConstTypePtr p_left, GDExtensionConstTypePtr p_right, GDExtensionTypePtr r_result);
 typedef void (*GDExtensionPtrBuiltInMethod)(GDExtensionTypePtr p_base, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return, int p_argument_count);
 typedef void (*GDExtensionPtrConstructor)(GDExtensionUninitializedTypePtr p_base, const GDExtensionConstTypePtr *p_args);
@@ -272,7 +272,9 @@ typedef GDExtensionObjectPtr (*GDExtensionClassCreateInstance2)(void *p_class_us
 typedef void (*GDExtensionClassFreeInstance)(void *p_class_userdata, GDExtensionClassInstancePtr p_instance);
 typedef GDExtensionClassInstancePtr (*GDExtensionClassRecreateInstance)(void *p_class_userdata, GDExtensionObjectPtr p_object);
 typedef GDExtensionClassCallVirtual (*GDExtensionClassGetVirtual)(void *p_class_userdata, GDExtensionConstStringNamePtr p_name);
+typedef GDExtensionClassCallVirtual (*GDExtensionClassGetVirtual2)(void *p_class_userdata, GDExtensionConstStringNamePtr p_name, uint32_t p_hash);
 typedef void *(*GDExtensionClassGetVirtualCallData)(void *p_class_userdata, GDExtensionConstStringNamePtr p_name);
+typedef void *(*GDExtensionClassGetVirtualCallData2)(void *p_class_userdata, GDExtensionConstStringNamePtr p_name, uint32_t p_hash);
 typedef void (*GDExtensionClassCallVirtualWithData)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, void *p_virtual_call_userdata, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret);
 
 typedef struct {
@@ -367,6 +369,7 @@ typedef struct {
 	GDExtensionBool is_abstract;
 	GDExtensionBool is_exposed;
 	GDExtensionBool is_runtime;
+	GDExtensionConstStringPtr icon_path;
 	GDExtensionClassSet set_func;
 	GDExtensionClassGet get_func;
 	GDExtensionClassGetPropertyList get_property_list_func;
@@ -382,20 +385,23 @@ typedef struct {
 	GDExtensionClassFreeInstance free_instance_func; // Destructor; mandatory.
 	GDExtensionClassRecreateInstance recreate_instance_func;
 	// Queries a virtual function by name and returns a callback to invoke the requested virtual function.
-	GDExtensionClassGetVirtual get_virtual_func;
+	GDExtensionClassGetVirtual2 get_virtual_func;
 	// Paired with `call_virtual_with_data_func`, this is an alternative to `get_virtual_func` for extensions that
 	// need or benefit from extra data when calling virtual functions.
 	// Returns user data that will be passed to `call_virtual_with_data_func`.
 	// Returning `NULL` from this function signals to Godot that the virtual function is not overridden.
 	// Data returned from this function should be managed by the extension and must be valid until the extension is deinitialized.
 	// You should supply either `get_virtual_func`, or `get_virtual_call_data_func` with `call_virtual_with_data_func`.
-	GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
+	GDExtensionClassGetVirtualCallData2 get_virtual_call_data_func;
 	// Used to call virtual functions when `get_virtual_call_data_func` is not null.
 	GDExtensionClassCallVirtualWithData call_virtual_with_data_func;
 	void *class_userdata; // Per-class user data, later accessible in instance bindings.
 } GDExtensionClassCreationInfo4;
 
 typedef void *GDExtensionClassLibraryPtr;
+
+/* Passed a pointer to a PackedStringArray that should be filled with the classes that may be used by the GDExtension. */
+typedef void (*GDExtensionEditorGetClassesUsedCallback)(GDExtensionTypePtr p_packed_string_array);
 
 /* Method */
 
@@ -786,15 +792,38 @@ typedef struct {
 	const char *string;
 } GDExtensionGodotVersion;
 
+typedef struct {
+	uint32_t major;
+	uint32_t minor;
+	uint32_t patch;
+	uint32_t hex; // Full version encoded as hexadecimal with one byte (2 hex digits) per number (e.g. for "3.1.12" it would be 0x03010C)
+	const char *status; // (e.g. "stable", "beta", "rc1", "rc2")
+	const char *build; // (e.g. "custom_build")
+	const char *hash; // Full Git commit hash.
+	uint64_t timestamp; // Git commit date UNIX timestamp in seconds, or 0 if unavailable.
+	const char *string; // (e.g. "Godot v3.1.4.stable.official.mono")
+} GDExtensionGodotVersion2;
+
 /**
  * @name get_godot_version
  * @since 4.1
+ * @deprecated in Godot 4.5. Use `get_godot_version2` instead.
  *
  * Gets the Godot version that the GDExtension was loaded into.
  *
  * @param r_godot_version A pointer to the structure to write the version information into.
  */
 typedef void (*GDExtensionInterfaceGetGodotVersion)(GDExtensionGodotVersion *r_godot_version);
+
+/**
+ * @name get_godot_version2
+ * @since 4.5
+ *
+ * Gets the Godot version that the GDExtension was loaded into.
+ *
+ * @param r_godot_version A pointer to the structure to write the version information into.
+ */
+typedef void (*GDExtensionInterfaceGetGodotVersion2)(GDExtensionGodotVersion2 *r_godot_version);
 
 /* INTERFACE: Memory */
 
@@ -841,7 +870,7 @@ typedef void (*GDExtensionInterfaceMemFree)(void *p_ptr);
  *
  * Logs an error to Godot's built-in debugger and to the OS terminal.
  *
- * @param p_description The code trigging the error.
+ * @param p_description The code triggering the error.
  * @param p_function The function name where the error occurred.
  * @param p_file The file where the error occurred.
  * @param p_line The line where the error occurred.
@@ -855,7 +884,7 @@ typedef void (*GDExtensionInterfacePrintError)(const char *p_description, const 
  *
  * Logs an error with a message to Godot's built-in debugger and to the OS terminal.
  *
- * @param p_description The code trigging the error.
+ * @param p_description The code triggering the error.
  * @param p_message The message to show along with the error.
  * @param p_function The function name where the error occurred.
  * @param p_file The file where the error occurred.
@@ -870,7 +899,7 @@ typedef void (*GDExtensionInterfacePrintErrorWithMessage)(const char *p_descript
  *
  * Logs a warning to Godot's built-in debugger and to the OS terminal.
  *
- * @param p_description The code trigging the warning.
+ * @param p_description The code triggering the warning.
  * @param p_function The function name where the warning occurred.
  * @param p_file The file where the warning occurred.
  * @param p_line The line where the warning occurred.
@@ -884,7 +913,7 @@ typedef void (*GDExtensionInterfacePrintWarning)(const char *p_description, cons
  *
  * Logs a warning with a message to Godot's built-in debugger and to the OS terminal.
  *
- * @param p_description The code trigging the warning.
+ * @param p_description The code triggering the warning.
  * @param p_message The message to show along with the warning.
  * @param p_function The function name where the warning occurred.
  * @param p_file The file where the warning occurred.
@@ -899,7 +928,7 @@ typedef void (*GDExtensionInterfacePrintWarningWithMessage)(const char *p_descri
  *
  * Logs a script error to Godot's built-in debugger and to the OS terminal.
  *
- * @param p_description The code trigging the error.
+ * @param p_description The code triggering the error.
  * @param p_function The function name where the error occurred.
  * @param p_file The file where the error occurred.
  * @param p_line The line where the error occurred.
@@ -913,7 +942,7 @@ typedef void (*GDExtensionInterfacePrintScriptError)(const char *p_description, 
  *
  * Logs a script error with a message to Godot's built-in debugger and to the OS terminal.
  *
- * @param p_description The code trigging the error.
+ * @param p_description The code triggering the error.
  * @param p_message The message to show along with the error.
  * @param p_function The function name where the error occurred.
  * @param p_file The file where the error occurred.
@@ -1382,6 +1411,23 @@ typedef GDExtensionVariantFromTypeConstructorFunc (*GDExtensionInterfaceGetVaria
  * @return A pointer to a function that can get the raw value from a Variant of the given type.
  */
 typedef GDExtensionTypeFromVariantConstructorFunc (*GDExtensionInterfaceGetVariantToTypeConstructor)(GDExtensionVariantType p_type);
+
+/**
+ * @name variant_get_ptr_internal_getter
+ * @since 4.4
+ *
+ * Provides a function pointer for retrieving a pointer to a variant's internal value.
+ * Access to a variant's internal value can be used to modify it in-place, or to retrieve its value without the overhead of variant conversion functions.
+ * It is recommended to cache the getter for all variant types in a function table to avoid retrieval overhead upon use.
+ *
+ * @note Each function assumes the variant's type has already been determined and matches the function.
+ * Invoking the function with a variant of a mismatched type has undefined behavior, and may lead to a segmentation fault.
+ *
+ * @param p_type The Variant type.
+ *
+ * @return A pointer to a type-specific function that returns a pointer to the internal value of a variant. Check the implementation of this function (gdextension_variant_get_ptr_internal_getter) for pointee type info of each variant type.
+ */
+typedef GDExtensionVariantGetInternalPtrFunc (*GDExtensionInterfaceGetVariantGetInternalPtrFunc)(GDExtensionVariantType p_type);
 
 /**
  * @name variant_get_ptr_operator_evaluator
@@ -2700,6 +2746,17 @@ typedef void (*GDExtensionInterfacePlaceHolderScriptInstanceUpdate)(GDExtensionS
  */
 typedef GDExtensionScriptInstanceDataPtr (*GDExtensionInterfaceObjectGetScriptInstance)(GDExtensionConstObjectPtr p_object, GDExtensionObjectPtr p_language);
 
+/**
+ * @name object_set_script_instance
+ * @since 4.5
+ *
+ * Set the script instance data attached to this object.
+ *
+ * @param p_object A pointer to the Object.
+ * @param p_script_instance A pointer to the script instance data to attach to this object.
+ */
+typedef void (*GDExtensionInterfaceObjectSetScriptInstance)(GDExtensionObjectPtr p_object, GDExtensionScriptInstanceDataPtr p_script_instance);
+
 /* INTERFACE: Callable */
 
 /**
@@ -3057,8 +3114,22 @@ typedef void (*GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8Chars)(const char *
  */
 typedef void (*GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen)(const char *p_data, GDExtensionInt p_size);
 
+/**
+ * @name editor_register_get_classes_used_callback
+ * @since 4.5
+ *
+ * Registers a callback that Godot can call to get the list of all classes (from ClassDB) that may be used by the calling GDExtension.
+ *
+ * This is used by the editor to generate a build profile (in "Tools" > "Engine Compilation Configuration Editor..." > "Detect from project"),
+ * in order to recompile Godot with only the classes used.
+ * In the provided callback, the GDExtension should provide the list of classes that _may_ be used statically, thus the time of invocation shouldn't matter.
+ * If a GDExtension doesn't register a callback, Godot will assume that it could be using any classes.
+ *
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_callback The callback to retrieve the list of classes used.
+ */
+typedef void (*GDExtensionInterfaceEditorRegisterGetClassesUsedCallback)(GDExtensionClassLibraryPtr p_library, GDExtensionEditorGetClassesUsedCallback p_callback);
+
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GDEXTENSION_INTERFACE_H

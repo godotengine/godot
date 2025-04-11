@@ -66,8 +66,6 @@
 #include "editor/node_dock.h"
 #endif
 
-#include <stdint.h>
-
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
 const Vector<String> ignored_types = {};
@@ -364,7 +362,7 @@ Ref<Script> CSharpLanguage::make_template(const String &p_template, const String
 	Ref<CSharpScript> scr;
 	scr.instantiate();
 
-	String class_name_no_spaces = p_class_name.replace(" ", "_");
+	String class_name_no_spaces = p_class_name.replace_char(' ', '_');
 	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
 	String processed_template = p_template;
 	processed_template = processed_template.replace("_BINDINGS_NAMESPACE_", BINDINGS_NAMESPACE)
@@ -445,9 +443,9 @@ bool CSharpLanguage::handles_global_class_type(const String &p_type) const {
 	return p_type == get_type();
 }
 
-String CSharpLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+String CSharpLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool) const {
 	String class_name;
-	GDMonoCache::managed_callbacks.ScriptManagerBridge_GetGlobalClassName(&p_path, r_base_type, r_icon_path, &class_name);
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_GetGlobalClassName(&p_path, r_base_type, r_icon_path, r_is_abstract, r_is_tool, &class_name);
 	return class_name;
 }
 
@@ -615,7 +613,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 			return false; // Already up to date
 		}
 	} else {
-		String assembly_name = path::get_csharp_project_name();
+		String assembly_name = Path::get_csharp_project_name();
 
 		assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
 								.path_join(assembly_name + ".dll");
@@ -652,7 +650,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		for (SelfList<CSharpScript> *elem = script_list.first(); elem; elem = elem->next()) {
 			// Do not reload scripts with only non-collectible instances to avoid disrupting event subscriptions and such.
-			bool is_reloadable = elem->self()->instances.size() == 0;
+			bool is_reloadable = elem->self()->instances.is_empty();
 			for (Object *obj : elem->self()->instances) {
 				ERR_CONTINUE(!obj->get_script_instance());
 				CSharpInstance *csi = static_cast<CSharpInstance *>(obj->get_script_instance());
@@ -1059,7 +1057,7 @@ void CSharpLanguage::_editor_init_callback() {
 	const void **interop_funcs = godotsharp::get_editor_interop_funcs(interop_funcs_size);
 
 	Object *editor_plugin_obj = GDMono::get_singleton()->get_plugin_callbacks().LoadToolsAssemblyCallback(
-			GodotSharpDirs::get_data_editor_tools_dir().path_join("GodotTools.dll").utf16(),
+			GodotSharpDirs::get_data_editor_tools_dir().path_join("GodotTools.dll").utf16().get_data(),
 			interop_funcs, interop_funcs_size);
 	CRASH_COND(editor_plugin_obj == nullptr);
 
@@ -1473,14 +1471,14 @@ Object *CSharpInstance::get_owner() {
 }
 
 bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
-	ERR_FAIL_COND_V(!script.is_valid(), false);
+	ERR_FAIL_COND_V(script.is_null(), false);
 
 	return GDMonoCache::managed_callbacks.CSharpInstanceBridge_Set(
 			gchandle.get_intptr(), &p_name, &p_value);
 }
 
 bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
-	ERR_FAIL_COND_V(!script.is_valid(), false);
+	ERR_FAIL_COND_V(script.is_null(), false);
 
 	Variant ret_value;
 
@@ -1497,7 +1495,7 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	List<PropertyInfo> props;
-	ERR_FAIL_COND(!script.is_valid());
+	ERR_FAIL_COND(script.is_null());
 #ifdef TOOLS_ENABLED
 	for (const PropertyInfo &prop : script->exported_members_cache) {
 		props.push_back(prop);
@@ -1574,7 +1572,7 @@ Variant::Type CSharpInstance::get_property_type(const StringName &p_name, bool *
 }
 
 bool CSharpInstance::property_can_revert(const StringName &p_name) const {
-	ERR_FAIL_COND_V(!script.is_valid(), false);
+	ERR_FAIL_COND_V(script.is_null(), false);
 
 	Variant name_arg = p_name;
 	const Variant *args[1] = { &name_arg };
@@ -1592,7 +1590,7 @@ bool CSharpInstance::property_can_revert(const StringName &p_name) const {
 }
 
 void CSharpInstance::validate_property(PropertyInfo &p_property) const {
-	ERR_FAIL_COND(!script.is_valid());
+	ERR_FAIL_COND(script.is_null());
 
 	Variant property_arg = (Dictionary)p_property;
 	const Variant *args[1] = { &property_arg };
@@ -1610,7 +1608,7 @@ void CSharpInstance::validate_property(PropertyInfo &p_property) const {
 }
 
 bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_ret) const {
-	ERR_FAIL_COND_V(!script.is_valid(), false);
+	ERR_FAIL_COND_V(script.is_null(), false);
 
 	Variant name_arg = p_name;
 	const Variant *args[1] = { &name_arg };
@@ -1637,7 +1635,7 @@ void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
 }
 
 bool CSharpInstance::has_method(const StringName &p_method) const {
-	if (!script.is_valid()) {
+	if (script.is_null()) {
 		return false;
 	}
 
@@ -1678,7 +1676,7 @@ int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *
 }
 
 Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	ERR_FAIL_COND_V(!script.is_valid(), Variant());
+	ERR_FAIL_COND_V(script.is_null(), Variant());
 
 	Variant ret;
 	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
@@ -2328,7 +2326,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 
 bool CSharpScript::can_instantiate() const {
 #ifdef TOOLS_ENABLED
-	bool extra_cond = type_info.is_tool || ScriptServer::is_scripting_enabled();
+	bool extra_cond = (type_info.is_tool || ScriptServer::is_scripting_enabled()) && !Engine::get_singleton()->is_recovery_mode_hint();
 #else
 	bool extra_cond = true;
 #endif
@@ -2344,9 +2342,7 @@ bool CSharpScript::can_instantiate() const {
 }
 
 StringName CSharpScript::get_instance_base_type() const {
-	StringName native_name;
-	GDMonoCache::managed_callbacks.ScriptManagerBridge_GetScriptNativeName(this, &native_name);
-	return native_name;
+	return type_info.native_base_name;
 }
 
 CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error) {
@@ -2817,7 +2813,7 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 	if (p_path.begins_with("csharp://")) {
 		// This is a virtual path used by generic types, extract the real path.
 		real_path = "res://" + p_path.trim_prefix("csharp://");
-		real_path = real_path.substr(0, real_path.rfind(":"));
+		real_path = real_path.substr(0, real_path.rfind_char(':'));
 	}
 
 	Ref<CSharpScript> scr;

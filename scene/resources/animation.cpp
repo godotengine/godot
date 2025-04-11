@@ -32,7 +32,6 @@
 #include "animation.compat.inc"
 
 #include "core/io/marshalls.h"
-#include "core/math/geometry_3d.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
@@ -465,7 +464,9 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 	String prop_name = p_name;
 
 	if (p_name == SNAME("_compression")) {
-		ERR_FAIL_COND_V(!compression.enabled, false);
+		if (!compression.enabled) {
+			return false;
+		}
 		Dictionary comp;
 		comp["fps"] = compression.fps;
 		Array bounds;
@@ -949,50 +950,50 @@ void Animation::remove_track(int p_track) {
 		case TYPE_POSITION_3D: {
 			PositionTrack *tt = static_cast<PositionTrack *>(t);
 			ERR_FAIL_COND_MSG(tt->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
-			_clear(tt->positions);
+			tt->positions.clear();
 
 		} break;
 		case TYPE_ROTATION_3D: {
 			RotationTrack *rt = static_cast<RotationTrack *>(t);
 			ERR_FAIL_COND_MSG(rt->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
-			_clear(rt->rotations);
+			rt->rotations.clear();
 
 		} break;
 		case TYPE_SCALE_3D: {
 			ScaleTrack *st = static_cast<ScaleTrack *>(t);
 			ERR_FAIL_COND_MSG(st->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
-			_clear(st->scales);
+			st->scales.clear();
 
 		} break;
 		case TYPE_BLEND_SHAPE: {
 			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
 			ERR_FAIL_COND_MSG(bst->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
-			_clear(bst->blend_shapes);
+			bst->blend_shapes.clear();
 
 		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
-			_clear(vt->values);
+			vt->values.clear();
 
 		} break;
 		case TYPE_METHOD: {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
-			_clear(mt->methods);
+			mt->methods.clear();
 
 		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bz = static_cast<BezierTrack *>(t);
-			_clear(bz->values);
+			bz->values.clear();
 
 		} break;
 		case TYPE_AUDIO: {
 			AudioTrack *ad = static_cast<AudioTrack *>(t);
-			_clear(ad->values);
+			ad->values.clear();
 
 		} break;
 		case TYPE_ANIMATION: {
 			AnimationTrack *an = static_cast<AnimationTrack *>(t);
-			_clear(an->values);
+			an->values.clear();
 
 		} break;
 	}
@@ -1136,11 +1137,6 @@ int Animation::_marker_insert(double p_time, Vector<MarkerKey> &p_keys, const Ma
 	}
 
 	return -1;
-}
-
-template <typename T>
-void Animation::_clear(T &p_keys) {
-	p_keys.clear();
 }
 
 ////
@@ -4341,7 +4337,7 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 	ERR_FAIL_INDEX(p_idx, tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_VALUE);
 	ValueTrack *vt = static_cast<ValueTrack *>(tracks[p_idx]);
-	if (vt->values.size() == 0) {
+	if (vt->values.is_empty()) {
 		return;
 	}
 	Variant::Type type = vt->values[0].value.get_type();
@@ -4513,7 +4509,7 @@ struct AnimationCompressionDataState {
 		if (p_delta == 0) {
 			return 0;
 		} else if (p_delta < 0) {
-			p_delta = ABS(p_delta) - 1;
+			p_delta = Math::abs(p_delta) - 1;
 			if (p_delta == 0) {
 				return 1;
 			}
@@ -4588,7 +4584,7 @@ struct AnimationCompressionDataState {
 	}
 
 	uint32_t get_temp_packet_size() const {
-		if (temp_packets.size() == 0) {
+		if (temp_packets.is_empty()) {
 			return 0;
 		} else if (temp_packets.size() == 1) {
 			return components == 1 ? 4 : 8; // 1 component packet is 16 bits and 16 bits unused. 3 component packets is 48 bits and 16 bits unused
@@ -4630,7 +4626,7 @@ struct AnimationCompressionDataState {
 	}
 
 	void commit_temp_packets() {
-		if (temp_packets.size() == 0) {
+		if (temp_packets.is_empty()) {
 			return; // Nothing to do.
 		}
 //#define DEBUG_PACKET_PUSH
@@ -4695,7 +4691,7 @@ struct AnimationCompressionDataState {
 
 				uint16_t deltau;
 				if (delta < 0) {
-					deltau = (ABS(delta) - 1) | (1 << max_shifts[j]);
+					deltau = (Math::abs(delta) - 1) | (1 << max_shifts[j]);
 				} else {
 					deltau = delta;
 				}
@@ -4896,7 +4892,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 		track_bounds.push_back(bounds);
 	}
 
-	if (tracks_to_compress.size() == 0) {
+	if (tracks_to_compress.is_empty()) {
 		return; //nothing to compress
 	}
 
@@ -5051,7 +5047,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 				uint32_t total_page_size = 0;
 
 				for (uint32_t i = 0; i < data_tracks.size(); i++) {
-					if (data_tracks[i].temp_packets.size() == 0 || (data_tracks[i].temp_packets[data_tracks[i].temp_packets.size() - 1].frame) < finalizer_local_frame) {
+					if (data_tracks[i].temp_packets.is_empty() || (data_tracks[i].temp_packets[data_tracks[i].temp_packets.size() - 1].frame) < finalizer_local_frame) {
 						// Add finalizer frame if it makes sense
 						Vector3i values = _compress_key(tracks_to_compress[i], track_bounds[i], -1, page_end_frame * frame_len);
 

@@ -33,7 +33,6 @@
 #include "core/math/projection.h"
 #include "core/math/transform_interpolator.h"
 #include "scene/main/viewport.h"
-#include "servers/rendering/rendering_server_constants.h"
 
 void Camera3D::_update_audio_listener_state() {
 }
@@ -231,6 +230,7 @@ void Camera3D::_notification(int p_what) {
 			if (is_inside_tree()) {
 				_interpolation_data.xform_curr = get_global_transform();
 				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+				_update_process_mode();
 			}
 		} break;
 
@@ -529,9 +529,12 @@ Vector3 Camera3D::project_position(const Point2 &p_point, real_t p_z_depth) cons
 	}
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	Projection cm = _get_camera_projection(p_z_depth);
+	Projection cm = _get_camera_projection(_near);
 
-	Vector2 vp_he = cm.get_viewport_half_extents();
+	Plane z_slice(Vector3(0, 0, 1), -p_z_depth);
+	Vector3 res;
+	z_slice.intersect_3(cm.get_projection_plane(Projection::Planes::PLANE_RIGHT), cm.get_projection_plane(Projection::Planes::PLANE_TOP), &res);
+	Vector2 vp_he(res.x, res.y);
 
 	Vector2 point;
 	point.x = (p_point.x / viewport_size.x) * 2.0 - 1.0;
@@ -688,7 +691,9 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera3D::_get_frustum);
 	ClassDB::bind_method(D_METHOD("is_position_in_frustum", "world_point"), &Camera3D::is_position_in_frustum);
 	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera3D::get_camera);
+#ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_pyramid_shape_rid"), &Camera3D::get_pyramid_shape_rid);
+#endif // PHYSICS_3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_cull_mask_value", "layer_number", "value"), &Camera3D::set_cull_mask_value);
 	ClassDB::bind_method(D_METHOD("get_cull_mask_value", "layer_number"), &Camera3D::get_cull_mask_value);
@@ -851,6 +856,7 @@ Vector3 Camera3D::get_doppler_tracked_velocity() const {
 	}
 }
 
+#ifndef PHYSICS_3D_DISABLED
 RID Camera3D::get_pyramid_shape_rid() {
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), RID(), "Camera is not inside scene.");
 	if (pyramid_shape == RID()) {
@@ -878,6 +884,7 @@ RID Camera3D::get_pyramid_shape_rid() {
 
 	return pyramid_shape;
 }
+#endif // PHYSICS_3D_DISABLED
 
 Camera3D::Camera3D() {
 	camera = RenderingServer::get_singleton()->camera_create();
@@ -892,8 +899,10 @@ Camera3D::Camera3D() {
 Camera3D::~Camera3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(camera);
+#ifndef PHYSICS_3D_DISABLED
 	if (pyramid_shape.is_valid()) {
 		ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
 		PhysicsServer3D::get_singleton()->free(pyramid_shape);
 	}
+#endif // PHYSICS_3D_DISABLED
 }

@@ -3,7 +3,7 @@ import platform
 import sys
 from typing import TYPE_CHECKING
 
-from methods import get_compiler_version, print_error, print_warning, using_gcc
+from methods import get_compiler_version, print_error, print_info, print_warning, using_gcc
 from platform_methods import detect_arch, validate_arch
 
 if TYPE_CHECKING:
@@ -73,7 +73,7 @@ def get_flags():
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
-    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64"]
+    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "loongarch64"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
     ## Build type
@@ -123,10 +123,16 @@ def configure(env: "SConsEnvironment"):
                         found_wrapper = True
                         break
                 if not found_wrapper:
-                    print_error(
-                        "Couldn't locate mold installation path. Make sure it's installed in /usr or /usr/local."
-                    )
-                    sys.exit(255)
+                    for path in os.environ["PATH"].split(os.pathsep):
+                        if os.path.isfile(path + "/ld.mold"):
+                            env.Append(LINKFLAGS=["-B" + path])
+                            found_wrapper = True
+                            break
+                    if not found_wrapper:
+                        print_error(
+                            "Couldn't locate mold installation path. Make sure it's installed in /usr, /usr/local or in PATH environment variable."
+                        )
+                        sys.exit(255)
             else:
                 env.Append(LINKFLAGS=["-fuse-ld=mold"])
         else:
@@ -178,8 +184,8 @@ def configure(env: "SConsEnvironment"):
 
     # LTO
 
-    if env["lto"] == "auto":  # Full LTO for production.
-        env["lto"] = "full"
+    if env["lto"] == "auto":  # Enable LTO for production.
+        env["lto"] = "thin" if env["use_llvm"] else "full"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
@@ -216,23 +222,6 @@ def configure(env: "SConsEnvironment"):
 
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
 
-    # freetype depends on libpng and zlib, so bundling one of them while keeping others
-    # as shared libraries leads to weird issues. And graphite and harfbuzz need freetype.
-    ft_linked_deps = [
-        env["builtin_freetype"],
-        env["builtin_libpng"],
-        env["builtin_zlib"],
-        env["builtin_graphite"],
-        env["builtin_harfbuzz"],
-    ]
-    if (not all(ft_linked_deps)) and any(ft_linked_deps):  # All or nothing.
-        print_error(
-            "These libraries should be either all builtin, or all system provided:\n"
-            "freetype, libpng, zlib, graphite, harfbuzz.\n"
-            "Please specify `builtin_<name>=no` for all of them, or none."
-        )
-        sys.exit(255)
-
     if not env["builtin_freetype"]:
         env.ParseConfig("pkg-config freetype2 --cflags --libs")
 
@@ -244,6 +233,11 @@ def configure(env: "SConsEnvironment"):
 
     if not env["builtin_harfbuzz"]:
         env.ParseConfig("pkg-config harfbuzz harfbuzz-icu --cflags --libs")
+
+    if not env["builtin_icu4c"] or not env["builtin_harfbuzz"]:
+        print_warning(
+            "System-provided icu4c or harfbuzz cause known issues for GDExtension (see GH-91401 and GH-100301)."
+        )
 
     if not env["builtin_libpng"]:
         env.ParseConfig("pkg-config libpng16 --cflags --libs")
@@ -299,7 +293,7 @@ def configure(env: "SConsEnvironment"):
 
     if not env["builtin_recastnavigation"]:
         # No pkgconfig file so far, hardcode default paths.
-        env.Prepend(CPPPATH=["/usr/include/recastnavigation"])
+        env.Prepend(CPPEXTPATH=["/usr/include/recastnavigation"])
         env.Append(LIBS=["Recast"])
 
     if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
@@ -400,7 +394,7 @@ def configure(env: "SConsEnvironment"):
 
     env.Prepend(CPPPATH=["#platform/linuxbsd"])
     if env["use_sowrap"]:
-        env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers"])
+        env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers"])
 
     env.Append(
         CPPDEFINES=[
@@ -461,13 +455,34 @@ def configure(env: "SConsEnvironment"):
                 print_error("Wayland EGL library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config wayland-egl --cflags --libs")
+        else:
+            env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers/wayland/"])
+            if env["libdecor"]:
+                env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers/libdecor-0/"])
 
         if env["libdecor"]:
             env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
 
-        env.Prepend(CPPPATH=["#platform/linuxbsd", "#thirdparty/linuxbsd_headers/wayland/"])
         env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
         env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
+
+    if env["accesskit"]:
+        if env["accesskit_sdk_path"] != "":
+            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+            if env["arch"] == "arm64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm64/static/"])
+            elif env["arch"] == "arm32":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm32/static/"])
+            elif env["arch"] == "rv64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/riscv64gc/static/"])
+            elif env["arch"] == "x86_64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86_64/static/"])
+            elif env["arch"] == "x86_32":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86/static/"])
+            env.Append(LIBS=["accesskit"])
+        else:
+            env.Append(CPPDEFINES=["ACCESSKIT_DYNAMIC"])
+        env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
@@ -492,7 +507,7 @@ def configure(env: "SConsEnvironment"):
         else:
             # The default crash handler depends on glibc, so if the host uses
             # a different libc (BSD libc, musl), libexecinfo is required.
-            print("Note: Using `execinfo=no` disables the crash handler on platforms where glibc is missing.")
+            print_info("Using `execinfo=no` disables the crash handler on platforms where glibc is missing.")
     else:
         env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])
 

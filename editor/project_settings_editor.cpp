@@ -76,7 +76,15 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 }
 
 void ProjectSettingsEditor::queue_save() {
+	settings_changed = true;
 	timer->start();
+}
+
+void ProjectSettingsEditor::_save() {
+	settings_changed = false;
+	if (ps) {
+		ps->save();
+	}
 }
 
 void ProjectSettingsEditor::set_plugins_page() {
@@ -139,7 +147,7 @@ void ProjectSettingsEditor::_add_setting() {
 	undo_redo->add_undo_method(this, "queue_save");
 	undo_redo->commit_action();
 
-	general_settings_inspector->set_current_section(setting.get_slice("/", 1));
+	general_settings_inspector->set_current_section(setting.get_slicec('/', 1));
 	add_button->release_focus();
 }
 
@@ -268,7 +276,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 
 String ProjectSettingsEditor::_get_setting_name() const {
 	String name = property_box->get_text().strip_edges();
-	if (!name.begins_with("_") && !name.contains("/")) {
+	if (!name.begins_with("_") && !name.contains_char('/')) {
 		name = "global/" + name;
 	}
 	return name;
@@ -601,6 +609,10 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", Rect2(get_position(), get_size()));
+				if (settings_changed) {
+					timer->stop();
+					_save();
+				}
 			}
 		} break;
 
@@ -647,13 +659,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Filter Settings"));
+	search_box->set_accessibility_name(TTRC("Filter Settings"));
 	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_bar->add_child(search_box);
 
 	advanced = memnew(CheckButton);
 	advanced->set_text(TTR("Advanced Settings"));
-	advanced->connect(SceneStringName(toggled), callable_mp(this, &ProjectSettingsEditor::_advanced_toggled));
 	search_bar->add_child(advanced);
 
 	custom_properties = memnew(HBoxContainer);
@@ -661,17 +673,20 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	property_box = memnew(LineEdit);
 	property_box->set_placeholder(TTR("Select a Setting or Type its Name"));
+	property_box->set_accessibility_name(TTRC("Setting Name"));
 	property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	property_box->connect(SceneStringName(text_changed), callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
 	custom_properties->add_child(property_box);
 
 	feature_box = memnew(OptionButton);
 	feature_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
+	feature_box->set_accessibility_name(TTRC("Feature"));
 	feature_box->connect(SceneStringName(item_selected), callable_mp(this, &ProjectSettingsEditor::_feature_selected));
 	custom_properties->add_child(feature_box);
 
 	type_box = memnew(OptionButton);
 	type_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
+	type_box->set_accessibility_name(TTRC("Type"));
 	custom_properties->add_child(type_box);
 
 	add_button = memnew(Button);
@@ -720,6 +735,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_close_button = memnew(Button);
 	restart_close_button->set_flat(true);
 	restart_close_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
+	restart_close_button->set_accessibility_name(TTRC("Close"));
 	restart_hb->add_child(restart_close_button);
 
 	action_map_editor = memnew(ActionMapEditor);
@@ -763,7 +779,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
-	timer->connect("timeout", callable_mp(ps, &ProjectSettings::save));
+	timer->connect("timeout", callable_mp(this, &ProjectSettingsEditor::_save));
 	timer->set_one_shot(true);
 	add_child(timer);
 
@@ -774,6 +790,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	if (use_advanced) {
 		advanced->set_pressed(true);
 	}
+	advanced->connect(SceneStringName(toggled), callable_mp(this, &ProjectSettingsEditor::_advanced_toggled));
 
 	_update_advanced(use_advanced);
 

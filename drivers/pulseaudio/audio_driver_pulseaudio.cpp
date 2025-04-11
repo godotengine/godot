@@ -312,11 +312,11 @@ Error AudioDriverPulseAudio::init() {
 
 	String context_name;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		context_name = VERSION_NAME " Editor";
+		context_name = GODOT_VERSION_NAME " Editor";
 	} else {
 		context_name = GLOBAL_GET("application/config/name");
 		if (context_name.is_empty()) {
-			context_name = VERSION_NAME " Project";
+			context_name = GODOT_VERSION_NAME " Project";
 		}
 	}
 
@@ -725,7 +725,8 @@ Error AudioDriverPulseAudio::init_input_device() {
 	int input_buffer_frames = closest_power_of_2(input_latency * mix_rate / 1000);
 	int input_buffer_size = input_buffer_frames * spec.channels;
 
-	pa_buffer_attr attr;
+	pa_buffer_attr attr = {};
+	attr.maxlength = (uint32_t)-1;
 	attr.fragsize = input_buffer_size * sizeof(int16_t);
 
 	pa_rec_str = pa_stream_new(pa_ctx, "Record", &spec, &pa_rec_map);

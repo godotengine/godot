@@ -32,6 +32,7 @@
 
 #include "godot_area_2d.h"
 #include "godot_body_direct_state_2d.h"
+#include "godot_constraint_2d.h"
 #include "godot_space_2d.h"
 
 void GodotBody2D::_mass_properties_changed() {
@@ -625,7 +626,7 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 	if (mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 		_set_transform(new_transform, false);
 		_set_inv_transform(new_transform.affine_inverse());
-		if (contacts.size() == 0 && linear_velocity == Vector2() && angular_velocity == 0) {
+		if (contacts.is_empty() && linear_velocity == Vector2() && angular_velocity == 0) {
 			set_active(false); //stopped moving, deactivate
 		}
 		return;

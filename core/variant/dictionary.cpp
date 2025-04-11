@@ -49,14 +49,22 @@ struct DictionaryPrivate {
 	Variant *typed_fallback = nullptr; // Allows a typed dictionary to return dummy values when attempting an invalid access.
 };
 
-void Dictionary::get_key_list(List<Variant> *p_keys) const {
-	if (_p->variant_map.is_empty()) {
-		return;
-	}
+Dictionary::ConstIterator Dictionary::begin() const {
+	return _p->variant_map.begin();
+}
 
+Dictionary::ConstIterator Dictionary::end() const {
+	return _p->variant_map.end();
+}
+
+LocalVector<Variant> Dictionary::get_key_list() const {
+	LocalVector<Variant> keys;
+
+	keys.reserve(_p->variant_map.size());
 	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
-		p_keys->push_back(E.key);
+		keys.push_back(E.key);
 	}
+	return keys;
 }
 
 Variant Dictionary::get_key_at_index(int p_index) const {
@@ -101,10 +109,12 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 		}
 		return *_p->read_only;
 	} else {
-		if (unlikely(!_p->variant_map.has(key))) {
-			VariantInternal::initialize(&_p->variant_map[key], _p->typed_value.type);
+		const uint32_t old_size = _p->variant_map.size();
+		Variant &value = _p->variant_map[key];
+		if (_p->variant_map.size() > old_size) {
+			VariantInternal::initialize(&value, _p->typed_value.type);
 		}
-		return _p->variant_map[key];
+		return value;
 	}
 }
 
@@ -208,7 +218,7 @@ bool Dictionary::is_empty() const {
 bool Dictionary::has(const Variant &p_key) const {
 	Variant key = p_key;
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "use 'has'"), false);
-	return _p->variant_map.has(p_key);
+	return _p->variant_map.has(key);
 }
 
 bool Dictionary::has_all(const Array &p_keys) const {
@@ -595,6 +605,10 @@ Dictionary Dictionary::recursive_duplicate(bool p_deep, int recursion_count) con
 	return n;
 }
 
+void Dictionary::set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type) {
+	set_typed(p_key_type.builtin_type, p_key_type.class_name, p_key_type.script, p_value_type.builtin_type, p_value_type.class_name, p_key_type.script);
+}
+
 void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->variant_map.size() > 0, "Type can only be set when dictionary is empty.");
@@ -639,6 +653,22 @@ bool Dictionary::is_same_typed_key(const Dictionary &p_other) const {
 
 bool Dictionary::is_same_typed_value(const Dictionary &p_other) const {
 	return _p->typed_value == p_other._p->typed_value;
+}
+
+ContainerType Dictionary::get_key_type() const {
+	ContainerType type;
+	type.builtin_type = _p->typed_key.type;
+	type.class_name = _p->typed_key.class_name;
+	type.script = _p->typed_key.script;
+	return type;
+}
+
+ContainerType Dictionary::get_value_type() const {
+	ContainerType type;
+	type.builtin_type = _p->typed_value.type;
+	type.class_name = _p->typed_value.class_name;
+	type.script = _p->typed_value.script;
+	return type;
 }
 
 uint32_t Dictionary::get_typed_key_builtin() const {
@@ -691,6 +721,15 @@ Dictionary::Dictionary(const Dictionary &p_from) {
 Dictionary::Dictionary() {
 	_p = memnew(DictionaryPrivate);
 	_p->refcount.init();
+}
+
+Dictionary::Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init) {
+	_p = memnew(DictionaryPrivate);
+	_p->refcount.init();
+
+	for (const KeyValue<Variant, Variant> &E : p_init) {
+		operator[](E.key) = E.value;
+	}
 }
 
 Dictionary::~Dictionary() {

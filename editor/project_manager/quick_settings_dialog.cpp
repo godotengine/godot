@@ -38,7 +38,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 
@@ -49,6 +48,7 @@ void QuickSettingsDialog::_fetch_setting_values() {
 	editor_themes.clear();
 	editor_scales.clear();
 	editor_network_modes.clear();
+	editor_engine_version_update_modes.clear();
 	editor_directory_naming_conventions.clear();
 
 	{
@@ -66,6 +66,8 @@ void QuickSettingsDialog::_fetch_setting_values() {
 				editor_scales = pi.hint_string.split(",");
 			} else if (pi.name == "network/connection/network_mode") {
 				editor_network_modes = pi.hint_string.split(",");
+			} else if (pi.name == "network/connection/engine_version_update_mode") {
+				editor_engine_version_update_modes = pi.hint_string.split(",");
 			} else if (pi.name == "project_manager/directory_naming_convention") {
 				editor_directory_naming_conventions = pi.hint_string.split(",");
 			}
@@ -98,6 +100,7 @@ void QuickSettingsDialog::_update_current_values() {
 			if (current_theme == theme_value) {
 				theme_option_button->set_text(current_theme);
 				theme_option_button->select(i);
+				theme_option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 				custom_theme_label->set_visible(current_theme == "Custom");
 			}
@@ -126,6 +129,22 @@ void QuickSettingsDialog::_update_current_values() {
 			if (current_network_mode == i) {
 				network_mode_option_button->set_text(network_mode_value);
 				network_mode_option_button->select(i);
+			}
+		}
+	}
+
+	// Engine version update mode options.
+	{
+		const int current_update_mode = EDITOR_GET("network/connection/engine_version_update_mode");
+
+		for (int i = 0; i < editor_engine_version_update_modes.size(); i++) {
+			const String &engine_version_update_mode_value = editor_engine_version_update_modes[i];
+			if (current_update_mode == i) {
+				engine_version_update_mode_button->set_text(engine_version_update_mode_value);
+				engine_version_update_mode_button->select(i);
+
+				// Disables Engine Version Update Mode selection if Network mode is set to Offline.
+				engine_version_update_mode_button->set_disabled(!EDITOR_GET("network/connection/network_mode"));
 			}
 		}
 	}
@@ -177,6 +196,13 @@ void QuickSettingsDialog::_scale_selected(int p_id) {
 
 void QuickSettingsDialog::_network_mode_selected(int p_id) {
 	_set_setting_value("network/connection/network_mode", p_id);
+
+	// Disables Engine Version Update Mode selection if Network mode is set to Offline.
+	engine_version_update_mode_button->set_disabled(!p_id);
+}
+
+void QuickSettingsDialog::_engine_version_update_mode_selected(int p_id) {
+	_set_setting_value("network/connection/engine_version_update_mode", p_id);
 }
 
 void QuickSettingsDialog::_directory_naming_convention_selected(int p_id) {
@@ -192,7 +218,11 @@ void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Vari
 		restart_required_label->show();
 
 		if (!restart_required_button) {
-			restart_required_button = add_button(TTR("Restart Now"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
+			int ed_swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+			if (ed_swap_cancel_ok == 0) {
+				ed_swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
+			}
+			restart_required_button = add_button(TTR("Restart Now"), ed_swap_cancel_ok != 2);
 			restart_required_button->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_request_restart));
 		}
 	}
@@ -314,6 +344,20 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			}
 
 			_add_setting_control(TTR("Network Mode"), network_mode_option_button);
+		}
+
+		// Engine version update mode options.
+		{
+			engine_version_update_mode_button = memnew(OptionButton);
+			engine_version_update_mode_button->set_fit_to_longest_item(false);
+			engine_version_update_mode_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_engine_version_update_mode_selected));
+
+			for (int i = 0; i < editor_engine_version_update_modes.size(); i++) {
+				const String &engine_version_update_mode_value = editor_engine_version_update_modes[i];
+				engine_version_update_mode_button->add_item(engine_version_update_mode_value, i);
+			}
+
+			_add_setting_control(TTR("Engine Version Update Mode"), engine_version_update_mode_button);
 		}
 
 		// Project directory naming options.

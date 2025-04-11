@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_SHADER_FILE_H
-#define RESOURCE_IMPORTER_SHADER_FILE_H
+#pragma once
 
 #include "core/io/resource_importer.h"
 
@@ -52,8 +51,4 @@ public:
 	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
 	virtual bool can_import_threaded() const override { return true; }
-
-	ResourceImporterShaderFile();
 };
-
-#endif // RESOURCE_IMPORTER_SHADER_FILE_H

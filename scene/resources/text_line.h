@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_LINE_H
-#define TEXT_LINE_H
+#pragma once
 
 #include "scene/resources/font.h"
 #include "servers/text_server.h"
@@ -42,7 +41,7 @@ class TextLine : public RefCounted {
 private:
 	RID rid;
 
-	bool dirty = true;
+	mutable bool dirty = true;
 
 	float width = -1.0;
 	BitField<TextServer::JustificationFlag> flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
@@ -55,7 +54,7 @@ private:
 protected:
 	static void _bind_methods();
 
-	void _shape();
+	void _shape() const;
 
 public:
 	RID get_rid() const;
@@ -64,6 +63,7 @@ public:
 
 	void set_direction(TextServer::Direction p_direction);
 	TextServer::Direction get_direction() const;
+	TextServer::Direction get_inferred_direction() const;
 
 	void set_bidi_override(const Array &p_override);
 
@@ -117,5 +117,3 @@ public:
 	TextLine();
 	~TextLine();
 };
-
-#endif // TEXT_LINE_H

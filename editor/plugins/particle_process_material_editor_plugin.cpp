@@ -30,14 +30,12 @@
 
 #include "particle_process_material_editor_plugin.h"
 
-#include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/label.h"
 #include "scene/resources/particle_process_material.h"
 
 void ParticleProcessMaterialMinMaxPropertyEditor::_update_sizing() {
@@ -437,6 +435,7 @@ ParticleProcessMaterialMinMaxPropertyEditor::ParticleProcessMaterialMinMaxProper
 	toggle_mode_button = memnew(Button);
 	toggle_mode_button->set_toggle_mode(true);
 	toggle_mode_button->set_tooltip_text(TTR("Toggle between minimum/maximum and base value/spread modes."));
+	toggle_mode_button->set_accessibility_name(TTRC("Spread mode"));
 	hb->add_child(toggle_mode_button);
 	toggle_mode_button->connect(SceneStringName(toggled), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_toggle_mode));
 

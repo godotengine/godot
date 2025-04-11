@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#pragma once
 
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
+#include "servers/display_server.h"
 
 class Font;
 class Shortcut;
@@ -63,6 +63,10 @@ public:
 		FLAG_EXTEND_TO_TITLE = DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE,
 		FLAG_MOUSE_PASSTHROUGH = DisplayServer::WINDOW_FLAG_MOUSE_PASSTHROUGH,
 		FLAG_SHARP_CORNERS = DisplayServer::WINDOW_FLAG_SHARP_CORNERS,
+		FLAG_EXCLUDE_FROM_CAPTURE = DisplayServer::WINDOW_FLAG_EXCLUDE_FROM_CAPTURE,
+		FLAG_POPUP_WM_HINT = DisplayServer::WINDOW_FLAG_POPUP_WM_HINT,
+		FLAG_MINIMIZE_DISABLED = DisplayServer::WINDOW_FLAG_MINIMIZE_DISABLED,
+		FLAG_MAXIMIZE_DISABLED = DisplayServer::WINDOW_FLAG_MAXIMIZE_DISABLED,
 		FLAG_MAX = DisplayServer::WINDOW_FLAG_MAX,
 	};
 
@@ -101,7 +105,7 @@ public:
 		DEFAULT_WINDOW_SIZE = 100,
 	};
 
-	// Keep synced with enum hint for `initial_position` property.
+	// Keep synced with enum hint for `initial_position` property and `display/window/size/initial_position_type` project setting.
 	enum WindowInitialPosition {
 		WINDOW_INITIAL_POSITION_ABSOLUTE,
 		WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN,
@@ -118,7 +122,7 @@ private:
 	String title;
 	String tr_title;
 	mutable int current_screen = 0;
-	mutable Vector2i position;
+	mutable Point2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
 	mutable Size2i min_size;
 	mutable Size2i max_size;
@@ -152,9 +156,15 @@ private:
 	ContentScaleStretch content_scale_stretch = CONTENT_SCALE_STRETCH_FRACTIONAL;
 	real_t content_scale_factor = 1.0;
 
+	RID accessibility_title_element;
+	RID accessibility_announcement_element;
+	String announcement;
+
 	void _make_window();
 	void _clear_window();
 	void _update_from_window();
+	void _accessibility_notify_enter(Node *p_node);
+	void _accessibility_notify_exit(Node *p_node);
 
 	bool _try_parent_dialog(Node *p_from_node);
 
@@ -177,6 +187,8 @@ private:
 	void _clear_transient();
 	void _make_transient();
 	void _set_transient_exclusive_child(bool p_clear_invalid = false);
+
+	static Window *focused_window;
 
 	ThemeOwner *theme_owner = nullptr;
 	Ref<Theme> theme;
@@ -258,6 +270,10 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &p_property) const;
 
+	void _accessibility_action_grab_focus(const Variant &p_data) {
+		grab_focus();
+	}
+
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
@@ -271,6 +287,10 @@ public:
 	};
 
 	static void set_root_layout_direction(int p_root_dir);
+	static Window *get_from_id(DisplayServer::WindowID p_window_id);
+
+	RID get_accessibility_element() const override;
+	virtual RID get_focused_accessibility_element() const override;
 
 	void set_title(const String &p_title);
 	String get_title() const;
@@ -376,6 +396,7 @@ public:
 	void child_controls_changed();
 
 	Window *get_exclusive_child() const { return exclusive_child; }
+	HashSet<Window *> get_transient_children() const { return transient_children; }
 	Window *get_parent_visible_window() const;
 	Viewport *get_parent_viewport() const;
 
@@ -398,7 +419,12 @@ public:
 	void grab_focus();
 	bool has_focus() const;
 
+	void start_drag();
+	void start_resize(DisplayServer::WindowResizeEdge p_edge);
+
 	Rect2i get_usable_parent_rect() const;
+
+	void accessibility_announcement(const String &p_announcement);
 
 	// Internationalization.
 
@@ -451,6 +477,7 @@ public:
 	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 #ifdef TOOLS_ENABLED
 	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
+	Ref<Texture2D> get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 #endif
 
 	bool has_theme_icon_override(const StringName &p_name) const;
@@ -471,8 +498,6 @@ public:
 	Ref<Font> get_theme_default_font() const;
 	int get_theme_default_font_size() const;
 
-	//
-
 	virtual Transform2D get_final_transform() const override;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
@@ -481,6 +506,7 @@ public:
 
 	Rect2i get_parent_rect() const;
 	virtual DisplayServer::WindowID get_window_id() const override;
+	static Window *get_focused_window() { return focused_window; }
 
 	virtual Size2 _get_contents_minimum_size() const;
 
@@ -495,5 +521,3 @@ VARIANT_ENUM_CAST(Window::ContentScaleAspect);
 VARIANT_ENUM_CAST(Window::ContentScaleStretch);
 VARIANT_ENUM_CAST(Window::LayoutDirection);
 VARIANT_ENUM_CAST(Window::WindowInitialPosition);
-
-#endif // WINDOW_H

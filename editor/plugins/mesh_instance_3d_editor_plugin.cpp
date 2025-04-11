@@ -36,9 +36,8 @@
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
-#include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
@@ -134,7 +133,7 @@ void MeshInstance3DEditor::_create_collision_shape() {
 			break;
 	}
 
-	List<Node *> selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_top_selected_node_list();
 
 	bool verbose = false;
 	if (selection.is_empty()) {
@@ -188,12 +187,12 @@ void MeshInstance3DEditor::_create_collision_shape() {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
 				cshape->set_name("CollisionShape3D");
-				cshape->set_transform(node->get_transform());
+				cshape->set_transform(instance->get_transform());
 				ur->add_do_method(E, "add_sibling", cshape, true);
 				ur->add_do_method(cshape, "set_owner", owner);
 				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);
 				ur->add_do_reference(cshape);
-				ur->add_undo_method(node->get_parent(), "remove_child", cshape);
+				ur->add_undo_method(instance->get_parent(), "remove_child", cshape);
 			}
 		}
 	}
@@ -241,7 +240,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CREATE_UV2: {
 			Ref<Mesh> mesh2 = node->get_mesh();
-			if (!mesh.is_valid()) {
+			if (mesh.is_null()) {
 				err_dialog->set_text(TTR("No mesh to unwrap."));
 				err_dialog->popup_centered();
 				return;
@@ -282,7 +281,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				ur->commit_action();
 			} else {
 				Ref<ArrayMesh> array_mesh = mesh2;
-				if (!array_mesh.is_valid()) {
+				if (array_mesh.is_null()) {
 					err_dialog->set_text(TTR("Contained Mesh is not of type ArrayMesh."));
 					err_dialog->popup_centered();
 					return;
@@ -338,7 +337,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_DEBUG_UV1: {
 			Ref<Mesh> mesh2 = node->get_mesh();
-			if (!mesh2.is_valid()) {
+			if (mesh2.is_null()) {
 				err_dialog->set_text(TTR("No mesh to debug."));
 				err_dialog->popup_centered();
 				return;
@@ -347,7 +346,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_DEBUG_UV2: {
 			Ref<Mesh> mesh2 = node->get_mesh();
-			if (!mesh2.is_valid()) {
+			if (mesh2.is_null()) {
 				err_dialog->set_text(TTR("No mesh to debug."));
 				err_dialog->popup_centered();
 				return;
@@ -384,7 +383,7 @@ struct MeshInstance3DEditorEdgeSort {
 
 void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 	Ref<Mesh> mesh = node->get_mesh();
-	ERR_FAIL_COND(!mesh.is_valid());
+	ERR_FAIL_COND(mesh.is_null());
 
 	HashSet<MeshInstance3DEditorEdgeSort, MeshInstance3DEditorEdgeSort> edges;
 	uv_lines.clear();
@@ -395,7 +394,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 		Array a = mesh->surface_get_arrays(i);
 
 		Vector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
-		if (uv.size() == 0) {
+		if (uv.is_empty()) {
 			err_dialog->set_text(vformat(TTR("Mesh has no UV in layer %d."), p_layer + 1));
 			err_dialog->popup_centered();
 			return;
@@ -441,7 +440,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 }
 
 void MeshInstance3DEditor::_debug_uv_draw() {
-	if (uv_lines.size() == 0) {
+	if (uv_lines.is_empty()) {
 		return;
 	}
 
@@ -570,6 +569,8 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options = memnew(MenuButton);
 	options->set_text(TTR("Mesh"));
 	options->set_switch_on_hover(true);
+	options->set_flat(false);
+	options->set_theme_type_variation("FlatMenuButton");
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->get_popup()->add_item(TTR("Create Collision Shape..."), MENU_OPTION_CREATE_COLLISION_SHAPE);
@@ -594,6 +595,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	//outline_dialog->set_child_rect(outline_dialog_vbc);
 
 	outline_size = memnew(SpinBox);
+	outline_size->set_accessibility_name(TTRC("Outline Size"));
 	outline_size->set_min(0.001);
 	outline_size->set_max(1024);
 	outline_size->set_step(0.001);
@@ -611,10 +613,11 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	shape_dialog->add_child(shape_dialog_vbc);
 
 	Label *l = memnew(Label);
-	l->set_text(TTR("Collision Shape placement"));
+	l->set_text(TTR("Collision Shape Placement"));
 	shape_dialog_vbc->add_child(l);
 
 	shape_placement = memnew(OptionButton);
+	shape_placement->set_accessibility_name(TTRC("Collision Shape Placement"));
 	shape_placement->set_h_size_flags(SIZE_EXPAND_FILL);
 	shape_placement->add_item(TTR("Sibling"), SHAPE_PLACEMENT_SIBLING);
 	shape_placement->set_item_tooltip(-1, TTR("Creates collision shapes as Sibling."));
@@ -627,6 +630,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	shape_dialog_vbc->add_child(l);
 
 	shape_type = memnew(OptionButton);
+	shape_type->set_accessibility_name(TTRC("Collision Shape Type"));
 	shape_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	shape_type->add_item(TTR("Trimesh"), SHAPE_TYPE_TRIMESH);
 	shape_type->set_item_tooltip(-1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));
@@ -668,7 +672,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	navigation_mesh_dialog_vbc->add_child(navigation_mesh_l);
 
 	add_child(navigation_mesh_dialog);
-	navigation_mesh_dialog->connect("confirmed", callable_mp(this, &MeshInstance3DEditor::_create_navigation_mesh));
+	navigation_mesh_dialog->connect(SceneStringName(confirmed), callable_mp(this, &MeshInstance3DEditor::_create_navigation_mesh));
 }
 
 void MeshInstance3DEditorPlugin::edit(Object *p_object) {
@@ -730,7 +734,4 @@ MeshInstance3DEditorPlugin::MeshInstance3DEditorPlugin() {
 	EditorNode::get_singleton()->get_gui_base()->add_child(mesh_editor);
 
 	mesh_editor->options->hide();
-}
-
-MeshInstance3DEditorPlugin::~MeshInstance3DEditorPlugin() {
 }

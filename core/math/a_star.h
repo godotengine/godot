@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef A_STAR_H
-#define A_STAR_H
+#pragma once
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
@@ -108,7 +107,7 @@ class AStar3D : public RefCounted {
 		}
 	};
 
-	int64_t last_free_id = 0;
+	mutable int64_t last_free_id = 0;
 	uint64_t pass = 1;
 
 	OAHashMap<int64_t, Point *> points;
@@ -222,5 +221,3 @@ public:
 	AStar2D() {}
 	~AStar2D() {}
 };
-
-#endif // A_STAR_H

@@ -12,7 +12,7 @@
 		<method name="are_advanced_options_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], is "Advanced" toggle is enabled in the export dialog.
+				Returns [code]true[/code] if "Advanced" toggle is enabled in the export dialog.
 			</description>
 		</method>
 		<method name="get_custom_features" qualifiers="const">
@@ -24,7 +24,7 @@
 		<method name="get_customized_files" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns [Dictionary] of files selected in the "Resources" tab of the export dialog. Dictionary keys are file names and values are export mode - [code]"strip[/code], [code]"keep"[/code], or [code]"remove"[/code]. See also [method get_file_export_mode].
+				Returns [Dictionary] of files selected in the "Resources" tab of the export dialog. Dictionary keys are file names and values are export mode - [code]"strip"[/code], [code]"keep"[/code], or [code]"remove"[/code]. See also [method get_file_export_mode].
 			</description>
 		</method>
 		<method name="get_customized_files_count" qualifiers="const">
@@ -36,13 +36,13 @@
 		<method name="get_encrypt_directory" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], PCK directory encryption is enabled in the export dialog.
+				Returns [code]true[/code] if PCK directory encryption is enabled in the export dialog.
 			</description>
 		</method>
 		<method name="get_encrypt_pck" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], PCK encryption is enabled in the export dialog.
+				Returns [code]true[/code] if PCK encryption is enabled in the export dialog.
 			</description>
 		</method>
 		<method name="get_encryption_ex_filter" qualifiers="const">
@@ -121,6 +121,13 @@
 				Returns export preset name.
 			</description>
 		</method>
+		<method name="get_project_setting">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the value of the setting identified by [param name] using export preset feature tag overrides instead of current OS features.
+			</description>
+		</method>
 		<method name="get_script_export_mode" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -140,7 +147,7 @@
 			<return type="bool" />
 			<param index="0" name="property" type="StringName" />
 			<description>
-				Returns [code]true[/code] if preset has specified property.
+				Returns [code]true[/code] if the preset has the property named [param property].
 			</description>
 		</method>
 		<method name="has_export_file">

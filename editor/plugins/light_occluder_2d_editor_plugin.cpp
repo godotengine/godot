@@ -30,7 +30,6 @@
 
 #include "light_occluder_2d_editor_plugin.h"
 
-#include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 
 Ref<OccluderPolygon2D> LightOccluder2DEditor::_ensure_occluder() const {
@@ -106,8 +105,6 @@ void LightOccluder2DEditor::_create_resource() {
 
 	_menu_option(MODE_CREATE);
 }
-
-LightOccluder2DEditor::LightOccluder2DEditor() {}
 
 LightOccluder2DEditorPlugin::LightOccluder2DEditorPlugin() :
 		AbstractPolygon2DEditorPlugin(memnew(LightOccluder2DEditor), "LightOccluder2D") {

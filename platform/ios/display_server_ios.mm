@@ -53,7 +53,7 @@ DisplayServerIOS *DisplayServerIOS::get_singleton() {
 	return (DisplayServerIOS *)DisplayServer::get_singleton();
 }
 
-DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	KeyMappingIOS::initialize();
 
 	rendering_driver = p_rendering_driver;
@@ -61,7 +61,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	// Init TTS
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
-		tts = [[TTS_IOS alloc] init];
+		initialize_tts();
 	}
 	native_menu = memnew(NativeMenu);
 
@@ -76,11 +76,10 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		RenderingContextDriverVulkanIOS::WindowPlatformData vulkan;
 #endif
 #ifdef METAL_ENABLED
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
 		RenderingContextDriverMetal::WindowPlatformData metal;
-#pragma clang diagnostic pop
+		GODOT_CLANG_WARNING_POP
 #endif
 	} wpd;
 
@@ -196,8 +195,8 @@ DisplayServerIOS::~DisplayServerIOS() {
 #endif
 }
 
-DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
-	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
+DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 }
 
 Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
@@ -371,6 +370,7 @@ bool DisplayServerIOS::has_feature(Feature p_feature) const {
 		// case FEATURE_NATIVE_DIALOG_INPUT:
 		// case FEATURE_NATIVE_DIALOG_FILE:
 		// case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		// case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		// case FEATURE_NATIVE_ICON:
 		// case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
@@ -388,39 +388,63 @@ bool DisplayServerIOS::has_feature(Feature p_feature) const {
 String DisplayServerIOS::get_name() const {
 	return "iOS";
 }
+void DisplayServerIOS::initialize_tts() const {
+	const_cast<DisplayServerIOS *>(this)->tts = [[TTS_IOS alloc] init];
+}
 
 bool DisplayServerIOS::tts_is_speaking() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return [tts isSpeaking];
 }
 
 bool DisplayServerIOS::tts_is_paused() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return [tts isPaused];
 }
 
 TypedArray<Dictionary> DisplayServerIOS::tts_get_voices() const {
-	ERR_FAIL_NULL_V_MSG(tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, TypedArray<Dictionary>());
 	return [tts getVoices];
 }
 
 void DisplayServerIOS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
 }
 
 void DisplayServerIOS::tts_pause() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts pauseSpeaking];
 }
 
 void DisplayServerIOS::tts_resume() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts resumeSpeaking];
 }
 
 void DisplayServerIOS::tts_stop() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts stopSpeaking];
 }
 
@@ -773,7 +797,7 @@ bool DisplayServerIOS::has_hardware_keyboard() const {
 }
 
 void DisplayServerIOS::clipboard_set(const String &p_text) {
-	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8()];
+	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8().get_data()];
 }
 
 String DisplayServerIOS::clipboard_get() const {

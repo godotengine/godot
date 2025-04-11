@@ -30,7 +30,6 @@
 
 #include "editor_help_search.h"
 
-#include "core/os/keyboard.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -329,6 +328,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	vbox->add_child(hbox);
 
 	search_box = memnew(LineEdit);
+	search_box->set_accessibility_name(TTRC("Search"));
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_clear_button_enabled(true);
@@ -338,16 +338,18 @@ EditorHelpSearch::EditorHelpSearch() {
 	hbox->add_child(search_box);
 
 	case_sensitive_button = memnew(Button);
-	case_sensitive_button->set_theme_type_variation("FlatButton");
+	case_sensitive_button->set_theme_type_variation(SceneStringName(FlatButton));
 	case_sensitive_button->set_tooltip_text(TTR("Case Sensitive"));
+	case_sensitive_button->set_accessibility_name(TTRC("Case Sensitive"));
 	case_sensitive_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelpSearch::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
 	case_sensitive_button->set_focus_mode(Control::FOCUS_NONE);
 	hbox->add_child(case_sensitive_button);
 
 	hierarchy_button = memnew(Button);
-	hierarchy_button->set_theme_type_variation("FlatButton");
+	hierarchy_button->set_theme_type_variation(SceneStringName(FlatButton));
 	hierarchy_button->set_tooltip_text(TTR("Show Hierarchy"));
+	hierarchy_button->set_accessibility_name(TTRC("Show Hierarchy"));
 	hierarchy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelpSearch::_update_results));
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);
@@ -355,6 +357,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	hbox->add_child(hierarchy_button);
 
 	filter_combo = memnew(OptionButton);
+	filter_combo->set_accessibility_name(TTRC("Filter"));
 	filter_combo->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	filter_combo->set_stretch_ratio(0); // Fixed width.
 	filter_combo->add_item(TTR("Display All"), SEARCH_ALL);
@@ -373,6 +376,7 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	// Create the results tree.
 	results_tree = memnew(Tree);
+	results_tree->set_accessibility_name(TTRC("Search Results"));
 	results_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	results_tree->set_columns(2);
@@ -957,7 +961,7 @@ void EditorHelpSearch::Runner::_match_method_name_and_push_back(Vector<DocData::
 				(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
 				(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 				(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-			method.doc = const_cast<DocData::MethodDoc *>(&p_methods[i]);
+			method.doc = &p_methods[i];
 			r_match_methods->push_back(method);
 		}
 	}

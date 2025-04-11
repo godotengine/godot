@@ -35,6 +35,8 @@
 #include "packet_peer_mbed_dtls.h"
 #include "stream_peer_mbedtls.h"
 
+#include "core/config/project_settings.h"
+
 #if MBEDTLS_VERSION_MAJOR >= 3
 #include <psa/crypto.h>
 #endif
@@ -49,6 +51,8 @@ void initialize_mbedtls_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+
+	GLOBAL_DEF("network/tls/enable_tls_v1.3", true);
 
 #if MBEDTLS_VERSION_MAJOR >= 3
 	int status = psa_crypto_init();

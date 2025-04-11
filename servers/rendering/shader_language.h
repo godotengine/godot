@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_LANGUAGE_H
-#define SHADER_LANGUAGE_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/rb_map.h"
+#include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 #include "scene/resources/shader_include.h"
@@ -619,10 +619,8 @@ public:
 		struct Varying {
 			enum Stage {
 				STAGE_UNKNOWN,
-				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT_LIGHT, emits warning if it's not used
-				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits warning if it's not used
-				STAGE_VERTEX_TO_FRAGMENT_LIGHT,
-				STAGE_FRAGMENT_TO_LIGHT,
+				STAGE_VERTEX,
+				STAGE_FRAGMENT,
 			};
 
 			Stage stage = STAGE_UNKNOWN;
@@ -631,6 +629,28 @@ public:
 			DataPrecision precision = PRECISION_DEFAULT;
 			int array_size = 0;
 			TkPos tkpos;
+
+			uint32_t get_size() const {
+				uint32_t size = 1;
+				if (array_size > 0) {
+					size = (uint32_t)array_size;
+				}
+
+				switch (type) {
+					case TYPE_MAT2:
+						size *= 2;
+						break;
+					case TYPE_MAT3:
+						size *= 3;
+						break;
+					case TYPE_MAT4:
+						size *= 4;
+						break;
+					default:
+						break;
+				}
+				return size;
+			}
 
 			Varying() {}
 		};
@@ -825,6 +845,7 @@ public:
 	static bool is_float_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
 	static Variant constant_value_to_variant(const Vector<Scalar> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+	static Variant get_default_datatype_value(DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
 	static uint32_t get_datatype_size(DataType p_type);
 	static uint32_t get_datatype_component_count(DataType p_type);
@@ -833,7 +854,7 @@ public:
 	static bool is_control_flow_keyword(String p_keyword);
 	static void get_builtin_funcs(List<String> *r_keywords);
 
-	static int instance_counter;
+	static SafeNumeric<int> instance_counter;
 
 	struct BuiltInInfo {
 		DataType type = TYPE_VOID;
@@ -1022,6 +1043,7 @@ private:
 	String current_uniform_subgroup_name;
 
 	VaryingFunctionNames varying_function_names;
+	uint32_t base_varying_index = 0;
 
 	TkPos _get_tkpos() {
 		TkPos tkp;
@@ -1217,6 +1239,7 @@ public:
 		HashSet<String> shader_types;
 		GlobalShaderUniformGetTypeFunc global_shader_uniform_type_func = nullptr;
 		bool is_include = false;
+		uint32_t base_varying_index = 0;
 	};
 
 	Error compile(const String &p_code, const ShaderCompileInfo &p_info);
@@ -1233,5 +1256,3 @@ public:
 	ShaderLanguage();
 	~ShaderLanguage();
 };
-
-#endif // SHADER_LANGUAGE_H

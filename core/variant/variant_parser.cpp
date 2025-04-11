@@ -31,10 +31,8 @@
 #include "variant_parser.h"
 
 #include "core/crypto/crypto_core.h"
-#include "core/input/input_event.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
-#include "core/os/keyboard.h"
 #include "core/string/string_buffer.h"
 
 char32_t VariantParser::Stream::get_char() {
@@ -99,6 +97,7 @@ bool VariantParser::StreamString::_is_eof() const {
 uint32_t VariantParser::StreamString::_read_buffer(char32_t *p_buffer, uint32_t p_num_chars) {
 	// The buffer is assumed to include at least one character (for null terminator)
 	ERR_FAIL_COND_V(!p_num_chars, 0);
+	ERR_FAIL_NULL_V(p_buffer, 0);
 
 	int available = MAX(s.length() - pos, 0);
 	if (available >= (int)p_num_chars) {
@@ -149,7 +148,8 @@ const char *VariantParser::tk_name[TK_MAX] = {
 static double stor_fix(const String &p_str) {
 	if (p_str == "inf") {
 		return INFINITY;
-	} else if (p_str == "inf_neg") {
+	} else if (p_str == "-inf" || p_str == "inf_neg") {
+		// inf_neg kept for compatibility.
 		return -INFINITY;
 	} else if (p_str == "nan") {
 		return NAN;
@@ -279,7 +279,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					char32_t ch = p_stream->get_char();
 
 					if (ch == 0) {
-						r_err_str = "Unterminated String";
+						r_err_str = "Unterminated string";
 						r_token.type = TK_ERROR;
 						return ERR_PARSE_ERROR;
 					} else if (ch == '"') {
@@ -288,7 +288,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						//escaped characters...
 						char32_t next = p_stream->get_char();
 						if (next == 0) {
-							r_err_str = "Unterminated String";
+							r_err_str = "Unterminated string";
 							r_token.type = TK_ERROR;
 							return ERR_PARSE_ERROR;
 						}
@@ -318,7 +318,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 									char32_t c = p_stream->get_char();
 
 									if (c == 0) {
-										r_err_str = "Unterminated String";
+										r_err_str = "Unterminated string";
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
@@ -396,7 +396,10 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				}
 
 				if (p_stream->is_utf8()) {
-					str.parse_utf8(str.ascii(true).get_data());
+					// Re-interpret the string we built as ascii.
+					CharString string_as_ascii = str.ascii(true);
+					str.clear();
+					str.append_utf8(string_as_ascii);
 				}
 				if (string_name) {
 					r_token.type = TK_STRING_NAME;
@@ -412,22 +415,19 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				if (cchar <= 32) {
 					break;
 				}
-
-				if (cchar == '-' || (cchar >= '0' && cchar <= '9')) {
+				StringBuffer<> token_text;
+				if (cchar == '-') {
+					token_text += '-';
+					cchar = p_stream->get_char();
+				}
+				if (cchar >= '0' && cchar <= '9') {
 					//a number
-
-					StringBuffer<> num;
 #define READING_SIGN 0
 #define READING_INT 1
 #define READING_DEC 2
 #define READING_EXP 3
 #define READING_DONE 4
 					int reading = READING_INT;
-
-					if (cchar == '-') {
-						num += '-';
-						cchar = p_stream->get_char();
-					}
 
 					char32_t c = cchar;
 					bool exp_sign = false;
@@ -442,7 +442,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 								} else if (c == '.') {
 									reading = READING_DEC;
 									is_float = true;
-								} else if (c == 'e') {
+								} else if (c == 'e' || c == 'E') {
 									reading = READING_EXP;
 									is_float = true;
 								} else {
@@ -452,7 +452,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 							} break;
 							case READING_DEC: {
 								if (is_digit(c)) {
-								} else if (c == 'e') {
+								} else if (c == 'e' || c == 'E') {
 									reading = READING_EXP;
 								} else {
 									reading = READING_DONE;
@@ -475,7 +475,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						if (reading == READING_DONE) {
 							break;
 						}
-						num += c;
+						token_text += c;
 						c = p_stream->get_char();
 					}
 
@@ -484,17 +484,16 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					r_token.type = TK_NUMBER;
 
 					if (is_float) {
-						r_token.value = num.as_double();
+						r_token.value = token_text.as_double();
 					} else {
-						r_token.value = num.as_int();
+						r_token.value = token_text.as_int();
 					}
 					return OK;
 				} else if (is_ascii_alphabet_char(cchar) || is_underscore(cchar)) {
-					StringBuffer<> id;
 					bool first = true;
 
 					while (is_ascii_alphabet_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
-						id += cchar;
+						token_text += cchar;
 						cchar = p_stream->get_char();
 						first = false;
 					}
@@ -502,10 +501,10 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					p_stream->saved = cchar;
 
 					r_token.type = TK_IDENTIFIER;
-					r_token.value = id.as_string();
+					r_token.value = token_text.as_string();
 					return OK;
 				} else {
-					r_err_str = "Unexpected character.";
+					r_err_str = "Unexpected character";
 					r_token.type = TK_ERROR;
 					return ERR_PARSE_ERROR;
 				}
@@ -513,6 +512,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 		}
 	}
 
+	r_err_str = "Unknown error getting token";
 	r_token.type = TK_ERROR;
 	return ERR_PARSE_ERROR;
 }
@@ -699,7 +699,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			value = Variant();
 		} else if (id == "inf") {
 			value = INFINITY;
-		} else if (id == "inf_neg") {
+		} else if (id == "-inf" || id == "inf_neg") {
+			// inf_neg kept for compatibility.
 			value = -INFINITY;
 		} else if (id == "nan") {
 			value = NAN;
@@ -1008,7 +1009,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			Object *obj = ClassDB::instantiate(type);
 
 			if (!obj) {
-				r_err_str = "Can't instantiate Object() of type: " + type;
+				r_err_str = vformat("Can't instantiate Object() of type '%s'", type);
 				return ERR_PARSE_ERROR;
 			}
 
@@ -1026,7 +1027,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			while (true) {
 				if (p_stream->is_eof()) {
-					r_err_str = "Unexpected End of File while parsing Object()";
+					r_err_str = "Unexpected EOF while parsing Object()";
 					return ERR_FILE_CORRUPT;
 				}
 
@@ -1124,7 +1125,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					String path = token.value;
 					Ref<Resource> res = ResourceLoader::load(path);
 					if (res.is_null()) {
-						r_err_str = "Can't load resource at path: '" + path + "'.";
+						r_err_str = "Can't load resource at path: " + path;
 						return ERR_PARSE_ERROR;
 					}
 
@@ -1136,7 +1137,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 					value = res;
 				} else {
-					r_err_str = "Expected string as argument for Resource().";
+					r_err_str = "Expected string as argument for Resource()";
 					return ERR_PARSE_ERROR;
 				}
 			}
@@ -1224,7 +1225,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						r_err_str = String();
 						value_type = Variant::OBJECT;
 						value_class_name = token.value;
-						got_comma_token = true;
+						got_bracket_token = true;
 					} else {
 						return err;
 					}
@@ -1572,7 +1573,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = arr;
 		} else {
-			r_err_str = "Unexpected identifier: '" + id + "'.";
+			r_err_str = vformat("Unexpected identifier '%s'", id);
 			return ERR_PARSE_ERROR;
 		}
 
@@ -1591,7 +1592,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		value = token.value;
 		return OK;
 	} else {
-		r_err_str = "Expected value, got " + String(tk_name[token.type]) + ".";
+		r_err_str = vformat("Expected value, got '%s'", String(tk_name[token.type]));
 		return ERR_PARSE_ERROR;
 	}
 }
@@ -1602,7 +1603,7 @@ Error VariantParser::_parse_array(Array &array, Stream *p_stream, int &line, Str
 
 	while (true) {
 		if (p_stream->is_eof()) {
-			r_err_str = "Unexpected End of File while parsing array";
+			r_err_str = "Unexpected EOF while parsing array";
 			return ERR_FILE_CORRUPT;
 		}
 
@@ -1644,7 +1645,7 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 
 	while (true) {
 		if (p_stream->is_eof()) {
-			r_err_str = "Unexpected End of File while parsing dictionary";
+			r_err_str = "Unexpected EOF while parsing dictionary";
 			return ERR_FILE_CORRUPT;
 		}
 
@@ -1736,7 +1737,8 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 				}
 				cs += c;
 			}
-			r_tag.name.parse_utf8(cs.get_data(), cs.length());
+			r_tag.name.clear();
+			r_tag.name.append_utf8(cs.get_data(), cs.length());
 		} else {
 			while (true) {
 				char32_t c = p_stream->get_char();
@@ -1776,7 +1778,7 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 
 	while (true) {
 		if (p_stream->is_eof()) {
-			r_err_str = "Unexpected End of File while parsing tag: " + r_tag.name;
+			r_err_str = vformat("Unexpected EOF while parsing tag '%s'", r_tag.name);
 			return ERR_FILE_CORRUPT;
 		}
 
@@ -1796,7 +1798,7 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 		}
 
 		if (token.type != TK_IDENTIFIER) {
-			r_err_str = "Expected Identifier";
+			r_err_str = "Expected identifier";
 			return ERR_PARSE_ERROR;
 		}
 
@@ -1809,6 +1811,7 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 
 		get_token(p_stream, token, line, r_err_str);
 		if (token.type != TK_EQUAL) {
+			r_err_str = "Expected '=' after identifier";
 			return ERR_PARSE_ERROR;
 		}
 
@@ -1931,7 +1934,7 @@ Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 
-static String rtos_fix(double p_value) {
+static String rtos_fix(double p_value, bool p_compat) {
 	if (p_value == 0.0) {
 		return "0"; //avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
 	} else if (isnan(p_value)) {
@@ -1939,8 +1942,10 @@ static String rtos_fix(double p_value) {
 	} else if (isinf(p_value)) {
 		if (p_value > 0) {
 			return "inf";
-		} else {
+		} else if (p_compat) {
 			return "inf_neg";
+		} else {
+			return "-inf";
 		}
 	} else {
 		return rtoss(p_value);
@@ -1959,9 +1964,9 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, itos(p_variant.operator int64_t()));
 		} break;
 		case Variant::FLOAT: {
-			String s = rtos_fix(p_variant.operator double());
-			if (s != "inf" && s != "inf_neg" && s != "nan") {
-				if (!s.contains(".") && !s.contains("e")) {
+			String s = rtos_fix(p_variant.operator double(), p_compat);
+			if (s != "inf" && s != "-inf" && s != "nan") {
+				if (!s.contains_char('.') && !s.contains_char('e') && !s.contains_char('E')) {
 					s += ".0";
 				}
 			}
@@ -1976,7 +1981,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		// Math types.
 		case Variant::VECTOR2: {
 			Vector2 v = p_variant;
-			p_store_string_func(p_store_string_ud, "Vector2(" + rtos_fix(v.x) + ", " + rtos_fix(v.y) + ")");
+			p_store_string_func(p_store_string_ud, "Vector2(" + rtos_fix(v.x, p_compat) + ", " + rtos_fix(v.y, p_compat) + ")");
 		} break;
 		case Variant::VECTOR2I: {
 			Vector2i v = p_variant;
@@ -1984,7 +1989,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::RECT2: {
 			Rect2 aabb = p_variant;
-			p_store_string_func(p_store_string_ud, "Rect2(" + rtos_fix(aabb.position.x) + ", " + rtos_fix(aabb.position.y) + ", " + rtos_fix(aabb.size.x) + ", " + rtos_fix(aabb.size.y) + ")");
+			p_store_string_func(p_store_string_ud, "Rect2(" + rtos_fix(aabb.position.x, p_compat) + ", " + rtos_fix(aabb.position.y, p_compat) + ", " + rtos_fix(aabb.size.x, p_compat) + ", " + rtos_fix(aabb.size.y, p_compat) + ")");
 		} break;
 		case Variant::RECT2I: {
 			Rect2i aabb = p_variant;
@@ -1992,7 +1997,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::VECTOR3: {
 			Vector3 v = p_variant;
-			p_store_string_func(p_store_string_ud, "Vector3(" + rtos_fix(v.x) + ", " + rtos_fix(v.y) + ", " + rtos_fix(v.z) + ")");
+			p_store_string_func(p_store_string_ud, "Vector3(" + rtos_fix(v.x, p_compat) + ", " + rtos_fix(v.y, p_compat) + ", " + rtos_fix(v.z, p_compat) + ")");
 		} break;
 		case Variant::VECTOR3I: {
 			Vector3i v = p_variant;
@@ -2000,7 +2005,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::VECTOR4: {
 			Vector4 v = p_variant;
-			p_store_string_func(p_store_string_ud, "Vector4(" + rtos_fix(v.x) + ", " + rtos_fix(v.y) + ", " + rtos_fix(v.z) + ", " + rtos_fix(v.w) + ")");
+			p_store_string_func(p_store_string_ud, "Vector4(" + rtos_fix(v.x, p_compat) + ", " + rtos_fix(v.y, p_compat) + ", " + rtos_fix(v.z, p_compat) + ", " + rtos_fix(v.w, p_compat) + ")");
 		} break;
 		case Variant::VECTOR4I: {
 			Vector4i v = p_variant;
@@ -2008,15 +2013,15 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::PLANE: {
 			Plane p = p_variant;
-			p_store_string_func(p_store_string_ud, "Plane(" + rtos_fix(p.normal.x) + ", " + rtos_fix(p.normal.y) + ", " + rtos_fix(p.normal.z) + ", " + rtos_fix(p.d) + ")");
+			p_store_string_func(p_store_string_ud, "Plane(" + rtos_fix(p.normal.x, p_compat) + ", " + rtos_fix(p.normal.y, p_compat) + ", " + rtos_fix(p.normal.z, p_compat) + ", " + rtos_fix(p.d, p_compat) + ")");
 		} break;
 		case Variant::AABB: {
 			AABB aabb = p_variant;
-			p_store_string_func(p_store_string_ud, "AABB(" + rtos_fix(aabb.position.x) + ", " + rtos_fix(aabb.position.y) + ", " + rtos_fix(aabb.position.z) + ", " + rtos_fix(aabb.size.x) + ", " + rtos_fix(aabb.size.y) + ", " + rtos_fix(aabb.size.z) + ")");
+			p_store_string_func(p_store_string_ud, "AABB(" + rtos_fix(aabb.position.x, p_compat) + ", " + rtos_fix(aabb.position.y, p_compat) + ", " + rtos_fix(aabb.position.z, p_compat) + ", " + rtos_fix(aabb.size.x, p_compat) + ", " + rtos_fix(aabb.size.y, p_compat) + ", " + rtos_fix(aabb.size.z, p_compat) + ")");
 		} break;
 		case Variant::QUATERNION: {
 			Quaternion quaternion = p_variant;
-			p_store_string_func(p_store_string_ud, "Quaternion(" + rtos_fix(quaternion.x) + ", " + rtos_fix(quaternion.y) + ", " + rtos_fix(quaternion.z) + ", " + rtos_fix(quaternion.w) + ")");
+			p_store_string_func(p_store_string_ud, "Quaternion(" + rtos_fix(quaternion.x, p_compat) + ", " + rtos_fix(quaternion.y, p_compat) + ", " + rtos_fix(quaternion.z, p_compat) + ", " + rtos_fix(quaternion.w, p_compat) + ")");
 		} break;
 		case Variant::TRANSFORM2D: {
 			String s = "Transform2D(";
@@ -2026,7 +2031,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.columns[i][j]);
+					s += rtos_fix(m3.columns[i][j], p_compat);
 				}
 			}
 
@@ -2040,7 +2045,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.rows[i][j]);
+					s += rtos_fix(m3.rows[i][j], p_compat);
 				}
 			}
 
@@ -2055,11 +2060,11 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.rows[i][j]);
+					s += rtos_fix(m3.rows[i][j], p_compat);
 				}
 			}
 
-			s = s + ", " + rtos_fix(t.origin.x) + ", " + rtos_fix(t.origin.y) + ", " + rtos_fix(t.origin.z);
+			s = s + ", " + rtos_fix(t.origin.x, p_compat) + ", " + rtos_fix(t.origin.y, p_compat) + ", " + rtos_fix(t.origin.z, p_compat);
 
 			p_store_string_func(p_store_string_ud, s + ")");
 		} break;
@@ -2071,7 +2076,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(t.columns[i][j]);
+					s += rtos_fix(t.columns[i][j], p_compat);
 				}
 			}
 
@@ -2081,7 +2086,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		// Misc types.
 		case Variant::COLOR: {
 			Color c = p_variant;
-			p_store_string_func(p_store_string_ud, "Color(" + rtos_fix(c.r) + ", " + rtos_fix(c.g) + ", " + rtos_fix(c.b) + ", " + rtos_fix(c.a) + ")");
+			p_store_string_func(p_store_string_ud, "Color(" + rtos_fix(c.r, p_compat) + ", " + rtos_fix(c.g, p_compat) + ", " + rtos_fix(c.b, p_compat) + ", " + rtos_fix(c.a, p_compat) + ")");
 		} break;
 		case Variant::STRING_NAME: {
 			String str = p_variant;
@@ -2243,8 +2248,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				ERR_PRINT("Max recursion reached");
 				p_store_string_func(p_store_string_ud, "{}");
 			} else {
-				List<Variant> keys;
-				dict.get_key_list(&keys);
+				LocalVector<Variant> keys = dict.get_key_list();
 				keys.sort_custom<StringLikeVariantOrder>();
 
 				if (keys.is_empty()) {
@@ -2255,11 +2259,12 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 					p_store_string_func(p_store_string_ud, "{\n");
 
-					for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-						write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+					for (uint32_t i = 0; i < keys.size(); i++) {
+						const Variant &key = keys[i];
+						write(key, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 						p_store_string_func(p_store_string_ud, ": ");
-						write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
-						if (E->next()) {
+						write(dict[key], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+						if (i + 1 < keys.size()) {
 							p_store_string_func(p_store_string_ud, ",\n");
 						} else {
 							p_store_string_func(p_store_string_ud, "\n");
@@ -2396,7 +2401,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i]));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i], p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -2411,7 +2416,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i]));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i], p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -2441,7 +2446,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x, p_compat) + ", " + rtos_fix(ptr[i].y, p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -2456,7 +2461,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y) + ", " + rtos_fix(ptr[i].z));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x, p_compat) + ", " + rtos_fix(ptr[i].y, p_compat) + ", " + rtos_fix(ptr[i].z, p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -2471,7 +2476,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].r) + ", " + rtos_fix(ptr[i].g) + ", " + rtos_fix(ptr[i].b) + ", " + rtos_fix(ptr[i].a));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].r, p_compat) + ", " + rtos_fix(ptr[i].g, p_compat) + ", " + rtos_fix(ptr[i].b, p_compat) + ", " + rtos_fix(ptr[i].a, p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -2486,7 +2491,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y) + ", " + rtos_fix(ptr[i].z) + ", " + rtos_fix(ptr[i].w));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x, p_compat) + ", " + rtos_fix(ptr[i].y, p_compat) + ", " + rtos_fix(ptr[i].z, p_compat) + ", " + rtos_fix(ptr[i].w, p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");

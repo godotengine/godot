@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PATH_2D_EDITOR_PLUGIN_H
-#define PATH_2D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/2d/path_2d.h"
@@ -97,6 +96,10 @@ class Path2DEditor : public HBoxContainer {
 	Vector2 edge_point;
 	Vector2 original_mouse_pos;
 
+	// Number of control points in range of the last click.
+	// 0, 1, or 2.
+	int control_points_in_range = 0;
+
 	void _mode_selected(int p_mode);
 	void _handle_option_pressed(int p_option);
 	void _cancel_current_action();
@@ -130,14 +133,11 @@ public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return path2d_editor->forward_gui_input(p_event); }
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { path2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	virtual String get_name() const override { return "Path2D"; }
+	virtual String get_plugin_name() const override { return "Path2D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
 	Path2DEditorPlugin();
-	~Path2DEditorPlugin();
 };
-
-#endif // PATH_2D_EDITOR_PLUGIN_H

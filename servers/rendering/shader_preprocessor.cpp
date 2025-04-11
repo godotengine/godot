@@ -133,7 +133,7 @@ void ShaderPreprocessor::Tokenizer::skip_whitespace() {
 
 bool ShaderPreprocessor::Tokenizer::consume_empty_line() {
 	// Read until newline and return true if the content was all whitespace/empty.
-	return tokens_to_string(advance('\n')).strip_edges().size() == 0;
+	return tokens_to_string(advance('\n')).strip_edges().is_empty();
 }
 
 String ShaderPreprocessor::Tokenizer::get_identifier(bool *r_is_cursor, bool p_started) {
@@ -1096,7 +1096,7 @@ bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_num
 				int arg_index_start = 0;
 				int arg_index = 0;
 				while (find_match(body, arg_name, arg_index, arg_index_start)) {
-					body = body.substr(0, arg_index) + args[i] + body.substr(arg_index + arg_name.length(), body.length() - (arg_index + arg_name.length()));
+					body = body.substr(0, arg_index) + args[i] + body.substr(arg_index + arg_name.length());
 					// Manually reset arg_index_start to where the arg value of the define finishes.
 					// This ensures we don't skip the other args of this macro in the string.
 					arg_index_start = arg_index + args[i].length() + 1;
@@ -1105,11 +1105,11 @@ bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_num
 
 			concatenate_macro_body(body);
 
-			result = result.substr(0, index) + " " + body + " " + result.substr(args_end + 1, result.length());
+			result = result.substr(0, index) + " " + body + " " + result.substr(args_end + 1);
 		} else {
 			concatenate_macro_body(body);
 
-			result = result.substr(0, index) + " " + body + " " + result.substr(index + key.length(), result.length() - (index + key.length()));
+			result = result.substr(0, index) + " " + body + " " + result.substr(index + key.length());
 		}
 
 		r_expanded = result;
@@ -1176,7 +1176,7 @@ void ShaderPreprocessor::concatenate_macro_body(String &r_body) {
 			index_start--;
 		}
 
-		r_body = r_body.substr(0, index_start) + r_body.substr(index_end, r_body.length() - index_end);
+		r_body = r_body.substr(0, index_start) + r_body.substr(index_end);
 
 		index_start = r_body.find("##", index_start);
 	}
@@ -1234,6 +1234,13 @@ ShaderPreprocessor::Define *ShaderPreprocessor::create_define(const String &p_bo
 	ShaderPreprocessor::Define *define = memnew(Define);
 	define->body = p_body;
 	return define;
+}
+
+void ShaderPreprocessor::insert_builtin_define(String p_name, String p_value, State &p_state) {
+	Define *define = memnew(Define);
+	define->is_builtin = true;
+	define->body = p_value;
+	p_state.defines[p_name] = define;
 }
 
 void ShaderPreprocessor::clear_state() {
@@ -1332,30 +1339,19 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 
 	// Built-in defines.
 	{
-		static HashMap<StringName, String> defines;
+		const String rendering_method = OS::get_singleton()->get_current_rendering_method();
 
-		if (defines.is_empty()) {
-			const String rendering_method = OS::get_singleton()->get_current_rendering_method();
-
-			if (rendering_method == "forward_plus") {
-				defines["CURRENT_RENDERER"] = _MKSTR(2);
-			} else if (rendering_method == "mobile") {
-				defines["CURRENT_RENDERER"] = _MKSTR(1);
-			} else { // gl_compatibility
-				defines["CURRENT_RENDERER"] = _MKSTR(0);
-			}
-
-			defines["RENDERER_COMPATIBILITY"] = _MKSTR(0);
-			defines["RENDERER_MOBILE"] = _MKSTR(1);
-			defines["RENDERER_FORWARD_PLUS"] = _MKSTR(2);
+		if (rendering_method == "forward_plus") {
+			insert_builtin_define("CURRENT_RENDERER", _MKSTR(2), pp_state);
+		} else if (rendering_method == "mobile") {
+			insert_builtin_define("CURRENT_RENDERER", _MKSTR(1), pp_state);
+		} else { // gl_compatibility
+			insert_builtin_define("CURRENT_RENDERER", _MKSTR(0), pp_state);
 		}
 
-		for (const KeyValue<StringName, String> &E : defines) {
-			Define *define = memnew(Define);
-			define->is_builtin = true;
-			define->body = E.value;
-			pp_state.defines[E.key] = define;
-		}
+		insert_builtin_define("RENDERER_COMPATIBILITY", _MKSTR(0), pp_state);
+		insert_builtin_define("RENDERER_MOBILE", _MKSTR(1), pp_state);
+		insert_builtin_define("RENDERER_FORWARD_PLUS", _MKSTR(2), pp_state);
 	}
 
 	Error err = preprocess(&pp_state, p_code, r_result);

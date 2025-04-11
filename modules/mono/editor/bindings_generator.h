@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BINDINGS_GENERATOR_H
-#define BINDINGS_GENERATOR_H
+#pragma once
 
 #include "core/typedefs.h" // DEBUG_METHODS_ENABLED
 
-#if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
+#ifdef DEBUG_METHODS_ENABLED
 
 #include "core/doc_data.h"
 #include "core/object/class_db.h"
@@ -804,14 +803,16 @@ class BindingsGenerator {
 	void _append_text_param(StringBuilder &p_output, const String &p_link_target);
 	void _append_text_undeclared(StringBuilder &p_output, const String &p_link_target);
 
-	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
+	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
+	void _append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
+	void _append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
 	void _append_xml_constant(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_constant_in_global_scope(StringBuilder &p_xml_output, const String &p_target_cname, const String &p_link_target);
 	void _append_xml_param(StringBuilder &p_xml_output, const String &p_link_target, bool p_is_signal);
 	void _append_xml_undeclared(StringBuilder &p_xml_output, const String &p_link_target);
+
+	bool _validate_api_type(const TypeInterface *p_target_itype, const TypeInterface *p_source_itype);
 
 	int _determine_enum_prefix(const EnumInterface &p_ienum);
 	void _apply_prefix_to_enum_constants(EnumInterface &p_ienum, int p_prefix_length);
@@ -873,5 +874,3 @@ public:
 };
 
 #endif
-
-#endif // BINDINGS_GENERATOR_H

@@ -30,8 +30,6 @@
 
 #include "shader_compiler.h"
 
-#include "core/config/project_settings.h"
-#include "core/os/os.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_types.h"
 
@@ -181,7 +179,7 @@ static String _mkid(const String &p_id) {
 
 static String f2sp0(float p_float) {
 	String num = rtos(p_float);
-	if (!num.contains(".") && !num.contains("e")) {
+	if (!num.contains_char('.') && !num.contains_char('e')) {
 		num += ".0";
 	}
 	return num;
@@ -674,7 +672,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				const StringName &varying_name = varying_names[k];
 				const SL::ShaderNode::Varying &varying = pnode->varyings[varying_name];
 
-				if (varying.stage == SL::ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT || varying.stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
+				if (varying.stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
 					var_frag_to_light.push_back(Pair<StringName, SL::ShaderNode::Varying>(varying_name, varying));
 					fragment_varyings.insert(varying_name);
 					continue;
@@ -688,28 +686,12 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				vcode += _prestr(varying.precision, ShaderLanguage::is_float_type(varying.type));
 				vcode += _typestr(varying.type);
 				vcode += " " + _mkid(varying_name);
-				uint32_t inc = 1U;
+				uint32_t inc = varying.get_size();
 
 				if (varying.array_size > 0) {
-					inc = (uint32_t)varying.array_size;
-
 					vcode += "[";
 					vcode += itos(varying.array_size);
 					vcode += "]";
-				}
-
-				switch (varying.type) {
-					case SL::TYPE_MAT2:
-						inc *= 2U;
-						break;
-					case SL::TYPE_MAT3:
-						inc *= 3U;
-						break;
-					case SL::TYPE_MAT4:
-						inc *= 4U;
-						break;
-					default:
-						break;
 				}
 
 				vcode += ";\n";
@@ -907,7 +889,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.usage_defines.has(vnode->name) && !used_name_defines.has(vnode->name)) {
 				String define = p_default_actions.usage_defines[vnode->name];
 				if (define.begins_with("@")) {
-					define = p_default_actions.usage_defines[define.substr(1, define.length())];
+					define = p_default_actions.usage_defines[define.substr(1)];
 				}
 				r_gen_code.defines.push_back(define);
 				used_name_defines.insert(vnode->name);
@@ -1024,7 +1006,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.usage_defines.has(anode->name) && !used_name_defines.has(anode->name)) {
 				String define = p_default_actions.usage_defines[anode->name];
 				if (define.begins_with("@")) {
-					define = p_default_actions.usage_defines[define.substr(1, define.length())];
+					define = p_default_actions.usage_defines[define.substr(1)];
 				}
 				r_gen_code.defines.push_back(define);
 				used_name_defines.insert(anode->name);
@@ -1483,6 +1465,7 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 	info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
+	info.base_varying_index = actions.base_varying_index;
 
 	Error err = parser.compile(p_code, info);
 

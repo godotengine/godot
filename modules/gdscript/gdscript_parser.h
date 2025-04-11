@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_PARSER_H
-#define GDSCRIPT_PARSER_H
+#pragma once
 
 #include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
@@ -45,7 +44,6 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
@@ -373,6 +371,7 @@ public:
 		Vector<ExpressionNode *> arguments;
 		Vector<Variant> resolved_arguments;
 
+		/** Information of the annotation. Might be null for unknown annotations. */
 		AnnotationInfo *info = nullptr;
 		PropertyInfo export_info;
 		bool is_resolved = false;
@@ -862,6 +861,7 @@ public:
 		Vector<Variant> default_arg_values;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
+		int min_local_doc_line = 0;
 #endif // TOOLS_ENABLED
 
 		bool resolved_signature = false;
@@ -1310,6 +1310,11 @@ public:
 		COMPLETION_TYPE_NAME_OR_VOID, // Same as TYPE_NAME, but allows void (in function return type).
 	};
 
+	struct CompletionCall {
+		Node *call = nullptr;
+		int argument = -1;
+	};
+
 	struct CompletionContext {
 		CompletionType type = COMPLETION_NONE;
 		ClassNode *current_class = nullptr;
@@ -1321,11 +1326,7 @@ public:
 		Node *node = nullptr;
 		Object *base = nullptr;
 		GDScriptParser *parser = nullptr;
-	};
-
-	struct CompletionCall {
-		Node *call = nullptr;
-		int argument = -1;
+		CompletionCall call;
 	};
 
 private:
@@ -1358,6 +1359,7 @@ private:
 	List<GDScriptWarning> warnings;
 	List<PendingWarning> pending_warnings;
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
+	int warning_ignore_start_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
 #endif
 
@@ -1371,9 +1373,7 @@ private:
 	SuiteNode *current_suite = nullptr;
 
 	CompletionContext completion_context;
-	CompletionCall completion_call;
 	List<CompletionCall> completion_call_stack;
-	bool passed_cursor = false;
 	bool in_lambda = false;
 	bool lambda_ended = false; // Marker for when a lambda ends, to apply an end of statement if needed.
 
@@ -1506,6 +1506,7 @@ private:
 	void clear_unused_annotations();
 	bool tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
@@ -1514,9 +1515,9 @@ private:
 	bool export_tool_button_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyUsageFlags t_usage>
 	bool export_group_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool warning_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool warning_ignore_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool warning_ignore_region_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool rpc_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable(bool p_is_static);
@@ -1584,7 +1585,6 @@ public:
 	static Variant::Type get_builtin_type(const StringName &p_type); // Excluding `Variant::NIL` and `Variant::OBJECT`.
 
 	CompletionContext get_completion_context() const { return completion_context; }
-	CompletionCall get_completion_call() const { return completion_call; }
 	void get_annotation_list(List<MethodInfo> *r_annotations) const;
 	bool annotation_exists(const String &p_annotation_name) const;
 
@@ -1664,5 +1664,3 @@ public:
 #endif // DEBUG_ENABLED
 	static void cleanup();
 };
-
-#endif // GDSCRIPT_PARSER_H

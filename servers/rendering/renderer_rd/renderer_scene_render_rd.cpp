@@ -32,12 +32,14 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
-#include "core/os/os.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
-#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/shaders/decal_data_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/light_data_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/scene_data_inc.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/shader_include_db.h"
 #include "servers/rendering/storage/camera_attributes_storage.h"
 
 void get_vogel_disk(float *r_kernel, int p_sample_count) {
@@ -134,7 +136,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 
 	if (use_cube_map) {
 		Ref<Image> panorama = sky_bake_panorama(environment_get_sky(p_env), environment_get_bg_energy_multiplier(p_env), p_bake_irradiance, p_size);
-		if (use_ambient_light) {
+		if (use_ambient_light && panorama.is_valid()) {
 			for (int x = 0; x < p_size.width; x++) {
 				for (int y = 0; y < p_size.height; y++) {
 					panorama->set_pixel(x, y, ambient_color.lerp(panorama->get_pixel(x, y), ambient_color_sky_mix));
@@ -307,13 +309,35 @@ void RendererSceneRenderRD::_process_compositor_effects(RS::CompositorEffectCall
 	Vector<RID> re_rids = comp_storage->compositor_get_compositor_effects(p_render_data->compositor, p_callback_type, true);
 
 	for (RID rid : re_rids) {
-		Array arr;
 		Callable callback = comp_storage->compositor_effect_get_callback(rid);
-
-		arr.push_back(p_callback_type);
-		arr.push_back(p_render_data);
-
+		Array arr = { p_callback_type, p_render_data };
 		callback.callv(arr);
+	}
+}
+
+void RendererSceneRenderRD::_render_buffers_ensure_screen_texture(const RenderDataRD *p_render_data) {
+	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
+	ERR_FAIL_COND(rb.is_null());
+
+	if (!rb->has_internal_texture()) {
+		// We're likely rendering reflection probes where we can't use our backbuffers.
+		return;
+	}
+
+	bool can_use_storage = _render_buffers_can_be_storage();
+	Size2i size = rb->get_internal_size();
+
+	// When upscaling, the blur texture needs to be at the target size for post-processing to work. We prefer to use a
+	// dedicated backbuffer copy texture instead if the blur texture is not an option so shader effects work correctly.
+	Size2i target_size = rb->get_target_size();
+	bool internal_size_matches = (size.width == target_size.width) && (size.height == target_size.height);
+	bool reuse_blur_texture = !rb->has_upscaled_texture() || internal_size_matches;
+	if (reuse_blur_texture) {
+		rb->allocate_blur_textures();
+	} else {
+		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		usage_bits |= can_use_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR, rb->get_base_data_format(), usage_bits);
 	}
 }
 
@@ -338,12 +362,8 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 	bool internal_size_matches = (size.width == target_size.width) && (size.height == target_size.height);
 	bool reuse_blur_texture = !rb->has_upscaled_texture() || internal_size_matches;
 	if (reuse_blur_texture) {
-		rb->allocate_blur_textures();
 		texture_name = RB_TEX_BLUR_0;
 	} else {
-		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-		usage_bits |= can_use_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-		rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR, rb->get_base_data_format(), usage_bits);
 		texture_name = RB_TEX_BACK_COLOR;
 	}
 
@@ -375,6 +395,23 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 	RD::get_singleton()->draw_command_end_label();
 }
 
+void RendererSceneRenderRD::_render_buffers_ensure_depth_texture(const RenderDataRD *p_render_data) {
+	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
+	ERR_FAIL_COND(rb.is_null());
+
+	if (!rb->has_depth_texture()) {
+		// We're likely rendering reflection probes where we can't use our backbuffers.
+		return;
+	}
+
+	// Note, this only creates our back depth texture if we haven't already created it.
+	uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
+	usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+	usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT; // Set this as color attachment because we're copying data into it, it's not actually used as a depth buffer
+
+	rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, RD::DATA_FORMAT_R32_SFLOAT, usage_bits, RD::TEXTURE_SAMPLES_1);
+}
+
 void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataRD *p_render_data) {
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
@@ -385,13 +422,6 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 	}
 
 	RD::get_singleton()->draw_command_begin_label("Copy depth texture");
-
-	// note, this only creates our back depth texture if we haven't already created it.
-	uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
-	usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-	usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT; // set this as color attachment because we're copying data into it, it's not actually used as a depth buffer
-
-	rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, RD::DATA_FORMAT_R32_SFLOAT, usage_bits, RD::TEXTURE_SAMPLES_1);
 
 	bool can_use_storage = _render_buffers_can_be_storage();
 	Size2i size = rb->get_internal_size();
@@ -427,8 +457,18 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	can_use_effects &= _debug_draw_can_use_effects(debug_draw);
 	bool can_use_storage = _render_buffers_can_be_storage();
 
-	bool use_fsr = fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR;
-	bool use_upscaled_texture = rb->has_upscaled_texture() && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR2;
+	RS::ViewportScaling3DMode scale_mode = rb->get_scaling_3d_mode();
+	bool use_upscaled_texture = rb->has_upscaled_texture() && (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2 || scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
+	SpatialUpscaler *spatial_upscaler = nullptr;
+	if (can_use_effects) {
+		if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
+			spatial_upscaler = fsr;
+		} else if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
+#if METAL_ENABLED
+			spatial_upscaler = mfx_spatial;
+#endif
+		}
+	}
 
 	RID render_target = rb->get_render_target();
 	RID color_texture = use_upscaled_texture ? rb->get_upscaled_texture() : rb->get_internal_texture();
@@ -642,11 +682,10 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(render_target);
 
 		RID dest_fb;
-		bool use_intermediate_fb = use_fsr;
-		if (use_intermediate_fb) {
-			// If we use FSR to upscale we need to write our result into an intermediate buffer.
+		if (spatial_upscaler != nullptr) {
+			// If we use a spatial upscaler to upscale we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
-			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
+			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 			dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
 		} else {
 			// If we do a bilinear upscale we just render into our render target and our shader will upscale automatically.
@@ -666,14 +705,16 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_end_label();
 	}
 
-	if (use_fsr) {
-		RD::get_singleton()->draw_command_begin_label("FSR 1.0 Upscale");
+	if (rb.is_valid() && spatial_upscaler) {
+		spatial_upscaler->ensure_context(rb);
+
+		RD::get_singleton()->draw_command_begin_label(spatial_upscaler->get_label());
 
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RID source_texture = rb->get_texture_slice(SNAME("Tonemapper"), SNAME("destination"), v, 0);
 			RID dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
 
-			fsr->fsr_upscale(rb, source_texture, dest_texture);
+			spatial_upscaler->process(rb, source_texture, dest_texture);
 		}
 
 		if (dest_is_msaa_2d) {
@@ -1215,6 +1256,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 		if (p_render_buffers.is_valid() && p_reflection_probe.is_null()) {
 			render_data.transparent_bg = texture_storage->render_target_get_transparent(rb->get_render_target());
+			render_data.render_region = texture_storage->render_target_get_render_region(rb->get_render_target());
 		}
 	}
 
@@ -1452,6 +1494,13 @@ void RendererSceneRenderRD::init() {
 	/* Forward ID */
 	forward_id_storage = create_forward_id_storage();
 
+	/* Register the include files we make available by default to our users */
+	{
+		ShaderIncludeDB::register_built_in_include_file("godot/decal_data_inc.glsl", decal_data_inc_shader_glsl);
+		ShaderIncludeDB::register_built_in_include_file("godot/light_data_inc.glsl", light_data_inc_shader_glsl);
+		ShaderIncludeDB::register_built_in_include_file("godot/scene_data_inc.glsl", scene_data_inc_shader_glsl);
+	}
+
 	/* SKY SHADER */
 
 	sky.init();
@@ -1511,6 +1560,9 @@ void RendererSceneRenderRD::init() {
 	if (can_use_storage) {
 		fsr = memnew(RendererRD::FSR);
 	}
+#ifdef METAL_ENABLED
+	mfx_spatial = memnew(RendererRD::MFXSpatialEffect);
+#endif
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
@@ -1539,6 +1591,11 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	if (fsr) {
 		memdelete(fsr);
 	}
+#ifdef METAL_ENABLED
+	if (mfx_spatial) {
+		memdelete(mfx_spatial);
+	}
+#endif
 
 	if (sky.sky_scene_state.uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky.sky_scene_state.uniform_set)) {
 		RD::get_singleton()->free(sky.sky_scene_state.uniform_set);

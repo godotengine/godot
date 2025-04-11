@@ -5,20 +5,15 @@ on:
 # Global Settings
 # SCONS_CACHE for windows must be set in the build environment
 env:
-  # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes strict_checks=yes "angle_libs=${{ github.workspace }}/"
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes strict_checks=yes "angle_libs=${{ github.workspace }}/" "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.15.1/"
   SCONS_CACHE_MSVC_CONFIG: true
-
-concurrency:
-  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-windows
-  cancel-in-progress: true
 
 jobs:
   build-windows:
     # Windows 10 with latest image
     runs-on: windows-latest
     name: ${{ matrix.name }}
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -86,13 +81,16 @@ jobs:
       - name: Extract pre-built ANGLE static libraries
         run: Expand-Archive -Force angle/angle.zip ${{ github.workspace }}/
 
-      - name: Setup MSVC problem matcher
-        if: matrix.compiler == 'msvc'
-        uses: ammaraskar/msvc-problem-matcher@master
+      - name: Download pre-built AccessKit
+        uses: dsaltares/fetch-gh-release-asset@1.1.2
+        with:
+          repo: AccessKit/accesskit-c
+          version: tags/0.15.1
+          file: accesskit-c-0.15.1.zip
+          target: accesskit-c-0.15.1/accesskit_c.zip
 
-      - name: Setup GCC problem matcher
-        if: matrix.compiler != 'msvc'
-        uses: ammaraskar/gcc-problem-matcher@master
+      - name: Extract pre-built AccessKit
+        run: unzip -o accesskit-c-0.15.1/accesskit_c.zip
 
       - name: Compilation
         uses: ./.github/actions/godot-build

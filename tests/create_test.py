@@ -39,6 +39,9 @@ def main():
     name_snake_case = snake_case_regex.sub("_", prefiltered_name).lower()
     file_path = os.path.normpath(os.path.join(args.path, f"test_{name_snake_case}.h"))
 
+    # Ensure the directory exists.
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
     print(file_path)
     if os.path.isfile(file_path):
         print(f'ERROR: The file "{file_path}" already exists.')
@@ -75,8 +78,7 @@ def main():
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_{name_upper_snake_case}_H
-#define TEST_{name_upper_snake_case}_H
+#pragma once
 
 #include "tests/test_macros.h"
 
@@ -87,14 +89,11 @@ TEST_CASE("[{name_pascal_case}] Example test case") {{
 }}
 
 }} // namespace Test{name_pascal_case}
-
-#endif // TEST_{name_upper_snake_case}_H
 """.format(
                 name_snake_case=name_snake_case,
                 # Capitalize the first letter but keep capitalization for the rest of the string.
                 # This is done in case the user passes a camelCase string instead of PascalCase.
                 name_pascal_case=args.name[0].upper() + args.name[1:],
-                name_upper_snake_case=name_snake_case.upper(),
                 # The padding length depends on the test name length.
                 padding=" " * (61 - len(name_snake_case)),
             )

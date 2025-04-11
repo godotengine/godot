@@ -112,7 +112,7 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 
 	const int entry_limit = MIN(entries.size(), 300);
 	for (int i = 0; i < entry_limit; i++) {
-		String section_name = entries[i].key_name.get_slice("/", 0);
+		String section_name = entries[i].key_name.get_slicec('/', 0);
 		TreeItem *section;
 
 		if (sections.has(section_name)) {
@@ -207,6 +207,7 @@ void EditorCommandPalette::open_popup() {
 	if (was_showed) {
 		popup(prev_rect);
 	} else {
+		_update_command_search(String());
 		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
 	}
 
@@ -293,11 +294,10 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 
 	// Load command use history.
 	Dictionary command_history = EditorSettings::get_singleton()->get_project_metadata("command_palette", "command_history", Dictionary());
-	Array history_entries = command_history.keys();
-	for (int i = 0; i < history_entries.size(); i++) {
-		const String &history_key = history_entries[i];
+	for (const KeyValue<Variant, Variant> &history_kv : command_history) {
+		const String &history_key = history_kv.key;
 		if (commands.has(history_key)) {
-			commands[history_key].last_used = command_history[history_key];
+			commands[history_key].last_used = history_kv.value;
 		}
 	}
 }
@@ -344,6 +344,7 @@ EditorCommandPalette::EditorCommandPalette() {
 
 	command_search_box = memnew(LineEdit);
 	command_search_box->set_placeholder(TTR("Filter Commands"));
+	command_search_box->set_accessibility_name(TTRC("Filter Commands"));
 	command_search_box->connect(SceneStringName(gui_input), callable_mp(this, &EditorCommandPalette::_sbox_input));
 	command_search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorCommandPalette::_update_command_search));
 	command_search_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);

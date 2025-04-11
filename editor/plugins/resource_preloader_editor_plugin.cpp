@@ -30,7 +30,6 @@
 
 #include "resource_preloader_editor_plugin.h"
 
-#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_interface.h"
@@ -113,7 +112,7 @@ void ResourcePreloaderEditor::_item_edited() {
 			return;
 		}
 
-		if (new_name.is_empty() || new_name.contains("\\") || new_name.contains("/") || preloader->has_resource(new_name)) {
+		if (new_name.is_empty() || new_name.contains_char('\\') || new_name.contains_char('/') || preloader->has_resource(new_name)) {
 			s->set_text(0, old_name);
 			return;
 		}
@@ -143,7 +142,7 @@ void ResourcePreloaderEditor::_remove_resource(const String &p_to_remove) {
 
 void ResourcePreloaderEditor::_paste_pressed() {
 	Ref<Resource> r = EditorSettings::get_singleton()->get_resource_clipboard();
-	if (!r.is_valid()) {
+	if (r.is_null()) {
 		dialog->set_text(TTR("Resource clipboard is empty!"));
 		dialog->set_title(TTR("Error!"));
 		dialog->set_ok_button_text(TTR("Close"));
@@ -254,7 +253,7 @@ void ResourcePreloaderEditor::edit(ResourcePreloader *p_preloader) {
 }
 
 Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-	TreeItem *ti = tree->get_item_at_position(p_point);
+	TreeItem *ti = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_selected() : tree->get_item_at_position(p_point);
 	if (!ti) {
 		return Variant();
 	}
@@ -262,7 +261,7 @@ Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2 &p_point, Control
 	String name = ti->get_metadata(0);
 
 	Ref<Resource> res = preloader->get_resource(name);
-	if (!res.is_valid()) {
+	if (res.is_null()) {
 		return Variant();
 	}
 
@@ -357,6 +356,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	vbc->add_child(hbc);
 
 	load = memnew(Button);
+	load->set_accessibility_name(TTRC("Load Resource"));
 	load->set_tooltip_text(TTR("Load Resource"));
 	hbc->add_child(load);
 
@@ -425,9 +425,6 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin() {
 	preloader_editor = memnew(ResourcePreloaderEditor);
 	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
-	button = EditorNode::get_bottom_panel()->add_item("ResourcePreloader", preloader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_resource_preloader_bottom_panel", TTR("Toggle ResourcePreloader Bottom Panel")));
+	button = EditorNode::get_bottom_panel()->add_item("ResourcePreloader", preloader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_resource_preloader_bottom_panel", TTRC("Toggle ResourcePreloader Bottom Panel")));
 	button->hide();
-}
-
-ResourcePreloaderEditorPlugin::~ResourcePreloaderEditorPlugin() {
 }

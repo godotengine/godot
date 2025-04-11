@@ -38,7 +38,6 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
-#include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
 
 #ifdef DEBUG_ENABLED
@@ -116,10 +115,19 @@ TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
 	return va;
 }
 
+TypedArray<Dictionary> convert_property_list(const Vector<PropertyInfo> &p_vector) {
+	TypedArray<Dictionary> va;
+	for (const PropertyInfo &E : p_vector) {
+		va.push_back(Dictionary(E));
+	}
+
+	return va;
+}
+
 MethodInfo::operator Dictionary() const {
 	Dictionary d;
 	d["name"] = name;
-	d["args"] = convert_property_list(&arguments);
+	d["args"] = convert_property_list(arguments);
 	Array da;
 	for (int i = 0; i < default_arguments.size(); i++) {
 		da.push_back(default_arguments[i]);
@@ -166,6 +174,37 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 	return mi;
 }
 
+uint32_t MethodInfo::get_compatibility_hash() const {
+	bool has_return = (return_val.type != Variant::NIL) || (return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
+
+	uint32_t hash = hash_murmur3_one_32(has_return);
+	hash = hash_murmur3_one_32(arguments.size(), hash);
+
+	if (has_return) {
+		hash = hash_murmur3_one_32(return_val.type, hash);
+		if (return_val.class_name != StringName()) {
+			hash = hash_murmur3_one_32(return_val.class_name.hash(), hash);
+		}
+	}
+
+	for (const PropertyInfo &arg : arguments) {
+		hash = hash_murmur3_one_32(arg.type, hash);
+		if (arg.class_name != StringName()) {
+			hash = hash_murmur3_one_32(arg.class_name.hash(), hash);
+		}
+	}
+
+	hash = hash_murmur3_one_32(default_arguments.size(), hash);
+	for (const Variant &v : default_arguments) {
+		hash = hash_murmur3_one_32(v.hash(), hash);
+	}
+
+	hash = hash_murmur3_one_32(flags & METHOD_FLAG_CONST ? 1 : 0, hash);
+	hash = hash_murmur3_one_32(flags & METHOD_FLAG_VARARG ? 1 : 0, hash);
+
+	return hash_fmix32(hash);
+}
+
 Object::Connection::operator Variant() const {
 	Dictionary d;
 	d["signal"] = signal;
@@ -210,19 +249,13 @@ void Object::cancel_free() {
 }
 
 void Object::_initialize() {
-	_class_name_ptr = _get_class_namev(); // Set the direct pointer, which is much faster to obtain, but can only happen after _initialize.
+	// Cache the class name in the object for quick reference.
+	_class_name_ptr = _get_class_namev();
 	_initialize_classv();
-	_class_name_ptr = nullptr; // May have been called from a constructor.
 }
 
 void Object::_postinitialize() {
 	notification(NOTIFICATION_POSTINITIALIZE);
-}
-
-void Object::get_valid_parents_static(List<String> *p_parents) {
-}
-
-void Object::_get_valid_parents_static(List<String> *p_parents) {
 }
 
 void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid) {
@@ -521,7 +554,13 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 		PropertyInfo pi = PropertyInfo(K.value.get_type(), "metadata/" + K.key.operator String());
 		if (K.value.get_type() == Variant::OBJECT) {
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "Resource";
+			Object *obj = K.value;
+			if (Object::cast_to<Script>(obj)) {
+				pi.hint_string = "Script";
+				pi.usage |= PROPERTY_USAGE_NEVER_DUPLICATE;
+			} else {
+				pi.hint_string = "Resource";
+			}
 		}
 		p_list->push_back(pi);
 	}
@@ -866,18 +905,14 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 	return ret;
 }
 
-void Object::notification(int p_notification, bool p_reversed) {
-	if (p_reversed) {
-		if (script_instance) {
-			script_instance->notification(p_notification, p_reversed);
-		}
-	} else {
-		_notificationv(p_notification, p_reversed);
-	}
+void Object::_notification_forward(int p_notification) {
+	// Notify classes starting with Object and ending with most derived subclass.
+	// e.g. Object -> Node -> Node3D
+	_notification_forwardv(p_notification);
 
 	if (_extension) {
 		if (_extension->notification2) {
-			_extension->notification2(_extension_instance, p_notification, static_cast<GDExtensionBool>(p_reversed));
+			_extension->notification2(_extension_instance, p_notification, static_cast<GDExtensionBool>(false));
 #ifndef DISABLE_DEPRECATED
 		} else if (_extension->notification) {
 			_extension->notification(_extension_instance, p_notification);
@@ -885,13 +920,29 @@ void Object::notification(int p_notification, bool p_reversed) {
 		}
 	}
 
-	if (p_reversed) {
-		_notificationv(p_notification, p_reversed);
-	} else {
-		if (script_instance) {
-			script_instance->notification(p_notification, p_reversed);
+	if (script_instance) {
+		script_instance->notification(p_notification, false);
+	}
+}
+
+void Object::_notification_backward(int p_notification) {
+	if (script_instance) {
+		script_instance->notification(p_notification, true);
+	}
+
+	if (_extension) {
+		if (_extension->notification2) {
+			_extension->notification2(_extension_instance, p_notification, static_cast<GDExtensionBool>(true));
+#ifndef DISABLE_DEPRECATED
+		} else if (_extension->notification) {
+			_extension->notification(_extension_instance, p_notification);
+#endif // DISABLE_DEPRECATED
 		}
 	}
+
+	// Notify classes starting with most derived subclass and ending in Object.
+	// e.g. Node3D -> Node -> Object
+	_notification_backwardv(p_notification);
 }
 
 String Object::to_string() {
@@ -940,7 +991,7 @@ void Object::set_script(const Variant &p_script) {
 		script_instance = nullptr;
 	}
 
-	if (!s.is_null()) {
+	if (s.is_valid()) {
 		if (s->can_instantiate()) {
 			OBJ_DEBUG_LOCK
 			script_instance = s->instance_create(this);
@@ -1044,8 +1095,8 @@ TypedArray<Dictionary> Object::_get_method_list_bind() const {
 	get_method_list(&ml);
 	TypedArray<Dictionary> ret;
 
-	for (List<MethodInfo>::Element *E = ml.front(); E; E = E->next()) {
-		Dictionary d = E->get();
+	for (const MethodInfo &mi : ml) {
+		Dictionary d = mi;
 		//va.push_back(d);
 		ret.push_back(d);
 	}
@@ -1539,7 +1590,7 @@ void Object::initialize_class() {
 	if (initialized) {
 		return;
 	}
-	ClassDB::_add_class<Object>();
+	_add_class_to_classdb(get_class_static(), StringName());
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
@@ -1579,7 +1630,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	switch (p_var.get_type()) {
 		case Variant::OBJECT: {
 			Ref<Resource> r = p_var;
-			if (!r.is_valid()) {
+			if (r.is_null()) {
 				return;
 			}
 
@@ -1604,12 +1655,10 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = p_var;
-			List<Variant> keys;
-			d.get_key_list(&keys);
 
-			for (const Variant &E : keys) {
-				_clear_internal_resource_paths(E);
-				_clear_internal_resource_paths(d[E]);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				_clear_internal_resource_paths(kv.key);
+				_clear_internal_resource_paths(kv.value);
 			}
 		} break;
 		default: {
@@ -1617,9 +1666,20 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	}
 }
 
+void Object::_add_class_to_classdb(const StringName &p_class, const StringName &p_inherits) {
+	ClassDB::_add_class(p_class, p_inherits);
+}
+
+void Object::_get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
+	ClassDB::get_property_list(p_class, p_list, p_no_inheritance, p_validator);
+}
+
 #ifdef TOOLS_ENABLED
-void Object::editor_set_section_unfold(const String &p_section, bool p_unfolded) {
-	set_edited(true);
+void Object::editor_set_section_unfold(const String &p_section, bool p_unfolded, bool p_initializing) {
+	if (!p_initializing) {
+		set_edited(true);
+	}
+
 	if (p_unfolded) {
 		editor_section_folding.insert(p_section);
 	} else {
@@ -1842,7 +1902,7 @@ Variant::Type Object::get_static_property_type(const StringName &p_property, boo
 }
 
 Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid) const {
-	if (p_path.size() == 0) {
+	if (p_path.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
 		}
@@ -1908,6 +1968,20 @@ uint32_t Object::get_edited_version() const {
 	return _edited_version;
 }
 #endif
+
+const StringName &Object::get_class_name() const {
+	if (_extension) {
+		// Can't put inside the unlikely as constructor can run it.
+		return _extension->class_name;
+	}
+
+	if (unlikely(!_class_name_ptr)) {
+		// While class is initializing / deinitializing, constructors and destructors
+		// need access to the proper class at the proper stage.
+		return *_get_class_namev();
+	}
+	return *_class_name_ptr;
+}
 
 StringName Object::get_class_name_for_extension(const GDExtension *p_library) const {
 #ifdef TOOLS_ENABLED
@@ -2056,7 +2130,6 @@ void Object::clear_internal_extension() {
 	// Clear the virtual methods.
 	while (virtual_method_list) {
 		(*virtual_method_list->method) = nullptr;
-		(*virtual_method_list->initialized) = false;
 		virtual_method_list = virtual_method_list->next;
 	}
 }

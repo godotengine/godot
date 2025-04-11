@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROJECT_DIALOG_H
-#define PROJECT_DIALOG_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 
 class Button;
+class CheckBox;
 class CheckButton;
 class EditorFileDialog;
 class LineEdit;
@@ -65,6 +65,7 @@ private:
 
 	Mode mode = MODE_NEW;
 	bool is_folder_empty = true;
+	ConfirmationDialog *nonempty_confirmation = nullptr;
 
 	CheckButton *create_dir = nullptr;
 	Button *project_browse = nullptr;
@@ -88,6 +89,8 @@ private:
 	TextureRect *install_status_rect = nullptr;
 
 	OptionButton *vcs_metadata_selection = nullptr;
+
+	CheckBox *edit_check_box = nullptr;
 
 	EditorFileDialog *fdialog_project = nullptr;
 	EditorFileDialog *fdialog_install = nullptr;
@@ -146,5 +149,3 @@ public:
 
 	ProjectDialog();
 };
-
-#endif // PROJECT_DIALOG_H

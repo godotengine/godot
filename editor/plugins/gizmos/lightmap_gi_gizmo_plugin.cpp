@@ -33,7 +33,6 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/lightmap_gi.h"
 
 LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
@@ -89,7 +88,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	HashSet<Vector2i> lines_found;
 
 	Vector<Vector3> points = data->get_capture_points();
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 		return;
 	}
 	Vector<Color> sh = data->get_capture_sh();

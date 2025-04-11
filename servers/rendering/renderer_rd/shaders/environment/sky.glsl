@@ -17,8 +17,9 @@ layout(push_constant, std430) uniform Params {
 	vec4 projection; // only applicable if not multiview
 	vec3 position;
 	float time;
-	vec3 pad;
+	vec2 pad;
 	float luminance_multiplier;
+	float brightness_multiplier;
 }
 params;
 
@@ -57,8 +58,9 @@ layout(push_constant, std430) uniform Params {
 	vec4 projection; // only applicable if not multiview
 	vec3 position;
 	float time;
-	vec3 pad;
+	vec2 pad;
 	float luminance_multiplier;
+	float brightness_multiplier;
 }
 params;
 
@@ -189,7 +191,7 @@ void main() {
 	vec3 cube_normal;
 #ifdef USE_MULTIVIEW
 	// In multiview our projection matrices will contain positional and rotational offsets that we need to properly unproject.
-	vec4 unproject = vec4(uv_interp.x, -uv_interp.y, 0.0, 1.0); // unproject at the far plane
+	vec4 unproject = vec4(uv_interp.x, uv_interp.y, 0.0, 1.0); // unproject at the far plane
 	vec4 unprojected = sky_scene_data.view_inv_projections[ViewIndex] * unproject;
 	cube_normal = unprojected.xyz / unprojected.w;
 
@@ -198,7 +200,7 @@ void main() {
 #else
 	cube_normal.z = -1.0;
 	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.projection.x)) / params.projection.y;
-	cube_normal.y = -(cube_normal.z * (-uv_interp.y - params.projection.z)) / params.projection.w;
+	cube_normal.y = -(cube_normal.z * (uv_interp.y - params.projection.z)) / params.projection.w;
 #endif
 	cube_normal = mat3(params.orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
@@ -254,6 +256,9 @@ void main() {
 
 	frag_color.rgb = color;
 	frag_color.a = alpha;
+
+	// Apply environment 'brightness' setting separately before fog to ensure consistent luminance.
+	frag_color.rgb = frag_color.rgb * params.brightness_multiplier;
 
 #if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
 

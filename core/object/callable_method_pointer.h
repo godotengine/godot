@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CALLABLE_METHOD_POINTER_H
-#define CALLABLE_METHOD_POINTER_H
+#pragma once
 
 #include "core/object/object.h"
-#include "core/templates/hashfuncs.h"
-#include "core/templates/simple_type.h"
 #include "core/variant/binder_common.h"
 #include "core/variant/callable.h"
 
@@ -84,8 +81,7 @@ class CallableCustomMethodPointer : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
 		uint64_t object_id;
-		R(T::*method)
-		(P...);
+		R (T::*method)(P...);
 	} data;
 
 public:
@@ -154,8 +150,7 @@ class CallableCustomMethodPointerC : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
 		uint64_t object_id;
-		R(T::*method)
-		(P...) const;
+		R (T::*method)(P...) const;
 	} data;
 
 public:
@@ -228,8 +223,7 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 template <typename R, typename... P>
 class CallableCustomStaticMethodPointer : public CallableCustomMethodPointerBase {
 	struct Data {
-		R(*method)
-		(P...);
+		R (*method)(P...);
 	} data;
 
 public:
@@ -294,5 +288,3 @@ Callable create_custom_callable_static_function_pointer(
 #else
 #define callable_mp_static(M) create_custom_callable_static_function_pointer(M)
 #endif
-
-#endif // CALLABLE_METHOD_POINTER_H

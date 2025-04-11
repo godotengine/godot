@@ -90,7 +90,7 @@ struct Text::Impl
     bool render(RenderMethod* renderer)
     {
         if (!loader) return true;
-        renderer->blend(paint->blend());
+        renderer->blend(PP(paint)->blendMethod);
         return PP(shape)->render(renderer);
     }
 
@@ -113,9 +113,9 @@ struct Text::Impl
 
         //transform the gradient coordinates based on the final scaled font.
         auto fill = P(shape)->rs.fill;
-        if (fill && P(shape)->flag & RenderUpdateFlag::Gradient) {
+        if (fill && P(shape)->rFlag & RenderUpdateFlag::Gradient) {
             auto scale = 1.0f / loader->scale;
-            if (fill->identifier() == TVG_CLASS_ID_LINEAR) {
+            if (fill->type() == Type::LinearGradient) {
                 P(static_cast<LinearGradient*>(fill))->x1 *= scale;
                 P(static_cast<LinearGradient*>(fill))->y1 *= scale;
                 P(static_cast<LinearGradient*>(fill))->x2 *= scale;

@@ -30,8 +30,6 @@
 
 #include "editor_scene_exporter_gltf_plugin.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "editor_scene_exporter_gltf_settings.h"
 
 #include "editor/editor_file_system.h"
@@ -41,7 +39,7 @@
 #include "editor/import/3d/scene_import_settings.h"
 #include "editor/themes/editor_scale.h"
 
-String SceneExporterGLTFPlugin::get_name() const {
+String SceneExporterGLTFPlugin::get_plugin_name() const {
 	return "ConvertGLTF2";
 }
 
@@ -118,5 +116,3 @@ void SceneExporterGLTFPlugin::_export_scene_as_gltf(const String &p_file_path) {
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
 }
-
-#endif // TOOLS_ENABLED

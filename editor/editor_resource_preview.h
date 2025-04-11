@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_RESOURCE_PREVIEW_H
-#define EDITOR_RESOURCE_PREVIEW_H
+#pragma once
 
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -54,11 +53,11 @@ protected:
 	class DrawRequester : public Object {
 		Semaphore semaphore;
 
-		Variant _post_semaphore() const;
+		Variant _post_semaphore();
 
 	public:
-		void request_and_wait(RID p_viewport) const;
-		void abort() const;
+		void request_and_wait(RID p_viewport);
+		void abort();
 	};
 
 public:
@@ -69,8 +68,6 @@ public:
 
 	virtual bool generate_small_preview_automatically() const;
 	virtual bool can_generate_small_preview() const;
-
-	EditorResourcePreviewGenerator();
 };
 
 class EditorResourcePreview : public Node {
@@ -123,6 +120,7 @@ class EditorResourcePreview : public Node {
 	void _update_thumbnail_sizes();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -152,5 +150,3 @@ public:
 	EditorResourcePreview();
 	~EditorResourcePreview();
 };
-
-#endif // EDITOR_RESOURCE_PREVIEW_H

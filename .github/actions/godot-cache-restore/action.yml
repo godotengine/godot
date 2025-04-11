@@ -11,24 +11,29 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Restore SCons cache directory
+    - name: Restore default cache
       uses: actions/cache/restore@v4
+      id: cache-ping
       with:
         path: ${{ inputs.scons-cache }}
-        key: ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-${{ github.ref }}-${{ github.sha }}
+        key: ${{ inputs.cache-name }}|${{ github.event.repository.default_branch }}|${{ github.sha }}
+        restore-keys: ${{ inputs.cache-name }}|${{ github.event.repository.default_branch }}
 
-        # We try to match an existing cache to restore from it. Each potential key is checked against
-        # all existing caches as a prefix. E.g. 'linux-template-minimal' would match any cache that
-        # starts with "linux-template-minimal", such as "linux-template-minimal-master-refs/heads/master-6588a4a29af1621086feac0117d5d4d37af957fd".
-        #
-        # We check these prefixes in this order:
-        #
-        #   1. The exact match, including the base branch, the commit reference, and the SHA hash of the commit.
-        #   2. A partial match for the same base branch and the same commit reference.
-        #   3. A partial match for the same base branch and the base branch commit reference.
-        #   4. A partial match for the same base branch only (not ideal, matches any PR with the same base branch).
+    - name: Log default cache files
+      if: steps.cache-ping.outputs.cache-matched-key && github.ref_name != github.event.repository.default_branch
+      shell: sh
+      run: find "${{ inputs.scons-cache }}" >> redundant.txt
 
-        restore-keys: |
-          ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-${{ github.ref }}
-          ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-refs/heads/${{ env.GODOT_BASE_BRANCH }}
-          ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}
+    # This is done after pulling the default cache so that PRs can integrate any potential changes
+    # from the default branch without conflicting with whatever local changes were already made.
+    - name: Restore local cache
+      uses: actions/cache/restore@v4
+      if: github.ref_name != github.event.repository.default_branch
+      with:
+        path: ${{ inputs.scons-cache }}
+        key: ${{ inputs.cache-name }}|${{ github.ref_name }}|${{ github.sha }}
+        restore-keys: ${{ inputs.cache-name }}|${{ github.ref_name }}
+
+    - name: Store unix timestamp
+      shell: sh
+      run: echo "CACHE_TIMESTAMP=$(date +%s)" >> $GITHUB_ENV

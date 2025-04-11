@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISPLAY_SERVER_MACOS_H
-#define DISPLAY_SERVER_MACOS_H
+#pragma once
 
 #include "core/input/input.h"
 #include "servers/display_server.h"
@@ -39,16 +38,16 @@
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
-#include "native_menu_macos.h"
+#import "native_menu_macos.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#include "rendering_context_driver_vulkan_macos.h"
+#import "rendering_context_driver_vulkan_macos.h"
 #endif // VULKAN_ENABLED
 #if defined(METAL_ENABLED)
-#include "drivers/metal/rendering_context_driver_metal.h"
+#import "drivers/metal/rendering_context_driver_metal.h"
 #endif
 #endif // RD_ENABLED
 
@@ -65,7 +64,7 @@
 #undef CursorShape
 
 class DisplayServerMacOS : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerMacOS, DisplayServer);
 
 	_THREAD_SAFE_CLASS_
 
@@ -92,6 +91,7 @@ public:
 		Vector<Vector2> mpath;
 
 		Point2i mouse_pos;
+		WindowResizeEdge edge = WINDOW_EDGE_MAX;
 
 		Size2i min_size;
 		Size2i max_size;
@@ -123,12 +123,15 @@ public:
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
+		bool no_min_btn = false;
+		bool no_max_btn = false;
 		bool no_focus = false;
 		bool is_popup = false;
 		bool mpass = false;
 		bool focused = false;
 		bool is_visible = true;
 		bool extend_to_title = false;
+		bool hide_from_capture = false;
 
 		Rect2i parent_safe_rect;
 	};
@@ -167,6 +170,10 @@ private:
 
 	CGEventSourceRef event_source;
 	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
+	bool mouse_mode_override_enabled = false;
+	void _mouse_update_mode();
 
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
@@ -175,16 +182,16 @@ private:
 		String name;
 		String code;
 	};
-	Vector<LayoutInfo> kbd_layouts;
-	int current_layout = 0;
-	bool keyboard_layout_dirty = true;
+	mutable Vector<LayoutInfo> kbd_layouts;
+	mutable int current_layout = 0;
+	mutable bool keyboard_layout_dirty = true;
 
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	float display_max_scale = 1.f;
-	Point2i origin;
-	bool displays_arrangement_dirty = true;
+	mutable Point2i origin;
+	mutable bool displays_arrangement_dirty = true;
 	bool is_resizing = false;
 
 	CursorShape cursor_shape = CURSOR_ARROW;
@@ -215,9 +222,9 @@ private:
 	Callable system_theme_changed;
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
-	void _update_window_style(WindowData p_wd);
+	void _update_window_style(WindowData p_wd, WindowID p_window);
 
-	void _update_displays_arrangement();
+	void _update_displays_arrangement() const;
 	Point2i _get_native_screen_position(int p_screen) const;
 	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
 
@@ -225,12 +232,14 @@ private:
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 	void _push_input(const Ref<InputEvent> &p_event);
 	void _process_key_events();
-	void _update_keyboard_layouts();
+	void _update_keyboard_layouts() const;
 	static void _keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info);
 
 	static NSCursor *_cursor_from_selector(SEL p_selector, SEL p_fallback = nil);
 
-	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
+	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
+
+	void initialize_tts() const;
 
 public:
 	void menu_callback(id p_sender);
@@ -248,6 +257,7 @@ public:
 	void send_event(NSEvent *p_event);
 	void send_window_event(const WindowData &p_wd, WindowEvent p_event);
 	void release_pressed_events();
+	void sync_mouse_state();
 	void get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const;
 	void update_mouse_pos(WindowData &p_wd, NSPoint p_location_in_window);
 	void push_to_key_event_buffer(const KeyEvent &p_event);
@@ -264,6 +274,8 @@ public:
 	void mouse_enter_window(WindowID p_window);
 	void mouse_exit_window(WindowID p_window);
 	void update_presentation_mode();
+
+	bool is_always_on_top_recursive(WindowID p_window) const;
 
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
@@ -295,11 +307,17 @@ public:
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
 
-	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
-	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) override;
+
+	virtual void beep() const override;
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual void mouse_set_mode_override(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode_override() const override;
+	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
+	virtual bool mouse_is_mode_override_enabled() const override;
 
 	bool update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp);
 	virtual void warp_mouse(const Point2i &p_position) override;
@@ -324,6 +342,7 @@ public:
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Color screen_get_pixel(const Point2i &p_position) const override;
 	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Ref<Image> screen_get_image_rect(const Rect2i &p_rect) const override;
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
 
@@ -402,8 +421,16 @@ public:
 	virtual bool window_maximize_on_title_dbl_click() const override;
 	virtual bool window_minimize_on_title_dbl_click() const override;
 
+	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_start_resize(WindowResizeEdge p_edge, WindowID p_window = MAIN_WINDOW_ID) override;
+
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual int accessibility_should_increase_contrast() const override;
+	virtual int accessibility_should_reduce_animation() const override;
+	virtual int accessibility_should_reduce_transparency() const override;
+	virtual int accessibility_screen_reader_active() const override;
 
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;
@@ -422,7 +449,9 @@ public:
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
+	virtual void show_emoji_and_symbol_picker() const override;
 
+	void _process_events(bool p_pump);
 	virtual void process_events() override;
 	virtual void force_process_and_drop_events() override;
 
@@ -442,13 +471,11 @@ public:
 
 	virtual bool is_window_transparency_available() const override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 
 	static void register_macos_driver();
 
-	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
+	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerMacOS();
 };
-
-#endif // DISPLAY_SERVER_MACOS_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_PHYSICS_SERVER_2D_H
-#define GODOT_PHYSICS_SERVER_2D_H
+#pragma once
 
 #include "godot_joints_2d.h"
 #include "godot_shape_2d.h"
@@ -56,7 +55,7 @@ class GodotPhysicsServer2D : public PhysicsServer2D {
 	bool flushing_queries = false;
 
 	GodotStep2D *stepper = nullptr;
-	HashSet<const GodotSpace2D *> active_spaces;
+	HashSet<GodotSpace2D *> active_spaces;
 
 	mutable RID_PtrOwner<GodotShape2D, true> shape_owner;
 	mutable RID_PtrOwner<GodotSpace2D, true> space_owner;
@@ -303,5 +302,3 @@ public:
 	GodotPhysicsServer2D(bool p_using_threads = false);
 	~GodotPhysicsServer2D() {}
 };
-
-#endif // GODOT_PHYSICS_SERVER_2D_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_OBSTACLE_3D_EDITOR_PLUGIN_H
-#define NAVIGATION_OBSTACLE_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
@@ -124,7 +123,7 @@ public:
 
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
-	virtual String get_name() const override { return "NavigationObstacle3D"; }
+	virtual String get_plugin_name() const override { return "NavigationObstacle3DEditor"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -133,5 +132,3 @@ public:
 	NavigationObstacle3DEditorPlugin();
 	~NavigationObstacle3DEditorPlugin();
 };
-
-#endif // NAVIGATION_OBSTACLE_3D_EDITOR_PLUGIN_H

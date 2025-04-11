@@ -68,7 +68,6 @@ ios_lib = [
     "ios.mm",
     "rendering_context_driver_vulkan_ios.mm",
     "display_server_ios.mm",
-    "joypad_ios.mm",
     "godot_view.mm",
     "tts_ios.mm",
     "display_layer.mm",
@@ -98,9 +97,9 @@ def combine_libs(target=None, source=None, env=None):
     )
 
 
-combine_command = env_ios.Command("#bin/libgodot" + env_ios["LIBSUFFIX"], [ios_lib] + env_ios["LIBS"], combine_libs)
+combine_command = env_ios.CommandNoCache(
+    "#bin/libgodot" + env_ios["LIBSUFFIX"], [ios_lib] + env_ios["LIBS"], env.Run(combine_libs)
+)
 
 if env["generate_bundle"]:
-    generate_bundle_command = env.Command("generate_bundle", [], generate_bundle)
-    command = env.AlwaysBuild(generate_bundle_command)
-    env.Depends(command, [combine_command])
+    env.AlwaysBuild(env.CommandNoCache("generate_bundle", combine_command, env.Run(generate_bundle)))

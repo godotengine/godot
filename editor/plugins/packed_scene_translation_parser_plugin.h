@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PACKED_SCENE_TRANSLATION_PARSER_PLUGIN_H
-#define PACKED_SCENE_TRANSLATION_PARSER_PLUGIN_H
+#pragma once
 
 #include "editor/editor_translation_parser.h"
 
@@ -42,11 +41,9 @@ class PackedSceneEditorTranslationParserPlugin : public EditorTranslationParserP
 	HashMap<String, Vector<String>> exception_list;
 
 public:
-	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) override;
+	virtual Error parse_file(const String &p_path, Vector<Vector<String>> *r_translations) override;
 	bool match_property(const String &p_property_name, const String &p_node_type);
 	virtual void get_recognized_extensions(List<String> *r_extensions) const override;
 
 	PackedSceneEditorTranslationParserPlugin();
 };
-
-#endif // PACKED_SCENE_TRANSLATION_PARSER_PLUGIN_H

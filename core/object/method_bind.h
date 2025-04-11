@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef METHOD_BIND_H
-#define METHOD_BIND_H
+#pragma once
 
 #include "core/variant/binder_common.h"
 
@@ -90,7 +89,7 @@ public:
 	}
 
 	_FORCE_INLINE_ Variant::Type get_argument_type(int p_argument) const {
-		ERR_FAIL_COND_V(p_argument < -1 || p_argument > argument_count, Variant::NIL);
+		ERR_FAIL_COND_V(p_argument < -1 || p_argument >= argument_count, Variant::NIL);
 		return argument_types[p_argument + 1];
 	}
 
@@ -143,8 +142,7 @@ public:
 template <typename Derived, typename T, typename R, bool should_returns>
 class MethodBindVarArgBase : public MethodBind {
 protected:
-	R(T::*method)
-	(const Variant **, int, Callable::CallError &);
+	R (T::*method)(const Variant **, int, Callable::CallError &);
 	MethodInfo method_info;
 
 public:
@@ -152,7 +150,7 @@ public:
 		if (p_arg < 0) {
 			return _gen_return_type_info();
 		} else if (p_arg < method_info.arguments.size()) {
-			return method_info.arguments.get(p_arg);
+			return method_info.arguments[p_arg];
 		} else {
 			return PropertyInfo(Variant::NIL, "arg_" + itos(p_arg), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
 		}
@@ -193,11 +191,10 @@ public:
 			Vector<StringName> names;
 			names.resize(method_info.arguments.size());
 #endif
-			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
-				at[i + 1] = itr->type;
+			for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
+				at[i + 1] = method_info.arguments[i].type;
 #ifdef DEBUG_METHODS_ENABLED
-				names.write[i] = itr->name;
+				names.write[i] = method_info.arguments[i].name;
 #endif
 			}
 
@@ -259,11 +256,8 @@ class MethodBindVarArgTR : public MethodBindVarArgBase<MethodBindVarArgTR<T, R>,
 	friend class MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>;
 
 public:
-#if defined(SANITIZERS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
-	// Workaround GH-66343 raised only with UBSAN, seems to be a false positive.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wmaybe-uninitialized") // Workaround GH-66343 raised only with UBSAN, seems to be a false positive.
+
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 #ifdef TOOLS_ENABLED
 		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == MethodBind::get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
@@ -271,9 +265,7 @@ public:
 		return (static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>::method)(p_args, p_arg_count, r_error);
 	}
 
-#if defined(SANITIZERS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+	GODOT_GCC_WARNING_POP
 
 	MethodBindVarArgTR(
 			R (T::*p_method)(const Variant **, int, Callable::CallError &),
@@ -480,8 +472,7 @@ template <typename T, typename R, typename... P>
 template <typename R, typename... P>
 #endif
 class MethodBindTR : public MethodBind {
-	R(MB_T::*method)
-	(P...);
+	R (MB_T::*method)(P...);
 
 protected:
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
@@ -576,8 +567,7 @@ template <typename T, typename R, typename... P>
 template <typename R, typename... P>
 #endif
 class MethodBindTRC : public MethodBind {
-	R(MB_T::*method)
-	(P...) const;
+	R (MB_T::*method)(P...) const;
 
 protected:
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
@@ -728,8 +718,7 @@ MethodBind *create_static_method_bind(void (*p_method)(P...)) {
 
 template <typename R, typename... P>
 class MethodBindTRS : public MethodBind {
-	R(*function)
-	(P...);
+	R (*function)(P...);
 
 protected:
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
@@ -790,5 +779,3 @@ MethodBind *create_static_method_bind(R (*p_method)(P...)) {
 	MethodBind *a = memnew((MethodBindTRS<R, P...>)(p_method));
 	return a;
 }
-
-#endif // METHOD_BIND_H

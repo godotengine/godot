@@ -28,16 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_RD_H
-#define SHADER_RD_H
+#pragma once
 
 #include "core/os/mutex.h"
 #include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
-#include "core/variant/variant.h"
 #include "servers/rendering_server.h"
 
 class ShaderRD {
@@ -62,6 +59,8 @@ private:
 	Vector<uint32_t> variant_to_group;
 	HashMap<int, LocalVector<int>> group_to_variant_map;
 	Vector<bool> group_enabled;
+
+	Vector<RD::PipelineImmutableSampler> immutable_samplers;
 
 	struct Version {
 		CharString uniforms;
@@ -211,10 +210,8 @@ public:
 
 	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 
-	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "");
+	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "", const Vector<RD::PipelineImmutableSampler> &r_immutable_samplers = Vector<RD::PipelineImmutableSampler>());
 	void initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines = "");
 
 	virtual ~ShaderRD();
 };
-
-#endif // SHADER_RD_H

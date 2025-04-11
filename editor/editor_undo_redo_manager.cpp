@@ -32,7 +32,6 @@
 
 #include "core/io/resource.h"
 #include "core/os/os.h"
-#include "core/templates/local_vector.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_log.h"
@@ -62,7 +61,7 @@ UndoRedo *EditorUndoRedoManager::get_history_undo_redo(int p_idx) const {
 int EditorUndoRedoManager::get_history_id_for_object(Object *p_object) const {
 	int history_id = INVALID_HISTORY;
 
-	if (Object::cast_to<EditorDebuggerRemoteObject>(p_object)) {
+	if (Object::cast_to<EditorDebuggerRemoteObjects>(p_object)) {
 		return REMOTE_HISTORY;
 	}
 

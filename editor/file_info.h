@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_INFO_H
-#define FILE_INFO_H
+#pragma once
 
-#include "core/variant/variant.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
 
 enum class FileSortOption {
 	FILE_SORT_NAME = 0,
@@ -70,5 +70,3 @@ struct FileInfoModifiedTimeComparator {
 };
 
 void sort_file_info_list(List<FileInfo> &r_file_list, FileSortOption p_file_sort_option);
-
-#endif // FILE_INFO_H

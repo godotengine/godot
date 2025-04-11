@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LINE_EDIT_H
-#define LINE_EDIT_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
@@ -69,6 +68,7 @@ public:
 		MENU_INSERT_ZWNJ,
 		MENU_INSERT_WJ,
 		MENU_INSERT_SHY,
+		MENU_EMOJI_AND_SYMBOL,
 		MENU_MAX
 	};
 
@@ -87,10 +87,19 @@ private:
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
 	bool editing = false;
+	bool keep_editing_on_text_submit = false;
 	bool editable = false;
 	bool pass = false;
 	bool text_changed_dirty = false;
 
+	enum AltInputMode {
+		ALT_INPUT_NONE,
+		ALT_INPUT_UNICODE,
+		ALT_INPUT_OEM,
+		ALT_INPUT_WIN,
+	};
+
+	AltInputMode alt_mode = ALT_INPUT_NONE;
 	bool alt_start = false;
 	bool alt_start_no_hold = false;
 	uint32_t alt_code = 0;
@@ -104,6 +113,7 @@ private:
 	Point2 ime_selection;
 
 	RID text_rid;
+	RID accessibility_text_root_element;
 	float full_width = 0.0;
 
 	bool selecting_enabled = true;
@@ -111,6 +121,7 @@ private:
 	bool drag_and_drop_selection_enabled = true;
 
 	bool context_menu_enabled = true;
+	bool emoji_menu_enabled = true;
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
@@ -248,6 +259,7 @@ private:
 	void _move_caret_end(bool p_select);
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
+	void _texture_changed();
 
 protected:
 	bool _is_over_clear_button(const Point2 &p_pos) const;
@@ -261,10 +273,17 @@ protected:
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	void _accessibility_action_set_selection(const Variant &p_data);
+	void _accessibility_action_replace_selected(const Variant &p_data);
+	void _accessibility_action_set_value(const Variant &p_data);
+	void _accessibility_action_menu(const Variant &p_data);
+
 public:
 	void edit();
 	void unedit();
 	bool is_editing() const;
+	void set_keep_editing_on_text_submit(bool p_enabled);
+	bool is_editing_kept_on_text_submit() const;
 
 	bool has_ime_text() const;
 	void cancel_ime();
@@ -284,6 +303,11 @@ public:
 	bool is_context_menu_enabled();
 	PopupMenu *get_menu() const;
 	bool is_menu_visible() const;
+
+	void show_emoji_and_symbol_picker();
+
+	void set_emoji_menu_enabled(bool p_enabled);
+	bool is_emoji_menu_enabled() const;
 
 	void select(int p_from = 0, int p_to = -1);
 	void select_all();
@@ -408,5 +432,3 @@ public:
 
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
 VARIANT_ENUM_CAST(LineEdit::VirtualKeyboardType);
-
-#endif // LINE_EDIT_H

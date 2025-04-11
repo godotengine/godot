@@ -87,7 +87,7 @@
 			<param index="1" name="flags" type="int" default="0" />
 			<description>
 				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].
-				[b]FIXME:[/b] Document possible values for [param flags], it changed in 4.0. Likely some combinations of [enum Mesh.ArrayFormat].
+				The [param flags] argument can be the bitwise OR of [constant Mesh.ARRAY_FLAG_USE_DYNAMIC_UPDATE], [constant Mesh.ARRAY_FLAG_USE_8_BONE_WEIGHTS], or [constant Mesh.ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY].
 			</description>
 		</method>
 		<method name="commit_to_arrays">
@@ -147,7 +147,7 @@
 		<method name="generate_tangents">
 			<return type="void" />
 			<description>
-				Generates a tangent vector for each vertex. Requires that each vertex have UVs and normals set already (see [method generate_normals]).
+				Generates a tangent vector for each vertex. Requires that each vertex already has UVs and normals set (see [method generate_normals]).
 			</description>
 		</method>
 		<method name="get_aabb" qualifiers="const">

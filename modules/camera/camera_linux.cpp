@@ -52,6 +52,9 @@ void CameraLinux::_update_devices() {
 
 			for (int i = feeds.size() - 1; i >= 0; i--) {
 				Ref<CameraFeedLinux> feed = (Ref<CameraFeedLinux>)feeds[i];
+				if (feed.is_null()) {
+					continue;
+				}
 				String device_name = feed->get_device_name();
 				if (!_is_active(device_name)) {
 					remove_feed(feed);
@@ -84,6 +87,9 @@ void CameraLinux::_update_devices() {
 bool CameraLinux::_has_device(const String &p_device_name) {
 	for (int i = 0; i < feeds.size(); i++) {
 		Ref<CameraFeedLinux> feed = (Ref<CameraFeedLinux>)feeds[i];
+		if (feed.is_null()) {
+			continue;
+		}
 		if (feed->get_device_name() == p_device_name) {
 			return true;
 		}
@@ -107,7 +113,7 @@ void CameraLinux::_add_device(const String &p_device_name) {
 int CameraLinux::_open_device(const String &p_device_name) {
 	struct stat s;
 
-	if (stat(p_device_name.ascii(), &s) == -1) {
+	if (stat(p_device_name.ascii().get_data(), &s) == -1) {
 		return -1;
 	}
 
@@ -115,7 +121,7 @@ int CameraLinux::_open_device(const String &p_device_name) {
 		return -1;
 	}
 
-	return open(p_device_name.ascii(), O_RDWR | O_NONBLOCK, 0);
+	return open(p_device_name.ascii().get_data(), O_RDWR | O_NONBLOCK, 0);
 }
 
 // TODO any cheaper/cleaner way to check if file descriptor is invalid?
@@ -134,17 +140,14 @@ bool CameraLinux::_is_video_capture_device(int p_file_descriptor) {
 	struct v4l2_capability capability;
 
 	if (ioctl(p_file_descriptor, VIDIOC_QUERYCAP, &capability) == -1) {
-		print_verbose("Cannot query device");
 		return false;
 	}
 
 	if (!(capability.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-		print_verbose(vformat("%s is no video capture device\n", String((char *)capability.card)));
 		return false;
 	}
 
 	if (!(capability.capabilities & V4L2_CAP_STREAMING)) {
-		print_verbose(vformat("%s does not support streaming", String((char *)capability.card)));
 		return false;
 	}
 
@@ -159,11 +162,25 @@ bool CameraLinux::_can_query_format(int p_file_descriptor, int p_type) {
 	return ioctl(p_file_descriptor, VIDIOC_G_FMT, &format) != -1;
 }
 
-CameraLinux::CameraLinux() {
-	camera_thread.start(CameraLinux::camera_thread_func, this);
+inline void CameraLinux::set_monitoring_feeds(bool p_monitoring_feeds) {
+	if (p_monitoring_feeds == monitoring_feeds) {
+		return;
+	}
+
+	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
+	if (p_monitoring_feeds) {
+		camera_thread.start(CameraLinux::camera_thread_func, this);
+	} else {
+		exit_flag.set();
+		if (camera_thread.is_started()) {
+			camera_thread.wait_to_finish();
+		}
+	}
 }
 
 CameraLinux::~CameraLinux() {
 	exit_flag.set();
-	camera_thread.wait_to_finish();
+	if (camera_thread.is_started()) {
+		camera_thread.wait_to_finish();
+	}
 }
