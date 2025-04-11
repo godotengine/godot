@@ -130,13 +130,13 @@ Error WSLPeer::accept_stream(Ref<StreamPeer> p_stream) {
 
 	_clear();
 
-	if (p_stream->is_class_ptr(StreamPeerTCP::get_class_ptr_static())) {
+	if (p_stream->is_class<StreamPeerTCP>()) {
 		tcp = p_stream;
 		connection = p_stream;
 		use_tls = false;
-	} else if (p_stream->is_class_ptr(StreamPeerTLS::get_class_ptr_static())) {
+	} else if (p_stream->is_class<StreamPeerTLS>()) {
 		Ref<StreamPeer> base_stream = static_cast<Ref<StreamPeerTLS>>(p_stream)->get_stream();
-		ERR_FAIL_COND_V(base_stream.is_null() || !base_stream->is_class_ptr(StreamPeerTCP::get_class_ptr_static()), ERR_INVALID_PARAMETER);
+		ERR_FAIL_COND_V(base_stream.is_null() || !base_stream->is_class<StreamPeerTCP>(), ERR_INVALID_PARAMETER);
 		tcp = static_cast<Ref<StreamPeerTCP>>(base_stream);
 		connection = p_stream;
 		use_tls = true;

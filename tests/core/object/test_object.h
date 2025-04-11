@@ -129,7 +129,7 @@ TEST_CASE("[Object] Core getters") {
 	Object object;
 
 	CHECK_MESSAGE(
-			object.is_class("Object"),
+			object.is_class<Object>(),
 			"is_class() should return the expected value.");
 	CHECK_MESSAGE(
 			object.get_class() == "Object",
