@@ -910,6 +910,14 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		global_pipeline_data_required.use_lightmaps = true;
 	}
 
+	if (global_surface_data.screen_texture_used || global_surface_data.depth_texture_used) {
+		if (rb_data.is_valid()) {
+			// Just called to create the framebuffer since we know we will need it later.
+			rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_RENDER_PASS);
+		}
+		global_pipeline_data_required.use_separate_post_pass = true;
+	}
+
 	_update_dirty_geometry_pipelines();
 
 	p_render_data->scene_data->emissive_exposure_normalization = -1.0;
