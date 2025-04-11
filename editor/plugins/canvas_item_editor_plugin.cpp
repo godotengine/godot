@@ -5787,7 +5787,7 @@ void CanvasItemEditorPlugin::edit(Object *p_object) {
 }
 
 bool CanvasItemEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("CanvasItem");
+	return Object::is_class<CanvasItem>(p_object);
 }
 
 void CanvasItemEditorPlugin::make_visible(bool p_visible) {
