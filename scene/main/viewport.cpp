@@ -1499,7 +1499,7 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 
 		// Otherwise, we check parent controls unless some conditions prevent it.
 
-		if (p_control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+		if (p_control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_STOP) {
 			break;
 		}
 		if (p_control->is_set_as_top_level()) {
@@ -1670,14 +1670,14 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 	while (ci) {
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
-			if (control->data.mouse_filter != Control::MOUSE_FILTER_IGNORE) {
+			if (control->get_mouse_filter_with_recursive() != Control::MOUSE_FILTER_IGNORE) {
 				control->_call_gui_input(ev);
 			}
 
 			if (!control->is_inside_tree() || control->is_set_as_top_level()) {
 				break;
 			}
-			if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP && is_pointer_event && !(is_scroll_event && control->data.force_pass_scroll_events)) {
+			if (control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_STOP && is_pointer_event && !(is_scroll_event && control->data.force_pass_scroll_events)) {
 				// Mouse, ScreenDrag and ScreenTouch events are stopped by default with MOUSE_FILTER_STOP, unless we have a scroll event and force_pass_scroll_events set to true
 				set_input_as_handled();
 				break;
@@ -1703,7 +1703,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 	while (ci) {
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
-			if (control->data.mouse_filter != Control::MOUSE_FILTER_IGNORE) {
+			if (control->get_mouse_filter_with_recursive() != Control::MOUSE_FILTER_IGNORE) {
 				control->notification(p_what);
 			}
 
@@ -1714,7 +1714,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 			if (!control->is_inside_tree() || control->is_set_as_top_level()) {
 				break;
 			}
-			if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+			if (control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_STOP) {
 				break;
 			}
 		}
@@ -1784,7 +1784,7 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 		}
 	}
 
-	if (!c || c->data.mouse_filter == Control::MOUSE_FILTER_IGNORE) {
+	if (!c || c->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_IGNORE) {
 		return nullptr;
 	}
 
@@ -1816,7 +1816,7 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 				return true;
 			}
 
-			if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+			if (control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_STOP) {
 				break;
 			}
 		}
@@ -1891,7 +1891,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							break;
 						}
 
-						if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+						if (control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_STOP) {
 							break;
 						}
 					}
@@ -1977,7 +1977,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 								section_root->gui.global_dragging = false;
 							}
 
-							if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+							if (control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_STOP) {
 								break;
 							}
 						}
@@ -2069,7 +2069,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					if (cursor_shape != Control::CURSOR_ARROW) {
 						break;
 					}
-					if (c->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+					if (c->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_STOP) {
 						break;
 					}
 					if (c->is_set_as_top_level()) {

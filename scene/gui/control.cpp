@@ -243,7 +243,7 @@ PackedStringArray Control::get_configuration_warnings() const {
 	ERR_READ_THREAD_GUARD_V(PackedStringArray());
 	PackedStringArray warnings = CanvasItem::get_configuration_warnings();
 
-	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
+	if (get_mouse_filter_with_recursive() == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
 		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
 	}
 
@@ -488,7 +488,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 
 	if (p_property.name == "mouse_force_pass_scroll_events") {
 		// Disable force pass if the control is not stopping the event.
-		if (data.mouse_filter != MOUSE_FILTER_STOP) {
+		if (get_mouse_filter_with_recursive() != MOUSE_FILTER_STOP) {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 	}
@@ -2100,7 +2100,7 @@ void Control::set_focus_mode(FocusMode p_focus_mode) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX((int)p_focus_mode, 4);
 
-	if (is_inside_tree() && p_focus_mode == FOCUS_NONE && data.focus_mode != FOCUS_NONE && has_focus()) {
+	if (is_inside_tree() && p_focus_mode == FOCUS_NONE && get_focus_mode_with_recursive() != FOCUS_NONE && has_focus()) {
 		release_focus();
 	}
 
@@ -2157,8 +2157,8 @@ void Control::grab_focus() {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
 
-	if (data.focus_mode == FOCUS_NONE) {
-		WARN_PRINT("This control can't grab focus. Use set_focus_mode() to allow a control to get focus.");
+	if (get_focus_mode_with_recursive() == FOCUS_NONE) {
+		WARN_PRINT("This control can't grab focus. Use set_focus_mode() and/or set_focus_recursive_behavior() to allow a control to get focus.");
 		return;
 	}
 
@@ -3595,7 +3595,7 @@ void Control::_notification(int p_notification) {
 			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Vector2(), data.size_cache));
 			DisplayServer::get_singleton()->accessibility_update_set_tooltip(ae, data.tooltip);
 			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_CLIPS_CHILDREN, data.clip_contents);
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_TOUCH_PASSTHROUGH, data.mouse_filter == MOUSE_FILTER_PASS);
+			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_TOUCH_PASSTHROUGH, get_mouse_filter_with_recursive() == MOUSE_FILTER_PASS);
 
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Control::_accessibility_action_foucs));
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &Control::_accessibility_action_blur));
