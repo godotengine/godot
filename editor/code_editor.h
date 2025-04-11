@@ -272,6 +272,7 @@ public:
 
 	void set_error_count(int p_error_count);
 	void set_warning_count(int p_warning_count);
+	bool check_for_errors();
 
 	void update_editor_settings();
 	void set_error(const String &p_error);
