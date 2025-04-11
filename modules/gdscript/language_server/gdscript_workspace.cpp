@@ -44,14 +44,17 @@
 #include "scene/resources/packed_scene.h"
 
 void GDScriptWorkspace::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("apply_new_signal"), &GDScriptWorkspace::apply_new_signal);
-	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::didDeleteFiles);
+	ClassDB::bind_method(D_METHOD("apply_new_signal", "obj", "function", "args"), &GDScriptWorkspace::apply_new_signal);
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
 	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
 	ClassDB::bind_method(D_METHOD("get_file_path", "uri"), &GDScriptWorkspace::get_file_path);
 	ClassDB::bind_method(D_METHOD("get_file_uri", "path"), &GDScriptWorkspace::get_file_uri);
-	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
 	ClassDB::bind_method(D_METHOD("generate_script_api", "path"), &GDScriptWorkspace::generate_script_api);
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
+	ClassDB::bind_method(D_METHOD("didDeleteFiles", "params"), &GDScriptWorkspace::didDeleteFiles);
+#endif
 }
 
 void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {
