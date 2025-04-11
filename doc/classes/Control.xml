@@ -415,10 +415,10 @@
 				Returns [member offset_right] and [member offset_bottom].
 			</description>
 		</method>
-		<method name="get_focus_mode_with_recursive" qualifiers="const">
+		<method name="get_focus_mode_with_override" qualifiers="const">
 			<return type="int" enum="Control.FocusMode" />
 			<description>
-				Similar to the getter of [member focus_mode], but takes parent's [member focus_recursive_behavior] into account.
+				Returns the [member focus_mode], but takes the [member focus_behavior_recursive] into account. If [member focus_behavior_recursive] is set to [constant FOCUS_BEHAVIOR_DISABLED], or it is set to [constant FOCUS_BEHAVIOR_INHERITED] and its ancestor is set to [constant FOCUS_BEHAVIOR_DISABLED], then this returns [constant FOCUS_NONE].
 			</description>
 		</method>
 		<method name="get_focus_neighbor" qualifiers="const">
@@ -443,10 +443,10 @@
 				Returns the minimum size for this control. See [member custom_minimum_size].
 			</description>
 		</method>
-		<method name="get_mouse_filter_with_recursive" qualifiers="const">
+		<method name="get_mouse_filter_with_override" qualifiers="const">
 			<return type="int" enum="Control.MouseFilter" />
 			<description>
-				Similar to the getter of [member mouse_filter], but takes parent's [member mouse_recursive_behavior] into account.
+				Returns the [member mouse_filter], but takes the [member mouse_behavior_recursive] into account. If [member mouse_behavior_recursive] is set to [constant MOUSE_BEHAVIOR_DISABLED], or it is set to [constant MOUSE_BEHAVIOR_INHERITED] and its ancestor is set to [constant MOUSE_BEHAVIOR_DISABLED], then this returns [constant MOUSE_FILTER_IGNORE].
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
@@ -983,8 +983,11 @@
 		<member name="custom_minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
 			The minimum size of the node's bounding rectangle. If you set it to a value greater than [code](0, 0)[/code], the node's bounding rectangle will always have at least this size. Note that [Control] nodes have their internal minimum size returned by [method get_minimum_size]. It depends on the control's contents, like text, textures, or style boxes. The actual minimum size is the maximum value of this property and the internal minimum size (see [method get_combined_minimum_size]).
 		</member>
+		<member name="focus_behavior_recursive" type="int" setter="set_focus_behavior_recursive" getter="get_focus_behavior_recursive" enum="Control.FocusBehaviorRecursive" default="0">
+			Determines which controls can be focused together with [member focus_mode]. See [method get_focus_mode_with_override]. Since the default behavior is [constant FOCUS_BEHAVIOR_INHERITED], this can be used to prevent all children controls from getting focused.
+		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode" default="0">
-			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard, gamepad, and mouse signals.
+			Determines which controls can be focused. Only one control can be focused at a time, and the focused control will receive keyboard, gamepad, and mouse events in [method _gui_input]. Use [method get_focus_mode_with_override] to determine if a control can grab focus, since [member focus_behavior_recursive] also affects it. See also [method grab_focus].
 		</member>
 		<member name="focus_neighbor_bottom" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)" keywords="focus_neighbour_bottom">
 			Tells Godot which node it should give focus to if the user presses the down arrow on the keyboard or down on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_down] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
@@ -1006,9 +1009,6 @@
 			Tells Godot which node it should give focus to if the user presses [kbd]Shift + Tab[/kbd] on a keyboard by default. You can change the key by editing the [member ProjectSettings.input/ui_focus_prev] input action.
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
-		<member name="focus_recursive_behavior" type="int" setter="set_focus_recursive_behavior" getter="get_focus_recursive_behavior" enum="Control.RecursiveBehavior" default="0">
-			Controls whether the recursive child nodes should have their [member focus_mode] overridden to [constant FOCUS_NONE] when evaluating input.
-		</member>
 		<member name="global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
 			The node's global position, relative to the world (usually to the [CanvasLayer]).
 		</member>
@@ -1025,20 +1025,20 @@
 			If [code]true[/code], automatically converts code line numbers, list indices, [SpinBox] and [ProgressBar] values from the Western Arabic (0..9) to the numeral systems used in current locale.
 			[b]Note:[/b] Numbers within the text are not automatically converted, it can be done manually, using [method TextServer.format_number].
 		</member>
+		<member name="mouse_behavior_recursive" type="int" setter="set_mouse_behavior_recursive" getter="get_mouse_behavior_recursive" enum="Control.MouseBehaviorRecursive" default="0">
+			Determines which controls can receive mouse input together with [member mouse_filter]. See [method get_mouse_filter_with_override]. Since the default behavior is [constant MOUSE_BEHAVIOR_INHERITED], this can be used to prevent all children controls from receiving mouse input.
+		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape" default="0">
 			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
 			[b]Note:[/b] On Linux, shapes may vary depending on the cursor theme of the system.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
-			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
+			Determines which controls will be able to receive mouse button input events through [method _gui_input] and the [signal mouse_entered], and [signal mouse_exited] signals. Also determines how these events should be propagated. See the constants to learn what each does. Use [method get_mouse_filter_with_override] to determine if a control can receive mouse input, since [member mouse_behavior_recursive] also affects it.
 		</member>
 		<member name="mouse_force_pass_scroll_events" type="bool" setter="set_force_pass_scroll_events" getter="is_force_pass_scroll_events" default="true">
 			When enabled, scroll wheel events processed by [method _gui_input] will be passed to the parent control even if [member mouse_filter] is set to [constant MOUSE_FILTER_STOP].
 			You should disable it on the root of your UI if you do not want scroll events to go to the [method Node._unhandled_input] processing.
 			[b]Note:[/b] Because this property defaults to [code]true[/code], this allows nested scrollable containers to work out of the box.
-		</member>
-		<member name="mouse_recursive_behavior" type="int" setter="set_mouse_recursive_behavior" getter="get_mouse_recursive_behavior" enum="Control.RecursiveBehavior" default="0">
-			Controls whether the recursive child nodes should have their [member mouse_filter] overridden to [constant MOUSE_FILTER_IGNORE] when evaluating input.
 		</member>
 		<member name="offset_bottom" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
@@ -1198,14 +1198,23 @@
 		<constant name="FOCUS_ACCESSIBILITY" value="3" enum="FocusMode">
 			The node can grab focus only when screen reader is active. Use with [member focus_mode].
 		</constant>
-		<constant name="RECURSIVE_BEHAVIOR_INHERITED" value="0" enum="RecursiveBehavior">
-			Inherits the associated behavior from the control's parent. This is the default for any newly created control.
+		<constant name="FOCUS_BEHAVIOR_INHERITED" value="0" enum="FocusBehaviorRecursive">
+			Inherits the [member focus_behavior_recursive] from the parent control. If there is no parent control, this is the same as [constant FOCUS_BEHAVIOR_ENABLED].
 		</constant>
-		<constant name="RECURSIVE_BEHAVIOR_DISABLED" value="1" enum="RecursiveBehavior">
-			The current control and all its recursive child controls have their associated behavior disabled, regardless of the parent control's configuration.
+		<constant name="FOCUS_BEHAVIOR_DISABLED" value="1" enum="FocusBehaviorRecursive">
+			Prevents the control from getting focused. [method get_focus_mode_with_override] will return [constant FOCUS_NONE].
 		</constant>
-		<constant name="RECURSIVE_BEHAVIOR_ENABLED" value="2" enum="RecursiveBehavior">
-			The current control and all its recursive child controls have their associated behavior enabled, regardless of the parent control's configuration.
+		<constant name="FOCUS_BEHAVIOR_ENABLED" value="2" enum="FocusBehaviorRecursive">
+			Allows the control to be focused, depending on the [member focus_mode]. This can be used to ignore the parent's [member focus_behavior_recursive]. [method get_focus_mode_with_override] will return the [member focus_mode].
+		</constant>
+		<constant name="MOUSE_BEHAVIOR_INHERITED" value="0" enum="MouseBehaviorRecursive">
+			Inherits the [member mouse_behavior_recursive] from the parent control. If there is no parent control, this is the same as [constant MOUSE_BEHAVIOR_ENABLED].
+		</constant>
+		<constant name="MOUSE_BEHAVIOR_DISABLED" value="1" enum="MouseBehaviorRecursive">
+			Prevents the control from receiving mouse input. [method get_mouse_filter_with_override] will return [constant MOUSE_FILTER_IGNORE].
+		</constant>
+		<constant name="MOUSE_BEHAVIOR_ENABLED" value="2" enum="MouseBehaviorRecursive">
+			Allows the control to be receive mouse input, depending on the [member mouse_filter]. This can be used to ignore the parent's [member mouse_behavior_recursive]. [method get_mouse_filter_with_override] will return the [member mouse_filter].
 		</constant>
 		<constant name="NOTIFICATION_RESIZED" value="40">
 			Sent when the node changes size. Use [member size] to get the new size.
