@@ -46,6 +46,7 @@ struct NamedColor {
 // NOTE: This data is duplicated in the file:
 // modules/mono/glue/GodotSharp/GodotSharp/Core/Colors.cs
 
+/* clang-format off */
 static NamedColor named_colors[] = {
 	{ "ALICE_BLUE", Color::hex(0xF0F8FFFF) },
 	{ "ANTIQUE_WHITE", Color::hex(0xFAEBD7FF) },
@@ -202,3 +203,4 @@ static NamedColor named_colors[] = {
 	{ "YELLOW", Color::hex(0xFFFF00FF) },
 	{ "YELLOW_GREEN", Color::hex(0x9ACD32FF) },
 };
+/* clang-format on */
