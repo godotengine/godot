@@ -73,6 +73,8 @@ private:
 
 	Ref<Image> _modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient);
 
+	void _generate_image_now();
+
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
@@ -117,7 +119,7 @@ public:
 	virtual RID get_rid() const override;
 	virtual bool has_alpha() const override { return false; }
 
-	virtual Ref<Image> get_image() const override;
+	Ref<Image> get_image() const override;
 
 	NoiseTexture2D();
 	virtual ~NoiseTexture2D();
