@@ -34,13 +34,13 @@
 
 #include "core/os/mutex.h"
 
-#include "editor/editor_command_palette.h"
+#include "editor/dialogs/editor_command_palette.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
-#include "editor/multi_node_edit.h"
+#include "editor/inspector/multi_node_edit.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"

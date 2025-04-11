@@ -31,7 +31,7 @@
 #include "grid_map_editor_plugin.h"
 
 #include "core/os/keyboard.h"
-#include "editor/editor_command_palette.h"
+#include "editor/dialogs/editor_command_palette.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -39,7 +39,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_zoom_widget.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/dialogs.h"

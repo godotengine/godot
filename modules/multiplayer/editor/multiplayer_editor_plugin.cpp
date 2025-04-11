@@ -34,7 +34,7 @@
 #include "editor_network_profiler.h"
 #include "replication_editor.h"
 
-#include "editor/editor_command_palette.h"
+#include "editor/dialogs/editor_command_palette.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"

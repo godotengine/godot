@@ -31,7 +31,7 @@
 #include "gizmo_3d_helper.h"
 
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 
 void Gizmo3DHelper::initialize_handle_action(const Variant &p_initial_value, const Transform3D &p_initial_transform) {

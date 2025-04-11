@@ -32,9 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/dialogs/run_instances_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "editor/run_instances_dialog.h"
 #include "main/main.h"
 #include "servers/display_server.h"
 
