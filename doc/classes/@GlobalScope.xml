@@ -551,14 +551,14 @@
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns whether [param x] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity.
+				Returns whether [param x] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity. See also [method is_inf] and [method is_nan].
 			</description>
 		</method>
 		<method name="is_inf">
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]true[/code] if [param x] is either positive infinity or negative infinity.
+				Returns [code]true[/code] if [param x] is either positive infinity or negative infinity. See also [method is_finite] and [method is_nan].
 			</description>
 		</method>
 		<method name="is_instance_id_valid">
@@ -579,7 +579,7 @@
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]true[/code] if [param x] is a NaN ("Not a Number" or invalid) value.
+				Returns [code]true[/code] if [param x] is a NaN ("Not a Number" or invalid) value. This method is needed as [constant @GDScript.NAN] is not equal to itself, which means [code]x == NAN[/code] can't be used to check whether a value is a NaN.
 			</description>
 		</method>
 		<method name="is_same">
