@@ -267,6 +267,16 @@ RID OpenXRAPI::OpenXRSwapChainInfo::get_image() {
 	}
 }
 
+RID OpenXRAPI::OpenXRSwapChainInfo::get_density_map() {
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+
+	if (image_acquired && openxr_api && openxr_api->get_graphics_extension()) {
+		return openxr_api->get_graphics_extension()->get_density_map(swapchain_graphics_data, image_index);
+	} else {
+		return RID();
+	}
+}
+
 ////////////////////////////////////
 // OpenXRAPI
 
@@ -2367,6 +2377,17 @@ RID OpenXRAPI::get_depth_texture() {
 	} else {
 		return RID();
 	}
+}
+
+RID OpenXRAPI::get_density_map_texture() {
+	ERR_NOT_ON_RENDER_THREAD_V(RID());
+
+	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
+	if (fov_ext && fov_ext->is_enabled()) {
+		return render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_density_map();
+	}
+
+	return RID();
 }
 
 void OpenXRAPI::set_velocity_texture(RID p_render_target) {

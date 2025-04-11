@@ -85,6 +85,12 @@ public:
 		XR_ENV_BLEND_MODE_ALPHA_BLEND, /* Real world is passed through where alpha channel is 0.0 and gradually blends to opaque for value 1.0. */
 	};
 
+	enum VRSTextureFormat {
+		XR_VRS_TEXTURE_FORMAT_UNIFIED,
+		XR_VRS_TEXTURE_FORMAT_FRAGMENT_SHADING_RATE,
+		XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP,
+	};
+
 protected:
 	_THREAD_SAFE_CLASS_
 
@@ -159,6 +165,7 @@ public:
 
 	/** VRS **/
 	virtual RID get_vrs_texture(); /* obtain VRS texture */
+	virtual VRSTextureFormat get_vrs_texture_format() { return XR_VRS_TEXTURE_FORMAT_UNIFIED; }
 
 	XRInterface();
 	~XRInterface();
@@ -168,3 +175,4 @@ VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
 VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
 VARIANT_ENUM_CAST(XRInterface::EnvironmentBlendMode);
+VARIANT_ENUM_CAST(XRInterface::VRSTextureFormat);

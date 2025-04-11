@@ -3379,11 +3379,10 @@
 		</member>
 		<member name="xr/openxr/foveation_dynamic" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
-			[b]Note:[/b] Only works on the Compatibility rendering method.
 		</member>
 		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
 			Applied foveation level if supported: 0 = off, 1 = low, 2 = medium, 3 = high.
-			[b]Note:[/b] Only works on the Compatibility rendering method. On platforms other than Android, if [member rendering/anti_aliasing/quality/msaa_3d] is enabled, this feature will be disabled.
+			[b]Note:[/b] On platforms other than Android, if [member rendering/anti_aliasing/quality/msaa_3d] is enabled, this feature will be disabled.
 		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
 			Specify the default reference space.

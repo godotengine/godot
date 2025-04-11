@@ -2761,6 +2761,10 @@ void RenderingDevice::_vrs_detect_method() {
 	}
 }
 
+RD::VRSMethod RenderingDevice::vrs_get_method() const {
+	return vrs_method;
+}
+
 RD::DataFormat RenderingDevice::vrs_get_format() const {
 	return vrs_format;
 }
