@@ -393,6 +393,7 @@ private:
 	TextOperation current_op;
 	List<TextOperation> undo_stack;
 	List<TextOperation>::Element *undo_stack_pos = nullptr;
+	size_t undo_stack_idx = 0; // number of elements away from top undo_stack_pos is
 
 	Timer *idle_detect = nullptr;
 
@@ -883,6 +884,9 @@ public:
 
 	bool has_undo() const;
 	bool has_redo() const;
+	int get_undo_count() const;
+	int get_redo_count() const;
+	int get_prev_version() const;
 	void undo();
 	void redo();
 	void clear_undo_history();
