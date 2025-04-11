@@ -342,7 +342,9 @@ public:
 		int leftmost_column = 0, rightmost_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
-
+#ifdef TOOLS_ENABLED
+		Vector<Node *> incomplete_fragments;
+#endif
 		DataType datatype;
 
 		virtual DataType get_datatype() const { return datatype; }
@@ -1362,6 +1364,9 @@ private:
 	int warning_ignore_start_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
 #endif
+#ifdef TOOLS_ENABLED
+	Vector<GDScriptParser::Node *> incomplete_fragments;
+#endif
 
 	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
@@ -1461,6 +1466,8 @@ private:
 	}
 	void apply_pending_warnings();
 #endif
+	inline void push_incomplete(GDScriptParser::Node *p_incomplete);
+	inline void apply_incomplete(GDScriptParser::Node *p_apply_to);
 	// Setting p_force to false will prevent the completion context from being update if a context was already set before.
 	// This should only be done when we push context before we consumed any tokens for the corresponding structure.
 	// See parse_precedence for an example.
