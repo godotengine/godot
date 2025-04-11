@@ -6,7 +6,7 @@ dilate = "#define MODE_DILATE";
 unocclude = "#define MODE_UNOCCLUDE";
 light_probes = "#define MODE_LIGHT_PROBES";
 denoise = "#define MODE_DENOISE";
-pack_coeffs = "#define MODE_PACK_L1_COEFFS";
+//pack_coeffs = "#define MODE_PACK_L1_COEFFS";
 
 #[compute]
 
@@ -66,7 +66,7 @@ layout(rgba8, set = 1, binding = 5) uniform restrict writeonly image2DArray shad
 layout(set = 1, binding = 5) uniform texture2D environment;
 #endif
 
-#if defined(MODE_DILATE) || defined(MODE_DENOISE) || defined(MODE_PACK_L1_COEFFS)
+#if defined(MODE_DILATE) || defined(MODE_DENOISE) // || defined(MODE_PACK_L1_COEFFS)
 layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2DArray dest_light;
 layout(set = 1, binding = 1) uniform texture2DArray source_light;
 #endif
@@ -861,15 +861,19 @@ void main() {
 			light_for_texture += light;
 
 #ifdef USE_SH_LIGHTMAPS
-			// These coefficients include the factored out SH evaluation, diffuse convolution, and final application, as well as the BRDF 1/PI and the spherical monte carlo factor.
-			// LO: 1/(2*sqrtPI) * 1/(2*sqrtPI) * PI * PI * 1/PI = 0.25
-			// L1: sqrt(3/(4*pi)) * sqrt(3/(4*pi)) * (PI*2/3) * (2 * PI) * 1/PI = 1.0
-			// Note: This only works because we aren't scaling, rotating, or combing harmonics, we are just directing applying them in the shader.
+			// Since we don't want to double attenuate the light we need to undo attenuation based on the surface
+			// normal before encoding it into SH coefficients
+			if (dot(normal, light_dir) > 0.0) {
+				light /= dot(normal, light_dir);
+			}
 
+			// Different coefficients are used because we are directly encoding point lights.
+			// L0: Zero is used since the lighting should be able to attenuate to zero (at 90 degrees)
+			// L1: 1 is to no increase or decrease the lights intensity. This should match dynamic lighting.
 			float c[4] = float[](
-					0.25, //l0
+					0, //l0
 					light_dir.y, //l1n1
-					light_dir.z, //l1n0
+					light_dir.z, //l1n0 (Should always be positive)
 					light_dir.x //l1p1
 			);
 
