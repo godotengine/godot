@@ -1243,7 +1243,7 @@ void CanvasItem::force_update_transform() {
 
 	get_tree()->xform_change_list.remove(&xform_change);
 
-	notification(NOTIFICATION_TRANSFORM_CHANGED);
+	notification(NOTIFICATION_GLOBAL_TRANSFORM_CHANGED);
 }
 
 void CanvasItem::_validate_property(PropertyInfo &p_property) const {
@@ -1397,8 +1397,12 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_notify_local_transform", "enable"), &CanvasItem::set_notify_local_transform);
 	ClassDB::bind_method(D_METHOD("is_local_transform_notification_enabled"), &CanvasItem::is_local_transform_notification_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_notify_transform", "enable"), &CanvasItem::set_notify_transform);
-	ClassDB::bind_method(D_METHOD("is_transform_notification_enabled"), &CanvasItem::is_transform_notification_enabled);
+	ClassDB::bind_method(D_METHOD("set_notify_global_transform", "enable"), &CanvasItem::set_notify_global_transform);
+	ClassDB::bind_method(D_METHOD("is_global_transform_notification_enabled"), &CanvasItem::is_global_transform_notification_enabled);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_notify_transform", "enable"), &CanvasItem::set_notify_global_transform);
+	ClassDB::bind_method(D_METHOD("is_transform_notification_enabled"), &CanvasItem::is_global_transform_notification_enabled);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("force_update_transform"), &CanvasItem::force_update_transform);
 
@@ -1450,7 +1454,10 @@ void CanvasItem::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("hidden"));
 	ADD_SIGNAL(MethodInfo("item_rect_changed"));
 
+	BIND_CONSTANT(NOTIFICATION_GLOBAL_TRANSFORM_CHANGED);
+#ifndef DISABLE_DEPRECATED
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
+#endif // DISABLE_DEPRECATED
 	BIND_CONSTANT(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_DRAW);
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
@@ -1513,7 +1520,7 @@ bool CanvasItem::is_local_transform_notification_enabled() const {
 	return notify_local_transform;
 }
 
-void CanvasItem::set_notify_transform(bool p_enable) {
+void CanvasItem::set_notify_global_transform(bool p_enable) {
 	ERR_THREAD_GUARD;
 	if (notify_transform == p_enable) {
 		return;
@@ -1527,7 +1534,7 @@ void CanvasItem::set_notify_transform(bool p_enable) {
 	}
 }
 
-bool CanvasItem::is_transform_notification_enabled() const {
+bool CanvasItem::is_global_transform_notification_enabled() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return notify_transform;
 }
