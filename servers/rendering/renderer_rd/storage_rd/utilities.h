@@ -99,6 +99,11 @@ public:
 	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const override;
 	virtual String get_captured_timestamp_name(uint32_t p_index) const override;
 
+	/* SYNCHRONIZATION */
+
+	virtual void set_cpu_gpu_sync_mode(RS::CpuGpuSyncMode p_sync_mode) override;
+	virtual RS::CpuGpuSyncMode get_cpu_gpu_sync_mode() const override;
+
 	/* MISC */
 
 	virtual void update_dirty_resources() override;
