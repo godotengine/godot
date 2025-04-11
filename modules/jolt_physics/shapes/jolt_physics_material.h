@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  jolt_sphere_shape_3d.cpp                                              */
+/*  jolt_physics_material.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,44 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "jolt_sphere_shape_3d.h"
+#pragma once
 
-#include "../misc/jolt_type_conversions.h"
+#include "Jolt/Jolt.h"
 
-#include "Jolt/Physics/Collision/Shape/SphereShape.h"
+#include "Jolt/Physics/Collision/PhysicsMaterialSimple.h"
+#include "core/math/math_defs.h"
 
-JPH::ShapeRefC JoltSphereShape3D::_build() const {
-	ERR_FAIL_COND_V_MSG(radius <= 0.0f, nullptr, vformat("Failed to build Jolt Physics sphere shape with %s. Its radius must be greater than 0. This shape belongs to %s.", to_string(), _owners_to_string()));
+class JoltPhysicsMaterial : public JPH::PhysicsMaterialSimple {
+public:
+	real_t friction;
+	real_t bounce;
 
-	const JPH::SphereShapeSettings shape_settings(radius, material);
-	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
-	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics sphere shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
-
-	return shape_result.Get();
-}
-
-Variant JoltSphereShape3D::get_data() const {
-	return radius;
-}
-
-void JoltSphereShape3D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::FLOAT);
-
-	const float new_radius = p_data;
-	if (unlikely(new_radius == radius)) {
-		return;
-	}
-
-	radius = new_radius;
-
-	destroy();
-}
-
-AABB JoltSphereShape3D::get_aabb() const {
-	const Vector3 half_extents(radius, radius, radius);
-	return AABB(-half_extents, half_extents * 2.0f);
-}
-
-String JoltSphereShape3D::to_string() const {
-	return vformat("{radius=%f}", radius);
-}
+	JoltPhysicsMaterial(real_t p_friction, real_t p_bounce) :
+			friction(p_friction), bounce(p_bounce) {}
+};

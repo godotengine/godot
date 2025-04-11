@@ -57,7 +57,7 @@ JPH::ShapeRefC JoltConvexPolygonShape3D::_build() const {
 	const float min_half_extent = _calculate_aabb().get_shortest_axis_size() * 0.5f;
 	const float actual_margin = MIN(margin, min_half_extent * JoltProjectSettings::collision_margin_fraction);
 
-	const JPH::ConvexHullShapeSettings shape_settings(jolt_vertices, actual_margin);
+	const JPH::ConvexHullShapeSettings shape_settings(jolt_vertices, actual_margin, material);
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
 	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics convex polygon shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
 
