@@ -1619,7 +1619,7 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 		frames->get_animation_list(&anim_names);
 		anim_names.sort_custom<StringName::AlphCompare>();
 		if (anim_names.size()) {
-			edited_anim = anim_names.front()->get();
+			edited_anim = anim_names.get_front();
 		} else {
 			edited_anim = StringName();
 		}
@@ -1835,7 +1835,7 @@ void SpriteFramesEditor::_fetch_sprite_node() {
 	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	const List<Node *> &top_node_list = editor_selection->get_top_selected_node_list();
 	if (top_node_list.size() == 1) {
-		selected = top_node_list.front()->get();
+		selected = top_node_list.get_front();
 	}
 
 	bool show_node_edit = false;

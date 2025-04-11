@@ -270,7 +270,7 @@ void GDScriptParser::override_completion_context(const Node *p_for_node, Complet
 	context.node = p_node;
 	context.parser = this;
 	if (!completion_call_stack.is_empty()) {
-		context.call = completion_call_stack.back()->get();
+		context.call = completion_call_stack.get_back();
 	}
 	completion_context = context;
 }
@@ -292,7 +292,7 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node
 	context.node = p_node;
 	context.parser = this;
 	if (!completion_call_stack.is_empty()) {
-		context.call = completion_call_stack.back()->get();
+		context.call = completion_call_stack.get_back();
 	}
 	completion_context = context;
 }
@@ -313,7 +313,7 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Variant::Typ
 	context.builtin_type = p_builtin_type;
 	context.parser = this;
 	if (!completion_call_stack.is_empty()) {
-		context.call = completion_call_stack.back()->get();
+		context.call = completion_call_stack.get_back();
 	}
 	completion_context = context;
 }
@@ -341,7 +341,7 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 		return;
 	}
 	ERR_FAIL_COND_MSG(completion_call_stack.is_empty(), "Trying to set argument on empty completion call stack");
-	completion_call_stack.back()->get().argument = p_argument;
+	completion_call_stack.get_back().argument = p_argument;
 }
 
 Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion, bool p_parse_body) {
@@ -568,7 +568,7 @@ void GDScriptParser::push_multiline(bool p_state) {
 void GDScriptParser::pop_multiline() {
 	ERR_FAIL_COND_MSG(multiline_stack.is_empty(), "Parser bug: trying to pop from multiline stack without available value.");
 	multiline_stack.pop_back();
-	tokenizer->set_multiline_mode(multiline_stack.size() > 0 ? multiline_stack.back()->get() : false);
+	tokenizer->set_multiline_mode(multiline_stack.size() > 0 ? multiline_stack.get_back() : false);
 }
 
 bool GDScriptParser::is_statement_end_token() const {
@@ -944,7 +944,7 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)(b
 	// Consume annotations.
 	List<AnnotationNode *> annotations;
 	while (!annotation_stack.is_empty()) {
-		AnnotationNode *last_annotation = annotation_stack.back()->get();
+		AnnotationNode *last_annotation = annotation_stack.get_back();
 		if (last_annotation->applies_to(p_target)) {
 			annotations.push_front(last_annotation);
 			annotation_stack.pop_back();
@@ -1853,7 +1853,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 	List<AnnotationNode *> annotations;
 	if (current.type != GDScriptTokenizer::Token::ANNOTATION) {
 		while (!annotation_stack.is_empty()) {
-			AnnotationNode *last_annotation = annotation_stack.back()->get();
+			AnnotationNode *last_annotation = annotation_stack.get_back();
 			if (last_annotation->applies_to(AnnotationInfo::STATEMENT)) {
 				annotations.push_front(last_annotation);
 				annotation_stack.pop_back();
@@ -3518,7 +3518,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 		function->identifier = parse_identifier();
 	}
 
-	bool multiline_context = multiline_stack.back()->get();
+	bool multiline_context = multiline_stack.get_back();
 
 	// Reset the multiline stack since we don't want the multiline mode one in the lambda body.
 	push_multiline(false);
@@ -5374,7 +5374,7 @@ bool GDScriptParser::DataType::can_reference(const GDScriptParser::DataType &p_o
 }
 
 void GDScriptParser::complete_extents(Node *p_node) {
-	while (!nodes_in_progress.is_empty() && nodes_in_progress.back()->get() != p_node) {
+	while (!nodes_in_progress.is_empty() && nodes_in_progress.get_back() != p_node) {
 		ERR_PRINT("Parser bug: Mismatch in extents tracking stack.");
 		nodes_in_progress.pop_back();
 	}
