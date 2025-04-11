@@ -1429,11 +1429,9 @@ Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_poin
 
 bool TabBar::_handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const {
 	Dictionary d = p_data;
-	if (!d.has("type")) {
-		return false;
-	}
 
-	if (String(d["type"]) == p_type) {
+	const String type = d.get("type", "");
+	if (type == p_type) {
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
 		if (from_path == to_path) {
@@ -1446,6 +1444,8 @@ bool TabBar::_handle_can_drop_data(const String &p_type, const Point2 &p_point, 
 				return true;
 			}
 		}
+	} else if (switch_on_hover && hover > -1 && hover != current) {
+		const_cast<TabBar *>(this)->set_current_tab(hover);
 	}
 
 	return false;
@@ -1925,6 +1925,14 @@ bool TabBar::get_scroll_to_selected() const {
 	return scroll_to_selected;
 }
 
+void TabBar::set_switch_on_hover(bool p_enabled) {
+	switch_on_hover = p_enabled;
+}
+
+bool TabBar::get_switch_on_hover() const {
+	return switch_on_hover;
+}
+
 void TabBar::set_select_with_rmb(bool p_enabled) {
 	select_with_rmb = p_enabled;
 }
@@ -1997,6 +2005,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scrolling_enabled"), &TabBar::get_scrolling_enabled);
 	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &TabBar::set_drag_to_rearrange_enabled);
 	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &TabBar::get_drag_to_rearrange_enabled);
+	ClassDB::bind_method(D_METHOD("set_switch_on_hover", "enabled"), &TabBar::set_switch_on_hover);
+	ClassDB::bind_method(D_METHOD("get_switch_on_hover"), &TabBar::get_switch_on_hover);
 	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &TabBar::set_tabs_rearrange_group);
 	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &TabBar::get_tabs_rearrange_group);
 	ClassDB::bind_method(D_METHOD("set_scroll_to_selected", "enabled"), &TabBar::set_scroll_to_selected);
@@ -2024,6 +2034,7 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_tab_width", PROPERTY_HINT_RANGE, "0,99999,1,suffix:px"), "set_max_tab_width", "get_max_tab_width");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "get_switch_on_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_to_selected"), "set_scroll_to_selected", "get_scroll_to_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_with_rmb"), "set_select_with_rmb", "get_select_with_rmb");
