@@ -2246,34 +2246,70 @@ void AnimationTrackEdit::_notification(int p_what) {
 				float scale = timeline->get_zoom_scale();
 				int limit_end = get_size().width - timeline->get_buttons_width() - outer_margin;
 
+				// Realtime key scaling.
+				AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+				float from_t = 1e20;
+				float to_t = -1e20;
+				float pivot = player->is_playing() ? 0.0f : timeline->get_play_position();
+				float s = editor->get_scaling_selection_factor();
+				if (editor->is_scaling_selection()) {
+					for (int i = 0; i < animation->track_get_key_count(track); i++) {
+						if (editor->is_key_selected(track, i)) {
+							float t = animation->track_get_key_time(track, i);
+							if (t < from_t) {
+								from_t = t;
+							}
+							if (t > to_t) {
+								to_t = t;
+							}
+						}
+					}
+				}
+				float len = to_t - from_t;
+
 				for (int i = 0; i < animation->track_get_key_count(track); i++) {
 					float offset = animation->track_get_key_time(track, i) - timeline->get_value();
-					if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-						offset = offset + editor->get_moving_selection_offset();
+
+#define NEW_POS(m_ofs) ((s > 0 ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * s + pivot
+					if (editor->is_key_selected(track, i)) {
+						if (editor->is_scaling_selection()) {
+							offset = editor->snap_time(NEW_POS(offset));
+						} else if (editor->is_moving_selection()) {
+							offset = offset + editor->get_moving_selection_offset();
+						}
 					}
 					offset = offset * scale + limit;
 					if (i < animation->track_get_key_count(track) - 1) {
 						float offset_n = animation->track_get_key_time(track, i + 1) - timeline->get_value();
-						if (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) {
-							offset_n = offset_n + editor->get_moving_selection_offset();
+						if (editor->is_key_selected(track, i + 1)) {
+							if (editor->is_scaling_selection()) {
+								offset_n = editor->snap_time(NEW_POS(offset));
+							} else if (editor->is_moving_selection()) {
+								offset_n = offset_n + editor->get_moving_selection_offset();
+							}
 						}
 						offset_n = offset_n * scale + limit;
 						float offset_last = limit_end;
 						if (i < animation->track_get_key_count(track) - 2) {
 							offset_last = animation->track_get_key_time(track, i + 2) - timeline->get_value();
-							if (editor->is_key_selected(track, i + 2) && editor->is_moving_selection()) {
-								offset_last = offset_last + editor->get_moving_selection_offset();
+							if (editor->is_key_selected(track, i + 2)) {
+								if (editor->is_scaling_selection()) {
+									offset_last = editor->snap_time(NEW_POS(offset));
+								} else if (editor->is_moving_selection()) {
+									offset_last = offset_last + editor->get_moving_selection_offset();
+								}
 							}
 							offset_last = offset_last * scale + limit;
 						}
-						int limit_string = (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) ? int(offset_last) : int(offset_n);
-						if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
+						int limit_string = (editor->is_key_selected(track, i + 1) && (editor->is_moving_selection() || editor->is_scaling_selection())) ? int(offset_last) : int(offset_n);
+						if (editor->is_key_selected(track, i) && (editor->is_moving_selection() || editor->is_scaling_selection())) {
 							limit_string = int(MAX(limit_end, offset_last));
 						}
 						draw_key_link(i, scale, int(offset), int(offset_n), limit, limit_end);
 						draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_string);
 						continue;
 					}
+#undef NEW_POS
 
 					draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_end);
 				}
@@ -3020,8 +3056,11 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				menu->reset_size();
 
-				moving_selection_attempt = false;
+				transform_selection_attempt = false;
+				scaling_selection = false;
+				emit_signal(SNAME("scale_selection_cancel"));
 				moving_selection = false;
+				emit_signal(SNAME("move_selection_cancel"));
 
 				Vector2 popup_pos = get_screen_position() + update_mode_rect.position + Vector2(0, update_mode_rect.size.height);
 				menu->set_position(popup_pos);
@@ -3069,8 +3108,11 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				menu->reset_size();
 
-				moving_selection_attempt = false;
+				transform_selection_attempt = false;
+				scaling_selection = false;
+				emit_signal(SNAME("scale_selection_cancel"));
 				moving_selection = false;
+				emit_signal(SNAME("move_selection_cancel"));
 
 				Vector2 popup_pos = get_screen_position() + interp_mode_rect.position + Vector2(0, interp_mode_rect.size.height);
 				menu->set_position(popup_pos);
@@ -3089,8 +3131,11 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->add_icon_item(get_editor_theme_icon(SNAME("InterpWrapLoop")), TTR("Wrap Loop Interp"), MENU_LOOP_WRAP);
 				menu->reset_size();
 
-				moving_selection_attempt = false;
+				transform_selection_attempt = false;
+				scaling_selection = false;
+				emit_signal(SNAME("scale_selection_cancel"));
 				moving_selection = false;
+				emit_signal(SNAME("move_selection_cancel"));
 
 				Vector2 popup_pos = get_screen_position() + loop_wrap_rect.position + Vector2(0, loop_wrap_rect.size.height);
 				menu->set_position(popup_pos);
@@ -3146,8 +3191,11 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				menu->reset_size();
 
-				moving_selection_attempt = false;
+				transform_selection_attempt = false;
+				scaling_selection = false;
+				emit_signal(SNAME("scale_selection_cancel"));
 				moving_selection = false;
+				emit_signal(SNAME("move_selection_cancel"));
 
 				menu->set_position(get_screen_position() + get_local_mouse_position());
 				menu->popup();
@@ -3172,8 +3220,11 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		path->set_text(animation->track_get_path(track));
 		const Vector2 theme_ofs = path->get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"))->get_offset();
 
-		moving_selection_attempt = false;
+		transform_selection_attempt = false;
+		scaling_selection = false;
+		emit_signal(SNAME("scale_selection_cancel"));
 		moving_selection = false;
+		emit_signal(SNAME("move_selection_cancel"));
 
 		path_popup->set_position(get_screen_position() + path_rect.position - theme_ofs);
 		path_popup->set_size(path_rect.size);
@@ -3183,22 +3234,31 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		clicking_on_name = false;
 	}
 
-	if (mb.is_valid() && moving_selection_attempt) {
+	if (mb.is_valid() && transform_selection_attempt) {
 		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-			moving_selection_attempt = false;
+			transform_selection_attempt = false;
 			if (moving_selection && moving_selection_effective) {
 				if (abs(editor->get_moving_selection_offset()) > CMP_EPSILON) {
 					emit_signal(SNAME("move_selection_commit"));
+				}
+			} else if (scaling_selection && scaling_selection_effective) {
+				if (abs(editor->get_moving_selection_offset() - 1.0f) > CMP_EPSILON) {
+					AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+					// When AnimationPlayer is playing, scale from Timeline start.
+					emit_signal(SNAME("scale_selection_commit"), (player && !player->is_playing()));
 				}
 			} else if (select_single_attempt != -1) {
 				emit_signal(SNAME("select_key"), select_single_attempt, true);
 			}
 			moving_selection = false;
+			scaling_selection = false;
 			select_single_attempt = -1;
 		}
 
-		if (moving_selection && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
-			moving_selection_attempt = false;
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+			transform_selection_attempt = false;
+			scaling_selection = false;
+			emit_signal(SNAME("scale_selection_cancel"));
 			moving_selection = false;
 			emit_signal(SNAME("move_selection_cancel"));
 		}
@@ -3256,24 +3316,50 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::LEFT) && moving_selection_attempt) {
-		if (!moving_selection) {
-			moving_selection = true;
-			emit_signal(SNAME("move_selection_begin"));
+	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::LEFT) && transform_selection_attempt) {
+		if (mm->get_modifiers_mask().has_flag(KeyModifierMask::ALT)) {
+			if (!scaling_selection) {
+				scaling_selection = true;
+				emit_signal(SNAME("scale_selection_begin"));
+				moving_selection = false;
+				emit_signal(SNAME("move_selection_cancel"));
+			}
+
+			float begin_time = (transform_selection_mouse_begin_x - timeline->get_name_limit()) / timeline->get_zoom_scale();
+			float new_time = (mm->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale();
+			AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+			float pivot = player && player->is_playing() ? 0.0f : timeline->get_play_position();
+			float delta = (new_time - pivot) / (begin_time - pivot);
+
+			float factor = 1.0;
+			if (abs(editor->get_scaling_selection_factor()) > CMP_EPSILON || abs(delta) > CMP_EPSILON) {
+				factor = delta;
+				scaling_selection_effective = true;
+			}
+
+			emit_signal(SNAME("scale_selection"), factor);
+
+		} else {
+			if (!moving_selection) {
+				moving_selection = true;
+				emit_signal(SNAME("move_selection_begin"));
+				scaling_selection = false;
+				emit_signal(SNAME("scale_selection_cancel"));
+			}
+
+			float begin_time = ((transform_selection_mouse_begin_x - timeline->get_name_limit()) / timeline->get_zoom_scale()) + timeline->get_value();
+			float new_time = ((mm->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale()) + timeline->get_value();
+			float delta = new_time - begin_time;
+			float snapped_time = editor->snap_time(moving_selection_pivot + delta);
+
+			float offset = 0.0;
+			if (abs(editor->get_moving_selection_offset()) > CMP_EPSILON || (snapped_time > moving_selection_pivot && delta > CMP_EPSILON) || (snapped_time < moving_selection_pivot && delta < -CMP_EPSILON)) {
+				offset = snapped_time - moving_selection_pivot;
+				moving_selection_effective = true;
+			}
+
+			emit_signal(SNAME("move_selection"), offset);
 		}
-
-		float moving_begin_time = ((moving_selection_mouse_begin_x - timeline->get_name_limit()) / timeline->get_zoom_scale()) + timeline->get_value();
-		float new_time = ((mm->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale()) + timeline->get_value();
-		float delta = new_time - moving_begin_time;
-		float snapped_time = editor->snap_time(moving_selection_pivot + delta);
-
-		float offset = 0.0;
-		if (abs(editor->get_moving_selection_offset()) > CMP_EPSILON || (snapped_time > moving_selection_pivot && delta > CMP_EPSILON) || (snapped_time < moving_selection_pivot && delta < -CMP_EPSILON)) {
-			offset = snapped_time - moving_selection_pivot;
-			moving_selection_effective = true;
-		}
-
-		emit_signal(SNAME("move_selection"), offset);
 	}
 }
 
@@ -3317,15 +3403,16 @@ bool AnimationTrackEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggre
 						if (p_deselectable) {
 							emit_signal(SNAME("deselect_key"), key_idx);
 							moving_selection_pivot = 0.0f;
-							moving_selection_mouse_begin_x = 0.0f;
+							transform_selection_mouse_begin_x = 0.0f;
 						}
 					} else {
 						emit_signal(SNAME("select_key"), key_idx, false);
-						moving_selection_attempt = true;
+						transform_selection_attempt = true;
 						moving_selection_effective = false;
+						scaling_selection_effective = false;
 						select_single_attempt = -1;
 						moving_selection_pivot = animation->track_get_key_time(track, key_idx);
-						moving_selection_mouse_begin_x = p_pos.x;
+						transform_selection_mouse_begin_x = p_pos.x;
 					}
 				} else {
 					if (!editor->is_key_selected(track, key_idx)) {
@@ -3335,16 +3422,17 @@ bool AnimationTrackEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggre
 						select_single_attempt = key_idx;
 					}
 
-					moving_selection_attempt = true;
+					transform_selection_attempt = true;
 					moving_selection_effective = false;
+					scaling_selection_effective = false;
 					moving_selection_pivot = animation->track_get_key_time(track, key_idx);
-					moving_selection_mouse_begin_x = p_pos.x;
+					transform_selection_mouse_begin_x = p_pos.x;
 				}
 
 				if (read_only) {
-					moving_selection_attempt = false;
+					transform_selection_attempt = false;
 					moving_selection_pivot = 0.0f;
-					moving_selection_mouse_begin_x = 0.0f;
+					transform_selection_mouse_begin_x = 0.0f;
 				}
 				return true;
 			}
@@ -3577,6 +3665,11 @@ void AnimationTrackEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("move_selection", PropertyInfo(Variant::FLOAT, "offset")));
 	ADD_SIGNAL(MethodInfo("move_selection_commit"));
 	ADD_SIGNAL(MethodInfo("move_selection_cancel"));
+
+	ADD_SIGNAL(MethodInfo("scale_selection_begin"));
+	ADD_SIGNAL(MethodInfo("scale_selection", PropertyInfo(Variant::FLOAT, "offset")));
+	ADD_SIGNAL(MethodInfo("scale_selection_commit"));
+	ADD_SIGNAL(MethodInfo("scale_selection_cancel"));
 
 	ADD_SIGNAL(MethodInfo("duplicate_request", PropertyInfo(Variant::FLOAT, "offset"), PropertyInfo(Variant::BOOL, "is_offset_valid")));
 	ADD_SIGNAL(MethodInfo("create_reset_request"));
@@ -5046,6 +5139,10 @@ void AnimationTrackEditor::_update_tracks() {
 		track_edit->connect("move_selection", callable_mp(this, &AnimationTrackEditor::_move_selection));
 		track_edit->connect("move_selection_commit", callable_mp(this, &AnimationTrackEditor::_move_selection_commit));
 		track_edit->connect("move_selection_cancel", callable_mp(this, &AnimationTrackEditor::_move_selection_cancel));
+		track_edit->connect("scale_selection_begin", callable_mp(this, &AnimationTrackEditor::_scale_selection_begin));
+		track_edit->connect("scale_selection", callable_mp(this, &AnimationTrackEditor::_scale_selection));
+		track_edit->connect("scale_selection_commit", callable_mp(this, &AnimationTrackEditor::_scale_selection_commit));
+		track_edit->connect("scale_selection_cancel", callable_mp(this, &AnimationTrackEditor::_scale_selection_cancel));
 
 		track_edit->connect("duplicate_request", callable_mp(this, &AnimationTrackEditor::_anim_duplicate_keys).bind(i), CONNECT_DEFERRED);
 		track_edit->connect("cut_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_CUT_KEYS), CONNECT_DEFERRED);
@@ -5760,6 +5857,16 @@ void AnimationTrackEditor::_move_selection(float p_offset) {
 	_redraw_tracks();
 }
 
+void AnimationTrackEditor::_scale_selection_begin() {
+	scaling_selection = true;
+	scaling_selection_factor = 0;
+}
+
+void AnimationTrackEditor::_scale_selection(float p_factor) {
+	scaling_selection_factor = p_factor;
+	_redraw_tracks();
+}
+
 struct _AnimMoveRestore {
 	int track = 0;
 	float time = 0;
@@ -5982,12 +6089,123 @@ void AnimationTrackEditor::_move_selection_cancel() {
 	_redraw_tracks();
 }
 
+void AnimationTrackEditor::_scale_selection_commit(bool p_from_cursor = true) {
+	float from_t = 1e20;
+	float to_t = -1e20;
+	float len = -1e20;
+	float pivot = p_from_cursor ? timeline->get_play_position() : 0.0f;
+
+	for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+		float t = animation->track_get_key_time(E.key.track, E.key.key);
+		if (t < from_t) {
+			from_t = t;
+		}
+		if (t > to_t) {
+			to_t = t;
+		}
+	}
+
+	len = to_t - from_t;
+
+	float s = (scaling_selection ? scaling_selection_factor : scale->get_value());
+	ERR_FAIL_COND_MSG(s == 0, "Can't scale to 0.");
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Animation Scale Keys"));
+
+	List<_AnimMoveRestore> to_restore;
+
+	// 1 - Remove the keys.
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
+	}
+	// 2 - Remove overlapped keys.
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		float newtime = (E->get().pos - from_t) * s + from_t;
+		int idx = animation->track_find_key(E->key().track, newtime, Animation::FIND_MODE_APPROX);
+		if (idx == -1) {
+			continue;
+		}
+		SelectedKey sk;
+		sk.key = idx;
+		sk.track = E->key().track;
+		if (selection.has(sk)) {
+			continue; // Already in selection, don't save.
+		}
+
+		undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newtime);
+		_AnimMoveRestore amr;
+
+		amr.key = animation->track_get_key_value(E->key().track, idx);
+		amr.track = E->key().track;
+		amr.time = newtime;
+		amr.transition = animation->track_get_key_transition(E->key().track, idx);
+
+		to_restore.push_back(amr);
+	}
+
+#define NEW_POS(m_ofs) ((s > 0 ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * s + pivot
+	// 3 - Move the keys (re insert them).
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		float newpos = snap_time(NEW_POS(E->get().pos));
+		undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->key().track, newpos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
+	}
+
+	// 4 - (Undo) Remove inserted keys.
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		float newpos = snap_time(NEW_POS(E->get().pos));
+		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newpos);
+	}
+
+	// 5 - (Undo) Reinsert keys.
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
+	}
+
+	// 6 - (Undo) Reinsert overlapped keys.
+	for (_AnimMoveRestore &amr : to_restore) {
+		undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, amr.transition);
+	}
+
+	scaling_selection = false;
+	undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+	undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+
+	// 7 - Reselect.
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		float oldpos = E->get().pos;
+		float newpos = snap_time(NEW_POS(E->get().pos));
+		if (newpos >= 0) {
+			undo_redo->add_do_method(this, "_select_at_anim", animation, E->key().track, newpos);
+		}
+		undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, oldpos);
+	}
+#undef NEW_POS
+
+	undo_redo->add_do_method(this, "_redraw_tracks");
+	undo_redo->add_undo_method(this, "_redraw_tracks");
+	undo_redo->commit_action();
+}
+
+void AnimationTrackEditor::_scale_selection_cancel() {
+	scaling_selection = false;
+	_redraw_tracks();
+}
+
 bool AnimationTrackEditor::is_moving_selection() const {
 	return moving_selection;
 }
 
+bool AnimationTrackEditor::is_scaling_selection() const {
+	return scaling_selection;
+}
+
 float AnimationTrackEditor::get_moving_selection_offset() const {
 	return moving_selection_offset;
+}
+
+float AnimationTrackEditor::get_scaling_selection_factor() const {
+	return scaling_selection_factor;
 }
 
 void AnimationTrackEditor::_box_selection_draw() {
@@ -6538,7 +6756,6 @@ void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event, bool p_timeli
 }
 
 void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
-	last_menu_track_opt = p_option;
 	switch (p_option) {
 		case EDIT_COPY_TRACKS: {
 			track_copy_select->clear();
@@ -6708,107 +6925,10 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			if (selection.is_empty()) {
 				return;
 			}
+			AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+			ERR_FAIL_COND_MSG(player && player->is_playing() && last_menu_track_opt == EDIT_SCALE_FROM_CURSOR, "Can't scale from cursor while playing.");
 
-			float from_t = 1e20;
-			float to_t = -1e20;
-			float len = -1e20;
-			float pivot = 0;
-
-			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
-				float t = animation->track_get_key_time(E.key.track, E.key.key);
-				if (t < from_t) {
-					from_t = t;
-				}
-				if (t > to_t) {
-					to_t = t;
-				}
-			}
-
-			len = to_t - from_t;
-			if (last_menu_track_opt == EDIT_SCALE_FROM_CURSOR) {
-				pivot = timeline->get_play_position();
-
-			} else {
-				pivot = from_t;
-			}
-
-			float s = scale->get_value();
-			ERR_FAIL_COND_MSG(s == 0, "Can't scale to 0.");
-
-			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->create_action(TTR("Animation Scale Keys"));
-
-			List<_AnimMoveRestore> to_restore;
-
-			// 1 - Remove the keys.
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
-			}
-			// 2 - Remove overlapped keys.
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float newtime = (E->get().pos - from_t) * s + from_t;
-				int idx = animation->track_find_key(E->key().track, newtime, Animation::FIND_MODE_APPROX);
-				if (idx == -1) {
-					continue;
-				}
-				SelectedKey sk;
-				sk.key = idx;
-				sk.track = E->key().track;
-				if (selection.has(sk)) {
-					continue; // Already in selection, don't save.
-				}
-
-				undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newtime);
-				_AnimMoveRestore amr;
-
-				amr.key = animation->track_get_key_value(E->key().track, idx);
-				amr.track = E->key().track;
-				amr.time = newtime;
-				amr.transition = animation->track_get_key_transition(E->key().track, idx);
-
-				to_restore.push_back(amr);
-			}
-
-#define NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * Math::abs(s) + from_t
-			// 3 - Move the keys (re insert them).
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float newpos = NEW_POS(E->get().pos);
-				undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->key().track, newpos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
-			}
-
-			// 4 - (Undo) Remove inserted keys.
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float newpos = NEW_POS(E->get().pos);
-				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newpos);
-			}
-
-			// 5 - (Undo) Reinsert keys.
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
-			}
-
-			// 6 - (Undo) Reinsert overlapped keys.
-			for (_AnimMoveRestore &amr : to_restore) {
-				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, amr.transition);
-			}
-
-			undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
-			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
-
-			// 7 - Reselect.
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float oldpos = E->get().pos;
-				float newpos = NEW_POS(oldpos);
-				if (newpos >= 0) {
-					undo_redo->add_do_method(this, "_select_at_anim", animation, E->key().track, newpos);
-				}
-				undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, oldpos);
-			}
-#undef NEW_POS
-
-			undo_redo->add_do_method(this, "_redraw_tracks");
-			undo_redo->add_undo_method(this, "_redraw_tracks");
-			undo_redo->commit_action();
+			_scale_selection_commit(last_menu_track_opt == EDIT_SCALE_FROM_CURSOR);
 		} break;
 
 		case EDIT_SET_START_OFFSET: {
@@ -7267,6 +7387,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 		} break;
 	}
+	last_menu_track_opt = p_option;
 }
 
 void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
