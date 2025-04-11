@@ -45,9 +45,11 @@ class NavigationMeshSourceGeometryData3D : public Resource {
 
 public:
 	struct ProjectedObstruction;
+	struct ProjectedArea;
 
 private:
 	Vector<ProjectedObstruction> _projected_obstructions;
+	Vector<ProjectedArea> _projected_areas;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -70,6 +72,26 @@ public:
 		bool carve = false;
 	};
 
+	struct ProjectedArea {
+		static inline uint32_t VERSION = 1; // Increase on format changes.
+
+		Vector<float> vertices;
+		AABB aabb;
+		Vector3 position;
+		float radius = 0.0;
+		float elevation = 0.0;
+		float height = 0.0;
+		uint32_t navigation_layers = 0;
+		int priority = 0;
+		enum ShapeType {
+			NONE = 0,
+			BOX,
+			CYLINDER,
+			POLYGON
+		};
+		ShapeType shape_type = ShapeType::NONE;
+	};
+
 	// kept root node transform here on the geometry data
 	// if we add this transform to all exposed functions we need to break comp on all functions later
 	// when navmesh changes from global transform to relative to navregion
@@ -87,6 +109,7 @@ public:
 	bool has_data();
 	void clear();
 	void clear_projected_obstructions();
+	void clear_projected_areas();
 
 	void add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform);
 	void add_mesh_array(const Array &p_mesh_array, const Transform3D &p_xform);
@@ -100,8 +123,18 @@ public:
 	void set_projected_obstructions(const Array &p_array);
 	Array get_projected_obstructions() const;
 
-	void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions);
-	void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions);
+	void set_projected_areas(const Array &p_array);
+	Array get_projected_areas() const;
+
+	//void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions);
+	//void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions);
+
+	void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions, Vector<ProjectedArea> &p_projected_areas);
+	void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions, Vector<ProjectedArea> &p_projected_areas);
+
+	void add_projected_area_box(const AABB &p_aabb, uint32_t p_navigation_layers, int p_priority = 0);
+	void add_projected_area_cylinder(const Vector3 &p_position, float p_radius, float p_height, uint32_t p_navigation_layers, int p_priority = 0);
+	void add_projected_area_polygon(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, uint32_t p_navigation_layers, int p_priority = 0);
 
 	AABB get_bounds();
 
