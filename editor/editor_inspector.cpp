@@ -1717,14 +1717,6 @@ EditorInspectorCategory::EditorInspectorCategory() {
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
 
-void EditorInspectorSection::_test_unfold() {
-	if (!vbox_added) {
-		add_child(vbox);
-		move_child(vbox, 0);
-		vbox_added = true;
-	}
-}
-
 Ref<Texture2D> EditorInspectorSection::_get_arrow() {
 	Ref<Texture2D> arrow;
 	if (foldable) {
@@ -1870,7 +1862,9 @@ void EditorInspectorSection::_notification(int p_what) {
 						arrow_position.x = margin_start;
 					}
 					arrow_position.y = (header_height - arrow->get_height()) / 2;
-					draw_texture(arrow, arrow_position);
+					if (vbox->get_child_count(false) != 0) {
+						draw_texture(arrow, arrow_position);
+					}
 					margin_start += arrow->get_width() + separation;
 				}
 
@@ -1879,9 +1873,9 @@ void EditorInspectorSection::_notification(int p_what) {
 				if (checkbox.is_valid()) {
 					Point2 checkbox_position;
 					if (rtl) {
-						checkbox_position.x = get_size().width - (margin_start + checkbox->get_width());
+						checkbox_position.x = margin_start + checkbox->get_width();
 					} else {
-						checkbox_position.x = margin_start;
+						checkbox_position.x = get_size().width - (margin_end + checkbox->get_width());
 					}
 
 					Color color2(1, 1, 1);
@@ -1893,7 +1887,7 @@ void EditorInspectorSection::_notification(int p_what) {
 					checkbox_position.y = (header_height - checkbox->get_height()) / 2;
 					check_rect = Rect2(checkbox_position.x, checkbox_position.y, checkbox->get_width(), checkbox->get_height());
 					draw_texture(checkbox, checkbox_position, color2);
-					margin_start += checkbox->get_width() + 4 * EDSCALE;
+					margin_end += checkbox->get_width() + 4 * EDSCALE;
 				}
 
 				int available = get_size().width - (margin_start + margin_end);
@@ -2019,14 +2013,13 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 	checkable = !p_related_check_property.is_empty();
 	related_enable_property = p_related_check_property;
 
-	if (!foldable && !vbox_added) {
-		add_child(vbox);
-		move_child(vbox, 0);
-		vbox_added = true;
-	}
-
 	if (foldable) {
-		_test_unfold();
+		if (!vbox_added) {
+			add_child(vbox);
+			move_child(vbox, 0);
+			vbox_added = true;
+		}
+
 		if (object->editor_is_section_unfolded(section)) {
 			vbox->show();
 		} else {
@@ -2039,7 +2032,6 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouse> me = p_event;
-
 	if (me.is_valid()) {
 		bool new_check_hover = check_rect.has_point(me->get_position());
 		if (new_check_hover != check_hover) {
@@ -2063,7 +2055,6 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (object->editor_is_section_unfolded(section)) {
 			int header_height = _get_header_height();
@@ -2078,8 +2069,9 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 		if (check_rect.has_point(mb->get_position())) {
 			checked = !checked;
 			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
+			unfold();
 		} else if (foldable) {
-			bool should_unfold = !object->editor_is_section_unfolded(section);
+			bool should_unfold = !object->editor_is_section_unfolded(section) && vbox->get_child_count(false) != 0;
 			if (should_unfold) {
 				unfold();
 			} else {
@@ -2121,7 +2113,11 @@ void EditorInspectorSection::unfold() {
 		return;
 	}
 
-	_test_unfold();
+	if (!vbox_added) {
+		add_child(vbox);
+		move_child(vbox, 0);
+		vbox_added = true;
+	}
 
 	object->editor_set_section_unfold(section, true);
 	vbox->show();
@@ -3848,6 +3844,7 @@ void EditorInspector::update_tree() {
 			if (valid) {
 				last_created_section->set_checked(checked.operator bool());
 			}
+			continue;
 		}
 
 		// Check if the property is an array counter, if so create a dedicated array editor for the array.

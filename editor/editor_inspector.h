@@ -352,7 +352,6 @@ class EditorInspectorSection : public Container {
 
 	HashSet<StringName> revertable_properties;
 
-	void _test_unfold();
 	int _get_header_height();
 	Ref<Texture2D> _get_arrow();
 	Ref<Texture2D> _get_checkbox();
@@ -666,6 +665,8 @@ class EditorInspector : public ScrollContainer {
 	void _feature_profile_changed();
 
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
+
+	void _section_toggled_by_user(const String &p_path, bool p_value);
 
 	AddMetadataDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
