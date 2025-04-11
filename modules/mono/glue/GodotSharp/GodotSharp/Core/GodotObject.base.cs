@@ -80,6 +80,16 @@ namespace Godot
         /// </summary>
         public IntPtr NativeInstance => NativePtr;
 
+        /// <summary>
+        /// Indicates if this type has a user-defined <see cref="_Get"/> method.
+        /// </summary>
+        public virtual bool HasCustomGetMethod => false;
+
+        /// <summary>
+        /// Indicates if this type has a user-defined <see cref="_Set"/> method.
+        /// </summary>
+        public virtual bool HasCustomSetMethod => false;
+
         internal static IntPtr GetPtr(GodotObject? instance)
         {
             if (instance == null)
