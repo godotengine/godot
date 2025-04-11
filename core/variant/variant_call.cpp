@@ -1820,7 +1820,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(rstrip, sarray("chars"), varray());
 	bind_string_method(get_extension, sarray(), varray());
 	bind_string_method(get_basename, sarray(), varray());
-	bind_string_method(path_join, sarray("file"), varray());
+	bind_string_method(path_join, sarray("path"), varray());
 	bind_string_method(unicode_at, sarray("at"), varray());
 	bind_string_method(indent, sarray("prefix"), varray());
 	bind_string_method(dedent, sarray(), varray());
