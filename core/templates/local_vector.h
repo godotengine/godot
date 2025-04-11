@@ -144,6 +144,7 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return count == 0; }
 	_FORCE_INLINE_ U get_capacity() const { return capacity; }
 	void reserve(U p_size) {
+		ERR_FAIL_COND_MSG(p_size < size(), "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 		if (p_size > capacity) {
 			if (tight) {
 				capacity = p_size;

@@ -301,7 +301,10 @@ public:
 	 *  capacity.
 	 **/
 	void reserve(uint32_t p_new_capacity) {
-		ERR_FAIL_COND(p_new_capacity < capacity);
+		ERR_FAIL_COND_MSG(p_new_capacity < get_num_elements(), "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
+		if (p_new_capacity <= capacity) {
+			return;
+		}
 		_resize_and_rehash(p_new_capacity);
 	}
 
