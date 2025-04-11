@@ -42,13 +42,9 @@
 namespace TestOccluderInstance3D {
 
 TEST_CASE("[SceneTree][OccluderInstance3D] Test baking functionality") {
-// We need to load an occluder path because when the light occluder generates
-// it has to save to a file.
-#ifdef WINDOWS_ENABLED
-	const String occluder_path = OS::get_singleton()->get_environment("TEMP").path_join("test_occluder.occ");
-#else
-	const String occluder_path = "/tmp/test_occluder.occ";
-#endif
+// We need to load an occluder path because when the occluder generates,
+	// it has to save to a file.
+	const String occluder_path = OS::get_singleton()->get_temp_path().path_join("test_occluder.occ");
 
 	SceneTree *scene_tree = SceneTree::get_singleton();
 
