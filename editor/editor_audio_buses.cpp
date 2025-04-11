@@ -636,7 +636,7 @@ Variant EditorAudioBus::get_drag_data(const Point2 &p_point) {
 	p->set_modulate(Color(1, 1, 1, 0.7));
 	p->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("focus"), SNAME("Button")));
 	p->set_size(get_size());
-	p->set_position((p_point == Vector2(INFINITY, INFINITY)) ? Vector2() : -p_point);
+	p->set_position((p_point == Vector2(Math::INF, Math::INF)) ? Vector2() : -p_point);
 	set_drag_preview(c);
 	Dictionary d;
 	d["type"] = "move_audio_bus";
@@ -669,7 +669,7 @@ void EditorAudioBus::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-	TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? effects->get_selected() : effects->get_item_at_position(p_point);
+	TreeItem *item = (p_point == Vector2(Math::INF, Math::INF)) ? effects->get_selected() : effects->get_item_at_position(p_point);
 	if (!item) {
 		return Variant();
 	}
@@ -698,7 +698,7 @@ bool EditorAudioBus::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		return false;
 	}
 
-	TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? effects->get_selected() : effects->get_item_at_position(p_point);
+	TreeItem *item = (p_point == Vector2(Math::INF, Math::INF)) ? effects->get_selected() : effects->get_item_at_position(p_point);
 	if (!item) {
 		return false;
 	}
@@ -711,11 +711,11 @@ bool EditorAudioBus::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 void EditorAudioBus::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary d = p_data;
 
-	TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? effects->get_selected() : effects->get_item_at_position(p_point);
+	TreeItem *item = (p_point == Vector2(Math::INF, Math::INF)) ? effects->get_selected() : effects->get_item_at_position(p_point);
 	if (!item) {
 		return;
 	}
-	int pos = (p_point == Vector2(INFINITY, INFINITY)) ? effects->get_drop_section_at_position(effects->get_item_rect(item).position) : effects->get_drop_section_at_position(p_point);
+	int pos = (p_point == Vector2(Math::INF, Math::INF)) ? effects->get_drop_section_at_position(effects->get_item_rect(item).position) : effects->get_drop_section_at_position(p_point);
 	Variant md = item->get_metadata(0);
 
 	int paste_at;

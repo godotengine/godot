@@ -399,7 +399,7 @@ SkeletonModification2DLookAt::SkeletonModification2DLookAt() {
 	additional_rotation = 0;
 	enable_constraint = false;
 	constraint_angle_min = 0;
-	constraint_angle_max = Math_PI * 2;
+	constraint_angle_max = Math::PI * 2;
 	constraint_angle_invert = false;
 	enabled = true;
 

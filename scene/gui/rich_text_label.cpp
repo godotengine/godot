@@ -1269,8 +1269,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
 								uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
 								uint64_t max_rand = 2147483647;
-								double current_offset = Math::remap(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
-								double previous_offset = Math::remap(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
+								double current_offset = Math::remap(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math::PI);
+								double previous_offset = Math::remap(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math::PI);
 								double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
 								n_time = (n_time > 1.0) ? 1.0 : n_time;
 								item_shake->prev_off = Point2(Math::lerp(Math::sin(previous_offset), Math::sin(current_offset), n_time), Math::lerp(Math::cos(previous_offset), Math::cos(current_offset), n_time)) * (float)item_shake->strength / 10.0f;

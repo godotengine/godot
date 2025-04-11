@@ -56,7 +56,7 @@ TEST_CASE("[Transform2D] Copy constructor") {
 }
 
 TEST_CASE("[Transform2D] Constructor from angle and position") {
-	constexpr float ROTATION = Math_PI / 4;
+	constexpr float ROTATION = Math::PI / 4;
 	constexpr Vector2 TRANSLATION = Vector2(20, -20);
 
 	const Transform2D test = Transform2D(ROTATION, TRANSLATION);
@@ -65,9 +65,9 @@ TEST_CASE("[Transform2D] Constructor from angle and position") {
 }
 
 TEST_CASE("[Transform2D] Constructor from angle, scale, skew and position") {
-	constexpr float ROTATION = Math_PI / 2;
+	constexpr float ROTATION = Math::PI / 2;
 	constexpr Vector2 SCALE = Vector2(2, 0.5);
-	constexpr float SKEW = Math_PI / 4;
+	constexpr float SKEW = Math::PI / 4;
 	constexpr Vector2 TRANSLATION = Vector2(30, 0);
 
 	const Transform2D test = Transform2D(ROTATION, SCALE, SKEW, TRANSLATION);
@@ -182,7 +182,7 @@ TEST_CASE("[Transform2D] Interpolation") {
 
 TEST_CASE("[Transform2D] Finite number checks") {
 	constexpr Vector2 x = Vector2(0, 1);
-	const Vector2 infinite = Vector2(NAN, NAN);
+	constexpr Vector2 infinite = Vector2(Math::NaN, Math::NaN);
 
 	CHECK_MESSAGE(
 			Transform2D(x, x, x).is_finite(),
@@ -239,7 +239,7 @@ TEST_CASE("[Transform2D] Is conformal checks") {
 			"Transform2D with non-uniform scale should not be conformal.");
 
 	CHECK_FALSE_MESSAGE(
-			Transform2D(Vector2(Math_SQRT12, Math_SQRT12), Vector2(0, 1), Vector2()).is_conformal(),
+			Transform2D(Vector2(Math::SQRT12, Math::SQRT12), Vector2(0, 1), Vector2()).is_conformal(),
 			"Transform2D with the X axis skewed 45 degrees should not be conformal.");
 }
 

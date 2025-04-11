@@ -193,7 +193,7 @@ Point2 TextureProgressBar::unit_val_to_uv(float val) {
 	Point2 p = get_relative_center();
 
 	// Minimal version of Liang-Barsky clipping algorithm
-	float angle = (val * Math_TAU) - Math_PI * 0.5;
+	float angle = (val * Math::TAU) - Math::PI * 0.5;
 	Point2 dir = Vector2(Math::cos(angle), Math::sin(angle));
 	float t1 = 1.0;
 	float cp = 0.0;

@@ -6232,7 +6232,7 @@ int Tree::get_button_id_at_position(const Point2 &p_pos) const {
 		return -1;
 	}
 
-	if (p_pos == Vector2(INFINITY, INFINITY)) {
+	if (p_pos == Vector2(Math::INF, Math::INF)) {
 		if (selected_item && selected_button >= 0) {
 			return selected_item->cells[selected_col].buttons[selected_button].id;
 		}

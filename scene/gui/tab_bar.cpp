@@ -1394,7 +1394,7 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_point) {
-	int tab_over = (p_point == Vector2(INFINITY, INFINITY)) ? current : get_tab_idx_at_point(p_point);
+	int tab_over = (p_point == Vector2(Math::INF, Math::INF)) ? current : get_tab_idx_at_point(p_point);
 	if (tab_over < 0) {
 		return Variant();
 	}
@@ -1459,7 +1459,7 @@ void TabBar::_handle_drop_data(const String &p_type, const Point2 &p_point, cons
 
 	if (String(d["type"]) == p_type) {
 		int tab_from_id = d["tab_index"];
-		int hover_now = (p_point == Vector2(INFINITY, INFINITY)) ? current : get_closest_tab_idx_to_point(p_point);
+		int hover_now = (p_point == Vector2(Math::INF, Math::INF)) ? current : get_closest_tab_idx_to_point(p_point);
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
 
