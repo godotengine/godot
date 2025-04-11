@@ -159,9 +159,10 @@
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "scene/resources/visual_shader_sdf_nodes.h"
+#include "scene/resources/world_2d.h"
 #include "scene/theme/theme_db.h"
 
-// 2D
+#ifndef _2D_DISABLED
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/2d/audio_stream_player_2d.h"
@@ -197,7 +198,7 @@
 #include "scene/resources/2d/skeleton/skeleton_modification_2d_twoboneik.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_stack_2d.h"
 #include "scene/resources/2d/tile_set.h"
-#include "scene/resources/world_2d.h"
+#endif // _2D_DISABLED
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/2d/navigation/navigation_agent_2d.h"
@@ -418,7 +419,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(HTTPRequest);
 	GDREGISTER_CLASS(Timer);
 	GDREGISTER_CLASS(CanvasLayer);
+#ifndef _2D_DISABLED
+	// CanvasModulate must be registered before BaseButton... for some reason.
 	GDREGISTER_CLASS(CanvasModulate);
+#endif // _2D_DISABLED
 	GDREGISTER_CLASS(ResourcePreloader);
 	GDREGISTER_CLASS(Window);
 
@@ -518,7 +522,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GraphElement);
 	GDREGISTER_CLASS(GraphNode);
 	GDREGISTER_CLASS(GraphFrame);
+#ifndef _2D_DISABLED
 	GDREGISTER_CLASS(GraphEdit);
+#endif // _2D_DISABLED
 
 	GDREGISTER_CLASS(FoldableGroup);
 	GDREGISTER_CLASS(FoldableContainer);
@@ -839,6 +845,7 @@ void register_scene_types() {
 
 	/* REGISTER 2D */
 
+#ifndef _2D_DISABLED
 	GDREGISTER_CLASS(Node2D);
 	GDREGISTER_CLASS(CanvasGroup);
 	GDREGISTER_CLASS(CPUParticles2D);
@@ -913,6 +920,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SkeletonModification2DJiggle);
 	GDREGISTER_CLASS(SkeletonModification2DPhysicalBones);
 #endif // PHYSICS_2D_DISABLED
+#endif // _2D_DISABLED
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -1067,6 +1075,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
+#ifndef _2D_DISABLED
 	GDREGISTER_CLASS(AudioStreamPlayer2D);
 	GDREGISTER_CLASS(Curve2D);
 	GDREGISTER_CLASS(Path2D);
@@ -1110,6 +1119,7 @@ void register_scene_types() {
 	StaticBody2D::navmesh_parse_init();
 #endif // PHYSICS_2D_DISABLED
 #endif // NAVIGATION_2D_DISABLED
+#endif // _2D_DISABLED
 
 #ifndef NAVIGATION_3D_DISABLED
 	// 3D nodes that support navmesh baking need to server register their source geometry parsers.
