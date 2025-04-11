@@ -37,6 +37,27 @@
 #include "editor/inspector_dock.h"
 #include "scene/debugger/scene_debugger.h"
 
+EditorDebuggerRemoteObjects::EditorDebuggerRemoteObjects(SceneDebuggerObject &p_obj) {
+	remote_object_ids.push_back(p_obj.id);
+	type_name = p_obj.class_name;
+	Vector<SceneDebuggerObject> objects;
+	objects.push_back(p_obj);
+	update_props(objects, nullptr, nullptr);
+	update();
+}
+
+bool EditorDebuggerRemoteObjects::_is_read_only() {
+	return read_only;
+}
+
+void EditorDebuggerRemoteObjects::set_read_only(bool p_read_only) {
+	read_only = p_read_only;
+}
+
+bool EditorDebuggerRemoteObjects::is_read_only() {
+	return _is_read_only();
+}
+
 bool EditorDebuggerRemoteObjects::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");
 }
@@ -98,6 +119,113 @@ void EditorDebuggerRemoteObjects::set_property_field(const StringName &p_propert
 	_set_impl(p_property, p_value, p_field);
 }
 
+int EditorDebuggerRemoteObjects::update_props(const Vector<SceneDebuggerObject> &p_objects, HashSet<String> *p_changed, HashSet<Ref<Resource>> *p_remote_dependencies) {
+	// Search for properties that are present in all selected objects.
+
+	struct UsageData {
+		int qty = 0;
+		SceneDebuggerObject::SceneDebuggerProperty prop;
+		TypedDictionary<uint64_t, Variant> values;
+	};
+	HashMap<String, UsageData> usage;
+
+	int nc = 0;
+	for (const SceneDebuggerObject &obj : p_objects) {
+		for (const SceneDebuggerObject::SceneDebuggerProperty &prop : obj.properties) {
+			PropertyInfo pinfo = prop.first;
+			if (pinfo.name == "script") {
+				continue; // Added later manually, since this is intercepted before being set (check Variant Object::get()).
+			} else if (pinfo.name.begins_with("metadata/")) {
+				pinfo.name = pinfo.name.replace_first("metadata/", "Metadata/"); // Trick to not get actual metadata edited from EditorDebuggerRemoteObjects.
+			}
+
+			if (!usage.has(pinfo.name)) {
+				UsageData usage_dt;
+				usage_dt.prop = prop;
+				usage_dt.prop.first.name = pinfo.name;
+				usage_dt.values[obj.id] = prop.second;
+				usage[pinfo.name] = usage_dt;
+			}
+
+			// Make sure only properties with the same exact PropertyInfo data will appear.
+			if (usage[pinfo.name].prop.first == pinfo) {
+				usage[pinfo.name].qty++;
+				usage[pinfo.name].values[obj.id] = prop.second;
+			}
+		}
+
+		nc++;
+	}
+	for (HashMap<String, UsageData>::Iterator E = usage.begin(); E;) {
+		HashMap<String, UsageData>::Iterator next = E;
+		++next;
+
+		UsageData usage_dt = E->value;
+		if (nc != usage_dt.qty) {
+			// Doesn't appear on all of them, remove it.
+			usage.erase(E->key);
+		}
+
+		E = next;
+	}
+
+	prop_list.clear();
+	int new_props_added = 0;
+	for (KeyValue<String, UsageData> &KV : usage) {
+		const PropertyInfo &pinfo = KV.value.prop.first;
+		Variant var = KV.value.values[remote_object_ids[0]];
+
+		if (pinfo.type == Variant::OBJECT) {
+			if (var.is_string()) {
+				String path = var;
+				// If a resource is followed by a ::, it is a nested resource (like a sub_resource in a .tscn file).
+				// To get a reference to it, first we load the parent resource (the .tscn, for example), then,
+				// we load the child resource. The parent resource (dependency) should not be destroyed before the child
+				// resource (var) is loaded. We must declare dependency outside of the if statement to ensure this.
+				Ref<Resource> dependency;
+				if (path.contains("::")) {
+					// Built-in resource.
+					String base_path = path.get_slice("::", 0);
+					dependency = ResourceLoader::load(base_path);
+					if (dependency.is_valid() && p_remote_dependencies) {
+						p_remote_dependencies->insert(dependency);
+					}
+				}
+				var = ResourceLoader::load(path);
+				KV.value.values[remote_object_ids[0]] = var;
+
+				if (pinfo.hint_string == "Script") {
+					if (get_script() != var) {
+						set_script(Ref<RefCounted>());
+						Ref<Script> scr(var);
+						if (scr.is_valid()) {
+							ScriptInstance *scr_instance = scr->placeholder_instance_create(this);
+							if (scr_instance) {
+								set_script_and_instance(var, scr_instance);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Always add the property, since props may have been added or removed.
+		prop_list.push_back(pinfo);
+
+		if (!prop_values.has(pinfo.name)) {
+			new_props_added++;
+		} else if (bool(Variant::evaluate(Variant::OP_NOT_EQUAL, prop_values[pinfo.name], var))) {
+			if (p_changed) {
+				p_changed->insert(pinfo.name);
+			}
+		}
+
+		prop_values[pinfo.name] = KV.value.values;
+	}
+
+	return new_props_added;
+}
+
 String EditorDebuggerRemoteObjects::get_title() {
 	if (!remote_object_ids.is_empty() && ObjectID(remote_object_ids[0].operator uint64_t()).is_valid()) {
 		const int size = remote_object_ids.size();
@@ -115,6 +243,10 @@ Variant EditorDebuggerRemoteObjects::get_variant(const StringName &p_name) {
 
 void EditorDebuggerRemoteObjects::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_title"), &EditorDebuggerRemoteObjects::get_title);
+
+	ClassDB::bind_method(D_METHOD("_is_read_only"), &EditorDebuggerRemoteObjects::_is_read_only);
+	ClassDB::bind_method(D_METHOD("set_read_only", "p_read_only"), &EditorDebuggerRemoteObjects::set_read_only);
+	ClassDB::bind_method(D_METHOD("is_read_only"), &EditorDebuggerRemoteObjects::is_read_only);
 
 	ADD_SIGNAL(MethodInfo("values_edited", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "uint64_t:Variant"), PropertyInfo(Variant::STRING, "field")));
 }
@@ -161,7 +293,7 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 	ERR_FAIL_COND_V(p_arr.is_empty(), nullptr);
 
 	TypedArray<uint64_t> ids;
-	LocalVector<SceneDebuggerObject> objects;
+	Vector<SceneDebuggerObject> objects;
 	for (const Array arr : p_arr) {
 		SceneDebuggerObject obj;
 		obj.deserialize(arr);
@@ -219,102 +351,9 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 	}
 	remote_objects->type_name = class_name;
 
-	// Search for properties that are present in all selected objects.
-	struct UsageData {
-		int qty = 0;
-		SceneDebuggerObject::SceneDebuggerProperty prop;
-		TypedDictionary<uint64_t, Variant> values;
-	};
-	HashMap<String, UsageData> usage;
-	int nc = 0;
-	for (const SceneDebuggerObject &obj : objects) {
-		for (const SceneDebuggerObject::SceneDebuggerProperty &prop : obj.properties) {
-			PropertyInfo pinfo = prop.first;
-			if (pinfo.name == "script") {
-				continue; // Added later manually, since this is intercepted before being set (check Variant Object::get()).
-			} else if (pinfo.name.begins_with("metadata/")) {
-				pinfo.name = pinfo.name.replace_first("metadata/", "Metadata/"); // Trick to not get actual metadata edited from EditorDebuggerRemoteObjects.
-			}
-
-			if (!usage.has(pinfo.name)) {
-				UsageData usage_dt;
-				usage_dt.prop = prop;
-				usage_dt.prop.first.name = pinfo.name;
-				usage_dt.values[obj.id] = prop.second;
-				usage[pinfo.name] = usage_dt;
-			}
-
-			// Make sure only properties with the same exact PropertyInfo data will appear.
-			if (usage[pinfo.name].prop.first == pinfo) {
-				usage[pinfo.name].qty++;
-				usage[pinfo.name].values[obj.id] = prop.second;
-			}
-		}
-
-		nc++;
-	}
-	for (HashMap<String, UsageData>::Iterator E = usage.begin(); E;) {
-		HashMap<String, UsageData>::Iterator next = E;
-		++next;
-
-		UsageData usage_dt = E->value;
-		if (nc != usage_dt.qty) {
-			// Doesn't appear on all of them, remove it.
-			usage.erase(E->key);
-		}
-
-		E = next;
-	}
-
 	int old_prop_size = remote_objects->prop_list.size();
-
-	remote_objects->prop_list.clear();
-	int new_props_added = 0;
 	HashSet<String> changed;
-	for (KeyValue<String, UsageData> &KV : usage) {
-		const PropertyInfo &pinfo = KV.value.prop.first;
-		Variant var = KV.value.values[remote_objects->remote_object_ids[0]];
-
-		if (pinfo.type == Variant::OBJECT) {
-			if (var.is_string()) {
-				String path = var;
-				if (path.contains("::")) {
-					// Built-in resource.
-					String base_path = path.get_slice("::", 0);
-					Ref<Resource> dependency = ResourceLoader::load(base_path);
-					if (dependency.is_valid()) {
-						remote_dependencies.insert(dependency);
-					}
-				}
-				var = ResourceLoader::load(path);
-				KV.value.values[remote_objects->remote_object_ids[0]] = var;
-
-				if (pinfo.hint_string == "Script") {
-					if (remote_objects->get_script() != var) {
-						remote_objects->set_script(Ref<RefCounted>());
-						Ref<Script> scr(var);
-						if (scr.is_valid()) {
-							ScriptInstance *scr_instance = scr->placeholder_instance_create(remote_objects);
-							if (scr_instance) {
-								remote_objects->set_script_and_instance(var, scr_instance);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		// Always add the property, since props may have been added or removed.
-		remote_objects->prop_list.push_back(pinfo);
-
-		if (!remote_objects->prop_values.has(pinfo.name)) {
-			new_props_added++;
-		} else if (bool(Variant::evaluate(Variant::OP_NOT_EQUAL, remote_objects->prop_values[pinfo.name], var))) {
-			changed.insert(pinfo.name);
-		}
-
-		remote_objects->prop_values[pinfo.name] = KV.value.values;
-	}
+	int new_props_added = remote_objects->update_props(objects, &changed, &remote_dependencies);
 
 	if (old_prop_size == remote_objects->prop_list.size() && new_props_added == 0) {
 		// Only some may have changed, if so, then update those, if they exist.
