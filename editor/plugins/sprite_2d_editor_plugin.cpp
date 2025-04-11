@@ -665,8 +665,17 @@ Sprite2DEditor::Sprite2DEditor() {
 	add_child(debug_uv_dialog);
 }
 
+void Sprite2DEditorPlugin::_editor_theme_changed() {
+	dragging_mode_hint->remove_theme_color_override(SceneStringName(font_color));
+	dragging_mode_hint->add_theme_color_override(SceneStringName(font_color), Color(0.6f, 0.6f, 0.6f, 1));
+	dragging_mode_hint->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
+	dragging_mode_hint->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
+	dragging_mode_hint->add_theme_constant_override("line_spacing", 0);
+}
+
 void Sprite2DEditorPlugin::edit(Object *p_object) {
-	sprite_editor->edit(Object::cast_to<Sprite2D>(p_object));
+	Sprite2D *spr = Object::cast_to<Sprite2D>(p_object);
+	sprite_editor->edit(spr);
 }
 
 bool Sprite2DEditorPlugin::handles(Object *p_object) const {
@@ -676,8 +685,10 @@ bool Sprite2DEditorPlugin::handles(Object *p_object) const {
 void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		sprite_editor->options->show();
+		dragging_mode_hint->show();
 	} else {
 		sprite_editor->options->hide();
+		dragging_mode_hint->hide();
 		sprite_editor->edit(nullptr);
 	}
 }
@@ -685,7 +696,12 @@ void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 Sprite2DEditorPlugin::Sprite2DEditorPlugin() {
 	sprite_editor = memnew(Sprite2DEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(sprite_editor);
-	make_visible(false);
 
+	dragging_mode_hint = memnew(Label);
+	dragging_mode_hint->set_text(TTRC("When dragging: \nHold Ctrl + left mouse button to change the region_rect and position (when region_enabled is true).\nHold left mouse button to modify the scale of the sprite."));
+	_editor_theme_changed();
+	CanvasItemEditor::get_singleton()->get_controls_container()->add_child(dragging_mode_hint);
+
+	make_visible(false);
 	//sprite_editor->options->hide();
 }

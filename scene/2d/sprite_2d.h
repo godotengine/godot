@@ -55,6 +55,7 @@ class Sprite2D : public Node2D {
 	int hframes = 1;
 
 	void _get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip_enabled) const;
+	Point2 _get_rect_offset(const Size2i &p_size) const;
 
 	void _texture_changed();
 
@@ -73,6 +74,8 @@ public:
 	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
 	virtual Point2 _edit_get_pivot() const override;
 	virtual bool _edit_use_pivot() const override;
+
+	virtual void _edit_set_rect(const Rect2 &p_rect) override;
 #endif // TOOLS_ENABLED
 
 #ifdef DEBUG_ENABLED

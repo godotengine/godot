@@ -30,18 +30,21 @@
 
 #include "sprite_2d.h"
 
+#include "core/input/input.h"
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Sprite2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = offset;
+	state["region_rect"] = region_rect;
 	return state;
 }
 
 void Sprite2D::_edit_set_state(const Dictionary &p_state) {
 	Node2D::_edit_set_state(p_state);
 	set_offset(p_state["offset"]);
+	set_region_rect(p_state["region_rect"]);
 }
 
 void Sprite2D::_edit_set_pivot(const Point2 &p_pivot) {
@@ -55,6 +58,20 @@ Point2 Sprite2D::_edit_get_pivot() const {
 
 bool Sprite2D::_edit_use_pivot() const {
 	return true;
+}
+
+void Sprite2D::_edit_set_rect(const Rect2 &p_rect) {
+	if (texture.is_null()) {
+		return;
+	}
+	if (!(region_enabled && Input::get_singleton()->is_key_label_pressed(Key::CTRL))) {
+		Node2D::_edit_set_rect(p_rect);
+		return;
+	}
+	Point2 pivot = p_rect.position - (centered ? _get_rect_offset(p_rect.size) : Vector2());
+	offset = pivot; // This is needed as we have to keep offset being Vector2()
+	set_region_rect(Rect2(Vector2(), p_rect.size));
+	_edit_set_pivot(pivot);
 }
 #endif // TOOLS_ENABLED
 
@@ -111,6 +128,19 @@ void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_c
 	if (vflip) {
 		r_dst_rect.size.y = -r_dst_rect.size.y;
 	}
+}
+
+Point2 Sprite2D::_get_rect_offset(const Size2i &p_size) const {
+	Point2 ofs = offset;
+	if (centered) {
+		ofs -= Size2(p_size) / 2;
+	}
+
+	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
+		ofs = (ofs + Point2(0.5, 0.5)).floor();
+	}
+
+	return ofs;
 }
 
 void Sprite2D::_notification(int p_what) {
@@ -407,14 +437,7 @@ Rect2 Sprite2D::get_rect() const {
 
 	s = s / Point2(hframes, vframes);
 
-	Point2 ofs = offset;
-	if (centered) {
-		ofs -= Size2(s) / 2;
-	}
-
-	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-		ofs = (ofs + Point2(0.5, 0.5)).floor();
-	}
+	Point2 ofs = _get_rect_offset(s);
 
 	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
