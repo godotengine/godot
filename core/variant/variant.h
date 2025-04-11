@@ -202,11 +202,8 @@ private:
 	struct PackedArrayRefBase {
 		SafeRefCount refcount;
 		_FORCE_INLINE_ PackedArrayRefBase *reference() {
-			if (refcount.ref()) {
-				return this;
-			} else {
-				return nullptr;
-			}
+			refcount.ref();
+			return this;
 		}
 		static _FORCE_INLINE_ PackedArrayRefBase *reference_from(PackedArrayRefBase *p_base, PackedArrayRefBase *p_from) {
 			if (p_base == p_from) {
@@ -249,10 +246,10 @@ private:
 
 		_FORCE_INLINE_ PackedArrayRef(const Vector<T> &p_from) {
 			array = p_from;
-			refcount.init();
+			refcount.init(1);
 		}
 		_FORCE_INLINE_ PackedArrayRef() {
-			refcount.init();
+			refcount.init(1);
 		}
 	};
 
