@@ -971,6 +971,9 @@
 		<member name="interface/inspector/default_color_picker_shape" type="int" setter="" getter="">
 			The default color picker shape to use when opening [ColorPicker]s in the editor. This shape can be temporarily adjusted on the color picker itself.
 		</member>
+		<member name="interface/inspector/default_color_picker_show_intensity" type="bool" setter="" getter="">
+			If [code]true[/code], show the intensity slider in the [ColorPicker]s opened in the editor.
+		</member>
 		<member name="interface/inspector/default_float_step" type="float" setter="" getter="">
 			The floating-point precision to use for properties that don't define an explicit precision step. Lower values allow entering more precise values.
 		</member>
