@@ -1951,6 +1951,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 	update_view_timer = memnew(Timer);
 	update_view_timer->set_wait_time(0.2);
+	update_view_timer->set_one_shot(true);
 	update_view_timer->connect("timeout", callable_mp(this, &SceneImportSettingsDialog::_update_view_gizmos));
 	add_child(update_view_timer);
 }
