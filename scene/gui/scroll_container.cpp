@@ -77,7 +77,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 }
 
 void ScrollContainer::_cancel_drag() {
-	set_physics_process_internal(false);
+	set_process_internal(false);
 	drag_touching_deaccel = false;
 	drag_touching = false;
 	drag_speed = Vector2();
@@ -185,7 +185,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			drag_touching_deaccel = false;
 			beyond_deadzone = false;
 			time_since_motion = 0;
-			set_physics_process_internal(true);
+			set_process_internal(true);
 			time_since_motion = 0;
 
 		} else {
@@ -461,13 +461,11 @@ void ScrollContainer::_notification(int p_what) {
 					v_scroll->set_value(point.y);
 				}
 			}
-		} break;
 
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (drag_touching) {
 				if (drag_touching_deaccel) {
 					Vector2 pos = Vector2(h_scroll->get_value(), v_scroll->get_value());
-					pos += drag_speed * get_physics_process_delta_time();
+					pos += drag_speed * get_process_delta_time();
 
 					bool turnoff_h = false;
 					bool turnoff_v = false;
@@ -499,7 +497,7 @@ void ScrollContainer::_notification(int p_what) {
 
 					float sgn_x = drag_speed.x < 0 ? -1 : 1;
 					float val_x = Math::abs(drag_speed.x);
-					val_x -= 1000 * get_physics_process_delta_time();
+					val_x -= 1000 * get_process_delta_time();
 
 					if (val_x < 0) {
 						turnoff_h = true;
@@ -507,7 +505,7 @@ void ScrollContainer::_notification(int p_what) {
 
 					float sgn_y = drag_speed.y < 0 ? -1 : 1;
 					float val_y = Math::abs(drag_speed.y);
-					val_y -= 1000 * get_physics_process_delta_time();
+					val_y -= 1000 * get_process_delta_time();
 
 					if (val_y < 0) {
 						turnoff_v = true;
@@ -523,10 +521,10 @@ void ScrollContainer::_notification(int p_what) {
 					if (time_since_motion == 0 || time_since_motion > 0.1) {
 						Vector2 diff = drag_accum - last_drag_accum;
 						last_drag_accum = drag_accum;
-						drag_speed = diff / get_physics_process_delta_time();
+						drag_speed = diff / get_process_delta_time();
 					}
 
-					time_since_motion += get_physics_process_delta_time();
+					time_since_motion += get_process_delta_time();
 				}
 			}
 		} break;
