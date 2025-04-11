@@ -225,7 +225,7 @@ _ALWAYS_INLINE_ bool is_nan(double p_val) {
 	union {
 		uint64_t u;
 		double f;
-	} ieee754;
+	} ieee754 = {};
 	ieee754.f = p_val;
 	// (unsigned)(0x7ff0000000000001 >> 32) : 0x7ff00000
 	return ((((unsigned)(ieee754.u >> 32) & 0x7fffffff) + ((unsigned)ieee754.u != 0)) > 0x7ff00000);
@@ -241,7 +241,7 @@ _ALWAYS_INLINE_ bool is_nan(float p_val) {
 	union {
 		uint32_t u;
 		float f;
-	} ieee754;
+	} ieee754 = {};
 	ieee754.f = p_val;
 	// -----------------------------------
 	// (single-precision floating-point)
@@ -265,7 +265,7 @@ _ALWAYS_INLINE_ bool is_inf(double p_val) {
 	union {
 		uint64_t u;
 		double f;
-	} ieee754;
+	} ieee754 = {};
 	ieee754.f = p_val;
 	return ((unsigned)(ieee754.u >> 32) & 0x7fffffff) == 0x7ff00000 &&
 			((unsigned)ieee754.u == 0);
@@ -282,7 +282,7 @@ _ALWAYS_INLINE_ bool is_inf(float p_val) {
 	union {
 		uint32_t u;
 		float f;
-	} ieee754;
+	} ieee754 = {};
 	ieee754.f = p_val;
 	return (ieee754.u & 0x7fffffff) == 0x7f800000;
 #else
@@ -799,7 +799,7 @@ _ALWAYS_INLINE_ float halfptr_to_float(const uint16_t *p_half) {
 	union {
 		uint32_t u32;
 		float f32;
-	} u;
+	} u = {};
 
 	u.u32 = halfbits_to_floatbits(*p_half);
 	return u.f32;
@@ -813,7 +813,7 @@ _ALWAYS_INLINE_ uint16_t make_half_float(float p_value) {
 	union {
 		float fv;
 		uint32_t ui;
-	} ci;
+	} ci = {};
 	ci.fv = p_value;
 
 	uint32_t x = ci.ui;
