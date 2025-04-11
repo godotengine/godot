@@ -1560,6 +1560,9 @@
 			- [code]wintab[/code], uses Wacom "WinTab" driver.
 			- [code]dummy[/code], tablet input is disabled.
 		</member>
+		<member name="input_devices/pointing/android/disable_scroll_deadzone" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], disables the scroll deadzone on Android, allowing even very small scroll movements to be registered. This may increase scroll sensitivity but can also lead to unintended scrolling from slight finger movements.
+		</member>
 		<member name="input_devices/pointing/android/enable_long_press_as_right_click" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], long press events on an Android touchscreen are transformed into right click events.
 		</member>
