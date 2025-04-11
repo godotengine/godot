@@ -387,5 +387,8 @@ RID NoiseTexture2D::get_rid() const {
 }
 
 Ref<Image> NoiseTexture2D::get_image() const {
+	if (image.is_null()) {
+		const_cast<NoiseTexture2D *>(this)->_update_texture();
+	}
 	return image;
 }
