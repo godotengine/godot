@@ -215,6 +215,41 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	return preview->preview;
 }
 
+void AudioStreamPreviewGenerator::update_preview(const Ref<AudioStream> &p_stream) {
+	if (previews.has(p_stream->get_instance_id())) {
+		Preview *preview = &previews[p_stream->get_instance_id()];
+		if (!preview->thread) {
+			preview->generating.set();
+			preview->playback = p_stream->instantiate_playback();
+			float len_s = p_stream->get_length();
+			if (len_s == 0) {
+				len_s = 60 * 5; //five minutes
+			}
+
+			int frames = AudioServer::get_singleton()->get_mix_rate() * len_s;
+
+			Vector<uint8_t> maxmin;
+			int pw = frames / 20;
+			maxmin.resize(pw * 2);
+			{
+				uint8_t *ptr = maxmin.ptrw();
+				for (int i = 0; i < pw * 2; i++) {
+					ptr[i] = 127;
+				}
+			}
+
+			preview->preview->preview = maxmin;
+			preview->preview->length = len_s;
+
+			if (preview->playback.is_valid()) {
+				preview->thread = memnew(Thread);
+				preview->thread->set_name("AudioStreamPreviewGenerator");
+				preview->thread->start(_preview_thread, preview);
+			}
+		}
+	}
+}
+
 void AudioStreamPreviewGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_preview", "stream"), &AudioStreamPreviewGenerator::generate_preview);
 
