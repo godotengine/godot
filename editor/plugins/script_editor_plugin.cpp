@@ -774,7 +774,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		Object::cast_to<ScriptEditorBase>(c)->validate();
 	}
 	if (Object::cast_to<EditorHelp>(c)) {
-		script_name_label->set_text(Object::cast_to<EditorHelp>(c)->get_class());
+		script_name_label->set_text(Object::cast_to<EditorHelp>(c)->get_class_name());
 		script_icon->set_texture(get_editor_theme_icon(SNAME("Help")));
 		if (is_visible_in_tree()) {
 			Object::cast_to<EditorHelp>(c)->set_focused();
@@ -1417,11 +1417,11 @@ void ScriptEditor::_menu_option(int p_option) {
 			EditorHelp *eh = Object::cast_to<EditorHelp>(tab);
 			bool native_class_doc = false;
 			if (eh) {
-				const HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(eh->get_class());
+				const HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(eh->get_class_name());
 				native_class_doc = E && !E->value.is_script_doc;
 			}
 			if (native_class_doc) {
-				String name = eh->get_class().to_lower();
+				String name = eh->get_class_name().to_lower();
 				String doc_url = vformat(GODOT_VERSION_DOCS_URL "/classes/class_%s.html", name);
 				OS::get_singleton()->shell_open(doc_url);
 			} else {
@@ -1550,7 +1550,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (!scr->is_tool()) {
 					is_runnable = false;
 
-					if (scr->get_class() == "GDScript") {
+					if (scr->get_class_name() == "GDScript") {
 						EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script (add the @tool annotation at the top)."), EditorToaster::SEVERITY_WARNING);
 					} else {
 						EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script."), EditorToaster::SEVERITY_WARNING);
@@ -2165,11 +2165,11 @@ void ScriptEditor::_update_online_doc() {
 	EditorHelp *eh = Object::cast_to<EditorHelp>(current);
 	bool native_class_doc = false;
 	if (eh) {
-		const HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(eh->get_class());
+		const HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(eh->get_class_name());
 		native_class_doc = E && !E->value.is_script_doc;
 	}
 	if (native_class_doc) {
-		String name = eh->get_class();
+		String name = eh->get_class_name();
 		String tooltip = vformat(TTR("Open '%s' in Godot online documentation."), name);
 		site_search->set_text(TTR("Open in Online Docs"));
 		site_search->set_tooltip_text(tooltip);
@@ -2286,8 +2286,8 @@ void ScriptEditor::_update_script_names() {
 		}
 
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
-		if (eh && !eh->get_class().is_empty()) {
-			String name = eh->get_class().unquote();
+		if (eh && !eh->get_class_name().is_empty()) {
+			String name = eh->get_class_name().unquote();
 			Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Help"));
 			String tooltip = vformat(TTR("%s Class Reference"), name);
 
@@ -2857,7 +2857,7 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 
 			Ref<Script> scr = edited_res;
 			if (scr.is_valid()) {
-				Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+				Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class_name(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 				ERR_CONTINUE(rel_scr.is_null());
 				scr->set_source_code(rel_scr->get_source_code());
 				scr->reload(true);
@@ -2867,7 +2867,7 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 
 			Ref<JSON> json = edited_res;
 			if (json.is_valid()) {
-				Ref<JSON> rel_json = ResourceLoader::load(json->get_path(), json->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+				Ref<JSON> rel_json = ResourceLoader::load(json->get_path(), json->get_class_name(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 				ERR_CONTINUE(rel_json.is_null());
 				json->parse(rel_json->get_parsed_text(), true);
 			}
@@ -3163,7 +3163,7 @@ Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	}
 	EditorHelp *eh = Object::cast_to<EditorHelp>(cur_node);
 	if (eh) {
-		preview_name = eh->get_class();
+		preview_name = eh->get_class_name();
 		preview_icon = get_editor_theme_icon(SNAME("Help"));
 	}
 
@@ -3648,7 +3648,7 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
 
 		if (eh) {
-			helps.push_back(eh->get_class());
+			helps.push_back(eh->get_class_name());
 		}
 	}
 
@@ -3671,7 +3671,7 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
 
-		if (eh && eh->get_class() == p_class) {
+		if (eh && eh->get_class_name() == p_class) {
 			_go_to_tab(i);
 			_update_script_names();
 			return;
@@ -3706,7 +3706,7 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 	_go_to_tab(tab_container->get_tab_count() - 1);
 	eh->go_to_help(p_desc);
 	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
-	_add_recent_script(eh->get_class());
+	_add_recent_script(eh->get_class_name());
 	_sort_list_on_update = true;
 	_update_script_names();
 	_save_layout();
@@ -3716,7 +3716,7 @@ bool ScriptEditor::_help_tab_goto(const String &p_name, const String &p_desc) {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
 
-		if (eh && eh->get_class() == p_name) {
+		if (eh && eh->get_class_name() == p_name) {
 			_go_to_tab(i);
 			eh->go_to_help(p_desc);
 			_update_script_names();
@@ -3731,7 +3731,7 @@ void ScriptEditor::update_doc(const String &p_name) {
 
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
-		if (eh && eh->get_class() == p_name) {
+		if (eh && eh->get_class_name() == p_name) {
 			eh->update_doc();
 			return;
 		}

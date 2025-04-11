@@ -2156,7 +2156,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 			//store as generic object
 
-			p_store_string_func(p_store_string_ud, "Object(" + obj->get_class() + ",");
+			p_store_string_func(p_store_string_ud, "Object(" + obj->get_class_name() + ",");
 
 			List<PropertyInfo> props;
 			obj->get_property_list(&props);

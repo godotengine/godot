@@ -275,7 +275,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			script_debugger->set_lines_left(-1);
 
 			MainLoop *main_loop = OS::get_singleton()->get_main_loop();
-			if (main_loop->get_class() == "SceneTree") {
+			if (main_loop->get_class_name() == "SceneTree") {
 				main_loop->call("quit");
 			}
 			break;

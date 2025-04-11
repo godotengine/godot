@@ -67,7 +67,7 @@ uint32_t SignalAwaiterCallable::hash() const {
 String SignalAwaiterCallable::get_as_text() const {
 	Object *base = ObjectDB::get_instance(target_id);
 	if (base) {
-		String class_name = base->get_class();
+		String class_name = base->get_class_name();
 		Ref<Script> script = base->get_script();
 		if (script.is_valid() && script->get_path().is_resource_file()) {
 			class_name += "(" + script->get_path().get_file() + ")";
@@ -152,7 +152,7 @@ uint32_t EventSignalCallable::hash() const {
 }
 
 String EventSignalCallable::get_as_text() const {
-	String class_name = owner->get_class();
+	String class_name = owner->get_class_name();
 	Ref<Script> script = owner->get_script();
 	if (script.is_valid() && script->get_path().is_resource_file()) {
 		class_name += "(" + script->get_path().get_file() + ")";

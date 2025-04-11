@@ -8,7 +8,7 @@
 
 func test():
 	var resource := Resource.new()
-	prints("Not shadowed:", resource.get_class())
+	prints("Not shadowed:", resource.get_class_name())
 
 	for property in get_property_list():
 		if str(property.name).begins_with("test_"):

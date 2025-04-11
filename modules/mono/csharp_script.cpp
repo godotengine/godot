@@ -1140,7 +1140,7 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 
 	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, false,
-			"Type inherits from native type '" + type_name + "', so it can't be instantiated in object of type: '" + p_object->get_class() + "'.");
+			"Type inherits from native type '" + type_name + "', so it can't be instantiated in object of type: '" + p_object->get_class_name() + "'.");
 
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!r_script_binding.gchandle.is_released());
@@ -2448,9 +2448,9 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 		if (EngineDebugger::is_active()) {
 			CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
 					"Script inherits from native type '" + String(native_name) +
-							"', so it can't be assigned to an object of type: '" + p_this->get_class() + "'");
+							"', so it can't be assigned to an object of type: '" + p_this->get_class_name() + "'");
 		}
-		ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) + "', so it can't be assigned to an object of type: '" + p_this->get_class() + "'.");
+		ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) + "', so it can't be assigned to an object of type: '" + p_this->get_class_name() + "'.");
 	}
 
 	Callable::CallError unchecked_error;

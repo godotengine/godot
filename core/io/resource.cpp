@@ -220,7 +220,7 @@ void Resource::reset_state() {
 
 Error Resource::copy_from(const Ref<Resource> &p_resource) {
 	ERR_FAIL_COND_V(p_resource.is_null(), ERR_INVALID_PARAMETER);
-	if (get_class() != p_resource->get_class()) {
+	if (get_class_name() != p_resource->get_class_name()) {
 		return ERR_INVALID_PARAMETER;
 	}
 
@@ -253,7 +253,7 @@ void Resource::reload_from_file() {
 		return;
 	}
 
-	Ref<Resource> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+	Ref<Resource> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class_name(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 
 	if (s.is_null()) {
 		return;
@@ -315,7 +315,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	Ref<Resource> r = Object::cast_to<Resource>(ClassDB::instantiate(get_class()));
+	Ref<Resource> r = Object::cast_to<Resource>(ClassDB::instantiate(get_class_name()));
 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
 	r->local_scene = p_for_scene;
@@ -391,7 +391,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	Ref<Resource> r = static_cast<Resource *>(ClassDB::instantiate(get_class()));
+	Ref<Resource> r = static_cast<Resource *>(ClassDB::instantiate(get_class_name()));
 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
 	for (const PropertyInfo &E : plist) {
@@ -628,7 +628,7 @@ void ResourceCache::clear() {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			ERR_PRINT(vformat("%d resources still in use at exit.", resources.size()));
 			for (const KeyValue<String, Resource *> &E : resources) {
-				print_line(vformat("Resource still in use: %s (%s)", E.key, E.value->get_class()));
+				print_line(vformat("Resource still in use: %s (%s)", E.key, E.value->get_class_name()));
 			}
 		} else {
 			ERR_PRINT(vformat("%d resources still in use at exit (run with --verbose for details).", resources.size()));

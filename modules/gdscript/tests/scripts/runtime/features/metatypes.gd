@@ -14,7 +14,7 @@ func check_gdscript_native_class(value: Variant) -> void:
 	print(var_to_str(value).get_slice(",", 0).trim_prefix("Object("))
 
 func check_gdscript(value: GDScript) -> void:
-	print(value.get_class())
+	print(value.get_class_name())
 
 func check_enum(value: Dictionary) -> void:
 	print(value)

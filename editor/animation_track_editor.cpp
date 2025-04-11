@@ -583,7 +583,7 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 					Ref<Resource> res = v;
 					if (res.is_valid()) {
 						val_hint = PROPERTY_HINT_RESOURCE_TYPE;
-						val_hint_string = res->get_class();
+						val_hint_string = res->get_class_name();
 					}
 				}
 
@@ -1193,7 +1193,7 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 							Ref<Resource> res = v;
 							if (res.is_valid()) {
 								val_hint = PROPERTY_HINT_RESOURCE_TYPE;
-								val_hint_string = res->get_class();
+								val_hint_string = res->get_class_name();
 							}
 						}
 
@@ -2922,7 +2922,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 						} else if (!stream->get_name().is_empty()) {
 							stream_name = stream->get_name();
 						} else {
-							stream_name = stream->get_class();
+							stream_name = stream->get_class_name();
 						}
 					}
 
@@ -3054,7 +3054,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 						if (nd) {
 							StringName prop = npath.get_concatenated_subnames();
 							PropertyInfo prop_info;
-							ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
+							ClassDB::get_property_info(nd->get_class_name(), prop, &prop_info);
 #ifdef DISABLE_DEPRECATED
 							bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.contains("radians_as_degrees");
 #else
@@ -6445,7 +6445,7 @@ bool AnimationTrackEditor::_is_track_compatible(int p_target_track_idx, Variant:
 							if (nd) {
 								StringName prop = npath.get_concatenated_subnames();
 								PropertyInfo prop_info;
-								path_valid = ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
+								path_valid = ClassDB::get_property_info(nd->get_class_name(), prop, &prop_info);
 								property_type = prop_info.type;
 							}
 						}
@@ -6555,8 +6555,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				String text;
 				Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Node"));
 				if (node) {
-					if (has_theme_icon(node->get_class(), EditorStringName(EditorIcons))) {
-						icon = get_editor_theme_icon(node->get_class());
+					if (has_theme_icon(node->get_class_name(), EditorStringName(EditorIcons))) {
+						icon = get_editor_theme_icon(node->get_class_name());
 					}
 
 					text = node->get_name();

@@ -56,7 +56,7 @@ static String _get_variant_string(const Variant &p_variant) {
 				if (script) {
 					txt = "script(" + GDScript::debug_get_script_name(script) + ")";
 				} else {
-					txt = "object(" + obj->get_class();
+					txt = "object(" + obj->get_class_name();
 					if (obj->get_script_instance()) {
 						txt += ", " + GDScript::debug_get_script_name(obj->get_script_instance()->get_script());
 					}

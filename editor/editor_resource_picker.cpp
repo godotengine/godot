@@ -84,7 +84,7 @@ void EditorResourcePicker::_update_resource() {
 			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
 		}
 	} else if (edited_resource.is_valid()) {
-		assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
+		assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class_name());
 	}
 
 	assign_button->set_disabled(!editable && edited_resource.is_null());
@@ -144,7 +144,7 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	if (!base_type.is_empty()) {
 		bool any_type_matches = false;
 
-		String res_type = loaded_resource->get_class();
+		String res_type = loaded_resource->get_class_name();
 		Ref<Script> res_script = loaded_resource->get_script();
 		bool is_global_class = false;
 		if (res_script.is_valid()) {
@@ -580,7 +580,7 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	if (p_resource.is_null()) {
 		return String();
 	}
-	String res_type = p_resource->get_class();
+	String res_type = p_resource->get_class_name();
 
 	Ref<Script> res_script = p_resource->get_script();
 	if (res_script.is_null()) {
@@ -911,8 +911,8 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 			is_custom = _is_type_valid(custom_class, allowed_types);
 		}
 
-		if (!is_custom && !_is_type_valid(edited_resource->get_class(), allowed_types)) {
-			String class_str = (custom_class == StringName() ? edited_resource->get_class() : vformat("%s (%s)", custom_class, edited_resource->get_class()));
+		if (!is_custom && !_is_type_valid(edited_resource->get_class_name(), allowed_types)) {
+			String class_str = (custom_class == StringName() ? String(edited_resource->get_class_name()) : vformat("%s (%s)", custom_class, edited_resource->get_class_name()));
 			WARN_PRINT(vformat("Value mismatch between the new base type of this EditorResourcePicker, '%s', and the type of the value it already has, '%s'.", base_type, class_str));
 		}
 	}
@@ -957,8 +957,8 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 			is_custom = _is_type_valid(custom_class, allowed_types);
 		}
 
-		if (!is_custom && !_is_type_valid(p_resource->get_class(), allowed_types)) {
-			String class_str = (custom_class == StringName() ? p_resource->get_class() : vformat("%s (%s)", custom_class, p_resource->get_class()));
+		if (!is_custom && !_is_type_valid(p_resource->get_class_name(), allowed_types)) {
+			String class_str = (custom_class == StringName() ? String(p_resource->get_class_name()) : vformat("%s (%s)", custom_class, p_resource->get_class_name()));
 			ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
 		}
 	}
@@ -1028,9 +1028,9 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 	}
 
 	if (res_name.is_empty()) {
-		p_item->set_text(0, p_resource->get_class());
+		p_item->set_text(0, p_resource->get_class_name());
 	} else {
-		p_item->set_text(0, vformat("%s (%s)", p_resource->get_class(), res_name));
+		p_item->set_text(0, vformat("%s (%s)", p_resource->get_class_name(), res_name));
 	}
 
 	p_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(p_resource.ptr()));
@@ -1044,7 +1044,7 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 	}
 
 	static Vector<String> unique_exceptions = { "Image", "Shader", "Mesh", "FontFile" };
-	if (!unique_exceptions.has(p_resource->get_class())) {
+	if (!unique_exceptions.has(p_resource->get_class_name())) {
 		// Automatically select resource, unless it's something that shouldn't be duplicated.
 		p_item->set_checked(0, true);
 	}
@@ -1380,7 +1380,7 @@ void EditorAudioStreamPicker::_preview_draw() {
 	} else if (audio_stream->get_path().is_resource_file()) {
 		text = audio_stream->get_path().get_file();
 	} else {
-		text = audio_stream->get_class().replace_first("AudioStream", "");
+		text = String(audio_stream->get_class_name()).replace_first("AudioStream", "");
 	}
 
 	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 4, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);

@@ -606,7 +606,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			return false;
 		}
 
-		String res_type = res->get_class();
+		String res_type = res->get_class_name();
 		StringName script_class;
 		if (res->get_script()) {
 			script_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());

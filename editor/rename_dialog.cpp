@@ -446,7 +446,7 @@ String RenameDialog::_substitute(const String &subject, const Node *node, int co
 
 	if (node) {
 		result = result.replace("${NAME}", node->get_name());
-		result = result.replace("${TYPE}", node->get_class());
+		result = result.replace("${TYPE}", node->get_class_name());
 	}
 
 	int current = EditorNode::get_editor_data().get_edited_scene();

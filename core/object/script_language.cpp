@@ -181,7 +181,7 @@ void Script::reload_from_file() {
 #ifdef TOOLS_ENABLED
 	// Replicates how the ScriptEditor reloads script resources, which generally handles it.
 	// However, when scripts are to be reloaded but aren't open in the internal editor, we go through here instead.
-	const Ref<Script> rel = ResourceLoader::load(ResourceLoader::path_remap(get_path()), get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+	const Ref<Script> rel = ResourceLoader::load(ResourceLoader::path_remap(get_path()), get_class_name(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 	if (rel.is_null()) {
 		return;
 	}

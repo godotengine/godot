@@ -295,7 +295,7 @@ public:
 
 	void watch_signal(Object *p_object, const String &p_signal) {
 		MethodInfo method_info;
-		ClassDB::get_signal(p_object->get_class(), p_signal, &method_info);
+		ClassDB::get_signal(p_object->get_class_name(), p_signal, &method_info);
 		switch (method_info.arguments.size()) {
 			case 0: {
 				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_zero).bind(p_signal));
@@ -317,7 +317,7 @@ public:
 
 	void unwatch_signal(Object *p_object, const String &p_signal) {
 		MethodInfo method_info;
-		ClassDB::get_signal(p_object->get_class(), p_signal, &method_info);
+		ClassDB::get_signal(p_object->get_class_name(), p_signal, &method_info);
 		switch (method_info.arguments.size()) {
 			case 0: {
 				p_object->disconnect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_zero));

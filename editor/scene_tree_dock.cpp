@@ -426,7 +426,7 @@ void SceneTreeDock::_perform_create_audio_stream_players(const Vector<String> &p
 
 		String new_name = p_parent->validate_child_name(node);
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_parent), node->get_class(), new_name);
+		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_parent), node->get_class_name(), new_name);
 		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_parent)).path_join(new_name)));
 	}
 
@@ -744,7 +744,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			if (selected) {
-				create_dialog->popup_create(false, true, selected->get_class(), selected->get_name());
+				create_dialog->popup_create(false, true, selected->get_class_name(), selected->get_name());
 			}
 		} break;
 		case TOOL_EXTEND_SCRIPT: {
@@ -1233,7 +1233,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					class_name = script_base->get_global_name();
 				}
 				if (class_name.is_empty()) {
-					class_name = node->get_class();
+					class_name = node->get_class_name();
 				}
 
 				ScriptEditor::get_singleton()->goto_help("class_name:" + class_name);
@@ -2923,7 +2923,7 @@ Node *SceneTreeDock::_do_create(Node *p_parent) {
 		undo_redo->add_undo_method(p_parent, "remove_child", child);
 
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_parent), child->get_class(), new_name);
+		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_parent), child->get_class_name(), new_name);
 		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_parent)).path_join(new_name)));
 
 	} else {
@@ -3153,7 +3153,7 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 		}
 
 		if (!default_oldnode) {
-			default_oldnode = Object::cast_to<Node>(ClassDB::instantiate(oldnode->get_class()));
+			default_oldnode = Object::cast_to<Node>(ClassDB::instantiate(oldnode->get_class_name()));
 		}
 
 		List<PropertyInfo> pinfo;
@@ -3288,7 +3288,7 @@ bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node
 					r_variant = p_by_node;
 				} else {
 					r_variant = memnew(Object);
-					r_warn_message = vformat("The node's new type is incompatible with an exported variable (expected %s, but type is %s).", type_hint, p_by_node->get_class());
+					r_warn_message = vformat("The node's new type is incompatible with an exported variable (expected %s, but type is %s).", type_hint, p_by_node->get_class_name());
 				}
 				return true;
 			}
@@ -3635,7 +3635,7 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 		undo_redo->add_undo_method(n, "remove_child", new_node);
 
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(n), new_node->get_class(), new_node->get_name());
+		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(n), new_node->get_class_name(), new_node->get_name());
 		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(n)).path_join(new_node->get_name())));
 		undo_redo->commit_action();
 	} else {
@@ -4117,12 +4117,12 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 		}
 	}
 
-	String inherits = selected->get_class();
+	String inherits = selected->get_class_name();
 
 	if (p_extend && existing.is_valid()) {
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *l = ScriptServer::get_language(i);
-			if (l->get_type() == existing->get_class()) {
+			if (l->get_type() == existing->get_class_name()) {
 				String name = l->get_global_class_name(existing->get_path());
 				if (ScriptServer::is_global_class(name) && EDITOR_GET("interface/editors/derive_script_globals_by_name").operator bool()) {
 					inherits = name;
@@ -4529,7 +4529,7 @@ void SceneTreeDock::_list_all_subresources(PopupMenu *p_menu) {
 
 	for (const Pair<Ref<Resource>, Node *> &pair : all_resources) {
 		if (!unique_resources.has(pair.first)) {
-			resources_by_type[pair.first->get_class()].push_back(pair);
+			resources_by_type[pair.first->get_class_name()].push_back(pair);
 		}
 		unique_resources[pair.first]++;
 	}

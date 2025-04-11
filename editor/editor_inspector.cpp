@@ -3248,7 +3248,7 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 		return false;
 	}
 
-	StringName class_name = object->get_class();
+	StringName class_name = object->get_class_name();
 
 	while (class_name != StringName()) {
 		if (profile->is_class_property_disabled(class_name, p_property)) {
@@ -3858,7 +3858,7 @@ void EditorInspector::update_tree() {
 
 			// Small hack for theme_overrides. They are listed under Control, but come from another class.
 			if (classname == "Control" && p.name.begins_with("theme_override_")) {
-				classname = get_edited_object()->get_class();
+				classname = get_edited_object()->get_class_name();
 			}
 
 			// Search for the doc path in the cache.
@@ -5152,7 +5152,7 @@ void EditorInspector::_show_add_meta_dialog() {
 	StringName dialog_title;
 	Node *node = Object::cast_to<Node>(object);
 	// If object is derived from Node use node name, if derived from Resource use classname.
-	dialog_title = node ? node->get_name() : StringName(object->get_class());
+	dialog_title = node ? node->get_name() : StringName(object->get_class_name());
 
 	List<StringName> existing_meta_keys;
 	object->get_meta_list(&existing_meta_keys);

@@ -145,7 +145,7 @@ void EditorObjectSelector::update_path() {
 				}
 
 				if (name.is_empty()) {
-					name = r->get_class();
+					name = r->get_class_name();
 				}
 			} else if (obj->is_class("EditorDebuggerRemoteObjects")) {
 				name = obj->call("get_title");
@@ -154,11 +154,11 @@ void EditorObjectSelector::update_path() {
 			} else if (Object::cast_to<Resource>(obj) && !Object::cast_to<Resource>(obj)->get_name().is_empty()) {
 				name = Object::cast_to<Resource>(obj)->get_name();
 			} else {
-				name = obj->get_class();
+				name = obj->get_class_name();
 			}
 
 			current_object_label->set_text(name);
-			set_tooltip_text(obj->get_class());
+			set_tooltip_text(obj->get_class_name());
 		}
 	}
 }

@@ -515,15 +515,15 @@ String ScriptTextEditor::get_name() {
 
 Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 	if (get_parent_control()) {
-		String icon_name = script->get_class();
+		String icon_name = script->get_class_name();
 		if (script->is_built_in()) {
 			icon_name += "Internal";
 		}
 
 		if (get_parent_control()->has_theme_icon(icon_name, EditorStringName(EditorIcons))) {
 			return get_parent_control()->get_editor_theme_icon(icon_name);
-		} else if (get_parent_control()->has_theme_icon(script->get_class(), EditorStringName(EditorIcons))) {
-			return get_parent_control()->get_editor_theme_icon(script->get_class());
+		} else if (get_parent_control()->has_theme_icon(script->get_class_name(), EditorStringName(EditorIcons))) {
+			return get_parent_control()->get_editor_theme_icon(script->get_class_name());
 		}
 	}
 
@@ -873,7 +873,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 		uint64_t date = FileAccess::get_modified_time(scr->get_path());
 
 		if (last_date != date) {
-			Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+			Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class_name(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 			ERR_CONTINUE(rel_scr.is_null());
 			scr->set_source_code(rel_scr->get_source_code());
 			scr->set_last_modified_time(rel_scr->get_last_modified_time());
@@ -1935,7 +1935,7 @@ static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p
 			path = ResourceUID::get_singleton()->id_to_text(id);
 		}
 	}
-	const bool is_script = ClassDB::is_parent_class(p_resource->get_class(), "Script");
+	const bool is_script = ClassDB::is_parent_class(p_resource->get_class_name(), "Script");
 
 	if (!p_create_field) {
 		return vformat("preload(%s)", _quote_drop_data(path));

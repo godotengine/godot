@@ -210,7 +210,7 @@ void Light3D::set_projector(const Ref<Texture2D> &p_texture) {
 					p_texture->is_class("MeshTexture") ||
 					p_texture->is_class("Texture2DRD") ||
 					p_texture->is_class("ViewportTexture"))) {
-		WARN_PRINT(vformat("%s cannot be used as a Light3D projector texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
+		WARN_PRINT(vformat("%s cannot be used as a Light3D projector texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class_name(), get_path(), p_texture->get_class_name()));
 	}
 #endif
 

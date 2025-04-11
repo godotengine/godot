@@ -284,7 +284,7 @@ void OpenXRBindingModifierEditor::setup(Ref<OpenXRActionMap> p_action_map, Ref<O
 	if (p_binding_modifier.is_valid()) {
 		binding_modifier_title->set_text(p_binding_modifier->get_description());
 
-		editor_inspector->set_object_class(p_binding_modifier->get_class());
+		editor_inspector->set_object_class(p_binding_modifier->get_class_name());
 		editor_inspector->edit(p_binding_modifier.ptr());
 	}
 }

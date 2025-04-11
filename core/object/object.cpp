@@ -960,7 +960,7 @@ String Object::to_string() {
 		_extension->to_string(_extension_instance, &is_valid, &ret);
 		return ret;
 	}
-	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
+	return "<" + get_class_name() + "#" + itos(get_instance_id()) + ">";
 }
 
 void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
@@ -1451,7 +1451,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 #endif
 		}
 
-		ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, vformat("In Object of type '%s': Attempt to connect nonexistent signal '%s' to callable '%s'.", String(get_class()), p_signal, p_callable));
+		ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, vformat("In Object of type '%s': Attempt to connect nonexistent signal '%s' to callable '%s'.", String(get_class_name()), p_signal, p_callable));
 
 		signal_map[p_signal] = SignalData();
 		s = &signal_map[p_signal];
@@ -1708,7 +1708,7 @@ void Object::notify_property_list_changed() {
 }
 
 void Object::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
+	ClassDB::bind_method(D_METHOD("get_class_name"), &Object::get_class_name);
 	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class);
 	ClassDB::bind_method(D_METHOD("set", "property", "value"), &Object::_set_bind);
 	ClassDB::bind_method(D_METHOD("get", "property"), &Object::_get_bind);
@@ -1867,6 +1867,16 @@ void Object::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONNECT_PERSIST);
 	BIND_ENUM_CONSTANT(CONNECT_ONE_SHOT);
 	BIND_ENUM_CONSTANT(CONNECT_REFERENCE_COUNTED);
+
+#ifndef DISABLE_DEPRECATED
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
+	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
+	GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4996)
+	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
+	GODOT_MSVC_WARNING_POP
+	GODOT_CLANG_WARNING_POP
+	GODOT_GCC_WARNING_POP
+#endif
 }
 
 void Object::set_deferred(const StringName &p_property, const Variant &p_value) {
@@ -2435,7 +2445,7 @@ void ObjectDB::cleanup() {
 
 					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_SLOT_MAX_COUNT_BITS) | (object_slots[i].is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);
 					DEV_ASSERT(id == (uint64_t)obj->get_instance_id()); // We could just use the id from the object, but this check may help catching memory corruption catastrophes.
-					print_line("Leaked instance: " + String(obj->get_class()) + ":" + uitos(id) + extra_info);
+					print_line("Leaked instance: " + String(obj->get_class_name()) + ":" + uitos(id) + extra_info);
 
 					count--;
 				}

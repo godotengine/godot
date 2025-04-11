@@ -89,7 +89,7 @@ void ShaderEditorPlugin::_update_shader_list() {
 			text += "(*)";
 		}
 
-		String _class = shader->get_class();
+		String _class = shader->get_class_name();
 		if (!shader_list->has_theme_icon(_class, EditorStringName(EditorIcons))) {
 			_class = "TextFile";
 		}

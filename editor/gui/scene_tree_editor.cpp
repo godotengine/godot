@@ -678,7 +678,7 @@ void SceneTreeEditor::_update_node_tooltip(Node *p_node, TreeItem *p_item) {
 	}
 
 	StringName custom_type = EditorNode::get_singleton()->get_object_custom_type_name(p_node);
-	tooltip += "\n" + TTR("Type:") + " " + (custom_type != StringName() ? String(custom_type) : p_node->get_class());
+	tooltip += "\n" + TTR("Type:") + " " + (custom_type != StringName() ? custom_type : p_node->get_class_name());
 
 	if (!p_node->get_editor_description().is_empty()) {
 		const PackedInt32Array boundaries = TS->string_get_word_breaks(p_node->get_editor_description(), "", 80);
@@ -1122,7 +1122,7 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 
 			if (parameter == "type" || parameter == "t") {
 				// Filter by Type.
-				String type = get_node(p_item->get_metadata(0))->get_class();
+				String type = get_node(p_item->get_metadata(0))->get_class_name();
 				bool term_in_inherited_class = false;
 				// Every Node is a Node, duh!
 				while (type != "Node") {
@@ -1517,9 +1517,9 @@ void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *
 	if (new_name.is_empty()) {
 		// If name is still empty, fallback to class name.
 		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
-			new_name = Node::adjust_name_casing(p_node->get_class());
+			new_name = Node::adjust_name_casing(p_node->get_class_name());
 		} else {
-			new_name = p_node->get_class();
+			new_name = p_node->get_class_name();
 		}
 	}
 

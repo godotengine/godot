@@ -73,7 +73,7 @@ static String _get_var_type(const Variant *p_var) {
 			if (bobj->is_class_ptr(GDScriptNativeClass::get_class_ptr_static())) {
 				basestr = Object::cast_to<GDScriptNativeClass>(bobj)->get_name();
 			} else {
-				basestr = bobj->get_class();
+				basestr = bobj->get_class_name();
 				if (bobj->get_script_instance()) {
 					basestr += " (" + GDScript::debug_get_script_name(bobj->get_script_instance()->get_script()) + ")";
 				}

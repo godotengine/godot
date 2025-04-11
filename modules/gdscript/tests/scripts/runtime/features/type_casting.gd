@@ -1,7 +1,7 @@
 func print_value(value: Variant) -> void:
 	if value is Object:
 		@warning_ignore("unsafe_method_access")
-		print("<%s>" % value.get_class())
+		print("<%s>" % value.get_class_name())
 	else:
 		print(var_to_str(value))
 
