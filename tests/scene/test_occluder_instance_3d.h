@@ -66,9 +66,16 @@ TEST_CASE("[SceneTree][OccluderInstance3D] Test baking functionality") {
 	box_mesh_instance->set_owner(test_bake_scene);
 
 	// This is the vertices output that we expect for a single cube.
-	const PackedVector3Array expected_vertices_output = PackedVector3Array(
-			{ Vector3(-0.5, 0.5, 0.5), Vector3(0.5, 0.5, 0.5), Vector3(-0.5, -0.5, 0.5), Vector3(0.5, -0.5, 0.5), Vector3(0.5, 0.5, -0.5), Vector3(-0.5, 0.5, -0.5),
-					Vector3(0.5, -0.5, -0.5), Vector3(-0.5, -0.5, -0.5) });
+	const PackedVector3Array expected_vertices_output = PackedVector3Array({
+		Vector3(-0.5, 0.5, 0.5),
+		Vector3(0.5, 0.5, 0.5),
+		Vector3(-0.5, -0.5, 0.5),
+		Vector3(0.5, -0.5, 0.5),
+		Vector3(0.5, 0.5, -0.5),
+		Vector3(-0.5, 0.5, -0.5),
+		Vector3(0.5, -0.5, -0.5),
+		Vector3(-0.5, -0.5, -0.5),
+	});
 
 	// This is the indices output that we expect for a single cube.
 	const PackedInt32Array expected_indices_output = PackedInt32Array(
