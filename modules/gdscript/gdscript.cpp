@@ -2771,6 +2771,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"is",
 		"not",
 		"or",
+		"xor",
 		// Special values (tokenizer treats them as literals, not as tokens).
 		"false",
 		"null",
