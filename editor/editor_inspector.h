@@ -303,13 +303,33 @@ public:
 class EditorInspectorCategory : public Control {
 	GDCLASS(EditorInspectorCategory, Control);
 
+	friend class EditorInspector;
+
 	// Right-click context menu options.
 	enum ClassMenuOption {
 		MENU_OPEN_DOCS,
 		MENU_UNFAVORITE_ALL,
 	};
 
+	struct ThemeCache {
+		int horizontal_separation = 0;
+		int vertical_separation = 0;
+		int class_icon_size = 0;
+
+		Color font_color;
+
+		Ref<Font> bold_font;
+		int bold_font_size = 0;
+
+		Ref<Texture2D> icon_favorites;
+		Ref<Texture2D> icon_unfavorite;
+		Ref<Texture2D> icon_help;
+
+		Ref<StyleBox> background;
+	} theme_cache;
+
 	PropertyInfo info;
+
 	Ref<Texture2D> icon;
 	String label;
 	String doc_class_name;
@@ -372,6 +392,36 @@ class EditorInspectorSection : public Container {
 	Ref<Texture2D> _get_checkbox();
 
 	EditorInspector *_get_parent_inspector() const;
+
+	struct ThemeCache {
+		int horizontal_separation = 0;
+		int vertical_separation = 0;
+		int inspector_margin = 0;
+		int indent_size = 0;
+
+		Color warning_color;
+		Color prop_subsection;
+		Color font_color;
+		Color font_disabled_color;
+		Color font_hover_color;
+		Color font_pressed_color;
+		Color font_hover_pressed_color;
+
+		Ref<Font> font;
+		int font_size = 0;
+		Ref<Font> bold_font;
+		int bold_font_size = 0;
+		Ref<Font> light_font;
+		int light_font_size = 0;
+
+		Ref<Texture2D> arrow;
+		Ref<Texture2D> arrow_collapsed;
+		Ref<Texture2D> arrow_collapsed_mirrored;
+		Ref<Texture2D> icon_gui_checked;
+		Ref<Texture2D> icon_gui_unchecked;
+
+		Ref<StyleBoxFlat> indent_box;
+	} theme_cache;
 
 protected:
 	Object *object = nullptr;
@@ -570,6 +620,15 @@ class EditorInspector : public ScrollContainer {
 	static Ref<EditorInspectorPlugin> inspector_plugins[MAX_PLUGINS];
 	static int inspector_plugin_count;
 
+	struct ThemeCache {
+		int vertical_separation = 0;
+		Color prop_subsection;
+		Ref<Texture2D> icon_add;
+	} theme_cache;
+
+	EditorInspectorSection::ThemeCache section_theme_cache;
+	EditorInspectorCategory::ThemeCache category_theme_cache;
+
 	bool can_favorite = false;
 	PackedStringArray current_favorites;
 	VBoxContainer *favorites_section = nullptr;
@@ -687,6 +746,8 @@ class EditorInspector : public ScrollContainer {
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
 
+	static EditorInspector *_get_control_parent_inspector(Control *p_control);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -698,6 +759,9 @@ public:
 	static Button *create_inspector_action_button(const String &p_text);
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
+
+	static void initialize_section_theme(EditorInspectorSection::ThemeCache &p_cache, Control *p_control);
+	static void initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control);
 
 	bool is_main_editor_inspector() const;
 	String get_selected_path() const;
