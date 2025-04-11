@@ -58,29 +58,29 @@ static void decompress_image(BCdecFormat format, const void *src, void *dst, con
 		dst_pos += 3 * width * color_bytesize;                                          \
 	}
 
-#define DECOMPRESS_LOOP_SAFE(func, block_size, color_bytesize, color_components, output)                                                              \
-	for (uint64_t y = 0; y < height; y += 4) {                                                                                                        \
-		for (uint64_t x = 0; x < width; x += 4) {                                                                                                     \
-			const uint32_t yblock = MIN(height - y, 4ul);                                                                                             \
-			const uint32_t xblock = MIN(width - x, 4ul);                                                                                              \
-                                                                                                                                                      \
-			const bool incomplete = yblock < 4 || xblock < 4;                                                                                         \
-			uint8_t *dec_out = incomplete ? output : &dec_blocks[y * 4 * width + x * color_bytesize];                                                 \
-                                                                                                                                                      \
-			func(&src_blocks[src_pos], dec_out, 4 * color_components);                                                                                \
-			src_pos += block_size;                                                                                                                    \
-                                                                                                                                                      \
-			if (incomplete) {                                                                                                                         \
-				for (uint32_t cy = 0; cy < yblock; cy++) {                                                                                            \
-					for (uint32_t cx = 0; cx < xblock; cx++) {                                                                                        \
-						memcpy(&dec_blocks[(y + cy) * 4 * width + (x + cx) * color_bytesize], &output[cy * 4 + cx * color_bytesize], color_bytesize); \
-					}                                                                                                                                 \
-				}                                                                                                                                     \
-			}                                                                                                                                         \
-		}                                                                                                                                             \
+#define DECOMPRESS_LOOP_SAFE(func, block_size, color_bytesize, color_components, output)                                                    \
+	for (uint64_t y = 0; y < height; y += 4) {                                                                                              \
+		for (uint64_t x = 0; x < width; x += 4) {                                                                                           \
+			const uint32_t yblock = MIN(height - y, 4ul);                                                                                   \
+			const uint32_t xblock = MIN(width - x, 4ul);                                                                                    \
+                                                                                                                                            \
+			if (yblock < 4 || xblock < 4) {                                                                                                 \
+				func(&src_blocks[src_pos], output, 4 * color_components);                                                                   \
+				for (uint32_t cy = 0; cy < yblock; cy++) {                                                                                  \
+					memcpy(&dec_blocks[((y + cy) * width + x) * color_bytesize], &output[cy * 4 * color_bytesize], xblock *color_bytesize); \
+				}                                                                                                                           \
+			} else {                                                                                                                        \
+				func(&src_blocks[src_pos], &dec_blocks[y * 4 * width + x * color_bytesize], width *color_components);                       \
+			}                                                                                                                               \
+                                                                                                                                            \
+			src_pos += block_size;                                                                                                          \
+		}                                                                                                                                   \
 	}
 
-	if (width % 4 != 0 || height % 4 != 0) {
+	const uint64_t aligned_width = (width + 3) & ~0x03;
+	const uint64_t aligned_height = (height + 3) & ~0x03;
+
+	if (width != aligned_width || height != aligned_height) {
 		uint64_t src_pos = 0;
 
 		uint8_t r8_output[4 * 4];
@@ -156,21 +156,6 @@ void image_decompress_bcdec(Image *p_image) {
 	int width = p_image->get_width();
 	int height = p_image->get_height();
 
-	// Compressed images' dimensions should be padded to the upper multiple of 4.
-	// If they aren't, they need to be realigned (the actual data is correctly padded though).
-	const bool need_width_realign = width % 4 != 0;
-	const bool need_height_realign = height % 4 != 0;
-
-	if (need_width_realign || need_height_realign) {
-		int new_width = need_width_realign ? width + (4 - (width % 4)) : width;
-		int new_height = need_height_realign ? height + (4 - (height % 4)) : height;
-
-		print_verbose(vformat("Compressed image's dimensions are not multiples of 4 (%dx%d), aligning to (%dx%d)", width, height, new_width, new_height));
-
-		width = new_width;
-		height = new_height;
-	}
-
 	Image::Format source_format = p_image->get_format();
 	Image::Format target_format = Image::FORMAT_MAX;
 
@@ -237,8 +222,8 @@ void image_decompress_bcdec(Image *p_image) {
 	// Decompress mipmaps.
 	for (int i = 0; i <= mm_count; i++) {
 		int mipmap_w = 0, mipmap_h = 0;
-		int64_t src_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, source_format, i, mipmap_w, mipmap_h);
-		int64_t dst_ofs = Image::get_image_mipmap_offset(width, height, target_format, i);
+		int64_t src_ofs = Image::get_image_mipmap_offset(width, height, source_format, i);
+		int64_t dst_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, mipmap_w, mipmap_h);
 		decompress_image(bcdec_format, rb + src_ofs, wb + dst_ofs, mipmap_w, mipmap_h);
 	}
 
