@@ -91,12 +91,41 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 
 	// Set tooltip so that the full text is displayed in a tooltip if hovered.
 	// This is useful when using a narrow inspector, as the text can be trimmed otherwise.
-	text->set_tooltip_text(get_tooltip_string(text->get_text()));
+	if (!is_secret || !text->is_secret()) {
+		text->set_tooltip_text(get_tooltip_string(text->get_text()));
+	}
 
 	if (string_name) {
 		emit_changed(get_edited_property(), StringName(p_string));
 	} else {
 		emit_changed(get_edited_property(), p_string);
+	}
+}
+
+void EditorPropertyText::_show_secret_toggled(const bool &p_toggled) {
+	text->set_secret(!p_toggled);
+	if (p_toggled) {
+		text->set_tooltip_text(get_tooltip_string(text->get_text()));
+		show_secret->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
+		show_secret->set_tooltip_text(TTRC("Hide secret text."));
+	} else {
+		text->set_tooltip_text("");
+		show_secret->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
+		show_secret->set_tooltip_text(TTRC("Show secret text."));
+	}
+}
+
+void EditorPropertyText::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (is_secret) {
+				if (show_secret->is_pressed()) {
+					show_secret->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
+				} else {
+					show_secret->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
+				}
+			}
+		} break;
 	}
 }
 
@@ -106,7 +135,9 @@ void EditorPropertyText::update_property() {
 	if (text->get_text() != s) {
 		int caret = text->get_caret_column();
 		text->set_text(s);
-		text->set_tooltip_text(get_tooltip_string(s));
+		if (!is_secret || !text->is_secret()) {
+			text->set_tooltip_text(get_tooltip_string(s));
+		}
 		text->set_caret_column(caret);
 	}
 	text->set_editable(!is_read_only());
@@ -125,7 +156,22 @@ void EditorPropertyText::set_string_name(bool p_enabled) {
 }
 
 void EditorPropertyText::set_secret(bool p_enabled) {
+	is_secret = p_enabled;
+	if (p_enabled) {
+		show_secret = memnew(Button);
+		show_secret->set_toggle_mode(true);
+		show_secret->set_tooltip_text(TTRC("Show secret text."));
+		text->get_parent()->add_child(show_secret);
+		add_focusable(show_secret);
+		show_secret->connect(SceneStringName(toggled), callable_mp(this, &EditorPropertyText::_show_secret_toggled));
+	} else {
+		text->set_tooltip_text(get_tooltip_string(text->get_text()));
+	}
 	text->set_secret(p_enabled);
+	if (show_secret != nullptr) {
+		show_secret->set_visible(p_enabled);
+		show_secret->set_pressed_no_signal(false);
+	}
 }
 
 void EditorPropertyText::set_placeholder(const String &p_string) {
