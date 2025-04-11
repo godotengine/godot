@@ -2229,6 +2229,9 @@ Control *Control::find_next_valid_focus() const {
 	// Index of the current `Control` subtree within the containing `Window`.
 	int window_next = -1;
 
+	// Index of the current `Control` subtree within the containing `Window`
+	int window_next = -1;
+
 	while (true) {
 		// Find next child.
 
@@ -2331,6 +2334,9 @@ Control *Control::find_prev_valid_focus() const {
 	bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
 
 	// Index of the current `Control` subtree within the containing `Window`.
+	int window_prev = -1;
+
+	// Index of the current `Control` subtree within the containing `Window`
 	int window_prev = -1;
 
 	while (true) {
