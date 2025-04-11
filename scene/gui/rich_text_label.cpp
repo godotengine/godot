@@ -4253,6 +4253,8 @@ void RichTextLabel::push_dropcap(const String &p_string, const Ref<Font> &p_font
 	item->ol_size = p_ol_size;
 	item->ol_color = p_ol_color;
 	item->dropcap_margins = p_dropcap_margins;
+	p_font->connect_changed(callable_mp(this, &RichTextLabel::_invalidate_fonts), CONNECT_REFERENCE_COUNTED);
+
 	_add_item(item, false);
 }
 
@@ -4269,6 +4271,8 @@ void RichTextLabel::_push_def_font_var(DefaultFont p_def_font, const Ref<Font> &
 	item->font = p_font;
 	item->font_size = p_size;
 	item->def_size = (p_size <= 0);
+	p_font->connect_changed(callable_mp(this, &RichTextLabel::_invalidate_fonts), CONNECT_REFERENCE_COUNTED);
+
 	_add_item(item, true);
 }
 
@@ -4296,7 +4300,17 @@ void RichTextLabel::push_font(const Ref<Font> &p_font, int p_size) {
 	item->rid = items.make_rid(item);
 	item->font = p_font;
 	item->font_size = p_size;
+	p_font->connect_changed(callable_mp(this, &RichTextLabel::_invalidate_fonts), CONNECT_REFERENCE_COUNTED);
+
 	_add_item(item, true);
+}
+
+void RichTextLabel::_invalidate_fonts() {
+	_stop_thread();
+	main->first_invalid_font_line.store(0); // Invalidate all lines.
+	_invalidate_accessibility();
+	queue_accessibility_update();
+	queue_redraw();
 }
 
 void RichTextLabel::push_normal() {
