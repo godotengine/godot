@@ -191,6 +191,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	bool _uses_vulkan(const Ref<EditorExportPreset> &p_preset) const;
 
+	void _termux_result_callback(int p_error_code, const String &p_stdout, const String &p_stderr);
+
 protected:
 	void _notification(int p_what);
 
