@@ -1315,7 +1315,9 @@ namespace Godot
         /// <returns>The concatenated path with the given file name.</returns>
         public static string PathJoin(this string instance, string file)
         {
-            if (instance.Length > 0 && instance[instance.Length - 1] == '/')
+            if (instance.Length == 0)
+                return file;
+            if (instance[^1] == '/' || (file.Length > 0 && file[0] == '/'))
                 return instance + file;
             return instance + "/" + file;
         }
