@@ -404,6 +404,7 @@ void GraphNode::_accessibility_action_slot(const Variant &p_data) {
 }
 
 void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 	if (port_pos_dirty) {
 		_port_pos_update();
 	}
@@ -534,6 +535,8 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 		queue_accessibility_update();
 		queue_redraw();
 	}
+
+	GraphElement::gui_input(p_event);
 }
 
 void GraphNode::_notification(int p_what) {
