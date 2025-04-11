@@ -134,6 +134,7 @@ public:
 	enum class VCSMetadata {
 		NONE,
 		GIT,
+		MERCURIAL,
 	};
 	static void create_vcs_metadata_files(VCSMetadata p_vcs_metadata_type, String &p_dir);
 
