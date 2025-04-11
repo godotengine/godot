@@ -263,7 +263,7 @@ void OpenXRHandTrackingExtension::on_process() {
 					Transform3D transform;
 					Vector3 linear_velocity;
 					Vector3 angular_velocity;
-					BitField<XRHandTracker::HandJointFlags> flags;
+					BitField<XRHandTracker::HandJointFlags> flags = {};
 
 					if (location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
 						if (pose.orientation.x != 0 || pose.orientation.y != 0 || pose.orientation.z != 0 || pose.orientation.w != 0) {

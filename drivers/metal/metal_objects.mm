@@ -612,7 +612,7 @@ void MDCommandBuffer::_render_clear_render_area() {
 	bool shouldClearStencil = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, true));
 	if (shouldClearDepth || shouldClearStencil) {
 		MDAttachment const &attachment = pass.attachments[ds_index];
-		BitField<RDD::TextureAspectBits> bits;
+		BitField<RDD::TextureAspectBits> bits = {};
 		if (shouldClearDepth && attachment.type & MDAttachmentType::Depth) {
 			bits.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
 		}

@@ -367,7 +367,7 @@ private:
 		HashMap<int, ObjectID> touch_focus;
 		Control *mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
-		BitField<MouseButtonMask> mouse_focus_mask;
+		BitField<MouseButtonMask> mouse_focus_mask = MouseButtonMask::NONE;
 		Control *key_focus = nullptr;
 		Control *mouse_over = nullptr;
 		LocalVector<Control *> mouse_over_hierarchy;
