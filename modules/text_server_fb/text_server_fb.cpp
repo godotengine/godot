@@ -267,15 +267,10 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 
 	if (ret.index == -1) {
 		// Could not find texture to fit, create one.
-		int texsize = MAX(p_data->size.x * p_data->oversampling * 8, 256);
-
+		int texsize = MAX(p_data->size.x * p_data->oversampling * 16, 1 << min_atlas_texture_size);
 		texsize = next_power_of_2(texsize);
+		texsize = MIN(texsize, 1 << max_atlas_texture_size);
 
-		if (p_msdf) {
-			texsize = MIN(texsize, 2048);
-		} else {
-			texsize = MIN(texsize, 1024);
-		}
 		if (mw > texsize) { // Special case, adapt to it?
 			texsize = next_power_of_2(mw);
 		}
@@ -5055,10 +5050,13 @@ PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_str
 
 void TextServerFallback::_update_settings() {
 	lcd_subpixel_layout.set((TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout"));
+	min_atlas_texture_size = GLOBAL_GET("gui/fonts/min_atlas_texture_size");
+	max_atlas_texture_size = GLOBAL_GET("gui/fonts/max_atlas_texture_size");
 }
 
 TextServerFallback::TextServerFallback() {
 	_insert_feature_sets();
+	_update_settings();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerFallback::_update_settings));
 }
 

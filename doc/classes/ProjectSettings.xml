@@ -1161,6 +1161,12 @@
 		</member>
 		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
 		</member>
+		<member name="gui/fonts/max_atlas_texture_size" type="int" setter="" getter="" default="11">
+			Maximum font atlas texture size, specified as a power of two. Default texture atlas size is [code]font_size * oversampling * 16[/code] clamped between [member gui/fonts/min_atlas_texture_size] and [member gui/fonts/max_atlas_texture_size]. Increasing texture atlas size will improve drawing performance for text with a large number of unique glyphs or large font sizes, but makes atlas updates slower. If you are increasing the atlas size, consider pre-rendering required glyphs in the advanced font import dialog, or using [method TextServer.font_render_range].
+		</member>
+		<member name="gui/fonts/min_atlas_texture_size" type="int" setter="" getter="" default="8">
+			Minimum font atlas texture size, specified as a power of two. Default texture atlas size is [code]font_size * oversampling * 16[/code] clamped between [member gui/fonts/min_atlas_texture_size] and [member gui/fonts/max_atlas_texture_size]. Increasing texture atlas size will improve drawing performance for text with a large number of unique glyphs or large font sizes, but makes atlas updates slower. If you are increasing the atlas size, consider pre-rendering required glyphs in the advanced font import dialog, or using [method TextServer.font_render_range].
+		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
 		</member>

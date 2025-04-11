@@ -845,14 +845,10 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 
 	if (ret.index == -1) {
 		// Could not find texture to fit, create one.
-		int texsize = MAX(p_data->size.x * p_data->oversampling * 8, 256);
-
+		int texsize = MAX(p_data->size.x * p_data->oversampling * 16, 1 << min_atlas_texture_size);
 		texsize = next_power_of_2(texsize);
-		if (p_msdf) {
-			texsize = MIN(texsize, 2048);
-		} else {
-			texsize = MIN(texsize, 1024);
-		}
+		texsize = MIN(texsize, 1 << max_atlas_texture_size);
+
 		if (mw > texsize) { // Special case, adapt to it?
 			texsize = next_power_of_2(mw);
 		}
@@ -7922,12 +7918,15 @@ bool TextServerAdvanced::_is_valid_letter(uint64_t p_unicode) const {
 
 void TextServerAdvanced::_update_settings() {
 	lcd_subpixel_layout.set((TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout"));
+	min_atlas_texture_size = GLOBAL_GET("gui/fonts/min_atlas_texture_size");
+	max_atlas_texture_size = GLOBAL_GET("gui/fonts/max_atlas_texture_size");
 }
 
 TextServerAdvanced::TextServerAdvanced() {
 	_insert_num_systems_lang();
 	_insert_feature_sets();
 	_bmp_create_font_funcs();
+	_update_settings();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerAdvanced::_update_settings));
 }
 
