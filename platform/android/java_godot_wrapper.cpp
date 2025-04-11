@@ -39,19 +39,16 @@
 
 GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance) {
 	godot_instance = p_env->NewGlobalRef(p_godot_instance);
-	activity = p_env->NewGlobalRef(p_activity);
+	if (p_env->IsSameObject(p_activity, nullptr)) {
+		activity = nullptr;
+	} else {
+		activity = p_env->NewGlobalRef(p_activity);
+	}
 
 	// get info about our Godot class so we can get pointers and stuff...
 	godot_class = p_env->FindClass("org/godotengine/godot/Godot");
 	if (godot_class) {
 		godot_class = (jclass)p_env->NewGlobalRef(godot_class);
-	} else {
-		// this is a pretty serious fail.. bail... pointers will stay 0
-		return;
-	}
-	activity_class = p_env->FindClass("android/app/Activity");
-	if (activity_class) {
-		activity_class = (jclass)p_env->NewGlobalRef(activity_class);
 	} else {
 		// this is a pretty serious fail.. bail... pointers will stay 0
 		return;
@@ -105,8 +102,9 @@ GodotJavaWrapper::~GodotJavaWrapper() {
 	ERR_FAIL_NULL(env);
 	env->DeleteGlobalRef(godot_instance);
 	env->DeleteGlobalRef(godot_class);
-	env->DeleteGlobalRef(activity);
-	env->DeleteGlobalRef(activity_class);
+	if (activity != nullptr) {
+		env->DeleteGlobalRef(activity);
+	}
 }
 
 jobject GodotJavaWrapper::get_activity() {
