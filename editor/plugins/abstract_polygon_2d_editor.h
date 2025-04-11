@@ -44,6 +44,7 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	Button *button_create = nullptr;
 	Button *button_edit = nullptr;
 	Button *button_delete = nullptr;
+	Button *button_center = nullptr;
 
 	struct Vertex {
 		Vertex() {}
@@ -85,6 +86,10 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	bool wip_active = false;
 	bool wip_destructive = false;
 
+	Vector<Vector<Vector2>> pre_center_move_edit;
+	bool center_drag = false;
+	Vector2 center_drag_origin;
+
 	bool _polygon_editing_enabled = false;
 
 	CanvasItemEditor *canvas_item_editor = nullptr;
@@ -97,6 +102,7 @@ protected:
 		MODE_EDIT,
 		MODE_DELETE,
 		MODE_CONT,
+		CENTER_POLY,
 	};
 
 	int mode = MODE_EDIT;
@@ -131,6 +137,8 @@ protected:
 	virtual void _action_set_polygon(int p_idx, const Variant &p_polygon);
 	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon);
 	virtual void _commit_action();
+
+	virtual Vector2 _get_geometric_center() const;
 
 	virtual bool _has_resource() const;
 	virtual void _create_resource();
