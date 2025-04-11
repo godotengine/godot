@@ -79,6 +79,7 @@ void ResourceImporterMP3::get_import_options(const String &p_path, List<ImportOp
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,or_greater"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,or_greater"), 4));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "edit/volume_db", PROPERTY_HINT_RANGE, "-24,24,0.001,or_greater,or_less,exp,suffix:db"), 0.0));
 }
 
 #ifdef TOOLS_ENABLED
@@ -100,6 +101,7 @@ Error ResourceImporterMP3::import(ResourceUID::ID p_source_id, const String &p_s
 	double bpm = p_options["bpm"];
 	float beat_count = p_options["beat_count"];
 	float bar_beats = p_options["bar_beats"];
+	float volume_db = p_options["edit/volume_db"];
 
 	Ref<AudioStreamMP3> mp3_stream = AudioStreamMP3::load_from_file(p_source_file);
 	if (mp3_stream.is_null()) {
@@ -111,6 +113,7 @@ Error ResourceImporterMP3::import(ResourceUID::ID p_source_id, const String &p_s
 	mp3_stream->set_bpm(bpm);
 	mp3_stream->set_beat_count(beat_count);
 	mp3_stream->set_bar_beats(bar_beats);
+	mp3_stream->set_volume_db(volume_db);
 
 	return ResourceSaver::save(mp3_stream, p_save_path + ".mp3str");
 }
