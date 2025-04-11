@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2024 Arm Limited
+// Copyright 2011-2025 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -100,6 +100,9 @@ private:
 	/** @brief Lock used for critical section and condition synchronization. */
 	std::mutex m_lock;
 
+	/** @brief True if the current operation is cancelled. */
+	std::atomic<bool> m_is_cancelled;
+
 	/** @brief True if the stage init() step has been executed. */
 	bool m_init_done;
 
@@ -147,12 +150,23 @@ public:
 	{
 		m_init_done = false;
 		m_term_done = false;
+		m_is_cancelled = false;
 		m_start_count = 0;
 		m_done_count = 0;
 		m_task_count = 0;
 		m_callback = nullptr;
 		m_callback_last_value = 0.0f;
 		m_callback_min_diff = 1.0f;
+	}
+
+	/**
+	 * @brief Clear the tracker and stop new tasks being assigned.
+	 *
+	 * Note, all in-flight tasks in a worker will still complete normally.
+	 */
+	void cancel()
+	{
+		m_is_cancelled = true;
 	}
 
 	/**
@@ -211,7 +225,7 @@ public:
 	unsigned int get_task_assignment(unsigned int granule, unsigned int& count)
 	{
 		unsigned int base = m_start_count.fetch_add(granule, std::memory_order_relaxed);
-		if (base >= m_task_count)
+		if (m_is_cancelled || base >= m_task_count)
 		{
 			count = 0;
 			return 0;
@@ -241,16 +255,17 @@ public:
 			local_count = m_done_count;
 			local_last_value = m_callback_last_value;
 
-			if (m_done_count == m_task_count)
+			// Ensure the progress bar hits 100%
+			if (m_callback && m_done_count == m_task_count)
 			{
-				// Ensure the progress bar hits 100%
-				if (m_callback)
-				{
-					std::unique_lock<std::mutex> cblck(m_callback_lock);
-					m_callback(100.0f);
-					m_callback_last_value = 100.0f;
-				}
+				std::unique_lock<std::mutex> cblck(m_callback_lock);
+				m_callback(100.0f);
+				m_callback_last_value = 100.0f;
+			}
 
+			// Notify if nothing left to do
+			if (m_is_cancelled || m_done_count == m_task_count)
+			{
 				lck.unlock();
 				m_complete.notify_all();
 			}
@@ -285,7 +300,7 @@ public:
 	void wait()
 	{
 		std::unique_lock<std::mutex> lck(m_lock);
-		m_complete.wait(lck, [this]{ return m_done_count == m_task_count; });
+		m_complete.wait(lck, [this]{ return m_is_cancelled || m_done_count == m_task_count; });
 	}
 
 	/**
