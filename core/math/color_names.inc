@@ -98,6 +98,7 @@ static NamedColor named_colors[] = {
 	{ "GOLD", Color::hex(0xFFD700FF) },
 	{ "GOLDENROD", Color::hex(0xDAA520FF) },
 	{ "GRAY", Color::hex(0xBEBEBEFF) },
+	{ "GREY", Color::hex(0xBEBEBEFF) },
 	{ "GREEN", Color::hex(0x00FF00FF) },
 	{ "GREEN_YELLOW", Color::hex(0xADFF2FFF) },
 	{ "HONEYDEW", Color::hex(0xF0FFF0FF) },
