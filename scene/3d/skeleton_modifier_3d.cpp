@@ -68,11 +68,18 @@ void SkeletonModifier3D::_update_skeleton() {
 	if (old_sk != new_sk) {
 		_skeleton_changed(old_sk, new_sk);
 	}
+	if (new_sk) {
+		_validate_bone_names();
+	}
 	update_configuration_warnings();
 }
 
 void SkeletonModifier3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) {
-	//
+	GDVIRTUAL_CALL(_skeleton_changed, p_old, p_new);
+}
+
+void SkeletonModifier3D::_validate_bone_names() {
+	GDVIRTUAL_CALL(_validate_bone_names);
 }
 
 void SkeletonModifier3D::_force_update_skeleton_skin() {
@@ -162,6 +169,9 @@ void SkeletonModifier3D::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_process_modification);
 #endif
+
+	GDVIRTUAL_BIND(_skeleton_changed, "old_skeleton", "new_skeleton");
+	GDVIRTUAL_BIND(_validate_bone_names);
 
 	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_X);
 	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_X);
