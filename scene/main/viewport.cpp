@@ -4550,10 +4550,10 @@ Vector3 Viewport::camera_3d_override_project_local_ray_normal(const Point2 &p_po
 	if (camera_3d_override.projection == Camera3DOverrideData::PROJECTION_ORTHOGONAL) {
 		ray = Vector3(0, 0, -1);
 	} else {
-		Projection cm;
-		cm.set_perspective(camera_3d_override.fov, get_visible_rect().size.aspect(), camera_3d_override.z_near, camera_3d_override.z_far, false);
+		Frustum fm;
+		fm.set_perspective(camera_3d_override.fov, get_visible_rect().size.aspect(), camera_3d_override.z_near, camera_3d_override.z_far, false);
 
-		Vector2 screen_he = cm.get_viewport_half_extents();
+		Vector2 screen_he = fm.get_viewport_half_extents();
 		ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -camera_3d_override.z_near).normalized();
 	}
 
