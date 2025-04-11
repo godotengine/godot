@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/object.h"
 #include "scene_cache_interface.h"
 #include "scene_replication_interface.h"
 #include "scene_rpc_interface.h"
@@ -183,6 +184,9 @@ public:
 	String get_rpc_md5(const Object *p_obj);
 
 	const HashSet<int> get_connected_peers() const { return connected_peers; }
+
+	int get_network_id(Object *p_object, int p_peer_id) const;
+	Object *instance_from_network_id(int p_id) const;
 
 	void set_remote_sender_override(int p_id) { remote_sender_override = p_id; }
 	void set_refuse_new_connections(bool p_refuse);
