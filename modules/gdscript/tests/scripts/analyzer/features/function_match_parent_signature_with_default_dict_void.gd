@@ -6,9 +6,9 @@ func test():
 	print("No failure")
 
 class Parent:
-	func my_function(_par1: Dictionary = {}) -> void:
+	@virtual func my_function(_par1: Dictionary = {}) -> void:
 		pass
 
 class Child extends Parent:
-	func my_function(_par1: Dictionary = {}) -> void:
+	@override func my_function(_par1: Dictionary = {}) -> void:
 		pass
