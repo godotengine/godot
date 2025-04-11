@@ -547,7 +547,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_bind_methods() {
 
 void TileSetAtlasSourceEditor::_inspector_property_selected(const String &p_property) {
 	selected_property = p_property;
-	_update_atlas_view();
+	_update_atlas_view(false);
 	_update_current_tile_data_editor();
 }
 
@@ -956,7 +956,7 @@ void TileSetAtlasSourceEditor::_tile_data_editors_tree_selected() {
 	alternative_tiles_control_unscaled->queue_redraw();
 }
 
-void TileSetAtlasSourceEditor::_update_atlas_view() {
+void TileSetAtlasSourceEditor::_update_atlas_view(bool p_with_clipping) {
 	// Update the atlas display.
 	tile_atlas_view->set_atlas_source(*tile_set, tile_set_atlas_source, tile_set_atlas_source_id);
 
@@ -1023,6 +1023,7 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 	tile_atlas_control_unscaled->queue_redraw();
 	alternative_tiles_control->queue_redraw();
 	alternative_tiles_control_unscaled->queue_redraw();
+	tile_atlas_view->mark_redraw_as_clipping(p_with_clipping);
 	tile_atlas_view->queue_redraw();
 
 	// Synchronize atlas view.
@@ -1063,7 +1064,6 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_mouse_exited() {
 	hovered_base_tile_coords = TileSetSource::INVALID_ATLAS_COORDS;
 	tile_atlas_control->queue_redraw();
 	tile_atlas_control_unscaled->queue_redraw();
-	tile_atlas_view->queue_redraw();
 }
 
 void TileSetAtlasSourceEditor::_tile_atlas_view_transform_changed() {
@@ -1087,6 +1087,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 		tile_atlas_control_unscaled->queue_redraw();
 		alternative_tiles_control->queue_redraw();
 		alternative_tiles_control_unscaled->queue_redraw();
+		tile_atlas_view->mark_redraw_as_clipping();
 		tile_atlas_view->queue_redraw();
 		return;
 	} else {
@@ -1153,7 +1154,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					// Update only what's needed.
 					tile_set_changed_needs_update = false;
 					_update_tile_inspector();
-					_update_atlas_view();
+					_update_atlas_view(true);
 					_update_tile_id_label();
 					_update_current_tile_data_editor();
 				}
@@ -1195,7 +1196,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					// Update only what's needed.
 					tile_set_changed_needs_update = false;
 					_update_tile_inspector();
-					_update_atlas_view();
+					_update_atlas_view(true);
 					_update_tile_id_label();
 					_update_current_tile_data_editor();
 				}
@@ -1206,7 +1207,6 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 			tile_atlas_control_unscaled->queue_redraw();
 			alternative_tiles_control->queue_redraw();
 			alternative_tiles_control_unscaled->queue_redraw();
-			tile_atlas_view->queue_redraw();
 			return;
 		}
 
@@ -1348,12 +1348,6 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					// Left click released.
 					_end_dragging();
 				}
-				tile_atlas_control->queue_redraw();
-				tile_atlas_control_unscaled->queue_redraw();
-				alternative_tiles_control->queue_redraw();
-				alternative_tiles_control_unscaled->queue_redraw();
-				tile_atlas_view->queue_redraw();
-				return;
 			} else if (mb->get_button_index() == MouseButton::RIGHT) {
 				// Right click pressed.
 				if (mb->is_pressed()) {
@@ -1363,12 +1357,15 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					// Right click released.
 					_end_dragging();
 				}
+			}
+
+			if (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT) {
 				tile_atlas_control->queue_redraw();
 				tile_atlas_control_unscaled->queue_redraw();
 				alternative_tiles_control->queue_redraw();
 				alternative_tiles_control_unscaled->queue_redraw();
+				tile_atlas_view->mark_redraw_as_clipping(mb->is_pressed());
 				tile_atlas_view->queue_redraw();
-				return;
 			}
 		}
 	}
@@ -1719,7 +1716,7 @@ void TileSetAtlasSourceEditor::_set_selection_from_array(const Array &p_selectio
 	}
 	_update_tile_inspector();
 	_update_tile_id_label();
-	_update_atlas_view();
+	_update_atlas_view(false);
 	_update_current_tile_data_editor();
 }
 
@@ -1934,6 +1931,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 		tile_atlas_control_unscaled->queue_redraw();
 		alternative_tiles_control->queue_redraw();
 		alternative_tiles_control_unscaled->queue_redraw();
+		tile_atlas_view->mark_redraw_as_clipping();
 		tile_atlas_view->queue_redraw();
 		return;
 	}
@@ -2121,7 +2119,7 @@ void TileSetAtlasSourceEditor::_tile_set_changed() {
 
 void TileSetAtlasSourceEditor::_tile_proxy_object_changed(const String &p_what) {
 	tile_set_changed_needs_update = false; // Avoid updating too many things.
-	_update_atlas_view();
+	_update_atlas_view(false);
 }
 
 void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(const String &p_what) {
@@ -2239,7 +2237,7 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 	// Update the selected tile.
 	_update_fix_selected_and_hovered_tiles();
 	_update_tile_id_label();
-	_update_atlas_view();
+	_update_atlas_view(false);
 	_update_atlas_source_inspector();
 	_update_tile_inspector();
 	_update_tile_data_editors();
@@ -2484,7 +2482,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 				// Update the selected tile.
 				_update_fix_selected_and_hovered_tiles();
 				_update_tile_id_label();
-				_update_atlas_view();
+				_update_atlas_view(drag_type != DRAG_TYPE_NONE);
 				_update_atlas_source_inspector();
 				_update_tile_inspector();
 				_update_tile_data_editors();
@@ -2531,7 +2529,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tools_button_group->connect(SceneStringName(pressed), callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_inspector).unbind(1));
 	tools_button_group->connect(SceneStringName(pressed), callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_data_editors).unbind(1));
 	tools_button_group->connect(SceneStringName(pressed), callable_mp(this, &TileSetAtlasSourceEditor::_update_current_tile_data_editor).unbind(1));
-	tools_button_group->connect(SceneStringName(pressed), callable_mp(this, &TileSetAtlasSourceEditor::_update_atlas_view).unbind(1));
+	tools_button_group->connect(SceneStringName(pressed), callable_mp(this, &TileSetAtlasSourceEditor::_update_atlas_view).unbind(1).bind(false));
 	tools_button_group->connect(SceneStringName(pressed), callable_mp(this, &TileSetAtlasSourceEditor::_update_toolbar).unbind(1));
 
 	HBoxContainer *toolbox = memnew(HBoxContainer);
