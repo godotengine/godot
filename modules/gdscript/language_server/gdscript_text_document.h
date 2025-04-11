@@ -42,8 +42,6 @@ class GDScriptTextDocument : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	Ref<FileAccess> file_checker;
-
 	Array native_member_completions;
 
 private:
@@ -79,6 +77,4 @@ public:
 	Variant signatureHelp(const Dictionary &p_params);
 
 	void initialize();
-
-	GDScriptTextDocument();
 };
