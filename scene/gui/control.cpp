@@ -1931,6 +1931,18 @@ Control::RecursiveBehavior Control::get_mouse_recursive_behavior() const {
 	return data.mouse_recursive_behavior;
 }
 
+void Control::set_mouse_capture(bool p_state) {
+	ERR_MAIN_THREAD_GUARD;
+
+	data.mouse_capture = p_state;
+}
+
+bool Control::get_mouse_capture() const {
+	ERR_READ_THREAD_GUARD_V(true)
+
+	return data.mouse_capture;
+}
+
 void Control::set_force_pass_scroll_events(bool p_force_pass_scroll_events) {
 	ERR_MAIN_THREAD_GUARD;
 	data.force_pass_scroll_events = p_force_pass_scroll_events;
@@ -3955,6 +3967,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mouse_recursive_behavior", "mouse_recursive_behavior"), &Control::set_mouse_recursive_behavior);
 	ClassDB::bind_method(D_METHOD("get_mouse_recursive_behavior"), &Control::get_mouse_recursive_behavior);
 
+	ClassDB::bind_method(D_METHOD("set_mouse_capture", "mouse_capture"), &Control::set_mouse_capture);
+	ClassDB::bind_method(D_METHOD("get_mouse_capture"), &Control::get_mouse_capture);
+
 	ClassDB::bind_method(D_METHOD("set_force_pass_scroll_events", "force_pass_scroll_events"), &Control::set_force_pass_scroll_events);
 	ClassDB::bind_method(D_METHOD("is_force_pass_scroll_events"), &Control::is_force_pass_scroll_events);
 
@@ -4055,6 +4070,9 @@ void Control::_bind_methods() {
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass (Propagate Up),Ignore"), "set_mouse_filter", "get_mouse_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_recursive_behavior", PROPERTY_HINT_ENUM, "Inherited,Disabled,Enabled"), "set_mouse_recursive_behavior", "get_mouse_recursive_behavior");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_capture"), "set_mouse_capture", "get_mouse_capture");
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_force_pass_scroll_events"), "set_force_pass_scroll_events", "is_force_pass_scroll_events");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
 

@@ -266,6 +266,15 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK(root->gui_find_control(on_b) == node_a);
 		}
 
+		SUBCASE("[VIEWPORT][GuiFindControl] Nodes with mouse capturing disabled are not considered as results.") {
+			// Non-Root Control
+			node_d->set_mouse_capture(false);
+			CHECK(root->gui_find_control(on_d) == node_b);
+			// Root Control
+			node_b->set_mouse_capture(false);
+			CHECK(root->gui_find_control(on_b) == node_a);
+		}
+
 		SUBCASE("[VIEWPORT][GuiFindControl] Root Control with CanvasItem as parent is affected by parent's transform.") {
 			node_b->remove_child(node_c);
 			node_c->set_position(Point2i(50, 50));
