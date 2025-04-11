@@ -66,10 +66,32 @@ public:
 class EditorPackedScenePreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorPackedScenePreviewPlugin, EditorResourcePreviewGenerator);
 
+	RID viewport;
+	RID viewport_texture;
+	RID scenario;
+	float preview_3d_fov = 30.0;
+	mutable bool aborted = false;
+	mutable DrawRequester draw_requester;
+
+protected:
+	void _construct_scene_3d(Node *p_node, Vector<RID> &generated) const;
+	void _count_node_types(Node *p_node, int &c2d, int &c3d, int &clight3d) const;
+	void _calculate_scene_rect(Node *p_node, Rect2 &rect) const;
+	void _calculate_scene_aabb(Node *p_node, AABB &aabb) const;
+	Transform3D _get_global_transform_3d(Node *p_n3d) const;
+	void _hide_node_2d_in_scene(Node *p_node) const;
+	void _hide_gui_in_scene(Node *p_node) const;
+	bool _remove_scripts_from_packed_scene(Ref<PackedScene> pack) const;
+	void _wait_frames(const uint64_t &n) const;
+
 public:
+	virtual void abort() override;
 	virtual bool handles(const String &p_type) const override;
 	virtual Ref<Texture2D> generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const override;
 	virtual Ref<Texture2D> generate_from_path(const String &p_path, const Size2 &p_size, Dictionary &p_metadata) const override;
+
+	EditorPackedScenePreviewPlugin();
+	~EditorPackedScenePreviewPlugin();
 };
 
 class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {

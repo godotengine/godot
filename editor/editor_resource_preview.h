@@ -145,6 +145,7 @@ public:
 
 	void start();
 	void stop();
+	bool can_run_on_thread() const;
 	bool is_threaded() const;
 
 	EditorResourcePreview();
