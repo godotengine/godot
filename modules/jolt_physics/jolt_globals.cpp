@@ -94,7 +94,7 @@ void jolt_initialize() {
 	JPH::AssertFailed = &jolt_assert;
 #endif
 
-	JPH::Factory::sInstance = new JPH::Factory();
+	JPH::Factory::sInstance = memnew(JPH::Factory);
 
 	JPH::RegisterTypes();
 
@@ -102,20 +102,20 @@ void jolt_initialize() {
 	JoltCustomUserDataShape::register_type();
 	JoltCustomDoubleSidedShape::register_type();
 
-	JoltGroupFilter::instance = new JoltGroupFilter();
+	JoltGroupFilter::instance = memnew(JoltGroupFilter);
 	JoltGroupFilter::instance->SetEmbedded();
 }
 
 void jolt_deinitialize() {
 	if (JoltGroupFilter::instance != nullptr) {
-		delete JoltGroupFilter::instance;
+		memdelete(JoltGroupFilter::instance);
 		JoltGroupFilter::instance = nullptr;
 	}
 
 	JPH::UnregisterTypes();
 
 	if (JPH::Factory::sInstance != nullptr) {
-		delete JPH::Factory::sInstance;
+		memdelete(JPH::Factory::sInstance);
 		JPH::Factory::sInstance = nullptr;
 	}
 }

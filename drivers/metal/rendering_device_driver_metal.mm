@@ -941,7 +941,7 @@ void RenderingDeviceDriverMetal::command_pool_free(CommandPoolID p_cmd_pool) {
 
 RDD::CommandBufferID RenderingDeviceDriverMetal::command_buffer_create(CommandPoolID p_cmd_pool) {
 	id<MTLCommandQueue> queue = rid::get(p_cmd_pool);
-	MDCommandBuffer *obj = new MDCommandBuffer(queue, this);
+	MDCommandBuffer *obj = memnew(MDCommandBuffer(queue, this));
 	command_buffers.push_back(obj);
 	return CommandBufferID(obj);
 }
@@ -1078,13 +1078,13 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 		textures.write[i] = tex;
 	}
 
-	MDFrameBuffer *fb = new MDFrameBuffer(textures, Size2i(p_width, p_height));
+	MDFrameBuffer *fb = memnew(MDFrameBuffer(textures, Size2i(p_width, p_height)));
 	return FramebufferID(fb);
 }
 
 void RenderingDeviceDriverMetal::framebuffer_free(FramebufferID p_framebuffer) {
 	MDFrameBuffer *obj = (MDFrameBuffer *)(p_framebuffer.id);
-	delete obj;
+	memdelete(obj);
 }
 
 #pragma mark - Shader
@@ -2596,11 +2596,11 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 
 	MDShader *shader = nullptr;
 	if (binary_data.is_compute()) {
-		MDComputeShader *cs = new MDComputeShader(
+		MDComputeShader *cs = memnew(MDComputeShader(
 				binary_data.shader_name,
 				uniform_sets,
 				binary_data.uses_argument_buffers(),
-				libraries[ShaderStage::SHADER_STAGE_COMPUTE]);
+				libraries[ShaderStage::SHADER_STAGE_COMPUTE]));
 
 		uint32_t *binding = binary_data.push_constant.msl_binding.getptr(SHADER_STAGE_COMPUTE);
 		if (binding) {
@@ -2614,13 +2614,13 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 #endif
 		shader = cs;
 	} else {
-		MDRenderShader *rs = new MDRenderShader(
+		MDRenderShader *rs = memnew(MDRenderShader(
 				binary_data.shader_name,
 				uniform_sets,
 				binary_data.needs_view_mask_buffer(),
 				binary_data.uses_argument_buffers(),
 				libraries[ShaderStage::SHADER_STAGE_VERTEX],
-				libraries[ShaderStage::SHADER_STAGE_FRAGMENT]);
+				libraries[ShaderStage::SHADER_STAGE_FRAGMENT]));
 
 		uint32_t *vert_binding = binary_data.push_constant.msl_binding.getptr(SHADER_STAGE_VERTEX);
 		if (vert_binding) {
@@ -2658,7 +2658,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 
 void RenderingDeviceDriverMetal::shader_free(ShaderID p_shader) {
 	MDShader *obj = (MDShader *)p_shader.id;
-	delete obj;
+	memdelete(obj);
 }
 
 void RenderingDeviceDriverMetal::shader_destroy_modules(ShaderID p_shader) {
@@ -3047,7 +3047,7 @@ void RenderingDeviceDriverMetal::command_copy_texture_to_buffer(CommandBufferID 
 
 void RenderingDeviceDriverMetal::pipeline_free(PipelineID p_pipeline_id) {
 	MDPipeline *obj = (MDPipeline *)(p_pipeline_id.id);
-	delete obj;
+	memdelete(obj);
 }
 
 // ----- BINDING -----
@@ -3175,13 +3175,13 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 			mda.type |= MDAttachmentType::Color;
 		}
 	}
-	MDRenderPass *obj = new MDRenderPass(attachments, subpasses);
+	MDRenderPass *obj = memnew(MDRenderPass(attachments, subpasses));
 	return RenderPassID(obj);
 }
 
 void RenderingDeviceDriverMetal::render_pass_free(RenderPassID p_render_pass) {
 	MDRenderPass *obj = (MDRenderPass *)(p_render_pass.id);
-	delete obj;
+	memdelete(obj);
 }
 
 // ----- COMMANDS -----
@@ -3454,7 +3454,7 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 
 	// Input assembly & tessellation.
 
-	MDRenderPipeline *pipeline = new MDRenderPipeline();
+	MDRenderPipeline *pipeline = memnew(MDRenderPipeline);
 
 	switch (p_render_primitive) {
 		case RENDER_PRIMITIVE_POINTS:
@@ -3747,7 +3747,7 @@ RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_s
 																				error:&error];
 	ERR_FAIL_COND_V_MSG(error != nil, PipelineID(), ([NSString stringWithFormat:@"error creating pipeline: %@", error.localizedDescription].UTF8String));
 
-	MDComputePipeline *pipeline = new MDComputePipeline(state);
+	MDComputePipeline *pipeline = memnew(MDComputePipeline(state));
 	pipeline->compute_state.local = shader->local;
 	pipeline->shader = shader;
 
@@ -4114,7 +4114,7 @@ RenderingDeviceDriverMetal::RenderingDeviceDriverMetal(RenderingContextDriverMet
 
 RenderingDeviceDriverMetal::~RenderingDeviceDriverMetal() {
 	for (MDCommandBuffer *cb : command_buffers) {
-		delete cb;
+		memdelete(cb);
 	}
 
 	for (KeyValue<SHA256Digest, ShaderCacheEntry *> &kv : _shader_cache) {
