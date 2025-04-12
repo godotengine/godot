@@ -463,12 +463,6 @@
 			<return type="String" />
 			<description>
 				Returns the color converted to the mathematically closest standardized named color [String] in [code]UPPER_SNAKE_CASE[/code].
-				To get a different case, use:
-				- [method String.capitalize] for [code]Title Case[/code]
-				- [method String.to_camel_case] for [code]camelCase[/code]
-				- [method String.to_pascal_case] for [code]PascalCase[/code]
-				- [method String.to_snake_case] for [code]snake_case[/code]
-				- [method String.to_kebab_case] for [code]kebab-case[/code]
 				[codeblocks]
 				[gdscript]
 				var white = Color(1, 1, 1, 0.5)
