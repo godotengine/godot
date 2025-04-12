@@ -144,6 +144,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 	text = TS->parse_number(text);
 	// Ignore the prefix and suffix in the expression.
 	text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
+	text = text.to_upper();
 
 	Error err = expr->parse(text);
 
