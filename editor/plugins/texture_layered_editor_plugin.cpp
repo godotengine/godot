@@ -239,9 +239,8 @@ void TextureLayeredEditor::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			Ref<Texture2D> checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
-			Size2 size = get_size();
-
-			draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
+			draw_texture_rect(checkerboard, texture_rect->get_rect(), true);
+			_draw_outline();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -249,6 +248,7 @@ void TextureLayeredEditor::_notification(int p_what) {
 				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				info->add_theme_font_override(SceneStringName(font), metadata_label_font);
 			}
+			theme_cache.outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
 		} break;
 	}
 }
@@ -296,6 +296,12 @@ void TextureLayeredEditor::on_selected_channels_changed() {
 	_update_material(false);
 }
 
+void TextureLayeredEditor::_draw_outline() {
+	const float outline_width = Math::round(EDSCALE);
+	const Rect2 outline_rect = texture_rect->get_rect().grow(outline_width * 0.5);
+	draw_rect(outline_rect, theme_cache.outline_color, false, outline_width);
+}
+
 void TextureLayeredEditor::_make_shaders() {
 	shaders[0].instantiate();
 	shaders[0]->set_code(array_2d_shader);
@@ -333,7 +339,7 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 	int ofs_x = (size.width - tex_width) / 2;
 	int ofs_y = (size.height - tex_height) / 2;
 
-	texture_rect->set_position(Vector2(ofs_x, ofs_y));
+	texture_rect->set_position(Vector2(ofs_x, ofs_y - Math::round(EDSCALE)));
 	texture_rect->set_size(Vector2(tex_width, tex_height));
 }
 
