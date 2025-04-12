@@ -42,6 +42,7 @@ class EditorExportPlugin : public RefCounted {
 	friend class EditorExportPlatform;
 	friend class EditorExportPreset;
 
+	String export_base_path;
 	Ref<EditorExportPreset> export_preset;
 
 	Vector<SharedObject> shared_objects;
@@ -87,6 +88,8 @@ class EditorExportPlugin : public RefCounted {
 	String _has_valid_export_configuration(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset);
 
 protected:
+	void set_export_base_path(const String &p_export_base_path);
+	const String &get_export_base_path() const;
 	void set_export_preset(const Ref<EditorExportPreset> &p_preset);
 	Ref<EditorExportPreset> get_export_preset() const;
 	Ref<EditorExportPlatform> get_export_platform() const;

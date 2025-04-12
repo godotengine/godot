@@ -143,8 +143,8 @@ struct Light {
 	vec4 atlas_rect;
 };
 
-layout(set = 0, binding = 2, std140) uniform LightData {
-	Light data[MAX_LIGHTS];
+layout(set = 0, binding = 2, std430) restrict readonly buffer LightData {
+	Light data[];
 }
 light_array;
 

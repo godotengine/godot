@@ -33,6 +33,18 @@
 #include "drivers/png/image_loader_png.h"
 #include "drivers/png/resource_saver_png.h"
 
+#ifdef VULKAN_ENABLED
+#include "drivers/vulkan/rendering_shader_container_vulkan.h"
+#endif
+
+#ifdef D3D12_ENABLED
+#include "drivers/d3d12/rendering_shader_container_d3d12.h"
+#endif
+
+#ifdef METAL_ENABLED
+#include "drivers/metal/rendering_shader_container_metal.h"
+#endif
+
 static Ref<ImageLoaderPNG> image_loader_png;
 static Ref<ResourceSaverPNG> resource_saver_png;
 
@@ -42,6 +54,15 @@ void register_core_driver_types() {
 
 	resource_saver_png.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_png);
+#ifdef VULKAN_ENABLED
+	GDREGISTER_CLASS(RenderingShaderContainerVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	GDREGISTER_CLASS(RenderingShaderContainerD3D12);
+#endif
+#ifdef METAL_ENABLED
+	GDREGISTER_CLASS(RenderingShaderContainerMetal);
+#endif
 }
 
 void unregister_core_driver_types() {

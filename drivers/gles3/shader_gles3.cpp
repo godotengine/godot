@@ -129,12 +129,6 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 	feedback_count = p_feedback_count;
 
 	StringBuilder tohash;
-	/*
-	tohash.append("[SpirvCacheKey]");
-	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
-	tohash.append("[BinaryCacheKey]");
-	tohash.append(RenderingDevice::get_singleton()->shader_get_binary_cache_key());
-	*/
 	tohash.append("[Vertex]");
 	tohash.append(p_vertex_code ? p_vertex_code : "");
 	tohash.append("[Fragment]");
