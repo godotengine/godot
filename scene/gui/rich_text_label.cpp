@@ -1354,8 +1354,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, outline_size, fx_offset + char_off, gl, font_color);
 								}
 							}
-							processed_glyphs_step++;
 						}
+						processed_glyphs_step++;
 						if (step == DRAW_STEP_TEXT && skip) {
 							// Finish underline/overline/strikethrough is previous glyph is skipped.
 							if (ul_started) {
@@ -1403,7 +1403,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								}
 							}
 							last_color = color;
-							processed_glyphs_step++;
 						} else {
 							// Finish box is previous glyph is skipped.
 							if (last_color.a > 0.0) {
@@ -1413,6 +1412,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 							}
 							last_color = Color(0, 0, 0, 0);
 						}
+						processed_glyphs_step++;
 						off_step.x += glyphs[i].advance;
 					}
 				}
