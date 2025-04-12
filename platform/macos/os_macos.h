@@ -59,6 +59,7 @@ class OS_MacOS : public OS_Unix {
 
 	CrashHandler crash_handler;
 
+	CFRunLoopTimerRef wait_timer = nil;
 	CFRunLoopObserverRef pre_wait_observer = nil;
 
 	MainLoop *main_loop = nullptr;
@@ -85,6 +86,8 @@ protected:
 	virtual void delete_main_loop() override;
 
 public:
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
+
 	virtual void set_cmdline_platform_args(const List<String> &p_args);
 	virtual List<String> get_cmdline_platform_args() const override;
 

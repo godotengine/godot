@@ -193,7 +193,7 @@ public:
 
 	virtual Error set_cwd(const String &p_cwd) override;
 
-	virtual void add_frame_delay(bool p_can_draw) override;
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 	virtual void delay_usec(uint32_t p_usec) const override;
 	virtual uint64_t get_ticks_usec() const override;
 
