@@ -152,6 +152,9 @@ class GridMap : public Node3D {
 		OctantKey() {}
 	};
 
+	OctantKey get_octant_key_from_index_key(const IndexKey &p_index_key) const;
+	OctantKey get_octant_key_from_cell_coords(const Vector3i &p_cell_coords) const;
+
 #ifndef PHYSICS_3D_DISABLED
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
@@ -300,6 +303,16 @@ public:
 
 	TypedArray<Vector3i> get_used_cells() const;
 	TypedArray<Vector3i> get_used_cells_by_item(int p_item) const;
+
+	TypedArray<Vector3i> get_used_octants() const;
+	TypedArray<Vector3i> get_used_octants_by_item(int p_item) const;
+
+	TypedArray<Vector3i> get_used_cells_in_octant(const Vector3i &p_octant_coords) const;
+	TypedArray<Vector3i> get_used_cells_in_octant_by_item(const Vector3i &p_octant_coords, int p_item) const;
+
+	TypedArray<Vector3i> get_used_octants_in_bounds(const AABB &p_bounds) const;
+	Vector3i get_octant_coords_from_cell_coords(const Vector3i &p_cell_coords) const;
+	RID get_physics_body_from_octant_coord(const Vector3i &p_octant_coords) const;
 
 	Array get_meshes() const;
 
