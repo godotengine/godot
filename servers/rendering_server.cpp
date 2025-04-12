@@ -240,15 +240,15 @@ RID RenderingServer::_make_test_cube() {
 RID RenderingServer::make_sphere_mesh(int p_lats, int p_lons, real_t p_radius) {
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
-	const double lat_step = Math_TAU / p_lats;
-	const double lon_step = Math_TAU / p_lons;
+	const double lat_step = Math::TAU / p_lats;
+	const double lon_step = Math::TAU / p_lons;
 
 	for (int i = 1; i <= p_lats; i++) {
-		double lat0 = lat_step * (i - 1) - Math_TAU / 4;
+		double lat0 = lat_step * (i - 1) - Math::TAU / 4;
 		double z0 = Math::sin(lat0);
 		double zr0 = Math::cos(lat0);
 
-		double lat1 = lat_step * i - Math_TAU / 4;
+		double lat1 = lat_step * i - Math::TAU / 4;
 		double z1 = Math::sin(lat1);
 		double zr1 = Math::cos(lat1);
 
@@ -327,9 +327,9 @@ void _get_axis_angle(const Vector3 &p_normal, const Vector4 &p_tangent, float &r
 	r_angle = float(angle);
 
 	if (d < 0.0) {
-		r_angle = CLAMP((1.0 - r_angle / Math_PI) * 0.5, 0.0, 0.49999);
+		r_angle = CLAMP((1.0 - r_angle / Math::PI) * 0.5, 0.0, 0.49999);
 	} else {
-		r_angle = CLAMP((r_angle / Math_PI) * 0.5 + 0.5, 0.500008, 1.0);
+		r_angle = CLAMP((r_angle / Math::PI) * 0.5 + 0.5, 0.500008, 1.0);
 	}
 }
 
@@ -337,7 +337,7 @@ void _get_axis_angle(const Vector3 &p_normal, const Vector4 &p_tangent, float &r
 // and p_angle includes the binormal direction.
 void _get_tbn_from_axis_angle(const Vector3 &p_axis, float p_angle, Vector3 &r_normal, Vector4 &r_tangent) {
 	float binormal_sign = p_angle > 0.5 ? 1.0 : -1.0;
-	float angle = Math::abs(p_angle * 2.0 - 1.0) * Math_PI;
+	float angle = Math::abs(p_angle * 2.0 - 1.0) * Math::PI;
 
 	Basis tbn = Basis(p_axis, angle);
 	Vector3 tan = tbn.rows[0];

@@ -385,7 +385,7 @@ public:
 		if (!lpw_path) {
 			return S_FALSE;
 		}
-		String path = String::utf16((const char16_t *)lpw_path).replace("\\", "/").trim_prefix(R"(\\?\)").simplify_path();
+		String path = String::utf16((const char16_t *)lpw_path).replace_char('\\', '/').trim_prefix(R"(\\?\)").simplify_path();
 		if (!path.begins_with(root.simplify_path())) {
 			return S_FALSE;
 		}
@@ -618,13 +618,13 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			current_dir_name.resize(str_len + 1);
 			GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 			if (dir == ".") {
-				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/");
+				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/');
 			} else {
-				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/").path_join(dir);
+				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(dir);
 			}
 		}
 		dir = dir.simplify_path();
-		dir = dir.trim_prefix(R"(\\?\)").replace("/", "\\");
+		dir = dir.trim_prefix(R"(\\?\)").replace_char('/', '\\');
 
 		IShellItem *shellitem = nullptr;
 		hr = SHCreateItemFromParsingName((LPCWSTR)dir.utf16().ptr(), nullptr, IID_IShellItem, (void **)&shellitem);
@@ -667,7 +667,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 						PWSTR file_path = nullptr;
 						hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
 						if (SUCCEEDED(hr)) {
-							file_names.push_back(String::utf16((const char16_t *)file_path).replace("\\", "/").trim_prefix(R"(\\?\)"));
+							file_names.push_back(String::utf16((const char16_t *)file_path).replace_char('\\', '/').trim_prefix(R"(\\?\)"));
 							CoTaskMemFree(file_path);
 						}
 						result->Release();
@@ -681,7 +681,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 					PWSTR file_path = nullptr;
 					hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
 					if (SUCCEEDED(hr)) {
-						file_names.push_back(String::utf16((const char16_t *)file_path).replace("\\", "/").trim_prefix(R"(\\?\)"));
+						file_names.push_back(String::utf16((const char16_t *)file_path).replace_char('\\', '/').trim_prefix(R"(\\?\)"));
 						CoTaskMemFree(file_path);
 					}
 					result->Release();
@@ -922,7 +922,7 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 }
 
 BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
-	BitField<MouseButtonMask> last_button_state = 0;
+	BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 
 	if (GetKeyState(VK_LBUTTON) & (1 << 15)) {
 		last_button_state.set_flag(MouseButtonMask::LEFT);
@@ -4526,7 +4526,7 @@ void DisplayServerWindows::popup_close(WindowID p_window) {
 }
 
 BitField<DisplayServerWindows::WinKeyModifierMask> DisplayServerWindows::_get_mods() const {
-	BitField<WinKeyModifierMask> mask;
+	BitField<WinKeyModifierMask> mask = {};
 	static unsigned char keyboard_state[256];
 	if (GetKeyboardState((PBYTE)&keyboard_state)) {
 		if ((keyboard_state[VK_LSHIFT] & 0x80) || (keyboard_state[VK_RSHIFT] & 0x80)) {
@@ -5008,8 +5008,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					windows[window_id].last_pressure_update = 0;
 
 					float pressure = float(packet.pkNormalPressure - windows[window_id].min_pressure) / float(windows[window_id].max_pressure - windows[window_id].min_pressure);
-					double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math_PI / 180);
-					double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math_PI / 180));
+					double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math::PI / 180);
+					double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math::PI / 180));
 					bool inverted = packet.pkStatus & TPS_INVERT;
 
 					Vector2 tilt = (windows[window_id].tilt_supported) ? Vector2(Math::atan(Math::sin(azim) / alt), Math::atan(Math::cos(azim) / alt)) : Vector2();
@@ -5136,7 +5136,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb.instantiate();
 			mb->set_window_id(window_id);
 
-			BitField<MouseButtonMask> last_button_state = 0;
+			BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 			if (IS_POINTER_FIRSTBUTTON_WPARAM(wParam)) {
 				last_button_state.set_flag(MouseButtonMask::LEFT);
 				mb->set_button_index(MouseButton::LEFT);
@@ -5302,7 +5302,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
 			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
-			BitField<MouseButtonMask> last_button_state = 0;
+			BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 			if (IS_POINTER_FIRSTBUTTON_WPARAM(wParam)) {
 				last_button_state.set_flag(MouseButtonMask::LEFT);
 			}
@@ -7165,7 +7165,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		HKEY key;
 		if (RegOpenKeyW(HKEY_CURRENT_USER_LOCAL_SETTINGS, L"Software\\Microsoft\\Windows\\Shell\\MuiCache", &key) == ERROR_SUCCESS) {
 			Char16String cs_name = name.utf16();
-			String value_name = OS::get_singleton()->get_executable_path().replace("/", "\\") + ".FriendlyAppName";
+			String value_name = OS::get_singleton()->get_executable_path().replace_char('/', '\\') + ".FriendlyAppName";
 			RegSetValueExW(key, (LPCWSTR)value_name.utf16().get_data(), 0, REG_SZ, (const BYTE *)cs_name.get_data(), cs_name.size() * sizeof(WCHAR));
 			RegCloseKey(key);
 		}

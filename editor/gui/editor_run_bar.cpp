@@ -259,7 +259,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 	String run_filename;
 	switch (current_mode) {
 		case RUN_CUSTOM: {
-			run_filename = p_scene_path;
+			run_filename = ResourceUID::ensure_path(p_scene_path);
 			run_custom_filename = run_filename;
 		} break;
 

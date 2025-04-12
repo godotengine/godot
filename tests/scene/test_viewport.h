@@ -347,7 +347,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 				CHECK(node_a->has_focus());
 
-				SEND_GUI_MOUSE_BUTTON_EVENT(on_b, MouseButton::RIGHT, (int)MouseButtonMask::LEFT | (int)MouseButtonMask::RIGHT, Key::NONE);
+				SEND_GUI_MOUSE_BUTTON_EVENT(on_b, MouseButton::RIGHT, MouseButtonMask::LEFT | MouseButtonMask::RIGHT, Key::NONE);
 				CHECK(node_a->has_focus());
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_b, MouseButton::RIGHT, MouseButtonMask::LEFT, Key::NONE);
@@ -362,12 +362,12 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_background, MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
 				CHECK_FALSE(root->gui_get_focus_owner());
 
-				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, (int)MouseButtonMask::LEFT | (int)MouseButtonMask::RIGHT, Key::NONE);
+				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT | MouseButtonMask::RIGHT, Key::NONE);
 				CHECK(node_a->has_focus());
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::RIGHT, Key::NONE);
 				CHECK(node_a->has_focus());
 
-				SEND_GUI_MOUSE_BUTTON_EVENT(on_b, MouseButton::LEFT, (int)MouseButtonMask::LEFT | (int)MouseButtonMask::RIGHT, Key::NONE);
+				SEND_GUI_MOUSE_BUTTON_EVENT(on_b, MouseButton::LEFT, MouseButtonMask::LEFT | MouseButtonMask::RIGHT, Key::NONE);
 				CHECK(node_b->has_focus());
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_d, MouseButton::LEFT, MouseButtonMask::RIGHT, Key::NONE);
@@ -1774,7 +1774,7 @@ TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
 
 	SUBCASE("[Viewport][Picking2D] CollisionObject in CanvasLayer") {
 		CanvasLayer *node_c = memnew(CanvasLayer);
-		node_c->set_rotation(Math_PI);
+		node_c->set_rotation(Math::PI);
 		node_c->set_offset(Point2i(100, 100));
 		root->add_child(node_c);
 

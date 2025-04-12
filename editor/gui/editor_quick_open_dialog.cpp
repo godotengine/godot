@@ -606,7 +606,7 @@ void QuickOpenResultContainer::handle_search_box_input(const Ref<InputEvent> &p_
 			case Key::RIGHT: {
 				if (content_display_mode == QuickOpenDisplayMode::GRID) {
 					// Maybe strip off the shift modifier to allow non-selecting navigation by character?
-					if (key_event->get_modifiers_mask() == 0) {
+					if (key_event->get_modifiers_mask().is_empty()) {
 						move_selection = true;
 					}
 				}

@@ -1950,33 +1950,37 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					bool node_selected = get_selected_count() > 0;
 
-					if (node_selected && ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE)) {
-						begin_transform(TRANSFORM_ROTATE, false);
-						break;
-					}
-
-					if (node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
-						begin_transform(TRANSFORM_TRANSLATE, false);
-						break;
-					}
-
-					if (node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
-						begin_transform(TRANSFORM_SCALE, false);
-						break;
-					}
-
-					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM && !b->is_alt_pressed()) {
 						// Single item selection.
 						clicked = _select_ray(b->get_position());
 
-						selection_in_progress = true;
+						if (clicked.is_valid() && !editor_selection->is_selected(ObjectDB::get_instance<Node>(clicked))) {
+							selection_in_progress = true;
+							break;
+						}
 
 						if (clicked.is_null()) {
 							// Default to region select.
 							cursor.region_select = true;
 							cursor.region_begin = b->get_position();
 							cursor.region_end = b->get_position();
+							break;
 						}
+					}
+
+					if (!clicked_wants_append && node_selected && ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE)) {
+						begin_transform(TRANSFORM_ROTATE, false);
+						break;
+					}
+
+					if (!clicked_wants_append && node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
+						begin_transform(TRANSFORM_TRANSLATE, false);
+						break;
+					}
+
+					if (!clicked_wants_append && node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
+						begin_transform(TRANSFORM_SCALE, false);
+						break;
 					}
 
 					surface->queue_redraw();
@@ -2034,7 +2038,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						set_message("");
 						spatial_editor->update_transform_gizmo();
 					}
-					surface->queue_redraw();
 				}
 
 			} break;
@@ -2120,12 +2123,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 
-				if (selection_in_progress && movement_threshold_passed && clicked.is_valid()) {
-					if (clicked_wants_append || !editor_selection->is_selected(ObjectDB::get_instance<Node>(clicked))) {
-						cursor.region_select = true;
-						cursor.region_begin = _edit.original_mouse_pos;
-						clicked = ObjectID();
-					}
+				if ((selection_in_progress || clicked_wants_append) && movement_threshold_passed && clicked.is_valid()) {
+					cursor.region_select = true;
+					cursor.region_begin = _edit.original_mouse_pos;
+					clicked = ObjectID();
 				}
 
 				if (cursor.region_select) {
@@ -2134,7 +2135,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (clicked.is_valid() && movement_threshold_passed) {
+				if (clicked.is_valid() && movement_threshold_passed && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE)) {
 					_compute_edit(_edit.original_mouse_pos);
 					clicked = ObjectID();
 					_edit.mode = TRANSFORM_TRANSLATE;
@@ -2144,7 +2145,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				update_transform(_get_key_modifier(m) == Key::SHIFT);
+				if (!selection_in_progress) {
+					update_transform(_get_key_modifier(m) == Key::SHIFT);
+				}
 			}
 		} else if (m->get_button_mask().has_flag(MouseButtonMask::RIGHT) || freelook_active) {
 			NavigationMode change_nav_from_shortcut = _get_nav_mode_from_shortcut_check(NAVIGATION_RIGHT_MOUSE, shortcut_check_sets, false);
@@ -2386,28 +2389,28 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_down", p_event)) {
 			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-			cursor.x_rot = CLAMP(cursor.x_rot - Math_PI / 12.0, -1.57, 1.57);
+			cursor.x_rot = CLAMP(cursor.x_rot - Math::PI / 12.0, -1.57, 1.57);
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_up", p_event)) {
 			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-			cursor.x_rot = CLAMP(cursor.x_rot + Math_PI / 12.0, -1.57, 1.57);
+			cursor.x_rot = CLAMP(cursor.x_rot + Math::PI / 12.0, -1.57, 1.57);
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_right", p_event)) {
-			cursor.y_rot -= Math_PI / 12.0;
+			cursor.y_rot -= Math::PI / 12.0;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_left", p_event)) {
-			cursor.y_rot += Math_PI / 12.0;
+			cursor.y_rot += Math::PI / 12.0;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_180", p_event)) {
-			cursor.y_rot += Math_PI;
+			cursor.y_rot += Math::PI;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
@@ -3502,7 +3505,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 	switch (p_option) {
 		case VIEW_TOP: {
 			cursor.y_rot = 0;
-			cursor.x_rot = Math_PI / 2.0;
+			cursor.x_rot = Math::PI / 2.0;
 			set_message(TTR("Top View."), 2);
 			view_type = VIEW_TYPE_TOP;
 			_set_auto_orthogonal();
@@ -3511,7 +3514,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_BOTTOM: {
 			cursor.y_rot = 0;
-			cursor.x_rot = -Math_PI / 2.0;
+			cursor.x_rot = -Math::PI / 2.0;
 			set_message(TTR("Bottom View."), 2);
 			view_type = VIEW_TYPE_BOTTOM;
 			_set_auto_orthogonal();
@@ -3520,7 +3523,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_LEFT: {
 			cursor.x_rot = 0;
-			cursor.y_rot = Math_PI / 2.0;
+			cursor.y_rot = Math::PI / 2.0;
 			set_message(TTR("Left View."), 2);
 			view_type = VIEW_TYPE_LEFT;
 			_set_auto_orthogonal();
@@ -3529,7 +3532,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_RIGHT: {
 			cursor.x_rot = 0;
-			cursor.y_rot = -Math_PI / 2.0;
+			cursor.y_rot = -Math::PI / 2.0;
 			set_message(TTR("Right View."), 2);
 			view_type = VIEW_TYPE_RIGHT;
 			_set_auto_orthogonal();
@@ -3547,7 +3550,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_REAR: {
 			cursor.x_rot = 0;
-			cursor.y_rot = Math_PI;
+			cursor.y_rot = Math::PI;
 			set_message(TTR("Rear View."), 2);
 			view_type = VIEW_TYPE_REAR;
 			_set_auto_orthogonal();
@@ -3596,7 +3599,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					// Adjust rotation to match Decal's default orientation.
 					// This makes the decal "look" in the same direction as the camera,
 					// rather than pointing down relative to the camera orientation.
-					xform.basis.rotate_local(Vector3(1, 0, 0), Math_TAU * 0.25);
+					xform.basis.rotate_local(Vector3(1, 0, 0), Math::TAU * 0.25);
 				}
 
 				Node3D *parent = sp->get_parent_node_3d();
@@ -3634,7 +3637,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					// Adjust rotation to match Decal's default orientation.
 					// This makes the decal "look" in the same direction as the camera,
 					// rather than pointing down relative to the camera orientation.
-					basis.rotate_local(Vector3(1, 0, 0), Math_TAU * 0.25);
+					basis.rotate_local(Vector3(1, 0, 0), Math::TAU * 0.25);
 				}
 
 				undo_redo->add_do_method(sp, "set_rotation", basis.get_euler_normalized());
@@ -4908,7 +4911,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 }
 
 bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	if (p_point == Vector2(INFINITY, INFINITY)) {
+	if (p_point == Vector2(Math::INF, Math::INF)) {
 		return false;
 	}
 	preview_node_viewport_pos = p_point;
@@ -5373,7 +5376,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 				Vector3 projection_axis = plane.normal.cross(global_axis);
 				Vector3 delta = intersection - click;
 				float projection = delta.dot(projection_axis);
-				angle = (projection * (Math_PI / 2.0f)) / (gizmo_scale * GIZMO_CIRCLE_SIZE);
+				angle = (projection * (Math::PI / 2.0f)) / (gizmo_scale * GIZMO_CIRCLE_SIZE);
 			} else {
 				_edit.show_rotation_line = true;
 				Vector3 click_axis = (click - _edit.center).normalized();
@@ -7321,7 +7324,7 @@ void fragment() {
 
 				int arrow_sides = 16;
 
-				const real_t arrow_sides_step = Math_TAU / arrow_sides;
+				const real_t arrow_sides_step = Math::TAU / arrow_sides;
 				for (int k = 0; k < arrow_sides; k++) {
 					Basis ma(ivec, k * arrow_sides_step);
 					Basis mb(ivec, (k + 1) * arrow_sides_step);
@@ -7360,7 +7363,7 @@ void fragment() {
 					vec * GIZMO_PLANE_DST - ivec3 * GIZMO_PLANE_SIZE
 				};
 
-				Basis ma(ivec, Math_PI / 2);
+				Basis ma(ivec, Math::PI / 2);
 
 				Vector3 points[4] = {
 					ma.xform(plane[0]),
@@ -7400,14 +7403,14 @@ void fragment() {
 				int n = 128; // number of circle segments
 				int m = 3; // number of thickness segments
 
-				real_t step = Math_TAU / n;
+				real_t step = Math::TAU / n;
 				for (int j = 0; j < n; ++j) {
 					Basis basis = Basis(ivec, j * step);
 
 					Vector3 vertex = basis.xform(ivec2 * GIZMO_CIRCLE_SIZE);
 
 					for (int k = 0; k < m; ++k) {
-						Vector2 ofs = Vector2(Math::cos((Math_TAU * k) / m), Math::sin((Math_TAU * k) / m));
+						Vector2 ofs = Vector2(Math::cos((Math::TAU * k) / m), Math::sin((Math::TAU * k) / m));
 						Vector3 normal = ivec * ofs.x + ivec2 * ofs.y;
 
 						surftool->set_normal(basis.xform(normal));
@@ -7544,7 +7547,7 @@ void fragment() {
 
 				int arrow_sides = 4;
 
-				const real_t arrow_sides_step = Math_TAU / arrow_sides;
+				const real_t arrow_sides_step = Math::TAU / arrow_sides;
 				for (int k = 0; k < 4; k++) {
 					Basis ma(ivec, k * arrow_sides_step);
 					Basis mb(ivec, (k + 1) * arrow_sides_step);
@@ -7583,7 +7586,7 @@ void fragment() {
 					vec * GIZMO_PLANE_DST - ivec3 * GIZMO_PLANE_SIZE
 				};
 
-				Basis ma(ivec, Math_PI / 2);
+				Basis ma(ivec, Math::PI / 2);
 
 				Vector3 points[4] = {
 					ma.xform(plane[0]),
@@ -8912,7 +8915,7 @@ void Node3DEditor::_sun_direction_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 		sun_rotation.x += mm->get_relative().y * (0.02 * EDSCALE);
 		sun_rotation.y -= mm->get_relative().x * (0.02 * EDSCALE);
-		sun_rotation.x = CLAMP(sun_rotation.x, -Math_TAU / 4, Math_TAU / 4);
+		sun_rotation.x = CLAMP(sun_rotation.x, -Math::TAU / 4, Math::TAU / 4);
 
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Set Preview Sun Direction"), UndoRedo::MergeMode::MERGE_ENDS);

@@ -52,9 +52,9 @@ TEST_CASE("[SceneTree][Control] Transforms") {
 		CHECK_EQ(test_node->get_global_transform(), Transform2D(0, Size2(4, 4), 0, Vector2(2, 2)));
 		test_node->set_scale(Vector2(1, 1));
 		test_node->set_rotation_degrees(90);
-		CHECK_EQ(test_node->get_global_transform(), Transform2D(Math_PI / 2, Vector2(2, 2)));
+		CHECK_EQ(test_node->get_global_transform(), Transform2D(Math::PI / 2, Vector2(2, 2)));
 		test_node->set_pivot_offset(Vector2(1, 0));
-		CHECK_EQ(test_node->get_global_transform(), Transform2D(Math_PI / 2, Vector2(3, 1)));
+		CHECK_EQ(test_node->get_global_transform(), Transform2D(Math::PI / 2, Vector2(3, 1)));
 
 		memdelete(test_child);
 		memdelete(test_node);

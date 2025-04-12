@@ -157,6 +157,7 @@ public:
 };
 
 class FileAccessPack : public FileAccess {
+	GDSOFTCLASS(FileAccessPack, FileAccess);
 	PackedData::PackedFile pf;
 
 	mutable uint64_t pos;
@@ -241,6 +242,7 @@ bool PackedData::has_directory(const String &p_path) {
 }
 
 class DirAccessPack : public DirAccess {
+	GDSOFTCLASS(DirAccessPack, DirAccess);
 	PackedData::PackedDir *current;
 
 	List<String> list_dirs;

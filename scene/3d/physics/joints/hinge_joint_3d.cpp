@@ -122,8 +122,8 @@ void HingeJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsB
 
 HingeJoint3D::HingeJoint3D() {
 	params[PARAM_BIAS] = 0.3;
-	params[PARAM_LIMIT_UPPER] = Math_PI * 0.5;
-	params[PARAM_LIMIT_LOWER] = -Math_PI * 0.5;
+	params[PARAM_LIMIT_UPPER] = Math::PI * 0.5;
+	params[PARAM_LIMIT_LOWER] = -Math::PI * 0.5;
 	params[PARAM_LIMIT_BIAS] = 0.3;
 	params[PARAM_LIMIT_SOFTNESS] = 0.9;
 	params[PARAM_LIMIT_RELAXATION] = 1.0;

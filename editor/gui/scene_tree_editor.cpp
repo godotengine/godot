@@ -1864,12 +1864,12 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		return false;
 	}
 
-	TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_selected() : tree->get_item_at_position(p_point);
+	TreeItem *item = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_selected() : tree->get_item_at_position(p_point);
 	if (!item) {
 		return false;
 	}
 
-	int section = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_drop_section_at_position(tree->get_item_rect(item).position) : tree->get_drop_section_at_position(p_point);
+	int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(item).position) : tree->get_drop_section_at_position(p_point);
 	if (section < -1 || (section == -1 && !item->get_parent())) {
 		return false;
 	}
@@ -1953,11 +1953,11 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 		return;
 	}
 
-	TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_selected() : tree->get_item_at_position(p_point);
+	TreeItem *item = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_selected() : tree->get_item_at_position(p_point);
 	if (!item) {
 		return;
 	}
-	int section = (p_point == Vector2(INFINITY, INFINITY)) ? tree->get_drop_section_at_position(tree->get_item_rect(item).position) : tree->get_drop_section_at_position(p_point);
+	int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(item).position) : tree->get_drop_section_at_position(p_point);
 	if (section < -1) {
 		return;
 	}

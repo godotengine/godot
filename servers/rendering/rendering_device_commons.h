@@ -962,7 +962,7 @@ public:
 		UniformType type = UniformType::UNIFORM_TYPE_MAX;
 		bool writable = false;
 		uint32_t binding = 0;
-		BitField<ShaderStage> stages;
+		BitField<ShaderStage> stages = {};
 		uint32_t length = 0; // Size of arrays (in total elements), or ubos (in bytes * total elements).
 
 		bool operator!=(const ShaderUniform &p_other) const {
@@ -990,7 +990,7 @@ public:
 	};
 
 	struct ShaderSpecializationConstant : public PipelineSpecializationConstant {
-		BitField<ShaderStage> stages;
+		BitField<ShaderStage> stages = {};
 
 		bool operator<(const ShaderSpecializationConstant &p_other) const { return constant_id < p_other.constant_id; }
 	};
@@ -1009,7 +1009,7 @@ public:
 
 protected:
 	struct ShaderReflection : public ShaderDescription {
-		BitField<ShaderStage> stages;
-		BitField<ShaderStage> push_constant_stages;
+		BitField<ShaderStage> stages = {};
+		BitField<ShaderStage> push_constant_stages = {};
 	};
 };

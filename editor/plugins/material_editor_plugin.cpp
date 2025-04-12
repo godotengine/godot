@@ -62,7 +62,7 @@ void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 			const real_t limit = Math::deg_to_rad(80.0);
 			rot = rot.clampf(-limit, limit);
 		} else {
-			rot.x = CLAMP(rot.x, -Math_PI / 2, Math_PI / 2);
+			rot.x = CLAMP(rot.x, -Math::PI / 2, Math::PI / 2);
 		}
 		_update_rotation();
 		_store_rotation_metadata();

@@ -2384,10 +2384,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		default_renderer_mobile = "gl_compatibility";
 	}
 #endif
-	if (!renderer_hints.is_empty()) {
-		renderer_hints += ",";
-	}
-	renderer_hints += "dummy";
 
 	if (!rendering_method.is_empty()) {
 		if (rendering_method != "forward_plus" &&
@@ -2397,7 +2393,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->print("Unknown rendering method '%s', aborting.\nValid options are ",
 					rendering_method.utf8().get_data());
 
-			const Vector<String> rendering_method_hints = renderer_hints.split(",");
+			Vector<String> rendering_method_hints = renderer_hints.split(",");
+			rendering_method_hints.push_back("dummy");
 			for (int i = 0; i < rendering_method_hints.size(); i++) {
 				if (i == rendering_method_hints.size() - 1) {
 					OS::get_singleton()->print(" and ");
@@ -2410,6 +2407,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->print(".\n");
 			goto error;
 		}
+	}
+	if (renderer_hints.is_empty()) {
+		renderer_hints = "dummy";
 	}
 
 	if (!rendering_driver.is_empty()) {
@@ -3799,7 +3799,7 @@ int Main::start() {
 #ifdef TOOLS_ENABLED
 	String doc_tool_path;
 	bool doc_tool_implicit_cwd = false;
-	BitField<DocTools::GenerateFlags> gen_flags;
+	BitField<DocTools::GenerateFlags> gen_flags = {};
 	String _export_preset;
 	Vector<String> patches;
 	bool export_debug = false;
@@ -4425,7 +4425,7 @@ int Main::start() {
 
 		String local_game_path;
 		if (!game_path.is_empty() && !project_manager) {
-			local_game_path = game_path.replace("\\", "/");
+			local_game_path = game_path.replace_char('\\', '/');
 
 			if (!local_game_path.begins_with("res://")) {
 				bool absolute =

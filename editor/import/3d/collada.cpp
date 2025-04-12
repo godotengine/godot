@@ -1372,7 +1372,7 @@ Collada::Node *Collada::_parse_visual_instance_camera(XMLParser &p_parser) {
 	cam->camera = _uri_to_id(p_parser.get_named_attribute_value_safe("url"));
 
 	if (state.up_axis == Vector3::AXIS_Z) { //collada weirdness
-		cam->post_transform.basis.rotate(Vector3(1, 0, 0), -Math_PI * 0.5);
+		cam->post_transform.basis.rotate(Vector3(1, 0, 0), -Math::PI * 0.5);
 	}
 
 	if (p_parser.is_empty()) { //nothing else to parse...
@@ -1393,7 +1393,7 @@ Collada::Node *Collada::_parse_visual_instance_light(XMLParser &p_parser) {
 	cam->light = _uri_to_id(p_parser.get_named_attribute_value_safe("url"));
 
 	if (state.up_axis == Vector3::AXIS_Z) { //collada weirdness
-		cam->post_transform.basis.rotate(Vector3(1, 0, 0), -Math_PI * 0.5);
+		cam->post_transform.basis.rotate(Vector3(1, 0, 0), -Math::PI * 0.5);
 	}
 
 	if (p_parser.is_empty()) { //nothing else to parse...

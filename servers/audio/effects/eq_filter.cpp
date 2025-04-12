@@ -88,9 +88,9 @@ void EQ::recalculate_band_coefficients() {
 
 		double frq_l = round(frq / pow(2.0, octave_size / 2.0));
 
-		double side_gain2 = POW2(Math_SQRT12);
-		double th = Math_TAU * frq / mix_rate;
-		double th_l = Math_TAU * frq_l / mix_rate;
+		double side_gain2 = POW2(Math::SQRT12);
+		double th = Math::TAU * frq / mix_rate;
+		double th_l = Math::TAU * frq_l / mix_rate;
 
 		double c2a = side_gain2 * POW2(cos(th)) - 2.0 * side_gain2 * cos(th_l) * cos(th) + side_gain2 - POW2(sin(th_l));
 

@@ -106,7 +106,7 @@ void NavMapBuilder2D::_build_step_find_edge_connection_pairs(NavMapIterationBuil
 	PerformanceData &performance_data = r_build.performance_data;
 	NavMapIteration2D *map_iteration = r_build.map_iteration;
 	int polygon_count = r_build.polygon_count;
-
+	const Vector2 merge_rasterizer_cell_size = r_build.merge_rasterizer_cell_size;
 	HashMap<EdgeKey, EdgeConnectionPair, EdgeKey> &connection_pairs_map = r_build.iter_connection_pairs_map;
 
 	// Group all edges per key.
@@ -120,9 +120,9 @@ void NavMapBuilder2D::_build_step_find_edge_connection_pairs(NavMapIterationBuil
 		}
 
 		for (Polygon &poly : region.navmesh_polygons) {
-			for (uint32_t p = 0; p < poly.points.size(); p++) {
-				const int next_point = (p + 1) % poly.points.size();
-				const EdgeKey ek(poly.points[p].key, poly.points[next_point].key);
+			for (uint32_t p = 0; p < poly.vertices.size(); p++) {
+				const int next_point = (p + 1) % poly.vertices.size();
+				const EdgeKey ek(get_point_key(poly.vertices[p], merge_rasterizer_cell_size), get_point_key(poly.vertices[next_point], merge_rasterizer_cell_size));
 
 				HashMap<EdgeKey, EdgeConnectionPair, EdgeKey>::Iterator pair_it = connection_pairs_map.find(ek);
 				if (!pair_it) {
@@ -136,8 +136,8 @@ void NavMapBuilder2D::_build_step_find_edge_connection_pairs(NavMapIterationBuil
 					Edge::Connection new_connection;
 					new_connection.polygon = &poly;
 					new_connection.edge = p;
-					new_connection.pathway_start = poly.points[p].pos;
-					new_connection.pathway_end = poly.points[next_point].pos;
+					new_connection.pathway_start = poly.vertices[p];
+					new_connection.pathway_end = poly.vertices[next_point];
 
 					pair.connections[pair.size] = new_connection;
 					++pair.size;
@@ -207,8 +207,8 @@ void NavMapBuilder2D::_build_step_edge_connection_margin_connections(NavMapItera
 
 	for (uint32_t i = 0; i < free_edges.size(); i++) {
 		const Edge::Connection &free_edge = free_edges[i];
-		Vector2 edge_p1 = free_edge.polygon->points[free_edge.edge].pos;
-		Vector2 edge_p2 = free_edge.polygon->points[(free_edge.edge + 1) % free_edge.polygon->points.size()].pos;
+		Vector2 edge_p1 = free_edge.polygon->vertices[free_edge.edge];
+		Vector2 edge_p2 = free_edge.polygon->vertices[(free_edge.edge + 1) % free_edge.polygon->vertices.size()];
 
 		for (uint32_t j = 0; j < free_edges.size(); j++) {
 			const Edge::Connection &other_edge = free_edges[j];
@@ -216,8 +216,8 @@ void NavMapBuilder2D::_build_step_edge_connection_margin_connections(NavMapItera
 				continue;
 			}
 
-			Vector2 other_edge_p1 = other_edge.polygon->points[other_edge.edge].pos;
-			Vector2 other_edge_p2 = other_edge.polygon->points[(other_edge.edge + 1) % other_edge.polygon->points.size()].pos;
+			Vector2 other_edge_p1 = other_edge.polygon->vertices[other_edge.edge];
+			Vector2 other_edge_p2 = other_edge.polygon->vertices[(other_edge.edge + 1) % other_edge.polygon->vertices.size()];
 
 			// Compute the projection of the opposite edge on the current one.
 			Vector2 edge_vector = edge_p2 - edge_p1;
@@ -267,7 +267,6 @@ void NavMapBuilder2D::_build_step_navlink_connections(NavMapIterationBuild2D &r_
 	NavMapIteration2D *map_iteration = r_build.map_iteration;
 
 	real_t link_connection_radius = r_build.link_connection_radius;
-	Vector2 merge_rasterizer_cell_size = r_build.merge_rasterizer_cell_size;
 
 	LocalVector<Polygon> &link_polygons = map_iteration->link_polygons;
 	LocalVector<NavLinkIteration2D> &links = map_iteration->link_iterations;
@@ -303,8 +302,8 @@ void NavMapBuilder2D::_build_step_navlink_connections(NavMapIterationBuild2D &r_
 			}
 
 			for (Polygon &polyon : region.navmesh_polygons) {
-				for (uint32_t point_id = 2; point_id < polyon.points.size(); point_id += 1) {
-					const Triangle2 triangle(polyon.points[0].pos, polyon.points[point_id - 1].pos, polyon.points[point_id].pos);
+				for (uint32_t point_id = 2; point_id < polyon.vertices.size(); point_id += 1) {
+					const Triangle2 triangle(polyon.vertices[0], polyon.vertices[point_id - 1], polyon.vertices[point_id]);
 
 					{
 						const Vector2 start_point = triangle.get_closest_point_to(link_start_pos);
@@ -341,28 +340,28 @@ void NavMapBuilder2D::_build_step_navlink_connections(NavMapIterationBuild2D &r_
 
 			new_polygon.edges.clear();
 			new_polygon.edges.resize(4);
-			new_polygon.points.resize(4);
+			new_polygon.vertices.resize(4);
 
 			// Build a set of vertices that create a thin polygon going from the start to the end point.
-			new_polygon.points[0] = { closest_start_point, get_point_key(closest_start_point, merge_rasterizer_cell_size) };
-			new_polygon.points[1] = { closest_start_point, get_point_key(closest_start_point, merge_rasterizer_cell_size) };
-			new_polygon.points[2] = { closest_end_point, get_point_key(closest_end_point, merge_rasterizer_cell_size) };
-			new_polygon.points[3] = { closest_end_point, get_point_key(closest_end_point, merge_rasterizer_cell_size) };
+			new_polygon.vertices[0] = closest_start_point;
+			new_polygon.vertices[1] = closest_start_point;
+			new_polygon.vertices[2] = closest_end_point;
+			new_polygon.vertices[3] = closest_end_point;
 
 			// Setup connections to go forward in the link.
 			{
 				Edge::Connection entry_connection;
 				entry_connection.polygon = &new_polygon;
 				entry_connection.edge = -1;
-				entry_connection.pathway_start = new_polygon.points[0].pos;
-				entry_connection.pathway_end = new_polygon.points[1].pos;
+				entry_connection.pathway_start = new_polygon.vertices[0];
+				entry_connection.pathway_end = new_polygon.vertices[1];
 				closest_start_polygon->edges[0].connections.push_back(entry_connection);
 
 				Edge::Connection exit_connection;
 				exit_connection.polygon = closest_end_polygon;
 				exit_connection.edge = -1;
-				exit_connection.pathway_start = new_polygon.points[2].pos;
-				exit_connection.pathway_end = new_polygon.points[3].pos;
+				exit_connection.pathway_start = new_polygon.vertices[2];
+				exit_connection.pathway_end = new_polygon.vertices[3];
 				new_polygon.edges[2].connections.push_back(exit_connection);
 			}
 
@@ -371,15 +370,15 @@ void NavMapBuilder2D::_build_step_navlink_connections(NavMapIterationBuild2D &r_
 				Edge::Connection entry_connection;
 				entry_connection.polygon = &new_polygon;
 				entry_connection.edge = -1;
-				entry_connection.pathway_start = new_polygon.points[2].pos;
-				entry_connection.pathway_end = new_polygon.points[3].pos;
+				entry_connection.pathway_start = new_polygon.vertices[2];
+				entry_connection.pathway_end = new_polygon.vertices[3];
 				closest_end_polygon->edges[0].connections.push_back(entry_connection);
 
 				Edge::Connection exit_connection;
 				exit_connection.polygon = closest_start_polygon;
 				exit_connection.edge = -1;
-				exit_connection.pathway_start = new_polygon.points[0].pos;
-				exit_connection.pathway_end = new_polygon.points[1].pos;
+				exit_connection.pathway_start = new_polygon.vertices[0];
+				exit_connection.pathway_end = new_polygon.vertices[1];
 				new_polygon.edges[0].connections.push_back(exit_connection);
 			}
 		}

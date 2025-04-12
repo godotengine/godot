@@ -285,7 +285,7 @@ bool ActionMapEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 	TreeItem *source = Object::cast_to<TreeItem>(ObjectDB::get_instance(d["source"].operator ObjectID()));
 	TreeItem *selected = action_tree->get_selected();
 
-	TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? selected : action_tree->get_item_at_position(p_point);
+	TreeItem *item = (p_point == Vector2(Math::INF, Math::INF)) ? selected : action_tree->get_item_at_position(p_point);
 	if (!selected || !item || item == source) {
 		return false;
 	}
@@ -309,12 +309,12 @@ void ActionMapEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	}
 
 	TreeItem *selected = action_tree->get_selected();
-	TreeItem *target = (p_point == Vector2(INFINITY, INFINITY)) ? selected : action_tree->get_item_at_position(p_point);
+	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? selected : action_tree->get_item_at_position(p_point);
 	if (!target) {
 		return;
 	}
 
-	bool drop_above = ((p_point == Vector2(INFINITY, INFINITY)) ? action_tree->get_drop_section_at_position(action_tree->get_item_rect(target).position) : action_tree->get_drop_section_at_position(p_point)) == -1;
+	bool drop_above = ((p_point == Vector2(Math::INF, Math::INF)) ? action_tree->get_drop_section_at_position(action_tree->get_item_rect(target).position) : action_tree->get_drop_section_at_position(p_point)) == -1;
 
 	Dictionary d = p_data;
 	if (d["input_type"] == "action") {

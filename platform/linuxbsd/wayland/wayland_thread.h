@@ -341,7 +341,7 @@ public:
 		Vector2 relative_motion;
 		uint32_t relative_motion_time = 0;
 
-		BitField<MouseButtonMask> pressed_button_mask;
+		BitField<MouseButtonMask> pressed_button_mask = MouseButtonMask::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;
@@ -371,7 +371,7 @@ public:
 		Vector2 tilt;
 		uint32_t pressure = 0;
 
-		BitField<MouseButtonMask> pressed_button_mask;
+		BitField<MouseButtonMask> pressed_button_mask = MouseButtonMask::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;
