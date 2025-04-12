@@ -2494,7 +2494,21 @@ String OS_Windows::get_system_ca_certificates() {
 	return certs;
 }
 
-void OS_Windows::add_frame_delay(bool p_can_draw) {
+void OS_Windows::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
+	if (p_wake_for_events) {
+		uint64_t delay = get_frame_delay(p_can_draw);
+		if (delay == 0) {
+			return;
+		}
+
+		DisplayServer *ds = DisplayServer::get_singleton();
+		DisplayServerWindows *ds_win = Object::cast_to<DisplayServerWindows>(ds);
+		if (ds_win) {
+			MsgWaitForMultipleObjects(0, nullptr, false, Math::floor(double(delay) / 1000.0), QS_ALLINPUT);
+			return;
+		}
+	}
+
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 	if (frame_delay) {
 		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
