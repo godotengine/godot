@@ -55,19 +55,15 @@ GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(cons
 		gdextension_class_icon_paths[kv.key] = kv.value;
 	}
 
-#ifdef TOOLS_ENABLED
 	// Signals that a new extension is loaded so GDScript can register new class names.
 	emit_signal("extension_loaded", p_extension);
-#endif
 
 	return LOAD_STATUS_OK;
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(const Ref<GDExtension> &p_extension) {
-#ifdef TOOLS_ENABLED
 	// Signals that a new extension is unloading so GDScript can unregister class names.
 	emit_signal("extension_unloading", p_extension);
-#endif
 
 	if (level >= 0) { // Already initialized up to some level.
 		// Deinitialize down from current level.

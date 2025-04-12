@@ -263,6 +263,7 @@ void ClassDB::get_extensions_class_list(List<StringName> *p_classes) {
 
 	p_classes->sort_custom<StringName::AlphCompare>();
 }
+#endif
 
 void ClassDB::get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes) {
 	Locker::Lock lock(Locker::STATE_READ);
@@ -279,7 +280,6 @@ void ClassDB::get_extension_class_list(const Ref<GDExtension> &p_extension, List
 
 	p_classes->sort_custom<StringName::AlphCompare>();
 }
-#endif
 
 void ClassDB::get_inheriters_from_class(const StringName &p_class, LocalVector<StringName> &p_classes) {
 	Locker::Lock lock(Locker::STATE_READ);

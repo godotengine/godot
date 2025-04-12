@@ -308,7 +308,9 @@ public:
 	static void get_class_list(List<StringName> *p_classes);
 #ifdef TOOLS_ENABLED
 	static void get_extensions_class_list(List<StringName> *p_classes);
+#endif
 	static void get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes);
+#ifdef TOOLS_ENABLED
 	static ObjectGDExtension *get_placeholder_extension(const StringName &p_class);
 #endif
 	static void get_inheriters_from_class(const StringName &p_class, LocalVector<StringName> &p_classes);
