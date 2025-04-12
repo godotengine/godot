@@ -433,7 +433,7 @@ Color Color::get_named_color(int p_idx) {
 }
 
 String Color::to_named() const {
-	NamedColor closest_named_color = default;
+	NamedColor closest_named_color;
 	float closest_distance_squared = std::numeric_limits<float>::infinity();
 
 	for (NamedColor named_color : named_colors) {
