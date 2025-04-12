@@ -96,7 +96,7 @@ void TexturePreview::_notification(int p_what) {
 
 			bg_rect->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
 			checkerboard->set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
-			cached_outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
+			theme_cache.outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
 		} break;
 	}
 }
@@ -104,7 +104,7 @@ void TexturePreview::_notification(int p_what) {
 void TexturePreview::_draw_outline() {
 	const float outline_width = Math::round(EDSCALE);
 	const Rect2 outline_rect = Rect2(Vector2(), outline_overlay->get_size()).grow(outline_width * 0.5);
-	outline_overlay->draw_rect(outline_rect, cached_outline_color, false, outline_width);
+	outline_overlay->draw_rect(outline_rect, theme_cache.outline_color, false, outline_width);
 }
 
 void TexturePreview::_update_texture_display_ratio() {
