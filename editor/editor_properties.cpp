@@ -42,6 +42,7 @@
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
+#include "editor/node_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
 #include "editor/property_selector.h"
@@ -2743,6 +2744,7 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path, bool p_absol
 	} else {
 		emit_changed(get_edited_property(), path);
 	}
+	NodeDock::get_singleton()->update_lists();
 	update_property();
 }
 
