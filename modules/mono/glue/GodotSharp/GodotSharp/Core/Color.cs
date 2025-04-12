@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -573,6 +574,34 @@ namespace Godot
             }
 
             return txt;
+        }
+
+        /// <summary>
+        /// Finds the mathematically closest standardized color name listed in <see cref="Colors"/>.
+        /// </summary>
+        /// <returns>The closest standardized color name in UPPER_SNAKE_CASE, for example "RED".</returns>
+        public readonly KeyValuePair<string, Color> ToNamed()
+        {
+            KeyValuePair<string, Color> closestNamedColor = default;
+            float closestDistanceSquared = float.PositiveInfinity;
+
+            foreach (KeyValuePair<string, Color> namedColor in Colors.NamedColors)
+            {
+                Color delta = namedColor.Value - this;
+                float distanceSquared = (delta.R * delta.R) + (delta.G * delta.G) + (delta.B * delta.B) + (delta.A * delta.A);
+
+                if (distanceSquared == 0)
+                {
+                    return namedColor;
+                }
+                if (distanceSquared < closestDistanceSquared)
+                {
+                    closestNamedColor = namedColor;
+                    closestDistanceSquared = distanceSquared;
+                }
+            }
+
+            return closestNamedColor;
         }
 
         /// <summary>

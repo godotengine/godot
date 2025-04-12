@@ -459,6 +459,30 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="to_named" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the color converted to the mathematically closest standardized named color [String] in [code]UPPER_SNAKE_CASE[/code].
+				To get a different case, use:
+				[ul]
+				[li][method String.capitalize] for [code]Title Case[/code][/li]
+				[li][method String.to_camel_case] for [code]camelCase[/code][/li]
+				[li][method String.to_pascal_case] for [code]PascalCase[/code][/li]
+				[li][method String.to_snake_case] for [code]snake_case[/code][/li]
+				[li][method String.to_kebab_case] for [code]kebab-case[/code][/li]
+				[/ul]
+				[codeblocks]
+				[gdscript]
+				var white = Color(1, 1, 1, 0.5)
+				print(white.to_named()) # Prints "WHITE"
+				[/gdscript]
+				[csharp]
+				var white = new Color(1, 1, 1, 0.5f);
+				GD.Print(white.ToNamed()); # Prints "WHITE"
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="to_rgba32" qualifiers="const">
 			<return type="int" />
 			<description>
