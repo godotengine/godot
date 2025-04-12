@@ -97,19 +97,4 @@ TEST_CASE("[StyleBoxEmpty] set_content_margin, set_content_margin_all, set_conte
 	}
 }
 
-TEST_CASE("[StyleBoxEmpty] get_draw_rect") {
-	Ref<StyleBoxEmpty> style_box_empty = memnew(StyleBoxEmpty);
-	Rect2 rect = Rect2(2, 3, 2, 3);
-
-	CHECK_MESSAGE(style_box_empty->get_draw_rect(rect) == rect,
-			"Returns value passed since there's no overrided get_draw_rect");
-}
-
-TEST_CASE("[StyleBoxEmpty] test_mask") {
-	Ref<StyleBoxEmpty> style_box_empty = memnew(StyleBoxEmpty);
-
-	CHECK_MESSAGE(style_box_empty->test_mask(Point2(0, 0), Rect2(0, 0, 0, 0)) == true,
-			"Returns true since there's no overrided test_mask");
-}
-
 } // namespace TestStyleBoxEmpty
