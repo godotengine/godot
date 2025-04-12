@@ -1972,6 +1972,11 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		icon_hover_color.a = 1.0;
 		p_theme->set_color("icon_hover_color", "BottomPanelButton", icon_hover_color);
 		p_theme->set_color("icon_hover_pressed_color", "BottomPanelButton", icon_hover_color);
+
+		// Audio bus.
+		p_theme->set_stylebox("normal", "EditorAudioBus", style_bottom_panel);
+		p_theme->set_stylebox("master", "EditorAudioBus", p_config.button_style_disabled);
+		p_theme->set_stylebox("focus", "EditorAudioBus", p_config.button_style_focus);
 	}
 
 	// Editor GUI widgets.
