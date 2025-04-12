@@ -122,8 +122,8 @@ void CollisionShape2D::_notification(int p_what) {
 
 				Vector<Vector2> pts{
 					line_to + tsize * one_way_collision_direction,
-					line_to + Math::SQRT12 * tsize * one_way_collision_direction.rotated(-Math_PI / 2),
-					line_to + Math::SQRT12 * tsize * one_way_collision_direction.rotated(Math_PI / 2),
+					line_to + Math::SQRT12 * tsize * one_way_collision_direction.rotated(-Math::PI / 2),
+					line_to + Math::SQRT12 * tsize * one_way_collision_direction.rotated(Math::PI / 2),
 				};
 
 				Vector<Color> cols{ draw_col, draw_col, draw_col };

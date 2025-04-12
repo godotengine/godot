@@ -151,14 +151,14 @@ void CollisionPolygon2D::_notification(int p_what) {
 			if (one_way_collision) {
 				Color dcol = get_tree()->get_debug_collisions_color(); //0.9,0.2,0.2,0.4);
 				dcol.a = 1.0;
-				Vector2 line_to(0, 20);
+				Vector2 line_to = 20.0 * one_way_collision_direction;
 				draw_line(Vector2(), line_to, dcol, 3);
 				real_t tsize = 8;
 
 				Vector<Vector2> pts = {
-					line_to + Vector2(0, tsize),
-					line_to + Vector2(Math::SQRT12 * tsize, 0),
-					line_to + Vector2(-Math::SQRT12 * tsize, 0)
+					line_to + tsize * one_way_collision_direction,
+					line_to + Math::SQRT12 * tsize * one_way_collision_direction.rotated(-Math::PI / 2),
+					line_to + Math::SQRT12 * tsize * one_way_collision_direction.rotated(Math::PI / 2),
 				};
 
 				Vector<Color> cols{ dcol, dcol, dcol };
@@ -294,6 +294,7 @@ real_t CollisionPolygon2D::get_one_way_collision_margin() const {
 
 void CollisionPolygon2D::set_one_way_collision_direction(const Vector2 &p_direction) {
 	one_way_collision_direction = p_direction.normalized();
+	queue_redraw();
 	if (collision_object) {
 		collision_object->shape_owner_set_one_way_collision_direction(owner_id, p_direction);
 	}
