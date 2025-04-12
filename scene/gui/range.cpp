@@ -98,18 +98,18 @@ void Range::Shared::emit_value_changed() {
 	}
 }
 
-void Range::_changed_notify(const char *p_what) {
+void Range::_changed_notify() {
 	emit_signal(CoreStringName(changed));
 	queue_redraw();
 }
 
-void Range::Shared::emit_changed(const char *p_what) {
+void Range::Shared::emit_changed() {
 	for (Range *E : owners) {
 		Range *r = E;
 		if (!r->is_inside_tree()) {
 			continue;
 		}
-		r->_changed_notify(p_what);
+		r->_changed_notify();
 	}
 }
 
@@ -181,7 +181,7 @@ void Range::set_min(double p_min) {
 	shared->page = CLAMP(shared->page, 0, shared->max - shared->min);
 	set_value(shared->val);
 
-	shared->emit_changed("min");
+	shared->emit_changed();
 
 	update_configuration_warnings();
 
@@ -198,7 +198,7 @@ void Range::set_max(double p_max) {
 	shared->page = CLAMP(shared->page, 0, shared->max - shared->min);
 	set_value(shared->val);
 
-	shared->emit_changed("max");
+	shared->emit_changed();
 
 	queue_accessibility_update();
 }
@@ -209,7 +209,7 @@ void Range::set_step(double p_step) {
 	}
 
 	shared->step = p_step;
-	shared->emit_changed("step");
+	shared->emit_changed();
 
 	queue_accessibility_update();
 }
@@ -223,7 +223,7 @@ void Range::set_page(double p_page) {
 	shared->page = page_validated;
 	set_value(shared->val);
 
-	shared->emit_changed("page");
+	shared->emit_changed();
 
 	queue_accessibility_update();
 }
