@@ -146,6 +146,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 	}
 
 	if (!p_scene.is_empty()) {
+		args.push_back("--scene");
 		args.push_back(p_scene);
 	}
 
