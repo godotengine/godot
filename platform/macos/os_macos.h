@@ -64,6 +64,7 @@ protected:
 
 	JoypadApple *joypad_apple = nullptr;
 	MainLoop *main_loop = nullptr;
+	CFRunLoopTimerRef wait_timer = nil;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
@@ -75,6 +76,8 @@ protected:
 	virtual void delete_main_loop() override;
 
 public:
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
+
 	virtual void set_cmdline_platform_args(const List<String> &p_args);
 	virtual List<String> get_cmdline_platform_args() const override;
 

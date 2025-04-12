@@ -4855,11 +4855,9 @@ bool Main::iteration() {
 	}
 
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	bool skip_delay = scene_tree && scene_tree->is_accessibility_enabled();
+	bool wake_for_events = scene_tree && scene_tree->is_accessibility_enabled();
 
-	if (!skip_delay) {
-		OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
-	}
+	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw(), wake_for_events);
 
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {
