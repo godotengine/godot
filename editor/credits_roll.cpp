@@ -51,6 +51,7 @@ Label *CreditsRoll::_create_label(const String &p_with_text, LabelSize p_size) {
 	switch (p_size) {
 		case LabelSize::NORMAL: {
 			label->add_theme_font_size_override(SceneStringName(font_size), font_size_normal);
+			label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		} break;
 
 		case LabelSize::HEADER: {
@@ -165,6 +166,7 @@ void CreditsRoll::roll_credits() {
 		_create_nothing();
 
 		project_manager = _create_label(TTR("Project Manager", "Job Title"), LabelSize::HEADER);
+		project_manager->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		_create_label(_build_string(AUTHORS_PROJECT_MANAGERS));
 
 		_create_nothing();

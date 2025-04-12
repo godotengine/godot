@@ -31,13 +31,13 @@
 #pragma once
 
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/gui/scroll_container.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
 
 class CreditsRoll;
+class ItemList;
+class Label;
+class RichTextLabel;
+class TextureRect;
+class Tree;
 
 /**
  * NOTE: Do not assume the EditorNode singleton to be available in this class' methods.
@@ -47,12 +47,19 @@ class EditorAbout : public AcceptDialog {
 	GDCLASS(EditorAbout, AcceptDialog);
 
 private:
-	void _license_tree_selected();
-	void _project_manager_clicked();
-	void _item_with_website_selected(int p_id, ItemList *p_il);
-	void _item_list_resized(ItemList *p_il);
-	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], int p_single_column_flags = 0, bool p_allow_website = false, const String &p_easter_egg_section = String());
+	enum SectionFlags {
+		FLAG_SINGLE_COLUMN = 1 << 0,
+		FLAG_ALLOW_WEBSITE = 1 << 1,
+		FLAG_EASTER_EGG = 1 << 2,
+	};
 
+	void _license_tree_selected();
+	void _item_activated(int p_idx, ItemList *p_il);
+	void _item_list_resized(ItemList *p_il);
+	Label *_create_section(Control *p_parent, const String &p_name, const char *const *p_src, BitField<SectionFlags> p_flags = 0);
+
+	Label *_about_text_label = nullptr;
+	Label *_project_manager_label = nullptr;
 	Tree *_tpl_tree = nullptr;
 	RichTextLabel *license_text_label = nullptr;
 	RichTextLabel *_tpl_text = nullptr;
