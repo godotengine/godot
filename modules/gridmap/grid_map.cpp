@@ -356,10 +356,7 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 	key.y = p_position.y;
 	key.z = p_position.z;
 
-	OctantKey ok;
-	ok.x = p_position.x / octant_size;
-	ok.y = p_position.y / octant_size;
-	ok.z = p_position.z / octant_size;
+	const OctantKey ok = get_octant_key_from_cell_coords(p_position);
 
 	if (p_item < 0) {
 		//erase
@@ -521,6 +518,32 @@ int GridMap::get_orthogonal_index_from_basis(const Basis &p_basis) const {
 	}
 
 	return 0;
+}
+
+GridMap::OctantKey GridMap::get_octant_key_from_index_key(const IndexKey &p_index_key) const {
+	const int x = p_index_key.x > 0 ? p_index_key.x / octant_size : (p_index_key.x - (octant_size - 1)) / octant_size;
+	const int y = p_index_key.y > 0 ? p_index_key.y / octant_size : (p_index_key.y - (octant_size - 1)) / octant_size;
+	const int z = p_index_key.z > 0 ? p_index_key.z / octant_size : (p_index_key.z - (octant_size - 1)) / octant_size;
+
+	OctantKey ok;
+	ok.key = 0;
+	ok.x = x;
+	ok.y = y;
+	ok.z = z;
+	return ok;
+}
+
+GridMap::OctantKey GridMap::get_octant_key_from_cell_coords(const Vector3i &p_cell_coords) const {
+	const int x = p_cell_coords.x > 0 ? p_cell_coords.x / octant_size : (p_cell_coords.x - (octant_size - 1)) / octant_size;
+	const int y = p_cell_coords.y > 0 ? p_cell_coords.y / octant_size : (p_cell_coords.y - (octant_size - 1)) / octant_size;
+	const int z = p_cell_coords.z > 0 ? p_cell_coords.z / octant_size : (p_cell_coords.z - (octant_size - 1)) / octant_size;
+
+	OctantKey ok;
+	ok.key = 0;
+	ok.x = x;
+	ok.y = y;
+	ok.z = z;
+	return ok;
 }
 
 Vector3i GridMap::local_to_map(const Vector3 &p_world_position) const {
@@ -1339,10 +1362,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		xform.set_origin(cellpos * cell_size + ofs);
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 
-		OctantKey ok;
-		ok.x = key.x / octant_size;
-		ok.y = key.y / octant_size;
-		ok.z = key.z / octant_size;
+		const OctantKey ok = get_octant_key_from_index_key(key);
 
 		if (!surface_map.has(ok)) {
 			surface_map[ok] = HashMap<Ref<Material>, Ref<SurfaceTool>>();

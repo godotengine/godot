@@ -149,6 +149,9 @@ class GridMap : public Node3D {
 		OctantKey() {}
 	};
 
+	OctantKey get_octant_key_from_index_key(const IndexKey &p_index_key) const;
+	OctantKey get_octant_key_from_cell_coords(const Vector3i &p_cell_coords) const;
+
 #ifndef PHYSICS_3D_DISABLED
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
