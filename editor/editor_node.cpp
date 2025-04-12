@@ -861,21 +861,19 @@ void EditorNode::_notification(int p_what) {
 				scene_tabs->update_scene_tabs();
 			}
 
-			// Update the animation frame of the update spinner.
-			uint64_t frame = Engine::get_singleton()->get_frames_drawn();
-			uint64_t tick = OS::get_singleton()->get_ticks_msec();
+			if (update_spinner->is_visible()) {
+				// Update the animation frame of the update spinner.
+				uint64_t frame = Engine::get_singleton()->get_frames_drawn();
+				uint64_t tick = OS::get_singleton()->get_ticks_msec();
 
-			if (frame != update_spinner_step_frame && (tick - update_spinner_step_msec) > (1000 / 8)) {
-				update_spinner_step++;
-				if (update_spinner_step >= 8) {
-					update_spinner_step = 0;
-				}
+				if (frame != update_spinner_step_frame && (tick - update_spinner_step_msec) > (1000 / 8)) {
+					update_spinner_step++;
+					if (update_spinner_step >= 8) {
+						update_spinner_step = 0;
+					}
 
-				update_spinner_step_msec = tick;
-				update_spinner_step_frame = frame + 1;
-
-				// Update the icon itself only when the spinner is visible.
-				if (_should_display_update_spinner()) {
+					update_spinner_step_msec = tick;
+					update_spinner_step_frame = frame + 1;
 					update_spinner->set_button_icon(theme->get_icon("Progress" + itos(update_spinner_step + 1), EditorStringName(EditorIcons)));
 				}
 			}
@@ -1154,9 +1152,25 @@ void EditorNode::_notification(int p_what) {
 }
 
 void EditorNode::_update_update_spinner() {
-	update_spinner->set_visible(!RenderingServer::get_singleton()->canvas_item_get_debug_redraw() && _should_display_update_spinner());
+	bool should_display_spinner = false;
+	if (!RenderingServer::get_singleton()->canvas_item_get_debug_redraw()) {
+#ifdef DEV_ENABLED
+		const bool in_dev = true;
+#else
+		const bool in_dev = false;
+#endif
+		const int show_update_spinner_setting = EDITOR_GET("interface/editor/show_update_spinner");
+		should_display_spinner = (show_update_spinner_setting == 0 && in_dev) || show_update_spinner_setting == 1;
+	}
+	update_spinner->set_visible(should_display_spinner);
 
 	const bool update_continuously = EDITOR_GET("interface/editor/update_continuously");
+	OS::get_singleton()->set_low_processor_usage_mode(!update_continuously);
+
+	if (!update_spinner->is_visible()) {
+		return;
+	}
+
 	PopupMenu *update_popup = update_spinner->get_popup();
 	update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_CONTINUOUSLY), update_continuously);
 	update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_WHEN_CHANGED), !update_continuously);
@@ -1174,8 +1188,6 @@ void EditorNode::_update_update_spinner() {
 		update_spinner->set_tooltip_text(TTRC("Spins when the editor window redraws."));
 		update_spinner->set_self_modulate(Color(1, 1, 1));
 	}
-
-	OS::get_singleton()->set_low_processor_usage_mode(!update_continuously);
 }
 
 void EditorNode::_execute_upgrades() {
@@ -6023,16 +6035,6 @@ String EditorNode::_get_system_info() const {
 	}
 
 	return String(" - ").join(info);
-}
-
-bool EditorNode::_should_display_update_spinner() const {
-#ifdef DEV_ENABLED
-	const bool in_dev = true;
-#else
-	const bool in_dev = false;
-#endif
-	const int show_update_spinner_setting = EDITOR_GET("interface/editor/show_update_spinner");
-	return (show_update_spinner_setting == 0 && in_dev) || show_update_spinner_setting == 1;
 }
 
 Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
