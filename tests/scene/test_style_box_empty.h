@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_style_box_empty.h                                              */
+/*  test_style_box_empty.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -74,13 +74,13 @@ TEST_CASE("[StyleBoxEmpty] set_content_margin, set_content_margin_all, set_conte
 		style_box_empty->set_content_margin(SIDE_BOTTOM, 4);
 
 		CHECK_MESSAGE(style_box_empty->get_margin(SIDE_LEFT) == 0,
-			"Value is lesser than zero, so it returns 0");
+				"Value is lesser than zero, so it returns 0");
 		CHECK_MESSAGE(style_box_empty->get_margin(SIDE_RIGHT) == 0,
-			"Value is lesser than zero, so it returns 0");
+				"Value is lesser than zero, so it returns 0");
 		CHECK_MESSAGE(style_box_empty->get_margin(SIDE_TOP) == 3,
-			"Value is higher than zero, so it returns value");
+				"Value is higher than zero, so it returns value");
 		CHECK_MESSAGE(style_box_empty->get_margin(SIDE_BOTTOM) == 4,
-			"Value is higher than zero, so it returns value");
+				"Value is higher than zero, so it returns value");
 	}
 
 	SUBCASE("set_content_margin_individual, get_minimum_size") {
@@ -93,7 +93,7 @@ TEST_CASE("[StyleBoxEmpty] set_content_margin, set_content_margin_all, set_conte
 		style_box_empty->set_content_margin_individual(-3, 5, 1, 2);
 
 		CHECK_MESSAGE(style_box_empty->get_offset() == Point2(0, 5),
-			"Returns Point2 with get_margin of SIDE_LEFT and SIDE_TOP");
+				"Returns Point2 with get_margin of SIDE_LEFT and SIDE_TOP");
 	}
 }
 
@@ -102,14 +102,14 @@ TEST_CASE("[StyleBoxEmpty] get_draw_rect") {
 	Rect2 rect = Rect2(2, 3, 2, 3);
 
 	CHECK_MESSAGE(style_box_empty->get_draw_rect(rect) == rect,
-		"Returns value passed since there's no overrided get_draw_rect");
+			"Returns value passed since there's no overrided get_draw_rect");
 }
 
 TEST_CASE("[StyleBoxEmpty] test_mask") {
 	Ref<StyleBoxEmpty> style_box_empty = memnew(StyleBoxEmpty);
 
 	CHECK_MESSAGE(style_box_empty->test_mask(Point2(0, 0), Rect2(0, 0, 0, 0)) == true,
-		"Returns true since there's no overrided test_mask");
+			"Returns true since there's no overrided test_mask");
 }
 
-} // namespace StyleBoxEmpty
+} // namespace TestStyleBoxEmpty
