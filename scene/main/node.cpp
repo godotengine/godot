@@ -47,6 +47,16 @@ int Node::orphan_node_count = 0;
 
 thread_local Node *Node::current_process_thread_group = nullptr;
 
+
+Ref<Resource> Node::get_my_resource() const {
+	return data.my_resource;
+}
+
+void Node::set_my_resource(Ref<Resource> value) {
+	data.my_resource = value;
+}
+
+
 void Node::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
@@ -3952,6 +3962,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "config"), &Node::rpc_config);
 	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Node::get_rpc_config);
 
+	ClassDB::bind_method(D_METHOD("set_my_resource", "value"), &Node::set_my_resource);
+	ClassDB::bind_method(D_METHOD("get_my_resource"), &Node::get_my_resource);
+
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
 
@@ -4126,6 +4139,9 @@ void Node::_bind_methods() {
 
 	ADD_GROUP("Auto Translate", "auto_translate_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
+
+	ADD_GROUP("My Resource", "my_");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "my_resource"), "set_my_resource", "get_my_resource");
 
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");

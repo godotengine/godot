@@ -34,6 +34,7 @@
 #include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
+#include "core/io/resource.h"
 
 class Viewport;
 class Window;
@@ -183,6 +184,7 @@ private:
 		NodePath import_path; // Path used when imported, used by scene editors to keep tracking.
 #endif
 		String editor_description;
+		Ref<Resource> my_resource;
 
 		Viewport *viewport = nullptr;
 
@@ -270,6 +272,9 @@ private:
 	} data;
 
 	Ref<MultiplayerAPI> multiplayer;
+
+	Ref<Resource> get_my_resource() const;
+	void set_my_resource(Ref<Resource> value);
 
 	String _get_tree_string_pretty(const String &p_prefix, bool p_last);
 	String _get_tree_string(const Node *p_node);
