@@ -476,7 +476,7 @@
 				[/gdscript]
 				[csharp]
 				var white = new Color(1, 1, 1, 0.5f);
-				GD.Print(white.ToNamed()); # Prints "WHITE"
+				GD.Print(white.ToNamed()); // Prints "WHITE"
 				[/csharp]
 				[/codeblocks]
 			</description>
