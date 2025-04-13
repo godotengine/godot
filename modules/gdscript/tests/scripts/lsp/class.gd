@@ -58,16 +58,19 @@ class Inner2:
 		#      |  |   ^^^^ -> class2:func:arg2
 		#      ^^^^ -> class2:func:arg1
 
-class Inner3 extends Inner2:
+class Inner三 extends Inner2:
 #     |    |         ^^^^^^ -> class2
 #     ^^^^^^ class3 -> class3
 	var whatever = "foo"
 	#   ^^^^^^^^ class3:whatever -> class3:whatever
 
+	var ütf8 = ""
+	#   ^^^^ class3:utf8 -> class3:utf8
+
 	func _init():
 	#    ^^^^^ class3:init
 	# Note: no self-ref check here: resolves to `Object._init`.
-	#       usages of `Inner3.new()` DO resolve to this `_init`
+	#       usages of `Inner三.new()` DO resolve to this `_init`
 		pass
 
 	class NestedInInner3:
@@ -97,14 +100,18 @@ func _ready():
 	#     |    |  ^^^^^^ -> func:class1:value2
 	#     ^^^^^^ -> func:class1:value1
 
-	var inner3 = Inner3.new()
+	var inner3 = Inner三.new()
 	#   |    |   |    | ^^^ -> class3:init
 	#   |    |   ^^^^^^ -> class3
 	#   ^^^^^^ func:class3 -> func:class3
 	print(inner3)
 	#     ^^^^^^ -> func:class3
 
-	var nested1 = Inner3.NestedInInner3.new()
+	print(inner3.ütf8)
+	#     |    | ^^^^ -> class3:utf8
+	#     ^^^^^^ -> func:class3
+
+	var nested1 = Inner三.NestedInInner3.new()
 	#   |     |   |    | ^^^^^^^^^^^^^^ -> class3:nested1
 	#   |     |   ^^^^^^ -> class3
 	#   ^^^^^^^ func:class3:nested1 -> func:class3:nested1
@@ -115,7 +122,7 @@ func _ready():
 	print(value_nested1)
 	#     ^^^^^^^^^^^^^ -> func:class3:nested1:value
 
-	var nested2 = Inner3.AnotherNestedInInner3.new()
+	var nested2 = Inner三.AnotherNestedInInner3.new()
 	#   |     |   |    | ^^^^^^^^^^^^^^^^^^^^^ -> class3:nested2
 	#   |     |   ^^^^^^ -> class3
 	#   ^^^^^^^ func:class3:nested2 -> func:class3:nested2
