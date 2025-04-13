@@ -751,19 +751,18 @@
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Requests permission from the OS for the given [param name]. Returns [code]true[/code] if the permission has already been granted. See also [signal MainLoop.on_request_permissions_result].
+				Requests a [i]dangerous[/i] permission from the OS for the given [param name]. Returns [code]true[/code] unless [param name] is a valid [i]dangerous[/i] permission which has not already been granted. Otherwise dispatches the appropriate request to Android and returns [code]false[/code]. See also [signal MainLoop.on_request_permissions_result].
 				The [param name] must be the full permission name. For example:
 				- [code]OS.request_permission("android.permission.READ_EXTERNAL_STORAGE")[/code]
 				- [code]OS.request_permission("android.permission.POST_NOTIFICATIONS")[/code]
-				[b]Note:[/b] Permission must be checked during export.
+				[b]Note:[/b] In use, it is required that said permission be ticked during export time; so as to insert it into the AndroidManifest, and prevent the OS / [signal MainLoop.on_request_permissions_result] from reporting straight back upon request as though the permission was user-denied.
 				[b]Note:[/b] This method is only implemented on Android.
 			</description>
 		</method>
 		<method name="request_permissions">
 			<return type="bool" />
 			<description>
-				Requests [i]dangerous[/i] permissions from the OS. Returns [code]true[/code] if permissions have already been granted. See also [signal MainLoop.on_request_permissions_result].
-				[b]Note:[/b] Permissions must be checked during export.
+				Requests [i]dangerous[/i] permissions from the OS; as per the AndroidManifest (ie, those ticked during export). Returns [code]true[/code] if all permissions have already been granted. Otherwise dispatches the appropriate request(s) to Android and returns [code]false[/code]. See also [signal MainLoop.on_request_permissions_result].
 				[b]Note:[/b] This method is only implemented on Android. Normal permissions are automatically granted at install time in Android applications.
 			</description>
 		</method>
