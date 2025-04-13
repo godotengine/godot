@@ -848,7 +848,7 @@ void EditorPropertyArray::_add_element() {
 	_length_changed(double(object->get_array().call("size")) + 1.0);
 }
 
-void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string) {
+void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string, PropertyHint p_hint) {
 	array_type = p_array_type;
 
 	// The format of p_hint_string is:
@@ -865,6 +865,14 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 
 			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1);
 			subtype = Variant::Type(subtype_string.to_int());
+		} else if (p_hint == PROPERTY_HINT_ARRAY_TYPE) {
+			subtype = Variant::get_type_by_name(p_hint_string);
+
+			if (subtype == Variant::VARIANT_MAX) {
+				subtype = Variant::OBJECT;
+				subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				subtype_hint_string = p_hint_string;
+			}
 		}
 	}
 }
@@ -1159,6 +1167,18 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 			Variant new_key = object->get_new_item_key();
 			VariantInternal::initialize(&new_key, key_subtype);
 			object->set_new_item_key(new_key);
+		} else if (p_hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+			key_subtype = Variant::get_type_by_name(key);
+
+			if (key_subtype == Variant::VARIANT_MAX) {
+				key_subtype = Variant::OBJECT;
+				key_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				key_subtype_hint_string = key;
+			}
+
+			Variant new_key = object->get_new_item_key();
+			VariantInternal::initialize(&new_key, key_subtype);
+			object->set_new_item_key(new_key);
 		}
 	}
 	if (types.size() > 1 && !types[1].is_empty()) {
@@ -1174,6 +1194,18 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 
 			value_subtype_hint_string = value.substr(hint_value_subtype_separator + 1);
 			value_subtype = Variant::Type(value_subtype_string.to_int());
+
+			Variant new_value = object->get_new_item_value();
+			VariantInternal::initialize(&new_value, value_subtype);
+			object->set_new_item_value(new_value);
+		} else if (p_hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+			value_subtype = Variant::get_type_by_name(value);
+
+			if (value_subtype == Variant::VARIANT_MAX) {
+				value_subtype = Variant::OBJECT;
+				value_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				value_subtype_hint_string = value;
+			}
 
 			Variant new_value = object->get_new_item_value();
 			VariantInternal::initialize(&new_value, value_subtype);

@@ -165,7 +165,7 @@ protected:
 	virtual void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
-	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
+	void setup(Variant::Type p_array_type, const String &p_hint_string = "", PropertyHint p_hint = PROPERTY_HINT_NONE);
 	void set_preview_value(bool p_preview_value);
 	virtual void update_property() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
