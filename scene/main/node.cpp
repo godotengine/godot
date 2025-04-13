@@ -47,6 +47,9 @@ int Node::orphan_node_count = 0;
 
 thread_local Node *Node::current_process_thread_group = nullptr;
 
+void get_component_list(List<StringName> *out) const {
+	//
+}
 
 Ref<Resource> Node::get_my_resource() const {
 	return data.my_resource;

@@ -5309,6 +5309,12 @@ void EditorInspector::_add_component_confirm() {
 
 
 void EditorInspector::_show_add_component_dialog() {
+	Node *node = Object::cast_to<Node>(object);
+
+	if (!node) {
+		return;
+	}
+
 	if (!add_component_dialog) {
 		add_component_dialog = memnew(AddComponentDialog());
 		add_component_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorInspector::_add_component_confirm));
@@ -5316,13 +5322,11 @@ void EditorInspector::_show_add_component_dialog() {
 	}
 
 	StringName dialog_title;
-	Node *node = Object::cast_to<Node>(object);
-	// If object is derived from Node use node name, if derived from Resource use classname.
-	dialog_title = node ? node->get_name() : StringName(object->get_class());
+	dialog_title = node->get_name();
 
-	List<StringName> existing_meta_keys;
-	object->get_meta_list(&existing_meta_keys);
-	add_component_dialog->open(dialog_title, existing_meta_keys);
+	List<StringName> existing_components;
+	node->get_component_list(&existing_components);
+	add_component_dialog->open(dialog_title, existing_components);
 }
 
 

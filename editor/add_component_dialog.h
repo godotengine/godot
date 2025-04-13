@@ -40,18 +40,16 @@ class AddComponentDialog : public ConfirmationDialog {
 
 public:
 	AddComponentDialog();
-	void open(const StringName p_title, List<StringName> &p_existing_metas);
+	void open(const StringName p_title, List<StringName> &p_existing_components);
 
-	StringName get_meta_name();
-	Variant get_meta_defval();
+	StringName get_component_name();
 
 private:
-	List<StringName> _existing_metas;
+	List<StringName> _existing_components;
 
-	void _check_meta_name();
+	void _check_component();
 	void _complete_init(const StringName &p_label);
 
-	LineEdit *add_meta_name = nullptr;
-	OptionButton *add_meta_type = nullptr;
+	OptionButton *add_component_type = nullptr;
 	EditorValidationPanel *validation_panel = nullptr;
 };

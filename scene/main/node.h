@@ -273,6 +273,7 @@ private:
 
 	Ref<MultiplayerAPI> multiplayer;
 
+	void get_component_list(List<StringName> *out) const;
 	Ref<Resource> get_my_resource() const;
 	void set_my_resource(Ref<Resource> value);
 

@@ -671,7 +671,6 @@ class EditorInspector : public ScrollContainer {
 
 	void _section_toggled_by_user(const String &p_path, bool p_value);
 	AddComponentDialog *add_component_dialog = nullptr;
-	LineEdit *add_component_name = nullptr;
 	OptionButton *add_component_type = nullptr;
 	EditorValidationPanel *component_validation_panel = nullptr;
 

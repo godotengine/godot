@@ -36,45 +36,31 @@ AddComponentDialog::AddComponentDialog() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
-	HBoxContainer *hbc = memnew(HBoxContainer);
-	vbc->add_child(hbc);
-	hbc->add_child(memnew(Label(TTR("Name:"))));
+	add_component_type = memnew(OptionButton);
+	add_component_type->set_accessibility_name(TTRC("Type:"));
 
-	add_meta_name = memnew(LineEdit);
-	add_meta_name->set_accessibility_name(TTRC("Name:"));
-	add_meta_name->set_custom_minimum_size(Size2(200 * EDSCALE, 1));
-	hbc->add_child(add_meta_name);
-	hbc->add_child(memnew(Label(TTR("Type:"))));
-
-	add_meta_type = memnew(OptionButton);
-	add_meta_type->set_accessibility_name(TTRC("Type:"));
-
-	hbc->add_child(add_meta_type);
+	vbc->add_child(add_component_type);
 
 	Control *spacing = memnew(Control);
 	vbc->add_child(spacing);
 	spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
 
 	set_ok_button_text(TTR("Add"));
-	register_text_enter(add_meta_name);
 
 	validation_panel = memnew(EditorValidationPanel);
 	vbc->add_child(validation_panel);
-	validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name is valid."));
-	validation_panel->set_update_callback(callable_mp(this, &AddComponentDialog::_check_meta_name));
+	validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Component is valid."));
+	validation_panel->set_update_callback(callable_mp(this, &AddComponentDialog::_check_component));
 	validation_panel->set_accept_button(get_ok_button());
-
-	add_meta_name->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 }
 
 void AddComponentDialog::_complete_init(const StringName &p_title) {
-	add_meta_name->set_text("");
 	validation_panel->update();
 
-	set_title(vformat(TTR("Add Metadata Property for \"%s\""), p_title));
+	set_title(vformat(TTR("Add Component to \"%s\""), p_title));
 
 	// Skip if we already completed the initialization.
-	if (add_meta_type->get_item_count()) {
+	if (add_component_type->get_item_count()) {
 		return;
 	}
 
@@ -85,38 +71,30 @@ void AddComponentDialog::_complete_init(const StringName &p_title) {
 		}
 		String type = i == Variant::OBJECT ? String("Resource") : Variant::get_type_name(Variant::Type(i));
 
-		add_meta_type->add_icon_item(get_editor_theme_icon(type), type, i);
+		add_component_type->add_icon_item(get_editor_theme_icon(type), type, i);
 	}
 }
 
-void AddComponentDialog::open(const StringName p_title, List<StringName> &p_existing_metas) {
-	this->_existing_metas = p_existing_metas;
+void AddComponentDialog::open(const StringName p_title, List<StringName> &p_existing_components) {
+	this->_existing_components = p_existing_components;
 	_complete_init(p_title);
 	popup_centered();
-	add_meta_name->grab_focus();
 }
 
-StringName AddComponentDialog::get_meta_name() {
-	return add_meta_name->get_text();
+StringName AddComponentDialog::get_component_name() {
+	return "FIXME:: component name.";// add_meta_name->get_text();
 }
 
-Variant AddComponentDialog::get_meta_defval() {
-	Variant defval;
-	Callable::CallError ce;
-	Variant::construct(Variant::Type(add_meta_type->get_selected_id()), defval, nullptr, 0, ce);
-	return defval;
-}
-
-void AddComponentDialog::_check_meta_name() {
-	const String meta_name = add_meta_name->get_text();
-
-	if (meta_name.is_empty()) {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name can't be empty."), EditorValidationPanel::MSG_ERROR);
-	} else if (!meta_name.is_valid_ascii_identifier()) {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name must be a valid identifier."), EditorValidationPanel::MSG_ERROR);
-	} else if (_existing_metas.find(meta_name)) {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, vformat(TTR("Metadata with name \"%s\" already exists."), meta_name), EditorValidationPanel::MSG_ERROR);
-	} else if (meta_name[0] == '_') {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Names starting with _ are reserved for editor-only metadata."), EditorValidationPanel::MSG_ERROR);
-	}
+void AddComponentDialog::_check_component() {
+//	const String meta_name = add_meta_name->get_text();
+//
+//	if (meta_name.is_empty()) {
+//		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name can't be empty."), EditorValidationPanel::MSG_ERROR);
+//	} else if (!meta_name.is_valid_ascii_identifier()) {
+//		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name must be a valid identifier."), EditorValidationPanel::MSG_ERROR);
+//	} else if (_existing_metas.find(meta_name)) {
+//		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, vformat(TTR("Metadata with name \"%s\" already exists."), meta_name), EditorValidationPanel::MSG_ERROR);
+//	} else if (meta_name[0] == '_') {
+//		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Names starting with _ are reserved for editor-only metadata."), EditorValidationPanel::MSG_ERROR);
+//	}
 }
