@@ -318,8 +318,6 @@ Error Array::insert(int p_pos, const Variant &p_value) {
 		p_pos = _p->array.size() + p_pos;
 	}
 
-	ERR_FAIL_INDEX_V_MSG(p_pos, _p->array.size(), ERR_INVALID_PARAMETER, vformat("The calculated index %d is out of bounds (the array has %d elements). Leaving the array untouched.", p_pos, _p->array.size()));
-
 	return _p->array.insert(p_pos, std::move(value));
 }
 
@@ -494,8 +492,6 @@ void Array::remove_at(int p_pos) {
 		// Relative offset from the end.
 		p_pos = _p->array.size() + p_pos;
 	}
-
-	ERR_FAIL_INDEX_MSG(p_pos, _p->array.size(), vformat("The calculated index %d is out of bounds (the array has %d elements). Leaving the array untouched.", p_pos, _p->array.size()));
 
 	_p->array.remove_at(p_pos);
 }
