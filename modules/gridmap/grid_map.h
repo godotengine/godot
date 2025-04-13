@@ -152,6 +152,9 @@ class GridMap : public Node3D {
 		OctantKey() {}
 	};
 
+	OctantKey get_octant_key_from_index_key(const IndexKey &p_index_key) const;
+	OctantKey get_octant_key_from_cell_coords(const Vector3i &p_cell_coords) const;
+
 #ifndef PHYSICS_3D_DISABLED
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
@@ -224,6 +227,45 @@ class GridMap : public Node3D {
 	};
 
 	Vector<BakedMesh> baked_meshes;
+
+	bool debug_dirty = true;
+	bool debug_enabled = false;
+	bool debug_show_octants = true;
+	bool debug_use_custom = false;
+
+	Color debug_default_color_octants = Color(1.0, 1.0, 1.0, 1.0);
+	Color debug_custom_color_octants = Color(1.0, 1.0, 1.0, 1.0);
+
+	Ref<StandardMaterial3D> debug_default_octant_line_material;
+	Ref<StandardMaterial3D> debug_custom_octant_line_material;
+
+	void _debug_update();
+	void _debug_update_octants();
+	void _debug_clear();
+	void _debug_clear_octants();
+
+	RID debug_octant_line_mesh_rid;
+
+	struct OctantDebug {
+		RID debug_line_mesh_rid;
+		RID debug_line_instance_rid;
+	};
+	HashMap<OctantKey, OctantDebug *, OctantKey> debug_octant_map;
+
+	Array build_octant_line_mesh_arrays() const;
+
+public:
+	void debug_set_enabled(bool p_enable);
+	bool debug_get_enabled() const;
+
+	void debug_set_show_octants(bool p_enable);
+	bool debug_get_show_octants() const;
+
+	void debug_set_use_custom(bool p_enable);
+	bool debug_get_use_custom() const;
+
+	void debug_set_custom_color_octants(const Color &p_color);
+	Color debug_get_custom_color_octants() const;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -300,6 +342,15 @@ public:
 
 	TypedArray<Vector3i> get_used_cells() const;
 	TypedArray<Vector3i> get_used_cells_by_item(int p_item) const;
+
+	TypedArray<Vector3i> get_used_octants() const;
+	TypedArray<Vector3i> get_used_octants_by_item(int p_item) const;
+
+	TypedArray<Vector3i> get_used_cells_in_octant(const Vector3i &p_octant_coords) const;
+	TypedArray<Vector3i> get_used_cells_in_octant_by_item(const Vector3i &p_octant_coords, int p_item) const;
+
+	TypedArray<Vector3i> get_used_octants_in_bounds(const AABB &p_bounds) const;
+	Vector3i get_octant_coords_from_cell_coords(const Vector3i &p_cell_coords) const;
 
 	Array get_meshes() const;
 

@@ -338,6 +338,180 @@ bool GridMap::get_center_z() const {
 	return center_z;
 }
 
+Array GridMap::build_octant_line_mesh_arrays() const {
+	AABB aabb;
+	aabb.size = octant_size * cell_size;
+
+	Vector<Vector3> vertex_array;
+	vertex_array.resize(24);
+	Vector3 *vertex_array_ptrw = vertex_array.ptrw();
+	int vertex_index = 0;
+
+	for (int i = 0; i < 12; i++) {
+		Vector3 a, b;
+		aabb.get_edge(i, a, b);
+		vertex_array_ptrw[vertex_index++] = a;
+		vertex_array_ptrw[vertex_index++] = b;
+	}
+
+	Array mesh_arrays;
+	mesh_arrays.resize(Mesh::ARRAY_MAX);
+	mesh_arrays[Mesh::ARRAY_VERTEX] = vertex_array;
+
+	return mesh_arrays;
+}
+
+void GridMap::debug_set_use_custom(bool p_enable) {
+	if (debug_use_custom == p_enable) {
+		return;
+	}
+
+	debug_use_custom = p_enable;
+
+	debug_dirty = true;
+}
+
+bool GridMap::debug_get_use_custom() const {
+	return debug_use_custom;
+}
+
+void GridMap::debug_set_custom_color_octants(const Color &p_color) {
+	if (debug_custom_color_octants == p_color) {
+		return;
+	}
+
+	debug_custom_color_octants = p_color;
+
+	if (debug_custom_octant_line_material.is_valid()) {
+		debug_custom_octant_line_material->set_albedo(debug_custom_color_octants);
+	}
+}
+
+Color GridMap::debug_get_custom_color_octants() const {
+	return debug_custom_color_octants;
+}
+
+void GridMap::_debug_update_octants() {
+	if (!(debug_enabled && debug_show_octants)) {
+		_debug_clear_octants();
+		return;
+	}
+	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
+
+	RID debug_scenario = get_world_3d()->get_scenario();
+
+	Ref<StandardMaterial3D> debug_octant_line_material;
+	if (debug_use_custom) {
+		if (debug_custom_octant_line_material.is_null()) {
+			debug_custom_octant_line_material.instantiate();
+			debug_custom_octant_line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+			debug_custom_octant_line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+			debug_custom_octant_line_material->set_albedo(debug_custom_color_octants);
+		}
+		debug_octant_line_material = debug_custom_octant_line_material;
+
+	} else {
+		if (debug_octant_line_material.is_null()) {
+			debug_default_octant_line_material.instantiate();
+			debug_default_octant_line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+			debug_default_octant_line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+			debug_default_octant_line_material->set_albedo(debug_default_color_octants);
+		}
+		debug_octant_line_material = debug_default_octant_line_material;
+	}
+
+	Array debug_mesh_arrays = build_octant_line_mesh_arrays();
+
+	if (debug_octant_line_mesh_rid.is_null()) {
+		debug_octant_line_mesh_rid = rs->mesh_create();
+	}
+	rs->mesh_clear(debug_octant_line_mesh_rid);
+	rs->mesh_add_surface_from_arrays(debug_octant_line_mesh_rid, RS::PRIMITIVE_LINES, debug_mesh_arrays);
+	rs->mesh_surface_set_material(debug_octant_line_mesh_rid, 0, debug_octant_line_material->get_rid());
+
+	const Transform3D &gridmap_xform = get_global_transform();
+
+	for (const KeyValue<OctantKey, Octant *> &ele : octant_map) {
+		OctantKey octant_key = ele.key;
+		HashMap<OctantKey, OctantDebug *, OctantKey>::Iterator E = debug_octant_map.find(octant_key);
+		if (!E) {
+			OctantDebug *octant_debug = memnew(OctantDebug);
+
+			//RID debug_octant_line_mesh_rid = rs->mesh_create();
+			RID debug_octant_line_instance_rid = rs->instance_create();
+
+			rs->instance_set_base(debug_octant_line_instance_rid, debug_octant_line_mesh_rid);
+			rs->instance_set_scenario(debug_octant_line_instance_rid, debug_scenario);
+
+			//octant_debug->debug_line_mesh_rid = debug_octant_line_mesh_rid;
+			octant_debug->debug_line_instance_rid = debug_octant_line_instance_rid;
+
+			E = debug_octant_map.insert(octant_key, octant_debug);
+		}
+
+		OctantDebug &octant_debug = *E->value;
+
+		const Transform3D octant_transform = gridmap_xform * (Transform3D(Basis(), Vector3(octant_key.x, octant_key.y, octant_key.z) * octant_size * cell_size));
+
+		rs->instance_set_scenario(octant_debug.debug_line_instance_rid, debug_scenario);
+		rs->instance_set_transform(octant_debug.debug_line_instance_rid, octant_transform);
+		rs->instance_set_visible(octant_debug.debug_line_instance_rid, is_visible_in_tree());
+	}
+}
+
+void GridMap::_debug_clear_octants() {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
+
+	for (const KeyValue<OctantKey, Octant *> &ele : octant_map) {
+		OctantKey octant_key = ele.key;
+		HashMap<OctantKey, OctantDebug *, OctantKey>::Iterator E = debug_octant_map.find(octant_key);
+		if (E) {
+			OctantDebug &octant_debug = *E->value;
+
+			if (octant_debug.debug_line_mesh_rid.is_valid()) {
+				rs->free(octant_debug.debug_line_mesh_rid);
+				octant_debug.debug_line_mesh_rid = RID();
+			}
+			if (octant_debug.debug_line_instance_rid.is_valid()) {
+				rs->free(octant_debug.debug_line_instance_rid);
+				octant_debug.debug_line_instance_rid = RID();
+			}
+
+			memdelete(&octant_debug);
+		}
+	}
+
+	debug_octant_map.clear();
+}
+
+GridMap::OctantKey GridMap::get_octant_key_from_index_key(const IndexKey &p_index_key) const {
+	const int x = p_index_key.x > 0 ? p_index_key.x / octant_size : (p_index_key.x - (octant_size - 1)) / octant_size;
+	const int y = p_index_key.y > 0 ? p_index_key.y / octant_size : (p_index_key.y - (octant_size - 1)) / octant_size;
+	const int z = p_index_key.z > 0 ? p_index_key.z / octant_size : (p_index_key.z - (octant_size - 1)) / octant_size;
+
+	OctantKey ok;
+	ok.key = 0;
+	ok.x = x;
+	ok.y = y;
+	ok.z = z;
+	return ok;
+}
+
+GridMap::OctantKey GridMap::get_octant_key_from_cell_coords(const Vector3i &p_cell_coords) const {
+	const int x = p_cell_coords.x > 0 ? p_cell_coords.x / octant_size : (p_cell_coords.x - (octant_size - 1)) / octant_size;
+	const int y = p_cell_coords.y > 0 ? p_cell_coords.y / octant_size : (p_cell_coords.y - (octant_size - 1)) / octant_size;
+	const int z = p_cell_coords.z > 0 ? p_cell_coords.z / octant_size : (p_cell_coords.z - (octant_size - 1)) / octant_size;
+
+	OctantKey ok;
+	ok.key = 0;
+	ok.x = x;
+	ok.y = y;
+	ok.z = z;
+	return ok;
+}
+
 void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 	if (baked_meshes.size() && !recreating_octants) {
 		//if you set a cell item, baked meshes go good bye
@@ -354,10 +528,7 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 	key.y = p_position.y;
 	key.z = p_position.z;
 
-	OctantKey ok;
-	ok.x = p_position.x / octant_size;
-	ok.y = p_position.y / octant_size;
-	ok.z = p_position.z / octant_size;
+	const OctantKey ok = get_octant_key_from_cell_coords(p_position);
 
 	if (p_item < 0) {
 		//erase
@@ -519,6 +690,47 @@ int GridMap::get_orthogonal_index_from_basis(const Basis &p_basis) const {
 	}
 
 	return 0;
+}
+
+Vector3i GridMap::get_octant_coords_from_cell_coords(const Vector3i &p_cell_coords) const {
+	return Vector3i(
+			p_cell_coords.x > 0 ? p_cell_coords.x / octant_size : (p_cell_coords.x - (octant_size - 1)) / octant_size,
+			p_cell_coords.y > 0 ? p_cell_coords.y / octant_size : (p_cell_coords.y - (octant_size - 1)) / octant_size,
+			p_cell_coords.z > 0 ? p_cell_coords.z / octant_size : (p_cell_coords.z - (octant_size - 1)) / octant_size);
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants_in_bounds(const AABB &p_bounds) const {
+	TypedArray<Vector3i> octant_coords;
+	if (!p_bounds.has_volume()) {
+		return octant_coords;
+	}
+
+	Vector3i cell_coords_start = (p_bounds.position / cell_size).floor();
+	// -CMP_EPSILON because we don't want the octants that are just starting at the edge of the bounds.
+	Vector3i cell_coords_end = ((p_bounds.get_end() / cell_size) - Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON)).floor();
+
+	OctantKey octant_coords_start = get_octant_key_from_cell_coords(cell_coords_start);
+	OctantKey octant_coords_end = get_octant_key_from_cell_coords(cell_coords_end);
+
+	for (int z = octant_coords_start.z; z < octant_coords_end.z + 1; z++) {
+		for (int y = octant_coords_start.y; y < octant_coords_end.y + 1; y++) {
+			for (int x = octant_coords_start.x; x < octant_coords_end.x + 1; x++) {
+				OctantKey octant_key;
+				octant_key.x = x;
+				octant_key.y = y;
+				octant_key.z = z;
+
+				const HashMap<OctantKey, Octant *, OctantKey>::ConstIterator octant_kv = octant_map.find(octant_key);
+
+				if (octant_kv) {
+					Vector3i octant_coord(x, y, z);
+					octant_coords.push_back(octant_coord);
+				}
+			}
+		}
+	}
+
+	return octant_coords;
 }
 
 Vector3i GridMap::local_to_map(const Vector3 &p_world_position) const {
@@ -904,6 +1116,8 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 		}
 	}
 #endif // DEBUG_ENABLED
+
+	_debug_clear_octants();
 }
 
 void GridMap::_octant_clean_up(const OctantKey &p_key) {
@@ -961,6 +1175,8 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 		RS::get_singleton()->free(g.multimesh_instances[i].multimesh);
 	}
 	g.multimesh_instances.clear();
+
+	_debug_clear_octants();
 }
 
 void GridMap::_notification(int p_what) {
@@ -985,6 +1201,12 @@ void GridMap::_notification(int p_what) {
 			}
 #endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 			_update_visibility();
+
+			debug_dirty = true;
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			_debug_clear();
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -1002,6 +1224,16 @@ void GridMap::_notification(int p_what) {
 			for (int i = 0; i < baked_meshes.size(); i++) {
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
+
+			for (const KeyValue<OctantKey, OctantDebug *> &E : debug_octant_map) {
+				OctantKey octant_key = E.key;
+				OctantDebug &octant_debug = *E.value;
+				if (octant_debug.debug_line_instance_rid.is_valid()) {
+					const Transform3D octant_transform = new_xform * (Transform3D(Basis(), Vector3(octant_key.x, octant_key.y, octant_key.z) * octant_size * cell_size));
+					RS::get_singleton()->instance_set_transform(octant_debug.debug_line_instance_rid, octant_transform);
+				}
+			}
+
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
@@ -1020,7 +1252,26 @@ void GridMap::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_visibility();
 		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (is_inside_tree() && debug_dirty) {
+				_debug_update();
+			}
+		} break;
 	}
+}
+
+void GridMap::_debug_update() {
+	if (!debug_dirty) {
+		return;
+	}
+	debug_dirty = false;
+
+	_debug_update_octants();
+}
+
+void GridMap::_debug_clear() {
+	_debug_clear_octants();
 }
 
 void GridMap::_update_visibility() {
@@ -1038,6 +1289,16 @@ void GridMap::_update_visibility() {
 
 	for (int i = 0; i < baked_meshes.size(); i++) {
 		RS::get_singleton()->instance_set_visible(baked_meshes[i].instance, is_visible_in_tree());
+	}
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
+
+	for (const KeyValue<OctantKey, OctantDebug *> &E : debug_octant_map) {
+		OctantDebug &octant_debug = *E.value;
+		if (octant_debug.debug_line_instance_rid.is_valid()) {
+			rs->instance_set_visible(octant_debug.debug_line_instance_rid, is_visible_in_tree());
+		}
 	}
 }
 
@@ -1058,6 +1319,8 @@ void GridMap::_recreate_octant_data() {
 		set_cell_item(Vector3i(E.key), E.value.item, E.value.rot);
 	}
 	recreating_octants = false;
+
+	debug_dirty = true;
 }
 
 void GridMap::_clear_internal() {
@@ -1072,6 +1335,10 @@ void GridMap::_clear_internal() {
 
 	octant_map.clear();
 	cell_map.clear();
+
+	_debug_clear_octants();
+
+	debug_dirty = true;
 }
 
 void GridMap::clear() {
@@ -1104,6 +1371,8 @@ void GridMap::_update_octants_callback() {
 
 	_update_visibility();
 	awaiting_update = false;
+
+	_debug_update_octants();
 }
 
 void GridMap::_bind_methods() {
@@ -1156,6 +1425,7 @@ void GridMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("local_to_map", "local_position"), &GridMap::local_to_map);
 	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &GridMap::map_to_local);
+	ClassDB::bind_method(D_METHOD("get_octant_coords_from_cell_coords", "cell_coords"), &GridMap::get_octant_coords_from_cell_coords);
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);
@@ -1173,12 +1443,32 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &GridMap::get_used_cells);
 	ClassDB::bind_method(D_METHOD("get_used_cells_by_item", "item"), &GridMap::get_used_cells_by_item);
 
+	ClassDB::bind_method(D_METHOD("get_used_octants"), &GridMap::get_used_octants);
+	ClassDB::bind_method(D_METHOD("get_used_octants_by_item", "item"), &GridMap::get_used_octants_by_item);
+
+	ClassDB::bind_method(D_METHOD("get_used_cells_in_octant", "octant_coords"), &GridMap::get_used_cells_in_octant);
+	ClassDB::bind_method(D_METHOD("get_used_cells_in_octant_by_item", "octant_coords", "item"), &GridMap::get_used_cells_in_octant_by_item);
+
+	ClassDB::bind_method(D_METHOD("get_used_octants_in_bounds", "bounds"), &GridMap::get_used_octants_in_bounds);
+
 	ClassDB::bind_method(D_METHOD("get_meshes"), &GridMap::get_meshes);
 	ClassDB::bind_method(D_METHOD("get_bake_meshes"), &GridMap::get_bake_meshes);
 	ClassDB::bind_method(D_METHOD("get_bake_mesh_instance", "idx"), &GridMap::get_bake_mesh_instance);
 
 	ClassDB::bind_method(D_METHOD("clear_baked_meshes"), &GridMap::clear_baked_meshes);
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
+
+	ClassDB::bind_method(D_METHOD("debug_set_enabled", "enable"), &GridMap::debug_set_enabled);
+	ClassDB::bind_method(D_METHOD("debug_get_enabled"), &GridMap::debug_get_enabled);
+
+	ClassDB::bind_method(D_METHOD("debug_set_show_octants", "enable"), &GridMap::debug_set_show_octants);
+	ClassDB::bind_method(D_METHOD("debug_get_show_octants"), &GridMap::debug_get_show_octants);
+
+	ClassDB::bind_method(D_METHOD("debug_set_use_custom", "enable"), &GridMap::debug_set_use_custom);
+	ClassDB::bind_method(D_METHOD("debug_get_use_custom"), &GridMap::debug_get_use_custom);
+
+	ClassDB::bind_method(D_METHOD("debug_set_custom_color_octants", "color"), &GridMap::debug_set_custom_color_octants);
+	ClassDB::bind_method(D_METHOD("debug_get_custom_color_octants"), &GridMap::debug_get_custom_color_octants);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material", "get_physics_material");
@@ -1197,6 +1487,11 @@ void GridMap::_bind_methods() {
 #endif // PHYSICS_3D_DISABLED
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
+	ADD_GROUP("Debug", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled"), "debug_set_enabled", "debug_get_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_show_octants"), "debug_set_show_octants", "debug_get_show_octants");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_use_custom"), "debug_set_use_custom", "debug_get_use_custom");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_custom_color_octants"), "debug_set_custom_color_octants", "debug_get_custom_color_octants");
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
@@ -1235,6 +1530,76 @@ TypedArray<Vector3i> GridMap::get_used_cells_by_item(int p_item) const {
 	}
 
 	return a;
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants() const {
+	TypedArray<Vector3i> octant_coords;
+	octant_coords.resize(octant_map.size());
+	int i = 0;
+	for (const KeyValue<OctantKey, Octant *> &octant_kv : octant_map) {
+		const OctantKey &octant_key = octant_kv.key;
+		Vector3i octant_coord(octant_key.x, octant_key.y, octant_key.z);
+		octant_coords[i++] = octant_coord;
+	}
+
+	return octant_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants_by_item(int p_item) const {
+	TypedArray<Vector3i> octant_coords;
+	for (const KeyValue<OctantKey, Octant *> &octant_kv : octant_map) {
+		const OctantKey &octant_key = octant_kv.key;
+		const Octant &octant = *octant_kv.value;
+		for (const IndexKey &cell_key : octant.cells) {
+			const Cell &cell = cell_map[cell_key];
+			if ((int)cell.item == p_item) {
+				Vector3i octant_coord(octant_key.x, octant_key.y, octant_key.z);
+				octant_coords.push_back(octant_coord);
+				break;
+			}
+		}
+	}
+
+	return octant_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_cells_in_octant(const Vector3i &p_octant_coords) const {
+	TypedArray<Vector3i> cell_coords;
+
+	const OctantKey octantkey = get_octant_key_from_cell_coords(p_octant_coords);
+	if (!octant_map.has(octantkey)) {
+		return cell_coords;
+	}
+
+	const Octant &octant = *octant_map[octantkey];
+
+	for (const IndexKey &cell_key : octant.cells) {
+		Vector3i cell_coord(cell_key.x, cell_key.y, cell_key.z);
+		cell_coords.push_back(cell_coord);
+	}
+
+	return cell_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_cells_in_octant_by_item(const Vector3i &p_octant_coords, int p_item) const {
+	TypedArray<Vector3i> cell_coords;
+
+	const OctantKey octantkey = get_octant_key_from_cell_coords(p_octant_coords);
+	if (!octant_map.has(octantkey)) {
+		return cell_coords;
+	}
+
+	const Octant &octant = *octant_map[octantkey];
+
+	for (const IndexKey &cell_key : octant.cells) {
+		const Cell &cell = cell_map[cell_key];
+		if ((int)cell.item == p_item) {
+			Vector3i cell_coord(cell_key.x, cell_key.y, cell_key.z);
+			cell_coords.push_back(cell_coord);
+		}
+	}
+
+	return cell_coords;
 }
 
 Array GridMap::get_meshes() const {
@@ -1320,10 +1685,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		xform.set_origin(cellpos * cell_size + ofs);
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 
-		OctantKey ok;
-		ok.x = key.x / octant_size;
-		ok.y = key.y / octant_size;
-		ok.z = key.z / octant_size;
+		const OctantKey ok = get_octant_key_from_index_key(key);
 
 		if (!surface_map.has(ok)) {
 			surface_map[ok] = HashMap<Ref<Material>, Ref<SurfaceTool>>();
@@ -1394,12 +1756,41 @@ RID GridMap::get_bake_mesh_instance(int p_idx) {
 	return baked_meshes[p_idx].instance;
 }
 
+void GridMap::debug_set_enabled(bool p_enable) {
+	if (debug_enabled == p_enable) {
+		return;
+	}
+
+	debug_enabled = p_enable;
+
+	debug_dirty = true;
+}
+
+bool GridMap::debug_get_enabled() const {
+	return debug_enabled;
+}
+
+void GridMap::debug_set_show_octants(bool p_enable) {
+	if (debug_show_octants == p_enable) {
+		return;
+	}
+
+	debug_show_octants = p_enable;
+
+	debug_dirty = true;
+}
+
+bool GridMap::debug_get_show_octants() const {
+	return debug_show_octants;
+}
+
 GridMap::GridMap() {
 	set_notify_transform(true);
 #if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 	NavigationServer3D::get_singleton()->connect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));
 	NavigationServer3D::get_singleton()->connect("navigation_debug_changed", callable_mp(this, &GridMap::_update_navigation_debug_edge_connections));
 #endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
+	set_process_internal(true);
 }
 
 #ifndef NAVIGATION_3D_DISABLED
@@ -1566,6 +1957,8 @@ GridMap::~GridMap() {
 	NavigationServer3D::get_singleton()->disconnect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));
 	NavigationServer3D::get_singleton()->disconnect("navigation_debug_changed", callable_mp(this, &GridMap::_update_navigation_debug_edge_connections));
 #endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
+
+	_debug_clear_octants();
 }
 
 #if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
