@@ -101,6 +101,14 @@
 				Sets YCbCr image for this feed.
 			</description>
 		</method>
+		<method name="set_ycbcr_images">
+			<return type="void" />
+			<param index="0" name="y_image" type="Image" />
+			<param index="1" name="cbcr_image" type="Image" />
+			<description>
+				Sets Y and CbCr images for this feed.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="feed_is_active" type="bool" setter="set_active" getter="is_active" default="false">
