@@ -2849,6 +2849,7 @@
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="23" enum="PropertyHint">
 			If a property is [String], hints that the property represents a particular type (class). This allows to select a type from the create dialog. The property will store the selected type as a string.
 			If a property is [Array], hints the editor how to show elements. The [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code].
+			If a property is [Dictionary], hints the editor how to show elements. The [code]hint_string[/code] is the same as [Array], with a [code]";"[/code] separating the key and value.
 			[codeblocks]
 			[gdscript]
 			# Array of elem_type.
@@ -2923,10 +2924,12 @@
 			Hints that an [int] property is a pointer. Used by GDExtension.
 		</constant>
 		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="31" enum="PropertyHint">
-			Hints that a property is an [Array] with the stored type specified in the hint string.
+			Hints that a property is an [Array] with the stored type specified in the hint string. The hint string contains the type of the array (e.g. [code]"String"[/code]).
+			Use the hint string format from [constant PROPERTY_HINT_TYPE_STRING] for more control over the stored type.
 		</constant>
 		<constant name="PROPERTY_HINT_DICTIONARY_TYPE" value="38" enum="PropertyHint">
 			Hints that a property is a [Dictionary] with the stored types specified in the hint string. The hint string contains the key and value types separated by a semicolon (e.g. [code]"int;String"[/code]).
+			Use the hint string format from [constant PROPERTY_HINT_TYPE_STRING] for more control over the stored types.
 		</constant>
 		<constant name="PROPERTY_HINT_LOCALE_ID" value="32" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
