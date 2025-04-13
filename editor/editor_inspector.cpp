@@ -4308,6 +4308,23 @@ void EditorInspector::update_tree() {
 		}
 	}
 
+	{//TODO:: put in its own function
+		Node *node = Object::cast_to<Node>(object);
+		if (node) {
+			Control *spacer = memnew(Control);
+			spacer->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
+			main_vbox->add_child(spacer);
+
+			Button *add_component = EditorInspector::create_inspector_action_button(TTR("Add Component"));
+			add_component->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			add_component->connect(SceneStringName(pressed), callable_mp(this, &EditorInspector::_show_add_component_dialog));
+			main_vbox->add_child(add_component);
+			if (all_read_only) {
+				add_component->set_disabled(true);
+			}
+		}
+	}
+
 	if (!hide_metadata && !object->call("_hide_metadata_from_inspector")) {
 		// Add 4px of spacing between the "Add Metadata" button and the content above it.
 		Control *spacer = memnew(Control);
@@ -5276,6 +5293,38 @@ void EditorInspector::set_property_clipboard(const Variant &p_value) {
 Variant EditorInspector::get_property_clipboard() const {
 	return property_clipboard;
 }
+
+
+void EditorInspector::_add_component_confirm() {
+	// Ensure metadata is unfolded when adding a new metadata.
+	object->editor_set_section_unfold("component", true);
+
+	String name = add_meta_dialog->get_meta_name();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Add component %s"), name));
+	undo_redo->add_do_method(object, "set_component", name, add_meta_dialog->get_meta_defval());
+	undo_redo->add_undo_method(object, "remove_component", name);
+	undo_redo->commit_action();
+}
+
+
+void EditorInspector::_show_add_component_dialog() {
+	if (!add_component_dialog) {
+		add_component_dialog = memnew(AddComponentDialog());
+		add_component_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorInspector::_add_component_confirm));
+		add_child(add_component_dialog);
+	}
+
+	StringName dialog_title;
+	Node *node = Object::cast_to<Node>(object);
+	// If object is derived from Node use node name, if derived from Resource use classname.
+	dialog_title = node ? node->get_name() : StringName(object->get_class());
+
+	List<StringName> existing_meta_keys;
+	object->get_meta_list(&existing_meta_keys);
+	add_component_dialog->open(dialog_title, existing_meta_keys);
+}
+
 
 void EditorInspector::_show_add_meta_dialog() {
 	if (!add_meta_dialog) {
