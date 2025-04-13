@@ -318,7 +318,7 @@ Error Array::insert(int p_pos, const Variant &p_value) {
 		p_pos = _p->array.size() + p_pos;
 	}
 
-	ERR_FAIL_INDEX_V_MSG(p_pos, _p->array.size(), ERR_INVALID_PARAMETER, vformat("The calculated index %d is out of bounds (the array has %d elements). Leaving the array untouched.", p_pos, _p->array.size()));
+	ERR_FAIL_INDEX_V_MSG(p_pos, _p->array.size() + 1, ERR_INVALID_PARAMETER, vformat("The calculated index %d is out of bounds (the array has %d elements). Leaving the array untouched.", p_pos, _p->array.size()));
 
 	return _p->array.insert(p_pos, std::move(value));
 }
