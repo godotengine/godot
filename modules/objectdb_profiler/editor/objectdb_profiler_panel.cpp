@@ -401,7 +401,6 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 
 	// Load all the snapshot names from disk.
 	Ref<DirAccess> snapshot_dir = _get_and_create_snapshot_storage_dir();
-	TreeItem *last_snapshot_button = nullptr;
 	if (snapshot_dir.is_valid()) {
 		for (const String &file_name : snapshot_dir->get_files()) {
 			Vector<String> name_parts = file_name.split(".");
@@ -409,8 +408,6 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 				ERR_PRINT("ObjectDB Snapshot file did not have .odb_snapshot extension. Skipping: " + file_name);
 				continue;
 			}
-
-			last_snapshot_button = _add_snapshot_button(name_parts[0], snapshot_dir->get_current_dir().path_join(file_name));
 		}
 	}
 }
