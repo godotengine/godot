@@ -423,8 +423,11 @@ void MenuBar::_draw_menu_item(int p_index) {
 	bool pressed = (active_menu == p_index);
 	bool rtl = is_layout_rtl();
 
-	if (has_focus() && focused_menu == -1 && p_index == 0) {
-		hovered = true;
+	// When close the active_menu, the hovered menu should be the one that was active.
+	if (has_focus() && active_menu == -1 && focused_menu == -1) {
+		if (p_index == selected_menu) {
+			hovered = true;
+		}
 	}
 
 	if (menu_cache[p_index].hidden) {
