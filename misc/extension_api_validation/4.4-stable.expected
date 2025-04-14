@@ -48,3 +48,10 @@ GH-71542
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorExportPlatform/methods/get_forced_export_files': arguments
 
 Optional argument added. Compatibility methods registered.
+
+
+GH-101300
+---------
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2DExtension/methods/_intersect_point/arguments': size changed value in new API, from 7 to 8.
+
+Added argument to disable checking the canvas instance ID on point intersection queries.
