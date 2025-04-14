@@ -695,11 +695,11 @@ void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_platform_on_leave", "on_leave_apply_velocity"), &CharacterBody2D::set_platform_on_leave);
 	ClassDB::bind_method(D_METHOD("get_platform_on_leave"), &CharacterBody2D::get_platform_on_leave);
 
-	ClassDB::bind_method(D_METHOD("is_on_floor"), &CharacterBody2D::is_on_floor);
-	ClassDB::bind_method(D_METHOD("is_on_floor_only"), &CharacterBody2D::is_on_floor_only);
-	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &CharacterBody2D::is_on_ceiling);
-	ClassDB::bind_method(D_METHOD("is_on_ceiling_only"), &CharacterBody2D::is_on_ceiling_only);
-	ClassDB::bind_method(D_METHOD("is_on_wall"), &CharacterBody2D::is_on_wall);
+	ClassDB::bind_method(D_METHOD("is_on_floor"), &CharacterBody2D::on_lattiassa);
+	ClassDB::bind_method(D_METHOD("is_on_floor_only"), &CharacterBody2D::on_vain_lattiassa);
+	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &CharacterBody2D::on_katossa);
+	ClassDB::bind_method(D_METHOD("is_on_ceiling_only"), &CharacterBody2D::on_vain_katossa);
+	ClassDB::bind_method(D_METHOD("is_on_wall"), &CharacterBody2D::on_seinassa);
 	ClassDB::bind_method(D_METHOD("is_on_wall_only"), &CharacterBody2D::is_on_wall_only);
 	ClassDB::bind_method(D_METHOD("get_floor_normal"), &CharacterBody2D::get_floor_normal);
 	ClassDB::bind_method(D_METHOD("get_wall_normal"), &CharacterBody2D::get_wall_normal);
