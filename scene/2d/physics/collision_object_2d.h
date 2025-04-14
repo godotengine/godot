@@ -153,7 +153,7 @@ public:
 	void shape_owner_set_one_way_collision_margin(uint32_t p_owner, real_t p_margin);
 	real_t get_shape_owner_one_way_collision_margin(uint32_t p_owner) const;
 
-	void shape_owner_set_one_way_collision_direction(uint32_t p_owner, Vector2 p_direction);
+	void shape_owner_set_one_way_collision_direction(uint32_t p_owner, const Vector2 &p_direction);
 	Vector2 get_shape_owner_one_way_collision_direction(uint32_t p_owner) const;
 
 	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape);
