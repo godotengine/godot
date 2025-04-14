@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  component.cpp                                                         */
+/*  actor.h                                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -29,16 +29,38 @@
 /**************************************************************************/
 
 
-#include "component.h"
-
-#include "core/object/class_db.h"
+#pragma once
 
 
-StringName Component::get_component_class() {
-	return StringName("Component");
-}
+#include "core/object/object.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/string/string_name.h"
+#include "modules/components/component.h"
 
 
-void Component::_bind_methods() {
-	ClassDB::bind_static_method("Component", D_METHOD("get_component_class"), &Component::get_component_class);
-}
+class Actor : public Object {
+	GDCLASS(Actor, Object);
+
+
+protected:
+	HashMap<StringName, Ref<Component>> _component_resources {
+		{Component::get_component_class(), memnew(Component)}
+	};
+
+
+public:
+	Actor() = default;
+	virtual ~Actor() = default;
+
+	bool has_component(StringName component_class) const;
+	Ref<Component> get_component(StringName component_class);
+	bool set_component(Ref<Component> value);
+	bool remove_component(StringName component_class);
+	void get_component_list(List<Ref<Component>> *out);
+
+
+protected:
+	static void _bind_methods();
+	void _get_property_list(List<PropertyInfo> *out) const;
+};

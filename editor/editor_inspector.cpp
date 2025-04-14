@@ -5324,9 +5324,9 @@ void EditorInspector::_show_add_component_dialog() {
 	StringName dialog_title;
 	dialog_title = node->get_name();
 
-	List<StringName> existing_components;
-	node->get_component_list(&existing_components);
-	add_component_dialog->open(dialog_title, existing_components);
+//	List<StringName> existing_components;
+//	node->get_component_list(&existing_components);
+//	add_component_dialog->open(dialog_title, existing_components);
 }
 
 

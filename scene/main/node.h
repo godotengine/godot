@@ -35,6 +35,8 @@
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
 #include "core/io/resource.h"
+#include "core/templates/hash_set.h"
+#include "scene/main/actor.h"
 
 class Viewport;
 class Window;
@@ -45,8 +47,8 @@ class PropertyTweener;
 SAFE_FLAG_TYPE_PUN_GUARANTEES
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
 
-class Node : public Object {
-	GDCLASS(Node, Object);
+class Node : public Actor {
+	GDCLASS(Node, Actor);
 
 protected:
 	// During group processing, these are thread-safe.
@@ -273,10 +275,12 @@ private:
 
 	Ref<MultiplayerAPI> multiplayer;
 
+public:
 	void get_component_list(List<StringName> *out) const;
 	Ref<Resource> get_my_resource() const;
 	void set_my_resource(Ref<Resource> value);
 
+private:
 	String _get_tree_string_pretty(const String &p_prefix, bool p_last);
 	String _get_tree_string(const Node *p_node);
 
