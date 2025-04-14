@@ -148,6 +148,7 @@
 #include "scene/resources/style_box_line.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
@@ -935,6 +936,7 @@ void register_scene_types() {
 #ifndef _3D_DISABLED
 	GDREGISTER_CLASS(AudioStreamPlayer3D);
 	GDREGISTER_VIRTUAL_CLASS(PrimitiveMesh);
+	GDREGISTER_CLASS(SVGTexture);
 	GDREGISTER_CLASS(BoxMesh);
 	GDREGISTER_CLASS(CapsuleMesh);
 	GDREGISTER_CLASS(CylinderMesh);
