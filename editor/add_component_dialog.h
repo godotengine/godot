@@ -31,9 +31,10 @@
 #pragma once
 
 #include "editor/gui/editor_validation_panel.h"
+#include "editor/editor_resource_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
+#include "modules/components/component.h"
 
 class AddComponentDialog : public ConfirmationDialog {
 	GDCLASS(AddComponentDialog, ConfirmationDialog);
@@ -42,7 +43,7 @@ public:
 	AddComponentDialog();
 	void open(const StringName p_title, List<StringName> &p_existing_components);
 
-	StringName get_component_name();
+	Ref<Component> get_component();
 
 private:
 	List<StringName> _existing_components;
@@ -50,6 +51,6 @@ private:
 	void _check_component();
 	void _complete_init(const StringName &p_label);
 
-	OptionButton *add_component_type = nullptr;
+	EditorResourcePicker *component_picker = nullptr;
 	EditorValidationPanel *validation_panel = nullptr;
 };

@@ -36,10 +36,10 @@ AddComponentDialog::AddComponentDialog() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
-	add_component_type = memnew(OptionButton);
-	add_component_type->set_accessibility_name(TTRC("Type:"));
+	component_picker = memnew(EditorResourcePicker);
+	component_picker->set_base_type("Component");
 
-	vbc->add_child(add_component_type);
+	vbc->add_child(component_picker);
 
 	Control *spacing = memnew(Control);
 	vbc->add_child(spacing);
@@ -59,20 +59,7 @@ void AddComponentDialog::_complete_init(const StringName &p_title) {
 
 	set_title(vformat(TTR("Add Component to \"%s\""), p_title));
 
-	// Skip if we already completed the initialization.
-	if (add_component_type->get_item_count()) {
-		return;
-	}
-
-	// Theme icons can be retrieved only the Window has been initialized.
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (i == Variant::NIL || i == Variant::RID || i == Variant::CALLABLE || i == Variant::SIGNAL) {
-			continue; //not editable by inspector.
-		}
-		String type = i == Variant::OBJECT ? String("Resource") : Variant::get_type_name(Variant::Type(i));
-
-		add_component_type->add_icon_item(get_editor_theme_icon(type), type, i);
-	}
+	component_picker->set_edited_resource(nullptr);
 }
 
 void AddComponentDialog::open(const StringName p_title, List<StringName> &p_existing_components) {
@@ -81,8 +68,8 @@ void AddComponentDialog::open(const StringName p_title, List<StringName> &p_exis
 	popup_centered();
 }
 
-StringName AddComponentDialog::get_component_name() {
-	return "FIXME:: component name.";// add_meta_name->get_text();
+Ref<Component> AddComponentDialog::get_component() {
+	return Object::cast_to<Component>(*component_picker->get_edited_resource());
 }
 
 void AddComponentDialog::_check_component() {

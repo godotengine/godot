@@ -55,9 +55,10 @@ Ref<Component> Actor::get_component(StringName component_class) const {
 
 
 void Actor::set_component(Ref<Component> value) {
-	ERR_FAIL_COND_MSG(!value.is_valid(), vformat("Can't set a component to a null value."));
+	ERR_FAIL_COND_MSG(!value.is_valid(), vformat("Can't add a null component."));
 
 	_component_resources[value->get_component_class()] = value;
+	print_line("Success setting component: ", value->get_component_class());
 
 	notify_property_list_changed();
 }
@@ -71,8 +72,17 @@ void Actor::remove_component(StringName component_class) {
 }
 
 
-void Actor::get_component_list(List<Ref<Component>> *out) {
-	//
+void Actor::get_component_list(List<Ref<Component>> *out) const {
+	for (const KeyValue<StringName, Ref<Component>> &K : _component_resources) {
+		out->push_back(K.value);
+	}
+}
+
+
+void Actor::get_component_class_list(List<StringName> *out) const {
+	for (const KeyValue<StringName, Ref<Component>> &K : _component_resources) {
+		out->push_back(K.key);
+	}
 }
 
 
@@ -87,7 +97,7 @@ void Actor::_bind_methods() {
 
 void Actor::_get_property_list(List<PropertyInfo> *out) const {
 	for (const KeyValue<StringName, Ref<Component>> &k_v: _component_resources) {
-		PropertyInfo property_info = PropertyInfo(Variant::OBJECT, "components/", PROPERTY_HINT_RESOURCE_TYPE, "Component");
+		PropertyInfo property_info = PropertyInfo(Variant::OBJECT, "components/" + k_v.key.operator String(), PROPERTY_HINT_RESOURCE_TYPE, "Component");
 		out->push_back(property_info);
 	}
 }

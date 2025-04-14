@@ -4143,7 +4143,7 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				if (sub_inspector_use_filter) {
+				if (sub_inspector_use_filter) {//TODO:: check this out
 					EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(ep);
 					if (epr) {
 						epr->set_use_filter(true);
@@ -4163,12 +4163,14 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				if (p.name.begins_with("metadata/")) {
+				if (p.name.begins_with("metadata/")) {//TODO:: check this out
 					Variant _default = Variant();
 					if (node != nullptr) {
 						_default = PropertyUtils::get_property_default_value(node, p.name, nullptr, &sstack, false, nullptr, nullptr);
 					}
 					ep->set_deletable(_default == Variant());
+				} else if (p.name.begins_with("components/")) {
+					ep->set_deletable(true);
 				} else {
 					ep->set_deletable(deletable_properties);
 				}
@@ -4309,8 +4311,8 @@ void EditorInspector::update_tree() {
 	}
 
 	{//TODO:: put in its own function
-		Node *node = Object::cast_to<Node>(object);
-		if (node) {
+		Actor *actor = Object::cast_to<Actor>(object);
+		if (actor) {
 			Control *spacer = memnew(Control);
 			spacer->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
 			main_vbox->add_child(spacer);
@@ -4830,6 +4832,14 @@ void EditorInspector::_property_deleted(const String &p_path) {
 		undo_redo->add_do_method(object, "remove_meta", name);
 		undo_redo->add_undo_method(object, "set_meta", name, object->get_meta(name));
 		undo_redo->commit_action();
+	} else if (p_path.begins_with("components/")) {
+		Actor *actor = Object::cast_to<Actor>(object);
+		String name = p_path.replace_first("components/", "");
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTR("Remove component %s"), name));
+		undo_redo->add_do_method(object, "remove_component", name);
+		undo_redo->add_undo_method(object, "set_component", name, actor->get_component(name));
+		undo_redo->commit_action();
 	}
 
 	emit_signal(SNAME("property_deleted"), p_path);
@@ -5299,19 +5309,20 @@ void EditorInspector::_add_component_confirm() {
 	// Ensure metadata is unfolded when adding a new metadata.
 	object->editor_set_section_unfold("component", true);
 
-	String name = add_meta_dialog->get_meta_name();
+	Ref<Component> component = add_component_dialog->get_component();
+	String name = component->get_component_class();
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Add component %s"), name));
-	undo_redo->add_do_method(object, "set_component", name, add_meta_dialog->get_meta_defval());
+	undo_redo->add_do_method(object, "set_component", component);
 	undo_redo->add_undo_method(object, "remove_component", name);
 	undo_redo->commit_action();
 }
 
 
 void EditorInspector::_show_add_component_dialog() {
-	Node *node = Object::cast_to<Node>(object);
+	Actor *actor = Object::cast_to<Actor>(object);
 
-	if (!node) {
+	if (!actor) {
 		return;
 	}
 
@@ -5322,11 +5333,11 @@ void EditorInspector::_show_add_component_dialog() {
 	}
 
 	StringName dialog_title;
-	dialog_title = node->get_name();
+	dialog_title = "Actor";
 
-//	List<StringName> existing_components;
-//	node->get_component_list(&existing_components);
-//	add_component_dialog->open(dialog_title, existing_components);
+	List<StringName> existing_components;
+	actor->get_component_class_list(&existing_components);
+	add_component_dialog->open(dialog_title, existing_components);
 }
 
 

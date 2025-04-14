@@ -55,7 +55,8 @@ public:
 	Ref<Component> get_component(StringName component_class) const;
 	void set_component(Ref<Component> value);
 	void remove_component(StringName component_class);
-	void get_component_list(List<Ref<Component>> *out);
+	void get_component_list(List<Ref<Component>> *out) const;
+	void get_component_class_list(List<StringName> *out) const;
 
 
 protected:

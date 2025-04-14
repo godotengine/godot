@@ -45,7 +45,7 @@ class Component : public Resource {
 public:
 	Component() = default;
 
-	static StringName get_component_class();
+	static StringName get_component_class();//TODO:: figure out how to allow gdscript inheritance without warnings
 
 
 protected:
