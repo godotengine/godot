@@ -91,7 +91,7 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 
 	// Set tooltip so that the full text is displayed in a tooltip if hovered.
 	// This is useful when using a narrow inspector, as the text can be trimmed otherwise.
-	if (!is_secret || !text->is_secret()) {
+	if (!text->is_secret()) {
 		text->set_tooltip_text(get_tooltip_string(text->get_text()));
 	}
 
