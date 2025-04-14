@@ -737,7 +737,9 @@ private:
 
 	bool enable_auto_tooltip = true;
 
+	bool hovered_update_queued = false;
 	void _determine_hovered_item();
+	void _queue_update_hovered_item();
 
 	int _count_selected_items(TreeItem *p_from) const;
 	bool _is_branch_selected(TreeItem *p_from) const;
