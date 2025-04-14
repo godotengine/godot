@@ -80,6 +80,7 @@ struct [[nodiscard]] Vector2 {
 	void normalize();
 	Vector2 normalized() const;
 	bool is_normalized() const;
+	void reversed();
 
 	real_t length() const;
 	real_t length_squared() const;
