@@ -370,7 +370,7 @@ void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owne
 	}
 }
 
-void CollisionObject2D::shape_owner_set_one_way_collision_direction(uint32_t p_owner, Vector2 p_direction) {
+void CollisionObject2D::shape_owner_set_one_way_collision_direction(uint32_t p_owner, const Vector2 &p_direction) {
 	if (area) {
 		return; //not for areas
 	}
