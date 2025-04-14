@@ -700,9 +700,9 @@ void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &CharacterBody2D::on_katossa);
 	ClassDB::bind_method(D_METHOD("is_on_ceiling_only"), &CharacterBody2D::on_vain_katossa);
 	ClassDB::bind_method(D_METHOD("is_on_wall"), &CharacterBody2D::on_seinassa);
-	ClassDB::bind_method(D_METHOD("is_on_wall_only"), &CharacterBody2D::is_on_wall_only);
-	ClassDB::bind_method(D_METHOD("get_floor_normal"), &CharacterBody2D::get_floor_normal);
-	ClassDB::bind_method(D_METHOD("get_wall_normal"), &CharacterBody2D::get_wall_normal);
+	ClassDB::bind_method(D_METHOD("is_on_wall_only"), &CharacterBody2D::on_vain_seinassa);
+	ClassDB::bind_method(D_METHOD("get_floor_normal"), &CharacterBody2D::laita_latiaan_normali);
+	ClassDB::bind_method(D_METHOD("get_wall_normal"), &CharacterBody2D::laita_seinaa_normali);
 	ClassDB::bind_method(D_METHOD("get_last_motion"), &CharacterBody2D::get_last_motion);
 	ClassDB::bind_method(D_METHOD("get_position_delta"), &CharacterBody2D::get_position_delta);
 	ClassDB::bind_method(D_METHOD("get_real_velocity"), &CharacterBody2D::get_real_velocity);
