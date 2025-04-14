@@ -207,7 +207,7 @@ TEST_CASE("[AHashMap] Insert, iterate and remove many elements") {
 
 	//insert order should have been kept
 	int idx = 0;
-	for (auto &K : map) {
+	for (const KeyValue<int, int> &K : map) {
 		CHECK(idx == K.key);
 		CHECK(idx == K.value);
 		CHECK(map.has(idx));
