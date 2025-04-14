@@ -1859,19 +1859,23 @@ PackedVector2Array Input::get_microphone_buffer(int p_frames) {
 	PackedVector2Array ret;
 	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
 	Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
-	if (input_position < microphone_buffer_ofs)
+	if (input_position < microphone_buffer_ofs) {
 		input_position += buf.size();
-	if (p_frames == -1)
+	}
+	if (p_frames == -1) {
 		p_frames = (input_position - microphone_buffer_ofs) / 2;
+	}
 	if (microphone_buffer_ofs + p_frames * 2 <= input_position) {
 		ret.resize(p_frames);
 		for (int i = 0; i < p_frames; i++) {
 			float l = (buf[microphone_buffer_ofs++] >> 16) / 32768.f;
-			if (microphone_buffer_ofs >= buf.size())
+			if (microphone_buffer_ofs >= buf.size()) {
 				microphone_buffer_ofs = 0;
+			}
 			float r = (buf[microphone_buffer_ofs++] >> 16) / 32768.f;
-			if (microphone_buffer_ofs >= buf.size())
+			if (microphone_buffer_ofs >= buf.size()) {
 				microphone_buffer_ofs = 0;
+			}
 			ret.write[i] = Vector2(l, r);
 		}
 	}
