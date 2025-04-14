@@ -23,6 +23,10 @@
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">
 			Sets whether this collision shape should only detect collision on one side (top or bottom).
 			[b]Note:[/b] This property has no effect if this [CollisionShape2D] is a child of an [Area2D] node.
+			[b]Note:[/b] The one way collision direction can be configured by setting [member one_way_collision_direction].
+		</member>
+		<member name="one_way_collision_direction" type="Vector2" setter="set_one_way_collision_direction" getter="get_one_way_collision_direction" default="Vector2(0, 1)">
+			The direction used for one-way collision.
 		</member>
 		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin" default="1.0">
 			The margin used for one-way collision (in pixels). Higher values will make the shape thicker, and work better for colliders that enter the shape at a high velocity.
