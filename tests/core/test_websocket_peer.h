@@ -1,10 +1,3 @@
-/*
-.poll() behavior?
-.close() call and updated state?
-set_write_mode()
-get_connected_host()
-*/
-
 #include "modules/websocket/websocket_peer.h"
 #include "tests/test_macros.h"
 
