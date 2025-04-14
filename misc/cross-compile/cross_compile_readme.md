@@ -27,3 +27,4 @@ Modify variables in the script if needed!
 ## Future
 - Confirm, test, or add support for GDScript projects
 - Add other source & destination machine targets e.g. Mac to Windows
+- Add AppImage as second output too (currently just an ELF executable)
