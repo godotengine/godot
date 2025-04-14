@@ -1908,6 +1908,7 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector2, limit_length, sarray("length"), varray(1.0));
 	bind_method(Vector2, normalized, sarray(), varray());
 	bind_method(Vector2, is_normalized, sarray(), varray());
+	bind_method(Vector2, reversed, sarray(), varray());
 	bind_method(Vector2, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector2, is_zero_approx, sarray(), varray());
 	bind_method(Vector2, is_finite, sarray(), varray());
@@ -2016,6 +2017,7 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector3, limit_length, sarray("length"), varray(1.0));
 	bind_method(Vector3, normalized, sarray(), varray());
 	bind_method(Vector3, is_normalized, sarray(), varray());
+	bind_method(Vector3, reversed, sarray(), varray());
 	bind_method(Vector3, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector3, is_zero_approx, sarray(), varray());
 	bind_method(Vector3, is_finite, sarray(), varray());
