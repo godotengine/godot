@@ -64,7 +64,7 @@ class EditorPropertyText : public EditorProperty {
 	bool is_secret = false;
 	void _text_changed(const String &p_string);
 	void _text_submitted(const String &p_string);
-	void _show_secret_toggled(const bool &p_toggled);
+	void _show_secret_toggled(bool p_toggled);
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;

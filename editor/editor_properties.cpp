@@ -102,7 +102,7 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 	}
 }
 
-void EditorPropertyText::_show_secret_toggled(const bool &p_toggled) {
+void EditorPropertyText::_show_secret_toggled(bool p_toggled) {
 	text->set_secret(!p_toggled);
 	if (p_toggled) {
 		text->set_tooltip_text(get_tooltip_string(text->get_text()));
@@ -135,7 +135,7 @@ void EditorPropertyText::update_property() {
 	if (text->get_text() != s) {
 		int caret = text->get_caret_column();
 		text->set_text(s);
-		if (!is_secret || !text->is_secret()) {
+		if (!text->is_secret()) {
 			text->set_tooltip_text(get_tooltip_string(s));
 		}
 		text->set_caret_column(caret);
