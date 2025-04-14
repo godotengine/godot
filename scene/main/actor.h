@@ -44,9 +44,7 @@ class Actor : public Object {
 
 
 protected:
-	HashMap<StringName, Ref<Component>> _component_resources {
-		{Component::get_component_class(), memnew(Component)}
-	};
+	HashMap<StringName, Ref<Component>> _component_resources;
 
 
 public:
@@ -54,13 +52,15 @@ public:
 	virtual ~Actor() = default;
 
 	bool has_component(StringName component_class) const;
-	Ref<Component> get_component(StringName component_class);
-	bool set_component(Ref<Component> value);
-	bool remove_component(StringName component_class);
+	Ref<Component> get_component(StringName component_class) const;
+	void set_component(Ref<Component> value);
+	void remove_component(StringName component_class);
 	void get_component_list(List<Ref<Component>> *out);
 
 
 protected:
 	static void _bind_methods();
 	void _get_property_list(List<PropertyInfo> *out) const;
+	bool _get(const StringName &p_property, Variant &r_value) const;
+	bool _set(const StringName &p_property, const Variant &p_value);
 };

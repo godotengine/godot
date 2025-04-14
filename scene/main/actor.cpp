@@ -32,6 +32,7 @@
 #include "actor.h"
 
 #include "core/object/class_db.h"
+#include "core/string/ustring.h"
 #include "core/variant/variant.h"
 
 
@@ -40,24 +41,33 @@ bool Actor::has_component(StringName component_class) const {
 }
 
 
-Ref<Component> Actor::get_component(StringName component_class) {
+Ref<Component> Actor::get_component(StringName component_class) const {
+	if (!has_component(component_class)) {
+		return nullptr;
+	}
+
 	Ref<Component> result;
 
-	return result;
-}
-
-
-bool Actor::set_component(Ref<Component> value) {
-	bool result = false;
+	result = _component_resources.get(component_class);
 
 	return result;
 }
 
 
-bool Actor::remove_component(StringName component_class) {
-	bool result = false;
+void Actor::set_component(Ref<Component> value) {
+	ERR_FAIL_COND_MSG(!value.is_valid(), vformat("Can't set a component to a null value."));
 
-	return result;
+	_component_resources[value->get_component_class()] = value;
+
+	notify_property_list_changed();
+}
+
+
+void Actor::remove_component(StringName component_class) {
+	if (_component_resources.has(component_class)) {
+		_component_resources.erase(component_class);
+		notify_property_list_changed();
+	}
 }
 
 
@@ -77,7 +87,40 @@ void Actor::_bind_methods() {
 
 void Actor::_get_property_list(List<PropertyInfo> *out) const {
 	for (const KeyValue<StringName, Ref<Component>> &k_v: _component_resources) {
-		PropertyInfo property_info = PropertyInfo(Variant::OBJECT, "components/" + k_v.key.operator String(), PROPERTY_HINT_RESOURCE_TYPE, "Component");
+		PropertyInfo property_info = PropertyInfo(Variant::OBJECT, "components/", PROPERTY_HINT_RESOURCE_TYPE, "Component");
 		out->push_back(property_info);
 	}
+}
+
+
+bool Actor::_get(const StringName &p_property, Variant &r_value) const {
+	bool result = false;
+
+	const String COMPONENTS = "components/";
+	String p_string = p_property;
+	if (p_string.begins_with(COMPONENTS)) {
+		String key = p_string.trim_prefix(COMPONENTS);
+
+		result = has_component(key);
+
+		if (result) {
+			r_value = get_component(key);
+		}
+	}
+
+	return result;
+}
+
+
+bool Actor::_set(const StringName &p_property, const Variant &p_value) {
+	bool result = false;
+
+	const String COMPONENTS = "components/";
+	String p_string = p_property;
+	if (p_string.begins_with(COMPONENTS)) {
+		set_component(p_value);
+		result = true;
+	}
+
+	return result;
 }
