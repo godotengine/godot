@@ -1092,7 +1092,7 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && over_drag_position) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && over_drag_position && !get_editor()->get_scale_control()->is_visible()) {
 		len_resizing = true;
 		// In case if resizing index is not set yet reset the flag.
 		if (len_resizing_index < 0) {
@@ -1153,10 +1153,10 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 Control::CursorShape AnimationTrackEditTypeAudio::get_cursor_shape(const Point2 &p_pos) const {
-	if (over_drag_position || len_resizing) {
+	if ((over_drag_position || len_resizing) && !get_editor()->get_scale_control()->is_visible()) {
 		return Control::CURSOR_HSIZE;
 	} else {
-		return get_default_cursor_shape();
+		return AnimationTrackEdit::get_cursor_shape(p_pos);
 	}
 }
 
