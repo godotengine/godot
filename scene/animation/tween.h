@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
+#include "scene/resources/curve.h"
 
 class Tween;
 class Node;
@@ -108,6 +109,7 @@ private:
 	TweenPauseMode pause_mode = TweenPauseMode::TWEEN_PAUSE_BOUND;
 	TransitionType default_transition = TransitionType::TRANS_LINEAR;
 	EaseType default_ease = EaseType::EASE_IN_OUT;
+	Ref<Curve> default_curve = nullptr;
 	ObjectID bound_node;
 
 	SceneTree *parent_tree = nullptr;
@@ -139,6 +141,11 @@ private:
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	static Variant _interpolate_variant_bind_compat_105391(const Variant &p_initial_val, const Variant &p_delta_val, double p_time, double p_duration, Tween::TransitionType p_trans, Tween::EaseType p_ease);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	virtual String to_string() override;
@@ -176,12 +183,15 @@ public:
 	TransitionType get_trans() const;
 	Ref<Tween> set_ease(EaseType p_ease);
 	EaseType get_ease() const;
+	Ref<Tween> set_curve(Ref<Curve> p_curve);
+	Ref<Curve> get_curve() const;
 
 	Ref<Tween> parallel();
 	Ref<Tween> chain();
 
 	static real_t run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
-	static Variant interpolate_variant(const Variant &p_initial_val, const Variant &p_delta_val, double p_time, double p_duration, Tween::TransitionType p_trans, Tween::EaseType p_ease);
+	static real_t run_equation_curve(Ref<Curve> p_curve, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration);
+	static Variant interpolate_variant(const Variant &p_initial_val, const Variant &p_delta_val, double p_time, double p_duration, Tween::TransitionType p_trans, Tween::EaseType p_ease, Ref<Curve> p_curve = nullptr);
 
 	bool step(double p_delta);
 	bool can_process(bool p_tree_paused) const;
@@ -208,6 +218,7 @@ public:
 	Ref<PropertyTweener> as_relative();
 	Ref<PropertyTweener> set_trans(Tween::TransitionType p_trans);
 	Ref<PropertyTweener> set_ease(Tween::EaseType p_ease);
+	Ref<PropertyTweener> set_curve(Ref<Curve> p_curve);
 	Ref<PropertyTweener> set_custom_interpolator(const Callable &p_method);
 	Ref<PropertyTweener> set_delay(double p_delay);
 
@@ -234,6 +245,7 @@ private:
 	double duration = 0;
 	Tween::TransitionType trans_type = Tween::TRANS_MAX; // This is set inside set_tween();
 	Tween::EaseType ease_type = Tween::EASE_MAX;
+	Ref<Curve> curve = nullptr;
 	Callable custom_method;
 
 	double delay = 0;
@@ -282,6 +294,7 @@ class MethodTweener : public Tweener {
 public:
 	Ref<MethodTweener> set_trans(Tween::TransitionType p_trans);
 	Ref<MethodTweener> set_ease(Tween::EaseType p_ease);
+	Ref<MethodTweener> set_curve(Ref<Curve> p_curve);
 	Ref<MethodTweener> set_delay(double p_delay);
 
 	void set_tween(const Ref<Tween> &p_tween) override;
@@ -298,6 +311,7 @@ private:
 	double delay = 0;
 	Tween::TransitionType trans_type = Tween::TRANS_MAX;
 	Tween::EaseType ease_type = Tween::EASE_MAX;
+	Ref<Curve> curve = nullptr;
 
 	Variant initial_val;
 	Variant delta_val;

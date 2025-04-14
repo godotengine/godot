@@ -48,3 +48,10 @@ GH-71542
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorExportPlatform/methods/get_forced_export_files': arguments
 
 Optional argument added. Compatibility methods registered.
+
+
+GH-105391
+--------
+Validate extension JSON: Error: Field 'classes/Tween/methods/interpolate_value/arguments': size changed value in new API, from 6 to 7.
+Added optional "curve" argument to interpolate_value methods in Tween classes.
+Compatibility methods registered.
