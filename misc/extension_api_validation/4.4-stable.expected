@@ -26,7 +26,6 @@ Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/unregi
 Switched from `OpenXRExtensionWrapperExtension` to parent `OpenXRExtensionWrapper`. Compatibility methods registered.
 
 
-=======
 GH-104890
 ---------
 Validate extension JSON: API was removed: classes/JSONRPC/methods/set_scope
