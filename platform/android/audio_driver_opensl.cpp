@@ -302,8 +302,6 @@ Error AudioDriverOpenSL::input_stop() {
 	return OK;
 }
 
-
-
 int AudioDriverOpenSL::get_mix_rate() const {
 	return 44100; // hardcoded for Android, as selected by SL_SAMPLINGRATE_44_1
 }

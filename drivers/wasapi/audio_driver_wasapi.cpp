@@ -1007,7 +1007,7 @@ Error AudioDriverWASAPI::input_start() {
 	if (audio_input.active.is_set()) {
 		return ERR_ALREADY_IN_USE;
 	}
-	
+
 	Error err = init_input_device();
 	if (err != OK) {
 		ERR_PRINT("WASAPI: init_input_device error");
