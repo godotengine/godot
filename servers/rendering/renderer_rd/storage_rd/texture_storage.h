@@ -173,7 +173,6 @@ private:
 		bool is_render_target;
 		bool is_proxy;
 
-		Ref<Image> image_cache_2d;
 		String path;
 
 		RID proxy_to;
