@@ -34,13 +34,16 @@
 
 #include "tests/test_macros.h"
 
+#define CHECK_CLASS_EXISTS_OR_SKIP(CLASSNAME)                \
+	if (!ClassDB::class_exists(#CLASSNAME)) {                \
+		WARN(#CLASSNAME " is not available in this build."); \
+		return;                                              \
+	}
+
 namespace TestORMMaterial3D {
 
 TEST_CASE("[Material][ORMMaterial3D] Constructor & default state") {
-	if (!ClassDB::class_exists("ORMMaterial3D")) {
-		WARN("ORMMaterial3D is not available in this minimal template build.");
-		return;
-	}
+	CHECK_CLASS_EXISTS_OR_SKIP(ORMMaterial3D);
 	Ref<ORMMaterial3D> mat;
 	mat.instantiate();
 	CHECK(mat.is_valid());
@@ -49,6 +52,7 @@ TEST_CASE("[Material][ORMMaterial3D] Constructor & default state") {
 }
 
 TEST_CASE("[Material][ORMMaterial3D] ORM texture assignment") {
+	CHECK_CLASS_EXISTS_OR_SKIP(ORMMaterial3D);
 	Ref<ORMMaterial3D> mat;
 	mat.instantiate();
 	Ref<Texture2D> tex;
@@ -59,6 +63,7 @@ TEST_CASE("[Material][ORMMaterial3D] ORM texture assignment") {
 }
 
 TEST_CASE("[Material][ORMMaterial3D] Set AO texture and channel") {
+	CHECK_CLASS_EXISTS_OR_SKIP(ORMMaterial3D);
 	Ref<ORMMaterial3D> mat;
 	mat.instantiate();
 	Ref<Texture2D> tex;
@@ -71,6 +76,7 @@ TEST_CASE("[Material][ORMMaterial3D] Set AO texture and channel") {
 }
 
 TEST_CASE("[Material][ORMMaterial3D] Metallic and roughness channels") {
+	CHECK_CLASS_EXISTS_OR_SKIP(ORMMaterial3D);
 	Ref<ORMMaterial3D> mat;
 	mat.instantiate();
 
@@ -82,6 +88,7 @@ TEST_CASE("[Material][ORMMaterial3D] Metallic and roughness channels") {
 }
 
 TEST_CASE("[Material][ORMMaterial3D] Emission and refraction settings") {
+	CHECK_CLASS_EXISTS_OR_SKIP(ORMMaterial3D);
 	Ref<ORMMaterial3D> mat;
 	mat.instantiate();
 
@@ -94,6 +101,7 @@ TEST_CASE("[Material][ORMMaterial3D] Emission and refraction settings") {
 }
 
 TEST_CASE("[Material][ORMMaterial3D] AO and feature flag logic") {
+	CHECK_CLASS_EXISTS_OR_SKIP(ORMMaterial3D);
 	Ref<ORMMaterial3D> mat;
 	mat.instantiate();
 
@@ -105,6 +113,7 @@ TEST_CASE("[Material][ORMMaterial3D] AO and feature flag logic") {
 }
 
 TEST_CASE("[Material][ORMMaterial3D] Double assignment") {
+	CHECK_CLASS_EXISTS_OR_SKIP(ORMMaterial3D);
 	Ref<ORMMaterial3D> mat1;
 	Ref<ORMMaterial3D> mat2;
 	mat1.instantiate();
