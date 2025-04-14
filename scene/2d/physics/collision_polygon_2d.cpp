@@ -293,6 +293,10 @@ real_t CollisionPolygon2D::get_one_way_collision_margin() const {
 }
 
 void CollisionPolygon2D::set_one_way_collision_direction(const Vector2 &p_direction) {
+	if (p_direction == one_way_collision_direction) {
+		return;
+	}
+
 	one_way_collision_direction = p_direction.normalized();
 	queue_redraw();
 	if (collision_object) {
