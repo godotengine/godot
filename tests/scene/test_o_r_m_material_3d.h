@@ -38,7 +38,8 @@ namespace TestORMMaterial3D {
 
 TEST_CASE("[Material][ORMMaterial3D] Constructor & default state") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
-		SKIP("ORMMaterial3D is not available in this minimal template build.");
+		WARN("ORMMaterial3D is not available in this minimal template build.");
+		return;
 	}
 	Ref<ORMMaterial3D> mat;
 	mat.instantiate();
