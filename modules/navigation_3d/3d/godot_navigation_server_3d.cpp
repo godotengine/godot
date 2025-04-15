@@ -389,6 +389,13 @@ RID GodotNavigationServer3D::region_create() {
 	return rid;
 }
 
+uint32_t GodotNavigationServer3D::region_get_iteration_id(RID p_region) const {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, 0);
+
+	return region->get_iteration_id();
+}
+
 COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled) {
 	NavRegion3D *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL(region);
