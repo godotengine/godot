@@ -82,3 +82,9 @@ Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shap
 Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_draw_outline/arguments': size changed value in new API, from 7 to 8.
 
 Optional "oversmpling" argument added. Compatibility methods registered.
+
+GH-105443
+---------
+Validate extension JSON: Error: Field 'classes/GraphEdit/properties/connections': getter changed value in new API, from "get_connection_list" to &"get_connections".
+
+Renamed getter. Compatibility methods registered.
