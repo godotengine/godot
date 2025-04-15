@@ -436,7 +436,7 @@ String Color::to_named() const {
 	NamedColor closest_named_color = {};
 	float closest_distance_squared = Math::INF;
 
-	for (NamedColor named_color : named_colors) {
+	for (const NamedColor &named_color : named_colors) {
 		Color delta = named_color.color - *this;
 		float distance_squared = (delta.r * delta.r) + (delta.g * delta.g) + (delta.b * delta.b) + (delta.a * delta.a);
 
