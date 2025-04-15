@@ -31,6 +31,7 @@
 #include "scroll_container.h"
 
 #include "core/config/project_settings.h"
+#include "scene/gui/panel_container.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 
@@ -44,7 +45,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		if (c == h_scroll || c == v_scroll) {
+		if (c == h_scroll || c == v_scroll || c == focus_panel) {
 			continue;
 		}
 
@@ -72,7 +73,16 @@ Size2 ScrollContainer::get_minimum_size() const {
 		}
 	}
 
-	min_size += theme_cache.panel_style->get_minimum_size();
+	Size2 panel_size = theme_cache.panel_style->get_minimum_size();
+	min_size += panel_size;
+	if (draw_focus_border) {
+		Size2 focus_size = theme_cache.focus_style->get_minimum_size();
+		// Only update the minimum size if the focus style's minimum size doesn't fit into the panel style's minimum size.
+		if (focus_size > panel_size) {
+			min_size += focus_size - panel_size;
+		}
+	}
+
 	return min_size;
 }
 
@@ -258,21 +268,45 @@ void ScrollContainer::_update_scrollbar_position() {
 		return;
 	}
 
+	float right_margin = theme_cache.panel_style->get_margin(SIDE_RIGHT);
+	float left_margin = theme_cache.panel_style->get_margin(SIDE_LEFT);
+	float top_margin = theme_cache.panel_style->get_margin(SIDE_TOP);
+	float bottom_margin = theme_cache.panel_style->get_margin(SIDE_BOTTOM);
+	if (draw_focus_border) {
+		// Only update margins if the focus style's margins don't fit into the panel style's margins.
+		float focus_margin = theme_cache.focus_style->get_margin(SIDE_RIGHT);
+		if (focus_margin > right_margin) {
+			right_margin += focus_margin;
+		}
+		focus_margin = theme_cache.focus_style->get_margin(SIDE_LEFT);
+		if (focus_margin > left_margin) {
+			left_margin += focus_margin;
+		}
+		focus_margin = theme_cache.focus_style->get_margin(SIDE_TOP);
+		if (focus_margin > top_margin) {
+			top_margin += focus_margin;
+		}
+		focus_margin = theme_cache.focus_style->get_margin(SIDE_BOTTOM);
+		if (focus_margin > bottom_margin) {
+			bottom_margin += focus_margin;
+		}
+	}
+
 	Size2 hmin = h_scroll->is_visible() ? h_scroll->get_combined_minimum_size() : Size2();
 	Size2 vmin = v_scroll->is_visible() ? v_scroll->get_combined_minimum_size() : Size2();
 
-	int lmar = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_RIGHT) : theme_cache.panel_style->get_margin(SIDE_LEFT);
-	int rmar = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_LEFT) : theme_cache.panel_style->get_margin(SIDE_RIGHT);
+	int lmar = is_layout_rtl() ? right_margin : left_margin;
+	int rmar = is_layout_rtl() ? left_margin : right_margin;
 
 	h_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, lmar);
 	h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -rmar - vmin.width);
-	h_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -hmin.height - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
-	h_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -theme_cache.panel_style->get_margin(SIDE_BOTTOM));
+	h_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -hmin.height - bottom_margin);
+	h_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -bottom_margin);
 
 	v_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -vmin.width - rmar);
 	v_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -rmar);
-	v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, theme_cache.panel_style->get_margin(SIDE_TOP));
-	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -hmin.height - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
+	v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, top_margin);
+	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -hmin.height - bottom_margin);
 
 	_updating_scrollbars = false;
 }
@@ -313,8 +347,22 @@ void ScrollContainer::_reposition_children() {
 	Size2 size = get_size();
 	Point2 ofs;
 
-	size -= theme_cache.panel_style->get_minimum_size();
-	ofs += theme_cache.panel_style->get_offset();
+	Size2 panel_size = theme_cache.panel_style->get_minimum_size();
+	Point2 panel_offset = theme_cache.panel_style->get_offset();
+	size -= panel_size;
+	ofs += panel_offset;
+	if (draw_focus_border) {
+		// Only update the size and offset if focus style's doesn't fit into the panel style's.
+		Size2 focus_size = theme_cache.focus_style->get_minimum_size();
+		if (focus_size > panel_size) {
+			size -= focus_size - panel_size;
+		}
+		Point2 focus_offset = theme_cache.focus_style->get_offset();
+		if (focus_offset > panel_offset) {
+			ofs += focus_offset - panel_offset;
+		}
+	}
+
 	bool rtl = is_layout_rtl();
 
 	if (_is_h_scroll_visible() || horizontal_scroll_mode == SCROLL_MODE_RESERVE) {
@@ -330,7 +378,7 @@ void ScrollContainer::_reposition_children() {
 		if (!c) {
 			continue;
 		}
-		if (c == h_scroll || c == v_scroll) {
+		if (c == h_scroll || c == v_scroll || c == focus_panel) {
 			continue;
 		}
 		Size2 minsize = c->get_combined_minimum_size();
@@ -350,6 +398,9 @@ void ScrollContainer::_reposition_children() {
 		fit_child_in_rect(c, r);
 	}
 
+	if (draw_focus_border) {
+		focus_panel->set_size(get_size());
+	}
 	queue_redraw();
 }
 
@@ -399,6 +450,7 @@ void ScrollContainer::_notification(int p_what) {
 			if (p_what == NOTIFICATION_THEME_CHANGED) {
 				scroll_border = get_theme_constant(SNAME("scroll_border"), SNAME("Tree"));
 				scroll_speed = get_theme_constant(SNAME("scroll_speed"), SNAME("Tree"));
+				focus_panel->add_theme_style_override("panel", theme_cache.focus_style);
 			}
 		} break;
 
@@ -415,15 +467,8 @@ void ScrollContainer::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			draw_style_box(theme_cache.panel_style, Rect2(Vector2(), get_size()));
-			if (draw_focus_border && (has_focus() || child_has_focus())) {
-				RID ci = get_canvas_item();
-				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
-				draw_style_box(theme_cache.focus_style, Rect2(Point2(), get_size()));
-				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
-				focus_border_is_drawn = true;
-			} else {
-				focus_border_is_drawn = false;
-			}
+			focus_border_is_drawn = draw_focus_border && (has_focus() || child_has_focus());
+			focus_panel->set_visible(focus_border_is_drawn);
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -533,7 +578,15 @@ void ScrollContainer::_notification(int p_what) {
 
 void ScrollContainer::update_scrollbars() {
 	Size2 size = get_size();
-	size -= theme_cache.panel_style->get_minimum_size();
+	Size2 panel_size = theme_cache.panel_style->get_minimum_size();
+	size -= panel_size;
+	if (draw_focus_border) {
+		Size2 focus_size = theme_cache.focus_style->get_minimum_size();
+		// Only update the size if the focus style's minimum size doesn't fit into the panel style's minimum size.
+		if (focus_size > panel_size) {
+			size -= focus_size - panel_size;
+		}
+	}
 
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
@@ -644,7 +697,7 @@ PackedStringArray ScrollContainer::get_configuration_warnings() const {
 		if (!c) {
 			continue;
 		}
-		if (c == h_scroll || c == v_scroll) {
+		if (c == h_scroll || c == v_scroll || c == focus_panel) {
 			continue;
 		}
 
@@ -734,7 +787,9 @@ void ScrollContainer::set_draw_focus_border(bool p_draw) {
 		return;
 	}
 	draw_focus_border = p_draw;
-	queue_redraw();
+	if (is_ready()) {
+		_reposition_children();
+	}
 }
 
 bool ScrollContainer::get_draw_focus_border() {
@@ -756,6 +811,17 @@ ScrollContainer::ScrollContainer() {
 	v_scroll->set_name("_v_scroll");
 	add_child(v_scroll, false, INTERNAL_MODE_BACK);
 	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
+
+	// We need to use a PanelContainer for the focus style instead of just drawing it directly with RenderingService
+	// due to a clippling issues. The Control that is being scrolled will be over the focus border because both will be
+	// drawn on the same CanvasItem. If we decide to ignore clipping, the focus border will be drawn even over other
+	// CanvasItems.
+	focus_panel = memnew(PanelContainer);
+	focus_panel->set_name("_focus");
+	focus_panel->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	focus_panel->set_focus_mode(FOCUS_NONE);
+	focus_panel->set_visible(draw_focus_border);
+	add_child(focus_panel, false, INTERNAL_MODE_BACK);
 
 	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");
 

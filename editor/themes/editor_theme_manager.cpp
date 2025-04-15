@@ -1888,8 +1888,6 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_stylebox("FocusViewport", EditorStringName(EditorStyles), style_widget_focus_viewport);
 
 		Ref<StyleBoxFlat> style_widget_scroll_container = p_config.button_style_focus->duplicate();
-		// Make the focus outline appear to be flush with the buttons it's focusing, so not draw on top of the content.
-		style_widget_scroll_container->set_expand_margin_all(4);
 		p_theme->set_stylebox("focus", "ScrollContainer", style_widget_scroll_container);
 
 		// This stylebox is used in 3d and 2d viewports (no borders).
@@ -2241,6 +2239,12 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 	// Editor inspector.
 	{
+		// Panel.
+		Ref<StyleBoxFlat> editor_inspector_panel = p_config.tree_panel_style->duplicate();
+		editor_inspector_panel->set_border_width_all(0);
+		editor_inspector_panel->set_content_margin_all(0);
+		p_theme->set_stylebox(SceneStringName(panel), "EditorInspector", editor_inspector_panel);
+
 		// Vertical separation between inspector categories and sections.
 		p_theme->set_constant("v_separation", "EditorInspector", 0);
 
