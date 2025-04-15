@@ -861,12 +861,7 @@ namespace Godot
 
         private static bool FindNamedColor(string name, out Color color)
         {
-            name = name.Replace(" ", string.Empty, StringComparison.Ordinal);
-            name = name.Replace("-", string.Empty, StringComparison.Ordinal);
-            name = name.Replace("_", string.Empty, StringComparison.Ordinal);
-            name = name.Replace("'", string.Empty, StringComparison.Ordinal);
-            name = name.Replace(".", string.Empty, StringComparison.Ordinal);
-            name = name.ToUpperInvariant();
+            name = name.ToSnakeCase().ToUpperInvariant();
 
             return Colors.NamedColors.TryGetValue(name, out color);
         }
