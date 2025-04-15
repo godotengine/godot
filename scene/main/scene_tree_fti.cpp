@@ -352,6 +352,12 @@ void SceneTreeFTI::_update_dirty_spatials(Node *p_node, uint32_t p_current_frame
 			s->data.global_transform_interpolated = local_interp;
 		}
 
+		// Watch for this, disable_scale can cause incredibly confusing bugs
+		// and must be checked for when calculating global xforms.
+		if (s->data.disable_scale) {
+			s->data.global_transform_interpolated.basis.orthonormalize();
+		}
+
 		// Upload to VisualServer the interpolated global xform.
 		s->fti_update_servers_xform();
 
