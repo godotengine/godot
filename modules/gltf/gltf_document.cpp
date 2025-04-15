@@ -531,8 +531,7 @@ String GLTFDocument::_gen_unique_animation_name(Ref<GLTFState> p_state, const St
 
 String GLTFDocument::_sanitize_bone_name(const String &p_name) {
 	String bone_name = p_name;
-	bone_name = bone_name.replace(":", "_");
-	bone_name = bone_name.replace("/", "_");
+	bone_name = bone_name.replace_chars(":/", '_');
 	return bone_name;
 }
 
@@ -812,8 +811,8 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_
 					buffer_data = _parse_base64_uri(uri);
 				} else { // Relative path to an external image file.
 					ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
-					uri = uri.uri_decode();
-					uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
+					uri = uri.uri_file_decode();
+					uri = p_base_path.path_join(uri).replace_char('\\', '/'); // Fix for Windows.
 					ERR_FAIL_COND_V_MSG(!FileAccess::exists(uri), ERR_FILE_NOT_FOUND, "glTF: Binary file not found: " + uri);
 					buffer_data = FileAccess::get_file_as_bytes(uri);
 					ERR_FAIL_COND_V_MSG(buffer_data.is_empty(), ERR_PARSE_ERROR, "glTF: Couldn't load binary file as an array: " + uri);
@@ -888,6 +887,9 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 
 		if (d.has("byteStride")) {
 			buffer_view->byte_stride = d["byteStride"];
+			if (buffer_view->byte_stride < 4 || buffer_view->byte_stride > 252 || buffer_view->byte_stride % 4 != 0) {
+				ERR_PRINT("glTF import: Invalid byte stride " + itos(buffer_view->byte_stride) + " for buffer view at index " + itos(i) + " while importing file '" + p_state->filename + "'. If defined, byte stride must be a multiple of 4 and between 4 and 252.");
+			}
 		}
 
 		if (d.has("target")) {
@@ -1029,6 +1031,9 @@ Error GLTFDocument::_parse_accessors(Ref<GLTFState> p_state) {
 		accessor->component_type = (GLTFAccessor::GLTFComponentType)(int32_t)d["componentType"];
 		ERR_FAIL_COND_V(!d.has("count"), ERR_PARSE_ERROR);
 		accessor->count = d["count"];
+		if (accessor->count <= 0) {
+			ERR_PRINT("glTF import: Invalid accessor count " + itos(accessor->count) + " for accessor at index " + itos(i) + " while importing file '" + p_state->filename + "'. Accessor count must be greater than 0.");
+		}
 		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
 		accessor->accessor_type = _get_accessor_type_from_str(d["type"]);
 
@@ -1432,7 +1437,7 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, c
 	const Ref<GLTFBufferView> bv = p_state->buffer_views[p_buffer_view];
 
 	int stride = p_element_size;
-	if (bv->byte_stride != -1) {
+	if (bv->byte_stride > 0) {
 		stride = bv->byte_stride;
 	}
 	if (p_for_vertex && stride % 4) {
@@ -3581,11 +3586,16 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				// Compression is enabled, so let's validate that the normals and tangents are correct.
 				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
 				Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
-				for (int vert = 0; vert < normals.size(); vert++) {
-					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-					if (abs(tan.dot(normals[vert])) > 0.0001) {
-						// Tangent is not perpendicular to the normal, so we can't use compression.
-						flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				if (unlikely(tangents.size() < normals.size() * 4)) {
+					ERR_PRINT("glTF import: Mesh " + itos(i) + " has invalid tangents.");
+					flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				} else {
+					for (int vert = 0; vert < normals.size(); vert++) {
+						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
+						if (abs(tan.dot(normals[vert])) > 0.0001) {
+							// Tangent is not perpendicular to the normal, so we can't use compression.
+							flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+						}
 					}
 				}
 			}
@@ -4123,8 +4133,8 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				}
 			} else { // Relative path to an external image file.
 				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
-				uri = uri.uri_decode();
-				uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
+				uri = uri.uri_file_decode();
+				uri = p_base_path.path_join(uri).replace_char('\\', '/'); // Fix for Windows.
 				resource_uri = uri.simplify_path();
 				// ResourceLoader will rely on the file extension to use the relevant loader.
 				// The spec says that if mimeType is defined, it should take precedence (e.g.
@@ -6963,7 +6973,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 		animation->set_loop_mode(Animation::LOOP_LINEAR);
 	}
 
-	double anim_start = p_trimming ? INFINITY : 0.0;
+	double anim_start = p_trimming ? Math::INF : 0.0;
 	double anim_end = 0.0;
 
 	for (const KeyValue<int, GLTFAnimation::NodeTrack> &track_i : anim->get_node_tracks()) {
@@ -7650,7 +7660,7 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 						} else {
 							Vector3 rotation_euler = p_godot_animation->track_get_key_value(p_godot_anim_track_index, key_i);
 							if (node_prop == "rotation_degrees") {
-								rotation_euler *= Math_TAU / 360.0;
+								rotation_euler *= Math::TAU / 360.0;
 							}
 							rotation_quaternion = Quaternion::from_euler(rotation_euler);
 						}

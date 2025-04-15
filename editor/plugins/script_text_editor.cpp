@@ -1227,8 +1227,8 @@ String ScriptTextEditor::_get_absolute_path(const String &rel_path) {
 	return path.replace("///", "//").simplify_path();
 }
 
-void ScriptTextEditor::update_toggle_scripts_button() {
-	code_editor->update_toggle_scripts_button();
+void ScriptTextEditor::update_toggle_files_button() {
+	code_editor->update_toggle_files_button();
 }
 
 void ScriptTextEditor::_update_connected_methods() {
@@ -1958,7 +1958,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	Dictionary d = p_data;
 
 	CodeEdit *te = code_editor->get_text_editor();
-	Point2i pos = te->get_line_column_at_pos(p_point);
+	Point2i pos = (p_point == Vector2(Math::INF, Math::INF)) ? Point2i(te->get_caret_line(0), te->get_caret_column(0)) : te->get_line_column_at_pos(p_point);
 	int drop_at_line = pos.y;
 	int drop_at_column = pos.x;
 	int selection_index = te->get_selection_at_line_column(drop_at_line, drop_at_column);
@@ -2382,7 +2382,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_clicked", callable_mp(this, &ScriptTextEditor::_gutter_clicked));
 	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &ScriptTextEditor::_text_edit_gui_input));
-	code_editor->show_toggle_scripts_button();
+	code_editor->show_toggle_files_button();
 	_update_gutter_indexes();
 
 	editor_box->add_child(warnings_panel);

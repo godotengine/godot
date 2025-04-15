@@ -722,6 +722,12 @@ SkyRD::SkyRD() {
 	roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
 	sky_ggx_samples_quality = GLOBAL_GET("rendering/reflections/sky_reflections/ggx_samples");
 	sky_use_cubemap_array = GLOBAL_GET("rendering/reflections/sky_reflections/texture_array_reflections");
+#if defined(MACOS_ENABLED) && defined(__x86_64__)
+	if (OS::get_singleton()->get_current_rendering_driver_name() == "vulkan" && RenderingServer::get_singleton()->get_video_adapter_name().contains("Intel")) {
+		// Disable texture array reflections on macOS on Intel GPUs due to driver bugs.
+		sky_use_cubemap_array = false;
+	}
+#endif
 }
 
 void SkyRD::init() {
@@ -777,9 +783,9 @@ void SkyRD::init() {
 		actions.renames["SCREEN_UV"] = "uv";
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["TIME"] = "params.time";
-		actions.renames["PI"] = _MKSTR(Math_PI);
-		actions.renames["TAU"] = _MKSTR(Math_TAU);
-		actions.renames["E"] = _MKSTR(Math_E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 		actions.renames["HALF_RES_COLOR"] = "half_res_color";
 		actions.renames["QUARTER_RES_COLOR"] = "quarter_res_color";
 		actions.renames["RADIANCE"] = "radiance";

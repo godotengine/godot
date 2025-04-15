@@ -14,13 +14,13 @@
 			Haptic pulse to emit when the user releases the input.
 		</member>
 		<member name="off_threshold" type="float" setter="set_off_threshold" getter="get_off_threshold" default="0.4">
-			When our input value falls below this, our output becomes false.
+			When our input value falls below this, our output becomes [code]false[/code].
 		</member>
 		<member name="on_haptic" type="OpenXRHapticBase" setter="set_on_haptic" getter="get_on_haptic">
 			Haptic pulse to emit when the user presses the input.
 		</member>
 		<member name="on_threshold" type="float" setter="set_on_threshold" getter="get_on_threshold" default="0.6">
-			When our input value is equal or larger than this value, our output becomes true. It stays true until it falls under the [member off_threshold] value.
+			When our input value is equal or larger than this value, our output becomes [code]true[/code]. It stays [code]true[/code] until it falls under the [member off_threshold] value.
 		</member>
 	</members>
 </class>

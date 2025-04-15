@@ -678,6 +678,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	files_to_delete_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	files_to_delete_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	files_to_delete_list->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
+	files_to_delete_list->set_accessibility_name(TTRC("Files to be Deleted"));
 	vb->add_child(files_to_delete_list);
 
 	vb_owners = memnew(VBoxContainer);
@@ -694,6 +695,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	owners->set_hide_root(true);
 	owners->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
+	owners->set_accessibility_name(TTRC("Dependencies"));
 	vb_owners->add_child(owners);
 	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 

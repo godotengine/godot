@@ -223,16 +223,16 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_keep_rounding_remainders(keep_rounding_remainders);
 
 	Dictionary langs = p_options["language_support"];
-	for (int i = 0; i < langs.size(); i++) {
-		String key = langs.get_key_at_index(i);
-		bool enabled = langs.get_value_at_index(i);
+	for (const KeyValue<Variant, Variant> &kv : langs) {
+		String key = kv.key;
+		bool enabled = kv.value;
 		font->set_language_support_override(key, enabled);
 	}
 
 	Dictionary scripts = p_options["script_support"];
-	for (int i = 0; i < scripts.size(); i++) {
-		String key = scripts.get_key_at_index(i);
-		bool enabled = scripts.get_value_at_index(i);
+	for (const KeyValue<Variant, Variant> &kv : scripts) {
+		String key = kv.key;
+		bool enabled = kv.value;
 		font->set_script_support_override(key, enabled);
 	}
 

@@ -120,13 +120,11 @@ COMMAND_2(map_set_active, RID, p_map, bool, p_active) {
 	if (p_active) {
 		if (!map_is_active(p_map)) {
 			active_maps.push_back(map);
-			active_maps_iteration_id.push_back(map->get_iteration_id());
 		}
 	} else {
 		int map_index = active_maps.find(map);
 		ERR_FAIL_COND(map_index < 0);
 		active_maps.remove_at(map_index);
-		active_maps_iteration_id.remove_at(map_index);
 	}
 }
 
@@ -1224,7 +1222,6 @@ COMMAND_1(free, RID, p_object) {
 		int map_index = active_maps.find(map);
 		if (map_index >= 0) {
 			active_maps.remove_at(map_index);
-			active_maps_iteration_id.remove_at(map_index);
 		}
 		map_owner.free(p_object);
 
@@ -1343,6 +1340,8 @@ void GodotNavigationServer3D::process(double p_delta_time) {
 	// Will run reliably every rendered frame independent of the physics tick rate.
 	// Use for things that (only) need to update once per main loop iteration and rendered frame or is visible to the user.
 	// E.g. (final) sync of objects for this main loop iteration, updating rendered debug visuals, updating debug statistics, ...
+
+	sync();
 }
 
 void GodotNavigationServer3D::physics_process(double p_delta_time) {
@@ -1369,8 +1368,6 @@ void GodotNavigationServer3D::physics_process(double p_delta_time) {
 	int _new_pm_edge_free_count = 0;
 	int _new_pm_obstacle_count = 0;
 
-	// In c++ we can't be sure that this is performed in the main thread
-	// even with mutable functions.
 	MutexLock lock(operations_mutex);
 	for (uint32_t i(0); i < active_maps.size(); i++) {
 		active_maps[i]->sync();
@@ -1386,13 +1383,6 @@ void GodotNavigationServer3D::physics_process(double p_delta_time) {
 		_new_pm_edge_connection_count += active_maps[i]->get_pm_edge_connection_count();
 		_new_pm_edge_free_count += active_maps[i]->get_pm_edge_free_count();
 		_new_pm_obstacle_count += active_maps[i]->get_pm_obstacle_count();
-
-		// Emit a signal if a map changed.
-		const uint32_t new_map_iteration_id = active_maps[i]->get_iteration_id();
-		if (new_map_iteration_id != active_maps_iteration_id[i]) {
-			emit_signal(SNAME("map_changed"), active_maps[i]->get_self());
-			active_maps_iteration_id[i] = new_map_iteration_id;
-		}
 	}
 
 	pm_region_count = _new_pm_region_count;

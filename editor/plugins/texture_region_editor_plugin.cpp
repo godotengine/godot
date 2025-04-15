@@ -171,7 +171,7 @@ void TextureRegionEditor::_texture_overlay_draw() {
 		int next = (i + 1) % 4;
 
 		Vector2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
-		ofs *= Math_SQRT2 * (select_handle->get_size().width / 2);
+		ofs *= Math::SQRT2 * (select_handle->get_size().width / 2);
 
 		texture_overlay->draw_line(endpoints[i] - draw_ofs * draw_zoom, endpoints[next] - draw_ofs * draw_zoom, color, 2);
 
@@ -1154,6 +1154,7 @@ TextureRegionEditor::TextureRegionEditor() {
 
 	snap_mode_button = memnew(OptionButton);
 	hb_tools->add_child(snap_mode_button);
+	snap_mode_button->set_accessibility_name(TTRC("Snap Mode"));
 	snap_mode_button->add_item(TTR("None"), 0);
 	snap_mode_button->add_item(TTR("Pixel Snap"), 1);
 	snap_mode_button->add_item(TTR("Grid Snap"), 2);
@@ -1171,12 +1172,14 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_off_x->set_step(1);
 	sb_off_x->set_suffix("px");
 	sb_off_x->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_off_x));
+	sb_off_x->set_accessibility_name(TTRC("Offset X"));
 	hb_grid->add_child(sb_off_x);
 
 	sb_off_y = memnew(SpinBox);
 	sb_off_y->set_step(1);
 	sb_off_y->set_suffix("px");
 	sb_off_y->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_off_y));
+	sb_off_y->set_accessibility_name(TTRC("Offset Y"));
 	hb_grid->add_child(sb_off_y);
 
 	hb_grid->add_child(memnew(VSeparator));
@@ -1187,6 +1190,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_step_x->set_step(1);
 	sb_step_x->set_suffix("px");
 	sb_step_x->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_step_x));
+	sb_step_x->set_accessibility_name(TTRC("Step X"));
 	hb_grid->add_child(sb_step_x);
 
 	sb_step_y = memnew(SpinBox);
@@ -1194,6 +1198,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_step_y->set_step(1);
 	sb_step_y->set_suffix("px");
 	sb_step_y->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_step_y));
+	sb_step_y->set_accessibility_name(TTRC("Step Y"));
 	hb_grid->add_child(sb_step_y);
 
 	hb_grid->add_child(memnew(VSeparator));
@@ -1204,6 +1209,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_sep_x->set_step(1);
 	sb_sep_x->set_suffix("px");
 	sb_sep_x->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_sep_x));
+	sb_sep_x->set_accessibility_name(TTRC("Separation X"));
 	hb_grid->add_child(sb_sep_x);
 
 	sb_sep_y = memnew(SpinBox);
@@ -1211,6 +1217,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_sep_y->set_step(1);
 	sb_sep_y->set_suffix("px");
 	sb_sep_y->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_sep_y));
+	sb_sep_y->set_accessibility_name(TTRC("Separation Y"));
 	hb_grid->add_child(sb_sep_y);
 
 	hb_grid->hide();
@@ -1249,18 +1256,21 @@ TextureRegionEditor::TextureRegionEditor() {
 	zoom_out = memnew(Button);
 	zoom_out->set_flat(true);
 	zoom_out->set_tooltip_text(TTR("Zoom Out"));
+	zoom_out->set_accessibility_name(TTRC("Zoom Out"));
 	zoom_out->connect(SceneStringName(pressed), callable_mp(this, &TextureRegionEditor::_zoom_out));
 	zoom_hb->add_child(zoom_out);
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
 	zoom_reset->set_tooltip_text(TTR("Zoom Reset"));
+	zoom_reset->set_accessibility_name(TTRC("Reset Zoom"));
 	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &TextureRegionEditor::_zoom_reset));
 	zoom_hb->add_child(zoom_reset);
 
 	zoom_in = memnew(Button);
 	zoom_in->set_flat(true);
 	zoom_in->set_tooltip_text(TTR("Zoom In"));
+	zoom_in->set_accessibility_name(TTRC("Zoom In"));
 	zoom_in->connect(SceneStringName(pressed), callable_mp(this, &TextureRegionEditor::_zoom_in));
 	zoom_hb->add_child(zoom_in);
 

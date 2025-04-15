@@ -112,7 +112,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
 			ERR_FAIL_NULL(Image::basis_universal_unpacker_ptr);
 			image = Image::basis_universal_unpacker_ptr(data, data_size);
-
+			format = image->get_format();
 		} break;
 		case COMPRESSION_MODE_S3TC:
 		case COMPRESSION_MODE_ETC2:
@@ -189,12 +189,15 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 			}
 		} break;
 		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
+#ifdef TOOLS_ENABLED
 			ERR_FAIL_COND(p_image->is_compressed());
 			encode_uint16(DATA_FORMAT_BASIS_UNIVERSAL, buffer.ptrw() + 2);
 			Image::UsedChannels uc = p_image->detect_used_channels(p_normal_map ? Image::COMPRESS_SOURCE_NORMAL : Image::COMPRESS_SOURCE_GENERIC);
 			Vector<uint8_t> budata = Image::basis_universal_packer(p_image, uc);
 			buffer.append_array(budata);
-
+#else
+			ERR_FAIL_MSG("Basis Universal compression can only run in editor build.");
+#endif
 		} break;
 		case COMPRESSION_MODE_S3TC:
 		case COMPRESSION_MODE_ETC2:

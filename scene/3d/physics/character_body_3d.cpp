@@ -219,7 +219,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					// Avoid to move forward on a wall if floor_block_on_wall is true.
 					// Applies only when the motion angle is under 90 degrees,
 					// in order to avoid blocking lateral motion along a wall.
-					if (motion_angle < .5 * Math_PI) {
+					if (motion_angle < .5 * Math::PI) {
 						apply_default_sliding = false;
 						if (p_was_on_floor && !vel_dir_facing_up) {
 							// Cancel the motion.

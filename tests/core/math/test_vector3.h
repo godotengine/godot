@@ -33,9 +33,6 @@
 #include "core/math/vector3.h"
 #include "tests/test_macros.h"
 
-#define Math_SQRT13 0.57735026918962576450914878050196
-#define Math_SQRT3 1.7320508075688772935274463415059
-
 namespace TestVector3 {
 
 TEST_CASE("[Vector3] Constructor methods") {
@@ -51,26 +48,26 @@ TEST_CASE("[Vector3] Angle methods") {
 	constexpr Vector3 vector_y = Vector3(0, 1, 0);
 	constexpr Vector3 vector_yz = Vector3(0, 1, 1);
 	CHECK_MESSAGE(
-			vector_x.angle_to(vector_y) == doctest::Approx((real_t)Math_TAU / 4),
+			vector_x.angle_to(vector_y) == doctest::Approx((real_t)Math::TAU / 4),
 			"Vector3 angle_to should work as expected.");
 	CHECK_MESSAGE(
-			vector_x.angle_to(vector_yz) == doctest::Approx((real_t)Math_TAU / 4),
+			vector_x.angle_to(vector_yz) == doctest::Approx((real_t)Math::TAU / 4),
 			"Vector3 angle_to should work as expected.");
 	CHECK_MESSAGE(
-			vector_yz.angle_to(vector_x) == doctest::Approx((real_t)Math_TAU / 4),
+			vector_yz.angle_to(vector_x) == doctest::Approx((real_t)Math::TAU / 4),
 			"Vector3 angle_to should work as expected.");
 	CHECK_MESSAGE(
-			vector_y.angle_to(vector_yz) == doctest::Approx((real_t)Math_TAU / 8),
+			vector_y.angle_to(vector_yz) == doctest::Approx((real_t)Math::TAU / 8),
 			"Vector3 angle_to should work as expected.");
 
 	CHECK_MESSAGE(
-			vector_x.signed_angle_to(vector_y, vector_y) == doctest::Approx((real_t)Math_TAU / 4),
+			vector_x.signed_angle_to(vector_y, vector_y) == doctest::Approx((real_t)Math::TAU / 4),
 			"Vector3 signed_angle_to edge case should be positive.");
 	CHECK_MESSAGE(
-			vector_x.signed_angle_to(vector_yz, vector_y) == doctest::Approx((real_t)Math_TAU / -4),
+			vector_x.signed_angle_to(vector_yz, vector_y) == doctest::Approx((real_t)Math::TAU / -4),
 			"Vector3 signed_angle_to should work as expected.");
 	CHECK_MESSAGE(
-			vector_yz.signed_angle_to(vector_x, vector_y) == doctest::Approx((real_t)Math_TAU / 4),
+			vector_yz.signed_angle_to(vector_x, vector_y) == doctest::Approx((real_t)Math::TAU / 4),
 			"Vector3 signed_angle_to should work as expected.");
 }
 
@@ -152,7 +149,7 @@ TEST_CASE("[Vector3] Length methods") {
 			vector1.length_squared() == 300,
 			"Vector3 length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			vector1.length() == doctest::Approx(10 * (real_t)Math_SQRT3),
+			vector1.length() == doctest::Approx(10 * (real_t)Math::SQRT3),
 			"Vector3 length should work as expected.");
 	CHECK_MESSAGE(
 			vector2.length_squared() == 2900,
@@ -171,10 +168,10 @@ TEST_CASE("[Vector3] Length methods") {
 TEST_CASE("[Vector3] Limiting methods") {
 	constexpr Vector3 vector = Vector3(10, 10, 10);
 	CHECK_MESSAGE(
-			vector.limit_length().is_equal_approx(Vector3(Math_SQRT13, Math_SQRT13, Math_SQRT13)),
+			vector.limit_length().is_equal_approx(Vector3(Math::SQRT13, Math::SQRT13, Math::SQRT13)),
 			"Vector3 limit_length should work as expected.");
 	CHECK_MESSAGE(
-			vector.limit_length(5).is_equal_approx(5 * Vector3(Math_SQRT13, Math_SQRT13, Math_SQRT13)),
+			vector.limit_length(5).is_equal_approx(5 * Vector3(Math::SQRT13, Math::SQRT13, Math::SQRT13)),
 			"Vector3 limit_length should work as expected.");
 
 	CHECK_MESSAGE(
@@ -196,10 +193,10 @@ TEST_CASE("[Vector3] Normalization methods") {
 			Vector3(1, 0, 0).normalized() == Vector3(1, 0, 0),
 			"Vector3 normalized should return the same vector for a normalized vector.");
 	CHECK_MESSAGE(
-			Vector3(1, 1, 0).normalized().is_equal_approx(Vector3(Math_SQRT12, Math_SQRT12, 0)),
+			Vector3(1, 1, 0).normalized().is_equal_approx(Vector3(Math::SQRT12, Math::SQRT12, 0)),
 			"Vector3 normalized should work as expected.");
 	CHECK_MESSAGE(
-			Vector3(1, 1, 1).normalized().is_equal_approx(Vector3(Math_SQRT13, Math_SQRT13, Math_SQRT13)),
+			Vector3(1, 1, 1).normalized().is_equal_approx(Vector3(Math::SQRT13, Math::SQRT13, Math::SQRT13)),
 			"Vector3 normalized should work as expected.");
 
 	Vector3 vector = Vector3(3.2, -5.4, 6);
@@ -301,11 +298,11 @@ TEST_CASE("[Vector3] Operators") {
 			"Vector3 cast to String should work as expected.");
 #ifdef REAL_T_IS_DOUBLE
 	CHECK_MESSAGE(
-			((String)Vector3(Math_E, Math_SQRT2, Math_SQRT3)) == "(2.71828182845905, 1.4142135623731, 1.73205080756888)",
+			((String)Vector3(Math::E, Math::SQRT2, Math::SQRT3)) == "(2.71828182845905, 1.4142135623731, 1.73205080756888)",
 			"Vector3 cast to String should print the correct amount of digits for real_t = double.");
 #else
 	CHECK_MESSAGE(
-			((String)Vector3(Math_E, Math_SQRT2, Math_SQRT3)) == "(2.718282, 1.414214, 1.732051)",
+			((String)Vector3(Math::E, Math::SQRT2, Math::SQRT3)) == "(2.718282, 1.414214, 1.732051)",
 			"Vector3 cast to String should print the correct amount of digits for real_t = float.");
 #endif // REAL_T_IS_DOUBLE
 }
@@ -316,7 +313,7 @@ TEST_CASE("[Vector3] Other methods") {
 			vector.direction_to(Vector3()).is_equal_approx(-vector.normalized()),
 			"Vector3 direction_to should work as expected.");
 	CHECK_MESSAGE(
-			Vector3(1, 1, 1).direction_to(Vector3(2, 2, 2)).is_equal_approx(Vector3(Math_SQRT13, Math_SQRT13, Math_SQRT13)),
+			Vector3(1, 1, 1).direction_to(Vector3(2, 2, 2)).is_equal_approx(Vector3(Math::SQRT13, Math::SQRT13, Math::SQRT13)),
 			"Vector3 direction_to should work as expected.");
 	CHECK_MESSAGE(
 			vector.inverse().is_equal_approx(Vector3(1 / 1.2, 1 / 3.4, 1 / 5.6)),
@@ -335,16 +332,16 @@ TEST_CASE("[Vector3] Other methods") {
 			"Vector3 posmodv should work as expected.");
 
 	CHECK_MESSAGE(
-			vector.rotated(Vector3(0, 1, 0), Math_TAU).is_equal_approx(vector),
+			vector.rotated(Vector3(0, 1, 0), Math::TAU).is_equal_approx(vector),
 			"Vector3 rotated should work as expected.");
 	CHECK_MESSAGE(
-			vector.rotated(Vector3(0, 1, 0), Math_TAU / 4).is_equal_approx(Vector3(5.6, 3.4, -1.2)),
+			vector.rotated(Vector3(0, 1, 0), Math::TAU / 4).is_equal_approx(Vector3(5.6, 3.4, -1.2)),
 			"Vector3 rotated should work as expected.");
 	CHECK_MESSAGE(
-			vector.rotated(Vector3(1, 0, 0), Math_TAU / 3).is_equal_approx(Vector3(1.2, -6.54974226119285642, 0.1444863728670914)),
+			vector.rotated(Vector3(1, 0, 0), Math::TAU / 3).is_equal_approx(Vector3(1.2, -6.54974226119285642, 0.1444863728670914)),
 			"Vector3 rotated should work as expected.");
 	CHECK_MESSAGE(
-			vector.rotated(Vector3(0, 0, 1), Math_TAU / 2).is_equal_approx(vector.rotated(Vector3(0, 0, 1), Math_TAU / -2)),
+			vector.rotated(Vector3(0, 0, 1), Math::TAU / 2).is_equal_approx(vector.rotated(Vector3(0, 0, 1), Math::TAU / -2)),
 			"Vector3 rotated should work as expected.");
 
 	CHECK_MESSAGE(
@@ -490,7 +487,7 @@ TEST_CASE("[Vector3] Linear algebra methods") {
 }
 
 TEST_CASE("[Vector3] Finite number checks") {
-	const double infinite[] = { NAN, INFINITY, -INFINITY };
+	constexpr double infinite[] = { Math::NaN, Math::INF, -Math::INF };
 
 	CHECK_MESSAGE(
 			Vector3(0, 1, 2).is_finite(),

@@ -924,6 +924,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	HBoxContainer *name_hbc = memnew(HBoxContainer);
 	current_profile_name = memnew(LineEdit);
 	name_hbc->add_child(current_profile_name);
+	current_profile_name->set_accessibility_name(TTRC("Current Profile"));
 	current_profile_name->set_text(TTR("(none)"));
 	current_profile_name->set_editable(false);
 	current_profile_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -938,6 +939,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 
 	HBoxContainer *profiles_hbc = memnew(HBoxContainer);
 	profile_list = memnew(OptionButton);
+	profile_list->set_accessibility_name(TTRC("Profiles"));
 	profile_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	profile_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	profiles_hbc->add_child(profile_list);
@@ -1031,6 +1033,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	new_profile_name = memnew(LineEdit);
 	new_profile_vb->add_child(new_profile_name);
 	new_profile_name->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
+	new_profile_name->set_accessibility_name(TTRC("Profile Name"));
 	add_child(new_profile_dialog);
 	new_profile_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorFeatureProfileManager::_create_new_profile));
 	new_profile_dialog->register_text_enter(new_profile_name);

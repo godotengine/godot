@@ -282,9 +282,7 @@ private:
 		RID lightmap_capture_buffer;
 
 		bool used_screen_texture = false;
-		bool used_normal_texture = false;
 		bool used_depth_texture = false;
-		bool used_sss = false;
 		bool used_lightmap = false;
 
 		struct ShadowPass {
@@ -658,6 +656,12 @@ public:
 	void _mesh_generate_all_pipelines_for_surface_cache(GeometryInstanceSurfaceDataCache *p_surface_cache, const GlobalPipelineData &p_global);
 	void _update_dirty_geometry_instances();
 	void _update_dirty_geometry_pipelines();
+
+	// Global data about the scene that can be used to pre-allocate resources without relying on culling.
+	struct GlobalSurfaceData {
+		bool screen_texture_used = false;
+		bool depth_texture_used = false;
+	} global_surface_data;
 
 	virtual RenderGeometryInstance *geometry_instance_create(RID p_base) override;
 	virtual void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override;

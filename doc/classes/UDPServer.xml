@@ -154,7 +154,7 @@
 		<method name="poll">
 			<return type="int" enum="Error" />
 			<description>
-				Call this method at regular intervals (e.g. inside [method Node._process]) to process new packets. And packet from known address/port pair will be delivered to the appropriate [PacketPeerUDP], any packet received from an unknown address/port pair will be added as a pending connection (see [method is_connection_available], [method take_connection]). The maximum number of pending connection is defined via [member max_pending_connections].
+				Call this method at regular intervals (e.g. inside [method Node._process]) to process new packets. Any packet from a known address/port pair will be delivered to the appropriate [PacketPeerUDP], while any packet received from an unknown address/port pair will be added as a pending connection (see [method is_connection_available] and [method take_connection]). The maximum number of pending connections is defined via [member max_pending_connections].
 			</description>
 		</method>
 		<method name="stop">

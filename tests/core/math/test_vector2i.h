@@ -78,7 +78,7 @@ TEST_CASE("[Vector2i] Length methods") {
 			vector1.length_squared() == 200,
 			"Vector2i length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			vector1.length() == doctest::Approx(10 * Math_SQRT2),
+			vector1.length() == doctest::Approx(10 * Math::SQRT2),
 			"Vector2i length should work as expected.");
 	CHECK_MESSAGE(
 			vector2.length_squared() == 1300,

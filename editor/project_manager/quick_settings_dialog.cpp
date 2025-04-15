@@ -48,6 +48,7 @@ void QuickSettingsDialog::_fetch_setting_values() {
 	editor_themes.clear();
 	editor_scales.clear();
 	editor_network_modes.clear();
+	editor_engine_version_update_modes.clear();
 	editor_directory_naming_conventions.clear();
 
 	{
@@ -65,6 +66,8 @@ void QuickSettingsDialog::_fetch_setting_values() {
 				editor_scales = pi.hint_string.split(",");
 			} else if (pi.name == "network/connection/network_mode") {
 				editor_network_modes = pi.hint_string.split(",");
+			} else if (pi.name == "network/connection/engine_version_update_mode") {
+				editor_engine_version_update_modes = pi.hint_string.split(",");
 			} else if (pi.name == "project_manager/directory_naming_convention") {
 				editor_directory_naming_conventions = pi.hint_string.split(",");
 			}
@@ -130,6 +133,22 @@ void QuickSettingsDialog::_update_current_values() {
 		}
 	}
 
+	// Engine version update mode options.
+	{
+		const int current_update_mode = EDITOR_GET("network/connection/engine_version_update_mode");
+
+		for (int i = 0; i < editor_engine_version_update_modes.size(); i++) {
+			const String &engine_version_update_mode_value = editor_engine_version_update_modes[i];
+			if (current_update_mode == i) {
+				engine_version_update_mode_button->set_text(engine_version_update_mode_value);
+				engine_version_update_mode_button->select(i);
+
+				// Disables Engine Version Update Mode selection if Network mode is set to Offline.
+				engine_version_update_mode_button->set_disabled(!EDITOR_GET("network/connection/network_mode"));
+			}
+		}
+	}
+
 	// Project directory naming options.
 	{
 		const int current_directory_naming = EDITOR_GET("project_manager/directory_naming_convention");
@@ -177,6 +196,13 @@ void QuickSettingsDialog::_scale_selected(int p_id) {
 
 void QuickSettingsDialog::_network_mode_selected(int p_id) {
 	_set_setting_value("network/connection/network_mode", p_id);
+
+	// Disables Engine Version Update Mode selection if Network mode is set to Offline.
+	engine_version_update_mode_button->set_disabled(!p_id);
+}
+
+void QuickSettingsDialog::_engine_version_update_mode_selected(int p_id) {
+	_set_setting_value("network/connection/engine_version_update_mode", p_id);
 }
 
 void QuickSettingsDialog::_directory_naming_convention_selected(int p_id) {
@@ -318,6 +344,20 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			}
 
 			_add_setting_control(TTR("Network Mode"), network_mode_option_button);
+		}
+
+		// Engine version update mode options.
+		{
+			engine_version_update_mode_button = memnew(OptionButton);
+			engine_version_update_mode_button->set_fit_to_longest_item(false);
+			engine_version_update_mode_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_engine_version_update_mode_selected));
+
+			for (int i = 0; i < editor_engine_version_update_modes.size(); i++) {
+				const String &engine_version_update_mode_value = editor_engine_version_update_modes[i];
+				engine_version_update_mode_button->add_item(engine_version_update_mode_value, i);
+			}
+
+			_add_setting_control(TTR("Engine Version Update Mode"), engine_version_update_mode_button);
 		}
 
 		// Project directory naming options.

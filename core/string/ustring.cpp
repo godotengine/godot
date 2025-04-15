@@ -882,14 +882,14 @@ const char32_t *String::get_data() const {
 	return size() ? &operator[](0) : &zero;
 }
 
-String String::_camelcase_to_underscore() const {
-	const char32_t *cstr = get_data();
-	String new_string;
-	int start_index = 0;
-
+String String::_separate_compound_words() const {
 	if (length() == 0) {
 		return *this;
 	}
+
+	const char32_t *cstr = get_data();
+	int start_index = 0;
+	String new_string;
 
 	bool is_prev_upper = is_unicode_upper_case(cstr[0]);
 	bool is_prev_lower = is_unicode_lower_case(cstr[0]);
@@ -911,7 +911,7 @@ String String::_camelcase_to_underscore() const {
 		const bool cond_d = (is_prev_upper || is_prev_lower) && is_curr_digit; // A2, a2
 
 		if (cond_a || cond_b || cond_c || cond_d) {
-			new_string += substr(start_index, i - start_index) + "_";
+			new_string += substr(start_index, i - start_index) + " ";
 			start_index = i;
 		}
 
@@ -921,40 +921,72 @@ String String::_camelcase_to_underscore() const {
 	}
 
 	new_string += substr(start_index, size() - start_index);
+
+	for (int i = 0; i < new_string.size(); i++) {
+		const bool whitespace = is_whitespace(new_string[i]);
+		const bool underscore = is_underscore(new_string[i]);
+		const bool hyphen = is_hyphen(new_string[i]);
+
+		if (whitespace || underscore || hyphen) {
+			new_string[i] = ' ';
+		}
+	}
+
 	return new_string.to_lower();
 }
 
 String String::capitalize() const {
-	String aux = _camelcase_to_underscore().replace("_", " ").strip_edges();
-	String cap;
-	for (int i = 0; i < aux.get_slice_count(" "); i++) {
-		String slice = aux.get_slicec(' ', i);
+	String words = _separate_compound_words().strip_edges();
+	String ret;
+	for (int i = 0; i < words.get_slice_count(" "); i++) {
+		String slice = words.get_slicec(' ', i);
 		if (slice.length() > 0) {
 			slice[0] = _find_upper(slice[0]);
 			if (i > 0) {
-				cap += " ";
+				ret += " ";
 			}
-			cap += slice;
+			ret += slice;
 		}
 	}
-
-	return cap;
+	return ret;
 }
 
 String String::to_camel_case() const {
-	String s = to_pascal_case();
-	if (!s.is_empty()) {
-		s[0] = _find_lower(s[0]);
+	String words = _separate_compound_words().strip_edges();
+	String ret;
+	for (int i = 0; i < words.get_slice_count(" "); i++) {
+		String slice = words.get_slicec(' ', i);
+		if (slice.length() > 0) {
+			if (i == 0) {
+				slice[0] = _find_lower(slice[0]);
+			} else {
+				slice[0] = _find_upper(slice[0]);
+			}
+			ret += slice;
+		}
 	}
-	return s;
+	return ret;
 }
 
 String String::to_pascal_case() const {
-	return capitalize().remove_char(' ');
+	String words = _separate_compound_words().strip_edges();
+	String ret;
+	for (int i = 0; i < words.get_slice_count(" "); i++) {
+		String slice = words.get_slicec(' ', i);
+		if (slice.length() > 0) {
+			slice[0] = _find_upper(slice[0]);
+			ret += slice;
+		}
+	}
+	return ret;
 }
 
 String String::to_snake_case() const {
-	return _camelcase_to_underscore().replace(" ", "_").strip_edges();
+	return _separate_compound_words().replace_char(' ', '_');
+}
+
+String String::to_kebab_case() const {
+	return _separate_compound_words().replace_char(' ', '-');
 }
 
 String String::get_with_code_lines() const {
@@ -2073,33 +2105,44 @@ Error String::append_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	return result;
 }
 
-CharString String::utf8() const {
+CharString String::utf8(Vector<uint8_t> *r_ch_length_map) const {
 	int l = length();
 	if (!l) {
 		return CharString();
+	}
+
+	uint8_t *map_ptr = nullptr;
+	if (r_ch_length_map) {
+		r_ch_length_map->resize(l);
+		map_ptr = r_ch_length_map->ptrw();
 	}
 
 	const char32_t *d = &operator[](0);
 	int fl = 0;
 	for (int i = 0; i < l; i++) {
 		uint32_t c = d[i];
+		int ch_w = 1;
 		if (c <= 0x7f) { // 7 bits.
-			fl += 1;
+			ch_w = 1;
 		} else if (c <= 0x7ff) { // 11 bits
-			fl += 2;
+			ch_w = 2;
 		} else if (c <= 0xffff) { // 16 bits
-			fl += 3;
+			ch_w = 3;
 		} else if (c <= 0x001fffff) { // 21 bits
-			fl += 4;
+			ch_w = 4;
 		} else if (c <= 0x03ffffff) { // 26 bits
-			fl += 5;
+			ch_w = 5;
 			print_unicode_error(vformat("Invalid unicode codepoint (%x)", c));
 		} else if (c <= 0x7fffffff) { // 31 bits
-			fl += 6;
+			ch_w = 6;
 			print_unicode_error(vformat("Invalid unicode codepoint (%x)", c));
 		} else {
-			fl += 1;
+			ch_w = 1;
 			print_unicode_error(vformat("Invalid unicode codepoint (%x), cannot represent as UTF-8", c), true);
+		}
+		fl += ch_w;
+		if (map_ptr) {
+			map_ptr[i] = ch_w;
 		}
 	}
 
@@ -4188,6 +4231,117 @@ String String::replace_first(const char *p_key, const char *p_with) const {
 	return *this;
 }
 
+String String::replace_char(char32_t p_key, char32_t p_with) const {
+	ERR_FAIL_COND_V_MSG(p_with == 0, *this, "`with` must not be the NUL character.");
+
+	if (p_key == 0) {
+		return *this;
+	}
+
+	int len = length();
+	if (len == 0) {
+		return *this;
+	}
+
+	int index = 0;
+	const char32_t *old_ptr = ptr();
+	for (; index < len; ++index) {
+		if (old_ptr[index] == p_key) {
+			break;
+		}
+	}
+
+	// If no occurrence of `key` was found, return this.
+	if (index == len) {
+		return *this;
+	}
+
+	// If we found at least one occurrence of `key`, create new string.
+	String new_string;
+	new_string.resize(len + 1);
+	char32_t *new_ptr = new_string.ptrw();
+
+	// Copy part of input before `key`.
+	memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
+
+	new_ptr[index] = p_with;
+
+	// Copy or replace rest of input.
+	for (++index; index < len; ++index) {
+		if (old_ptr[index] == p_key) {
+			new_ptr[index] = p_with;
+		} else {
+			new_ptr[index] = old_ptr[index];
+		}
+	}
+
+	new_ptr[index] = _null;
+
+	return new_string;
+}
+
+template <class T>
+static String _replace_chars_common(const String &p_this, const T *p_keys, int p_keys_len, char32_t p_with) {
+	ERR_FAIL_COND_V_MSG(p_with == 0, p_this, "`with` must not be the NUL character.");
+
+	// Delegate if p_keys is a single element.
+	if (p_keys_len == 1) {
+		return p_this.replace_char(*p_keys, p_with);
+	} else if (p_keys_len == 0) {
+		return p_this;
+	}
+
+	int len = p_this.length();
+	if (len == 0) {
+		return p_this;
+	}
+
+	int index = 0;
+	const char32_t *old_ptr = p_this.ptr();
+	for (; index < len; ++index) {
+		if (_contains_char(old_ptr[index], p_keys, p_keys_len)) {
+			break;
+		}
+	}
+
+	// If no occurrence of `keys` was found, return this.
+	if (index == len) {
+		return p_this;
+	}
+
+	// If we found at least one occurrence of `keys`, create new string.
+	String new_string;
+	new_string.resize(len + 1);
+	char32_t *new_ptr = new_string.ptrw();
+
+	// Copy part of input before `key`.
+	memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
+
+	new_ptr[index] = p_with;
+
+	// Copy or replace rest of input.
+	for (++index; index < len; ++index) {
+		const char32_t old_char = old_ptr[index];
+		if (_contains_char(old_char, p_keys, p_keys_len)) {
+			new_ptr[index] = p_with;
+		} else {
+			new_ptr[index] = old_char;
+		}
+	}
+
+	new_ptr[index] = 0;
+
+	return new_string;
+}
+
+String String::replace_chars(const String &p_keys, char32_t p_with) const {
+	return _replace_chars_common(*this, p_keys.ptr(), p_keys.length(), p_with);
+}
+
+String String::replace_chars(const char *p_keys, char32_t p_with) const {
+	return _replace_chars_common(*this, p_keys, strlen(p_keys), p_with);
+}
+
 String String::replacen(const String &p_key, const String &p_with) const {
 	return _replace_common(*this, p_key, p_with, true);
 }
@@ -4470,7 +4624,7 @@ String String::simplify_path() const {
 		}
 	}
 
-	s = s.replace("\\", "/");
+	s = s.replace_char('\\', '/');
 	while (true) { // in case of using 2 or more slash
 		String compare = s.replace("//", "/");
 		if (s == compare) {
@@ -4700,6 +4854,29 @@ String String::uri_decode() const {
 			}
 		} else if (src[i] == '+') {
 			res += ' ';
+		} else {
+			res += src[i];
+		}
+	}
+	return String::utf8(res);
+}
+
+String String::uri_file_decode() const {
+	CharString src = utf8();
+	CharString res;
+	for (int i = 0; i < src.length(); ++i) {
+		if (src[i] == '%' && i + 2 < src.length()) {
+			char ord1 = src[i + 1];
+			if (is_digit(ord1) || is_ascii_upper_case(ord1)) {
+				char ord2 = src[i + 2];
+				if (is_digit(ord2) || is_ascii_upper_case(ord2)) {
+					char bytes[3] = { (char)ord1, (char)ord2, 0 };
+					res += (char)strtol(bytes, nullptr, 16);
+					i += 2;
+				}
+			} else {
+				res += src[i];
+			}
 		} else {
 			res += src[i];
 		}
@@ -5090,8 +5267,8 @@ bool String::is_valid_float() const {
 
 String String::path_to_file(const String &p_path) const {
 	// Don't get base dir for src, this is expected to be a dir already.
-	String src = replace("\\", "/");
-	String dst = p_path.replace("\\", "/").get_base_dir();
+	String src = replace_char('\\', '/');
+	String dst = p_path.replace_char('\\', '/').get_base_dir();
 	String rel = src.path_to(dst);
 	if (rel == dst) { // failed
 		return p_path;
@@ -5101,8 +5278,8 @@ String String::path_to_file(const String &p_path) const {
 }
 
 String String::path_to(const String &p_path) const {
-	String src = replace("\\", "/");
-	String dst = p_path.replace("\\", "/");
+	String src = replace_char('\\', '/');
+	String dst = p_path.replace_char('\\', '/');
 	if (!src.ends_with("/")) {
 		src += "/";
 	}

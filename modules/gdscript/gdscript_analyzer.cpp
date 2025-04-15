@@ -1714,6 +1714,12 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		static_context = p_function->is_static;
 	}
 
+	MethodInfo method_info;
+	method_info.name = function_name;
+	if (p_function->is_static) {
+		method_info.flags |= MethodFlags::METHOD_FLAG_STATIC;
+	}
+
 	GDScriptParser::DataType prev_datatype = p_function->get_datatype();
 
 	GDScriptParser::DataType resolving_datatype;
@@ -1733,6 +1739,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 	for (int i = 0; i < p_function->parameters.size(); i++) {
 		resolve_parameter(p_function->parameters[i]);
+		method_info.arguments.push_back(p_function->parameters[i]->get_datatype().to_property_info(p_function->parameters[i]->identifier->name));
 #ifdef DEBUG_ENABLED
 		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_")) {
 			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->parameters[i]->identifier->name);
@@ -1796,7 +1803,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		GDScriptParser::DataType parent_return_type;
 		List<GDScriptParser::DataType> parameters_types;
 		int default_par_count = 0;
-		BitField<MethodFlags> method_flags;
+		BitField<MethodFlags> method_flags = {};
 		StringName native_base;
 		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
 			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
@@ -1882,6 +1889,10 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		parser->push_warning(p_function, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
 	}
 #endif
+
+	method_info.default_arguments.append_array(p_function->default_arg_values);
+	method_info.return_val = p_function->get_datatype().to_property_info("");
+	p_function->info = method_info;
 
 	if (p_function->get_datatype().is_resolving()) {
 		p_function->set_datatype(prev_datatype);
@@ -2265,7 +2276,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			GDScriptParser::DataType return_type;
 			List<GDScriptParser::DataType> par_types;
 			int default_arg_count = 0;
-			BitField<MethodFlags> method_flags;
+			BitField<MethodFlags> method_flags = {};
 			if (get_function_signature(p_for->list, false, list_type, CoreStringName(_iter_get), return_type, par_types, default_arg_count, method_flags)) {
 				variable_type = return_type;
 				variable_type.type_source = list_type.type_source;
@@ -3556,7 +3567,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 	}
 
 	int default_arg_count = 0;
-	BitField<MethodFlags> method_flags;
+	BitField<MethodFlags> method_flags = {};
 	GDScriptParser::DataType return_type;
 	List<GDScriptParser::DataType> par_types;
 

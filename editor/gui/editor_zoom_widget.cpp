@@ -187,6 +187,7 @@ void EditorZoomWidget::set_shortcut_context(Node *p_node) const {
 EditorZoomWidget::EditorZoomWidget() {
 	// Zoom buttons
 	zoom_minus = memnew(Button);
+	zoom_minus->set_accessibility_name(TTRC("Zoom Out"));
 	zoom_minus->set_flat(true);
 	zoom_minus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_minus", TTRC("Zoom Out"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::MINUS), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_SUBTRACT) }));
 	zoom_minus->set_shortcut_context(this);
@@ -196,6 +197,7 @@ EditorZoomWidget::EditorZoomWidget() {
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
+	zoom_reset->set_accessibility_name(TTRC("Reset Zoom"));
 
 	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
 	zoom_reset->add_theme_style_override(CoreStringName(normal), empty_stylebox);
@@ -216,6 +218,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
 
 	zoom_plus = memnew(Button);
+	zoom_plus->set_accessibility_name(TTRC("Zoom In"));
 	zoom_plus->set_flat(true);
 	zoom_plus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_plus", TTRC("Zoom In"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
 	zoom_plus->set_shortcut_context(this);

@@ -267,14 +267,14 @@ public:
 	};
 
 	struct TextureSubresourceLayers {
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 		uint32_t mipmap = 0;
 		uint32_t base_layer = 0;
 		uint32_t layer_count = 0;
 	};
 
 	struct TextureSubresourceRange {
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 		uint32_t base_mipmap = 0;
 		uint32_t mipmap_count = 0;
 		uint32_t base_layer = 0;
@@ -370,22 +370,22 @@ public:
 	};
 
 	struct MemoryBarrier {
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 	};
 
 	struct BufferBarrier {
 		BufferID buffer;
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 		uint64_t offset = 0;
 		uint64_t size = 0;
 	};
 
 	struct TextureBarrier {
 		TextureID texture;
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 		TextureLayout prev_layout = TEXTURE_LAYOUT_UNDEFINED;
 		TextureLayout next_layout = TEXTURE_LAYOUT_UNDEFINED;
 		TextureSubresourceRange subresources;
@@ -628,7 +628,7 @@ public:
 		static const uint32_t UNUSED = 0xffffffff;
 		uint32_t attachment = UNUSED;
 		TextureLayout layout = TEXTURE_LAYOUT_UNDEFINED;
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 	};
 
 	struct Subpass {
@@ -644,10 +644,10 @@ public:
 	struct SubpassDependency {
 		uint32_t src_subpass = 0xffffffff;
 		uint32_t dst_subpass = 0xffffffff;
-		BitField<PipelineStageBits> src_stages;
-		BitField<PipelineStageBits> dst_stages;
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+		BitField<PipelineStageBits> src_stages = {};
+		BitField<PipelineStageBits> dst_stages = {};
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 	};
 
 	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) = 0;
@@ -666,7 +666,7 @@ public:
 	};
 
 	struct AttachmentClear {
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 		uint32_t color_attachment = 0xffffffff;
 		RenderPassClearValue value;
 	};

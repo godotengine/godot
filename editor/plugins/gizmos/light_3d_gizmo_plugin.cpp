@@ -179,7 +179,7 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 			for (int i = 0; i < arrow_sides; i++) {
 				for (int j = 0; j < arrow_points; j++) {
-					Basis ma(Vector3(0, 0, 1), Math_PI * i / arrow_sides);
+					Basis ma(Vector3(0, 0, 1), Math::PI * i / arrow_sides);
 
 					Vector3 v1 = arrow[j] - Vector3(0, 0, arrow_length);
 					Vector3 v2 = arrow[(j + 1) % arrow_points] - Vector3(0, 0, arrow_length);
@@ -295,8 +295,8 @@ float Light3DGizmoPlugin::_find_closest_angle_to_half_pi_arc(const Vector3 &p_fr
 	Vector3 min_p;
 
 	for (int i = 0; i < arc_test_points; i++) {
-		float a = i * Math_PI * 0.5 / arc_test_points;
-		float an = (i + 1) * Math_PI * 0.5 / arc_test_points;
+		float a = i * Math::PI * 0.5 / arc_test_points;
+		float an = (i + 1) * Math::PI * 0.5 / arc_test_points;
 		Vector3 p = Vector3(Math::cos(a), 0, -Math::sin(a)) * p_arc_radius;
 		Vector3 n = Vector3(Math::cos(an), 0, -Math::sin(an)) * p_arc_radius;
 
@@ -311,6 +311,6 @@ float Light3DGizmoPlugin::_find_closest_angle_to_half_pi_arc(const Vector3 &p_fr
 	}
 
 	//min_p = p_arc_xform.affine_inverse().xform(min_p);
-	float a = (Math_PI * 0.5) - Vector2(min_p.x, -min_p.z).angle();
+	float a = (Math::PI * 0.5) - Vector2(min_p.x, -min_p.z).angle();
 	return Math::rad_to_deg(a);
 }

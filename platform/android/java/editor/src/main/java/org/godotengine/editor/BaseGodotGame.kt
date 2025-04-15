@@ -52,6 +52,8 @@ abstract class BaseGodotGame: GodotEditor() {
 
 	override fun enablePanAndScaleGestures() = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
 
+	override fun disableScrollDeadzone() = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/disable_scroll_deadzone"))
+
 	override fun onGodotSetupCompleted() {
 		super.onGodotSetupCompleted()
 		Log.v(TAG, "OnGodotSetupCompleted")

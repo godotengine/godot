@@ -164,8 +164,8 @@ void ColorPickerShape::draw_cursor(Control *p_control, const Vector2 &p_center, 
 void ColorPickerShape::draw_circle_cursor(Control *p_control, float p_hue) {
 	const Vector2 center = p_control->get_size() * 0.5;
 	const Vector2 cursor_pos(
-			center.x + (center.x * Math::cos(p_hue * Math_TAU) * color_picker->s),
-			center.y + (center.y * Math::sin(p_hue * Math_TAU) * color_picker->s));
+			center.x + (center.x * Math::cos(p_hue * Math::TAU) * color_picker->s),
+			center.y + (center.y * Math::sin(p_hue * Math::TAU) * color_picker->s));
 
 	draw_cursor(p_control, cursor_pos);
 }
@@ -407,7 +407,7 @@ void ColorPickerShapeWheel::_wheel_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 	const Vector2 uv_size = wheel_uv->get_size();
-	const Vector2 ring_radius = uv_size * Math_SQRT12 * WHEEL_RADIUS;
+	const Vector2 ring_radius = uv_size * Math::SQRT12 * WHEEL_RADIUS;
 	const Vector2 center = uv_size * 0.5;
 
 	if (is_click && !spinning) {
@@ -427,7 +427,7 @@ void ColorPickerShapeWheel::_wheel_input(const Ref<InputEvent> &p_event) {
 
 	if (spinning) {
 		real_t rad = center.angle_to_point(event_position);
-		color_picker->h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
+		color_picker->h = ((rad >= 0) ? rad : (Math::TAU + rad)) / Math::TAU;
 		apply_color();
 		return;
 	}
@@ -460,7 +460,7 @@ void ColorPickerShapeWheel::_wheel_draw() {
 
 void ColorPickerShapeWheel::_wheel_uv_draw() {
 	const Vector2 uv_size = wheel_uv->get_size();
-	const Vector2 ring_radius = uv_size * Math_SQRT12 * WHEEL_RADIUS;
+	const Vector2 ring_radius = uv_size * Math::SQRT12 * WHEEL_RADIUS;
 	const Vector2 center = uv_size * 0.5;
 
 	const Rect2 uv_rect(center - ring_radius, ring_radius * 2.0);
@@ -472,8 +472,8 @@ void ColorPickerShapeWheel::_wheel_uv_draw() {
 	float radius = WHEEL_RADIUS * 2.0;
 	radius += (1.0 - radius) * 0.5;
 	const Vector2 cursor_pos = center +
-			Vector2(center.x * Math::cos(color_picker->h * Math_TAU) * radius,
-					center.y * Math::sin(color_picker->h * Math_TAU) * radius);
+			Vector2(center.x * Math::cos(color_picker->h * Math::TAU) * radius,
+					center.y * Math::sin(color_picker->h * Math::TAU) * radius);
 	draw_cursor(wheel_uv, cursor_pos, false);
 }
 
@@ -539,7 +539,7 @@ void ColorPickerShapeCircle::update_circle_cursor(const Vector2 &p_color_change_
 		circle_keyboard_joypad_picker_cursor_position += p_color_change_vector;
 		real_t dist = p_center.distance_to(circle_keyboard_joypad_picker_cursor_position);
 		real_t rad = p_center.angle_to_point(circle_keyboard_joypad_picker_cursor_position);
-		color_picker->h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
+		color_picker->h = ((rad >= 0) ? rad : (Math::TAU + rad)) / Math::TAU;
 		color_picker->s = CLAMP(dist / p_center.x, 0, 1);
 	} else {
 		color_picker->h = get_h_on_circle_edge(p_color_change_vector);
@@ -608,7 +608,7 @@ void ColorPickerShapeVHSCircle::_circle_input(const Ref<InputEvent> &p_event) {
 	}
 
 	real_t rad = center.angle_to_point(event_position);
-	color_picker->h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
+	color_picker->h = ((rad >= 0) ? rad : (Math::TAU + rad)) / Math::TAU;
 	color_picker->s = CLAMP(dist / center.x, 0, 1);
 	color_picker->ok_hsl_h = color_picker->h;
 	color_picker->ok_hsl_s = color_picker->s;
@@ -668,7 +668,7 @@ void ColorPickerShapeVHSCircle::_value_slider_draw() {
 void ColorPickerShapeVHSCircle::_update_cursor(const Vector2 &p_color_change_vector, bool p_is_echo) {
 	if (circle_overlay->has_focus()) {
 		const Vector2 center = circle_overlay->get_size() / 2.0;
-		const Vector2 hue_offset = center * Vector2(Math::cos(color_picker->h * Math_TAU), Math::sin(color_picker->h * Math_TAU)) * color_picker->s;
+		const Vector2 hue_offset = center * Vector2(Math::cos(color_picker->h * Math::TAU), Math::sin(color_picker->h * Math::TAU)) * color_picker->s;
 		update_circle_cursor(p_color_change_vector, center, hue_offset);
 	} else if (value_slider->has_focus()) {
 		color_picker->v = CLAMP(color_picker->v - p_color_change_vector.y * echo_multiplier / 100.0, 0, 1);
@@ -693,7 +693,7 @@ void ColorPickerShapeOKHSLCircle::_circle_input(const Ref<InputEvent> &p_event) 
 	}
 
 	real_t rad = center.angle_to_point(event_position);
-	color_picker->h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
+	color_picker->h = ((rad >= 0) ? rad : (Math::TAU + rad)) / Math::TAU;
 	color_picker->s = CLAMP(dist / center.x, 0, 1);
 	color_picker->ok_hsl_h = color_picker->h;
 	color_picker->ok_hsl_s = color_picker->s;
@@ -761,7 +761,7 @@ void ColorPickerShapeOKHSLCircle::_value_slider_draw() {
 void ColorPickerShapeOKHSLCircle::_update_cursor(const Vector2 &p_color_change_vector, bool p_is_echo) {
 	if (circle_overlay->has_focus()) {
 		const Vector2 center = circle_overlay->get_size() / 2.0;
-		const Vector2 hue_offset = center * Vector2(Math::cos(color_picker->ok_hsl_h * Math_TAU), Math::sin(color_picker->ok_hsl_h * Math_TAU)) * color_picker->ok_hsl_s;
+		const Vector2 hue_offset = center * Vector2(Math::cos(color_picker->ok_hsl_h * Math::TAU), Math::sin(color_picker->ok_hsl_h * Math::TAU)) * color_picker->ok_hsl_s;
 		update_circle_cursor(p_color_change_vector, center, hue_offset);
 		color_picker->ok_hsl_h = color_picker->h;
 		color_picker->ok_hsl_s = color_picker->s;

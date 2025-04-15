@@ -396,6 +396,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 		HBoxContainer *hb_filter = memnew(HBoxContainer);
 		{
 			filter_mode = memnew(OptionButton);
+			filter_mode->set_accessibility_name(TTRC("Locale Filter"));
 			filter_mode->add_item(TTR("Show All Locales"), SHOW_ALL_LOCALES);
 			filter_mode->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			filter_mode->add_item(TTR("Show Selected Locales Only"), SHOW_ONLY_SELECTED_LOCALES);
@@ -434,6 +435,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			}
 			{
 				lang_list = memnew(Tree);
+				lang_list->set_accessibility_name(TTRC("Language"));
 				lang_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				lang_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 				lang_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
@@ -454,6 +456,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			}
 			{
 				script_list = memnew(Tree);
+				script_list->set_accessibility_name(TTR("Script", "Locale"));
 				script_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				script_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 				script_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
@@ -473,6 +476,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			}
 			{
 				cnt_list = memnew(Tree);
+				cnt_list->set_accessibility_name(TTRC("Country"));
 				cnt_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				cnt_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 				cnt_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
@@ -499,7 +503,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				{
 					lang_code = memnew(LineEdit);
 					lang_code->set_max_length(3);
-					lang_code->set_tooltip_text("Language");
+					lang_code->set_accessibility_name("Language");
 					vb_language->add_child(lang_code);
 				}
 				hb_locale->add_child(vb_language);
@@ -516,7 +520,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				{
 					script_code = memnew(LineEdit);
 					script_code->set_max_length(4);
-					script_code->set_tooltip_text("Script");
+					script_code->set_accessibility_name("Script");
 					vb_script->add_child(script_code);
 				}
 				hb_locale->add_child(vb_script);
@@ -549,7 +553,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 					variant_code = memnew(LineEdit);
 					variant_code->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					variant_code->set_placeholder("Variant");
-					variant_code->set_tooltip_text("Variant");
+					variant_code->set_accessibility_name("Variant");
 					vb_variant->add_child(variant_code);
 				}
 				hb_locale->add_child(vb_variant);

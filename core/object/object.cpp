@@ -249,9 +249,9 @@ void Object::cancel_free() {
 }
 
 void Object::_initialize() {
-	_class_name_ptr = _get_class_namev(); // Set the direct pointer, which is much faster to obtain, but can only happen after _initialize.
+	// Cache the class name in the object for quick reference.
+	_class_name_ptr = _get_class_namev();
 	_initialize_classv();
-	_class_name_ptr = nullptr; // May have been called from a constructor.
 }
 
 void Object::_postinitialize() {
@@ -1590,7 +1590,7 @@ void Object::initialize_class() {
 	if (initialized) {
 		return;
 	}
-	_add_class_to_classdb(get_class_static(), get_parent_class_static());
+	_add_class_to_classdb(get_class_static(), StringName());
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
@@ -1969,6 +1969,20 @@ uint32_t Object::get_edited_version() const {
 }
 #endif
 
+const StringName &Object::get_class_name() const {
+	if (_extension) {
+		// Can't put inside the unlikely as constructor can run it.
+		return _extension->class_name;
+	}
+
+	if (unlikely(!_class_name_ptr)) {
+		// While class is initializing / deinitializing, constructors and destructors
+		// need access to the proper class at the proper stage.
+		return *_get_class_namev();
+	}
+	return *_class_name_ptr;
+}
+
 StringName Object::get_class_name_for_extension(const GDExtension *p_library) const {
 #ifdef TOOLS_ENABLED
 	// If this is the library this extension comes from and it's a placeholder, we
@@ -2116,7 +2130,6 @@ void Object::clear_internal_extension() {
 	// Clear the virtual methods.
 	while (virtual_method_list) {
 		(*virtual_method_list->method) = nullptr;
-		(*virtual_method_list->initialized) = false;
 		virtual_method_list = virtual_method_list->next;
 	}
 }

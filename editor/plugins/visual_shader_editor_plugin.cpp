@@ -80,14 +80,14 @@ struct FloatConstantDef {
 };
 
 static FloatConstantDef float_constant_defs[] = {
-	{ "E", Math_E, TTRC("E constant (2.718282). Represents the base of the natural logarithm.") },
+	{ "E", Math::E, TTRC("E constant (2.718282). Represents the base of the natural logarithm.") },
 	{ "Epsilon", CMP_EPSILON, TTRC("Epsilon constant (0.00001). Smallest possible scalar number.") },
 	{ "Phi", 1.618034f, TTRC("Phi constant (1.618034). Golden ratio.") },
-	{ "Pi/4", Math_PI / 4, TTRC("Pi/4 constant (0.785398) or 45 degrees.") },
-	{ "Pi/2", Math_PI / 2, TTRC("Pi/2 constant (1.570796) or 90 degrees.") },
-	{ "Pi", Math_PI, TTRC("Pi constant (3.141593) or 180 degrees.") },
-	{ "Tau", Math_TAU, TTRC("Tau constant (6.283185) or 360 degrees.") },
-	{ "Sqrt2", Math_SQRT2, TTRC("Sqrt2 constant (1.414214). Square root of 2.") }
+	{ "Pi/4", Math::PI / 4, TTRC("Pi/4 constant (0.785398) or 45 degrees.") },
+	{ "Pi/2", Math::PI / 2, TTRC("Pi/2 constant (1.570796) or 90 degrees.") },
+	{ "Pi", Math::PI, TTRC("Pi constant (3.141593) or 180 degrees.") },
+	{ "Tau", Math::TAU, TTRC("Tau constant (6.283185) or 360 degrees.") },
+	{ "Sqrt2", Math::SQRT2, TTRC("Sqrt2 constant (1.414214). Square root of 2.") }
 };
 
 constexpr int MAX_FLOAT_CONST_DEFS = std::size(float_constant_defs);
@@ -1212,6 +1212,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		if (valid_right) {
 			if (expanded_port_counter == 0 && vsnode->is_output_port_expandable(i)) {
 				TextureButton *expand = memnew(TextureButton);
+				expand->set_accessibility_name(TTRC("Expand output port"));
 				expand->set_toggle_mode(true);
 				expand->set_texture_normal(editor->get_editor_theme_icon(SNAME("GuiTreeArrowRight")));
 				expand->set_texture_pressed(editor->get_editor_theme_icon(SNAME("GuiTreeArrowDown")));
@@ -1222,6 +1223,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			}
 			if (vsnode->has_output_port_preview(i) && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
 				TextureButton *preview = memnew(TextureButton);
+				preview->set_accessibility_name(TTRC("Select preview port"));
 				preview->set_toggle_mode(true);
 				preview->set_texture_normal(editor->get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
 				preview->set_texture_pressed(editor->get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
@@ -2197,8 +2199,7 @@ void VisualShaderEditor::_update_nodes() {
 		}
 	}
 
-	List<Variant> keys;
-	added.get_key_list(&keys);
+	LocalVector<Variant> keys = added.get_key_list();
 	keys.sort_custom<StringLikeVariantOrder>();
 
 	for (const Variant &key : keys) {
@@ -2468,11 +2469,11 @@ Size2 VisualShaderEditor::get_minimum_size() const {
 	return Size2(10, 200);
 }
 
-void VisualShaderEditor::update_toggle_scripts_button() {
-	ERR_FAIL_NULL(toggle_scripts_list);
-	bool forward = toggle_scripts_list->is_visible() == is_layout_rtl();
-	toggle_scripts_button->set_button_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
-	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
+void VisualShaderEditor::update_toggle_files_button() {
+	ERR_FAIL_NULL(toggle_files_list);
+	bool forward = toggle_files_list->is_visible() == is_layout_rtl();
+	toggle_files_button->set_button_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
+	toggle_files_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Files Panel"), ED_GET_SHORTCUT("script_editor/toggle_files_panel")->get_as_text()));
 }
 
 void VisualShaderEditor::_draw_color_over_button(Object *p_obj, Color p_color) {
@@ -3314,7 +3315,7 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 			popup_pref_size.width = 180;
 			break;
 	}
-	property_editor_popup->set_min_size(popup_pref_size);
+	property_editor_popup->set_min_size(popup_pref_size * EDSCALE);
 
 	property_editor->set_object_and_property(edited_property_holder.ptr(), "edited_property");
 	property_editor->update_property();
@@ -5268,11 +5269,11 @@ void VisualShaderEditor::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				_update_graph();
 			}
-			update_toggle_scripts_button();
+			update_toggle_files_button();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			update_toggle_scripts_button();
+			update_toggle_files_button();
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -6121,6 +6122,10 @@ void VisualShaderEditor::_connection_menu_id_pressed(int p_idx) {
 }
 
 Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+	if (p_point == Vector2(Math::INF, Math::INF)) {
+		return Variant();
+	}
+
 	if (p_from == members) {
 		TreeItem *it = members->get_item_at_position(p_point);
 		if (!it) {
@@ -6146,6 +6151,10 @@ Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 }
 
 bool VisualShaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	if (p_point == Vector2(Math::INF, Math::INF)) {
+		return false;
+	}
+
 	if (p_from == graph) {
 		Dictionary d = p_data;
 
@@ -6161,6 +6170,10 @@ bool VisualShaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 }
 
 void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	if (p_point == Vector2(Math::INF, Math::INF)) {
+		return;
+	}
+
 	if (p_from == graph) {
 		Dictionary d = p_data;
 
@@ -6377,13 +6390,13 @@ void VisualShaderEditor::_show_shader_preview() {
 }
 
 void VisualShaderEditor::set_toggle_list_control(Control *p_control) {
-	toggle_scripts_list = p_control;
+	toggle_files_list = p_control;
 }
 
-void VisualShaderEditor::_toggle_scripts_pressed() {
-	ERR_FAIL_NULL(toggle_scripts_list);
-	toggle_scripts_list->set_visible(!toggle_scripts_list->is_visible());
-	update_toggle_scripts_button();
+void VisualShaderEditor::_toggle_files_pressed() {
+	ERR_FAIL_NULL(toggle_files_list);
+	toggle_files_list->set_visible(!toggle_files_list->is_visible());
+	update_toggle_files_button();
 }
 
 void VisualShaderEditor::_bind_methods() {
@@ -6641,11 +6654,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar->add_child(separator);
 	toolbar->move_child(separator, 0);
 
-	toggle_scripts_button = memnew(Button);
-	toggle_scripts_button->set_flat(true);
-	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_toggle_scripts_pressed));
-	toolbar->add_child(toggle_scripts_button);
-	toolbar->move_child(toggle_scripts_button, 0);
+	toggle_files_button = memnew(Button);
+	toggle_files_button->set_flat(true);
+	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_toggle_files_pressed));
+	toolbar->add_child(toggle_files_button);
+	toolbar->move_child(toggle_files_button, 0);
 
 	///////////////////////////////////////
 	// CODE PREVIEW
@@ -6746,6 +6759,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_tools = memnew(MenuButton);
 	filter_hbox->add_child(preview_tools);
 	preview_tools->set_tooltip_text(TTR("Options"));
+	preview_tools->set_accessibility_name(TTRC("Options"));
 	preview_tools->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_preview_tools_menu_option));
 	preview_tools->get_popup()->add_item(TTR("Copy Parameters From Material"), COPY_PARAMS_FROM_MATERIAL);
 	preview_tools->get_popup()->add_item(TTR("Paste Parameters To Material"), PASTE_PARAMS_TO_MATERIAL);
@@ -6795,10 +6809,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	node_filter->connect(SceneStringName(gui_input), callable_mp(this, &VisualShaderEditor::_sbox_input));
 	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	node_filter->set_placeholder(TTR("Search"));
+	node_filter->set_accessibility_name(TTRC("Search"));
 
 	tools = memnew(MenuButton);
 	filter_hb->add_child(tools);
 	tools->set_tooltip_text(TTR("Options"));
+	tools->set_accessibility_name(TTRC("Options"));
 	tools->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_tools_menu_option));
 	tools->get_popup()->add_item(TTR("Expand All"), EXPAND_ALL);
 	tools->get_popup()->add_item(TTR("Collapse All"), COLLAPSE_ALL);
@@ -6874,6 +6890,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		varying_type->add_item("Vector4");
 		varying_type->add_item("Boolean");
 		varying_type->add_item("Transform");
+		varying_type->set_accessibility_name(TTRC("Varying Type"));
 		varying_type->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_varying_type_changed));
 
 		varying_name = memnew(LineEdit);
@@ -6887,6 +6904,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		hb->add_child(varying_mode);
 		varying_mode->add_item("Vertex -> [Fragment, Light]");
 		varying_mode->add_item("Fragment -> Light");
+		varying_mode->set_accessibility_name(TTRC("Varying Mode"));
 		varying_mode->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_varying_mode_changed));
 
 		varying_error_label = memnew(Label);

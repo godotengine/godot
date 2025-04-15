@@ -569,6 +569,8 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options = memnew(MenuButton);
 	options->set_text(TTR("Mesh"));
 	options->set_switch_on_hover(true);
+	options->set_flat(false);
+	options->set_theme_type_variation("FlatMenuButton");
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->get_popup()->add_item(TTR("Create Collision Shape..."), MENU_OPTION_CREATE_COLLISION_SHAPE);
@@ -593,6 +595,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	//outline_dialog->set_child_rect(outline_dialog_vbc);
 
 	outline_size = memnew(SpinBox);
+	outline_size->set_accessibility_name(TTRC("Outline Size"));
 	outline_size->set_min(0.001);
 	outline_size->set_max(1024);
 	outline_size->set_step(0.001);
@@ -610,10 +613,11 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	shape_dialog->add_child(shape_dialog_vbc);
 
 	Label *l = memnew(Label);
-	l->set_text(TTR("Collision Shape placement"));
+	l->set_text(TTR("Collision Shape Placement"));
 	shape_dialog_vbc->add_child(l);
 
 	shape_placement = memnew(OptionButton);
+	shape_placement->set_accessibility_name(TTRC("Collision Shape Placement"));
 	shape_placement->set_h_size_flags(SIZE_EXPAND_FILL);
 	shape_placement->add_item(TTR("Sibling"), SHAPE_PLACEMENT_SIBLING);
 	shape_placement->set_item_tooltip(-1, TTR("Creates collision shapes as Sibling."));
@@ -626,6 +630,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	shape_dialog_vbc->add_child(l);
 
 	shape_type = memnew(OptionButton);
+	shape_type->set_accessibility_name(TTRC("Collision Shape Type"));
 	shape_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	shape_type->add_item(TTR("Trimesh"), SHAPE_TYPE_TRIMESH);
 	shape_type->set_item_tooltip(-1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));

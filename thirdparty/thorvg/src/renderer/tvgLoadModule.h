@@ -23,6 +23,8 @@
 #ifndef _TVG_LOAD_MODULE_H_
 #define _TVG_LOAD_MODULE_H_
 
+#include <atomic>
+#include "tvgCommon.h"
 #include "tvgRender.h"
 #include "tvgInlist.h"
 
@@ -38,7 +40,7 @@ struct LoadModule
     };
 
     FileType type;                                  //current loader file type
-    uint16_t sharing = 0;                           //reference count
+    atomic<uint16_t> sharing{};                     //reference count
     bool readied = false;                           //read done already.
     bool pathcache = false;                         //cached by path
 
@@ -77,7 +79,7 @@ struct LoadModule
 
 struct ImageLoader : LoadModule
 {
-    static ColorSpace cs;                           //desired value
+    static atomic<ColorSpace> cs;                   //desired value
 
     float w = 0, h = 0;                             //default image size
     RenderSurface surface;
@@ -95,14 +97,21 @@ struct ImageLoader : LoadModule
 };
 
 
+struct FontMetrics
+{
+    //TODO: add necessary metrics
+    float minw;
+};
+
+
 struct FontLoader : LoadModule
 {
-    float scale = 1.0f;
-
     FontLoader(FileType type) : LoadModule(type) {}
 
-    virtual bool request(Shape* shape, char* text) = 0;
-    virtual bool transform(Paint* paint, float fontSize, bool italic) = 0;
+    using LoadModule::read;
+
+    virtual bool read(Shape* shape, char* text, FontMetrics& out) = 0;
+    virtual float transform(Paint* paint, FontMetrics& mertrics, float fontSize, bool italic) = 0;
 };
 
 #endif //_TVG_LOAD_MODULE_H_

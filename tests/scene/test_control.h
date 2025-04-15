@@ -52,9 +52,9 @@ TEST_CASE("[SceneTree][Control] Transforms") {
 		CHECK_EQ(test_node->get_global_transform(), Transform2D(0, Size2(4, 4), 0, Vector2(2, 2)));
 		test_node->set_scale(Vector2(1, 1));
 		test_node->set_rotation_degrees(90);
-		CHECK_EQ(test_node->get_global_transform(), Transform2D(Math_PI / 2, Vector2(2, 2)));
+		CHECK_EQ(test_node->get_global_transform(), Transform2D(Math::PI / 2, Vector2(2, 2)));
 		test_node->set_pivot_offset(Vector2(1, 0));
-		CHECK_EQ(test_node->get_global_transform(), Transform2D(Math_PI / 2, Vector2(3, 1)));
+		CHECK_EQ(test_node->get_global_transform(), Transform2D(Math::PI / 2, Vector2(3, 1)));
 
 		memdelete(test_child);
 		memdelete(test_node);
@@ -142,8 +142,10 @@ TEST_CASE("[SceneTree][Control] Focus") {
 }
 
 TEST_CASE("[SceneTree][Control] Find next/prev valid focus") {
+	Node *intermediate = memnew(Node);
 	Control *ctrl = memnew(Control);
-	SceneTree::get_singleton()->get_root()->add_child(ctrl);
+	intermediate->add_child(ctrl);
+	SceneTree::get_singleton()->get_root()->add_child(intermediate);
 
 	SUBCASE("[SceneTree][Control] In FOCUS_CLICK mode") {
 		ctrl->set_focus_mode(Control::FocusMode::FOCUS_CLICK);
@@ -162,7 +164,7 @@ TEST_CASE("[SceneTree][Control] Find next/prev valid focus") {
 
 		SUBCASE("[SceneTree][Control] Has a sibling control but the parent node is not a control") {
 			Control *other_ctrl = memnew(Control);
-			SceneTree::get_singleton()->get_root()->add_child(other_ctrl);
+			intermediate->add_child(other_ctrl);
 
 			SUBCASE("[SceneTree][Control] Has a sibling control with FOCUS_ALL") {
 				other_ctrl->set_focus_mode(Control::FocusMode::FOCUS_ALL);
@@ -897,6 +899,7 @@ TEST_CASE("[SceneTree][Control] Find next/prev valid focus") {
 	}
 
 	memdelete(ctrl);
+	memdelete(intermediate);
 }
 
 TEST_CASE("[SceneTree][Control] Anchoring") {
@@ -987,6 +990,38 @@ TEST_CASE("[SceneTree][Control] Anchoring") {
 	}
 
 	memdelete(test_child);
+	memdelete(test_control);
+}
+
+TEST_CASE("[SceneTree][Control] Set position does not cause size side-effects") {
+	Control *test_control = memnew(Control);
+	test_control->set_size(Size2(1, 1));
+	test_control->set_custom_minimum_size(Size2(2, 2));
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(test_control);
+
+	SUBCASE("Shrinks after setting position and smaller custom minimum size (without keeping offsets)") {
+		test_control->set_position(Point2(10, 10), false);
+		SceneTree::get_singleton()->process(0);
+
+		test_control->set_custom_minimum_size(Size2(0, 0));
+		SceneTree::get_singleton()->process(0);
+		CHECK_MESSAGE(
+				test_control->get_size().is_equal_approx(Vector2(1, 1)),
+				"Should shrink to original size after setting a smaller custom minimum size.");
+	}
+
+	SUBCASE("Shrinks after setting position and smaller custom minimum size (while keeping offsets)") {
+		test_control->set_position(Point2(10, 10), true);
+		SceneTree::get_singleton()->process(0);
+
+		test_control->set_custom_minimum_size(Size2(0, 0));
+		SceneTree::get_singleton()->process(0);
+		CHECK_MESSAGE(
+				test_control->get_size().is_equal_approx(Vector2(1, 1)),
+				"Should shrink to original size after setting a smaller custom minimum size.");
+	}
+
 	memdelete(test_control);
 }
 

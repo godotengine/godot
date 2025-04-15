@@ -278,6 +278,8 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("MeshLibrary"));
 	menu->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MeshLibrary"), EditorStringName(EditorIcons)));
+	menu->set_flat(false);
+	menu->set_theme_type_variation("FlatMenuButton");
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
 	menu->get_popup()->add_separator();

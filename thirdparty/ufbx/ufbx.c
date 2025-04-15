@@ -270,6 +270,7 @@
 	#define ufbx_fmax ufbxi_math_fn(fmax)
 	#define ufbx_nextafter ufbxi_math_fn(nextafter)
 	#define ufbx_rint ufbxi_math_fn(rint)
+	#define ufbx_floor ufbxi_math_fn(floor)
 	#define ufbx_ceil ufbxi_math_fn(ceil)
 	#define ufbx_isnan ufbxi_math_fn(isnan)
 #endif
@@ -296,6 +297,7 @@ extern "C" {
 	ufbx_extern_abi double ufbx_copysign(double x, double y);
 	ufbx_extern_abi double ufbx_nextafter(double x, double y);
 	ufbx_extern_abi double ufbx_rint(double x);
+	ufbx_extern_abi double ufbx_floor(double x);
 	ufbx_extern_abi double ufbx_ceil(double x);
 	ufbx_extern_abi int ufbx_isnan(double x);
 #endif
@@ -531,6 +533,10 @@ extern "C" {
 			#pragma GCC diagnostic ignored "-Wc90-c99-compat"
 			#pragma GCC diagnostic ignored "-Wc99-c11-compat"
 		#endif
+	#endif
+	// MSC isnan() definition triggers this error on MinGW GCC
+	#if defined(__MINGW32__)
+		#pragma GCC diagnostic ignored "-Wfloat-conversion"
 	#endif
 #endif
 
@@ -830,7 +836,7 @@ ufbx_static_assert(sizeof_f64, sizeof(double) == 8);
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 17, 1)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 18, 0)
 ufbx_abi_data_def const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -1656,7 +1662,7 @@ static ufbxi_noinline double ufbxi_parse_double(const char *str, size_t max_leng
 	}
 }
 
-static ufbxi_noinline uint32_t ufbxi_parse_double_init_flags()
+static ufbxi_noinline uint32_t ufbxi_parse_double_init_flags(void)
 {
 	// We require evaluation in double precision, either for doubles (0) or always (1)
 	// and rounding to nearest, which we can check for with `1 + eps == 1 - eps`.
@@ -5198,6 +5204,7 @@ static const char ufbxi_Edges[] = "Edges";
 static const char ufbxi_EmissiveColor[] = "EmissiveColor";
 static const char ufbxi_Entry[] = "Entry";
 static const char ufbxi_FBXHeaderExtension[] = "FBXHeaderExtension";
+static const char ufbxi_FBXHeaderVersion[] = "FBXHeaderVersion";
 static const char ufbxi_FBXVersion[] = "FBXVersion";
 static const char ufbxi_FKEffector[] = "FKEffector";
 static const char ufbxi_FarPlane[] = "FarPlane";
@@ -5307,6 +5314,7 @@ static const char ufbxi_OriginalUnitScaleFactor[] = "OriginalUnitScaleFactor";
 static const char ufbxi_OriginalUpAxis[] = "OriginalUpAxis";
 static const char ufbxi_OriginalUpAxisSign[] = "OriginalUpAxisSign";
 static const char ufbxi_OrthoZoom[] = "OrthoZoom";
+static const char ufbxi_OtherFlags[] = "OtherFlags";
 static const char ufbxi_OuterAngle[] = "OuterAngle";
 static const char ufbxi_PO[] = "PO\0";
 static const char ufbxi_PP[] = "PP\0";
@@ -5317,7 +5325,9 @@ static const char ufbxi_PolygonIndexArray[] = "PolygonIndexArray";
 static const char ufbxi_PolygonVertexIndex[] = "PolygonVertexIndex";
 static const char ufbxi_PoseNode[] = "PoseNode";
 static const char ufbxi_Pose[] = "Pose";
+static const char ufbxi_Post_Extrapolation[] = "Post-Extrapolation";
 static const char ufbxi_PostRotation[] = "PostRotation";
+static const char ufbxi_Pre_Extrapolation[] = "Pre-Extrapolation";
 static const char ufbxi_PreRotation[] = "PreRotation";
 static const char ufbxi_PreviewDivisionLevels[] = "PreviewDivisionLevels";
 static const char ufbxi_Properties60[] = "Properties60";
@@ -5330,6 +5340,7 @@ static const char ufbxi_ReferenceTime[] = "ReferenceTime";
 static const char ufbxi_RelativeFileName[] = "RelativeFileName";
 static const char ufbxi_RelativeFilename[] = "RelativeFilename";
 static const char ufbxi_RenderDivisionLevels[] = "RenderDivisionLevels";
+static const char ufbxi_Repetition[] = "Repetition";
 static const char ufbxi_RightCamera[] = "RightCamera";
 static const char ufbxi_RootNode[] = "RootNode";
 static const char ufbxi_Root[] = "Root";
@@ -5360,6 +5371,7 @@ static const char ufbxi_SpecularColor[] = "SpecularColor";
 static const char ufbxi_Step[] = "Step";
 static const char ufbxi_SubDeformer[] = "SubDeformer";
 static const char ufbxi_T[] = "T\0\0";
+static const char ufbxi_TCDefinition[] = "TCDefinition";
 static const char ufbxi_Take[] = "Take";
 static const char ufbxi_Takes[] = "Takes";
 static const char ufbxi_Tangents[] = "Tangents";
@@ -5493,6 +5505,7 @@ static const ufbx_string ufbxi_strings[] = {
 	{ ufbxi_EmissiveColor, 13 },
 	{ ufbxi_Entry, 5 },
 	{ ufbxi_FBXHeaderExtension, 18 },
+	{ ufbxi_FBXHeaderVersion, 16 },
 	{ ufbxi_FBXVersion, 10 },
 	{ ufbxi_FKEffector, 10 },
 	{ ufbxi_FarPlane, 8 },
@@ -5602,6 +5615,7 @@ static const ufbx_string ufbxi_strings[] = {
 	{ ufbxi_OriginalUpAxis, 14 },
 	{ ufbxi_OriginalUpAxisSign, 18 },
 	{ ufbxi_OrthoZoom, 9 },
+	{ ufbxi_OtherFlags, 10 },
 	{ ufbxi_OuterAngle, 10 },
 	{ ufbxi_PO, 2 },
 	{ ufbxi_PP, 2 },
@@ -5612,7 +5626,9 @@ static const ufbx_string ufbxi_strings[] = {
 	{ ufbxi_PolygonVertexIndex, 18 },
 	{ ufbxi_Pose, 4 },
 	{ ufbxi_PoseNode, 8 },
+	{ ufbxi_Post_Extrapolation, 18 },
 	{ ufbxi_PostRotation, 12 },
+	{ ufbxi_Pre_Extrapolation, 17 },
 	{ ufbxi_PreRotation, 11 },
 	{ ufbxi_PreviewDivisionLevels, 21 },
 	{ ufbxi_Properties60, 12 },
@@ -5625,6 +5641,7 @@ static const ufbx_string ufbxi_strings[] = {
 	{ ufbxi_RelativeFileName, 16 },
 	{ ufbxi_RelativeFilename, 16 },
 	{ ufbxi_RenderDivisionLevels, 20 },
+	{ ufbxi_Repetition, 10 },
 	{ ufbxi_RightCamera, 11 },
 	{ ufbxi_Root, 4 },
 	{ ufbxi_RootNode, 8 },
@@ -5655,6 +5672,7 @@ static const ufbx_string ufbxi_strings[] = {
 	{ ufbxi_Step, 4 },
 	{ ufbxi_SubDeformer, 11 },
 	{ ufbxi_T, 1 },
+	{ ufbxi_TCDefinition, 12 },
 	{ ufbxi_Take, 4 },
 	{ ufbxi_Takes, 5 },
 	{ ufbxi_Tangents, 8 },
@@ -7506,11 +7524,16 @@ static ufbxi_noinline ufbxi_node *ufbxi_find_child(ufbxi_node *node, const char 
 	return NULL;
 }
 
+// Retrieve the type of a given value
+ufbxi_forceinline static ufbxi_value_type ufbxi_get_val_type(ufbxi_node *node, size_t ix)
+{
+	return (ufbxi_value_type)((node->value_type_mask >> (ix*2)) & 0x3);
+}
+
 // Retrieve values from nodes with type codes:
 // Any: '_' (ignore)
 // NUMBER: 'I' int32_t 'L' int64_t 'F' float 'D' double 'R' ufbxi_real 'B' bool 'Z' size_t
 // STRING: 'S' ufbx_string 'C' const char* (checked) 's' ufbx_string 'c' const char * (unchecked) 'b' ufbx_blob
-
 ufbxi_nodiscard ufbxi_forceinline static int ufbxi_get_val_at(ufbxi_node *node, size_t ix, char fmt, void *v)
 {
 	ufbxi_dev_assert(ix < UFBXI_MAX_NON_ARRAY_VALUES);
@@ -9542,7 +9565,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_ascii_next_token(ufbxi_context *
 	if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_') {
 		token->type = UFBXI_ASCII_BARE_WORD;
 		while ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
-			|| (c >= '0' && c <= '9') || c == '_') {
+			|| (c >= '0' && c <= '9') || c == '_' || c == '-') {
 			ufbxi_check(ufbxi_ascii_push_token_char(uc, token, c));
 			c = ufbxi_ascii_next(uc);
 		}
@@ -11216,6 +11239,7 @@ static const ufbxi_prop_type_name ufbxi_prop_type_names[] = {
 	{ "Integer", UFBX_PROP_INTEGER },
 	{ "int", UFBX_PROP_INTEGER },
 	{ "enum", UFBX_PROP_INTEGER },
+	{ "Enum", UFBX_PROP_INTEGER },
 	{ "Visibility", UFBX_PROP_INTEGER },
 	{ "Visibility Inheritance", UFBX_PROP_INTEGER },
 	{ "KTime", UFBX_PROP_INTEGER },
@@ -11498,7 +11522,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_init_node_prop_names(ufbxi_conte
 	return 1;
 }
 
-static bool ufbxi_is_node_property(ufbxi_context *uc, const char *name)
+static bool ufbxi_is_node_property_name(ufbxi_context *uc, const char *name)
 {
 	// You need to call `ufbxi_init_node_prop_names()` before calling this
 	ufbx_assert(uc->node_prop_set.size > 0);
@@ -11604,8 +11628,11 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_read_property(ufbxi_context *uc,
 		flags |= (uint32_t)UFBX_PROP_FLAG_VALUE_REAL << (real_ix - 1);
 	}
 
-	// Distance properties have a string unit _after_ the real value, eg. `10, "cm"`
-	if (prop->type == UFBX_PROP_DISTANCE) {
+	// Skip one value forward in case the current value is not a string, as some properties
+	// contain mixed numbers and strings. Currenltly known cases:
+	//   Lod Distance:    P: "Thresholds|Level0", "Distance", "", "",64, "cm"
+	//   User Enum:       P: "User_Enum", "Enum", "", "A+U",1, "ValueA~ValueB~ValueC"
+	if (ufbxi_get_val_type(node, val_ix) != UFBXI_VALUE_STRING) {
 		val_ix++;
 	}
 
@@ -11742,9 +11769,9 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_read_scene_info(ufbxi_context *u
 
 ufbxi_nodiscard static ufbxi_noinline int ufbxi_read_header_extension(ufbxi_context *uc)
 {
-	// TODO: Read TCDefinition and adjust timestamps
-	uc->ktime_sec = 46186158000;
-	uc->ktime_sec_double = (double)uc->ktime_sec;
+	bool has_tc_definition = false;
+	int32_t tc_definition = 0;
+	int32_t header_version = 0;
 
 	for (;;) {
 		ufbxi_node *child;
@@ -11764,11 +11791,32 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_read_header_extension(ufbxi_cont
 			}
 		}
 
+		if (child->name == ufbxi_FBXHeaderVersion) {
+			ufbxi_ignore(ufbxi_get_val1(child, "I", &header_version));
+		}
+
+		if (child->name == ufbxi_OtherFlags) {
+			if (ufbxi_find_val1(child, ufbxi_TCDefinition, "I", &tc_definition)) {
+				has_tc_definition = true;
+			}
+		}
+
 		if (child->name == ufbxi_SceneInfo) {
 			ufbxi_check(ufbxi_read_scene_info(uc, child));
 		}
 
 	}
+
+	// FBX 8000 will change the KTime units and the new units are opt-in currently via `TCDefinition`.
+	// `TCDefinition` seems be accounted in all versions, as long as `FBXHeaderVersion >= 1004`.
+	// The old KTime units are specified as the value `127` and all other values seem to use the new definition.
+	bool use_v7_ktime = uc->version < 8000;
+	if (header_version >= 1004 && has_tc_definition) {
+		use_v7_ktime = tc_definition == 127;
+	}
+
+	uc->ktime_sec = use_v7_ktime ? 46186158000 : 141120000;
+	uc->ktime_sec_double = (double)uc->ktime_sec;
 
 	return 1;
 }
@@ -13935,10 +13983,43 @@ static void ufbxi_solve_tcb(float *p_slope_left, float *p_slope_right, double te
 	*p_slope_right = (float)(d10 * slope_left + d11 * slope_right);
 }
 
+ufbxi_noinline static void ufbxi_read_extrapolation(ufbx_extrapolation *p_extrapolation, ufbxi_node *node, const char *name)
+{
+	ufbxi_node *child = ufbxi_find_child(node, name);
+	ufbx_extrapolation_mode mode = UFBX_EXTRAPOLATION_CONSTANT;
+	int32_t repeat_count = -1;
+
+	if (child) {
+		int32_t mode_ch;
+		if (ufbxi_find_val1(child, ufbxi_Type, "I", &mode_ch)) {
+
+			switch (mode_ch) {
+			case 'A': mode = UFBX_EXTRAPOLATION_REPEAT_RELATIVE; break;
+			case 'C': mode = UFBX_EXTRAPOLATION_CONSTANT; break;
+			case 'K': mode = UFBX_EXTRAPOLATION_SLOPE; break;
+			case 'M': mode = UFBX_EXTRAPOLATION_MIRROR; break;
+			case 'R': mode = UFBX_EXTRAPOLATION_REPEAT; break;
+			default: /* Unknown */ break;
+			}
+			if (ufbxi_find_val1(child, ufbxi_Repetition, "I", &repeat_count)) {
+				if (repeat_count < 0) {
+					repeat_count = -1;
+				}
+			}
+		}
+	}
+
+	p_extrapolation->mode = mode;
+	p_extrapolation->repeat_count = repeat_count;
+}
+
 ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_animation_curve(ufbxi_context *uc, ufbxi_node *node, ufbxi_element_info *info)
 {
 	ufbx_anim_curve *curve = ufbxi_push_element(uc, info, ufbx_anim_curve, UFBX_ELEMENT_ANIM_CURVE);
 	ufbxi_check(curve);
+
+	ufbxi_read_extrapolation(&curve->pre_extrapolation, node, ufbxi_Pre_Extrapolation);
+	ufbxi_read_extrapolation(&curve->post_extrapolation, node, ufbxi_Post_Extrapolation);
 
 	if (uc->opts.ignore_animation) return 1;
 
@@ -14537,27 +14618,26 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_synthetic_attribute(ufbxi_c
 
 	// 6x00: Link the node to the node attribute so property connections can be
 	// redirected from connections if necessary.
-	if (uc->version < 7000) {
-		ufbxi_check(ufbxi_insert_fbx_attr(uc, info->fbx_id, attrib_info.fbx_id));
+	ufbxi_check(ufbxi_insert_fbx_attr(uc, info->fbx_id, attrib_info.fbx_id));
 
-		// Split properties between the node and the attribute
-		ufbx_prop *ps = info->props.props.data;
-		size_t dst = 0, src = 0, end = info->props.props.count;
-		while (src < end) {
-			if (!ufbxi_is_node_property(uc, ps[src].name.data)) {
-				ufbxi_check(ufbxi_push_copy(&uc->tmp_stack, ufbx_prop, 1, &ps[src]));
-				src++;
-			} else if (dst != src) {
-				ps[dst++] = ps[src++];
-			} else {
-				dst++; src++;
-			}
+	// Split properties between the node and the attribute.
+	// Consider all user properties as node properties.
+	ufbx_prop *ps = info->props.props.data;
+	size_t dst = 0, src = 0, end = info->props.props.count;
+	while (src < end) {
+		if (!ufbxi_is_node_property_name(uc, ps[src].name.data) && (ps[src].flags & UFBX_PROP_FLAG_USER_DEFINED) == 0) {
+			ufbxi_check(ufbxi_push_copy(&uc->tmp_stack, ufbx_prop, 1, &ps[src]));
+			src++;
+		} else if (dst != src) {
+			ps[dst++] = ps[src++];
+		} else {
+			dst++; src++;
 		}
-		attrib_info.props.props.count = end - dst;
-		attrib_info.props.props.data = ufbxi_push_pop(&uc->result, &uc->tmp_stack, ufbx_prop, attrib_info.props.props.count);
-		ufbxi_check(attrib_info.props.props.data);
-		info->props.props.count = dst;
 	}
+	attrib_info.props.props.count = end - dst;
+	attrib_info.props.props.data = ufbxi_push_pop(&uc->result, &uc->tmp_stack, ufbx_prop, attrib_info.props.props.count);
+	ufbxi_check(attrib_info.props.props.data);
+	info->props.props.count = dst;
 
 	if (sub_type == ufbxi_Mesh) {
 		ufbxi_check(ufbxi_read_mesh(uc, node, &attrib_info));
@@ -14994,6 +15074,9 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_take_anim_channel(ufbxi_con
 	ufbxi_check(curve);
 
 	ufbxi_check(ufbxi_connect_op(uc, curve_fbx_id, value_fbx_id, curve->name));
+
+	ufbxi_read_extrapolation(&curve->pre_extrapolation, node, ufbxi_Pre_Extrapolation);
+	ufbxi_read_extrapolation(&curve->post_extrapolation, node, ufbxi_Post_Extrapolation);
 
 	if (uc->opts.ignore_animation) return 1;
 
@@ -15438,6 +15521,11 @@ ufbxi_noinline static void ufbxi_setup_root_node(ufbxi_context *uc, ufbx_node *r
 		root->node_to_parent = ufbx_identity_matrix;
 	}
 	root->is_root = true;
+}
+
+static ufbxi_forceinline bool ufbxi_supports_version(uint32_t version)
+{
+	return version >= 3000 && version <= 7700;
 }
 
 ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_root(ufbxi_context *uc)
@@ -17335,6 +17423,8 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_file(ufbxi_context *uc
 			uc->obj.mtllib_relative_path.size = lib.length;
 		} else if (ufbxi_str_equal(cmd, ufbxi_str_c("usemtl"))) {
 			ufbxi_check(ufbxi_obj_parse_material(uc));
+		} else if (!uc->opts.disable_quirks && key == 0) {
+			// ZBrush exporter seems to end the files with '\0', sometimes..
 		} else {
 			ufbxi_check(ufbxi_warnf(UFBX_WARNING_UNKNOWN_OBJ_DIRECTIVE, "Unknown .obj directive, skipped line"));
 		}
@@ -18168,15 +18258,21 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_resolve_connections(ufbxi_contex
 	uc->scene.connections_src.data = ufbxi_push(&uc->result, ufbx_connection, num_connections);
 	ufbxi_check(uc->scene.connections_src.data);
 
-	// HACK: Translate property connections from node to attribute if
-	// the property name is not included in the known node properties.
+	// HACK: Translate property connections from node to attribute if the property name is not included
+	// in the known node properties and is not a property of the node.
 	if (uc->version > 0 && uc->version < 7000) {
 		ufbxi_for(ufbxi_tmp_connection, tmp_conn, tmp_connections, num_connections) {
-			if (tmp_conn->src_prop.length > 0 && !ufbxi_is_node_property(uc, tmp_conn->src_prop.data)) {
-				tmp_conn->src = ufbxi_find_attribute_fbx_id(uc, tmp_conn->src);
+			if (tmp_conn->src_prop.length > 0 && !ufbxi_is_node_property_name(uc, tmp_conn->src_prop.data)) {
+				ufbx_element *src = ufbxi_find_element_by_fbx_id(uc, tmp_conn->src);
+				if (!src || !ufbx_find_prop_len(&src->props, tmp_conn->src_prop.data, tmp_conn->src_prop.length)) {
+					tmp_conn->src = ufbxi_find_attribute_fbx_id(uc, tmp_conn->src);
+				}
 			}
-			if (tmp_conn->dst_prop.length > 0 && !ufbxi_is_node_property(uc, tmp_conn->dst_prop.data)) {
-				tmp_conn->dst = ufbxi_find_attribute_fbx_id(uc, tmp_conn->dst);
+			if (tmp_conn->dst_prop.length > 0 && !ufbxi_is_node_property_name(uc, tmp_conn->dst_prop.data)) {
+				ufbx_element *dst = ufbxi_find_element_by_fbx_id(uc, tmp_conn->dst);
+				if (!dst || !ufbx_find_prop_len(&dst->props, tmp_conn->dst_prop.data, tmp_conn->dst_prop.length)) {
+					tmp_conn->dst = ufbxi_find_attribute_fbx_id(uc, tmp_conn->dst);
+				}
 			}
 		}
 	}
@@ -18882,6 +18978,8 @@ typedef enum {
 	UFBXI_SHADER_MAPPING_DEFAULT_W_1 = 0x1,
 	// Widen values to RGB if only a single value is present.
 	UFBXI_SHADER_MAPPING_WIDEN_TO_RGB = 0x2,
+	// Multiply the existing value.
+	UFBXI_SHADER_MAPPING_MULTIPLY_VALUE = 0x4,
 } ufbxi_shader_mapping_flag;
 
 typedef enum {
@@ -19187,6 +19285,56 @@ static const ufbxi_shader_mapping ufbxi_gltf_material_pbr_mapping[] = {
 	{ UFBX_MATERIAL_PBR_SPECULAR_IOR, 0, 0, ufbxi_mat_string("extension|indexOfRefraction") },
 };
 
+static const ufbxi_shader_mapping ufbxi_openpbr_material_pbr_mapping[] = {
+	{ UFBX_MATERIAL_PBR_BASE_FACTOR, 0, 0, ufbxi_mat_string("base_weight") },
+	{ UFBX_MATERIAL_PBR_BASE_COLOR, UFBXI_SHADER_MAPPING_DEFAULT_W_1, 0, ufbxi_mat_string("base_color") },
+	{ UFBX_MATERIAL_PBR_ROUGHNESS, 0, 0, ufbxi_mat_string("specular_roughness") },
+	{ UFBX_MATERIAL_PBR_DIFFUSE_ROUGHNESS, 0, 0, ufbxi_mat_string("base_diffuse_roughness") },
+	{ UFBX_MATERIAL_PBR_METALNESS, 0, 0, ufbxi_mat_string("base_metalness") },
+	{ UFBX_MATERIAL_PBR_SPECULAR_FACTOR, 0, 0, ufbxi_mat_string("specular_weight") },
+	{ UFBX_MATERIAL_PBR_SPECULAR_COLOR, UFBXI_SHADER_MAPPING_DEFAULT_W_1, 0, ufbxi_mat_string("specular_color") },
+	{ UFBX_MATERIAL_PBR_SPECULAR_ANISOTROPY, 0, 0, ufbxi_mat_string("specular_roughness_anisotropy") },
+	{ UFBX_MATERIAL_PBR_SPECULAR_IOR, 0, 0, ufbxi_mat_string("specular_ior") },
+	{ UFBX_MATERIAL_PBR_TRANSMISSION_FACTOR, 0, 0, ufbxi_mat_string("transmission_weight") },
+	{ UFBX_MATERIAL_PBR_TRANSMISSION_COLOR, UFBXI_SHADER_MAPPING_DEFAULT_W_1, 0, ufbxi_mat_string("transmission_color") },
+	{ UFBX_MATERIAL_PBR_TRANSMISSION_DEPTH, 0, 0, ufbxi_mat_string("transmission_depth") },
+	{ UFBX_MATERIAL_PBR_TRANSMISSION_SCATTER, UFBXI_SHADER_MAPPING_WIDEN_TO_RGB, 0, ufbxi_mat_string("transmission_scatter") },
+	{ UFBX_MATERIAL_PBR_TRANSMISSION_SCATTER_ANISOTROPY, 0, 0, ufbxi_mat_string("transmission_scatter_anisotropy") },
+	{ UFBX_MATERIAL_PBR_TRANSMISSION_DISPERSION, 0, 0, ufbxi_mat_string("transmission_dispersion_scale") },
+	{ UFBX_MATERIAL_PBR_SUBSURFACE_FACTOR, 0, 0, ufbxi_mat_string("subsurface_weight") },
+	{ UFBX_MATERIAL_PBR_SUBSURFACE_COLOR, UFBXI_SHADER_MAPPING_DEFAULT_W_1, 0, ufbxi_mat_string("subsurface_color") },
+	{ UFBX_MATERIAL_PBR_SUBSURFACE_RADIUS, UFBXI_SHADER_MAPPING_WIDEN_TO_RGB, 0, ufbxi_mat_string("subsurface_radius_scale") },
+	{ UFBX_MATERIAL_PBR_SUBSURFACE_SCALE, 0, 0, ufbxi_mat_string("subsurface_radius") },
+	{ UFBX_MATERIAL_PBR_SUBSURFACE_ANISOTROPY, 0, 0, ufbxi_mat_string("subsurface_scatter_anisotropy") },
+	{ UFBX_MATERIAL_PBR_COAT_FACTOR, 0, 0, ufbxi_mat_string("coat_weight") },
+	{ UFBX_MATERIAL_PBR_COAT_COLOR, UFBXI_SHADER_MAPPING_DEFAULT_W_1, 0, ufbxi_mat_string("coat_color") },
+	{ UFBX_MATERIAL_PBR_COAT_ROUGHNESS, 0, 0, ufbxi_mat_string("coat_roughness") },
+	{ UFBX_MATERIAL_PBR_COAT_ANISOTROPY, 0, 0, ufbxi_mat_string("coat_roughness_anisotropy") },
+	{ UFBX_MATERIAL_PBR_COAT_IOR, 0, 0, ufbxi_mat_string("coat_ior") },
+	{ UFBX_MATERIAL_PBR_COAT_NORMAL, 0, 0, ufbxi_mat_string("coat_normal_map") },
+	{ UFBX_MATERIAL_PBR_SHEEN_FACTOR, 0, 0, ufbxi_mat_string("fuzz_weight") },
+	{ UFBX_MATERIAL_PBR_SHEEN_COLOR, UFBXI_SHADER_MAPPING_DEFAULT_W_1, 0, ufbxi_mat_string("fuzz_color") },
+	{ UFBX_MATERIAL_PBR_SHEEN_ROUGHNESS, 0, 0, ufbxi_mat_string("fuzz_roughness") },
+	{ UFBX_MATERIAL_PBR_EMISSION_FACTOR, 0, 0, ufbxi_mat_string("emission_weight") },
+	{ UFBX_MATERIAL_PBR_EMISSION_FACTOR, UFBXI_SHADER_MAPPING_MULTIPLY_VALUE, 0, ufbxi_mat_string("emission_luminance") },
+	{ UFBX_MATERIAL_PBR_EMISSION_COLOR, UFBXI_SHADER_MAPPING_DEFAULT_W_1, 0, ufbxi_mat_string("emission_color") },
+	{ UFBX_MATERIAL_PBR_THIN_FILM_FACTOR, 0, 0, ufbxi_mat_string("thin_film_weight") },
+	{ UFBX_MATERIAL_PBR_THIN_FILM_THICKNESS, 0, 0, ufbxi_mat_string("thin_film_thickness") },
+	{ UFBX_MATERIAL_PBR_THIN_FILM_IOR, 0, 0, ufbxi_mat_string("thin_film_ior") },
+	{ UFBX_MATERIAL_PBR_NORMAL_MAP, 0, 0, ufbxi_mat_string("bump") },
+	{ UFBX_MATERIAL_PBR_NORMAL_MAP, 0, 0, ufbxi_mat_string("bump_map_amt") },
+	{ UFBX_MATERIAL_PBR_DISPLACEMENT_MAP, 0, 0, ufbxi_mat_string("displacement") },
+	{ UFBX_MATERIAL_PBR_DISPLACEMENT_MAP, 0, 0, ufbxi_mat_string("displacement_map_amt") },
+	{ UFBX_MATERIAL_PBR_COAT_NORMAL, 0, 0, ufbxi_mat_string("coat_bump") },
+	{ UFBX_MATERIAL_PBR_COAT_NORMAL, 0, 0, ufbxi_mat_string("coat_bump_map_amt") },
+	{ UFBX_MATERIAL_PBR_TANGENT_MAP, 0, 0, ufbxi_mat_string("geometry_tangent_map") },
+	{ UFBX_MATERIAL_PBR_OPACITY, UFBXI_SHADER_MAPPING_WIDEN_TO_RGB, 0, ufbxi_mat_string("geometry_opacity") },
+};
+
+static const ufbxi_shader_mapping ufbxi_openpbr_material_features[] = {
+	{ UFBX_MATERIAL_FEATURE_THIN_WALLED, 0, 0, ufbxi_mat_string("geometry_thin_walled") },
+};
+
 static const ufbxi_shader_mapping ufbxi_3ds_max_pbr_metal_rough_pbr_mapping[] = {
 	{ UFBX_MATERIAL_PBR_BASE_COLOR, UFBXI_SHADER_MAPPING_DEFAULT_W_1, 0, ufbxi_mat_string("base_color") },
 	{ UFBX_MATERIAL_PBR_BASE_COLOR, UFBXI_SHADER_MAPPING_DEFAULT_W_1, 0, ufbxi_mat_string("baseColor") },
@@ -19365,6 +19513,14 @@ static const ufbxi_shader_mapping_list ufbxi_shader_pbr_mappings[] = {
 		{ NULL, 0 }, ufbxi_string_literal("Map"), // texture_prefix/suffix
 		{ NULL, 0 }, { NULL, 0 }, // texture_enabled_prefix/suffix
 	},
+	{ // UFBX_SHADER_OPENPBR_MATERIAL
+		ufbxi_openpbr_material_pbr_mapping, ufbxi_arraycount(ufbxi_openpbr_material_pbr_mapping),
+		ufbxi_openpbr_material_features, ufbxi_arraycount(ufbxi_openpbr_material_features),
+		(uint32_t)(UFBXI_MAT_PBR | UFBXI_MAT_METALNESS | UFBXI_MAT_DIFFUSE | UFBXI_MAT_SPECULAR | UFBXI_MAT_COAT
+			| UFBXI_MAT_SHEEN | UFBXI_MAT_TRANSMISSION | UFBXI_MAT_OPACITY | UFBXI_MAT_IOR | UFBXI_MAT_DIFFUSE_ROUGHNESS),
+		{ NULL, 0 }, ufbxi_string_literal("_map"),    // texture_prefix/suffix
+		{ NULL, 0 }, ufbxi_string_literal("_map_on"), // texture_enabled_prefix/suffix
+	},
 	{ // UFBX_SHADER_SHADERFX_GRAPH
 		ufbxi_shaderfx_graph_pbr_mapping, ufbxi_arraycount(ufbxi_shaderfx_graph_pbr_mapping),
 		NULL, 0,
@@ -19468,8 +19624,13 @@ ufbxi_noinline static void ufbxi_fetch_mapping_maps(ufbx_material *material, ufb
 
 			if (flags & UFBXI_MAPPING_FETCH_VALUE) {
 				if (prop && prop->type != UFBX_PROP_REFERENCE) {
-					map->value_vec4 = prop->value_vec4;
-					map->value_int = prop->value_int;
+					if ((mapping->flags & UFBXI_SHADER_MAPPING_MULTIPLY_VALUE) != 0) {
+						map->value_vec4.x *= prop->value_vec4.x;
+						map->value_int = ufbxi_f64_to_i64(map->value_vec4.x);
+					} else {
+						map->value_vec4 = prop->value_vec4;
+						map->value_int = prop->value_int;
+					}
 					map->has_value = true;
 					if (mapping->transform) {
 						ufbxi_mat_transform_fn transform_fn = ufbxi_mat_transform_fns[mapping->transform];
@@ -19611,6 +19772,7 @@ ufbxi_noinline static void ufbxi_fetch_maps(ufbx_scene *scene, ufbx_material *ma
 	ufbxi_update_factor(&material->pbr.specular_factor, &material->pbr.specular_color);
 	ufbxi_update_factor(&material->pbr.emission_factor, &material->pbr.emission_color);
 	ufbxi_update_factor(&material->pbr.sheen_factor, &material->pbr.sheen_color);
+	ufbxi_update_factor(&material->pbr.thin_film_factor, &material->pbr.thin_film_thickness);
 	ufbxi_update_factor(&material->pbr.transmission_factor, &material->pbr.transmission_color);
 
 	// Patch transmission roughness if only extra roughness is defined
@@ -19909,6 +20071,7 @@ static const ufbxi_file_shader ufbxi_file_shaders[] = {
 	{ UINT64_C(0x7e73161fad53b12a), "ai_image", "filename" },
 	{ 0, "OSLBitmap", ufbxi_Filename },
 	{ 0, "OSLBitmap2", ufbxi_Filename },
+	{ 0, "OSLBitmap3", ufbxi_Filename },
 	{ 0, "UberBitmap", ufbxi_Filename },
 	{ 0, "UberBitmap2", ufbxi_Filename },
 };
@@ -21697,6 +21860,14 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_finalize_scene(ufbxi_context *uc
 		}
 	}
 
+	ufbxi_for_ptr_list(ufbx_anim_curve, p_curve, uc->scene.anim_curves) {
+		ufbx_anim_curve *curve = *p_curve;
+		if (curve->keyframes.count > 0) {
+			curve->min_time = curve->keyframes.data[0].time;
+			curve->max_time = curve->keyframes.data[curve->keyframes.count - 1].time;
+		}
+	}
+
 	ufbxi_for_ptr_list(ufbx_shader, p_shader, uc->scene.shaders) {
 		ufbx_shader *shader = *p_shader;
 		ufbxi_check(ufbxi_fetch_dst_elements(uc, &shader->bindings, &shader->element, false, false, NULL, UFBX_ELEMENT_SHADER_BINDING));
@@ -21736,6 +21907,10 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_finalize_scene(ufbxi_context *uc
 				uint32_t classid_b = (uint32_t)(uint64_t)ufbx_find_int(&material->props, "3dsMax|ClassIDb", 0);
 				if (classid_a == 0x3d6b1cecu && classid_b == 0xdeadc001u) {
 					material->shader_type = UFBX_SHADER_3DS_MAX_PHYSICAL_MATERIAL;
+					material->shader_prop_prefix.data = "3dsMax|Parameters|";
+					material->shader_prop_prefix.length = strlen("3dsMax|Parameters|");
+				} else if (classid_a == 0xf1551e33u && classid_b == 0x37fb1337u) {
+					material->shader_type = UFBX_SHADER_OPENPBR_MATERIAL;
 					material->shader_prop_prefix.data = "3dsMax|Parameters|";
 					material->shader_prop_prefix.length = strlen("3dsMax|Parameters|");
 				} else if (classid_a == 0x38420192u && classid_b == 0x45fe4e1bu) {
@@ -24671,6 +24846,9 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_load_imp(ufbxi_context *uc)
 		} else {
 			ufbxi_check(ufbxi_read_root(uc));
 		}
+		if (!ufbxi_supports_version(uc->version)) {
+			ufbxi_check(ufbxi_warnf(UFBX_WARNING_UNSUPPORTED_VERSION, "Unsupported FBX version (%u)", uc->version));
+		}
 		ufbxi_update_scene_metadata(&uc->scene.metadata);
 		ufbxi_check(ufbxi_init_file_paths(uc));
 	} else if (format == UFBX_FILE_FORMAT_OBJ) {
@@ -24978,6 +25156,12 @@ static ufbxi_noinline ufbx_scene *ufbxi_load(ufbxi_context *uc, const ufbx_load_
 		return &uc->scene_imp->scene;
 	} else {
 		ufbxi_fix_error_type(&uc->error, "Failed to load", p_error);
+		if (p_error && p_error->type == UFBX_ERROR_UNKNOWN && uc->scene.metadata.file_format == UFBX_FILE_FORMAT_FBX && !ufbxi_supports_version(uc->version)) {
+			p_error->description.data = "Unsupported version";
+			p_error->description.length = strlen("Unsupported version");
+			p_error->type = UFBX_ERROR_UNSUPPORTED_VERSION;
+			ufbxi_fmt_err_info(p_error, "%u", uc->version);
+		}
 		ufbxi_free_result(uc);
 		return NULL;
 	}
@@ -25115,7 +25299,7 @@ static ufbxi_forceinline bool ufbxi_anim_layer_might_contain_id(const ufbx_anim_
 	return ok;
 }
 
-static ufbxi_noinline void ufbxi_evaluate_props(const ufbx_anim *anim, const ufbx_element *element, double time, ufbx_prop *props, size_t num_props)
+static ufbxi_noinline void ufbxi_evaluate_props(const ufbx_anim *anim, const ufbx_element *element, double time, ufbx_prop *props, size_t num_props, uint32_t flags)
 {
 	ufbxi_anim_layer_combine_ctx combine_ctx = { anim, element, time };
 
@@ -25131,7 +25315,7 @@ static ufbxi_noinline void ufbxi_evaluate_props(const ufbx_anim *anim, const ufb
 		if (layer->weight_is_animated && layer->blended) {
 			ufbx_anim_prop *weight_aprop = ufbxi_find_anim_prop_start(layer, &layer->element);
 			if (weight_aprop) {
-				weight = ufbx_evaluate_anim_value_real(weight_aprop->anim_value, time) / (ufbx_real)100.0;
+				weight = ufbx_evaluate_anim_value_real_flags(weight_aprop->anim_value, time, flags) / (ufbx_real)100.0;
 				if (weight < 0.0f) weight = 0.0f;
 				if (weight > 0.99999f) weight = 1.0f;
 			}
@@ -25160,7 +25344,7 @@ static ufbxi_noinline void ufbxi_evaluate_props(const ufbx_anim *anim, const ufb
 			// This could be done by having `UFBX_PROP_FLAG_ANIMATION_EVALUATED`
 			// that gets set for the first layer of animation that is applied.
 			if (aprop->prop_name.data == prop->name.data) {
-				ufbx_vec3 v = ufbx_evaluate_anim_value_vec3(aprop->anim_value, time);
+				ufbx_vec3 v = ufbx_evaluate_anim_value_vec3_flags(aprop->anim_value, time, flags);
 				if (layer_ix == 0) {
 					prop->value_vec3 = v;
 				} else {
@@ -25178,9 +25362,9 @@ static ufbxi_noinline void ufbxi_evaluate_props(const ufbx_anim *anim, const ufb
 
 // Recursion limited by not calling `ufbx_evaluate_prop_len()` with a connected property,
 // meaning it will never call `ufbxi_evaluate_connected_prop()` again indirectly.
-static ufbxi_noinline void ufbxi_evaluate_connected_prop(ufbx_prop *prop, const ufbx_anim *anim, const ufbx_element *element, const char *name, double time)
-	ufbxi_recursive_function_void(ufbxi_evaluate_connected_prop, (prop, anim, element, name, time), 3,
-		(ufbx_prop *prop, const ufbx_anim *anim, const ufbx_element *element, const char *name, double time))
+static ufbxi_noinline void ufbxi_evaluate_connected_prop(ufbx_prop *prop, const ufbx_anim *anim, const ufbx_element *element, const char *name, double time, uint32_t flags)
+	ufbxi_recursive_function_void(ufbxi_evaluate_connected_prop, (prop, anim, element, name, time, flags), 3,
+		(ufbx_prop *prop, const ufbx_anim *anim, const ufbx_element *element, const char *name, double time, uint32_t flags))
 {
 	ufbx_connection *conn = ufbxi_find_prop_connection(element, name);
 
@@ -25192,7 +25376,7 @@ static ufbxi_noinline void ufbxi_evaluate_connected_prop(ufbx_prop *prop, const 
 
 	// Found a non-cyclic connection
 	if (conn && !ufbxi_find_prop_connection(conn->src, conn->src_prop.data)) {
-		ufbx_prop ep = ufbx_evaluate_prop_len(anim, conn->src, conn->src_prop.data, conn->src_prop.length, time);
+		ufbx_prop ep = ufbx_evaluate_prop_len_flags(anim, conn->src, conn->src_prop.data, conn->src_prop.length, time, flags);
 		prop->value_vec4 = ep.value_vec4;
 		prop->value_int = ep.value_int;
 		prop->value_str = ep.value_str;
@@ -25282,7 +25466,7 @@ static ufbxi_forceinline const ufbx_prop *ufbxi_next_prop(ufbxi_prop_iter *iter)
 	}
 }
 
-static ufbxi_noinline ufbx_props ufbxi_evaluate_selected_props(const ufbx_anim *anim, const ufbx_element *element, double time, ufbx_prop *props, const char *const *prop_names, size_t max_props)
+static ufbxi_noinline ufbx_props ufbxi_evaluate_selected_props(const ufbx_anim *anim, const ufbx_element *element, double time, ufbx_prop *props, const char *const *prop_names, size_t max_props, uint32_t flags)
 {
 	const char *name = prop_names[0];
 	uint32_t key = ufbxi_get_name_key_c(name);
@@ -25306,7 +25490,7 @@ static ufbxi_noinline ufbx_props ufbxi_evaluate_selected_props(const ufbx_anim *
 				if ((prop->flags & UFBX_PROP_FLAG_CONNECTED) != 0 && !anim->ignore_connections) {
 					ufbx_prop *dst = &props[num_props++];
 					*dst = *prop;
-					ufbxi_evaluate_connected_prop(dst, anim, element, name, time);
+					ufbxi_evaluate_connected_prop(dst, anim, element, name, time, flags);
 				} else if ((prop->flags & (UFBX_PROP_FLAG_ANIMATED|UFBX_PROP_FLAG_OVERRIDDEN)) != 0) {
 					props[num_props++] = *prop;
 				}
@@ -25323,13 +25507,81 @@ static ufbxi_noinline ufbx_props ufbxi_evaluate_selected_props(const ufbx_anim *
 		}
 	}
 
-	ufbxi_evaluate_props(anim, element, time, props, num_props);
+	ufbxi_evaluate_props(anim, element, time, props, num_props, flags);
 
 	ufbx_props prop_list;
 	prop_list.props.data = props;
 	prop_list.props.count = prop_list.num_animated = num_props;
 	prop_list.defaults = (ufbx_props*)&element->props;
 	return prop_list;
+}
+
+// Recursion limited by not calling `ufbx_evaluate_curve()` with `UFBX_EVALUATE_FLAG_NO_EXTRAPOLATION`.
+static ufbxi_noinline ufbx_real ufbxi_extrapolate_curve(const ufbx_anim_curve *curve, double real_time, uint32_t flags)
+	ufbxi_recursive_function(ufbx_real, ufbxi_extrapolate_curve, (curve, real_time, flags), 3,
+		(const ufbx_anim_curve *curve, double real_time, uint32_t flags))
+{
+	bool pre = real_time < curve->min_time;
+	const ufbx_keyframe *key;
+	ufbx_extrapolation ext;
+	if (pre) {
+		key = &curve->keyframes.data[0];
+		ext = curve->pre_extrapolation;
+	} else {
+		key = &curve->keyframes.data[curve->keyframes.count - 1];
+		ext = curve->post_extrapolation;
+	}
+
+	if (ext.mode == UFBX_EXTRAPOLATION_CONSTANT) {
+		return key->value;
+	} else if (ext.mode == UFBX_EXTRAPOLATION_SLOPE) {
+		ufbx_tangent tangent = *(pre ? &key->right : &key->left);
+		return key->value + (ufbx_real)(tangent.dy * ((real_time - key->time) / tangent.dx));
+	} else if (ext.repeat_count == 0) {
+		return key->value;
+	}
+
+	// Perform all operations in KTime ticks to be frame perfect
+	double scale = (double)curve->element.scene->metadata.ktime_second;
+	double min_time = ufbx_rint(curve->min_time * scale);
+	double max_time = ufbx_rint(curve->max_time * scale);
+	double time = real_time * scale;
+
+	double delta = pre ? min_time - time : time - max_time;
+	double duration = max_time - min_time;
+
+	// Require at least one KTime unit
+	if (!(duration >= 1.0)) return key->value;
+
+	double rep = delta / duration;
+	double rep_n = ufbx_floor(rep);
+	double rep_d = delta - rep_n * duration;
+
+	if (ext.repeat_count > 0 && rep_n >= (double)ext.repeat_count) {
+		// Clamp to the repeat count to handle mirroring
+		rep_n = (double)(ext.repeat_count - 1);
+		rep_d = duration;
+	}
+
+	if (ext.mode == UFBX_EXTRAPOLATION_MIRROR) {
+		double rep_parity = rep_n*0.5 - ufbx_floor(rep_n*0.5);
+		if (rep_parity <= 0.25) {
+			rep_d = duration - rep_d;
+		}
+	}
+
+	if (pre) rep_d = duration - rep_d;
+	double new_time = (min_time + rep_d) / scale;
+
+	ufbx_real value = ufbx_evaluate_curve_flags(curve, new_time, key->value, flags | UFBX_EVALUATE_FLAG_NO_EXTRAPOLATION);
+
+	if (ext.mode == UFBX_EXTRAPOLATION_REPEAT_RELATIVE) {
+		ufbx_real val_delta = curve->keyframes.data[curve->keyframes.count - 1].value - curve->keyframes.data[0].value;
+		if (pre) val_delta = -val_delta;
+		value += val_delta * (ufbx_real)(rep_n + 1.0);
+	}
+
+	return value;
 }
 
 #if UFBXI_FEATURE_SCENE_EVALUATION
@@ -25686,7 +25938,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_evaluate_imp(ufbxi_eval_context 
 		ufbx_prop *props = ufbxi_push(&ec->result, ufbx_prop, num_animated);
 		ufbxi_check_err(&ec->error, props);
 
-		elem->props = ufbx_evaluate_props(&anim, elem, ec->time, props, num_animated);
+		elem->props = ufbx_evaluate_props_flags(&anim, elem, ec->time, props, num_animated, ec->opts.evaluate_flags);
 		elem->props.defaults = &ec->src_scene.elements.data[elem->element_id]->props;
 	}
 
@@ -26693,6 +26945,9 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_bake_node_imp(ufbxi_bake_context
 		}
 
 		flags |= UFBX_TRANSFORM_FLAG_IGNORE_SCALE_HELPER|UFBX_TRANSFORM_FLAG_IGNORE_COMPONENTWISE_SCALE|UFBX_TRANSFORM_FLAG_EXPLICIT_INCLUDES;
+		if (bc->opts.evaluate_flags & UFBX_EVALUATE_FLAG_NO_EXTRAPOLATION) {
+			flags |= UFBX_TRANSFORM_FLAG_NO_EXTRAPOLATION;
+		}
 
 		double eval_time = ufbxi_bake_time_sample_time(bake_time);
 		ufbx_transform transform = ufbx_evaluate_transform_flags(bc->anim, node, eval_time, flags);
@@ -26813,7 +27068,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_bake_anim_prop(ufbxi_bake_contex
 	for (size_t i = 0; i < times.count; i++) {
 		ufbxi_bake_time bake_time = times.data[i];
 		double eval_time = ufbxi_bake_time_sample_time(bake_time);
-		ufbx_prop prop = ufbx_evaluate_prop_len(bc->anim, element, name.data, name.length, eval_time);
+		ufbx_prop prop = ufbx_evaluate_prop_len_flags(bc->anim, element, name.data, name.length, eval_time, bc->opts.evaluate_flags);
 		keys.data[i].time = bake_time.time;
 		keys.data[i].value = prop.value_vec3;
 		keys.data[i].flags = (ufbx_baked_key_flags)bake_time.flags;
@@ -30114,12 +30369,23 @@ ufbx_abi ufbxi_noinline ufbx_matrix ufbx_get_compatible_matrix_for_normals(const
 
 ufbx_abi ufbx_real ufbx_evaluate_curve(const ufbx_anim_curve *curve, double time, ufbx_real default_value)
 {
+	return ufbx_evaluate_curve_flags(curve, time, default_value, 0);
+}
+
+ufbx_abi ufbx_real ufbx_evaluate_curve_flags(const ufbx_anim_curve *curve, double time, ufbx_real default_value, uint32_t flags)
+{
 	if (!curve) return default_value;
 	if (curve->keyframes.count <= 1) {
 		if (curve->keyframes.count == 1) {
 			return curve->keyframes.data[0].value;
 		} else {
 			return default_value;
+		}
+	}
+
+	if ((flags & UFBX_EVALUATE_FLAG_NO_EXTRAPOLATION) == 0) {
+		if (time < curve->min_time || time > curve->max_time) {
+			return ufbxi_extrapolate_curve(curve, time, flags);
 		}
 	}
 
@@ -30192,16 +30458,26 @@ ufbx_abi ufbx_real ufbx_evaluate_curve(const ufbx_anim_curve *curve, double time
 
 ufbx_abi ufbxi_noinline ufbx_real ufbx_evaluate_anim_value_real(const ufbx_anim_value *anim_value, double time)
 {
+	return ufbx_evaluate_anim_value_real_flags(anim_value, time, 0);
+}
+
+ufbx_abi ufbxi_noinline ufbx_vec3 ufbx_evaluate_anim_value_vec3(const ufbx_anim_value *anim_value, double time)
+{
+	return ufbx_evaluate_anim_value_vec3_flags(anim_value, time, 0);
+}
+
+ufbx_abi ufbxi_noinline ufbx_real ufbx_evaluate_anim_value_real_flags(const ufbx_anim_value *anim_value, double time, uint32_t flags)
+{
 	if (!anim_value) {
 		return 0.0f;
 	}
 
 	ufbx_real res = anim_value->default_value.x;
-	if (anim_value->curves[0]) res = ufbx_evaluate_curve(anim_value->curves[0], time, res);
+	if (anim_value->curves[0]) res = ufbx_evaluate_curve_flags(anim_value->curves[0], time, res, flags);
 	return res;
 }
 
-ufbx_abi ufbxi_noinline ufbx_vec3 ufbx_evaluate_anim_value_vec3(const ufbx_anim_value *anim_value, double time)
+ufbx_abi ufbxi_noinline ufbx_vec3 ufbx_evaluate_anim_value_vec3_flags(const ufbx_anim_value *anim_value, double time, uint32_t flags)
 {
 	if (!anim_value) {
 		ufbx_vec3 zero = { 0.0f };
@@ -30209,13 +30485,18 @@ ufbx_abi ufbxi_noinline ufbx_vec3 ufbx_evaluate_anim_value_vec3(const ufbx_anim_
 	}
 
 	ufbx_vec3 res = anim_value->default_value;
-	if (anim_value->curves[0]) res.x = ufbx_evaluate_curve(anim_value->curves[0], time, res.x);
-	if (anim_value->curves[1]) res.y = ufbx_evaluate_curve(anim_value->curves[1], time, res.y);
-	if (anim_value->curves[2]) res.z = ufbx_evaluate_curve(anim_value->curves[2], time, res.z);
+	if (anim_value->curves[0]) res.x = ufbx_evaluate_curve_flags(anim_value->curves[0], time, res.x, flags);
+	if (anim_value->curves[1]) res.y = ufbx_evaluate_curve_flags(anim_value->curves[1], time, res.y, flags);
+	if (anim_value->curves[2]) res.z = ufbx_evaluate_curve_flags(anim_value->curves[2], time, res.z, flags);
 	return res;
 }
 
 ufbx_abi ufbxi_noinline ufbx_prop ufbx_evaluate_prop_len(const ufbx_anim *anim, const ufbx_element *element, const char *name, size_t name_len, double time)
+{
+	return ufbx_evaluate_prop_len_flags(anim, element, name, name_len, time, 0);
+}
+
+ufbx_abi ufbxi_noinline ufbx_prop ufbx_evaluate_prop_len_flags(const ufbx_anim *anim, const ufbx_element *element, const char *name, size_t name_len, double time, uint32_t flags)
 {
 	ufbx_prop result;
 
@@ -30242,15 +30523,20 @@ ufbx_abi ufbxi_noinline ufbx_prop ufbx_evaluate_prop_len(const ufbx_anim *anim, 
 	if ((result.flags & (UFBX_PROP_FLAG_ANIMATED|UFBX_PROP_FLAG_CONNECTED)) == 0) return result;
 
 	if ((prop->flags & UFBX_PROP_FLAG_CONNECTED) != 0 && !anim->ignore_connections) {
-		ufbxi_evaluate_connected_prop(&result, anim, element, prop->name.data, time);
+		ufbxi_evaluate_connected_prop(&result, anim, element, prop->name.data, time, flags);
 	}
 
-	ufbxi_evaluate_props(anim, element, time, &result, 1);
+	ufbxi_evaluate_props(anim, element, time, &result, 1, flags);
 
 	return result;
 }
 
 ufbx_abi ufbxi_noinline ufbx_props ufbx_evaluate_props(const ufbx_anim *anim, const ufbx_element *element, double time, ufbx_prop *buffer, size_t buffer_size)
+{
+	return ufbx_evaluate_props_flags(anim, element, time, buffer, buffer_size, 0);
+}
+
+ufbx_abi ufbxi_noinline ufbx_props ufbx_evaluate_props_flags(const ufbx_anim *anim, const ufbx_element *element, double time, ufbx_prop *buffer, size_t buffer_size, uint32_t flags)
 {
 	ufbx_props ret = { NULL };
 	if (!element) return ret;
@@ -30267,11 +30553,11 @@ ufbx_abi ufbxi_noinline ufbx_props ufbx_evaluate_props(const ufbx_anim *anim, co
 		*dst = *prop;
 
 		if ((prop->flags & UFBX_PROP_FLAG_CONNECTED) != 0 && !anim->ignore_connections) {
-			ufbxi_evaluate_connected_prop(dst, anim, element, prop->name.data, time);
+			ufbxi_evaluate_connected_prop(dst, anim, element, prop->name.data, time, flags);
 		}
 	}
 
-	ufbxi_evaluate_props(anim, element, time, buffer, num_anim);
+	ufbxi_evaluate_props(anim, element, time, buffer, num_anim, flags);
 
 	ret.props.data = buffer;
 	ret.props.count = ret.num_animated = num_anim;
@@ -30382,8 +30668,13 @@ ufbx_abi ufbxi_noinline ufbx_transform ufbx_evaluate_transform_flags(const ufbx_
 		}
 	}
 
+	uint32_t eval_flags = 0;
+	if (flags & UFBX_TRANSFORM_FLAG_NO_EXTRAPOLATION) {
+		eval_flags |= UFBX_EVALUATE_FLAG_NO_EXTRAPOLATION;
+	}
+
 	ufbx_prop buf[ufbxi_arraycount(ufbxi_transform_props_all)]; // ufbxi_uninit
-	ufbx_props props = ufbxi_evaluate_selected_props(anim, &node->element, time, buf, prop_names, num_prop_names);
+	ufbx_props props = ufbxi_evaluate_selected_props(anim, &node->element, time, buf, prop_names, num_prop_names, eval_flags);
 	ufbx_rotation_order order = (ufbx_rotation_order)ufbxi_find_enum(&props, ufbxi_RotationOrder, UFBX_ROTATION_ORDER_XYZ, UFBX_ROTATION_ORDER_SPHERIC);
 
 	ufbx_transform transform; // ufbxi_uninit
@@ -30413,12 +30704,17 @@ ufbx_abi ufbxi_noinline ufbx_transform ufbx_evaluate_transform_flags(const ufbx_
 
 ufbx_abi ufbx_real ufbx_evaluate_blend_weight(const ufbx_anim *anim, const ufbx_blend_channel *channel, double time)
 {
+	return ufbx_evaluate_blend_weight_flags(anim, channel, time, 0);
+}
+
+ufbx_abi ufbx_real ufbx_evaluate_blend_weight_flags(const ufbx_anim *anim, const ufbx_blend_channel *channel, double time, uint32_t flags)
+{
 	const char *prop_names[] = {
 		ufbxi_DeformPercent,
 	};
 
 	ufbx_prop buf[ufbxi_arraycount(prop_names)]; // ufbxi_uninit
-	ufbx_props props = ufbxi_evaluate_selected_props(anim, &channel->element, time, buf, prop_names, ufbxi_arraycount(prop_names));
+	ufbx_props props = ufbxi_evaluate_selected_props(anim, &channel->element, time, buf, prop_names, ufbxi_arraycount(prop_names), flags);
 	return ufbxi_find_real(&props, ufbxi_DeformPercent, channel->weight * (ufbx_real)100.0) * (ufbx_real)0.01;
 }
 
@@ -32332,6 +32628,7 @@ ufbx_abi ufbx_anim_stack *ufbx_find_anim_stack(const ufbx_scene *scene, const ch
 ufbx_abi ufbx_material *ufbx_find_material(const ufbx_scene *scene, const char *name) { return ufbx_find_material_len(scene, name, strlen(name)); }
 ufbx_abi ufbx_anim_prop *ufbx_find_anim_prop(const ufbx_anim_layer *layer, const ufbx_element *element, const char *prop) { return ufbx_find_anim_prop_len(layer, element, prop, strlen(prop)); }
 ufbx_abi ufbx_prop ufbx_evaluate_prop(const ufbx_anim *anim, const ufbx_element *element, const char *name, double time) { return ufbx_evaluate_prop_len(anim, element, name, strlen(name), time); }
+ufbx_abi ufbx_prop ufbx_evaluate_prop_flags(const ufbx_anim *anim, const ufbx_element *element, const char *name, double time, uint32_t flags) { return ufbx_evaluate_prop_len_flags(anim, element, name, strlen(name), time, flags); }
 ufbx_abi ufbx_texture *ufbx_find_prop_texture(const ufbx_material *material, const char *name) { return ufbx_find_prop_texture_len(material, name, strlen(name)); }
 ufbx_abi ufbx_string ufbx_find_shader_prop(const ufbx_shader *shader, const char *name) { return ufbx_find_shader_prop_len(shader, name, strlen(name)); }
 ufbx_abi ufbx_shader_prop_binding_list ufbx_find_shader_prop_bindings(const ufbx_shader *shader, const char *name) { return ufbx_find_shader_prop_bindings_len(shader, name, strlen(name)); }

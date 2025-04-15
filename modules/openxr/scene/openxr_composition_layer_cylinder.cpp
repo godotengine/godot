@@ -77,7 +77,7 @@ Ref<Mesh> OpenXRCompositionLayerCylinder::_create_fallback_mesh() {
 	Vector<int> indices;
 
 	float delta_angle = central_angle / fallback_segments;
-	float start_angle = (-Math_PI / 2.0) - (central_angle / 2.0);
+	float start_angle = (-Math::PI / 2.0) - (central_angle / 2.0);
 
 	for (uint32_t i = 0; i < fallback_segments + 1; i++) {
 		float current_angle = start_angle + (delta_angle * i);
@@ -192,7 +192,7 @@ Vector2 OpenXRCompositionLayerCylinder::intersects_ray(const Vector3 &p_origin, 
 	Vector3 intersection = p_origin + p_direction * t;
 
 	Basis correction = cylinder_transform.basis.inverse();
-	correction.rotate(Vector3(0.0, 1.0, 0.0), -Math_PI / 2.0);
+	correction.rotate(Vector3(0.0, 1.0, 0.0), -Math::PI / 2.0);
 	Vector3 relative_point = correction.xform(intersection - cylinder_transform.origin);
 
 	Vector2 projected_point = Vector2(relative_point.x, relative_point.z);

@@ -123,32 +123,6 @@ VARIANT_ENUM_CAST(Key);
 VARIANT_BITFIELD_CAST(KeyModifierMask);
 VARIANT_ENUM_CAST(KeyLocation);
 
-static inline Key &operator|=(Key &a, BitField<KeyModifierMask> b) {
-	a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b.operator int64_t()));
-	return a;
-}
-
-static inline Key &operator&=(Key &a, BitField<KeyModifierMask> b) {
-	a = static_cast<Key>(static_cast<int>(a) & static_cast<int>(b.operator int64_t()));
-	return a;
-}
-
-static inline Key operator|(Key a, BitField<KeyModifierMask> b) {
-	return (Key)((int)a | (int)b.operator int64_t());
-}
-
-static inline Key operator&(Key a, BitField<KeyModifierMask> b) {
-	return (Key)((int)a & (int)b.operator int64_t());
-}
-
-static inline Key operator+(BitField<KeyModifierMask> a, Key b) {
-	return (Key)((int)a.operator int64_t() + (int)b);
-}
-
-static inline Key operator|(BitField<KeyModifierMask> a, Key b) {
-	return (Key)((int)a.operator int64_t() | (int)b);
-}
-
 template <>
 struct VariantCaster<char32_t> {
 	static _FORCE_INLINE_ char32_t cast(const Variant &p_variant) {

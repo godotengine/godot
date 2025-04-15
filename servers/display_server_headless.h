@@ -35,6 +35,8 @@
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 class DisplayServerHeadless : public DisplayServer {
+	GDSOFTCLASS(DisplayServerHeadless, DisplayServer);
+
 private:
 	friend class DisplayServer;
 

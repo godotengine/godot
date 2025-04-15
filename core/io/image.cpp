@@ -2294,7 +2294,7 @@ void Image::initialize_data(const char **p_xpm) {
 		switch (status) {
 			case READING_HEADER: {
 				String line_str = line_ptr;
-				line_str.replace("\t", " ");
+				line_str.replace_char('\t', ' ');
 
 				size_width = line_str.get_slicec(' ', 0).to_int();
 				size_height = line_str.get_slicec(' ', 1).to_int();
@@ -4331,10 +4331,10 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 	Dictionary result;
-	result["max"] = INFINITY;
-	result["mean"] = INFINITY;
-	result["mean_squared"] = INFINITY;
-	result["root_mean_squared"] = INFINITY;
+	result["max"] = Math::INF;
+	result["mean"] = Math::INF;
+	result["mean_squared"] = Math::INF;
+	result["root_mean_squared"] = Math::INF;
 	result["peak_snr"] = 0.0f;
 
 	ERR_FAIL_COND_V(p_compared_image.is_null(), result);

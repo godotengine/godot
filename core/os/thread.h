@@ -119,6 +119,8 @@ private:
 public:
 	static void _set_platform_functions(const PlatformFunctions &p_functions);
 
+	_FORCE_INLINE_ static void yield() { std::this_thread::yield(); }
+
 	_FORCE_INLINE_ ID get_id() const { return id; }
 	// get the ID of the caller thread
 	_FORCE_INLINE_ static ID get_caller_id() {

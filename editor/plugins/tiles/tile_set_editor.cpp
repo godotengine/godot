@@ -846,6 +846,7 @@ TileSetEditor::TileSetEditor() {
 	source_sort_button->set_flat(false);
 	source_sort_button->set_theme_type_variation(SceneStringName(FlatButton));
 	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
+	source_sort_button->set_accessibility_name(TTRC("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_set_source_sort));
@@ -896,6 +897,7 @@ TileSetEditor::TileSetEditor() {
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
 	sources_advanced_menu_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
+	sources_advanced_menu_button->set_accessibility_name(TTRC("Advanced"));
 	sources_bottom_actions->add_child(sources_advanced_menu_button);
 	sources_bottom_actions->add_child(source_sort_button);
 

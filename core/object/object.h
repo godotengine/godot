@@ -398,7 +398,8 @@ struct ObjectGDExtension {
 // so that they can support the `Object::cast_to()` method.
 #define GDSOFTCLASS(m_class, m_inherits)                                             \
 public:                                                                              \
-	typedef m_class self_type;                                                       \
+	using self_type = m_class;                                                       \
+	using super_type = m_inherits;                                                   \
 	static _FORCE_INLINE_ void *get_class_ptr_static() {                             \
 		static int ptr;                                                              \
 		return &ptr;                                                                 \
@@ -417,24 +418,15 @@ private:                                                                        
                                                                                                                                             \
 public:                                                                                                                                     \
 	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;             \
-	virtual String get_class() const override {                                                                                             \
-		if (_get_extension()) {                                                                                                             \
-			return _get_extension()->class_name.operator String();                                                                          \
-		}                                                                                                                                   \
-		return String(#m_class);                                                                                                            \
-	}                                                                                                                                       \
 	virtual const StringName *_get_class_namev() const override {                                                                           \
+		return &get_class_static();                                                                                                         \
+	}                                                                                                                                       \
+	static const StringName &get_class_static() {                                                                                           \
 		static StringName _class_name_static;                                                                                               \
 		if (unlikely(!_class_name_static)) {                                                                                                \
 			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                     \
 		}                                                                                                                                   \
-		return &_class_name_static;                                                                                                         \
-	}                                                                                                                                       \
-	static _FORCE_INLINE_ String get_class_static() {                                                                                       \
-		return String(#m_class);                                                                                                            \
-	}                                                                                                                                       \
-	static _FORCE_INLINE_ String get_parent_class_static() {                                                                                \
-		return m_inherits::get_class_static();                                                                                              \
+		return _class_name_static;                                                                                                          \
 	}                                                                                                                                       \
 	virtual bool is_class(const String &p_class) const override {                                                                           \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                      \
@@ -458,7 +450,7 @@ public:                                                                         
 			return;                                                                                                                         \
 		}                                                                                                                                   \
 		m_inherits::initialize_class();                                                                                                     \
-		_add_class_to_classdb(get_class_static(), get_parent_class_static());                                                               \
+		_add_class_to_classdb(get_class_static(), super_type::get_class_static());                                                          \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                              \
 			_bind_methods();                                                                                                                \
 		}                                                                                                                                   \
@@ -747,11 +739,7 @@ protected:
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	virtual const StringName *_get_class_namev() const {
-		static StringName _class_name_static;
-		if (unlikely(!_class_name_static)) {
-			StringName::assign_static_unique_class_name(&_class_name_static, "Object");
-		}
-		return &_class_name_static;
+		return &get_class_static();
 	}
 
 	TypedArray<StringName> _get_meta_list_bind() const;
@@ -771,7 +759,6 @@ protected:
 #ifdef TOOLS_ENABLED
 	struct VirtualMethodTracker {
 		void **method;
-		bool *initialized;
 		VirtualMethodTracker *next;
 	};
 
@@ -820,15 +807,16 @@ public:
 	};
 
 	/* TYPE API */
-	static String get_class_static() { return "Object"; }
-	static String get_parent_class_static() { return String(); }
-
-	virtual String get_class() const {
-		if (_extension) {
-			return _extension->class_name.operator String();
+	static const StringName &get_class_static() {
+		static StringName _class_name_static;
+		if (unlikely(!_class_name_static)) {
+			StringName::assign_static_unique_class_name(&_class_name_static, "Object");
 		}
-		return "Object";
+		return _class_name_static;
 	}
+
+	_FORCE_INLINE_ String get_class() const { return get_class_name(); }
+
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
 
 	virtual bool is_class(const String &p_class) const {
@@ -839,19 +827,7 @@ public:
 	}
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
-	_FORCE_INLINE_ const StringName &get_class_name() const {
-		if (_extension) {
-			// Can't put inside the unlikely as constructor can run it
-			return _extension->class_name;
-		}
-
-		if (unlikely(!_class_name_ptr)) {
-			// While class is initializing / deinitializing, constructors and destructurs
-			// need access to the proper class at the proper stage.
-			return *_get_class_namev();
-		}
-		return *_class_name_ptr;
-	}
+	const StringName &get_class_name() const;
 
 	StringName get_class_name_for_extension(const GDExtension *p_library) const;
 

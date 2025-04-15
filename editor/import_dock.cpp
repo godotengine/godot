@@ -124,7 +124,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 	_update_options(p_path, config);
 
 	List<Ref<ResourceImporter>> importers;
-	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_path.get_extension(), &importers);
+	ResourceFormatImporter::get_singleton()->get_importers_for_file(p_path, &importers);
 	List<Pair<String, String>> importer_names;
 
 	for (const Ref<ResourceImporter> &E : importers) {
@@ -314,7 +314,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	params->update();
 
 	List<Ref<ResourceImporter>> importers;
-	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_paths[0].get_extension(), &importers);
+	ResourceFormatImporter::get_singleton()->get_importers_for_file(p_paths[0], &importers);
 	List<Pair<String, String>> importer_names;
 
 	for (const Ref<ResourceImporter> &E : importers) {
@@ -763,6 +763,7 @@ ImportDock::ImportDock() {
 	import_as->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	import_as->connect(SceneStringName(item_selected), callable_mp(this, &ImportDock::_importer_selected));
+	import_as->set_accessibility_name(TTRC("Import As"));
 	hb->add_child(import_as);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	preset = memnew(MenuButton);

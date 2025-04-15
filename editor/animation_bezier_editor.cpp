@@ -245,6 +245,15 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			selected_icon = get_editor_theme_icon(SNAME("KeyBezierSelected"));
 		} break;
 
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			//TODO
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
+			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Animation bezier track editor")));
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (animation.is_null()) {
 				return;
@@ -815,8 +824,8 @@ void AnimationBezierTrackEdit::set_filtered(bool p_filtered) {
 
 void AnimationBezierTrackEdit::auto_fit_vertically() {
 	int track_count = animation->get_track_count();
-	real_t minimum_value = INFINITY;
-	real_t maximum_value = -INFINITY;
+	real_t minimum_value = Math::INF;
+	real_t maximum_value = -Math::INF;
 
 	int nb_track_visible = 0;
 	for (int i = 0; i < track_count; ++i) {
@@ -1027,10 +1036,10 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 
-			real_t minimum_time = INFINITY;
-			real_t maximum_time = -INFINITY;
-			real_t minimum_value = INFINITY;
-			real_t maximum_value = -INFINITY;
+			real_t minimum_time = Math::INF;
+			real_t maximum_time = -Math::INF;
+			real_t minimum_value = Math::INF;
+			real_t maximum_value = -Math::INF;
 
 			for (const IntPair &E : focused_keys) {
 				IntPair key_pair = E;

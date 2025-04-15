@@ -910,6 +910,14 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		global_pipeline_data_required.use_lightmaps = true;
 	}
 
+	if (global_surface_data.screen_texture_used || global_surface_data.depth_texture_used) {
+		if (rb_data.is_valid()) {
+			// Just called to create the framebuffer since we know we will need it later.
+			rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_RENDER_PASS);
+		}
+		global_pipeline_data_required.use_separate_post_pass = true;
+	}
+
 	_update_dirty_geometry_pipelines();
 
 	p_render_data->scene_data->emissive_exposure_normalization = -1.0;
@@ -1174,14 +1182,22 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
 			}
 
-			if (scene_state.used_screen_texture) {
-				// Copy screen texture to backbuffer so we can read from it
-				_render_buffers_copy_screen_texture(p_render_data);
+			if (scene_state.used_screen_texture || global_surface_data.screen_texture_used) {
+				_render_buffers_ensure_screen_texture(p_render_data);
+
+				if (scene_state.used_screen_texture) {
+					// Copy screen texture to backbuffer so we can read from it
+					_render_buffers_copy_screen_texture(p_render_data);
+				}
 			}
 
-			if (scene_state.used_depth_texture) {
-				// Copy depth texture to backbuffer so we can read from it
-				_render_buffers_copy_depth_texture(p_render_data);
+			if (scene_state.used_depth_texture || global_surface_data.depth_texture_used) {
+				_render_buffers_ensure_depth_texture(p_render_data);
+
+				if (scene_state.used_depth_texture) {
+					// Copy depth texture to backbuffer so we can read from it
+					_render_buffers_copy_depth_texture(p_render_data);
+				}
 			}
 
 			if (render_list[RENDER_LIST_ALPHA].element_info.size() > 0) {
@@ -1887,9 +1903,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 
 	if (p_render_list == RENDER_LIST_OPAQUE) {
-		scene_state.used_sss = false;
 		scene_state.used_screen_texture = false;
-		scene_state.used_normal_texture = false;
 		scene_state.used_depth_texture = false;
 		scene_state.used_lightmap = false;
 	}
@@ -2043,14 +2057,8 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					scene_state.used_lightmap = true;
 				}
 
-				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SUBSURFACE_SCATTERING) {
-					scene_state.used_sss = true;
-				}
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SCREEN_TEXTURE) {
 					scene_state.used_screen_texture = true;
-				}
-				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_NORMAL_TEXTURE) {
-					scene_state.used_normal_texture = true;
 				}
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_DEPTH_TEXTURE) {
 					scene_state.used_depth_texture = true;
@@ -2536,10 +2544,12 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 
 	if (p_material->shader_data->uses_screen_texture) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SCREEN_TEXTURE;
+		global_surface_data.screen_texture_used = true;
 	}
 
 	if (p_material->shader_data->uses_depth_texture) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_DEPTH_TEXTURE;
+		global_surface_data.depth_texture_used = true;
 	}
 
 	if (p_material->shader_data->uses_normal_texture) {

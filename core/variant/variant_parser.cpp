@@ -147,12 +147,12 @@ const char *VariantParser::tk_name[TK_MAX] = {
 
 static double stor_fix(const String &p_str) {
 	if (p_str == "inf") {
-		return INFINITY;
+		return Math::INF;
 	} else if (p_str == "-inf" || p_str == "inf_neg") {
 		// inf_neg kept for compatibility.
-		return -INFINITY;
+		return -Math::INF;
 	} else if (p_str == "nan") {
-		return NAN;
+		return Math::NaN;
 	}
 	return -1;
 }
@@ -698,12 +698,12 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		} else if (id == "null" || id == "nil") {
 			value = Variant();
 		} else if (id == "inf") {
-			value = INFINITY;
+			value = Math::INF;
 		} else if (id == "-inf" || id == "inf_neg") {
 			// inf_neg kept for compatibility.
-			value = -INFINITY;
+			value = -Math::INF;
 		} else if (id == "nan") {
-			value = NAN;
+			value = Math::NaN;
 		} else if (id == "Vector2") {
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
@@ -2248,8 +2248,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				ERR_PRINT("Max recursion reached");
 				p_store_string_func(p_store_string_ud, "{}");
 			} else {
-				List<Variant> keys;
-				dict.get_key_list(&keys);
+				LocalVector<Variant> keys = dict.get_key_list();
 				keys.sort_custom<StringLikeVariantOrder>();
 
 				if (keys.is_empty()) {
@@ -2260,11 +2259,12 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 					p_store_string_func(p_store_string_ud, "{\n");
 
-					for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-						write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+					for (uint32_t i = 0; i < keys.size(); i++) {
+						const Variant &key = keys[i];
+						write(key, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 						p_store_string_func(p_store_string_ud, ": ");
-						write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
-						if (E->next()) {
+						write(dict[key], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+						if (i + 1 < keys.size()) {
 							p_store_string_func(p_store_string_ud, ",\n");
 						} else {
 							p_store_string_func(p_store_string_ud, "\n");

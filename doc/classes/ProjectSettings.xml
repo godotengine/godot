@@ -114,6 +114,14 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="get_setting_with_override_and_custom_features" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="features" type="PackedStringArray" />
+			<description>
+				Similar to [method get_setting_with_override], but applies feature tag overrides instead of current OS features.
+			</description>
+		</method>
 		<method name="globalize_path" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
@@ -235,6 +243,16 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility/general/accessibility_support" type="int" setter="" getter="" default="0">
+			Accessibility support mode:
+			- [b]Auto[/b] ([code]0[/code]): accessibility support is enabled, but accessibility information updates are processed only if an assistive app (e.g. screen reader or Braille display) is active (default).
+			- [b]Always Active[/b] ([code]1[/code]): accessibility support is enabled, and accessibility information updates are processed regardless of current assistive apps' status.
+			- [b]Disabled[/b] ([code]2[/code]): accessibility support is fully disabled.
+			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, macOS Accessibility Inspector, or AT-SPI Browser do not count as assistive apps. To test your app with these tools, use [code]1[/code].
+		</member>
+		<member name="accessibility/general/updates_per_second" type="int" setter="" getter="" default="60">
+			The number of accessibility information updates per second.
+		</member>
 		<member name="animation/warnings/check_angle_interpolation_type_conflicting" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [AnimationMixer] prints the warning of interpolation being forced to choose the shortest rotation path due to multiple angle interpolation types being mixed in the [AnimationMixer] cache.
 		</member>
@@ -408,7 +426,7 @@
 		</member>
 		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="0.5">
 			The base strength of the panning effect for all [AudioStreamPlayer3D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
-			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
+			The default value of [code]0.5[/code] is tuned for headphones which means that the opposite side channel goes no lower than 50% of the volume of the nearside channel. You may find that you can set this value higher for speakers to have the same effect since both ears can hear from each speaker.
 		</member>
 		<member name="audio/general/default_playback_type" type="int" setter="" getter="" default="0" experimental="">
 			Specifies the default playback type of the platform.
@@ -948,6 +966,12 @@
 			Main window initial screen, this setting is used only if [member display/window/size/initial_position_type] is set to "Other Screen Center" ([code]2[/code]).
 			[b]Note:[/b] This setting only affects the exported project, or when the project is run from the command line. In the editor, the value of [member EditorSettings.run/window_placement/screen] is used instead.
 		</member>
+		<member name="display/window/size/maximize_disabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the main window's maximize button is disabled.
+		</member>
+		<member name="display/window/size/minimize_disabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the main window's minimize button is disabled.
+		</member>
 		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
 			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
 			[b]Note:[/b] Game embedding is available only in the "Windowed" mode.
@@ -1101,7 +1125,7 @@
 		</member>
 		<member name="filesystem/import/blender/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Blender 3D scene files with the [code].blend[/code] extension will be imported by converting them to glTF 2.0.
-			This requires configuring a path to a Blender executable in the editor settings at [code]filesystem/import/blender/blender_path[/code]. Blender 3.0 or later is required.
+			This requires configuring a path to a Blender executable in the [member EditorSettings.filesystem/import/blender/blender_path] setting. Blender 3.0 or later is required.
 		</member>
 		<member name="filesystem/import/blender/enabled.android" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/blender/enabled] on Android where Blender can't easily be accessed from Godot.
@@ -1191,6 +1215,10 @@
 			Default [InputEventAction] to confirm a focused button, menu or list item, or validate input.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_accessibility_drag_and_drop" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to start or end a drag-and-drop operation without using mouse.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_cancel" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to discard a modal or pending input.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -1227,6 +1255,10 @@
 			Default [InputEventAction] to go up one directory in a [FileDialog].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_focus_mode" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to switch [TextEdit] [member input/ui_text_indent] between moving keyboard focus to the next [Control] in the scene and inputting a [code]Tab[/code] character.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_focus_next" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to focus the next [Control] in the scene. The focus behavior can be configured via [member Control.focus_next].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -1242,6 +1274,20 @@
 		<member name="input/ui_graph_duplicate" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to duplicate a [GraphNode] in a [GraphEdit].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_graph_follow_left" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to follow a [GraphNode] input port connection.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_graph_follow_left.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to follow a [GraphNode] input port connection.
+		</member>
+		<member name="input/ui_graph_follow_right" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to follow a [GraphNode] output port connection.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_graph_follow_right.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to follow a [GraphNode] output port connection.
 		</member>
 		<member name="input/ui_home" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go to the start position of a [Control] (e.g. first item in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_HOME] on typical desktop UI systems.
@@ -1513,6 +1559,9 @@
 			- [code]winink[/code], uses Windows native "Windows Ink" driver.
 			- [code]wintab[/code], uses Wacom "WinTab" driver.
 			- [code]dummy[/code], tablet input is disabled.
+		</member>
+		<member name="input_devices/pointing/android/disable_scroll_deadzone" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], disables the scroll deadzone on Android, allowing even very small scroll movements to be registered. This may increase scroll sensitivity but can also lead to unintended scrolling from slight finger movements.
 		</member>
 		<member name="input_devices/pointing/android/enable_long_press_as_right_click" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], long press events on an Android touchscreen are transformed into right click events.
@@ -3030,6 +3079,7 @@
 		</member>
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], uses texture arrays instead of mipmaps for reflection probes and panorama backgrounds (sky). This reduces jitter noise and upscaling artifacts on reflections, but is significantly slower to compute and uses [member rendering/reflections/sky_reflections/roughness_layers] times more memory.
+			[b]Note:[/b] Texture array reflections are always disabled on macOS on Intel GPUs due to driver bugs.
 		</member>
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
@@ -3110,11 +3160,11 @@
 		</member>
 		<member name="rendering/rendering_device/fallback_to_opengl3" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the forward renderer will fall back to OpenGL 3 if Direct3D 12, Metal, and Vulkan are not supported.
-			[b]Note:[/b] This setting is implemented only on Windows, Android, macOS, iOS, and Linux/X11.
+			[b]Note:[/b] This setting is implemented on Windows, Android, macOS, iOS, and Linux/X11.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_vulkan" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 (on Windows) or Metal (on macOS x86_64) are not supported. The fallback is always attempted regardless of this setting if Direct3D 12 (Windows) or Metal (macOS) driver support was disabled at compile time.
-			[b]Note:[/b] This setting is implemented only on Windows and macOS.
+			[b]Note:[/b] This setting is implemented on Windows and macOS.
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/enable" type="bool" setter="" getter="" default="true">
 			Enable the pipeline cache that is saved to disk if the graphics API supports it.

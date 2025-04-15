@@ -1210,7 +1210,6 @@ TextShaderEditor::TextShaderEditor() {
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &TextShaderEditor::_bookmark_item_pressed));
 
 	add_child(main_container);
-	main_container->add_child(hbc);
 	hbc->add_child(edit_menu);
 	hbc->add_child(search_menu);
 	hbc->add_child(goto_menu);
@@ -1270,5 +1269,5 @@ TextShaderEditor::TextShaderEditor() {
 	add_child(disk_changed);
 
 	_editor_settings_changed();
-	code_editor->show_toggle_scripts_button(); // TODO: Disabled for now, because it doesn't work properly.
+	code_editor->show_toggle_files_button(); // TODO: Disabled for now, because it doesn't work properly.
 }

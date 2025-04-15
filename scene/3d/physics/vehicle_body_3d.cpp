@@ -879,7 +879,7 @@ void VehicleBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 		}
 
 		wheel.m_rotation += wheel.m_deltaRotation;
-		wheel.m_rpm = ((wheel.m_deltaRotation / step) * 60) / Math_TAU;
+		wheel.m_rpm = ((wheel.m_deltaRotation / step) * 60) / Math::TAU;
 
 		wheel.m_deltaRotation *= real_t(0.99); //damping of rotation when not in contact
 	}

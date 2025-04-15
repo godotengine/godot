@@ -271,8 +271,8 @@ float Camera3DGizmoPlugin::_find_closest_angle_to_half_pi_arc(const Vector3 &p_f
 	Vector3 min_p;
 
 	for (int i = 0; i < arc_test_points; i++) {
-		float a = i * Math_PI * 0.5 / arc_test_points;
-		float an = (i + 1) * Math_PI * 0.5 / arc_test_points;
+		float a = i * Math::PI * 0.5 / arc_test_points;
+		float an = (i + 1) * Math::PI * 0.5 / arc_test_points;
 		Vector3 p = Vector3(Math::cos(a), 0, -Math::sin(a)) * p_arc_radius;
 		Vector3 n = Vector3(Math::cos(an), 0, -Math::sin(an)) * p_arc_radius;
 
@@ -287,6 +287,6 @@ float Camera3DGizmoPlugin::_find_closest_angle_to_half_pi_arc(const Vector3 &p_f
 	}
 
 	//min_p = p_arc_xform.affine_inverse().xform(min_p);
-	float a = (Math_PI * 0.5) - Vector2(min_p.x, -min_p.z).angle();
+	float a = (Math::PI * 0.5) - Vector2(min_p.x, -min_p.z).angle();
 	return Math::rad_to_deg(a);
 }

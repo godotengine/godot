@@ -71,11 +71,6 @@ struct EdgeKey {
 	}
 };
 
-struct Point {
-	Vector2 pos;
-	PointKey key;
-};
-
 struct Edge {
 	/// The gateway in the edge, as, in some case, the whole edge might not be navigable.
 	struct Connection {
@@ -103,8 +98,7 @@ struct Polygon {
 	/// Navigation region or link that contains this polygon.
 	const NavBaseIteration2D *owner = nullptr;
 
-	/// The points of this `Polygon`
-	LocalVector<Point> points;
+	LocalVector<Vector2> vertices;
 
 	/// The edges of this `Polygon`
 	LocalVector<Edge> edges;

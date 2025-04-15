@@ -92,6 +92,14 @@ private:
 	bool pass = false;
 	bool text_changed_dirty = false;
 
+	enum AltInputMode {
+		ALT_INPUT_NONE,
+		ALT_INPUT_UNICODE,
+		ALT_INPUT_OEM,
+		ALT_INPUT_WIN,
+	};
+
+	AltInputMode alt_mode = ALT_INPUT_NONE;
 	bool alt_start = false;
 	bool alt_start_no_hold = false;
 	uint32_t alt_code = 0;
@@ -105,6 +113,7 @@ private:
 	Point2 ime_selection;
 
 	RID text_rid;
+	RID accessibility_text_root_element;
 	float full_width = 0.0;
 
 	bool selecting_enabled = true;
@@ -263,6 +272,11 @@ protected:
 
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+	void _accessibility_action_set_selection(const Variant &p_data);
+	void _accessibility_action_replace_selected(const Variant &p_data);
+	void _accessibility_action_set_value(const Variant &p_data);
+	void _accessibility_action_menu(const Variant &p_data);
 
 public:
 	void edit();

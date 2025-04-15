@@ -667,6 +667,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	top_hb->add_child(tool_blend);
 	tool_blend->set_pressed(true);
 	tool_blend->set_tooltip_text(TTR("Set the blending position within the space"));
+	tool_blend->set_accessibility_name(TTRC("Set Blending Position"));
 	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(3));
 
 	tool_select = memnew(Button);
@@ -675,6 +676,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
 	tool_select->set_tooltip_text(TTR("Select and move points, create points with RMB."));
+	tool_select->set_accessibility_name(TTRC("Edit Points"));
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(0));
 
 	tool_create = memnew(Button);
@@ -683,6 +685,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_create->set_button_group(bg);
 	top_hb->add_child(tool_create);
 	tool_create->set_tooltip_text(TTR("Create points."));
+	tool_create->set_accessibility_name(TTRC("Create Points"));
 	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(1));
 
 	tool_erase_sep = memnew(VSeparator);
@@ -691,6 +694,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
 	top_hb->add_child(tool_erase);
 	tool_erase->set_tooltip_text(TTR("Erase points."));
+	tool_erase->set_accessibility_name(TTRC("Erase Points"));
 	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_erase_selected));
 
 	top_hb->add_child(memnew(VSeparator));
@@ -701,6 +705,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	top_hb->add_child(snap);
 	snap->set_pressed(true);
 	snap->set_tooltip_text(TTR("Enable snap and show grid."));
+	snap->set_accessibility_name(TTRC("Snap to Grid"));
 	snap->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_snap_toggled));
 
 	snap_value = memnew(SpinBox);
@@ -708,6 +713,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	snap_value->set_min(0.01);
 	snap_value->set_step(0.01);
 	snap_value->set_max(1000);
+	snap_value->set_accessibility_name(TTRC("Grid Step"));
 
 	top_hb->add_child(memnew(VSeparator));
 	top_hb->add_child(memnew(Label(TTR("Sync:"))));
@@ -732,6 +738,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	edit_value->set_min(-1000);
 	edit_value->set_max(1000);
 	edit_value->set_step(0.01);
+	edit_value->set_accessibility_name(TTRC("Blend Value"));
 	edit_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_edit_point_pos));
 
 	open_editor = memnew(Button);
@@ -768,14 +775,17 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 		min_value->set_min(-10000);
 		min_value->set_max(0);
 		min_value->set_step(0.01);
+		min_value->set_accessibility_name(TTRC("Min"));
 
 		max_value = memnew(SpinBox);
 		max_value->set_min(0.01);
 		max_value->set_max(10000);
 		max_value->set_step(0.01);
+		max_value->set_accessibility_name(TTRC("Max"));
 
 		label_value = memnew(LineEdit);
 		label_value->set_expand_to_text_length_enabled(true);
+		label_value->set_accessibility_name(TTRC("Value"));
 
 		// now add
 

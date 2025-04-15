@@ -329,7 +329,7 @@ bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p
 		rel = Vector2(Math::cos(bone_angle), Math::sin(bone_angle)) * length * get_global_scale();
 	}
 
-	Vector2 relt = rel.rotated(Math_PI * 0.5).normalized() * bone_width;
+	Vector2 relt = rel.rotated(Math::PI * 0.5).normalized() * bone_width;
 	Vector2 reln = rel.normalized();
 	Vector2 reltn = relt.normalized();
 

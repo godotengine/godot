@@ -75,7 +75,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 		CLOSE_OTHER_TABS,
 		SHOW_IN_FILE_SYSTEM,
 		COPY_PATH,
-		TOGGLE_SHADERS_PANEL,
+		TOGGLE_FILES_PANEL,
 	};
 
 	enum PopupMenuType {
@@ -84,9 +84,10 @@ class ShaderEditorPlugin : public EditorPlugin {
 		CONTEXT_VALID_ITEM,
 	};
 
-	HSplitContainer *main_split = nullptr;
-	VBoxContainer *left_panel = nullptr;
+	VBoxContainer *main_container = nullptr;
+	HSplitContainer *files_split = nullptr;
 	HBoxContainer *menu_hb = nullptr;
+	Control *menu_spacer = nullptr;
 
 	ItemList *shader_list = nullptr;
 	TabContainer *shader_tabs = nullptr;

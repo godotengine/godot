@@ -1957,11 +1957,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		skip_breakpoints->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip_text(TTR("Skip Breakpoints"));
+		skip_breakpoints->set_accessibility_name(TTRC("Skip Breakpoints"));
 		skip_breakpoints->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
 
 		ignore_error_breaks = memnew(Button);
 		ignore_error_breaks->set_flat(true);
 		ignore_error_breaks->set_tooltip_text(TTR("Ignore Error Breaks"));
+		ignore_error_breaks->set_accessibility_name(TTRC("Ignore Error Breaks"));
 		hbc->add_child(ignore_error_breaks);
 		ignore_error_breaks->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_ignore_error_breaks));
 
@@ -1971,6 +1973,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		copy->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(copy);
 		copy->set_tooltip_text(TTR("Copy Error"));
+		copy->set_accessibility_name(TTRC("Copy Error"));
 		copy->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_copy));
 
 		hbc->add_child(memnew(VSeparator));
@@ -1979,6 +1982,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		step->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(step);
 		step->set_tooltip_text(TTR("Step Into"));
+		step->set_accessibility_name(TTRC("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
 		step->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_step));
 
@@ -1986,6 +1990,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		next->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(next);
 		next->set_tooltip_text(TTR("Step Over"));
+		next->set_accessibility_name(TTRC("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
 		next->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_next));
 
@@ -1995,6 +2000,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		dobreak->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip_text(TTR("Break"));
+		dobreak->set_accessibility_name(TTRC("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
 		dobreak->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_break));
 
@@ -2002,6 +2008,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		docontinue->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip_text(TTR("Continue"));
+		docontinue->set_accessibility_name(TTRC("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
 		docontinue->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_continue));
 
@@ -2050,6 +2057,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		search = memnew(LineEdit);
 		search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		search->set_placeholder(TTR("Filter Stack Variables"));
+		search->set_accessibility_name(TTRC("Filter Stack Variables"));
 		search->set_clear_button_enabled(true);
 		tools_hb->add_child(search);
 
@@ -2184,14 +2192,17 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		vmem_hb->add_child(memnew(Label(TTR("Total:") + " ")));
 		vmem_total = memnew(LineEdit);
 		vmem_total->set_editable(false);
+		vmem_total->set_accessibility_name(TTRC("Video RAM Total"));
 		vmem_total->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		vmem_hb->add_child(vmem_total);
 		vmem_refresh = memnew(Button);
+		vmem_refresh->set_accessibility_name(TTRC("Refresh Video RAM"));
 		vmem_refresh->set_theme_type_variation(SceneStringName(FlatButton));
 		vmem_hb->add_child(vmem_refresh);
 		vmem_export = memnew(Button);
 		vmem_export->set_theme_type_variation(SceneStringName(FlatButton));
 		vmem_export->set_tooltip_text(TTR("Export list to a CSV file"));
+		vmem_export->set_accessibility_name(TTRC("Export to CSV"));
 		vmem_hb->add_child(vmem_export);
 		vmem_vb->add_child(vmem_hb);
 		vmem_refresh->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
@@ -2235,11 +2246,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		misc->add_child(info_left);
 		clicked_ctrl = memnew(LineEdit);
 		clicked_ctrl->set_editable(false);
+		clicked_ctrl->set_accessibility_name(TTRC("Clicked Control"));
 		clicked_ctrl->set_h_size_flags(SIZE_EXPAND_FILL);
 		info_left->add_child(memnew(Label(TTR("Clicked Control:"))));
 		info_left->add_child(clicked_ctrl);
 		clicked_ctrl_type = memnew(LineEdit);
 		clicked_ctrl_type->set_editable(false);
+		clicked_ctrl_type->set_accessibility_name(TTRC("Clicked Control Type"));
 		info_left->add_child(memnew(Label(TTR("Clicked Control Type:"))));
 		info_left->add_child(clicked_ctrl_type);
 
@@ -2247,6 +2260,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		live_edit_root = memnew(LineEdit);
 		live_edit_root->set_editable(false);
 		live_edit_root->set_h_size_flags(SIZE_EXPAND_FILL);
+		live_edit_root->set_accessibility_name(TTRC("Live Edit Root"));
 
 		{
 			HBoxContainer *lehb = memnew(HBoxContainer);

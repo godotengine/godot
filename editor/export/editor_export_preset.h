@@ -125,6 +125,8 @@ public:
 	void set_file_export_mode(const String &p_path, FileExportMode p_mode);
 	FileExportMode get_file_export_mode(const String &p_path, FileExportMode p_default = MODE_FILE_NOT_CUSTOMIZED) const;
 
+	Variant get_project_setting(const StringName &p_name);
+
 	void set_name(const String &p_name);
 	String get_name() const;
 

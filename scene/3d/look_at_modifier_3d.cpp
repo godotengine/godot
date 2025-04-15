@@ -554,13 +554,13 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 		Vector3 prev_forward_vector_nrm = forward_vector.normalized();
 		Vector3 rest_forward_vector = get_vector_from_bone_axis(forward_axis);
 		if (symmetry_limitation) {
-			if ((is_not_max_influence || !Math::is_equal_approx(primary_limit_angle, (float)Math_TAU)) &&
+			if ((is_not_max_influence || !Math::is_equal_approx(primary_limit_angle, (float)Math::TAU)) &&
 					prev_forward_vector_nrm.dot(rest_forward_vector) < 0 &&
 					forward_vector_nrm.dot(rest_forward_vector) < 0) {
 				init_transition();
 			}
 		} else {
-			if ((is_not_max_influence || !Math::is_equal_approx(primary_positive_limit_angle + primary_negative_limit_angle, (float)Math_TAU)) &&
+			if ((is_not_max_influence || !Math::is_equal_approx(primary_positive_limit_angle + primary_negative_limit_angle, (float)Math::TAU)) &&
 					prev_forward_vector_nrm.dot(rest_forward_vector) < 0 &&
 					forward_vector_nrm.dot(rest_forward_vector) < 0) {
 				init_transition();
@@ -660,7 +660,7 @@ float LookAtModifier3D::remap_damped(float p_from, float p_to, float p_damp_thre
 		return sign * CLAMP(abs_value, p_from, p_to);
 	}
 
-	double limit = Math_PI;
+	double limit = Math::PI;
 	double inv_to = 1.0 / p_to;
 	double end_x = limit * inv_to;
 	double position = abs_value * inv_to;

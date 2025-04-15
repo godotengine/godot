@@ -57,7 +57,7 @@ constexpr double DEFAULT_CONTACT_MAX_SEPARATION = 0.05;
 constexpr double DEFAULT_CONTACT_MAX_ALLOWED_PENETRATION = 0.01;
 constexpr double DEFAULT_CONTACT_DEFAULT_BIAS = 0.8;
 constexpr double DEFAULT_SLEEP_THRESHOLD_LINEAR = 0.1;
-constexpr double DEFAULT_SLEEP_THRESHOLD_ANGULAR = 8.0 * Math_PI / 180;
+constexpr double DEFAULT_SLEEP_THRESHOLD_ANGULAR = 8.0 * Math::PI / 180;
 constexpr double DEFAULT_SOLVER_ITERATIONS = 8;
 
 } // namespace

@@ -231,6 +231,7 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 	fold_btn = memnew(Button);
 	fold_btn->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
 	fold_btn->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionSetEditor::_on_toggle_expand));
+	fold_btn->set_accessibility_name(TTRC("Fold"));
 	fold_btn->set_flat(true);
 	panel_hb->add_child(fold_btn);
 
@@ -247,6 +248,7 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 	action_set_name->set_tooltip_text(TTR("Internal name of the action. Some XR runtimes don't allow spaces or special characters."));
 	action_set_name->set_custom_minimum_size(Size2(150.0 * EDSCALE, 0.0));
 	action_set_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_name_changed));
+	action_set_name->set_accessibility_name(TTRC("Action Set Name"));
 	action_set_hb->add_child(action_set_name);
 
 	action_set_localized_name = memnew(LineEdit);
@@ -255,6 +257,7 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 	action_set_localized_name->set_custom_minimum_size(Size2(150.0 * EDSCALE, 0.0));
 	action_set_localized_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_set_localized_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_localized_name_changed));
+	action_set_localized_name->set_accessibility_name(TTRC("Action Set Localized Name"));
 	action_set_hb->add_child(action_set_localized_name);
 
 	action_set_priority = memnew(TextEdit);
@@ -262,17 +265,20 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 	action_set_priority->set_tooltip_text(TTR("Priority of the action set. If multiple action sets bind to the same input, the action set with the highest priority will be updated."));
 	action_set_priority->set_custom_minimum_size(Size2(50.0 * EDSCALE, 0.0));
 	action_set_priority->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_priority_changed));
+	action_set_priority->set_accessibility_name(TTRC("Action Set Priority"));
 	action_set_hb->add_child(action_set_priority);
 
 	add_action = memnew(Button);
 	add_action->set_tooltip_text(TTR("Add action."));
 	add_action->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionSetEditor::_on_add_action));
+	add_action->set_accessibility_name(TTRC("Add"));
 	add_action->set_flat(true);
 	action_set_hb->add_child(add_action);
 
 	rem_action_set = memnew(Button);
 	rem_action_set->set_tooltip_text(TTR("Remove action set."));
 	rem_action_set->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionSetEditor::_on_remove_action_set));
+	rem_action_set->set_accessibility_name(TTRC("Remove"));
 	rem_action_set->set_flat(true);
 	action_set_hb->add_child(rem_action_set);
 

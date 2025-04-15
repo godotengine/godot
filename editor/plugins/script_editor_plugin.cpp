@@ -1304,13 +1304,13 @@ TypedArray<Script> ScriptEditor::_get_open_scripts() const {
 	return ret;
 }
 
-bool ScriptEditor::toggle_scripts_panel() {
+bool ScriptEditor::toggle_files_panel() {
 	list_split->set_visible(!list_split->is_visible());
-	EditorSettings::get_singleton()->set_project_metadata("scripts_panel", "show_scripts_panel", list_split->is_visible());
+	EditorSettings::get_singleton()->set_project_metadata("files_panel", "show_files_panel", list_split->is_visible());
 	return list_split->is_visible();
 }
 
-bool ScriptEditor::is_scripts_panel_toggled() {
+bool ScriptEditor::is_files_panel_toggled() {
 	return list_split->is_visible();
 }
 
@@ -1438,15 +1438,15 @@ void ScriptEditor::_menu_option(int p_option) {
 			_sort_list_on_update = true;
 			_update_script_names();
 		} break;
-		case TOGGLE_SCRIPTS_PANEL: {
-			toggle_scripts_panel();
+		case TOGGLE_FILES_PANEL: {
+			toggle_files_panel();
 			if (current) {
-				current->update_toggle_scripts_button();
+				current->update_toggle_files_button();
 			} else {
 				Control *tab = tab_container->get_current_tab_control();
 				EditorHelp *editor_help = Object::cast_to<EditorHelp>(tab);
 				if (editor_help) {
-					editor_help->update_toggle_scripts_button();
+					editor_help->update_toggle_files_button();
 				}
 			}
 		}
@@ -3272,7 +3272,15 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		if (se || eh) {
 			int new_index = 0;
 			if (script_list->get_item_count() > 0) {
-				new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+				int pos = 0;
+				if (p_point == Vector2(Math::INF, Math::INF)) {
+					if (script_list->is_anything_selected()) {
+						pos = script_list->get_selected_items()[0];
+					}
+				} else {
+					pos = script_list->get_item_at_position(p_point);
+				}
+				new_index = script_list->get_item_metadata(pos);
 			}
 			tab_container->move_child(node, new_index);
 			tab_container->set_current_tab(new_index);
@@ -3292,7 +3300,15 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		if (se || eh) {
 			int new_index = 0;
 			if (script_list->get_item_count() > 0) {
-				new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+				int pos = 0;
+				if (p_point == Vector2(Math::INF, Math::INF)) {
+					if (script_list->is_anything_selected()) {
+						pos = script_list->get_selected_items()[0];
+					}
+				} else {
+					pos = script_list->get_item_at_position(p_point);
+				}
+				new_index = script_list->get_item_metadata(pos);
 			}
 			tab_container->move_child(node, new_index);
 			tab_container->set_current_tab(new_index);
@@ -3305,7 +3321,15 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 
 		int new_index = 0;
 		if (script_list->get_item_count() > 0) {
-			new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+			int pos = 0;
+			if (p_point == Vector2(Math::INF, Math::INF)) {
+				if (script_list->is_anything_selected()) {
+					pos = script_list->get_selected_items()[0];
+				}
+			} else {
+				pos = script_list->get_item_at_position(p_point);
+			}
+			new_index = script_list->get_item_metadata(pos);
 		}
 		int num_tabs_before = tab_container->get_tab_count();
 		for (int i = 0; i < files.size(); i++) {
@@ -3452,7 +3476,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), WINDOW_MOVE_UP);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_down"), WINDOW_MOVE_DOWN);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_sort"), WINDOW_SORT);
-	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_scripts_panel"), TOGGLE_SCRIPTS_PANEL);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"), TOGGLE_FILES_PANEL);
 
 	context_menu->set_item_disabled(context_menu->get_item_index(CLOSE_ALL), tab_container->get_tab_count() <= 0);
 	context_menu->set_item_disabled(context_menu->get_item_index(CLOSE_OTHER_TABS), tab_container->get_tab_count() <= 1);
@@ -4172,6 +4196,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	filter_scripts = memnew(LineEdit);
 	filter_scripts->set_placeholder(TTR("Filter Scripts"));
+	filter_scripts->set_accessibility_name(TTRC("Filter Scripts"));
 	filter_scripts->set_clear_button_enabled(true);
 	filter_scripts->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_scripts_text_changed));
 	scripts_vbox->add_child(filter_scripts);
@@ -4197,7 +4222,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	list_split->add_child(overview_vbox);
-	list_split->set_visible(EditorSettings::get_singleton()->get_project_metadata("scripts_panel", "show_scripts_panel", true));
+	list_split->set_visible(EditorSettings::get_singleton()->get_project_metadata("files_panel", "show_files_panel", true));
 	buttons_hbox = memnew(HBoxContainer);
 	overview_vbox->add_child(buttons_hbox);
 
@@ -4211,6 +4236,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	members_overview_alphabeta_sort_button = memnew(Button);
 	members_overview_alphabeta_sort_button->set_flat(true);
+	members_overview_alphabeta_sort_button->set_accessibility_name(TTRC("Alphabetical Sorting"));
 	members_overview_alphabeta_sort_button->set_tooltip_text(TTR("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
 	members_overview_alphabeta_sort_button->set_pressed(EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically"));
@@ -4220,6 +4246,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	filter_methods = memnew(LineEdit);
 	filter_methods->set_placeholder(TTR("Filter Methods"));
+	filter_methods->set_accessibility_name(TTRC("Filter Methods"));
 	filter_methods->set_clear_button_enabled(true);
 	filter_methods->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_methods_text_changed));
 	overview_vbox->add_child(filter_methods);
@@ -4328,7 +4355,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTRC("Run"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::X), FILE_RUN);
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTRC("Toggle Scripts Panel"), KeyModifierMask::CMD_OR_CTRL | Key::BACKSLASH), TOGGLE_SCRIPTS_PANEL);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_files_panel", TTRC("Toggle Files Panel"), KeyModifierMask::CMD_OR_CTRL | Key::BACKSLASH), TOGGLE_FILES_PANEL);
 	file_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_menu_option));
 	file_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ScriptEditor::_prepare_file_menu));
 	file_menu->get_popup()->connect("popup_hide", callable_mp(this, &ScriptEditor::_file_menu_closed));
@@ -4366,6 +4393,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	menu_hb->add_spacer();
 
 	site_search = memnew(Button);
+	site_search->set_accessibility_name(TTRC("Site Search"));
 	site_search->set_flat(true);
 	site_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
@@ -4380,6 +4408,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	menu_hb->add_child(memnew(VSeparator));
 
 	script_back = memnew(Button);
+	script_back->set_accessibility_name(TTRC("Previous"));
 	script_back->set_flat(true);
 	script_back->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_back));
 	menu_hb->add_child(script_back);
@@ -4387,6 +4416,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_back->set_tooltip_text(TTR("Go to previous edited document."));
 
 	script_forward = memnew(Button);
+	script_forward->set_accessibility_name(TTRC("Next"));
 	script_forward->set_flat(true);
 	script_forward->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_forward));
 	menu_hb->add_child(script_forward);

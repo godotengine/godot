@@ -43,6 +43,8 @@
 #include "main/main.h"
 #include "scene/resources/texture.h"
 
+#include "servers/rendering/dummy/rasterizer_dummy.h"
+
 #if defined(VULKAN_ENABLED)
 #include "rendering_context_driver_vulkan_windows.h"
 #endif
@@ -51,6 +53,10 @@
 #endif
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
+#if defined(ACCESSKIT_ENABLED)
+#include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
 #include <avrt.h>
@@ -142,6 +148,11 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 			return true;
 		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 			return (os_ver.dwBuildNumber >= 17134); // Windows 10 Redstone 4 (1803)+ only.
+#ifdef ACCESSKIT_ENABLED
+		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return (accessibility_driver != nullptr);
+		} break;
+#endif
 		default:
 			return false;
 	}
@@ -374,7 +385,7 @@ public:
 		if (!lpw_path) {
 			return S_FALSE;
 		}
-		String path = String::utf16((const char16_t *)lpw_path).replace("\\", "/").trim_prefix(R"(\\?\)").simplify_path();
+		String path = String::utf16((const char16_t *)lpw_path).replace_char('\\', '/').trim_prefix(R"(\\?\)").simplify_path();
 		if (!path.begins_with(root.simplify_path())) {
 			return S_FALSE;
 		}
@@ -607,13 +618,13 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			current_dir_name.resize(str_len + 1);
 			GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 			if (dir == ".") {
-				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/");
+				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/');
 			} else {
-				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/").path_join(dir);
+				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(dir);
 			}
 		}
 		dir = dir.simplify_path();
-		dir = dir.trim_prefix(R"(\\?\)").replace("/", "\\");
+		dir = dir.trim_prefix(R"(\\?\)").replace_char('/', '\\');
 
 		IShellItem *shellitem = nullptr;
 		hr = SHCreateItemFromParsingName((LPCWSTR)dir.utf16().ptr(), nullptr, IID_IShellItem, (void **)&shellitem);
@@ -656,7 +667,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 						PWSTR file_path = nullptr;
 						hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
 						if (SUCCEEDED(hr)) {
-							file_names.push_back(String::utf16((const char16_t *)file_path).replace("\\", "/").trim_prefix(R"(\\?\)"));
+							file_names.push_back(String::utf16((const char16_t *)file_path).replace_char('\\', '/').trim_prefix(R"(\\?\)"));
 							CoTaskMemFree(file_path);
 						}
 						result->Release();
@@ -670,7 +681,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 					PWSTR file_path = nullptr;
 					hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
 					if (SUCCEEDED(hr)) {
-						file_names.push_back(String::utf16((const char16_t *)file_path).replace("\\", "/").trim_prefix(R"(\\?\)"));
+						file_names.push_back(String::utf16((const char16_t *)file_path).replace_char('\\', '/').trim_prefix(R"(\\?\)"));
 						CoTaskMemFree(file_path);
 					}
 					result->Release();
@@ -911,7 +922,7 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 }
 
 BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
-	BitField<MouseButtonMask> last_button_state = 0;
+	BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 
 	if (GetKeyState(VK_LBUTTON) & (1 << 15)) {
 		last_button_state.set_flag(MouseButtonMask::LEFT);
@@ -1622,6 +1633,12 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT) {
 		wd.resizable = false;
 	}
+	if (p_flags & WINDOW_FLAG_MINIMIZE_DISABLED_BIT) {
+		wd.no_min_btn = true;
+	}
+	if (p_flags & WINDOW_FLAG_MAXIMIZE_DISABLED_BIT) {
+		wd.no_max_btn = true;
+	}
 	if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
 		wd.borderless = true;
 	}
@@ -2303,7 +2320,7 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 	return Size2();
 }
 
-void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex) {
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex) {
 	// Windows docs for window styles:
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
@@ -2331,9 +2348,11 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 			r_style |= WS_MAXIMIZE;
 		}
 		if (!p_fullscreen) {
-			r_style |= WS_SYSMENU | WS_MINIMIZEBOX;
-
-			if (p_resizable) {
+			r_style |= WS_SYSMENU;
+			if (!p_no_min_btn) {
+				r_style |= WS_MINIMIZEBOX;
+			}
+			if (!p_no_max_btn) {
 				r_style |= WS_MAXIMIZEBOX;
 			}
 		}
@@ -2346,11 +2365,23 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 			} else {
 				r_style = WS_OVERLAPPEDWINDOW;
 			}
+			if (p_no_min_btn) {
+				r_style &= ~WS_MINIMIZEBOX;
+			}
+			if (p_no_max_btn) {
+				r_style &= ~WS_MAXIMIZEBOX;
+			}
 		} else {
 			if (p_minimized) {
-				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MINIMIZE;
+				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZE;
 			} else {
-				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+			}
+			if (!p_no_min_btn) {
+				r_style |= WS_MINIMIZEBOX;
+			}
+			if (!p_no_max_btn) {
+				r_style |= WS_MAXIMIZEBOX;
 			}
 		}
 	}
@@ -2380,7 +2411,7 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.no_min_btn, wd.no_max_btn, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -2535,10 +2566,10 @@ bool DisplayServerWindows::window_is_maximize_allowed(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
 
-	// FIXME: Implement this, or confirm that it should always be true.
-
-	return true;
+	const DWORD style = GetWindowLongPtr(wd.hWnd, GWL_STYLE);
+	return (style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX;
 }
 
 void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
@@ -2547,6 +2578,14 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	switch (p_flag) {
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			wd.no_min_btn = p_enabled;
+			_update_window_style(p_window);
+		} break;
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			wd.no_max_btn = p_enabled;
+			_update_window_style(p_window);
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			if (p_enabled && wd.parent_hwnd) {
 				print_line("Embedded window resize can't be disabled.");
@@ -2642,6 +2681,12 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
 	switch (p_flag) {
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			return wd.no_max_btn;
+		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			return wd.no_min_btn;
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			return !wd.resizable;
 		} break;
@@ -2732,6 +2777,46 @@ bool DisplayServerWindows::can_any_window_draw() const {
 		}
 	}
 
+	return false;
+}
+
+int DisplayServerWindows::accessibility_should_increase_contrast() const {
+	HIGHCONTRASTA hc;
+	hc.cbSize = sizeof(HIGHCONTRAST);
+	if (!SystemParametersInfoA(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRAST), &hc, 0)) {
+		return -1;
+	}
+	return (hc.dwFlags & HCF_HIGHCONTRASTON);
+}
+
+int DisplayServerWindows::accessibility_should_reduce_animation() const {
+	bool anim_enabled = false;
+	if (!SystemParametersInfoA(SPI_GETCLIENTAREAANIMATION, 0, &anim_enabled, 0)) {
+		return -1;
+	}
+	return (!anim_enabled);
+}
+
+int DisplayServerWindows::accessibility_should_reduce_transparency() const {
+	bool tr_enabled = false;
+	if (!SystemParametersInfoA(SPI_GETDISABLEOVERLAPPEDCONTENT, 0, &tr_enabled, 0)) {
+		return -1;
+	}
+	return tr_enabled;
+}
+
+int DisplayServerWindows::accessibility_screen_reader_active() const {
+	bool sr_enabled = false;
+	if (SystemParametersInfoA(SPI_GETSCREENREADER, 0, &sr_enabled, 0) && sr_enabled) {
+		return true;
+	}
+
+	static const WCHAR *narrator_mutex_name = L"NarratorRunning";
+	HANDLE narrator_mutex = OpenMutexW(MUTEX_ALL_ACCESS, false, narrator_mutex_name);
+	if (narrator_mutex) {
+		CloseHandle(narrator_mutex);
+		return true;
+	}
 	return false;
 }
 
@@ -4441,7 +4526,7 @@ void DisplayServerWindows::popup_close(WindowID p_window) {
 }
 
 BitField<DisplayServerWindows::WinKeyModifierMask> DisplayServerWindows::_get_mods() const {
-	BitField<WinKeyModifierMask> mask;
+	BitField<WinKeyModifierMask> mask = {};
 	static unsigned char keyboard_state[256];
 	if (GetKeyboardState((PBYTE)&keyboard_state)) {
 		if ((keyboard_state[VK_LSHIFT] & 0x80) || (keyboard_state[VK_RSHIFT] & 0x80)) {
@@ -4522,6 +4607,16 @@ LRESULT DisplayServerWindows::_handle_early_window_message(HWND hWnd, UINT uMsg,
 
 			// Fix this up so we can recognize the remaining messages.
 			pWindowData->hWnd = hWnd;
+
+#ifdef ACCESSKIT_ENABLED
+			if (accessibility_driver && !accessibility_driver->window_create(pWindowData->id, (void *)hWnd)) {
+				if (OS::get_singleton()->is_stdout_verbose()) {
+					ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+				}
+				memdelete(accessibility_driver);
+				accessibility_driver = nullptr;
+			}
+#endif
 		} break;
 		default: {
 			// Additional messages during window creation should happen after we fixed
@@ -4572,6 +4667,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case WM_GETOBJECT: {
+			get_object_recieved = true;
+		} break;
 		case WM_MENUCOMMAND: {
 			native_menu->_menu_activate(HMENU(lParam), (int)wParam);
 		} break;
@@ -4910,8 +5008,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					windows[window_id].last_pressure_update = 0;
 
 					float pressure = float(packet.pkNormalPressure - windows[window_id].min_pressure) / float(windows[window_id].max_pressure - windows[window_id].min_pressure);
-					double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math_PI / 180);
-					double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math_PI / 180));
+					double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math::PI / 180);
+					double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math::PI / 180));
 					bool inverted = packet.pkStatus & TPS_INVERT;
 
 					Vector2 tilt = (windows[window_id].tilt_supported) ? Vector2(Math::atan(Math::sin(azim) / alt), Math::atan(Math::cos(azim) / alt)) : Vector2();
@@ -5038,7 +5136,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb.instantiate();
 			mb->set_window_id(window_id);
 
-			BitField<MouseButtonMask> last_button_state = 0;
+			BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 			if (IS_POINTER_FIRSTBUTTON_WPARAM(wParam)) {
 				last_button_state.set_flag(MouseButtonMask::LEFT);
 				mb->set_button_index(MouseButton::LEFT);
@@ -5204,7 +5302,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
 			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
-			BitField<MouseButtonMask> last_button_state = 0;
+			BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 			if (IS_POINTER_FIRSTBUTTON_WPARAM(wParam)) {
 				last_button_state.set_flag(MouseButtonMask::LEFT);
 			}
@@ -5870,6 +5968,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			joypad->probe_joypads();
 		} break;
 		case WM_DESTROY: {
+#ifdef ACCESSKIT_ENABLED
+			if (accessibility_driver) {
+				accessibility_driver->window_destroy(window_id);
+			}
+#endif
 			Input::get_singleton()->flush_buffered_events();
 			if (window_mouseover_id == window_id) {
 				window_mouseover_id = INVALID_WINDOW_ID;
@@ -5923,6 +6026,11 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id) {
 			SetFocus(wd.hWnd);
 		}
 		wd.window_focused = true;
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver) {
+			accessibility_driver->accessibility_set_window_focused(p_window_id, true);
+		}
+#endif
 		_send_window_event(wd, WINDOW_EVENT_FOCUS_IN);
 	} else { // WM_INACTIVE.
 		Input::get_singleton()->release_pressed_events();
@@ -5936,6 +6044,11 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id) {
 			ReleaseCapture();
 		}
 		wd.window_focused = false;
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver) {
+			accessibility_driver->accessibility_set_window_focused(p_window_id, false);
+		}
+#endif
 		_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
 	}
 
@@ -6153,7 +6266,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP_BIT), p_parent_hwnd, dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_flags & WINDOW_FLAG_MINIMIZE_DISABLED_BIT, p_flags & WINDOW_FLAG_MAXIMIZE_DISABLED_BIT, p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP_BIT), p_parent_hwnd, dwStyle, dwExStyle);
 
 	int rq_screen = get_screen_from_rect(p_rect);
 	if (rq_screen < 0) {
@@ -6223,6 +6336,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		WindowData &wd = windows[id];
 
+		wd.id = id;
 		wd.hWnd = CreateWindowExW(
 				dwExStyle,
 				L"Engine", L"",
@@ -6649,6 +6763,19 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 	native_menu = memnew(NativeMenuWindows);
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		accessibility_driver = memnew(AccessibilityDriverAccessKit);
+		if (accessibility_driver->init() != OK) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT("Can't create an accessibility driver, accessibility support disabled!");
+			}
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+	}
+#endif
+
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
@@ -6829,6 +6956,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	_register_raw_input_devices(INVALID_WINDOW_ID);
 
+	// Init context and rendering device.
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
+	}
+
 #if defined(RD_ENABLED)
 	[[maybe_unused]] bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
 	[[maybe_unused]] bool fallback_to_d3d12 = GLOBAL_GET("rendering/rendering_device/fallback_to_d3d12");
@@ -6901,7 +7033,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 #endif
-// Init context and rendering device
+
 #if defined(GLES3_ENABLED)
 
 	bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_angle");
@@ -7033,7 +7165,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		HKEY key;
 		if (RegOpenKeyW(HKEY_CURRENT_USER_LOCAL_SETTINGS, L"Software\\Microsoft\\Windows\\Shell\\MuiCache", &key) == ERROR_SUCCESS) {
 			Char16String cs_name = name.utf16();
-			String value_name = OS::get_singleton()->get_executable_path().replace("/", "\\") + ".FriendlyAppName";
+			String value_name = OS::get_singleton()->get_executable_path().replace_char('/', '\\') + ".FriendlyAppName";
 			RegSetValueExW(key, (LPCWSTR)value_name.utf16().get_data(), 0, REG_SZ, (const BYTE *)cs_name.get_data(), cs_name.size() * sizeof(WCHAR));
 			RegCloseKey(key);
 		}
@@ -7075,6 +7207,24 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 
 	windows[MAIN_WINDOW_ID].initialized = true;
+
+	if (accessibility_screen_reader_active()) {
+		_THREAD_SAFE_LOCK_
+		uint64_t time_wait = OS::get_singleton()->get_ticks_msec();
+		while (true) {
+			MSG msg = {};
+			while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+				TranslateMessage(&msg);
+				DispatchMessageW(&msg);
+			}
+
+			uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_wait;
+			if (delta > 500 || get_object_recieved) {
+				break;
+			}
+		}
+		_THREAD_SAFE_UNLOCK_
+	}
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
@@ -7133,6 +7283,7 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_angle");
 #endif
+	drivers.push_back("dummy");
 
 	return drivers;
 }
@@ -7283,6 +7434,11 @@ DisplayServerWindows::~DisplayServerWindows() {
 	if (gl_manager_native) {
 		memdelete(gl_manager_native);
 		gl_manager_native = nullptr;
+	}
+#endif
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		memdelete(accessibility_driver);
 	}
 #endif
 	if (tts) {

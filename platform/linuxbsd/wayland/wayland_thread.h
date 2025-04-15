@@ -104,7 +104,7 @@ public:
 
 	// Message data for window rect changes.
 	class WindowRectMessage : public WindowMessage {
-		GDSOFTCLASS(WindowRectMessage, Message);
+		GDSOFTCLASS(WindowRectMessage, WindowMessage);
 
 	public:
 		// NOTE: This is in "scaled" terms. For example, if there's a 1920x1080 rect
@@ -113,7 +113,7 @@ public:
 	};
 
 	class WindowEventMessage : public WindowMessage {
-		GDSOFTCLASS(WindowEventMessage, Message);
+		GDSOFTCLASS(WindowEventMessage, WindowMessage);
 
 	public:
 		DisplayServer::WindowEvent event;
@@ -127,14 +127,14 @@ public:
 	};
 
 	class DropFilesEventMessage : public WindowMessage {
-		GDSOFTCLASS(DropFilesEventMessage, Message);
+		GDSOFTCLASS(DropFilesEventMessage, WindowMessage);
 
 	public:
 		Vector<String> files;
 	};
 
 	class IMEUpdateEventMessage : public WindowMessage {
-		GDSOFTCLASS(IMEUpdateEventMessage, Message);
+		GDSOFTCLASS(IMEUpdateEventMessage, WindowMessage);
 
 	public:
 		String text;
@@ -142,7 +142,7 @@ public:
 	};
 
 	class IMECommitEventMessage : public WindowMessage {
-		GDSOFTCLASS(IMECommitEventMessage, Message);
+		GDSOFTCLASS(IMECommitEventMessage, WindowMessage);
 
 	public:
 		String text;
@@ -341,7 +341,7 @@ public:
 		Vector2 relative_motion;
 		uint32_t relative_motion_time = 0;
 
-		BitField<MouseButtonMask> pressed_button_mask;
+		BitField<MouseButtonMask> pressed_button_mask = MouseButtonMask::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;
@@ -371,7 +371,7 @@ public:
 		Vector2 tilt;
 		uint32_t pressure = 0;
 
-		BitField<MouseButtonMask> pressed_button_mask;
+		BitField<MouseButtonMask> pressed_button_mask = MouseButtonMask::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;

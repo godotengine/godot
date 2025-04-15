@@ -3030,14 +3030,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 			const String base_path = resource_path.substr(0, resource_path.rfind_char('/')) + "/";
 
-			file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-			file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-			file->clear_filters();
-			file->set_current_path(base_path);
-			file->set_current_file(ProjectZIPPacker::get_project_zip_safe_name());
-			file->add_filter("*.zip", "ZIP Archive");
-			file->set_title(TTR("Pack Project as ZIP..."));
-			file->popup_file_dialog();
+			file_pack_zip->set_current_path(base_path);
+			file_pack_zip->set_current_file(ProjectZIPPacker::get_project_zip_safe_name());
+			file_pack_zip->popup_file_dialog();
 		} break;
 
 		case FILE_UNDO: {
@@ -3368,7 +3363,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			about->popup_centered(Size2(780, 500) * EDSCALE);
 		} break;
 		case HELP_SUPPORT_GODOT_DEVELOPMENT: {
-			OS::get_singleton()->shell_open("https://godotengine.org/donate");
+			OS::get_singleton()->shell_open("https://fund.godotengine.org");
 		} break;
 	}
 }
@@ -3379,11 +3374,13 @@ String EditorNode::adjust_scene_name_casing(const String &p_root_name) {
 			// Use casing of the root node.
 			break;
 		case SCENE_NAME_CASING_PASCAL_CASE:
-			return p_root_name.replace("-", "_").to_pascal_case();
+			return p_root_name.to_pascal_case();
 		case SCENE_NAME_CASING_SNAKE_CASE:
-			return p_root_name.replace("-", "_").to_snake_case();
+			return p_root_name.to_snake_case();
 		case SCENE_NAME_CASING_KEBAB_CASE:
-			return p_root_name.to_snake_case().replace("_", "-");
+			return p_root_name.to_kebab_case();
+		case SCENE_NAME_CASING_CAMEL_CASE:
+			return p_root_name.to_camel_case();
 	}
 	return p_root_name;
 }
@@ -3400,11 +3397,13 @@ String EditorNode::adjust_script_name_casing(const String &p_file_name, ScriptLa
 			// Script language has no preference, so do not adjust.
 			break;
 		case ScriptLanguage::SCRIPT_NAME_CASING_PASCAL_CASE:
-			return p_file_name.replace("-", "_").to_pascal_case();
+			return p_file_name.to_pascal_case();
 		case ScriptLanguage::SCRIPT_NAME_CASING_SNAKE_CASE:
-			return p_file_name.replace("-", "_").to_snake_case();
+			return p_file_name.to_snake_case();
 		case ScriptLanguage::SCRIPT_NAME_CASING_KEBAB_CASE:
-			return p_file_name.to_snake_case().replace("_", "-");
+			return p_file_name.to_kebab_case();
+		case ScriptLanguage::SCRIPT_NAME_CASING_CAMEL_CASE:
+			return p_file_name.to_camel_case();
 	}
 	return p_file_name;
 }
@@ -3707,10 +3706,8 @@ void EditorNode::replace_resources_in_object(Object *p_object, const Vector<Ref<
 			} break;
 			case Variant::DICTIONARY: {
 				Dictionary d = p_object->get(E.name);
-				List<Variant> keys;
 				bool dictionary_requires_updating = false;
-				d.get_key_list(&keys);
-				for (const Variant &F : keys) {
+				for (const Variant &F : d.get_key_list()) {
 					Variant v = d[F];
 					Ref<Resource> res = v;
 
@@ -5702,11 +5699,6 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 		return false;
 	}
 
-	if (!EditorNode::validate_custom_directory()) {
-		current_menu_option = -1;
-		return false;
-	}
-
 	return true;
 }
 
@@ -7506,6 +7498,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/toggle_last_opened_bottom_panel", TTRC("Toggle Last Opened Bottom Panel"), KeyModifierMask::CMD_OR_CTRL | Key::J);
 	distraction_free->set_shortcut(ED_GET_SHORTCUT("editor/distraction_free_mode"));
 	distraction_free->set_tooltip_text(TTRC("Toggle distraction-free mode."));
+	distraction_free->set_accessibility_name(TTRC("Distraction-free Mode"));
 	distraction_free->set_toggle_mode(true);
 	scene_tabs->add_extra_button(distraction_free);
 	distraction_free->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
@@ -7723,6 +7716,7 @@ EditorNode::EditorNode() {
 	main_editor_button_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	editor_main_screen->set_button_container(main_editor_button_hb);
 	title_bar->add_child(main_editor_button_hb);
+	title_bar->set_center_control(main_editor_button_hb);
 
 	// Options are added and handled by DebuggerEditorPlugin.
 	debug_menu = memnew(PopupMenu);
@@ -7831,6 +7825,7 @@ EditorNode::EditorNode() {
 	renderer->set_fit_to_longest_item(false);
 	renderer->set_focus_mode(Control::FOCUS_NONE);
 	renderer->set_tooltip_text(TTR("Choose a rendering method.\n\nNotes:\n- On mobile platforms, the Mobile rendering method is used if Forward+ is selected here.\n- On the web platform, the Compatibility rendering method is always used."));
+	renderer->set_accessibility_name(TTRC("Rendering Method"));
 
 	right_menu_hb->add_child(renderer);
 
@@ -7853,6 +7848,9 @@ EditorNode::EditorNode() {
 		PackedStringArray renderers = ProjectSettings::get_singleton()->get_custom_property_info().get(StringName("rendering/renderer/rendering_method")).hint_string.split(",", false);
 		for (int i = 0; i < renderers.size(); i++) {
 			String rendering_method = renderers[i];
+			if (rendering_method == "dummy") {
+				continue;
+			}
 			_add_renderer_entry(rendering_method, false);
 			renderer->set_item_metadata(i, rendering_method);
 			// Lowercase for standard comparison.
@@ -7888,6 +7886,7 @@ EditorNode::EditorNode() {
 	right_menu_hb->add_child(update_spinner);
 	update_spinner->set_button_icon(theme->get_icon(SNAME("Progress1"), EditorStringName(EditorIcons)));
 	update_spinner->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
+	update_spinner->set_accessibility_name(TTRC("Update Mode"));
 	PopupMenu *p = update_spinner->get_popup();
 	p->add_radio_check_item(TTR("Update Continuously"), SPINNER_UPDATE_CONTINUOUSLY);
 	p->add_radio_check_item(TTR("Update When Changed"), SPINNER_UPDATE_WHEN_CHANGED);
@@ -8067,6 +8066,14 @@ EditorNode::EditorNode() {
 	}
 	gui_base->add_child(file_script);
 	file_script->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
+
+	file_pack_zip = memnew(EditorFileDialog);
+	file_pack_zip->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
+	file_pack_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_pack_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_pack_zip->add_filter("*.zip", "ZIP Archive");
+	file_pack_zip->set_title(TTR("Pack Project as ZIP..."));
+	gui_base->add_child(file_pack_zip);
 
 	file_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 	file_menu->connect("about_to_popup", callable_mp(this, &EditorNode::_update_file_menu_opened));

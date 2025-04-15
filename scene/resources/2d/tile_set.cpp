@@ -3784,20 +3784,20 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			for (int i = 0; i < p.size(); i++) {
 				CompatibilityShapeData csd;
 				Dictionary d = p[i];
-				for (int j = 0; j < d.size(); j++) {
-					String key = d.get_key_at_index(j);
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					String key = kv.key;
 					if (key == "autotile_coord") {
-						csd.autotile_coords = d[key];
+						csd.autotile_coords = kv.value;
 					} else if (key == "one_way") {
-						csd.one_way = d[key];
+						csd.one_way = kv.value;
 					} else if (key == "one_way_margin") {
-						csd.one_way_margin = d[key];
+						csd.one_way_margin = kv.value;
 					} else if (key == "shape") {
 #ifndef PHYSICS_2D_DISABLED
-						csd.shape = d[key];
+						csd.shape = kv.value;
 #endif // PHYSICS_2D_DISABLED
 					} else if (key == "shape_transform") {
-						csd.transform = d[key];
+						csd.transform = kv.value;
 					}
 				}
 				ctd->shapes.push_back(csd);

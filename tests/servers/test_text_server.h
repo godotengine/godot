@@ -517,7 +517,7 @@ TEST_SUITE("[TextServer]") {
 					struct TestCase {
 						String text;
 						PackedInt32Array breaks;
-						BitField<TextServer::LineBreakFlag> flags;
+						BitField<TextServer::LineBreakFlag> flags = TextServer::BREAK_NONE;
 					};
 					TestCase cases[] = {
 						{ U"test \rtest", { 0, 4, 6, 10 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES },

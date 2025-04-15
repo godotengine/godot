@@ -601,8 +601,8 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 	context_menu->popup();
 }
 
-void TextEditor::update_toggle_scripts_button() {
-	code_editor->update_toggle_scripts_button();
+void TextEditor::update_toggle_files_button() {
+	code_editor->update_toggle_files_button();
 }
 
 TextEditor::TextEditor() {
@@ -613,7 +613,7 @@ TextEditor::TextEditor() {
 	code_editor->connect("validate_script", callable_mp(this, &TextEditor::_validate_script));
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	code_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	code_editor->show_toggle_scripts_button();
+	code_editor->show_toggle_files_button();
 	code_editor->set_toggle_list_control(ScriptEditor::get_singleton()->get_left_list_split());
 
 	update_settings();

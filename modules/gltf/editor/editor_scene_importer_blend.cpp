@@ -515,6 +515,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		blender_path = memnew(LineEdit);
 		blender_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		blender_path->set_accessibility_name(TTRC("Path"));
 		hb->add_child(blender_path);
 
 		blender_path_browse = memnew(Button);

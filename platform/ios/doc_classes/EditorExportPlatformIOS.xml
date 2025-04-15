@@ -106,10 +106,10 @@
 			[/codeblock]
 		</member>
 		<member name="entitlements/game_center" type="bool" setter="" getter="">
-			Enable to allow access to Game Center features. [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_game-center]com.apple.developer.game-center[/url].
+			If [code]true[/code], allows access to Game Center features. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_game-center]com.apple.developer.game-center[/url].
 		</member>
 		<member name="entitlements/increased_memory_limit" type="bool" setter="" getter="">
-			Enable if app may perform better with a higher memory limit. [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_kernel_increased-memory-limit]com.apple.developer.kernel.increased-memory-limit[/url].
+			If [code]true[/code], hints that the app might perform better with a higher memory limit. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_kernel_increased-memory-limit]com.apple.developer.kernel.increased-memory-limit[/url].
 		</member>
 		<member name="entitlements/push_notifications" type="String" setter="" getter="">
 			Environment for Apple Push Notification service. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/aps-environment]aps-environment[/url].

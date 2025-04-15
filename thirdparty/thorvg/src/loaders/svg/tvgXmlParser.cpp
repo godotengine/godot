@@ -483,6 +483,14 @@ bool simpleXmlParseW3CAttribute(const char* buf, unsigned bufLength, simpleXMLAt
     do {
         char* sep = (char*)strchr(buf, ':');
         next = (char*)strchr(buf, ';');
+
+        if (auto src = strstr(buf, "src")) {//src tag from css font-face contains extra semicolon
+            if (src < sep) {
+                if (next + 1 < end) next = (char*)strchr(next + 1, ';');
+                else return true;
+            }
+        }
+
         if (sep >= end) {
             next = nullptr;
             sep = nullptr;

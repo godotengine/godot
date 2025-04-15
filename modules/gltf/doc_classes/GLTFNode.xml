@@ -48,7 +48,7 @@
 	</methods>
 	<members>
 		<member name="camera" type="int" setter="set_camera" getter="get_camera" default="-1">
-			If this glTF node is a camera, the index of the [GLTFCamera] in the [GLTFState] that describes the camera's properties. If -1, this node is not a camera.
+			If this glTF node is a camera, the index of the [GLTFCamera] in the [GLTFState] that describes the camera's properties. If [code]-1[/code], this node is not a camera.
 		</member>
 		<member name="children" type="PackedInt32Array" setter="set_children" getter="get_children" default="PackedInt32Array()">
 			The indices of the child nodes in the [GLTFState]. If this glTF node has no children, this will be an empty array.

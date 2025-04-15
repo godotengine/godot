@@ -826,7 +826,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				SeparationRayShape3D *rayShape = memnew(SeparationRayShape3D);
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
-				Object::cast_to<Node3D>(sb)->rotate_x(Math_PI / 2);
+				Object::cast_to<Node3D>(sb)->rotate_x(Math::PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
 				WorldBoundaryShape3D *world_boundary_shape = memnew(WorldBoundaryShape3D);
 				colshape->set_shape(world_boundary_shape);
@@ -2930,7 +2930,7 @@ static Error convert_path_to_uid(ResourceUID::ID p_source_id, const String &p_ha
 			if (ResourceUID::get_singleton()->has_id(save_id)) {
 				if (save_path != ResourceUID::get_singleton()->get_id_path(save_id)) {
 					// The user has specified a path which does not match the default UID.
-					save_id = ResourceUID::get_singleton()->create_id();
+					save_id = ResourceUID::get_singleton()->create_id_for_path(save_path);
 				}
 			}
 			p_settings[p_path_key] = ResourceUID::get_singleton()->id_to_text(save_id);

@@ -101,7 +101,7 @@
 			<return type="float" />
 			<description>
 				Returns the actual scale of the editor UI ([code]1.0[/code] being 100% scale). This can be used to adjust position and dimensions of the UI added by plugins.
-				[b]Note:[/b] This value is set via the [code]interface/editor/display_scale[/code] and [code]interface/editor/custom_display_scale[/code] editor settings. Editor must be restarted for changes to be properly applied.
+				[b]Note:[/b] This value is set via the [member EditorSettings.interface/editor/display_scale] and [member EditorSettings.interface/editor/custom_display_scale] settings. The editor must be restarted for changes to be properly applied.
 			</description>
 		</method>
 		<method name="get_editor_settings" qualifiers="const">

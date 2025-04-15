@@ -684,28 +684,37 @@ void BaseMaterial3D::_update_shader() {
 		return; //no update required in the end
 	}
 
-	MutexLock lock(shader_map_mutex);
-	if (shader_map.has(current_key)) {
-		shader_map[current_key].users--;
-		if (shader_map[current_key].users == 0) {
-			// Deallocate shader which is no longer in use.
-			RS::get_singleton()->free(shader_map[current_key].shader);
-			shader_map.erase(current_key);
+	{
+		MutexLock lock(shader_map_mutex);
+		ShaderData *v = shader_map.getptr(current_key);
+		if (v) {
+			v->users--;
+			if (v->users == 0) {
+				// Deallocate shader which is no longer in use.
+				shader_rid = RID();
+				RS::get_singleton()->free(v->shader);
+				shader_map.erase(current_key);
+			}
+		}
+
+		current_key = mk;
+
+		v = shader_map.getptr(mk);
+		if (v) {
+			shader_rid = v->shader;
+			v->users++;
+
+			if (_get_material().is_valid()) {
+				RS::get_singleton()->material_set_shader(_get_material(), shader_rid);
+			}
+
+			return;
 		}
 	}
 
-	current_key = mk;
-
-	if (shader_map.has(mk)) {
-		shader_rid = shader_map[mk].shader;
-		shader_map[mk].users++;
-
-		if (_get_material().is_valid()) {
-			RS::get_singleton()->material_set_shader(_get_material(), shader_rid);
-		}
-
-		return;
-	}
+	// From this point, it is possible that multiple threads requesting the same key will
+	// race to create the shader. The winner, which is the one found in shader_map, will be
+	// used. The losers will free their shader.
 
 	String texfilter_str;
 	// Force linear filtering for the heightmap texture, as the heightmap effect
@@ -1929,11 +1938,28 @@ void fragment() {)";
 
 	code += "}\n";
 
-	ShaderData shader_data;
-	shader_data.shader = RS::get_singleton()->shader_create_from_code(code);
-	shader_data.users = 1;
-	shader_map[mk] = shader_data;
-	shader_rid = shader_data.shader;
+	// We must create the shader outside the shader_map_mutex to avoid potential deadlocks with
+	// other tasks in the WorkerThreadPool simultaneously creating materials, which
+	// may also hold the shared shader_map_mutex lock.
+	RID new_shader = RS::get_singleton()->shader_create_from_code(code);
+
+	MutexLock lock(shader_map_mutex);
+
+	ShaderData *v = shader_map.getptr(mk);
+	if (unlikely(v)) {
+		// We raced and managed to create the same key concurrently, so we'll free the shader we just created,
+		// given we know it isn't used, and use the winner.
+		RS::get_singleton()->free(new_shader);
+	} else {
+		ShaderData shader_data;
+		shader_data.shader = new_shader;
+		// ShaderData will be inserted with a users count of 0, but we
+		// increment unconditionally outside this if block, whilst still under lock.
+		v = &shader_map.insert(mk, shader_data)->value;
+	}
+
+	shader_rid = v->shader;
+	v->users++;
 
 	if (_get_material().is_valid()) {
 		RS::get_singleton()->material_set_shader(_get_material(), shader_rid);
@@ -1959,11 +1985,18 @@ void BaseMaterial3D::_check_material_rid() {
 }
 
 void BaseMaterial3D::flush_changes() {
-	MutexLock lock(material_mutex);
+	SelfList<BaseMaterial3D>::List copy;
+	{
+		MutexLock lock(material_mutex);
+		while (SelfList<BaseMaterial3D> *E = dirty_materials.first()) {
+			dirty_materials.remove(E);
+			copy.add(E);
+		}
+	}
 
-	while (dirty_materials.first()) {
-		dirty_materials.first()->self()->_update_shader();
-		dirty_materials.first()->remove_from_list();
+	while (SelfList<BaseMaterial3D> *E = copy.first()) {
+		E->self()->_update_shader();
+		copy.remove(E);
 	}
 }
 

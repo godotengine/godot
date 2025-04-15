@@ -905,7 +905,7 @@ bool EditorFileSystem::_update_scan_actions() {
 				if (existing_id != ResourceUID::INVALID_ID) {
 					const String old_path = ResourceUID::get_singleton()->get_id_path(existing_id);
 					if (old_path != new_file_path && FileAccess::exists(old_path)) {
-						const ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id();
+						const ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
 						ResourceUID::get_singleton()->add_id(new_id, new_file_path);
 						ResourceSaver::set_uid(new_file_path, new_id);
 						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The new file UID was changed automatically.", new_file_path, old_path));
@@ -916,7 +916,7 @@ bool EditorFileSystem::_update_scan_actions() {
 				} else if (ResourceLoader::should_create_uid_file(new_file_path)) {
 					Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
 					if (f.is_valid()) {
-						ia.new_file->uid = ResourceUID::get_singleton()->create_id();
+						ia.new_file->uid = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
 						f->store_line(ResourceUID::get_singleton()->id_to_text(ia.new_file->uid));
 					}
 				}
@@ -970,7 +970,7 @@ bool EditorFileSystem::_update_scan_actions() {
 					Vector<String> dependencies = _get_dependencies(full_path);
 					for (const String &dep : dependencies) {
 						const String &dependency_path = dep.contains("::") ? dep.get_slice("::", 0) : dep;
-						if (import_extensions.has(dep.get_extension())) {
+						if (_can_import_file(dep)) {
 							reimports.push_back(dependency_path);
 						}
 					}
@@ -1224,7 +1224,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 		FileCache *fc = file_cache.getptr(path);
 		uint64_t mt = FileAccess::get_modified_time(path);
 
-		if (import_extensions.has(ext)) {
+		if (_can_import_file(scan_file)) {
 			//is imported
 			uint64_t import_mt = FileAccess::get_modified_time(path + ".import");
 
@@ -1353,7 +1353,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				Ref<FileAccess> f = FileAccess::open(path + ".uid", FileAccess::WRITE);
 				if (f.is_valid()) {
 					if (fi->uid == ResourceUID::INVALID_ID) {
-						fi->uid = ResourceUID::get_singleton()->create_id();
+						fi->uid = ResourceUID::get_singleton()->create_id_for_path(path);
 					} else {
 						WARN_PRINT(vformat("Missing .uid file for path \"%s\". The file was re-created from cache.", path));
 					}
@@ -1514,7 +1514,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 						scan_actions.push_back(ia);
 					}
 
-					if (import_extensions.has(ext)) {
+					if (_can_import_file(f)) {
 						//if it can be imported, and it was added, it needs to be reimported
 						ItemAction ia;
 						ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
@@ -1546,7 +1546,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 
 		String path = cd.path_join(p_dir->files[i]->file);
 
-		if (import_extensions.has(p_dir->files[i]->file.get_extension().to_lower())) {
+		if (_can_import_file(p_dir->files[i]->file)) {
 			// Check here if file must be imported or not.
 			// Same logic as in _process_file_system, the last modifications dates
 			// needs to be trusted to prevent reading all the .import files and the md5
@@ -1867,7 +1867,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 		return false;
 	}
 	f = f.substr(6);
-	f = f.replace("\\", "/");
+	f = f.replace_char('\\', '/');
 
 	Vector<String> path = f.split("/");
 
@@ -1993,7 +1993,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 	}
 
 	f = f.substr(6);
-	f = f.replace("\\", "/");
+	f = f.replace_char('\\', '/');
 	if (f.is_empty()) {
 		return filesystem;
 	}
@@ -2442,7 +2442,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				if (ResourceLoader::should_create_uid_file(file)) {
 					Ref<FileAccess> f = FileAccess::open(file + ".uid", FileAccess::WRITE);
 					if (f.is_valid()) {
-						const ResourceUID::ID id = ResourceUID::get_singleton()->create_id();
+						const ResourceUID::ID id = ResourceUID::get_singleton()->create_id_for_path(file);
 						ResourceUID::get_singleton()->add_id(id, file);
 						f->store_line(ResourceUID::get_singleton()->id_to_text(id));
 						fi->uid = id;
@@ -2630,7 +2630,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			}
 
 			if (uid == ResourceUID::INVALID_ID) {
-				uid = ResourceUID::get_singleton()->create_id();
+				uid = ResourceUID::get_singleton()->create_id_for_path(file);
 			}
 
 			f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.
@@ -2820,7 +2820,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 	if (importer.is_null()) {
 		//not found by name, find by extension
-		importer = ResourceFormatImporter::get_singleton()->get_importer_by_extension(p_file.get_extension());
+		importer = ResourceFormatImporter::get_singleton()->get_importer_by_file(p_file);
 		load_default = true;
 		if (importer.is_null()) {
 			ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, "BUG: File queued for import, but can't be imported, importer for type '" + importer_name + "' not found.");
@@ -2852,7 +2852,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	}
 
 	if (uid == ResourceUID::INVALID_ID) {
-		uid = ResourceUID::get_singleton()->create_id();
+		uid = ResourceUID::get_singleton()->create_id_for_path(p_file);
 	}
 
 	//finally, perform import!!
@@ -3541,14 +3541,14 @@ ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const
 		}
 
 		if (p_generate) {
-			return ResourceUID::get_singleton()->create_id(); // Just create a new one, we will be notified of save anyway and fetch the right UID at that time, to keep things simple.
+			return ResourceUID::get_singleton()->create_id_for_path(p_path); // Just create a new one, we will be notified of save anyway and fetch the right UID at that time, to keep things simple.
 		} else {
 			return ResourceUID::INVALID_ID;
 		}
 	} else if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
 		return fs->files[cpos]->uid;
 	} else if (p_generate) {
-		return ResourceUID::get_singleton()->create_id(); // Just create a new one, we will be notified of save anyway and fetch the right UID at that time, to keep things simple.
+		return ResourceUID::get_singleton()->create_id_for_path(p_path); // Just create a new one, we will be notified of save anyway and fetch the right UID at that time, to keep things simple.
 	} else {
 		return ResourceUID::INVALID_ID;
 	}
@@ -3626,8 +3626,18 @@ void EditorFileSystem::_update_extensions() {
 	extensionsl.clear();
 	ResourceFormatImporter::get_singleton()->get_recognized_extensions(&extensionsl);
 	for (const String &E : extensionsl) {
-		import_extensions.insert(E);
+		import_extensions.insert(!E.begins_with(".") ? "." + E : E);
 	}
+}
+
+bool EditorFileSystem::_can_import_file(const String &p_file) {
+	for (const String &F : import_extensions) {
+		if (p_file.right(F.length()).nocasecmp_to(F) == 0) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void EditorFileSystem::add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {

@@ -178,7 +178,7 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 			// We cannot solve for this angle! Do nothing to avoid setting the rotation (and scale) to NaN.
 		} else {
 			joint_one_bone->set_global_rotation(angle_atan - angle_0 - joint_one_bone->get_bone_angle());
-			joint_two_bone->set_rotation(-Math_PI - angle_1 - joint_two_bone->get_bone_angle() + joint_one_bone->get_bone_angle());
+			joint_two_bone->set_rotation(-Math::PI - angle_1 - joint_two_bone->get_bone_angle() + joint_one_bone->get_bone_angle());
 		}
 	} else {
 		joint_one_bone->set_global_rotation(angle_atan - joint_one_bone->get_bone_angle());
@@ -221,10 +221,10 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 #endif // TOOLS_ENABLED
 
 	if (flip_bend_direction) {
-		float angle = -(Math_PI * 0.5) + operation_bone_one->get_bone_angle();
+		float angle = -(Math::PI * 0.5) + operation_bone_one->get_bone_angle();
 		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
 	} else {
-		float angle = (Math_PI * 0.5) + operation_bone_one->get_bone_angle();
+		float angle = (Math::PI * 0.5) + operation_bone_one->get_bone_angle();
 		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
 	}
 
