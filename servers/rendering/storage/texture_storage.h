@@ -122,6 +122,7 @@ public:
 	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) = 0;
 	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) = 0;
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
+	virtual void decal_set_keep_decal_opacity(RID p_decal, bool p_override = false) = 0;
 
 	virtual AABB decal_get_aabb(RID p_decal) const = 0;
 	virtual uint32_t decal_get_cull_mask(RID p_decal) const = 0;
