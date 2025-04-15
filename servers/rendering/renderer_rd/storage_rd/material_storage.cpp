@@ -2142,9 +2142,19 @@ void MaterialStorage::_material_queue_update(Material *material, bool p_uniform,
 }
 
 void MaterialStorage::_update_queued_materials() {
-	MutexLock lock(material_update_list_mutex);
-	while (material_update_list.first()) {
-		Material *material = material_update_list.first()->self();
+	SelfList<Material>::List copy;
+	{
+		MutexLock lock(material_update_list_mutex);
+		while (SelfList<Material> *E = material_update_list.first()) {
+			DEV_ASSERT(E == &E->self()->update_element);
+			material_update_list.remove(E);
+			copy.add(E);
+		}
+	}
+
+	while (SelfList<Material> *E = copy.first()) {
+		Material *material = E->self();
+		copy.remove(E);
 		bool uniforms_changed = false;
 
 		if (material->data) {
@@ -2152,8 +2162,6 @@ void MaterialStorage::_update_queued_materials() {
 		}
 		material->texture_dirty = false;
 		material->uniform_dirty = false;
-
-		material_update_list.remove(&material->update_element);
 
 		if (uniforms_changed) {
 			//some implementations such as 3D renderer cache the material uniform set, so update is required
