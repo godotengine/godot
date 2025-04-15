@@ -161,6 +161,7 @@ class EditorPropertyPath : public EditorProperty {
 	bool folder = false;
 	bool global = false;
 	bool save_mode = false;
+	bool enable_uid = false;
 	EditorFileDialog *dialog = nullptr;
 	LineEdit *path = nullptr;
 	Button *path_edit = nullptr;
@@ -178,7 +179,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void setup(const Vector<String> &p_extensions, bool p_folder, bool p_global);
+	void setup(const Vector<String> &p_extensions, bool p_folder, bool p_global, bool p_enable_uid);
 	void set_save_mode();
 	virtual void update_property() override;
 	EditorPropertyPath();
