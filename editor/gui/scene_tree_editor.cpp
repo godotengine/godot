@@ -332,6 +332,12 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			// Allow.
 		} else if (p_node->has_exposed_nodes()) {
 			HashMap<Node *, CachedNode>::Iterator I = node_cache.get(p_node);
+			if (p_node->get_parent() && p_node->get_parent()->get_scene_instance_load_placeholder()) {
+				if (I) {
+					node_cache.remove(p_node, true);
+				}
+				return;
+			}
 			if (!I) {
 				node_cache.add(p_node, tree->create_item(p_parent, 0));
 			}
