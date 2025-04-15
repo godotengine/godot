@@ -32,6 +32,7 @@
 #include "actor.h"
 
 #include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "core/string/ustring.h"
 #include "core/variant/variant.h"
 
@@ -97,7 +98,7 @@ void Actor::_bind_methods() {
 
 void Actor::_get_property_list(List<PropertyInfo> *out) const {
 	for (const KeyValue<StringName, Ref<Component>> &k_v: _component_resources) {
-		PropertyInfo property_info = PropertyInfo(Variant::OBJECT, "components/" + k_v.key.operator String(), PROPERTY_HINT_RESOURCE_TYPE, "Component");
+		PropertyInfo property_info = PropertyInfo(Variant::OBJECT, "components/" + k_v.key.operator String(), PROPERTY_HINT_RESOURCE_TYPE, "Component", PropertyUsageFlags::PROPERTY_USAGE_DEFAULT | PropertyUsageFlags::PROPERTY_USAGE_READ_ONLY);
 		out->push_back(property_info);
 	}
 }

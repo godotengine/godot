@@ -4148,6 +4148,10 @@ void EditorInspector::update_tree() {
 					if (epr) {
 						epr->set_use_filter(true);
 					}
+
+					if (p.name.begins_with("components/")) {
+						//TODO::
+					}
 				}
 
 				Node *section_search = current_vbox->get_parent();
@@ -5310,7 +5314,7 @@ void EditorInspector::_add_component_confirm() {
 	object->editor_set_section_unfold("component", true);
 
 	Ref<Component> component = add_component_dialog->get_component();
-	String name = component->get_component_class();
+	String name = component->get_class();
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Add component %s"), name));
 	undo_redo->add_do_method(object, "set_component", component);

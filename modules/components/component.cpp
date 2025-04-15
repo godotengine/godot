@@ -32,13 +32,19 @@
 #include "component.h"
 
 #include "core/object/class_db.h"
+#include "core/object/script_language.h"
 
 
 StringName Component::get_component_class() {
-	return StringName("Component");
+	Ref<Script> s = get_script();
+	if (s.is_valid()) {
+		return s->get_global_name();
+	}
+
+	return get_class_name();
 }
 
 
 void Component::_bind_methods() {
-	ClassDB::bind_static_method("Component", D_METHOD("get_component_class"), &Component::get_component_class);
+	ClassDB::bind_method(D_METHOD("get_component_class"), &Component::get_component_class);
 }
