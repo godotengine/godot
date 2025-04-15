@@ -47,7 +47,7 @@ uint32_t GDScriptRPCCallable::hash() const {
 }
 
 String GDScriptRPCCallable::get_as_text() const {
-	String class_name = object->get_class();
+	String class_name = object->get_class_name();
 	Ref<Script> script = object->get_script();
 	if (script.is_valid()) {
 		if (!script->get_global_name().is_empty()) {

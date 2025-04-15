@@ -2,5 +2,5 @@
 
 func test():
 	var object := Object.new() # Not `Object()`.
-	print(object.get_class())
+	print(object.get_class_name())
 	object.free()

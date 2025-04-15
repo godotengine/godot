@@ -818,7 +818,7 @@ String EditorData::get_scene_type(int p_idx) const {
 	if (!edited_scene[p_idx].root) {
 		return "";
 	}
-	return edited_scene[p_idx].root->get_class();
+	return edited_scene[p_idx].root->get_class_name();
 }
 
 void EditorData::move_edited_scene_to_index(int p_idx) {

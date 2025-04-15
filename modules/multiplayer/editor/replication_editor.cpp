@@ -519,10 +519,10 @@ void ReplicationEditor::edit(MultiplayerSynchronizer *p_sync) {
 }
 
 Ref<Texture2D> ReplicationEditor::_get_class_icon(const Node *p_node) {
-	if (!p_node || !has_theme_icon(p_node->get_class(), EditorStringName(EditorIcons))) {
+	if (!p_node || !has_theme_icon(p_node->get_class_name(), EditorStringName(EditorIcons))) {
 		return get_theme_icon(SNAME("ImportFail"), EditorStringName(EditorIcons));
 	}
-	return get_theme_icon(p_node->get_class(), EditorStringName(EditorIcons));
+	return get_theme_icon(p_node->get_class_name(), EditorStringName(EditorIcons));
 }
 
 static bool can_sync(const Variant &p_var) {

@@ -968,7 +968,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	bool add_script_function_request = false;
 	Ref<Script> scr = target->get_script();
 
-	if (scr.is_valid() && !ClassDB::has_method(target->get_class(), cd.method)) {
+	if (scr.is_valid() && !ClassDB::has_method(target->get_class_name(), cd.method)) {
 		// Check in target's own script.
 		int line = scr->get_language()->find_function(cd.method, scr->get_source_code());
 		if (line != -1) {
@@ -1450,7 +1450,7 @@ void ConnectionsDock::update_tree() {
 	TreeItem *root = tree->create_item();
 	DocTools *doc_data = EditorHelp::get_doc_data();
 	EditorData &editor_data = EditorNode::get_editor_data();
-	StringName native_base = selected_node->get_class();
+	StringName native_base = selected_node->get_class_name();
 	Ref<Script> script_base = selected_node->get_script();
 
 	while (native_base != StringName()) {

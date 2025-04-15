@@ -869,7 +869,7 @@ void TextShaderEditor::_check_for_external_edit() {
 }
 
 void TextShaderEditor::_reload_shader_from_disk() {
-	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class_name(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 	ERR_FAIL_COND(rel_shader.is_null());
 
 	code_editor->set_block_shader_changed(true);
@@ -880,7 +880,7 @@ void TextShaderEditor::_reload_shader_from_disk() {
 }
 
 void TextShaderEditor::_reload_shader_include_from_disk() {
-	Ref<ShaderInclude> rel_shader_include = ResourceLoader::load(shader_inc->get_path(), shader_inc->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+	Ref<ShaderInclude> rel_shader_include = ResourceLoader::load(shader_inc->get_path(), shader_inc->get_class_name(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 	ERR_FAIL_COND(rel_shader_include.is_null());
 
 	code_editor->set_block_shader_changed(true);

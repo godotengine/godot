@@ -257,7 +257,7 @@ public:
 	void popup_search();
 	void search_again(bool p_search_previous = false);
 
-	String get_class();
+	String get_class_name();
 
 	void set_focused() { class_desc->grab_focus(); }
 

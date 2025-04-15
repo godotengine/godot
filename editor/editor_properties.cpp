@@ -3167,7 +3167,7 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 	if (get_edited_object() && s.is_valid() && get_edited_property() == CoreStringName(script)) {
 		is_script = true;
 		InspectorDock::get_singleton()->store_script_properties(get_edited_object());
-		s->call("set_instance_base_type", get_edited_object()->get_class());
+		s->call("set_instance_base_type", get_edited_object()->get_class_name());
 	}
 
 	// Prevent the creation of invalid ViewportTextures when possible.

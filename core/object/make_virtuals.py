@@ -124,7 +124,7 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
         method_flags += " | METHOD_FLAG_VIRTUAL_REQUIRED"
         s = s.replace(
             "$REQCHECK",
-            'ERR_PRINT_ONCE("Required virtual method " + get_class() + "::" + #m_name + " must be overridden before calling.");',
+            'ERR_PRINT_ONCE("Required virtual method " + get_class_name() + "::" + #m_name + " must be overridden before calling.");',
         )
     else:
         s = s.replace("\t\t$REQCHECK\\\n", "")

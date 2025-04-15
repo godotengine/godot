@@ -1282,7 +1282,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			if (s.class_name != StringName()) {
 				d["type"] = String(s.class_name);
 			} else {
-				d["type"] = String(s.ptr->get_class());
+				d["type"] = String(s.ptr->get_class_name());
 			}
 			singletons.push_back(d);
 		}

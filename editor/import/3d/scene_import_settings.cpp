@@ -383,7 +383,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		p_node = mesh_node;
 	}
 
-	String type = p_node->get_class();
+	String type = p_node->get_class_name();
 
 	if (!has_theme_icon(type, EditorStringName(EditorIcons))) {
 		type = "Node3D";

@@ -757,7 +757,7 @@ Error ResourceLoaderBinary::load() {
 			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
 				//use the existing one
 				Ref<Resource> cached = ResourceCache::get_ref(path);
-				if (cached->get_class() == t) {
+				if (cached->get_class_name() == t) {
 					cached->reset_state();
 					res = cached;
 				}
@@ -782,7 +782,7 @@ Error ResourceLoaderBinary::load() {
 
 				r = Object::cast_to<Resource>(obj);
 				if (!r) {
-					String obj_class = obj->get_class();
+					String obj_class = obj->get_class_name();
 					error = ERR_FILE_CORRUPT;
 					memdelete(obj); //bye
 					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("'%s': Resource type in resource field not a resource, type is: %s.", local_path, obj_class));
@@ -2121,7 +2121,7 @@ static String _resource_get_class(Ref<Resource> p_resource) {
 	if (missing_resource.is_valid()) {
 		return missing_resource->get_original_class();
 	} else {
-		return p_resource->get_class();
+		return p_resource->get_class_name();
 	}
 }
 
@@ -2253,7 +2253,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 						}
 					}
 
-					Variant default_value = ClassDB::class_get_default_property_value(E->get_class(), F.name);
+					Variant default_value = ClassDB::class_get_default_property_value(E->get_class_name(), F.name);
 
 					if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p.value, default_value))) {
 						continue;

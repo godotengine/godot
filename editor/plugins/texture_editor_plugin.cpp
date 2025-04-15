@@ -164,7 +164,7 @@ void TexturePreview::_update_metadata_label_text() {
 
 	const Image::Format format = get_texture_2d_format(texture.ptr());
 
-	const String format_name = format != Image::FORMAT_MAX ? Image::get_format_name(format) : texture->get_class();
+	const String format_name = format != Image::FORMAT_MAX ? Image::get_format_name(format) : String(texture->get_class_name());
 
 	const Vector2i resolution = texture->get_size();
 	const int mipmaps = get_texture_mipmaps_count(texture);

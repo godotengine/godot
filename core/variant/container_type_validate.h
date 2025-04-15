@@ -131,7 +131,7 @@ struct ContainerTypeValidate {
 
 		StringName obj_class = object->get_class_name();
 		if (obj_class != class_name) {
-			ERR_FAIL_COND_V_MSG(!ClassDB::is_parent_class(object->get_class_name(), class_name), false, vformat("Attempted to %s an object of type '%s' into a %s, which does not inherit from '%s'.", String(p_operation), object->get_class(), where, String(class_name)));
+			ERR_FAIL_COND_V_MSG(!ClassDB::is_parent_class(object->get_class_name(), class_name), false, vformat("Attempted to %s an object of type '%s' into a %s, which does not inherit from '%s'.", String(p_operation), object->get_class_name(), where, String(class_name)));
 		}
 
 		if (script.is_null()) {

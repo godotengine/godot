@@ -70,11 +70,11 @@ Error MultiplayerDebugger::_capture(void *p_user, const String &p_msg, const Arr
 			ERR_CONTINUE(!obj);
 			if (Object::cast_to<SceneReplicationConfig>(obj)) {
 				out.push_back(id);
-				out.push_back(obj->get_class());
+				out.push_back(obj->get_class_name());
 				out.push_back(((SceneReplicationConfig *)obj)->get_path());
 			} else if (Object::cast_to<Node>(obj)) {
 				out.push_back(id);
-				out.push_back(obj->get_class());
+				out.push_back(obj->get_class_name());
 				out.push_back(String(((Node *)obj)->get_path()));
 			} else {
 				ERR_FAIL_V(FAILED);

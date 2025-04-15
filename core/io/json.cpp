@@ -766,7 +766,7 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 				return Variant();
 			}
 
-			ERR_FAIL_COND_V(!ClassDB::can_instantiate(obj->get_class()), Variant());
+			ERR_FAIL_COND_V(!ClassDB::can_instantiate(obj->get_class_name()), Variant());
 
 			List<PropertyInfo> prop_list;
 			obj->get_property_list(&prop_list);
@@ -794,7 +794,7 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			}
 
 			Dictionary ret;
-			ret[TYPE] = obj->get_class();
+			ret[TYPE] = obj->get_class_name();
 			ret[PROPS] = props;
 			return ret;
 		} break;

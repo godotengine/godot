@@ -148,7 +148,7 @@ func test_unsafe_void_return() -> void:
 	return variant_func().f()
 
 @warning_ignore("native_method_override")
-func get_class():
+func get_class_name():
 	pass
 
 # We don't want to execute it because of errors, just analyze.

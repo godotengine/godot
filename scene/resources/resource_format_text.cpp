@@ -521,7 +521,7 @@ Error ResourceLoaderText::load() {
 		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
 			//reuse existing
 			Ref<Resource> cache = ResourceCache::get_ref(path);
-			if (cache.is_valid() && cache->get_class() == type) {
+			if (cache.is_valid() && cache->get_class_name() == type) {
 				res = cache;
 				res->reset_state();
 				do_assign = true;
@@ -678,7 +678,7 @@ Error ResourceLoaderText::load() {
 		resource = ResourceLoader::get_resource_ref_override(local_path);
 		if (resource.is_null()) {
 			Ref<Resource> cache = ResourceCache::get_ref(local_path);
-			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && cache.is_valid() && cache->get_class() == res_type) {
+			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && cache.is_valid() && cache->get_class_name() == res_type) {
 				cache->reset_state();
 				resource = cache;
 			}
@@ -1700,7 +1700,7 @@ static String _resource_get_class(Ref<Resource> p_resource) {
 	if (missing_resource.is_valid()) {
 		return missing_resource->get_original_class();
 	} else {
-		return p_resource->get_class();
+		return p_resource->get_class_name();
 	}
 }
 
@@ -1935,7 +1935,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 					}
 				}
 
-				Variant default_value = ClassDB::class_get_default_property_value(res->get_class(), name);
+				Variant default_value = ClassDB::class_get_default_property_value(res->get_class_name(), name);
 
 				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
 					continue;

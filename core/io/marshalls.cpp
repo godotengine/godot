@@ -1747,9 +1747,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 					r_len += 4;
 
 				} else {
-					ERR_FAIL_COND_V(!ClassDB::can_instantiate(obj->get_class()), ERR_INVALID_PARAMETER);
+					ERR_FAIL_COND_V(!ClassDB::can_instantiate(obj->get_class_name()), ERR_INVALID_PARAMETER);
 
-					_encode_string(obj->get_class(), buf, r_len);
+					_encode_string(obj->get_class_name(), buf, r_len);
 
 					List<PropertyInfo> props;
 					obj->get_property_list(&props);

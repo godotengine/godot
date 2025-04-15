@@ -101,7 +101,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case OBJECT_REQUEST_HELP: {
 			if (current) {
 				EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
-				emit_signal(SNAME("request_help"), current->get_class());
+				emit_signal(SNAME("request_help"), current->get_class_name());
 			}
 		} break;
 
@@ -349,14 +349,14 @@ void InspectorDock::_prepare_history() {
 			} else if (!r->get_name().is_empty()) {
 				text = r->get_name();
 			} else {
-				text = r->get_class();
+				text = r->get_class_name();
 			}
 		} else if (Object::cast_to<Node>(obj)) {
 			text = Object::cast_to<Node>(obj)->get_name();
 		} else if (obj->is_class("EditorDebuggerRemoteObjects")) {
 			text = obj->call("get_title");
 		} else {
-			text = obj->get_class();
+			text = obj->get_class_name();
 		}
 
 		if (i == editor_history->get_history_pos() && current) {
