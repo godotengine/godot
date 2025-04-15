@@ -1029,22 +1029,69 @@ void Viewport::update_canvas_items() {
 	_update_canvas_items(this);
 }
 
+void Viewport::set_use_oversampling(bool p_oversampling) {
+	ERR_MAIN_THREAD_GUARD;
+	if (use_font_oversampling == p_oversampling) {
+		return;
+	}
+	use_font_oversampling = p_oversampling;
+	_set_size(_get_size(), _get_size_2d_override(), _is_size_allocated());
+}
+
+bool Viewport::is_using_oversampling() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return use_font_oversampling;
+}
+
+void Viewport::set_oversampling_override(float p_oversampling) {
+	ERR_MAIN_THREAD_GUARD;
+	if (font_oversampling_override == p_oversampling) {
+		return;
+	}
+	font_oversampling_override = p_oversampling;
+	_set_size(_get_size(), _get_size_2d_override(), _is_size_allocated());
+}
+
+float Viewport::get_oversampling_override() const {
+	ERR_READ_THREAD_GUARD_V(0.0);
+	return font_oversampling_override;
+}
+
 bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, bool p_allocated) {
 	Transform2D stretch_transform_new = Transform2D();
+	float new_font_oversampling = 1.0;
 	if (is_size_2d_override_stretch_enabled() && p_size_2d_override.width > 0 && p_size_2d_override.height > 0) {
 		Size2 scale = Size2(p_size) / p_size_2d_override;
 		stretch_transform_new.scale(scale);
+
+		if (use_font_oversampling) {
+			if (font_oversampling_override <= 0.0) {
+				new_font_oversampling = MAX(scale.x, scale.y);
+			} else {
+				new_font_oversampling = font_oversampling_override;
+			}
+		} else {
+			new_font_oversampling = 1.0;
+		}
+	} else if (use_font_oversampling && font_oversampling_override > 0.0) {
+		new_font_oversampling = font_oversampling_override;
 	}
 
 	Size2i new_size = p_size.maxi(2);
-	if (size == new_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override) {
+	if (size == new_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override && new_font_oversampling == font_oversampling) {
 		return false;
+	}
+
+	if (new_font_oversampling != font_oversampling) {
+		TS->reference_oversampling_level(new_font_oversampling);
+		TS->unreference_oversampling_level(font_oversampling);
 	}
 
 	size = new_size;
 	size_allocated = p_allocated;
 	size_2d_override = p_size_2d_override;
 	stretch_transform = stretch_transform_new;
+	font_oversampling = new_font_oversampling;
 
 #ifndef _3D_DISABLED
 	if (!use_xr) {
@@ -4912,6 +4959,14 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_draw", "debug_draw"), &Viewport::set_debug_draw);
 	ClassDB::bind_method(D_METHOD("get_debug_draw"), &Viewport::get_debug_draw);
 
+	ClassDB::bind_method(D_METHOD("set_use_oversampling", "enable"), &Viewport::set_use_oversampling);
+	ClassDB::bind_method(D_METHOD("is_using_oversampling"), &Viewport::is_using_oversampling);
+
+	ClassDB::bind_method(D_METHOD("set_oversampling_override", "oversampling"), &Viewport::set_oversampling_override);
+	ClassDB::bind_method(D_METHOD("get_oversampling_override"), &Viewport::get_oversampling_override);
+
+	ClassDB::bind_method(D_METHOD("get_oversampling"), &Viewport::get_oversampling);
+
 	ClassDB::bind_method(D_METHOD("get_render_info", "type", "info"), &Viewport::get_render_info);
 
 	ClassDB::bind_method(D_METHOD("get_texture"), &Viewport::get_texture);
@@ -5119,6 +5174,9 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "canvas_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_canvas_transform", "get_canvas_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_canvas_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_canvas_transform", "get_global_canvas_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_canvas_cull_mask", "get_canvas_cull_mask");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "oversampling"), "set_use_oversampling", "is_using_oversampling");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling_override"), "set_oversampling_override", "get_oversampling_override");
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));

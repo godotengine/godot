@@ -177,4 +177,6 @@ void NavLink2D::get_iteration_update(NavLinkIteration2D &r_iteration) {
 	r_iteration.start_position = get_start_position();
 	r_iteration.end_position = get_end_position();
 	r_iteration.bidirectional = is_bidirectional();
+
+	r_iteration.navmesh_polygons.clear();
 }

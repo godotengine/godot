@@ -84,7 +84,6 @@ class GodotNavigationServer2D : public NavigationServer2D {
 
 	bool active = true;
 	LocalVector<NavMap2D *> active_maps;
-	LocalVector<uint32_t> active_maps_iteration_id;
 
 #ifdef CLIPPER2_ENABLED
 	NavMeshGenerator2D *navmesh_generator_2d = nullptr;

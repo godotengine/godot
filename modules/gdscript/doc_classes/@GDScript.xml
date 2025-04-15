@@ -277,7 +277,8 @@
 			[b]Warning:[/b] Numeric infinity is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer number by [code]0[/code] will not result in [constant INF] and will result in a run-time error instead.
 		</constant>
 		<constant name="NAN" value="nan">
-			"Not a Number", an invalid floating-point value. [constant NAN] has special properties, including that [code]!=[/code] always returns [code]true[/code], while other comparison operators always return [code]false[/code]. This is true even when comparing with itself ([code]NAN == NAN[/code] returns [code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). It is returned by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
+			"Not a Number", an invalid floating-point value. It is returned by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
+			[constant NAN] has special properties, including that [code]!=[/code] always returns [code]true[/code], while other comparison operators always return [code]false[/code]. This is true even when comparing with itself ([code]NAN == NAN[/code] returns [code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). Due to this, you must use [method @GlobalScope.is_nan] to check whether a number is equal to [constant NAN].
 			[b]Warning:[/b] "Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.
 		</constant>
 	</constants>
