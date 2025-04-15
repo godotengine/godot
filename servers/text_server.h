@@ -605,7 +605,7 @@ public:
 
 	TypedArray<Vector3i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
-	virtual void set_current_drawn_item_ovrsampling(double p_vp_oversampling) { vp_oversampling = p_vp_oversampling; }
+	virtual void set_current_drawn_item_oversampling(double p_vp_oversampling) { vp_oversampling = p_vp_oversampling; }
 
 	virtual void cleanup() {}
 
