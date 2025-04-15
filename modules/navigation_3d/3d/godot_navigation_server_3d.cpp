@@ -1370,6 +1370,38 @@ void GodotNavigationServer3D::process(double p_delta_time) {
 	// E.g. (final) sync of objects for this main loop iteration, updating rendered debug visuals, updating debug statistics, ...
 
 	sync();
+
+	int _new_pm_region_count = 0;
+	int _new_pm_agent_count = 0;
+	int _new_pm_link_count = 0;
+	int _new_pm_polygon_count = 0;
+	int _new_pm_edge_count = 0;
+	int _new_pm_edge_merge_count = 0;
+	int _new_pm_edge_connection_count = 0;
+	int _new_pm_edge_free_count = 0;
+	int _new_pm_obstacle_count = 0;
+
+	for (NavMap3D *map : active_maps) {
+		_new_pm_region_count += map->get_pm_region_count();
+		_new_pm_agent_count += map->get_pm_agent_count();
+		_new_pm_link_count += map->get_pm_link_count();
+		_new_pm_polygon_count += map->get_pm_polygon_count();
+		_new_pm_edge_count += map->get_pm_edge_count();
+		_new_pm_edge_merge_count += map->get_pm_edge_merge_count();
+		_new_pm_edge_connection_count += map->get_pm_edge_connection_count();
+		_new_pm_edge_free_count += map->get_pm_edge_free_count();
+		_new_pm_obstacle_count += map->get_pm_obstacle_count();
+	}
+
+	pm_region_count = _new_pm_region_count;
+	pm_agent_count = _new_pm_agent_count;
+	pm_link_count = _new_pm_link_count;
+	pm_polygon_count = _new_pm_polygon_count;
+	pm_edge_count = _new_pm_edge_count;
+	pm_edge_merge_count = _new_pm_edge_merge_count;
+	pm_edge_connection_count = _new_pm_edge_connection_count;
+	pm_edge_free_count = _new_pm_edge_free_count;
+	pm_obstacle_count = _new_pm_obstacle_count;
 }
 
 void GodotNavigationServer3D::physics_process(double p_delta_time) {
@@ -1386,42 +1418,12 @@ void GodotNavigationServer3D::physics_process(double p_delta_time) {
 		return;
 	}
 
-	int _new_pm_region_count = 0;
-	int _new_pm_agent_count = 0;
-	int _new_pm_link_count = 0;
-	int _new_pm_polygon_count = 0;
-	int _new_pm_edge_count = 0;
-	int _new_pm_edge_merge_count = 0;
-	int _new_pm_edge_connection_count = 0;
-	int _new_pm_edge_free_count = 0;
-	int _new_pm_obstacle_count = 0;
-
 	MutexLock lock(operations_mutex);
 	for (uint32_t i(0); i < active_maps.size(); i++) {
 		active_maps[i]->sync();
 		active_maps[i]->step(p_delta_time);
 		active_maps[i]->dispatch_callbacks();
-
-		_new_pm_region_count += active_maps[i]->get_pm_region_count();
-		_new_pm_agent_count += active_maps[i]->get_pm_agent_count();
-		_new_pm_link_count += active_maps[i]->get_pm_link_count();
-		_new_pm_polygon_count += active_maps[i]->get_pm_polygon_count();
-		_new_pm_edge_count += active_maps[i]->get_pm_edge_count();
-		_new_pm_edge_merge_count += active_maps[i]->get_pm_edge_merge_count();
-		_new_pm_edge_connection_count += active_maps[i]->get_pm_edge_connection_count();
-		_new_pm_edge_free_count += active_maps[i]->get_pm_edge_free_count();
-		_new_pm_obstacle_count += active_maps[i]->get_pm_obstacle_count();
 	}
-
-	pm_region_count = _new_pm_region_count;
-	pm_agent_count = _new_pm_agent_count;
-	pm_link_count = _new_pm_link_count;
-	pm_polygon_count = _new_pm_polygon_count;
-	pm_edge_count = _new_pm_edge_count;
-	pm_edge_merge_count = _new_pm_edge_merge_count;
-	pm_edge_connection_count = _new_pm_edge_connection_count;
-	pm_edge_free_count = _new_pm_edge_free_count;
-	pm_obstacle_count = _new_pm_obstacle_count;
 }
 
 void GodotNavigationServer3D::init() {
