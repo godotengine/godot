@@ -4,7 +4,7 @@
 		A scalable [Texture2D] based on an SVG image.
 	</brief_description>
 	<description>
-		A scalable [Texture2D] based on an SVG image. [SVGTexture]s are automatically rescaled to match font oversampling.
+		A scalable [Texture2D] based on an SVG image. [SVGTexture]s are automatically re-rasterized to match font oversampling.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -29,10 +29,10 @@
 	</methods>
 	<members>
 		<member name="base_scale" type="float" setter="set_base_scale" getter="get_base_scale" default="1.0">
-			SVG texture scale.
+			SVG texture scale. [code]1.0[/code] is the original SVG size. Higher values result in a larger image.
 		</member>
 		<member name="color_map" type="Dictionary" setter="set_color_map" getter="get_color_map" default="{}">
-			If sets, remaps SVG texture colors according to [Color]-[Color] map.
+			If set, remaps SVG texture colors according to [Color]-[Color] map.
 		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="saturation" type="float" setter="set_saturation" getter="get_saturation" default="1.0">

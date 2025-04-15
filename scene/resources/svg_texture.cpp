@@ -159,7 +159,7 @@ void SVGTexture::_remove_scale(double p_scale) {
 
 RID SVGTexture::_ensure_scale(double p_scale) const {
 	if (Math::is_equal_approx(p_scale, 1.0)) {
-		if (!base_texture.is_valid()) {
+		if (base_texture.is_null()) {
 			base_texture = _load_at_scale(p_scale, true);
 		}
 		return base_texture;
@@ -180,7 +180,8 @@ RID SVGTexture::_ensure_scale(double p_scale) const {
 }
 
 RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
-	Ref<Image> img = memnew(Image);
+	Ref<Image> img;
+	img.instantiate();
 #ifdef MODULE_SVG_ENABLED
 	const bool upsample = !Math::is_equal_approx(Math::round(p_scale * base_scale), p_scale * base_scale);
 
@@ -300,7 +301,7 @@ void SVGTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const 
 }
 
 bool SVGTexture::is_pixel_opaque(int p_x, int p_y) const {
-	if (!alpha_cache.is_valid()) {
+	if (alpha_cache.is_null()) {
 		Ref<Image> img = get_image();
 		if (img.is_valid()) {
 			alpha_cache.instantiate();
@@ -318,8 +319,8 @@ bool SVGTexture::is_pixel_opaque(int p_x, int p_y) const {
 		int x = p_x * aw / size.x;
 		int y = p_y * ah / size.y;
 
-		x = CLAMP(x, 0, aw);
-		y = CLAMP(y, 0, ah);
+		x = CLAMP(x, 0, aw - 1);
+		y = CLAMP(y, 0, ah - 1);
 
 		return alpha_cache->get_bit(x, y);
 	}
