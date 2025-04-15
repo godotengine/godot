@@ -2896,15 +2896,17 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 					}
 					Vector2 gpos = fgl.rect.position;
 					Size2 csize = fgl.rect.size;
-					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
-						if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
-							double gl_scale = (double)p_size / (double)fd->fixed_size;
-							gpos *= gl_scale;
-							csize *= gl_scale;
-						} else {
-							double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
-							gpos *= gl_scale;
-							csize *= gl_scale;
+					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
+						if (size.x != p_size * 64) {
+							if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
+								double gl_scale = (double)p_size / (double)fd->fixed_size;
+								gpos *= gl_scale;
+								csize *= gl_scale;
+							} else {
+								double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
+								gpos *= gl_scale;
+								csize *= gl_scale;
+							}
 						}
 					} else {
 						gpos /= oversampling_factor;
@@ -3030,15 +3032,17 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 					}
 					Vector2 gpos = fgl.rect.position;
 					Size2 csize = fgl.rect.size;
-					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
-						if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
-							double gl_scale = (double)p_size / (double)fd->fixed_size;
-							gpos *= gl_scale;
-							csize *= gl_scale;
-						} else {
-							double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
-							gpos *= gl_scale;
-							csize *= gl_scale;
+					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
+						if (size.x != p_size * 64) {
+							if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
+								double gl_scale = (double)p_size / (double)fd->fixed_size;
+								gpos *= gl_scale;
+								csize *= gl_scale;
+							} else {
+								double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
+								gpos *= gl_scale;
+								csize *= gl_scale;
+							}
 						}
 					} else {
 						gpos /= oversampling_factor;
