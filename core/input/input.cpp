@@ -173,6 +173,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_emulating_touch_from_mouse"), &Input::is_emulating_touch_from_mouse);
 	ClassDB::bind_method(D_METHOD("start_microphone"), &Input::start_microphone);
 	ClassDB::bind_method(D_METHOD("stop_microphone"), &Input::stop_microphone);
+	ClassDB::bind_method(D_METHOD("get_microphone_frames_available"), &Input::get_microphone_frames_available);
 	ClassDB::bind_method(D_METHOD("get_microphone_buffer", "frames"), &Input::get_microphone_buffer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
@@ -1855,6 +1856,15 @@ Error Input::stop_microphone() {
 	return AudioDriver::get_singleton()->input_stop();
 }
 
+int Input::get_microphone_frames_available() {
+	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
+	if (input_position < microphone_buffer_ofs) {
+		Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
+		input_position += buf.size();
+	}
+	return (input_position - microphone_buffer_ofs) / 2;
+}
+
 PackedVector2Array Input::get_microphone_buffer(int p_frames) {
 	PackedVector2Array ret;
 	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
@@ -1862,10 +1872,7 @@ PackedVector2Array Input::get_microphone_buffer(int p_frames) {
 	if (input_position < microphone_buffer_ofs) {
 		input_position += buf.size();
 	}
-	if (p_frames == -1) {
-		p_frames = (input_position - microphone_buffer_ofs) / 2;
-	}
-	if (microphone_buffer_ofs + p_frames * 2 <= input_position) {
+	if ((microphone_buffer_ofs + p_frames * 2 <= input_position) && (p_frames >= 0)) {
 		ret.resize(p_frames);
 		for (int i = 0; i < p_frames; i++) {
 			float l = (buf[microphone_buffer_ofs++] >> 16) / 32768.f;

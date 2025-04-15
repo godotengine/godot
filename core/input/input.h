@@ -399,6 +399,7 @@ public:
 
 	Error start_microphone();
 	Error stop_microphone();
+	int get_microphone_frames_available();
 	PackedVector2Array get_microphone_buffer(int p_frames);
 
 	Input();
