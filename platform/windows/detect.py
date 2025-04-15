@@ -405,7 +405,7 @@ def configure_msvc(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if int(env["target_win_version"], 16) < 0x0602:
-            print_info("AcceeKit enabled, targeted Windows version changed to Windows 8 (0x602).")
+            print_info("AccessKit enabled, targeted Windows version changed to Windows 8 (0x602).")
             env["target_win_version"] = "0x0602"  # Accessibility API require Windows 8+
 
     env.AppendUnique(
@@ -771,7 +771,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if int(env["target_win_version"], 16) < 0x0602:
-            print_info("AcceeKit enabled, targeted Windows version changed to Windows 8 (0x602).")
+            print_info("AccessKit enabled, targeted Windows version changed to Windows 8 (0x602).")
             env["target_win_version"] = "0x0602"  # Accessibility API require Windows 8+
 
     if not env["use_llvm"]:
