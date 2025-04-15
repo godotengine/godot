@@ -578,11 +578,18 @@ String SceneMultiplayer::get_rpc_md5(const Object *p_obj) {
 	return rpc->get_rpc_md5(p_obj);
 }
 
-int SceneMultiplayer::get_network_id(Object *p_object, int p_peer_id) const {
+int SceneMultiplayer::get_network_id(Object *p_object) const {
 	Node *node = Object::cast_to<Node>(p_object);
 	ERR_FAIL_COND_V_MSG(!node || !node->is_inside_tree(), 0, "The object must be a valid Node inside the SceneTree");
 
-	return cache->get_network_id(node, p_peer_id);
+	return cache->get_local_network_id(node);
+}
+
+bool SceneMultiplayer::has_peer_confirmed_network_id(Object *p_object, int p_peer) const {
+	Node *node = Object::cast_to<Node>(p_object);
+	ERR_FAIL_COND_V_MSG(!node || !node->is_inside_tree(), false, "The object must be a valid Node inside the SceneTree");
+
+	return cache->is_cache_confirmed(node, p_peer);
 }
 
 Object *SceneMultiplayer::instance_from_network_id(int p_id) const {
@@ -667,7 +674,8 @@ void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auth_timeout", "timeout"), &SceneMultiplayer::set_auth_timeout);
 	ClassDB::bind_method(D_METHOD("get_auth_timeout"), &SceneMultiplayer::get_auth_timeout);
 
-	ClassDB::bind_method(D_METHOD("get_network_id", "object", "peer_id"), &SceneMultiplayer::get_network_id);
+	ClassDB::bind_method(D_METHOD("get_network_id", "object"), &SceneMultiplayer::get_network_id);
+	ClassDB::bind_method(D_METHOD("has_peer_confirmed_network_id", "object", "peer_id"), &SceneMultiplayer::has_peer_confirmed_network_id);
 	ClassDB::bind_method(D_METHOD("instance_from_network_id", "id"), &SceneMultiplayer::instance_from_network_id);
 
 	ClassDB::bind_method(D_METHOD("set_refuse_new_connections", "refuse"), &SceneMultiplayer::set_refuse_new_connections);

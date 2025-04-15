@@ -81,7 +81,8 @@ public:
 	void process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 	ObjectID resolve_object_id(int p_id) const;
-	int get_network_id(const Object *p_object, int p_peer_id) const;
+	int get_local_network_id(const Object *p_object) const;
+	bool is_peer_aware_of_id(int p_id) const;
 
 	// Returns true if all peers have cached path.
 	bool send_object_cache(Object *p_obj, int p_target, int &p_id);

@@ -185,7 +185,8 @@ public:
 
 	const HashSet<int> get_connected_peers() const { return connected_peers; }
 
-	int get_network_id(Object *p_object, int p_peer_id) const;
+	int get_network_id(Object *p_object) const;
+	bool has_peer_confirmed_network_id(Object *p_object, int p_peer) const;
 	Object *instance_from_network_id(int p_id) const;
 
 	void set_remote_sender_override(int p_id) { remote_sender_override = p_id; }

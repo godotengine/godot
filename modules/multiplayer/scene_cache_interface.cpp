@@ -215,18 +215,13 @@ ObjectID SceneCacheInterface::resolve_object_id(int p_id) const {
 	return ObjectID{ (uint64_t)0 };
 }
 
-int SceneCacheInterface::get_network_id(const Object *p_object, int p_peer_id) const {
+int SceneCacheInterface::get_local_network_id(const Object *p_object) const {
 	ERR_FAIL_NULL_V(p_object, 0);
 
 	ObjectID oid = p_object->get_instance_id();
 	const NodeCache *nc = nodes_cache.getptr(oid);
 
-	// if (!nc->confirmed_peers.has(p_peer_id) || !nc->confirmed_peers.get(p_peer_id) || !nc->recv_ids.has(p_peer_id)) {
-	//   // Peer hasn't confirmed ID
-	//   return -1;
-	// }
-
-	return nc ? nc->cache_id : 0;
+	return nc->cache_id;
 }
 
 bool SceneCacheInterface::is_cache_confirmed(Node *p_node, int p_peer) {
