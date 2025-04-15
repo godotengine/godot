@@ -958,6 +958,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	metadata_selection->set_custom_minimum_size(Size2(100, 20));
 	metadata_selection->add_item("None", (int)EditorVCSInterface::VCSMetadata::NONE);
 	metadata_selection->add_item("Git", (int)EditorVCSInterface::VCSMetadata::GIT);
+	metadata_selection->add_item("Mercurial", (int)EditorVCSInterface::VCSMetadata::MERCURIAL);
 	metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
 	metadata_hb->add_child(metadata_selection);
 
