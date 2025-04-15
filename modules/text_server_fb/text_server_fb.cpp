@@ -899,10 +899,10 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 			}
 		}
 
-		fd->ascent = (fd->face->size->metrics.ascender / 64.0) / fd->scale;
-		fd->descent = (-fd->face->size->metrics.descender / 64.0) / fd->scale;
-		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->scale;
-		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->scale;
+		fd->ascent = (fd->face->size->metrics.ascender / 64.0) * fd->scale;
+		fd->descent = (-fd->face->size->metrics.descender / 64.0) * fd->scale;
+		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) * fd->scale;
+		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) * fd->scale;
 
 		if (!p_font_data->face_init) {
 			// When a font does not provide a `family_name`, FreeType tries to synthesize one based on other names.

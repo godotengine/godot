@@ -1469,10 +1469,10 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 
 		fd->hb_handle = hb_ft_font_create(fd->face, nullptr);
 
-		fd->ascent = (fd->face->size->metrics.ascender / 64.0) / fd->scale;
-		fd->descent = (-fd->face->size->metrics.descender / 64.0) / fd->scale;
-		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->scale;
-		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->scale;
+		fd->ascent = (fd->face->size->metrics.ascender / 64.0) * fd->scale;
+		fd->descent = (-fd->face->size->metrics.descender / 64.0) * fd->scale;
+		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) * fd->scale;
+		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) * fd->scale;
 
 #if HB_VERSION_ATLEAST(3, 3, 0)
 		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform[0][1]);
