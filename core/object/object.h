@@ -703,6 +703,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_property) const { return false; }
 	void _get_property_list(List<PropertyInfo> *p_list) const {}
 	void _validate_property(PropertyInfo &p_property) const {}
+	void _get_property_warning(const StringName &p_name, String &r_property) const {}
 	bool _property_can_revert(const StringName &p_name) const { return false; }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return false; }
 	void _notification(int p_notification) {}

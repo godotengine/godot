@@ -186,6 +186,25 @@
 				[b]Note:[/b] If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.
 			</description>
 		</method>
+		<method name="_get_property_warning" qualifiers="virtual">
+			<return type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Override this method to customize warning messages for properties in the inspector.
+				Should return the given [param property]'s warning to be displayed as warnings in the inspector if the script that overrides it is a [code]tool[/code] script.
+				Returning an empty string produces no warnings.
+				[codeblock]
+				@export var energy = 0
+
+				func _get_property_warning(property):
+				    if property == "energy" and energy &lt; 0:
+				        return "Energy must be 0 or greater."
+				    else:
+				        return ""
+				[/codeblock]
+				[b]Note:[/b] If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.
+			</description>
+		</method>
 		<method name="_init" qualifiers="virtual">
 			<return type="void" />
 			<description>

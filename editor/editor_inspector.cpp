@@ -774,7 +774,8 @@ void EditorProperty::update_editor_property_status() {
 
 	bool new_warning = false;
 	if (object->has_method("_get_property_warning")) {
-		new_warning = !String(object->call("_get_property_warning", property)).is_empty();
+		const Variant custom_warning = object->call("_get_property_warning", property);
+		new_warning = (custom_warning.get_type() != Variant::NIL) && !String(custom_warning).is_empty();
 	}
 
 	Variant current = object->get(_get_revert_property());
@@ -1256,9 +1257,9 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 	String prologue;
 
 	if (object->has_method("_get_property_warning")) {
-		const String custom_warning = object->call("_get_property_warning", property);
-		if (!custom_warning.is_empty()) {
-			prologue = "[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + custom_warning + "[/color][/b]";
+		const Variant custom_warning = object->call("_get_property_warning", property);
+		if ((custom_warning.get_type() != Variant::NIL) && !String(custom_warning).is_empty()) {
+			prologue = "[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + String(custom_warning) + "[/color][/b]";
 		}
 	}
 

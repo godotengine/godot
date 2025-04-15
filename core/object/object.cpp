@@ -1834,6 +1834,13 @@ void Object::_bind_methods() {
 		BIND_OBJ_CORE_METHOD(mi);
 	}
 
+	{
+		MethodInfo mi("_get_property_warning");
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "property"));
+		mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		BIND_OBJ_CORE_METHOD(mi);
+	}
+
 	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::NIL, "_validate_property", PropertyInfo(Variant::DICTIONARY, "property")));
 
 	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_property_can_revert", PropertyInfo(Variant::STRING_NAME, "property")));
