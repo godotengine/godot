@@ -59,7 +59,7 @@ void Actor::set_component(Ref<Component> value) {
 	ERR_FAIL_COND_MSG(!value.is_valid(), vformat("Can't add a null component."));
 
 	_component_resources[value->get_component_class()] = value;
-//	print_line("Success setting component: ", value->get_component_class());
+	print_line("Success setting component: ", value->get_component_class());
 
 	notify_property_list_changed();
 }

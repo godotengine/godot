@@ -37,8 +37,12 @@
 
 StringName Component::get_component_class() {
 	Ref<Script> s = get_script();
-	if (s.is_valid()) {
-		return s->get_global_name();
+	while (s.is_valid()) {
+		if (!s->get_global_name().is_empty()) {
+			return s->get_global_name();
+		} else {
+			s = s->get_base_script();
+		}
 	}
 
 	return get_class_name();
