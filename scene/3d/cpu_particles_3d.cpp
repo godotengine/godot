@@ -90,21 +90,6 @@ void CPUParticles3D::set_amount(int p_amount) {
 
 void CPUParticles3D::set_amount_ratio(float p_amount_ratio) {
 	amount_ratio = p_amount_ratio;
-
-	float tot = 1;
-	int pcount = particles.size();
-	Particle *w = particles.ptrw();
-
-	for (int i = 0; i < pcount; i++) {
-		tot += amount_ratio;
-		w[i].stopped = false;
-		if (tot >= 1) {
-			w[i].stopping = false;
-			tot -= 1;
-		} else {
-			w[i].stopping = true;
-		}
-	}
 }
 
 void CPUParticles3D::set_lifetime(double p_lifetime) {
@@ -766,14 +751,18 @@ void CPUParticles3D::_particles_process(double p_delta) {
 		velocity_xform = emission_xform.basis;
 	}
 
+	float amount_ratio_accumulator = 0.0;
 	double system_phase = time / lifetime;
 
 	bool should_be_active = false;
 	for (int i = 0; i < pcount; i++) {
 		Particle &p = parray[i];
 
-		if (p.stopped) {
-			continue;
+		amount_ratio_accumulator += amount_ratio;
+		bool active_by_ratio = false;
+		if (amount_ratio_accumulator >= 1.0) {
+			active_by_ratio = true;
+			amount_ratio_accumulator -= 1.0;
 		}
 
 		if (!emitting && !p.active) {
@@ -834,9 +823,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 		float tv = 0.0;
 
 		if (restart) {
-			if (p.stopping) {
-				p.stopped = true;
-				p.active = false;
+			if (!active_by_ratio) {
 				continue;
 			}
 

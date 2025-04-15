@@ -90,8 +90,6 @@ private:
 		real_t custom[4] = {};
 		Vector3 velocity;
 		bool active = false;
-		bool stopping = false;
-		bool stopped = false;
 		real_t angle_rand = 0.0;
 		real_t scale_rand = 0.0;
 		real_t hue_rot_rand = 0.0;

@@ -88,8 +88,6 @@ private:
 		real_t rotation = 0.0;
 		Vector2 velocity;
 		bool active = false;
-		bool stopping = false;
-		bool stopped = false;
 		real_t angle_rand = 0.0;
 		real_t scale_rand = 0.0;
 		real_t hue_rot_rand = 0.0;
