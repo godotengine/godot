@@ -763,6 +763,8 @@ void CPUParticles3D::_particles_process(double p_delta) {
 		if (amount_ratio_accumulator >= 1.0) {
 			active_by_ratio = true;
 			amount_ratio_accumulator -= 1.0;
+		} else if (!p.active) {
+			continue;
 		}
 
 		if (!emitting && !p.active) {
@@ -824,6 +826,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 
 		if (restart) {
 			if (!active_by_ratio) {
+				p.active = false;
 				continue;
 			}
 
