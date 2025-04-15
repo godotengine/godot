@@ -1149,6 +1149,9 @@ void main() {
 			}
 			decal_albedo *= decals.data[decal_index].modulate;
 			decal_albedo.a *= fade;
+			if (decals.data[decal_index].override_surface_alpha == 1u) {
+				alpha = max(alpha, decal_albedo.a);
+			}
 			albedo = mix(albedo, decal_albedo.rgb, decal_albedo.a * decals.data[decal_index].albedo_mix);
 
 			if (decals.data[decal_index].normal_rect != vec4(0.0)) {
