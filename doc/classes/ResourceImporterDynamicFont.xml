@@ -66,9 +66,6 @@
 		<member name="opentype_features" type="Dictionary" setter="" getter="" default="{}">
 			The OpenType features to enable, disable or set a value for this font. This can be used to enable optional features provided by the font, such as ligatures or alternative glyphs. The list of supported OpenType features varies on a per-font basis.
 		</member>
-		<member name="oversampling" type="float" setter="" getter="" default="0.0">
-			Deprecated. This property does nothing.
-		</member>
 		<member name="preload" type="Array" setter="" getter="" default="[]">
 			The glyph ranges to prerender. This can avoid stuttering during gameplay when new characters need to be rendered, especially if [member subpixel_positioning] is enabled. The downside of using preloading is that initial project load times will increase, as well as memory usage.
 		</member>
