@@ -1496,14 +1496,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_TOGGLE_SCENE_EXPOSE_NODE: {
 			// Enabling/disabling based on the same node based on which the checkbox in the menu is checked/unchecked.
-			const List<Node *>::Element *first_selected = editor_selection->get_selected_node_list().front();
+			const List<Node *>::Element *first_selected = editor_selection->get_top_selected_node_list().front();
 			if (first_selected == nullptr) {
 				return;
 			}
 			if (first_selected->get() == EditorNode::get_singleton()->get_edited_scene()) {
 				// Exclude Root Node. It should never be exposed in its own scene!
 				editor_selection->remove_node(first_selected->get());
-				first_selected = editor_selection->get_selected_node_list().front();
+				first_selected = editor_selection->get_top_selected_node_list().front();
 				if (first_selected == nullptr) {
 					return;
 				}
@@ -3982,7 +3982,6 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			if (menu->get_item_index(TOOL_COPY_NODE_PATH) == -1) {
 				menu->add_separator();
 			}
-			Node *node = full_selection.front()->get();
 			menu->add_icon_check_item(get_editor_theme_icon(SNAME("SceneUniqueName")), TTRC("Access as Unique Name"), TOOL_TOGGLE_SCENE_UNIQUE_NAME);
 			menu->set_item_shortcut(menu->get_item_index(TOOL_TOGGLE_SCENE_UNIQUE_NAME), ED_GET_SHORTCUT("scene_tree/toggle_unique_name"));
 			menu->set_item_checked(menu->get_item_index(TOOL_TOGGLE_SCENE_UNIQUE_NAME), node->is_unique_name_in_owner());

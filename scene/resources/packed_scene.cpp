@@ -974,7 +974,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		}
 
 		// Skip exposure metadata.
-		if (name == META_PROPERTY_EXPOSED_IN_OWNER || name == META_PROPERTY_MARKED_FOR_EXPOSURE || name == META_PROPERTY_EXPOSED_IN_INSTANCE) {
+		if (name == META_PROPERTY_EXPOSED_IN_OWNER || name == META_PROPERTY_MARKED_FOR_EXPOSURE || name == META_PROPERTY_EXPOSED_IN_INSTANCE || name == META_PROPERTY_CONTAINS_EXPOSED_NODES) {
 			continue;
 		}
 

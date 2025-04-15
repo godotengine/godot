@@ -333,7 +333,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 		} else if (p_node->has_exposed_nodes()) {
 			HashMap<Node *, CachedNode>::Iterator I = node_cache.get(p_node);
 			if (!I) {
-				node_cache.add(p_node);
+				node_cache.add(p_node, tree->create_item(p_parent, 0));
 			}
 			for (int i = 0; i < p_node->get_child_count(); i++) {
 				if (!get_scene_node()->is_editable_instance(p_node->get_child(i)->get_owner()) || p_node->get_child(i)->has_meta(META_EXPOSED_IN_INSTANCE)) {
@@ -384,6 +384,9 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			}
 		} else {
 			index = p_node->get_index(false);
+			if (p_node->get_parent() && !p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+				index += p_node->get_parent()->get_exposed_node_count();
+			}
 			item = tree->create_item(p_parent, index);
 		}
 
@@ -2439,13 +2442,6 @@ SceneTreeDialog::SceneTreeDialog() {
 }
 
 /******** CACHE *********/
-HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCache::add(Node *p_node) {
-	if (!p_node) {
-		return HashMap<Node *, CachedNode>::Iterator();
-	}
-
-	return cache.insert(p_node, CachedNode(p_node, nullptr));
-}
 HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCache::add(Node *p_node, TreeItem *p_item) {
 	if (!p_node) {
 		return HashMap<Node *, CachedNode>::Iterator();
@@ -2569,9 +2565,7 @@ void SceneTreeEditor::NodeCache::delete_pending() {
 		// and immediate reinsertion. This is what happens with moves and
 		// type changes.
 		if (Math::abs((*I)->delete_serial - delete_serial) >= 2) {
-			if ((*I)->item != nullptr) {
-				memdelete((*I)->item);
-			}
+			memdelete((*I)->item);
 			cache.remove((*I)->cache_iterator);
 			to_delete.remove(I);
 		} else if (!(*I)->removed) {
@@ -2584,10 +2578,8 @@ void SceneTreeEditor::NodeCache::delete_pending() {
 			// We might already be removed (and thus not have a parent) by rapid
 			// undo/redo.
 			if (!(*I)->removed) {
-				if ((*I)->item != nullptr) {
-					TreeItem *parent = (*I)->item->get_parent();
-					parent->remove_child((*I)->item);
-				}
+				TreeItem *parent = (*I)->item->get_parent();
+				parent->remove_child((*I)->item);
 			}
 			(*I)->removed = true;
 		}
@@ -2600,11 +2592,7 @@ void SceneTreeEditor::NodeCache::delete_pending() {
 void SceneTreeEditor::NodeCache::clear() {
 	for (CachedNode *E : to_delete) {
 		// Only removed entries won't be automatically cleaned up by Tree::clear().
-		if (E->removed) {
-			if (E->item != nullptr) {
-				memdelete(E->item);
-			}
-		}
+		memdelete(E->item);
 	}
 	cache.clear();
 	to_delete.clear();

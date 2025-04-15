@@ -535,6 +535,7 @@ public:
 	bool is_unique_name_in_owner() const;
 
 	bool has_exposed_nodes();
+	int get_exposed_node_count();
 
 	_FORCE_INLINE_ int get_index(bool p_include_internal = true) const {
 		// p_include_internal = false doesn't make sense if the node is internal.
@@ -894,6 +895,7 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 }
 
 #define META_CONTAINS_EXPOSED_NODES "_contains_exposed_nodes"
+#define META_PROPERTY_CONTAINS_EXPOSED_NODES "metadata/_contains_exposed_nodes"
 #define META_PROPERTY_EXPOSED_IN_OWNER "metadata/_exposed_in_owner"
 #define META_EXPOSED_IN_OWNER "_exposed_in_owner"
 #define META_PROPERTY_MARKED_FOR_EXPOSURE "metadata/_marked_for_exposure"
