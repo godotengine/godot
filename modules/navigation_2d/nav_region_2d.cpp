@@ -178,6 +178,10 @@ bool NavRegion2D::sync() {
 
 	update_polygons();
 
+	if (something_changed) {
+		iteration_id = iteration_id % UINT32_MAX + 1;
+	}
+
 	return something_changed;
 }
 
