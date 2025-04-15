@@ -53,11 +53,13 @@ bool NoiseTextureConversionPlugin::handles(const Ref<Resource> &p_resource) cons
 	return mat.is_valid();
 }
 
-void ConvertTextureDialog::_check_file_path() {
-	validation_panel->set_message(MSG_ID_INFO_0, TTR("The image data from the resource will be saved as a PNG to the path specified."), EditorValidationPanel::MSG_INFO);
+void ConvertTextureDialog::_check_path_and_content() {
+	String file_path_text = file_path->get_text().strip_edges();
+
+	String file_type = file_path->get_text().get_extension() == "png" ? "PNG" : "WebP";
+	validation_panel->set_message(MSG_ID_INFO_0, vformat(TTR("The image data from the resource will be saved as a %s file to the path specified."), file_type), EditorValidationPanel::MSG_INFO);
 	validation_panel->set_message(MSG_ID_INFO_1, TTR("The new image will be imported as a CompressedTexture2D which will replace the original resource."), EditorValidationPanel::MSG_INFO);
 
-	String file_path_text = file_path->get_text().strip_edges();
 	if (file_path_text.is_empty()) {
 		validation_panel->set_message(MSG_ID_PATH, TTR("Image path is empty."), EditorValidationPanel::MSG_ERROR);
 		return;
@@ -73,12 +75,21 @@ void ConvertTextureDialog::_check_file_path() {
 		validation_panel->set_message(MSG_ID_PATH, TTR("Path is not local."), EditorValidationPanel::MSG_ERROR);
 	} else {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (da->dir_exists(file_path_text) || da->file_exists(file_path_text)) {
-			validation_panel->set_message(MSG_ID_PATH, TTR("A file or directory with the same name exists."), EditorValidationPanel::MSG_ERROR);
+		if (da->dir_exists(file_path_text)) {
+			validation_panel->set_message(MSG_ID_PATH, TTR("A directory with the same name exists."), EditorValidationPanel::MSG_ERROR);
+		}
+		if (da->file_exists(file_path_text) && !checkbox_overwrite->is_pressed()) {
+			validation_panel->set_message(MSG_ID_PATH, TTR("A file with the same name exists."), EditorValidationPanel::MSG_ERROR);
 		}
 		if (!da->dir_exists(file_path_text.get_base_dir())) {
 			validation_panel->set_message(MSG_ID_PATH, TTR("Parent directory does not exist."), EditorValidationPanel::MSG_ERROR);
 		}
+	}
+
+	Ref<NoiseTexture2D> noise_tex = resource;
+	auto base_image = noise_tex->get_image();
+	if (base_image.is_null()) {
+		validation_panel->set_message(MSG_ID_EMPTY, TTR("Empty image data! The texture's noise property cannot be empty."), EditorValidationPanel::MSG_ERROR);
 	}
 }
 
@@ -92,15 +103,20 @@ void ConvertTextureDialog::_browse_path() {
 	file_browse->popup_file_dialog();
 }
 
+void ConvertTextureDialog::_overwrite_button_pressed() {
+	validation_panel->update();
+}
+
 ConvertTextureDialog::ConvertTextureDialog() {
 	GridContainer *gc = memnew(GridContainer);
 	gc->set_columns(2);
 
 	validation_panel = memnew(EditorValidationPanel);
 	validation_panel->add_line(MSG_ID_PATH, TTR("Image path/name is valid."));
+	validation_panel->add_line(MSG_ID_EMPTY);
 	validation_panel->add_line(MSG_ID_INFO_0);
 	validation_panel->add_line(MSG_ID_INFO_1);
-	validation_panel->set_update_callback(callable_mp(this, &ConvertTextureDialog::_check_file_path));
+	validation_panel->set_update_callback(callable_mp(this, &ConvertTextureDialog::_check_path_and_content));
 	validation_panel->set_accept_button(get_ok_button());
 	validation_panel->update();
 
@@ -124,14 +140,20 @@ ConvertTextureDialog::ConvertTextureDialog() {
 	gc->add_child(label);
 	gc->add_child(hb);
 
+	Label *label_overwrite = memnew(Label(TTR("Overwrite Existing Files:")));
+	checkbox_overwrite = memnew(CheckBox);
+	checkbox_overwrite->connect(SNAME("pressed"), callable_mp(this, &ConvertTextureDialog::_overwrite_button_pressed));
+	gc->add_child(label_overwrite);
+	gc->add_child(checkbox_overwrite);
+
 	gc->set_custom_minimum_size(Size2(650, 0) * EDSCALE);
 	set_title(TTR("Convert to CompressedTexture2D"));
 
 	file_browse = memnew(EditorFileDialog);
 	file_browse->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	// We don't want to allow overwriting, but that gets handled in the main dialog.
+	// We may not want to allow overwriting, but that gets handled in the main dialog.
 	file_browse->set_disable_overwrite_warning(true);
-	file_browse->set_filters({ "*.png" });
+	file_browse->set_filters({ "*.webp", "*.png" });
 	file_browse->connect(SNAME("file_selected"), callable_mp(this, &ConvertTextureDialog::_browse_path_selected));
 	add_child(file_browse);
 }
@@ -152,7 +174,7 @@ void ConvertTextureDialog::_notification(int p_what) {
 
 void ConvertTextureDialog::config(const Ref<Resource> &p_resource) {
 	resource = p_resource;
-	file_path->set_text(resource->get_path().get_basename() + ".png");
+	file_path->set_text(resource->get_path().get_basename() + ".webp");
 }
 
 void NoiseTextureConversionPlugin::_confirm_conversion() {
@@ -163,7 +185,12 @@ void NoiseTextureConversionPlugin::_confirm_conversion() {
 	}
 
 	auto base_image = noise_tex->get_image();
-	base_image->save_png(dialog->get_file_path());
+	auto file_path = dialog->get_file_path();
+	if (file_path.get_extension() == "png") {
+		base_image->save_png(file_path);
+	} else {
+		base_image->save_webp(file_path);
+	}
 	base_image->notify_property_list_changed();
 	pending_updates.append({ callback, dialog->get_file_path() });
 	EditorFileSystem::get_singleton()->scan_changes();

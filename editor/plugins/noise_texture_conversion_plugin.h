@@ -70,6 +70,7 @@ class ConvertTextureDialog : public ConfirmationDialog {
 
 	enum {
 		MSG_ID_PATH,
+		MSG_ID_EMPTY,
 		MSG_ID_INFO_0,
 		MSG_ID_INFO_1
 	};
@@ -77,9 +78,9 @@ class ConvertTextureDialog : public ConfirmationDialog {
 	Ref<Resource> resource = nullptr;
 	EditorValidationPanel *validation_panel = nullptr;
 	EditorFileDialog *file_browse = nullptr;
-	LineEdit *file_path;
-	Button *path_button;
-	CheckBox *preserve_mipmap = nullptr;
+	LineEdit *file_path = nullptr;
+	Button *path_button = nullptr;
+	CheckBox *checkbox_overwrite = nullptr;
 
 public:
 	ConvertTextureDialog();
@@ -93,7 +94,8 @@ protected:
 private:
 	void _browse_path();
 	void _browse_path_selected(String selected_path);
-	void _check_file_path();
+	void _overwrite_button_pressed();
+	void _check_path_and_content();
 };
 
 #endif // NOISE_TEXTURE_CONVERSION_PLUGIN_H
