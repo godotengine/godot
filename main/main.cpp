@@ -2206,160 +2206,160 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_native", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_gles", true);
 
-		Array device_blocklist;
+		Array force_angle_list;
 
-#define BLOCK_DEVICE(m_vendor, m_name)      \
+#define FORCE_ANGLE(m_vendor, m_name)       \
 	{                                       \
 		Dictionary device;                  \
 		device["vendor"] = m_vendor;        \
 		device["name"] = m_name;            \
-		device_blocklist.push_back(device); \
+		force_angle_list.push_back(device); \
 	}
 
 		// AMD GPUs.
-		BLOCK_DEVICE("ATI", "Radeon 9"); // ATI Radeon 9000 Series
-		BLOCK_DEVICE("ATI", "Radeon X"); // ATI Radeon X500-X2000 Series
-		BLOCK_DEVICE("ATI", "Radeon HD 2"); // AMD/ATI (Mobility) Radeon HD 2xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 3"); // AMD/ATI (Mobility) Radeon HD 3xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 4"); // AMD/ATI (Mobility) Radeon HD 4xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 5"); // AMD/ATI (Mobility) Radeon HD 5xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 6"); // AMD/ATI (Mobility) Radeon HD 6xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 7"); // AMD/ATI (Mobility) Radeon HD 7xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 8"); // AMD/ATI (Mobility) Radeon HD 8xxx Series
-		BLOCK_DEVICE("ATI", "Radeon(TM) R2 Graphics"); // APUs
-		BLOCK_DEVICE("ATI", "Radeon(TM) R3 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon(TM) R4 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon(TM) R5 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon(TM) R6 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon(TM) R7 Graphics");
-		BLOCK_DEVICE("AMD", "Radeon(TM) R7 Graphics");
-		BLOCK_DEVICE("AMD", "Radeon(TM) R8 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon R5 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon R6 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon R7 Graphics");
-		BLOCK_DEVICE("AMD", "Radeon R7 Graphics");
-		BLOCK_DEVICE("AMD", "Radeon R8 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon R5 2"); // Rx 2xx Series
-		BLOCK_DEVICE("ATI", "Radeon R7 2");
-		BLOCK_DEVICE("ATI", "Radeon R9 2");
-		BLOCK_DEVICE("ATI", "Radeon R5 M2"); // Rx M2xx Series
-		BLOCK_DEVICE("ATI", "Radeon R7 M2");
-		BLOCK_DEVICE("ATI", "Radeon R9 M2");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R9 Fury");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R5 3"); // Rx 3xx Series
-		BLOCK_DEVICE("AMD", "Radeon (TM) R5 3");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R7 3");
-		BLOCK_DEVICE("AMD", "Radeon (TM) R7 3");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R9 3");
-		BLOCK_DEVICE("AMD", "Radeon (TM) R9 3");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R5 M3"); // Rx M3xx Series
-		BLOCK_DEVICE("AMD", "Radeon (TM) R5 M3");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R7 M3");
-		BLOCK_DEVICE("AMD", "Radeon (TM) R7 M3");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R9 M3");
-		BLOCK_DEVICE("AMD", "Radeon (TM) R9 M3");
+		FORCE_ANGLE("ATI", "Radeon 9"); // ATI Radeon 9000 Series
+		FORCE_ANGLE("ATI", "Radeon X"); // ATI Radeon X500-X2000 Series
+		FORCE_ANGLE("ATI", "Radeon HD 2"); // AMD/ATI (Mobility) Radeon HD 2xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 3"); // AMD/ATI (Mobility) Radeon HD 3xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 4"); // AMD/ATI (Mobility) Radeon HD 4xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 5"); // AMD/ATI (Mobility) Radeon HD 5xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 6"); // AMD/ATI (Mobility) Radeon HD 6xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 7"); // AMD/ATI (Mobility) Radeon HD 7xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 8"); // AMD/ATI (Mobility) Radeon HD 8xxx Series
+		FORCE_ANGLE("ATI", "Radeon(TM) R2 Graphics"); // APUs
+		FORCE_ANGLE("ATI", "Radeon(TM) R3 Graphics");
+		FORCE_ANGLE("ATI", "Radeon(TM) R4 Graphics");
+		FORCE_ANGLE("ATI", "Radeon(TM) R5 Graphics");
+		FORCE_ANGLE("ATI", "Radeon(TM) R6 Graphics");
+		FORCE_ANGLE("ATI", "Radeon(TM) R7 Graphics");
+		FORCE_ANGLE("AMD", "Radeon(TM) R7 Graphics");
+		FORCE_ANGLE("AMD", "Radeon(TM) R8 Graphics");
+		FORCE_ANGLE("ATI", "Radeon R5 Graphics");
+		FORCE_ANGLE("ATI", "Radeon R6 Graphics");
+		FORCE_ANGLE("ATI", "Radeon R7 Graphics");
+		FORCE_ANGLE("AMD", "Radeon R7 Graphics");
+		FORCE_ANGLE("AMD", "Radeon R8 Graphics");
+		FORCE_ANGLE("ATI", "Radeon R5 2"); // Rx 2xx Series
+		FORCE_ANGLE("ATI", "Radeon R7 2");
+		FORCE_ANGLE("ATI", "Radeon R9 2");
+		FORCE_ANGLE("ATI", "Radeon R5 M2"); // Rx M2xx Series
+		FORCE_ANGLE("ATI", "Radeon R7 M2");
+		FORCE_ANGLE("ATI", "Radeon R9 M2");
+		FORCE_ANGLE("ATI", "Radeon (TM) R9 Fury");
+		FORCE_ANGLE("ATI", "Radeon (TM) R5 3"); // Rx 3xx Series
+		FORCE_ANGLE("AMD", "Radeon (TM) R5 3");
+		FORCE_ANGLE("ATI", "Radeon (TM) R7 3");
+		FORCE_ANGLE("AMD", "Radeon (TM) R7 3");
+		FORCE_ANGLE("ATI", "Radeon (TM) R9 3");
+		FORCE_ANGLE("AMD", "Radeon (TM) R9 3");
+		FORCE_ANGLE("ATI", "Radeon (TM) R5 M3"); // Rx M3xx Series
+		FORCE_ANGLE("AMD", "Radeon (TM) R5 M3");
+		FORCE_ANGLE("ATI", "Radeon (TM) R7 M3");
+		FORCE_ANGLE("AMD", "Radeon (TM) R7 M3");
+		FORCE_ANGLE("ATI", "Radeon (TM) R9 M3");
+		FORCE_ANGLE("AMD", "Radeon (TM) R9 M3");
 
 		// Intel GPUs.
-		BLOCK_DEVICE("0x8086", "0x0042"); // HD Graphics, Gen5, Clarkdale
-		BLOCK_DEVICE("0x8086", "0x0046"); // HD Graphics, Gen5, Arrandale
-		BLOCK_DEVICE("0x8086", "0x010A"); // HD Graphics, Gen6, Sandy Bridge
-		BLOCK_DEVICE("Intel", "Intel HD Graphics 2000");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 2000");
-		BLOCK_DEVICE("0x8086", "0x0102"); // HD Graphics 2000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("0x8086", "0x0116"); // HD Graphics 3000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("Intel", "Intel HD Graphics 3000");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 3000");
-		BLOCK_DEVICE("0x8086", "0x0126"); // HD Graphics 3000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("Intel", "Intel HD Graphics P3000");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P3000");
-		BLOCK_DEVICE("0x8086", "0x0112"); // HD Graphics P3000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("0x8086", "0x0122");
-		BLOCK_DEVICE("0x8086", "0x015A"); // HD Graphics, Gen7, Ivy Bridge
-		BLOCK_DEVICE("Intel", "Intel HD Graphics 2500");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 2500");
-		BLOCK_DEVICE("0x8086", "0x0152"); // HD Graphics 2500, Gen7, Ivy Bridge
-		BLOCK_DEVICE("Intel", "Intel HD Graphics 4000");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4000");
-		BLOCK_DEVICE("0x8086", "0x0162"); // HD Graphics 4000, Gen7, Ivy Bridge
-		BLOCK_DEVICE("0x8086", "0x0166");
-		BLOCK_DEVICE("Intel", "Intel HD Graphics P4000");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4000");
-		BLOCK_DEVICE("0x8086", "0x016A"); // HD Graphics P4000, Gen7, Ivy Bridge
-		BLOCK_DEVICE("Intel", "Intel(R) Vallyview Graphics");
-		BLOCK_DEVICE("0x8086", "0x0F30"); // Intel(R) Vallyview Graphics, Gen7, Vallyview
-		BLOCK_DEVICE("0x8086", "0x0F31");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4200");
-		BLOCK_DEVICE("0x8086", "0x0A1E"); // Intel(R) HD Graphics 4200, Gen7.5, Haswell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4400");
-		BLOCK_DEVICE("0x8086", "0x0A16"); // Intel(R) HD Graphics 4400, Gen7.5, Haswell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4600");
-		BLOCK_DEVICE("0x8086", "0x0412"); // Intel(R) HD Graphics 4600, Gen7.5, Haswell
-		BLOCK_DEVICE("0x8086", "0x0416");
-		BLOCK_DEVICE("0x8086", "0x0426");
-		BLOCK_DEVICE("0x8086", "0x0D12");
-		BLOCK_DEVICE("0x8086", "0x0D16");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4600/P4700");
-		BLOCK_DEVICE("0x8086", "0x041A"); // Intel(R) HD Graphics P4600/P4700, Gen7.5, Haswell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5000");
-		BLOCK_DEVICE("0x8086", "0x0422"); // Intel(R) HD Graphics 5000, Gen7.5, Haswell
-		BLOCK_DEVICE("0x8086", "0x042A");
-		BLOCK_DEVICE("0x8086", "0x0A26");
-		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 5100");
-		BLOCK_DEVICE("0x8086", "0x0A22"); // Intel(R) Iris(TM) Graphics 5100, Gen7.5, Haswell
-		BLOCK_DEVICE("0x8086", "0x0A2A");
-		BLOCK_DEVICE("0x8086", "0x0A2B");
-		BLOCK_DEVICE("0x8086", "0x0A2E");
-		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 5200");
-		BLOCK_DEVICE("0x8086", "0x0D22"); // Intel(R) Iris(TM) Pro Graphics 5200, Gen7.5, Haswell
-		BLOCK_DEVICE("0x8086", "0x0D26");
-		BLOCK_DEVICE("0x8086", "0x0D2A");
-		BLOCK_DEVICE("0x8086", "0x0D2B");
-		BLOCK_DEVICE("0x8086", "0x0D2E");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 400");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 405");
-		BLOCK_DEVICE("0x8086", "0x22B0"); // Intel(R) HD Graphics, Gen8, Cherryview Braswell
-		BLOCK_DEVICE("0x8086", "0x22B1");
-		BLOCK_DEVICE("0x8086", "0x22B2");
-		BLOCK_DEVICE("0x8086", "0x22B3");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5300");
-		BLOCK_DEVICE("0x8086", "0x161E"); // Intel(R) HD Graphics 5300, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5500");
-		BLOCK_DEVICE("0x8086", "0x1616"); // Intel(R) HD Graphics 5500, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5600");
-		BLOCK_DEVICE("0x8086", "0x1612"); // Intel(R) HD Graphics 5600, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 6000");
-		BLOCK_DEVICE("0x8086", "0x1626"); // Intel(R) HD Graphics 6000, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 6100");
-		BLOCK_DEVICE("0x8086", "0x162B"); // Intel(R) Iris(TM) Graphics 6100, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 6200");
-		BLOCK_DEVICE("0x8086", "0x1622"); // Intel(R) Iris(TM) Pro Graphics 6200, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics P6300");
-		BLOCK_DEVICE("0x8086", "0x162A"); // Intel(R) Iris(TM) Pro Graphics P6300, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 500");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 505");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 510");
-		BLOCK_DEVICE("0x8086", "0x1902"); // Intel(R) HD Graphics 510, Gen9, Skylake
-		BLOCK_DEVICE("0x8086", "0x1906");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 520");
-		BLOCK_DEVICE("0x8086", "0x1916"); // Intel(R) HD Graphics 520, Gen9, Skylake
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 530");
-		BLOCK_DEVICE("0x8086", "0x1912"); // Intel(R) HD Graphics 530, Gen9, Skylake
-		BLOCK_DEVICE("0x8086", "0x191B");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P530");
-		BLOCK_DEVICE("0x8086", "0x191D"); // Intel(R) HD Graphics P530, Gen9, Skylake
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 515");
-		BLOCK_DEVICE("0x8086", "0x191E"); // Intel(R) HD Graphics 515, Gen9, Skylake
-		BLOCK_DEVICE("Intel", "Intel(R) Iris Graphics 540");
-		BLOCK_DEVICE("0x8086", "0x1926"); // Intel(R) Iris Graphics 540, Gen9, Skylake
-		BLOCK_DEVICE("0x8086", "0x1927");
-		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics 580");
-		BLOCK_DEVICE("0x8086", "0x193B"); // Intel(R) Iris Pro Graphics 580, Gen9, Skylake
-		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics P580");
-		BLOCK_DEVICE("0x8086", "0x193D"); // Intel(R) Iris Pro Graphics P580, Gen9, Skylake
+		FORCE_ANGLE("0x8086", "0x0042"); // HD Graphics, Gen5, Clarkdale
+		FORCE_ANGLE("0x8086", "0x0046"); // HD Graphics, Gen5, Arrandale
+		FORCE_ANGLE("0x8086", "0x010A"); // HD Graphics, Gen6, Sandy Bridge
+		FORCE_ANGLE("Intel", "Intel HD Graphics 2000");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 2000");
+		FORCE_ANGLE("0x8086", "0x0102"); // HD Graphics 2000, Gen6, Sandy Bridge
+		FORCE_ANGLE("0x8086", "0x0116"); // HD Graphics 3000, Gen6, Sandy Bridge
+		FORCE_ANGLE("Intel", "Intel HD Graphics 3000");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 3000");
+		FORCE_ANGLE("0x8086", "0x0126"); // HD Graphics 3000, Gen6, Sandy Bridge
+		FORCE_ANGLE("Intel", "Intel HD Graphics P3000");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics P3000");
+		FORCE_ANGLE("0x8086", "0x0112"); // HD Graphics P3000, Gen6, Sandy Bridge
+		FORCE_ANGLE("0x8086", "0x0122");
+		FORCE_ANGLE("0x8086", "0x015A"); // HD Graphics, Gen7, Ivy Bridge
+		FORCE_ANGLE("Intel", "Intel HD Graphics 2500");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 2500");
+		FORCE_ANGLE("0x8086", "0x0152"); // HD Graphics 2500, Gen7, Ivy Bridge
+		FORCE_ANGLE("Intel", "Intel HD Graphics 4000");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 4000");
+		FORCE_ANGLE("0x8086", "0x0162"); // HD Graphics 4000, Gen7, Ivy Bridge
+		FORCE_ANGLE("0x8086", "0x0166");
+		FORCE_ANGLE("Intel", "Intel HD Graphics P4000");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics P4000");
+		FORCE_ANGLE("0x8086", "0x016A"); // HD Graphics P4000, Gen7, Ivy Bridge
+		FORCE_ANGLE("Intel", "Intel(R) Vallyview Graphics");
+		FORCE_ANGLE("0x8086", "0x0F30"); // Intel(R) Vallyview Graphics, Gen7, Vallyview
+		FORCE_ANGLE("0x8086", "0x0F31");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 4200");
+		FORCE_ANGLE("0x8086", "0x0A1E"); // Intel(R) HD Graphics 4200, Gen7.5, Haswell
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 4400");
+		FORCE_ANGLE("0x8086", "0x0A16"); // Intel(R) HD Graphics 4400, Gen7.5, Haswell
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 4600");
+		FORCE_ANGLE("0x8086", "0x0412"); // Intel(R) HD Graphics 4600, Gen7.5, Haswell
+		FORCE_ANGLE("0x8086", "0x0416");
+		FORCE_ANGLE("0x8086", "0x0426");
+		FORCE_ANGLE("0x8086", "0x0D12");
+		FORCE_ANGLE("0x8086", "0x0D16");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics P4600/P4700");
+		FORCE_ANGLE("0x8086", "0x041A"); // Intel(R) HD Graphics P4600/P4700, Gen7.5, Haswell
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 5000");
+		FORCE_ANGLE("0x8086", "0x0422"); // Intel(R) HD Graphics 5000, Gen7.5, Haswell
+		FORCE_ANGLE("0x8086", "0x042A");
+		FORCE_ANGLE("0x8086", "0x0A26");
+		FORCE_ANGLE("Intel", "Intel(R) Iris(TM) Graphics 5100");
+		FORCE_ANGLE("0x8086", "0x0A22"); // Intel(R) Iris(TM) Graphics 5100, Gen7.5, Haswell
+		FORCE_ANGLE("0x8086", "0x0A2A");
+		FORCE_ANGLE("0x8086", "0x0A2B");
+		FORCE_ANGLE("0x8086", "0x0A2E");
+		FORCE_ANGLE("Intel", "Intel(R) Iris(TM) Pro Graphics 5200");
+		FORCE_ANGLE("0x8086", "0x0D22"); // Intel(R) Iris(TM) Pro Graphics 5200, Gen7.5, Haswell
+		FORCE_ANGLE("0x8086", "0x0D26");
+		FORCE_ANGLE("0x8086", "0x0D2A");
+		FORCE_ANGLE("0x8086", "0x0D2B");
+		FORCE_ANGLE("0x8086", "0x0D2E");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 400");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 405");
+		FORCE_ANGLE("0x8086", "0x22B0"); // Intel(R) HD Graphics, Gen8, Cherryview Braswell
+		FORCE_ANGLE("0x8086", "0x22B1");
+		FORCE_ANGLE("0x8086", "0x22B2");
+		FORCE_ANGLE("0x8086", "0x22B3");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 5300");
+		FORCE_ANGLE("0x8086", "0x161E"); // Intel(R) HD Graphics 5300, Gen8, Broadwell
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 5500");
+		FORCE_ANGLE("0x8086", "0x1616"); // Intel(R) HD Graphics 5500, Gen8, Broadwell
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 5600");
+		FORCE_ANGLE("0x8086", "0x1612"); // Intel(R) HD Graphics 5600, Gen8, Broadwell
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 6000");
+		FORCE_ANGLE("0x8086", "0x1626"); // Intel(R) HD Graphics 6000, Gen8, Broadwell
+		FORCE_ANGLE("Intel", "Intel(R) Iris(TM) Graphics 6100");
+		FORCE_ANGLE("0x8086", "0x162B"); // Intel(R) Iris(TM) Graphics 6100, Gen8, Broadwell
+		FORCE_ANGLE("Intel", "Intel(R) Iris(TM) Pro Graphics 6200");
+		FORCE_ANGLE("0x8086", "0x1622"); // Intel(R) Iris(TM) Pro Graphics 6200, Gen8, Broadwell
+		FORCE_ANGLE("Intel", "Intel(R) Iris(TM) Pro Graphics P6300");
+		FORCE_ANGLE("0x8086", "0x162A"); // Intel(R) Iris(TM) Pro Graphics P6300, Gen8, Broadwell
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 500");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 505");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 510");
+		FORCE_ANGLE("0x8086", "0x1902"); // Intel(R) HD Graphics 510, Gen9, Skylake
+		FORCE_ANGLE("0x8086", "0x1906");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 520");
+		FORCE_ANGLE("0x8086", "0x1916"); // Intel(R) HD Graphics 520, Gen9, Skylake
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 530");
+		FORCE_ANGLE("0x8086", "0x1912"); // Intel(R) HD Graphics 530, Gen9, Skylake
+		FORCE_ANGLE("0x8086", "0x191B");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics P530");
+		FORCE_ANGLE("0x8086", "0x191D"); // Intel(R) HD Graphics P530, Gen9, Skylake
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 515");
+		FORCE_ANGLE("0x8086", "0x191E"); // Intel(R) HD Graphics 515, Gen9, Skylake
+		FORCE_ANGLE("Intel", "Intel(R) Iris Graphics 540");
+		FORCE_ANGLE("0x8086", "0x1926"); // Intel(R) Iris Graphics 540, Gen9, Skylake
+		FORCE_ANGLE("0x8086", "0x1927");
+		FORCE_ANGLE("Intel", "Intel(R) Iris Pro Graphics 580");
+		FORCE_ANGLE("0x8086", "0x193B"); // Intel(R) Iris Pro Graphics 580, Gen9, Skylake
+		FORCE_ANGLE("Intel", "Intel(R) Iris Pro Graphics P580");
+		FORCE_ANGLE("0x8086", "0x193D"); // Intel(R) Iris Pro Graphics P580, Gen9, Skylake
 
-#undef BLOCK_DEVICE
+#undef FORCE_ANGLE
 
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), device_blocklist);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), force_angle_list);
 	}
 
 	// Start with RenderingDevice-based backends.
