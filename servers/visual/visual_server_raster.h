@@ -586,6 +586,11 @@ public:
 
 	BIND2(instance_set_extra_visibility_margin, RID, real_t)
 
+	BIND0R(RID, fti_instance_create)
+	BIND2(fti_instance_prepare, RID, RID)
+	BIND2(fti_instance_set_transform, RID, const Transform &)
+	BIND1(fti_instance_reset, RID)
+
 	/* PORTALS */
 
 	BIND2(instance_set_portal_mode, RID, InstancePortalMode)
