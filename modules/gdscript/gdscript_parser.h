@@ -1464,6 +1464,14 @@ private:
 		return node;
 	}
 
+	SuiteNode *alloc_recovery_suite() {
+		SuiteNode *suite = alloc_recovery_node<SuiteNode>();
+		suite->parent_block = current_suite;
+		suite->parent_function = current_function;
+		suite->is_in_loop = current_suite->is_in_loop;
+		return suite;
+	}
+
 	void clear();
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
 #ifdef DEBUG_ENABLED

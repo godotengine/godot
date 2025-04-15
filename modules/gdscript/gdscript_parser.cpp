@@ -2421,8 +2421,16 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 	}
 
 	if (!consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":"%s after "match" %s.)", has_guard ? "" : R"( or "when")", has_guard ? "pattern guard" : "patterns"))) {
+		branch->block = alloc_recovery_suite();
 		complete_extents(branch);
-		return nullptr;
+		// Consume the whole line and treat the next one as new match branch.
+		while (current.type != GDScriptTokenizer::Token::NEWLINE && !is_at_end()) {
+			advance();
+		}
+		if (!is_at_end()) {
+			advance();
+		}
+		return branch;
 	}
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
