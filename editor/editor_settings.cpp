@@ -1183,7 +1183,7 @@ String EditorSettings::_guess_exec_args_for_extenal_editor(const String &p_path)
 	if (editor.begins_with("rider")) {
 		new_exec_flags = "{project} --line {line} {file}";
 	} else if (editor == "subl" || editor == "sublime text" || editor == "sublime_text") {
-		new_exec_flags = "{project} {file}:{line}:{column}";
+		new_exec_flags = "{project} {file}:{line}:{col}";
 	} else if (editor == "vim" || editor == "gvim") {
 		new_exec_flags = "\"+call cursor({line}, {col})\" {file}";
 	} else if (editor == "emacs") {
