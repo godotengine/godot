@@ -423,6 +423,14 @@
 				@export_file("*.txt") var notes_path: String
 				@export_file var level_paths: Array[String]
 				[/codeblock]
+				[b]Note:[/b] The file will be stored as raw path, which means that it may become invalid when the file is moved. If you are exporting a [Resource] path, consider using [annotation @export_file_uid].
+			</description>
+		</annotation>
+		<annotation name="@export_file_uid" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="filter" type="String" default="&quot;&quot;" />
+			<description>
+				Same as [annotation @export_file], except the file will be stored as UID instead of path, if available. This ensures that the path won't become invalid when the file is moved.
 			</description>
 		</annotation>
 		<annotation name="@export_flags" qualifiers="vararg">
