@@ -505,6 +505,7 @@ private:
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
+	void _perform_safe_threaded_physics_actions();
 
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
@@ -837,6 +838,8 @@ private:
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_priority;
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_name;
 
+	bool using_physics_threads = false;
+
 	void _register_all_gizmos();
 
 	void _selection_changed();
@@ -1036,6 +1039,8 @@ public:
 
 	void edit(Node3D *p_spatial);
 	void clear();
+
+	bool is_editor_using_separate_physics_thread() const { return using_physics_threads; }
 
 	Node3DEditor();
 	~Node3DEditor();
