@@ -59,7 +59,7 @@ void Actor::set_component(Ref<Component> value) {
 	ERR_FAIL_COND_MSG(!value.is_valid(), vformat("Can't add a null component."));
 
 	_component_resources[value->get_component_class()] = value;
-	print_line("Success setting component: ", value->get_component_class());
+//	print_line("Success setting component: ", value->get_component_class());
 
 	notify_property_list_changed();
 }
@@ -92,7 +92,6 @@ void Actor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_component", "component_class"), &Actor::get_component);
 	ClassDB::bind_method(D_METHOD("set_component", "value"), &Actor::set_component);
 	ClassDB::bind_method(D_METHOD("remove_component", "component_class"), &Actor::remove_component);
-//	ClassDB::bind_method(D_METHOD("get_component_list", "out"), &Actor::_get_component_list_bind);
 }
 
 

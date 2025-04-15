@@ -35,9 +35,11 @@
 AddComponentDialog::AddComponentDialog() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
+	vbc->set_custom_minimum_size(Size2(400 * EDSCALE, 80 * EDSCALE));
 
 	component_picker = memnew(EditorResourcePicker);
 	component_picker->set_base_type("Component");
+	component_picker->set_can_load(false);
 
 	vbc->add_child(component_picker);
 
@@ -52,6 +54,8 @@ AddComponentDialog::AddComponentDialog() {
 	validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Component is valid."));
 	validation_panel->set_update_callback(callable_mp(this, &AddComponentDialog::_check_component));
 	validation_panel->set_accept_button(get_ok_button());
+
+	component_picker->connect("resource_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 }
 
 void AddComponentDialog::_complete_init(const StringName &p_title) {
@@ -73,15 +77,16 @@ Ref<Component> AddComponentDialog::get_component() {
 }
 
 void AddComponentDialog::_check_component() {
-//	const String meta_name = add_meta_name->get_text();
-//
-//	if (meta_name.is_empty()) {
-//		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name can't be empty."), EditorValidationPanel::MSG_ERROR);
-//	} else if (!meta_name.is_valid_ascii_identifier()) {
-//		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name must be a valid identifier."), EditorValidationPanel::MSG_ERROR);
-//	} else if (_existing_metas.find(meta_name)) {
-//		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, vformat(TTR("Metadata with name \"%s\" already exists."), meta_name), EditorValidationPanel::MSG_ERROR);
-//	} else if (meta_name[0] == '_') {
-//		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Names starting with _ are reserved for editor-only metadata."), EditorValidationPanel::MSG_ERROR);
-//	}
+	Ref<Component> c = Object::cast_to<Component>(*component_picker->get_edited_resource());
+
+	StringName n;
+	if (c.is_valid()) {
+		n = c->get_component_class();
+	}
+
+	if (c.is_null()) {
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Choose a component."), EditorValidationPanel::MSG_ERROR);
+	} else if (_existing_components.find(n)) {
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, vformat(TTR("Component of type \"%s\" already exists on this Actor."), n), EditorValidationPanel::MSG_ERROR);
+	}
 }
