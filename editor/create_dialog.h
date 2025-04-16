@@ -59,6 +59,7 @@ class CreateDialog : public ConfirmationDialog {
 	Set<StringName> type_blacklist;
 
 	void _item_selected();
+	void _script_selected(const Variant &p_object, int p_column, int p_id);
 
 	void _update_search();
 	void _update_favorite_list();
