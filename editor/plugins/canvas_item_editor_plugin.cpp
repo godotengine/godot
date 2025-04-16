@@ -2035,7 +2035,14 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			Size2 scale_max;
 			if (drag_type != DRAG_SCALE_BOTH) {
 				for (CanvasItem *ci : drag_selection) {
-					scale_max = scale_max.max(ci->_edit_get_scale());
+					Size2 scale = ci->_edit_get_scale();
+
+					if (Math::abs(scale.x) > Math::abs(scale_max.x)) {
+						scale_max.x = scale.x;
+					}
+					if (Math::abs(scale.y) > Math::abs(scale_max.y)) {
+						scale_max.y = scale.y;
+					}
 				}
 			}
 
