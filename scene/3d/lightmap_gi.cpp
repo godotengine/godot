@@ -1511,8 +1511,15 @@ void LightmapGI::_notification(int p_what) {
 void LightmapGI::_assign_lightmaps() {
 	ERR_FAIL_COND(light_data.is_null());
 
+	Vector<String> missing_node_paths;
+
 	for (int i = 0; i < light_data->get_user_count(); i++) {
-		Node *node = get_node(light_data->get_user_path(i));
+		NodePath user_path = light_data->get_user_path(i);
+		Node *node = get_node_or_null(user_path);
+		if (!node) {
+			missing_node_paths.push_back(user_path);
+			continue;
+		}
 		int instance_idx = light_data->get_user_sub_instance(i);
 		if (instance_idx >= 0) {
 			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
@@ -1525,12 +1532,25 @@ void LightmapGI::_assign_lightmaps() {
 			RS::get_singleton()->instance_geometry_set_lightmap(vi->get_instance(), get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
 		}
 	}
+
+	if (!missing_node_paths.is_empty()) {
+		String missing_paths_text;
+		if (missing_node_paths.size() <= 3) {
+			missing_paths_text = String(", ").join(missing_node_paths);
+		} else {
+			missing_paths_text = vformat("%s and %d more", String(", ").join(missing_node_paths.slice(0, 3)), missing_node_paths.size() - 3);
+		}
+		WARN_PRINT(vformat("%s couldn't find previously baked nodes and needs a rebake (missing nodes: %s).", get_name(), missing_paths_text));
+	}
 }
 
 void LightmapGI::_clear_lightmaps() {
 	ERR_FAIL_COND(light_data.is_null());
 	for (int i = 0; i < light_data->get_user_count(); i++) {
-		Node *node = get_node(light_data->get_user_path(i));
+		Node *node = get_node_or_null(light_data->get_user_path(i));
+		if (!node) {
+			continue;
+		}
 		int instance_idx = light_data->get_user_sub_instance(i);
 		if (instance_idx >= 0) {
 			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
