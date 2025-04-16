@@ -1902,7 +1902,7 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, V
 void DisplayServerX11::show_window(WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
-	const WindowData &wd = windows[p_id];
+	WindowData &wd = windows[p_id];
 	popup_open(p_id);
 
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
@@ -1910,6 +1910,76 @@ void DisplayServerX11::show_window(WindowID p_id) {
 	XMapWindow(x11_display, wd.x11_window);
 	XSync(x11_display, False);
 	_validate_mode_on_map(p_id);
+
+	if (p_id == MAIN_WINDOW_ID) {
+		// Get main window size for boot splash drawing.
+		bool get_config_event = false;
+
+		// Search the X11 event queue for ConfigureNotify events and process all that are currently queued early.
+		{
+			MutexLock mutex_lock(events_mutex);
+
+			for (uint32_t event_index = 0; event_index < polled_events.size(); ++event_index) {
+				XEvent &config_event = polled_events[event_index];
+				if (config_event.type == ConfigureNotify) {
+					_window_changed(&config_event);
+					get_config_event = true;
+				}
+			}
+			XEvent config_event;
+			while (XCheckTypedEvent(x11_display, ConfigureNotify, &config_event)) {
+				_window_changed(&config_event);
+				get_config_event = true;
+			}
+		}
+
+		// Estimate maximize/full screen window size, ConfigureNotify may arrive only after maximize animation is finished.
+		if (!get_config_event && (wd.maximized || wd.fullscreen)) {
+			int screen = window_get_current_screen(p_id);
+			Size2i sz;
+			if (wd.maximized) {
+				sz = screen_get_usable_rect(screen).size;
+				if (!wd.borderless) {
+					Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
+					if (prop != None) {
+						Atom type;
+						int format;
+						unsigned long len;
+						unsigned long remaining;
+						unsigned char *data = nullptr;
+						if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+							if (format == 32 && len == 4 && data) {
+								long *extents = (long *)data;
+								sz.width -= extents[0] + extents[1]; // left, right
+								sz.height -= extents[2] + extents[3]; // top, bottom
+							}
+							XFree(data);
+						}
+					}
+				}
+			} else {
+				sz = screen_get_size(screen);
+			}
+			if (sz == Size2i()) {
+				return;
+			}
+
+			wd.size = sz;
+#if defined(RD_ENABLED)
+			if (rendering_context) {
+				rendering_context->window_set_size(p_id, sz.width, sz.height);
+			}
+#endif
+#if defined(GLES3_ENABLED)
+			if (gl_manager) {
+				gl_manager->window_resize(p_id, sz.width, sz.height);
+			}
+			if (gl_manager_egl) {
+				gl_manager_egl->window_resize(p_id, sz.width, sz.height);
+			}
+#endif
+		}
+	}
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
