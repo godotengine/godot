@@ -193,7 +193,7 @@
 				The samples are signed floating-point PCM between [code]-1[/code] and [code]1[/code]. You will have to scale them if you want to use them as 8 or 16-bit integer samples. ([code]v = 0x7fff * samples[0].x[/code])
 			</description>
 		</method>
-		<method name="get_microphone_frames_available" qualifiers="const">
+		<method name="get_microphone_frames_available">
 			<return type="int" />
 			<description>
 				Returns the number of frames available to read using [method get_microphone_buffer].
