@@ -126,12 +126,14 @@ TEST_CASE("[Array] resize(), insert(), and erase()") {
 	CHECK(int(arr[0]) == 2);
 	arr.erase(2);
 	CHECK(int(arr[0]) == 1);
-
-	// Negative index on insert.
-	CHECK(arr.size() == 3);
+	arr.resize(0);
+	CHECK(arr.size() == 0);
+	arr.insert(0, 8);
+	CHECK(arr.size() == 1);
+	arr.insert(1, 16);
+	CHECK(int(arr[1]) == 16);
 	arr.insert(-1, 3);
-	CHECK(int(arr[2]) == 3);
-	CHECK(arr.size() == 4);
+	CHECK(int(arr[1]) == 3);
 }
 
 TEST_CASE("[Array] front() and back()") {
