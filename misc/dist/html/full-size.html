@@ -164,7 +164,7 @@ const engine = new Engine(GODOT_CONFIG);
 		threads: GODOT_THREADS_ENABLED,
 	});
 
-	if (missing.length !== 0) {
+	if (missing.length > 0) {
 		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
 			let serviceWorkerRegistrationPromise;
 			try {
@@ -210,6 +210,14 @@ const engine = new Engine(GODOT_CONFIG);
 		}).then(() => {
 			setStatusMode('hidden');
 		}, displayFailureNotice);
+
+		if (GODOT_CONFIG['serviceWorker'] && 'serviceWorker' in navigator) {
+			navigator.serviceWorker.ready.then((registration) => {
+				window.addEventListener('pagehide', () => {
+					registration.active.postMessage('pagehide');
+				});
+			});
+		}
 	}
 }());
 		</script>
