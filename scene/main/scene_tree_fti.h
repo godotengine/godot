@@ -48,6 +48,7 @@ public:
 	bool is_enabled() const { return false; }
 
 	void spatial_notify_changed(Spatial &r_spatial, bool p_transform_changed) {}
+	void spatial_request_reset(Spatial *p_spatial) {}
 	void spatial_notify_delete(Spatial *p_spatial) {}
 };
 #else
@@ -73,6 +74,8 @@ class SceneTreeFTI {
 
 		LocalVector<Spatial *> frame_property_list;
 
+		LocalVector<Spatial *> request_reset_list;
+
 		uint32_t mirror = 0;
 
 		bool enabled = false;
@@ -87,6 +90,8 @@ class SceneTreeFTI {
 	} data;
 
 	void _update_dirty_spatials(Node *p_node, uint32_t p_current_frame, float p_interpolation_fraction, bool p_active, const Transform *p_parent_global_xform = nullptr, int p_depth = 0);
+	void _update_request_resets();
+
 	void _reset_flags(Node *p_node);
 	void _spatial_notify_set_xform(Spatial &r_spatial);
 	void _spatial_notify_set_property(Spatial &r_spatial);
@@ -104,6 +109,7 @@ public:
 		}
 	}
 
+	void spatial_request_reset(Spatial *p_spatial);
 	void spatial_notify_delete(Spatial *p_spatial);
 
 	// Calculate interpolated xforms, send to visual server.

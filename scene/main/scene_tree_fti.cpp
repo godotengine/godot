@@ -46,8 +46,12 @@ void SceneTreeFTI::_reset_flags(Node *p_node) {
 	Spatial *s = Object::cast_to<Spatial>(p_node);
 
 	if (s) {
-		s->data.fti_on_frame_xform_list = false;
 		s->data.fti_on_tick_xform_list = false;
+		s->data.fti_on_tick_property_list = false;
+		s->data.fti_on_frame_xform_list = false;
+		s->data.fti_on_frame_property_list = false;
+		s->data.fti_global_xform_interp_set = false;
+		s->data.fti_frame_xform_force_update = false;
 
 		// In most cases the later  NOTIFICATION_RESET_PHYSICS_INTERPOLATION
 		// will reset this, but this should help cover hidden nodes.
@@ -79,6 +83,8 @@ void SceneTreeFTI::tick_update() {
 	if (!data.enabled) {
 		return;
 	}
+
+	_update_request_resets();
 
 	uint32_t curr_mirror = data.mirror;
 	uint32_t prev_mirror = curr_mirror ? 0 : 1;
@@ -161,6 +167,36 @@ void SceneTreeFTI::tick_update() {
 	data.mirror = prev_mirror;
 }
 
+void SceneTreeFTI::_update_request_resets() {
+	// For instance when first adding to the tree, when the previous transform is
+	// unset, to prevent streaking from the origin.
+	for (uint32_t n = 0; n < data.request_reset_list.size(); n++) {
+		Spatial *s = data.request_reset_list[n];
+		if (s->_is_physics_interpolation_reset_requested()) {
+			if (s->_is_vi_visible() && !s->_is_using_identity_transform()) {
+				s->notification(Spatial::NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+			}
+
+			s->_set_physics_interpolation_reset_requested(false);
+		}
+	}
+
+	data.request_reset_list.clear();
+}
+
+void SceneTreeFTI::spatial_request_reset(Spatial *p_spatial) {
+	DEV_ASSERT(p_spatial);
+	DEV_CHECK_ONCE(data.enabled);
+
+	if (!p_spatial->_is_physics_interpolation_reset_requested()) {
+		p_spatial->_set_physics_interpolation_reset_requested(true);
+#ifdef GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
+		DEV_CHECK_ONCE(data.request_reset_list.find(p_spatial) == -1);
+#endif
+		data.request_reset_list.push_back(p_spatial);
+	}
+}
+
 void SceneTreeFTI::_spatial_notify_set_property(Spatial &r_spatial) {
 	if (!r_spatial.is_physics_interpolated()) {
 		return;
@@ -230,9 +266,12 @@ void SceneTreeFTI::spatial_notify_delete(Spatial *p_spatial) {
 
 	ERR_FAIL_NULL(p_spatial);
 
-	if (p_spatial->data.fti_on_frame_xform_list) {
-		p_spatial->data.fti_on_frame_xform_list = false;
-	}
+	p_spatial->data.fti_on_frame_xform_list = false;
+
+	// Ensure this is kept in sync with the lists, in case a node
+	// is removed and readded to the scene tree multiple times
+	// on the same frame / tick.
+	p_spatial->_set_physics_interpolation_reset_requested(false);
 
 	// This can potentially be optimized for large scenes with large churn,
 	// as it will be doing a linear search through the lists.
@@ -243,6 +282,7 @@ void SceneTreeFTI::spatial_notify_delete(Spatial *p_spatial) {
 	data.tick_property_list[1].erase_unordered(p_spatial);
 
 	data.frame_property_list.erase_unordered(p_spatial);
+	data.request_reset_list.erase_unordered(p_spatial);
 
 #ifdef GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
 	// There should only be one occurrence on the lists.
@@ -254,6 +294,7 @@ void SceneTreeFTI::spatial_notify_delete(Spatial *p_spatial) {
 	DEV_CHECK_ONCE(data.tick_property_list[1].find(p_spatial) == -1);
 
 	DEV_CHECK_ONCE(data.frame_property_list.find(p_spatial) == -1);
+	DEV_CHECK_ONCE(data.request_reset_list.find(p_spatial) == -1);
 #endif
 }
 
@@ -381,6 +422,8 @@ void SceneTreeFTI::frame_update(Node *p_root, bool p_frame_start) {
 	if (!data.enabled || !p_root) {
 		return;
 	}
+
+	_update_request_resets();
 
 	data.frame_start = p_frame_start;
 

@@ -191,7 +191,15 @@ void Spatial::_notification(int p_what) {
 
 				// Make sure servers are up to date.
 				fti_update_servers_xform();
+
+				// As well as a reset based on the transform when adding, the user may change
+				// the transform during the first tick / frame, and we want to reset automatically
+				// at the end of the frame / tick (unless the user manually called `reset_physics_interpolation()`).
+				if (is_physics_interpolated()) {
+					get_tree()->get_scene_tree_fti().spatial_request_reset(this);
+				}
 			}
+
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (is_inside_tree()) {

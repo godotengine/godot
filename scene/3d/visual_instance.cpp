@@ -103,24 +103,10 @@ void VisualInstance::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (_is_vi_visible()) {
-				if (!_is_using_identity_transform()) {
-					// Physics interpolation cases.
-					if (is_inside_tree() && get_tree()->is_physics_interpolation_enabled()) {
-						// Physics interpolated VIs don't need to send their transform immediately after setting,
-						// indeed it is counterproductive, because the interpolated transform will be sent
-						// to the VisualServer immediately prior to rendering.
-						if (is_physics_interpolated() && _is_physics_interpolation_reset_requested()) {
-							// For instance when first adding to the tree, when the previous transform is
-							// unset, to prevent streaking from the origin.
-							_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
-							_set_physics_interpolation_reset_requested(false);
-						}
-					} else {
-						// Physics interpolation global off, always send.
-						VisualServer::get_singleton()->instance_set_transform(instance, get_global_transform());
-					}
-				}
+			// ToDo : Can we turn off notify transform for physics interpolated cases?
+			if (_is_vi_visible() && !(is_inside_tree() && get_tree()->is_physics_interpolation_enabled()) && !_is_using_identity_transform()) {
+				// Physics interpolation global off, always send.
+				VisualServer::get_singleton()->instance_set_transform(instance, get_global_transform());
 			}
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
