@@ -502,6 +502,9 @@ else:
     # Disable assert() for production targets (only used in thirdparty code).
     env.Append(CPPDEFINES=["NDEBUG"])
 
+# adding the line below to remove the error in the control.h file (claimed it could not find core/math)
+env.Append(CPPPATH=['#core'])
+
 # This is not part of fast_unsafe because the only downside it has compared to
 # the default is that SCons won't mark files that were changed in the last second
 # as different. This is unlikely to be a problem in any real situation as just booting
