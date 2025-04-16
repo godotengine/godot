@@ -58,7 +58,7 @@ class GodotPhysicsServer3D : public PhysicsServer3D {
 	mutable RID_PtrOwner<GodotShape3D, true> shape_owner;
 	mutable RID_PtrOwner<GodotSpace3D, true> space_owner;
 	mutable RID_PtrOwner<GodotArea3D, true> area_owner;
-	mutable RID_PtrOwner<GodotBody3D, true> body_owner;
+	mutable RID_PtrOwner<GodotBody3D, true> body_owner{ 65536, 1048576 };
 	mutable RID_PtrOwner<GodotSoftBody3D, true> soft_body_owner;
 	mutable RID_PtrOwner<GodotJoint3D, true> joint_owner;
 
