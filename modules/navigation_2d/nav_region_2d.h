@@ -59,11 +59,15 @@ class NavRegion2D : public NavBase2D {
 	Vector<Vector2> pending_navmesh_vertices;
 	Vector<Vector<int>> pending_navmesh_polygons;
 
+	uint32_t iteration_id = 0;
+
 	SelfList<NavRegion2D> sync_dirty_request_list_element;
 
 public:
 	NavRegion2D();
 	~NavRegion2D();
+
+	uint32_t get_iteration_id() const { return iteration_id; }
 
 	void scratch_polygons() {
 		polygons_dirty = true;
