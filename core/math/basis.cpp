@@ -268,7 +268,7 @@ Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
 	Vector3 dots;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			dots[j] += s[i] * abs(m.get_column(i).normalized().dot(b.get_column(j)));
+			dots[j] += s[i] * Math::abs(m.get_column(i).normalized().dot(b.get_column(j)));
 		}
 	}
 	if (sign != signbit(dots.x + dots.y + dots.z)) {
