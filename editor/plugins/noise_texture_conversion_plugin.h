@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NOISE_TEXTURE_CONVERSION_PLUGIN_H
-#define NOISE_TEXTURE_CONVERSION_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
@@ -97,5 +96,3 @@ private:
 	void _overwrite_button_pressed();
 	void _check_path_and_content();
 };
-
-#endif // NOISE_TEXTURE_CONVERSION_PLUGIN_H
