@@ -2790,7 +2790,7 @@ int DisplayServerWindows::accessibility_should_increase_contrast() const {
 }
 
 int DisplayServerWindows::accessibility_should_reduce_animation() const {
-	bool anim_enabled = false;
+	BOOL anim_enabled = false; // Note: this should be BOOL (WinAPI), not bool (C++), since SystemParametersInfoA expect variable with specific size.
 	if (!SystemParametersInfoA(SPI_GETCLIENTAREAANIMATION, 0, &anim_enabled, 0)) {
 		return -1;
 	}
@@ -2798,7 +2798,7 @@ int DisplayServerWindows::accessibility_should_reduce_animation() const {
 }
 
 int DisplayServerWindows::accessibility_should_reduce_transparency() const {
-	bool tr_enabled = false;
+	BOOL tr_enabled = false; // Note: this should be BOOL (WinAPI), not bool (C++), since SystemParametersInfoA expect variable with specific size.
 	if (!SystemParametersInfoA(SPI_GETDISABLEOVERLAPPEDCONTENT, 0, &tr_enabled, 0)) {
 		return -1;
 	}
@@ -2806,7 +2806,7 @@ int DisplayServerWindows::accessibility_should_reduce_transparency() const {
 }
 
 int DisplayServerWindows::accessibility_screen_reader_active() const {
-	bool sr_enabled = false;
+	BOOL sr_enabled = false; // Note: this should be BOOL (WinAPI), not bool (C++), since SystemParametersInfoA expect variable with specific size.
 	if (SystemParametersInfoA(SPI_GETSCREENREADER, 0, &sr_enabled, 0) && sr_enabled) {
 		return true;
 	}
@@ -7208,6 +7208,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	windows[MAIN_WINDOW_ID].initialized = true;
 
+#ifdef ACCESSKIT_ENABLED
 	if (accessibility_screen_reader_active()) {
 		_THREAD_SAFE_LOCK_
 		uint64_t time_wait = OS::get_singleton()->get_ticks_msec();
@@ -7225,6 +7226,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 		_THREAD_SAFE_UNLOCK_
 	}
+#endif
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
