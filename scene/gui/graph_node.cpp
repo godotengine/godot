@@ -639,10 +639,6 @@ void GraphNode::_notification(int p_what) {
 			// Draw body (slots area) stylebox.
 			draw_style_box(sb_to_draw_panel, body_rect);
 
-			if (has_focus()) {
-				draw_style_box(theme_cache.panel_focus, body_rect);
-			}
-
 			// Draw title bar stylebox above.
 			draw_style_box(sb_to_draw_titlebar, titlebar_rect);
 
