@@ -60,7 +60,7 @@ class GodotPhysicsServer2D : public PhysicsServer2D {
 	mutable RID_PtrOwner<GodotShape2D, true> shape_owner;
 	mutable RID_PtrOwner<GodotSpace2D, true> space_owner;
 	mutable RID_PtrOwner<GodotArea2D, true> area_owner;
-	mutable RID_PtrOwner<GodotBody2D, true> body_owner;
+	mutable RID_PtrOwner<GodotBody2D, true> body_owner{ 65536, 1048576 };
 	mutable RID_PtrOwner<GodotJoint2D, true> joint_owner;
 
 	static GodotPhysicsServer2D *godot_singleton;
