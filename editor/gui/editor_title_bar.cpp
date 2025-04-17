@@ -96,7 +96,23 @@ void EditorTitleBar::_notification(int p_what) {
 	Control *prev = nullptr;
 	Control *base = nullptr;
 	Control *next = nullptr;
-	for (int i = 0; i < get_child_count(); i++) {
+
+	bool rtl = is_layout_rtl();
+
+	int start;
+	int end;
+	int delta;
+	if (rtl) {
+		start = get_child_count() - 1;
+		end = -1;
+		delta = -1;
+	} else {
+		start = 0;
+		end = get_child_count();
+		delta = +1;
+	}
+
+	for (int i = start; i != end; i += delta) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
 			continue;
