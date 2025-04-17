@@ -1073,7 +1073,7 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 			se->trim_final_newlines();
 		}
 
-		if (convert_indent_on_save) {
+		if (_should_convert_indent_on_save(se)) {
 			se->convert_indent();
 		}
 
@@ -1475,7 +1475,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					current->trim_final_newlines();
 				}
 
-				if (convert_indent_on_save) {
+				if (_should_convert_indent_on_save(current)) {
 					current->convert_indent();
 				}
 
@@ -2716,7 +2716,7 @@ void ScriptEditor::save_current_script() {
 		current->trim_final_newlines();
 	}
 
-	if (convert_indent_on_save) {
+	if (_should_convert_indent_on_save(current)) {
 		current->convert_indent();
 	}
 
@@ -2750,7 +2750,7 @@ void ScriptEditor::save_all_scripts() {
 			continue;
 		}
 
-		if (convert_indent_on_save) {
+		if (_should_convert_indent_on_save(se)) {
 			se->convert_indent();
 		}
 
@@ -3019,6 +3019,9 @@ void ScriptEditor::_apply_editor_settings() {
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
 	convert_indent_on_save = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save");
+
+	String convert_filter_str = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save_filter");
+	convert_indent_on_save_filter = _parse_convert_indent_on_save_filter(convert_filter_str);
 
 	members_overview_enabled = EDITOR_GET("text_editor/script_list/show_members_overview");
 	help_overview_enabled = EDITOR_GET("text_editor/help/show_help_index");
@@ -4139,6 +4142,35 @@ void ScriptEditor::_filter_methods_text_changed(const String &p_newtext) {
 	_update_members_overview();
 }
 
+Vector<String> ScriptEditor::_parse_convert_indent_on_save_filter(const String &filter_str) {
+	Vector<String> filter = filter_str.split(",");
+	for (String &s : filter) {
+		s = s.strip_edges();
+	}
+
+	if (filter.size() == 1 && filter[0].length() == 0) {
+		filter.set(0, "*");
+	}
+
+	return filter;
+}
+
+bool ScriptEditor::_should_convert_indent_on_save(ScriptEditorBase *const se) {
+	if (!convert_indent_on_save) {
+		return false;
+	}
+
+	String fname = se->get_edited_resource()->get_path().get_file();
+
+	for (int i = 0; i < convert_indent_on_save_filter.size(); i++) {
+		if (fname.matchn(convert_indent_on_save_filter[i])) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_help_tab_goto", &ScriptEditor::_help_tab_goto);
 	ClassDB::bind_method("get_current_editor", &ScriptEditor::_get_current_editor);
@@ -4521,6 +4553,9 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
 	convert_indent_on_save = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save");
+
+	String convert_filter_str = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save_filter");
+	convert_indent_on_save_filter = _parse_convert_indent_on_save_filter(convert_filter_str);
 
 	ScriptServer::edit_request_func = _open_script_request;
 
