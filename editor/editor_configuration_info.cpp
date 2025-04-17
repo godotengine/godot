@@ -31,10 +31,18 @@
 #include "editor_configuration_info.h"
 
 #include "editor/editor_property_name_processor.h"
+#include "editor/editor_settings.h"
 #include "scene/main/node.h"
 #include "servers/text_server.h"
 
+// Cached editor setting, value is updated via SceneTreeEditor::set_accessibility_warnings.
+bool EditorConfigurationInfo::_include_accessibility = false;
+
 Vector<ConfigurationInfo> EditorConfigurationInfo::get_configuration_info(Object *p_object) {
+	return get_configuration_info(p_object, _include_accessibility);
+}
+
+Vector<ConfigurationInfo> EditorConfigurationInfo::get_configuration_info(Object *p_object, bool p_include_accessibility) {
 	Vector<ConfigurationInfo> config_infos;
 	if (!p_object) {
 		return config_infos;
@@ -58,6 +66,10 @@ Vector<ConfigurationInfo> EditorConfigurationInfo::get_configuration_info(Object
 
 	Vector<ConfigurationInfo> valid_infos;
 	for (const ConfigurationInfo &config_info : config_infos) {
+		if (!p_include_accessibility && config_info.is_accessibility()) {
+			continue;
+		}
+
 		if (config_info.ensure_valid(p_object)) {
 			valid_infos.push_back(config_info);
 		}

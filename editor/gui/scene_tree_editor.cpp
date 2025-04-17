@@ -57,12 +57,6 @@ Node *SceneTreeEditor::get_scene_node() const {
 	return get_tree()->get_edited_scene_root();
 }
 
-PackedStringArray SceneTreeEditor::_get_node_accessibility_configuration_warnings(Node *p_node) {
-	PackedStringArray warnings = p_node->get_accessibility_configuration_warnings();
-
-	return warnings;
-}
-
 void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
 	if (p_button != MouseButton::LEFT) {
 		return;
@@ -137,8 +131,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_WARNING) {
-		const Vector<ConfigurationInfo> config_infos = EditorConfigurationInfo::get_configuration_info(n);
-		// TODO(redmser): if (accessibility_warnings) { warnings.append_array(_get_node_accessibility_configuration_warnings(n)); }
+		const Vector<ConfigurationInfo> config_infos = EditorConfigurationInfo::get_configuration_info(n, accessibility_warnings);
 		if (config_infos.is_empty()) {
 			return;
 		}
@@ -440,8 +433,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 
 	if (can_rename) { // TODO Should be can edit..
 
-		const Vector<ConfigurationInfo> config_infos = EditorConfigurationInfo::get_configuration_info(p_node);
-		// TODO(redmser): if (accessibility_warnings) { warnings.append_array(_get_node_accessibility_configuration_warnings(n)); }
+		const Vector<ConfigurationInfo> config_infos = EditorConfigurationInfo::get_configuration_info(p_node, accessibility_warnings);
 		if (!config_infos.is_empty()) {
 			ConfigurationInfo::Severity max_severity = EditorConfigurationInfo::get_max_severity(config_infos);
 			const StringName config_info_icon = EditorConfigurationInfo::get_severity_icon(max_severity);
@@ -2013,6 +2005,7 @@ void SceneTreeEditor::set_accessibility_warnings(bool p_enable, bool p_update_se
 		EditorSettings::get_singleton()->set("docks/scene_tree/accessibility_warnings", p_enable);
 	}
 	accessibility_warnings = p_enable;
+	EditorConfigurationInfo::set_include_accessibility(p_enable);
 }
 
 void SceneTreeEditor::set_connect_to_script_mode(bool p_enable) {

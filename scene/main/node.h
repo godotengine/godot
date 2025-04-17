@@ -401,7 +401,6 @@ protected:
 	GDVIRTUAL0(_enter_tree)
 	GDVIRTUAL0(_exit_tree)
 	GDVIRTUAL0(_ready)
-	GDVIRTUAL0RC(Vector<String>, _get_accessibility_configuration_warnings)
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 #endif
@@ -702,8 +701,6 @@ public:
 	virtual RID get_focused_accessibility_element() const;
 	virtual String get_accessibility_container_name(const Node *p_node) const;
 	virtual bool accessibility_override_tree_hierarchy() const { return false; }
-
-	virtual PackedStringArray get_accessibility_configuration_warnings() const;
 
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 #ifdef TOOLS_ENABLED

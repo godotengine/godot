@@ -36,6 +36,8 @@
 
 #define CONFIG_WARNING(code, message) p_infos->push_back(ConfigurationInfo(code, message, "", ConfigurationInfo::Severity::WARNING));
 #define CONFIG_WARNING_P(code, message, property_name) p_infos->push_back(ConfigurationInfo(code, message, property_name, ConfigurationInfo::Severity::WARNING));
+#define ACCESSIBILITY_WARNING(code, message) p_infos->push_back(ConfigurationInfo(code, message, "", ConfigurationInfo::Severity::WARNING, true));
+#define ACCESSIBILITY_WARNING_P(code, message, property_name) p_infos->push_back(ConfigurationInfo(code, message, property_name, ConfigurationInfo::Severity::WARNING, true));
 
 class ConfigurationInfo {
 public:
@@ -52,6 +54,7 @@ private:
 	StringName code;
 	StringName property_name;
 	Severity severity;
+	bool accessibility;
 
 	inline static HashSet<String> queued_errors_to_print;
 
@@ -69,6 +72,7 @@ public:
 	StringName get_code() const { return code; }
 	StringName get_property_name() const { return property_name; }
 	Severity get_severity() const { return severity; }
+	bool is_accessibility() const { return accessibility; }
 
 	bool operator==(const ConfigurationInfo &p_val) const {
 		return (message == p_val.message) &&
@@ -86,5 +90,5 @@ public:
 			property_name(*reinterpret_cast<StringName *>(p_config_info.property_name)),
 			severity((Severity)p_config_info.severity) {}
 
-	ConfigurationInfo(const StringName &p_code, const String &p_message, const StringName &p_property_name = StringName(), Severity p_severity = Severity::WARNING);
+	ConfigurationInfo(const StringName &p_code, const String &p_message, const StringName &p_property_name = StringName(), Severity p_severity = Severity::WARNING, bool p_accessibility = false);
 };

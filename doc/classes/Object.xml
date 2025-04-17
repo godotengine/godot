@@ -360,6 +360,7 @@
 				- [code]property[/code] of type [StringName], which adds an icon next to the property with the same name.
 				- [code]code[/code] of type [StringName], to identify this configuration info. In the future, this will be used to allow discarding messages in the editor. While the message may change due to translation or string formatting, the code field should not change.
 				- [code]severity[/code] can be set to [code]"error"[/code], [code]"warning"[/code], or [code]"info"[/code] to change the icon and text color. Defaults to warning.
+				- [code]accessibility[/code] is a boolean (defaults to [code]false[/code]) which determines whether this entry is relevant for accessibility. This allows it to be filtered via [member EditorSettings.docks/scene_tree/accessibility_warnings].
 				If a string is found in the returned array, it is treated as a warning message with no property set.
 				Returning an empty array produces no messages.
 				[b]Note:[/b] This method only has an effect in the editor and its availability should not be relied upon in an exported project.

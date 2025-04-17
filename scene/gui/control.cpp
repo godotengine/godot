@@ -246,30 +246,21 @@ void Control::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 				"tooltip_text");
 	}
 
-	return infos;
-}
-#endif
-
-PackedStringArray Control::get_accessibility_configuration_warnings() const {
-	ERR_READ_THREAD_GUARD_V(PackedStringArray());
-	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
-
 	String ac_name = get_accessibility_name().strip_edges();
 	if (ac_name.is_empty()) {
-		warnings.push_back(RTR("Accessibility Name must not be empty, or contain only spaces."));
+		ACCESSIBILITY_WARNING_P(RTR("Accessibility Name must not be empty, or contain only spaces."), "accessibility_name");
 	}
 	if (ac_name.contains(get_class_name())) {
-		warnings.push_back(RTR("Accessibility Name must not include Node class name."));
+		ACCESSIBILITY_WARNING_P(RTR("Accessibility Name must not include Node class name."), "accessibility_name");
 	}
 	for (int i = 0; i < ac_name.length(); i++) {
 		if (is_control(ac_name[i])) {
-			warnings.push_back(RTR("Accessibility Name must not include control character."));
+			ACCESSIBILITY_WARNING_P(RTR("Accessibility Name must not include control character."), "accessibility_name");
 			break;
 		}
 	}
-
-	return warnings;
 }
+#endif
 
 bool Control::is_text_field() const {
 	ERR_READ_THREAD_GUARD_V(false);

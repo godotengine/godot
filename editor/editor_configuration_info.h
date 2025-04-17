@@ -38,7 +38,13 @@ class EditorConfigurationInfo {
 public:
 	EditorConfigurationInfo() {}
 
+	static bool _include_accessibility;
+
+	static bool get_include_accessibility() { return _include_accessibility; }
+	static void set_include_accessibility(bool p_value) { _include_accessibility = p_value; }
+
 	static Vector<ConfigurationInfo> get_configuration_info(Object *p_object);
+	static Vector<ConfigurationInfo> get_configuration_info(Object *p_object, bool p_include_accessibility);
 	static ConfigurationInfo::Severity get_max_severity(const Vector<ConfigurationInfo> &p_config_infos);
 	static StringName get_severity_icon(ConfigurationInfo::Severity p_severity);
 
