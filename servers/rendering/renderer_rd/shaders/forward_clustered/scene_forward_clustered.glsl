@@ -1992,10 +1992,12 @@ void fragment_shader(in SceneData scene_data) {
 		// Base Layer
 		float NdotV = clamp(dot(normal, view), 0.0001, 1.0);
 		vec2 envBRDF = prefiltered_dfg(roughness, NdotV).xy;
+		// Multiscattering
+		vec3 energy_compensation = get_energy_compensation(f0, envBRDF.y);
+
 		// cheap luminance approximation
 		float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
-
-		specular_light *= f90 * envBRDF.x + f0 * envBRDF.y;
+		specular_light *= energy_compensation * (f90 * envBRDF.x + f0 * envBRDF.y);
 #endif
 	}
 

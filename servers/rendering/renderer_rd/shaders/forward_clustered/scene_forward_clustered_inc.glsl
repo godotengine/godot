@@ -462,6 +462,15 @@ vec3 prefiltered_dfg(float lod, float NoV) {
 	return textureLod(sampler2D(dfg, SAMPLER_LINEAR_CLAMP), vec2(NoV, 1.0 - lod), 0.0).rgb;
 }
 
+// https://google.github.io/filament/Filament.html#listing_energycompensationimpl
+vec3 get_energy_compensation(vec3 f0, float env) {
+#ifdef SPECULAR_MULTISCATTERING_GGX
+	return 1.0 + f0 * (1.0 / env - 1.0);
+#else
+	return vec3(1.0);
+#endif
+}
+
 /* Set 2 Skeleton & Instancing (can change per item) */
 
 layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {

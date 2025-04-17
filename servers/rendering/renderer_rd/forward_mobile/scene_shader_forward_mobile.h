@@ -31,6 +31,7 @@
 #pragma once
 
 #include "../storage_rd/material_storage.h"
+#include "scene/resources/material.h"
 #include "servers/rendering/renderer_rd/pipeline_hash_map_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_mobile/scene_forward_mobile.glsl.gen.h"
 
@@ -204,6 +205,7 @@ public:
 		int depth_testi = DEPTH_TEST_ENABLED;
 		int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 		int cull_mode = RS::CULL_MODE_BACK;
+		int specular_mode = BaseMaterial3D::SPECULAR_SCHLICK_GGX;
 
 		bool uses_point_size = false;
 		bool uses_alpha = false;

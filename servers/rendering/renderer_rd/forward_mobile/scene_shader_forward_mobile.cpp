@@ -106,6 +106,8 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_mode, RS::CULL_MODE_FRONT);
 	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_mode, RS::CULL_MODE_BACK);
 
+	actions.render_mode_values["specular_multiscattering_ggx"] = Pair<int *, int>(&specular_mode, BaseMaterial3D::SPECULAR_MULTISCATTERING_GGX);
+
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
 	actions.render_mode_flags["particle_trails"] = &uses_particle_trails;
@@ -174,6 +176,10 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	if (uses_transmittance) {
 		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ renderer.");
+	}
+
+	if (specular_mode == BaseMaterial3D::SPECULAR_MULTISCATTERING_GGX) {
+		WARN_PRINT_ONCE_ED("MultiscatterGGX is only available when using the Forward+ renderer.");
 	}
 #endif
 
@@ -681,6 +687,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.render_mode_defines["sss_mode_skin"] = "#define SSS_MODE_SKIN\n";
 
 		actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
+		actions.render_mode_defines["specular_multiscattering_ggx"] = "#define SPECULAR_MULTISCATTERING_GGX\n";
 
 		actions.render_mode_defines["specular_toon"] = "#define SPECULAR_TOON\n";
 		actions.render_mode_defines["specular_disabled"] = "#define SPECULAR_DISABLED\n";

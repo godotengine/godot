@@ -724,10 +724,14 @@
 		<constant name="SPECULAR_SCHLICK_GGX" value="0" enum="SpecularMode">
 			Default specular blob.
 		</constant>
-		<constant name="SPECULAR_TOON" value="1" enum="SpecularMode">
+		<constant name="SPECULAR_MULTISCATTERING_GGX" value="1" enum="SpecularMode">
+			Uses multiple specular lobes for more accurate reflections, at a slight performance cost.
+			[b]Note:[/b] The impact is most noticeable on rough metallic surfaces. For smooth surfaces and non-metal surfaces, the impact likely won’t be noticed and should be changed to [b]SchlickGGX[/b].
+		</constant>
+		<constant name="SPECULAR_TOON" value="2" enum="SpecularMode">
 			Toon blob which changes size based on roughness.
 		</constant>
-		<constant name="SPECULAR_DISABLED" value="2" enum="SpecularMode">
+		<constant name="SPECULAR_DISABLED" value="3" enum="SpecularMode">
 			No specular blob. This is slightly faster to render than other specular modes.
 		</constant>
 		<constant name="BILLBOARD_DISABLED" value="0" enum="BillboardMode">
