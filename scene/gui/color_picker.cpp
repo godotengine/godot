@@ -38,6 +38,7 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
@@ -67,6 +68,14 @@ void ColorPicker::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_color();
 		} break;
+
+#ifdef MACOS_ENABLED
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree()) {
+				perm_hb->set_visible(!OS::get_singleton()->get_granted_permissions().has("macos.permission.RECORD_SCREEN"));
+			}
+		} break;
+#endif
 
 		case NOTIFICATION_READY: {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_COLOR_PICKER)) {
@@ -2215,6 +2224,23 @@ ColorPicker::ColorPicker() {
 	btn_add_preset->set_accessibility_name(ETR("Add Preset"));
 	btn_add_preset->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_add_preset_pressed));
 	preset_container->add_child(btn_add_preset);
+
+	perm_hb = memnew(HBoxContainer);
+	perm_hb->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+
+	LinkButton *perm_link = memnew(LinkButton);
+	perm_link->set_text(ETR("Screen Recording permission missing!"));
+	perm_link->set_tooltip_text(ETR("Screen Recording permission is required to pick colors from the other application windows.\nClick here to request access..."));
+	perm_link->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_req_permission));
+	perm_hb->add_child(perm_link);
+	real_vbox->add_child(perm_hb);
+	perm_hb->set_visible(false);
+}
+
+void ColorPicker::_req_permission() {
+#ifdef MACOS_ENABLED
+	OS::get_singleton()->request_permission("macos.permission.RECORD_SCREEN");
+#endif
 }
 
 ColorPicker::~ColorPicker() {

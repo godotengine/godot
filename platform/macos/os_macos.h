@@ -128,6 +128,7 @@ public:
 	virtual String get_model_name() const override;
 
 	virtual bool is_sandboxed() const override;
+	virtual bool request_permission(const String &p_name) override;
 	virtual Vector<String> get_granted_permissions() const override;
 	virtual void revoke_granted_permissions() override;
 
