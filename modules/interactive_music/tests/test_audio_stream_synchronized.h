@@ -30,25 +30,25 @@
 
 #pragma once
 
+#include "servers/audio/audio_stream.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
-#include "servers/audio/audio_stream.h"
 
 #include "../audio_stream_synchronized.h"
 
 namespace TestAudio_stream_synchronized {
 
 TEST_CASE("[AudioStreamSynchronized] test_initialized_and_default") {
-    Ref<AudioStreamSynchronized> synchro;
-    synchro.instantiate();
-    CHECK(synchro.is_valid());
+	Ref<AudioStreamSynchronized> synchro;
+	synchro.instantiate();
+	CHECK(synchro.is_valid());
 
-    //testing default values
-    CHECK(synchro->get_stream_count() == 0);
-    CHECK(synchro->get_beat_count() == 0);
-    CHECK(synchro->get_bpm() == 0.0);
-    CHECK(synchro->get_bar_beats() == 0);
-    CHECK(synchro->get_stream_name() == "Synchronized");
+	//testing default values
+	CHECK(synchro->get_stream_count() == 0);
+	CHECK(synchro->get_beat_count() == 0);
+	CHECK(synchro->get_bpm() == 0.0);
+	CHECK(synchro->get_bar_beats() == 0);
+	CHECK(synchro->get_stream_name() == "Synchronized");
 }
 
 } // namespace TestAudio_stream_synchronized

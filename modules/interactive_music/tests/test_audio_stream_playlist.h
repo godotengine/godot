@@ -30,37 +30,37 @@
 
 #pragma once
 
+#include "servers/audio/audio_stream.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
-#include "servers/audio/audio_stream.h"
 
 #include "../audio_stream_playlist.h"
 
 namespace TestAudio_stream_playlist {
 
 TEST_CASE("[AudioStreamPlaylist] test_initialized_and_default") {
-    Ref<AudioStreamPlaylist> playlist;
-    playlist.instantiate();
-    CHECK(playlist.is_valid());
+	Ref<AudioStreamPlaylist> playlist;
+	playlist.instantiate();
+	CHECK(playlist.is_valid());
 
-    // checking default settings
-    CHECK(playlist->get_stream_name() == "Playlist");
-    CHECK(playlist->get_shuffle() == false);
-    CHECK(playlist->get_fade_time() == float(0.3));
-    CHECK(playlist->has_loop() == true);
-    CHECK(playlist->get_stream_count() == 0);
-    CHECK(playlist->get_length() == 0.0);
-    CHECK(playlist->is_meta_stream() == true);
-    CHECK(playlist->get_bpm() == 0.0);
+	// checking default settings
+	CHECK(playlist->get_stream_name() == "Playlist");
+	CHECK(playlist->get_shuffle() == false);
+	CHECK(playlist->get_fade_time() == float(0.3));
+	CHECK(playlist->has_loop() == true);
+	CHECK(playlist->get_stream_count() == 0);
+	CHECK(playlist->get_length() == 0.0);
+	CHECK(playlist->is_meta_stream() == true);
+	CHECK(playlist->get_bpm() == 0.0);
 }
 
 TEST_CASE("[AudioStreamPlaylist] test_instantiate_playback") {
-    Ref<AudioStreamPlaylist> playlist;
-    playlist.instantiate();
-    CHECK(playlist.is_valid());
+	Ref<AudioStreamPlaylist> playlist;
+	playlist.instantiate();
+	CHECK(playlist.is_valid());
 
-    Ref<AudioStreamPlayback> playback = playlist->instantiate_playback();
-    CHECK(playback.is_valid());
+	Ref<AudioStreamPlayback> playback = playlist->instantiate_playback();
+	CHECK(playback.is_valid());
 }
 
 } // namespace TestAudio_stream_playlist
