@@ -3123,9 +3123,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (p_imethod.requires_object_call) {
 			// Fallback to Godot's object.Call(string, params)
 
-			p_output.append(INDENT2 CS_METHOD_CALL "(\"");
-			p_output.append(p_imethod.name);
-			p_output.append("\"");
+			p_output.append(INDENT2 CS_METHOD_CALL "(");
+			p_output.append("MethodName." + p_imethod.proxy_name);
 
 			for (const ArgumentInterface &iarg : p_imethod.arguments) {
 				p_output.append(", ");
