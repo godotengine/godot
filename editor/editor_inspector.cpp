@@ -445,7 +445,7 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			Color color;
-			if (draw_warning || draw_prop_warning) {
+			if (draw_warning) {
 				color = get_theme_color(is_read_only() ? SNAME("readonly_warning_color") : SNAME("warning_color"));
 			} else {
 				color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
@@ -768,13 +768,6 @@ String EditorProperty::_get_info_tooltip() const {
 	// Should be replaced with Vector::duplicate, but it is not const. See GH-79140.
 	infos.append_array(config_info);
 
-	if (object->has_method("_get_property_warning")) {
-		const String warning_text = object->call("_get_property_warning", property);
-		if (!warning_text.is_empty()) {
-			infos.append(ConfigurationInfo(warning_text));
-		}
-	}
-
 	const String bullet_point = U"•  ";
 	PackedStringArray lines;
 	for (const ConfigurationInfo &info : infos) {
@@ -849,11 +842,6 @@ void EditorProperty::update_editor_property_status() {
 		new_pinned = node->is_property_pinned(property);
 	}
 
-	bool new_warning = false;
-	if (object->has_method("_get_property_warning")) {
-		new_warning = !String(object->call("_get_property_warning", property)).is_empty();
-	}
-
 	Variant current = object->get(_get_revert_property());
 	bool new_can_revert = EditorPropertyRevert::can_property_revert(object, property, &current) && !is_read_only();
 
@@ -866,11 +854,10 @@ void EditorProperty::update_editor_property_status() {
 		}
 	}
 
-	if (new_can_revert != can_revert || new_pinned != pinned || new_checked != checked || new_warning != draw_prop_warning) {
+	if (new_can_revert != can_revert || new_pinned != pinned || new_checked != checked) {
 		if (new_can_revert != can_revert) {
 			emit_signal(SNAME("property_can_revert_changed"), property, new_can_revert);
 		}
-		draw_prop_warning = new_warning;
 		can_revert = new_can_revert;
 		pinned = new_pinned;
 		checked = new_checked;
