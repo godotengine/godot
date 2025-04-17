@@ -46,7 +46,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	void remove_cache_parser(const String &p_path);
 	bool initialized = false;
 	HashMap<StringName, LSP::DocumentSymbol> native_symbols;
 
@@ -57,9 +56,6 @@ protected:
 
 	void reload_all_workspace_scripts();
 
-	ExtendGDScriptParser *get_parse_successed_script(const String &p_path);
-	ExtendGDScriptParser *get_parse_result(const String &p_path);
-
 	void list_script_files(const String &p_root_dir, List<String> &r_files);
 
 	void apply_new_signal(Object *obj, String function, PackedStringArray args);
@@ -68,15 +64,10 @@ public:
 	String root;
 	String root_uri;
 
-	HashMap<String, ExtendGDScriptParser *> scripts;
-	HashMap<String, ExtendGDScriptParser *> parse_results;
 	HashMap<StringName, ClassMembers> native_members;
 
 public:
 	Error initialize();
-
-	Error parse_script(const String &p_path, const String &p_content);
-	Error parse_local_script(const String &p_path);
 
 	String get_file_path(const String &p_uri) const;
 	String get_file_uri(const String &p_path) const;
@@ -90,7 +81,6 @@ public:
 	void resolve_document_links(const String &p_uri, List<LSP::DocumentLink> &r_list);
 	Dictionary generate_script_api(const String &p_path);
 	Error resolve_signature(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::SignatureHelp &r_signature);
-	void didDeleteFiles(const Dictionary &p_params);
 	Dictionary rename(const LSP::TextDocumentPositionParams &p_doc_pos, const String &new_name);
 	bool can_rename(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::DocumentSymbol &r_symbol, LSP::Range &r_range);
 	Vector<LSP::Location> find_usages_in_file(const LSP::DocumentSymbol &p_symbol, const String &p_file_path);

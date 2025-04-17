@@ -58,6 +58,18 @@ private:
 
 		Error handle_data();
 		Error send_data();
+
+		/**
+		 * Tracks all files that the client claimed, however for files deemed not relevant
+		 * to the server the `text` might not be persisted.
+		 */
+		HashMap<String, LSP::TextDocumentItem> managed_files;
+		HashMap<String, ExtendGDScriptParser *> parse_results;
+
+		void remove_cached_parser(const String &p_path);
+		ExtendGDScriptParser *parse_script(const String &p_path);
+
+		~LSPeer();
 	};
 
 	enum LSPErrorCode {
@@ -106,6 +118,22 @@ public:
 
 	bool is_smart_resolve_enabled() const;
 	bool is_goto_native_symbols_enabled() const;
+
+	/**
+	 * Returns the client which is currently being processed.
+	 */
+	Ref<LSPeer> get_client();
+
+	// Text Document Synchronization
+	void lsp_did_open(const Dictionary &p_params);
+	void lsp_did_change(const Dictionary &p_params);
+	void lsp_did_close(const Dictionary &p_params);
+
+	/**
+	 * Returns parse results for the given path, using the cache if available.
+	 * If no such file exists, or the file is not a GDScript file a `nullptr` is returned.
+	 */
+	ExtendGDScriptParser *get_parse_result(const String &p_path);
 
 	GDScriptLanguageProtocol();
 };
