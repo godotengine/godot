@@ -197,10 +197,7 @@ private:
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
-	Color debug_paths_color;
-	float debug_paths_width = 1.0f;
 	Ref<ArrayMesh> debug_contact_mesh;
-	Ref<Material> debug_paths_material;
 	Ref<Material> collision_material;
 	int collision_debug_contacts;
 
@@ -384,6 +381,7 @@ public:
 	void set_debug_collision_contact_color(const Color &p_color);
 	Color get_debug_collision_contact_color() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_debug_paths_color(const Color &p_color);
 	Color get_debug_paths_color() const;
 
@@ -391,6 +389,8 @@ public:
 	float get_debug_paths_width() const;
 
 	Ref<Material> get_debug_paths_material();
+#endif // DISABLE_DEPRECATED
+
 	Ref<Material> get_debug_collision_material();
 	Ref<ArrayMesh> get_debug_contact_mesh();
 

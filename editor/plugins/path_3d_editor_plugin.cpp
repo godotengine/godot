@@ -319,8 +319,9 @@ void Path3DGizmo::redraw() {
 
 	debug_material = gizmo_plugin->get_material("path_material", this);
 
-	Color path_color = path->get_debug_custom_color();
-	if (path_color != Color(0.0, 0.0, 0.0)) {
+	Color path_color;
+	if (path->get_debug_custom_enabled()) {
+		path_color = path->get_debug_custom_color();
 		debug_material.instantiate();
 		debug_material->set_albedo(path_color);
 		debug_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -355,19 +356,8 @@ void Path3DGizmo::redraw() {
 		_collision_segments.resize((sample_count - 1) * 2);
 		Vector3 *_collisions_ptr = _collision_segments.ptrw();
 
-		Vector<Vector3> bones;
-		bones.resize(sample_count * 4);
-		Vector3 *bones_ptr = bones.ptrw();
-
-		Vector<Vector3> ribbon;
-		ribbon.resize(sample_count);
-		Vector3 *ribbon_ptr = ribbon.ptrw();
-
 		for (int i = 0; i < sample_count; i++) {
 			const Vector3 p1 = r[i].origin;
-			const Vector3 side = r[i].basis.get_column(0);
-			const Vector3 up = r[i].basis.get_column(1);
-			const Vector3 forward = r[i].basis.get_column(2);
 
 			// Collision segments.
 			if (i != sample_count - 1) {
@@ -375,28 +365,9 @@ void Path3DGizmo::redraw() {
 				_collisions_ptr[(i * 2)] = p1;
 				_collisions_ptr[(i * 2) + 1] = p2;
 			}
-
-			// Path3D as a ribbon.
-			ribbon_ptr[i] = p1;
-
-			if (i % 4 == 0) {
-				// Draw fish bone every 4 points to reduce visual noise and performance impact
-				// (compared to drawing it for every point).
-				const Vector3 p_left = p1 + (side + forward - up * 0.3) * 0.06;
-				const Vector3 p_right = p1 + (-side + forward - up * 0.3) * 0.06;
-
-				const int bone_idx = i * 4;
-
-				bones_ptr[bone_idx] = p1;
-				bones_ptr[bone_idx + 1] = p_left;
-				bones_ptr[bone_idx + 2] = p1;
-				bones_ptr[bone_idx + 3] = p_right;
-			}
 		}
 
 		add_collision_segments(_collision_segments);
-		add_lines(bones, debug_material);
-		add_vertices(ribbon, debug_material, Mesh::PRIMITIVE_LINE_STRIP);
 	}
 
 	// 2. Draw handles when selected.
@@ -1190,7 +1161,7 @@ int Path3DGizmoPlugin::get_priority() const {
 }
 
 Path3DGizmoPlugin::Path3DGizmoPlugin(float p_disk_size) {
-	Color path_color = SceneTree::get_singleton()->get_debug_paths_color();
+	Color path_color = PathDebug3D::get_debug_paths_color();
 	Color path_tilt_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/path_tilt");
 	disk_size = p_disk_size;
 

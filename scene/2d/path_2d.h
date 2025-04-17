@@ -33,7 +33,52 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/curve.h"
 
+class Path2D;
 class Timer;
+
+class PathDebug2D {
+	static bool debug_enabled;
+	static Color debug_paths_color;
+	static float debug_paths_width;
+	static float debug_paths_sample_interval;
+	static bool debug_paths_fish_bones_enabled;
+	static int debug_paths_fish_bones_interval;
+
+	static void emit_changed();
+	static bool _emitting_changed;
+	void _emit_changed_deferred();
+
+	static Mutex update_callbacks_mutex;
+	static HashMap<Path2D *, Callable> update_callbacks;
+	static void emit_update_callbacks();
+
+public:
+	static void add_update_callback(Path2D *p_path, Callable p_callback);
+	static void remove_update_callback(Path2D *p_path);
+
+	static void init_settings();
+
+	static void set_debug_enabled(bool p_enabled);
+	static bool is_debug_enabled();
+
+	static void set_debug_paths_color(const Color &p_color);
+	static Color get_debug_paths_color();
+
+	static void set_debug_paths_width(float p_width);
+	static float get_debug_paths_width();
+
+	static void set_debug_paths_sample_interval(float p_interval);
+	static float get_debug_paths_sample_interval();
+
+	static void set_debug_paths_fish_bones_enabled(bool p_enabled);
+	static bool get_debug_paths_fish_bones_enabled();
+
+	static void set_debug_paths_fish_bones_interval(int p_interval);
+	static int get_debug_paths_fish_bones_interval();
+
+	PathDebug2D();
+	~PathDebug2D();
+};
 
 class Path2D : public Node2D {
 	GDCLASS(Path2D, Node2D);
@@ -41,6 +86,21 @@ class Path2D : public Node2D {
 	Ref<Curve2D> curve;
 
 	void _curve_changed();
+
+	RID debug_mesh_rid;
+	RID debug_instance;
+	bool debug_enabled = true;
+	bool debug_custom_enabled = false;
+	Color debug_custom_color = Color(1.0, 1.0, 1.0, 1.0);
+
+	void _debug_create();
+	void _debug_update();
+	void _debug_clear();
+	void _debug_free();
+
+	bool _emitting_debug_changed = false;
+	void _on_debug_global_changed();
+	void _emit_debug_changed_deferred();
 
 protected:
 	void _notification(int p_what);
@@ -55,6 +115,15 @@ public:
 
 	void set_curve(const Ref<Curve2D> &p_curve);
 	Ref<Curve2D> get_curve() const;
+
+	void set_debug_enabled(bool p_enabled);
+	bool get_debug_enabled() const;
+
+	void set_debug_custom_enabled(bool p_enabled);
+	bool get_debug_custom_enabled() const;
+
+	void set_debug_custom_color(const Color &p_color);
+	const Color &get_debug_custom_color() const;
 
 	Path2D() {}
 };
