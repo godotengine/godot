@@ -892,7 +892,6 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 	}
 	Node *node = p_I->key;
 
-	int current_node_index = node->get_index(false);
 	TreeItem *item = p_I->value.item;
 	if (p_I->value.item) {
 		if (p_parent->get_child_count() - 1 > p_I->value.index) {
