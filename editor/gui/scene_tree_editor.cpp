@@ -332,12 +332,6 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			// Allow.
 		} else if (p_node->has_exposed_nodes()) {
 			HashMap<Node *, CachedNode>::Iterator I = node_cache.get(p_node);
-			if (p_node->get_parent() && p_node->get_parent()->get_scene_instance_load_placeholder()) {
-				if (I) {
-					node_cache.remove(p_node, true);
-				}
-				return;
-			}
 			if (!I) {
 				node_cache.add(p_node, tree->create_item(p_parent, 0));
 			}
@@ -346,7 +340,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 					_update_node_subtree(p_node->get_child(i), p_parent);
 				}
 			}
-			node_cache.remove(p_node, false);
+			node_cache.remove(p_node, p_node->get_parent() && p_node->get_parent()->get_scene_instance_load_placeholder());
 			return;
 		} else {
 			// Stale node, remove recursively.
@@ -373,7 +367,19 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			}
 			p_parent->add_child(item);
 			I->value.removed = false;
-			_move_node_item(p_parent, I);
+			// Fix index of exposed nodes.
+			if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+				int final_idx = 0;
+				for (int i = 0; i < p_parent->get_child_count(); i++) {
+					if (p_parent->get_child(i)->is_exposed() && p_parent->get_child(i) != I->value.item) {
+						final_idx++;
+					}
+				}
+				I->value.index = final_idx;
+				_move_node_item(p_parent, I);
+			} else {
+				_move_node_item(p_parent, I);
+			}
 		}
 
 		if (I->value.has_moved_children) {
@@ -842,12 +848,35 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 void SceneTreeEditor::_move_node_children(HashMap<Node *, CachedNode>::Iterator &p_I) {
 	TreeItem *item = p_I->value.item;
 	Node *node = p_I->key;
-	int cc = node->get_child_count(false);
+	Vector<Node *> ordered_children;
 
+	// Find all our exposed node tree items.
+	for (int i = 0; i < item->get_child_count(); i++) {
+		TreeItem *TI = item->get_child(i);
+		HashMap<Node *, CachedNode>::Iterator CI = node_cache.find_by_item(TI);
+		Node *n = CI->key;
+		if (TI->is_exposed()) {
+			ordered_children.push_back(n);
+		}
+	}
+
+	// Find all our normal nodes.
+	int cc = node->get_child_count(false);
 	for (int i = 0; i < cc; i++) {
-		HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(node->get_child(i, false));
+		Node *child = node->get_child(i, false);
+		if (child->get_owner() == EditorNode::get_singleton()->get_edited_scene() && !child->has_meta(META_EXPOSED_IN_INSTANCE)) {
+			ordered_children.push_back(child);
+		}
+	}
+
+	// Move children in the correct order
+	for (int i = 0; i < ordered_children.size(); i++) {
+		Node *child = ordered_children[i];
+		HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(child);
 		if (CI) {
-			_move_node_item(item, CI);
+			// Move the TreeItem to the correct parent and index
+			CI->value.index = i;
+			_move_node_item(item, CI); // Pass the desired index
 		}
 	}
 
@@ -873,10 +902,9 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 		p_parent->add_child(item);
 		p_I->value.removed = false;
 		current_item_index = p_parent->get_child_count() - 1;
-		p_I->value.index = current_item_index;
 	}
 
-	if (p_I->value.index != current_node_index) {
+	if (p_I->value.index != current_node_index || item->is_exposed()) {
 		// If we just re-parented we know our index.
 		if (current_item_index == -1) {
 			current_item_index = item->get_index();
@@ -888,13 +916,29 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 			return;
 		}
 
+		// If tree differs from scene graph.
+		if (p_I->value.index == current_item_index) {
+			return;
+		}
+
+		// Move exposed nodes to the top.
+		if (item->is_exposed()) {
+			TreeItem *neighbor_item = p_parent->get_child(CLAMP(p_I->value.index - 1, 0, p_parent->get_child_count() - 1));
+			if (p_I->value.index == 0) {
+				item->move_before(neighbor_item);
+			} else {
+				item->move_after(neighbor_item);
+			}
+			return;
+		}
+
 		// Are we the first node?
 		if (current_node_index == 0) {
 			// There has to be at least 1 other node, otherwise we would not have gotten here.
 			TreeItem *neighbor_item = p_parent->get_child(0);
 			item->move_before(neighbor_item);
 		} else {
-			TreeItem *neighbor_item = p_parent->get_child(CLAMP(current_node_index - 1, 0, p_parent->get_child_count() - 1));
+			TreeItem *neighbor_item = p_parent->get_child(CLAMP(p_I->value.index - 1, 0, p_parent->get_child_count() - 1));
 			item->move_after(neighbor_item);
 		}
 
@@ -2452,7 +2496,9 @@ HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCach
 	if (!p_node) {
 		return HashMap<Node *, CachedNode>::Iterator();
 	}
-
+	if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+		p_item->set_exposed(true);
+	}
 	return cache.insert(p_node, CachedNode(p_node, p_item));
 }
 
@@ -2480,6 +2526,16 @@ HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCach
 	}
 
 	return I;
+}
+
+HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator
+SceneTreeEditor::NodeCache::find_by_item(TreeItem *p_item) {
+	for (auto I = cache.begin(); I; ++I) {
+		if (I->value.item == p_item) {
+			return I;
+		}
+	}
+	return HashMap<Node *, CachedNode>::Iterator();
 }
 
 bool SceneTreeEditor::NodeCache::has(Node *p_node) {
