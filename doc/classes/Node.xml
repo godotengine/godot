@@ -36,13 +36,6 @@
 				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited].
 			</description>
 		</method>
-		<method name="_get_accessibility_configuration_warnings" qualifiers="virtual const">
-			<return type="PackedStringArray" />
-			<description>
-				The elements in the array returned from this method are displayed as warnings in the Scene dock if the script that overrides it is a [code]tool[/code] script, and accessibility warnings are enabled in the editor settings.
-				Returning an empty array produces no warnings.
-			</description>
-		</method>
 		<method name="_get_accessibility_container_name" qualifiers="virtual const">
 			<return type="String" />
 			<param index="0" name="node" type="Node" />

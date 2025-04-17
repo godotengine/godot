@@ -3568,18 +3568,6 @@ void Node::clear_internal_tree_resource_paths() {
 	}
 }
 
-PackedStringArray Node::get_accessibility_configuration_warnings() const {
-	ERR_THREAD_GUARD_V(PackedStringArray());
-	PackedStringArray ret;
-
-	Vector<String> warnings;
-	if (GDVIRTUAL_CALL(_get_accessibility_configuration_warnings, warnings)) {
-		ret.append_array(warnings);
-	}
-
-	return ret;
-}
-
 #ifndef DISABLE_DEPRECATED
 PackedStringArray Node::get_configuration_warnings() const {
 	ERR_THREAD_GUARD_V(PackedStringArray());
@@ -4154,7 +4142,6 @@ void Node::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_get_configuration_warnings);
 #endif
-	GDVIRTUAL_BIND(_get_accessibility_configuration_warnings);
 	GDVIRTUAL_BIND(_input, "event");
 	GDVIRTUAL_BIND(_shortcut_input, "event");
 	GDVIRTUAL_BIND(_unhandled_input, "event");

@@ -1883,22 +1883,20 @@ void RichTextLabel::_update_theme_item_cache() {
 	use_selected_font_color = theme_cache.font_selected_color != Color(0, 0, 0, 0);
 }
 
-PackedStringArray RichTextLabel::get_accessibility_configuration_warnings() const {
-	PackedStringArray warnings = Control::get_accessibility_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void RichTextLabel::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	Item *it = main;
 	while (it) {
 		if (it->type == ITEM_IMAGE) {
 			ItemImage *img = static_cast<ItemImage *>(it);
 			if (img && img->alt_text.strip_edges().is_empty()) {
-				warnings.push_back(RTR("Image alternative text must not be empty."));
+				ACCESSIBILITY_WARNING(RTR("Image alternative text must not be empty."));
 			}
 		}
 		it = _get_next_item(it, true);
 	}
-
-	return warnings;
 }
+#endif // TOOLS_ENABLED
 
 void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep) {
 	ERR_FAIL_NULL(p_frame);

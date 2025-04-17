@@ -99,10 +99,12 @@ ConfigurationInfo::ConfigurationInfo(const Dictionary &p_dict) {
 	message = p_dict.get("message", "");
 	property_name = p_dict.get("property", StringName());
 	severity = string_to_severity(p_dict.get("severity", "warning"));
+	accessibility = p_dict.get("accessibility", false);
 }
 
-ConfigurationInfo::ConfigurationInfo(const String &p_message, const StringName &p_property_name, Severity p_severity) {
+ConfigurationInfo::ConfigurationInfo(const String &p_message, const StringName &p_property_name, Severity p_severity, bool p_accessibility) {
 	message = p_message;
 	property_name = p_property_name;
 	severity = p_severity;
+	accessibility = p_accessibility;
 }

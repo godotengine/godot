@@ -451,7 +451,6 @@ public:
 
 	static void set_root_layout_direction(int p_root_dir);
 
-	PackedStringArray get_accessibility_configuration_warnings() const override;
 #ifdef TOOLS_ENABLED
 	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
 #endif
