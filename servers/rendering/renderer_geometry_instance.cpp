@@ -134,6 +134,9 @@ void RenderGeometryInstanceBase::set_cast_double_sided_shadows(bool p_enable) {
 	_mark_dirty();
 }
 
+void RenderGeometryInstanceBase::reset_motion_vectors() {
+}
+
 Transform3D RenderGeometryInstanceBase::get_transform() {
 	return transform;
 }

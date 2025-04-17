@@ -2046,6 +2046,13 @@
 				Sets whether an instance is drawn or not. Equivalent to [member Node3D.visible].
 			</description>
 		</method>
+		<method name="instance_teleport">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<description>
+				Resets motion vectors and other interpolated values. Use this [i]after[/i] teleporting a mesh from one position to another to avoid ghosting artifacts.
+			</description>
+		</method>
 		<method name="instances_cull_aabb" qualifiers="const">
 			<return type="PackedInt64Array" />
 			<param index="0" name="aabb" type="AABB" />

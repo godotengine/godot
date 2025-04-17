@@ -110,6 +110,7 @@ void VisualInstance3D::_notification(int p_what) {
 				if (!_is_using_identity_transform()) {
 					RenderingServer::get_singleton()->instance_set_transform(instance, get_global_transform());
 				}
+				RenderingServer::get_singleton()->instance_teleport(instance);
 
 				RenderingServer::get_singleton()->instance_reset_physics_interpolation(instance);
 			}
