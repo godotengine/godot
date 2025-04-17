@@ -100,8 +100,34 @@ bool OS_MacOS::is_sandboxed() const {
 	return has_environment("APP_SANDBOX_CONTAINER_ID");
 }
 
+bool OS_MacOS::request_permission(const String &p_name) {
+	if (@available(macOS 10.15, *)) {
+		if (p_name == "macos.permission.RECORD_SCREEN") {
+			if (CGPreflightScreenCaptureAccess()) {
+				return true;
+			} else {
+				CGRequestScreenCaptureAccess();
+				return false;
+			}
+		}
+	} else {
+		if (p_name == "macos.permission.RECORD_SCREEN") {
+			return true;
+		}
+	}
+	return false;
+}
+
 Vector<String> OS_MacOS::get_granted_permissions() const {
 	Vector<String> ret;
+
+	if (@available(macOS 10.15, *)) {
+		if (CGPreflightScreenCaptureAccess()) {
+			ret.push_back("macos.permission.RECORD_SCREEN");
+		}
+	} else {
+		ret.push_back("macos.permission.RECORD_SCREEN");
+	}
 
 	if (is_sandboxed()) {
 		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];

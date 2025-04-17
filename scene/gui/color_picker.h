@@ -186,6 +186,11 @@ private:
 	Ref<ButtonGroup> preset_group;
 	Ref<ButtonGroup> recent_preset_group;
 
+#ifdef MACOS_ENABLED
+	HBoxContainer *perm_hb = nullptr;
+	void _req_permission();
+#endif
+
 #ifdef TOOLS_ENABLED
 	Callable quick_open_callback;
 	Callable palette_saved_callback;
