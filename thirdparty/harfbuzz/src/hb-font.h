@@ -1052,6 +1052,12 @@ hb_font_set_funcs_data (hb_font_t         *font,
 			void              *font_data,
 			hb_destroy_func_t  destroy);
 
+HB_EXTERN hb_bool_t
+hb_font_set_funcs_using (hb_font_t  *font,
+			 const char *name);
+
+HB_EXTERN const char **
+hb_font_list_funcs (void);
 
 HB_EXTERN void
 hb_font_set_scale (hb_font_t *font,

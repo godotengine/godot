@@ -204,7 +204,7 @@ hb_ot_color_palette_get_colors (hb_face_t     *face,
 hb_bool_t
 hb_ot_color_has_layers (hb_face_t *face)
 {
-  return face->table.COLR->has_v0_data ();
+  return face->table.COLR->colr->has_v0_data ();
 }
 
 /**
@@ -221,7 +221,7 @@ hb_ot_color_has_layers (hb_face_t *face)
 hb_bool_t
 hb_ot_color_has_paint (hb_face_t *face)
 {
-  return face->table.COLR->has_v1_data ();
+  return face->table.COLR->colr->has_v1_data ();
 }
 
 /**
@@ -240,7 +240,7 @@ hb_bool_t
 hb_ot_color_glyph_has_paint (hb_face_t      *face,
                              hb_codepoint_t  glyph)
 {
-  return face->table.COLR->has_paint_for_glyph (glyph);
+  return face->table.COLR->colr->has_paint_for_glyph (glyph);
 }
 
 /**
@@ -266,7 +266,7 @@ hb_ot_color_glyph_get_layers (hb_face_t           *face,
 			      unsigned int        *layer_count, /* IN/OUT.  May be NULL. */
 			      hb_ot_color_layer_t *layers /* OUT.     May be NULL. */)
 {
-  return face->table.COLR->get_glyph_layers (glyph, start_offset, layer_count, layers);
+  return face->table.COLR->colr->get_glyph_layers (glyph, start_offset, layer_count, layers);
 }
 
 

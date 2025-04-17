@@ -726,6 +726,9 @@ _hb_cairo_add_sweep_gradient_patches (hb_color_stop_t *stops,
     float span;
 
     span = angles[n_stops - 1] - angles[0];
+    if (!span)
+      goto done;
+
     k = 0;
     if (angles[0] >= 0)
     {

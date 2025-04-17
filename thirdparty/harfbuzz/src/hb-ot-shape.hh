@@ -66,6 +66,7 @@ struct hb_ot_shape_plan_t
   hb_segment_properties_t props;
   const struct hb_ot_shaper_t *shaper;
   hb_ot_map_t map;
+  hb_aat_map_t aat_map;
   const void *data;
 #ifndef HB_NO_OT_SHAPE_FRACTIONS
   hb_mask_t frac_mask, numr_mask, dnom_mask;
@@ -108,9 +109,11 @@ struct hb_ot_shape_plan_t
 #ifndef HB_NO_AAT_SHAPE
   bool apply_kerx : 1;
   bool apply_morx : 1;
+  bool apply_trak : 1;
 #else
   static constexpr bool apply_kerx = false;
   static constexpr bool apply_morx = false;
+  static constexpr bool apply_trak = false;
 #endif
 
   void collect_lookups (hb_tag_t table_tag, hb_set_t *lookups) const
@@ -141,6 +144,7 @@ struct hb_ot_shape_planner_t
   hb_segment_properties_t props;
   hb_ot_map_builder_t map;
 #ifndef HB_NO_AAT_SHAPE
+  hb_aat_map_builder_t aat_map;
   bool apply_morx : 1;
 #else
   static constexpr bool apply_morx = false;

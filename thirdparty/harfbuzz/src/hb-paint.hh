@@ -157,7 +157,7 @@ struct hb_paint_funcs_t
 
   /* Internal specializations. */
 
-  void push_root_transform (void *paint_data,
+  void push_font_transform (void *paint_data,
                             const hb_font_t *font)
   {
     float upem = font->face->get_upem ();
@@ -168,8 +168,8 @@ struct hb_paint_funcs_t
 		    xscale/upem, 0, slant * yscale/upem, yscale/upem, 0, 0);
   }
 
-  void push_inverse_root_transform (void *paint_data,
-                                    hb_font_t *font)
+  void push_inverse_font_transform (void *paint_data,
+                                    const hb_font_t *font)
   {
     float upem = font->face->get_upem ();
     int xscale = font->x_scale ? font->x_scale : upem;

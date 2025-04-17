@@ -360,7 +360,7 @@ preprocess_text_thai (const hb_ot_shape_plan_t *plan,
     {
       /* Since we decomposed, and NIKHAHIT is combining, merge clusters with the
        * previous cluster. */
-      if (start && buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
+      if (start)
 	buffer->merge_out_clusters (start - 1, end);
     }
   }

@@ -737,7 +737,8 @@ struct hb_ot_apply_context_t :
   hb_ot_apply_context_t (unsigned int table_index_,
 			 hb_font_t *font_,
 			 hb_buffer_t *buffer_,
-			 hb_blob_t *table_blob_) :
+			 hb_blob_t *table_blob_,
+			 ItemVariationStore::cache_t *var_store_cache_ = nullptr) :
 			table_index (table_index_),
 			font (font_), face (font->face), buffer (buffer_),
 			sanitizer (table_blob_),
@@ -756,25 +757,12 @@ struct hb_ot_apply_context_t :
 #endif
 			     ),
 			var_store (gdef.get_var_store ()),
-			var_store_cache (
-#ifndef HB_NO_VAR
-					 table_index == 1 && font->num_coords ? var_store.create_cache () : nullptr
-#else
-					 nullptr
-#endif
-					),
+			var_store_cache (var_store_cache_),
 			direction (buffer_->props.direction),
 			has_glyph_classes (gdef.has_glyph_classes ())
   {
     init_iters ();
     buffer->collect_codepoints (digest);
-  }
-
-  ~hb_ot_apply_context_t ()
-  {
-#ifndef HB_NO_VAR
-    ItemVariationStore::destroy_cache (var_store_cache);
-#endif
   }
 
   void init_iters ()
@@ -4900,7 +4888,7 @@ struct GSUBGPOS
 
       this->lookup_count = table->get_lookup_count ();
 
-      this->accels = (hb_atomic_ptr_t<hb_ot_layout_lookup_accelerator_t> *) hb_calloc (this->lookup_count, sizeof (*accels));
+      this->accels = (hb_atomic_t<hb_ot_layout_lookup_accelerator_t *> *) hb_calloc (this->lookup_count, sizeof (*accels));
       if (unlikely (!this->accels))
       {
 	this->lookup_count = 0;
@@ -4948,7 +4936,7 @@ struct GSUBGPOS
 
     hb_blob_ptr_t<T> table;
     unsigned int lookup_count;
-    hb_atomic_ptr_t<hb_ot_layout_lookup_accelerator_t> *accels;
+    hb_atomic_t<hb_ot_layout_lookup_accelerator_t *> *accels;
   };
 
   protected:

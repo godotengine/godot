@@ -32,278 +32,8 @@
 
 #include "hb-shaper-impl.hh"
 
-#include "hb-coretext.h"
+#include "hb-coretext.hh"
 #include "hb-aat-layout.hh"
-
-
-/**
- * SECTION:hb-coretext
- * @title: hb-coretext
- * @short_description: CoreText integration
- * @include: hb-coretext.h
- *
- * Functions for using HarfBuzz with the CoreText fonts.
- **/
-
-static CTFontRef create_ct_font (CGFontRef cg_font, CGFloat font_size);
-
-static void
-release_table_data (void *user_data)
-{
-  CFDataRef cf_data = reinterpret_cast<CFDataRef> (user_data);
-  CFRelease(cf_data);
-}
-
-static hb_blob_t *
-_hb_cg_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data)
-{
-  CGFontRef cg_font = reinterpret_cast<CGFontRef> (user_data);
-  CFDataRef cf_data = CGFontCopyTableForTag (cg_font, tag);
-  if (unlikely (!cf_data))
-    return nullptr;
-
-  const char *data = reinterpret_cast<const char*> (CFDataGetBytePtr (cf_data));
-  const size_t length = CFDataGetLength (cf_data);
-  if (!data || !length)
-  {
-    CFRelease (cf_data);
-    return nullptr;
-  }
-
-  return hb_blob_create (data, length, HB_MEMORY_MODE_READONLY,
-			 reinterpret_cast<void *> (const_cast<__CFData *> (cf_data)),
-			 release_table_data);
-}
-
-static unsigned
-_hb_cg_get_table_tags (const hb_face_t *face HB_UNUSED,
-		       unsigned int start_offset,
-		       unsigned int *table_count,
-		       hb_tag_t *table_tags,
-		       void *user_data)
-{
-  CGFontRef cg_font = reinterpret_cast<CGFontRef> (user_data);
-
-  CTFontRef ct_font = create_ct_font (cg_font, (CGFloat) HB_CORETEXT_DEFAULT_FONT_SIZE);
-
-  auto arr = CTFontCopyAvailableTables (ct_font, kCTFontTableOptionNoOptions);
-
-  unsigned population = (unsigned) CFArrayGetCount (arr);
-  unsigned end_offset;
-
-  if (!table_count)
-    goto done;
-
-  if (unlikely (start_offset >= population))
-  {
-    *table_count = 0;
-    goto done;
-  }
-
-  end_offset = start_offset + *table_count;
-  if (unlikely (end_offset < start_offset))
-  {
-    *table_count = 0;
-    goto done;
-  }
-  end_offset= hb_min (end_offset, (unsigned) population);
-
-  *table_count = end_offset - start_offset;
-  for (unsigned i = start_offset; i < end_offset; i++)
-  {
-    CTFontTableTag tag = (CTFontTableTag)(uintptr_t) CFArrayGetValueAtIndex (arr, i);
-    table_tags[i - start_offset] = tag;
-  }
-
-done:
-  CFRelease (arr);
-  CFRelease (ct_font);
-  return population;
-}
-
-static void
-_hb_cg_font_release (void *data)
-{
-  CGFontRelease ((CGFontRef) data);
-}
-
-
-static CTFontDescriptorRef
-get_last_resort_font_desc ()
-{
-  // TODO Handle allocation failures?
-  CTFontDescriptorRef last_resort = CTFontDescriptorCreateWithNameAndSize (CFSTR("LastResort"), 0);
-  CFArrayRef cascade_list = CFArrayCreate (kCFAllocatorDefault,
-					   (const void **) &last_resort,
-					   1,
-					   &kCFTypeArrayCallBacks);
-  CFRelease (last_resort);
-  CFDictionaryRef attributes = CFDictionaryCreate (kCFAllocatorDefault,
-						   (const void **) &kCTFontCascadeListAttribute,
-						   (const void **) &cascade_list,
-						   1,
-						   &kCFTypeDictionaryKeyCallBacks,
-						   &kCFTypeDictionaryValueCallBacks);
-  CFRelease (cascade_list);
-
-  CTFontDescriptorRef font_desc = CTFontDescriptorCreateWithAttributes (attributes);
-  CFRelease (attributes);
-  return font_desc;
-}
-
-static void
-release_data (void *info, const void *data, size_t size)
-{
-  assert (hb_blob_get_length ((hb_blob_t *) info) == size &&
-	  hb_blob_get_data ((hb_blob_t *) info, nullptr) == data);
-
-  hb_blob_destroy ((hb_blob_t *) info);
-}
-
-static CGFontRef
-create_cg_font (hb_face_t *face)
-{
-  CGFontRef cg_font = nullptr;
-  if (face->destroy == _hb_cg_font_release)
-  {
-    cg_font = CGFontRetain ((CGFontRef) face->user_data);
-  }
-  else
-  {
-    hb_blob_t *blob = hb_face_reference_blob (face);
-    unsigned int blob_length;
-    const char *blob_data = hb_blob_get_data (blob, &blob_length);
-    if (unlikely (!blob_length))
-      DEBUG_MSG (CORETEXT, face, "Face has empty blob");
-
-    CGDataProviderRef provider = CGDataProviderCreateWithData (blob, blob_data, blob_length, &release_data);
-    if (likely (provider))
-    {
-      cg_font = CGFontCreateWithDataProvider (provider);
-      if (unlikely (!cg_font))
-	DEBUG_MSG (CORETEXT, face, "Face CGFontCreateWithDataProvider() failed");
-      CGDataProviderRelease (provider);
-    }
-  }
-  return cg_font;
-}
-
-static CTFontRef
-create_ct_font (CGFontRef cg_font, CGFloat font_size)
-{
-  CTFontRef ct_font = nullptr;
-
-  /* CoreText does not enable trak table usage / tracking when creating a CTFont
-   * using CTFontCreateWithGraphicsFont. The only way of enabling tracking seems
-   * to be through the CTFontCreateUIFontForLanguage call. */
-  CFStringRef cg_postscript_name = CGFontCopyPostScriptName (cg_font);
-  if (CFStringHasPrefix (cg_postscript_name, CFSTR (".SFNSText")) ||
-      CFStringHasPrefix (cg_postscript_name, CFSTR (".SFNSDisplay")))
-  {
-#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && MAC_OS_X_VERSION_MIN_REQUIRED < 1080
-# define kCTFontUIFontSystem kCTFontSystemFontType
-# define kCTFontUIFontEmphasizedSystem kCTFontEmphasizedSystemFontType
-#endif
-    CTFontUIFontType font_type = kCTFontUIFontSystem;
-    if (CFStringHasSuffix (cg_postscript_name, CFSTR ("-Bold")))
-      font_type = kCTFontUIFontEmphasizedSystem;
-
-    ct_font = CTFontCreateUIFontForLanguage (font_type, font_size, nullptr);
-    CFStringRef ct_result_name = CTFontCopyPostScriptName(ct_font);
-    if (CFStringCompare (ct_result_name, cg_postscript_name, 0) != kCFCompareEqualTo)
-    {
-      CFRelease(ct_font);
-      ct_font = nullptr;
-    }
-    CFRelease (ct_result_name);
-  }
-  CFRelease (cg_postscript_name);
-
-  if (!ct_font)
-    ct_font = CTFontCreateWithGraphicsFont (cg_font, font_size, nullptr, nullptr);
-
-  if (unlikely (!ct_font)) {
-    DEBUG_MSG (CORETEXT, cg_font, "Font CTFontCreateWithGraphicsFont() failed");
-    return nullptr;
-  }
-
-  /* crbug.com/576941 and crbug.com/625902 and the investigation in the latter
-   * bug indicate that the cascade list reconfiguration occasionally causes
-   * crashes in CoreText on OS X 10.9, thus let's skip this step on older
-   * operating system versions. Except for the emoji font, where _not_
-   * reconfiguring the cascade list causes CoreText crashes. For details, see
-   * crbug.com/549610 */
-  // 0x00070000 stands for "kCTVersionNumber10_10", see CoreText.h
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  if (&CTGetCoreTextVersion != nullptr && CTGetCoreTextVersion() < 0x00070000) {
-#pragma GCC diagnostic pop
-    CFStringRef fontName = CTFontCopyPostScriptName (ct_font);
-    bool isEmojiFont = CFStringCompare (fontName, CFSTR("AppleColorEmoji"), 0) == kCFCompareEqualTo;
-    CFRelease (fontName);
-    if (!isEmojiFont)
-      return ct_font;
-  }
-
-  CFURLRef original_url = nullptr;
-#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-  ATSFontRef atsFont;
-  FSRef fsref;
-  OSStatus status;
-  atsFont = CTFontGetPlatformFont (ct_font, NULL);
-  status = ATSFontGetFileReference (atsFont, &fsref);
-  if (status == noErr)
-    original_url = CFURLCreateFromFSRef (NULL, &fsref);
-#else
-  original_url = (CFURLRef) CTFontCopyAttribute (ct_font, kCTFontURLAttribute);
-#endif
-
-  /* Create font copy with cascade list that has LastResort first; this speeds up CoreText
-   * font fallback which we don't need anyway. */
-  {
-    CTFontDescriptorRef last_resort_font_desc = get_last_resort_font_desc ();
-    CTFontRef new_ct_font = CTFontCreateCopyWithAttributes (ct_font, 0.0, nullptr, last_resort_font_desc);
-    CFRelease (last_resort_font_desc);
-    if (new_ct_font)
-    {
-      /* The CTFontCreateCopyWithAttributes call fails to stay on the same font
-       * when reconfiguring the cascade list and may switch to a different font
-       * when there are fonts that go by the same name, since the descriptor is
-       * just name and size.
-       *
-       * Avoid reconfiguring the cascade lists if the new font is outside the
-       * system locations that we cannot access from the sandboxed renderer
-       * process in Blink. This can be detected by the new file URL location
-       * that the newly found font points to. */
-      CFURLRef new_url = nullptr;
-#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-      atsFont = CTFontGetPlatformFont (new_ct_font, NULL);
-      status = ATSFontGetFileReference (atsFont, &fsref);
-      if (status == noErr)
-	new_url = CFURLCreateFromFSRef (NULL, &fsref);
-#else
-      new_url = (CFURLRef) CTFontCopyAttribute (new_ct_font, kCTFontURLAttribute);
-#endif
-      // Keep reconfigured font if URL cannot be retrieved (seems to be the case
-      // on Mac OS 10.12 Sierra), speculative fix for crbug.com/625606
-      if (!original_url || !new_url || CFEqual (original_url, new_url)) {
-	CFRelease (ct_font);
-	ct_font = new_ct_font;
-      } else {
-	CFRelease (new_ct_font);
-	DEBUG_MSG (CORETEXT, ct_font, "Discarding reconfigured CTFont, location changed.");
-      }
-      if (new_url)
-	CFRelease (new_url);
-    }
-    else
-      DEBUG_MSG (CORETEXT, ct_font, "Font copy with empty cascade list failed");
-  }
-
-  if (original_url)
-    CFRelease (original_url);
-  return ct_font;
-}
 
 hb_coretext_face_data_t *
 _hb_coretext_shaper_face_data_create (hb_face_t *face)
@@ -325,102 +55,6 @@ _hb_coretext_shaper_face_data_destroy (hb_coretext_face_data_t *data)
   CFRelease ((CGFontRef) data);
 }
 
-/**
- * hb_coretext_face_create:
- * @cg_font: The CGFontRef to work upon
- *
- * Creates an #hb_face_t face object from the specified
- * CGFontRef.
- *
- * Return value: (transfer full): The new face object
- *
- * Since: 0.9.10
- */
-hb_face_t *
-hb_coretext_face_create (CGFontRef cg_font)
-{
-  hb_face_t *face = hb_face_create_for_tables (_hb_cg_reference_table, CGFontRetain (cg_font), _hb_cg_font_release);
-  hb_face_set_get_table_tags_func (face, _hb_cg_get_table_tags, cg_font, nullptr);
-  return face;
-}
-
-/**
- * hb_coretext_face_create_from_file_or_fail:
- * @file_name: A font filename
- * @index: The index of the face within the file
- *
- * Creates an #hb_face_t face object from the specified
- * font file and face index.
- *
- * This is similar in functionality to hb_face_create_from_file_or_fail(),
- * but uses the CoreText library for loading the font file.
- *
- * Return value: (transfer full): The new face object, or `NULL` if
- * no face is found at the specified index or the file cannot be read.
- *
- * Since: 10.1.0
- */
-hb_face_t *
-hb_coretext_face_create_from_file_or_fail (const char   *file_name,
-					   unsigned int  index)
-{
-  auto url = CFURLCreateFromFileSystemRepresentation (nullptr,
-						      (const UInt8 *) file_name,
-						      strlen (file_name),
-						      false);
-  if (unlikely (!url))
-    return nullptr;
-
-  auto ct_font_desc_array = CTFontManagerCreateFontDescriptorsFromURL (url);
-  if (unlikely (!ct_font_desc_array))
-  {
-    CFRelease (url);
-    return nullptr;
-  }
-  auto ct_font_desc = (CFArrayGetCount (ct_font_desc_array) > index) ?
-		      (CTFontDescriptorRef) CFArrayGetValueAtIndex (ct_font_desc_array, index) : nullptr;
-  if (unlikely (!ct_font_desc))
-  {
-    CFRelease (ct_font_desc_array);
-    CFRelease (url);
-    return nullptr;
-  }
-  CFRelease (url);
-  auto ct_font = ct_font_desc ? CTFontCreateWithFontDescriptor (ct_font_desc, 0, nullptr) : nullptr;
-  CFRelease (ct_font_desc_array);
-  if (unlikely (!ct_font))
-    return nullptr;
-
-  auto cg_font = ct_font ? CTFontCopyGraphicsFont (ct_font, nullptr) : nullptr;
-  CFRelease (ct_font);
-  if (unlikely (!cg_font))
-    return nullptr;
-
-  hb_face_t *face = hb_coretext_face_create (cg_font);
-  CFRelease (cg_font);
-  if (unlikely (hb_face_is_immutable (face)))
-    return nullptr;
-
-  return face;
-}
-
-/**
- * hb_coretext_face_get_cg_font:
- * @face: The #hb_face_t to work upon
- *
- * Fetches the CGFontRef associated with an #hb_face_t
- * face object
- *
- * Return value: the CGFontRef found
- *
- * Since: 0.9.10
- */
-CGFontRef
-hb_coretext_face_get_cg_font (hb_face_t *face)
-{
-  return (CGFontRef) (const void *) face->data.coretext;
-}
-
 
 hb_coretext_font_data_t *
 _hb_coretext_shaper_font_data_create (hb_font_t *font)
@@ -439,7 +73,9 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
     return nullptr;
   }
 
-  if (font->num_coords)
+  unsigned num_axes = hb_ot_var_get_axis_count (face);
+  // https://github.com/harfbuzz/harfbuzz/issues/5163
+  if (num_axes)
   {
     CFMutableDictionaryRef variations =
       CFDictionaryCreateMutable (kCFAllocatorDefault,
@@ -447,14 +83,15 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
 				 &kCFTypeDictionaryKeyCallBacks,
 				 &kCFTypeDictionaryValueCallBacks);
 
-    for (unsigned i = 0; i < font->num_coords; i++)
+    unsigned count = hb_max (num_axes, font->num_coords);
+    for (unsigned i = 0; i < count; i++)
     {
       hb_ot_var_axis_info_t info;
       unsigned int c = 1;
       hb_ot_var_get_axis_infos (font->face, i, &c, &info);
-      if (font->design_coords[i] == info.default_value)
-	continue;
-      float v = hb_clamp (font->design_coords[i], info.min_value, info.max_value);
+      float v = i < font->num_coords ?
+		hb_clamp (font->design_coords[i], info.min_value, info.max_value) :
+		info.default_value;
 
       CFNumberRef tag_number = CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &info.tag);
       CFNumberRef value_number = CFNumberCreate (kCFAllocatorDefault, kCFNumberFloatType, &v);
@@ -488,94 +125,6 @@ _hb_coretext_shaper_font_data_destroy (hb_coretext_font_data_t *data)
 {
   CFRelease ((CTFontRef) data);
 }
-
-/**
- * hb_coretext_font_create:
- * @ct_font: The CTFontRef to work upon
- *
- * Creates an #hb_font_t font object from the specified
- * CTFontRef.
- *
- * The created font uses the default font functions implemented
- * natively by HarfBuzz. If you want to use the CoreText font functions
- * instead (rarely needed), you can do so by calling
- * by hb_coretext_font_set_funcs().
- *
- * Return value: (transfer full): The new font object
- *
- * Since: 1.7.2
- **/
-hb_font_t *
-hb_coretext_font_create (CTFontRef ct_font)
-{
-  CGFontRef cg_font = CTFontCopyGraphicsFont (ct_font, nullptr);
-  hb_face_t *face = hb_coretext_face_create (cg_font);
-  CFRelease (cg_font);
-  hb_font_t *font = hb_font_create (face);
-  hb_face_destroy (face);
-
-  if (unlikely (hb_object_is_immutable (font)))
-    return font;
-
-  hb_font_set_ptem (font, CTFontGetSize (ct_font));
-
-  /* Copy font variations */
-  CFDictionaryRef variations = CTFontCopyVariation (ct_font);
-  if (variations)
-  {
-    hb_vector_t<hb_variation_t> vars;
-    hb_vector_t<CFTypeRef> keys;
-    hb_vector_t<CFTypeRef> values;
-
-    CFIndex count = CFDictionaryGetCount (variations);
-    if (unlikely (!vars.alloc_exact (count) || !keys.resize_exact (count) || !values.resize_exact (count)))
-      goto done;
-
-    // Fetch them one by one and collect in a vector of our own.
-    CFDictionaryGetKeysAndValues (variations, keys.arrayZ, values.arrayZ);
-    for (CFIndex i = 0; i < count; i++)
-    {
-      int tag;
-      float value;
-      CFNumberGetValue ((CFNumberRef) keys.arrayZ[i], kCFNumberIntType, &tag);
-      CFNumberGetValue ((CFNumberRef) values.arrayZ[i], kCFNumberFloatType, &value);
-
-      hb_variation_t var = {tag, value};
-      vars.push (var);
-    }
-    hb_font_set_variations (font, vars.arrayZ, vars.length);
-
-done:
-    CFRelease (variations);
-  }
-
-  /* Let there be dragons here... */
-  font->data.coretext.cmpexch (nullptr, (hb_coretext_font_data_t *) CFRetain (ct_font));
-
-  // https://github.com/harfbuzz/harfbuzz/pull/4895#issuecomment-2408471254
-  //hb_coretext_font_set_funcs (font);
-
-  return font;
-}
-
-/**
- * hb_coretext_font_get_ct_font:
- * @font: #hb_font_t to work upon
- *
- * Fetches the CTFontRef associated with the specified
- * #hb_font_t font object.
- *
- * Return value: the CTFontRef found
- *
- * Since: 0.9.10
- */
-CTFontRef
-hb_coretext_font_get_ct_font (hb_font_t *font)
-{
-  CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
-  return ct_font ? (CTFontRef) ct_font : nullptr;
-}
-
 
 /*
  * shaper
@@ -646,7 +195,7 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
    * B1 M1 B2 M2, and B1-B2 form a ligature, M2's cluster will
    * continue pointing to B2 even though B2 was merged into B1's
    * cluster... */
-  if (buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
+  if (HB_BUFFER_CLUSTER_LEVEL_IS_GRAPHEMES (buffer->cluster_level))
   {
     hb_unicode_funcs_t *unicode = buffer->unicode;
     unsigned int count = buffer->len;
@@ -1010,7 +559,7 @@ resize_and_retry:
 
     CFArrayRef glyph_runs = CTLineGetGlyphRuns (line);
     unsigned int num_runs = CFArrayGetCount (glyph_runs);
-    DEBUG_MSG (CORETEXT, nullptr, "Num runs: %d", num_runs);
+    DEBUG_MSG (CORETEXT, nullptr, "Num runs: %u", num_runs);
 
     buffer->len = 0;
     uint32_t status_or = 0;
@@ -1292,7 +841,7 @@ resize_and_retry:
      * or the native OT backend, only that the cluster indices will be
      * monotonic in the output buffer. */
     if (count > 1 && (status_or & kCTRunStatusNonMonotonic) &&
-	buffer->cluster_level != HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
+	HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (buffer->cluster_level))
     {
       hb_glyph_info_t *info = buffer->info;
       if (HB_DIRECTION_IS_FORWARD (buffer->props.direction))

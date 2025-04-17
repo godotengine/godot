@@ -42,7 +42,7 @@
 
 /* hb_options_t */
 
-hb_atomic_int_t _hb_options;
+hb_atomic_t<unsigned> _hb_options;
 
 void
 _hb_options_init ()
@@ -273,7 +273,7 @@ struct hb_language_item_t {
 
 /* Thread-safe lockfree language list */
 
-static hb_atomic_ptr_t <hb_language_item_t> langs;
+static hb_atomic_t<hb_language_item_t *> langs;
 
 static inline void
 free_langs ()
@@ -403,7 +403,7 @@ hb_language_to_string (hb_language_t language)
 hb_language_t
 hb_language_get_default ()
 {
-  static hb_atomic_ptr_t <hb_language_t> default_language;
+  static hb_atomic_t<hb_language_t> default_language;
 
   hb_language_t language = default_language;
   if (unlikely (language == HB_LANGUAGE_INVALID))
@@ -968,6 +968,9 @@ hb_feature_from_string (const char *str, int len,
  * understood by hb_feature_from_string(). The client in responsible for
  * allocating big enough size for @buf, 128 bytes is more than enough.
  *
+ * Note that the feature value will be omitted if it is '1', but the
+ * string won't include any whitespace.
+ *
  * Since: 0.9.5
  **/
 void
@@ -1121,6 +1124,8 @@ get_C_locale ()
  * understood by hb_variation_from_string(). The client in responsible for
  * allocating big enough size for @buf, 128 bytes is more than enough.
  *
+ * Note that the string won't include any whitespace.
+ *
  * Since: 1.4.2
  */
 void
@@ -1211,6 +1216,58 @@ uint8_t
 {
   return hb_color_get_blue (color);
 }
+
+/**
+ * hb_malloc:
+ * @size: The size of the memory to allocate.
+ *
+ * Allocates @size bytes of memory, using the allocator set at
+ * compile-time. Typically just malloc().
+ *
+ * Return value: A pointer to the allocated memory.
+ *
+ * Since: 11.0.0
+ **/
+void* hb_malloc(size_t size) { return hb_malloc_impl (size); }
+
+/**
+ * hb_calloc:
+ * @nmemb: The number of elements to allocate.
+ * @size: The size of each element.
+ *
+ * Allocates @nmemb elements of @size bytes each, initialized to zero,
+ * using the allocator set at compile-time. Typically just calloc().
+ *
+ * Return value: A pointer to the allocated memory.
+ *
+ * Since: 11.0.0
+ **/
+void* hb_calloc(size_t nmemb, size_t size) { return hb_calloc_impl (nmemb, size); }
+
+/**
+ * hb_realloc:
+ * @ptr: The pointer to the memory to reallocate.
+ * @size: The new size of the memory.
+ *
+ * Reallocates the memory pointed to by @ptr to @size bytes, using the
+ * allocator set at compile-time. Typically just realloc().
+ *
+ * Return value: A pointer to the reallocated memory.
+ *
+ * Since: 11.0.0
+ **/
+void* hb_realloc(void *ptr, size_t size) { return hb_realloc_impl (ptr, size); }
+
+/**
+ * hb_free:
+ * @ptr: The pointer to the memory to free.
+ *
+ * Frees the memory pointed to by @ptr, using the allocator set at
+ * compile-time. Typically just free().
+ *
+ * Since: 11.0.0
+ **/
+void  hb_free(void *ptr) { hb_free_impl (ptr); }
 
 
 /* If there is no visibility control, then hb-static.cc will NOT
