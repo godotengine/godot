@@ -61,11 +61,7 @@ public:
 			reserve(count + 1);
 		}
 
-		if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
-			memnew_placement(&data[count++], T(std::move(p_elem)));
-		} else {
-			data[count++] = std::move(p_elem);
-		}
+		memnew_placement(&data[count++], T(std::move(p_elem)));
 	}
 
 	void remove_at(U p_index) {
@@ -74,9 +70,7 @@ public:
 		for (U i = p_index; i < count; i++) {
 			data[i] = std::move(data[i + 1]);
 		}
-		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
-			data[count].~T();
-		}
+		data[count].~T();
 	}
 
 	/// Removes the item copying the last value into the position of the one to
@@ -87,9 +81,7 @@ public:
 		if (count > p_index) {
 			data[p_index] = std::move(data[count]);
 		}
-		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
-			data[count].~T();
-		}
+		data[count].~T();
 	}
 
 	_FORCE_INLINE_ bool erase(const T &p_val) {
@@ -163,8 +155,12 @@ public:
 	}
 
 	void resize(U p_size) {
+		// We must statically assert this in a function because otherwise,
+		// `LocalVector` cannot be used with a forward-declared type.
+		static_assert(!force_trivial || std::is_trivially_destructible_v<T>, "T must be trivially destructible if force_trivial is set");
+
 		if (p_size < count) {
-			if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
+			if constexpr (!std::is_trivially_destructible_v<T>) {
 				for (U i = p_size; i < count; i++) {
 					data[i].~T();
 				}
