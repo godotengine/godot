@@ -1772,7 +1772,7 @@ void Control::_size_changed() {
 			}
 		}
 
-		if (pos_changed && !size_changed) {
+		if (pos_changed && !approx_size_changed) {
 			_update_canvas_item_transform();
 		}
 
