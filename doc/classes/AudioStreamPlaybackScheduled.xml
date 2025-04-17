@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamPlaybackScheduled" inherits="AudioStreamPlayback" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Wrapper around [AudioStreamPlayback] that schedules it to be played in the future.
+	</brief_description>
+	<description>
+		Wrapper around [AudioStreamPlayback] that schedules it to be played in the future.
+		An [AudioStreamPlaybackScheduled] instance is created from [method ScheduledAudioStreamPlayer.play_scheduled], [method ScheduledAudioStreamPlayer2D.play_scheduled], or [method ScheduledAudioStreamPlayer3D.play_scheduled].
+		[codeblocks]
+		[gdscript]
+		var audio_time = AudioServer.get_absolute_time()
+
+		# Play the sound roughly 1 second in the future, then stop it after exactly 3 seconds.
+		var playback_scheduled = player.play_scheduled(audio_time + 1)
+		playback_scheduled.scheduled_end_time = audio_time + 4
+
+		# Cancel the playback
+		playback_scheduled.cancel()
+		[/gdscript]
+		[csharp]
+		double audioTime = AudioServer.GetAbsoluteTime();
+
+		// Play the sound roughly 1 second in the future, then stop it after exactly 3 seconds.
+		AudioStreamPlaybackScheduled playbackScheduled = player.PlayScheduled(audioTime + 1);
+		playbackScheduled.ScheduledEndTime = audioTime + 4;
+
+		// Cancel the playback
+		playbackScheduled.Cancel();
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="cancel">
+			<return type="void" />
+			<description>
+				Cancels the currently scheduled playback.
+				If the playback is actively playing, this method does nothing. Use [method AudioStreamPlayback.stop] instead to both stop and cancel the scheduled playback.
+			</description>
+		</method>
+		<method name="is_scheduled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the playback is scheduled and has not yet started.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="base_playback" type="AudioStreamPlayback" setter="set_base_playback" getter="get_base_playback">
+			The wrapped [AudioStreamPlayback] to be scheduled. If set, the previously scheduled playback will be cancelled/stopped.
+		</member>
+		<member name="scheduled_end_time" type="float" setter="set_scheduled_end_time" getter="get_scheduled_end_time" default="0.0">
+			The time the playback is scheduled to stop playing in seconds. This is based on the [AudioServer]'s timeline (see [method AudioServer.get_absolute_time]).
+		</member>
+		<member name="scheduled_start_time" type="float" setter="set_scheduled_start_time" getter="get_scheduled_start_time" default="0.0">
+			The time the playback is scheduled to start playing in seconds. This is based on the [AudioServer]'s timeline (see [method AudioServer.get_absolute_time]).
+		</member>
+	</members>
+</class>

@@ -36,6 +36,7 @@
 
 class AudioStream;
 class AudioStreamPlayback;
+class AudioStreamPlaybackScheduled;
 class AudioSamplePlayback;
 class Node;
 
@@ -60,6 +61,8 @@ private:
 
 	void _set_process(bool p_enabled);
 	void _update_stream_parameters();
+
+	Ref<AudioStreamPlayback> _create_playback();
 
 	_FORCE_INLINE_ bool _is_sample() {
 		return (AudioServer::get_singleton()->get_default_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_SAMPLE && get_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT) || get_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_SAMPLE;
@@ -93,10 +96,11 @@ public:
 	StringName get_bus() const;
 
 	Ref<AudioStreamPlayback> play_basic();
-	void seek(float p_seconds);
+	Ref<AudioStreamPlaybackScheduled> play_scheduled_basic();
+	void seek(double p_seconds);
 	void stop_basic();
 	bool is_playing() const;
-	float get_playback_position();
+	double get_playback_position();
 
 	void set_playing(bool p_enable);
 	bool is_active() const;

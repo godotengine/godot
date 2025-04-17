@@ -43,6 +43,7 @@
 #include "scene/animation/animation_tree.h"
 #include "scene/animation/tween.h"
 #include "scene/audio/audio_stream_player.h"
+#include "scene/audio/scheduled_audio_stream_player.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
@@ -109,6 +110,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/animation_library.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/audio_stream_playback_scheduled.h"
 #include "scene/resources/audio_stream_polyphonic.h"
 #include "scene/resources/audio_stream_wav.h"
 #include "scene/resources/bit_map.h"
@@ -185,6 +187,7 @@
 #include "scene/2d/path_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/remote_transform_2d.h"
+#include "scene/2d/scheduled_audio_stream_player_2d.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/tile_map_layer.h"
@@ -252,6 +255,7 @@
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/remote_transform_3d.h"
 #include "scene/3d/retarget_modifier_3d.h"
+#include "scene/3d/scheduled_audio_stream_player_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/skeleton_modifier_3d.h"
 #include "scene/3d/spline_ik_3d.h"
@@ -1004,6 +1008,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(RibbonTrailMesh);
 	GDREGISTER_CLASS(PointMesh);
 	GDREGISTER_ABSTRACT_CLASS(BaseMaterial3D);
+	GDREGISTER_CLASS(ScheduledAudioStreamPlayer3D);
 	GDREGISTER_CLASS(StandardMaterial3D);
 	GDREGISTER_CLASS(ORMMaterial3D);
 	GDREGISTER_CLASS(ProceduralSkyMaterial);
@@ -1121,6 +1126,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AudioStreamWAV);
 	GDREGISTER_CLASS(AudioStreamPolyphonic);
 	GDREGISTER_ABSTRACT_CLASS(AudioStreamPlaybackPolyphonic);
+	GDREGISTER_CLASS(AudioStreamPlaybackScheduled);
+	GDREGISTER_CLASS(ScheduledAudioStreamPlayer);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -1128,6 +1135,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Curve2D);
 	GDREGISTER_CLASS(Path2D);
 	GDREGISTER_CLASS(PathFollow2D);
+	GDREGISTER_CLASS(ScheduledAudioStreamPlayer2D);
 
 #ifndef PHYSICS_2D_DISABLED
 	GDREGISTER_ABSTRACT_CLASS(Shape2D);
