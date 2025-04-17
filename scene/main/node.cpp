@@ -126,10 +126,22 @@ void Node::_notification(int p_notification) {
 
 		case NOTIFICATION_PROCESS: {
 			GDVIRTUAL_CALL(_process, get_process_delta_time());
+			HashMap<StringName, Ref<Component>>::Iterator it = _component_resources.begin();
+			HashMap<StringName, Ref<Component>>::Iterator end = _component_resources.end();
+			while (it != end) {
+				it->value->process(get_process_delta_time());
+				++it;
+			}
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
 			GDVIRTUAL_CALL(_physics_process, get_physics_process_delta_time());
+			HashMap<StringName, Ref<Component>>::Iterator it = _component_resources.begin();
+			HashMap<StringName, Ref<Component>>::Iterator end = _component_resources.end();
+			while (it != end) {
+				it->value->physics_process(get_physics_process_delta_time());
+				++it;
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -297,30 +309,36 @@ void Node::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			if (GDVIRTUAL_IS_OVERRIDDEN(_input)) {
+			if (GDVIRTUAL_IS_OVERRIDDEN(_input) || !_component_resources.is_empty()) {
 				set_process_input(true);
 			}
 
-			if (GDVIRTUAL_IS_OVERRIDDEN(_shortcut_input)) {
+			if (GDVIRTUAL_IS_OVERRIDDEN(_shortcut_input) || !_component_resources.is_empty()) {
 				set_process_shortcut_input(true);
 			}
 
-			if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_input)) {
+			if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_input) || !_component_resources.is_empty()) {
 				set_process_unhandled_input(true);
 			}
 
-			if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_key_input)) {
+			if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_key_input) || !_component_resources.is_empty()) {
 				set_process_unhandled_key_input(true);
 			}
 
-			if (GDVIRTUAL_IS_OVERRIDDEN(_process)) {
+			if (GDVIRTUAL_IS_OVERRIDDEN(_process) || !_component_resources.is_empty()) {
 				set_process(true);
 			}
-			if (GDVIRTUAL_IS_OVERRIDDEN(_physics_process)) {
+			if (GDVIRTUAL_IS_OVERRIDDEN(_physics_process) || !_component_resources.is_empty()) {//FIXME:: add a signal to Actor to toggle what is needed
 				set_physics_process(true);
 			}
 
 			GDVIRTUAL_CALL(_ready);
+			HashMap<StringName, Ref<Component>>::Iterator it = _component_resources.begin();
+			HashMap<StringName, Ref<Component>>::Iterator end = _component_resources.end();//FIXME:: put these details in functions inside Actor
+			while (it != end) {
+				it->value->ready();
+				++it;
+			}
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
@@ -401,6 +419,13 @@ void Node::_propagate_enter_tree() {
 
 	GDVIRTUAL_CALL(_enter_tree);
 
+	HashMap<StringName, Ref<Component>>::Iterator it = _component_resources.begin();
+	HashMap<StringName, Ref<Component>>::Iterator end = _component_resources.end();
+	while (it != end) {
+		it->value->enter_tree();
+		++it;
+	}
+
 	emit_signal(SceneStringName(tree_entered));
 
 	data.tree->node_added(this);
@@ -465,6 +490,13 @@ void Node::_propagate_exit_tree() {
 	data.blocked--;
 
 	GDVIRTUAL_CALL(_exit_tree);
+
+	HashMap<StringName, Ref<Component>>::Iterator it = _component_resources.begin();
+	HashMap<StringName, Ref<Component>>::Iterator end = _component_resources.end();
+	while (it != end) {
+		it->value->exit_tree();
+		++it;
+	}
 
 	emit_signal(SceneStringName(tree_exiting));
 
@@ -3624,6 +3656,17 @@ void Node::request_ready() {
 
 void Node::_call_input(const Ref<InputEvent> &p_event) {
 	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		HashMap<StringName, Ref<Component>>::Iterator it = _component_resources.begin();
+		HashMap<StringName, Ref<Component>>::Iterator end = _component_resources.end();
+		while (get_viewport()->is_input_handled() && it != end) {
+			it->value->input(p_event);
+			++it;
+		}
+
+		if (get_viewport()->is_input_handled()) {
+			return;
+		}
+
 		GDVIRTUAL_CALL(_input, p_event);
 	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
@@ -3634,6 +3677,16 @@ void Node::_call_input(const Ref<InputEvent> &p_event) {
 
 void Node::_call_shortcut_input(const Ref<InputEvent> &p_event) {
 	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		HashMap<StringName, Ref<Component>>::Iterator it = _component_resources.begin();
+		HashMap<StringName, Ref<Component>>::Iterator end = _component_resources.end();
+		while (get_viewport()->is_input_handled() && it != end) {
+			it->value->shortcut_input(p_event);
+			++it;
+		}
+
+		if (get_viewport()->is_input_handled()) {
+			return;
+		}
 		GDVIRTUAL_CALL(_shortcut_input, p_event);
 	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
@@ -3644,6 +3697,16 @@ void Node::_call_shortcut_input(const Ref<InputEvent> &p_event) {
 
 void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
 	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		HashMap<StringName, Ref<Component>>::Iterator it = _component_resources.begin();
+		HashMap<StringName, Ref<Component>>::Iterator end = _component_resources.end();
+		while (get_viewport()->is_input_handled() && it != end) {
+			it->value->unhandled_input(p_event);
+			++it;
+		}
+
+		if (get_viewport()->is_input_handled()) {
+			return;
+		}
 		GDVIRTUAL_CALL(_unhandled_input, p_event);
 	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
@@ -3654,6 +3717,16 @@ void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
 
 void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
 	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		HashMap<StringName, Ref<Component>>::Iterator it = _component_resources.begin();
+		HashMap<StringName, Ref<Component>>::Iterator end = _component_resources.end();
+		while (get_viewport()->is_input_handled() && it != end) {
+			it->value->unhandled_key_input(p_event);
+			++it;
+		}
+
+		if (get_viewport()->is_input_handled()) {
+			return;
+		}
 		GDVIRTUAL_CALL(_unhandled_key_input, p_event);
 	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {

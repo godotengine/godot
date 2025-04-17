@@ -36,6 +36,7 @@
 #include "core/object/object.h"
 #include "core/string/string_name.h"
 #include "core/io/resource.h"
+#include "core/input/input_event.h"
 
 
 class Component : public Resource {
@@ -47,9 +48,31 @@ public:
 
 	StringName get_component_class();
 
+	void enter_tree();
+	void exit_tree();
+	void ready();
+	void process(double delta);
+	void physics_process(double delta);
+
+	void input(const Ref<InputEvent> &p_event);
+	void shortcut_input(const Ref<InputEvent> &p_key_event);
+	void unhandled_input(const Ref<InputEvent> &p_event);
+	void unhandled_key_input(const Ref<InputEvent> &p_key_event);
+
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL0(_enter_tree)
+	GDVIRTUAL0(_exit_tree)
+	GDVIRTUAL0(_ready)
+	GDVIRTUAL1(_process, double)
+	GDVIRTUAL1(_physics_process, double)
+
+	GDVIRTUAL1(_input, Ref<InputEvent>)
+	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
+	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
+	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
 };
 
 #endif //GODOT_FROM_SOURCE_COMPONENT_H

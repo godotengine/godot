@@ -48,7 +48,71 @@ StringName Component::get_component_class() {
 	return get_class_name();
 }
 
+void Component::enter_tree() {
+	if (GDVIRTUAL_CALL(_enter_tree)) {
+		//
+	}
+}
+
+void Component::exit_tree() {
+	if (GDVIRTUAL_CALL(_exit_tree)) {
+		//
+	}
+}
+
+void Component::ready() {
+	if (GDVIRTUAL_CALL(_ready)) {
+		//
+	}
+}
+
+void Component::process(double delta) {
+	if (GDVIRTUAL_CALL(_process, delta)) {
+		//
+	}
+}
+
+void Component::physics_process(double delta) {
+	if (GDVIRTUAL_CALL(_physics_process, delta)) {
+		//
+	}
+}
+
+void Component::input(const Ref<InputEvent> &p_event) {
+	if (GDVIRTUAL_CALL(_input, p_event)) {
+		//
+	}
+}
+
+void Component::shortcut_input(const Ref<InputEvent> &p_key_event) {
+	if (GDVIRTUAL_CALL(_shortcut_input, p_key_event)) {
+		//
+	}
+}
+
+void Component::unhandled_input(const Ref<InputEvent> &p_event) {
+	if (GDVIRTUAL_CALL(_unhandled_input, p_event)) {
+		//
+	}
+}
+
+void Component::unhandled_key_input(const Ref<InputEvent> &p_key_event) {
+	if (GDVIRTUAL_CALL(_unhandled_key_input, p_key_event)) {
+		//
+	}
+}
 
 void Component::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_component_class"), &Component::get_component_class);
+
+	GDVIRTUAL_BIND(_enter_tree);
+	GDVIRTUAL_BIND(_exit_tree);
+	GDVIRTUAL_BIND(_ready);
+	GDVIRTUAL_BIND(_process, "delta");
+	GDVIRTUAL_BIND(_physics_process, "delta");
+
+	GDVIRTUAL_BIND(_input, "event");
+	GDVIRTUAL_BIND(_shortcut_input, "event");
+	GDVIRTUAL_BIND(_unhandled_input, "event");
+	GDVIRTUAL_BIND(_unhandled_key_input, "event");
 }
