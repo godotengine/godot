@@ -191,8 +191,6 @@ opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loade
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
-opts.Add(BoolVariable("accesskit", "Use AccessKit C SDK", True))
-opts.Add(("accesskit_sdk_path", "Path to the AccessKit C SDK", ""))
 
 # Advanced options
 opts.Add(
@@ -501,9 +499,6 @@ if env.dev_build:
 else:
     # Disable assert() for production targets (only used in thirdparty code).
     env.Append(CPPDEFINES=["NDEBUG"])
-
-# adding the line below to remove the error in the control.h file (claimed it could not find core/math)
-env.Append(CPPPATH=['#core'])
 
 # This is not part of fast_unsafe because the only downside it has compared to
 # the default is that SCons won't mark files that were changed in the last second
