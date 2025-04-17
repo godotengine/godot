@@ -1044,6 +1044,8 @@ void RendererSceneCull::instance_reset_physics_interpolation(RID p_instance) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(instance);
 
+	instance->teleported = true;
+
 	if (_interpolation_data.interpolation_enabled && instance->interpolated) {
 		instance->transform_prev = instance->transform_curr;
 		instance->transform_checksum_prev = instance->transform_checksum_curr;
@@ -1156,8 +1158,10 @@ void RendererSceneCull::instance_set_visible(RID p_instance, bool p_visible) {
 	}
 }
 
-inline bool is_geometry_instance(RenderingServer::InstanceType p_type) {
-	return p_type == RS::INSTANCE_MESH || p_type == RS::INSTANCE_MULTIMESH || p_type == RS::INSTANCE_PARTICLES;
+void RendererSceneCull::instance_teleport(RID p_instance) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL(instance);
+	instance->teleported = true;
 }
 
 void RendererSceneCull::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
@@ -1790,7 +1794,11 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 		}
 
 		ERR_FAIL_NULL(geom->geometry_instance);
+
 		geom->geometry_instance->set_transform(*instance_xform, p_instance->aabb, p_instance->transformed_aabb);
+		if (p_instance->teleported) {
+			geom->geometry_instance->reset_motion_vectors();
+		}
 	}
 
 	// note: we had to remove is equal approx check here, it meant that det == 0.000004 won't work, which is the case for some of our scenes.
@@ -4204,6 +4212,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) const {
 
 	_update_instance(p_instance);
 
+	p_instance->teleported = false;
 	p_instance->update_aabb = false;
 	p_instance->update_dependencies = false;
 }
