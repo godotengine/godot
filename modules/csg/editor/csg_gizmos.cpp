@@ -191,7 +191,7 @@ String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, 
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_node_3d());
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {
-		return "Radius";
+		return TTR("Radius");
 	}
 
 	if (Object::cast_to<CSGBox3D>(cs)) {
@@ -199,11 +199,11 @@ String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, 
 	}
 
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
-		return p_id == 0 ? "Radius" : "Height";
+		return p_id == 0 ? TTR("Radius") : TTR("Height");
 	}
 
 	if (Object::cast_to<CSGTorus3D>(cs)) {
-		return p_id == 0 ? "InnerRadius" : "OuterRadius";
+		return p_id == 0 ? TTR("Inner radius") : TTR("Outer radius");
 	}
 
 	return "";
