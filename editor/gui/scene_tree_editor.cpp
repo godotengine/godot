@@ -395,9 +395,12 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 				index = 0;
 			}
 		} else {
-			index = p_node->get_index(false);
-			if (p_node->get_parent() && !p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
-				index += p_node->get_parent()->get_exposed_node_count();
+			int scene_index = p_node->get_index(false);
+			int tree_index = p_node->get_tree_index();
+			if (p_node->get_parent() == EditorNode::get_singleton()->get_edited_scene() || tree_index < scene_index) {
+				index = scene_index;
+			} else {
+				index = tree_index;
 			}
 			item = tree->create_item(p_parent, index);
 		}
@@ -887,62 +890,22 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 	if (!p_parent) {
 		return;
 	}
-
 	Node *node = p_I->key;
 
 	int current_node_index = node->get_index(false);
-	int current_item_index = -1;
 	TreeItem *item = p_I->value.item;
-
-	if (item->get_parent() != p_parent) {
-		TreeItem *p = item->get_parent();
-		if (p) {
-			item->get_parent()->remove_child(item);
-		}
-		p_parent->add_child(item);
-		p_I->value.removed = false;
-		current_item_index = p_parent->get_child_count() - 1;
-	}
-
-	if (p_I->value.index != current_node_index || item->is_exposed()) {
-		// If we just re-parented we know our index.
-		if (current_item_index == -1) {
-			current_item_index = item->get_index();
-		}
-
-		// Are we already in the right place?
-		if (current_node_index == current_item_index) {
-			p_I->value.index = current_node_index;
-			return;
-		}
-
-		// If tree differs from scene graph.
-		if (p_I->value.index == current_item_index) {
-			return;
-		}
-
-		// Move exposed nodes to the top.
-		if (item->is_exposed()) {
+	if (p_I->value.item) {
+		if (p_parent->get_child_count() - 1 > p_I->value.index) {
+			if (p_I->value.index == -1) {
+				p_I->value.index = node->get_tree_index();
+			}
 			TreeItem *neighbor_item = p_parent->get_child(CLAMP(p_I->value.index - 1, 0, p_parent->get_child_count() - 1));
 			if (p_I->value.index == 0) {
 				item->move_before(neighbor_item);
 			} else {
 				item->move_after(neighbor_item);
 			}
-			return;
 		}
-
-		// Are we the first node?
-		if (current_node_index == 0) {
-			// There has to be at least 1 other node, otherwise we would not have gotten here.
-			TreeItem *neighbor_item = p_parent->get_child(0);
-			item->move_before(neighbor_item);
-		} else {
-			TreeItem *neighbor_item = p_parent->get_child(CLAMP(p_I->value.index - 1, 0, p_parent->get_child_count() - 1));
-			item->move_after(neighbor_item);
-		}
-
-		p_I->value.index = current_node_index;
 	}
 }
 
@@ -1070,7 +1033,6 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 			}
 			node_cache.current_pinned_node = pinned_node;
 		}
-
 		_update_node_subtree(get_scene_node(), nullptr, node_cache.force_update);
 		_compute_hash(get_scene_node(), last_hash);
 

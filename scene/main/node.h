@@ -534,8 +534,8 @@ public:
 	void set_unique_name_in_owner(bool p_enabled);
 	bool is_unique_name_in_owner() const;
 
-	bool has_exposed_nodes();
-	int get_exposed_node_count(bool recursive = false);
+	bool has_exposed_nodes(bool recursive = true);
+	int get_exposed_node_count(Node *p_owner, bool recursive = true);
 
 	_FORCE_INLINE_ int get_index(bool p_include_internal = true) const {
 		// p_include_internal = false doesn't make sense if the node is internal.
@@ -585,6 +585,7 @@ public:
 	bool is_property_pinned(const StringName &p_property) const;
 	virtual StringName get_property_store_alias(const StringName &p_property) const;
 	bool is_part_of_edited_scene() const;
+	int get_tree_index() const;
 #else
 	bool is_part_of_edited_scene() const { return false; }
 #endif
