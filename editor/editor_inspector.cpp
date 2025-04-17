@@ -47,6 +47,7 @@
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
+#include "editor/plugins/configuration_info_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
@@ -5214,10 +5215,7 @@ void EditorInspector::_clear_current_favorites() {
 
 void EditorInspector::_configuration_info_changed(Object *p_object) {
 	if (object == p_object) {
-		// Only update the tree if the list of configuration info has changed.
-		if (_update_configuration_info()) {
-			update_tree_pending = true;
-		}
+		_update_configuration_info();
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -5225,12 +5223,12 @@ void EditorInspector::_configuration_info_changed(Object *p_object) {
 		args.append(p_object);
 
 		Node *child = get_child(i);
+		// Inform sub-inspectors and the configuration info list.
 		child->propagate_call(StringName("_configuration_info_changed"), args);
 	}
 }
 
-bool EditorInspector::_update_configuration_info() {
-	bool changed = false;
+void EditorInspector::_update_configuration_info() {
 	LocalVector<int> found_indices;
 	const Vector<ConfigurationInfo> config_info_list = EditorConfigurationInfo::get_configuration_info(object);
 
@@ -5240,7 +5238,7 @@ bool EditorInspector::_update_configuration_info() {
 		if (found_index < 0) {
 			found_index = configuration_info_cache.size();
 			configuration_info_cache.push_back(config_info);
-			changed = true;
+			_update_configuration_info_of_property(config_info);
 		}
 		found_indices.push_back(found_index);
 	}
@@ -5248,13 +5246,26 @@ bool EditorInspector::_update_configuration_info() {
 	// Removed entries.
 	for (uint32_t i = 0; i < configuration_info_cache.size(); i++) {
 		if (!found_indices.has(i)) {
+			const ConfigurationInfo &config_info = configuration_info_cache[i];
+			_update_configuration_info_of_property(config_info);
 			configuration_info_cache.remove_at(i);
 			i--;
-			changed = true;
 		}
 	}
+}
 
-	return changed;
+void EditorInspector::_update_configuration_info_of_property(const ConfigurationInfo &p_config_info) {
+	const StringName &property_name = p_config_info.get_property_name();
+	if (property_name.is_empty()) {
+		return;
+	}
+	if (!editor_property_map.has(property_name)) {
+		return;
+	}
+
+	for (EditorProperty *property : editor_property_map[property_name]) {
+		property->_update_config_info();
+	}
 }
 
 void EditorInspector::_notification(int p_what) {

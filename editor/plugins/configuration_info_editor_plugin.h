@@ -59,9 +59,11 @@ class ConfigurationInfoList : public MarginContainer {
 	void _update_background(bool p_hovering);
 	void _update_content();
 	void _update_toggler();
+	void _configuration_info_changed(Object *p_object);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
+	static void _bind_methods();
 	void _notification(int p_notification);
 
 public:

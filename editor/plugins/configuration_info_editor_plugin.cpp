@@ -210,6 +210,15 @@ void ConfigurationInfoList::_notification(int p_notification) {
 	}
 }
 
+// Called by EditorInspector::_configuration_info_changed via propagate_call.
+void ConfigurationInfoList::_configuration_info_changed(Object *p_object) {
+	_update_content();
+}
+
+void ConfigurationInfoList::_bind_methods() {
+	ClassDB::bind_method("_configuration_info_changed", &ConfigurationInfoList::_configuration_info_changed);
+}
+
 ConfigurationInfoList::ConfigurationInfoList() {
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	hide();

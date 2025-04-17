@@ -666,7 +666,8 @@ class EditorInspector : public ScrollContainer {
 
 	void _node_removed(Node *p_node);
 	void _configuration_info_changed(Object *p_object);
-	bool _update_configuration_info();
+	void _update_configuration_info();
+	void _update_configuration_info_of_property(const ConfigurationInfo &p_config_info);
 
 	HashMap<StringName, int> per_array_page;
 	void _page_change_request(int p_new_page, const StringName &p_array_prefix);
