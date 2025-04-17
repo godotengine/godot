@@ -1354,8 +1354,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, outline_size, fx_offset + char_off, gl, font_color);
 								}
 							}
-							processed_glyphs_step++;
 						}
+						processed_glyphs_step++;
 						if (step == DRAW_STEP_TEXT && skip) {
 							// Finish underline/overline/strikethrough is previous glyph is skipped.
 							if (ul_started) {
@@ -1403,7 +1403,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								}
 							}
 							last_color = color;
-							processed_glyphs_step++;
 						} else {
 							// Finish box is previous glyph is skipped.
 							if (last_color.a > 0.0) {
@@ -1413,6 +1412,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 							}
 							last_color = Color(0, 0, 0, 0);
 						}
+						processed_glyphs_step++;
 						off_step.x += glyphs[i].advance;
 					}
 				}
@@ -4253,6 +4253,8 @@ void RichTextLabel::push_dropcap(const String &p_string, const Ref<Font> &p_font
 	item->ol_size = p_ol_size;
 	item->ol_color = p_ol_color;
 	item->dropcap_margins = p_dropcap_margins;
+	p_font->connect_changed(callable_mp(this, &RichTextLabel::_invalidate_fonts), CONNECT_REFERENCE_COUNTED);
+
 	_add_item(item, false);
 }
 
@@ -4269,6 +4271,8 @@ void RichTextLabel::_push_def_font_var(DefaultFont p_def_font, const Ref<Font> &
 	item->font = p_font;
 	item->font_size = p_size;
 	item->def_size = (p_size <= 0);
+	p_font->connect_changed(callable_mp(this, &RichTextLabel::_invalidate_fonts), CONNECT_REFERENCE_COUNTED);
+
 	_add_item(item, true);
 }
 
@@ -4296,7 +4300,17 @@ void RichTextLabel::push_font(const Ref<Font> &p_font, int p_size) {
 	item->rid = items.make_rid(item);
 	item->font = p_font;
 	item->font_size = p_size;
+	p_font->connect_changed(callable_mp(this, &RichTextLabel::_invalidate_fonts), CONNECT_REFERENCE_COUNTED);
+
 	_add_item(item, true);
+}
+
+void RichTextLabel::_invalidate_fonts() {
+	_stop_thread();
+	main->first_invalid_font_line.store(0); // Invalidate all lines.
+	_invalidate_accessibility();
+	queue_accessibility_update();
+	queue_redraw();
 }
 
 void RichTextLabel::push_normal() {

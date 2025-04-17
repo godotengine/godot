@@ -521,6 +521,7 @@
 				A signal can only be connected once to the same [Callable]. If the signal is already connected, this method returns [constant ERR_INVALID_PARAMETER] and generates an error, unless the signal is connected with [constant CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
 				[b]Note:[/b] If the [param callable]'s object is freed, the connection will be lost.
 				[b]Note:[/b] In GDScript, it is generally recommended to connect signals with [method Signal.connect] instead.
+				[b]Note:[/b] This operation (and all other signal related operations) is thread-safe.
 			</description>
 		</method>
 		<method name="disconnect">

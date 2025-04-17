@@ -102,7 +102,7 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (smooth_scroll_enabled) {
 					scrolling = true;
-					set_physics_process_internal(true);
+					set_process_internal(true);
 				} else {
 					scroll_to(target_scroll);
 				}
@@ -126,7 +126,7 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (smooth_scroll_enabled) {
 					scrolling = true;
-					set_physics_process_internal(true);
+					set_process_internal(true);
 				} else {
 					scroll_to(target_scroll);
 				}
@@ -330,29 +330,29 @@ void ScrollBar::_notification(int p_what) {
 			drag_node = nullptr;
 		} break;
 
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (scrolling) {
 				if (get_value() != target_scroll) {
 					double target = target_scroll - get_value();
 					double dist = abs(target);
-					double vel = ((target / dist) * 500) * get_physics_process_delta_time();
+					double vel = ((target / dist) * 500) * get_process_delta_time();
 
 					if (Math::abs(vel) >= dist) {
 						scroll_to(target_scroll);
 						scrolling = false;
-						set_physics_process_internal(false);
+						set_process_internal(false);
 					} else {
 						scroll(vel);
 					}
 				} else {
 					scrolling = false;
-					set_physics_process_internal(false);
+					set_process_internal(false);
 				}
 
 			} else if (drag_node_touching) {
 				if (drag_node_touching_deaccel) {
 					Vector2 pos = Vector2(orientation == HORIZONTAL ? get_value() : 0, orientation == VERTICAL ? get_value() : 0);
-					pos += drag_node_speed * get_physics_process_delta_time();
+					pos += drag_node_speed * get_process_delta_time();
 
 					bool turnoff = false;
 
@@ -371,7 +371,7 @@ void ScrollBar::_notification(int p_what) {
 
 						float sgn_x = drag_node_speed.x < 0 ? -1 : 1;
 						float val_x = Math::abs(drag_node_speed.x);
-						val_x -= 1000 * get_physics_process_delta_time();
+						val_x -= 1000 * get_process_delta_time();
 
 						if (val_x < 0) {
 							turnoff = true;
@@ -394,7 +394,7 @@ void ScrollBar::_notification(int p_what) {
 
 						float sgn_y = drag_node_speed.y < 0 ? -1 : 1;
 						float val_y = Math::abs(drag_node_speed.y);
-						val_y -= 1000 * get_physics_process_delta_time();
+						val_y -= 1000 * get_process_delta_time();
 
 						if (val_y < 0) {
 							turnoff = true;
@@ -403,7 +403,7 @@ void ScrollBar::_notification(int p_what) {
 					}
 
 					if (turnoff) {
-						set_physics_process_internal(false);
+						set_process_internal(false);
 						drag_node_touching = false;
 						drag_node_touching_deaccel = false;
 					}
@@ -412,10 +412,10 @@ void ScrollBar::_notification(int p_what) {
 					if (time_since_motion == 0 || time_since_motion > 0.1) {
 						Vector2 diff = drag_node_accum - last_drag_node_accum;
 						last_drag_node_accum = drag_node_accum;
-						drag_node_speed = diff / get_physics_process_delta_time();
+						drag_node_speed = diff / get_process_delta_time();
 					}
 
-					time_since_motion += get_physics_process_delta_time();
+					time_since_motion += get_process_delta_time();
 				}
 			}
 		} break;
@@ -555,7 +555,7 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 			time_since_motion = 0;
 
 			if (drag_node_touching) {
-				set_physics_process_internal(true);
+				set_process_internal(true);
 				time_since_motion = 0;
 			}
 
@@ -564,7 +564,7 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 				if (drag_node_speed == Vector2()) {
 					drag_node_touching_deaccel = false;
 					drag_node_touching = false;
-					set_physics_process_internal(false);
+					set_process_internal(false);
 				} else {
 					drag_node_touching_deaccel = true;
 				}

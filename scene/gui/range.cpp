@@ -33,8 +33,8 @@
 PackedStringArray Range::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
 
-	if (shared->exp_ratio && shared->min <= 0) {
-		warnings.push_back(RTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."));
+	if (shared->exp_ratio && shared->min < 0) {
+		warnings.push_back(RTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater or equal to 0."));
 	}
 
 	return warnings;

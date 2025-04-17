@@ -387,6 +387,8 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 protected:
+	virtual bool _uses_signal_mutex() const override { return false; } // Node uses thread guards instead.
+
 	virtual void input(const Ref<InputEvent> &p_event);
 	virtual void shortcut_input(const Ref<InputEvent> &p_key_event);
 	virtual void unhandled_input(const Ref<InputEvent> &p_event);

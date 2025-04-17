@@ -512,6 +512,45 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_d->invalid_order);
 		}
 
+		SUBCASE("[Viewport][GuiInputEvent] Mouse behavior recursive disables mouse motion events.") {
+			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+
+			// Enabled when parent is set to inherit.
+			node_h->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_INHERITED);
+			node_i->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_INHERITED);
+			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
+			CHECK(node_i->mouse_over);
+			CHECK(node_i->mouse_over_self);
+
+			// Enabled when parent is set to enabled.
+			node_h->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_ENABLED);
+			node_i->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_INHERITED);
+			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
+			CHECK(node_i->mouse_over);
+			CHECK(node_i->mouse_over_self);
+
+			// Disabled when parent is set to disabled.
+			node_h->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_DISABLED);
+			node_i->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_INHERITED);
+			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
+			CHECK_FALSE(node_i->mouse_over);
+			CHECK_FALSE(node_i->mouse_over_self);
+
+			// Enabled when set to enabled and parent is set to disabled.
+			node_h->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_DISABLED);
+			node_i->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_ENABLED);
+			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
+			CHECK(node_i->mouse_over);
+			CHECK(node_i->mouse_over_self);
+
+			// Disabled when it is set to disabled.
+			node_h->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_ENABLED);
+			node_i->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_DISABLED);
+			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
+			CHECK_FALSE(node_i->mouse_over);
+			CHECK_FALSE(node_i->mouse_over_self);
+		}
+
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation.") {
 			node_d->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 			node_g->set_mouse_filter(Control::MOUSE_FILTER_PASS);
