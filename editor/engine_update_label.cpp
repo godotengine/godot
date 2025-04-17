@@ -37,7 +37,7 @@
 
 bool EngineUpdateLabel::_can_check_updates() const {
 	return int(EDITOR_GET("network/connection/network_mode")) == EditorSettings::NETWORK_ONLINE &&
-			UpdateMode(int(EDITOR_GET("network/connection/engine_version_update_mode"))) != UpdateMode::DISABLED;
+			UpdateMode(int(EDITOR_GET("network/connection/check_for_updates"))) != UpdateMode::DISABLED;
 }
 
 void EngineUpdateLabel::_check_update() {
@@ -78,7 +78,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		version_array = result;
 	}
 
-	UpdateMode update_mode = UpdateMode(int(EDITOR_GET("network/connection/engine_version_update_mode")));
+	UpdateMode update_mode = UpdateMode(int(EDITOR_GET("network/connection/check_for_updates")));
 	bool stable_only = update_mode == UpdateMode::NEWEST_STABLE || update_mode == UpdateMode::NEWEST_PATCH;
 
 	const Dictionary current_version_info = Engine::get_singleton()->get_version_info();
