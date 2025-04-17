@@ -621,7 +621,16 @@ void Camera2D::_update_process_internal_for_smoothing() {
 	bool is_any_smoothing_valid = position_smoothing_speed > 0 || rotation_smoothing_speed > 0;
 
 	bool enable = is_any_smoothing_valid && is_not_in_scene_or_editor;
-	set_process_internal(enable);
+
+	if (enable) {
+		if (process_callback == CAMERA2D_PROCESS_IDLE) {
+			set_process_internal(true);
+			set_physics_process_internal(false);
+		} else {
+			set_process_internal(false);
+			set_physics_process_internal(true);
+		}
+	}
 }
 
 void Camera2D::_set_limit_rect(const Rect2 &p_limit_rect) {
