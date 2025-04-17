@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScheduledAudioStreamPlayer" inherits="AudioStreamPlayer" experimental="" keywords="sound, music, song" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node for scheduled audio playback.
+	</brief_description>
+	<description>
+		Behaves similarly to [AudioStreamPlayer] but can schedule audio to play in the future.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="cancel_scheduled_playback">
+			<return type="void" />
+			<param index="0" name="playback" type="AudioStreamPlayback" />
+			<description>
+				Cancels the scheduled playback if it has not yet started. Does nothing if it has already started.
+			</description>
+		</method>
+		<method name="is_playback_scheduled">
+			<return type="bool" />
+			<param index="0" name="playback" type="AudioStreamPlayback" />
+			<description>
+				Returns [code]true[/code] if the playback is scheduled and has not yet started.
+			</description>
+		</method>
+		<method name="play_delayed">
+			<return type="AudioStreamPlayback" />
+			<param index="0" name="delay" type="float" />
+			<param index="1" name="from_position" type="float" default="0.0" />
+			<description>
+				Schedules a sound to be played after [param delay] seconds. The sound starts from the given [param from_position] in seconds.
+				Use this method for high precision playbacks, such as a metronome or other rhythm-based sounds.
+				Returns an [AudioStreamPlayback] instance representing the scheduled playback of the sound.
+				[b]Note:[/b] Calling this method after [member AudioStreamPlayer.max_polyphony] is reached will cut off the oldest sound playing on this node.
+				[b]Note:[/b] On the Web platform, [member AudioStreamPlayer.playback_type] must be set to [constant AudioServer.PLAYBACK_TYPE_STREAM]. Otherwise, this method will behave like [method AudioStreamPlayer.play].
+			</description>
+		</method>
+		<method name="play_relative">
+			<return type="AudioStreamPlayback" />
+			<param index="0" name="playback" type="AudioStreamPlayback" />
+			<param index="1" name="relative_time" type="float" />
+			<param index="2" name="from_position" type="float" default="0.0" />
+			<description>
+				Schedules a sound to be played relative to another playback's timeline. If the sound is scheduled to play earlier than the other playback's current playback position, it will be played immediately. Internally, this calculates the delay needed based on the other playback's state and is NOT affected if the other playback pauses. The sound starts from the given [param from_position] in seconds.
+				Use this method for high precision playbacks, such as a metronome or other rhythm-based sounds.
+				Returns an [AudioStreamPlayback] instance representing the scheduled playback of the sound.
+				[b]Note:[/b] Calling this method after [member AudioStreamPlayer.max_polyphony] is reached will cut off the oldest sound playing on this node.
+				[b]Note:[/b] On the Web platform, [member AudioStreamPlayer.playback_type] must be set to [constant AudioServer.PLAYBACK_TYPE_STREAM]. Otherwise, this method will behave like [method AudioStreamPlayer.play].
+			</description>
+		</method>
+		<method name="set_delay">
+			<return type="void" />
+			<param index="0" name="playback" type="AudioStreamPlayback" />
+			<param index="1" name="delay" type="float" />
+			<description>
+				Sets the delay of an already scheduled playback.
+			</description>
+		</method>
+		<method name="set_stop_position">
+			<return type="void" />
+			<param index="0" name="playback" type="AudioStreamPlayback" />
+			<param index="1" name="stop_position" type="float" />
+			<description>
+				Sets the stop position of an already scheduled playback.
+			</description>
+		</method>
+	</methods>
+</class>
