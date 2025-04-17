@@ -1052,6 +1052,10 @@ void RenderingDeviceDriverMetal::swap_chain_free(SwapChainID p_swap_chain) {
 	memdelete(swap_chain);
 }
 
+Error RenderingDeviceDriverMetal::swap_chain_wait_for_present(SwapChainID p_swap_chain, uint32_t p_max_frame_delay) {
+	return ERR_UNAVAILABLE;
+}
+
 #pragma mark - Frame buffer
 
 RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) {

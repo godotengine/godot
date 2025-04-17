@@ -4605,6 +4605,12 @@ static uint64_t navigation_process_max = 0;
 bool Main::iteration() {
 	iterating++;
 
+	if (RD::get_singleton()) {
+		// We must do this right before input polling (i.e. DisplayServer**::process_events()).
+		// But we also must do this outside of timing measurements, so this is the 2nd best place.
+		RD::get_singleton()->_wait_for_present();
+	}
+
 	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	Engine::get_singleton()->_frame_ticks = ticks;
 	main_timer_sync.set_cpu_ticks_usec(ticks);

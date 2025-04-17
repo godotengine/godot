@@ -6352,6 +6352,25 @@ void RenderingDevice::_free_pending_resources(int p_frame) {
 	}
 }
 
+void RenderingDevice::set_wait_for_present(bool p_wait_for_present) {
+	wait_for_present = p_wait_for_present;
+}
+
+bool RenderingDevice::get_wait_for_present() const {
+	return wait_for_present;
+}
+
+void RenderingDevice::_wait_for_present() {
+	if (!wait_for_present) {
+		return;
+	}
+	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(DisplayServer::MAIN_WINDOW_ID);
+	if (it != screen_swap_chains.end()) {
+		const uint32_t max_frame_delay = frames.size();
+		driver->swap_chain_wait_for_present(it->value, max_frame_delay);
+	}
+}
+
 uint32_t RenderingDevice::get_frame_delay() const {
 	return frames.size();
 }
@@ -6673,6 +6692,8 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	frame = 0;
 	frames.resize(frame_count);
 	max_timestamp_query_elements = GLOBAL_GET("debug/settings/profiler/max_timestamp_query_elements");
+
+	wait_for_present = GLOBAL_GET("rendering/rendering_device/vsync/wait_for_present");
 
 	device = context->device_get(device_index);
 	err = driver->initialize(device_index, frame_count);
@@ -7425,6 +7446,8 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &RenderingDevice::has_feature);
 	ClassDB::bind_method(D_METHOD("limit_get", "limit"), &RenderingDevice::limit_get);
+	ClassDB::bind_method(D_METHOD("set_wait_for_present", "wait_for_present"), &RenderingDevice::set_wait_for_present);
+	ClassDB::bind_method(D_METHOD("get_wait_for_present"), &RenderingDevice::get_wait_for_present);
 	ClassDB::bind_method(D_METHOD("get_frame_delay"), &RenderingDevice::get_frame_delay);
 	ClassDB::bind_method(D_METHOD("submit"), &RenderingDevice::submit);
 	ClassDB::bind_method(D_METHOD("sync"), &RenderingDevice::sync);

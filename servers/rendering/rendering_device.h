@@ -194,6 +194,9 @@ private:
 	Error _buffer_initialize(Buffer *p_buffer, const uint8_t *p_data, size_t p_data_size, uint32_t p_required_align = 32);
 
 	void update_perf_report();
+
+	bool wait_for_present = false;
+
 	// Flag for batching descriptor sets.
 	bool descriptor_set_batching = true;
 	// When true, the final draw call that copies our offscreen result into the Swapchain is put into its
@@ -1622,6 +1625,11 @@ public:
 	uint64_t limit_get(Limit p_limit) const;
 
 	void swap_buffers(bool p_present);
+
+	void set_wait_for_present(bool p_wait_for_present);
+	bool get_wait_for_present() const;
+
+	void _wait_for_present();
 
 	uint32_t get_frame_delay() const;
 
