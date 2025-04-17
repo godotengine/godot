@@ -89,6 +89,7 @@
 #pragma GCC diagnostic error   "-Wstring-conversion"
 #pragma GCC diagnostic error   "-Wswitch-enum"
 #pragma GCC diagnostic error   "-Wtautological-overlap-compare"
+#pragma GCC diagnostic error   "-Wuninitialized"
 #pragma GCC diagnostic error   "-Wunneeded-internal-declaration"
 #pragma GCC diagnostic error   "-Wunused"
 #pragma GCC diagnostic error   "-Wunused-local-typedefs"
@@ -230,33 +231,6 @@
 #define HB_PASTE(a,b) HB_PASTE1(a,b)
 
 
-/* Compile-time custom allocator support. */
-
-#if !defined(HB_CUSTOM_MALLOC) \
-  && defined(hb_malloc_impl) \
-  && defined(hb_calloc_impl) \
-  && defined(hb_realloc_impl) \
-  && defined(hb_free_impl)
-#define HB_CUSTOM_MALLOC
-#endif
-
-#ifdef HB_CUSTOM_MALLOC
-extern "C" void* hb_malloc_impl(size_t size);
-extern "C" void* hb_calloc_impl(size_t nmemb, size_t size);
-extern "C" void* hb_realloc_impl(void *ptr, size_t size);
-extern "C" void  hb_free_impl(void *ptr);
-#define hb_malloc hb_malloc_impl
-#define hb_calloc hb_calloc_impl
-#define hb_realloc hb_realloc_impl
-#define hb_free hb_free_impl
-#else
-#define hb_malloc malloc
-#define hb_calloc calloc
-#define hb_realloc realloc
-#define hb_free free
-#endif
-
-
 /*
  * Compiler attributes
  */
@@ -282,7 +256,7 @@ extern "C" void  hb_free_impl(void *ptr);
 #define __attribute__(x)
 #endif
 
-#if defined(__MINGW32__) && (__GNUC__ >= 3)
+#if defined(__MINGW32__) && (__GNUC__ >= 3) && !defined(__clang__)
 #define HB_PRINTF_FUNC(format_idx, arg_idx) __attribute__((__format__ (gnu_printf, format_idx, arg_idx)))
 #elif defined(__GNUC__) && (__GNUC__ >= 3)
 #define HB_PRINTF_FUNC(format_idx, arg_idx) __attribute__((__format__ (__printf__, format_idx, arg_idx)))
@@ -491,7 +465,7 @@ static int HB_UNUSED _hb_errno = 0;
 #    define hb_atexit atexit
 #  else
      template <void (*function) (void)> struct hb_atexit_t { ~hb_atexit_t () { function (); } };
-#    define hb_atexit(f) static hb_atexit_t<f> _hb_atexit_##__LINE__;
+#    define hb_atexit(f) static hb_atexit_t<f> _hb_atexit_##__LINE__
 #  endif
 #endif
 #endif
@@ -538,6 +512,29 @@ static_assert ((sizeof (hb_var_int_t) == 4), "");
 // https://github.com/harfbuzz/harfbuzz/issues/4166
 #define HB_PI 3.14159265358979f
 #define HB_2_PI (2.f * HB_PI)
+
+/* Compile-time custom allocator support. */
+
+#if !defined(HB_CUSTOM_MALLOC) \
+  && defined(hb_malloc_impl) \
+  && defined(hb_calloc_impl) \
+  && defined(hb_realloc_impl) \
+  && defined(hb_free_impl)
+#define HB_CUSTOM_MALLOC
+#endif
+
+#ifdef HB_CUSTOM_MALLOC
+extern "C" void* hb_malloc_impl(size_t size);
+extern "C" void* hb_calloc_impl(size_t nmemb, size_t size);
+extern "C" void* hb_realloc_impl(void *ptr, size_t size);
+extern "C" void  hb_free_impl(void *ptr);
+#else
+#define hb_malloc_impl malloc
+#define hb_calloc_impl calloc
+#define hb_realloc_impl realloc
+#define hb_free_impl free
+#endif
+
 
 
 /* Headers we include for everyone.  Keep topologically sorted by dependency.

@@ -397,292 +397,277 @@ struct hb_collect_coverage_context_t :
   set_t *set;
 };
 
-struct hb_ot_apply_context_t :
-       hb_dispatch_context_t<hb_ot_apply_context_t, bool, HB_DEBUG_APPLY>
+struct matcher_t
 {
-  struct matcher_t
+  typedef bool (*match_func_t) (hb_glyph_info_t &info, unsigned value, const void *data);
+
+  template <typename context_t>
+  void init (const context_t *c, bool context_match = false)
   {
-    typedef bool (*match_func_t) (hb_glyph_info_t &info, unsigned value, const void *data);
+    set_match_func (nullptr, nullptr);
+    lookup_props = c->lookup_props;
+    /* Ignore ZWNJ if we are matching GPOS, or matching GSUB context and asked to. */
+    ignore_zwnj = c->table_index == 1 || (context_match && c->auto_zwnj);
+    /* Ignore ZWJ if we are matching context, or asked to. */
+    ignore_zwj = context_match || c->auto_zwj;
+    /* Ignore hidden glyphs (like CGJ) during GPOS. */
+    ignore_hidden = c->table_index == 1;
+    mask = context_match ? -1 : c->lookup_mask;
+    /* Per syllable matching is only for GSUB. */
+    per_syllable = c->table_index == 0 && c->per_syllable;
+    syllable = 0;
+  }
 
-    void set_ignore_zwnj (bool ignore_zwnj_) { ignore_zwnj = ignore_zwnj_; }
-    void set_ignore_zwj (bool ignore_zwj_) { ignore_zwj = ignore_zwj_; }
-    void set_ignore_hidden (bool ignore_hidden_) { ignore_hidden = ignore_hidden_; }
-    void set_lookup_props (unsigned int lookup_props_) { lookup_props = lookup_props_; }
-    void set_mask (hb_mask_t mask_) { mask = mask_; }
-    void set_per_syllable (bool per_syllable_) { per_syllable = per_syllable_; }
-    void set_syllable (uint8_t syllable_)  { syllable = per_syllable ? syllable_ : 0; }
-    void set_match_func (match_func_t match_func_,
-			 const void *match_data_)
-    { match_func = match_func_; match_data = match_data_; }
+  void set_match_func (match_func_t match_func_,
+		       const void *match_data_)
+  { match_func = match_func_; match_data = match_data_; }
 
-    enum may_match_t {
-      MATCH_NO,
-      MATCH_YES,
-      MATCH_MAYBE
-    };
-
-#ifndef HB_OPTIMIZE_SIZE
-    HB_ALWAYS_INLINE
-#endif
-    may_match_t may_match (hb_glyph_info_t &info,
-			   hb_codepoint_t glyph_data) const
-    {
-      if (!(info.mask & mask) ||
-	  (syllable && syllable != info.syllable ()))
-	return MATCH_NO;
-
-      if (match_func)
-	return match_func (info, glyph_data, match_data) ? MATCH_YES : MATCH_NO;
-
-      return MATCH_MAYBE;
-    }
-
-    enum may_skip_t {
-      SKIP_NO,
-      SKIP_YES,
-      SKIP_MAYBE
-    };
-
-#ifndef HB_OPTIMIZE_SIZE
-    HB_ALWAYS_INLINE
-#endif
-    may_skip_t may_skip (const hb_ot_apply_context_t *c,
-			 const hb_glyph_info_t       &info) const
-    {
-      if (!c->check_glyph_property (&info, lookup_props))
-	return SKIP_YES;
-
-      if (unlikely (_hb_glyph_info_is_default_ignorable (&info) &&
-		    (ignore_zwnj || !_hb_glyph_info_is_zwnj (&info)) &&
-		    (ignore_zwj || !_hb_glyph_info_is_zwj (&info)) &&
-		    (ignore_hidden || !_hb_glyph_info_is_hidden (&info))))
-	return SKIP_MAYBE;
-
-      return SKIP_NO;
-    }
-
-    protected:
-    unsigned int lookup_props = 0;
-    hb_mask_t mask = -1;
-    bool ignore_zwnj = false;
-    bool ignore_zwj = false;
-    bool ignore_hidden = false;
-    bool per_syllable = false;
-    uint8_t syllable = 0;
-    match_func_t match_func = nullptr;
-    const void *match_data = nullptr;
+  enum may_match_t {
+    MATCH_NO,
+    MATCH_YES,
+    MATCH_MAYBE
   };
 
-  struct skipping_iterator_t
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
+  may_match_t may_match (hb_glyph_info_t &info,
+			 hb_codepoint_t glyph_data) const
   {
-    void init (hb_ot_apply_context_t *c_, bool context_match = false)
-    {
-      c = c_;
-      end = c->buffer->len;
-      match_glyph_data16 = nullptr;
+    if (!(info.mask & mask) ||
+	(per_syllable && syllable && syllable != info.syllable ()))
+      return MATCH_NO;
+
+    if (match_func)
+      return match_func (info, glyph_data, match_data) ? MATCH_YES : MATCH_NO;
+
+    return MATCH_MAYBE;
+  }
+
+  enum may_skip_t {
+    SKIP_NO,
+    SKIP_YES,
+    SKIP_MAYBE
+  };
+
+  template <typename context_t>
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
+  may_skip_t may_skip (const context_t *c,
+		       const hb_glyph_info_t       &info) const
+  {
+    if (!c->check_glyph_property (&info, lookup_props))
+      return SKIP_YES;
+
+    if (unlikely (_hb_glyph_info_is_default_ignorable (&info) &&
+		  (ignore_zwnj || !_hb_glyph_info_is_zwnj (&info)) &&
+		  (ignore_zwj || !_hb_glyph_info_is_zwj (&info)) &&
+		  (ignore_hidden || !_hb_glyph_info_is_hidden (&info))))
+      return SKIP_MAYBE;
+
+    return SKIP_NO;
+  }
+
+  public:
+  unsigned int lookup_props = 0;
+  hb_mask_t mask = -1;
+  bool ignore_zwnj = false;
+  bool ignore_zwj = false;
+  bool ignore_hidden = false;
+  bool per_syllable = false;
+  uint8_t syllable = 0;
+  match_func_t match_func = nullptr;
+  const void *match_data = nullptr;
+};
+
+template <typename context_t>
+struct skipping_iterator_t
+{
+  void init (context_t *c_, bool context_match = false)
+  {
+    c = c_;
+    end = c->buffer->len;
+    match_glyph_data16 = nullptr;
 #ifndef HB_NO_BEYOND_64K
-      match_glyph_data24 = nullptr;
+    match_glyph_data24 = nullptr;
 #endif
-      matcher.set_match_func (nullptr, nullptr);
-      matcher.set_lookup_props (c->lookup_props);
-      /* Ignore ZWNJ if we are matching GPOS, or matching GSUB context and asked to. */
-      matcher.set_ignore_zwnj (c->table_index == 1 || (context_match && c->auto_zwnj));
-      /* Ignore ZWJ if we are matching context, or asked to. */
-      matcher.set_ignore_zwj  (context_match || c->auto_zwj);
-      /* Ignore hidden glyphs (like CGJ) during GPOS. */
-      matcher.set_ignore_hidden (c->table_index == 1);
-      matcher.set_mask (context_match ? -1 : c->lookup_mask);
-      /* Per syllable matching is only for GSUB. */
-      matcher.set_per_syllable (c->table_index == 0 && c->per_syllable);
-      matcher.set_syllable (0);
-    }
-    void set_lookup_props (unsigned int lookup_props)
-    {
-      matcher.set_lookup_props (lookup_props);
-    }
-    void set_match_func (matcher_t::match_func_t match_func_,
-			 const void *match_data_)
-    {
-      matcher.set_match_func (match_func_, match_data_);
-    }
-    void set_glyph_data (const HBUINT16 glyph_data[])
-    {
-      match_glyph_data16 = glyph_data;
+    matcher.init (c, context_match);
+  }
+  void set_lookup_props (unsigned int lookup_props)
+  {
+    matcher.lookup_props = lookup_props;
+  }
+  void set_match_func (matcher_t::match_func_t match_func_,
+		       const void *match_data_)
+  {
+    matcher.set_match_func (match_func_, match_data_);
+  }
+  void set_glyph_data (const HBUINT16 glyph_data[])
+  {
+    match_glyph_data16 = glyph_data;
 #ifndef HB_NO_BEYOND_64K
-      match_glyph_data24 = nullptr;
+    match_glyph_data24 = nullptr;
 #endif
-    }
+  }
 #ifndef HB_NO_BEYOND_64K
-    void set_glyph_data (const HBUINT24 glyph_data[])
-    {
-      match_glyph_data16 = nullptr;
-      match_glyph_data24 = glyph_data;
-    }
+  void set_glyph_data (const HBUINT24 glyph_data[])
+  {
+    match_glyph_data16 = nullptr;
+    match_glyph_data24 = glyph_data;
+  }
 #endif
 
 #ifndef HB_OPTIMIZE_SIZE
-    HB_ALWAYS_INLINE
+  HB_ALWAYS_INLINE
 #endif
-    void reset (unsigned int start_index_)
-    {
-      idx = start_index_;
-      end = c->buffer->len;
-      matcher.set_syllable (start_index_ == c->buffer->idx ? c->buffer->cur().syllable () : 0);
-    }
-
-#ifndef HB_OPTIMIZE_SIZE
-    HB_ALWAYS_INLINE
-#endif
-    void reset_fast (unsigned int start_index_)
-    {
-      // Doesn't set end or syllable. Used by GPOS which doesn't care / change.
-      idx = start_index_;
-    }
-
-    void reject ()
-    {
-      backup_glyph_data ();
-    }
-
-    matcher_t::may_skip_t
-#ifndef HB_OPTIMIZE_SIZE
-    HB_ALWAYS_INLINE
-#endif
-    may_skip (const hb_glyph_info_t &info) const
-    { return matcher.may_skip (c, info); }
-
-    enum match_t {
-      MATCH,
-      NOT_MATCH,
-      SKIP
-    };
-
-#ifndef HB_OPTIMIZE_SIZE
-    HB_ALWAYS_INLINE
-#endif
-    match_t match (hb_glyph_info_t &info)
-    {
-      matcher_t::may_skip_t skip = matcher.may_skip (c, info);
-      if (unlikely (skip == matcher_t::SKIP_YES))
-	return SKIP;
-
-      matcher_t::may_match_t match = matcher.may_match (info, get_glyph_data ());
-      if (match == matcher_t::MATCH_YES ||
-	  (match == matcher_t::MATCH_MAYBE &&
-	   skip == matcher_t::SKIP_NO))
-	return MATCH;
-
-      if (skip == matcher_t::SKIP_NO)
-        return NOT_MATCH;
-
-      return SKIP;
+  void reset (unsigned int start_index_)
+  {
+    idx = start_index_;
+    end = c->buffer->len;
+    matcher.syllable = start_index_ == c->buffer->idx ? c->buffer->cur().syllable () : 0;
   }
 
 #ifndef HB_OPTIMIZE_SIZE
-    HB_ALWAYS_INLINE
+  HB_ALWAYS_INLINE
 #endif
-    bool next (unsigned *unsafe_to = nullptr)
-    {
-      const signed stop = (signed) end - 1;
-      while ((signed) idx < stop)
-      {
-	idx++;
-	switch (match (c->buffer->info[idx]))
-	{
-	  case MATCH:
-	  {
-	    advance_glyph_data ();
-	    return true;
-	  }
-	  case NOT_MATCH:
-	  {
-	    if (unsafe_to)
-	      *unsafe_to = idx + 1;
-	    return false;
-	  }
-	  case SKIP:
-	    continue;
-	}
-      }
-      if (unsafe_to)
-        *unsafe_to = end;
-      return false;
-    }
+  void reset_fast (unsigned int start_index_)
+  {
+    // Doesn't set end or syllable. Used by GPOS which doesn't care / change.
+    idx = start_index_;
+  }
+
 #ifndef HB_OPTIMIZE_SIZE
-    HB_ALWAYS_INLINE
+  HB_ALWAYS_INLINE
 #endif
-    bool prev (unsigned *unsafe_from = nullptr)
-    {
-      const unsigned stop = 0;
-      while (idx > stop)
-      {
-	idx--;
-	switch (match (c->buffer->out_info[idx]))
-	{
-	  case MATCH:
-	  {
-	    advance_glyph_data ();
-	    return true;
-	  }
-	  case NOT_MATCH:
-	  {
-	    if (unsafe_from)
-	      *unsafe_from = hb_max (1u, idx) - 1u;
-	    return false;
-	  }
-	  case SKIP:
-	    continue;
-	}
-      }
-      if (unsafe_from)
-        *unsafe_from = 0;
-      return false;
-    }
+  matcher_t::may_skip_t may_skip (const hb_glyph_info_t &info) const
+  { return matcher.may_skip (c, info); }
 
-    HB_ALWAYS_INLINE
-    hb_codepoint_t
-    get_glyph_data ()
-    {
-      if (match_glyph_data16) return *match_glyph_data16;
-#ifndef HB_NO_BEYOND_64K
-      else
-      if (match_glyph_data24) return *match_glyph_data24;
-#endif
-      return 0;
-    }
-    HB_ALWAYS_INLINE
-    void
-    advance_glyph_data ()
-    {
-      if (match_glyph_data16) match_glyph_data16++;
-#ifndef HB_NO_BEYOND_64K
-      else
-      if (match_glyph_data24) match_glyph_data24++;
-#endif
-    }
-    void
-    backup_glyph_data ()
-    {
-      if (match_glyph_data16) match_glyph_data16--;
-#ifndef HB_NO_BEYOND_64K
-      else
-      if (match_glyph_data24) match_glyph_data24--;
-#endif
-    }
-
-    unsigned int idx;
-    protected:
-    hb_ot_apply_context_t *c;
-    matcher_t matcher;
-    const HBUINT16 *match_glyph_data16;
-#ifndef HB_NO_BEYOND_64K
-    const HBUINT24 *match_glyph_data24;
-#endif
-
-    unsigned int end;
+  enum match_t {
+    MATCH,
+    NOT_MATCH,
+    SKIP
   };
 
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
+  match_t match (hb_glyph_info_t &info)
+  {
+    matcher_t::may_skip_t skip = matcher.may_skip (c, info);
+    if (unlikely (skip == matcher_t::SKIP_YES))
+      return SKIP;
 
+    matcher_t::may_match_t match = matcher.may_match (info, get_glyph_data ());
+    if (match == matcher_t::MATCH_YES ||
+	(match == matcher_t::MATCH_MAYBE &&
+	 skip == matcher_t::SKIP_NO))
+      return MATCH;
+
+    if (skip == matcher_t::SKIP_NO)
+      return NOT_MATCH;
+
+    return SKIP;
+  }
+
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
+  bool next (unsigned *unsafe_to = nullptr)
+  {
+    const signed stop = (signed) end - 1;
+    while ((signed) idx < stop)
+    {
+      idx++;
+      switch (match (c->buffer->info[idx]))
+      {
+	case MATCH:
+	{
+	  advance_glyph_data ();
+	  return true;
+	}
+	case NOT_MATCH:
+	{
+	  if (unsafe_to)
+	    *unsafe_to = idx + 1;
+	  return false;
+	}
+	case SKIP:
+	  continue;
+      }
+    }
+    if (unsafe_to)
+      *unsafe_to = end;
+    return false;
+  }
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
+  bool prev (unsigned *unsafe_from = nullptr)
+  {
+    const unsigned stop = 0;
+    while (idx > stop)
+    {
+      idx--;
+      switch (match (c->buffer->out_info[idx]))
+      {
+	case MATCH:
+	{
+	  advance_glyph_data ();
+	  return true;
+	}
+	case NOT_MATCH:
+	{
+	  if (unsafe_from)
+	    *unsafe_from = hb_max (1u, idx) - 1u;
+	  return false;
+	}
+	case SKIP:
+	  continue;
+      }
+    }
+    if (unsafe_from)
+      *unsafe_from = 0;
+    return false;
+  }
+
+  HB_ALWAYS_INLINE
+  hb_codepoint_t
+  get_glyph_data ()
+  {
+    if (match_glyph_data16) return *match_glyph_data16;
+#ifndef HB_NO_BEYOND_64K
+    else
+    if (match_glyph_data24) return *match_glyph_data24;
+#endif
+    return 0;
+  }
+  HB_ALWAYS_INLINE
+  void
+  advance_glyph_data ()
+  {
+    if (match_glyph_data16) match_glyph_data16++;
+#ifndef HB_NO_BEYOND_64K
+    else
+    if (match_glyph_data24) match_glyph_data24++;
+#endif
+  }
+
+  unsigned int idx;
+  protected:
+  context_t *c;
+  matcher_t matcher;
+  const HBUINT16 *match_glyph_data16;
+#ifndef HB_NO_BEYOND_64K
+  const HBUINT24 *match_glyph_data24;
+#endif
+
+  unsigned int end;
+};
+
+struct hb_ot_apply_context_t :
+       hb_dispatch_context_t<hb_ot_apply_context_t, bool, HB_DEBUG_APPLY>
+{
   const char *get_name () { return "APPLY"; }
   typedef return_t (*recurse_func_t) (hb_ot_apply_context_t *c, unsigned int lookup_index);
   template <typename T>
@@ -703,7 +688,7 @@ struct hb_ot_apply_context_t :
     return ret;
   }
 
-  skipping_iterator_t iter_input, iter_context;
+  skipping_iterator_t<hb_ot_apply_context_t> iter_input, iter_context;
 
   unsigned int table_index; /* GSUB/GPOS */
   hb_font_t *font;
@@ -737,7 +722,8 @@ struct hb_ot_apply_context_t :
   hb_ot_apply_context_t (unsigned int table_index_,
 			 hb_font_t *font_,
 			 hb_buffer_t *buffer_,
-			 hb_blob_t *table_blob_) :
+			 hb_blob_t *table_blob_,
+			 ItemVariationStore::cache_t *var_store_cache_ = nullptr) :
 			table_index (table_index_),
 			font (font_), face (font->face), buffer (buffer_),
 			sanitizer (table_blob_),
@@ -756,25 +742,12 @@ struct hb_ot_apply_context_t :
 #endif
 			     ),
 			var_store (gdef.get_var_store ()),
-			var_store_cache (
-#ifndef HB_NO_VAR
-					 table_index == 1 && font->num_coords ? var_store.create_cache () : nullptr
-#else
-					 nullptr
-#endif
-					),
+			var_store_cache (var_store_cache_),
 			direction (buffer_->props.direction),
 			has_glyph_classes (gdef.has_glyph_classes ())
   {
     init_iters ();
     buffer->collect_codepoints (digest);
-  }
-
-  ~hb_ot_apply_context_t ()
-  {
-#ifndef HB_NO_VAR
-    ItemVariationStore::destroy_cache (var_store_cache);
-#endif
   }
 
   void init_iters ()
@@ -1282,7 +1255,7 @@ static bool match_input (hb_ot_apply_context_t *c,
 
   hb_buffer_t *buffer = c->buffer;
 
-  hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+  auto &skippy_iter = c->iter_input;
   skippy_iter.reset (buffer->idx);
   skippy_iter.set_match_func (match_func, match_data);
   skippy_iter.set_glyph_data (input);
@@ -1361,7 +1334,7 @@ static bool match_input (hb_ot_apply_context_t *c,
 	    j--;
 	  }
 
-	  if (found && skippy_iter.may_skip (out[j]) == hb_ot_apply_context_t::matcher_t::SKIP_YES)
+	  if (found && skippy_iter.may_skip (out[j]) == matcher_t::SKIP_YES)
 	    ligbase = LIGBASE_MAY_SKIP;
 	  else
 	    ligbase = LIGBASE_MAY_NOT_SKIP;
@@ -1524,7 +1497,7 @@ static bool match_backtrack (hb_ot_apply_context_t *c,
 {
   TRACE_APPLY (nullptr);
 
-  hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_context;
+  auto &skippy_iter = c->iter_context;
   skippy_iter.reset (c->buffer->backtrack_len ());
   skippy_iter.set_match_func (match_func, match_data);
   skippy_iter.set_glyph_data (backtrack);
@@ -1557,7 +1530,7 @@ static bool match_lookahead (hb_ot_apply_context_t *c,
 {
   TRACE_APPLY (nullptr);
 
-  hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_context;
+  auto &skippy_iter = c->iter_context;
   assert (start_index >= 1);
   skippy_iter.reset (start_index - 1);
   skippy_iter.set_match_func (match_func, match_data);
@@ -2221,7 +2194,7 @@ struct RuleSet
      *
      * Replicated from LigatureSet::apply(). */
 
-    hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+    auto &skippy_iter = c->iter_input;
     skippy_iter.reset (c->buffer->idx);
     skippy_iter.set_match_func (match_always, nullptr);
     skippy_iter.set_glyph_data ((HBUINT16 *) nullptr);
@@ -3432,7 +3405,7 @@ struct ChainRuleSet
     if (!c->auto_zwnj || !c->auto_zwj)
       goto slow;
 
-    hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+    auto &skippy_iter = c->iter_input;
     skippy_iter.reset (c->buffer->idx);
     skippy_iter.set_match_func (match_always, nullptr);
     skippy_iter.set_glyph_data ((HBUINT16 *) nullptr);
@@ -4900,7 +4873,7 @@ struct GSUBGPOS
 
       this->lookup_count = table->get_lookup_count ();
 
-      this->accels = (hb_atomic_ptr_t<hb_ot_layout_lookup_accelerator_t> *) hb_calloc (this->lookup_count, sizeof (*accels));
+      this->accels = (hb_atomic_t<hb_ot_layout_lookup_accelerator_t *> *) hb_calloc (this->lookup_count, sizeof (*accels));
       if (unlikely (!this->accels))
       {
 	this->lookup_count = 0;
@@ -4948,7 +4921,7 @@ struct GSUBGPOS
 
     hb_blob_ptr_t<T> table;
     unsigned int lookup_count;
-    hb_atomic_ptr_t<hb_ot_layout_lookup_accelerator_t> *accels;
+    hb_atomic_t<hb_ot_layout_lookup_accelerator_t *> *accels;
   };
 
   protected:
