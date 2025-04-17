@@ -260,7 +260,7 @@ void AudioStreamPlayerInternal::set_stream(Ref<AudioStream> p_stream) {
 	node->notify_property_list_changed();
 }
 
-void AudioStreamPlayerInternal::seek(float p_seconds) {
+void AudioStreamPlayerInternal::seek(double p_seconds) {
 	if (is_playing()) {
 		stop_callable.call();
 		play_callable.call(p_seconds);
@@ -286,7 +286,7 @@ bool AudioStreamPlayerInternal::is_playing() const {
 	return false;
 }
 
-float AudioStreamPlayerInternal::get_playback_position() {
+double AudioStreamPlayerInternal::get_playback_position() {
 	// Return the playback position of the most recently started playback stream.
 	if (!stream_playbacks.is_empty()) {
 		return AudioServer::get_singleton()->get_playback_position(stream_playbacks[stream_playbacks.size() - 1]);

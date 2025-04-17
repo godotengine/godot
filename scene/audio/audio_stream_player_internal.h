@@ -76,6 +76,7 @@ public:
 	bool autoplay = false;
 	StringName bus;
 	int max_polyphony = 1;
+	double scheduled_time = 0;
 
 	void process();
 	void ensure_playback_limit();
@@ -93,10 +94,10 @@ public:
 	StringName get_bus() const;
 
 	Ref<AudioStreamPlayback> play_basic();
-	void seek(float p_seconds);
+	void seek(double p_seconds);
 	void stop_basic();
 	bool is_playing() const;
-	float get_playback_position();
+	double get_playback_position();
 
 	void set_playing(bool p_enable);
 	bool is_active() const;

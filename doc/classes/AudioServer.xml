@@ -35,6 +35,26 @@
 				Generates an [AudioBusLayout] using the available buses and effects.
 			</description>
 		</method>
+		<method name="get_absolute_time" qualifiers="const" experimental="">
+			<return type="float" />
+			<description>
+				Returns the absolute time in seconds of the [AudioServer]'s timeline, based on the number of audio frames mixed. Used to schedule sounds to be played with high precision timing, such as with [method AudioStreamPlayer.play_scheduled].
+				[b]Note:[/b] This value only updates each time an audio chunk is mixed and should not be relied on as an accurate "current" time of the [AudioServer].
+				[b]Example:[/b] Schedule two sounds to be played at the same time, roughly 1 second in the future:
+				[codeblocks]
+				[gdscript]
+				var future_time = AudioServer.get_absolute_time() + 1
+				player1.play_scheduled(future_time)
+				player2.play_scheduled(future_time)
+				[/gdscript]
+				[csharp]
+				double futureTime = AudioServer.GetAbsoluteTime() + 1;
+				player1.PlayScheduled(futureTime);
+				player2.PlayScheduled(futureTime);
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="get_bus_channels" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="bus_idx" type="int" />
