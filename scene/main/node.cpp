@@ -2371,20 +2371,21 @@ bool Node::has_exposed_nodes() {
 	}
 	return false;
 }
-int Node::get_exposed_node_count() {
+int Node::get_exposed_node_count(bool recursive) {
 	int count = 0;
-	if (has_meta(META_EXPOSED_IN_OWNER)) {
-		count++;
-	}
 	if (!has_exposed_nodes()) {
 		return count;
 	}
-
 	for (const KeyValue<StringName, Node *> &KV : data.children) {
 		if (!KV.value->data.owner) {
 			continue;
 		}
-		count += KV.value->get_exposed_node_count();
+		if (KV.value->has_meta(META_EXPOSED_IN_OWNER)) {
+			count++;
+		}
+		if (recursive) {
+			count += KV.value->get_exposed_node_count(true);
+		}
 	}
 
 	return count;

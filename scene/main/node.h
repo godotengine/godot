@@ -535,7 +535,7 @@ public:
 	bool is_unique_name_in_owner() const;
 
 	bool has_exposed_nodes();
-	int get_exposed_node_count();
+	int get_exposed_node_count(bool recursive = false);
 
 	_FORCE_INLINE_ int get_index(bool p_include_internal = true) const {
 		// p_include_internal = false doesn't make sense if the node is internal.
