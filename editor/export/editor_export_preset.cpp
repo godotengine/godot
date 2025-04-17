@@ -35,6 +35,10 @@
 bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) {
 	values[p_name] = p_value;
 	EditorExport::singleton->save_presets();
+
+	// Defer so that the property can finish changing its value before configuration info is retrieved.
+	call_deferred("update_configuration_info");
+
 	if (update_visibility.has(p_name)) {
 		if (update_visibility[p_name]) {
 			update_value_overrides();
@@ -84,8 +88,6 @@ Variant EditorExportPreset::get_project_setting(const StringName &p_name) {
 }
 
 void EditorExportPreset::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &EditorExportPreset::_get_property_warning);
-
 	ClassDB::bind_method(D_METHOD("has", "property"), &EditorExportPreset::has);
 
 	ClassDB::bind_method(D_METHOD("get_files_to_export"), &EditorExportPreset::get_files_to_export);
@@ -131,17 +133,25 @@ void EditorExportPreset::_bind_methods() {
 	BIND_ENUM_CONSTANT(MODE_SCRIPT_BINARY_TOKENS_COMPRESSED);
 }
 
-String EditorExportPreset::_get_property_warning(const StringName &p_name) const {
-	if (value_overrides.has(p_name)) {
-		return String();
+void EditorExportPreset::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
+	List<EditorExportPlatform::ExportOption> options;
+
+	platform->get_export_options(&options);
+
+	for (const EditorExportPlatform::ExportOption &option : options) {
+		const String option_name = option.option.name;
+
+		if (value_overrides.has(option_name)) {
+			continue;
+		}
+
+		String warning = platform->get_export_option_warning(this, option_name);
+		if (!warning.is_empty()) {
+			CONFIG_WARNING_P(warning, option_name);
+		}
 	}
 
-	String warning = platform->get_export_option_warning(this, p_name);
-	if (!warning.is_empty()) {
-		warning += "\n";
-	}
-
-	// Get property warning from editor export plugins.
+	// Get property warnings from editor export plugins.
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
 		if (!export_plugins[i]->supports_platform(platform)) {
@@ -149,13 +159,19 @@ String EditorExportPreset::_get_property_warning(const StringName &p_name) const
 		}
 
 		export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>(this));
-		String plugin_warning = export_plugins[i]->_get_export_option_warning(platform, p_name);
-		if (!plugin_warning.is_empty()) {
-			warning += plugin_warning + "\n";
+
+		options.clear();
+		export_plugins[i]->_get_export_options(platform, &options);
+
+		for (const EditorExportPlatform::ExportOption &option : options) {
+			const String option_name = option.option.name;
+
+			String plugin_warning = export_plugins[i]->_get_export_option_warning(platform, option_name);
+			if (!plugin_warning.is_empty()) {
+				CONFIG_WARNING_P(plugin_warning, option_name);
+			}
 		}
 	}
-
-	return warning;
 }
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
