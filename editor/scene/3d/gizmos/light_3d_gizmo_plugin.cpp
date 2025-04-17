@@ -67,15 +67,15 @@ int Light3DGizmoPlugin::get_priority() const {
 String Light3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	if (p_id == 0) {
 		if (Object::cast_to<AreaLight3D>(p_gizmo->get_node_3d())) {
-			return "Area width";
+			return TTR("Area width");
 		} else {
-			return "Radius";
+			return TTR("Radius");
 		}
 	} else {
 		if (Object::cast_to<AreaLight3D>(p_gizmo->get_node_3d())) {
-			return "Area height";
+			return TTR("Area height");
 		} else {
-			return "Aperture";
+			return TTR("Aperture");
 		}
 	}
 }

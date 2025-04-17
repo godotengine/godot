@@ -634,7 +634,7 @@ void Node3DEditorViewport::cancel_transform() {
 
 	collision_reposition = false;
 	finish_transform();
-	set_message(TTRC("Transform Aborted."), 3);
+	set_message(TTRC("Transform aborted"), 3);
 }
 
 void Node3DEditorViewport::_update_shrink() {
@@ -1068,7 +1068,7 @@ void Node3DEditorViewport::_vertex_snap_cancel() {
 		}
 	}
 	vertex_snap_original_positions.clear();
-	set_message(TTR("Vertex Snap Canceled."), 3);
+	set_message(TTR("Vertex snap canceled"), 3);
 	surface->queue_redraw();
 }
 
@@ -2073,7 +2073,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			vertex_snap_mode = true;
 			vertex_snap_keycode = k->get_physical_keycode() != Key::NONE ? k->get_physical_keycode() : k->get_keycode();
 			_disable_follow_mode();
-			set_message(TTR("Vertex Snap"));
+			set_message(TTR("Vertex snap"));
 			_vertex_snap_update_source(_edit.mouse_pos);
 			surface->queue_redraw();
 		} else if (vertex_snap_mode && !k->is_pressed() && k->get_physical_keycode() == vertex_snap_keycode) {
@@ -2305,23 +2305,23 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					switch (_edit.plane) {
 						case TRANSFORM_VIEW: {
 							_edit.plane = TRANSFORM_X_AXIS;
-							set_message(TTR("X-Axis Transform."), 2);
+							set_message(TTR("X axis transform"), 2);
 							view_3d_controller->set_view_type(View3DController::VIEW_TYPE_USER);
 						} break;
 						case TRANSFORM_X_AXIS: {
 							_edit.plane = TRANSFORM_Y_AXIS;
-							set_message(TTR("Y-Axis Transform."), 2);
+							set_message(TTR("Y axis transform"), 2);
 
 						} break;
 						case TRANSFORM_Y_AXIS: {
 							_edit.plane = TRANSFORM_Z_AXIS;
-							set_message(TTR("Z-Axis Transform."), 2);
+							set_message(TTR("Z axis transform"), 2);
 
 						} break;
 						case TRANSFORM_Z_AXIS: {
 							_edit.plane = TRANSFORM_VIEW;
 							// TRANSLATORS: This refers to the transform of the view plane.
-							set_message(TTR("View Plane Transform."), 2);
+							set_message(TTR("View plane transform"), 2);
 
 						} break;
 						case TRANSFORM_YZ:
@@ -2644,7 +2644,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					vertex_snap_has_target = true;
 					displacement = target - vertex_snap_source;
 					has_displacement = true;
-					set_message(TTR("Vertex Snap (Snapped)"));
+					set_message(TTR("Vertex snap (snapped)"));
 				} else {
 					vertex_snap_has_target = false;
 					Vector3 ray_pos = get_ray_pos(m->get_position());
@@ -2654,7 +2654,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						displacement = intersection - vertex_snap_source;
 						has_displacement = true;
 					}
-					set_message(TTR("Vertex Snap"));
+					set_message(TTR("Vertex snap"));
 				}
 
 				if (has_displacement) {
@@ -2712,7 +2712,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, camera, m->get_position());
 			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
-			set_message(n + ": " + String(v));
+			if (v.get_type() == Variant::VECTOR3 || v.get_type() == Variant::VECTOR3I) {
+				v = _get_coordinates_string(v, "m");
+			}
+			set_message(n + " " + String(v));
 
 		} else if (m->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
@@ -2930,7 +2933,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 
 			if (!AnimationPlayerEditor::get_singleton()->get_track_editor()->has_keying()) {
-				set_message(TTR("Keying is disabled (no key inserted)."));
+				set_message(TTR("Keying is disabled (no key inserted)"));
 				return;
 			}
 
@@ -2945,7 +2948,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				spatial_editor->emit_signal(SNAME("transform_key_request"), sp, "", sp->get_transform());
 			}
 
-			set_message(TTR("Animation Key Inserted."));
+			set_message(TTR("Animation key inserted"));
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", event_mod) && _edit.mode != TRANSFORM_NONE) {
 			cancel_transform();
@@ -2975,13 +2978,16 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.plane = TRANSFORM_VIEW;
 					_edit.original_mouse_pos = _edit.mouse_pos;
 					if (_edit.is_trackball) {
-						set_message(TTR("Trackball Rotation"));
+						set_message(TTR("Trackball rotation"));
 					} else {
 						_edit.initial_click_vector = Vector3();
 						_edit.previous_rotation_vector = Vector3();
 						_edit.accumulated_rotation_angle = 0.0;
 						_edit.rotation_angle = 0.0;
-						set_message(vformat(TTR("Rotating %s degrees."), String::num(0, 0)));
+						// Add a space of additional padding for positive numbers, so that
+						// the `-` sign can display without reflowing numbers.
+						// (The tabular space has the same width as a digit or the `-` sign in the default font.)
+						set_message(vformat(TTR(U"Rotating %s%.2f°"), U" ", 0.0));
 					}
 					surface->queue_redraw();
 				} else if (_edit.mode != TRANSFORM_ROTATE) {
@@ -3134,6 +3140,17 @@ bool Node3DEditorViewport::_is_shortcut_empty(const String &p_name) {
 void Node3DEditorViewport::set_message(const String &p_message, float p_time) {
 	message = p_message;
 	message_time = p_time;
+}
+
+// Returns a string designed for fixed-width fonts (more readable than
+// `vformat()`'s `%v` for this purpose, with no parentheses surrounding the coordinates).
+String Node3DEditorViewport::_get_coordinates_string(Vector3 p_coords, String p_suffix, int p_digits) const {
+	// Add a tabular space of additional padding for positive numbers, so that the `-`
+	// sign can display without reflowing numbers.
+	// (The tabular space has the same width as a digit or the `-` sign in the default font.)
+	return "X: " + String(p_coords.x >= 0.0 ? U" " : U"") + rtos(p_coords.x).pad_decimals(p_digits) + U" " + p_suffix +
+			"    Y: " + String(p_coords.y >= 0.0 ? U" " : U"") + rtos(p_coords.y).pad_decimals(p_digits) + U" " + p_suffix +
+			"    Z: " + String(p_coords.z >= 0.0 ? U" " : U"") + rtos(p_coords.z).pad_decimals(p_digits) + U" " + p_suffix;
 }
 
 void Node3DEditorPlugin::edited_scene_changed() {
@@ -3824,7 +3841,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 					if (!ruler->is_inside_tree()) {
 						double snap = EDITOR_GET("interface/inspector/default_float_step");
 						int snap_step_decimals = Math::range_step_decimals(snap);
-						set_message(vformat(TTR("Translating: %s"), vformat("%.*v", snap_step_decimals, selected_node->get_global_position())));
+						set_message(TTR("Translating") + " " + _get_coordinates_string(selected_node->get_global_position(), "m", snap_step_decimals));
 					}
 
 					selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
@@ -3848,7 +3865,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos, preview_node));
 				double snap = EDITOR_GET("interface/inspector/default_float_step");
 				int snap_step_decimals = Math::range_step_decimals(snap);
-				set_message(vformat(TTR("Instantiating: %s"), vformat("%.*v", snap_step_decimals, preview_node_pos)));
+				set_message(TTR("Instantiating") + " " + _get_coordinates_string(preview_node_pos, "m", snap_step_decimals));
 				Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
 				preview_node->set_global_transform(preview_gl_transform);
 				if (!preview_node->is_visible()) {
@@ -4091,12 +4108,11 @@ void Node3DEditorViewport::_draw() {
 	RID ci = surface->get_canvas_item();
 
 	if (message_time > 0) {
-		Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-		int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-		Point2 msgpos = Point2(10 * EDSCALE, get_size().y - 14 * EDSCALE);
-		font->draw_string(ci, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		font->draw_string(ci, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		font->draw_string(ci, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
+		const Ref<Font> &font = get_theme_font(SceneStringName(font), SNAME("Label"));
+		const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+		const Point2 msgpos = Point2(10 * EDSCALE, get_size().y - 14 * EDSCALE);
+		font->draw_string_outline(ci, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Math::round(6 * EDSCALE), Color(0, 0, 0, 0.5));
+		font->draw_string(ci, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1));
 	}
 
 	if ((vertex_snap_mode || vertex_snap_dragging) && vertex_snap_has_source) {
@@ -4364,7 +4380,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_3d_controller->cursor.x_rot = Math::PI / 2.0;
 			view_3d_controller->cursor.unsnapped_y_rot = view_3d_controller->cursor.y_rot;
 			view_3d_controller->cursor.unsnapped_x_rot = view_3d_controller->cursor.x_rot;
-			set_message(TTR("Top View."), 2);
+			set_message(TTR("Top view"), 2);
 			view_3d_controller->set_view_type(View3DController::VIEW_TYPE_TOP);
 
 		} break;
@@ -4373,7 +4389,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_3d_controller->cursor.x_rot = -Math::PI / 2.0;
 			view_3d_controller->cursor.unsnapped_y_rot = view_3d_controller->cursor.y_rot;
 			view_3d_controller->cursor.unsnapped_x_rot = view_3d_controller->cursor.x_rot;
-			set_message(TTR("Bottom View."), 2);
+			set_message(TTR("Bottom view"), 2);
 			view_3d_controller->set_view_type(View3DController::VIEW_TYPE_BOTTOM);
 
 		} break;
@@ -4382,7 +4398,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_3d_controller->cursor.y_rot = Math::PI / 2.0;
 			view_3d_controller->cursor.unsnapped_x_rot = view_3d_controller->cursor.x_rot;
 			view_3d_controller->cursor.unsnapped_y_rot = view_3d_controller->cursor.y_rot;
-			set_message(TTR("Left View."), 2);
+			set_message(TTR("Left view"), 2);
 			view_3d_controller->set_view_type(View3DController::VIEW_TYPE_LEFT);
 
 		} break;
@@ -4391,7 +4407,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_3d_controller->cursor.y_rot = -Math::PI / 2.0;
 			view_3d_controller->cursor.unsnapped_x_rot = view_3d_controller->cursor.x_rot;
 			view_3d_controller->cursor.unsnapped_y_rot = view_3d_controller->cursor.y_rot;
-			set_message(TTR("Right View."), 2);
+			set_message(TTR("Right view"), 2);
 			view_3d_controller->set_view_type(View3DController::VIEW_TYPE_RIGHT);
 
 		} break;
@@ -4400,7 +4416,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_3d_controller->cursor.y_rot = 0;
 			view_3d_controller->cursor.unsnapped_x_rot = view_3d_controller->cursor.x_rot;
 			view_3d_controller->cursor.unsnapped_y_rot = view_3d_controller->cursor.y_rot;
-			set_message(TTR("Front View."), 2);
+			set_message(TTR("Front view"), 2);
 			view_3d_controller->set_view_type(View3DController::VIEW_TYPE_FRONT);
 
 		} break;
@@ -4409,7 +4425,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_3d_controller->cursor.y_rot = Math::PI;
 			view_3d_controller->cursor.unsnapped_x_rot = view_3d_controller->cursor.x_rot;
 			view_3d_controller->cursor.unsnapped_y_rot = view_3d_controller->cursor.y_rot;
-			set_message(TTR("Rear View."), 2);
+			set_message(TTR("Rear view"), 2);
 			view_3d_controller->set_view_type(View3DController::VIEW_TYPE_REAR);
 
 		} break;
@@ -6160,6 +6176,9 @@ void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 		return;
 	}
 
+	double snap = EDITOR_GET("interface/inspector/default_float_step");
+	int snap_step_decimals = Math::range_step_decimals(snap);
+
 	if (get_selected_count() > 0) {
 		_edit.children_original_globals.clear();
 
@@ -6174,13 +6193,16 @@ void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 		switch (p_mode) {
 			case TRANSFORM_ROTATE:
 				_edit.show_rotation_line = true;
-				set_message(vformat(TTR("Rotating %s degrees."), String::num(0, 0)));
+				// Add a space of additional padding for positive numbers, so that
+				// the `-` sign can display without reflowing numbers.
+				// (The tabular space has the same width as a digit or the `-` sign in the default font.)
+				set_message(vformat(TTR(U"Rotating %s%.2f°"), U" ", 0.0));
 				break;
 			case TRANSFORM_TRANSLATE:
-				set_message(vformat(TTR("Translating: %s"), vformat("%.0v", Vector3())));
+				set_message(TTR("Translating") + " " + _get_coordinates_string(Vector3(), "m", snap_step_decimals));
 				break;
 			case TRANSFORM_SCALE:
-				set_message(vformat(TTR("Scaling: %s"), vformat("%.0v", Vector3())));
+				set_message(TTR("Scaling") + " " + _get_coordinates_string(Vector3(), "", snap_step_decimals));
 				break;
 			default:
 				break;
@@ -6377,7 +6399,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			motion_snapped.snapf(snap);
 			// This might not be necessary anymore after issue #288 is solved (in 4.0?).
 			// TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
-			set_message(vformat(TTR("Scaling: %s"), vformat("%.*v", snap_step_decimals, motion_snapped)));
+			set_message(TTR("Scaling") + " " + _get_coordinates_string(motion_snapped, "", snap_step_decimals));
 			if (local_coords) {
 				// TODO: needed?
 				motion = _edit.original.basis.inverse().xform(motion);
@@ -6444,7 +6466,8 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			Vector3 motion_snapped = motion;
 			motion_snapped.snapf(snap);
 			// TRANSLATORS: Refers to changing the position of a node in the 3D editor.
-			set_message(vformat(TTR("Translating: %s"), vformat("%.*v", snap_step_decimals, motion_snapped)));
+			set_message(TTR("Translating") + " " + _get_coordinates_string(motion_snapped, "m", snap_step_decimals) +
+					"    (" + rtos(motion_snapped.length()).pad_decimals(snap_step_decimals) + " m)");
 			if (local_coords) {
 				motion = spatial_editor->get_gizmo_transform().basis.inverse().xform(motion);
 			}
@@ -6487,7 +6510,10 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 					}
 
 					double angle_deg = Math::rad_to_deg(rotation_angle);
-					set_message(vformat(TTR("Rotating %s degrees."), String::num(angle_deg, 2)));
+					// Add a space of additional padding for positive numbers, so that
+					// the `-` sign can display without reflowing numbers.
+					// (The tabular space has the same width as a digit or the `-` sign in the default font.)
+					set_message(vformat(TTR(U"Rotating %s%.2f°"), angle_deg >= 0.0 ? U" " : U"", angle_deg));
 
 					apply_transform(rotation_axis, rotation_angle);
 				}
@@ -6574,7 +6600,10 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 						? Math::deg_to_rad(Math::snapped(Math::rad_to_deg(_edit.accumulated_rotation_angle), snap))
 						: _edit.accumulated_rotation_angle;
 			}
-			set_message(vformat(TTR("Rotating %s degrees."), String::num(Math::rad_to_deg(_edit.rotation_angle), snap_step_decimals)));
+			// Add a space of additional padding for positive numbers, so that
+			// the `-` sign can display without reflowing numbers.
+			// (The tabular space has the same width as a digit or the `-` sign in the default font.)
+			set_message(vformat(TTR(U"Rotating %s%.2f°"), _edit.rotation_angle >= 0.0 ? U" " : U"", _edit.rotation_angle));
 
 			Vector3 compute_axis = local_coords ? local_axis : global_axis;
 			apply_transform(compute_axis, _edit.rotation_angle);
@@ -6628,17 +6657,20 @@ void Node3DEditorViewport::update_transform_numeric() {
 	switch (_edit.mode) {
 		case TRANSFORM_TRANSLATE:
 			motion *= value;
-			set_message(vformat(TTR("Translating %s."), motion));
+			set_message(vformat(TTR("Translating %s (%.3f m)"), _get_coordinates_string(motion, "m"), motion.length()));
 			break;
 		case TRANSFORM_ROTATE:
 			extra = Math::deg_to_rad(value);
-			set_message(vformat(TTR("Rotating %f degrees."), value));
+			// Add a space of additional padding for positive numbers, so that
+			// the `-` sign can display without reflowing numbers.
+			// (The tabular space has the same width as a digit or the `-` sign in the default font.)
+			set_message(vformat(TTR(U"Rotating %s%.2f°"), value >= 0.0 ? U" " : U"", value));
 			break;
 		case TRANSFORM_SCALE:
 			// To halve the size of an object in Blender, you scale it by 0.5.
 			// Doing the same in Godot is considered scaling it by -0.5.
 			motion *= (value - 1.0);
-			set_message(vformat(TTR("Scaling %s."), motion));
+			set_message(vformat(TTR("Scaling %s"), _get_coordinates_string(motion)));
 			break;
 		case TRANSFORM_NONE:
 			ERR_FAIL_MSG("_edit.mode cannot be TRANSFORM_NONE in update_transform_numeric.");
