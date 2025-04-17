@@ -43,7 +43,7 @@ using namespace godot;
 
 // Headers for building as built-in module.
 #include "core/string/ustring.h"
-#include "core/templates/vector.h"
+#include "core/templates/local_vector.h"
 
 #endif
 
@@ -65,11 +65,14 @@ public:
 		int end = 0;
 		hb_script_t script = HB_SCRIPT_COMMON;
 	};
-	Vector<ScriptRange> script_ranges;
+	LocalVector<ScriptRange> script_ranges;
 
 private:
 	static bool same_script(int32_t p_script_one, int32_t p_script_two);
 
 public:
+	ScriptIterator *substr(int p_start, int p_length);
+
+	ScriptIterator() {}
 	ScriptIterator(const String &p_string, int p_start, int p_length);
 };

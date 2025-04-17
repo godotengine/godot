@@ -366,15 +366,17 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 
 	l.indent = _find_margin(l.from, p_base_font, p_base_font_size) + l.prefix_width;
 	l.offset.x = l.indent;
-	l.text_buf->set_width(p_width - l.offset.x);
+	if ((l.text_buf->get_non_wrapped_size().x > p_width - l.offset.x) || (l.text_buf->get_size().x < p_width - l.offset.x)) {
+		l.text_buf->set_width(p_width - l.offset.x);
 
-	PackedFloat32Array tab_stops = _find_tab_stops(l.from);
-	if (!tab_stops.is_empty()) {
-		l.text_buf->tab_align(tab_stops);
-	} else if (tab_size > 0) { // Align inline tabs.
-		Vector<float> tabs;
-		tabs.push_back(tab_size * p_base_font->get_char_size(' ', p_base_font_size).width);
-		l.text_buf->tab_align(tabs);
+		PackedFloat32Array tab_stops = _find_tab_stops(l.from);
+		if (!tab_stops.is_empty()) {
+			l.text_buf->tab_align(tab_stops);
+		} else if (tab_size > 0) { // Align inline tabs.
+			Vector<float> tabs;
+			tabs.push_back(tab_size * tab_char_width);
+			l.text_buf->tab_align(tabs);
+		}
 	}
 
 	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
@@ -515,7 +517,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 		l.text_buf->tab_align(tab_stops);
 	} else if (tab_size > 0) { // Align inline tabs.
 		Vector<float> tabs;
-		tabs.push_back(tab_size * p_base_font->get_char_size(' ', p_base_font_size).width);
+		tabs.push_back(tab_size * tab_char_width);
 		l.text_buf->tab_align(tabs);
 	}
 
@@ -2346,6 +2348,10 @@ void RichTextLabel::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_stop_thread();
 			main->first_invalid_font_line.store(0); // Invalidate all lines.
+
+			tab_char_width = theme_cache.normal_font->get_char_size(' ', theme_cache.normal_font_size).width;
+			base_font_h = theme_cache.normal_font->get_height(theme_cache.normal_font_size);
+
 			_invalidate_accessibility();
 			queue_accessibility_update();
 			queue_redraw();
@@ -2737,12 +2743,12 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				handled = true;
 			}
 			if (k->is_action("ui_up", true) && vscroll->is_visible_in_tree()) {
-				vscroll->scroll(-theme_cache.normal_font->get_height(theme_cache.normal_font_size));
+				vscroll->scroll(-base_font_h);
 				queue_accessibility_update();
 				handled = true;
 			}
 			if (k->is_action("ui_down", true) && vscroll->is_visible_in_tree()) {
-				vscroll->scroll(theme_cache.normal_font->get_height(theme_cache.normal_font_size));
+				vscroll->scroll(base_font_h);
 				queue_accessibility_update();
 				handled = true;
 			}
