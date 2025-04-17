@@ -849,6 +849,9 @@ public:
 	int get_content_height() const;
 	int get_content_width() const;
 
+	int get_line_height(int p_line) const;
+	int get_line_width(int p_line) const;
+
 	void scroll_to_selection();
 
 	VScrollBar *get_v_scroll_bar() { return vscroll; }
