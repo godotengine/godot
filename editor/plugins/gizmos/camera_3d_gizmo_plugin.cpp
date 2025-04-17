@@ -61,9 +61,9 @@ String Camera3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, in
 	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_node_3d());
 
 	if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
-		return "FOV";
+		return TTR("FOV");
 	} else {
-		return "Size";
+		return TTR("Size");
 	}
 }
 
