@@ -44,13 +44,13 @@
 
 class CameraFeedWindows : public CameraFeed {
 private:
-	LPCWSTR camera_id;
-	IMFMediaSource *source = NULL;
-	IMFMediaType *type = NULL;
-	GUID format;
+	String device_id;
+	IMFMediaSource *imf_media_source = NULL;
 
-	IMFSourceReader *reader = NULL;
+	IMFSourceReader *imf_source_reader = NULL;
 	std::thread *worker;
+	Vector<GUID> format_guids;
+	Vector<IMFMediaType*> format_mediatypes;
 
 	// image_y is used as unique image when format is RGB
 	Ref<Image> image_y;
@@ -58,37 +58,29 @@ private:
 	Vector<uint8_t> data_y;
 	Vector<uint8_t> data_uv;
 
-	
 	static void capture(CameraFeedWindows *feed);
+
 	void read();
 
 protected:
 public:
-	CameraFeedWindows(LPCWSTR camera_id, IMFMediaType *type, String name, int width, int height, GUID format);
+	static Ref<CameraFeedWindows> create(IMFActivate *pDevice);
 	virtual ~CameraFeedWindows();
 
-	bool activate_feed();
-	void deactivate_feed();
+	virtual Array get_formats() const override;
+	virtual bool set_format(int p_index, const Dictionary &p_parameters) override;
+
+	virtual bool activate_feed() override;
+	virtual void deactivate_feed() override;
 };
 
 class CameraWindows : public CameraServer {
 private:
 	void update_feeds();
-	void update_feeds_2(IMFAttributes *pConfig);
-	void try_add_device(IMFActivate *pDevice);
 
 public:
 	CameraWindows();
 	~CameraWindows();
 };
-
-template <class T> void SafeRelease(T **ppT)
-{
-    if (*ppT)
-    {
-        (*ppT)->Release();
-        *ppT = NULL;
-    }
-}
 
 #endif // CAMERA_WIN_H
