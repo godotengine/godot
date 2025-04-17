@@ -274,7 +274,7 @@ Input::VelocityTrack::VelocityTrack() {
 bool Input::is_anything_pressed() const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input) {
+	if (input_disabled) {
 		return false;
 	}
 
@@ -294,7 +294,7 @@ bool Input::is_anything_pressed() const {
 bool Input::is_anything_pressed_except_mouse() const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input) {
+	if (input_disabled) {
 		return false;
 	}
 
@@ -314,7 +314,7 @@ bool Input::is_anything_pressed_except_mouse() const {
 bool Input::is_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input) {
+	if (input_disabled) {
 		return false;
 	}
 
@@ -324,7 +324,7 @@ bool Input::is_key_pressed(Key p_keycode) const {
 bool Input::is_physical_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input) {
+	if (input_disabled) {
 		return false;
 	}
 
@@ -334,7 +334,7 @@ bool Input::is_physical_key_pressed(Key p_keycode) const {
 bool Input::is_key_label_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input) {
+	if (input_disabled) {
 		return false;
 	}
 
@@ -344,7 +344,7 @@ bool Input::is_key_label_pressed(Key p_keycode) const {
 bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input) {
+	if (input_disabled) {
 		return false;
 	}
 
@@ -362,7 +362,7 @@ static JoyButton _combine_device(JoyButton p_value, int p_device) {
 bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input) {
+	if (input_disabled) {
 		return false;
 	}
 
@@ -372,7 +372,7 @@ bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 
-	if (disable_input) {
+	if (input_disabled) {
 		return false;
 	}
 
@@ -387,7 +387,7 @@ bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 
-	if (disable_input) {
+	if (input_disabled) {
 		return false;
 	}
 
@@ -413,7 +413,7 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 bool Input::is_action_just_released(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 
-	if (disable_input) {
+	if (input_disabled) {
 		return false;
 	}
 
@@ -439,7 +439,7 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 float Input::get_action_strength(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
 
-	if (disable_input) {
+	if (input_disabled) {
 		return 0.0f;
 	}
 
@@ -458,7 +458,7 @@ float Input::get_action_strength(const StringName &p_action, bool p_exact) const
 float Input::get_action_raw_strength(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
 
-	if (disable_input) {
+	if (input_disabled) {
 		return 0.0f;
 	}
 
@@ -507,7 +507,7 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input) {
+	if (input_disabled) {
 		return 0;
 	}
 
@@ -1829,12 +1829,12 @@ int Input::get_unused_joy_id() {
 	return -1;
 }
 
-void Input::set_disable_input(bool p_disable) {
-	disable_input = p_disable;
+void Input::set_input_disabled(bool p_disable) {
+	input_disabled = p_disable;
 }
 
 bool Input::is_input_disabled() const {
-	return disable_input;
+	return input_disabled;
 }
 
 Input::Input() {
