@@ -5,11 +5,12 @@ import shutil
 import subprocess
 import sys
 import urllib.request
-# [QCOM] Add platform check for Windows on ARM and fix SSL context error.
 import platform 
 import ssl
 
-ssl._create_default_https_context = ssl._create_unverified_context
+# Check if '-ssl_allow_unverified' is in the command line arguments
+if '-ssl_allow_unverified' in sys.argv:
+    ssl._create_default_https_context = ssl._create_unverified_context
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
 from misc.utility.color import Ansi, color_print
@@ -26,8 +27,8 @@ else:
 # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
 mesa_version = "23.1.9"
 mesa_filename = "godot-nir-23.1.9.zip"
-# [QCOM] Override mesa version and filename if building Windows on Arm
-if platform.machine() == 'ARM64' and platform.system() == 'Windows':
+# Override Mesa version and filename if building on Windows on ARM.
+if platform.system() == "Windows" and platform.machine() == "ARM64":
    mesa_version = "23.1.9-1"
    mesa_filename = "godot-nir-static-arm64-msvc-release.zip"
 mesa_archive = os.path.join(deps_folder, mesa_filename)
