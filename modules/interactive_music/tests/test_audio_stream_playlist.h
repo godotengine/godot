@@ -52,6 +52,12 @@ TEST_CASE("[AudioStreamPlaylist] test_initialized_and_default") {
 	CHECK(playlist->get_length() == 0.0);
 	CHECK(playlist->is_meta_stream() == true);
 	CHECK(playlist->get_bpm() == 0.0);
+
+	//using some set methods
+	playlist->set_loop(false); //we want these to fail for stress testing
+	CHECK(playlist->has_loop() == true);
+	playlist->set_shuffle(true);
+	CHECK(playlist->get_shuffle() == false);
 }
 
 TEST_CASE("[AudioStreamPlaylist] test_instantiate_playback") {
