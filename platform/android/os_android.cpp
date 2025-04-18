@@ -354,21 +354,12 @@ void OS_Android::main_loop_begin() {
 #endif
 }
 
-bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
+bool OS_Android::main_loop_iterate() {
 	if (!main_loop) {
 		return false;
 	}
-	DisplayServerAndroid::get_singleton()->reset_swap_buffers_flag();
 	DisplayServerAndroid::get_singleton()->process_events();
-	uint64_t current_frames_drawn = Engine::get_singleton()->get_frames_drawn();
 	bool exit = Main::iteration();
-
-	if (r_should_swap_buffers) {
-		*r_should_swap_buffers = !is_in_low_processor_usage_mode() ||
-				DisplayServerAndroid::get_singleton()->should_swap_buffers() ||
-				RenderingServer::get_singleton()->has_changed() ||
-				current_frames_drawn != Engine::get_singleton()->get_frames_drawn();
-	}
 
 	return exit;
 }

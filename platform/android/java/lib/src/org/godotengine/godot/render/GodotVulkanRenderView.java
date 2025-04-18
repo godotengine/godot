@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotGLRenderView.java                                                */
+/*  GodotVulkanRenderView.java                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,18 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package org.godotengine.godot.render;
 
-import org.godotengine.godot.gl.GLSurfaceView;
-import org.godotengine.godot.gl.GodotRenderer;
+import org.godotengine.godot.Godot;
+import org.godotengine.godot.GodotRenderView;
 import org.godotengine.godot.input.GodotInputHandler;
-import org.godotengine.godot.xr.XRMode;
-import org.godotengine.godot.xr.ovr.OvrConfigChooser;
-import org.godotengine.godot.xr.ovr.OvrContextFactory;
-import org.godotengine.godot.xr.ovr.OvrWindowSurfaceFactory;
-import org.godotengine.godot.xr.regular.RegularConfigChooser;
-import org.godotengine.godot.xr.regular.RegularContextFactory;
-import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
 
 import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
@@ -57,38 +50,30 @@ import androidx.annotation.Keep;
 
 import java.io.InputStream;
 
-/**
- * A simple GLSurfaceView sub-class that demonstrate how to perform
- * OpenGL ES 2.0 rendering into a GL Surface. Note the following important
- * details:
- *
- * - The class must use a custom context factory to enable 2.0 rendering.
- *   See ContextFactory class definition below.
- *
- * - The class must use a custom EGLConfigChooser to be able to select
- *   an EGLConfig that supports 3.0. This is done by providing a config
- *   specification to eglChooseConfig() that has the attribute
- *   EGL10.ELG_RENDERABLE_TYPE containing the EGL_OPENGL_ES2_BIT flag
- *   set. See ConfigChooser class definition below.
- *
- * - The class must select the surface's format, then choose an EGLConfig
- *   that matches it exactly (with regards to red/green/blue/alpha channels
- *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
- */
-class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
+public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	private final Godot godot;
-	private final GodotInputHandler inputHandler;
-	private final GodotRenderer godotRenderer;
+	private final GodotInputHandler mInputHandler;
+	private final GodotRenderer mRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotGLRenderView(Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl, boolean shouldBeTranslucent) {
+	public GodotVulkanRenderView(Godot godot, GodotRenderer renderer, GodotInputHandler inputHandler, boolean shouldBeTranslucent) {
 		super(godot.getContext());
 
 		this.godot = godot;
-		this.inputHandler = inputHandler;
-		this.godotRenderer = new GodotRenderer();
+		mInputHandler = inputHandler;
+		mRenderer = renderer;
 		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
-		init(xrMode, shouldBeTranslucent, useDebugOpengl);
+		setFocusableInTouchMode(true);
+		setClickable(false);
+
+		if (shouldBeTranslucent) {
+			this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+		}
+	}
+
+	@Override
+	public void startRenderer() {
+		startRenderer(mRenderer);
 	}
 
 	@Override
@@ -97,93 +82,55 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	}
 
 	@Override
-	public void queueOnRenderThread(Runnable event) {
-		queueEvent(event);
-	}
-
-	@Override
-	public void onActivityPaused() {
-		queueEvent(() -> {
-			GodotLib.focusout();
-			// Pause the renderer
-			godotRenderer.onActivityPaused();
-		});
-	}
-
-	@Override
-	public void onActivityStopped() {
-		pauseGLThread();
-	}
-
-	@Override
-	public void onActivityResumed() {
-		queueEvent(() -> {
-			// Resume the renderer
-			godotRenderer.onActivityResumed();
-			GodotLib.focusin();
-		});
-	}
-
-	@Override
-	public void onActivityStarted() {
-		resumeGLThread();
-	}
-
-	@Override
-	public void onActivityDestroyed() {
-		requestRenderThreadExitAndWait();
-	}
-
-	@Override
 	public GodotInputHandler getInputHandler() {
-		return inputHandler;
+		return mInputHandler;
 	}
 
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
-		return inputHandler.onTouchEvent(event);
+		return mInputHandler.onTouchEvent(event);
 	}
 
 	@Override
 	public boolean onKeyUp(final int keyCode, KeyEvent event) {
-		return inputHandler.onKeyUp(keyCode, event) || super.onKeyUp(keyCode, event);
+		return mInputHandler.onKeyUp(keyCode, event) || super.onKeyUp(keyCode, event);
 	}
 
 	@Override
 	public boolean onKeyDown(final int keyCode, KeyEvent event) {
-		return inputHandler.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
+		return mInputHandler.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
 	}
 
 	@Override
 	public boolean onGenericMotionEvent(MotionEvent event) {
-		return inputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
+		return mInputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
 	}
 
 	@Override
 	public boolean onCapturedPointerEvent(MotionEvent event) {
-		return inputHandler.onGenericMotionEvent(event);
-	}
-
-	@Override
-	public void onPointerCaptureChange(boolean hasCapture) {
-		super.onPointerCaptureChange(hasCapture);
-		inputHandler.onPointerCaptureChange(hasCapture);
+		return mInputHandler.onGenericMotionEvent(event);
 	}
 
 	@Override
 	public void requestPointerCapture() {
 		if (canCapturePointer()) {
 			super.requestPointerCapture();
-			inputHandler.onPointerCaptureChange(true);
+			mInputHandler.onPointerCaptureChange(true);
 		}
 	}
 
 	@Override
 	public void releasePointerCapture() {
 		super.releasePointerCapture();
-		inputHandler.onPointerCaptureChange(false);
+		mInputHandler.onPointerCaptureChange(false);
+	}
+
+	@Override
+	public void onPointerCaptureChange(boolean hasCapture) {
+		super.onPointerCaptureChange(hasCapture);
+		mInputHandler.onPointerCaptureChange(hasCapture);
 	}
 
 	/**
@@ -232,55 +179,5 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	@Override
 	public PointerIcon onResolvePointerIcon(MotionEvent me, int pointerIndex) {
 		return getPointerIcon();
-	}
-
-	private void init(XRMode xrMode, boolean translucent, boolean useDebugOpengl) {
-		setPreserveEGLContextOnPause(true);
-		setFocusableInTouchMode(true);
-		switch (xrMode) {
-			case OPENXR:
-				// Replace the default egl config chooser.
-				setEGLConfigChooser(new OvrConfigChooser());
-
-				// Replace the default context factory.
-				setEGLContextFactory(new OvrContextFactory());
-
-				// Replace the default window surface factory.
-				setEGLWindowSurfaceFactory(new OvrWindowSurfaceFactory());
-				break;
-
-			case REGULAR:
-			default:
-				/* By default, GLSurfaceView() creates a RGB_565 opaque surface.
-				 * If we want a translucent one, we should change the surface's
-				 * format here, using PixelFormat.TRANSLUCENT for GL Surfaces
-				 * is interpreted as any 32-bit surface with alpha by SurfaceFlinger.
-				 */
-				if (translucent) {
-					this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-				}
-
-				/* Setup the context factory for 2.0 rendering.
-				 * See ContextFactory class definition below
-				 */
-				setEGLContextFactory(new RegularContextFactory(useDebugOpengl));
-
-				/* We need to choose an EGLConfig that matches the format of
-				 * our surface exactly. This is going to be done in our
-				 * custom config chooser. See ConfigChooser class definition
-				 * below.
-				 */
-
-				setEGLConfigChooser(
-						new RegularFallbackConfigChooser(8, 8, 8, 8, 24, 0,
-								new RegularConfigChooser(8, 8, 8, 8, 16, 0)));
-				break;
-		}
-	}
-
-	@Override
-	public void startRenderer() {
-		/* Set the renderer responsible for frame rendering */
-		setRenderer(godotRenderer);
 	}
 }
