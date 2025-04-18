@@ -280,6 +280,9 @@ public:
 
 	uint32_t sky_ggx_samples_quality;
 	bool sky_use_cubemap_array;
+#if defined(MACOS_ENABLED) && defined(__x86_64__)
+	void check_cubemap_array();
+#endif
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
 	int roughness_layers;
