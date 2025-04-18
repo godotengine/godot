@@ -219,11 +219,6 @@ void Node::_notification(int p_notification) {
 			get_tree()->nodes_in_tree_count++;
 			orphan_node_count--;
 
-			// Allow physics interpolated nodes to automatically reset when added to the tree
-			// (this is to save the user from doing this manually each time).
-			if (get_tree()->is_physics_interpolation_enabled()) {
-				_set_physics_interpolation_reset_requested(true);
-			}
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {

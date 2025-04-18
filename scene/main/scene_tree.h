@@ -34,6 +34,7 @@
 #include "core/os/thread_safe.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/self_list.h"
+#include "scene/main/scene_tree_fti.h"
 #include "scene/resources/mesh.h"
 
 #undef Window
@@ -148,6 +149,7 @@ private:
 	bool _quit = false;
 
 	bool _physics_interpolation_enabled = false;
+	SceneTreeFTI scene_tree_fti;
 
 	StringName tree_changed_name = "tree_changed";
 	StringName node_added_name = "node_added";
@@ -453,6 +455,8 @@ public:
 	void client_physics_interpolation_add_node_3d(SelfList<Node3D> *p_elem);
 	void client_physics_interpolation_remove_node_3d(SelfList<Node3D> *p_elem);
 #endif
+
+	SceneTreeFTI &get_scene_tree_fti() { return scene_tree_fti; }
 
 	SceneTree();
 	~SceneTree();
