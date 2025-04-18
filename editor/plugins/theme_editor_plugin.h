@@ -30,12 +30,10 @@
 
 #pragma once
 
+#include "editor/gui/editor_accept_dialog.h"
 #include "editor/plugins/editor_plugin.h"
-#include "editor/plugins/theme_editor_preview.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/tree.h"
-#include "scene/resources/theme.h"
 
 class Button;
 class CheckButton;
@@ -46,8 +44,12 @@ class OptionButton;
 class PanelContainer;
 class TabBar;
 class TabContainer;
-class ThemeEditorPlugin;
 class TextureRect;
+class Theme;
+class ThemeEditorPlugin;
+class ThemeEditorPreview;
+class Tree;
+class TreeItem;
 
 class ThemeItemImportTree : public VBoxContainer {
 	GDCLASS(ThemeItemImportTree, VBoxContainer);
@@ -186,8 +188,8 @@ public:
 
 class ThemeTypeEditor;
 
-class ThemeItemEditorDialog : public AcceptDialog {
-	GDCLASS(ThemeItemEditorDialog, AcceptDialog);
+class ThemeItemEditorDialog : public EditorAcceptDialog {
+	GDCLASS(ThemeItemEditorDialog, EditorAcceptDialog);
 
 	ThemeTypeEditor *theme_type_editor = nullptr;
 
