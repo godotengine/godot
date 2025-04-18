@@ -129,19 +129,19 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				// By default, the vertical orientation takes precedence. This is an exception.
 				if ((h_scroll_enabled && mb->is_shift_pressed()) || v_scroll_hidden) {
-					h_scroll->scroll(-h_scroll->get_page() / 8 * mb->get_factor());
+					h_scroll->scroll(-h_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (v_scroll_enabled) {
-					v_scroll->scroll(-v_scroll->get_page() / 8 * mb->get_factor());
+					v_scroll->scroll(-v_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				if ((h_scroll_enabled && mb->is_shift_pressed()) || v_scroll_hidden) {
-					h_scroll->scroll(h_scroll->get_page() / 8 * mb->get_factor());
+					h_scroll->scroll(h_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (v_scroll_enabled) {
-					v_scroll->scroll(v_scroll->get_page() / 8 * mb->get_factor());
+					v_scroll->scroll(v_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
@@ -150,19 +150,19 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
 				// By default, the horizontal orientation takes precedence. This is an exception.
 				if ((v_scroll_enabled && mb->is_shift_pressed()) || h_scroll_hidden) {
-					v_scroll->scroll(-v_scroll->get_page() / 8 * mb->get_factor());
+					v_scroll->scroll(-v_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (h_scroll_enabled) {
-					h_scroll->scroll(-h_scroll->get_page() / 8 * mb->get_factor());
+					h_scroll->scroll(-h_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_RIGHT) {
 				if ((v_scroll_enabled && mb->is_shift_pressed()) || h_scroll_hidden) {
-					v_scroll->scroll(v_scroll->get_page() / 8 * mb->get_factor());
+					v_scroll->scroll(v_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (h_scroll_enabled) {
-					h_scroll->scroll(h_scroll->get_page() / 8 * mb->get_factor());
+					h_scroll->scroll(h_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
@@ -250,10 +250,10 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
 		if (h_scroll_enabled) {
-			h_scroll->scroll(h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+			h_scroll->scroll(h_scroll->get_page() * pan_gesture->get_delta().x / ScrollBar::PAGE_DIVISOR);
 		}
 		if (v_scroll_enabled) {
-			v_scroll->scroll(v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+			v_scroll->scroll(v_scroll->get_page() * pan_gesture->get_delta().y / ScrollBar::PAGE_DIVISOR);
 		}
 
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
@@ -411,19 +411,19 @@ void ScrollContainer::_accessibility_action_scroll_set(const Variant &p_data) {
 }
 
 void ScrollContainer::_accessibility_action_scroll_up(const Variant &p_data) {
-	v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() / 8);
+	v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
 }
 
 void ScrollContainer::_accessibility_action_scroll_down(const Variant &p_data) {
-	v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / 8);
+	v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
 }
 
 void ScrollContainer::_accessibility_action_scroll_left(const Variant &p_data) {
-	h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() / 8);
+	h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
 }
 
 void ScrollContainer::_accessibility_action_scroll_right(const Variant &p_data) {
-	h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() / 8);
+	h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
 }
 
 void ScrollContainer::_notification(int p_what) {
