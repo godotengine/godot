@@ -83,6 +83,12 @@
 				Called when there is an input event. The input event propagates up through the node tree until a node consumes it.
 				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
+				[codeblock]
+				func _input(event):
+				    if event.is_action_pressed("action_name"):
+				        # Execute code.
+				        get_viewport().set_input_as_handled()
+				[/codeblock]
 				For gameplay input, [method _unhandled_input] and [method _unhandled_key_input] are usually a better fit as they allow the GUI to intercept the events first.
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
