@@ -67,7 +67,8 @@ bool SkeletonModification2DPhysicalBones::_get(const StringName &p_path, Variant
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (path.begins_with("fetch_bones")) {
-			return true; // Do nothing!
+			// Do nothing!
+			return false;
 		}
 	}
 #endif //TOOLS_ENABLED
