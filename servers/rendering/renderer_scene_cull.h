@@ -412,6 +412,7 @@ public:
 		// This will either be the interpolated transform (when using fixed timestep interpolation)
 		// or the ONLY transform (when not using FTI).
 		Transform3D transform;
+		bool teleported = false;
 
 		// For interpolation we store the current transform (this physics tick)
 		// and the transform in the previous tick.
@@ -1053,6 +1054,8 @@ public:
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency);
+
+	virtual void instance_teleport(RID instance);
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb);
 
