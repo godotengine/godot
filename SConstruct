@@ -1146,14 +1146,14 @@ if env["vsproj"]:
     env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
     methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
 
-# Check for the existence of headers
-conf = Configure(env)
+# Check for the existence of headers (backwards compatibility).
 if "check_c_headers" in env:
-    headers = env["check_c_headers"]
-    for header in headers:
+    print_warning("`check_c_headers` is deprecated. Use `__has_include` in C++ scripts instead.")
+    conf = Configure(env)
+    for header, define in env["check_c_headers"].items():
         if conf.CheckCHeader(header):
-            env.AppendUnique(CPPDEFINES=[headers[header]])
-conf.Finish()
+            env.AppendUnique(CPPDEFINES=[define])
+    conf.Finish()
 
 # Miscellaneous & post-build methods.
 if not env.GetOption("clean") and not env.GetOption("help"):
