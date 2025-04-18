@@ -751,7 +751,9 @@ private:
 
 public:
 	virtual RID get_focused_accessibility_element() const override;
-	PackedStringArray get_accessibility_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	String get_parsed_text() const;
 	void add_text(const String &p_text);

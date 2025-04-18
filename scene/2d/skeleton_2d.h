@@ -77,7 +77,9 @@ public:
 	void apply_rest();
 	Transform2D get_skeleton_rest() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	void set_autocalculate_length_and_angle(bool p_autocalculate);
 	bool get_autocalculate_length_and_angle() const;

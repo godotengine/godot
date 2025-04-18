@@ -1469,7 +1469,7 @@ void Node::set_accessibility_name(const String &p_name) {
 	if (data.accessibility_name != p_name) {
 		data.accessibility_name = p_name;
 		queue_accessibility_update();
-		update_configuration_warnings();
+		update_configuration_info();
 	}
 }
 
@@ -2332,7 +2332,7 @@ void Node::set_unique_name_in_owner(bool p_enabled) {
 		_acquire_unique_name_in_owner();
 	}
 
-	update_configuration_warnings();
+	update_configuration_info();
 	_emit_editor_state_changed();
 }
 
@@ -3568,18 +3568,7 @@ void Node::clear_internal_tree_resource_paths() {
 	}
 }
 
-PackedStringArray Node::get_accessibility_configuration_warnings() const {
-	ERR_THREAD_GUARD_V(PackedStringArray());
-	PackedStringArray ret;
-
-	Vector<String> warnings;
-	if (GDVIRTUAL_CALL(_get_accessibility_configuration_warnings, warnings)) {
-		ret.append_array(warnings);
-	}
-
-	return ret;
-}
-
+#ifndef DISABLE_DEPRECATED
 PackedStringArray Node::get_configuration_warnings() const {
 	ERR_THREAD_GUARD_V(PackedStringArray());
 	PackedStringArray ret;
@@ -3593,16 +3582,20 @@ PackedStringArray Node::get_configuration_warnings() const {
 }
 
 void Node::update_configuration_warnings() {
-	ERR_THREAD_GUARD
 #ifdef TOOLS_ENABLED
-	if (!is_inside_tree()) {
+	ERR_THREAD_GUARD
+	if (!ConfigurationInfo::configuration_info_changed_func) {
 		return;
 	}
-	if (get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
+	if (is_inside_tree() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
+		ConfigurationInfo::configuration_info_changed_func(this);
+
+		// Emit old signal for compatibility.
 		get_tree()->emit_signal(SceneStringName(node_configuration_warning_changed), this);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
+#endif // DISABLE_DEPRECATED
 
 void Node::set_display_folded(bool p_folded) {
 	ERR_THREAD_GUARD
@@ -3989,7 +3982,9 @@ void Node::_bind_methods() {
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_id", &Node::_rpc_id_bind, mi);
 	}
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("update_configuration_warnings"), &Node::update_configuration_warnings);
+#endif
 
 	{
 		MethodInfo mi;
@@ -4144,8 +4139,9 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_enter_tree);
 	GDVIRTUAL_BIND(_exit_tree);
 	GDVIRTUAL_BIND(_ready);
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_get_configuration_warnings);
-	GDVIRTUAL_BIND(_get_accessibility_configuration_warnings);
+#endif
 	GDVIRTUAL_BIND(_input, "event");
 	GDVIRTUAL_BIND(_shortcut_input, "event");
 	GDVIRTUAL_BIND(_unhandled_input, "event");

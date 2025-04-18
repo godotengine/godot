@@ -33,6 +33,12 @@
 #include "core/config/project_settings.h"
 #include "editor/export/editor_export_platform.h"
 
+bool EditorExportPlugin::_set(const StringName &p_name, const Variant &p_value) {
+	// Defer so that the property can finish changing its value before configuration info is retrieved.
+	call_deferred("update_configuration_info");
+	return false;
+}
+
 void EditorExportPlugin::set_export_preset(const Ref<EditorExportPreset> &p_preset) {
 	if (p_preset.is_valid()) {
 		export_preset = p_preset;

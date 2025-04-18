@@ -254,6 +254,8 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
 		nullptr, // GDExtensionClassValidateProperty validate_property_func;
 		nullptr, // GDExtensionClassNotification2 notification_func;
+		nullptr, // GDExtensionClassGetConfigurationInfo get_configuration_info_func;
+		nullptr, // GDExtensionClassFreeConfigurationInfo free_configuration_info_func;
 		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
 		p_extension_funcs->reference_func, // GDExtensionClassReference reference_func;
 		p_extension_funcs->unreference_func, // GDExtensionClassUnreference unreference_func;
@@ -292,6 +294,8 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
 		p_extension_funcs->validate_property_func, // GDExtensionClassValidateProperty validate_property_func;
 		p_extension_funcs->notification_func, // GDExtensionClassNotification2 notification_func;
+		nullptr, // GDExtensionClassGetConfigurationInfo get_configuration_info_func;
+		nullptr, // GDExtensionClassFreeConfigurationInfo free_configuration_info_func;
 		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
 		p_extension_funcs->reference_func, // GDExtensionClassReference reference_func;
 		p_extension_funcs->unreference_func, // GDExtensionClassUnreference unreference_func;
@@ -330,6 +334,8 @@ void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
 		p_extension_funcs->validate_property_func, // GDExtensionClassValidateProperty validate_property_func;
 		p_extension_funcs->notification_func, // GDExtensionClassNotification2 notification_func;
+		nullptr, // GDExtensionClassGetConfigurationInfo get_configuration_info_func;
+		nullptr, // GDExtensionClassFreeConfigurationInfo free_configuration_info_func;
 		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
 		p_extension_funcs->reference_func, // GDExtensionClassReference reference_func;
 		p_extension_funcs->unreference_func, // GDExtensionClassUnreference unreference_func;
@@ -442,6 +448,8 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	}
 #endif // DISABLE_DEPRECATED
 	extension->gdextension.notification2 = p_extension_funcs->notification_func;
+	extension->gdextension.get_configuration_info = p_extension_funcs->get_configuration_info_func;
+	extension->gdextension.free_configuration_info = p_extension_funcs->free_configuration_info_func;
 	extension->gdextension.to_string = p_extension_funcs->to_string_func;
 	extension->gdextension.reference = p_extension_funcs->reference_func;
 	extension->gdextension.unreference = p_extension_funcs->unreference_func;
