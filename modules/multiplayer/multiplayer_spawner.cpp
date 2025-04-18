@@ -79,7 +79,7 @@ void MultiplayerSpawner::_get_property_list(List<PropertyInfo> *p_list) const {
 		ext_hint += "*." + E;
 	}
 	for (uint32_t i = 0; i < spawnable_scenes.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, "scenes/" + itos(i), PROPERTY_HINT_FILE, ext_hint, PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::STRING, "scenes/" + itos(i), PROPERTY_HINT_FILE_UID, ext_hint, PROPERTY_USAGE_EDITOR));
 	}
 }
 #endif
