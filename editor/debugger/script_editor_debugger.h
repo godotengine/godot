@@ -217,6 +217,7 @@ private:
 	void _msg_servers_profile_frame(uint64_t p_thread_id, const Array &p_data);
 	void _msg_servers_profile_total(uint64_t p_thread_id, const Array &p_data);
 	void _msg_request_quit(uint64_t p_thread_id, const Array &p_data);
+	void _msg_request_pause(uint64_t p_thread_id, const Array &p_data);
 	void _msg_remote_objects_selected(uint64_t p_thread_id, const Array &p_data);
 	void _msg_remote_nothing_selected(uint64_t p_thread_id, const Array &p_data);
 	void _msg_remote_selection_invalidated(uint64_t p_thread_id, const Array &p_data);
