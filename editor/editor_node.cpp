@@ -941,6 +941,11 @@ void EditorNode::_notification(int p_what) {
 				EditorHelpHighlighter::get_singleton()->reset_cache();
 			}
 #endif
+#ifdef ANDROID_ENABLED
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/touch_actions_panel")) {
+				_touch_actions_panel_mode_changed();
+			}
+#endif
 		} break;
 	}
 }
@@ -7063,6 +7068,34 @@ void EditorNode::set_unfocused_low_processor_usage_mode_enabled(bool p_enabled) 
 	unfocused_low_processor_usage_mode_enabled = p_enabled;
 }
 
+#ifdef ANDROID_ENABLED
+void EditorNode::_touch_actions_panel_mode_changed() {
+	int panel_mode = EDITOR_GET("interface/touchscreen/touch_actions_panel");
+	switch (panel_mode) {
+		case 1:
+			if (touch_actions_panel != nullptr) {
+				touch_actions_panel->queue_free();
+			}
+			touch_actions_panel = memnew(TouchActionsPanel);
+			main_hbox->call_deferred("add_child", touch_actions_panel);
+			break;
+		case 2:
+			if (touch_actions_panel != nullptr) {
+				touch_actions_panel->queue_free();
+			}
+			touch_actions_panel = memnew(TouchActionsPanel);
+			call_deferred("add_child", touch_actions_panel);
+			break;
+		case 0:
+			if (touch_actions_panel != nullptr) {
+				touch_actions_panel->queue_free();
+				touch_actions_panel = nullptr;
+			}
+			break;
+	}
+}
+#endif
+
 EditorNode::EditorNode() {
 	DEV_ASSERT(!singleton);
 	singleton = this;
@@ -7368,7 +7401,20 @@ EditorNode::EditorNode() {
 	gui_base->set_end(Point2(0, 0));
 
 	main_vbox = memnew(VBoxContainer);
+
+#ifdef ANDROID_ENABLED
+	main_hbox = memnew(HBoxContainer);
+	main_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+
+	main_hbox->add_child(main_vbox);
+	main_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+	_touch_actions_panel_mode_changed();
+
+	gui_base->add_child(main_hbox);
+#else
 	gui_base->add_child(main_vbox);
+#endif
 
 	title_bar = memnew(EditorTitleBar);
 	main_vbox->add_child(title_bar);
@@ -7951,14 +7997,6 @@ EditorNode::EditorNode() {
 	default_layout->set_value(docks_section, "dock_hsplit_4", 0);
 
 	_update_layouts_menu();
-
-#ifdef ANDROID_ENABLED
-	// Add TouchActionsPanel node.
-	bool is_enabled = EDITOR_GET("interface/touchscreen/enable_touch_actions_panel");
-	if (is_enabled) {
-		add_child(memnew(TouchActionsPanel));
-	}
-#endif
 
 	// Bottom panels.
 
