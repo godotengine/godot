@@ -1623,7 +1623,7 @@ public:
 
 	uint64_t limit_get(Limit p_limit) const;
 
-	void swap_buffers(bool p_present);
+	void swap_buffers(bool p_present, bool p_sequential_sync);
 
 	uint32_t get_frame_delay() const;
 
