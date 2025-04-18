@@ -294,6 +294,7 @@ private:
 		float distance_fade_begin = 40.0;
 		float distance_fade_length = 10.0;
 		float normal_fade = 0.0;
+		bool override_surface_alpha = false;
 
 		Dependency dependency;
 	};
@@ -330,6 +331,12 @@ private:
 		float normal_xform[12];
 		float normal[3];
 		float normal_fade;
+		uint32_t override_surface_alpha;
+
+		// Added padding to maintain correct buffer alignment for UBO.
+		uint32_t _pad0;
+		uint32_t _pad1;
+		uint32_t _pad2;
 	};
 
 	struct DecalInstanceSort {
@@ -622,6 +629,7 @@ public:
 	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) override;
 	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) override;
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override;
+	virtual void decal_set_override_surface_alpha(RID p_decal, bool p_override) override;
 
 	void decal_atlas_mark_dirty_on_texture(RID p_texture);
 	void decal_atlas_remove_texture(RID p_texture);
@@ -672,6 +680,11 @@ public:
 	_FORCE_INLINE_ float decal_get_normal_fade(RID p_decal) {
 		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->normal_fade;
+	}
+
+	_FORCE_INLINE_ bool decal_is_override_surface_alpha_enabled(RID p_decal) {
+		const Decal *decal = decal_owner.get_or_null(p_decal);
+		return decal->override_surface_alpha;
 	}
 
 	_FORCE_INLINE_ bool decal_is_distance_fade_enabled(RID p_decal) {

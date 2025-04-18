@@ -1187,6 +1187,14 @@
 				Sets the normal [param fade] in the decal specified by the [param decal] RID. Equivalent to [member Decal.normal_fade].
 			</description>
 		</method>
+		<method name="decal_set_override_surface_alpha">
+			<return type="void" />
+			<param index="0" name="decal" type="RID" />
+			<param index="1" name="override_surface_alpha" type="bool" />
+			<description>
+				If [code]true[/code], the decal's alpha value will replace the surface's alpha wherever the decal's is greater.
+			</description>
+		</method>
 		<method name="decal_set_size">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />

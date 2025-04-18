@@ -112,6 +112,15 @@ real_t Decal::get_normal_fade() const {
 	return normal_fade;
 }
 
+void Decal::set_override_surface_alpha(bool p_override) {
+	override_surface_alpha = p_override;
+	RS::get_singleton()->decal_set_override_surface_alpha(decal, override_surface_alpha);
+}
+
+bool Decal::is_override_surface_alpha_enabled() const {
+	return override_surface_alpha;
+}
+
 void Decal::set_modulate(Color p_modulate) {
 	modulate = p_modulate;
 	RS::get_singleton()->decal_set_modulate(decal, p_modulate);
@@ -224,6 +233,9 @@ void Decal::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_normal_fade", "fade"), &Decal::set_normal_fade);
 	ClassDB::bind_method(D_METHOD("get_normal_fade"), &Decal::get_normal_fade);
 
+	ClassDB::bind_method(D_METHOD("set_override_surface_alpha", "override_surface_alpha"), &Decal::set_override_surface_alpha);
+	ClassDB::bind_method(D_METHOD("is_override_surface_alpha_enabled"), &Decal::is_override_surface_alpha_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_enable_distance_fade", "enable"), &Decal::set_enable_distance_fade);
 	ClassDB::bind_method(D_METHOD("is_distance_fade_enabled"), &Decal::is_distance_fade_enabled);
 
@@ -253,6 +265,7 @@ void Decal::_bind_methods() {
 	// A Normal Fade of 1.0 causes the decal to be invisible even if fully perpendicular to a surface.
 	// Due to this, limit Normal Fade to 0.999.
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_fade", PROPERTY_HINT_RANGE, "0,0.999,0.001"), "set_normal_fade", "get_normal_fade");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_surface_alpha"), "set_override_surface_alpha", "is_override_surface_alpha_enabled");
 
 	ADD_GROUP("Vertical Fade", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "upper_fade", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_upper_fade", "get_upper_fade");
