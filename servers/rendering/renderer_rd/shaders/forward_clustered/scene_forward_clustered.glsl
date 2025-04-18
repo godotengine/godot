@@ -1655,22 +1655,27 @@ void fragment_shader(in SceneData scene_data) {
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
 		uint index = instances.data[instance_index].gi_offset;
 
+		// The world normal.
 		vec3 wnormal = mat3(scene_data.inv_view_matrix) * normal;
-		const float c1 = 0.429043;
-		const float c2 = 0.511664;
-		const float c3 = 0.743125;
-		const float c4 = 0.886227;
-		const float c5 = 0.247708;
-		ambient_light += (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
-								 c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
-								 c4 * lightmap_captures.data[index].sh[0].rgb -
-								 c5 * lightmap_captures.data[index].sh[6].rgb +
-								 2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
-								 2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
-								 2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
-								 2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
-								 2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
-								 2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z) *
+
+		// The SH coefficients used for evaluating diffuse data from SH probes.
+		const float c[5] = float[](
+				0.886227, // l0 				sqrt(1.0/(4.0*PI)) 	* PI
+				1.023327, // l1 				sqrt(3.0/(4.0*PI)) 	* PI*2.0/3.0
+				0.858086, // l2n2, l2n1, l2p1	sqrt(15.0/(4.0*PI)) * PI*1.0/4.0
+				0.247708, // l20 				sqrt(5.0/(16.0*PI)) * PI*1.0/4.0
+				0.429043 // l2p2 				sqrt(15.0/(16.0*PI))* PI*1.0/4.0
+		);
+
+		ambient_light += (c[0] * lightmap_captures.data[index].sh[0].rgb +
+								 c[1] * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
+								 c[1] * lightmap_captures.data[index].sh[2].rgb * wnormal.z +
+								 c[1] * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
+								 c[2] * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
+								 c[2] * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
+								 c[3] * lightmap_captures.data[index].sh[6].rgb * (3.0 * wnormal.z * wnormal.z - 1.0) +
+								 c[2] * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
+								 c[4] * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y)) *
 				scene_data.emissive_exposure_normalization;
 
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap

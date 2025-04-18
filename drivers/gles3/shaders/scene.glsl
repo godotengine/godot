@@ -2059,22 +2059,25 @@ void main() {
 #ifndef DISABLE_LIGHTMAP
 #ifdef USE_LIGHTMAP_CAPTURE
 	{
+		// The world normal.
 		vec3 wnormal = mat3(scene_data.inv_view_matrix) * normal;
-		const float c1 = 0.429043;
-		const float c2 = 0.511664;
-		const float c3 = 0.743125;
-		const float c4 = 0.886227;
-		const float c5 = 0.247708;
-		ambient_light += (c1 * lightmap_captures[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
-								 c3 * lightmap_captures[6].rgb * wnormal.z * wnormal.z +
-								 c4 * lightmap_captures[0].rgb -
-								 c5 * lightmap_captures[6].rgb +
-								 2.0 * c1 * lightmap_captures[4].rgb * wnormal.x * wnormal.y +
-								 2.0 * c1 * lightmap_captures[7].rgb * wnormal.x * wnormal.z +
-								 2.0 * c1 * lightmap_captures[5].rgb * wnormal.y * wnormal.z +
-								 2.0 * c2 * lightmap_captures[3].rgb * wnormal.x +
-								 2.0 * c2 * lightmap_captures[1].rgb * wnormal.y +
-								 2.0 * c2 * lightmap_captures[2].rgb * wnormal.z) *
+
+		// The SH coefficients used for evaluating diffuse data from SH probes.
+		const float c0 = 0.886227; // l0				sqrt(1.0/(4.0*PI)) 	* PI
+		const float c1 = 1.023327; // l1				sqrt(3.0/(4.0*PI)) 	* PI*2.0/3.0
+		const float c2 = 0.858086; // l2n2, l2n1, l2p1	sqrt(15.0/(4.0*PI)) * PI*1.0/4.0
+		const float c3 = 0.247708; // l20				sqrt(5.0/(16.0*PI)) * PI*1.0/4.0
+		const float c4 = 0.429043; // l2p2				sqrt(15.0/(16.0*PI))* PI*1.0/4.0
+
+		ambient_light += (c0 * lightmap_captures[0].rgb +
+								 c1 * lightmap_captures[1].rgb * wnormal.y +
+								 c1 * lightmap_captures[2].rgb * wnormal.z +
+								 c1 * lightmap_captures[3].rgb * wnormal.x +
+								 c2 * lightmap_captures[4].rgb * wnormal.x * wnormal.y +
+								 c2 * lightmap_captures[5].rgb * wnormal.y * wnormal.z +
+								 c3 * lightmap_captures[6].rgb * (3.0 * wnormal.z * wnormal.z - 1.0) +
+								 c2 * lightmap_captures[7].rgb * wnormal.x * wnormal.z +
+								 c4 * lightmap_captures[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y)) *
 				scene_data.emissive_exposure_normalization;
 	}
 #else
