@@ -62,6 +62,10 @@ import org.godotengine.godot.io.file.FileAccessHandler
 import org.godotengine.godot.plugin.AndroidRuntimePlugin
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginRegistry
+import org.godotengine.godot.render.GodotGLRenderView
+import org.godotengine.godot.render.GodotRenderer
+import org.godotengine.godot.render.GodotVulkanRenderView
+import org.godotengine.godot.render.Renderer
 import org.godotengine.godot.tts.GodotTTS
 import org.godotengine.godot.utils.DialogUtils
 import org.godotengine.godot.utils.GodotNetUtils
@@ -112,6 +116,8 @@ class Godot private constructor(val context: Context) {
 		internal fun isEditorBuild() = BuildConfig.FLAVOR == EDITOR_FLAVOR
 	}
 
+	private lateinit var renderer: GodotRenderer
+
 	private val mSensorManager: SensorManager? by lazy { context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager }
 	private val mClipboard: ClipboardManager? by lazy { context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager }
 	private val vibratorService: Vibrator? by lazy { context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator }
@@ -133,7 +139,7 @@ class Godot private constructor(val context: Context) {
 	val directoryAccessHandler = DirectoryAccessHandler(context)
 	val fileAccessHandler = FileAccessHandler(context)
 	val netUtils = GodotNetUtils(context)
-	private val godotInputHandler = GodotInputHandler(context, this)
+	val godotInputHandler = GodotInputHandler(context, this)
 
 	/**
 	 * Task to run when the engine terminates.
@@ -181,7 +187,7 @@ class Godot private constructor(val context: Context) {
 	/**
 	 * Returns true if the native engine has been initialized through [onInitNativeLayer], false otherwise.
 	 */
-	private fun isNativeInitialized() = nativeLayerInitializeCompleted && nativeLayerSetupCompleted
+	private fun isNativeInitialized() = nativeLayerInitializeCompleted && nativeLayerSetupCompleted && ::renderer.isInitialized
 
 	/**
 	 * Returns true if the engine has been initialized, false otherwise.
@@ -189,9 +195,14 @@ class Godot private constructor(val context: Context) {
 	fun isInitialized() = primaryHost != null && isNativeInitialized() && renderViewInitialized
 
 	/**
-	 * Provides access to the primary host [Activity]
+	 * Provides access to the primary host [Activity].
 	 */
 	fun getActivity() = primaryHost?.activity
+
+	/**
+	 * Provides access to the Godot [Renderer].
+	 */
+	fun getRenderer(): Renderer = renderer
 
 	/**
 	 * Start initialization of the Godot engine.
@@ -327,6 +338,21 @@ class Godot private constructor(val context: Context) {
 					Log.v(TAG, "Godot native layer setup completed")
 				}
 			}
+
+			val useVulkan = if (usesVulkan()) {
+				if (meetsVulkanRequirements(context.packageManager)) {
+					true
+				} else if (canFallbackToOpenGL()) {
+					// Fallback to OpenGl.
+					false
+				} else {
+					throw IllegalStateException(context.getString(R.string.error_missing_vulkan_requirements_message))
+				}
+			} else {
+				false
+			}
+			renderer = GodotRenderer(useVulkan)
+			renderer.startRenderer()
 		} finally {
 			endBenchmarkMeasure("Startup", "Godot::initEngine")
 		}
@@ -431,23 +457,13 @@ class Godot private constructor(val context: Context) {
 			editText.setBackgroundColor(Color.TRANSPARENT)
 			// ...add to FrameLayout
 			containerLayout?.addView(editText)
-			renderView = if (usesVulkan()) {
-				if (meetsVulkanRequirements(context.packageManager)) {
-					GodotVulkanRenderView(this, godotInputHandler)
-				} else if (canFallbackToOpenGL()) {
-					// Fallback to OpenGl.
-					GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl)
-				} else {
-					throw IllegalStateException(context.getString(R.string.error_missing_vulkan_requirements_message))
-				}
-
+			renderView = if (renderer.useVulkan) {
+				GodotVulkanRenderView(this, renderer, godotInputHandler)
 			} else {
-				// Fallback to OpenGl.
-				GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl)
+				GodotGLRenderView(this, renderer, godotInputHandler, xrMode, useDebugOpengl)
 			}
 
 			renderView?.let {
-				it.startRenderer()
 				containerLayout?.addView(
 					it.view,
 					ViewGroup.LayoutParams(
@@ -499,7 +515,7 @@ class Godot private constructor(val context: Context) {
 				override fun onEnd(animation: WindowInsetsAnimationCompat) {}
 			})
 
-			renderView?.queueOnRenderThread {
+			runOnRenderThread {
 				for (plugin in pluginRegistry.allPlugins) {
 					plugin.onRegisterPluginWithGodotNative()
 				}
@@ -535,7 +551,10 @@ class Godot private constructor(val context: Context) {
 			return
 		}
 
-		renderView?.onActivityStarted()
+		renderer.onActivityStarted()
+		for (plugin in pluginRegistry.allPlugins) {
+			plugin.onMainStart()
+		}
 	}
 
 	fun onResume(host: GodotHost) {
@@ -545,7 +564,7 @@ class Godot private constructor(val context: Context) {
 			return
 		}
 
-		renderView?.onActivityResumed()
+		renderer.onActivityResumed()
 		registerSensorsIfNeeded()
 		enableImmersiveMode(useImmersive.get(), true)
 		for (plugin in pluginRegistry.allPlugins) {
@@ -579,11 +598,11 @@ class Godot private constructor(val context: Context) {
 			return
 		}
 
-		renderView?.onActivityPaused()
-		mSensorManager?.unregisterListener(godotInputHandler)
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainPause()
 		}
+		renderer.onActivityPaused()
+		mSensorManager?.unregisterListener(godotInputHandler)
 	}
 
 	fun onStop(host: GodotHost) {
@@ -592,7 +611,10 @@ class Godot private constructor(val context: Context) {
 			return
 		}
 
-		renderView?.onActivityStopped()
+		for (plugin in pluginRegistry.allPlugins) {
+			plugin.onMainStop()
+		}
+		renderer.onActivityStopped()
 	}
 
 	fun onDestroy(primaryHost: GodotHost) {
@@ -601,12 +623,22 @@ class Godot private constructor(val context: Context) {
 		}
 		Log.v(TAG, "OnDestroy: $primaryHost")
 
+		// If the host activity is being destroyed because it's changing configurations, it'll be recreated, so we keep
+		// the engine around to continue where we left off.
+		val isHostChangingConfigurations = primaryHost.activity?.isChangingConfigurations == true
+		if (!isHostChangingConfigurations) {
+			destroyEngine()
+		}
+		this.primaryHost = null
+	}
+
+	private fun destroyEngine() {
+		Log.d(TAG, "Destroying Godot Engine")
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainDestroy()
 		}
 
-		renderView?.onActivityDestroyed()
-		this.primaryHost = null
+		renderer.onActivityDestroyed()
 	}
 
 	/**
@@ -667,7 +699,7 @@ class Godot private constructor(val context: Context) {
 		val scrollDeadzoneDisabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/disable_scroll_deadzone"))
 
 		runOnHostThread {
-			renderView?.inputHandler?.apply {
+			godotInputHandler.apply {
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
 				setOverrideVolumeButtons(overrideVolumeButtons)
@@ -755,7 +787,7 @@ class Godot private constructor(val context: Context) {
 	 * This must be called after the render thread has started.
 	 */
 	fun runOnRenderThread(action: Runnable) {
-		renderView?.queueOnRenderThread(action)
+		renderer.queueOnRenderThread(action)
 	}
 
 	/**
@@ -930,7 +962,7 @@ class Godot private constructor(val context: Context) {
 		runOnTerminate.set(destroyRunnable)
 
 		runOnHostThread {
-			onDestroy(host)
+			destroyEngine()
 		}
 	}
 
@@ -950,7 +982,7 @@ class Godot private constructor(val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainBackPressed()
 		}
-		renderView?.queueOnRenderThread { GodotLib.back() }
+		runOnRenderThread { GodotLib.back() }
 	}
 
 	/**
