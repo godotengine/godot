@@ -191,6 +191,36 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	bool _uses_vulkan(const Ref<EditorExportPreset> &p_preset) const;
 
+	// Temporary variables for testing.
+	List<String> gradle_build_args;
+	String _build_path;
+	const String _termux_home = "/data/data/com.termux/files/home";
+	const String _termux_sh = "/data/data/com.termux/files/usr/bin/sh";
+
+	void _termux_verify_openjdk();
+	void _termux_verify_openjdk_callback(int p_error_code, const String &p_stdout, const String &p_stderr);
+
+	void _termux_install_openjdk();
+	void _termux_install_openjdk_callback(int p_error_code, const String &p_stdout, const String &p_stderr);
+
+	void _termux_verify_android_sdk();
+	void _termux_verify_android_sdk_callback(int p_error_code, const String &p_stdout, const String &p_stderr);
+
+	void _termux_install_android_sdk();
+	void _termux_install_android_sdk_callback(int p_error_code, const String &p_stdout, const String &p_stderr);
+
+	void _termux_verify_aapt2();
+	void _termux_verify_aapt2_callback(int p_error_code, const String &p_stdout, const String &p_stderr);
+
+	void _termux_install_aapt2();
+	void _termux_install_aapt2_callback(int p_error_code, const String &p_stdout, const String &p_stderr);
+
+	void _termux_begin_gradle_build();
+	void _termux_begin_gradle_build_callback(int p_error_code, const String &p_stdout, const String &p_stderr);
+
+	void _termux_redo_gradle_build();
+	void _termux_redo_gradle_build_callback(int p_error_code, const String &p_stdout, const String &p_stderr);
+
 protected:
 	void _notification(int p_what);
 
