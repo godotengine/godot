@@ -1668,6 +1668,13 @@
 		<member name="input_devices/joypads/ignore_joypad_on_unfocused_application" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], joypad input (including motion sensors) and LED light changes will be ignored and joypad vibration will be stopped when the application is not focused.
 		</member>
+		<member name="input_devices/joypads/joypad_enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables joypad input events and allows the use of joypad-related functions such as [method Input.is_joy_button_pressed], [method Input.get_joy_axis], [method Input.start_joy_vibration], and [method Input.stop_joy_vibration].
+			This also affects [method Input.is_action_just_pressed], [method Input.is_action_just_released], and [method Input.is_action_pressed].
+			To control this at runtime, use [member Input.joypad_enabled].
+			[b]Note:[/b] Regardless of this property, Godot always detects how many joypads are connected (see [method Input.get_connected_joypads]).
+			[b]Note:[/b] You can also disable the joypad by using the [code]--disable-joypad[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
+		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
