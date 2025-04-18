@@ -96,7 +96,7 @@
 			<param index="0" name="permission" type="String" />
 			<param index="1" name="granted" type="bool" />
 			<description>
-				Emitted when a user responds to a permission request.
+				Emitted when a user responds to a permission request. In the case of multiple requests under Android, eg. via [method OS.request_permissions], the signals emit only once the OS is satisfied user-dialogue is complete; one signal per requested permission come that time.
 			</description>
 		</signal>
 	</signals>
