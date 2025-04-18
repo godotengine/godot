@@ -43,21 +43,6 @@ public interface GodotRenderView {
 	 */
 	void startRenderer();
 
-	/**
-	 * Queues a runnable to be run on the rendering thread.
-	 */
-	void queueOnRenderThread(Runnable event);
-
-	void onActivityPaused();
-
-	void onActivityStopped();
-
-	void onActivityResumed();
-
-	void onActivityStarted();
-
-	void onActivityDestroyed();
-
 	GodotInputHandler getInputHandler();
 
 	void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY);

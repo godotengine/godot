@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotRenderer.java                                                    */
+/*  RegularFallbackConfigChooser.java                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,71 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.gl;
-
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.plugin.GodotPlugin;
-import org.godotengine.godot.plugin.GodotPluginRegistry;
+package org.godotengine.godot.render;
 
 import android.util.Log;
 
+import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
+import javax.microedition.khronos.egl.EGLDisplay;
 
-/**
- * Godot's GL renderer implementation.
- */
-public class GodotRenderer implements GLSurfaceView.Renderer {
-	private final String TAG = GodotRenderer.class.getSimpleName();
+/* Fallback if the requested configuration is not supported */
+class RegularFallbackConfigChooser extends RegularConfigChooser {
+	private static final String TAG = RegularFallbackConfigChooser.class.getSimpleName();
 
-	private final GodotPluginRegistry pluginRegistry;
-	private boolean activityJustResumed = false;
+	private RegularConfigChooser fallback;
 
-	public GodotRenderer() {
-		this.pluginRegistry = GodotPluginRegistry.getPluginRegistry();
-	}
-
-	public boolean onDrawFrame(GL10 gl) {
-		if (activityJustResumed) {
-			GodotLib.onRendererResumed();
-			activityJustResumed = false;
-		}
-
-		boolean swapBuffers = GodotLib.step();
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLDrawFrame(gl);
-		}
-
-		return swapBuffers;
+	public RegularFallbackConfigChooser(int r, int g, int b, int a, int depth, int stencil, RegularConfigChooser fallback) {
+		super(r, g, b, a, depth, stencil);
+		this.fallback = fallback;
 	}
 
 	@Override
-	public void onRenderThreadExiting() {
-		Log.d(TAG, "Destroying Godot Engine");
-		GodotLib.ondestroy();
-	}
-
-	public void onSurfaceChanged(GL10 gl, int width, int height) {
-		GodotLib.resize(null, width, height);
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLSurfaceChanged(gl, width, height);
+	public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display, EGLConfig[] configs) {
+		EGLConfig ec = super.chooseConfig(egl, display, configs);
+		if (ec == null) {
+			Log.w(TAG, "Trying ConfigChooser fallback");
+			ec = fallback.chooseConfig(egl, display, configs);
 		}
-	}
-
-	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		GodotLib.newcontext(null);
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLSurfaceCreated(gl, config);
-		}
-	}
-
-	public void onActivityResumed() {
-		// We defer invoking GodotLib.onRendererResumed() until the first draw frame call.
-		// This ensures we have a valid GL context and surface when we do so.
-		activityJustResumed = true;
-	}
-
-	public void onActivityPaused() {
-		GodotLib.onRendererPaused();
+		return ec;
 	}
 }

@@ -30,9 +30,9 @@
 
 package org.godotengine.godot;
 
-import org.godotengine.godot.gl.GodotRenderer;
 import org.godotengine.godot.io.directory.DirectoryAccessHandler;
 import org.godotengine.godot.io.file.FileAccessHandler;
+import org.godotengine.godot.render.GodotRenderer;
 import org.godotengine.godot.tts.GodotTTS;
 import org.godotengine.godot.utils.GodotNetUtils;
 import org.godotengine.godot.variant.Callable;
@@ -55,7 +55,7 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native boolean initialize(Activity activity,
+	public static native boolean initialize(
 			Godot p_instance,
 			AssetManager p_asset_manager,
 			GodotIO godotIO,
@@ -81,7 +81,7 @@ public class GodotLib {
 	 * @param p_surface
 	 * @param p_width
 	 * @param p_height
-	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
+	 * @see GodotRenderer#onRenderSurfaceChanged(Surface, int, int)
 	 */
 	public static native void resize(Surface p_surface, int p_width, int p_height);
 
@@ -98,7 +98,7 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread to draw the current frame.
-	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onDrawFrame(GL10)
+	 * @see GodotRenderer#onRenderDrawFrame()
 	 */
 	public static native boolean step();
 

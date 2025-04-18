@@ -34,6 +34,7 @@ import org.godotengine.godot.BuildConfig;
 import org.godotengine.godot.Godot;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -46,10 +47,8 @@ import androidx.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -107,6 +106,13 @@ public abstract class GodotPlugin {
 	@Nullable
 	protected Activity getActivity() {
 		return godot.getActivity();
+	}
+
+	/**
+	 * Provides access to the {@link Context}.
+	 */
+	protected Context getContext() {
+		return godot.getContext();
 	}
 
 	/**
@@ -179,7 +185,7 @@ public abstract class GodotPlugin {
 	 * @return the plugin's view to be included; null if no views should be included.
 	 */
 	@Nullable
-	public View onMainCreate(Activity activity) {
+	public View onMainCreate(@Nullable Activity activity) {
 		return null;
 	}
 
@@ -199,6 +205,16 @@ public abstract class GodotPlugin {
 	 * @see Activity#onPause()
 	 */
 	public void onMainPause() {}
+
+	/**
+	 * @see Activity#onStop()
+	 */
+	public void onMainStop() {}
+
+	/**
+	 * @see Activity#onStart()
+	 */
+	public void onMainStart() {}
 
 	/**
 	 * @see Activity#onResume()
@@ -232,37 +248,71 @@ public abstract class GodotPlugin {
 	/**
 	 * When using the OpenGL renderer, this is invoked once per frame on the GL thread after the
 	 * frame is drawn.
+	 *
+	 * @deprecated Use {@link #onRenderDrawFrame()} instead.
 	 */
+	@Deprecated
 	public void onGLDrawFrame(GL10 gl) {}
 
 	/**
 	 * When using the OpenGL renderer, this is called on the GL thread after the surface is created
 	 * and whenever the OpenGL ES surface size changes.
+	 *
+	 * @deprecated Use {@link #onRenderSurfaceChanged(Surface, int, int)} instead.
 	 */
+	@Deprecated
 	public void onGLSurfaceChanged(GL10 gl, int width, int height) {}
 
 	/**
 	 * When using the OpenGL renderer, this is called on the GL thread when the surface is created
 	 * or recreated.
+	 *
+	 * @deprecated Use {@link #onRenderSurfaceCreated(Surface)} instead.
 	 */
+	@Deprecated
 	public void onGLSurfaceCreated(GL10 gl, EGLConfig config) {}
+
+	/**
+	 * This is called on the render thread when the surface is created or recreated.
+	 */
+	public void onRenderSurfaceCreated(Surface surface) {}
+
+	/**
+	 * This is called on the render thread after the surface is created and whenever the surface
+	 * size changes.
+	 */
+	public void onRenderSurfaceChanged(Surface surface, int width, int height) {}
+
+	/**
+	 * Invoked once per frame on the render thread after the frame is drawn.
+	 */
+	public void onRenderDrawFrame() {}
 
 	/**
 	 * When using the Vulkan renderer, this is invoked once per frame on the Vulkan thread after
 	 * the frame is drawn.
+	 *
+	 * @deprecated Use {@link #onRenderDrawFrame()} instead.
 	 */
+	@Deprecated
 	public void onVkDrawFrame() {}
 
 	/**
 	 * When using the Vulkan renderer, this is called on the Vulkan thread after the surface is
 	 * created and whenever the surface size changes.
+	 *
+	 * @deprecated Use {@link #onRenderSurfaceChanged(Surface, int, int)} instead.
 	 */
+	@Deprecated
 	public void onVkSurfaceChanged(Surface surface, int width, int height) {}
 
 	/**
 	 * When using the Vulkan renderer, this is called on the Vulkan thread when the surface is
 	 * created or recreated.
+	 *
+	 * @deprecated Use {@link #onRenderSurfaceCreated(Surface)} instead.
 	 */
+	@Deprecated
 	public void onVkSurfaceCreated(Surface surface) {}
 
 	/**
@@ -323,14 +373,24 @@ public abstract class GodotPlugin {
 	}
 
 	/**
-	 * Runs the specified action on the UI thread. If the current thread is the UI
-	 * thread, then the action is executed immediately. If the current thread is
-	 * not the UI thread, the action is posted to the event queue of the UI thread.
+	 * Runs the specified action on the host thread.
 	 *
-	 * @param action the action to run on the UI thread
+	 * @param action the action to run on the host thread
+	 *
+	 * @deprecated Use the {@link GodotPlugin#runOnHostThread} instead.
 	 */
+	@Deprecated
 	protected void runOnUiThread(Runnable action) {
-		godot.runOnUiThread(action);
+		runOnHostThread(action);
+	}
+
+	/**
+	 * Runs the specified action on the host thread.
+	 *
+	 * @param action the action to run on the host thread
+	 */
+	protected void runOnHostThread(Runnable action) {
+		godot.runOnHostThread(action);
 	}
 
 	/**
