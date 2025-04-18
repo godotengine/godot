@@ -46,6 +46,7 @@ struct NamedColor {
 // NOTE: This data is duplicated in the file:
 // modules/mono/glue/GodotSharp/GodotSharp/Core/Colors.cs
 
+/* clang-format off */
 static NamedColor named_colors[] = {
 	{ "ALICE_BLUE", Color::hex(0xF0F8FFFF) },
 	{ "ANTIQUE_WHITE", Color::hex(0xFAEBD7FF) },
@@ -72,6 +73,7 @@ static NamedColor named_colors[] = {
 	{ "DARK_CYAN", Color::hex(0x008B8BFF) },
 	{ "DARK_GOLDENROD", Color::hex(0xB8860BFF) },
 	{ "DARK_GRAY", Color::hex(0xA9A9A9FF) },
+	{ "DARK_GREY", Color::hex(0xA9A9A9FF) },
 	{ "DARK_GREEN", Color::hex(0x006400FF) },
 	{ "DARK_KHAKI", Color::hex(0xBDB76BFF) },
 	{ "DARK_MAGENTA", Color::hex(0x8B008BFF) },
@@ -83,11 +85,13 @@ static NamedColor named_colors[] = {
 	{ "DARK_SEA_GREEN", Color::hex(0x8FBC8FFF) },
 	{ "DARK_SLATE_BLUE", Color::hex(0x483D8BFF) },
 	{ "DARK_SLATE_GRAY", Color::hex(0x2F4F4FFF) },
+	{ "DARK_SLATE_GREY", Color::hex(0x2F4F4FFF) },
 	{ "DARK_TURQUOISE", Color::hex(0x00CED1FF) },
 	{ "DARK_VIOLET", Color::hex(0x9400D3FF) },
 	{ "DEEP_PINK", Color::hex(0xFF1493FF) },
 	{ "DEEP_SKY_BLUE", Color::hex(0x00BFFFFF) },
 	{ "DIM_GRAY", Color::hex(0x696969FF) },
+	{ "DIM_GREY", Color::hex(0x696969FF) },
 	{ "DODGER_BLUE", Color::hex(0x1E90FFFF) },
 	{ "FIREBRICK", Color::hex(0xB22222FF) },
 	{ "FLORAL_WHITE", Color::hex(0xFFFAF0FF) },
@@ -98,6 +102,7 @@ static NamedColor named_colors[] = {
 	{ "GOLD", Color::hex(0xFFD700FF) },
 	{ "GOLDENROD", Color::hex(0xDAA520FF) },
 	{ "GRAY", Color::hex(0xBEBEBEFF) },
+	{ "GREY", Color::hex(0xBEBEBEFF) },
 	{ "GREEN", Color::hex(0x00FF00FF) },
 	{ "GREEN_YELLOW", Color::hex(0xADFF2FFF) },
 	{ "HONEYDEW", Color::hex(0xF0FFF0FF) },
@@ -115,12 +120,14 @@ static NamedColor named_colors[] = {
 	{ "LIGHT_CYAN", Color::hex(0xE0FFFFFF) },
 	{ "LIGHT_GOLDENROD", Color::hex(0xFAFAD2FF) },
 	{ "LIGHT_GRAY", Color::hex(0xD3D3D3FF) },
+	{ "LIGHT_GREY", Color::hex(0xD3D3D3FF) },
 	{ "LIGHT_GREEN", Color::hex(0x90EE90FF) },
 	{ "LIGHT_PINK", Color::hex(0xFFB6C1FF) },
 	{ "LIGHT_SALMON", Color::hex(0xFFA07AFF) },
 	{ "LIGHT_SEA_GREEN", Color::hex(0x20B2AAFF) },
 	{ "LIGHT_SKY_BLUE", Color::hex(0x87CEFAFF) },
 	{ "LIGHT_SLATE_GRAY", Color::hex(0x778899FF) },
+	{ "LIGHT_SLATE_GREY", Color::hex(0x778899FF) },
 	{ "LIGHT_STEEL_BLUE", Color::hex(0xB0C4DEFF) },
 	{ "LIGHT_YELLOW", Color::hex(0xFFFFE0FF) },
 	{ "LIME", Color::hex(0x00FF00FF) },
@@ -174,6 +181,7 @@ static NamedColor named_colors[] = {
 	{ "SKY_BLUE", Color::hex(0x87CEEBFF) },
 	{ "SLATE_BLUE", Color::hex(0x6A5ACDFF) },
 	{ "SLATE_GRAY", Color::hex(0x708090FF) },
+	{ "SLATE_GREY", Color::hex(0x708090FF) },
 	{ "SNOW", Color::hex(0xFFFAFAFF) },
 	{ "SPRING_GREEN", Color::hex(0x00FF7FFF) },
 	{ "STEEL_BLUE", Color::hex(0x4682B4FF) },
@@ -185,6 +193,7 @@ static NamedColor named_colors[] = {
 	{ "TURQUOISE", Color::hex(0x40E0D0FF) },
 	{ "VIOLET", Color::hex(0xEE82EEFF) },
 	{ "WEB_GRAY", Color::hex(0x808080FF) },
+	{ "WEB_GREY", Color::hex(0x808080FF) },
 	{ "WEB_GREEN", Color::hex(0x008000FF) },
 	{ "WEB_MAROON", Color::hex(0x800000FF) },
 	{ "WEB_PURPLE", Color::hex(0x800080FF) },
@@ -194,3 +203,4 @@ static NamedColor named_colors[] = {
 	{ "YELLOW", Color::hex(0xFFFF00FF) },
 	{ "YELLOW_GREEN", Color::hex(0x9ACD32FF) },
 };
+/* clang-format on */
