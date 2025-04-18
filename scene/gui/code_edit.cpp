@@ -2293,7 +2293,12 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 
 			// Replace.
 			remove_text(caret_line, get_caret_column(i) - code_completion_base.length(), caret_remove_line, caret_col);
-			insert_text_at_caret(insert_text, i);
+			bool is_method = (code_completion_options[code_completion_current_selected].kind == ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+			if (is_method && line[caret_col] == '(') {
+				insert_text_at_caret(insert_text.substr(0, insert_text.find_char('(')), i);
+			} else {
+				insert_text_at_caret(insert_text, i);
+			}
 		} else {
 			// Get first non-matching char.
 			const String line = get_line(caret_line);
@@ -3665,7 +3670,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	}
 
 	/* A perfect match, stop completion. */
-	if (code_completion_options_new.size() == 1 && string_to_complete == code_completion_options_new[0].display) {
+	if (code_completion_options_new.size() == 1 && (string_to_complete == code_completion_options_new[0].display || (code_completion_options_new[0].kind == ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION && string_to_complete == code_completion_options_new[0].display.substr(0, code_completion_options_new[0].display.find_char('('))))) {
 		cancel_code_completion();
 		return;
 	}
