@@ -1,0 +1,100 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import pathlib
+
+import methods
+
+Import("env")
+Import("env_modules")
+
+opts = Variables([], ARGUMENTS)
+opts.Add(
+    EnumVariable(
+        "profiler",
+        "Profiler framework to use compile into the binary.",
+        "",
+        ("", "tracy", "perfetto"),
+    )
+)
+opts.Add(
+    BoolVariable(
+        "profiler_sample_callstack",
+        "Profile random samples application-wide using a callstack based sampler.",
+        False,
+    )
+)
+opts.Update(env)
+
+
+def profiler_gen_builder(target, source, env):
+    with methods.generated_wrapper(str(target[0])) as file:
+        if env["profiler"] == "tracy":
+            file.write("#define GODOT_USE_TRACY\n")
+            if env["profiler_sample_callstack"]:
+                file.write("#define TRACY_CALLSTACK 62\n")
+        if env["profiler"] == "perfetto":
+            file.write("#define GODOT_USE_PERFETTO\n")
+
+
+modules_enabled = env.CommandNoCache("profiling.gen.h", [], env.Run(profiler_gen_builder))
+
+module_obj = []
+
+env.add_source_files(env.modules_sources, "*.cpp")
+
+if env["profiler"] == "tracy":
+    tracy_dir_str = "#modules/profiler/tracy/public/"
+    tracy_dir_path = pathlib.Path(Dir(tracy_dir_str).srcnode().abspath)
+    if not tracy_dir_path.parent.is_dir():
+        print("'tracy/' folder is missing, please copy or symlink 'tracy/' as 'modules/profiler/tracy/'.")
+        Exit(255)
+    if not tracy_dir_path.is_dir():
+        print(
+            "'tracy/public/' folder is present, but 'tracy/public/' is missing. Please make sure you have copied or symlinked 'tracy/' as 'modules/profiler/tracy/'."
+        )
+        Exit(255)
+    if not (tracy_dir_path / "TracyClient.cpp").is_file():
+        print(
+            "'tracy/' folder is present, but 'public/TracyClient.cpp' is missing. Please make sure you have copied or symlinked 'tracy/' as 'modules/profiler/tracy/'."
+        )
+        Exit(255)
+
+    env.Prepend(CPPPATH=[tracy_dir_str])
+
+    env_tracy = env_modules.Clone()
+    env_tracy.Append(CPPDEFINES=["TRACY_ENABLE"])
+    if env["profiler_sample_callstack"]:
+        if env["platform"] not in ("windows", "linux", "android"):
+            # Reference the feature matrix in the tracy documentation.
+            print("Tracy does not currently support call stack sampling on this platform. Aborting.")
+            Exit(255)
+
+        # 62 is the maximum supported callstack depth reported by the tracy docs.
+        env_tracy.Append(CPPDEFINES=[("TRACY_CALLSTACK", 62)])
+    env_tracy.disable_warnings()
+    env_tracy.add_source_files(module_obj, tracy_dir_str + "TracyClient.cpp")
+elif env["profiler"] == "perfetto":
+    perfetto_dir_str = "#modules/profiler/perfetto/"
+    perfetto_dir_path = pathlib.Path(Dir(perfetto_dir_str).srcnode().abspath)
+    if not perfetto_dir_path.is_dir():
+        print("'perfetto/' folder is missing, please copy or symlink 'perfetto/' as 'modules/profiler/perfetto/'.")
+        Exit(255)
+    if not (perfetto_dir_path / "sdk").is_dir():
+        print(
+            "'perfetto/' folder is present, but 'perfetto/sdk/' is missing. Please make sure you have copied or symlinked 'perfetto/' as 'modules/profiler/perfetto/'."
+        )
+        Exit(255)
+
+    env.Prepend(CPPPATH=[perfetto_dir_str + "sdk"])
+
+    env_perfetto = env_modules.Clone()
+    if env["profiler_sample_callstack"]:
+        print("Perfetto does not currently support call stack sampling. Aborting.")
+        Exit(255)
+    env_perfetto.disable_warnings()
+    env_perfetto.Prepend(CPPPATH=[perfetto_dir_str + "sdk"])
+    env_perfetto.add_source_files(module_obj, perfetto_dir_str + "sdk/perfetto.cc")
+
+
+env.modules_sources += module_obj
