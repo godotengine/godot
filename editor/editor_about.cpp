@@ -37,13 +37,34 @@
 #include "editor/gui/editor_version_button.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/gui/tree.h"
 #include "scene/resources/style_box.h"
 
 void EditorAbout::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_about_text_label->set_text(
+					String::utf8("\xc2\xa9 2014-present ") + TTR("Godot Engine contributors") + "." +
+					String::utf8("\n\xc2\xa9 2007-2014 Juan Linietsky, Ariel Manzur.\n"));
+
+			_project_manager_label->set_text(TTR("Project Manager", "Job Title"));
+
+			for (ItemList *il : name_lists) {
+				for (int i = 0; i < il->get_item_count(); i++) {
+					const String website = il->get_item_metadata(i);
+					if (!website.is_empty()) {
+						il->set_item_tooltip(i, website + "\n\n" + TTR("Double-click to open in browser."));
+					}
+				}
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			const Ref<Font> font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
 			const int font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
@@ -91,87 +112,72 @@ void EditorAbout::_item_list_resized(ItemList *p_il) {
 	p_il->set_fixed_column_width(p_il->get_size().x / 3.0 - 16 * EDSCALE * 2.5); // Weird. Should be 3.0 and that's it?.
 }
 
-ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int p_single_column_flags, const bool p_allow_website) {
-	ScrollContainer *sc = memnew(ScrollContainer);
-	sc->set_name(p_name);
-	sc->set_v_size_flags(Control::SIZE_EXPAND);
-
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	sc->add_child(vbc);
-
+Label *EditorAbout::_create_section(Control *p_parent, const String &p_name, const char *const *p_src, int p_max_columns, bool p_allow_website) {
 	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
 
-	int i = 0;
-	for (List<String>::ConstIterator itr = p_sections.begin(); itr != p_sections.end(); ++itr, ++i) {
-		bool single_column = p_single_column_flags & (1 << i);
-		const char *const *names_ptr = p_src[i];
-		if (*names_ptr) {
-			Label *lbl = memnew(Label);
-			lbl->set_theme_type_variation("HeaderSmall");
-			lbl->set_text(*itr);
-			vbc->add_child(lbl);
+	Label *lbl = memnew(Label(p_name));
+	lbl->set_theme_type_variation("HeaderSmall");
+	p_parent->add_child(lbl);
 
-			ItemList *il = memnew(ItemList);
-			il->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-			il->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			il->set_same_column_width(true);
-			il->set_auto_height(true);
-			il->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-			il->set_focus_mode(Control::FOCUS_NONE);
-			il->add_theme_constant_override("h_separation", 16 * EDSCALE);
-			if (p_allow_website) {
-				il->set_focus_mode(Control::FOCUS_CLICK);
-				il->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	ItemList *il = memnew(ItemList);
+	il->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	il->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	il->set_same_column_width(true);
+	il->set_auto_height(true);
+	il->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	il->set_focus_mode(Control::FOCUS_NONE);
+	il->add_theme_constant_override("h_separation", 16 * EDSCALE);
 
-				il->connect("item_activated", callable_mp(this, &EditorAbout::_item_with_website_selected).bind(il));
-				il->connect(SceneStringName(resized), callable_mp(this, &EditorAbout::_item_list_resized).bind(il));
-				il->connect(SceneStringName(focus_exited), callable_mp(il, &ItemList::deselect_all));
+	const char *const *names_ptr = p_src;
+	if (p_allow_website) {
+		il->set_focus_mode(Control::FOCUS_CLICK);
+		il->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
-				il->add_theme_style_override("focus", empty_stylebox);
-				il->add_theme_style_override("selected", empty_stylebox);
+		il->connect("item_activated", callable_mp(this, &EditorAbout::_item_with_website_selected).bind(il));
+		il->connect(SceneStringName(resized), callable_mp(this, &EditorAbout::_item_list_resized).bind(il));
+		il->connect(SceneStringName(focus_exited), callable_mp(il, &ItemList::deselect_all));
 
-				while (*names_ptr) {
-					const String name = String::utf8(*names_ptr++);
-					const String identifier = name.get_slicec('<', 0);
-					const String website = name.get_slice_count("<") == 1 ? "" : name.get_slicec('<', 1).trim_suffix(">");
+		il->add_theme_style_override("focus", empty_stylebox);
+		il->add_theme_style_override("selected", empty_stylebox);
 
-					const int name_item_id = il->add_item(identifier, nullptr, false);
-					il->set_item_tooltip_enabled(name_item_id, false);
+		while (*names_ptr) {
+			const String name = String::utf8(*names_ptr++);
+			const String identifier = name.get_slicec('<', 0);
+			const String website = name.get_slice_count("<") == 1 ? "" : name.get_slicec('<', 1).trim_suffix(">");
 
-					if (!website.is_empty()) {
-						il->set_item_selectable(name_item_id, true);
-						il->set_item_metadata(name_item_id, website);
-						il->set_item_tooltip(name_item_id, website + "\n\n" + TTR("Double-click to open in browser."));
-						il->set_item_tooltip_enabled(name_item_id, true);
-					}
+			const int name_item_id = il->add_item(identifier, nullptr, false);
+			il->set_item_tooltip_enabled(name_item_id, false);
 
-					if (!*names_ptr && name.contains(" anonymous ")) {
-						il->set_item_disabled(name_item_id, true);
-					}
-				}
-			} else {
-				while (*names_ptr) {
-					il->add_item(String::utf8(*names_ptr++), nullptr, false);
-				}
+			if (!website.is_empty()) {
+				il->set_item_selectable(name_item_id, true);
+				il->set_item_metadata(name_item_id, website);
+				il->set_item_tooltip_enabled(name_item_id, true);
 			}
-			il->set_max_columns(single_column ? 1 : 16);
 
-			name_lists.append(il);
-
-			vbc->add_child(il);
-
-			HSeparator *hs = memnew(HSeparator);
-			hs->set_modulate(Color(0, 0, 0, 0));
-			vbc->add_child(hs);
+			if (!*names_ptr && name.contains(" anonymous ")) {
+				il->set_item_disabled(name_item_id, true);
+			}
+		}
+	} else {
+		while (*names_ptr) {
+			il->add_item(String::utf8(*names_ptr++), nullptr, false);
 		}
 	}
+	il->set_max_columns(p_max_columns);
 
-	return sc;
+	name_lists.append(il);
+
+	p_parent->add_child(il);
+
+	HSeparator *hs = memnew(HSeparator);
+	hs->set_modulate(Color(0, 0, 0, 0));
+	p_parent->add_child(hs);
+
+	return lbl;
 }
 
 EditorAbout::EditorAbout() {
-	set_title(TTR("Thanks from the Godot community!"));
+	set_title(TTRC("Thanks from the Godot community!"));
 	set_hide_on_ok(true);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -195,12 +201,10 @@ EditorAbout::EditorAbout() {
 
 	version_info_vbc->add_child(memnew(EditorVersionButton(EditorVersionButton::FORMAT_WITH_NAME_AND_BUILD)));
 
-	Label *about_text = memnew(Label);
-	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	about_text->set_text(
-			String::utf8("\xc2\xa9 2014-present ") + TTR("Godot Engine contributors") + "." +
-			String::utf8("\n\xc2\xa9 2007-2014 Juan Linietsky, Ariel Manzur.\n"));
-	version_info_vbc->add_child(about_text);
+	_about_text_label = memnew(Label);
+	_about_text_label->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	_about_text_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	version_info_vbc->add_child(_about_text_label);
 
 	hbc->add_child(version_info_vbc);
 
@@ -211,50 +215,50 @@ EditorAbout::EditorAbout() {
 	tc->set_theme_type_variation("TabContainerOdd");
 	vbc->add_child(tc);
 
-	// Authors.
+	{
+		ScrollContainer *sc = memnew(ScrollContainer);
+		sc->set_name(TTRC("Authors"));
+		sc->set_v_size_flags(Control::SIZE_EXPAND);
+		tc->add_child(sc);
 
-	List<String> dev_sections;
-	dev_sections.push_back(TTR("Project Founders"));
-	dev_sections.push_back(TTR("Lead Developer"));
-	// TRANSLATORS: This refers to a job title.
-	dev_sections.push_back(TTR("Project Manager", "Job Title"));
-	dev_sections.push_back(TTR("Developers"));
-	const char *const *dev_src[] = {
-		AUTHORS_FOUNDERS,
-		AUTHORS_LEAD_DEVELOPERS,
-		AUTHORS_PROJECT_MANAGERS,
-		AUTHORS_DEVELOPERS,
-	};
-	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src, 0b1)); // First section (Project Founders) is always one column.
+		VBoxContainer *vb = memnew(VBoxContainer);
+		vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		sc->add_child(vb);
 
-	// Donors.
+		_create_section(vb, TTRC("Project Founders"), AUTHORS_FOUNDERS, 1, false);
+		_create_section(vb, TTRC("Lead Developer"), AUTHORS_LEAD_DEVELOPERS, 16, false);
+		// The section title will be updated in NOTIFICATION_TRANSLATION_CHANGED.
+		_project_manager_label = _create_section(vb, "", AUTHORS_PROJECT_MANAGERS, 16, false);
+		_project_manager_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		_create_section(vb, TTRC("Developers"), AUTHORS_DEVELOPERS, 16, false);
+	}
 
-	List<String> donor_sections;
-	donor_sections.push_back(TTR("Patrons"));
-	donor_sections.push_back(TTR("Platinum Sponsors"));
-	donor_sections.push_back(TTR("Gold Sponsors"));
-	donor_sections.push_back(TTR("Silver Sponsors"));
-	donor_sections.push_back(TTR("Diamond Members"));
-	donor_sections.push_back(TTR("Titanium Members"));
-	donor_sections.push_back(TTR("Platinum Members"));
-	donor_sections.push_back(TTR("Gold Members"));
-	const char *const *donor_src[] = {
-		DONORS_PATRONS,
-		DONORS_SPONSORS_PLATINUM,
-		DONORS_SPONSORS_GOLD,
-		DONORS_SPONSORS_SILVER,
-		DONORS_MEMBERS_DIAMOND,
-		DONORS_MEMBERS_TITANIUM,
-		DONORS_MEMBERS_PLATINUM,
-		DONORS_MEMBERS_GOLD,
-	};
-	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, 0b1, true)); // First section (Patron) is one column.
+	{
+		ScrollContainer *sc = memnew(ScrollContainer);
+		sc->set_name(TTRC("Donors"));
+		sc->set_v_size_flags(Control::SIZE_EXPAND);
+		tc->add_child(sc);
+
+		VBoxContainer *vb = memnew(VBoxContainer);
+		vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		sc->add_child(vb);
+
+		_create_section(vb, TTRC("Patrons"), DONORS_PATRONS, 1, true);
+		_create_section(vb, TTRC("Platinum Sponsors"), DONORS_SPONSORS_PLATINUM, 16, true);
+		_create_section(vb, TTRC("Gold Sponsors"), DONORS_SPONSORS_GOLD, 16, true);
+		_create_section(vb, TTRC("Silver Sponsors"), DONORS_SPONSORS_SILVER, 16, true);
+		_create_section(vb, TTRC("Diamond Members"), DONORS_MEMBERS_DIAMOND, 16, true);
+		_create_section(vb, TTRC("Titanium Members"), DONORS_MEMBERS_TITANIUM, 16, true);
+		_create_section(vb, TTRC("Platinum Members"), DONORS_MEMBERS_PLATINUM, 16, true);
+		_create_section(vb, TTRC("Gold Members"), DONORS_MEMBERS_GOLD, 16, true);
+	}
 
 	// License.
 
 	license_text_label = memnew(RichTextLabel);
+	license_text_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	license_text_label->set_threaded(true);
-	license_text_label->set_name(TTR("License"));
+	license_text_label->set_name(TTRC("License"));
 	license_text_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	license_text_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	license_text_label->set_text(String::utf8(GODOT_LICENSE_TEXT));
@@ -263,34 +267,36 @@ EditorAbout::EditorAbout() {
 	// Thirdparty License.
 
 	VBoxContainer *license_thirdparty = memnew(VBoxContainer);
-	license_thirdparty->set_name(TTR("Third-party Licenses"));
+	license_thirdparty->set_name(TTRC("Third-party Licenses"));
 	license_thirdparty->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tc->add_child(license_thirdparty);
 
-	Label *tpl_label = memnew(Label);
+	Label *tpl_label = memnew(Label(TTRC("Godot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms.")));
 	tpl_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	tpl_label->set_text(TTR("Godot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms."));
 	tpl_label->set_size(Size2(630, 1) * EDSCALE);
 	license_thirdparty->add_child(tpl_label);
 
 	HSplitContainer *tpl_hbc = memnew(HSplitContainer);
+	tpl_hbc->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tpl_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_hbc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_hbc->set_split_offset(240 * EDSCALE);
 	license_thirdparty->add_child(tpl_hbc);
 
 	_tpl_tree = memnew(Tree);
-	_tpl_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	_tpl_tree->set_hide_root(true);
 	TreeItem *root = _tpl_tree->create_item();
 	TreeItem *tpl_ti_all = _tpl_tree->create_item(root);
-	tpl_ti_all->set_text(0, TTR("All Components"));
+	tpl_ti_all->set_text(0, TTRC("All Components"));
+	tpl_ti_all->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_ALWAYS);
 	TreeItem *tpl_ti_tp = _tpl_tree->create_item(root);
-	tpl_ti_tp->set_text(0, TTR("Components"));
+	tpl_ti_tp->set_text(0, TTRC("Components"));
+	tpl_ti_tp->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_ALWAYS);
 	tpl_ti_tp->set_selectable(0, false);
 	TreeItem *tpl_ti_lc = _tpl_tree->create_item(root);
-	tpl_ti_lc->set_text(0, TTR("Licenses"));
+	tpl_ti_lc->set_text(0, TTRC("Licenses"));
+	tpl_ti_lc->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_ALWAYS);
 	tpl_ti_lc->set_selectable(0, false);
 	String long_text = "";
 	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
