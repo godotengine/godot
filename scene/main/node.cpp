@@ -2864,7 +2864,9 @@ String Node::to_string() {
 		String ret;
 		GDExtensionBool is_valid;
 		_get_extension()->to_string(_get_extension_instance(), &is_valid, &ret);
-		return ret;
+		if (is_valid) {
+			return ret;
+		}
 	}
 	return (get_name() ? String(get_name()) + ":" : "") + Object::to_string();
 }

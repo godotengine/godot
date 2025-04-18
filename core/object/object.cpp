@@ -978,7 +978,9 @@ String Object::to_string() {
 		String ret;
 		GDExtensionBool is_valid;
 		_extension->to_string(_extension_instance, &is_valid, &ret);
-		return ret;
+		if (is_valid) {
+			return ret;
+		}
 	}
 	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
 }
