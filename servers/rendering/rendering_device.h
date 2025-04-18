@@ -321,7 +321,7 @@ public:
 		RID owner;
 
 		RDG::ResourceTracker *draw_tracker = nullptr;
-		HashMap<Rect2i, RDG::ResourceTracker *> slice_trackers;
+		HashMap<Rect2i, RDG::ResourceTracker *> *slice_trackers = nullptr;
 		SharedFallback *shared_fallback = nullptr;
 		int32_t transfer_worker_index = -1;
 		uint64_t transfer_worker_operation = 0;
