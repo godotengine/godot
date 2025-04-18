@@ -60,8 +60,6 @@ struct HashMapElement {
 			data(p_key, p_value) {}
 };
 
-bool _hashmap_variant_less_than(const Variant &p_left, const Variant &p_right);
-
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>,
@@ -272,6 +270,7 @@ public:
 		num_elements = 0;
 	}
 
+	template <typename C>
 	void sort() {
 		if (elements == nullptr || num_elements < 2) {
 			return; // An empty or single element HashMap is already sorted.
@@ -282,7 +281,7 @@ public:
 		while (inserting != nullptr) {
 			HashMapElement<TKey, TValue> *after = nullptr;
 			for (HashMapElement<TKey, TValue> *current = inserting->prev; current != nullptr; current = current->prev) {
-				if (_hashmap_variant_less_than(inserting->data.key, current->data.key)) {
+				if (C::compare(inserting->data.key, current->data.key)) {
 					after = current;
 				} else {
 					break;
