@@ -109,6 +109,29 @@ void SceneDebugger::_handle_input(const Ref<InputEvent> &p_event, const Ref<Shor
 	}
 }
 
+void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Dictionary &p_settings) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_null() || !k->is_pressed()) {
+		return;
+	}
+
+	Ref<Shortcut> p_shortcut = p_settings.get("editor/next_frame_embedded_project", Ref<Shortcut>());
+	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("request_embed_next_frame", Array());
+		return;
+	}
+
+	if (k->is_echo()) {
+		return;
+	} // Shortcuts that doesn't need is_echo goes below here
+
+	p_shortcut = p_settings.get("editor/suspend_resume_embedded_project", Ref<Shortcut>());
+	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("request_embed_suspend_toggle", Array());
+		return;
+	}
+}
+
 Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree) {
@@ -128,7 +151,17 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 	if (p_msg == "setup_scene") {
 		SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args)));
 
-	} else if (p_msg == "request_scene_tree") { /// Scene Tree
+	} else if (p_msg == "setup_embedded_shortcuts") {
+		ERR_FAIL_COND_V(p_args.is_empty() || p_args[0].get_type() != Variant::DICTIONARY, ERR_INVALID_DATA);
+		Dictionary dict = p_args[0];
+		LocalVector<Variant> keys = dict.get_key_list();
+
+		for (const Variant &key : keys) {
+			dict[key] = DebuggerMarshalls::deserialize_key_shortcut(dict[key]);
+		}
+
+		SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_embed_input).bind(dict));
+	} else if (p_msg == "request_scene_tree") { // Scene tree
 		live_editor->_send_tree();
 
 	} else if (p_msg == "save_node") {
