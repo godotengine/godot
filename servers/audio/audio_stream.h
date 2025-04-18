@@ -243,6 +243,8 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	Ref<AudioStreamMicrophone> microphone;
 
 protected:
+	static void _bind_methods();
+
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
 	virtual float get_stream_sampling_rate() override;
 	virtual double get_playback_position() const override;
@@ -253,6 +255,14 @@ public:
 	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;
 	virtual bool is_playing() const override;
+
+	void start_microphone();
+	void stop_microphone();
+	PackedVector2Array get_microphone_buffer(int p_frames);
+
+	// The GDExtension interface does not allow for functions to fill an existing array which would be
+	// more efficient as it would not put memory on the heap every frame.
+	// bool mix_microphone(GDExtensionPtr<AudioFrame> p_buffer, int p_frames);
 
 	virtual int get_loop_count() const override; //times it looped
 
