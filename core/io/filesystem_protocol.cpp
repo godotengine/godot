@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  file_access_unix_pipe.h                                               */
+/*  filesystem_protocol.cpp                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,54 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "filesystem_protocol.h"
 
-#include "core/io/file_access.h"
-#include "core/os/memory.h"
+Error FileSystemProtocol::get_open_error() const {
+	return open_error;
+}
+Ref<FileAccess> FileSystemProtocol::_open_file(const String &p_path, int p_mode_flags) {
+	return open_file(p_path, p_mode_flags, open_error);
+}
 
-#include <stdio.h>
+Ref<FileAccess> FileSystemProtocol::open_file(const String &p_path, int p_mode_flags, Error &r_error) const {
+	r_error = ERR_FILE_NOT_FOUND;
+	return Ref<FileAccess>();
+}
 
-#if defined(UNIX_ENABLED)
+void FileSystemProtocol::disguise_file(const Ref<FileAccess> &p_file, const String &p_protocol_name, const String &p_path) const {
+	p_file->set_path_disguise(p_protocol_name + "://" + p_path);
+}
 
-class FileAccessUnixPipe : public FileAccess {
-	GDSOFTCLASS(FileAccessUnixPipe, FileAccess);
-	bool unlink_on_close = false;
+void FileSystemProtocol::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &FileSystemProtocol::globalize_path);
 
-	int fd[2] = { -1, -1 };
+	ClassDB::bind_method(D_METHOD("get_open_error"), &FileSystemProtocol::get_open_error);
+	ClassDB::bind_method(D_METHOD("open_file", "path", "mode_flags"), &FileSystemProtocol::_open_file);
+	ClassDB::bind_method(D_METHOD("file_exists", "name"), &FileSystemProtocol::file_exists);
 
-	mutable Error last_error = OK;
-	String path;
-
-	void _close();
-
-protected:
-	virtual String _get_path() const override; /// returns the path for the current open file
-
-public:
-	Error open_existing(int p_rfd, int p_wfd, bool p_blocking);
-	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
-
-	virtual bool is_open() const override; ///< true when file is open
-
-	virtual void seek(uint64_t p_position) override {}
-	virtual void seek_end(int64_t p_position = 0) override {}
-	virtual uint64_t get_position() const override { return 0; }
-	virtual uint64_t get_length() const override;
-
-	virtual bool eof_reached() const override { return false; }
-
-	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
-
-	virtual Error get_error() const override; ///< get last error
-
-	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
-	virtual void flush() override {}
-	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
-
-	virtual void close() override;
-
-	FileAccessUnixPipe() {}
-	virtual ~FileAccessUnixPipe();
-};
-
-#endif // UNIX_ENABLED
+	ClassDB::bind_method(D_METHOD("get_modified_time", "path"), &FileSystemProtocol::get_modified_time);
+	ClassDB::bind_method(D_METHOD("get_unix_permissions", "path"), &FileSystemProtocol::get_unix_permissions);
+	ClassDB::bind_method(D_METHOD("set_unix_permissions", "path", "permissions"), &FileSystemProtocol::set_unix_permissions);
+	ClassDB::bind_method(D_METHOD("get_hidden_attribute", "path"), &FileSystemProtocol::get_hidden_attribute);
+	ClassDB::bind_method(D_METHOD("set_hidden_attribute", "path", "hidden"), &FileSystemProtocol::set_hidden_attribute);
+	ClassDB::bind_method(D_METHOD("get_read_only_attribute", "path"), &FileSystemProtocol::get_read_only_attribute);
+	ClassDB::bind_method(D_METHOD("set_read_only_attribute", "path", "ro"), &FileSystemProtocol::set_read_only_attribute);
+}
