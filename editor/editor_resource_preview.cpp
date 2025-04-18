@@ -97,7 +97,9 @@ void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewp
 	Callable request_vp_update_once = callable_mp(RS::get_singleton(), &RS::viewport_set_update_mode).bind(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
 
 	if (EditorResourcePreview::get_singleton()->is_threaded()) {
-		RS::get_singleton()->connect(SNAME("frame_pre_draw"), request_vp_update_once, Object::CONNECT_ONE_SHOT);
+		if (!RS::get_singleton()->is_connected(SNAME("frame_pre_draw"), request_vp_update_once)) {
+			RS::get_singleton()->connect(SNAME("frame_pre_draw"), request_vp_update_once, Object::CONNECT_ONE_SHOT);
+		}
 		RS::get_singleton()->request_frame_drawn_callback(callable_mp(this, &EditorResourcePreviewGenerator::DrawRequester::_post_semaphore));
 
 		semaphore.wait();
@@ -127,8 +129,12 @@ Variant EditorResourcePreviewGenerator::DrawRequester::_post_semaphore() {
 	return Variant(); // Needed because of how the callback is used.
 }
 
-bool EditorResourcePreview::is_threaded() const {
+bool EditorResourcePreview::can_run_on_thread() const {
 	return RSG::rasterizer->can_create_resources_async();
+}
+
+bool EditorResourcePreview::is_threaded() const {
+	return thread.is_started();
 }
 
 void EditorResourcePreview::_thread_func(void *ud) {
@@ -327,7 +333,7 @@ void EditorResourcePreview::_iterate() {
 			cache_valid = false;
 			f.unref();
 		} else if (last_modtime != modtime) {
-			String last_md5 = f->get_line();
+			String last_md5 = hash;
 			String md5 = FileAccess::get_md5(item.path);
 			f.unref();
 
@@ -556,7 +562,7 @@ void EditorResourcePreview::start() {
 		return;
 	}
 
-	if (is_threaded()) {
+	if (can_run_on_thread()) {
 		ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
 		thread.start(_thread_func, this);
 	} else {
@@ -568,23 +574,21 @@ void EditorResourcePreview::start() {
 
 void EditorResourcePreview::stop() {
 	if (is_threaded()) {
-		if (thread.is_started()) {
-			exiting.set();
-			preview_sem.post();
+		exiting.set();
+		preview_sem.post();
 
-			for (int i = 0; i < preview_generators.size(); i++) {
-				preview_generators.write[i]->abort();
-			}
-
-			while (!exited.is_set()) {
-				// Sync pending work.
-				OS::get_singleton()->delay_usec(10000);
-				RenderingServer::get_singleton()->sync();
-				MessageQueue::get_singleton()->flush();
-			}
-
-			thread.wait_to_finish();
+		for (int i = 0; i < preview_generators.size(); i++) {
+			preview_generators.write[i]->abort();
 		}
+
+		while (!exited.is_set()) {
+			// Sync pending work.
+			OS::get_singleton()->delay_usec(10000);
+			RenderingServer::get_singleton()->sync();
+			MessageQueue::get_singleton()->flush();
+		}
+
+		thread.wait_to_finish();
 	}
 }
 
