@@ -96,6 +96,13 @@
 				This function returns always the map set on the GridMap node and not the map on the NavigationServer. If the map is changed directly with the NavigationServer API the GridMap node will not be aware of the map change.
 			</description>
 		</method>
+		<method name="get_octant_coords_from_cell_coords" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="cell_coords" type="Vector3i" />
+			<description>
+				Returns the [Vector3i] octant coordinates of the [param cell_coords].
+			</description>
+		</method>
 		<method name="get_orthogonal_index_from_basis" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="basis" type="Basis" />
@@ -114,6 +121,41 @@
 			<param index="0" name="item" type="int" />
 			<description>
 				Returns an array of all cells with the given item index specified in [param item].
+			</description>
+		</method>
+		<method name="get_used_cells_in_octant" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="octant_coords" type="Vector3i" />
+			<description>
+				Returns an array of [Vector3i] with the non-empty cell coordinates inside the octant at [param octant_coords].
+			</description>
+		</method>
+		<method name="get_used_cells_in_octant_by_item" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="octant_coords" type="Vector3i" />
+			<param index="1" name="item" type="int" />
+			<description>
+				Returns an array of [Vector3i] with the non-empty cell coordinates inside the octant at [param octant_coords]. that use the specified cell [param item].
+			</description>
+		</method>
+		<method name="get_used_octants" qualifiers="const">
+			<return type="Vector3i[]" />
+			<description>
+				Returns an array of [Vector3i] with the non-empty octant coordinates in the grid map.
+			</description>
+		</method>
+		<method name="get_used_octants_by_item" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="item" type="int" />
+			<description>
+				Returns an array of [Vector3i] with the non-empty octant coordinates that use the specified [param item] in the grid map.
+			</description>
+		</method>
+		<method name="get_used_octants_in_bounds" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="bounds" type="AABB" />
+			<description>
+				Returns an array of [Vector3i] with the non-empty octant coordinates that are inside the local [param bounds].
 			</description>
 		</method>
 		<method name="local_to_map" qualifiers="const">
@@ -213,6 +255,18 @@
 		</member>
 		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
 			The priority used to solve colliding when occurring penetration. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
+		</member>
+		<member name="debug_custom_color_octants" type="Color" setter="debug_set_custom_color_octants" getter="debug_get_custom_color_octants" default="Color(1, 1, 1, 1)">
+			The custom [Color] used for rendering octant debug visuals when [member debug_use_custom] is enabled.
+		</member>
+		<member name="debug_enabled" type="bool" setter="debug_set_enabled" getter="debug_get_enabled" default="false">
+			If [code]true[/code] shows debug visuals for this node.
+		</member>
+		<member name="debug_show_octants" type="bool" setter="debug_set_show_octants" getter="debug_get_show_octants" default="true">
+			If [code]true[/code] and [member debug_enabled] is enabled, shows debug visuals for octants.
+		</member>
+		<member name="debug_use_custom" type="bool" setter="debug_set_use_custom" getter="debug_get_use_custom" default="false">
+			If [code]true[/code], the debug related custom options for this node override the default debug options.
 		</member>
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
