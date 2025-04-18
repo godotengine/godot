@@ -119,6 +119,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 		register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
 		register_annotation(MethodInfo("@export_flags_avoidance"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_AVOIDANCE, Variant::INT>);
+		register_annotation(MethodInfo("@export_from_dir", PropertyInfo(Variant::STRING, "directory")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_RES_FROM_DIR, Variant::OBJECT>, varray("res://"));
 		register_annotation(MethodInfo("@export_storage"), AnnotationInfo::VARIABLE, &GDScriptParser::export_storage_annotation);
 		register_annotation(MethodInfo("@export_custom", PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_ENUM, "PropertyHint"), PropertyInfo(Variant::STRING, "hint_string"), PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_BITFIELD, "PropertyUsageFlags")), AnnotationInfo::VARIABLE, &GDScriptParser::export_custom_annotation, varray(PROPERTY_USAGE_DEFAULT));
 		register_annotation(MethodInfo("@export_tool_button", PropertyInfo(Variant::STRING, "text"), PropertyInfo(Variant::STRING, "icon")), AnnotationInfo::VARIABLE, &GDScriptParser::export_tool_button_annotation, varray(""));
@@ -4539,6 +4540,24 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 		if (export_type.builtin_type == Variant::DICTIONARY) {
 			variable->export_info.type = Variant::DICTIONARY;
+		}
+	} else if (p_annotation->name == SNAME("@export_from_dir")) {
+		use_default_variable_type_check = false;
+
+		if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
+			if (dir_access->dir_exists_absolute(hint_string)) {
+				const String class_name = _find_narrowest_native_or_global_class(export_type);
+
+				variable->export_info.type = Variant::OBJECT;
+				variable->export_info.hint = PROPERTY_HINT_RES_FROM_DIR;
+				variable->export_info.hint_string = class_name + "," + hint_string;
+			} else {
+				push_error(R"(Export hint can only be an absolute directory path.)", p_annotation);
+				return false;
+			}
+		} else {
+			push_error(R"(Export type can only be a resource.)", p_annotation);
+			return false;
 		}
 	} else if (p_annotation->name == SNAME("@export")) {
 		use_default_variable_type_check = false;
