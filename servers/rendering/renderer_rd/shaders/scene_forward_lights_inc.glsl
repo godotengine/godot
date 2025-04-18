@@ -229,8 +229,11 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 			// Calculate Fresnel using specular occlusion term from Filament:
 			// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
 			float f90 = clamp(dot(f0, vec3(50.0 * 0.33)), metallic, 1.0);
+			// Multiscattering
+			vec2 dfg = prefiltered_dfg(roughness, cNdotV).xy;
+			vec3 energy_compensation = get_energy_compensation(f0, dfg.y);
 			vec3 F = f0 + (f90 - f0) * cLdotH5;
-			vec3 specular_brdf_NL = cNdotL * D * F * G;
+			vec3 specular_brdf_NL = energy_compensation * (cNdotL * D * F * G);
 			specular_light += specular_brdf_NL * light_color * attenuation * specular_amount;
 #endif
 		}

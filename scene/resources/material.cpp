@@ -836,6 +836,9 @@ void BaseMaterial3D::_update_shader() {
 		case SPECULAR_SCHLICK_GGX:
 			code += ", specular_schlick_ggx";
 			break;
+		case SPECULAR_MULTISCATTERING_GGX:
+			code += ", specular_multiscattering_ggx";
+			break;
 		case SPECULAR_TOON:
 			code += ", specular_toon";
 			break;
@@ -3205,7 +3208,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("Shading", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shading_mode", PROPERTY_HINT_ENUM, "Unshaded,Per-Pixel,Per-Vertex"), "set_shading_mode", "get_shading_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "diffuse_mode", PROPERTY_HINT_ENUM, "Burley,Lambert,Lambert Wrap,Toon"), "set_diffuse_mode", "get_diffuse_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,MultiscatterGGX,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_ambient_light"), "set_flag", "get_flag", FLAG_DISABLE_AMBIENT_LIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_fog"), "set_flag", "get_flag", FLAG_DISABLE_FOG);
 
@@ -3470,6 +3473,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DIFFUSE_TOON);
 
 	BIND_ENUM_CONSTANT(SPECULAR_SCHLICK_GGX);
+	BIND_ENUM_CONSTANT(SPECULAR_MULTISCATTERING_GGX);
 	BIND_ENUM_CONSTANT(SPECULAR_TOON);
 	BIND_ENUM_CONSTANT(SPECULAR_DISABLED);
 
