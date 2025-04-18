@@ -1660,7 +1660,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 		}
 
 		if (!unique) {
-			ERR_FAIL_COND(!node_hrcr_count.ref());
+			node_hrcr_count.ref();
 			// Optimized version of the code below:
 			// String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
 			uint32_t c = node_hrcr_count.get();
