@@ -1642,3 +1642,15 @@ def get_default_include_paths(env):
         print_warning("Failed to find the include paths in the compiler output.")
         return []
     return [x.strip() for x in match[1].strip().splitlines()]
+
+
+def opts_get_arguments(self, env):
+    # First pull in the defaults, except any which are None.
+    values = {opt.key: opt.default for opt in self.options if opt.default is not None}
+
+    args = {}
+    for option in self.options:
+        if option.converter and option.key in values and option.key in env:
+            args[option.key] = str(env[option.key])
+
+    return args

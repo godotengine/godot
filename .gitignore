@@ -98,6 +98,8 @@ platform/android/java/*/libs/
 
 # Web platform
 *.bc
+*.br
+*.gz
 platform/web/node_modules/
 
 # Misc
