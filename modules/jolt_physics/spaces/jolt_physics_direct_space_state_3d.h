@@ -76,6 +76,7 @@ public:
 	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &r_closest_safe, real_t &r_closest_unsafe, ShapeRestInfo *r_info = nullptr) override;
 	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) override;
 	virtual bool rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) override;
+	virtual int complete_rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_infos, int p_result_max) override;
 	virtual Vector3 get_closest_point_to_object_volume(RID p_object, Vector3 p_point) const override;
 
 	bool body_test_motion(const JoltBody3D &p_body, const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult *r_result) const;
