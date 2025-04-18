@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_android.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#ifndef CAMERA_ANDROID_H
+#define CAMERA_ANDROID_H
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_macos.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
-#endif
+#include "servers/camera/camera_feed.h"
+#include "servers/camera_server.h"
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+#include <camera/NdkCameraDevice.h>
+#include <camera/NdkCameraError.h>
+#include <camera/NdkCameraManager.h>
+#include <camera/NdkCameraMetadataTags.h>
+#include <media/NdkImageReader.h>
 
-#if defined(LINUXBSD_ENABLED)
-	CameraServer::make_default<CameraLinux>();
-#endif
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraMacOS>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
-}
+class CameraFeedAndroid : public CameraFeed {
+private:
+    String camera_id;
+    int32_t format;
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+	ACameraManager *manager = nullptr;
+	ACameraDevice *device = nullptr;
+	AImageReader *reader = nullptr;
+	ACameraCaptureSession *session = nullptr;
+	ACaptureRequest *request = nullptr;
+
+    static void onError(void *context, ACameraDevice *p_device, int error);
+	static void onDisconnected(void *context, ACameraDevice *p_device);
+    static void onImage(void *context, AImageReader *p_reader);
+    static void onSessionReady(void *context, ACameraCaptureSession *session);
+    static void onSessionActive(void *context, ACameraCaptureSession *session);
+    static void onSessionClosed(void *context, ACameraCaptureSession *session);
+
+protected:
+public:
+	CameraFeedAndroid(ACameraManager *manager, const char *id, int32_t position, int32_t width, int32_t height,
+                      int32_t format, int32_t orientation);
+	virtual ~CameraFeedAndroid();
+
+	bool activate_feed();
+	void deactivate_feed();
+};
+
+class CameraAndroid : public CameraServer {
+private:
+	ACameraManager *cameraManager;
+
+	void update_feeds();
+
+public:
+	CameraAndroid();
+	~CameraAndroid();
+};
+
+#endif // CAMERA_ANDROID_H
