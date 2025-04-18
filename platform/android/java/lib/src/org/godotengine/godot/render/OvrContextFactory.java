@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  RegularFallbackConfigChooser.java                                     */
+/*  OvrContextFactory.java                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,32 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.regular;
+package org.godotengine.godot.render;
 
-import android.util.Log;
+import android.opengl.EGL14;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 
-/* Fallback if the requested configuration is not supported */
-public class RegularFallbackConfigChooser extends RegularConfigChooser {
-	private static final String TAG = RegularFallbackConfigChooser.class.getSimpleName();
+/**
+ * EGL Context factory for the Oculus mobile VR SDK.
+ */
+class OvrContextFactory implements GLSurfaceView.EGLContextFactory {
+	private static final int[] CONTEXT_ATTRIBS = {
+		EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE
+	};
 
-	private RegularConfigChooser fallback;
-
-	public RegularFallbackConfigChooser(int r, int g, int b, int a, int depth, int stencil, RegularConfigChooser fallback) {
-		super(r, g, b, a, depth, stencil);
-		this.fallback = fallback;
+	@Override
+	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
+		return egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, CONTEXT_ATTRIBS);
 	}
 
 	@Override
-	public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display, EGLConfig[] configs) {
-		EGLConfig ec = super.chooseConfig(egl, display, configs);
-		if (ec == null) {
-			Log.w(TAG, "Trying ConfigChooser fallback");
-			ec = fallback.chooseConfig(egl, display, configs);
-		}
-		return ec;
+	public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
+		egl.eglDestroyContext(display, context);
 	}
 }

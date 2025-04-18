@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  OvrContextFactory.java                                                */
+/*  VkSurfaceView.kt                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,32 +28,65 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.ovr;
+@file:JvmName("VkSurfaceView")
+package org.godotengine.godot.render
 
-import org.godotengine.godot.gl.GLSurfaceView;
-
-import android.opengl.EGL14;
-
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLContext;
-import javax.microedition.khronos.egl.EGLDisplay;
+import android.content.Context
+import android.view.SurfaceHolder
+import android.view.SurfaceView
 
 /**
- * EGL Context factory for the Oculus mobile VR SDK.
+ * An implementation of SurfaceView that uses the dedicated surface for
+ * displaying Vulkan rendering.
+ * <p>
+ * A [VkSurfaceView] provides the following features:
+ * <p>
+ * <ul>
+ * <li>Manages a surface, which is a special piece of memory that can be
+ * composited into the Android view system.
+ * <li>Accepts a [GodotRenderer] object that does the actual rendering.
+ * <li>Renders on the [RenderThread] thread provided by the [GodotRenderer] to decouple rendering
+ *  * performance from the UI thread.
+ * </ul>
  */
-public class OvrContextFactory implements GLSurfaceView.EGLContextFactory {
-	private static final int[] CONTEXT_ATTRIBS = {
-		EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE
-	};
-
-	@Override
-	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
-		return egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, CONTEXT_ATTRIBS);
+internal open class VkSurfaceView(context: Context) : SurfaceView(context), SurfaceHolder.Callback {
+	companion object {
+		fun checkState(expression: Boolean, errorMessage: Any) {
+			check(expression) { errorMessage.toString() }
+		}
 	}
 
-	@Override
-	public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
-		egl.eglDestroyContext(display, context);
+	/**
+	 * Performs the actual rendering.
+	 */
+	private lateinit var renderer: GodotRenderer
+
+	init {
+		isClickable = true
+		holder.addCallback(this)
+	}
+
+	/**
+	 * Set the [GodotRenderer] associated with the view, and starts the thread that will drive the vulkan
+	 * rendering.
+	 *
+	 * This method should be called once and only once in the life-cycle of [VkSurfaceView].
+	 */
+	fun startRenderer(renderer: GodotRenderer) {
+		checkState(!this::renderer.isInitialized, "startRenderer must only be invoked once")
+		this.renderer = renderer
+		this.renderer.startRenderer()
+	}
+
+	override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+		renderer.renderThread.surfaceChanged(holder, width, height)
+	}
+
+	override fun surfaceDestroyed(holder: SurfaceHolder) {
+		renderer.renderThread.surfaceDestroyed(holder)
+	}
+
+	override fun surfaceCreated(holder: SurfaceHolder) {
+		renderer.renderThread.surfaceCreated(holder)
 	}
 }

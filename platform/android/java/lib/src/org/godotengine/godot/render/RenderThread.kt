@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  VkRenderer.kt                                                         */
+/*  RenderThread.kt                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,86 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-@file:JvmName("VkRenderer")
-package org.godotengine.godot.vulkan
+@file:JvmName("RenderThread")
+package org.godotengine.godot.render
 
-import android.util.Log
-import android.view.Surface
-import org.godotengine.godot.GodotLib
-import org.godotengine.godot.plugin.GodotPluginRegistry
+import android.view.SurfaceHolder
+import java.lang.ref.WeakReference
 
 /**
- * Responsible to setting up and driving the Vulkan rendering logic.
- *
- * <h3>Threading</h3>
- * The renderer will be called on a separate thread, so that rendering
- * performance is decoupled from the UI thread. Clients typically need to
- * communicate with the renderer from the UI thread, because that's where
- * input events are received. Clients can communicate using any of the
- * standard Java techniques for cross-thread communication, or they can
- * use the  [VkSurfaceView.queueOnVkThread] convenience method.
- *
- * @see [VkSurfaceView.startRenderer]
+ * Base class for the OpenGL / Vulkan render thread implementations.
  */
-internal class VkRenderer {
-
-	companion object {
-		private val TAG = VkRenderer::class.java.simpleName
-	}
-
-	private val pluginRegistry: GodotPluginRegistry = GodotPluginRegistry.getPluginRegistry()
+internal abstract class RenderThread(tag: String) : Thread(tag) {
 
 	/**
-	 * Called when the surface is created and signals the beginning of rendering.
+	 * Queues an event on the render thread
 	 */
-	fun onVkSurfaceCreated(surface: Surface) {
-		GodotLib.newcontext(surface)
-
-		for (plugin in pluginRegistry.getAllPlugins()) {
-			plugin.onVkSurfaceCreated(surface)
-		}
-	}
+	abstract fun queueEvent(event: Runnable)
 
 	/**
-	 * Called after the surface is created and whenever its size changes.
+	 * Request the thread to exit and block until it's done.
 	 */
-	fun onVkSurfaceChanged(surface: Surface, width: Int, height: Int) {
-		GodotLib.resize(surface, width, height)
-
-		for (plugin in pluginRegistry.getAllPlugins()) {
-			plugin.onVkSurfaceChanged(surface, width, height)
-		}
-	}
+	abstract fun requestExitAndWait()
 
 	/**
-	 * Called to draw the current frame.
+	 * Invoked when the app resumes.
 	 */
-	fun onVkDrawFrame() {
-		GodotLib.step()
-		for (plugin in pluginRegistry.getAllPlugins()) {
-			plugin.onVkDrawFrame()
-		}
-	}
+	abstract fun onResume()
 
 	/**
-	 * Called when the rendering thread is resumed.
+	 * Invoked when the app pauses.
 	 */
-	fun onVkResume() {
-		GodotLib.onRendererResumed()
-	}
+	abstract fun onPause()
+
+	abstract fun setRenderMode(renderMode: Int)
+
+	abstract fun getRenderMode(): Int
+
+	abstract fun requestRender()
 
 	/**
-	 * Called when the rendering thread is paused.
+	 * Invoked when the [android.view.Surface] has been created.
 	 */
-	fun onVkPause() {
-		GodotLib.onRendererPaused()
-	}
+	open fun surfaceCreated(holder: SurfaceHolder, surfaceViewWeakRef: WeakReference<GLSurfaceView>? = null) { }
 
 	/**
-	 * Invoked when the render thread is in the process of shutting down.
+	 * Invoked following structural updates to [android.view.Surface].
 	 */
-	fun onRenderThreadExiting() {
-		Log.d(TAG, "Destroying Godot Engine")
-		GodotLib.ondestroy()
-	}
+	open fun surfaceChanged(holder: SurfaceHolder, width: Int, height: Int) { }
+
+	/**
+	 * Invoked when the [android.view.Surface] is no longer available.
+	 */
+	open fun surfaceDestroyed(holder: SurfaceHolder) { }
 }
