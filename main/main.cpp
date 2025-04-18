@@ -1491,8 +1491,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			single_threaded_scene = true;
 		} else if (arg == "--disable-gamepad") {
 			GLOBAL_DEF_BASIC("input_devices/controller/gamepad_enabled", false);
-		}
-		else if (arg == "--build-solutions") { // Build the scripting solution such C#
+		} else if (arg == "--build-solutions") { // Build the scripting solution such C#
 
 			auto_build_solutions = true;
 			editor = true;
