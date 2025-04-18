@@ -32,7 +32,7 @@
 
 #include "../action_map/openxr_action_map.h"
 
-#include "editor/editor_command_palette.h"
+#include "editor/dialogs/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"
 
