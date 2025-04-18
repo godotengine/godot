@@ -1217,15 +1217,15 @@ GodotPhysicsDirectSpaceState2D *GodotSpace2D::get_direct_state() {
 }
 
 GodotSpace2D::GodotSpace2D() {
-	body_linear_velocity_sleep_threshold = GLOBAL_GET("physics/2d/sleep_threshold_linear");
-	body_angular_velocity_sleep_threshold = GLOBAL_GET("physics/2d/sleep_threshold_angular");
-	body_time_to_sleep = GLOBAL_GET("physics/2d/time_before_sleep");
-	solver_iterations = GLOBAL_GET("physics/2d/solver/solver_iterations");
-	contact_recycle_radius = GLOBAL_GET("physics/2d/solver/contact_recycle_radius");
-	contact_max_separation = GLOBAL_GET("physics/2d/solver/contact_max_separation");
-	contact_max_allowed_penetration = GLOBAL_GET("physics/2d/solver/contact_max_allowed_penetration");
-	contact_bias = GLOBAL_GET("physics/2d/solver/default_contact_bias");
-	constraint_bias = GLOBAL_GET("physics/2d/solver/default_constraint_bias");
+	body_linear_velocity_sleep_threshold = GLOBAL_GET("physics/godot_physics_2d/sleep_threshold_linear");
+	body_angular_velocity_sleep_threshold = GLOBAL_GET("physics/godot_physics_2d/sleep_threshold_angular");
+	body_time_to_sleep = GLOBAL_GET("physics/godot_physics_2d/time_before_sleep");
+	solver_iterations = GLOBAL_GET("physics/godot_physics_2d/solver/solver_iterations");
+	contact_recycle_radius = GLOBAL_GET("physics/godot_physics_2d/solver/contact_recycle_radius");
+	contact_max_separation = GLOBAL_GET("physics/godot_physics_2d/solver/contact_max_separation");
+	contact_max_allowed_penetration = GLOBAL_GET("physics/godot_physics_2d/solver/contact_max_allowed_penetration");
+	contact_bias = GLOBAL_GET("physics/godot_physics_2d/solver/default_contact_bias");
+	constraint_bias = GLOBAL_GET("physics/godot_physics_2d/solver/default_constraint_bias");
 
 	broadphase = GodotBroadPhase2D::create_func();
 	broadphase->set_pair_callback(_broadphase_pair, this);
