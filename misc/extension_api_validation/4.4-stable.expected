@@ -82,3 +82,18 @@ Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shap
 Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_draw_outline/arguments': size changed value in new API, from 7 to 8.
 
 Optional "oversmpling" argument added. Compatibility methods registered.
+
+
+GH-105545
+---------
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/methods/get_playback_position/return_value': meta changed value in new API, from "float" to "double".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/methods/play/arguments/0': meta changed value in new API, from "float" to "double".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/methods/seek/arguments/0': meta changed value in new API, from "float" to "double".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer2D/methods/get_playback_position/return_value': meta changed value in new API, from "float" to "double".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer2D/methods/play/arguments/0': meta changed value in new API, from "float" to "double".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer2D/methods/seek/arguments/0': meta changed value in new API, from "float" to "double".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/methods/get_playback_position/return_value': meta changed value in new API, from "float" to "double".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/methods/play/arguments/0': meta changed value in new API, from "float" to "double".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/methods/seek/arguments/0': meta changed value in new API, from "float" to "double".
+
+Playback position return/param type changed from float to double for higher precision. Compatibility methods registered.

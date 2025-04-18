@@ -95,6 +95,9 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	bool _is_autoplay_enabled_bind_compat_86907();
+	void _play_bind_compat_105545(float p_from_pos = 0.0);
+	void _seek_bind_compat_105545(float p_seconds);
+	float _get_playback_position_bind_compat_105545();
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -111,12 +114,12 @@ public:
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
 
-	void play(float p_from_pos = 0.0);
+	void play(double p_from_pos = 0.0);
 	void play_scheduled(double p_abs_time, double p_from_pos = 0.0);
-	void seek(float p_seconds);
+	void seek(double p_seconds);
 	void stop();
 	bool is_playing() const;
-	float get_playback_position();
+	double get_playback_position();
 
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;

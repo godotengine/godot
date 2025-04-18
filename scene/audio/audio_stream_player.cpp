@@ -126,7 +126,7 @@ void AudioStreamPlayer::_play_internal(double p_from_pos) {
 	}
 }
 
-void AudioStreamPlayer::play(float p_from_pos) {
+void AudioStreamPlayer::play(double p_from_pos) {
 	internal->scheduled_time = 0;
 	_play_internal(p_from_pos);
 }
@@ -136,7 +136,7 @@ void AudioStreamPlayer::play_scheduled(double p_abs_time, double p_from_pos) {
 	_play_internal(p_from_pos);
 }
 
-void AudioStreamPlayer::seek(float p_seconds) {
+void AudioStreamPlayer::seek(double p_seconds) {
 	internal->seek(p_seconds);
 }
 
@@ -148,7 +148,7 @@ bool AudioStreamPlayer::is_playing() const {
 	return internal->is_playing();
 }
 
-float AudioStreamPlayer::get_playback_position() {
+double AudioStreamPlayer::get_playback_position() {
 	return internal->get_playback_position();
 }
 

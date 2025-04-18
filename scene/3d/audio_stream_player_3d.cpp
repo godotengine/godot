@@ -613,7 +613,7 @@ void AudioStreamPlayer3D::_play_internal(double p_from_pos) {
 	}
 }
 
-void AudioStreamPlayer3D::play(float p_from_pos) {
+void AudioStreamPlayer3D::play(double p_from_pos) {
 	internal->scheduled_time = 0;
 	_play_internal(p_from_pos);
 }
@@ -623,7 +623,7 @@ void AudioStreamPlayer3D::play_scheduled(double p_abs_time, double p_from_pos) {
 	_play_internal(p_from_pos);
 }
 
-void AudioStreamPlayer3D::seek(float p_seconds) {
+void AudioStreamPlayer3D::seek(double p_seconds) {
 	internal->seek(p_seconds);
 }
 
@@ -639,7 +639,7 @@ bool AudioStreamPlayer3D::is_playing() const {
 	return internal->is_playing();
 }
 
-float AudioStreamPlayer3D::get_playback_position() {
+double AudioStreamPlayer3D::get_playback_position() {
 	if (setplay.get() >= 0) {
 		return setplay.get(); // play() has been called this frame, but no playback exists just yet.
 	}
