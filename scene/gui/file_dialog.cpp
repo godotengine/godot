@@ -669,16 +669,16 @@ void FileDialog::deselect_all() {
 		switch (mode) {
 			case FILE_MODE_OPEN_FILE:
 			case FILE_MODE_OPEN_FILES:
-				set_internal_ok_text(ETR("Open"));
+				set_default_ok_text(ETR("Open"));
 				break;
 			case FILE_MODE_OPEN_DIR:
-				set_internal_ok_text(ETR("Select Current Folder"));
+				set_default_ok_text(ETR("Select Current Folder"));
 				break;
 			case FILE_MODE_OPEN_ANY:
-				set_ok_button_text(ETR("Open"));
+				set_default_ok_text(ETR("Open"));
 				break;
 			case FILE_MODE_SAVE_FILE:
-				set_ok_button_text(ETR("Save"));
+				set_default_ok_text(ETR("Save"));
 				break;
 		}
 	}
@@ -698,14 +698,14 @@ void FileDialog::_tree_selected() {
 	if (!d["dir"]) {
 		file->set_text(d["name"]);
 		if (mode == FILE_MODE_SAVE_FILE) {
-			set_internal_ok_text(ETR("Save"));
+			set_default_ok_text(ETR("Save"));
 		} else {
-			set_internal_ok_text(ETR("Open"));
+			set_default_ok_text(ETR("Open"));
 		}
 	} else if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY || !dir_access->file_exists(file->get_text())) {
 		file->set_text("");
 		if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
-			set_internal_ok_text(ETR("Select This Folder"));
+			set_default_ok_text(ETR("Select This Folder"));
 		}
 	}
 
@@ -1235,35 +1235,35 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 	mode = p_mode;
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
-			set_internal_ok_text(ETR("Open"));
+			set_default_ok_text(ETR("Open"));
 			if (mode_overrides_title) {
 				set_title(ETR("Open a File"));
 			}
 			makedir->hide();
 			break;
 		case FILE_MODE_OPEN_FILES:
-			set_internal_ok_text(ETR("Open"));
+			set_default_ok_text(ETR("Open"));
 			if (mode_overrides_title) {
 				set_title(ETR("Open File(s)"));
 			}
 			makedir->hide();
 			break;
 		case FILE_MODE_OPEN_DIR:
-			set_internal_ok_text(ETR("Select Current Folder"));
+			set_default_ok_text(ETR("Select Current Folder"));
 			if (mode_overrides_title) {
 				set_title(ETR("Open a Directory"));
 			}
 			makedir->show();
 			break;
 		case FILE_MODE_OPEN_ANY:
-			set_internal_ok_text(ETR("Open"));
+			set_default_ok_text(ETR("Open"));
 			if (mode_overrides_title) {
 				set_title(ETR("Open a File or Directory"));
 			}
 			makedir->show();
 			break;
 		case FILE_MODE_SAVE_FILE:
-			set_internal_ok_text(ETR("Save"));
+			set_default_ok_text(ETR("Save"));
 			if (mode_overrides_title) {
 				set_title(ETR("Save a File"));
 			}
@@ -1906,7 +1906,7 @@ FileDialog::FileDialog() {
 
 	set_hide_on_ok(false);
 	set_size(Size2(640, 360));
-	set_internal_ok_text(ETR("Save")); // Default mode text.
+	set_default_ok_text(ETR("Save")); // Default mode text.
 
 	if (register_func) {
 		register_func(this);
