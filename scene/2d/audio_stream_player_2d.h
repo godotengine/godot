@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/variant/typed_dictionary.h"
 #include "scene/2d/node_2d.h"
 #include "servers/audio_server.h"
 
@@ -69,7 +70,7 @@ private:
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
 
-	StringName _get_actual_bus();
+	TypedDictionary<StringName, float> _get_actual_buses();
 	void _update_panning();
 
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->force_update_panning = true; }
@@ -117,6 +118,9 @@ public:
 
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
+
+	void set_sends(const TypedDictionary<StringName, float> &p_sends);
+	TypedDictionary<StringName, float> get_sends() const;
 
 	void set_autoplay(bool p_enable);
 	bool is_autoplay_enabled() const;

@@ -31,6 +31,7 @@
 #include "audio_stream_player.h"
 #include "audio_stream_player.compat.inc"
 
+#include "core/variant/typed_array.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "servers/audio/audio_stream.h"
 
@@ -69,9 +70,9 @@ void AudioStreamPlayer::set_volume_db(float p_volume) {
 	ERR_FAIL_COND_MSG(Math::is_nan(p_volume), "Volume can't be set to NaN.");
 	internal->volume_db = p_volume;
 
-	Vector<AudioFrame> volume_vector = _get_volume_vector();
+	HashMap<StringName, Vector<AudioFrame>> volume_vectors = _get_all_bus_volume_vectors();
 	for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
-		AudioServer::get_singleton()->set_playback_all_bus_volumes_linear(playback, volume_vector);
+		AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, volume_vectors);
 	}
 }
 
@@ -108,7 +109,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	if (stream_playback.is_null()) {
 		return;
 	}
-	AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->bus, _get_volume_vector(), p_from_pos, internal->pitch_scale);
+	AudioServer::get_singleton()->start_playback_stream(stream_playback, _get_all_bus_volume_vectors(), p_from_pos, internal->pitch_scale);
 	internal->ensure_playback_limit();
 
 	// Sample handling.
@@ -141,12 +142,28 @@ float AudioStreamPlayer::get_playback_position() {
 void AudioStreamPlayer::set_bus(const StringName &p_bus) {
 	internal->bus = p_bus;
 	for (const Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
-		AudioServer::get_singleton()->set_playback_bus_exclusive(playback, p_bus, _get_volume_vector());
+		AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, _get_all_bus_volume_vectors());
 	}
 }
 
 StringName AudioStreamPlayer::get_bus() const {
 	return internal->get_bus();
+}
+
+void AudioStreamPlayer::set_sends(const TypedDictionary<StringName, float> &p_sends) {
+	if (Engine::get_singleton()->is_editor_hint() && internal->sends.keys() != p_sends.keys()) {
+		notify_property_list_changed();
+	}
+	internal->sends = p_sends;
+	internal->sends.erase("");
+
+	for (const Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, _get_all_bus_volume_vectors());
+	}
+}
+
+TypedDictionary<StringName, float> AudioStreamPlayer::get_sends() const {
+	return internal->get_sends().duplicate();
 }
 
 void AudioStreamPlayer::set_autoplay(bool p_enable) {
@@ -214,6 +231,10 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 	return volume_vector;
 }
 
+HashMap<StringName, Vector<AudioFrame>> AudioStreamPlayer::_get_all_bus_volume_vectors() {
+	return internal->get_all_bus_volume_vectors(internal->get_all_buses(), _get_volume_vector());
+}
+
 void AudioStreamPlayer::_validate_property(PropertyInfo &p_property) const {
 	internal->validate_property(p_property);
 }
@@ -257,6 +278,9 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer::get_bus);
 
+	ClassDB::bind_method(D_METHOD("set_sends", "sends"), &AudioStreamPlayer::set_sends);
+	ClassDB::bind_method(D_METHOD("get_sends"), &AudioStreamPlayer::get_sends);
+
 	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioStreamPlayer::set_autoplay);
 	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer::is_autoplay_enabled);
 
@@ -287,6 +311,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "sends", PROPERTY_HINT_DICTIONARY_TYPE, "StringName;float"), "set_sends", "get_sends");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 
 	ADD_SIGNAL(MethodInfo("finished"));

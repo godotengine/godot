@@ -69,7 +69,7 @@
 			If [code]true[/code], audio plays when the AudioStreamPlayer3D node is added to scene tree.
 		</member>
 		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="&amp;&quot;Master&quot;">
-			The bus on which this audio is playing.
+			The bus on which this audio is playing. See also [member sends].
 			[b]Note:[/b] When setting this property, keep in mind that no validation is performed to see if the given name matches an existing bus. This is because audio bus layouts might be loaded after this property is set. If this given name can't be resolved at runtime, it will fall back to [code]"Master"[/code].
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="AudioStreamPlayer3D.DopplerTracking" default="0">
@@ -107,6 +107,10 @@
 		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
 			If [code]true[/code], audio is playing or is queued to be played (see [method play]).
 		</member>
+		<member name="sends" type="Dictionary" setter="set_sends" getter="get_sends" default="{}">
+			The sends on which this audio plays in addition to its primary bus. See also [member bus].
+			[b]Note:[/b] Has no effect when using the [code]sample[/code] playback type.
+		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 			The [AudioStream] resource to be played.
 		</member>
@@ -117,7 +121,7 @@
 			The factor for the attenuation effect. Higher values make the sound audible over a larger distance.
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
-			The base sound level before attenuation, in decibels.
+			The base sound level before attenuation, in decibels. The gain is applied pre-send, so it also affects the volume of [member sends].
 		</member>
 		<member name="volume_linear" type="float" setter="set_volume_linear" getter="get_volume_linear">
 			The base sound level before attenuation, as a linear value.

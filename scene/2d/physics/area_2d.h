@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/templates/vset.h"
+#include "core/variant/typed_dictionary.h"
 #include "scene/2d/physics/collision_object_2d.h"
 
 class Area2D : public CollisionObject2D {
@@ -130,6 +131,7 @@ private:
 
 	bool audio_bus_override = false;
 	StringName audio_bus;
+	TypedDictionary<StringName, float> audio_sends;
 
 protected:
 	static void _bind_methods();
@@ -191,6 +193,9 @@ public:
 
 	void set_audio_bus_name(const StringName &p_audio_bus);
 	StringName get_audio_bus_name() const;
+
+	void set_audio_sends(const TypedDictionary<StringName, float> &p_audio_sends);
+	TypedDictionary<StringName, float> get_audio_sends() const;
 
 	Area2D();
 	~Area2D();

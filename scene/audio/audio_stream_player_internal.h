@@ -32,6 +32,7 @@
 
 #include "core/object/ref_counted.h"
 #include "core/templates/safe_refcount.h"
+#include "core/variant/typed_dictionary.h"
 #include "servers/audio_server.h"
 
 class AudioStream;
@@ -75,6 +76,7 @@ public:
 	float volume_db = 0.0;
 	bool autoplay = false;
 	StringName bus;
+	TypedDictionary<StringName, float> sends;
 	int max_polyphony = 1;
 
 	void process();
@@ -91,6 +93,9 @@ public:
 	void set_max_polyphony(int p_max_polyphony);
 
 	StringName get_bus() const;
+	TypedDictionary<StringName, float> get_sends() const;
+	TypedDictionary<StringName, float> get_all_buses() const;
+	HashMap<StringName, Vector<AudioFrame>> get_all_bus_volume_vectors(const TypedDictionary<StringName, float> p_buses, const Vector<AudioFrame> p_volume_vector);
 
 	Ref<AudioStreamPlayback> play_basic();
 	void seek(float p_seconds);

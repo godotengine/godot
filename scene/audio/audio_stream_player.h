@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/variant/typed_dictionary.h"
 #include "scene/main/node.h"
 #include "servers/audio_server.h"
 
@@ -57,6 +58,7 @@ private:
 	bool _is_active() const;
 
 	Vector<AudioFrame> _get_volume_vector();
+	HashMap<StringName, Vector<AudioFrame>> _get_all_bus_volume_vectors();
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
@@ -96,6 +98,9 @@ public:
 
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
+
+	TypedDictionary<StringName, float> get_sends() const;
+	void set_sends(const TypedDictionary<StringName, float> &p_sends);
 
 	void set_autoplay(bool p_enable);
 	bool is_autoplay_enabled() const;

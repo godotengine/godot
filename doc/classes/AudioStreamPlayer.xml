@@ -63,7 +63,7 @@
 			If [code]true[/code], this node calls [method play] when entering the tree.
 		</member>
 		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="&amp;&quot;Master&quot;">
-			The target bus name. All sounds from this node will be playing on this bus.
+			The target bus name. All sounds from this node will be playing on this bus. See also [member sends].
 			[b]Note:[/b] At runtime, if no bus with the given name exists, all sounds will fall back on [code]"Master"[/code]. See also [method AudioServer.get_bus_name].
 		</member>
 		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
@@ -81,6 +81,10 @@
 		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
 			If [code]true[/code], this node is playing sounds. Setting this property has the same effect as [method play] and [method stop].
 		</member>
+		<member name="sends" type="Dictionary" setter="set_sends" getter="get_sends" default="{}">
+			The target sends' names. All sounds from this node will be sent to these buses in addition to the node's primary output bus. See also [member bus].
+			[b]Note:[/b] Has no effect when using the [code]sample[/code] playback type.
+		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 			The [AudioStream] resource to be played. Setting this property stops all currently playing sounds. If left empty, the [AudioStreamPlayer] does not work.
 		</member>
@@ -89,7 +93,7 @@
 			[b]Note:[/b] This property is automatically changed when exiting or entering the tree, or this node is paused (see [member Node.process_mode]).
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
-			Volume of sound, in decibels. This is an offset of the [member stream]'s volume.
+			Volume of sound, in decibels. This is an offset of the [member stream]'s volume. The gain is applied pre-send, so it also affects the volume of [member sends].
 			[b]Note:[/b] To convert between decibel and linear energy (like most volume sliders do), use [member volume_linear], or [method @GlobalScope.db_to_linear] and [method @GlobalScope.linear_to_db].
 		</member>
 		<member name="volume_linear" type="float" setter="set_volume_linear" getter="get_volume_linear">

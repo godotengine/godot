@@ -398,7 +398,7 @@
 		<constant name="PLAYBACK_TYPE_SAMPLE" value="2" enum="PlaybackType" experimental="">
 			Force the playback to be considered as a sample. This can provide lower latency and more stable playback (with less risk of audio crackling), at the cost of having less flexibility.
 			[b]Note:[/b] Only currently supported on the web platform.
-			[b]Note:[/b] [AudioEffect]s are not supported when playback is considered as a sample.
+			[b]Note:[/b] [AudioEffect]s and bus sends are not supported when playback is considered as a sample.
 		</constant>
 		<constant name="PLAYBACK_TYPE_MAX" value="3" enum="PlaybackType" experimental="">
 			Represents the size of the [enum PlaybackType] enum.

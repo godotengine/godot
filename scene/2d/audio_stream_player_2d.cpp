@@ -64,7 +64,10 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 			if (setplayback.is_valid() && setplay.get() >= 0) {
 				internal->active.set();
-				AudioServer::get_singleton()->start_playback_stream(setplayback, _get_actual_bus(), volume_vector, setplay.get(), internal->pitch_scale);
+
+				HashMap<StringName, Vector<AudioFrame>> bus_map = internal->get_all_bus_volume_vectors(_get_actual_buses(), volume_vector);
+
+				AudioServer::get_singleton()->start_playback_stream(setplayback, bus_map, setplay.get(), internal->pitch_scale);
 				setplayback.unref();
 				setplay.set(-1);
 			}
@@ -78,16 +81,19 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 }
 
 // Interacts with PhysicsServer2D, so can only be called during _physics_process.
-StringName AudioStreamPlayer2D::_get_actual_bus() {
+TypedDictionary<StringName, float> AudioStreamPlayer2D::_get_actual_buses() {
+	TypedDictionary<StringName, float> buses = internal->get_sends().duplicate();
+	StringName primary_bus;
+
 #ifndef PHYSICS_2D_DISABLED
 	Vector2 global_pos = get_global_position();
 
 	//check if any area is diverting sound into a bus
 	Ref<World2D> world_2d = get_world_2d();
-	ERR_FAIL_COND_V(world_2d.is_null(), SceneStringName(Master));
+	ERR_FAIL_COND_V(world_2d.is_null(), { SceneStringName(Master) });
 
 	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
-	ERR_FAIL_NULL_V(space_state, SceneStringName(Master));
+	ERR_FAIL_NULL_V(space_state, { SceneStringName(Master) });
 	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
 	PhysicsDirectSpaceState2D::PointParameters point_params;
@@ -103,15 +109,24 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 			continue;
 		}
 
+		buses.merge(area2d->get_audio_sends());
+
 		if (!area2d->is_overriding_audio_bus()) {
 			continue;
 		}
 
-		return area2d->get_audio_bus_name();
+		if (!primary_bus) {
+			primary_bus = area2d->get_audio_bus_name();
+		}
 	}
 #endif // PHYSICS_2D_DISABLED
 
-	return internal->bus;
+	if (!primary_bus) {
+		primary_bus = internal->bus;
+	}
+
+	buses[primary_bus] = internal->volume_db;
+	return buses;
 }
 
 // Interacts with PhysicsServer2D, so can only be called during _physics_process
@@ -128,12 +143,9 @@ void AudioStreamPlayer2D::_update_panning() {
 	HashSet<Viewport *> viewports = world_2d->get_viewports();
 
 	volume_vector.resize(4);
-	volume_vector.write[0] = AudioFrame(0, 0);
-	volume_vector.write[1] = AudioFrame(0, 0);
-	volume_vector.write[2] = AudioFrame(0, 0);
-	volume_vector.write[3] = AudioFrame(0, 0);
-
-	StringName actual_bus = _get_actual_bus();
+	for (AudioFrame &frame : volume_vector) {
+		frame = AudioFrame(0, 0);
+	}
 
 	for (Viewport *vp : viewports) {
 		if (!vp->is_audio_listener_2d()) {
@@ -163,7 +175,6 @@ void AudioStreamPlayer2D::_update_panning() {
 		}
 
 		float multiplier = Math::pow(1.0f - dist / max_distance, attenuation);
-		multiplier *= Math::db_to_linear(internal->volume_db); // Also apply player volume!
 
 		float pan = relative_to_listener.x / screen_size.x;
 		// Don't let the panning effect extend (too far) beyond the screen.
@@ -183,8 +194,10 @@ void AudioStreamPlayer2D::_update_panning() {
 		volume_vector.write[0] = AudioFrame(MAX(prev_sample[0], new_sample[0]), MAX(prev_sample[1], new_sample[1]));
 	}
 
+	HashMap<StringName, Vector<AudioFrame>> bus_map = internal->get_all_bus_volume_vectors(_get_actual_buses(), volume_vector);
+
 	for (const Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
-		AudioServer::get_singleton()->set_playback_bus_exclusive(playback, actual_bus, volume_vector);
+		AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, bus_map);
 	}
 
 	for (const Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
@@ -243,7 +256,7 @@ void AudioStreamPlayer2D::play(float p_from_pos) {
 	if (stream_playback->get_is_sample() && stream_playback->get_sample_playback().is_valid()) {
 		Ref<AudioSamplePlayback> sample_playback = stream_playback->get_sample_playback();
 		sample_playback->offset = p_from_pos;
-		sample_playback->bus = _get_actual_bus();
+		sample_playback->bus = _get_actual_buses()[get_bus()];
 
 		AudioServer::get_singleton()->start_sample_playback(sample_playback);
 	}
@@ -278,6 +291,18 @@ void AudioStreamPlayer2D::set_bus(const StringName &p_bus) {
 
 StringName AudioStreamPlayer2D::get_bus() const {
 	return internal->get_bus();
+}
+
+void AudioStreamPlayer2D::set_sends(const TypedDictionary<StringName, float> &p_sends) {
+	if (Engine::get_singleton()->is_editor_hint() && internal->sends.keys() != p_sends.keys()) {
+		notify_property_list_changed();
+	}
+	internal->sends = p_sends;
+	internal->sends.erase("");
+}
+
+TypedDictionary<StringName, float> AudioStreamPlayer2D::get_sends() const {
+	return internal->get_sends().duplicate();
 }
 
 void AudioStreamPlayer2D::set_autoplay(bool p_enable) {
@@ -397,6 +422,9 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer2D::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer2D::get_bus);
 
+	ClassDB::bind_method(D_METHOD("set_sends", "sends"), &AudioStreamPlayer2D::set_sends);
+	ClassDB::bind_method(D_METHOD("get_sends"), &AudioStreamPlayer2D::get_sends);
+
 	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioStreamPlayer2D::set_autoplay);
 	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer2D::is_autoplay_enabled);
 
@@ -438,6 +466,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "sends", PROPERTY_HINT_DICTIONARY_TYPE, "StringName;float"), "set_sends", "get_sends");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 

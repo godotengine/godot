@@ -30,6 +30,7 @@
 
 #include "area_2d.h"
 
+#include "core/variant/typed_dictionary.h"
 #include "servers/audio_server.h"
 
 void Area2D::set_gravity_space_override_mode(SpaceOverride p_mode) {
@@ -540,6 +541,18 @@ StringName Area2D::get_audio_bus_name() const {
 	return SceneStringName(Master);
 }
 
+void Area2D::set_audio_sends(const TypedDictionary<StringName, float> &p_audio_sends) {
+	if (Engine::get_singleton()->is_editor_hint() && audio_sends.keys() != p_audio_sends.keys()) {
+		notify_property_list_changed();
+	}
+	audio_sends = p_audio_sends;
+	audio_sends.erase("");
+}
+
+TypedDictionary<StringName, float> Area2D::get_audio_sends() const {
+	return audio_sends;
+}
+
 void Area2D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "audio_bus_name") {
 		String options;
@@ -552,6 +565,38 @@ void Area2D::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		p_property.hint_string = options;
+	} else if (p_property.name == "audio_sends") {
+		String options;
+		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+			String name = AudioServer::get_singleton()->get_bus_name(i);
+			if (name == "Master" || audio_sends.has(name)) {
+				continue;
+			}
+			if (options != "") {
+				options += ",";
+			}
+			options += name;
+		}
+
+		String hints;
+
+		// Key
+		hints += itos(Variant::Type::STRING_NAME);
+		hints += "/";
+		hints += itos(PROPERTY_HINT_ENUM);
+		hints += ":";
+		hints += options;
+
+		hints += ";";
+
+		// Value
+		hints += itos(Variant::Type::FLOAT);
+		hints += "/";
+		hints += itos(PROPERTY_HINT_RANGE);
+		hints += ":";
+		hints += "-80,0,0.1,suffix:dB";
+
+		p_property.hint_string = hints;
 	} else if (p_property.name.begins_with("gravity") && p_property.name != "gravity_space_override") {
 		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -629,6 +674,9 @@ void Area2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_audio_bus_name", "name"), &Area2D::set_audio_bus_name);
 	ClassDB::bind_method(D_METHOD("get_audio_bus_name"), &Area2D::get_audio_bus_name);
 
+	ClassDB::bind_method(D_METHOD("set_audio_sends", "sends"), &Area2D::set_audio_sends);
+	ClassDB::bind_method(D_METHOD("get_audio_sends"), &Area2D::get_audio_sends);
+
 	ClassDB::bind_method(D_METHOD("set_audio_bus_override", "enable"), &Area2D::set_audio_bus_override);
 	ClassDB::bind_method(D_METHOD("is_overriding_audio_bus"), &Area2D::is_overriding_audio_bus);
 
@@ -662,9 +710,10 @@ void Area2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_angular_damp_space_override_mode", "get_angular_damp_space_override_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 
-	ADD_GROUP("Audio Bus", "audio_bus_");
+	ADD_GROUP("Audio", "audio_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "audio_sends", PROPERTY_HINT_DICTIONARY_TYPE, "StringName;float"), "set_audio_sends", "get_audio_sends");
 
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_DISABLED);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE);
