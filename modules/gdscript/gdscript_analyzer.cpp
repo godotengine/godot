@@ -44,6 +44,10 @@
 #include "core/templates/hash_map.h"
 #include "scene/main/node.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_help.h"
+#endif
+
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES
 #include "editor/renames_map_3_to_4.h"
@@ -1992,6 +1996,57 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 		specified_type = type_from_metatype(resolve_datatype(p_assignable->datatype_specifier));
 		type = specified_type;
 	}
+
+#if TOOLS_ENABLED
+	DocTools *dd = EditorHelp::get_doc_data();
+	bool is_deprecated = false;
+	String new_value_type = "value";
+	String value_name = type.native_type;
+	switch (type.kind) {
+		case GDScriptParser::DataType::Kind::BUILTIN: // No built-in datatypes are deprecated.
+			break;
+		case GDScriptParser::DataType::Kind::NATIVE:
+			is_deprecated = dd && dd->class_list.has(type.native_type) && dd->class_list[type.native_type].is_deprecated;
+			new_value_type = "class";
+			break;
+		case GDScriptParser::DataType::Kind::SCRIPT: {
+			StringName class_name = type.script_type->get_doc_class_name();
+			is_deprecated = dd && dd->class_list.has(class_name) && dd->class_list[class_name].is_deprecated;
+			new_value_type = "class";
+			break;
+		}
+		case GDScriptParser::DataType::Kind::CLASS:
+			is_deprecated = type.class_type->doc_data.is_deprecated;
+			new_value_type = "class";
+
+			// TODO: Not recognizing the autoload name as a class type
+			// var my_var: MyAutoload  # <--- not getting this name
+			if (type.class_type && type.class_type->identifier) {
+				value_name = type.class_type->identifier->name;
+			} else {
+				value_name = "";
+			}
+			break;
+		case GDScriptParser::DataType::Kind::ENUM: {
+			StringName enum_type = type.enum_type; // Something like MyEnum.
+			GDScriptParser::ClassNode *class_type = type.class_type;
+			StringName class_name = (class_type && class_type->identifier) ? class_type->identifier->name : "@GlobalScope";
+			if (dd && dd->class_list.has(class_name)) {
+				DocData::ClassDoc class_doc = dd->class_list[class_name];
+				if (class_doc.enums.has(enum_type)) {
+					is_deprecated = class_doc.enums[enum_type].is_deprecated;
+				}
+			}
+			new_value_type = "enum";
+			break;
+		}
+		default:
+			break;
+	}
+	if (is_deprecated) {
+		parser->push_warning(p_assignable, GDScriptWarning::DEPRECATED_IDENTIFIER, new_value_type, value_name);
+	}
+#endif
 
 	if (p_assignable->initializer != nullptr) {
 		reduce_expression(p_assignable->initializer);
@@ -3998,6 +4053,38 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 	StringName name = p_identifier->name;
 
 	if (base.kind == GDScriptParser::DataType::ENUM) {
+#if TOOLS_ENABLED
+		StringName class_name;
+		DocTools *dd = EditorHelp::get_doc_data();
+		// TODO: Is this a proper way of detecting it's from a native class?
+		// e.g., "AnimationPlayer.AnimationProcessCallback"
+		// User-defined enums also seem to have a "native_type" so we can't
+		// detect actual native classes solely based on whether or not that
+		// string is defined.
+		if (base.native_type && !base.class_type) {
+			class_name = String(base.native_type).get_slicec('.', 0);
+		}
+
+		else if (base.class_type && base.class_type->identifier && base.class_type->identifier->name) {
+			class_name = base.class_type->identifier->name;
+			// It's an inner class, so we need to get the outer class's name
+			// as well to construct its full name as found in the doc data.
+			if (base.class_type->outer != nullptr && base.class_type->outer->identifier != nullptr) {
+				class_name = String(base.class_type->outer->identifier->name) + "." + class_name;
+			}
+		}
+
+		if (dd && dd->class_list.has(class_name)) {
+			for (const DocData::ConstantDoc &doc : dd->class_list[class_name].constants) {
+				if (doc.enumeration == base.enum_type && doc.name == name) {
+					if (doc.is_deprecated) {
+						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "enum value", vformat("%s.%s", base.enum_type, doc.name));
+					}
+					break;
+				}
+			}
+		}
+#endif
 		if (base.is_meta_type) {
 			if (base.enum_values.has(name)) {
 				p_identifier->set_datatype(type_from_metatype(base));
@@ -4143,6 +4230,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					p_identifier->reduced_value = member.constant->initializer->reduced_value;
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 					p_identifier->constant_source = member.constant;
+#if TOOLS_ENABLED
+					if (member.constant->doc_data.is_deprecated) {
+						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "constant", name);
+					}
+#endif
 					return;
 				}
 
@@ -4151,6 +4243,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					p_identifier->is_constant = true;
 					p_identifier->reduced_value = member.enum_value.value;
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+#if TOOLS_ENABLED
+					if (member.enum_value.doc_data.is_deprecated) {
+						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "enum value", name);
+					}
+#endif
 					return;
 				}
 
@@ -4159,6 +4256,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					p_identifier->is_constant = true;
 					p_identifier->reduced_value = member.m_enum->dictionary;
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+#if TOOLS_ENABLED
+					if (member.m_enum->doc_data.is_deprecated) {
+						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "enum", name);
+					}
+#endif
 					return;
 				}
 
@@ -4168,6 +4270,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 						p_identifier->source = member.variable->is_static ? GDScriptParser::IdentifierNode::STATIC_VARIABLE : GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
 						p_identifier->variable_source = member.variable;
 						member.variable->usages += 1;
+#if TOOLS_ENABLED
+						if (member.variable->doc_data.is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "property or variable", name);
+						}
+#endif
 						return;
 					}
 				} break;
@@ -4178,6 +4285,12 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
 						p_identifier->signal_source = member.signal;
 						member.signal->usages += 1;
+
+#if TOOLS_ENABLED
+						if (member.signal->doc_data.is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "signal", name);
+						}
+#endif
 						return;
 					}
 				} break;
@@ -4195,6 +4308,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				case GDScriptParser::ClassNode::Member::CLASS: {
 					reduce_identifier_from_base_set_class(p_identifier, member.get_datatype());
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CLASS;
+#ifdef TOOLS_ENABLED
+					if (script_class->get_member(name).m_class->doc_data.is_deprecated) {
+						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "class", name);
+					}
+#endif
 					return;
 				}
 
@@ -4284,6 +4402,19 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				p_identifier->set_datatype(type_from_property(getter->get_return_info(), false, !has_setter));
 				p_identifier->source = GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
 			}
+#if TOOLS_ENABLED
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd && dd->class_list.has(native)) {
+				for (const DocData::PropertyDoc &doc : dd->class_list[native].properties) {
+					if (doc.name == name) {
+						if (doc.is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "property", name);
+						}
+						break;
+					}
+				}
+			}
+#endif
 			return;
 		}
 		if (ClassDB::get_method_info(native, name, &method_info)) {
@@ -4296,11 +4427,33 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			// Signal is a type too.
 			p_identifier->set_datatype(make_signal_type(method_info));
 			p_identifier->source = GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
+#if TOOLS_ENABLED
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd && dd->class_list.has(native)) {
+				for (const DocData::MethodDoc &doc : dd->class_list[native].signals) {
+					if (doc.name == name) {
+						if (doc.is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "signal", name);
+						}
+						break;
+					}
+				}
+			}
+#endif
 			return;
 		}
 		if (ClassDB::has_enum(native, name)) {
 			p_identifier->set_datatype(make_native_enum_type(name, native));
 			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+#if TOOLS_ENABLED
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd && dd->class_list.has(native) && dd->class_list[native].enums.has(name)) {
+				DocData::EnumDoc doc = dd->class_list[native].enums[name];
+				if (doc.is_deprecated) {
+					parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "enum", name);
+				}
+			}
+#endif
 			return;
 		}
 		bool valid = false;
@@ -4310,6 +4463,20 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			p_identifier->is_constant = true;
 			p_identifier->reduced_value = int_constant;
 			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+
+#if TOOLS_ENABLED
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd && dd->class_list.has(native)) {
+				for (const DocData::ConstantDoc &doc : dd->class_list[native].constants) {
+					if (doc.name == name) {
+						if (doc.is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "constant", name);
+						}
+						break;
+					}
+				}
+			}
+#endif
 
 			// Check whether this constant, which exists, belongs to an enum
 			StringName enum_name = ClassDB::get_integer_constant_enum(native, name);
@@ -4363,6 +4530,12 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			// TODO: Constant should have a value on the node itself.
 			p_identifier->reduced_value = p_identifier->constant_source->initializer->reduced_value;
 			found_source = true;
+
+#ifdef TOOLS_ENABLED
+			if (p_identifier->constant_source->doc_data.is_deprecated) {
+				parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "constant", p_identifier->name);
+			}
+#endif
 			break;
 		case GDScriptParser::IdentifierNode::MEMBER_SIGNAL:
 			p_identifier->signal_source->usages++;
@@ -4381,6 +4554,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 #ifdef DEBUG_ENABLED
 			if (p_identifier->variable_source && p_identifier->variable_source->assignments == 0 && !(p_identifier->get_datatype().is_hard_type() && p_identifier->get_datatype().kind == GDScriptParser::DataType::BUILTIN)) {
 				parser->push_warning(p_identifier, GDScriptWarning::UNASSIGNED_VARIABLE, p_identifier->name);
+			}
+#endif
+#ifdef TOOLS_ENABLED
+			if (p_identifier->variable_source->doc_data.is_deprecated) {
+				parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "property or variable", p_identifier->name);
 			}
 #endif
 			break;
@@ -4499,12 +4677,28 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	}
 
 	if (class_exists(name)) {
+#if TOOLS_ENABLED
+		DocTools *dd = EditorHelp::get_doc_data();
+		if (dd && dd->class_list.has(name)) {
+			if (dd->class_list[name].is_deprecated) {
+				parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "class", name);
+			}
+		}
+#endif
 		p_identifier->set_datatype(make_native_meta_type(name));
 		return;
 	}
 
 	if (ScriptServer::is_global_class(name)) {
 		p_identifier->set_datatype(make_global_class_meta_type(name, p_identifier));
+#if TOOLS_ENABLED
+		DocTools *dd = EditorHelp::get_doc_data();
+		if (dd && dd->class_list.has(name)) {
+			if (dd->class_list[name].is_deprecated) {
+				parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "class", name);
+			}
+		}
+#endif
 		return;
 	}
 
@@ -4545,6 +4739,14 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 					}
 				}
 			}
+#if TOOLS_ENABLED
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd && dd->class_list.has(name)) {
+				if (dd->class_list[name].is_deprecated) {
+					parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "class", name);
+				}
+			}
+#endif
 			result.is_constant = true;
 			p_identifier->set_datatype(result);
 			return;
@@ -4562,6 +4764,17 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		}
 		p_identifier->is_constant = true;
 		p_identifier->reduced_value = value;
+
+#if TOOLS_ENABLED
+		DocTools *dd = EditorHelp::get_doc_data();
+		if (dd && dd->class_list.has("@GlobalScope")) {
+			for (const DocData::ConstantDoc &cd : dd->class_list["@GlobalScope"].constants) {
+				if (cd.name == name && cd.is_deprecated) {
+					parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER, "constant", name);
+				}
+			}
+		}
+#endif
 		return;
 	}
 
@@ -5755,6 +5968,12 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		r_return_type.is_meta_type = false;
 		r_return_type.is_coroutine = found_function->is_coroutine;
 
+		// For user-defined methods.
+#ifdef TOOLS_ENABLED
+		if (found_function->doc_data.is_deprecated) {
+			parser->push_warning(p_source, GDScriptWarning::DEPRECATED_IDENTIFIER, "function", found_function->identifier->name);
+		}
+#endif
 		return true;
 	}
 
@@ -5798,6 +6017,19 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		if (native_method && r_native_class) {
 			*r_native_class = native_method->get_instance_class();
 		}
+#endif
+#ifdef TOOLS_ENABLED
+		DocTools *dd = EditorHelp::get_doc_data();
+		if (dd) {
+			Vector<DocData::MethodDoc> method_list = dd->class_list[base_native].methods;
+			for (int i = 0; i < method_list.size(); i++) {
+				if (method_list[i].name == function_name && method_list[i].is_deprecated) {
+					parser->push_warning(p_source, GDScriptWarning::DEPRECATED_IDENTIFIER, "function", function_name);
+					break;
+				}
+			}
+		}
+
 #endif
 		return valid;
 	}
