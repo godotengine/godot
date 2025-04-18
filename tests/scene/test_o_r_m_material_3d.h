@@ -38,7 +38,7 @@ namespace TestORMMaterial3D {
 
 TEST_CASE("[Material][ORMMaterial3D] Constructor & default state") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
-		WARN("ORMMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "ORMMaterial3D is not available in this build.");
 	} else {
 		Ref<ORMMaterial3D> mat;
 		mat.instantiate();
@@ -50,7 +50,7 @@ TEST_CASE("[Material][ORMMaterial3D] Constructor & default state") {
 
 TEST_CASE("[Material][ORMMaterial3D] ORM texture assignment") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
-		WARN("ORMMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "ORMMaterial3D is not available in this build.");
 	} else {
 		Ref<ORMMaterial3D> mat;
 		mat.instantiate();
@@ -64,7 +64,7 @@ TEST_CASE("[Material][ORMMaterial3D] ORM texture assignment") {
 
 TEST_CASE("[Material][ORMMaterial3D] Set AO texture and channel") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
-		WARN("ORMMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "ORMMaterial3D is not available in this build.");
 	} else {
 		Ref<ORMMaterial3D> mat;
 		mat.instantiate();
@@ -80,7 +80,7 @@ TEST_CASE("[Material][ORMMaterial3D] Set AO texture and channel") {
 
 TEST_CASE("[Material][ORMMaterial3D] Metallic and roughness channels") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
-		WARN("ORMMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "ORMMaterial3D is not available in this build.");
 	} else {
 		Ref<ORMMaterial3D> mat;
 		mat.instantiate();
@@ -95,7 +95,7 @@ TEST_CASE("[Material][ORMMaterial3D] Metallic and roughness channels") {
 
 TEST_CASE("[Material][ORMMaterial3D] Emission and refraction settings") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
-		WARN("ORMMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "ORMMaterial3D is not available in this build.");
 	} else {
 		Ref<ORMMaterial3D> mat;
 		mat.instantiate();
@@ -111,7 +111,7 @@ TEST_CASE("[Material][ORMMaterial3D] Emission and refraction settings") {
 
 TEST_CASE("[Material][ORMMaterial3D] AO and feature flag logic") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
-		WARN("ORMMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "ORMMaterial3D is not available in this build.");
 	} else {
 		Ref<ORMMaterial3D> mat;
 		mat.instantiate();
@@ -126,7 +126,7 @@ TEST_CASE("[Material][ORMMaterial3D] AO and feature flag logic") {
 
 TEST_CASE("[Material][ORMMaterial3D] Double assignment") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
-		WARN("ORMMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "ORMMaterial3D is not available in this build.");
 	} else {
 		Ref<ORMMaterial3D> mat1;
 		Ref<ORMMaterial3D> mat2;

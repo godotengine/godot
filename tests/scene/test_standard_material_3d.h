@@ -38,7 +38,7 @@ namespace TestStandardMaterial3D {
 
 TEST_CASE("[Material][StandardMaterial3D] Constructor & default state") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
-		WARN("StandardMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "StandardMaterial3D is not available in this build.");
 	} else {
 		Ref<StandardMaterial3D> mat;
 		mat.instantiate();
@@ -51,7 +51,7 @@ TEST_CASE("[Material][StandardMaterial3D] Constructor & default state") {
 
 TEST_CASE("[Material][StandardMaterial3D] Setter & Getter logic") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
-		WARN("StandardMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "StandardMaterial3D is not available in this build.");
 	} else {
 		Ref<StandardMaterial3D> mat;
 		mat.instantiate();
@@ -70,7 +70,7 @@ TEST_CASE("[Material][StandardMaterial3D] Setter & Getter logic") {
 
 TEST_CASE("[Material][StandardMaterial3D] Texture assignment") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
-		WARN("StandardMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "StandardMaterial3D is not available in this build.");
 	} else {
 		Ref<StandardMaterial3D> mat;
 		mat.instantiate();
@@ -84,7 +84,7 @@ TEST_CASE("[Material][StandardMaterial3D] Texture assignment") {
 
 TEST_CASE("[Material][StandardMaterial3D] Transparency mode") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
-		WARN("StandardMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "StandardMaterial3D is not available in this build.");
 	} else {
 		Ref<StandardMaterial3D> mat;
 		mat.instantiate();
@@ -96,7 +96,7 @@ TEST_CASE("[Material][StandardMaterial3D] Transparency mode") {
 
 TEST_CASE("[Material][StandardMaterial3D] Enum parameter setting") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
-		WARN("StandardMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "StandardMaterial3D is not available in this build.");
 	} else {
 		Ref<StandardMaterial3D> mat;
 		mat.instantiate();
@@ -111,7 +111,7 @@ TEST_CASE("[Material][StandardMaterial3D] Enum parameter setting") {
 
 TEST_CASE("[Material][StandardMaterial3D] Double assignment") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
-		WARN("StandardMaterial3D is not available in this build.");
+		WARN_MESSAGE(true, "StandardMaterial3D is not available in this build.");
 	} else {
 		Ref<StandardMaterial3D> mat1;
 		Ref<StandardMaterial3D> mat2;
