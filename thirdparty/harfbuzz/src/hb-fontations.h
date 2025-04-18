@@ -1,6 +1,4 @@
 /*
- * Copyright © 2015-2019  Ebrahim Byagowi
- *
  *  This is part of HarfBuzz, a text shaping library.
  *
  * Permission is hereby granted, without written agreement and without
@@ -20,52 +18,39 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ *
+ * Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_DIRECTWRITE_H
-#define HB_DIRECTWRITE_H
+#ifndef HB_FONTATIONS_H
+#define HB_FONTATIONS_H
 
 #include "hb.h"
 
-#include <dwrite_3.h>
+/**
+ * SECTION: hb-fontations
+ * @title: hb-fontations
+ * @short_description: Fontations integration
+ * @include: hb-fontations.h
+ *
+ * Functions for using HarfBuzz with
+ * [Fontations](https://github.com/googlefonts/fontations/) fonts.
+ **/
 
 HB_BEGIN_DECLS
 
-HB_EXTERN hb_face_t *
-hb_directwrite_face_create (IDWriteFontFace *dw_face);
-
-HB_EXTERN hb_face_t *
-hb_directwrite_face_create_from_file_or_fail (const char   *file_name,
-					      unsigned int  index);
-
-HB_EXTERN hb_face_t *
-hb_directwrite_face_create_from_blob_or_fail (hb_blob_t    *blob,
-					      unsigned int  index);
-
-HB_EXTERN IDWriteFontFace *
-hb_directwrite_face_get_dw_font_face (hb_face_t *face);
-
-HB_EXTERN hb_font_t *
-hb_directwrite_font_create (IDWriteFontFace *dw_face);
-
-HB_EXTERN IDWriteFontFace *
-hb_directwrite_font_get_dw_font_face (hb_font_t *font);
-
+/**
+ * hb_fontations_font_set_funcs:
+ * @font: #hb_font_t to work upon
+ *
+ * Configures the font-functions structure of the specified #hb_font_t font
+ * object to use Fontations font functions.
+ *
+ * Since: 11.0.0
+ **/
 HB_EXTERN void
-hb_directwrite_font_set_funcs (hb_font_t *font);
-
-#ifndef HB_DISABLE_DEPRECATED
-
-HB_DEPRECATED_FOR (hb_directwrite_face_get_dw_font_face)
-HB_EXTERN IDWriteFontFace *
-hb_directwrite_face_get_font_face (hb_face_t *face);
-
-HB_DEPRECATED
-HB_EXTERN IDWriteFont *
-hb_directwrite_font_get_dw_font (hb_font_t *font);
-
-#endif
+hb_fontations_font_set_funcs (hb_font_t *font);
 
 HB_END_DECLS
 
-#endif /* HB_DIRECTWRITE_H */
+#endif /* HB_FONTATIONS_H */
