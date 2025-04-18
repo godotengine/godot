@@ -144,6 +144,12 @@ public:
 	virtual void shape_set_margin(RID p_shape, real_t p_margin) override;
 	virtual real_t shape_get_margin(RID p_shape) const override;
 
+	virtual real_t shape_get_friction_override(RID p_shape) const override;
+	virtual void shape_set_friction_override(RID p_shape, bool p_enable, real_t p_friction = 0.0) override;
+
+	virtual real_t shape_get_bounce_override(RID p_shape) const override;
+	virtual void shape_set_bounce_override(RID p_shape, bool p_enable, real_t p_bounce = 0.0) override;
+
 	virtual PhysicsServer3D::ShapeType shape_get_type(RID p_shape) const override;
 
 	virtual real_t shape_get_custom_solver_bias(RID p_shape) const override;

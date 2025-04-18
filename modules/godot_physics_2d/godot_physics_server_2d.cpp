@@ -124,6 +124,28 @@ void GodotPhysicsServer2D::shape_set_custom_solver_bias(RID p_shape, real_t p_bi
 	shape->set_custom_bias(p_bias);
 }
 
+void GodotPhysicsServer2D::shape_set_friction_override(RID p_shape, bool p_enable, real_t p_friction) {
+	GodotShape2D *shape = shape_owner.get_or_null(p_shape);
+	ERR_FAIL_NULL(shape);
+	if (p_enable) {
+		shape->set_friction(p_friction);
+	} else {
+		// Use default value from body
+		shape->set_friction(NAN);
+	}
+}
+
+void GodotPhysicsServer2D::shape_set_bounce_override(RID p_shape, bool p_enable, real_t p_bounce) {
+	GodotShape2D *shape = shape_owner.get_or_null(p_shape);
+	ERR_FAIL_NULL(shape);
+	if (p_enable) {
+		shape->set_bounce(p_bounce);
+	} else {
+		// Use default value from body
+		shape->set_bounce(NAN);
+	}
+}
+
 PhysicsServer2D::ShapeType GodotPhysicsServer2D::shape_get_type(RID p_shape) const {
 	const GodotShape2D *shape = shape_owner.get_or_null(p_shape);
 	ERR_FAIL_NULL_V(shape, SHAPE_CUSTOM);
@@ -141,6 +163,18 @@ real_t GodotPhysicsServer2D::shape_get_custom_solver_bias(RID p_shape) const {
 	const GodotShape2D *shape = shape_owner.get_or_null(p_shape);
 	ERR_FAIL_NULL_V(shape, 0);
 	return shape->get_custom_bias();
+}
+
+real_t GodotPhysicsServer2D::shape_get_friction_override(RID p_shape) const {
+	const GodotShape2D *shape = shape_owner.get_or_null(p_shape);
+	ERR_FAIL_NULL_V(shape, 0);
+	return shape->get_friction();
+}
+
+real_t GodotPhysicsServer2D::shape_get_bounce_override(RID p_shape) const {
+	const GodotShape2D *shape = shape_owner.get_or_null(p_shape);
+	ERR_FAIL_NULL_V(shape, 0);
+	return shape->get_bounce();
 }
 
 void GodotPhysicsServer2D::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata) {

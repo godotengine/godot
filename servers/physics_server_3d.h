@@ -278,6 +278,12 @@ public:
 	virtual void shape_set_margin(RID p_shape, real_t p_margin) = 0;
 	virtual real_t shape_get_margin(RID p_shape) const = 0;
 
+	virtual real_t shape_get_friction_override(RID p_shape) const = 0;
+	virtual void shape_set_friction_override(RID p_shape, bool p_enable, real_t p_friction = 0.0) = 0;
+
+	virtual real_t shape_get_bounce_override(RID p_shape) const = 0;
+	virtual void shape_set_bounce_override(RID p_shape, bool p_enable, real_t p_bounce = 0.0) = 0;
+
 	virtual real_t shape_get_custom_solver_bias(RID p_shape) const = 0;
 
 	/* SPACE API */
