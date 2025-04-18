@@ -1913,6 +1913,7 @@ Input::Input() {
 	gravity_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gravity", false);
 	gyroscope_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gyroscope", false);
 	magnetometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_magnetometer", false);
+	gamepad_enabled = GLOBAL_DEF_BASIC("input_devices/controller/gamepad_enabled", true);
 }
 
 Input::~Input() {
