@@ -415,6 +415,9 @@ void EditorNode::_update_from_settings() {
 	}
 	_update_title();
 
+	const bool wait_for_present = GLOBAL_GET("rendering/rendering_device/vsync/wait_for_present");
+	RD::get_singleton()->set_wait_for_present(wait_for_present);
+
 	int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
 	if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
 		Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;
