@@ -539,30 +539,46 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				String expression_str = data[0];
 				int frame = data[1];
 
-				ScriptInstance *breaked_instance = script_debugger->get_break_language()->debug_get_stack_level_instance(frame);
-				if (!breaked_instance) {
-					break;
+				PackedStringArray variables_vector;
+				Array variable_vals_array;
+				Object *obj = nullptr;
+
+				if (frame >= 0) {
+					ScriptInstance *breaked_instance = script_lang->debug_get_stack_level_instance(frame);
+					if (breaked_instance) {
+						obj = breaked_instance->get_owner();
+
+						List<String> locals;
+						List<Variant> local_vals;
+						script_lang->debug_get_stack_level_locals(frame, &locals, &local_vals);
+						ERR_FAIL_COND(locals.size() != local_vals.size());
+
+						for (const String &S : locals) {
+							variables_vector.append(S);
+						}
+
+						for (const Variant &V : local_vals) {
+							variable_vals_array.append(V);
+						}
+					}
 				}
 
-				List<String> locals;
-				List<Variant> local_vals;
+				List<String> globals;
+				List<Variant> globals_vals;
+				script_lang->debug_get_globals(&globals, &globals_vals);
+				ERR_FAIL_COND(globals.size() != globals_vals.size());
 
-				script_debugger->get_break_language()->debug_get_stack_level_locals(frame, &locals, &local_vals);
-				ERR_FAIL_COND(locals.size() != local_vals.size());
-
-				PackedStringArray locals_vector;
-				for (const String &S : locals) {
-					locals_vector.append(S);
+				for (const String &G : globals) {
+					variables_vector.append(G);
 				}
 
-				Array local_vals_array;
-				for (const Variant &V : local_vals) {
-					local_vals_array.append(V);
+				for (const Variant &V : globals_vals) {
+					variable_vals_array.append(V);
 				}
 
 				Expression expression;
-				expression.parse(expression_str, locals_vector);
-				const Variant return_val = expression.execute(local_vals_array, breaked_instance->get_owner());
+				expression.parse(expression_str, variables_vector);
+				const Variant return_val = expression.execute(variable_vals_array, obj);
 
 				DebuggerMarshalls::ScriptStackVariable stvar;
 				stvar.name = expression_str;
