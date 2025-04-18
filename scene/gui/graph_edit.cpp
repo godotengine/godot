@@ -2508,7 +2508,7 @@ void GraphEdit::set_connections(const TypedArray<Dictionary> &p_connections) {
 	}
 }
 
-TypedArray<Dictionary> GraphEdit::_get_connection_list() const {
+TypedArray<Dictionary> GraphEdit::_get_connections() const {
 	Vector<Ref<Connection>> conns = get_connections();
 
 	TypedArray<Dictionary> arr;
@@ -2553,7 +2553,7 @@ TypedArray<Dictionary> GraphEdit::_get_connections_intersecting_with_rect(const 
 	return arr;
 }
 
-TypedArray<Dictionary> GraphEdit::_get_connection_list_from_node(const StringName &p_node) const {
+TypedArray<Dictionary> GraphEdit::_get_connections_by_node(const StringName &p_node) const {
 	ERR_FAIL_COND_V(!connection_map.has(p_node), TypedArray<Dictionary>());
 
 	List<Ref<GraphEdit::Connection>> connections_from_node = connection_map.get(p_node);
@@ -2928,10 +2928,10 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("disconnect_node", "from_node", "from_port", "to_node", "to_port"), &GraphEdit::disconnect_node);
 	ClassDB::bind_method(D_METHOD("set_connection_activity", "from_node", "from_port", "to_node", "to_port", "amount"), &GraphEdit::set_connection_activity);
 	ClassDB::bind_method(D_METHOD("set_connections", "connections"), &GraphEdit::set_connections);
-	ClassDB::bind_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connection_list);
+	ClassDB::bind_method(D_METHOD("get_connections"), &GraphEdit::_get_connections);
 	ClassDB::bind_method(D_METHOD("get_connection_count", "from_node", "from_port"), &GraphEdit::get_connection_count);
 	ClassDB::bind_method(D_METHOD("get_closest_connection_at_point", "point", "max_distance"), &GraphEdit::_get_closest_connection_at_point, DEFVAL(4.0));
-	ClassDB::bind_method(D_METHOD("get_connection_list_from_node", "node"), &GraphEdit::_get_connection_list_from_node);
+	ClassDB::bind_method(D_METHOD("get_connections_by_node", "node"), &GraphEdit::_get_connections_by_node);
 	ClassDB::bind_method(D_METHOD("get_connections_intersecting_with_rect", "rect"), &GraphEdit::_get_connections_intersecting_with_rect);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
 	ClassDB::bind_method(D_METHOD("force_connection_drag_end"), &GraphEdit::force_connection_drag_end);
@@ -3046,7 +3046,7 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_curvature"), "set_connection_lines_curvature", "get_connection_lines_curvature");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_thickness", PROPERTY_HINT_RANGE, "0,100,0.1,suffix:px"), "set_connection_lines_thickness", "get_connection_lines_thickness");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "connection_lines_antialiased"), "set_connection_lines_antialiased", "is_connection_lines_antialiased");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "connections", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), "set_connections", "get_connection_list");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "connections", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), "set_connections", "get_connections");
 
 	ADD_GROUP("Zoom", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom"), "set_zoom", "get_zoom");

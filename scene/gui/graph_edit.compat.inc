@@ -51,6 +51,8 @@ void GraphEdit::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("set_arrange_nodes_button_hidden", "enable"), &GraphEdit::_set_arrange_nodes_button_hidden_bind_compat_81582);
 	ClassDB::bind_compatibility_method(D_METHOD("get_connection_line", "from_node", "to_node"), &GraphEdit::_get_connection_line_bind_compat_86158);
 	ClassDB::bind_compatibility_method(D_METHOD("connect_node", "from_node", "from_port", "to_node", "to_port"), &GraphEdit::_connect_node_bind_compat_97449);
+	ClassDB::bind_compatibility_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connections);
+	ClassDB::bind_compatibility_method(D_METHOD("get_connection_list_from_node", "node"), &GraphEdit::_get_connections_by_node);
 }
 
 #endif
