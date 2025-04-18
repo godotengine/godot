@@ -1180,6 +1180,51 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 }
 
+Error ProjectSettings::save_simple(const String &p_path) {
+	RBSet<_VCSort> vclist;
+
+	for (const KeyValue<StringName, VariantContainer> &G : props) {
+		const VariantContainer *v = &G.value;
+
+		if (v->variant == v->initial) {
+			continue;
+		}
+
+		_VCSort vc;
+		vc.name = G.key;
+		vc.order = v->order;
+		vc.type = v->variant.get_type();
+		vc.flags = PROPERTY_USAGE_STORAGE;
+
+		vclist.insert(vc);
+	}
+
+	RBMap<String, List<String>> save_props;
+
+	for (const _VCSort &E : vclist) {
+		String category = E.name;
+		String name = E.name;
+
+		int div = category.find_char('/');
+
+		if (div < 0) {
+			category = "";
+		} else {
+			category = category.substr(0, div);
+			name = name.substr(div + 1);
+		}
+		save_props[category].push_back(name);
+	}
+
+	if (p_path.ends_with(".godot") || p_path.ends_with("override.cfg")) {
+		return _save_settings_text(p_path, save_props);
+	} else if (p_path.ends_with(".binary")) {
+		return _save_settings_binary(p_path, save_props);
+	} else {
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, vformat("Unknown config file format: '%s'.", p_path));
+	}
+}
+
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic, bool p_internal) {
 	Variant ret;
 	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
