@@ -131,7 +131,7 @@ bool CameraFeedLinux::_request_buffers() {
 	ERR_FAIL_COND_V_MSG(requestbuffers.count < 2, false, "Not enough buffers granted.");
 
 	buffer_count = requestbuffers.count;
-	buffers = new StreamingBuffer[buffer_count];
+	buffers = (StreamingBuffer *)memalloc(sizeof(StreamingBuffer) * buffer_count);
 
 	for (unsigned int i = 0; i < buffer_count; i++) {
 		struct v4l2_buffer buffer;
@@ -142,7 +142,7 @@ bool CameraFeedLinux::_request_buffers() {
 		buffer.index = i;
 
 		if (ioctl(file_descriptor, VIDIOC_QUERYBUF, &buffer) == -1) {
-			delete[] buffers;
+			memfree(buffers);
 			ERR_FAIL_V_MSG(false, vformat("ioctl(VIDIOC_QUERYBUF) error: %d.", errno));
 		}
 
@@ -153,7 +153,7 @@ bool CameraFeedLinux::_request_buffers() {
 			for (unsigned int b = 0; b < i; b++) {
 				_unmap_buffers(i);
 			}
-			delete[] buffers;
+			memfree(buffers);
 			ERR_FAIL_V_MSG(false, "Mapping buffers failed.");
 		}
 	}
@@ -277,7 +277,7 @@ void CameraFeedLinux::deactivate_feed() {
 	memdelete(thread);
 	_stop_capturing();
 	_unmap_buffers(buffer_count);
-	delete[] buffers;
+	memfree(buffers);
 	memdelete(buffer_decoder);
 	for (int i = 0; i < CameraServer::FEED_IMAGES; i++) {
 		RID placeholder = RenderingServer::get_singleton()->texture_2d_placeholder_create();

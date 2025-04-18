@@ -98,7 +98,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 
 GodotJavaWrapper::~GodotJavaWrapper() {
 	if (godot_view) {
-		delete godot_view;
+		memdelete(godot_view);
 	}
 
 	JNIEnv *env = get_jni_env();
@@ -122,7 +122,7 @@ GodotJavaViewWrapper *GodotJavaWrapper::get_godot_view() {
 		ERR_FAIL_NULL_V(env, nullptr);
 		jobject godot_render_view = env->CallObjectMethod(godot_instance, _get_render_view);
 		if (!env->IsSameObject(godot_render_view, nullptr)) {
-			godot_view = new GodotJavaViewWrapper(godot_render_view);
+			godot_view = memnew(GodotJavaViewWrapper(godot_render_view));
 		}
 	}
 	return godot_view;

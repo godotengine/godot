@@ -366,7 +366,7 @@ public:
 	ULONG STDMETHODCALLTYPE Release() {
 		long ref = InterlockedDecrement(&ref_count);
 		if (!ref) {
-			delete this;
+			memdelete(this);
 		}
 		return ref;
 	}
@@ -574,7 +574,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 	}
 	if (SUCCEEDED(hr)) {
 		IFileDialogEvents *pfde = nullptr;
-		FileDialogEventHandler *event_handler = new FileDialogEventHandler();
+		FileDialogEventHandler *event_handler = memnew(FileDialogEventHandler);
 		hr = event_handler->QueryInterface(IID_PPV_ARGS(&pfde));
 
 		DWORD cookie = 0;
@@ -4882,15 +4882,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			UINT dwSize;
+			UINT dw_size;
 
-			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
-			LPBYTE lpb = new BYTE[dwSize];
+			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &dw_size, sizeof(RAWINPUTHEADER));
+			LPBYTE lpb = (LPBYTE)memalloc(dw_size);
 			if (lpb == nullptr) {
 				return 0;
 			}
 
-			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
+			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dw_size, sizeof(RAWINPUTHEADER)) != dw_size) {
 				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
 			}
 
@@ -4980,7 +4980,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					Input::get_singleton()->parse_input_event(mm);
 				}
 			}
-			delete[] lpb;
+			memfree(lpb);
 		} break;
 		case WT_CSRCHANGE:
 		case WT_PROXIMITY: {
@@ -7198,7 +7198,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		ERR_FAIL_MSG("Failed to create main window.");
 	}
 
-	joypad = new JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd);
+	joypad = memnew(JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd));
 
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
@@ -7352,7 +7352,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 		E->erase();
 	}
 
-	delete joypad;
+	memdelete(joypad);
 	touch_state.clear();
 
 	cursors_cache.clear();

@@ -45,24 +45,20 @@ AbstractYuyvBufferDecoder::AbstractYuyvBufferDecoder(CameraFeed *p_camera_feed) 
 		BufferDecoder(p_camera_feed) {
 	switch (camera_feed->get_format().pixel_format) {
 		case V4L2_PIX_FMT_YYUV:
-			component_indexes = new int[4]{ 0, 1, 2, 3 };
+			component_indexes = Vector4i(0, 1, 2, 3);
 			break;
 		case V4L2_PIX_FMT_YVYU:
-			component_indexes = new int[4]{ 0, 2, 3, 1 };
+			component_indexes = Vector4i(0, 2, 3, 1);
 			break;
 		case V4L2_PIX_FMT_UYVY:
-			component_indexes = new int[4]{ 1, 3, 0, 2 };
+			component_indexes = Vector4i(1, 3, 0, 2);
 			break;
 		case V4L2_PIX_FMT_VYUY:
-			component_indexes = new int[4]{ 1, 3, 2, 0 };
+			component_indexes = Vector4i(1, 3, 2, 0);
 			break;
 		default:
-			component_indexes = new int[4]{ 0, 2, 1, 3 };
+			component_indexes = Vector4i(0, 2, 1, 3);
 	}
-}
-
-AbstractYuyvBufferDecoder::~AbstractYuyvBufferDecoder() {
-	delete[] component_indexes;
 }
 
 SeparateYuyvBufferDecoder::SeparateYuyvBufferDecoder(CameraFeed *p_camera_feed) :
@@ -77,10 +73,10 @@ void SeparateYuyvBufferDecoder::decode(StreamingBuffer p_buffer) {
 	uint8_t *y_dst = (uint8_t *)y_image_data.ptrw();
 	uint8_t *uv_dst = (uint8_t *)cbcr_image_data.ptrw();
 	uint8_t *src = (uint8_t *)p_buffer.start;
-	uint8_t *y0_src = src + component_indexes[0];
-	uint8_t *y1_src = src + component_indexes[1];
-	uint8_t *u_src = src + component_indexes[2];
-	uint8_t *v_src = src + component_indexes[3];
+	uint8_t *y0_src = src + component_indexes.x;
+	uint8_t *y1_src = src + component_indexes.y;
+	uint8_t *u_src = src + component_indexes.z;
+	uint8_t *v_src = src + component_indexes.w;
 
 	for (int i = 0; i < width * height; i += 2) {
 		*y_dst++ = *y0_src;
@@ -116,8 +112,8 @@ YuyvToGrayscaleBufferDecoder::YuyvToGrayscaleBufferDecoder(CameraFeed *p_camera_
 void YuyvToGrayscaleBufferDecoder::decode(StreamingBuffer p_buffer) {
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
 	uint8_t *src = (uint8_t *)p_buffer.start;
-	uint8_t *y0_src = src + component_indexes[0];
-	uint8_t *y1_src = src + component_indexes[1];
+	uint8_t *y0_src = src + component_indexes.x;
+	uint8_t *y1_src = src + component_indexes.y;
 
 	for (int i = 0; i < width * height; i += 2) {
 		*dst++ = *y0_src;
@@ -143,10 +139,10 @@ YuyvToRgbBufferDecoder::YuyvToRgbBufferDecoder(CameraFeed *p_camera_feed) :
 
 void YuyvToRgbBufferDecoder::decode(StreamingBuffer p_buffer) {
 	uint8_t *src = (uint8_t *)p_buffer.start;
-	uint8_t *y0_src = src + component_indexes[0];
-	uint8_t *y1_src = src + component_indexes[1];
-	uint8_t *u_src = src + component_indexes[2];
-	uint8_t *v_src = src + component_indexes[3];
+	uint8_t *y0_src = src + component_indexes.x;
+	uint8_t *y1_src = src + component_indexes.y;
+	uint8_t *u_src = src + component_indexes.z;
+	uint8_t *v_src = src + component_indexes.w;
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
 
 	for (int i = 0; i < width * height; i += 2) {
