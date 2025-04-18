@@ -62,6 +62,7 @@ class GDScript : public Script {
 	bool tool = false;
 	bool valid = false;
 	bool reloading = false;
+	bool _is_abstract = false;
 
 	struct MemberInfo {
 		int index = 0;
@@ -247,7 +248,6 @@ public:
 	void cancel_pending_functions(bool warn);
 
 	virtual bool is_valid() const override { return valid; }
-	virtual bool is_abstract() const override { return false; } // GDScript does not support abstract classes.
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
@@ -280,6 +280,7 @@ public:
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
 	bool is_tool() const override { return tool; }
+	bool is_abstract() const override { return _is_abstract; }
 	Ref<GDScript> get_base() const;
 
 	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
