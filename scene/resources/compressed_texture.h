@@ -57,6 +57,7 @@ public:
 		//FORMAT_BIT_DETECT_SRGB = 1 << 25,
 		FORMAT_BIT_DETECT_NORMAL = 1 << 26,
 		FORMAT_BIT_DETECT_ROUGNESS = 1 << 27,
+		FORMAT_BIT_STORE_COMPRESSED = 1 << 28,
 	};
 
 private:
@@ -79,7 +80,7 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-	static Ref<Image> load_image_from_file(Ref<FileAccess> p_file, int p_size_limit);
+	static Ref<Image> load_image_from_file(Ref<FileAccess> p_file, int p_size_limit, bool p_compressed);
 
 	typedef void (*TextureFormatRequestCallback)(const Ref<CompressedTexture2D> &);
 	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<CompressedTexture2D> &, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel);

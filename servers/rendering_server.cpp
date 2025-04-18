@@ -3593,6 +3593,8 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF("rendering/textures/lossless_compression/force_png", false);
 
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "rendering/textures/import/store_compressed"), true);
+
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/webp_compression/compression_method", PROPERTY_HINT_RANGE, "0,6,1"), 2);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/textures/webp_compression/lossless_compression_factor", PROPERTY_HINT_RANGE, "0,100,1"), 25);
 
