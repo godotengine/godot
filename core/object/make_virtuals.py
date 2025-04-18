@@ -17,7 +17,7 @@ script_has_method = """ScriptInstance *_script_instance = ((Object *)(this))->ge
 proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 	mutable void *_gdvirtual_##$VARNAME = nullptr;\\
 	_FORCE_INLINE_ bool _gdvirtual_##$VARNAME##_call($CALLARGS) $CONST {\\
-		static const StringName _gdvirtual_##$VARNAME##_sn = _scs_create(#m_name, true);\\
+		static const StringName _gdvirtual_##$VARNAME##_sn = StringName(#m_name, true);\\
 		$SCRIPTCALL\\
 		if (_get_extension()) {\\
 			if (unlikely(!_gdvirtual_##$VARNAME)) {\\
@@ -53,7 +53,7 @@ proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 		return false;\\
 	}\\
 	_FORCE_INLINE_ bool _gdvirtual_##$VARNAME##_overridden() const {\\
-		static const StringName _gdvirtual_##$VARNAME##_sn = _scs_create(#m_name, true);\\
+		static const StringName _gdvirtual_##$VARNAME##_sn = StringName(#m_name, true);\\
 		$SCRIPTHASMETHOD\\
 		if (_get_extension()) {\\
 			if (unlikely(!_gdvirtual_##$VARNAME)) {\\
