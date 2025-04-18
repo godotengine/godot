@@ -158,8 +158,13 @@ void EditorColorMap::create() {
 	// These icons should not be converted.
 	add_conversion_exception("EditorPivot");
 	add_conversion_exception("EditorHandle");
-	add_conversion_exception("Editor3DHandle");
+	add_conversion_exception("EditorHandleDisabled");
+	add_conversion_exception("EditorHandleAdd");
+	add_conversion_exception("EditorCurveHandle");
+	add_conversion_exception("EditorPathSharpHandle");
+	add_conversion_exception("EditorPathSmoothHandle");
 	add_conversion_exception("EditorBoneHandle");
+	add_conversion_exception("Editor3DHandle");
 	add_conversion_exception("Godot");
 	add_conversion_exception("Sky");
 	add_conversion_exception("EditorControlAnchor");
@@ -177,6 +182,22 @@ void EditorColorMap::create() {
 
 	add_conversion_exception("MaterialPreviewLight1");
 	add_conversion_exception("MaterialPreviewLight2");
+
+	// Gizmo icons displayed in the 3D editor.
+	add_conversion_exception("Gizmo3DSamplePlayer");
+	add_conversion_exception("GizmoAudioListener3D");
+	add_conversion_exception("GizmoCamera3D");
+	add_conversion_exception("GizmoCPUParticles3D");
+	add_conversion_exception("GizmoDecal");
+	add_conversion_exception("GizmoDirectionalLight");
+	add_conversion_exception("GizmoFogVolume");
+	add_conversion_exception("GizmoGPUParticles3D");
+	add_conversion_exception("GizmoLight");
+	add_conversion_exception("GizmoLightmapGI");
+	add_conversion_exception("GizmoLightmapProbe");
+	add_conversion_exception("GizmoReflectionProbe");
+	add_conversion_exception("GizmoSpotLight");
+	add_conversion_exception("GizmoVoxelGI");
 
 	// GUI
 	add_conversion_exception("GuiChecked");
