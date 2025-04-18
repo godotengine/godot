@@ -662,6 +662,8 @@ void OpenXRCompositionLayer::_get_property_list(List<PropertyInfo> *p_property_l
 bool OpenXRCompositionLayer::_get(const StringName &p_property, Variant &r_value) const {
 	if (extension_property_values.has(p_property)) {
 		r_value = extension_property_values[p_property];
+	} else {
+		return false;
 	}
 
 	return true;

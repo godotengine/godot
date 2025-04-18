@@ -91,9 +91,7 @@ bool SkeletonProfile::_get(const StringName &p_path, Variant &r_ret) const {
 		} else {
 			return false;
 		}
-	}
-
-	if (path.begins_with("bones/")) {
+	} else if (path.begins_with("bones/")) {
 		int which = path.get_slicec('/', 1).to_int();
 		String what = path.get_slicec('/', 2);
 		ERR_FAIL_INDEX_V(which, bones.size(), false);
@@ -117,7 +115,10 @@ bool SkeletonProfile::_get(const StringName &p_path, Variant &r_ret) const {
 		} else {
 			return false;
 		}
+	} else {
+		return false;
 	}
+
 	return true;
 }
 

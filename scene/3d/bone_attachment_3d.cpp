@@ -68,6 +68,8 @@ bool BoneAttachment3D::_get(const StringName &p_path, Variant &r_ret) const {
 		r_ret = get_use_external_skeleton();
 	} else if (p_path == SNAME("external_skeleton")) {
 		r_ret = get_external_skeleton();
+	} else {
+		return false;
 	}
 
 	return true;
