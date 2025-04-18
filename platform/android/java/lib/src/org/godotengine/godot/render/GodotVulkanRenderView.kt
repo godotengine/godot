@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotVulkanRenderView.java                                            */
+/*  GodotVulkanRenderView.kt                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,156 +28,81 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.render;
+package org.godotengine.godot.render
 
-import org.godotengine.godot.Godot;
-import org.godotengine.godot.GodotRenderView;
-import org.godotengine.godot.input.GodotInputHandler;
+import android.annotation.SuppressLint
+import android.graphics.PixelFormat
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.PointerIcon
+import org.godotengine.godot.Godot
+import org.godotengine.godot.GodotRenderView
+import org.godotengine.godot.input.GodotInputHandler
 
-import android.annotation.SuppressLint;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.PixelFormat;
-import android.text.TextUtils;
-import android.util.SparseArray;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.PointerIcon;
-import android.view.SurfaceView;
+internal class GodotVulkanRenderView(
+	private val godot: Godot,
+	renderer: GodotRenderer,
+	private val mInputHandler: GodotInputHandler,
+	shouldBeTranslucent: Boolean
+) : VkSurfaceView(
+	godot.context,
+	renderer
+), GodotRenderView {
 
-import androidx.annotation.Keep;
-
-import java.io.InputStream;
-
-public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
-	private final Godot godot;
-	private final GodotInputHandler mInputHandler;
-	private final GodotRenderer mRenderer;
-	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
-
-	public GodotVulkanRenderView(Godot godot, GodotRenderer renderer, GodotInputHandler inputHandler, boolean shouldBeTranslucent) {
-		super(godot.getContext());
-
-		this.godot = godot;
-		mInputHandler = inputHandler;
-		mRenderer = renderer;
-		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
-		setFocusableInTouchMode(true);
-		setClickable(false);
+	init {
+		pointerIcon = PointerIcon.getSystemIcon(context, PointerIcon.TYPE_DEFAULT)
+		isFocusableInTouchMode = true
+		isClickable = false
 
 		if (shouldBeTranslucent) {
-			this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+			this.holder.setFormat(PixelFormat.TRANSLUCENT)
 		}
 	}
 
-	@Override
-	public void startRenderer() {
-		startRenderer(mRenderer);
-	}
+	override fun getView() = this
 
-	@Override
-	public SurfaceView getView() {
-		return this;
-	}
-
-	@Override
-	public GodotInputHandler getInputHandler() {
-		return mInputHandler;
-	}
+	override fun getInputHandler() = mInputHandler
 
 	@SuppressLint("ClickableViewAccessibility")
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		super.onTouchEvent(event);
-		return mInputHandler.onTouchEvent(event);
+	override fun onTouchEvent(event: MotionEvent): Boolean {
+		super.onTouchEvent(event)
+		return mInputHandler.onTouchEvent(event)
 	}
 
-	@Override
-	public boolean onKeyUp(final int keyCode, KeyEvent event) {
-		return mInputHandler.onKeyUp(keyCode, event) || super.onKeyUp(keyCode, event);
+	override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+		return mInputHandler.onKeyUp(keyCode, event) || super.onKeyUp(keyCode, event)
 	}
 
-	@Override
-	public boolean onKeyDown(final int keyCode, KeyEvent event) {
-		return mInputHandler.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
+	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+		return mInputHandler.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event)
 	}
 
-	@Override
-	public boolean onGenericMotionEvent(MotionEvent event) {
-		return mInputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
+	override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+		return mInputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event)
 	}
 
-	@Override
-	public boolean onCapturedPointerEvent(MotionEvent event) {
-		return mInputHandler.onGenericMotionEvent(event);
+	override fun onCapturedPointerEvent(event: MotionEvent): Boolean {
+		return mInputHandler.onGenericMotionEvent(event)
 	}
 
-	@Override
-	public void requestPointerCapture() {
-		if (canCapturePointer()) {
-			super.requestPointerCapture();
-			mInputHandler.onPointerCaptureChange(true);
+	override fun requestPointerCapture() {
+		if (godot.canCapturePointer()) {
+			super.requestPointerCapture()
+			mInputHandler.onPointerCaptureChange(true)
 		}
 	}
 
-	@Override
-	public void releasePointerCapture() {
-		super.releasePointerCapture();
-		mInputHandler.onPointerCaptureChange(false);
+	override fun releasePointerCapture() {
+		super.releasePointerCapture()
+		mInputHandler.onPointerCaptureChange(false)
 	}
 
-	@Override
-	public void onPointerCaptureChange(boolean hasCapture) {
-		super.onPointerCaptureChange(hasCapture);
-		mInputHandler.onPointerCaptureChange(hasCapture);
+	override fun onPointerCaptureChange(hasCapture: Boolean) {
+		super.onPointerCaptureChange(hasCapture)
+		mInputHandler.onPointerCaptureChange(hasCapture)
 	}
 
-	/**
-	 * Used to configure the PointerIcon for the given type.
-	 *
-	 * Called from JNI
-	 */
-	@Keep
-	@Override
-	public void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY) {
-		try {
-			Bitmap bitmap = null;
-			if (!TextUtils.isEmpty(imagePath)) {
-				if (godot.getDirectoryAccessHandler().filesystemFileExists(imagePath)) {
-					// Try to load the bitmap from the file system
-					bitmap = BitmapFactory.decodeFile(imagePath);
-				} else if (godot.getDirectoryAccessHandler().assetsFileExists(imagePath)) {
-					// Try to load the bitmap from the assets directory
-					AssetManager am = getContext().getAssets();
-					InputStream imageInputStream = am.open(imagePath);
-					bitmap = BitmapFactory.decodeStream(imageInputStream);
-				}
-			}
-
-			PointerIcon customPointerIcon = PointerIcon.create(bitmap, hotSpotX, hotSpotY);
-			customPointerIcons.put(pointerType, customPointerIcon);
-		} catch (Exception e) {
-			// Reset the custom pointer icon
-			customPointerIcons.delete(pointerType);
-		}
-	}
-
-	/**
-	 * called from JNI to change pointer icon
-	 */
-	@Keep
-	@Override
-	public void setPointerIcon(int pointerType) {
-		PointerIcon pointerIcon = customPointerIcons.get(pointerType);
-		if (pointerIcon == null) {
-			pointerIcon = PointerIcon.getSystemIcon(getContext(), pointerType);
-		}
-		setPointerIcon(pointerIcon);
-	}
-
-	@Override
-	public PointerIcon onResolvePointerIcon(MotionEvent me, int pointerIndex) {
-		return getPointerIcon();
+	override fun onResolvePointerIcon(me: MotionEvent, pointerIndex: Int): PointerIcon {
+		return pointerIcon
 	}
 }
