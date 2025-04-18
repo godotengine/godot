@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterLottie" inherits="ResourceImporterTexture" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Import a Lottie animation as a sprite sheet.
+	</brief_description>
+	<description>
+		This imports a Lottie animation to a [CompressedTexture2D] with support for Lottie JSON.
+		[b]Note:[/b] This importer only recognizes files with [code].lot[/code] extension. You have to rename Lottie JSON files extension to [code].lot[/code] to import them.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="lottie/begin" type="float" setter="" getter="" default="0">
+			The start of the Lottie animation in the range [code]0.0[/code] to [code]1.0[/code].
+		</member>
+		<member name="lottie/columns" type="int" setter="" getter="" default="0">
+			The number of columns of the sprite sheet. If it is [code]0[/code], the number of columns will be automatically calculated to be close to the number of rows.
+		</member>
+		<member name="lottie/end" type="float" setter="" getter="" default="1">
+			The end of the Lottie animation in the range [code]0.0[/code] to [code]1.0[/code]. This value will be clamped to be at least [member lottie/begin].
+		</member>
+		<member name="lottie/fps" type="float" setter="" getter="" default="30">
+			The frame rate Lottie animation should be rendered at. Higher values result in a larger image.
+		</member>
+		<member name="lottie/scale" type="float" setter="" getter="" default="1">
+			The scale the Lottie animation should be rendered at, with [code]1.0[/code] being the original size. Higher values result in a larger image.
+		</member>
+		<member name="lottie/size_limit" type="int" setter="" getter="" default="2048">
+			If set to a value greater than [code]0[/code], the size of the imported Lottie texture is limited on import to a value smaller than or equal to the value specified here.
+			[b]Note:[/b] Importing large Lottie textures in editor is slow. This setting ensures import speed and ignores [member lottie/scale].
+		</member>
+	</members>
+</class>
