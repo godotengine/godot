@@ -113,6 +113,12 @@ bool FileSystemList::edit_selected() {
 	switch (get_icon_mode()) {
 		case ItemList::ICON_MODE_LEFT:
 			rect = get_item_rect(s, true);
+			if (get_v_scroll_bar()->is_visible()) {
+				rect.position.y -= get_v_scroll_bar()->get_value();
+			}
+			if (get_h_scroll_bar()->is_visible()) {
+				rect.position.x -= get_h_scroll_bar()->get_value();
+			}
 			ofs = Vector2(0, Math::floor((MAX(line_editor->get_minimum_size().height, rect.size.height) - rect.size.height) / 2));
 			popup_rect.position = get_screen_position() + rect.position - ofs;
 			popup_rect.size = rect.size;
@@ -123,6 +129,12 @@ bool FileSystemList::edit_selected() {
 			break;
 		case ItemList::ICON_MODE_TOP:
 			rect = get_item_rect(s, false);
+			if (get_v_scroll_bar()->is_visible()) {
+				rect.position.y -= get_v_scroll_bar()->get_value();
+			}
+			if (get_h_scroll_bar()->is_visible()) {
+				rect.position.x -= get_h_scroll_bar()->get_value();
+			}
 			popup_rect.position = get_screen_position() + rect.position;
 			popup_rect.size = rect.size;
 
