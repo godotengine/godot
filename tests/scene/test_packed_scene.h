@@ -95,8 +95,6 @@ TEST_CASE("[PackedScene] Signals Preserved when Packing Scene") {
 		CHECK_EQ(state->get_connection_count(), 3);
 	}
 
-	/*
-	// FIXME: This subcase requires GH-48064 to be fixed.
 	SUBCASE("Signals that should not be saved") {
 		int subscene_flags = Object::CONNECT_PERSIST | Object::CONNECT_INHERITED;
 		// subscene node to itself
@@ -116,7 +114,33 @@ TEST_CASE("[PackedScene] Signals Preserved when Packing Scene") {
 		Ref<SceneState> state = packed_scene->get_state();
 		CHECK_EQ(state->get_connection_count(), 0);
 	}
-	*/
+
+	SUBCASE("Signals should be instantiated and packed again (GH-100097)") {
+		// sub node to a node in main scene
+		sub_node->connect("ready", Callable(main_scene_root, "is_ready"), Object::CONNECT_PERSIST);
+
+		Ref<PackedScene> packed_scene;
+		packed_scene.instantiate();
+		const Error err = packed_scene->pack(main_scene_root);
+		CHECK(err == OK);
+
+		Node *new_root = packed_scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+		CHECK(new_root != nullptr);
+		CHECK(new_root->get_child(0) != nullptr);
+
+		// Check if connection is preserved.
+		CHECK(new_root->get_child(0)->is_connected("ready", Callable(new_root, "is_ready")));
+
+		packed_scene.instantiate();
+		// Pack the newly instantiated node again.
+		packed_scene->pack(new_root);
+		memdelete(new_root);
+
+		// Instantiate again after re-packing.
+		new_root = packed_scene->instantiate();
+		CHECK(new_root->get_child(0)->is_connected("ready", Callable(new_root, "is_ready")));
+		memdelete(new_root);
+	}
 
 	memdelete(main_scene_root);
 }
