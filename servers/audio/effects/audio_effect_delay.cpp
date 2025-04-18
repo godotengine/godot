@@ -31,7 +31,7 @@
 #include "audio_effect_delay.h"
 
 #include "core/math/math_funcs.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectDelayInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	int todo = p_frame_count;

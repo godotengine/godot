@@ -36,7 +36,6 @@
 #include "nav_region_iteration_2d.h"
 
 #include "core/math/geometry_2d.h"
-#include "servers/navigation/navigation_utilities.h"
 
 using namespace nav_2d;
 

@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
 StringName MobileVRInterface::get_name() const {

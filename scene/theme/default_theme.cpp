@@ -41,7 +41,7 @@
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED

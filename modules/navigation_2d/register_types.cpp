@@ -33,7 +33,7 @@
 #include "2d/godot_navigation_server_2d.h"
 
 #include "core/config/engine.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 NavigationServer2D *new_navigation_server_2d() {
 	return memnew(GodotNavigationServer2D);

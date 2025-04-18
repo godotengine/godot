@@ -35,7 +35,6 @@
 #include "nav_region_iteration_3d.h"
 
 #include "core/math/geometry_3d.h"
-#include "servers/navigation/navigation_utilities.h"
 
 using namespace Nav3D;
 
