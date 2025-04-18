@@ -1,0 +1,115 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+import os
+import shutil
+
+from platform_methods import detect_mvk, lipo
+
+
+def generate_bundle(target, source, env):
+    bin_dir = Dir("#bin").abspath
+
+    # Template bundle.
+    app_prefix = "godot." + env["platform"]
+    rel_prefix = "libgodot." + env["platform"] + "." + "template_release"
+    dbg_prefix = "libgodot." + env["platform"] + "." + "template_debug"
+    if env.dev_build:
+        app_prefix += ".dev"
+        rel_prefix += ".dev"
+        dbg_prefix += ".dev"
+    if env["precision"] == "double":
+        app_prefix += ".double"
+        rel_prefix += ".double"
+        dbg_prefix += ".double"
+
+    # Lipo template libraries.
+    rel_target_bin = lipo(bin_dir + "/" + rel_prefix, env.extra_suffix + ".a")
+    dbg_target_bin = lipo(bin_dir + "/" + dbg_prefix, env.extra_suffix + ".a")
+    rel_target_bin_sim = lipo(bin_dir + "/" + rel_prefix, ".simulator" + env.extra_suffix + ".a")
+    dbg_target_bin_sim = lipo(bin_dir + "/" + dbg_prefix, ".simulator" + env.extra_suffix + ".a")
+
+    # Assemble Xcode project bundle.
+    app_dir = Dir("#bin/tvos_xcode").abspath
+    templ = Dir("#misc/dist/tvos_xcode").abspath
+    if os.path.exists(app_dir):
+        shutil.rmtree(app_dir)
+    shutil.copytree(templ, app_dir)
+    if rel_target_bin != "":
+        shutil.copy(rel_target_bin, app_dir + "/libgodot.tvos.release.xcframework/tvos-arm64/libgodot.a")
+    if dbg_target_bin != "":
+        shutil.copy(dbg_target_bin, app_dir + "/libgodot.tvos.debug.xcframework/tvos-arm64/libgodot.a")
+    if rel_target_bin_sim != "":
+        shutil.copy(
+            rel_target_bin_sim, app_dir + "/libgodot.tvos.release.xcframework/tvos-arm64_x86_64-simulator/libgodot.a"
+        )
+    if dbg_target_bin_sim != "":
+        shutil.copy(
+            dbg_target_bin_sim, app_dir + "/libgodot.tvos.debug.xcframework/tvos-arm64_x86_64-simulator/libgodot.a"
+        )
+    mvk_path = detect_mvk(env, "tvos-arm64")
+    if mvk_path != "":
+        shutil.copytree(mvk_path, app_dir + "/MoltenVK.xcframework")
+
+    # ZIP Xcode project bundle.
+    zip_dir = Dir("#bin/" + (app_prefix + env.extra_suffix).replace(".", "_")).abspath
+    shutil.make_archive(zip_dir, "zip", root_dir=app_dir)
+    shutil.rmtree(app_dir)
+
+
+tvos_lib = [
+    "godot_tvos.mm",
+    "os_tvos.mm",
+    "main.m",
+    "app_delegate.mm",
+    "view_controller.mm",
+    "tvos.mm",
+    "rendering_context_driver_vulkan_tvos.mm",
+    "display_server_tvos.mm",
+    "godot_view.mm",
+    "tts_tvos.mm",
+    "display_layer.mm",
+    "godot_app_delegate.m",
+    "godot_view_renderer.mm",
+    "device_metrics.m",
+    "key_mapping_tvos.mm",
+    "tvos_terminal_logger.mm",
+    "gamepad_tvos.mm",  # Specific to tvOS for Apple TV Remote and Game Controllers
+]
+
+env_tvos = env.Clone()
+tvos_lib = env_tvos.add_library("tvos", tvos_lib)
+
+# (tvOS) Enable module support
+env_tvos.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
+
+def combine_libs(target=None, source=None, env=None):
+    lib_path = target[0].srcnode().abspath
+    if "osxcross" in env:
+        libtool = "$TVOS_TOOLCHAIN_PATH/usr/bin/${tvos_triple}libtool"
+    else:
+        libtool = "$TVOS_TOOLCHAIN_PATH/usr/bin/libtool"
+    env.Execute(
+        libtool + ' -static -o "' + lib_path + '" ' + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
+    )
+
+
+combine_command = env_tvos.CommandNoCache(
+    "#bin/libgodot" + env_tvos["LIBSUFFIX"], [tvos_lib] + env_tvos["LIBS"], env.Run(combine_libs)
+)
+
+if env["generate_bundle"]:
+    env.AlwaysBuild(env.CommandNoCache("generate_bundle", combine_command, env.Run(generate_bundle)))
+
+# Export plugin files
+tvos_export_files = [
+    "export/export.cpp",
+    "export/export_plugin.cpp",
+    "export/godot_plugin_config.cpp",
+]
+
+env_tvos_export = env.Clone()
+env_tvos_export.add_source_files(env.modules_sources, tvos_export_files)
