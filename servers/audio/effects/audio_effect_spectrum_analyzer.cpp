@@ -66,14 +66,14 @@ static void smbFft(float *fftBuffer, long fftFrameSize, long sign)
 			*p2 = temp;
 		}
 	}
-	for (k = 0, le = 2; k < (long)(log((double)fftFrameSize) / log(2.) + .5); k++) {
+	for (k = 0, le = 2; k < (long)(std::log((double)fftFrameSize) / std::log(2.) + .5); k++) {
 		le <<= 1;
 		le2 = le >> 1;
 		ur = 1.0;
 		ui = 0.0;
 		arg = Math::PI / (le2 >> 1);
-		wr = cos(arg);
-		wi = sign * sin(arg);
+		wr = std::cos(arg);
+		wi = sign * std::sin(arg);
 		for (j = 0; j < le2; j += 2) {
 			p1r = fftBuffer + j;
 			p1i = p1r + 1;

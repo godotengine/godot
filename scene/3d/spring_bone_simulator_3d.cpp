@@ -1298,7 +1298,7 @@ void SpringBoneSimulator3D::_validate_rotation_axis(Skeleton3D *p_skeleton, int 
 		}
 	}
 	fwd.normalize();
-	if (Math::is_equal_approx(Math::absf(rot.dot(fwd)), 1.0f)) {
+	if (Math::is_equal_approx(Math::abs(rot.dot(fwd)), 1)) {
 		WARN_PRINT_ED("Setting: " + itos(p_index) + " Joint: " + itos(p_joint) + ": Rotation axis and forward vectors are colinear. This is not advised as it may cause unwanted rotation.");
 	}
 }

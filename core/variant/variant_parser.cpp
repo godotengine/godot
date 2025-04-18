@@ -1937,9 +1937,9 @@ Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, 
 static String rtos_fix(double p_value, bool p_compat) {
 	if (p_value == 0.0) {
 		return "0"; //avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
-	} else if (isnan(p_value)) {
+	} else if (std::isnan(p_value)) {
 		return "nan";
-	} else if (isinf(p_value)) {
+	} else if (std::isinf(p_value)) {
 		if (p_value > 0) {
 			return "inf";
 		} else if (p_compat) {

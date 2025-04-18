@@ -1753,7 +1753,7 @@ int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 
 		float den2 = (displayPhysicalSize.width / 25.4f) * (displayPhysicalSize.width / 25.4f) + (displayPhysicalSize.height / 25.4f) * (displayPhysicalSize.height / 25.4f);
 		if (den2 > 0.0f) {
-			return ceil(sqrt(displayPixelSize.width * displayPixelSize.width + displayPixelSize.height * displayPixelSize.height) / sqrt(den2) * scale);
+			return std::ceil(std::sqrt(displayPixelSize.width * displayPixelSize.width + displayPixelSize.height * displayPixelSize.height) / std::sqrt(den2) * scale);
 		}
 	}
 
@@ -1768,7 +1768,7 @@ float DisplayServerMacOS::screen_get_scale(int p_screen) const {
 		NSArray *screenArray = [NSScreen screens];
 		if ((NSUInteger)p_screen < [screenArray count]) {
 			if ([[screenArray objectAtIndex:p_screen] respondsToSelector:@selector(backingScaleFactor)]) {
-				return fmax(1.0, [[screenArray objectAtIndex:p_screen] backingScaleFactor]);
+				return std::fmax(1.0, [[screenArray objectAtIndex:p_screen] backingScaleFactor]);
 			}
 		}
 	}
@@ -3230,7 +3230,7 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 		int len = int(texture_size.width * texture_size.height);
 
 		for (int i = 0; i < len; i++) {
-			int row_index = floor(i / texture_size.width);
+			int row_index = std::floor(i / texture_size.width);
 			int column_index = i % int(texture_size.width);
 
 			uint32_t color = image->get_pixel(column_index, row_index).to_argb32();
@@ -3863,7 +3863,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 	int screen_count = get_screen_count();
 	for (int i = 0; i < screen_count; i++) {
-		display_max_scale = fmax(display_max_scale, screen_get_scale(i));
+		display_max_scale = std::fmax(display_max_scale, screen_get_scale(i));
 	}
 
 	// Register to be notified on keyboard layout changes.
