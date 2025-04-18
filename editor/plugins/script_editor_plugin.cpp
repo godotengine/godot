@@ -37,6 +37,7 @@
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/fuzzy_search.h"
 #include "core/version.h"
 #include "editor/code_editor.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -2365,10 +2366,29 @@ void ScriptEditor::_update_script_names() {
 	}
 
 	Vector<_ScriptEditorItemData> sedata_filtered;
-	for (int i = 0; i < sedata.size(); i++) {
-		String filter = filter_scripts->get_text();
-		if (filter.is_empty() || filter.is_subsequence_ofn(sedata[i].name)) {
-			sedata_filtered.push_back(sedata[i]);
+
+	String filter = filter_scripts->get_text();
+
+	if (filter.is_empty()) {
+		sedata_filtered = sedata;
+	} else {
+		HashMap<String, int> name_to_index;
+		PackedStringArray search_names;
+
+		for (int i = 0; i < sedata.size(); i++) {
+			name_to_index[sedata[i].name] = i;
+			search_names.append(sedata[i].name);
+		}
+
+		Vector<FuzzySearchResult> results;
+		FuzzySearch fuzzy;
+		fuzzy.set_query(filter);
+		fuzzy.search_all(search_names, results);
+
+		for (const FuzzySearchResult &res : results) {
+			if (name_to_index.has(res.target)) {
+				sedata_filtered.push_back(sedata[name_to_index[res.target]]);
+			}
 		}
 	}
 
