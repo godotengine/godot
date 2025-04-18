@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_resource_conversion_plugin.h                                   */
+/*  noise_texture_conversion_plugin.h                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,23 +30,69 @@
 
 #pragma once
 
-#include "core/io/resource.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "editor/editor_node.h"
+#include "editor/plugins/editor_resource_conversion_plugin.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 
-class EditorResourceConversionPlugin : public RefCounted {
-	GDCLASS(EditorResourceConversionPlugin, RefCounted);
+class ConvertTextureDialog;
+class EditorValidationPanel;
+class LineEdit;
 
-protected:
-	static void _bind_methods();
+class NoiseTextureConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(NoiseTextureConversionPlugin, EditorResourceConversionPlugin);
 
-	GDVIRTUAL0RC(String, _converts_to)
-	GDVIRTUAL1RC(bool, _handles, Ref<Resource>)
-	GDVIRTUAL1RC(Ref<Resource>, _convert, Ref<Resource>)
-	GDVIRTUAL2RC(bool, _convert_async, Ref<Resource>, Callable)
+	struct PendingResourceUpdate {
+		Callable cb;
+		String fpath;
+	};
 
 public:
-	virtual String converts_to() const;
-	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
-	virtual bool convert_async(const Ref<Resource> &p_resource, const Callable &p_on_complete);
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
+	bool convert_async(const Ref<Resource> &p_resource, const Callable &p_on_complete) override;
+	ConvertTextureDialog *create_confirmation_dialog();
+
+private:
+	void _confirm_conversion();
+	void _on_filesystem_updated();
+	ConvertTextureDialog *dialog;
+	Callable callback;
+	Ref<Resource> resource;
+	Vector<PendingResourceUpdate> pending_updates;
+};
+
+class ConvertTextureDialog : public ConfirmationDialog {
+	GDCLASS(ConvertTextureDialog, ConfirmationDialog);
+
+	enum {
+		MSG_ID_PATH,
+		MSG_ID_EMPTY,
+		MSG_ID_INFO_0,
+		MSG_ID_INFO_1
+	};
+
+	Ref<Resource> resource = nullptr;
+	EditorValidationPanel *validation_panel = nullptr;
+	EditorFileDialog *file_browse = nullptr;
+	LineEdit *file_path = nullptr;
+	Button *path_button = nullptr;
+	CheckBox *checkbox_overwrite = nullptr;
+
+public:
+	ConvertTextureDialog();
+	String get_file_path() const { return file_path->get_text(); }
+
+	void config(const Ref<Resource> &p_resource);
+
+protected:
+	void _notification(int p_what);
+
+private:
+	void _browse_path();
+	void _browse_path_selected(String selected_path);
+	void _overwrite_button_pressed();
+	void _check_path_and_content();
 };
