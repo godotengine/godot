@@ -288,6 +288,12 @@ public:
 		}
 	}
 
+	typedef Ref<AudioStreamWAV> (*LoadFromBufferFunc)(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options);
+	typedef Ref<AudioStreamWAV> (*LoadFromFileFunc)(const String &p_path, const Dictionary &p_options);
+
+	static LoadFromBufferFunc load_from_buffer_func;
+	static LoadFromFileFunc load_from_file_func;
+
 	AudioStreamWAV();
 	~AudioStreamWAV();
 };
