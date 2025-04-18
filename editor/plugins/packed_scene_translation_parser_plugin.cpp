@@ -148,7 +148,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 					continue;
 				}
 
-				String extension = s->get_language()->get_extension();
+				String extension = s->get_language()->get_extensions()[0];
 				if (EditorTranslationParser::get_singleton()->can_parse(extension)) {
 					EditorTranslationParser::get_singleton()->get_parser(extension)->parse_file(s->get_path(), r_translations);
 				}

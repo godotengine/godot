@@ -72,6 +72,9 @@ class EditorFileSystemDirectory : public Object {
 			String icon_path;
 			bool is_abstract = false;
 			bool is_tool = false;
+
+			Vector<String> script_subtypes; // type such as Trait that part of a script, availed on calling get_file_script_subtypes.
+			uint64_t script_subtypes_modified_time = 0; // indicates if script_subtypes needs a refresh.
 		};
 		ScriptClassInfo class_info;
 	};
@@ -99,6 +102,8 @@ public:
 	uint64_t get_file_import_modified_time(int p_idx) const;
 	String get_file_script_class_name(int p_idx) const; //used for scripts
 	String get_file_script_class_extends(int p_idx) const; //used for scripts
+	Vector<String> get_file_script_subtypes(int p_idx) const; // Used for scripts (subtypes like interfaces or traits).
+	void store_script_subtype(int p_idx) const;
 	String get_file_script_class_icon_path(int p_idx) const; //used for scripts
 	String get_file_icon_path(int p_idx) const; //used for FileSystemDock
 
