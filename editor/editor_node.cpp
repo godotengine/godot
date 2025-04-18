@@ -4883,6 +4883,13 @@ bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
 	return false;
 }
 
+void EditorNode::close_scene(String p_file) {
+	int tab_index = editor_data.get_edited_scene_from_path(p_file);
+	_remove_scene(tab_index);
+	scene_tabs->update_scene_tabs();
+	changing_scene = false;
+}
+
 bool EditorNode::is_scene_in_use(const String &p_path) {
 	Node *es = get_edited_scene();
 	if (es) {
