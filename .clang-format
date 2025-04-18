@@ -52,8 +52,10 @@ AllowShortFunctionsOnASingleLine: Inline
 # AlwaysBreakAfterReturnType: None
 # AlwaysBreakBeforeMultilineStrings: false
 # AlwaysBreakTemplateDeclarations: MultiLine
-# AttributeMacros:
-#   - __capability
+AttributeMacros:
+  - _ALWAYS_INLINE_
+  - _FORCE_INLINE_
+  - _NO_INLINE_
 # BinPackArguments: true
 # BinPackParameters: true
 # BitFieldColonSpacing: Both
