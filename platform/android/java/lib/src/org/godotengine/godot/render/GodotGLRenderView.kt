@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotGLRenderView.java                                                */
+/*  GodotGLRenderView.kt                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,29 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.render;
+package org.godotengine.godot.render
 
-import org.godotengine.godot.Godot;
-import org.godotengine.godot.GodotRenderView;
-import org.godotengine.godot.input.GodotInputHandler;
-import org.godotengine.godot.xr.XRMode;
-
-import android.annotation.SuppressLint;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.PixelFormat;
-import android.os.Build;
-import android.text.TextUtils;
-import android.util.SparseArray;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.PointerIcon;
-import android.view.SurfaceView;
-
-import androidx.annotation.Keep;
-
-import java.io.InputStream;
+import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.PixelFormat
+import android.os.Build
+import android.text.TextUtils
+import android.util.SparseArray
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.PointerIcon
+import androidx.annotation.Keep
+import org.godotengine.godot.Godot
+import org.godotengine.godot.GodotRenderView
+import org.godotengine.godot.input.GodotInputHandler
+import org.godotengine.godot.xr.XRMode
 
 /**
  * A simple GLSurfaceView sub-class that demonstrate how to perform
@@ -58,91 +52,77 @@ import java.io.InputStream;
  * details:
  *
  * - The class must use a custom context factory to enable 2.0 rendering.
- *   See ContextFactory class definition below.
+ * See ContextFactory class definition below.
  *
  * - The class must use a custom EGLConfigChooser to be able to select
- *   an EGLConfig that supports 3.0. This is done by providing a config
- *   specification to eglChooseConfig() that has the attribute
- *   EGL10.ELG_RENDERABLE_TYPE containing the EGL_OPENGL_ES2_BIT flag
- *   set. See ConfigChooser class definition below.
+ * an EGLConfig that supports 3.0. This is done by providing a config
+ * specification to eglChooseConfig() that has the attribute
+ * EGL10.ELG_RENDERABLE_TYPE containing the EGL_OPENGL_ES2_BIT flag
+ * set. See ConfigChooser class definition below.
  *
  * - The class must select the surface's format, then choose an EGLConfig
- *   that matches it exactly (with regards to red/green/blue/alpha channels
- *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
+ * that matches it exactly (with regards to red/green/blue/alpha channels
+ * bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
-public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
-	private final Godot godot;
-	private final GodotInputHandler inputHandler;
-	private final GodotRenderer godotRenderer;
-	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
+internal class GodotGLRenderView(
+	private val godot: Godot,
+	godotRenderer: GodotRenderer,
+	private val inputHandler: GodotInputHandler,
+	xrMode: XRMode,
+	useDebugOpengl: Boolean
+) : GLSurfaceView(
+	godot.context
+), GodotRenderView {
+	private val customPointerIcons = SparseArray<PointerIcon>()
 
-	public GodotGLRenderView(Godot godot, GodotRenderer renderer, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl) {
-		super(godot.getContext());
-
-		this.godot = godot;
-		this.inputHandler = inputHandler;
-		this.godotRenderer = renderer;
+	init {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
+			pointerIcon = PointerIcon.getSystemIcon(context, PointerIcon.TYPE_DEFAULT)
 		}
-		init(xrMode, false, useDebugOpengl);
+		init(xrMode, godotRenderer, false, useDebugOpengl)
 	}
 
-	@Override
-	public SurfaceView getView() {
-		return this;
-	}
+	override fun getView() = this
 
-	@Override
-	public GodotInputHandler getInputHandler() {
-		return inputHandler;
-	}
+	override fun getInputHandler() = inputHandler
 
 	@SuppressLint("ClickableViewAccessibility")
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		super.onTouchEvent(event);
-		return inputHandler.onTouchEvent(event);
+	override fun onTouchEvent(event: MotionEvent): Boolean {
+		super.onTouchEvent(event)
+		return inputHandler.onTouchEvent(event)
 	}
 
-	@Override
-	public boolean onKeyUp(final int keyCode, KeyEvent event) {
-		return inputHandler.onKeyUp(keyCode, event) || super.onKeyUp(keyCode, event);
+	override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+		return inputHandler.onKeyUp(keyCode, event) || super.onKeyUp(keyCode, event)
 	}
 
-	@Override
-	public boolean onKeyDown(final int keyCode, KeyEvent event) {
-		return inputHandler.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
+	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+		return inputHandler.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event)
 	}
 
-	@Override
-	public boolean onGenericMotionEvent(MotionEvent event) {
-		return inputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
+	override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+		return inputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event)
 	}
 
-	@Override
-	public boolean onCapturedPointerEvent(MotionEvent event) {
-		return inputHandler.onGenericMotionEvent(event);
+	override fun onCapturedPointerEvent(event: MotionEvent): Boolean {
+		return inputHandler.onGenericMotionEvent(event)
 	}
 
-	@Override
-	public void onPointerCaptureChange(boolean hasCapture) {
-		super.onPointerCaptureChange(hasCapture);
-		inputHandler.onPointerCaptureChange(hasCapture);
+	override fun onPointerCaptureChange(hasCapture: Boolean) {
+		super.onPointerCaptureChange(hasCapture)
+		inputHandler.onPointerCaptureChange(hasCapture)
 	}
 
-	@Override
-	public void requestPointerCapture() {
+	override fun requestPointerCapture() {
 		if (canCapturePointer()) {
-			super.requestPointerCapture();
-			inputHandler.onPointerCaptureChange(true);
+			super.requestPointerCapture()
+			inputHandler.onPointerCaptureChange(true)
 		}
 	}
 
-	@Override
-	public void releasePointerCapture() {
-		super.releasePointerCapture();
-		inputHandler.onPointerCaptureChange(false);
+	override fun releasePointerCapture() {
+		super.releasePointerCapture()
+		inputHandler.onPointerCaptureChange(false)
 	}
 
 	/**
@@ -151,28 +131,34 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	 * Called from JNI
 	 */
 	@Keep
-	@Override
-	public void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY) {
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+	override fun configurePointerIcon(
+		pointerType: Int,
+		imagePath: String,
+		hotSpotX: Float,
+		hotSpotY: Float
+	) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 			try {
-				Bitmap bitmap = null;
+				var bitmap: Bitmap? = null
 				if (!TextUtils.isEmpty(imagePath)) {
-					if (godot.getDirectoryAccessHandler().filesystemFileExists(imagePath)) {
+					if (godot.directoryAccessHandler.filesystemFileExists(imagePath)) {
 						// Try to load the bitmap from the file system
-						bitmap = BitmapFactory.decodeFile(imagePath);
-					} else if (godot.getDirectoryAccessHandler().assetsFileExists(imagePath)) {
+						bitmap = BitmapFactory.decodeFile(imagePath)
+					} else if (godot.directoryAccessHandler.assetsFileExists(imagePath)) {
 						// Try to load the bitmap from the assets directory
-						AssetManager am = getContext().getAssets();
-						InputStream imageInputStream = am.open(imagePath);
-						bitmap = BitmapFactory.decodeStream(imageInputStream);
+						val am = context.assets
+						val imageInputStream = am.open(imagePath)
+						bitmap = BitmapFactory.decodeStream(imageInputStream)
 					}
 				}
 
-				PointerIcon customPointerIcon = PointerIcon.create(bitmap, hotSpotX, hotSpotY);
-				customPointerIcons.put(pointerType, customPointerIcon);
-			} catch (Exception e) {
+				if (bitmap != null) {
+					val customPointerIcon = PointerIcon.create(bitmap, hotSpotX, hotSpotY)
+					customPointerIcons.put(pointerType, customPointerIcon)
+				}
+			} catch (e: Exception) {
 				// Reset the custom pointer icon
-				customPointerIcons.delete(pointerType);
+				customPointerIcons.delete(pointerType)
 			}
 		}
 	}
@@ -181,72 +167,72 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	 * called from JNI to change pointer icon
 	 */
 	@Keep
-	@Override
-	public void setPointerIcon(int pointerType) {
+	override fun setPointerIcon(pointerType: Int) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			PointerIcon pointerIcon = customPointerIcons.get(pointerType);
+			var pointerIcon = customPointerIcons[pointerType]
 			if (pointerIcon == null) {
-				pointerIcon = PointerIcon.getSystemIcon(getContext(), pointerType);
+				pointerIcon = PointerIcon.getSystemIcon(context, pointerType)
 			}
-			setPointerIcon(pointerIcon);
+			setPointerIcon(pointerIcon)
 		}
 	}
 
-	@Override
-	public PointerIcon onResolvePointerIcon(MotionEvent me, int pointerIndex) {
+	override fun onResolvePointerIcon(me: MotionEvent, pointerIndex: Int): PointerIcon {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			return getPointerIcon();
+			return pointerIcon
 		}
-		return super.onResolvePointerIcon(me, pointerIndex);
+		return super.onResolvePointerIcon(me, pointerIndex)
 	}
 
-	private void init(XRMode xrMode, boolean translucent, boolean useDebugOpengl) {
-		setPreserveEGLContextOnPause(true);
-		setFocusableInTouchMode(true);
-		switch (xrMode) {
-			case OPENXR:
+	private fun init(xrMode: XRMode, renderer: GodotRenderer, translucent: Boolean, useDebugOpengl: Boolean) {
+		preserveEGLContextOnPause = true
+		isFocusableInTouchMode = true
+		when (xrMode) {
+			XRMode.OPENXR -> {
 				// Replace the default egl config chooser.
-				setEGLConfigChooser(new OvrConfigChooser());
+				setEGLConfigChooser(OvrConfigChooser())
 
 				// Replace the default context factory.
-				setEGLContextFactory(new OvrContextFactory());
+				setEGLContextFactory(OvrContextFactory())
 
 				// Replace the default window surface factory.
-				setEGLWindowSurfaceFactory(new OvrWindowSurfaceFactory());
-				break;
+				setEGLWindowSurfaceFactory(OvrWindowSurfaceFactory())
+			}
 
-			case REGULAR:
-			default:
+			XRMode.REGULAR -> {
 				/* By default, GLSurfaceView() creates a RGB_565 opaque surface.
 				 * If we want a translucent one, we should change the surface's
 				 * format here, using PixelFormat.TRANSLUCENT for GL Surfaces
 				 * is interpreted as any 32-bit surface with alpha by SurfaceFlinger.
 				 */
 				if (translucent) {
-					this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+					this.holder.setFormat(PixelFormat.TRANSLUCENT)
 				}
 
 				/* Setup the context factory for 2.0 rendering.
 				 * See ContextFactory class definition below
 				 */
-				setEGLContextFactory(new RegularContextFactory(useDebugOpengl));
+				setEGLContextFactory(
+					RegularContextFactory(
+						useDebugOpengl
+					)
+				)
 
 				/* We need to choose an EGLConfig that matches the format of
 				 * our surface exactly. This is going to be done in our
 				 * custom config chooser. See ConfigChooser class definition
 				 * below.
 				 */
-
 				setEGLConfigChooser(
-						new RegularFallbackConfigChooser(8, 8, 8, 8, 24, 0,
-								new RegularConfigChooser(8, 8, 8, 8, 16, 0)));
-				break;
+					RegularFallbackConfigChooser(
+						8, 8, 8, 8, 24, 0,
+						RegularConfigChooser(8, 8, 8, 8, 16, 0)
+					)
+				)
+			}
 		}
-	}
 
-	@Override
-	public void startRenderer() {
-		/* Set the renderer responsible for frame rendering */
-		setRenderer(godotRenderer);
+		// Set the renderer responsible for frame rendering
+		setRenderer(renderer)
 	}
 }
