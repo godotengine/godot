@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_about.h                                                        */
+/*  credits_roll.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,39 +30,39 @@
 
 #pragma once
 
-#include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/gui/scroll_container.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
+#include "scene/gui/popup.h"
 
-class CreditsRoll;
+class Label;
+class VBoxContainer;
+class Font;
 
-/**
- * NOTE: Do not assume the EditorNode singleton to be available in this class' methods.
- * EditorAbout is also used from the project manager where EditorNode isn't initialized.
- */
-class EditorAbout : public AcceptDialog {
-	GDCLASS(EditorAbout, AcceptDialog);
+class CreditsRoll : public Popup {
+	GDCLASS(CreditsRoll, Popup);
 
-private:
-	void _license_tree_selected();
-	void _project_manager_clicked();
-	void _item_with_website_selected(int p_id, ItemList *p_il);
-	void _item_list_resized(ItemList *p_il);
-	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], int p_single_column_flags = 0, bool p_allow_website = false, const String &p_easter_egg_section = String());
+	enum class LabelSize {
+		NORMAL,
+		HEADER,
+		BIG_HEADER,
+	};
 
-	Tree *_tpl_tree = nullptr;
-	RichTextLabel *license_text_label = nullptr;
-	RichTextLabel *_tpl_text = nullptr;
-	TextureRect *_logo = nullptr;
-	Vector<ItemList *> name_lists;
-	CreditsRoll *credits_roll = nullptr;
+	int font_size_normal = 0;
+	int font_size_header = 0;
+	int font_size_big_header = 0;
+	Ref<Font> bold_font;
+
+	bool mouse_enabled = false;
+	VBoxContainer *content = nullptr;
+	Label *project_manager = nullptr;
+
+	Label *_create_label(const String &p_with_text, LabelSize p_size = LabelSize::NORMAL);
+	void _create_nothing(int p_size = -1);
+	String _build_string(const char *const *p_from) const;
 
 protected:
 	void _notification(int p_what);
 
 public:
-	EditorAbout();
+	void roll_credits();
+
+	CreditsRoll();
 };
