@@ -4206,6 +4206,24 @@ void Image::convert_rgba8_to_bgra8() {
 	}
 }
 
+void Image::convert_rgb565_to_bgr565() {
+	ERR_FAIL_COND(format != FORMAT_RGB565);
+	ERR_FAIL_COND(data.is_empty());
+
+	int64_t size = data.size() / 2;
+	uint16_t *ptr = reinterpret_cast<uint16_t *>(data.ptrw());
+
+	for (int64_t i = 0; i < size; i++) {
+		uint16_t px = ptr[i];
+
+		uint8_t r = (px >> 11) & 0x1F;
+		uint8_t g = (px >> 5) & 0x3F;
+		uint8_t b = px & 0x1F;
+
+		ptr[i] = (b << 11) | (g << 5) | r;
+	}
+}
+
 Error Image::_load_from_buffer(const Vector<uint8_t> &p_array, ImageMemLoadFunc p_loader) {
 	int buffer_size = p_array.size();
 

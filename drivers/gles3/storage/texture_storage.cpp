@@ -389,6 +389,12 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 			r_gl_internal_format = GL_RGB565;
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_SHORT_5_6_5;
+
+#ifdef WEB_ENABLED
+			if (p_image.is_valid()) {
+				p_image->convert_rgb565_to_bgr565();
+			}
+#endif
 		} break;
 		case Image::FORMAT_RF: {
 			if (config->float_texture_linear_supported) {
@@ -1759,6 +1765,12 @@ void TextureStorage::_texture_set_swizzle(GLES3::Texture *p_texture, Image::Form
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
 			}
+		} break;
+		case Image::FORMAT_RGB565: {
+			glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
+			glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+			glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+			glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
 		} break;
 		case Image::FORMAT_ETC2_RA_AS_RG:
 		case Image::FORMAT_DXT5_RA_AS_RG: {
