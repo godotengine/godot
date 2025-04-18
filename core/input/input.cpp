@@ -917,6 +917,9 @@ void Input::set_joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
 	_THREAD_SAFE_METHOD_
+	if (!gamepad_enabled) {
+		return;
+	}
 	if (p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
 		return;
 	}
@@ -930,6 +933,9 @@ void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_st
 
 void Input::stop_joy_vibration(int p_device) {
 	_THREAD_SAFE_METHOD_
+	if (!gamepad_enabled) {
+		return;
+	}
 	VibrationInfo vibration;
 	vibration.weak_magnitude = 0;
 	vibration.strong_magnitude = 0;
