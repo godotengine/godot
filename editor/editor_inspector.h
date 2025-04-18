@@ -307,6 +307,19 @@ class EditorInspectorCategory : public Control {
 		MENU_OPEN_DOCS,
 	};
 
+	struct ThemeCache {
+		int horizontal_separation = 0;
+		int vertical_separation = 0;
+		int class_icon_size = 0;
+
+		Color font_color;
+
+		Ref<Font> bold_font;
+		int bold_font_size = 0;
+
+		Ref<StyleBox> background;
+	} theme_cache;
+
 	Ref<Texture2D> icon;
 	String label;
 	String doc_class_name;
@@ -333,6 +346,8 @@ public:
 class EditorInspectorSection : public Container {
 	GDCLASS(EditorInspectorSection, Container);
 
+	friend class EditorInspector;
+
 	String label;
 	String section;
 	bool vbox_added = false; // Optimization.
@@ -349,6 +364,30 @@ class EditorInspectorSection : public Container {
 	void _test_unfold();
 	int _get_header_height();
 	Ref<Texture2D> _get_arrow();
+
+	struct ThemeCache {
+		int horizontal_separation = 0;
+		int vertical_separation = 0;
+		int inspector_margin = 0;
+		int indent_size = 0;
+
+		Color prop_subsection;
+		Color font_color;
+		Color font_disabled_color;
+
+		Ref<Font> font;
+		int font_size = 0;
+		Ref<Font> bold_font;
+		int bold_font_size = 0;
+		Ref<Font> light_font;
+		int light_font_size = 0;
+
+		Ref<Texture2D> arrow;
+		Ref<Texture2D> arrow_collapsed;
+		Ref<Texture2D> arrow_collapsed_mirrored;
+
+		Ref<StyleBoxFlat> indent_box;
+	} theme_cache;
 
 protected:
 	Object *object = nullptr;
@@ -549,6 +588,14 @@ class EditorInspector : public ScrollContainer {
 		MENU_UNFAVORITE_ALL,
 	};
 
+	struct ThemeCache {
+		int vertical_separation = 0;
+		Color prop_subsection;
+	} theme_cache;
+
+	EditorInspectorSection::ThemeCache section_theme_cache;
+	EditorInspectorCategory::ThemeCache category_theme_cache;
+
 	bool can_favorite = false;
 	PackedStringArray current_favorites;
 	VBoxContainer *favorites_section = nullptr;
@@ -666,6 +713,8 @@ class EditorInspector : public ScrollContainer {
 
 	void _handle_menu_option(int p_option);
 
+	static EditorInspector *_get_control_parent_inspector(Control *p_control);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -677,6 +726,9 @@ public:
 	static Button *create_inspector_action_button(const String &p_text);
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
+
+	static void initialize_section_theme(EditorInspectorSection::ThemeCache &p_cache, Control *p_control);
+	static void initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control);
 
 	bool is_main_editor_inspector() const;
 	String get_selected_path() const;
