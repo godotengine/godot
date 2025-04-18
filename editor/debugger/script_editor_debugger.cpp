@@ -111,6 +111,13 @@ void ScriptEditorDebugger::debug_ignore_error_breaks() {
 	_put_msg("set_ignore_error_breaks", msg);
 }
 
+void ScriptEditorDebugger::debug_out() {
+	ERR_FAIL_COND(!is_breaked());
+
+	_put_msg("out", Array(), debugging_thread_id);
+	_clear_execution();
+}
+
 void ScriptEditorDebugger::debug_next() {
 	ERR_FAIL_COND(!is_breaked());
 
@@ -1002,6 +1009,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			copy->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
 			step->set_button_icon(get_editor_theme_icon(SNAME("DebugStep")));
 			next->set_button_icon(get_editor_theme_icon(SNAME("DebugNext")));
+			out->set_button_icon(get_editor_theme_icon(SNAME("DebugOut")));
 			dobreak->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			docontinue->set_button_icon(get_editor_theme_icon(SNAME("DebugContinue")));
 			vmem_refresh->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
@@ -1173,6 +1181,7 @@ void ScriptEditorDebugger::_update_buttons_state() {
 	vmem_refresh->set_disabled(!active);
 	step->set_disabled(!active || !is_breaked() || !is_debuggable());
 	next->set_disabled(!active || !is_breaked() || !is_debuggable());
+	out->set_disabled(!active || !is_breaked() || !is_debuggable());
 	copy->set_disabled(!active || !is_breaked());
 	docontinue->set_disabled(!active || !is_breaked());
 	dobreak->set_disabled(!active || is_breaked());
@@ -1993,6 +2002,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		next->set_accessibility_name(TTRC("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
 		next->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_next));
+
+		out = memnew(Button);
+		out->set_theme_type_variation("FlatButton");
+		hbc->add_child(out);
+		out->set_tooltip_text(TTR("Step Out"));
+		out->set_shortcut(ED_GET_SHORTCUT("debugger/step_out"));
+		out->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_out));
 
 		hbc->add_child(memnew(VSeparator));
 
