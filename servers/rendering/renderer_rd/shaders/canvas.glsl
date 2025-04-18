@@ -463,6 +463,12 @@ void main() {
 	const InstanceData draw_data = instances.data[instance_index];
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
+	vec4 region_rect = draw_data.src_rect;
+#else
+	vec4 region_rect = vec4(0.0, 0.0, 1.0 / draw_data.color_texture_pixel_size);
+#endif
+
+#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
 #ifdef USE_NINEPATCH
 

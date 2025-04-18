@@ -569,6 +569,12 @@ void main() {
 	vec2 vertex = vertex_interp;
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
+	vec4 region_rect = read_draw_data_src_rect;
+#else
+	vec4 region_rect = vec4(0.0, 0.0, 1.0 / read_draw_data_color_texture_pixel_size);
+#endif
+
+#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
 #ifdef USE_NINEPATCH
 
