@@ -571,6 +571,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 	String text = value_input->get_text().replace_char(',', '.');
 	text = text.replace_char(';', ',');
 	text = TS->parse_number(text);
+	text = text.to_upper();
 
 	Error err = expr->parse(text);
 	if (err != OK) {
