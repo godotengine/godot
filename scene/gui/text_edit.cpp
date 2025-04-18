@@ -4718,7 +4718,7 @@ Point2i TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_fro
 
 		pos = -1;
 
-		int pos_from = (p_search_flags & SEARCH_BACKWARDS) ? text_line.length() : 0;
+		int pos_from = (p_search_flags & SEARCH_BACKWARDS) ? text_line.length() - 1 : 0;
 		int last_pos = -1;
 
 		while (true) {
