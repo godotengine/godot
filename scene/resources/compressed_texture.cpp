@@ -238,7 +238,9 @@ bool CompressedTexture2D::has_alpha() const {
 
 Ref<Image> CompressedTexture2D::get_image() const {
 	if (texture.is_valid()) {
-		return RS::get_singleton()->texture_2d_get(texture);
+		Ref<Image> img = RS::get_singleton()->texture_2d_get(texture);
+		img->resize(w, h);
+		return img;
 	} else {
 		return Ref<Image>();
 	}
