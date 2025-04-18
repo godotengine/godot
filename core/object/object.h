@@ -424,7 +424,7 @@ public:                                                                         
 	static const StringName &get_class_static() {                                                                                           \
 		static StringName _class_name_static;                                                                                               \
 		if (unlikely(!_class_name_static)) {                                                                                                \
-			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                     \
+			assign_class_name_static(#m_class, _class_name_static);                                                                         \
 		}                                                                                                                                   \
 		return _class_name_static;                                                                                                          \
 	}                                                                                                                                       \
@@ -810,10 +810,12 @@ public:
 	};
 
 	/* TYPE API */
+	static void assign_class_name_static(const Span<char> &p_name, StringName &r_target);
+
 	static const StringName &get_class_static() {
 		static StringName _class_name_static;
 		if (unlikely(!_class_name_static)) {
-			StringName::assign_static_unique_class_name(&_class_name_static, "Object");
+			assign_class_name_static("Object", _class_name_static);
 		}
 		return _class_name_static;
 	}
