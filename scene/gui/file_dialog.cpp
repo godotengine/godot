@@ -1237,35 +1237,35 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 		case FILE_MODE_OPEN_FILE:
 			set_internal_ok_text(ETR("Open"));
 			if (mode_overrides_title) {
-				set_title(ETR("Open a File"));
+				set_default_title(ETR("Open a File"));
 			}
 			makedir->hide();
 			break;
 		case FILE_MODE_OPEN_FILES:
 			set_internal_ok_text(ETR("Open"));
 			if (mode_overrides_title) {
-				set_title(ETR("Open File(s)"));
+				set_default_title(ETR("Open File(s)"));
 			}
 			makedir->hide();
 			break;
 		case FILE_MODE_OPEN_DIR:
 			set_internal_ok_text(ETR("Select Current Folder"));
 			if (mode_overrides_title) {
-				set_title(ETR("Open a Directory"));
+				set_default_title(ETR("Open a Directory"));
 			}
 			makedir->show();
 			break;
 		case FILE_MODE_OPEN_ANY:
 			set_internal_ok_text(ETR("Open"));
 			if (mode_overrides_title) {
-				set_title(ETR("Open a File or Directory"));
+				set_default_title(ETR("Open a File or Directory"));
 			}
 			makedir->show();
 			break;
 		case FILE_MODE_SAVE_FILE:
 			set_internal_ok_text(ETR("Save"));
 			if (mode_overrides_title) {
-				set_title(ETR("Save a File"));
+				set_default_title(ETR("Save a File"));
 			}
 			makedir->show();
 			break;
@@ -1729,7 +1729,7 @@ FileDialog::FileDialog() {
 	add_child(vbox, false, INTERNAL_MODE_FRONT);
 
 	mode = FILE_MODE_SAVE_FILE;
-	set_title(TTRC("Save a File"));
+	set_default_title(TTRC("Save a File"));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
