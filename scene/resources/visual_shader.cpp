@@ -1442,7 +1442,7 @@ void VisualShader::set_mode(Mode p_mode) {
 				keep = false;
 			} else {
 				Ref<VisualShaderNode> from_node = graph[i].nodes[from].node;
-				if (from_node->is_class("VisualShaderNodeOutput") || from_node->is_class("VisualShaderNodeInput")) {
+				if (Object::is_class<VisualShaderNodeOutput>(from_node.ptr()) || Object::is_class<VisualShaderNodeInput>(from_node.ptr())) {
 					keep = false;
 				}
 			}
@@ -1451,7 +1451,7 @@ void VisualShader::set_mode(Mode p_mode) {
 				keep = false;
 			} else {
 				Ref<VisualShaderNode> to_node = graph[i].nodes[to].node;
-				if (to_node->is_class("VisualShaderNodeOutput") || to_node->is_class("VisualShaderNodeInput")) {
+				if (Object::is_class<VisualShaderNodeOutput>(to_node.ptr()) || Object::is_class<VisualShaderNodeInput>(to_node.ptr())) {
 					keep = false;
 				}
 			}
