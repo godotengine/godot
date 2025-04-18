@@ -126,3 +126,19 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 
 	memfree(paren_stack);
 }
+
+ScriptIterator *ScriptIterator::substr(int p_start, int p_length) {
+	ScriptIterator *sub = memnew(ScriptIterator);
+	for (const ScriptRange &r : script_ranges) {
+		if (r.end <= p_start || r.start >= p_start + p_length) {
+			continue;
+		}
+		ScriptRange nr;
+		nr.start = MAX(r.start, p_start);
+		nr.end = MIN(r.end, p_start + p_length);
+		nr.script = r.script;
+		sub->script_ranges.push_back(nr);
+	}
+
+	return sub;
+}
