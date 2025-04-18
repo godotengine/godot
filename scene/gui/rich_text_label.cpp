@@ -5412,6 +5412,9 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_language(lang);
 			pos = brk_end + 1;
 			tag_stack.push_front("lang");
+		} else if (tag == "br") {
+			add_text("\r");
+			pos = brk_end + 1;
 		} else if (tag == "p") {
 			push_paragraph(HORIZONTAL_ALIGNMENT_LEFT);
 			pos = brk_end + 1;
