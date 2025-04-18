@@ -7064,6 +7064,8 @@ void EditorNode::set_unfocused_low_processor_usage_mode_enabled(bool p_enabled) 
 }
 
 EditorNode::EditorNode() {
+	print_line("Opening editor.");
+
 	DEV_ASSERT(!singleton);
 	singleton = this;
 
