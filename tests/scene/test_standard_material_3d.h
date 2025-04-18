@@ -39,96 +39,96 @@ namespace TestStandardMaterial3D {
 TEST_CASE("[Material][StandardMaterial3D] Constructor & default state") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
 		WARN("StandardMaterial3D is not available in this build.");
-		return;
-	}
-	Ref<StandardMaterial3D> mat;
-	mat.instantiate();
+	} else {
+		Ref<StandardMaterial3D> mat;
+		mat.instantiate();
 
-	CHECK(mat.is_valid());
-	CHECK_MESSAGE(mat->get_roughness() == doctest::Approx(1.0f), "Default roughness should be 1.0");
-	CHECK_MESSAGE(mat->get_metallic() == doctest::Approx(0.0f), "Default metallic should be 0.0");
+		CHECK(mat.is_valid());
+		CHECK_MESSAGE(mat->get_roughness() == doctest::Approx(1.0f), "Default roughness should be 1.0");
+		CHECK_MESSAGE(mat->get_metallic() == doctest::Approx(0.0f), "Default metallic should be 0.0");
+	}
 }
 
 TEST_CASE("[Material][StandardMaterial3D] Setter & Getter logic") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
 		WARN("StandardMaterial3D is not available in this build.");
-		return;
+	} else {
+		Ref<StandardMaterial3D> mat;
+		mat.instantiate();
+
+		mat->set_roughness(0.25f);
+		CHECK(mat->get_roughness() == doctest::Approx(0.25f));
+
+		mat->set_metallic(0.9f);
+		CHECK(mat->get_metallic() == doctest::Approx(0.9f));
+
+		Color albedo(0.3, 0.6, 0.9);
+		mat->set_albedo(albedo);
+		CHECK(mat->get_albedo() == albedo);
 	}
-	Ref<StandardMaterial3D> mat;
-	mat.instantiate();
-
-	mat->set_roughness(0.25f);
-	CHECK(mat->get_roughness() == doctest::Approx(0.25f));
-
-	mat->set_metallic(0.9f);
-	CHECK(mat->get_metallic() == doctest::Approx(0.9f));
-
-	Color albedo(0.3, 0.6, 0.9);
-	mat->set_albedo(albedo);
-	CHECK(mat->get_albedo() == albedo);
 }
 
 TEST_CASE("[Material][StandardMaterial3D] Texture assignment") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
 		WARN("StandardMaterial3D is not available in this build.");
-		return;
-	}
-	Ref<StandardMaterial3D> mat;
-	mat.instantiate();
-	Ref<Texture2D> tex;
-	tex.instantiate();
+	} else {
+		Ref<StandardMaterial3D> mat;
+		mat.instantiate();
+		Ref<Texture2D> tex;
+		tex.instantiate();
 
-	mat->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, tex);
-	CHECK(mat->get_texture(BaseMaterial3D::TEXTURE_ALBEDO) == tex);
+		mat->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, tex);
+		CHECK(mat->get_texture(BaseMaterial3D::TEXTURE_ALBEDO) == tex);
+	}
 }
 
 TEST_CASE("[Material][StandardMaterial3D] Transparency mode") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
 		WARN("StandardMaterial3D is not available in this build.");
-		return;
-	}
-	Ref<StandardMaterial3D> mat;
-	mat.instantiate();
+	} else {
+		Ref<StandardMaterial3D> mat;
+		mat.instantiate();
 
-	mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
-	CHECK(mat->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA);
+		mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+		CHECK(mat->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA);
+	}
 }
 
 TEST_CASE("[Material][StandardMaterial3D] Enum parameter setting") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
 		WARN("StandardMaterial3D is not available in this build.");
-		return;
+	} else {
+		Ref<StandardMaterial3D> mat;
+		mat.instantiate();
+
+		mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+		CHECK(mat->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA);
+
+		mat->set_blend_mode(BaseMaterial3D::BLEND_MODE_ADD);
+		CHECK(mat->get_blend_mode() == BaseMaterial3D::BLEND_MODE_ADD);
 	}
-	Ref<StandardMaterial3D> mat;
-	mat.instantiate();
-
-	mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
-	CHECK(mat->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA);
-
-	mat->set_blend_mode(BaseMaterial3D::BLEND_MODE_ADD);
-	CHECK(mat->get_blend_mode() == BaseMaterial3D::BLEND_MODE_ADD);
 }
 
 TEST_CASE("[Material][StandardMaterial3D] Double assignment") {
 	if (!ClassDB::class_exists("StandardMaterial3D")) {
 		WARN("StandardMaterial3D is not available in this build.");
-		return;
-	}
-	Ref<StandardMaterial3D> mat1;
-	Ref<StandardMaterial3D> mat2;
-	mat1.instantiate();
-	mat2.instantiate();
+	} else {
+		Ref<StandardMaterial3D> mat1;
+		Ref<StandardMaterial3D> mat2;
+		mat1.instantiate();
+		mat2.instantiate();
 
-	mat1->set_roughness(0.1f);
-	mat2->set_roughness(0.7f);
+		mat1->set_roughness(0.1f);
+		mat2->set_roughness(0.7f);
 
-	SUBCASE("Swap roughness") {
-		float tmp = mat1->get_roughness();
-		mat1->set_roughness(mat2->get_roughness());
-		mat2->set_roughness(tmp);
+		SUBCASE("Swap roughness") {
+			float tmp = mat1->get_roughness();
+			mat1->set_roughness(mat2->get_roughness());
+			mat2->set_roughness(tmp);
 
-		CHECK(mat1->get_roughness() == doctest::Approx(0.7f));
-		CHECK(mat2->get_roughness() == doctest::Approx(0.1f));
+			CHECK(mat1->get_roughness() == doctest::Approx(0.7f));
+			CHECK(mat2->get_roughness() == doctest::Approx(0.1f));
+		}
 	}
 }
 

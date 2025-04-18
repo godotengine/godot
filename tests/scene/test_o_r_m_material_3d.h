@@ -39,106 +39,106 @@ namespace TestORMMaterial3D {
 TEST_CASE("[Material][ORMMaterial3D] Constructor & default state") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
 		WARN("ORMMaterial3D is not available in this build.");
-		return;
+	} else {
+		Ref<ORMMaterial3D> mat;
+		mat.instantiate();
+		CHECK(mat.is_valid());
+		CHECK_MESSAGE(mat->get_metallic() == doctest::Approx(0.0f), "Default metallic should be 0.0");
+		CHECK_MESSAGE(mat->get_roughness() == doctest::Approx(1.0f), "Default roughness should be 1.0");
 	}
-	Ref<ORMMaterial3D> mat;
-	mat.instantiate();
-	CHECK(mat.is_valid());
-	CHECK_MESSAGE(mat->get_metallic() == doctest::Approx(0.0f), "Default metallic should be 0.0");
-	CHECK_MESSAGE(mat->get_roughness() == doctest::Approx(1.0f), "Default roughness should be 1.0");
 }
 
 TEST_CASE("[Material][ORMMaterial3D] ORM texture assignment") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
 		WARN("ORMMaterial3D is not available in this build.");
-		return;
-	}
-	Ref<ORMMaterial3D> mat;
-	mat.instantiate();
-	Ref<Texture2D> tex;
-	tex.instantiate();
+	} else {
+		Ref<ORMMaterial3D> mat;
+		mat.instantiate();
+		Ref<Texture2D> tex;
+		tex.instantiate();
 
-	mat->set_texture(BaseMaterial3D::TEXTURE_ORM, tex);
-	CHECK(mat->get_texture(BaseMaterial3D::TEXTURE_ORM) == tex);
+		mat->set_texture(BaseMaterial3D::TEXTURE_ORM, tex);
+		CHECK(mat->get_texture(BaseMaterial3D::TEXTURE_ORM) == tex);
+	}
 }
 
 TEST_CASE("[Material][ORMMaterial3D] Set AO texture and channel") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
 		WARN("ORMMaterial3D is not available in this build.");
-		return;
-	}
-	Ref<ORMMaterial3D> mat;
-	mat.instantiate();
-	Ref<Texture2D> tex;
-	tex.instantiate();
+	} else {
+		Ref<ORMMaterial3D> mat;
+		mat.instantiate();
+		Ref<Texture2D> tex;
+		tex.instantiate();
 
-	mat->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, tex);
-	mat->set_ao_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_GREEN);
-	CHECK(mat->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION) == tex);
-	CHECK(mat->get_ao_texture_channel() == BaseMaterial3D::TEXTURE_CHANNEL_GREEN);
+		mat->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, tex);
+		mat->set_ao_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_GREEN);
+		CHECK(mat->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION) == tex);
+		CHECK(mat->get_ao_texture_channel() == BaseMaterial3D::TEXTURE_CHANNEL_GREEN);
+	}
 }
 
 TEST_CASE("[Material][ORMMaterial3D] Metallic and roughness channels") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
 		WARN("ORMMaterial3D is not available in this build.");
-		return;
+	} else {
+		Ref<ORMMaterial3D> mat;
+		mat.instantiate();
+
+		mat->set_metallic_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_RED);
+		mat->set_roughness_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
+
+		CHECK(mat->get_metallic_texture_channel() == BaseMaterial3D::TEXTURE_CHANNEL_RED);
+		CHECK(mat->get_roughness_texture_channel() == BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
 	}
-	Ref<ORMMaterial3D> mat;
-	mat.instantiate();
-
-	mat->set_metallic_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_RED);
-	mat->set_roughness_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
-
-	CHECK(mat->get_metallic_texture_channel() == BaseMaterial3D::TEXTURE_CHANNEL_RED);
-	CHECK(mat->get_roughness_texture_channel() == BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
 }
 
 TEST_CASE("[Material][ORMMaterial3D] Emission and refraction settings") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
 		WARN("ORMMaterial3D is not available in this build.");
-		return;
+	} else {
+		Ref<ORMMaterial3D> mat;
+		mat.instantiate();
+
+		Color emission(0.5, 0.7, 1.0);
+		mat->set_emission(emission);
+		CHECK(mat->get_emission() == emission);
+
+		mat->set_refraction(0.8f);
+		CHECK(mat->get_refraction() == doctest::Approx(0.8f));
 	}
-	Ref<ORMMaterial3D> mat;
-	mat.instantiate();
-
-	Color emission(0.5, 0.7, 1.0);
-	mat->set_emission(emission);
-	CHECK(mat->get_emission() == emission);
-
-	mat->set_refraction(0.8f);
-	CHECK(mat->get_refraction() == doctest::Approx(0.8f));
 }
 
 TEST_CASE("[Material][ORMMaterial3D] AO and feature flag logic") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
 		WARN("ORMMaterial3D is not available in this build.");
-		return;
+	} else {
+		Ref<ORMMaterial3D> mat;
+		mat.instantiate();
+
+		mat->set_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION, true);
+		CHECK(mat->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION));
+
+		mat->set_feature(BaseMaterial3D::FEATURE_HEIGHT_MAPPING, true);
+		CHECK(mat->get_feature(BaseMaterial3D::FEATURE_HEIGHT_MAPPING));
 	}
-	Ref<ORMMaterial3D> mat;
-	mat.instantiate();
-
-	mat->set_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION, true);
-	CHECK(mat->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION));
-
-	mat->set_feature(BaseMaterial3D::FEATURE_HEIGHT_MAPPING, true);
-	CHECK(mat->get_feature(BaseMaterial3D::FEATURE_HEIGHT_MAPPING));
 }
 
 TEST_CASE("[Material][ORMMaterial3D] Double assignment") {
 	if (!ClassDB::class_exists("ORMMaterial3D")) {
 		WARN("ORMMaterial3D is not available in this build.");
-		return;
+	} else {
+		Ref<ORMMaterial3D> mat1;
+		Ref<ORMMaterial3D> mat2;
+		mat1.instantiate();
+		mat2.instantiate();
+
+		mat1->set_metallic(0.1f);
+		mat2->set_metallic(0.7f);
+
+		CHECK(mat1->get_metallic() == doctest::Approx(0.1f));
+		CHECK(mat2->get_metallic() == doctest::Approx(0.7f));
 	}
-	Ref<ORMMaterial3D> mat1;
-	Ref<ORMMaterial3D> mat2;
-	mat1.instantiate();
-	mat2.instantiate();
-
-	mat1->set_metallic(0.1f);
-	mat2->set_metallic(0.7f);
-
-	CHECK(mat1->get_metallic() == doctest::Approx(0.1f));
-	CHECK(mat2->get_metallic() == doctest::Approx(0.7f));
 }
 
 } // namespace TestORMMaterial3D
