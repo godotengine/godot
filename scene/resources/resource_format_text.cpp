@@ -1223,14 +1223,9 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			return error;
 		}
 
-		if (!next_tag.fields.has("type")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'type' in external resource tag";
-			_printerr();
-			return error;
+		if (next_tag.fields.has("type")) {
+			r_classes->insert(next_tag.fields["type"]);
 		}
-
-		r_classes->insert(next_tag.fields["type"]);
 
 		while (true) {
 			String assign;
@@ -1447,9 +1442,9 @@ bool ResourceFormatLoaderText::handles_type(const String &p_type) const {
 }
 
 void ResourceFormatLoaderText::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
-	String ext = p_path.get_extension().to_lower();
-	if (ext == "tscn") {
-		r_classes->insert("PackedScene");
+	const String type = get_resource_type(p_path);
+	if (!type.is_empty()) {
+		r_classes->insert(type);
 	}
 
 	// ...for anything else must test...
