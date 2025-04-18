@@ -76,6 +76,15 @@ public:
 			Vector<Vector3> &r_points,
 			Vector<Vector3> *r_body_a_points,
 			Vector<Vector3> *r_body_b_points);
+	void CreateGenericDistanceJointGizmo(const Transform3D &p_offset,
+			const Transform3D &p_trs_joint,
+			const Vector3 &p_vec_global_a,
+			const Vector3 &p_vec_global_b,
+			real_t distance_min,
+			real_t distance_max,
+			Vector<Vector3> &r_cursor_points,
+			Vector<Vector3> &r_body_points_a,
+			Vector<Vector3> &r_body_points_b);
 
 	Joint3DGizmoPlugin();
 };
@@ -93,4 +102,5 @@ public:
 	// Draw circle around p_axis
 	static void draw_circle(Vector3::Axis p_axis, real_t p_radius, const Transform3D &p_offset, const Basis &p_base, real_t p_limit_lower, real_t p_limit_upper, Vector<Vector3> &r_points, bool p_inverse = false);
 	static void draw_cone(const Transform3D &p_offset, const Basis &p_base, real_t p_swing, real_t p_twist, Vector<Vector3> &r_points);
+	static void draw_cross(const Transform3D &p_offset, const Vector3 &p_origin, Vector<Vector3> &r_points);
 };
