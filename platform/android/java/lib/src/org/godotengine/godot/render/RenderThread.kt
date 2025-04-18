@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotRenderer.java                                                    */
+/*  RenderThread.kt                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,71 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.gl;
+@file:JvmName("RenderThread")
+package org.godotengine.godot.render
 
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.plugin.GodotPlugin;
-import org.godotengine.godot.plugin.GodotPluginRegistry;
-
-import android.util.Log;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
+import android.view.SurfaceHolder
+import java.lang.ref.WeakReference
 
 /**
- * Godot's GL renderer implementation.
+ * Base class for the OpenGL / Vulkan render thread implementations.
  */
-public class GodotRenderer implements GLSurfaceView.Renderer {
-	private final String TAG = GodotRenderer.class.getSimpleName();
+internal abstract class RenderThread(tag: String) : Thread(tag) {
 
-	private final GodotPluginRegistry pluginRegistry;
-	private boolean activityJustResumed = false;
+	/**
+	 * Queues an event on the render thread
+	 */
+	abstract fun queueEvent(event: Runnable)
 
-	public GodotRenderer() {
-		this.pluginRegistry = GodotPluginRegistry.getPluginRegistry();
-	}
+	/**
+	 * Request the thread to exit and block until it's done.
+	 */
+	abstract fun requestExitAndWait()
 
-	public boolean onDrawFrame(GL10 gl) {
-		if (activityJustResumed) {
-			GodotLib.onRendererResumed();
-			activityJustResumed = false;
-		}
+	/**
+	 * Invoked when the app resumes.
+	 */
+	abstract fun onResume()
 
-		boolean swapBuffers = GodotLib.step();
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLDrawFrame(gl);
-		}
+	/**
+	 * Invoked when the app pauses.
+	 */
+	abstract fun onPause()
 
-		return swapBuffers;
-	}
+	abstract fun setRenderMode(renderMode: Renderer.RenderMode)
 
-	@Override
-	public void onRenderThreadExiting() {
-		Log.d(TAG, "Destroying Godot Engine");
-		GodotLib.ondestroy();
-	}
+	abstract fun getRenderMode(): Renderer.RenderMode
 
-	public void onSurfaceChanged(GL10 gl, int width, int height) {
-		GodotLib.resize(null, width, height);
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLSurfaceChanged(gl, width, height);
-		}
-	}
+	abstract fun requestRender()
 
-	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		GodotLib.newcontext(null);
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLSurfaceCreated(gl, config);
-		}
-	}
+	/**
+	 * Invoked when the [android.view.Surface] has been created.
+	 */
+	open fun surfaceCreated(holder: SurfaceHolder, surfaceViewWeakRef: WeakReference<GLSurfaceView>? = null) { }
 
-	public void onActivityResumed() {
-		// We defer invoking GodotLib.onRendererResumed() until the first draw frame call.
-		// This ensures we have a valid GL context and surface when we do so.
-		activityJustResumed = true;
-	}
+	/**
+	 * Invoked following structural updates to [android.view.Surface].
+	 */
+	open fun surfaceChanged(holder: SurfaceHolder, width: Int, height: Int) { }
 
-	public void onActivityPaused() {
-		GodotLib.onRendererPaused();
-	}
+	/**
+	 * Invoked when the [android.view.Surface] is no longer available.
+	 */
+	open fun surfaceDestroyed(holder: SurfaceHolder) { }
+
+	open fun makeEglCurrent(windowId: Int): Boolean = false
+
+	open fun eglSwapBuffers(windowId: Int) {}
+
+	open fun releaseCurrentGLWindow(windowId: Int) {}
 }
