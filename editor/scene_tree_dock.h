@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/gui/scene_tree_editor.h"
+#include "editor/new_scene_from_dialog.h"
 #include "editor/script_create_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/resources/animation.h"
@@ -151,7 +152,7 @@ class SceneTreeDock : public VBoxContainer {
 	ConfirmationDialog *placeholder_editable_instance_remove_dialog = nullptr;
 
 	ReparentDialog *reparent_dialog = nullptr;
-	EditorFileDialog *new_scene_from_dialog = nullptr;
+	NewSceneFromDialog *new_scene_from_dialog = nullptr;
 
 	enum FilterMenuItems {
 		FILTER_BY_TYPE = 64, // Used in the same menus as the Tool enum.
