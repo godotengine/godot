@@ -88,12 +88,13 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		return;
 	}
 
-	if (connect_to_script_mode) {
-		return; // Don't do anything in this mode.
-	}
-
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_NULL(item);
+
+	if (connect_to_script_mode || connecting_signal) {
+		tree->set_selected(item);
+		return;
+	}
 
 	NodePath np = item->get_metadata(0);
 
@@ -429,7 +430,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			p_item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT);
 			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr) {
 				// Disable button on custom scripts (pure visual cue).
-				p_item->set_button_disabled(0, p_item->get_button_count(0) - 1, true);
+				p_item->set_button_color(0, 0, get_theme_color(SNAME("icon_disabled_color"), EditorStringName(Editor)));
 			}
 		}
 	}
