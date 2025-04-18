@@ -10,6 +10,24 @@
 		<link title="Importing images">$DOCS_URL/tutorials/assets_pipeline/importing_images.html</link>
 	</tutorials>
 	<members>
+		<member name="basis_universal/rdo_dict_size" type="int" setter="" getter="" default="1024">
+			Specify the RDO dict size, ranges from 64 to 65536. Higher values increase memory consumption and reduce encoding speed, but give more compression.
+		</member>
+		<member name="basis_universal/rdo_enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables Rate-Distortion Optimization (RDO) to reduce disk size.
+		</member>
+		<member name="basis_universal/rdo_quality_loss" type="float" setter="" getter="" default="1.0">
+			Specify the RDO quality loss, ranges from 0.001 to 50.0. Higher value result in smaller file size but lower quality. Good range to try is from 0.25 to 10.0.
+		</member>
+		<member name="basis_universal/uastc_pack_level" type="int" setter="" getter="" default="0">
+			Sets the UASTC compressor's level, ranges from 0 to 4. Slower encoding speed improves quality.
+		</member>
+		<member name="basis_universal/zstd_supercompression" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables Zstandard supercompression to reduce disk size.
+		</member>
+		<member name="basis_universal/zstd_supercompression_level" type="int" setter="" getter="" default="6">
+			Specify the compression level for Zstandard supercompression.
+		</member>
 		<member name="compress/channel_pack" type="int" setter="" getter="" default="0">
 			Controls how color channels should be used in the imported texture.
 			[b]sRGB Friendly:[/b] Prevents the RG color format from being used, as it does not support sRGB color.

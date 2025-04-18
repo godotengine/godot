@@ -20,9 +20,10 @@
 #pragma warning (disable: 4127) //  conditional expression is constant
 #endif
 
-// v1.50: Added UASTC HDR support
-#define BASISD_LIB_VERSION 150
-#define BASISD_VERSION_STRING "01.50"
+// v1.50: Added UASTC HDR 4x4 support
+// v1.60: Added RDO ASTC HDR 6x6 and intermediate support
+#define BASISD_LIB_VERSION 160
+#define BASISD_VERSION_STRING "01.60"
 
 #ifdef _DEBUG
 #define BASISD_BUILD_DEBUG
@@ -91,9 +92,36 @@ namespace basist
 		cUASTC_HDR_4x4,						// HDR, transcodes only to 4x4 HDR ASTC, BC6H, or uncompressed
 		cBC6H,
 		cASTC_HDR_4x4,
+		cASTC_HDR_6x6,
 								
 		cTotalBlockFormats
 	};
+
+	inline uint32_t get_block_width(block_format fmt)
+	{
+		switch (fmt)
+		{
+		case block_format::cFXT1_RGB:
+			return 8;
+		case block_format::cASTC_HDR_6x6:
+			return 6;
+		default:
+			break;
+		}
+		return 4;
+	}
+
+	inline uint32_t get_block_height(block_format fmt)
+	{
+		switch (fmt)
+		{
+		case block_format::cASTC_HDR_6x6:
+			return 6;
+		default:
+			break;
+		}
+		return 4;
+	}
 
 	const int COLOR5_PAL0_PREV_HI = 9, COLOR5_PAL0_DELTA_LO = -9, COLOR5_PAL0_DELTA_HI = 31;
 	const int COLOR5_PAL1_PREV_HI = 21, COLOR5_PAL1_DELTA_LO = -21, COLOR5_PAL1_DELTA_HI = 21;
@@ -559,6 +587,12 @@ namespace basist
 			return ct.init(total_used_syms, &code_sizes[0]);
 		}
 
+		size_t get_bits_remaining() const
+		{
+			size_t total_bytes_remaining = m_pBuf_end - m_pBuf;
+			return total_bytes_remaining * 8 + m_bit_buf_size;
+		}
+
 	private:
 		uint32_t m_buf_size;
 		const uint8_t *m_pBuf;
@@ -804,6 +838,7 @@ namespace basist
 	const double MIN_DENORM_HALF_FLOAT = 0.000000059604645; // smallest positive subnormal number
 	const double MIN_HALF_FLOAT = 0.00006103515625; // smallest positive normal number
 	const double MAX_HALF_FLOAT = 65504.0; // largest normal number
+	const uint32_t MAX_HALF_FLOAT_AS_INT_BITS = 0x7BFF; // the half float rep for 65504.0
 
 	inline uint32_t get_bits(uint32_t val, int low, int high)
 	{
@@ -975,6 +1010,13 @@ namespace basist
 		return (h * 64 + 30) / 31;
 	}
 
+	// Suboptimal, but very close.
+	inline uint32_t bc6h_half_to_blog(half_float h, uint32_t num_bits)
+	{
+		assert(h <= MAX_BC6H_HALF_FLOAT_AS_UINT);
+		return (h * 64 + 30) / (31 * (1 << (16 - num_bits)));
+	}
+
 	struct bc6h_block
 	{
 		uint8_t m_bytes[16];
@@ -987,6 +1029,26 @@ namespace basist
 	void bc6h_enc_block_2subset_mode9_3bit_weights(bc6h_block* pPacked_block, uint32_t common_part_index, const half_float pEndpoints[2][3][2], const uint8_t* pWeights); // pEndpoints[subset][comp][lh_index]
 	void bc6h_enc_block_2subset_3bit_weights(bc6h_block* pPacked_block, uint32_t common_part_index, const half_float pEndpoints[2][3][2], const uint8_t* pWeights); // pEndpoints[subset][comp][lh_index]
 	bool bc6h_enc_block_solid_color(bc6h_block* pPacked_block, const half_float pColor[3]);
+
+	struct bc6h_logical_block
+	{
+		uint32_t m_mode;
+		uint32_t m_partition_pattern;	// must be 0 if 1 subset
+		uint32_t m_endpoints[3][4];		// [comp][subset*2+lh_index] - must be already properly packed
+		uint8_t m_weights[16];			// weights must be of the proper size, taking into account skipped MSB's which must be 0
+
+		void clear()
+		{
+			basisu::clear_obj(*this);
+		}
+	};
+
+	void pack_bc6h_block(bc6h_block& dst_blk, bc6h_logical_block& log_blk);
+		
+	namespace bc7_mode_5_encoder
+	{
+		void encode_bc7_mode_5_block(void* pDst_block, color32* pPixels, bool hq_mode);
+	}
 		
 } // namespace basist
 
