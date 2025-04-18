@@ -199,7 +199,7 @@ void ProjectDialog::_validate_path() {
 	}
 
 	is_folder_empty = true;
-	if (mode == MODE_NEW || mode == MODE_INSTALL || (mode == MODE_IMPORT && target_path_input_type == InputType::INSTALL_PATH)) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE || (mode == MODE_IMPORT && target_path_input_type == InputType::INSTALL_PATH)) {
 		if (create_dir->is_pressed()) {
 			if (!d->dir_exists(target_path.get_base_dir())) {
 				_set_message(TTRC("The parent directory of the path specified doesn't exist."), MESSAGE_ERROR, target_path_input_type);
@@ -247,7 +247,7 @@ void ProjectDialog::_validate_path() {
 }
 
 String ProjectDialog::_get_target_path() {
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
 		return project_path->get_text();
 	} else if (mode == MODE_IMPORT) {
 		return install_path->get_text();
@@ -256,7 +256,7 @@ String ProjectDialog::_get_target_path() {
 	}
 }
 void ProjectDialog::_set_target_path(const String &p_text) {
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
 		project_path->set_text(p_text);
 	} else if (mode == MODE_IMPORT) {
 		install_path->set_text(p_text);
@@ -267,7 +267,7 @@ void ProjectDialog::_set_target_path(const String &p_text) {
 
 void ProjectDialog::_update_target_auto_dir() {
 	String new_auto_dir;
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
 		new_auto_dir = project_name->get_text();
 	} else if (mode == MODE_IMPORT) {
 		new_auto_dir = project_path->get_text().get_file().get_basename();
@@ -338,7 +338,7 @@ void ProjectDialog::_create_dir_toggled(bool p_pressed) {
 }
 
 void ProjectDialog::_project_name_changed() {
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
 		_update_target_auto_dir();
 	}
 
@@ -365,7 +365,7 @@ void ProjectDialog::_browse_project_path() {
 	if (mode == MODE_IMPORT && install_path->is_visible_in_tree()) {
 		// Select last ZIP file.
 		fdialog_project->set_current_path(path);
-	} else if ((mode == MODE_NEW || mode == MODE_INSTALL) && create_dir->is_pressed()) {
+	} else if ((mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) && create_dir->is_pressed()) {
 		// Select parent directory of project path.
 		fdialog_project->set_current_dir(path.get_base_dir());
 	} else {
@@ -408,7 +408,7 @@ void ProjectDialog::_browse_install_path() {
 void ProjectDialog::_project_path_selected(const String &p_path) {
 	show_dialog(false);
 
-	if (create_dir->is_pressed() && (mode == MODE_NEW || mode == MODE_INSTALL)) {
+	if (create_dir->is_pressed() && (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE)) {
 		// Replace parent directory, but keep target dir name.
 		project_path->set_text(p_path.path_join(project_path->get_text().get_file()));
 	} else {
@@ -704,7 +704,20 @@ void ProjectDialog::ok_pressed() {
 		} break;
 	}
 
-	if (mode == MODE_RENAME || mode == MODE_INSTALL) {
+	if (mode == MODE_DUPLICATE) {
+		Ref<DirAccess> dir = DirAccess::open(original_project_path);
+		Error err = FAILED;
+		if (dir.is_valid()) {
+			err = dir->copy_dir(".", path, -1, true);
+		}
+		if (err != OK) {
+			dialog_error->set_text(vformat(TTR("Couldn't duplicate project (error %d)."), err));
+			dialog_error->popup_centered();
+			return;
+		}
+	}
+
+	if (mode == MODE_RENAME || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
 		// Load project.godot as ConfigFile to set the new name.
 		ConfigFile cfg;
 		String project_godot = path.path_join("project.godot");
@@ -737,6 +750,8 @@ void ProjectDialog::ok_pressed() {
 		}
 #endif
 		emit_signal(SNAME("project_created"), path, edit_check_box->is_pressed());
+	} else if (mode == MODE_DUPLICATE) {
+		emit_signal(SNAME("project_duplicated"), original_project_path, path, edit_check_box->is_visible() && edit_check_box->is_pressed());
 	} else if (mode == MODE_RENAME) {
 		emit_signal(SNAME("projects_updated"));
 	}
@@ -748,6 +763,14 @@ void ProjectDialog::set_zip_path(const String &p_path) {
 
 void ProjectDialog::set_zip_title(const String &p_title) {
 	zip_title = p_title;
+}
+
+void ProjectDialog::set_original_project_path(const String &p_path) {
+	original_project_path = p_path;
+}
+
+void ProjectDialog::set_duplicate_can_edit(bool p_duplicate_can_edit) {
+	duplicate_can_edit = p_duplicate_can_edit;
 }
 
 void ProjectDialog::set_mode(Mode p_mode) {
@@ -793,17 +816,24 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 		}
 		project_path->set_editable(true);
 
-		String fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
-		fav_dir = fav_dir.simplify_path();
-		if (!fav_dir.is_empty()) {
-			project_path->set_text(fav_dir);
-			install_path->set_text(fav_dir);
-			fdialog_project->set_current_dir(fav_dir);
+		if (mode == MODE_DUPLICATE) {
+			String original_dir = original_project_path.get_base_dir();
+			project_path->set_text(original_dir);
+			install_path->set_text(original_dir);
+			fdialog_project->set_current_dir(original_dir);
 		} else {
-			Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-			project_path->set_text(d->get_current_dir());
-			install_path->set_text(d->get_current_dir());
-			fdialog_project->set_current_dir(d->get_current_dir());
+			String fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
+			fav_dir = fav_dir.simplify_path();
+			if (!fav_dir.is_empty()) {
+				project_path->set_text(fav_dir);
+				install_path->set_text(fav_dir);
+				fdialog_project->set_current_dir(fav_dir);
+			} else {
+				Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+				project_path->set_text(d->get_current_dir());
+				install_path->set_text(d->get_current_dir());
+				fdialog_project->set_current_dir(d->get_current_dir());
+			}
 		}
 
 		create_dir->show();
@@ -844,6 +874,20 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			default_files_container->hide();
 
 			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred();
+		} else if (mode == MODE_DUPLICATE) {
+			set_title(TTRC("Duplicate Project"));
+			set_ok_button_text(TTRC("Duplicate"));
+
+			name_container->show();
+			install_path_container->hide();
+			renderer_container->hide();
+			default_files_container->hide();
+			if (!duplicate_can_edit) {
+				edit_check_box->hide();
+			}
+
+			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+			callable_mp(project_name, &LineEdit::select_all).call_deferred();
 		}
 
 		auto_dir = "";
@@ -885,6 +929,7 @@ void ProjectDialog::_notification(int p_what) {
 
 void ProjectDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("project_created"));
+	ADD_SIGNAL(MethodInfo("project_duplicated"));
 	ADD_SIGNAL(MethodInfo("projects_updated"));
 }
 
