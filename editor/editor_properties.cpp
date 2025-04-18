@@ -3906,7 +3906,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::ARRAY, p_hint_text);
+			editor->setup(Variant::ARRAY, p_hint_text, p_hint);
 			return editor;
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
