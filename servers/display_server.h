@@ -169,6 +169,7 @@ public:
 		FEATURE_NATIVE_COLOR_PICKER,
 		FEATURE_SELF_FITTING_WINDOWS,
 		FEATURE_ACCESSIBILITY_SCREEN_READER,
+		FEATURE_SUBWINDOW_EMBEDDING,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -433,7 +434,7 @@ public:
 		WINDOW_FLAG_MAXIMIZE_DISABLED_BIT = (1 << WINDOW_FLAG_MAXIMIZE_DISABLED),
 	};
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID);
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID, int64_t p_parent = 0);
 	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
 
@@ -794,9 +795,9 @@ public:
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid);
 
-	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus);
+	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, String p_embedded_window, const Rect2i &p_rect, bool p_visible, bool p_grab_focus);
 	virtual Error request_close_embedded_process(OS::ProcessID p_pid);
-	virtual Error remove_embedded_process(OS::ProcessID p_pid);
+	virtual Error remove_embedded_process(OS::ProcessID p_pid, String p_embedded_window);
 	virtual OS::ProcessID get_focused_process_id();
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback);

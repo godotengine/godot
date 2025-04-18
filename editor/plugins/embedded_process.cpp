@@ -154,7 +154,7 @@ int EmbeddedProcess::get_embedded_pid() const {
 	return current_process_id;
 }
 
-void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
+void EmbeddedProcess::embed_process(OS::ProcessID p_pid, String p_embedded_window) {
 	if (!window) {
 		return;
 	}
@@ -169,6 +169,7 @@ void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
 	reset();
 
 	current_process_id = p_pid;
+	current_embedded_window = p_embedded_window;
 	start_embedding_time = OS::get_singleton()->get_ticks_msec();
 	embedding_grab_focus = has_focus();
 	timer_update_embedded_process->start();
@@ -182,7 +183,7 @@ void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
 
 void EmbeddedProcess::reset() {
 	if (current_process_id != 0 && embedding_completed) {
-		DisplayServer::get_singleton()->remove_embedded_process(current_process_id);
+		DisplayServer::get_singleton()->remove_embedded_process(current_process_id, current_embedded_window);
 	}
 	current_process_id = 0;
 	embedding_completed = false;
@@ -203,7 +204,7 @@ void EmbeddedProcess::request_close() {
 
 void EmbeddedProcess::_try_embed_process() {
 	bool is_visible = is_visible_in_tree();
-	Error err = DisplayServer::get_singleton()->embed_process(window->get_window_id(), current_process_id, get_screen_embedded_window_rect(), is_visible, is_visible && application_has_focus && embedding_grab_focus);
+	Error err = DisplayServer::get_singleton()->embed_process(window->get_window_id(), current_process_id, current_embedded_window, get_screen_embedded_window_rect(), is_visible, is_visible && application_has_focus && embedding_grab_focus);
 	if (err == OK) {
 		embedding_completed = true;
 		queue_redraw();
@@ -262,7 +263,7 @@ void EmbeddedProcess::_update_embedded_process() {
 		last_updated_embedded_process_focused = focus;
 	}
 
-	DisplayServer::get_singleton()->embed_process(window->get_window_id(), current_process_id, get_screen_embedded_window_rect(), is_visible_in_tree(), must_grab_focus);
+	DisplayServer::get_singleton()->embed_process(window->get_window_id(), current_process_id, current_embedded_window, get_screen_embedded_window_rect(), is_visible_in_tree(), must_grab_focus);
 	emit_signal(SNAME("embedded_process_updated"));
 }
 
