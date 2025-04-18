@@ -252,7 +252,8 @@ private:
 
 	Ref<Shortcut> debugger_stop_shortcut;
 
-	static int root_layout_direction;
+	// Root layout direction is never LAYOUT_DIRECTION_INHERITED.
+	static LayoutDirection root_layout_direction;
 
 protected:
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
@@ -427,6 +428,9 @@ public:
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
 	bool is_layout_rtl() const;
+
+	// LAYOUT_DIRECTION_INHERITED is resolved into other enumerators.
+	LayoutDirection get_resolved_layout_direction() const;
 
 #ifndef DISABLE_DEPRECATED
 	void set_use_font_oversampling(bool p_oversampling);
