@@ -142,26 +142,36 @@ void Gizmo3DHelper::box_commit_handle(const String &p_action_name, bool p_cancel
 
 Vector<Vector3> Gizmo3DHelper::cylinder_get_handles(real_t p_height, real_t p_radius) {
 	Vector<Vector3> handles;
-	handles.push_back(Vector3(p_radius, 0, 0));
 	handles.push_back(Vector3(0, p_height * 0.5, 0));
 	handles.push_back(Vector3(0, p_height * -0.5, 0));
+	handles.push_back(Vector3(p_radius, 0, 0));
 	return handles;
 }
 
-String Gizmo3DHelper::cylinder_get_handle_name(int p_id) const {
-	if (p_id == 0) {
-		return "Radius";
-	} else {
+String Gizmo3DHelper::_cylinder_or_capsule_or_cone_frustum_get_handle_name(int p_id) const {
+	if (p_id < 2) {
 		return "Height";
+	} else {
+		return "Radius";
 	}
 }
 
-void Gizmo3DHelper::_cylinder_or_capsule_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_height, real_t &r_radius, Vector3 &r_cylinder_position, bool p_is_capsule) {
-	real_t initial_radius = initial_value.operator Vector2().x;
-	real_t initial_height = initial_value.operator Vector2().y;
+void Gizmo3DHelper::_cylinder_or_capsule_or_cone_frustum_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_height, real_t &r_radius_top, real_t &r_radius_bottom, Vector3 &r_position, bool p_is_capsule, bool p_is_frustum) {
+	ERR_FAIL_COND(p_is_capsule && p_is_frustum);
 
-	int sign = p_id == 2 ? -1 : 1;
-	int axis = p_id == 0 ? 0 : 1;
+	real_t initial_radius_top, initial_radius_bottom, initial_height;
+	if (p_is_frustum) {
+		initial_radius_top = initial_value.operator Vector3().x;
+		initial_radius_bottom = initial_value.operator Vector3().y;
+		initial_height = initial_value.operator Vector3().z;
+	} else {
+		initial_radius_top = initial_value.operator Vector2().x;
+		initial_radius_bottom = initial_radius_top;
+		initial_height = initial_value.operator Vector2().y;
+	}
+
+	int sign = p_id == 1 ? -1 : 1;
+	int axis = p_id >= 2 ? 0 : 1;
 
 	Vector3 axis_vector;
 	axis_vector[axis] = sign;
@@ -174,20 +184,7 @@ void Gizmo3DHelper::_cylinder_or_capsule_set_handle(const Vector3 p_segment[2], 
 		d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 	}
 
-	if (p_id == 0) {
-		// Adjust radius.
-		if (d < 0.001) {
-			d = 0.001;
-		}
-		r_radius = d;
-		r_cylinder_position = initial_transform.get_origin();
-
-		if (p_is_capsule) {
-			r_height = MAX(initial_height, r_radius * 2.0);
-		} else {
-			r_height = initial_height;
-		}
-	} else if (p_id == 1 || p_id == 2) {
+	if (p_id < 2) {
 		// Adjust height.
 		if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
 			r_height = d * 2.0;
@@ -201,17 +198,41 @@ void Gizmo3DHelper::_cylinder_or_capsule_set_handle(const Vector3 p_segment[2], 
 
 		// Adjust position.
 		if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
-			r_cylinder_position = initial_transform.get_origin();
+			r_position = initial_transform.get_origin();
 		} else {
 			Vector3 offset;
 			offset[axis] = (r_height - initial_height) * 0.5 * sign;
-			r_cylinder_position = initial_transform.xform(offset);
+			r_position = initial_transform.xform(offset);
 		}
 
 		if (p_is_capsule) {
-			r_radius = MIN(initial_radius, r_height / 2.0);
+			r_radius_top = MIN(initial_radius_top, r_height / 2.0);
+			r_radius_bottom = r_radius_top;
 		} else {
-			r_radius = initial_radius;
+			r_radius_top = initial_radius_top;
+			r_radius_bottom = initial_radius_bottom;
+		}
+	} else {
+		// Adjust radius.
+		if (d < 0.001) {
+			d = 0.001;
+		}
+		if (!p_is_frustum) {
+			r_radius_top = d;
+			r_radius_bottom = d;
+		} else {
+			real_t diff = d - (initial_radius_bottom + initial_radius_top) / 2.0;
+			diff = MAX(MAX(-initial_radius_bottom + 0.001, -initial_radius_top + 0.001), diff);
+			r_radius_top = initial_radius_top + diff;
+			r_radius_bottom = initial_radius_bottom + diff;
+		}
+
+		r_position = initial_transform.get_origin();
+
+		if (p_is_capsule) {
+			r_height = MAX(initial_height, r_radius_top * 2.0);
+		} else {
+			r_height = initial_height;
 		}
 	}
 }
@@ -232,11 +253,51 @@ void Gizmo3DHelper::cylinder_commit_handle(int p_id, const String &p_radius_acti
 	}
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(p_id == 0 ? p_radius_action_name : p_height_action_name);
+	ur->create_action(p_id < 2 ? p_height_action_name : p_radius_action_name);
 	ur->add_do_property(p_radius_object, p_radius_property, p_radius_object->get(p_radius_property));
 	ur->add_undo_property(p_radius_object, p_radius_property, initial_value.operator Vector2().x);
 	ur->add_do_property(p_height_object, p_height_property, p_height_object->get(p_height_property));
 	ur->add_undo_property(p_height_object, p_height_property, initial_value.operator Vector2().y);
+	ur->add_do_property(p_position_object, p_position_property, p_position_object->get(p_position_property));
+	ur->add_undo_property(p_position_object, p_position_property, initial_transform.get_origin());
+	ur->commit_action();
+}
+
+Vector<Vector3> Gizmo3DHelper::cone_frustum_get_handles(real_t p_height, real_t p_radius_top, real_t p_radius_bottom) {
+	Vector<Vector3> handles;
+	handles.push_back(Vector3(0, p_height * 0.5, 0));
+	handles.push_back(Vector3(0, p_height * -0.5, 0));
+	handles.push_back(Vector3((p_radius_top + p_radius_bottom) / 2.0, 0, 0));
+	return handles;
+}
+
+void Gizmo3DHelper::cone_frustum_commit_handle(int p_id, const String &p_radius_action_name, const String &p_height_action_name, bool p_cancel, Object *p_position_object, Object *p_height_object, Object *p_radius_top_object, Object *p_radius_bottom_object, const StringName &p_position_property, const StringName &p_height_property, const StringName &p_radius_top_property, const StringName &p_radius_bottom_property) {
+	if (!p_height_object) {
+		p_height_object = p_position_object;
+	}
+	if (!p_radius_top_object) {
+		p_radius_top_object = p_position_object;
+	}
+	if (!p_radius_bottom_object) {
+		p_radius_bottom_object = p_position_object;
+	}
+
+	if (p_cancel) {
+		p_radius_top_object->set(p_radius_top_property, initial_value.operator Vector3().x);
+		p_radius_bottom_object->set(p_radius_bottom_property, initial_value.operator Vector3().y);
+		p_height_object->set(p_height_property, initial_value.operator Vector3().z);
+		p_position_object->set(p_position_property, initial_transform.get_origin());
+		return;
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(p_id < 2 ? p_height_action_name : p_radius_action_name);
+	ur->add_do_property(p_radius_top_object, p_radius_top_property, p_radius_top_object->get(p_radius_top_property));
+	ur->add_do_property(p_radius_bottom_object, p_radius_bottom_property, p_radius_bottom_object->get(p_radius_bottom_property));
+	ur->add_undo_property(p_radius_top_object, p_radius_top_property, initial_value.operator Vector3().x);
+	ur->add_undo_property(p_radius_bottom_object, p_radius_bottom_property, initial_value.operator Vector3().y);
+	ur->add_do_property(p_height_object, p_height_property, p_height_object->get(p_height_property));
+	ur->add_undo_property(p_height_object, p_height_property, initial_value.operator Vector3().z);
 	ur->add_do_property(p_position_object, p_position_property, p_position_object->get(p_position_property));
 	ur->add_undo_property(p_position_object, p_position_property, initial_transform.get_origin());
 	ur->commit_action();
