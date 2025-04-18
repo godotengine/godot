@@ -289,6 +289,7 @@ void EditorResourcePicker::_update_menu_items() {
 
 		if (paste_valid) {
 			edit_menu->add_item(TTR("Paste"), OBJ_MENU_PASTE);
+			edit_menu->add_item(TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
 		}
 	}
 
@@ -435,11 +436,14 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			EditorSettings::get_singleton()->set_resource_clipboard(edited_resource);
 		} break;
 
-		case OBJ_MENU_PASTE: {
+		case OBJ_MENU_PASTE:
+		case OBJ_MENU_PASTE_AS_UNIQUE: {
 			edited_resource = EditorSettings::get_singleton()->get_resource_clipboard();
-			if (edited_resource->is_built_in() && EditorNode::get_singleton()->get_edited_scene() &&
-					edited_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path()) {
-				// Automatically make resource unique if it belongs to another scene.
+			if (EditorNode::get_singleton()->get_edited_scene() &&
+					(p_which == OBJ_MENU_PASTE_AS_UNIQUE ||
+							(edited_resource->is_built_in() && edited_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path()))) {
+				// Automatically make resource unique if it belongs to another scene,
+				// or if requested by the user with the Paste as Unique option.
 				_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
 				return;
 			}
