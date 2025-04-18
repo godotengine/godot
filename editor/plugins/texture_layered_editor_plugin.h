@@ -41,6 +41,10 @@ class ColorChannelSelector;
 class TextureLayeredEditor : public Control {
 	GDCLASS(TextureLayeredEditor, Control);
 
+	struct ThemeCache {
+		Color outline_color;
+	} theme_cache;
+
 	SpinBox *layer = nullptr;
 	Label *info = nullptr;
 	Ref<TextureLayered> texture;
@@ -55,6 +59,8 @@ class TextureLayeredEditor : public Control {
 	bool setting = false;
 
 	ColorChannelSelector *channel_selector = nullptr;
+
+	void _draw_outline();
 
 	void _make_shaders();
 	void _update_material(bool p_texture_changed);
