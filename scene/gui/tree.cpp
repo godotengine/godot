@@ -4984,7 +4984,7 @@ void Tree::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESIZED:
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (popup_edited_item != nullptr) {
 				Rect2 rect = _get_item_focus_rect(popup_edited_item);
 
@@ -6617,7 +6617,7 @@ Tree::Tree() {
 	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Tree::popup_select));
 	value_editor->connect(SceneStringName(value_changed), callable_mp(this, &Tree::value_editor_changed));
 
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 
 	set_mouse_filter(MOUSE_FILTER_STOP);
 

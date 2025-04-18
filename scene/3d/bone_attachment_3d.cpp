@@ -244,7 +244,7 @@ void BoneAttachment3D::set_override_pose(bool p_override) {
 	}
 
 	override_pose = p_override;
-	set_notify_transform(override_pose);
+	set_notify_global_transform(override_pose);
 	set_process_internal(override_pose);
 	if (!override_pose && bone_idx >= 0) {
 		Skeleton3D *sk = get_skeleton();
@@ -300,7 +300,7 @@ void BoneAttachment3D::_notification(int p_what) {
 			_check_unbind();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			_transform_changed();
 		} break;
 

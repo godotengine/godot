@@ -114,8 +114,8 @@ void Camera3D::_physics_interpolated_changed() {
 void Camera3D::_physics_interpolation_ensure_data_flipped() {
 	// The curr -> previous update can either occur
 	// on the INTERNAL_PHYSICS_PROCESS OR
-	// on NOTIFICATION_TRANSFORM_CHANGED,
-	// if NOTIFICATION_TRANSFORM_CHANGED takes place
+	// on NOTIFICATION_GLOBAL_TRANSFORM_CHANGED,
+	// if NOTIFICATION_GLOBAL_TRANSFORM_CHANGED takes place
 	// earlier than INTERNAL_PHYSICS_PROCESS on a tick.
 	// This is to ensure that the data keeps flowing, but the new data
 	// doesn't overwrite before prev has been set.
@@ -205,7 +205,7 @@ void Camera3D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (is_physics_interpolated_and_enabled()) {
 				_physics_interpolation_ensure_data_flipped();
 				_interpolation_data.xform_curr = get_global_transform();
@@ -892,7 +892,7 @@ Camera3D::Camera3D() {
 	RenderingServer::get_singleton()->camera_set_cull_mask(camera, layers);
 	//active=false;
 	velocity_tracker.instantiate();
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 	set_disable_scale(true);
 }
 

@@ -85,7 +85,7 @@ void VisualInstance3D::_notification(int p_what) {
 			_update_visibility();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (_is_vi_visible() || is_physics_interpolated_and_enabled()) {
 				if (!_is_using_identity_transform()) {
 					RenderingServer::get_singleton()->instance_set_transform(instance, get_global_transform());
@@ -105,7 +105,7 @@ void VisualInstance3D::_notification(int p_what) {
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
 			if (_is_vi_visible() && is_physics_interpolated() && is_inside_tree()) {
 				// We must ensure the RenderingServer transform is up to date before resetting.
-				// This is because NOTIFICATION_TRANSFORM_CHANGED is deferred,
+				// This is because NOTIFICATION_GLOBAL_TRANSFORM_CHANGED is deferred,
 				// and cannot be relied to be called in order before NOTIFICATION_RESET_PHYSICS_INTERPOLATION.
 				if (!_is_using_identity_transform()) {
 					RenderingServer::get_singleton()->instance_set_transform(instance, get_global_transform());
@@ -215,7 +215,7 @@ RID VisualInstance3D::get_base() const {
 VisualInstance3D::VisualInstance3D() {
 	instance = RenderingServer::get_singleton()->instance_create();
 	RenderingServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 }
 
 VisualInstance3D::~VisualInstance3D() {
