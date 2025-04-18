@@ -143,7 +143,6 @@ class EmbeddedGodotGame : GodotGame() {
 	override fun isAlwaysOnTopSupported() = hasPiPSystemFeature()
 
 	override fun onFullScreenUpdated(enabled: Boolean) {
-		godot?.enableImmersiveMode(enabled)
 		isFullscreen = enabled
 		if (enabled) {
 			layoutWidthInPx = FULL_SCREEN_WIDTH
