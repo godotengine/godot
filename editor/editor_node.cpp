@@ -8381,6 +8381,7 @@ EditorNode::~EditorNode() {
 	EditorInspector::cleanup_plugins();
 	EditorTranslationParser::get_singleton()->clean_parsers();
 	ResourceImporterScene::clean_up_importer_plugins();
+	ResourceImporterTexture::clean_up_importer_plugins();
 	EditorContextMenuPluginManager::cleanup();
 
 	remove_print_handler(&print_handler);

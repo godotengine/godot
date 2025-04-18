@@ -37,8 +37,49 @@
 
 class CompressedTexture2D;
 
+class EditorTextureImportPlugin : public RefCounted {
+	GDCLASS(EditorTextureImportPlugin, RefCounted);
+
+public:
+	enum Preset {
+		PRESET_DETECT,
+		PRESET_2D,
+		PRESET_3D,
+	};
+
+private:
+	mutable const HashMap<StringName, Variant> *current_options = nullptr;
+	mutable List<ResourceImporter::ImportOption> *current_option_list = nullptr;
+
+protected:
+	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL2C(_get_import_options, String, int)
+	GDVIRTUAL2RC(Variant, _get_option_visibility, String, String)
+	GDVIRTUAL1RC(Ref<Image>, _load_image, String)
+	GDVIRTUAL1RC(Ref<Image>, _pre_process, Ref<Image>)
+	GDVIRTUAL1RC(Ref<Image>, _post_process, Ref<Image>)
+
+	static void _bind_methods();
+
+public:
+	Variant get_option_value(const StringName &p_name) const;
+	void add_import_option(const String &p_name, const Variant &p_default_value);
+	void add_import_option_advanced(Variant::Type p_type, const String &p_name, const Variant &p_default_value, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(), int p_usage_flags = PROPERTY_USAGE_DEFAULT);
+
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options, Preset p_preset = PRESET_DETECT) const;
+	virtual Variant get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const;
+
+	virtual Ref<Image> load_image(const String &p_source_file, bool *r_use_custom_loader, const HashMap<StringName, Variant> &p_options) const;
+	virtual Ref<Image> pre_process(Ref<Image> p_image, const HashMap<StringName, Variant> &p_options) const;
+	virtual Ref<Image> post_process(Ref<Image> p_image, const HashMap<StringName, Variant> &p_options) const;
+};
+VARIANT_ENUM_CAST(EditorTextureImportPlugin::Preset);
+
 class ResourceImporterTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterTexture, ResourceImporter);
+
+	static Vector<Ref<EditorTextureImportPlugin>> texture_import_plugins;
 
 public:
 	enum CompressMode {
@@ -83,6 +124,11 @@ public:
 	static void save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality);
 
 	static ResourceImporterTexture *get_singleton() { return singleton; }
+
+	static void add_texture_import_plugin(Ref<EditorTextureImportPlugin> p_plugin, bool p_first_priority = false);
+	static void remove_texture_import_plugin(Ref<EditorTextureImportPlugin> p_plugin);
+	static void clean_up_importer_plugins();
+
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
