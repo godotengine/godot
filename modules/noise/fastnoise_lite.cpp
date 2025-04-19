@@ -299,7 +299,7 @@ real_t FastNoiseLite::get_domain_warp_fractal_gain() const {
 
 // Noise interface functions.
 
-real_t FastNoiseLite::get_noise_1d(real_t p_x) const {
+real_t FastNoiseLite::get_noise_1d(real_t p_x, Error *err) const {
 	p_x += offset.x;
 	if (domain_warp_enabled) {
 		// Needed since DomainWarp expects a reference.
@@ -309,11 +309,7 @@ real_t FastNoiseLite::get_noise_1d(real_t p_x) const {
 	return get_noise_2d(p_x, 0.0);
 }
 
-real_t FastNoiseLite::get_noise_2dv(Vector2 p_v) const {
-	return get_noise_2d(p_v.x, p_v.y);
-}
-
-real_t FastNoiseLite::get_noise_2d(real_t p_x, real_t p_y) const {
+real_t FastNoiseLite::get_noise_2d(real_t p_x, real_t p_y, Error *err) const {
 	p_x += offset.x;
 	p_y += offset.y;
 	if (domain_warp_enabled) {
@@ -322,11 +318,7 @@ real_t FastNoiseLite::get_noise_2d(real_t p_x, real_t p_y) const {
 	return _noise.GetNoise(p_x, p_y);
 }
 
-real_t FastNoiseLite::get_noise_3dv(Vector3 p_v) const {
-	return get_noise_3d(p_v.x, p_v.y, p_v.z);
-}
-
-real_t FastNoiseLite::get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const {
+real_t FastNoiseLite::get_noise_3d(real_t p_x, real_t p_y, real_t p_z, Error *err) const {
 	p_x += offset.x;
 	p_y += offset.y;
 	p_z += offset.z;
@@ -334,10 +326,6 @@ real_t FastNoiseLite::get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const {
 		_domain_warp_noise.DomainWarp(p_x, p_y, p_z);
 	}
 	return _noise.GetNoise(p_x, p_y, p_z);
-}
-
-void FastNoiseLite::_changed() {
-	emit_changed();
 }
 
 void FastNoiseLite::_bind_methods() {
@@ -411,8 +399,6 @@ void FastNoiseLite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_domain_warp_fractal_gain", "domain_warp_gain"), &FastNoiseLite::set_domain_warp_fractal_gain);
 	ClassDB::bind_method(D_METHOD("get_domain_warp_fractal_gain"), &FastNoiseLite::get_domain_warp_fractal_gain);
-
-	ClassDB::bind_method(D_METHOD("_changed"), &FastNoiseLite::_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "noise_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Smooth,Cellular,Perlin,Value Cubic,Value"), "set_noise_type", "get_noise_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");

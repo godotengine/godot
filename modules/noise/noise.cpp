@@ -32,6 +32,59 @@
 
 #include <float.h>
 
+real_t Noise::get_noise_1d(real_t p_x, Error *err) const {
+	real_t ret;
+	if (GDVIRTUAL_CALL(_get_noise_1d, p_x, ret)) {
+		return ret;
+	}
+	if (err) {
+		*err = ERR_UNAVAILABLE;
+	}
+	ERR_FAIL_V_MSG(0, "Unimplemented _get_noise_1d.");
+}
+
+real_t Noise::get_noise_2dv(Vector2 p_v) const {
+	return get_noise_2d(p_v.x, p_v.y);
+}
+
+real_t Noise::get_noise_2d(real_t p_x, real_t p_y, Error *err) const {
+	real_t ret;
+	if (GDVIRTUAL_CALL(_get_noise_2d, p_x, p_y, ret)) {
+		return ret;
+	}
+	if (err) {
+		*err = ERR_UNAVAILABLE;
+	}
+	ERR_FAIL_V_MSG(0, "Unimplemented _get_noise_2d.");
+}
+
+real_t Noise::get_noise_3dv(Vector3 p_v) const {
+	return get_noise_3d(p_v.x, p_v.y, p_v.z);
+}
+
+real_t Noise::get_noise_3d(real_t p_x, real_t p_y, real_t p_z, Error *err) const {
+	real_t ret;
+	if (GDVIRTUAL_CALL(_get_noise_3d, p_x, p_y, p_z, ret)) {
+		return ret;
+	}
+	if (err) {
+		*err = ERR_UNAVAILABLE;
+	}
+	ERR_FAIL_V_MSG(0, "Unimplemented _get_noise_3d.");
+}
+
+real_t Noise::_get_noise_1d(real_t p_x) const {
+	return get_noise_1d(p_x);
+}
+
+real_t Noise::_get_noise_2d(real_t p_x, real_t p_y) const {
+	return get_noise_2d(p_x, p_y);
+}
+
+real_t Noise::_get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const {
+	return get_noise_3d(p_x, p_y, p_z);
+}
+
 Vector<Ref<Image>> Noise::_get_seamless_image(int p_width, int p_height, int p_depth, bool p_invert, bool p_in_3d_space, real_t p_blend_skirt, bool p_normalize) const {
 	ERR_FAIL_COND_V(p_width <= 0 || p_height <= 0 || p_depth <= 0, Vector<Ref<Image>>());
 
@@ -43,6 +96,7 @@ Vector<Ref<Image>> Noise::_get_seamless_image(int p_width, int p_height, int p_d
 	int src_depth = p_depth + skirt_depth;
 
 	Vector<Ref<Image>> src = _get_image(src_width, src_height, src_depth, p_invert, p_in_3d_space, p_normalize);
+	ERR_FAIL_COND_V(src.is_empty(), Vector<Ref<Image>>());
 	bool grayscale = (src[0]->get_format() == Image::FORMAT_L8);
 
 	if (grayscale) {
@@ -53,6 +107,10 @@ Vector<Ref<Image>> Noise::_get_seamless_image(int p_width, int p_height, int p_d
 }
 
 Ref<Image> Noise::get_seamless_image(int p_width, int p_height, bool p_invert, bool p_in_3d_space, real_t p_blend_skirt, bool p_normalize) const {
+	Ref<Image> image;
+	if (GDVIRTUAL_CALL(_get_seamless_image, p_width, p_height, p_invert, p_in_3d_space, p_blend_skirt, p_normalize, image)) {
+		return image;
+	}
 	Vector<Ref<Image>> images = _get_seamless_image(p_width, p_height, 1, p_invert, p_in_3d_space, p_blend_skirt, p_normalize);
 	if (images.is_empty()) {
 		return Ref<Image>();
@@ -61,9 +119,12 @@ Ref<Image> Noise::get_seamless_image(int p_width, int p_height, bool p_invert, b
 }
 
 TypedArray<Image> Noise::get_seamless_image_3d(int p_width, int p_height, int p_depth, bool p_invert, real_t p_blend_skirt, bool p_normalize) const {
+	TypedArray<Ref<Image>> ret;
+	if (GDVIRTUAL_CALL(_get_seamless_image_3d, p_width, p_height, p_depth, p_invert, p_blend_skirt, p_normalize, ret)) {
+		return ret;
+	}
 	Vector<Ref<Image>> images = _get_seamless_image(p_width, p_height, p_depth, p_invert, true, p_blend_skirt, p_normalize);
 
-	TypedArray<Image> ret;
 	ret.resize(images.size());
 	for (int i = 0; i < images.size(); i++) {
 		ret[i] = images[i];
@@ -94,10 +155,17 @@ Vector<Ref<Image>> Noise::_get_image(int p_width, int p_height, int p_depth, boo
 		real_t min_val = FLT_MAX;
 		real_t max_val = -FLT_MAX;
 		int idx = 0;
+		Error err = OK;
 		for (int d = 0; d < p_depth; d++) {
 			for (int y = 0; y < p_height; y++) {
 				for (int x = 0; x < p_width; x++) {
-					values[idx] = p_in_3d_space ? get_noise_3d(x, y, d) : get_noise_2d(x, y);
+					if (p_in_3d_space) {
+						values[idx] = get_noise_3d(x, y, d, &err);
+						ERR_FAIL_COND_V_MSG(err != OK, Vector<Ref<Image>>(), vformat("Failed to generate image. %s _get_noise_3d.", error_names[err]));
+					} else {
+						values[idx] = get_noise_2d(x, y, &err);
+						ERR_FAIL_COND_V_MSG(err != OK, Vector<Ref<Image>>(), vformat("Failed to generate image. %s _get_noise_2d.", error_names[err]));
+					}
 					if (values[idx] > max_val) {
 						max_val = values[idx];
 					}
@@ -147,9 +215,17 @@ Vector<Ref<Image>> Noise::_get_image(int p_width, int p_height, int p_depth, boo
 
 			uint8_t ivalue;
 			int idx = 0;
+			Error err;
 			for (int y = 0; y < p_height; y++) {
 				for (int x = 0; x < p_width; x++) {
-					float value = (p_in_3d_space ? get_noise_3d(x, y, d) : get_noise_2d(x, y));
+					float value;
+					if (p_in_3d_space) {
+						value = get_noise_3d(x, y, d, &err);
+						ERR_FAIL_COND_V_MSG(err != OK, Vector<Ref<Image>>(), vformat("Failed to generate image. %s _get_noise_3d.", error_names[err]));
+					} else {
+						value = get_noise_2d(x, y, &err);
+						ERR_FAIL_COND_V_MSG(err != OK, Vector<Ref<Image>>(), vformat("Failed to generate image. %s _get_noise_2d.", error_names[err]));
+					}
 					ivalue = static_cast<uint8_t>(CLAMP(value * 127.5f + 127.5f, 0.0f, 255.0f));
 					wd8[idx] = p_invert ? (255 - ivalue) : ivalue;
 					idx++;
@@ -165,6 +241,10 @@ Vector<Ref<Image>> Noise::_get_image(int p_width, int p_height, int p_depth, boo
 }
 
 Ref<Image> Noise::get_image(int p_width, int p_height, bool p_invert, bool p_in_3d_space, bool p_normalize) const {
+	Ref<Image> image;
+	if (GDVIRTUAL_CALL(_get_image, p_width, p_height, p_invert, p_in_3d_space, p_normalize, image)) {
+		return image;
+	}
 	Vector<Ref<Image>> images = _get_image(p_width, p_height, 1, p_invert, p_in_3d_space, p_normalize);
 	if (images.is_empty()) {
 		return Ref<Image>();
@@ -173,9 +253,12 @@ Ref<Image> Noise::get_image(int p_width, int p_height, bool p_invert, bool p_in_
 }
 
 TypedArray<Image> Noise::get_image_3d(int p_width, int p_height, int p_depth, bool p_invert, bool p_normalize) const {
+	TypedArray<Ref<Image>> ret;
+	if (GDVIRTUAL_CALL(_get_image_3d, p_width, p_height, p_depth, p_invert, p_normalize, ret)) {
+		return ret;
+	}
 	Vector<Ref<Image>> images = _get_image(p_width, p_height, p_depth, p_invert, true, p_normalize);
 
-	TypedArray<Image> ret;
 	ret.resize(images.size());
 	for (int i = 0; i < images.size(); i++) {
 		ret[i] = images[i];
@@ -185,10 +268,10 @@ TypedArray<Image> Noise::get_image_3d(int p_width, int p_height, int p_depth, bo
 
 void Noise::_bind_methods() {
 	// Noise functions.
-	ClassDB::bind_method(D_METHOD("get_noise_1d", "x"), &Noise::get_noise_1d);
-	ClassDB::bind_method(D_METHOD("get_noise_2d", "x", "y"), &Noise::get_noise_2d);
+	ClassDB::bind_method(D_METHOD("get_noise_1d", "x"), &Noise::_get_noise_1d);
+	ClassDB::bind_method(D_METHOD("get_noise_2d", "x", "y"), &Noise::_get_noise_2d);
 	ClassDB::bind_method(D_METHOD("get_noise_2dv", "v"), &Noise::get_noise_2dv);
-	ClassDB::bind_method(D_METHOD("get_noise_3d", "x", "y", "z"), &Noise::get_noise_3d);
+	ClassDB::bind_method(D_METHOD("get_noise_3d", "x", "y", "z"), &Noise::_get_noise_3d);
 	ClassDB::bind_method(D_METHOD("get_noise_3dv", "v"), &Noise::get_noise_3dv);
 
 	// Textures.
@@ -196,4 +279,12 @@ void Noise::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_seamless_image", "width", "height", "invert", "in_3d_space", "skirt", "normalize"), &Noise::get_seamless_image, DEFVAL(false), DEFVAL(false), DEFVAL(0.1), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_image_3d", "width", "height", "depth", "invert", "normalize"), &Noise::get_image_3d, DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_seamless_image_3d", "width", "height", "depth", "invert", "skirt", "normalize"), &Noise::get_seamless_image_3d, DEFVAL(false), DEFVAL(0.1), DEFVAL(true));
+
+	GDVIRTUAL_BIND(_get_noise_1d, "x")
+	GDVIRTUAL_BIND(_get_noise_2d, "x", "y")
+	GDVIRTUAL_BIND(_get_noise_3d, "x", "y", "z")
+	GDVIRTUAL_BIND(_get_image, "width", "height", "invert", "in_3d_space", "normalize")
+	GDVIRTUAL_BIND(_get_image_3d, "width", "height", "depth", "invert", "normalize")
+	GDVIRTUAL_BIND(_get_seamless_image, "width", "height", "invert", "in_3d_space", "skirt", "normalize")
+	GDVIRTUAL_BIND(_get_seamless_image_3d, "width", "height", "depth", "invert", "skirt", "normalize")
 }

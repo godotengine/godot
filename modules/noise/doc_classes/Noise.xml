@@ -11,6 +11,76 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_image" qualifiers="virtual const">
+			<return type="Image" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="invert" type="bool" />
+			<param index="3" name="in_3d_space" type="bool" />
+			<param index="4" name="normalize" type="bool" />
+			<description>
+				Overrides [method get_image], used by [NoiseTexture2D]. If not overridden, a default implementation is provided using [method get_noise_2d] or [method get_noise_3d].
+			</description>
+		</method>
+		<method name="_get_image_3d" qualifiers="virtual const">
+			<return type="Image[]" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="depth" type="int" />
+			<param index="3" name="invert" type="bool" />
+			<param index="4" name="normalize" type="bool" />
+			<description>
+				Overrides [method get_image_3d], used by [NoiseTexture3D]. If not overridden, a default implementation is provided using [method get_noise_3d].
+			</description>
+		</method>
+		<method name="_get_noise_1d" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Overrides [method get_noise_1d]. Currently this is not used by the engine.
+			</description>
+		</method>
+		<method name="_get_noise_2d" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="y" type="float" />
+			<description>
+				Overrides [method get_noise_2d], used by [method get_image] if it is not overridden and the generation does not occur in 3D space.
+			</description>
+		</method>
+		<method name="_get_noise_3d" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="y" type="float" />
+			<param index="2" name="z" type="float" />
+			<description>
+				Overrides [method get_noise_3d], used by [method get_image_3d] and [method get_image] if these are not overridden and the generation occurs in 3D space.
+			</description>
+		</method>
+		<method name="_get_seamless_image" qualifiers="virtual const">
+			<return type="Image" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="invert" type="bool" />
+			<param index="3" name="in_3d_space" type="bool" />
+			<param index="4" name="skirt" type="float" />
+			<param index="5" name="normalize" type="bool" />
+			<description>
+				Overrides [method get_seamless_image]. If not overridden, a default implementation is provided using [method get_image].
+			</description>
+		</method>
+		<method name="_get_seamless_image_3d" qualifiers="virtual const">
+			<return type="Image[]" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="depth" type="int" />
+			<param index="3" name="invert" type="bool" />
+			<param index="4" name="skirt" type="float" />
+			<param index="5" name="normalize" type="bool" />
+			<description>
+				Overrides [method get_seamless_image_3d]. If not overridden, a default implementation is provided using [method get_image_3d].
+			</description>
+		</method>
 		<method name="get_image" qualifiers="const">
 			<return type="Image" />
 			<param index="0" name="width" type="int" />

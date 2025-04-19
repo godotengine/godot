@@ -275,19 +275,31 @@ class Noise : public Resource {
 	}
 
 protected:
+	GDVIRTUAL1RC(real_t, _get_noise_1d, real_t)
+	GDVIRTUAL2RC(real_t, _get_noise_2d, real_t, real_t)
+	GDVIRTUAL3RC(real_t, _get_noise_3d, real_t, real_t, real_t)
+	GDVIRTUAL5RC(Ref<Image>, _get_image, int, int, bool, bool, bool)
+	GDVIRTUAL5RC(TypedArray<Ref<Image>>, _get_image_3d, int, int, int, bool, bool)
+	GDVIRTUAL6RC(Ref<Image>, _get_seamless_image, int, int, bool, bool, real_t, bool)
+	GDVIRTUAL6RC(TypedArray<Ref<Image>>, _get_seamless_image_3d, int, int, int, bool, real_t, bool)
+
 	static void _bind_methods();
 
 public:
 	// Virtual destructor so we can delete any Noise derived object when referenced as a Noise*.
 	virtual ~Noise() {}
 
-	virtual real_t get_noise_1d(real_t p_x) const = 0;
+	virtual real_t get_noise_1d(real_t p_x, Error *err = nullptr) const;
 
-	virtual real_t get_noise_2dv(Vector2 p_v) const = 0;
-	virtual real_t get_noise_2d(real_t p_x, real_t p_y) const = 0;
+	virtual real_t get_noise_2dv(Vector2 p_v) const;
+	virtual real_t get_noise_2d(real_t p_x, real_t p_y, Error *err = nullptr) const;
 
-	virtual real_t get_noise_3dv(Vector3 p_v) const = 0;
-	virtual real_t get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const = 0;
+	virtual real_t get_noise_3dv(Vector3 p_v) const;
+	virtual real_t get_noise_3d(real_t p_x, real_t p_y, real_t p_z, Error *err = nullptr) const;
+
+	real_t _get_noise_1d(real_t p_x) const;
+	real_t _get_noise_2d(real_t p_x, real_t p_y) const;
+	real_t _get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const;
 
 	Vector<Ref<Image>> _get_image(int p_width, int p_height, int p_depth, bool p_invert = false, bool p_in_3d_space = false, bool p_normalize = true) const;
 	virtual Ref<Image> get_image(int p_width, int p_height, bool p_invert = false, bool p_in_3d_space = false, bool p_normalize = true) const;

@@ -202,15 +202,9 @@ public:
 	real_t get_domain_warp_fractal_gain() const;
 
 	// Interface methods.
-	real_t get_noise_1d(real_t p_x) const override;
-
-	real_t get_noise_2dv(Vector2 p_v) const override;
-	real_t get_noise_2d(real_t p_x, real_t p_y) const override;
-
-	real_t get_noise_3dv(Vector3 p_v) const override;
-	real_t get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const override;
-
-	void _changed();
+	real_t get_noise_1d(real_t p_x, Error *err = nullptr) const override;
+	real_t get_noise_2d(real_t p_x, real_t p_y, Error *err = nullptr) const override;
+	real_t get_noise_3d(real_t p_x, real_t p_y, real_t p_z, Error *err = nullptr) const override;
 };
 
 VARIANT_ENUM_CAST(FastNoiseLite::NoiseType);
