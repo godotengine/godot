@@ -156,6 +156,8 @@ protected:
 
 	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
 
+	TypedArray<StringName> _get_node_list() const;
+
 	virtual void _tree_changed() override;
 	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) override;
 	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node) override;
@@ -174,7 +176,7 @@ public:
 	void rename_node(const StringName &p_name, const StringName &p_new_name);
 	bool has_node(const StringName &p_name) const;
 	StringName get_node_name(const Ref<AnimationNode> &p_node) const;
-	void get_node_list(List<StringName> *r_nodes) const;
+	LocalVector<StringName> get_node_list() const;
 
 	void set_node_position(const StringName &p_name, const Vector2 &p_position);
 	Vector2 get_node_position(const StringName &p_name) const;

@@ -417,6 +417,8 @@ class AnimationNodeBlendTree : public AnimationRootNode {
 
 	void _initialize_node_tree();
 
+	TypedArray<StringName> _get_node_list() const;
+
 protected:
 	static void _bind_methods();
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -468,7 +470,7 @@ public:
 	virtual String get_caption() const override;
 	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
-	void get_node_list(List<StringName> *r_list);
+	LocalVector<StringName> get_node_list() const;
 
 	void set_graph_offset(const Vector2 &p_graph_offset);
 	Vector2 get_graph_offset() const;
