@@ -64,7 +64,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 			if (setplayback.is_valid() && setplay.get() >= 0) {
 				internal->active.set();
-				AudioServer::get_singleton()->start_playback_stream(setplayback, _get_actual_bus(), volume_vector, setplay.get(), internal->pitch_scale);
+				AudioServer::get_singleton()->start_playback_stream(setplayback, _get_actual_bus(), volume_vector, setplay.get(), internal->scheduled_time, internal->pitch_scale);
 				setplayback.unref();
 				setplay.set(-1);
 			}
@@ -231,7 +231,7 @@ float AudioStreamPlayer2D::get_pitch_scale() const {
 	return internal->pitch_scale;
 }
 
-void AudioStreamPlayer2D::play(float p_from_pos) {
+void AudioStreamPlayer2D::_play_internal(double p_from_pos) {
 	Ref<AudioStreamPlayback> stream_playback = internal->play_basic();
 	if (stream_playback.is_null()) {
 		return;
@@ -241,12 +241,26 @@ void AudioStreamPlayer2D::play(float p_from_pos) {
 
 	// Sample handling.
 	if (stream_playback->get_is_sample() && stream_playback->get_sample_playback().is_valid()) {
+		if (internal->scheduled_time > 0) {
+			WARN_PRINT_ED("play_scheduled() does not support samples. Playing immediately.");
+		}
+
 		Ref<AudioSamplePlayback> sample_playback = stream_playback->get_sample_playback();
 		sample_playback->offset = p_from_pos;
 		sample_playback->bus = _get_actual_bus();
 
 		AudioServer::get_singleton()->start_sample_playback(sample_playback);
 	}
+}
+
+void AudioStreamPlayer2D::play(float p_from_pos) {
+	internal->scheduled_time = 0;
+	_play_internal(p_from_pos);
+}
+
+void AudioStreamPlayer2D::play_scheduled(double p_abs_time, double p_from_pos) {
+	internal->scheduled_time = p_abs_time;
+	_play_internal(p_from_pos);
 }
 
 void AudioStreamPlayer2D::seek(float p_seconds) {
@@ -388,6 +402,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer2D::get_pitch_scale);
 
 	ClassDB::bind_method(D_METHOD("play", "from_position"), &AudioStreamPlayer2D::play, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("play_scheduled", "absolute_time", "from_position"), &AudioStreamPlayer2D::play_scheduled, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("seek", "to_position"), &AudioStreamPlayer2D::seek);
 	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayer2D::stop);
 
