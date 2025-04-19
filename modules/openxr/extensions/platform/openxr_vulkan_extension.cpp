@@ -382,7 +382,8 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 				p_width,
 				p_height,
 				1,
-				p_array_size);
+				p_array_size,
+				1);
 
 		texture_rids.push_back(image_rid);
 
@@ -396,7 +397,8 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 					density_images[i].width,
 					density_images[i].height,
 					1,
-					p_array_size);
+					p_array_size,
+					1);
 
 			density_map_rids.push_back(density_map_rid);
 		} else {

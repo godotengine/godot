@@ -159,6 +159,10 @@ RID RenderingDevice::_index_buffer_create_bind_compat_101561(uint32_t p_size_ind
 	return index_buffer_create(p_size_indices, p_format, p_data, p_use_restart_indices, 0);
 }
 
+RID RenderingDevice::_texture_create_from_extension_compat_105570(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers) {
+	return texture_create_from_extension(p_type, p_format, p_samples, p_usage, p_image, p_width, p_height, p_depth, p_layers, 1);
+}
+
 void RenderingDevice::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::_shader_create_from_bytecode_bind_compat_79606);
 
@@ -187,6 +191,8 @@ void RenderingDevice::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("storage_buffer_create", "size_bytes", "data", "usage"), &RenderingDevice::_storage_buffer_create_bind_compat_101561, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
 	ClassDB::bind_compatibility_method(D_METHOD("vertex_buffer_create", "size_bytes", "data", "use_as_storage"), &RenderingDevice::_vertex_buffer_create_bind_compat_101561, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices"), &RenderingDevice::_index_buffer_create_bind_compat_101561, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
+
+	ClassDB::bind_compatibility_method(D_METHOD("texture_create_from_extension", "type", "format", "samples", "usage_flags", "image", "width", "height", "depth", "layers"), &RenderingDevice::_texture_create_from_extension_compat_105570);
 }
 
 #endif
