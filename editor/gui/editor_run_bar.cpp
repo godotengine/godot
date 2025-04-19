@@ -222,7 +222,6 @@ void EditorRunBar::_update_movie_file_path(const String &p_new_text) {
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "editor/movie_writer/movie_file", GLOBAL_GET("editor/movie_writer/movie_file"));
 	undo_redo->add_undo_property(movie_filepath_select->get_edit(), "text", GLOBAL_GET("editor/movie_writer/movie_file"));
 	undo_redo->commit_action();
-	// TODO: Update LineEdit when undo or redo is done
 }
 
 Vector<String> EditorRunBar::_get_xr_mode_play_args(int p_xr_mode_id) {
@@ -749,7 +748,7 @@ EditorRunBar::EditorRunBar() {
 
 	movie_popup_path_label = memnew(Label);
 	movie_popup_path_container->add_child(movie_popup_path_label);
-	movie_popup_path_label->set_text("Output path");
+	movie_popup_path_label->set_text("Movie output path");
 
 	// NOTE: Use EditorPropertyPath as reference.
 	movie_filepath_select = memnew(EditorFilepathSelect);
@@ -765,5 +764,6 @@ EditorRunBar::EditorRunBar() {
 			movie_filepath_select->get_dialog()->add_filter(e);
 		}
 	}
+
 	movie_popup->hide();
 }
