@@ -142,6 +142,13 @@ private:
 
 	bool do_autoscroll_to_bottom = false;
 
+	void _scroll_changed(double);
+	void _shape_text(int p_idx);
+	void _mouse_exited();
+
+	String _atr(int p_idx, const String &p_text) const;
+
+protected:
 	struct ThemeCache {
 		int h_separation = 0;
 		int v_separation = 0;
@@ -170,13 +177,6 @@ private:
 		Color guide_color;
 	} theme_cache;
 
-	void _scroll_changed(double);
-	void _shape_text(int p_idx);
-	void _mouse_exited();
-
-	String _atr(int p_idx, const String &p_text) const;
-
-protected:
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }

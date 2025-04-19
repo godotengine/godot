@@ -114,23 +114,27 @@ bool FileSystemList::edit_selected() {
 		case ItemList::ICON_MODE_LEFT:
 			rect = get_item_rect(s, true);
 			ofs = Vector2(0, Math::floor((MAX(line_editor->get_minimum_size().height, rect.size.height) - rect.size.height) / 2));
-			popup_rect.position = get_screen_position() + rect.position - ofs;
+			popup_rect.position = rect.position - ofs;
 			popup_rect.size = rect.size;
 
 			// Adjust for icon position and size.
-			popup_rect.size.x -= icon_size.x;
-			popup_rect.position.x += icon_size.x;
+			popup_rect.size.x -= MAX(theme_cache.h_separation, 0) / 2 + icon_size.x;
+			popup_rect.position.x += MAX(theme_cache.h_separation, 0) / 2 + icon_size.x;
 			break;
 		case ItemList::ICON_MODE_TOP:
 			rect = get_item_rect(s, false);
-			popup_rect.position = get_screen_position() + rect.position;
+			popup_rect.position = rect.position;
 			popup_rect.size = rect.size;
 
 			// Adjust for icon position and size.
-			popup_rect.size.y -= icon_size.y;
-			popup_rect.position.y += icon_size.y;
+			popup_rect.size.y -= MAX(theme_cache.v_separation, 0) / 2 + theme_cache.icon_margin + icon_size.y;
+			popup_rect.position.y += MAX(theme_cache.v_separation, 0) / 2 + theme_cache.icon_margin + icon_size.y;
 			break;
 	}
+	if (is_layout_rtl()) {
+		popup_rect.position.x = get_size().width - popup_rect.position.x - popup_rect.size.x;
+	}
+	popup_rect.position += get_screen_position();
 
 	popup_editor->set_position(popup_rect.position);
 	popup_editor->set_size(popup_rect.size);
