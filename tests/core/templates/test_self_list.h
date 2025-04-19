@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  hash_map.cpp                                                          */
+/*  test_self_list.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,16 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "hash_map.h"
+#pragma once
 
-#include "core/variant/variant.h"
+#include "core/templates/self_list.h"
 
-bool _hashmap_variant_less_than(const Variant &p_left, const Variant &p_right) {
-	bool valid = false;
-	Variant res;
-	Variant::evaluate(Variant::OP_LESS, p_left, p_right, res, valid);
-	if (!valid) {
-		res = false;
+#include "tests/test_macros.h"
+
+namespace TestSelfList {
+
+TEST_CASE("[SelfList] Sort") {
+	const int SIZE = 5;
+	int numbers[SIZE]{ 3, 2, 5, 1, 4 };
+	SelfList<int> elements[SIZE]{
+		SelfList<int>(&numbers[0]),
+		SelfList<int>(&numbers[1]),
+		SelfList<int>(&numbers[2]),
+		SelfList<int>(&numbers[3]),
+		SelfList<int>(&numbers[4]),
+	};
+
+	SelfList<int>::List list;
+	for (int i = 0; i < SIZE; i++) {
+		list.add_last(&elements[i]);
 	}
-	return res;
+
+	SelfList<int> *it = list.first();
+	for (int i = 0; i < SIZE; i++) {
+		CHECK_EQ(numbers[i], *it->self());
+		it = it->next();
+	}
+
+	list.sort();
+	it = list.first();
+	for (int i = 1; i <= SIZE; i++) {
+		CHECK_EQ(i, *it->self());
+		it = it->next();
+	}
+
+	for (SelfList<int> &element : elements) {
+		element.remove_from_list();
+	}
 }
+} // namespace TestSelfList
