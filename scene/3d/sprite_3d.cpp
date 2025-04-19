@@ -773,7 +773,7 @@ void Sprite3D::_draw() {
 	bool texture_repeat;
 	if (region) {
 		base_rect = region_rect;
-		texture_repeat = (region_rect.size.x > texture->get_width()) || (region_rect.size.y > texture->get_height());
+		texture_repeat = !Rect2(Vector2(), tsize).encloses(region_rect.abs());
 	} else {
 		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
 		texture_repeat = false;
