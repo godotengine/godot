@@ -82,6 +82,8 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 
 		Array meshes = p_value;
 
+		const RID scenario = get_world_3d()->get_scenario();
+
 		for (int i = 0; i < meshes.size(); i++) {
 			BakedMesh bm;
 			bm.mesh = meshes[i];
@@ -90,7 +92,7 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 			RS::get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
 			RS::get_singleton()->instance_attach_object_instance_id(bm.instance, get_instance_id());
 			if (is_inside_tree()) {
-				RS::get_singleton()->instance_set_scenario(bm.instance, get_world_3d()->get_scenario());
+				RS::get_singleton()->instance_set_scenario(bm.instance, scenario);
 				RS::get_singleton()->instance_set_transform(bm.instance, get_global_transform());
 			}
 			baked_meshes.push_back(bm);
@@ -621,6 +623,18 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 	HashMap<int, List<Pair<Transform3D, IndexKey>>> multimesh_items;
 
+	RID scenario;
+#ifndef NAVIGATION_3D_DISABLED
+	RID navigation_map;
+#endif
+
+	if (is_inside_tree()) {
+		scenario = get_world_3d()->get_scenario();
+#ifndef NAVIGATION_3D_DISABLED
+		navigation_map = get_world_3d()->get_navigation_map();
+#endif
+	}
+
 	for (const IndexKey &E : g.cells) {
 		ERR_CONTINUE(!cell_map.has(E));
 		const Cell &c = cell_map[E];
@@ -683,7 +697,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 					if (map_override.is_valid()) {
 						NavigationServer3D::get_singleton()->region_set_map(region, map_override);
 					} else {
-						NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
+						NavigationServer3D::get_singleton()->region_set_map(region, navigation_map);
 					}
 				}
 				nm.region = region;
@@ -698,7 +712,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 						RS::get_singleton()->instance_set_base(nm.navigation_mesh_debug_instance, navigation_mesh_debug_rid);
 					}
 					if (is_inside_tree()) {
-						RS::get_singleton()->instance_set_scenario(nm.navigation_mesh_debug_instance, get_world_3d()->get_scenario());
+						RS::get_singleton()->instance_set_scenario(nm.navigation_mesh_debug_instance, scenario);
 						RS::get_singleton()->instance_set_transform(nm.navigation_mesh_debug_instance, get_global_transform() * nm.xform);
 					}
 				}
@@ -743,7 +757,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			RS::get_singleton()->instance_set_base(instance, mm);
 
 			if (is_inside_tree()) {
-				RS::get_singleton()->instance_set_scenario(instance, get_world_3d()->get_scenario());
+				RS::get_singleton()->instance_set_scenario(instance, scenario);
 				RS::get_singleton()->instance_set_transform(instance, get_global_transform());
 			}
 
@@ -802,22 +816,27 @@ void GridMap::_update_physics_bodies_characteristics() {
 void GridMap::_octant_enter_world(const OctantKey &p_key) {
 	ERR_FAIL_COND(!octant_map.has(p_key));
 	Octant &g = *octant_map[p_key];
+
+	const RID scenario = get_world_3d()->get_scenario();
+
 #ifndef PHYSICS_3D_DISABLED
 	PhysicsServer3D::get_singleton()->body_set_state(g.static_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
 	PhysicsServer3D::get_singleton()->body_set_space(g.static_body, get_world_3d()->get_space());
 
 	if (g.collision_debug_instance.is_valid()) {
-		RS::get_singleton()->instance_set_scenario(g.collision_debug_instance, get_world_3d()->get_scenario());
+		RS::get_singleton()->instance_set_scenario(g.collision_debug_instance, scenario);
 		RS::get_singleton()->instance_set_transform(g.collision_debug_instance, get_global_transform());
 	}
 #endif // PHYSICS_3D_DISABLED
 
 	for (int i = 0; i < g.multimesh_instances.size(); i++) {
-		RS::get_singleton()->instance_set_scenario(g.multimesh_instances[i].instance, get_world_3d()->get_scenario());
+		RS::get_singleton()->instance_set_scenario(g.multimesh_instances[i].instance, scenario);
 		RS::get_singleton()->instance_set_transform(g.multimesh_instances[i].instance, get_global_transform());
 	}
 
 #ifndef NAVIGATION_3D_DISABLED
+	const RID navigation_map = get_world_3d()->get_navigation_map();
+
 	if (bake_navigation && mesh_library.is_valid()) {
 		for (KeyValue<IndexKey, Octant::NavigationCell> &F : g.navigation_cell_ids) {
 			if (cell_map.has(F.key) && F.value.region.is_valid() == false) {
@@ -831,7 +850,7 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 					if (map_override.is_valid()) {
 						NavigationServer3D::get_singleton()->region_set_map(region, map_override);
 					} else {
-						NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
+						NavigationServer3D::get_singleton()->region_set_map(region, navigation_map);
 					}
 
 					F.value.region = region;
