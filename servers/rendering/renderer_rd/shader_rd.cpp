@@ -748,10 +748,8 @@ void ShaderRD::enable_group(int p_group) {
 	group_enabled.write[p_group] = true;
 
 	// Compile all versions again to include the new group.
-	List<RID> all_versions;
-	version_owner.get_owned_list(&all_versions);
-	for (const RID &E : all_versions) {
-		Version *version = version_owner.get_or_null(E);
+	for (const RID &version_rid : version_owner.get_owned_list()) {
+		Version *version = version_owner.get_or_null(version_rid);
 		version->mutex->lock();
 		_compile_version_start(version, p_group);
 		version->mutex->unlock();
@@ -907,13 +905,11 @@ bool ShaderRD::shader_cache_save_compressed_zstd = true;
 bool ShaderRD::shader_cache_save_debug = true;
 
 ShaderRD::~ShaderRD() {
-	List<RID> remaining;
-	version_owner.get_owned_list(&remaining);
+	LocalVector<RID> remaining = version_owner.get_owned_list();
 	if (remaining.size()) {
 		ERR_PRINT(itos(remaining.size()) + " shaders of type " + name + " were never freed");
-		while (remaining.size()) {
-			version_free(remaining.front()->get());
-			remaining.pop_front();
+		for (const RID &version_rid : remaining) {
+			version_free(version_rid);
 		}
 	}
 }

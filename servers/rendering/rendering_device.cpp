@@ -6946,21 +6946,20 @@ void RenderingDevice::_save_pipeline_cache(void *p_data) {
 
 template <typename T>
 void RenderingDevice::_free_rids(T &p_owner, const char *p_type) {
-	List<RID> owned;
-	p_owner.get_owned_list(&owned);
+	LocalVector<RID> owned = p_owner.get_owned_list();
 	if (owned.size()) {
 		if (owned.size() == 1) {
 			WARN_PRINT(vformat("1 RID of type \"%s\" was leaked.", p_type));
 		} else {
 			WARN_PRINT(vformat("%d RIDs of type \"%s\" were leaked.", owned.size(), p_type));
 		}
-		for (const RID &E : owned) {
+		for (const RID &rid : owned) {
 #ifdef DEV_ENABLED
-			if (resource_names.has(E)) {
-				print_line(String(" - ") + resource_names[E]);
+			if (resource_names.has(rid)) {
+				print_line(String(" - ") + resource_names[rid]);
 			}
 #endif
-			free(E);
+			free(rid);
 		}
 	}
 }
@@ -7157,36 +7156,35 @@ void RenderingDevice::finalize() {
 	_free_rids(sampler_owner, "Sampler");
 	{
 		// For textures it's a bit more difficult because they may be shared.
-		List<RID> owned;
-		texture_owner.get_owned_list(&owned);
+		LocalVector<RID> owned = texture_owner.get_owned_list();
 		if (owned.size()) {
 			if (owned.size() == 1) {
 				WARN_PRINT("1 RID of type \"Texture\" was leaked.");
 			} else {
 				WARN_PRINT(vformat("%d RIDs of type \"Texture\" were leaked.", owned.size()));
 			}
+			LocalVector<RID> owned_non_shared;
 			// Free shared first.
-			for (List<RID>::Element *E = owned.front(); E;) {
-				List<RID>::Element *N = E->next();
-				if (texture_is_shared(E->get())) {
+			for (const RID &texture_rid : owned) {
+				if (texture_is_shared(texture_rid)) {
 #ifdef DEV_ENABLED
-					if (resource_names.has(E->get())) {
-						print_line(String(" - ") + resource_names[E->get()]);
+					if (resource_names.has(texture_rid)) {
+						print_line(String(" - ") + resource_names[texture_rid]);
 					}
 #endif
-					free(E->get());
-					owned.erase(E);
+					free(texture_rid);
+				} else {
+					owned_non_shared.push_back(texture_rid);
 				}
-				E = N;
 			}
 			// Free non shared second, this will avoid an error trying to free unexisting textures due to dependencies.
-			for (const RID &E : owned) {
+			for (const RID &texture_rid : owned_non_shared) {
 #ifdef DEV_ENABLED
-				if (resource_names.has(E)) {
-					print_line(String(" - ") + resource_names[E]);
+				if (resource_names.has(texture_rid)) {
+					print_line(String(" - ") + resource_names[texture_rid]);
 				}
 #endif
-				free(E);
+				free(texture_rid);
 			}
 		}
 	}
