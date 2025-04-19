@@ -139,8 +139,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 
 	animations.clear();
 
-	List<StringName> nodes;
-	blend_tree->get_node_list(&nodes);
+	LocalVector<StringName> nodes = blend_tree->get_node_list();
 
 	for (const StringName &E : nodes) {
 		GraphNode *node = memnew(GraphNode);
