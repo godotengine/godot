@@ -433,6 +433,10 @@
 		<member name="emulate_touch_from_mouse" type="bool" setter="set_emulate_touch_from_mouse" getter="is_emulating_touch_from_mouse">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse. See also [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
 		</member>
+		<member name="gamepad_enabled" type="bool" setter="set_gamepad_enabled" getter="is_gamepad_enabled">
+			If [code]true[/code], enables gamepad input events and allows the use of gamepad-related functions such as [method Input.is_joy_button_pressed], [method Input.get_joy_axis], [method Input.start_joy_vibration], and [method Input.stop_joy_vibration].
+			See also [member ProjectSettings.input_devices/controller/gamepad_enabled].
+		</member>
 		<member name="mouse_mode" type="int" setter="set_mouse_mode" getter="get_mouse_mode" enum="Input.MouseMode">
 			Controls the mouse mode. See [enum MouseMode] for more information.
 		</member>
