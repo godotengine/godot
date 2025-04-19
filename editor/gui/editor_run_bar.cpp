@@ -183,11 +183,8 @@ void EditorRunBar::_movie_dropdown_toggled(bool p_enabled) {
 		Variant current_path_variant = ProjectSettings::get_singleton()->get("editor/movie_writer/movie_file");
 		String current_path = current_path_variant;
 		movie_filepath_select->get_edit()->set_text(current_path);
-
-		print_line("Show Movie Maker settings dropdown");
 		movie_popup->show();
 	} else {
-		print_line("Hide Movie Maker settings dropdown");
 		movie_popup->hide();
 	}
 }
@@ -744,5 +741,13 @@ EditorRunBar::EditorRunBar() {
 	movie_popup_parts_container->add_child(movie_filepath_select);
 	movie_filepath_select->get_edit()->connect("text_submitted", callable_mp(this, &EditorRunBar::_movie_popup_path_edit_text_submitted));
 
+	String extensions_string = ProjectSettings::get_singleton()->get_custom_property_info().get(StringName("editor/movie_writer/movie_file")).hint_string;
+	Vector<String> extensions = extensions_string.split(",");
+	for (int i = 0; i < extensions.size(); i++) {
+		String e = extensions[i].strip_edges();
+		if (!e.is_empty()) {
+			movie_filepath_select->get_dialog()->add_filter(e);
+		}
+	}
 	movie_popup->hide();
 }

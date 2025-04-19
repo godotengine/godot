@@ -49,5 +49,6 @@ class EditorFilepathSelect : public HBoxContainer {
 
 public:
 	LineEdit *get_edit() { return edit; }
+	EditorFileDialog *get_dialog() { return dialog; }
 	EditorFilepathSelect();
 };

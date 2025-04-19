@@ -38,14 +38,7 @@ void EditorFilepathSelect::_notification(int p_what) {
 	}
 }
 void EditorFilepathSelect::_path_pressed() {
-	if (!dialog) {
-		dialog = memnew(EditorFileDialog);
-		dialog->connect("file_selected", callable_mp(this, &EditorFilepathSelect::_dialog_path_selected));
-		add_child(dialog);
-	}
-
 	String full_path = edit->get_text();
-	dialog->clear_filters();
 
 	dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
@@ -70,4 +63,8 @@ EditorFilepathSelect::EditorFilepathSelect() {
 	add_child(browse_button);
 	browse_button->set_clip_text(true);
 	browse_button->connect(SceneStringName(pressed), callable_mp(this, &EditorFilepathSelect::_path_pressed));
+
+	dialog = memnew(EditorFileDialog);
+	dialog->connect("file_selected", callable_mp(this, &EditorFilepathSelect::_dialog_path_selected));
+	add_child(dialog);
 }
