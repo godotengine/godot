@@ -106,6 +106,7 @@
 #include "tests/core/templates/test_oa_hash_map.h"
 #include "tests/core/templates/test_paged_array.h"
 #include "tests/core/templates/test_rid.h"
+#include "tests/core/templates/test_self_list.h"
 #include "tests/core/templates/test_span.h"
 #include "tests/core/templates/test_vector.h"
 #include "tests/core/templates/test_vset.h"
