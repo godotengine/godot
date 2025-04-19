@@ -108,10 +108,14 @@ def redirect_emitter(target, source, env):
 
 def disable_warnings(self):
     # 'self' is the environment
-    if self.msvc and not using_clang(self):
-        self["WARNLEVEL"] = "/w"
-    else:
-        self["WARNLEVEL"] = "-w"
+    MSVC_SYNTAX = self.msvc and not using_clang(self)
+    PREFIXES = ("/W", "/w") if MSVC_SYNTAX else ("-W", "-w")
+    EXCLUDES = ("/w", "/wd4267") if MSVC_SYNTAX else ("-w")
+    self["WARNLEVEL"] = "/w" if MSVC_SYNTAX else "-w"
+    for identifier in ["CCFLAGS", "CXXFLAGS", "CFLAGS"]:
+        for item in self.Split(self[identifier]):
+            if item.startswith(PREFIXES) and item not in EXCLUDES:
+                self[identifier].remove(item)
 
 
 def force_optimization_on_debug(self):

@@ -213,7 +213,9 @@ opts.Add(
 )
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
 opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
-opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
+opts.Add(
+    EnumVariable("warnings", "Level of compilation warnings", "all", ("everything", "extra", "all", "moderate", "no"))
+)
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
@@ -854,7 +856,43 @@ if env.msvc and not methods.using_clang(env):  # MSVC
         "/wd4820",  # C4820 (padding added after construct)
     ]
 
-    if env["warnings"] == "extra":
+    if env["warnings"] == "everything":
+        # TODO: Determine which of these warnings should be addressed, if any.
+        disabled_warnings += [
+            "/wd4061",  # Enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label.
+            "/wd4062",  # Enumerator 'identifier' in switch of enum 'enumeration' is not handled.
+            "/wd4191",  # 'operation': unsafe conversion from 'type_of_expression' to 'type_required'.
+            "/wd4242",  # 'identifier': conversion from 'type1' to 'type2', possible loss of data.
+            "/wd4255",  # 'function' : no function prototype given: converting '()' to '(void)'.
+            "/wd4266",  # 'function' : no override available for virtual member function from base 'type'; function is hidden.
+            "/wd4296",  # 'operator' : expression is always false.
+            "/wd4355",  # 'this': used in base member initializer list.
+            "/wd4365",  # 'expression': conversion from 'type' to 'type', signed/unsigned mismatch.
+            "/wd4464",  # Relative include path contains '..'.
+            "/wd4577",  # 'noexcept' used with no exception handling mode specified; termination on exception is not guaranteed. Specify /EHsc.
+            "/wd4582",  # 'type': constructor is not implicitly called.
+            "/wd4619",  # #pragma warning: there is no warning number 'number'.
+            "/wd4623",  # 'type': default constructor was implicitly defined as deleted.
+            "/wd4625",  # 'type': copy constructor was implicitly defined as deleted.
+            "/wd4626",  # 'type': move constructor was implicitly defined as deleted.
+            "/wd4668",  # 'symbol' is not defined as a preprocessor macro, replacing with '0' for 'directives'.
+            "/wd4774",  # 'string' : format string expected in argument number is not a string literal.
+            "/wd4777",  # 'description' : format string 'string' requires an argument of type 'type', but variadic argument number has type 'type'.
+            "/wd4800",  # Implicit conversion from 'type' to bool. Possible information loss.
+            "/wd4866",  # 'file(line_number)' compiler may not enforce left-to-right evaluation order for call to 'operator_name'.
+            "/wd4868",  # 'file(line_number)' compiler may not enforce left-to-right evaluation order in braced initializer list.
+            "/wd4946",  # `reinterpret_cast` used between related classes: 'class1' and 'class2'.
+            "/wd5026",  # 'type': assignment operator was implicitly defined as deleted.
+            "/wd5027",  # 'type': move assignment operator was implicitly defined as deleted.
+            "/wd5045",  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified.
+            "/wd5219",  # Implicit conversion from 'type-1' to 'type-2', possible loss of data.
+            "/wd5246",  # 'member': the initialization of a subobject should be wrapped in braces.
+            "/wd5262",  # Implicit fall-through occurs here; are you missing a break statement? Use `[[fallthrough]]`` when a `break` statement is intentionally omitted between cases.
+            "/wd5267",  # Definition of implicit copy constructor/assignment operator for 'type' is deprecated because it has a user-provided assignment operator/copy constructor.
+        ]
+        env["WARNLEVEL"] = "/Wall"
+        env.AppendUnique(CCFLAGS=disabled_warnings)
+    elif env["warnings"] == "extra":
         env["WARNLEVEL"] = "/W4"
         env.AppendUnique(CCFLAGS=disabled_warnings)
     elif env["warnings"] == "all":
@@ -877,6 +915,9 @@ else:  # GCC, Clang
     common_warnings = []
 
     if methods.using_gcc(env):
+        if env["warnings"] == "everything":
+            print_warning("GCC lacks the ability to enable all warnings by design; falling back to `warnings=extra`.")
+            env["warnings"] = "extra"
         common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
         if cc_version_major < 11:
             # Regression in GCC 9/10, spams so much in our variadic templates
@@ -893,24 +934,93 @@ else:  # GCC, Clang
     # clang-cl will interpret `-Wall` as `-Weverything`, workaround with compatibility cast.
     env["WARNLEVEL"] = "-Wall" if not env.msvc else "-W3"
 
-    if env["warnings"] == "extra":
+    if env["warnings"] == "everything":
+        # TODO: Determine which of these warnings should be addressed, if any.
+        common_warnings += [
+            "-Wno-anon-enum-enum-conversion",
+            "-Wno-bitfield-enum-conversion",
+            "-Wno-c++20-extensions",
+            "-Wno-c++98-compat-pedantic",
+            "-Wno-cast-align",
+            "-Wno-cast-function-type-strict",
+            "-Wno-cast-qual",
+            "-Wno-comma",
+            "-Wno-conditional-uninitialized",
+            "-Wno-covered-switch-default",
+            "-Wno-ctad-maybe-unsupported",
+            "-Wno-deprecated-copy-with-user-provided-dtor",
+            "-Wno-deprecated-dynamic-exception-spec",
+            "-Wno-disabled-macro-expansion",
+            "-Wno-documentation-unknown-command",
+            "-Wno-documentation",
+            "-Wno-double-promotion",
+            "-Wno-duplicate-enum",
+            "-Wno-enum-float-conversion",
+            "-Wno-exit-time-destructors",
+            "-Wno-extra-semi-stmt",
+            "-Wno-extra-semi",
+            "-Wno-float-conversion",
+            "-Wno-float-equal",
+            "-Wno-format-nonliteral",
+            "-Wno-format",
+            "-Wno-global-constructors",
+            "-Wno-gnu-anonymous-struct",
+            "-Wno-gnu-label-as-value",
+            "-Wno-header-hygiene",
+            "-Wno-implicit-float-conversion",
+            "-Wno-implicit-int-conversion",
+            "-Wno-inconsistent-missing-destructor-override",
+            "-Wno-language-extension-token",
+            "-Wno-main",
+            "-Wno-microsoft-enum-value",
+            "-Wno-missing-prototypes",
+            "-Wno-missing-variable-declarations",
+            "-Wno-nested-anon-types",
+            "-Wno-nonportable-system-include-path",
+            "-Wno-nullability-extension",
+            "-Wno-old-style-cast",
+            "-Wno-overlength-strings",
+            "-Wno-redundant-parens",
+            "-Wno-reserved-identifier",
+            "-Wno-shadow-field",
+            "-Wno-shadow",
+            "-Wno-shift-sign-overflow",
+            "-Wno-sign-conversion",
+            "-Wno-signed-enum-bitfield",
+            "-Wno-string-conversion",
+            "-Wno-suggest-destructor-override",
+            "-Wno-suggest-override",
+            "-Wno-switch-default",
+            "-Wno-switch-enum",
+            "-Wno-tautological-type-limit-compare",
+            "-Wno-undef",
+            "-Wno-undefined-func-template",
+            "-Wno-undefined-reinterpret-cast",
+            "-Wno-unreachable-code-break",
+            "-Wno-unreachable-code-return",
+            "-Wno-unreachable-code",
+            "-Wno-unsafe-buffer-usage",
+            "-Wno-unused-macros",
+            "-Wno-unused-parameter",
+            "-Wno-unused-template",
+            "-Wno-zero-as-null-pointer-constant",
+        ]
+        env["WARNLEVEL"] = "-Weverything"
+        env.AppendUnique(CCFLAGS=common_warnings)
+    elif env["warnings"] == "extra":
         env.AppendUnique(CCFLAGS=["-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
         env.AppendUnique(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
         if methods.using_gcc(env):
             env.AppendUnique(
                 CCFLAGS=[
                     "-Walloc-zero",
+                    "-Wattribute-alias=2",
                     "-Wduplicated-branches",
                     "-Wduplicated-cond",
                     "-Wstringop-overflow=4",
                 ]
             )
             env.AppendUnique(CXXFLAGS=["-Wplacement-new=1", "-Wvirtual-inheritance"])
-            # Need to fix a warning with AudioServer lambdas before enabling.
-            # if cc_version_major != 9:  # GCC 9 had a regression (GH-36325).
-            #    env.Append(CXXFLAGS=["-Wnoexcept"])
-            if cc_version_major >= 9:
-                env.AppendUnique(CCFLAGS=["-Wattribute-alias=2"])
             if cc_version_major >= 11:  # Broke on MethodBind templates before GCC 11.
                 env.AppendUnique(CCFLAGS=["-Wlogical-op"])
         elif methods.using_clang(env) or methods.using_emcc(env):
