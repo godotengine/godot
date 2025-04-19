@@ -126,10 +126,19 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	float sector_step = (Math::PI * 2.0) / sector_count;
 	float stack_step = Math::PI / stack_count;
 
-	Vector<Vector3> vertices;
-	Vector<Color> colors;
-	Vector<int> indices;
+	LocalVector<Vector3> vertices;
+	LocalVector<Color> colors;
+	LocalVector<int> indices;
 	float radius = 0.3;
+
+	// L2 Spherical Harmonics evaluation and diffuse convolution coefficients.
+	const float sh_coeffs[5] = {
+		static_cast<float>(sqrt(1.0 / (4.0 * Math::PI)) * Math::PI),
+		static_cast<float>(sqrt(3.0 / (4.0 * Math::PI)) * Math::PI * 2.0 / 3.0),
+		static_cast<float>(sqrt(15.0 / (4.0 * Math::PI)) * Math::PI * 1.0 / 4.0),
+		static_cast<float>(sqrt(5.0 / (16.0 * Math::PI)) * Math::PI * 1.0 / 4.0),
+		static_cast<float>(sqrt(15.0 / (16.0 * Math::PI)) * Math::PI * 1.0 / 4.0)
+	};
 
 	for (int p = 0; p < points.size(); p++) {
 		int vertex_base = vertices.size();
@@ -158,21 +167,15 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				vertices.push_back(points[p] + n);
 				n.normalize();
 
-				const float c1 = 0.429043;
-				const float c2 = 0.511664;
-				const float c3 = 0.743125;
-				const float c4 = 0.886227;
-				const float c5 = 0.247708;
-				Vector3 light = (c1 * sh_col[8] * (n.x * n.x - n.y * n.y) +
-						c3 * sh_col[6] * n.z * n.z +
-						c4 * sh_col[0] -
-						c5 * sh_col[6] +
-						2.0 * c1 * sh_col[4] * n.x * n.y +
-						2.0 * c1 * sh_col[7] * n.x * n.z +
-						2.0 * c1 * sh_col[5] * n.y * n.z +
-						2.0 * c2 * sh_col[3] * n.x +
-						2.0 * c2 * sh_col[1] * n.y +
-						2.0 * c2 * sh_col[2] * n.z);
+				const Vector3 light = (sh_coeffs[0] * sh_col[0] +
+						sh_coeffs[1] * sh_col[1] * n.y +
+						sh_coeffs[1] * sh_col[2] * n.z +
+						sh_coeffs[1] * sh_col[3] * n.x +
+						sh_coeffs[2] * sh_col[4] * n.x * n.y +
+						sh_coeffs[2] * sh_col[5] * n.y * n.z +
+						sh_coeffs[3] * sh_col[6] * (3.0 * n.z * n.z - 1.0) +
+						sh_coeffs[2] * sh_col[7] * n.x * n.z +
+						sh_coeffs[4] * sh_col[8] * (n.x * n.x - n.y * n.y));
 
 				colors.push_back(Color(light.x, light.y, light.z, 1));
 			}
@@ -203,9 +206,9 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Array array;
 	array.resize(RS::ARRAY_MAX);
-	array[RS::ARRAY_VERTEX] = vertices;
-	array[RS::ARRAY_INDEX] = indices;
-	array[RS::ARRAY_COLOR] = colors;
+	array[RS::ARRAY_VERTEX] = Vector<Vector3>(vertices);
+	array[RS::ARRAY_INDEX] = Vector<int>(indices);
+	array[RS::ARRAY_COLOR] = Vector<Color>(colors);
 
 	Ref<ArrayMesh> mesh;
 	mesh.instantiate();
