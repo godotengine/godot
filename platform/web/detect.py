@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from emscripten_helpers import (
     add_js_externs,
     add_js_libraries,
+    add_js_post,
     add_js_pre,
     create_engine_file,
     create_template_zip,
@@ -169,12 +170,14 @@ def configure(env: "SConsEnvironment"):
         jscc = env.Builder(generator=run_closure_compiler, suffix=".cc.js", src_suffix=".js")
         env.Append(BUILDERS={"BuildJS": jscc})
 
-    # Add helper method for adding libraries, externs, pre-js.
+    # Add helper method for adding libraries, externs, pre-js, post-js.
     env["JS_LIBS"] = []
     env["JS_PRE"] = []
+    env["JS_POST"] = []
     env["JS_EXTERNS"] = []
     env.AddMethod(add_js_libraries, "AddJSLibraries")
     env.AddMethod(add_js_pre, "AddJSPre")
+    env.AddMethod(add_js_post, "AddJSPost")
     env.AddMethod(add_js_externs, "AddJSExterns")
 
     # Add method that joins/compiles our Engine files.

@@ -54,6 +54,12 @@ sys_env.AddJSExterns(
     ]
 )
 
+sys_env.AddJSPost(
+    [
+        "js/patches/patch_em_gl.js",
+    ]
+)
+
 if env["javascript_eval"]:
     sys_env.AddJSLibraries(["js/libs/library_godot_javascript_singleton.js"])
 
@@ -61,6 +67,8 @@ for lib in sys_env["JS_LIBS"]:
     sys_env.Append(LINKFLAGS=["--js-library", lib.abspath])
 for js in sys_env["JS_PRE"]:
     sys_env.Append(LINKFLAGS=["--pre-js", js.abspath])
+for js in sys_env["JS_POST"]:
+    sys_env.Append(LINKFLAGS=["--post-js", js.abspath])
 
 # Add JS externs to Closure.
 sys_env["ENV"]["EMCC_CLOSURE_ARGS"] = sys_env["ENV"].get("EMCC_CLOSURE_ARGS", "")
@@ -98,6 +106,7 @@ else:
 
 sys_env.Depends(build[0], sys_env["JS_LIBS"])
 sys_env.Depends(build[0], sys_env["JS_PRE"])
+sys_env.Depends(build[0], sys_env["JS_POST"])
 sys_env.Depends(build[0], sys_env["JS_EXTERNS"])
 
 engine = [
