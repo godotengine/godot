@@ -178,16 +178,7 @@ void EditorRunBar::_movie_dropdown_toggled(bool p_enabled) {
 		pos.x -= movie_popup->get_size().x - movie_dropdown_button->get_size().x;
 		pos.y += movie_dropdown_button->get_size().y;
 		movie_popup->set_position(pos);
-
-		// Populate the field with the current Movie Maker path.
-		Variant current_path_variant = ProjectSettings::get_singleton()->get("editor/movie_writer/movie_file");
-		String current_path = current_path_variant;
-		movie_filepath_select->get_edit()->set_text(current_path);
 		movie_popup->show();
-
-		// Set to true when the LineEdit contents are changed;
-		// tells Godot to actually change the property string.
-		movie_path_was_changed = false;
 	} else {
 		movie_popup->hide();
 	}
@@ -195,33 +186,6 @@ void EditorRunBar::_movie_dropdown_toggled(bool p_enabled) {
 
 void EditorRunBar::_movie_popup_close_requested() {
 	movie_dropdown_button->set_pressed(false);
-	if (movie_path_was_changed) {
-		_update_movie_file_path(movie_filepath_select->get_edit()->get_text());
-	}
-}
-
-void EditorRunBar::_movie_popup_path_edit_focus_exited() {
-	if (movie_path_was_changed) {
-		_update_movie_file_path(movie_filepath_select->get_edit()->get_text());
-	}
-}
-
-void EditorRunBar::_movie_popup_path_edit_text_submitted(const String &p_new_text) {
-	_update_movie_file_path(p_new_text);
-}
-
-void EditorRunBar::_movie_popup_path_edit_text_changed(const String &p_new_text) {
-	movie_path_was_changed = true;
-}
-
-void EditorRunBar::_update_movie_file_path(const String &p_new_text) {
-	// Immediately save the project settings value.
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Set movie_file"));
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), "editor/movie_writer/movie_file", p_new_text);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "editor/movie_writer/movie_file", GLOBAL_GET("editor/movie_writer/movie_file"));
-	undo_redo->add_undo_property(movie_filepath_select->get_edit(), "text", GLOBAL_GET("editor/movie_writer/movie_file"));
-	undo_redo->commit_action();
 }
 
 Vector<String> EditorRunBar::_get_xr_mode_play_args(int p_xr_mode_id) {
@@ -734,36 +698,8 @@ EditorRunBar::EditorRunBar() {
 
 	movie_dropdown_button->connect(SceneStringName(toggled), callable_mp(this, &EditorRunBar::_movie_dropdown_toggled));
 
-	movie_popup = memnew(PopupPanel);
-	movie_popup->set_min_size(Size2i(600.0, 0.0));
-	movie_popup->set_transient(true);
+	movie_popup = memnew(EditorQuickMovieMakerConfig);
 	movie_popup->connect("close_requested", callable_mp(this, &EditorRunBar::_movie_popup_close_requested));
 	main_hbox->add_child(movie_popup);
-
-	movie_popup_parts_container = memnew(VBoxContainer);
-	movie_popup->add_child(movie_popup_parts_container);
-
-	movie_popup_path_container = memnew(VBoxContainer);
-	movie_popup_parts_container->add_child(movie_popup_path_container);
-
-	movie_popup_path_label = memnew(Label);
-	movie_popup_path_container->add_child(movie_popup_path_label);
-	movie_popup_path_label->set_text("Movie output path");
-
-	// NOTE: Use EditorPropertyPath as reference.
-	movie_filepath_select = memnew(EditorFilepathSelect);
-	movie_popup_parts_container->add_child(movie_filepath_select);
-	movie_filepath_select->get_edit()->connect("text_submitted", callable_mp(this, &EditorRunBar::_movie_popup_path_edit_text_submitted));
-	movie_filepath_select->get_edit()->connect("text_changed", callable_mp(this, &EditorRunBar::_movie_popup_path_edit_text_changed));
-
-	String extensions_string = ProjectSettings::get_singleton()->get_custom_property_info().get(StringName("editor/movie_writer/movie_file")).hint_string;
-	Vector<String> extensions = extensions_string.split(",");
-	for (int i = 0; i < extensions.size(); i++) {
-		String e = extensions[i].strip_edges();
-		if (!e.is_empty()) {
-			movie_filepath_select->get_dialog()->add_filter(e);
-		}
-	}
-
 	movie_popup->hide();
 }
