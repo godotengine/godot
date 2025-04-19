@@ -663,6 +663,13 @@ private:
 	void _scroll_changed(double);
 	int _find_first_line(int p_from, int p_to, int p_vofs) const;
 
+	real_t auto_scroll_speed = 0.5;
+	Vector2 last_projected_mouse_pos;
+	bool is_mouse_in_text_area = false;
+	bool _is_mouse_in_text_area(const Vector2 &p_pos) const;
+	Vector2 _get_projected_mouse_pos(const Vector2 &p_mouse_pos);
+	void _update_selection_from_pointer();
+
 	_FORCE_INLINE_ float _calculate_line_vertical_offset(const Line &line) const;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;

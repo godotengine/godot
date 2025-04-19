@@ -2535,6 +2535,61 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 	return get_default_cursor_shape();
 }
 
+bool RichTextLabel::_is_mouse_in_text_area(const Vector2 &p_pos) const {
+	Size2 size = get_size();
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0)) {
+		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
+	}
+#endif
+
+	if (p_pos.x < 0.0) {
+		return false;
+	}
+	if (p_pos.y < 0.0) {
+		return false;
+	}
+	if (p_pos.x >= size.x) {
+		return false;
+	}
+	if (p_pos.y >= size.y) {
+		return false;
+	}
+	return true;
+}
+
+Vector2 RichTextLabel::_get_projected_mouse_pos(const Vector2 &p_mouse_pos) {
+	Vector2 projected_pos = p_mouse_pos;
+
+	// Handle vertical projection
+	if (p_mouse_pos.y < 0.0) {
+		// Set y to local top
+		projected_pos.y = 0.0;
+	} else if (p_mouse_pos.y > get_size().y) {
+		// Set y to local bottom
+		projected_pos.y = get_size().y;
+	}
+
+	// Handle horizontal projection
+	if (p_mouse_pos.x < 0.0) {
+		// Set x to local left
+		projected_pos.x = 0.0;
+	} else if (p_mouse_pos.x > get_size().x) {
+		// Set x to local right
+		projected_pos.x = get_size().x;
+	}
+
+	return projected_pos;
+}
+
+void RichTextLabel::_update_selection_from_pointer() {
+	Vector2 mouse_pos = get_local_mouse_position();
+	Vector2 projected_pos = _get_projected_mouse_pos(mouse_pos);
+
+	is_mouse_in_text_area = _is_mouse_in_text_area(mouse_pos);
+	last_projected_mouse_pos = projected_pos;
+}
+
 void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -2850,7 +2905,23 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 		int c_index = 0;
 		bool outside;
 
-		_find_click(main, m->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside, false);
+		_update_selection_from_pointer();
+
+		if (!is_mouse_in_text_area) {
+			real_t scroll_delta = 0.0;
+			if (m->get_position().y < 0) {
+				scroll_delta = -auto_scroll_speed * (1 - (m->get_position().y / 15.0));
+			} else if (m->get_position().y > get_size().y) {
+				scroll_delta = auto_scroll_speed * (1 + (m->get_position().y - get_size().y) / 15.0);
+			}
+
+			if (scroll_delta != 0.0) {
+				vscroll->scroll(scroll_delta);
+				queue_redraw();
+			}
+		}
+
+		_find_click(main, last_projected_mouse_pos, &c_frame, &c_line, &c_item, &c_index, &outside, false);
 		if (selection.click_item && c_item) {
 			selection.from_frame = selection.click_frame;
 			selection.from_line = selection.click_line;
