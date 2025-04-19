@@ -38,6 +38,7 @@
 #include "editor/editor_run_native.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_toaster.h"
@@ -109,6 +110,8 @@ void EditorRunBar::_notification(int p_what) {
 			write_movie_button->add_theme_color_override("icon_hover_color", get_theme_color(SNAME("movie_writer_icon_hover"), EditorStringName(EditorStyles)));
 			write_movie_button->add_theme_color_override("icon_hover_pressed_color", get_theme_color(SNAME("movie_writer_icon_hover_pressed"), EditorStringName(EditorStyles)));
 			write_movie_button->end_bulk_theme_override();
+
+			movie_dropdown_button->set_button_icon(get_editor_theme_icon(SNAME("Collapse")));
 		} break;
 	}
 }
@@ -165,6 +168,24 @@ void EditorRunBar::_write_movie_toggled(bool p_enabled) {
 		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
 		write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 	}
+}
+
+void EditorRunBar::_movie_dropdown_toggled(bool p_enabled) {
+	if (p_enabled) {
+		// Calculate the popup position.
+		// It should be centered underneath the button.
+		Point2i pos = movie_dropdown_button->get_screen_position();
+		pos.x -= movie_popup->get_size().x - movie_dropdown_button->get_size().x;
+		pos.y += movie_dropdown_button->get_size().y;
+		movie_popup->set_position(pos);
+		movie_popup->show();
+	} else {
+		movie_popup->hide();
+	}
+}
+
+void EditorRunBar::_movie_popup_close_requested() {
+	movie_dropdown_button->set_pressed(false);
 }
 
 Vector<String> EditorRunBar::_get_xr_mode_play_args(int p_xr_mode_id) {
@@ -653,8 +674,11 @@ EditorRunBar::EditorRunBar() {
 	write_movie_panel = memnew(PanelContainer);
 	main_hbox->add_child(write_movie_panel);
 
+	movie_hbox = memnew(HBoxContainer);
+	write_movie_panel->add_child(movie_hbox);
+
 	write_movie_button = memnew(Button);
-	write_movie_panel->add_child(write_movie_button);
+	movie_hbox->add_child(write_movie_button);
 	write_movie_button->set_theme_type_variation("RunBarButton");
 	write_movie_button->set_toggle_mode(true);
 	write_movie_button->set_pressed(false);
@@ -662,4 +686,18 @@ EditorRunBar::EditorRunBar() {
 	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
 	write_movie_button->set_accessibility_name(TTRC("Enable Movie Maker Mode"));
 	write_movie_button->connect(SceneStringName(toggled), callable_mp(this, &EditorRunBar::_write_movie_toggled));
+
+	movie_dropdown_button = memnew(Button);
+	movie_hbox->add_child(movie_dropdown_button);
+	movie_dropdown_button->set_theme_type_variation("RunBarButton");
+	movie_dropdown_button->set_toggle_mode(true);
+	movie_dropdown_button->set_pressed(false);
+	movie_dropdown_button->set_focus_mode(Control::FOCUS_NONE);
+
+	movie_dropdown_button->connect(SceneStringName(toggled), callable_mp(this, &EditorRunBar::_movie_dropdown_toggled));
+
+	movie_popup = memnew(EditorQuickMovieMakerConfig);
+	movie_popup->connect("close_requested", callable_mp(this, &EditorRunBar::_movie_popup_close_requested));
+	main_hbox->add_child(movie_popup);
+	movie_popup->hide();
 }
