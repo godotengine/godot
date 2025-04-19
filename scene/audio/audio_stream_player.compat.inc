@@ -34,8 +34,23 @@ bool AudioStreamPlayer::_is_autoplay_enabled_bind_compat_86907() {
 	return is_autoplay_enabled();
 }
 
+void AudioStreamPlayer::_play_bind_compat_105545(float p_from_pos) {
+	play(p_from_pos);
+}
+
+void AudioStreamPlayer::_seek_bind_compat_105545(float p_seconds) {
+	seek(p_seconds);
+}
+
+float AudioStreamPlayer::_get_playback_position_bind_compat_105545() {
+	return get_playback_position();
+}
+
 void AudioStreamPlayer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer::_is_autoplay_enabled_bind_compat_86907);
+	ClassDB::bind_compatibility_method(D_METHOD("play", "from_position"), &AudioStreamPlayer::_play_bind_compat_105545, DEFVAL(0.0));
+	ClassDB::bind_compatibility_method(D_METHOD("seek", "to_position"), &AudioStreamPlayer::_seek_bind_compat_105545);
+	ClassDB::bind_compatibility_method(D_METHOD("get_playback_position"), &AudioStreamPlayer::_get_playback_position_bind_compat_105545);
 }
 
 #endif // DISABLE_DEPRECATED
