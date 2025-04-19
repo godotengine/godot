@@ -74,7 +74,7 @@ class GridMapEditor : public VBoxContainer {
 	double accumulated_floor_delta = 0.0;
 
 	HBoxContainer *toolbar = nullptr;
-	List<BaseButton *> viewport_shortcut_buttons;
+	TightLocalVector<BaseButton *> viewport_shortcut_buttons;
 	Ref<ButtonGroup> mode_buttons_group;
 	// mode
 	Button *transform_mode_button = nullptr;
@@ -110,7 +110,7 @@ class GridMapEditor : public VBoxContainer {
 		int old_orientation = 0;
 	};
 
-	List<SetItem> set_items;
+	LocalVector<SetItem> set_items;
 
 	GridMap *node = nullptr;
 	Ref<MeshLibrary> mesh_library = nullptr;
@@ -139,7 +139,7 @@ class GridMapEditor : public VBoxContainer {
 		RID instance;
 	};
 
-	List<ClipboardItem> clipboard_items;
+	LocalVector<ClipboardItem> clipboard_items;
 
 	Color default_color;
 	Color erase_color;
