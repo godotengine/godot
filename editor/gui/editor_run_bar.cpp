@@ -184,30 +184,45 @@ void EditorRunBar::_movie_dropdown_toggled(bool p_enabled) {
 		String current_path = current_path_variant;
 		movie_filepath_select->get_edit()->set_text(current_path);
 		movie_popup->show();
+
+		// Set to true when the LineEdit contents are changed;
+		// tells Godot to actually change the property string.
+		movie_path_was_changed = false;
 	} else {
 		movie_popup->hide();
 	}
 }
 
 void EditorRunBar::_movie_popup_close_requested() {
-	// TODO: Immediately save the project settings value.
 	movie_dropdown_button->set_pressed(false);
+	if (movie_path_was_changed) {
+		_update_movie_file_path(movie_filepath_select->get_edit()->get_text());
+	}
 }
 
 void EditorRunBar::_movie_popup_path_edit_focus_exited() {
-	// TODO: Start (or reset) timer. When timer times out, save the text in the box
-	// to the ProjectSettings.
+	if (movie_path_was_changed) {
+		_update_movie_file_path(movie_filepath_select->get_edit()->get_text());
+	}
 }
 
 void EditorRunBar::_movie_popup_path_edit_text_submitted(const String &p_new_text) {
+	_update_movie_file_path(p_new_text);
+}
+
+void EditorRunBar::_movie_popup_path_edit_text_changed(const String &p_new_text) {
+	movie_path_was_changed = true;
+}
+
+void EditorRunBar::_update_movie_file_path(const String &p_new_text) {
 	// Immediately save the project settings value.
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-
 	undo_redo->create_action(TTR("Set movie_file"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "editor/movie_writer/movie_file", p_new_text);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "editor/movie_writer/movie_file", GLOBAL_GET("editor/movie_writer/movie_file"));
 	undo_redo->add_undo_property(movie_filepath_select->get_edit(), "text", GLOBAL_GET("editor/movie_writer/movie_file"));
 	undo_redo->commit_action();
+	// TODO: Update LineEdit when undo or redo is done
 }
 
 Vector<String> EditorRunBar::_get_xr_mode_play_args(int p_xr_mode_id) {
@@ -740,6 +755,7 @@ EditorRunBar::EditorRunBar() {
 	movie_filepath_select = memnew(EditorFilepathSelect);
 	movie_popup_parts_container->add_child(movie_filepath_select);
 	movie_filepath_select->get_edit()->connect("text_submitted", callable_mp(this, &EditorRunBar::_movie_popup_path_edit_text_submitted));
+	movie_filepath_select->get_edit()->connect("text_changed", callable_mp(this, &EditorRunBar::_movie_popup_path_edit_text_changed));
 
 	String extensions_string = ProjectSettings::get_singleton()->get_custom_property_info().get(StringName("editor/movie_writer/movie_file")).hint_string;
 	Vector<String> extensions = extensions_string.split(",");
