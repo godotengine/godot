@@ -329,11 +329,14 @@ Rect2 ItemList::get_item_rect(int p_idx, bool p_expand) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Rect2());
 
 	Rect2 ret = items[p_idx].rect_cache;
-	ret.position += theme_cache.panel_style->get_offset();
-
 	if (p_expand && p_idx % current_columns == current_columns - 1) {
-		ret.size.width = get_size().width - ret.position.x;
+		int width = get_size().width - theme_cache.panel_style->get_minimum_size().width;
+		if (scroll_bar_v->is_visible()) {
+			width -= scroll_bar_v->get_combined_minimum_size().width;
+		}
+		ret.size.width = width - ret.position.x;
 	}
+	ret.position += theme_cache.panel_style->get_offset();
 	return ret;
 }
 
@@ -1485,9 +1488,7 @@ void ItemList::_notification(int p_what) {
 						icon_size = items[i].get_icon_size() * icon_scale;
 					}
 
-					Vector2 icon_ofs;
-
-					Point2 pos = items[i].rect_cache.position + icon_ofs + base_ofs;
+					Point2 pos = items[i].rect_cache.position + base_ofs;
 
 					if (icon_mode == ICON_MODE_TOP) {
 						pos.y += MAX(theme_cache.v_separation, 0) / 2;
@@ -1540,14 +1541,14 @@ void ItemList::_notification(int p_what) {
 						tag_icon_size = items[i].tag_icon->get_size();
 					}
 
-					Point2 draw_pos = items[i].rect_cache.position;
+					Point2 draw_pos = items[i].rect_cache.position + base_ofs;
 					draw_pos.x += MAX(theme_cache.h_separation, 0) / 2;
 					draw_pos.y += MAX(theme_cache.v_separation, 0) / 2;
 					if (rtl) {
 						draw_pos.x = size.width - draw_pos.x - tag_icon_size.x;
 					}
 
-					draw_texture_rect(items[i].tag_icon, Rect2(draw_pos + base_ofs, tag_icon_size));
+					draw_texture_rect(items[i].tag_icon, Rect2(draw_pos, tag_icon_size));
 				}
 
 				if (!items[i].text.is_empty()) {
@@ -1610,7 +1611,7 @@ void ItemList::_notification(int p_what) {
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						float text_w = items[i].rect_cache.size.width - icon_size.x - MAX(theme_cache.h_separation, 0);
+						float text_w = items[i].rect_cache.size.width - icon_size.x - MAX(theme_cache.h_separation, 0) / 2 - theme_cache.icon_margin;
 						if (wraparound_items && items[i].rect_cache.size.width > width) {
 							text_w -= items[i].rect_cache.size.width - width;
 						}
