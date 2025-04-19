@@ -222,9 +222,11 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
 		}
 
-		// We exclude certain permissions from the set we request at startup, as they'll be
-		// requested on demand based on use cases.
-		PermissionsUtil.requestManifestPermissions(this, getExcludedPermissions())
+		if (BuildConfig.BUILD_TYPE != "benchmark") {
+			// We exclude certain permissions from the set we request at startup, as they'll be
+			// requested on demand based on use cases.
+			PermissionsUtil.requestManifestPermissions(this, getExcludedPermissions())
+		}
 
 		editorMessageDispatcher.parseStartIntent(packageManager, intent)
 

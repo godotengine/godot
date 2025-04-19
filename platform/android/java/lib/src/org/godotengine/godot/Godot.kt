@@ -749,6 +749,7 @@ class Godot(private val context: Context) {
 		magnetometerEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_magnetometer")))
 
 		runOnUiThread {
+			getActivity()?.reportFullyDrawn()
 			registerSensorsIfNeeded()
 			enableImmersiveMode(useImmersive.get(), true)
 		}
