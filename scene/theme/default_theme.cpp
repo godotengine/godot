@@ -38,15 +38,11 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
-
-#include "modules/modules_enabled.gen.h" // For svg.
-#ifdef MODULE_SVG_ENABLED
-#include "modules/svg/image_loader_svg.h"
-#endif
 
 static const int default_font_size = 16;
 
@@ -80,26 +76,8 @@ static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float
 }
 
 // See also `editor_generate_icon()` in `editor/themes/editor_icons.cpp`.
-static Ref<ImageTexture> generate_icon(int p_index) {
-	Ref<Image> img = memnew(Image);
-
-#ifdef MODULE_SVG_ENABLED
-	// Upsample icon generation only if the scale isn't an integer multiplier.
-	// Generating upsampled icons is slower, and the benefit is hardly visible
-	// with integer scales.
-	const bool upsample = !Math::is_equal_approx(Math::round(scale), scale);
-
-	Error err = ImageLoaderSVG::create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, HashMap<Color, Color>());
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in default theme.");
-
-	img->fix_alpha_edges();
-#else
-	// If the SVG module is disabled, we can't really display the UI well, but at least we won't crash.
-	// 16 pixels is used as it's the most common base size for Godot icons.
-	img = Image::create_empty(Math::round(16 * scale), Math::round(16 * scale), false, Image::FORMAT_RGBA8);
-#endif
-
-	return ImageTexture::create_from_image(img);
+static Ref<SVGTexture> generate_icon(int p_index) {
+	return SVGTexture::create_from_string(default_theme_icons_sources[p_index], scale);
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
