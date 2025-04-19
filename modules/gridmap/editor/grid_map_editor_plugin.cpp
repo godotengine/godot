@@ -551,6 +551,9 @@ void GridMapEditor::_fill_selection() {
 
 void GridMapEditor::_clear_clipboard_data() {
 	for (const ClipboardItem &E : clipboard_items) {
+		if (E.instance.is_null()) {
+			continue;
+		}
 		RenderingServer::get_singleton()->free(E.instance);
 	}
 
@@ -581,6 +584,10 @@ void GridMapEditor::_set_clipboard_data() {
 				item.orientation = node->get_cell_item_orientation(selected);
 				item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
 
+				if (mesh.is_valid()) {
+					item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
+				}
+
 				clipboard_items.push_back(item);
 			}
 		}
@@ -608,6 +615,9 @@ void GridMapEditor::_update_paste_indicator() {
 	RenderingServer::get_singleton()->instance_set_transform(paste_instance, node->get_global_transform() * xf);
 
 	for (const ClipboardItem &item : clipboard_items) {
+		if (item.instance.is_null()) {
+			continue;
+		}
 		xf = Transform3D();
 		xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
 		xf.basis = rot * xf.basis;
