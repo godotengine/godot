@@ -1105,10 +1105,6 @@
 			If [code]true[/code], enable two finger pan and scale gestures on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
-		<member name="interface/touchscreen/enable_touch_actions_panel" type="bool" setter="" getter="">
-			If [code]true[/code], enables the TouchActionsPanel to provide easy access to keyboard shortcuts on touchscreen devices.
-			[b]Note:[/b] Only available in the Android editor.
-		</member>
 		<member name="interface/touchscreen/increase_scrollbar_touch_area" type="bool" setter="" getter="">
 			If [code]true[/code], increases the scrollbar touch area to improve usability on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
@@ -1116,6 +1112,10 @@
 		<member name="interface/touchscreen/scale_gizmo_handles" type="float" setter="" getter="">
 			Specify the multiplier to apply to the scale for the editor gizmo handles to improve usability on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]1[/code] on non-touchscreen devices.
+		</member>
+		<member name="interface/touchscreen/touch_actions_panel" type="int" setter="" getter="">
+			A touch-friendly panel that provides easy access to common actions such as save, delete, undo, and redo without requiring a keyboard.
+			[b]Note:[/b] Only available in the Android and XR editor.
 		</member>
 		<member name="network/connection/check_for_updates" type="int" setter="" getter="">
 			Specifies how the engine should check for updates.
