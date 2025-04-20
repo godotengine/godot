@@ -89,6 +89,8 @@ android {
             editorAppName: "Godot Engine 4",
             editorBuildSuffix: ""
         ]
+
+        ndk { debugSymbolLevel 'FULL' }
     }
 
     base {
