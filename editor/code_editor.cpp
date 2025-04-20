@@ -916,13 +916,6 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 		accept_event();
 		return;
 	}
-	// Trigger script validation when the "Save" keybinding is pressed.
-	// TODO: Figure out how to make saving via the "File" menu trigger script validation as well.
-	if (ED_IS_SHORTCUT("script_editor/save", key_event)) {
-		_validate_script();
-		emit_signal(SNAME("validate_script"));
-		return;
-	}
 }
 
 void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
