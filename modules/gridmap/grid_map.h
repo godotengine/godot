@@ -98,12 +98,14 @@ class GridMap : public Node3D {
 	 * A GridMap can have multiple Octants.
 	 */
 	struct Octant {
+#if !defined(DISABLE_DEPRECATED) && !defined(NAVIGATION_3D_DISABLED)
 		struct NavigationCell {
 			RID region;
 			Transform3D xform;
 			RID navigation_mesh_debug_instance;
 			uint32_t navigation_layers = 1;
 		};
+#endif // !defined(DISABLE_DEPRECATED) && !defined(NAVIGATION_3D_DISABLED)
 
 		struct MultimeshInstance {
 			RID instance;
@@ -121,14 +123,12 @@ class GridMap : public Node3D {
 		HashSet<IndexKey> cells;
 		RID collision_debug;
 		RID collision_debug_instance;
-#ifdef DEBUG_ENABLED
-		RID navigation_debug_edge_connections_instance;
-		Ref<ArrayMesh> navigation_debug_edge_connections_mesh;
-#endif // DEBUG_ENABLED
 
 		bool dirty = false;
 		RID static_body;
+#if !defined(DISABLE_DEPRECATED) && !defined(NAVIGATION_3D_DISABLED)
 		HashMap<IndexKey, NavigationCell> navigation_cell_ids;
+#endif // !defined(DISABLE_DEPRECATED) && !defined(NAVIGATION_3D_DISABLED)
 	};
 
 	union OctantKey {
@@ -158,7 +158,9 @@ class GridMap : public Node3D {
 	real_t collision_priority = 1.0;
 	Ref<PhysicsMaterial> physics_material;
 #endif // PHYSICS_3D_DISABLED
+#ifndef DISABLE_DEPRECATED
 	bool bake_navigation = false;
+#endif // DISABLE_DEPRECATED
 	RID map_override;
 
 	Transform3D last_transform;
@@ -200,11 +202,6 @@ class GridMap : public Node3D {
 	bool _octant_update(const OctantKey &p_key);
 	void _octant_clean_up(const OctantKey &p_key);
 	void _octant_transform(const OctantKey &p_key);
-#if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
-	void _update_octant_navigation_debug_edge_connections_mesh(const OctantKey &p_key);
-	void _navigation_map_changed(RID p_map);
-	void _update_navigation_debug_edge_connections();
-#endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 	bool awaiting_update = false;
 
 	void _queue_octants_dirty();
@@ -261,13 +258,15 @@ public:
 	Array get_collision_shapes() const;
 #endif // PHYSICS_3D_DISABLED
 
+#ifndef DISABLE_DEPRECATED
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
+#endif // DISABLE_DEPRECATED
 
-#ifndef NAVIGATION_3D_DISABLED
+#if !defined(DISABLE_DEPRECATED) && !defined(NAVIGATION_3D_DISABLED)
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
-#endif // NAVIGATION_3D_DISABLED
+#endif // !defined(DISABLE_DEPRECATED) && !defined(NAVIGATION_3D_DISABLED)
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;

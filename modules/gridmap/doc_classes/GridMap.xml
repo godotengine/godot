@@ -89,7 +89,7 @@
 				Returns an array of [Transform3D] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in local space.
 			</description>
 		</method>
-		<method name="get_navigation_map" qualifiers="const">
+		<method name="get_navigation_map" qualifiers="const" deprecated="[GridMap]&apos;s built-in navigation mesh is no longer supported. Use the regular navigation system from [NavigationRegion3D] or [NavigationServer3D] instead.">
 			<return type="RID" />
 			<description>
 				Returns the [RID] of the navigation map this GridMap node uses for its cell baked navigation meshes.
@@ -172,7 +172,7 @@
 				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
-		<method name="set_navigation_map">
+		<method name="set_navigation_map" deprecated="[GridMap]&apos;s built-in navigation mesh is no longer supported. Use the regular navigation system from [NavigationRegion3D] or [NavigationServer3D] instead.">
 			<return type="void" />
 			<param index="0" name="navigation_map" type="RID" />
 			<description>
@@ -181,7 +181,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="false">
+		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="false" deprecated="[GridMap]&apos;s built-in navigation mesh is no longer supported. Use the regular navigation system from [NavigationRegion3D] or [NavigationServer3D] instead.">
 			If [code]true[/code], this GridMap creates a navigation region for each cell that uses a [member mesh_library] item with a navigation mesh. The created navigation region will use the navigation layers bitmask assigned to the [MeshLibrary]'s item.
 		</member>
 		<member name="cell_center_x" type="bool" setter="set_center_x" getter="get_center_x" default="true">
