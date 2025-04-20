@@ -267,3 +267,13 @@ Validate extension JSON: JSON file: Field was added in a way that breaks compati
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RichTextLabel/methods/push_underline': arguments
 
 Optional "color" argument added. Compatibility methods registered.
+
+
+GH-101358
+--------
+Validate extension JSON: Error: Field 'classes/HTTPClient/methods/set_http_proxy/arguments': size changed value in new API, from 2 to 4.
+Validate extension JSON: Error: Field 'classes/HTTPClient/methods/set_https_proxy/arguments': size changed value in new API, from 2 to 4.
+Validate extension JSON: Error: Field 'classes/HTTPRequest/methods/set_http_proxy/arguments': size changed value in new API, from 2 to 4.
+Validate extension JSON: Error: Field 'classes/HTTPRequest/methods/set_https_proxy/arguments': size changed value in new API, from 2 to 4.
+
+Added optional "user" and "pass" argument allowing Basic authentication in both http and https proxy.
