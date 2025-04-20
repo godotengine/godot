@@ -423,10 +423,6 @@ void MenuBar::_draw_menu_item(int p_index) {
 	bool pressed = (active_menu == p_index);
 	bool rtl = is_layout_rtl();
 
-	if (has_focus() && focused_menu == -1 && p_index == 0) {
-		hovered = true;
-	}
-
 	if (menu_cache[p_index].hidden) {
 		return;
 	}
@@ -969,7 +965,7 @@ String MenuBar::get_tooltip(const Point2 &p_pos) const {
 }
 
 MenuBar::MenuBar() {
-	set_focus_mode(FOCUS_ALL);
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_process_shortcut_input(true);
 }
 

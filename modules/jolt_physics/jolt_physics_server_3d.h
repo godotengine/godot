@@ -48,7 +48,7 @@ class JoltPhysicsServer3D final : public PhysicsServer3D {
 
 	mutable RID_PtrOwner<JoltSpace3D, true> space_owner;
 	mutable RID_PtrOwner<JoltArea3D, true> area_owner;
-	mutable RID_PtrOwner<JoltBody3D, true> body_owner;
+	mutable RID_PtrOwner<JoltBody3D, true> body_owner{ 65536, 1048576 };
 	mutable RID_PtrOwner<JoltSoftBody3D, true> soft_body_owner;
 	mutable RID_PtrOwner<JoltShape3D, true> shape_owner;
 	mutable RID_PtrOwner<JoltJoint3D, true> joint_owner;

@@ -431,19 +431,7 @@ void Node::_propagate_enter_tree() {
 void Node::_propagate_after_exit_tree() {
 	// Clear owner if it was not part of the pruned branch
 	if (data.owner) {
-		bool found = false;
-		Node *parent = data.parent;
-
-		while (parent) {
-			if (parent == data.owner) {
-				found = true;
-				break;
-			}
-
-			parent = parent->data.parent;
-		}
-
-		if (!found) {
+		if (!data.owner->is_ancestor_of(this)) {
 			_clean_up_owner();
 		}
 	}
@@ -2364,17 +2352,7 @@ void Node::set_owner(Node *p_owner) {
 		return;
 	}
 
-	Node *check = get_parent();
-	bool owner_valid = false;
-
-	while (check) {
-		if (check == p_owner) {
-			owner_valid = true;
-			break;
-		}
-
-		check = check->data.parent;
-	}
+	bool owner_valid = p_owner->is_ancestor_of(this);
 
 	ERR_FAIL_COND_MSG(!owner_valid, "Invalid owner. Owner must be an ancestor in the tree.");
 

@@ -773,7 +773,7 @@ void TabContainer::set_tab_focus_mode(Control::FocusMode p_focus_mode) {
 }
 
 Control::FocusMode TabContainer::get_tab_focus_mode() const {
-	return tab_bar->get_focus_mode_with_recursive();
+	return tab_bar->get_focus_mode();
 }
 
 void TabContainer::set_clip_tabs(bool p_clip_tabs) {

@@ -75,6 +75,7 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result", "callback"), &NavigationServer2D::query_path, DEFVAL(Callable()));
 
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer2D::region_create);
+	ClassDB::bind_method(D_METHOD("region_get_iteration_id", "region"), &NavigationServer2D::region_get_iteration_id);
 	ClassDB::bind_method(D_METHOD("region_set_enabled", "region", "enabled"), &NavigationServer2D::region_set_enabled);
 	ClassDB::bind_method(D_METHOD("region_get_enabled", "region"), &NavigationServer2D::region_get_enabled);
 	ClassDB::bind_method(D_METHOD("region_set_use_edge_connections", "region", "enabled"), &NavigationServer2D::region_set_use_edge_connections);

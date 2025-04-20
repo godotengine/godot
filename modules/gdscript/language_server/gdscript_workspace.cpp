@@ -279,6 +279,8 @@ ExtendGDScriptParser *GDScriptWorkspace::get_parse_result(const String &p_path) 
 	return nullptr;
 }
 
+#define HANDLE_DOC(m_string) ((is_native ? DTR(m_string) : (m_string)).strip_edges())
+
 Error GDScriptWorkspace::initialize() {
 	if (initialized) {
 		return OK;
@@ -287,6 +289,7 @@ Error GDScriptWorkspace::initialize() {
 	DocTools *doc = EditorHelp::get_doc_data();
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
 		const DocData::ClassDoc &class_data = E.value;
+		const bool is_native = !class_data.is_script_doc;
 		LSP::DocumentSymbol class_symbol;
 		String class_name = E.key;
 		class_symbol.name = class_name;
@@ -296,7 +299,7 @@ Error GDScriptWorkspace::initialize() {
 		if (!class_data.inherits.is_empty()) {
 			class_symbol.detail += " extends " + class_data.inherits;
 		}
-		class_symbol.documentation = class_data.brief_description + "\n" + class_data.description;
+		class_symbol.documentation = HANDLE_DOC(class_data.brief_description) + "\n" + HANDLE_DOC(class_data.description);
 
 		for (int i = 0; i < class_data.constants.size(); i++) {
 			const DocData::ConstantDoc &const_data = class_data.constants[i];
@@ -309,7 +312,7 @@ Error GDScriptWorkspace::initialize() {
 				symbol.detail += ": " + const_data.enumeration;
 			}
 			symbol.detail += " = " + const_data.value;
-			symbol.documentation = const_data.description;
+			symbol.documentation = HANDLE_DOC(const_data.description);
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -325,7 +328,7 @@ Error GDScriptWorkspace::initialize() {
 			} else {
 				symbol.detail += ": " + data.type;
 			}
-			symbol.documentation = data.description;
+			symbol.documentation = HANDLE_DOC(data.description);
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -336,7 +339,7 @@ Error GDScriptWorkspace::initialize() {
 			symbol.native_class = class_name;
 			symbol.kind = LSP::SymbolKind::Property;
 			symbol.detail = "<Theme> var " + class_name + "." + data.name + ": " + data.type;
-			symbol.documentation = data.description;
+			symbol.documentation = HANDLE_DOC(data.description);
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -388,7 +391,7 @@ Error GDScriptWorkspace::initialize() {
 				return_type = "void";
 			}
 			symbol.detail = "func " + class_name + "." + data.name + "(" + params + ") -> " + return_type;
-			symbol.documentation = data.description;
+			symbol.documentation = HANDLE_DOC(data.description);
 			class_symbol.children.push_back(symbol);
 		}
 

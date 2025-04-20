@@ -801,47 +801,45 @@ Variant Array::pop_at(int p_pos) {
 }
 
 Variant Array::min() const {
-	Variant minval;
-	for (int i = 0; i < size(); i++) {
-		if (i == 0) {
-			minval = get(i);
-		} else {
-			bool valid;
-			Variant ret;
-			Variant test = get(i);
-			Variant::evaluate(Variant::OP_LESS, test, minval, ret, valid);
-			if (!valid) {
-				return Variant(); //not a valid comparison
-			}
-			if (bool(ret)) {
-				//is less
-				minval = test;
-			}
+	int array_size = size();
+	if (array_size == 0) {
+		return Variant();
+	}
+
+	int min_index = 0;
+	Variant is_less;
+	for (int i = 1; i < array_size; i++) {
+		bool valid;
+		Variant::evaluate(Variant::OP_LESS, _p->array[i], _p->array[min_index], is_less, valid);
+		if (!valid) {
+			return Variant(); //not a valid comparison
+		}
+		if (bool(is_less)) {
+			min_index = i;
 		}
 	}
-	return minval;
+	return _p->array[min_index];
 }
 
 Variant Array::max() const {
-	Variant maxval;
-	for (int i = 0; i < size(); i++) {
-		if (i == 0) {
-			maxval = get(i);
-		} else {
-			bool valid;
-			Variant ret;
-			Variant test = get(i);
-			Variant::evaluate(Variant::OP_GREATER, test, maxval, ret, valid);
-			if (!valid) {
-				return Variant(); //not a valid comparison
-			}
-			if (bool(ret)) {
-				//is greater
-				maxval = test;
-			}
+	int array_size = size();
+	if (array_size == 0) {
+		return Variant();
+	}
+
+	int max_index = 0;
+	Variant is_greater;
+	for (int i = 1; i < array_size; i++) {
+		bool valid;
+		Variant::evaluate(Variant::OP_GREATER, _p->array[i], _p->array[max_index], is_greater, valid);
+		if (!valid) {
+			return Variant(); //not a valid comparison
+		}
+		if (bool(is_greater)) {
+			max_index = i;
 		}
 	}
-	return maxval;
+	return _p->array[max_index];
 }
 
 const void *Array::id() const {

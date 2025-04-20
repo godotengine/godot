@@ -140,7 +140,7 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 			WARN_PRINT(vformat("%s: DDS height '%d' is not divisible by %d. This is not allowed as per the DDS specification, attempting to load anyway.", p_file->get_path(), p_height, info.divisor));
 		}
 
-		uint32_t size = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
+		uint32_t size = MAX(1u, (w + 3) / 4) * MAX(1u, (h + 3) / 4) * info.block_size;
 
 		if (p_flags & DDSD_LINEARSIZE) {
 			ERR_FAIL_COND_V_MSG(size != p_pitch, Ref<Resource>(), "DDS header flags specify that a linear size of the top-level image is present, but the specified size does not match the expected value.");
@@ -152,7 +152,7 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 			w = MAX(1u, w >> 1);
 			h = MAX(1u, h >> 1);
 
-			uint32_t bsize = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
+			uint32_t bsize = MAX(1u, (w + 3) / 4) * MAX(1u, (h + 3) / 4) * info.block_size;
 			size += bsize;
 		}
 

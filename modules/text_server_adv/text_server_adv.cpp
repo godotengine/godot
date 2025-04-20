@@ -1469,10 +1469,10 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 
 		fd->hb_handle = hb_ft_font_create(fd->face, nullptr);
 
-		fd->ascent = (fd->face->size->metrics.ascender / 64.0) / fd->scale;
-		fd->descent = (-fd->face->size->metrics.descender / 64.0) / fd->scale;
-		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->scale;
-		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->scale;
+		fd->ascent = (fd->face->size->metrics.ascender / 64.0) * fd->scale;
+		fd->descent = (-fd->face->size->metrics.descender / 64.0) * fd->scale;
+		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) * fd->scale;
+		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) * fd->scale;
 
 #if HB_VERSION_ATLEAST(3, 3, 0)
 		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform[0][1]);
@@ -3956,15 +3956,17 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 					}
 					Vector2 gpos = fgl.rect.position;
 					Size2 csize = fgl.rect.size;
-					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
-						if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
-							double gl_scale = (double)p_size / (double)fd->fixed_size;
-							gpos *= gl_scale;
-							csize *= gl_scale;
-						} else {
-							double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
-							gpos *= gl_scale;
-							csize *= gl_scale;
+					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
+						if (size.x != p_size * 64) {
+							if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
+								double gl_scale = (double)p_size / (double)fd->fixed_size;
+								gpos *= gl_scale;
+								csize *= gl_scale;
+							} else {
+								double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
+								gpos *= gl_scale;
+								csize *= gl_scale;
+							}
 						}
 					} else {
 						gpos /= oversampling_factor;
@@ -4090,15 +4092,17 @@ void TextServerAdvanced::_font_draw_glyph_outline(const RID &p_font_rid, const R
 					}
 					Vector2 gpos = fgl.rect.position;
 					Size2 csize = fgl.rect.size;
-					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
-						if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
-							double gl_scale = (double)p_size / (double)fd->fixed_size;
-							gpos *= gl_scale;
-							csize *= gl_scale;
-						} else {
-							double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
-							gpos *= gl_scale;
-							csize *= gl_scale;
+					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
+						if (size.x != p_size * 64) {
+							if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
+								double gl_scale = (double)p_size / (double)fd->fixed_size;
+								gpos *= gl_scale;
+								csize *= gl_scale;
+							} else {
+								double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
+								gpos *= gl_scale;
+								csize *= gl_scale;
+							}
 						}
 					} else {
 						gpos /= oversampling_factor;

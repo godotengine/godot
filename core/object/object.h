@@ -608,7 +608,8 @@ private:
 		HashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
 		bool removable = false;
 	};
-
+	friend struct _ObjectSignalLock;
+	mutable Mutex *signal_mutex = nullptr;
 	HashMap<StringName, SignalData> signal_map;
 	List<Connection> connections;
 #ifdef DEBUG_ENABLED
@@ -755,6 +756,8 @@ protected:
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
+
+	virtual bool _uses_signal_mutex() const;
 
 #ifdef TOOLS_ENABLED
 	struct VirtualMethodTracker {

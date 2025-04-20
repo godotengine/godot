@@ -79,7 +79,7 @@ def templateExcludedBuildTask() {
     // We exclude these gradle tasks so we can run the scons command manually.
     def excludedTasks = []
     if (excludeSconsBuildTasks()) {
-        logger.lifecycle("Excluding Android studio build tasks")
+        logger.info("Excluding Android studio build tasks")
         for (String flavor : supportedFlavors) {
             String[] supportedBuildTypes = supportedFlavorsBuildTypes[flavor]
             for (String buildType : supportedBuildTypes) {
@@ -206,7 +206,7 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
                 }
             }
         } else {
-            logger.lifecycle("No native shared libs for target $target. Skipping build.")
+            logger.info("No native shared libs for target $target. Skipping build.")
         }
     }
 
