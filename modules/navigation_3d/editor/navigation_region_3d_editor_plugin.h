@@ -32,6 +32,8 @@
 
 #include "editor/plugins/editor_plugin.h"
 
+#include "navigation_region_3d_gizmo_plugin.h"
+
 class AcceptDialog;
 class Button;
 class HBoxContainer;
@@ -68,6 +70,8 @@ class NavigationRegion3DEditorPlugin : public EditorPlugin {
 	GDCLASS(NavigationRegion3DEditorPlugin, EditorPlugin);
 
 	NavigationRegion3DEditor *navigation_region_editor = nullptr;
+
+	Ref<NavigationRegion3DGizmoPlugin> gizmo_plugin;
 
 public:
 	virtual String get_plugin_name() const override { return "NavigationRegion3D"; }
