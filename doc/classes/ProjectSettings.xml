@@ -1418,6 +1418,11 @@
 			Sets which physics engine to use for 3D physics.
 			"DEFAULT" is currently the [url=https://bulletphysics.org]Bullet[/url] physics engine. The "GodotPhysics" engine is still supported as an alternative.
 		</member>
+		<member name="physics/3d/physics_interpolation/scene_traversal" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+			Allows reverting to [code]Legacy[/code] method for scene tree traversal, which is slower.
+			Also offers a [code]Debug[/code]  method which provides logging information.
+			[b]Note:[/b] This setting is intended for debugging only, you should use the [code]DEFAULT[/code] method in most cases.
+		</member>
 		<member name="physics/3d/smooth_trimesh_collision" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], smooths out collision with trimesh shapes ([ConcavePolygonShape]) by telling the Bullet physics engine to generate internal edge information for every trimesh shape created.
 			[b]Note:[/b] Only effective if [member physics/3d/physics_engine] is set to [code]DEFAULT[/code] or [code]Bullet[/code], [i]not[/i] [code]GodotPhysics[/code].
