@@ -65,7 +65,6 @@
 #include "editor/plugins/gizmos/marker_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/mesh_instance_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/navigation_link_3d_gizmo_plugin.h"
-#include "editor/plugins/gizmos/navigation_region_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/occluder_instance_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/particles_3d_emission_shape_gizmo_plugin.h"
 #include "editor/plugins/gizmos/physics_bone_3d_gizmo_plugin.h"
@@ -8733,7 +8732,6 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<CollisionShape3DGizmoPlugin>(memnew(CollisionShape3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionPolygon3DGizmoPlugin>(memnew(CollisionPolygon3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<NavigationLink3DGizmoPlugin>(memnew(NavigationLink3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<NavigationRegion3DGizmoPlugin>(memnew(NavigationRegion3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<PhysicalBone3DGizmoPlugin>(memnew(PhysicalBone3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
