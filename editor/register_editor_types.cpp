@@ -93,12 +93,6 @@
 #include "editor/plugins/lightmap_gi_editor_plugin.h"
 #include "editor/plugins/line_2d_editor_plugin.h"
 #include "editor/plugins/material_editor_plugin.h"
-#include "editor/plugins/mesh_editor_plugin.h"
-#include "editor/plugins/mesh_instance_3d_editor_plugin.h"
-#include "editor/plugins/mesh_library_editor_plugin.h"
-#include "editor/plugins/multimesh_editor_plugin.h"
-#include "editor/plugins/node_3d_editor_gizmos.h"
-#include "editor/plugins/occluder_instance_3d_editor_plugin.h"
 #include "editor/plugins/packed_scene_editor_plugin.h"
 #include "editor/plugins/particles_editor_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
@@ -230,6 +224,9 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<MeshInstance3DEditorPlugin>();
 	EditorPlugins::add_by_type<MeshLibraryEditorPlugin>();
 	EditorPlugins::add_by_type<MultiMeshEditorPlugin>();
+#ifndef NAVIGATION_3D_DISABLED
+	EditorPlugins::add_by_type<NavigationObstacle3DEditorPlugin>();
+#endif // NAVIGATION_3D_DISABLED
 	EditorPlugins::add_by_type<OccluderInstance3DEditorPlugin>();
 	EditorPlugins::add_by_type<PackedSceneEditorPlugin>();
 	EditorPlugins::add_by_type<Path3DEditorPlugin>();

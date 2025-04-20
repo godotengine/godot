@@ -988,7 +988,6 @@ if env.editor_build:
         "disable_physics_2d",
         "disable_physics_3d",
         "disable_navigation_2d",
-        "disable_navigation_3d",
     ]:
         if env[disable_opt]:
             unsupported_opts.append(disable_opt)

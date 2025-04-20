@@ -39,7 +39,9 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "main/main.h"
 #include "scene/3d/mesh_instance_3d.h"
+#ifndef NAVIGATION_3D_DISABLED
 #include "scene/3d/navigation/navigation_region_3d.h"
+#endif // NAVIGATION_3D_DISABLED
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/gui/menu_button.h"
 #include "scene/resources/packed_scene.h"
@@ -210,6 +212,7 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 	}
 	p_library->set_item_shapes(item_id, collisions);
 
+#ifndef NAVIGATION_3D_DISABLED
 	for (int i = 0; i < mesh_instance_node->get_child_count(); i++) {
 		NavigationRegion3D *navigation_region_node = Object::cast_to<NavigationRegion3D>(mesh_instance_node->get_child(i));
 		if (!navigation_region_node) {
@@ -223,6 +226,7 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 			break;
 		}
 	}
+#endif // NAVIGATION_3D_DISABLED
 }
 
 Error MeshLibraryEditor::update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge, bool p_apply_xforms) {

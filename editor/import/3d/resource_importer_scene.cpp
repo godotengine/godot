@@ -40,7 +40,9 @@
 #include "editor/import/3d/scene_import_settings.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#ifndef NAVIGATION_3D_DISABLED
 #include "scene/3d/navigation/navigation_region_3d.h"
+#endif // NAVIGATION_3D_DISABLED
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/physics/area_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
@@ -918,6 +920,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			}
 		}
 
+#ifndef NAVIGATION_3D_DISABLED
 	} else if (_teststr(name, "navmesh") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		if (isroot) {
 			return p_node;
@@ -938,6 +941,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		p_node->set_owner(nullptr);
 		memdelete(p_node);
 		p_node = nmi;
+#endif // NAVIGATION_3D_DISABLED
 	} else if (_teststr(name, "occ") || _teststr(name, "occonly")) {
 		if (isroot) {
 			return p_node;
@@ -1683,6 +1687,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 		}
 	}
 
+#ifndef NAVIGATION_3D_DISABLED
 	//navmesh (node may have changed type above)
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
@@ -1714,6 +1719,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 			}
 		}
 	}
+#endif // NAVIGATION_3D_DISABLED
 
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);

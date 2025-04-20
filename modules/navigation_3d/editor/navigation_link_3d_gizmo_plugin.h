@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef NAVIGATION_3D_DISABLED
+
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
 class NavigationLink3DGizmoPlugin : public EditorNode3DGizmoPlugin {
@@ -48,3 +50,5 @@ public:
 
 	NavigationLink3DGizmoPlugin();
 };
+
+#endif // NAVIGATION_3D_DISABLED
