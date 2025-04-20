@@ -4497,7 +4497,7 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 						queue_free();
 					}
 				} else if (!Input::get_singleton()->get_last_mouse_velocity().is_zero_approx()) {
-					if (!_is_mouse_inside_tooltip && OS::get_singleton()->get_ticks_msec() - _enter_tree_time > 250) {
+					if (!_is_mouse_inside_tooltip && OS::get_singleton()->get_ticks_msec() - _enter_tree_time > 350) {
 						_start_timer();
 					}
 				}
