@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/config/engine.h"
+#include "core/io/image.h"
 #include "core/io/logger.h"
 #include "core/io/remote_filesystem_client.h"
 #include "core/os/time_enums.h"
@@ -311,6 +312,8 @@ public:
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	virtual Error move_to_trash(const String &p_path) { return FAILED; }
+
+	virtual Error send_notification(const String &p_title, const String &p_message, const Callable &p_callback = Callable(), const Ref<Image> &p_icon = Ref<Image>(), int p_duration = -1, const Dictionary &p_datetime_to_send = Dictionary()) { return FAILED; }
 
 	void create_lock_file();
 	void remove_lock_file();

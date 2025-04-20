@@ -35,8 +35,10 @@
 #import "godot_application.h"
 #import "godot_application_delegate.h"
 #import "macos_terminal_logger.h"
+#import <UserNotifications/UserNotifications.h>
 
 #include "core/crypto/crypto_core.h"
+#include "core/os/time.h"
 #include "core/version_generated.gen.h"
 #include "main/main.h"
 
@@ -145,10 +147,6 @@ void OS_MacOS::finalize() {
 			}
 		}
 	}
-
-#ifdef COREMIDI_ENABLED
-	midi_driver.close();
-#endif
 
 	delete_main_loop();
 
@@ -942,6 +940,194 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
 	[NSApp registerUserInterfaceItemSearchHandler:delegate];
+}
+
+double OS_MacOS::_calculate_notification_delay(const Dictionary &p_datetime_dict) {
+	if (p_datetime_dict.is_empty()) {
+		return 0.0;
+	}
+
+	double delay_seconds = 0.0;
+	if (p_datetime_dict.has("relative_seconds")) {
+		delay_seconds = p_datetime_dict["relative_seconds"];
+		if (delay_seconds < 0) {
+			WARN_PRINT("Negative relative_seconds value provided. Scheduling for immediate delivery.");
+			delay_seconds = 0;
+		}
+		return delay_seconds;
+	}
+
+	double current_unix_time = Time::get_singleton()->get_unix_time_from_system();
+	int64_t target_unix_time = 0;
+
+	if (p_datetime_dict.has("unix_time")) {
+		target_unix_time = p_datetime_dict["unix_time"];
+	} else if (p_datetime_dict.has("year") && p_datetime_dict.has("month") &&
+			p_datetime_dict.has("day") && p_datetime_dict.has("hour") &&
+			p_datetime_dict.has("minute") && p_datetime_dict.has("second")) {
+		target_unix_time = Time::get_singleton()->get_unix_time_from_datetime_dict(p_datetime_dict);
+	} else {
+		WARN_PRINT("Incomplete or invalid datetime dictionary for scheduled notification. Scheduling for immediate delivery.");
+		return 0.0;
+	}
+
+	delay_seconds = target_unix_time - current_unix_time;
+	if (delay_seconds < 0) {
+		WARN_PRINT("Scheduled notification time is in the past. Scheduling for immediate delivery.");
+		delay_seconds = 0;
+	}
+
+	return delay_seconds;
+}
+
+Error OS_MacOS::send_notification(const String &p_title, const String &p_message, const Callable &p_callback, const Ref<Image> &p_icon, int p_duration, const Dictionary &p_datetime_to_send) {
+	bool script_mode = OS::get_singleton()->is_stdout_verbose() || Engine::get_singleton()->is_in_physics_frame() || Main::is_cmdline_tool();
+	if (script_mode) {
+		WARN_PRINT("Desktop notifications are not available in script mode.");
+		print_line("NOTIFICATION: " + p_title + " - " + p_message);
+		return OK;
+	}
+
+	double delay_seconds = _calculate_notification_delay(p_datetime_to_send);
+	bool is_scheduled = !p_datetime_to_send.is_empty() && delay_seconds > 0;
+
+	NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
+	if (!bundleID) {
+		// Not a properly bundled app, can't use UNUserNotificationCenter
+		WARN_PRINT("Desktop notifications require a properly bundled application. Running unbundled.");
+		print_line("NOTIFICATION: " + p_title + " - " + p_message);
+		return OK;
+	}
+
+	@try {
+		if (@available(macOS 10.14, *)) {
+			// Check if we're properly bundled before trying to use UNUserNotificationCenter
+			NSBundle *mainBundle = [NSBundle mainBundle];
+			if (!mainBundle || ![mainBundle bundleURL]) {
+				WARN_PRINT("Desktop notifications require a properly bundled application. Running unbundled.");
+				print_line("NOTIFICATION: " + p_title + " - " + p_message);
+				return OK;
+			}
+
+			UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+			GodotApplicationDelegate *appDelegate = (GodotApplicationDelegate *)[NSApp delegate];
+
+			UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+			content.title = [NSString stringWithUTF8String:p_title.utf8().get_data()];
+			content.body = [NSString stringWithUTF8String:p_message.utf8().get_data()];
+			content.sound = [UNNotificationSound defaultSound];
+
+			// Handle custom icon if provided
+			if (p_icon.is_valid()) {
+				NSString *tempDir = NSTemporaryDirectory();
+				NSString *tempFilePath = [tempDir stringByAppendingPathComponent:@"godot_notification_icon.png"];
+
+				// Convert Godot image to png
+				Vector<uint8_t> png_buffer = p_icon->save_png_to_buffer();
+				if (png_buffer.size() > 0) {
+					NSData *img_data = [NSData dataWithBytes:png_buffer.ptr() length:png_buffer.size()];
+					if (img_data && [img_data writeToFile:tempFilePath atomically:YES]) {
+						NSError *error = nil;
+						NSURL *attachment_url = [NSURL fileURLWithPath:tempFilePath];
+						UNNotificationAttachment *attachment = [UNNotificationAttachment
+								attachmentWithIdentifier:@"image"
+													 URL:attachment_url
+												 options:nil
+												   error:&error];
+
+						if (!error) {
+							content.attachments = @[ attachment ];
+						}
+					}
+				}
+			}
+
+			UNTimeIntervalNotificationTrigger *trigger = nil;
+			if (is_scheduled && delay_seconds > 0) {
+				// Use scheduled time
+				trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:delay_seconds repeats:NO];
+			} else {
+				// Immediate delivery (with small delay to ensure trigger works)
+				trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:0.1 repeats:NO];
+			}
+
+			// Create request and add it to notification center
+			NSString *uuid = [[NSUUID UUID] UUIDString];
+			UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:uuid
+																				  content:content
+																				  trigger:trigger];
+			if (p_callback.is_valid()) {
+				Callable *callable_copy = new Callable(p_callback);
+				NSNumber *callablePtr = [NSNumber numberWithUnsignedLong:(uintptr_t)callable_copy];
+				[appDelegate.notificationCallbacks setObject:callablePtr forKey:uuid];
+			}
+
+			[center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *settings) {
+				if (settings.authorizationStatus == UNAuthorizationStatusAuthorized ||
+						settings.authorizationStatus == UNAuthorizationStatusProvisional) {
+					[center addNotificationRequest:request
+							 withCompletionHandler:^(NSError *_Nullable error) {
+								 if (error) {
+									 NSLog(@"Error scheduling notification: %@", error.localizedDescription);
+								 }
+							 }];
+				} else if (settings.authorizationStatus == UNAuthorizationStatusNotDetermined) {
+					[center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound)
+										  completionHandler:^(BOOL granted, NSError *_Nullable error) {
+											  if (granted) {
+												  [center addNotificationRequest:request
+														   withCompletionHandler:^(NSError *_Nullable error) {
+															   if (error) {
+																   NSLog(@"Error scheduling notification: %@", error.localizedDescription);
+															   }
+														   }];
+											  }
+										  }];
+				}
+			}];
+		} else {
+			// Fallback for older macOS versions using NSUserNotification (deprecated)
+			NSBundle *mainBundle = [NSBundle mainBundle];
+			if (!mainBundle || ![mainBundle bundleURL]) {
+				WARN_PRINT("Desktop notifications require a properly bundled application. Running unbundled.");
+				print_line("NOTIFICATION: " + p_title + " - " + p_message);
+				return OK;
+			}
+
+			NSUserNotification *notification = [[NSUserNotification alloc] init];
+			notification.title = [NSString stringWithUTF8String:p_title.utf8().get_data()];
+			notification.informativeText = [NSString stringWithUTF8String:p_message.utf8().get_data()];
+
+			if (p_icon.is_valid()) {
+				// Convert Godot image to NSImage
+				Vector<uint8_t> png_buffer = p_icon->save_png_to_buffer();
+				if (png_buffer.size() > 0) {
+					NSData *img_data = [NSData dataWithBytes:png_buffer.ptr() length:png_buffer.size()];
+					if (img_data) {
+						NSImage *nsImage = [[NSImage alloc] initWithData:img_data];
+						if (nsImage) {
+							notification.contentImage = nsImage;
+						}
+					}
+				}
+			}
+
+			// Handle scheduling
+			if (is_scheduled && delay_seconds > 0) {
+				notification.deliveryDate = [NSDate dateWithTimeIntervalSinceNow:delay_seconds];
+				notification.deliveryRepeatInterval = nil;
+				[[NSUserNotificationCenter defaultUserNotificationCenter] scheduleNotification:notification];
+			} else {
+				notification.hasActionButton = YES;
+				notification.actionButtonTitle = @"OK";
+				[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+			}
+		}
+	} @catch (NSException *exception) {
+		WARN_PRINT(String("Could not show notification: ") + String::utf8([exception.description UTF8String]));
+	}
+
+	return OK;
 }
 
 OS_MacOS::~OS_MacOS() {

@@ -231,6 +231,8 @@ def configure(env: "SConsEnvironment"):
             "Security",
             "-framework",
             "UniformTypeIdentifiers",
+            "-framework",
+            "UserNotifications",
         ]
     )
     env.Append(LIBS=["pthread", "z"])

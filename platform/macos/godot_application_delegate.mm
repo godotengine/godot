@@ -155,6 +155,18 @@ static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 	reduce_transparency = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
 	voice_over = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
 
+	if (self) {
+		_notificationCallbacks = [[NSMutableDictionary alloc] init];
+		if (@available(macOS 10.14, *)) {
+			NSBundle *mainBundle = [NSBundle mainBundle];
+			if (mainBundle && [mainBundle bundleURL] && [mainBundle bundleIdentifier]) {
+				[[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
+			} else {
+				NSLog(@"Desktop notifications require a properly bundled application. Running unbundled.");
+			}
+		}
+	}
+
 	return self;
 }
 
@@ -162,6 +174,23 @@ static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"AppleInterfaceThemeChangedNotification" object:nil];
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"AppleColorPreferencesChangedNotification" object:nil];
 	[[NSWorkspace sharedWorkspace] removeObserver:self forKeyPath:@"voiceOverEnabled" context:(void *)godot_ac_ctx];
+
+	// Clean up notification callbacks
+	if (@available(macOS 10.14, *)) {
+		NSBundle *mainBundle = [NSBundle mainBundle];
+		if (mainBundle && [mainBundle bundleURL] && [mainBundle bundleIdentifier] && _notificationCallbacks) {
+			for (NSString *key in _notificationCallbacks) {
+				id callbackData = [_notificationCallbacks objectForKey:key];
+				if (callbackData) {
+					uintptr_t ptr = [(NSNumber *)callbackData unsignedLongValue];
+					if (ptr) {
+						delete (Callable *)ptr;
+					}
+				}
+			}
+			[_notificationCallbacks removeAllObjects];
+		}
+	}
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -296,6 +325,26 @@ static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 	if (os && os->get_main_loop()) {
 		os->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
 	}
+}
+
+// UNUserNotificationCenterDelegate methods
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)(void))completionHandler API_AVAILABLE(macos(10.14)) {
+	NSString *identifier = response.notification.request.identifier;
+	id callbackData = [_notificationCallbacks objectForKey:identifier];
+
+	if (callbackData) {
+		uintptr_t ptr = [(NSNumber *)callbackData unsignedLongValue];
+		if (ptr) {
+			Callable *callable = (Callable *)ptr;
+			if (callable->is_valid()) {
+				callable->call();
+			}
+			[_notificationCallbacks removeObjectForKey:identifier];
+			delete callable;
+		}
+	}
+
+	completionHandler();
 }
 
 @end

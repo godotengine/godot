@@ -628,6 +628,17 @@ String OS::get_unique_id() const {
 	return ::OS::get_singleton()->get_unique_id();
 }
 
+Error OS::send_notification(const String &p_title, const String &p_message, const Callable &p_callback, const Variant &p_icon, int p_duration, const Dictionary &p_datetime_to_send) {
+	Ref<Image> icon;
+	if (p_icon.get_type() == Variant::OBJECT) {
+		Object *obj = p_icon.get_validated_object();
+		if (obj) {
+			icon = Ref(cast_to<Image>(obj));
+		}
+	}
+	return ::OS::get_singleton()->send_notification(p_title, p_message, p_callback, icon, p_duration, p_datetime_to_send);
+}
+
 OS *OS::singleton = nullptr;
 
 void OS::_bind_methods() {
@@ -733,6 +744,8 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request_permissions"), &OS::request_permissions);
 	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &OS::get_granted_permissions);
 	ClassDB::bind_method(D_METHOD("revoke_granted_permissions"), &OS::revoke_granted_permissions);
+
+	ClassDB::bind_method(D_METHOD("send_notification", "title", "message", "callback", "icon", "duration", "datetime_to_send"), &OS::send_notification, DEFVAL(Callable()), DEFVAL(Variant()), DEFVAL(-1), DEFVAL(Dictionary()));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
