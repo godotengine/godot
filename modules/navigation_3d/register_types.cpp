@@ -37,7 +37,7 @@
 #endif // DISABLE_DEPRECATED
 
 #ifdef TOOLS_ENABLED
-#include "editor/navigation_mesh_editor_plugin.h"
+#include "editor/navigation_region_3d_editor_plugin.h"
 #endif
 
 #include "core/config/engine.h"
@@ -64,7 +64,7 @@ void initialize_navigation_3d_module(ModuleInitializationLevel p_level) {
 
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
+		EditorPlugins::add_by_type<NavigationRegion3DEditorPlugin>();
 	}
 #endif
 }
