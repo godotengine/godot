@@ -1352,10 +1352,11 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
-
-			// When we change theme we need to re-do everything.
+			[[fallthrough]];
+		}
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			// When we change theme or translation we need to re-do everything.
 			_reset();
-
 			_update_tree();
 		} break;
 
