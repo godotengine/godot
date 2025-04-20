@@ -1364,6 +1364,9 @@
 		<member name="text_editor/completion/complete_file_paths" type="bool" setter="" getter="">
 			If [code]true[/code], provides autocompletion suggestions for file paths in methods such as [code]load()[/code] and [code]preload()[/code].
 		</member>
+		<member name="text_editor/completion/idle_parse_enabled" type="bool" setter="" getter="">
+			Whether or not scripts should periodically be parsed when the user stops typing. If enabled, the idle delay is determined by [member text_editor/completion/idle_parse_delay] and [member text_editor/completion/idle_parse_delay_with_errors_found]. Parsing is always performed when the script is saved.
+		</member>
 		<member name="text_editor/completion/idle_parse_delay" type="float" setter="" getter="">
 			The delay in seconds after which the script editor should check for errors when the user stops typing.
 		</member>

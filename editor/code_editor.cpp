@@ -916,6 +916,13 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 		accept_event();
 		return;
 	}
+	// Trigger script validation when the "Save" keybinding is pressed.
+	// TODO: Figure out how to make saving via the "File" menu trigger script validation aswell.
+	if (ED_IS_SHORTCUT("script_editor/save", key_event)) {
+		_validate_script();
+		emit_signal(SNAME("validate_script"));
+		return;
+	}
 }
 
 void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
@@ -1154,6 +1161,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
 	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
+	idle_parse_enabled = EDITOR_GET("text_editor/completion/idle_parse_enabled");
 	idle_time = EDITOR_GET("text_editor/completion/idle_parse_delay");
 	idle_time_with_errors = EDITOR_GET("text_editor/completion/idle_parse_delay_with_errors_found");
 
@@ -1602,8 +1610,10 @@ void CodeTextEditor::_update_font_ligatures() {
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {
-	_validate_script();
-	emit_signal(SNAME("validate_script"));
+	if (idle_parse_enabled) {
+		_validate_script();
+		emit_signal(SNAME("validate_script"));
+	}
 }
 
 void CodeTextEditor::validate_script() {
