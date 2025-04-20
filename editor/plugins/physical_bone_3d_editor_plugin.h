@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -69,3 +71,5 @@ public:
 	virtual void make_visible(bool p_visible) override;
 	virtual void edit(Object *p_node) override;
 };
+
+#endif // PHYSICS_3D_DISABLED

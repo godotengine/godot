@@ -97,7 +97,9 @@
 #include "editor/plugins/particles_editor_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
 #include "editor/plugins/path_3d_editor_plugin.h"
+#ifndef PHYSICS_3D_DISABLED
 #include "editor/plugins/physical_bone_3d_editor_plugin.h"
+#endif // PHYSICS_3D_DISABLED
 #include "editor/plugins/polygon_2d_editor_plugin.h"
 #include "editor/plugins/polygon_3d_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
@@ -230,7 +232,9 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<OccluderInstance3DEditorPlugin>();
 	EditorPlugins::add_by_type<PackedSceneEditorPlugin>();
 	EditorPlugins::add_by_type<Path3DEditorPlugin>();
+#ifndef PHYSICS_3D_DISABLED
 	EditorPlugins::add_by_type<PhysicalBone3DEditorPlugin>();
+#endif // PHYSICS_3D_DISABLED
 	EditorPlugins::add_by_type<Polygon3DEditorPlugin>();
 	EditorPlugins::add_by_type<ResourcePreloaderEditorPlugin>();
 	EditorPlugins::add_by_type<ShaderEditorPlugin>();

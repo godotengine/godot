@@ -2147,7 +2147,7 @@ void RuntimeNodeSelect::_update_selection() {
 		if (visual_instance) {
 			bounds = visual_instance->get_aabb();
 		} else {
-#ifndef PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 			CollisionShape3D *collision_shape = Object::cast_to<CollisionShape3D>(node_3d);
 			if (collision_shape) {
 				Ref<Shape3D> shape = collision_shape->get_shape();
@@ -2155,7 +2155,7 @@ void RuntimeNodeSelect::_update_selection() {
 					bounds = shape->get_debug_mesh()->get_aabb();
 				}
 			}
-#endif // PHYSICS_2D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 		}
 
 		Transform3D xform_to_top_level_parent_space = node_3d->get_global_transform().affine_inverse() * node_3d->get_global_transform();

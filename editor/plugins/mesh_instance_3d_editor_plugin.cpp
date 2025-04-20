@@ -39,8 +39,10 @@
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/3d/navigation/navigation_region_3d.h"
 #endif // NAVIGATION_3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
+#endif // PHYSICS_3D_DISABLED
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
@@ -61,6 +63,7 @@ void MeshInstance3DEditor::edit(MeshInstance3D *p_mesh) {
 	node = p_mesh;
 }
 
+#ifndef PHYSICS_3D_DISABLED
 Vector<Ref<Shape3D>> MeshInstance3DEditor::create_shape_from_mesh(Ref<Mesh> p_mesh, int p_option, bool p_verbose) {
 	Vector<Ref<Shape3D>> shapes;
 	switch (p_option) {
@@ -110,7 +113,9 @@ Vector<Ref<Shape3D>> MeshInstance3DEditor::create_shape_from_mesh(Ref<Mesh> p_me
 	}
 	return shapes;
 }
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef PHYSICS_3D_DISABLED
 void MeshInstance3DEditor::_create_collision_shape() {
 	int placement_option = shape_placement->get_selected();
 	int shape_type_option = shape_type->get_selected();
@@ -201,6 +206,7 @@ void MeshInstance3DEditor::_create_collision_shape() {
 
 	ur->commit_action();
 }
+#endif // PHYSICS_3D_DISABLED
 
 void MeshInstance3DEditor::_menu_option(int p_option) {
 	Ref<Mesh> mesh = node->get_mesh();
@@ -212,7 +218,9 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
 		case MENU_OPTION_CREATE_COLLISION_SHAPE: {
+#ifndef PHYSICS_3D_DISABLED
 			shape_dialog->popup_centered();
+#endif // PHYSICS_3D_DISABLED
 		} break;
 
 		case MENU_OPTION_CREATE_NAVMESH: {
@@ -579,7 +587,9 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->set_theme_type_variation("FlatMenuButton");
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
+#ifndef PHYSICS_3D_DISABLED
 	options->get_popup()->add_item(TTR("Create Collision Shape..."), MENU_OPTION_CREATE_COLLISION_SHAPE);
+#endif // PHYSICS_3D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 	options->get_popup()->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
 #endif // NAVIGATION_3D_DISABLED
@@ -613,6 +623,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	add_child(outline_dialog);
 	outline_dialog->connect(SceneStringName(confirmed), callable_mp(this, &MeshInstance3DEditor::_create_outline_mesh));
 
+#ifndef PHYSICS_3D_DISABLED
 	shape_dialog = memnew(ConfirmationDialog);
 	shape_dialog->set_title(TTR("Create Collision Shape"));
 	shape_dialog->set_ok_button_text(TTR("Create"));
@@ -652,6 +663,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 
 	add_child(shape_dialog);
 	shape_dialog->connect(SceneStringName(confirmed), callable_mp(this, &MeshInstance3DEditor::_create_collision_shape));
+#endif // PHYSICS_3D_DISABLED
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);

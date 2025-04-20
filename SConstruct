@@ -986,7 +986,6 @@ if env.editor_build:
         "disable_3d",
         "disable_advanced_gui",
         "disable_physics_2d",
-        "disable_physics_3d",
         "disable_navigation_2d",
     ]:
         if env[disable_opt]:

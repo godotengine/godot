@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "vehicle_body_3d_gizmo_plugin.h"
 
 #include "scene/3d/physics/vehicle_body_3d.h"
@@ -100,3 +102,5 @@ void VehicleWheel3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_lines(points, material);
 	p_gizmo->add_collision_segments(points);
 }
+
+#endif // PHYSICS_3D_DISABLED

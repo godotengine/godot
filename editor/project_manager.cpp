@@ -1250,8 +1250,9 @@ ProjectManager::ProjectManager() {
 #ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3D::get_singleton()->set_active(false);
 #endif // NAVIGATION_3D_DISABLED
-
+#ifndef PHYSICS_3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(false);
+#endif // PHYSICS_3D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(false);
 
 	// Initialize settings.

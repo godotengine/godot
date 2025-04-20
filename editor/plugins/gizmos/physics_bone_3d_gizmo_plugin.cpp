@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "physics_bone_3d_gizmo_plugin.h"
 
 #include "editor/editor_settings.h"
@@ -165,3 +167,5 @@ void PhysicalBone3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_collision_segments(points);
 	p_gizmo->add_lines(points, material);
 }
+
+#endif // PHYSICS_3D_DISABLED

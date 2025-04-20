@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "collision_polygon_3d_gizmo_plugin.h"
 
 #include "core/math/geometry_2d.h"
@@ -230,3 +232,5 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_lines(lines, material, false, collision_color);
 	p_gizmo->add_collision_segments(lines);
 }
+
+#endif // PHYSICS_3D_DISABLED
