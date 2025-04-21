@@ -944,6 +944,9 @@
 			If [code]true[/code], redraws the editor every frame even if nothing has changed on screen. When this setting is enabled, the update spinner displays in red (see [member interface/editor/show_update_spinner]).
 			[b]Warning:[/b] This greatly increases CPU and GPU utilization, leading to increased power usage. This should only be enabled for troubleshooting purposes.
 		</member>
+		<member name="interface/editor/zoom_drag_sensivity" type="float" setter="" getter="">
+			The zoom-drag sensivity factor to use. Increasing the value will increase the zoom-drag speed.
+		</member>
 		<member name="interface/editor/use_embedded_menu" type="bool" setter="" getter="">
 			If [code]true[/code], editor main menu is using embedded [MenuBar] instead of system global menu.
 			Specific to the macOS platform.
