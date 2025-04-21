@@ -64,7 +64,7 @@ def get_android_ndk_root(env: "SConsEnvironment"):
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_ndk_version():
-    return "23.2.8568313"
+    return "27.2.12479018"
 
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
