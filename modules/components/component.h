@@ -44,6 +44,9 @@ class Component : public Resource {
 
 
 public:
+	Object* owner = nullptr;
+
+public:
 	Component() = default;
 
 	StringName get_component_class();
@@ -54,10 +57,18 @@ public:
 	void process(double delta);
 	void physics_process(double delta);
 
-	void input(const Ref<InputEvent> &p_event);
-	void shortcut_input(const Ref<InputEvent> &p_key_event);
-	void unhandled_input(const Ref<InputEvent> &p_event);
-	void unhandled_key_input(const Ref<InputEvent> &p_key_event);
+	bool input(const Ref<InputEvent> &p_event);
+	bool shortcut_input(const Ref<InputEvent> &p_key_event);
+	bool unhandled_input(const Ref<InputEvent> &p_event);
+	bool unhandled_key_input(const Ref<InputEvent> &p_key_event);
+
+	bool is_process_overridden() const;
+	bool is_physics_process_overridden() const;
+
+	bool is_input_overridden() const;
+	bool is_shortcut_input_overridden() const;
+	bool is_unhandled_input_overridden() const;
+	bool is_unhandled_key_input_overridden() const;
 
 
 protected:
@@ -69,10 +80,10 @@ protected:
 	GDVIRTUAL1(_process, double)
 	GDVIRTUAL1(_physics_process, double)
 
-	GDVIRTUAL1(_input, Ref<InputEvent>)
-	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
-	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
-	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
+	GDVIRTUAL1R(bool, _input, Ref<InputEvent>)
+	GDVIRTUAL1R(bool, _shortcut_input, Ref<InputEvent>)
+	GDVIRTUAL1R(bool, _unhandled_input, Ref<InputEvent>)
+	GDVIRTUAL1R(bool, _unhandled_key_input, Ref<InputEvent>)
 };
 
 #endif //GODOT_FROM_SOURCE_COMPONENT_H

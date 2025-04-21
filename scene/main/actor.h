@@ -34,6 +34,7 @@
 
 #include "core/object/object.h"
 #include "core/templates/hash_map.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 #include "core/string/string_name.h"
 #include "modules/components/component.h"
@@ -45,6 +46,12 @@ class Actor : public Object {
 
 protected:
 	HashMap<StringName, Ref<Component>> _component_resources;
+	HashSet<Ref<Component>> _process_group;
+	HashSet<Ref<Component>> _physics_process_group;
+	HashSet<Ref<Component>> _input_group;
+	HashSet<Ref<Component>> _shortcut_input_group;
+	HashSet<Ref<Component>> _unhandled_input_group;
+	HashSet<Ref<Component>> _unhandled_key_input_group;
 
 
 public:
@@ -53,10 +60,22 @@ public:
 
 	bool has_component(StringName component_class) const;
 	Ref<Component> get_component(StringName component_class) const;
-	void set_component(Ref<Component> value);
-	void remove_component(StringName component_class);
+	virtual void set_component(Ref<Component> value);
+	virtual void remove_component(StringName component_class);
 	void get_component_list(List<Ref<Component>> *out) const;
 	void get_component_class_list(List<StringName> *out) const;
+
+
+	void call_components_enter_tree();
+	void call_components_exit_tree();
+	void call_components_ready();
+	void call_components_process(double delta);
+	void call_components_physics_process(double delta);
+
+	bool call_components_input(const Ref<InputEvent> &p_event);
+	bool call_components_shortcut_input(const Ref<InputEvent> &p_key_event);
+	bool call_components_unhandled_input(const Ref<InputEvent> &p_event);
+	bool call_components_unhandled_key_input(const Ref<InputEvent> &p_key_event);
 
 
 protected:

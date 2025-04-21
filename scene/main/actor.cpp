@@ -56,9 +56,36 @@ Ref<Component> Actor::get_component(StringName component_class) const {
 
 
 void Actor::set_component(Ref<Component> value) {
+	ERR_FAIL_COND_MSG(value->owner != nullptr, vformat("This component already has owner. Remove it first."));
 	ERR_FAIL_COND_MSG(!value.is_valid(), vformat("Can't add a null component."));
 
 	_component_resources[value->get_component_class()] = value;
+	value->owner = Object::cast_to<Object>(this);
+
+	if (value->is_process_overridden()) {
+		(void)_process_group.insert(value);
+	}
+
+	if (value->is_physics_process_overridden()) {
+		(void)_physics_process_group.insert(value);
+	}
+
+	if (value->is_input_overridden()) {
+		(void)_input_group.insert(value);
+	}
+
+	if (value->is_shortcut_input_overridden()) {
+		(void)_shortcut_input_group.insert(value);
+	}
+
+	if (value->is_unhandled_input_overridden()) {
+		(void)_unhandled_input_group.insert(value);
+	}
+
+	if (value->is_unhandled_key_input_overridden()) {
+		(void)_unhandled_key_input_group.insert(value);
+	}
+
 	print_line("Success setting component: ", value->get_component_class());
 
 	notify_property_list_changed();
@@ -66,8 +93,18 @@ void Actor::set_component(Ref<Component> value) {
 
 
 void Actor::remove_component(StringName component_class) {
-	if (_component_resources.has(component_class)) {
+	Ref<Component> value = _component_resources.get(component_class);
+	if (value.is_valid()) {
 		_component_resources.erase(component_class);
+		value->owner = nullptr;
+
+		(void)_process_group.erase(value);
+		(void)_physics_process_group.erase(value);
+		(void)_input_group.erase(value);
+		(void)_shortcut_input_group.erase(value);
+		(void)_unhandled_input_group.erase(value);
+		(void)_unhandled_key_input_group.erase(value);
+
 		notify_property_list_changed();
 	}
 }
@@ -86,6 +123,76 @@ void Actor::get_component_class_list(List<StringName> *out) const {
 	}
 }
 
+
+void Actor::call_components_enter_tree() {
+	for (const KeyValue<StringName, Ref<Component>> &K : _component_resources) {
+		K.value->enter_tree();
+	}
+}
+
+void Actor::call_components_exit_tree() {
+	for (const KeyValue<StringName, Ref<Component>> &K : _component_resources) {
+		K.value->exit_tree();
+	}
+}
+
+void Actor::call_components_ready() {
+	for (const KeyValue<StringName, Ref<Component>> &K : _component_resources) {
+		K.value->ready();
+	}
+}
+
+void Actor::call_components_process(double delta) {
+	for (const Ref<Component> &K : _process_group) {
+		K->process(delta);//TODO:: this ideally should call Node::get_process_delta_time()
+	}
+}
+
+void Actor::call_components_physics_process(double delta) {
+	for (const Ref<Component> &K : _physics_process_group) {
+		K->physics_process(delta);//TODO:: this ideally should call Node::get_physics_process_delta_time()
+	}
+}
+
+bool Actor::call_components_input(const Ref<InputEvent> &p_event) {
+	for (const Ref<Component> &K : _input_group) {
+		if (K->input(p_event)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Actor::call_components_shortcut_input(const Ref<InputEvent> &p_key_event) {
+	for (const Ref<Component> &K : _shortcut_input_group) {
+		if (K->shortcut_input(p_key_event)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Actor::call_components_unhandled_input(const Ref<InputEvent> &p_event) {
+	for (const Ref<Component> &K : _unhandled_input_group) {
+		if (K->unhandled_input(p_event)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Actor::call_components_unhandled_key_input(const Ref<InputEvent> &p_key_event) {
+	for (const Ref<Component> &K : _unhandled_key_input_group) {
+		if (K->unhandled_key_input(p_key_event)) {
+			return true;
+		}
+	}
+
+	return false;
+}
 
 void Actor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_component", "component_class"), &Actor::has_component);

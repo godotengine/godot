@@ -186,7 +186,6 @@ private:
 		NodePath import_path; // Path used when imported, used by scene editors to keep tracking.
 #endif
 		String editor_description;
-		Ref<Resource> my_resource;
 
 		Viewport *viewport = nullptr;
 
@@ -274,11 +273,6 @@ private:
 	} data;
 
 	Ref<MultiplayerAPI> multiplayer;
-
-public:
-	void get_component_list(List<StringName> *out) const;
-	Ref<Resource> get_my_resource() const;
-	void set_my_resource(Ref<Resource> value);
 
 private:
 	String _get_tree_string_pretty(const String &p_prefix, bool p_last);
@@ -478,6 +472,11 @@ public:
 		NOTIFICATION_SUSPENDED = 9003,
 		NOTIFICATION_UNSUSPENDED = 9004
 	};
+
+	/* ACTOR/COMPONENT */
+
+	void set_component(Ref<Component> value) override;
+	void remove_component(StringName component_class) override;
 
 	/* NODE/TREE */
 
