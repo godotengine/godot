@@ -45,6 +45,7 @@
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
