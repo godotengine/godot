@@ -333,6 +333,8 @@ public:
 class EditorInspectorSection : public Container {
 	GDCLASS(EditorInspectorSection, Container);
 
+	friend class EditorInspector;
+
 	String label;
 	String section;
 	Color bg_color;
@@ -349,6 +351,8 @@ class EditorInspectorSection : public Container {
 
 	Rect2 check_rect;
 	bool check_hover = false;
+
+	bool hide_feature = false;
 
 	HashSet<StringName> revertable_properties;
 
@@ -382,11 +386,12 @@ public:
 	void fold();
 	void set_bg_color(const Color &p_bg_color);
 	void reset_timer();
-	void set_checkable(const String &p_related_check_property);
+	void set_checkable(const String &p_related_check_property, bool p_hide_feature);
 	void set_checked(bool p_checked);
 
 	bool has_revertable_properties() const;
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
+	void _property_edited(const String &p_property);
 
 	EditorInspectorSection();
 	~EditorInspectorSection();

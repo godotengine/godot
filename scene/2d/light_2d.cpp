@@ -161,7 +161,6 @@ int Light2D::get_item_shadow_cull_mask() const {
 void Light2D::set_shadow_enabled(bool p_enabled) {
 	shadow = p_enabled;
 	RS::get_singleton()->canvas_light_set_shadow_enabled(canvas_light, shadow);
-	notify_property_list_changed();
 }
 
 bool Light2D::is_shadow_enabled() const {
@@ -244,10 +243,6 @@ real_t Light2D::get_shadow_smooth() const {
 }
 
 void Light2D::_validate_property(PropertyInfo &p_property) const {
-	if (!shadow && (p_property.name == "shadow_color" || p_property.name == "shadow_filter" || p_property.name == "shadow_filter_smooth" || p_property.name == "shadow_item_cull_mask")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
 	if (shadow && p_property.name == "shadow_filter_smooth" && shadow_filter == SHADOW_FILTER_NONE) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -315,7 +310,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_cull_mask", "get_item_cull_mask");
 
 	ADD_GROUP("Shadow", "shadow_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_shadow_enabled", "is_shadow_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_shadow_enabled", "is_shadow_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_filter", PROPERTY_HINT_ENUM, "None (Fast),PCF5 (Average),PCF13 (Slow)"), "set_shadow_filter", "get_shadow_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shadow_filter_smooth", PROPERTY_HINT_RANGE, "0,64,0.1"), "set_shadow_smooth", "get_shadow_smooth");
