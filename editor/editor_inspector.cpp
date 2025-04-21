@@ -1827,7 +1827,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				header_offset_x += section_indent;
 			}
 
-			bool has_children_to_show = vbox->get_child_count(false) != 0;
+			bool can_click_unfold = vbox->get_child_count(false) != 0 && !(checkable && !checked && hide_feature);
 
 			// Draw header area.
 			int header_height = _get_header_height();
@@ -1835,7 +1835,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			Color c = bg_color;
 			c.a *= 0.4;
 			if (foldable && header_rect.has_point(get_local_mouse_position())) {
-				c = c.lightened((has_children_to_show && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) ? -0.05 : 0.2);
+				c = c.lightened((can_click_unfold && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) ? -0.05 : 0.2);
 			}
 			draw_rect(header_rect, c);
 
@@ -1857,41 +1857,11 @@ void EditorInspectorSection::_notification(int p_what) {
 						arrow_position.x = margin_start;
 					}
 					arrow_position.y = (header_height - arrow->get_height()) / 2;
-					if (has_children_to_show) {
+					if (can_click_unfold) {
 						draw_texture(arrow, arrow_position);
 					}
 					margin_start += arrow->get_width() + separation;
 				}
-
-				// - Checkbox.
-				Ref<Texture2D> checkbox = _get_checkbox();
-				if (checkbox.is_valid()) {
-					Point2 checkbox_position;
-					if (rtl) {
-						checkbox_position.x = margin_start;
-					} else {
-						checkbox_position.x = get_size().width - (margin_end + checkbox->get_width());
-					}
-					checkbox_position.y = (header_height - checkbox->get_height()) / 2;
-					check_rect = Rect2(checkbox_position.x, checkbox_position.y, checkbox->get_width(), checkbox->get_height());
-
-					Color checkbox_color(1, 1, 1);
-					if (check_hover) {
-						checkbox_color.r *= 1.2;
-						checkbox_color.g *= 1.2;
-						checkbox_color.b *= 1.2;
-					}
-					draw_texture(checkbox, checkbox_position, checkbox_color);
-					margin_end += checkbox->get_width() + 4 * EDSCALE;
-				}
-
-				int available = get_size().width - (margin_start + margin_end);
-
-				// - Count of revertable properties.
-				String num_revertable_str;
-				int num_revertable_width = 0;
-
-				bool folded = foldable && !object->editor_is_section_unfolded(section);
 
 				Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 				int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
@@ -1902,11 +1872,54 @@ void EditorInspectorSection::_notification(int p_what) {
 					font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 				}
 
+				Ref<Font> light_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
+				int light_font_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
+
+				// - Checkbox.
+				Ref<Texture2D> checkbox = _get_checkbox();
+				if (checkbox.is_valid()) {
+					int label_width = light_font->get_string_size("On", HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size).x;
+					Point2 checkbox_position;
+					Point2 label_position;
+					if (rtl) {
+						label_position.x = margin_start;
+						checkbox_position.x = margin_start + label_width + 2 * EDSCALE;
+					} else {
+						label_position.x = get_size().width - (margin_end + label_width);
+						checkbox_position.x = label_position.x - checkbox->get_width() - 2 * EDSCALE;
+					}
+					checkbox_position.y = (header_height - checkbox->get_height()) / 2;
+					label_position.y = light_font->get_ascent(light_font_size) + (header_height - light_font->get_height(light_font_size)) / 2;
+
+					check_rect = Rect2(checkbox_position.x, checkbox_position.y, checkbox->get_width() + label_width + 2 * EDSCALE, checkbox->get_height());
+
+					Color check_font_color = font_color;
+					Color checkbox_color(1, 1, 1);
+					if (check_hover) {
+						checkbox_color.r *= 1.2;
+						checkbox_color.g *= 1.2;
+						checkbox_color.b *= 1.2;
+						check_font_color = checked ? get_theme_color(SNAME("font_hover_pressed_color"), EditorStringName(Editor)) : get_theme_color(SNAME("font_hover_color"), EditorStringName(Editor));
+					} else if (checked) {
+						check_font_color = get_theme_color(SNAME("font_pressed_color"), EditorStringName(Editor));
+					}
+
+					draw_texture(checkbox, checkbox_position, checkbox_color);
+					draw_string(light_font, label_position, "On", HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, check_font_color, TextServer::JUSTIFICATION_NONE);
+					margin_end += label_width + checkbox->get_width() + 6 * EDSCALE;
+				}
+
+				int available = get_size().width - (margin_start + margin_end);
+
+				// - Count of revertable properties.
+				String num_revertable_str;
+				int num_revertable_width = 0;
+
+				bool folded = foldable && !object->editor_is_section_unfolded(section);
+
 				if (folded && revertable_properties.size()) {
 					int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, available, font_size, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS).x;
 
-					Ref<Font> light_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
-					int light_font_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
 					Color light_font_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
 
 					// Can we fit the long version of the revertable count text?
@@ -2084,7 +2097,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
-		if (foldable && has_children_to_show && k->is_action("ui_accept", true)) {
+		if (foldable && has_children_to_show && !(checkable && !checked && hide_feature) && k->is_action("ui_accept", true)) {
 			accept_event();
 
 			bool should_unfold = !object->editor_is_section_unfolded(section);
@@ -2108,12 +2121,16 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 		accept_event();
 
-		if (check_rect.has_point(mb->get_position())) {
+		if (checkable && check_rect.has_point(mb->get_position())) {
 			checked = !checked;
 			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
-			unfold();
-		} else if (foldable) {
-			bool should_unfold = has_children_to_show && !object->editor_is_section_unfolded(section);
+			if (checked) {
+				unfold();
+			} else if (hide_feature) {
+				fold();
+			}
+		} else {
+			bool should_unfold = foldable && has_children_to_show && !(checkable && !checked && hide_feature) && !object->editor_is_section_unfolded(section);
 			if (should_unfold) {
 				unfold();
 			} else {
@@ -2187,11 +2204,12 @@ void EditorInspectorSection::reset_timer() {
 	}
 }
 
-void EditorInspectorSection::set_checkable(const String &p_related_check_property) {
+void EditorInspectorSection::set_checkable(const String &p_related_check_property, bool p_hide_feature) {
 	if (checkable == !p_related_check_property.is_empty()) {
 		return;
 	}
 
+	hide_feature = p_hide_feature;
 	checkable = !p_related_check_property.is_empty();
 	related_enable_property = p_related_check_property;
 	queue_redraw();
@@ -4066,7 +4084,7 @@ void EditorInspector::update_tree() {
 					Variant value_checked = object->get(p.name, &valid);
 
 					if (valid) {
-						last_created_section->set_checkable(p.name);
+						last_created_section->set_checkable(p.name, p.hint_string == "feature");
 						last_created_section->set_checked(value_checked.operator bool());
 
 						if (use_doc_hints) {

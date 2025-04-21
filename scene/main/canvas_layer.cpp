@@ -304,12 +304,6 @@ void CanvasLayer::_update_follow_viewport(bool p_force_exit) {
 	}
 }
 
-void CanvasLayer::_validate_property(PropertyInfo &p_property) const {
-	if (!follow_viewport && p_property.name == "follow_viewport_scale") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-}
-
 void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_layer", "layer"), &CanvasLayer::set_layer);
 	ClassDB::bind_method(D_METHOD("get_layer"), &CanvasLayer::get_layer);
@@ -354,7 +348,7 @@ void CanvasLayer::_bind_methods() {
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_GROUP("Follow Viewport", "follow_viewport");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_follow_viewport", "is_following_viewport");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_follow_viewport", "is_following_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "follow_viewport_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,or_less"), "set_follow_viewport_scale", "get_follow_viewport_scale");
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
