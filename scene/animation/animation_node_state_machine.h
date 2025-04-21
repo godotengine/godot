@@ -49,6 +49,12 @@ public:
 		ADVANCE_MODE_AUTO,
 	};
 
+	enum ConnectionType {
+		CONNECTION_TYPE_DEFAULT,
+		CONNECTION_TYPE_INCOMING,
+		CONNECTION_TYPE_OUTGOING,
+	};
+
 private:
 	SwitchMode switch_mode = SWITCH_MODE_IMMEDIATE;
 	AdvanceMode advance_mode = ADVANCE_MODE_ENABLED;

@@ -2612,7 +2612,10 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 			p_theme->set_color("transition_color", "GraphStateMachine", p_config.font_color);
 			p_theme->set_color("transition_disabled_color", "GraphStateMachine", p_config.font_color * Color(1, 1, 1, 0.2));
+			p_theme->set_color("transition_in_color", "GraphStateMachine", Color(1, 0.30, 0.20));
+			p_theme->set_color("transition_out_color", "GraphStateMachine", Color(0.39, 1, 0.14));
 			p_theme->set_color("transition_icon_color", "GraphStateMachine", Color(1, 1, 1));
+			p_theme->set_color("transition_icon_auto_color", "GraphStateMachine", p_config.accent_color);
 			p_theme->set_color("transition_icon_disabled_color", "GraphStateMachine", Color(1, 1, 1, 0.2));
 			p_theme->set_color("highlight_color", "GraphStateMachine", p_config.accent_color);
 			p_theme->set_color("highlight_disabled_color", "GraphStateMachine", p_config.accent_color * Color(1, 1, 1, 0.6));
