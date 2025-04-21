@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
+#include "editor/editor_settings.h"
 
 class InputEvent;
 class Shortcut;
@@ -59,6 +60,9 @@ private:
 	bool is_dragging = false;
 	bool pan_key_pressed = false;
 	bool force_drag = false;
+
+	bool is_zoom_dragging = false;
+	float zoom_drag_sensitivity_factor = -0.01f;
 
 	bool enable_rmb = false;
 	bool simple_panning_enabled = false;

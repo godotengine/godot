@@ -87,6 +87,11 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 			}
 		}
 
+		if (mb->get_button_index() == MouseButton::MIDDLE && mb->is_ctrl_pressed()) {
+			is_zoom_dragging = mb->is_pressed();
+			return true;
+		}
+
 		// Alt is not used for button presses, so ignore it.
 		if (mb->is_alt_pressed()) {
 			return false;
@@ -115,6 +120,13 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 			} else {
 				pan_callback.call(mm->get_relative(), p_event);
 			}
+			return true;
+		} else if (is_zoom_dragging) {
+			// Zoom drag with vertical movement
+			Vector2 drag_distance = mm->get_relative();
+			float zoom_drag_sensivity = EditorSettings::get_singleton()->get("interface/editor/zoom_drag_sensivity");
+			float zoom_factor = 1.0 + (drag_distance.y * zoom_drag_sensivity * zoom_drag_sensitivity_factor);
+			zoom_callback.call(zoom_factor, mm->get_position(), p_event);
 			return true;
 		}
 	}
