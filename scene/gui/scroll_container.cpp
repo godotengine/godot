@@ -341,6 +341,12 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 void ScrollContainer::_reposition_children() {
 	_update_scrollbars();
 	_update_scroll_hints();
+	Size2 size = get_size();
+	Point2 ofs;
+	bool h_scroll_is_visible = false;
+	bool v_scroll_is_visible = false;
+	bool is_resizing = previous_size != size;
+	previous_size = size;
 
 	Rect2 margins = _get_margins();
 	Size2 size = get_size();
@@ -352,14 +358,18 @@ void ScrollContainer::_reposition_children() {
 
 	if (_is_h_scroll_visible() || horizontal_scroll_mode == SCROLL_MODE_RESERVE) {
 		size.y -= h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
+		h_scroll_is_visible = true;
+	}
+	if (hold_when_max_horizontal && child_previous_min_size == Size2()) {
+		previous_h_scroll_was_max = true;
 	}
 
 	if (reserve_vscroll) {
-		int width = v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
-		size.x -= width;
-		if (rtl) {
-			ofs.x += width;
-		}
+		size.x -= v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
+		v_scroll_is_visible = true;
+	}
+	if (hold_when_max_vertical && child_previous_min_size == Size2()) {
+		previous_v_scroll_was_max = true;
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -367,8 +377,11 @@ void ScrollContainer::_reposition_children() {
 		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
-
 		Size2 minsize = c->get_combined_minimum_size();
+		if (child_previous_min_size != minsize) {
+			is_resizing = true;
+		}
+		child_previous_min_size = minsize;
 		Rect2 r = Rect2(-Size2(get_h_scroll(), get_v_scroll()), minsize);
 
 		if (c->get_h_size_flags().has_flag(SIZE_EXPAND)) {
@@ -381,6 +394,26 @@ void ScrollContainer::_reposition_children() {
 		r.position += ofs;
 		r.position = r.position.floor();
 		fit_child_in_rect(c, r);
+		if (hold_when_max_horizontal && is_resizing && h_scroll_is_visible && previous_h_scroll_was_max) {
+			c->set_position(Point2(size.x - c->get_size().x, c->get_position().y));
+		}
+		if (hold_when_max_vertical && is_resizing && v_scroll_is_visible && previous_v_scroll_was_max) {
+			c->set_position(Point2(c->get_position().x, size.y - c->get_size().y));
+		}
+	}
+	if (h_scroll_is_visible) {
+		if (hold_when_max_horizontal && is_resizing && previous_h_scroll_was_max) {
+			h_scroll->set_value_no_signal(h_scroll->get_max() - h_scroll->get_page());
+			_cancel_drag();
+		}
+		previous_h_scroll_was_max = h_scroll->get_max() - h_scroll->get_page() - h_scroll->get_value() <= max_value_snap;
+	}
+	if (v_scroll_is_visible) {
+		if (hold_when_max_vertical && is_resizing && previous_v_scroll_was_max) {
+			v_scroll->set_value_no_signal(v_scroll->get_max() - v_scroll->get_page());
+			_cancel_drag();
+		}
+		previous_v_scroll_was_max = v_scroll->get_max() - v_scroll->get_page() - v_scroll->get_value() <= max_value_snap;
 	}
 
 	if (draw_focus_border) {
@@ -803,6 +836,22 @@ VScrollBar *ScrollContainer::get_v_scroll_bar() {
 	return v_scroll;
 }
 
+bool ScrollContainer::is_hold_when_max_horizontal() const {
+	return hold_when_max_horizontal;
+}
+
+void ScrollContainer::set_hold_when_max_horizontal(bool p_keep_max) {
+	hold_when_max_horizontal = p_keep_max;
+}
+
+bool ScrollContainer::is_hold_when_max_vertical() const {
+	return hold_when_max_vertical;
+}
+
+void ScrollContainer::set_hold_when_max_vertical(bool p_keep_max) {
+	hold_when_max_vertical = p_keep_max;
+}
+
 void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
@@ -834,6 +883,12 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_follow_focus", "enabled"), &ScrollContainer::set_follow_focus);
 	ClassDB::bind_method(D_METHOD("is_following_focus"), &ScrollContainer::is_following_focus);
 
+	ClassDB::bind_method(D_METHOD("set_hold_when_max_horizontal", "enabled"), &ScrollContainer::set_hold_when_max_horizontal);
+	ClassDB::bind_method(D_METHOD("is_hold_when_max_horizontal"), &ScrollContainer::is_hold_when_max_horizontal);
+
+	ClassDB::bind_method(D_METHOD("set_hold_when_max_vertical", "enabled"), &ScrollContainer::set_hold_when_max_vertical);
+	ClassDB::bind_method(D_METHOD("is_hold_when_max_vertical"), &ScrollContainer::is_hold_when_max_vertical);
+
 	ClassDB::bind_method(D_METHOD("get_h_scroll_bar"), &ScrollContainer::get_h_scroll_bar);
 	ClassDB::bind_method(D_METHOD("get_v_scroll_bar"), &ScrollContainer::get_v_scroll_bar);
 	ClassDB::bind_method(D_METHOD("ensure_control_visible", "control"), &ScrollContainer::ensure_control_visible);
@@ -848,6 +903,11 @@ void ScrollContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_focus_border"), "set_draw_focus_border", "get_draw_focus_border");
 
 	ADD_GROUP("Scrollbar", "");
+	ADD_GROUP("Resize Behavior", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hold_when_max_horizontal"), "set_hold_when_max_horizontal", "is_hold_when_max_horizontal");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hold_when_max_vertical"), "set_hold_when_max_vertical", "is_hold_when_max_vertical");
+
+	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal", PROPERTY_HINT_NONE, "suffix:px"), "set_h_scroll", "get_h_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:px"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_horizontal_custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_horizontal_custom_step", "get_horizontal_custom_step");

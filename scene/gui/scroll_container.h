@@ -74,6 +74,13 @@ private:
 	bool drag_touching_deaccel = false;
 	bool beyond_deadzone = false;
 	bool scroll_on_drag_hover = false;
+	bool previous_h_scroll_was_max;
+	bool previous_v_scroll_was_max;
+	bool hold_when_max_horizontal = false;
+	bool hold_when_max_vertical = false;
+	const int max_value_snap = 5;
+	Size2 previous_size;
+	Size2 child_previous_min_size;
 
 	TextureRect *scroll_hint_top_left = nullptr;
 	TextureRect *scroll_hint_bottom_right = nullptr;
@@ -169,6 +176,12 @@ public:
 	void set_follow_focus(bool p_follow);
 
 	void set_scroll_on_drag_hover(bool p_scroll);
+
+	bool is_hold_when_max_horizontal() const;
+	void set_hold_when_max_horizontal(bool p_keep_max);
+
+	bool is_hold_when_max_vertical() const;
+	void set_hold_when_max_vertical(bool p_keep_max);
 
 	HScrollBar *get_h_scroll_bar();
 	VScrollBar *get_v_scroll_bar();
