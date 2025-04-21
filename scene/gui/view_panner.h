@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
-#include "editor/editor_settings.h"
 
 class InputEvent;
 class Shortcut;
@@ -62,6 +61,7 @@ private:
 	bool force_drag = false;
 
 	bool is_zoom_dragging = false;
+	float zoom_drag_sensitivity = 1.0f;
 	float zoom_drag_sensitivity_factor = -0.01f;
 
 	bool enable_rmb = false;
@@ -84,6 +84,7 @@ public:
 	void set_scroll_speed(int p_scroll_speed);
 	void set_scroll_zoom_factor(float p_scroll_zoom_factor);
 	void set_pan_axis(PanAxis p_pan_axis);
+	void set_zoom_drag_sensitivity(float p_sensitivity);
 
 	void setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning);
 	void setup_warped_panning(Viewport *p_viewport, bool p_allowed);

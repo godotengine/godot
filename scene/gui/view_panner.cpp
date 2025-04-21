@@ -124,7 +124,6 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 		} else if (is_zoom_dragging) {
 			// Zoom drag with vertical movement
 			Vector2 drag_distance = mm->get_relative();
-			float zoom_drag_sensitivity = EditorSettings::get_singleton()->get("interface/editor/zoom_drag_sensitivity");
 			float zoom_factor = 1.0 + (drag_distance.y * zoom_drag_sensitivity * zoom_drag_sensitivity_factor);
 			zoom_callback.call(zoom_factor, mm->get_position(), p_event);
 			return true;
@@ -217,6 +216,11 @@ void ViewPanner::set_scroll_zoom_factor(float p_scroll_zoom_factor) {
 
 void ViewPanner::set_pan_axis(PanAxis p_pan_axis) {
 	pan_axis = p_pan_axis;
+}
+
+void ViewPanner::set_zoom_drag_sensitivity(float p_zoom_drag_sensitivity) {
+	ERR_FAIL_COND(p_zoom_drag_sensitivity < 0.0f);
+	zoom_drag_sensitivity = p_zoom_drag_sensitivity;
 }
 
 void ViewPanner::setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning) {

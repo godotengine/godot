@@ -582,6 +582,9 @@
 		<member name="editors/panning/warped_mouse_panning" type="bool" setter="" getter="">
 			If [code]true[/code], warps the mouse around the 2D viewport while panning in the 2D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
 		</member>
+		<member name="editors/panning/zoom_drag_sensitivity" type="float" setter="" getter="">
+			The zoom-drag sensitivity factor to use. Increasing the value will increase the zoom-drag speed.
+		</member>
 		<member name="editors/polygon_editor/auto_bake_delay" type="float" setter="" getter="">
 			The delay in seconds until more complex and performance costly polygon editors commit their outlines, e.g. the 2D navigation polygon editor rebakes the navigation mesh polygons. A negative value stops the auto bake.
 		</member>
@@ -943,9 +946,6 @@
 		<member name="interface/editor/update_continuously" type="bool" setter="" getter="">
 			If [code]true[/code], redraws the editor every frame even if nothing has changed on screen. When this setting is enabled, the update spinner displays in red (see [member interface/editor/show_update_spinner]).
 			[b]Warning:[/b] This greatly increases CPU and GPU utilization, leading to increased power usage. This should only be enabled for troubleshooting purposes.
-		</member>
-		<member name="interface/editor/zoom_drag_sensitivity" type="float" setter="" getter="">
-			The zoom-drag sensitivity factor to use. Increasing the value will increase the zoom-drag speed.
 		</member>
 		<member name="interface/editor/use_embedded_menu" type="bool" setter="" getter="">
 			If [code]true[/code], editor main menu is using embedded [MenuBar] instead of system global menu.
