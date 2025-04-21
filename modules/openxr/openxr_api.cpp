@@ -52,6 +52,10 @@
 #include "extensions/platform/openxr_opengl_extension.h"
 #endif
 
+#ifdef D3D12_ENABLED
+#include "extensions/platform/openxr_d3d12_extension.h"
+#endif
+
 #include "extensions/openxr_composition_layer_depth_extension.h"
 #include "extensions/openxr_debug_utils_extension.h"
 #include "extensions/openxr_eye_gaze_interaction.h"
@@ -1675,6 +1679,14 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 	} else if (p_rendering_driver == "opengl3") {
 #if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 		graphics_extension = memnew(OpenXROpenGLExtension);
+		register_extension_wrapper(graphics_extension);
+#else
+		// shouldn't be possible...
+		ERR_FAIL_V(false);
+#endif
+	} else if (p_rendering_driver == "d3d12") {
+#ifdef D3D12_ENABLED
+		graphics_extension = memnew(OpenXRD3D12Extension);
 		register_extension_wrapper(graphics_extension);
 #else
 		// shouldn't be possible...
