@@ -101,14 +101,11 @@ jobs:
         with:
           submodules: recursive
 
-      # Need newer mesa for lavapipe to work properly.
       - name: Linux dependencies for tests
         if: matrix.proj-test
         run: |
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB8B81E14DA65431D7504EA8F63F0F2B90935439
-          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu jammy main"
-          sudo apt-get install -qq mesa-vulkan-drivers
+          sudo apt-get install mesa-vulkan-drivers
 
       # TODO: Figure out somehow how to embed this one.
       - name: wayland-scanner dependency
