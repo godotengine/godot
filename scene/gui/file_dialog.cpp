@@ -35,6 +35,7 @@
 #include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
@@ -1343,32 +1344,39 @@ void FileDialog::_update_option_controls() {
 	}
 	options_dirty = false;
 
-	while (grid_options->get_child_count() > 0) {
-		Node *child = grid_options->get_child(0);
-		grid_options->remove_child(child);
+	while (flow_checkbox_options->get_child_count() > 0) {
+		Node *child = flow_checkbox_options->get_child(0);
+		flow_checkbox_options->remove_child(child);
+		child->queue_free();
+	}
+	while (grid_select_options->get_child_count() > 0) {
+		Node *child = grid_select_options->get_child(0);
+		grid_select_options->remove_child(child);
 		child->queue_free();
 	}
 	selected_options.clear();
 
 	for (const FileDialog::Option &opt : options) {
-		Label *lbl = memnew(Label);
-		lbl->set_text(opt.name);
-		grid_options->add_child(lbl);
 		if (opt.values.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
+			cb->set_text(opt.name);
 			cb->set_accessibility_name(opt.name);
 			cb->set_pressed(opt.default_idx);
-			grid_options->add_child(cb);
+			flow_checkbox_options->add_child(cb);
 			cb->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::_option_changed_checkbox_toggled).bind(opt.name));
 			selected_options[opt.name] = (bool)opt.default_idx;
 		} else {
+			Label *lbl = memnew(Label);
+			lbl->set_text(opt.name);
+			grid_select_options->add_child(lbl);
+
 			OptionButton *ob = memnew(OptionButton);
 			for (const String &val : opt.values) {
 				ob->add_item(val);
 			}
 			ob->set_accessibility_name(opt.name);
 			ob->select(opt.default_idx);
-			grid_options->add_child(ob);
+			grid_select_options->add_child(ob);
 			ob->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_option_changed_item_selected).bind(opt.name));
 			selected_options[opt.name] = opt.default_idx;
 		}
@@ -1791,10 +1799,15 @@ FileDialog::FileDialog() {
 	file_box->add_child(filter);
 	filter->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_filter_selected));
 
-	grid_options = memnew(GridContainer);
-	grid_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	grid_options->set_columns(2);
-	main_vbox->add_child(grid_options);
+	flow_checkbox_options = memnew(HFlowContainer);
+	flow_checkbox_options->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	flow_checkbox_options->set_alignment(FlowContainer::ALIGNMENT_CENTER);
+	main_vbox->add_child(flow_checkbox_options);
+
+	grid_select_options = memnew(GridContainer);
+	grid_select_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	grid_select_options->set_columns(2);
+	main_vbox->add_child(grid_select_options);
 
 	confirm_save = memnew(ConfirmationDialog);
 	add_child(confirm_save, false, INTERNAL_MODE_FRONT);

@@ -34,6 +34,7 @@
 #include "scene/property_list_helper.h"
 
 class DirAccess;
+class FlowContainer;
 class GridContainer;
 class HBoxContainer;
 class ItemList;
@@ -138,7 +139,8 @@ private:
 	LineEdit *filename_edit = nullptr;
 	OptionButton *filter = nullptr;
 
-	GridContainer *grid_options = nullptr;
+	FlowContainer *flow_checkbox_options = nullptr;
+	GridContainer *grid_select_options = nullptr;
 
 	ConfirmationDialog *make_dir_dialog = nullptr;
 	LineEdit *new_dir_name = nullptr;
