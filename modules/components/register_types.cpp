@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  components/register_types.cpp                                         */
+/*  register_types.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-
 #include "register_types.h"
 
-#include "core/object/class_db.h"
 #include "component.h"
-
+#include "core/object/class_db.h"
 
 void initialize_components_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -42,7 +40,6 @@ void initialize_components_module(ModuleInitializationLevel p_level) {
 
 	ClassDB::register_class<Component>();
 }
-
 
 void uninitialize_components_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {

@@ -33,10 +33,10 @@
 #include "editor/add_component_dialog.h"
 #include "editor/add_metadata_dialog.h"
 #include "editor_property_name_processor.h"
+#include "modules/components/component.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/main/actor.h"
-#include "modules/components/component.h"
 
 class AcceptDialog;
 class Button;

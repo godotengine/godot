@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  components/register_types.h                                           */
+/*  register_types.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,15 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-
-#ifndef COMPONENTS_REGISTER_TYPES_H
-#define COMPONENTS_REGISTER_TYPES_H
+#pragma once
 
 #include "modules/register_module_types.h"
 
-
 void initialize_components_module(ModuleInitializationLevel p_level);
 void uninitialize_components_module(ModuleInitializationLevel p_level);
-
-
-#endif //COMPONENTS_REGISTER_TYPES_H
