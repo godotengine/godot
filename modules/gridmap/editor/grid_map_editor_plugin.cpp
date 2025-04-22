@@ -815,8 +815,8 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 					for (const SetItem &si : set_items) {
 						undo_redo->add_do_method(node, "set_cell_item", si.position, si.new_value, si.new_orientation);
 					}
-					for (List<SetItem>::Element *E = set_items.back(); E; E = E->prev()) {
-						const SetItem &si = E->get();
+					for (uint32_t i = set_items.size(); i > 0; i--) {
+						const SetItem &si = set_items[i - 1];
 						undo_redo->add_undo_method(node, "set_cell_item", si.position, si.old_value, si.old_orientation);
 					}
 
@@ -1386,6 +1386,8 @@ GridMapEditor::GridMapEditor() {
 	HBoxContainer *mode_buttons = memnew(HBoxContainer);
 	toolbar->add_child(mode_buttons);
 	mode_buttons_group.instantiate();
+
+	viewport_shortcut_buttons.reserve(12);
 
 	transform_mode_button = memnew(Button);
 	transform_mode_button->set_theme_type_variation(SceneStringName(FlatButton));

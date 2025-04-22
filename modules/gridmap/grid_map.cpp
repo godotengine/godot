@@ -32,6 +32,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/math/convex_hull.h"
+#include "core/templates/a_hash_map.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
@@ -644,7 +645,11 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	 * and set said multimesh bounding box to one containing all cells which have this item
 	 */
 
-	HashMap<int, List<Pair<Transform3D, IndexKey>>> multimesh_items;
+	struct MultiMeshItemPlacement {
+		Transform3D transform;
+		IndexKey index_key;
+	};
+	AHashMap<int, LocalVector<MultiMeshItemPlacement>> item_id_to_multimesh_item_placements;
 
 	RID scenario;
 #ifndef NAVIGATION_3D_DISABLED
@@ -676,14 +681,14 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 		if (baked_meshes.is_empty()) {
 			if (mesh_library->get_item_mesh(c.item).is_valid()) {
-				if (!multimesh_items.has(c.item)) {
-					multimesh_items[c.item] = List<Pair<Transform3D, IndexKey>>();
+				if (!item_id_to_multimesh_item_placements.has(c.item)) {
+					item_id_to_multimesh_item_placements[c.item] = LocalVector<MultiMeshItemPlacement>();
 				}
 
-				Pair<Transform3D, IndexKey> p;
-				p.first = xform * mesh_library->get_item_mesh_transform(c.item);
-				p.second = E;
-				multimesh_items[c.item].push_back(p);
+				MultiMeshItemPlacement p;
+				p.transform = xform * mesh_library->get_item_mesh_transform(c.item);
+				p.index_key = E;
+				item_id_to_multimesh_item_placements[c.item].push_back(p);
 			}
 		}
 
@@ -754,7 +759,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 	//update multimeshes, only if not baked
 	if (baked_meshes.is_empty()) {
-		for (const KeyValue<int, List<Pair<Transform3D, IndexKey>>> &E : multimesh_items) {
+		for (const KeyValue<int, LocalVector<MultiMeshItemPlacement>> &E : item_id_to_multimesh_item_placements) {
 			Octant::MultimeshInstance mmi;
 
 			RID mm = RS::get_singleton()->multimesh_create();
@@ -762,14 +767,15 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			RS::get_singleton()->multimesh_set_mesh(mm, mesh_library->get_item_mesh(E.key)->get_rid());
 
 			int idx = 0;
-			for (const Pair<Transform3D, IndexKey> &F : E.value) {
-				RS::get_singleton()->multimesh_instance_set_transform(mm, idx, F.first);
+			const LocalVector<MultiMeshItemPlacement> &mm_item_placements = E.value;
+			for (const MultiMeshItemPlacement &mm_item_placement : mm_item_placements) {
+				RS::get_singleton()->multimesh_instance_set_transform(mm, idx, mm_item_placement.transform);
 #ifdef TOOLS_ENABLED
 
 				Octant::MultimeshInstance::Item it;
 				it.index = idx;
-				it.transform = F.first;
-				it.key = F.second;
+				it.transform = mm_item_placement.transform;
+				it.key = mm_item_placement.index_key;
 				mmi.items.push_back(it);
 #endif
 
@@ -1131,17 +1137,19 @@ void GridMap::_update_octants_callback() {
 		return;
 	}
 
-	List<OctantKey> to_delete;
+	LocalVector<OctantKey> to_delete;
+	to_delete.reserve(octant_map.size());
 	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
 		if (_octant_update(E.key)) {
 			to_delete.push_back(E.key);
 		}
 	}
 
-	while (to_delete.front()) {
-		memdelete(octant_map[to_delete.front()->get()]);
-		octant_map.erase(to_delete.front()->get());
-		to_delete.pop_front();
+	while (!to_delete.is_empty()) {
+		const OctantKey &octantkey = to_delete[0];
+		memdelete(octant_map[octantkey]);
+		octant_map.erase(octantkey);
+		to_delete.remove_at_unordered(0);
 	}
 
 	_update_visibility();
