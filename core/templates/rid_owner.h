@@ -33,7 +33,7 @@
 #include "core/os/memory.h"
 #include "core/os/mutex.h"
 #include "core/string/print_string.h"
-#include "core/templates/list.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
 
@@ -381,19 +381,21 @@ public:
 	_FORCE_INLINE_ uint32_t get_rid_count() const {
 		return alloc_count;
 	}
-	void get_owned_list(List<RID> *p_owned) const {
+	LocalVector<RID> get_owned_list() const {
+		LocalVector<RID> owned;
 		if constexpr (THREAD_SAFE) {
 			mutex.lock();
 		}
 		for (size_t i = 0; i < max_alloc; i++) {
 			uint64_t validator = chunks[i / elements_in_chunk][i % elements_in_chunk].validator;
 			if (validator != 0xFFFFFFFF) {
-				p_owned->push_back(_make_from_id((validator << 32) | i));
+				owned.push_back(_make_from_id((validator << 32) | i));
 			}
 		}
 		if constexpr (THREAD_SAFE) {
 			mutex.unlock();
 		}
+		return owned;
 	}
 
 	//used for fast iteration in the elements or RIDs
@@ -505,8 +507,8 @@ public:
 		return alloc.get_rid_count();
 	}
 
-	_FORCE_INLINE_ void get_owned_list(List<RID> *p_owned) const {
-		return alloc.get_owned_list(p_owned);
+	_FORCE_INLINE_ LocalVector<RID> get_owned_list() const {
+		return alloc.get_owned_list();
 	}
 
 	void fill_owned_buffer(RID *p_rid_buffer) const {
@@ -561,8 +563,8 @@ public:
 		return alloc.get_rid_count();
 	}
 
-	_FORCE_INLINE_ void get_owned_list(List<RID> *p_owned) const {
-		return alloc.get_owned_list(p_owned);
+	_FORCE_INLINE_ LocalVector<RID> get_owned_list() const {
+		return alloc.get_owned_list();
 	}
 	void fill_owned_buffer(RID *p_rid_buffer) const {
 		alloc.fill_owned_buffer(p_rid_buffer);

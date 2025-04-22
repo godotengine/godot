@@ -1419,9 +1419,7 @@ bool OpenXRAPI::on_state_synchronized() {
 	print_verbose("On state synchronized");
 
 	// Just in case, see if we already have active trackers...
-	List<RID> trackers;
-	tracker_owner.get_owned_list(&trackers);
-	for (const RID &tracker : trackers) {
+	for (const RID &tracker : tracker_owner.get_owned_list()) {
 		tracker_check_profile(tracker);
 	}
 
@@ -2078,9 +2076,7 @@ bool OpenXRAPI::poll_events() {
 
 				XrEventDataInteractionProfileChanged *event = (XrEventDataInteractionProfileChanged *)&runtimeEvent;
 
-				List<RID> trackers;
-				tracker_owner.get_owned_list(&trackers);
-				for (const RID &tracker : trackers) {
+				for (const RID &tracker : tracker_owner.get_owned_list()) {
 					tracker_check_profile(tracker, event->session);
 				}
 
@@ -2909,12 +2905,10 @@ XrPath OpenXRAPI::get_xr_path(const String &p_path) {
 }
 
 RID OpenXRAPI::get_tracker_rid(XrPath p_path) {
-	List<RID> current;
-	tracker_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		Tracker *tracker = tracker_owner.get_or_null(E);
+	for (const RID &tracker_rid : tracker_owner.get_owned_list()) {
+		Tracker *tracker = tracker_owner.get_or_null(tracker_rid);
 		if (tracker && tracker->toplevel_path == p_path) {
-			return E;
+			return tracker_rid;
 		}
 	}
 
@@ -2922,12 +2916,10 @@ RID OpenXRAPI::get_tracker_rid(XrPath p_path) {
 }
 
 RID OpenXRAPI::find_tracker(const String &p_name) {
-	List<RID> current;
-	tracker_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		Tracker *tracker = tracker_owner.get_or_null(E);
+	for (const RID &tracker_rid : tracker_owner.get_owned_list()) {
+		Tracker *tracker = tracker_owner.get_or_null(tracker_rid);
 		if (tracker && tracker->name == p_name) {
-			return E;
+			return tracker_rid;
 		}
 	}
 
@@ -3035,12 +3027,10 @@ RID OpenXRAPI::action_set_create(const String p_name, const String p_localized_n
 }
 
 RID OpenXRAPI::find_action_set(const String p_name) {
-	List<RID> current;
-	action_set_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		ActionSet *action_set = action_set_owner.get_or_null(E);
+	for (const RID &action_set_rid : action_set_owner.get_owned_list()) {
+		ActionSet *action_set = action_set_owner.get_or_null(action_set_rid);
 		if (action_set && action_set->name == p_name) {
-			return E;
+			return action_set_rid;
 		}
 	}
 
@@ -3139,12 +3129,10 @@ void OpenXRAPI::action_set_free(RID p_action_set) {
 }
 
 RID OpenXRAPI::get_action_rid(XrAction p_action) {
-	List<RID> current;
-	action_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		Action *action = action_owner.get_or_null(E);
+	for (const RID &action_rid : action_owner.get_owned_list()) {
+		Action *action = action_owner.get_or_null(action_rid);
 		if (action && action->handle == p_action) {
-			return E;
+			return action_rid;
 		}
 	}
 
@@ -3152,12 +3140,10 @@ RID OpenXRAPI::get_action_rid(XrAction p_action) {
 }
 
 RID OpenXRAPI::find_action(const String &p_name, const RID &p_action_set) {
-	List<RID> current;
-	action_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		Action *action = action_owner.get_or_null(E);
+	for (const RID &action_rid : action_owner.get_owned_list()) {
+		Action *action = action_owner.get_or_null(action_rid);
 		if (action && action->name == p_name && (p_action_set.is_null() || action->action_set_rid == p_action_set)) {
-			return E;
+			return action_rid;
 		}
 	}
 
@@ -3269,12 +3255,10 @@ void OpenXRAPI::action_free(RID p_action) {
 }
 
 RID OpenXRAPI::get_interaction_profile_rid(XrPath p_path) {
-	List<RID> current;
-	interaction_profile_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		InteractionProfile *ip = interaction_profile_owner.get_or_null(E);
+	for (const RID &ip_rid : interaction_profile_owner.get_owned_list()) {
+		InteractionProfile *ip = interaction_profile_owner.get_or_null(ip_rid);
 		if (ip && ip->path == p_path) {
-			return E;
+			return ip_rid;
 		}
 	}
 
