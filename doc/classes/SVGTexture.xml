@@ -19,11 +19,24 @@
 				Creates a new [SVGTexture] and initializes it by allocating and setting the SVG data from string.
 			</description>
 		</method>
+		<method name="get_source" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns SVG source code.
+			</description>
+		</method>
 		<method name="set_size_override">
 			<return type="void" />
 			<param index="0" name="size" type="Vector2i" />
 			<description>
 				Resizes the texture to the specified dimensions.
+			</description>
+		</method>
+		<method name="set_source">
+			<return type="void" />
+			<param index="0" name="source" type="String" />
+			<description>
+				Sets SVG source code.
 			</description>
 		</method>
 	</methods>
@@ -37,9 +50,6 @@
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="saturation" type="float" setter="set_saturation" getter="get_saturation" default="1.0">
 			Overrides texture saturation.
-		</member>
-		<member name="source" type="String" setter="set_source" getter="get_source" default="&quot;&quot;">
-			SVG source code.
 		</member>
 	</members>
 </class>

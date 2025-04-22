@@ -193,7 +193,9 @@ RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
 	const bool upsample = !Math::is_equal_approx(Math::round(p_scale * base_scale), p_scale * base_scale);
 
 	Error err = ImageLoaderSVG::create_image_from_string(img, source, p_scale * base_scale, upsample, cmap);
-	ERR_FAIL_COND_V_MSG(err != OK, RID(), "Failed generating icon, unsupported or invalid SVG data in default theme.");
+	if (err != OK) {
+		return RID();
+	}
 #else
 	img = Image::create_empty(Math::round(16 * p_scale * base_scale), Math::round(16 * p_scale * base_scale), false, Image::FORMAT_RGBA8);
 #endif
@@ -372,7 +374,7 @@ void SVGTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_color_map"), &SVGTexture::get_color_map);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &SVGTexture::set_size_override);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source", PROPERTY_HINT_MULTILINE_TEXT), "set_source", "get_source");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "_source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE), "set_source", "get_source");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_scale", PROPERTY_HINT_RANGE, "0.01,10.0,0.01"), "set_base_scale", "get_base_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "saturation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_saturation", "get_saturation");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "color_map"), "set_color_map", "get_color_map");
