@@ -48,6 +48,13 @@
 				Only available when running in the editor. Opens a popup that visualizes the generated shader code, including all variants and internal shader code. See also [method Shader.inspect_native_shader_code].
 			</description>
 		</method>
+		<method name="set_material_rid" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="material" type="RID" />
+			<description>
+				Sets the [RenderingServer]'s material RID of this [Material].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass">
