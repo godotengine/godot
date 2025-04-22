@@ -373,6 +373,7 @@ public:
 
 	void notification(int p_notification, bool p_reversed = false) override;
 	void _call_notification(int p_notification, bool p_reversed = false);
+	virtual void get_configuration_info(List<ConfigurationInfo> *p_infos) const override;
 
 	String to_string(bool *r_valid) override;
 

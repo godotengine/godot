@@ -101,7 +101,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	String _get_property_warning(const StringName &p_name) const;
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
 
 	static void _bind_methods();
 

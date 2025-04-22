@@ -32,16 +32,14 @@
 
 #include "scene/3d/spring_bone_simulator_3d.h"
 
-PackedStringArray SpringBoneCollision3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node3D::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void SpringBoneCollision3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	SpringBoneSimulator3D *parent = Object::cast_to<SpringBoneSimulator3D>(get_parent());
 	if (!parent) {
-		warnings.push_back(RTR("Parent node should be a SpringBoneSimulator3D node."));
+		CONFIG_WARNING(RTR("Parent node should be a SpringBoneSimulator3D node."));
 	}
-
-	return warnings;
 }
+#endif
 
 void SpringBoneCollision3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "bone_name") {

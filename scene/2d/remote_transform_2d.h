@@ -69,7 +69,9 @@ public:
 
 	void force_update_cache();
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	RemoteTransform2D();
 };

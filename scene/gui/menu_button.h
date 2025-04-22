@@ -71,7 +71,7 @@ public:
 	int get_item_count() const;
 
 #ifdef TOOLS_ENABLED
-	PackedStringArray get_configuration_warnings() const override;
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
 #endif
 
 	MenuButton(const String &p_text = String());

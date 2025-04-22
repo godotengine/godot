@@ -652,7 +652,9 @@ public:
 	Control *gui_get_hovered_control() const;
 	Window *get_focused_subwindow() const { return gui.subwindow_focused; }
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;
