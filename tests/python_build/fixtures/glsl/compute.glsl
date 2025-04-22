@@ -4,7 +4,6 @@
 
 #VERSION_DEFINES
 
-
 #include "_included.glsl"
 
 void main() {
