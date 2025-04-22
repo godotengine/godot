@@ -51,7 +51,6 @@ class EditorQuickMovieMakerConfig : public PopupPanel {
 	void _notification(int p_what);
 	void _open_settings_pressed();
 
-public:
 	void _close_requested();
 	void _path_edit_focus_exited();
 	void _path_edit_text_submitted(const String &p_new_text);
@@ -59,5 +58,6 @@ public:
 	void _visibility_changed();
 	void _update_movie_file_path(const String &p_new_text);
 
+public:
 	EditorQuickMovieMakerConfig();
 };
