@@ -696,6 +696,7 @@ EditorRunBar::EditorRunBar() {
 	movie_dropdown_button->set_pressed(false);
 	movie_dropdown_button->set_focus_mode(Control::FOCUS_NONE);
 
+	// TODO: Toggle dropdown button off whenever config panel is made invisible.
 	movie_dropdown_button->connect(SceneStringName(toggled), callable_mp(this, &EditorRunBar::_movie_dropdown_toggled));
 
 	movie_popup = memnew(EditorQuickMovieMakerConfig);

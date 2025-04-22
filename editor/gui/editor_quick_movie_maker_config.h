@@ -33,6 +33,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_filepath_select.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
 
@@ -44,9 +45,11 @@ class EditorQuickMovieMakerConfig : public PopupPanel {
 	Label *path_label = nullptr;
 	VBoxContainer *path_container = nullptr;
 	EditorFilepathSelect *filepath_select = nullptr;
+	Button *open_settings_button = nullptr;
 	bool movie_path_was_changed = false;
 
 	void _notification(int p_what);
+	void _open_settings_pressed();
 
 public:
 	void _close_requested();

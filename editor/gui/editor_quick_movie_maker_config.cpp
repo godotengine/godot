@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 
 void EditorQuickMovieMakerConfig::_close_requested() {
@@ -89,6 +90,12 @@ void EditorQuickMovieMakerConfig::_notification(int p_what) {
 	}
 }
 
+void EditorQuickMovieMakerConfig::_open_settings_pressed() {
+	set_visible(false);
+	ProjectSettingsEditor::get_singleton()->popup_project_settings(true);
+	ProjectSettingsEditor::get_singleton()->set_general_page("editor/movie_writer");
+}
+
 EditorQuickMovieMakerConfig::EditorQuickMovieMakerConfig() {
 	set_transient(true);
 
@@ -116,4 +123,9 @@ EditorQuickMovieMakerConfig::EditorQuickMovieMakerConfig() {
 			filepath_select->get_dialog()->add_filter(e);
 		}
 	}
+
+	open_settings_button = memnew(Button);
+	parts_container->add_child(open_settings_button);
+	open_settings_button->set_text("Open Project Settings...");
+	open_settings_button->connect("pressed", callable_mp(this, &EditorQuickMovieMakerConfig::_open_settings_pressed));
 }
