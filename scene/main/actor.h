@@ -76,4 +76,6 @@ protected:
 	void _get_property_list(List<PropertyInfo> *out) const;
 	bool _get(const StringName &p_property, Variant &r_value) const;
 	bool _set(const StringName &p_property, const Variant &p_value);
+
+	bool _remove_component(StringName component_class);
 };

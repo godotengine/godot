@@ -52,8 +52,10 @@ Ref<Component> Actor::get_component(StringName component_class) const {
 }
 
 void Actor::set_component(Ref<Component> value) {
-	ERR_FAIL_COND_MSG(value->owner != nullptr, vformat("This component already has owner. Remove it first."));
+	ERR_FAIL_COND_MSG(value->owner != nullptr, vformat("This component already has an owner. Remove it first."));
 	ERR_FAIL_COND_MSG(!value.is_valid(), vformat("Can't add a null component."));
+
+	(void)_remove_component(value->get_component_class());
 
 	_component_resources[value->get_component_class()] = value;
 	value->owner = Object::cast_to<Object>(this);
@@ -86,18 +88,7 @@ void Actor::set_component(Ref<Component> value) {
 }
 
 void Actor::remove_component(StringName component_class) {
-	Ref<Component> value = _component_resources.get(component_class);
-	if (value.is_valid()) {
-		_component_resources.erase(component_class);
-		value->owner = nullptr;
-
-		(void)_process_group.erase(value);
-		(void)_physics_process_group.erase(value);
-		(void)_input_group.erase(value);
-		(void)_shortcut_input_group.erase(value);
-		(void)_unhandled_input_group.erase(value);
-		(void)_unhandled_key_input_group.erase(value);
-
+	if (_remove_component(component_class)) {
 		notify_property_list_changed();
 	}
 }
@@ -224,6 +215,25 @@ bool Actor::_set(const StringName &p_property, const Variant &p_value) {
 	if (p_string.begins_with(COMPONENTS)) {
 		set_component(p_value);
 		result = true;
+	}
+
+	return result;
+}
+
+bool Actor::_remove_component(StringName component_class) {
+	bool result = false;
+	Ref<Component> value = _component_resources.get(component_class);
+	if (value.is_valid()) {
+		result = true;
+		_component_resources.erase(component_class);
+		value->owner = nullptr;
+
+		(void)_process_group.erase(value);
+		(void)_physics_process_group.erase(value);
+		(void)_input_group.erase(value);
+		(void)_shortcut_input_group.erase(value);
+		(void)_unhandled_input_group.erase(value);
+		(void)_unhandled_key_input_group.erase(value);
 	}
 
 	return result;
