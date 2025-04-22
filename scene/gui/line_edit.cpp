@@ -1956,11 +1956,14 @@ void LineEdit::delete_char() {
 	if (text.is_empty() || caret_column == 0) {
 		return;
 	}
-
-	text = text.left(caret_column - 1) + text.substr(caret_column);
+	int delete_char_offset = 1;
+	if (!caret_mid_grapheme_enabled && backspace_deletes_composite_character_enabled) {
+		delete_char_offset = caret_column - get_previous_composite_character_column(caret_column);
+	}
+	text = text.left(caret_column - delete_char_offset) + text.substr(caret_column);
 	_shape();
 
-	set_caret_column(get_caret_column() - 1);
+	set_caret_column(get_caret_column() - delete_char_offset);
 
 	_text_changed();
 }
@@ -2212,6 +2215,24 @@ void LineEdit::set_caret_column(int p_column) {
 
 int LineEdit::get_caret_column() const {
 	return caret_column;
+}
+
+int LineEdit::get_next_composite_character_column(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, text.length() + 1, -1);
+	if (p_column == text.length()) {
+		return p_column;
+	} else {
+		return TS->shaped_text_next_character_pos(text_rid, p_column);
+	}
+}
+
+int LineEdit::get_previous_composite_character_column(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, text.length() + 1, -1);
+	if (p_column == 0) {
+		return 0;
+	} else {
+		return TS->shaped_text_prev_character_pos(text_rid, p_column);
+	}
 }
 
 void LineEdit::set_scroll_offset(float p_pos) {
@@ -2628,6 +2649,14 @@ void LineEdit::set_emoji_menu_enabled(bool p_enabled) {
 
 bool LineEdit::is_emoji_menu_enabled() const {
 	return emoji_menu_enabled;
+}
+
+void LineEdit::set_backspace_deletes_composite_character_enabled(bool p_enabled) {
+	backspace_deletes_composite_character_enabled = p_enabled;
+}
+
+bool LineEdit::is_backspace_deletes_composite_character_enabled() const {
+	return backspace_deletes_composite_character_enabled;
 }
 
 bool LineEdit::is_menu_visible() const {
@@ -3093,6 +3122,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_placeholder"), &LineEdit::get_placeholder);
 	ClassDB::bind_method(D_METHOD("set_caret_column", "position"), &LineEdit::set_caret_column);
 	ClassDB::bind_method(D_METHOD("get_caret_column"), &LineEdit::get_caret_column);
+	ClassDB::bind_method(D_METHOD("get_next_composite_character_column", "column"), &LineEdit::get_next_composite_character_column);
+	ClassDB::bind_method(D_METHOD("get_previous_composite_character_column", "column"), &LineEdit::get_previous_composite_character_column);
 	ClassDB::bind_method(D_METHOD("get_scroll_offset"), &LineEdit::get_scroll_offset);
 	ClassDB::bind_method(D_METHOD("set_expand_to_text_length_enabled", "enabled"), &LineEdit::set_expand_to_text_length_enabled);
 	ClassDB::bind_method(D_METHOD("is_expand_to_text_length_enabled"), &LineEdit::is_expand_to_text_length_enabled);
@@ -3125,6 +3156,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &LineEdit::is_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("set_emoji_menu_enabled", "enable"), &LineEdit::set_emoji_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_emoji_menu_enabled"), &LineEdit::is_emoji_menu_enabled);
+	ClassDB::bind_method(D_METHOD("set_backspace_deletes_composite_character_enabled", "enable"), &LineEdit::set_backspace_deletes_composite_character_enabled);
+	ClassDB::bind_method(D_METHOD("is_backspace_deletes_composite_character_enabled"), &LineEdit::is_backspace_deletes_composite_character_enabled);
 	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_enabled", "enable"), &LineEdit::set_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("is_virtual_keyboard_enabled"), &LineEdit::is_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_type", "type"), &LineEdit::set_virtual_keyboard_type);
@@ -3204,6 +3237,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_to_text_length"), "set_expand_to_text_length_enabled", "is_expand_to_text_length_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emoji_menu_enabled"), "set_emoji_menu_enabled", "is_emoji_menu_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "backspace_deletes_composite_character_enabled"), "set_backspace_deletes_composite_character_enabled", "is_backspace_deletes_composite_character_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "virtual_keyboard_type", PROPERTY_HINT_ENUM, "Default,Multiline,Number,Decimal,Phone,Email,Password,URL"), "set_virtual_keyboard_type", "get_virtual_keyboard_type");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clear_button_enabled"), "set_clear_button_enabled", "is_clear_button_enabled");

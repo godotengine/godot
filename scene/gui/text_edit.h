@@ -340,6 +340,7 @@ private:
 	bool overtype_mode = false;
 	bool context_menu_enabled = true;
 	bool emoji_menu_enabled = true;
+	bool backspace_deletes_composite_character_enabled = false;
 	bool shortcut_keys_enabled = true;
 	bool virtual_keyboard_enabled = true;
 	bool middle_mouse_paste_enabled = true;
@@ -813,6 +814,9 @@ public:
 	void set_emoji_menu_enabled(bool p_enabled);
 	bool is_emoji_menu_enabled() const;
 
+	void set_backspace_deletes_composite_character_enabled(bool p_enabled);
+	bool is_backspace_deletes_composite_character_enabled() const;
+
 	void set_shortcut_keys_enabled(bool p_enabled);
 	bool is_shortcut_keys_enabled() const;
 
@@ -960,6 +964,8 @@ public:
 
 	void set_caret_column(int p_column, bool p_adjust_viewport = true, int p_caret = 0);
 	int get_caret_column(int p_caret = 0) const;
+	int get_next_composite_character_column(int p_line, int p_column) const;
+	int get_previous_composite_character_column(int p_line, int p_column) const;
 
 	int get_caret_wrap_index(int p_caret = 0) const;
 
