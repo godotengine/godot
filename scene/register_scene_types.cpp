@@ -936,7 +936,6 @@ void register_scene_types() {
 #ifndef _3D_DISABLED
 	GDREGISTER_CLASS(AudioStreamPlayer3D);
 	GDREGISTER_VIRTUAL_CLASS(PrimitiveMesh);
-	GDREGISTER_CLASS(SVGTexture);
 	GDREGISTER_CLASS(BoxMesh);
 	GDREGISTER_CLASS(CapsuleMesh);
 	GDREGISTER_CLASS(CylinderMesh);
@@ -1021,6 +1020,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PlaceholderTexture2DArray);
 	GDREGISTER_CLASS(PlaceholderCubemap);
 	GDREGISTER_CLASS(PlaceholderCubemapArray);
+	GDREGISTER_CLASS(SVGTexture);
 
 	// These classes are part of renderer_rd
 	GDREGISTER_CLASS(Texture2DRD);
