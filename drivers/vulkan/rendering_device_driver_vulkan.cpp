@@ -2318,6 +2318,10 @@ RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p
 	sampler_create_info.borderColor = (VkBorderColor)p_state.border_color;
 	sampler_create_info.unnormalizedCoordinates = p_state.unnormalized_uvw;
 
+	if (sampler_create_info.maxAnisotropy == 1.0f) {
+		sampler_create_info.anisotropyEnable = false;
+	}
+
 	VkSampler vk_sampler = VK_NULL_HANDLE;
 	VkResult res = vkCreateSampler(vk_device, &sampler_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER), &vk_sampler);
 	ERR_FAIL_COND_V_MSG(res, SamplerID(), "vkCreateSampler failed with error " + itos(res) + ".");
