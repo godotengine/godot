@@ -62,6 +62,8 @@ public:
 private:
 	LocalVector<Point> points;
 	bool is_sorted = true;
+	bool dithering = false;
+	float dithering_noise_granularity = .5f;
 	InterpolationMode interpolation_mode = GRADIENT_INTERPOLATE_LINEAR;
 	ColorSpace interpolation_color_space = GRADIENT_COLOR_SPACE_SRGB;
 
@@ -142,97 +144,19 @@ public:
 	void set_colors(const Vector<Color> &p_colors);
 	Vector<Color> get_colors() const;
 
+	void set_dithering(bool p_dithering);
+	bool get_dithering();
+
+	void set_dithering_noise_granularity(float p_dithering_noise_granularity);
+	float get_dithering_noise_granularity();
+
 	void set_interpolation_mode(InterpolationMode p_interp_mode);
 	InterpolationMode get_interpolation_mode();
 
 	void set_interpolation_color_space(Gradient::ColorSpace p_color_space);
 	ColorSpace get_interpolation_color_space();
 
-	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
-		if (points.is_empty()) {
-			return Color(0, 0, 0, 1);
-		}
-
-		_update_sorting();
-
-		// Binary search.
-		int low = 0;
-		int high = points.size() - 1;
-		int middle = 0;
-
-#ifdef DEBUG_ENABLED
-		if (low > high) {
-			ERR_PRINT("low > high, this may be a bug");
-		}
-#endif
-
-		while (low <= high) {
-			middle = (low + high) / 2;
-			const Point &point = points[middle];
-			if (point.offset > p_offset) {
-				high = middle - 1; //search low end of array
-			} else if (point.offset < p_offset) {
-				low = middle + 1; //search high end of array
-			} else {
-				return point.color;
-			}
-		}
-
-		// Return sampled value.
-		if (points[middle].offset > p_offset) {
-			middle--;
-		}
-		int first = middle;
-		int second = middle + 1;
-		if (second >= (int)points.size()) {
-			return points[points.size() - 1].color;
-		}
-		if (first < 0) {
-			return points[0].color;
-		}
-		const Point &point1 = points[first];
-		const Point &point2 = points[second];
-		float weight = (p_offset - point1.offset) / (point2.offset - point1.offset);
-
-		switch (interpolation_mode) {
-			case GRADIENT_INTERPOLATE_CONSTANT: {
-				return point1.color;
-			}
-			case GRADIENT_INTERPOLATE_LINEAR:
-			default: { // Fallback to linear interpolation.
-				Color color1 = transform_color_space(point1.color);
-				Color color2 = transform_color_space(point2.color);
-
-				Color interpolated = color1.lerp(color2, weight);
-				return inv_transform_color_space(interpolated);
-			}
-			case GRADIENT_INTERPOLATE_CUBIC: {
-				int p0 = first - 1;
-				int p3 = second + 1;
-				if (p3 >= (int)points.size()) {
-					p3 = second;
-				}
-				if (p0 < 0) {
-					p0 = first;
-				}
-				const Point &point0 = points[p0];
-				const Point &point3 = points[p3];
-
-				Color color0 = transform_color_space(point0.color);
-				Color color1 = transform_color_space(point1.color);
-				Color color2 = transform_color_space(point2.color);
-				Color color3 = transform_color_space(point3.color);
-
-				Color interpolated;
-				interpolated[0] = Math::cubic_interpolate(color1[0], color2[0], color0[0], color3[0], weight);
-				interpolated[1] = Math::cubic_interpolate(color1[1], color2[1], color0[1], color3[1], weight);
-				interpolated[2] = Math::cubic_interpolate(color1[2], color2[2], color0[2], color3[2], weight);
-				interpolated[3] = Math::cubic_interpolate(color1[3], color2[3], color0[3], color3[3], weight);
-
-				return inv_transform_color_space(interpolated);
-			}
-		}
-	}
+	Color get_color_at_offset(float p_offset);
 
 	int get_point_count() const;
 };
