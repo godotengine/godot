@@ -1145,6 +1145,7 @@ Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 	dp["value"] = object->get(property);
 
 	Label *drag_label = memnew(Label);
+	drag_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	drag_label->set_text(property);
 	drag_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate raw property name.
 	set_drag_preview(drag_label);
@@ -3191,6 +3192,7 @@ EditorPaginator::EditorPaginator() {
 	add_child(page_line_edit);
 
 	page_count_label = memnew(Label);
+	page_count_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	add_child(page_count_label);
 
 	next_page_button = memnew(Button);

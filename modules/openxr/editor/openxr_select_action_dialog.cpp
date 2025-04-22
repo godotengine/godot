@@ -82,6 +82,7 @@ void OpenXRSelectActionDialog::open() {
 		Ref<OpenXRActionSet> action_set = action_sets[i];
 
 		Label *action_set_label = memnew(Label);
+		action_set_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		action_set_label->set_text(action_set->get_localized_name());
 		main_vb->add_child(action_set_label);
 

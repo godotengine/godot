@@ -1442,7 +1442,6 @@ void FileDialog::_update_option_controls() {
 	for (const FileDialog::Option &opt : options) {
 		Label *lbl = memnew(Label);
 		lbl->set_text(opt.name);
-		lbl->set_focus_mode(Control::FOCUS_NONE);
 		grid_options->add_child(lbl);
 		if (opt.values.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
@@ -1753,7 +1752,6 @@ FileDialog::FileDialog() {
 	dir_up->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_go_up));
 
 	Label *lbl_path = memnew(Label(ETR("Path:")));
-	lbl_path->set_focus_mode(Control::FOCUS_NONE);
 	hbc->add_child(lbl_path);
 
 	drives_container = memnew(HBoxContainer);
@@ -1813,6 +1811,7 @@ FileDialog::FileDialog() {
 	vbox->add_margin_child(ETR("Directories & Files:"), tree, true);
 
 	message = memnew(Label);
+	message->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	message->hide();
 	message->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -1833,7 +1832,6 @@ FileDialog::FileDialog() {
 
 	file_box = memnew(HBoxContainer);
 	Label *lbl_file = memnew(Label(ETR("File:")));
-	lbl_file->set_focus_mode(Control::FOCUS_NONE);
 	file_box->add_child(lbl_file);
 
 	file = memnew(LineEdit);

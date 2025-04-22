@@ -4846,6 +4846,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	delete_dialog->add_child(vb);
 
 	delete_dialog_label = memnew(Label);
+	delete_dialog_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	vb->add_child(delete_dialog_label);
 
 	delete_tracks_checkbox = memnew(CheckBox(TTR("Delete Related Animation Tracks")));
