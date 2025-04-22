@@ -140,11 +140,16 @@ void TreeSortAndFilterBar::_apply_sort() {
 			items.reverse();
 		}
 
-		int idx = 0;
+		TreeItem* previous = nullptr;
 		for (const TreeItemColumn &item : items) {
-			item.item->move_before(to_sort->get_child(idx));
+			if (previous != nullptr) {
+				item.item->move_after(previous);
+			}
+			else {
+				item.item->move_before(to_sort->get_first_child());
+			}
+			previous = item.item;
 			items_to_sort.push_back(item.item);
-			idx++;
 		}
 	}
 }
@@ -234,6 +239,12 @@ void TreeSortAndFilterBar::apply() {
 	if (!managed_tree || !managed_tree->get_root()) {
 		return;
 	}
+	
+
+	OS::get_singleton()->benchmark_begin_measure("odb profiler", "TreeSortAndFilterBar::apply _apply_sort");
 	_apply_sort();
+	OS::get_singleton()->benchmark_end_measure("odb profiler", "TreeSortAndFilterBar::apply _apply_sort");
+	OS::get_singleton()->benchmark_begin_measure("odb profiler", "TreeSortAndFilterBar::apply _apply_filter");
 	_apply_filter();
+	OS::get_singleton()->benchmark_end_measure("odb profiler", "TreeSortAndFilterBar::apply _apply_filter");
 }
