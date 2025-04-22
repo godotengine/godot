@@ -562,6 +562,8 @@ void GridMapEditor::_set_clipboard_data() {
 
 	Ref<MeshLibrary> meshLibrary = node->get_mesh_library();
 
+	const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
+
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
 			for (int k = selection.begin.z; k <= selection.end.z; k++) {
@@ -577,7 +579,7 @@ void GridMapEditor::_set_clipboard_data() {
 				item.cell_item = itm;
 				item.grid_offset = Vector3(selected) - selection.begin;
 				item.orientation = node->get_cell_item_orientation(selected);
-				item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world_3d()->get_scenario());
+				item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
 
 				clipboard_items.push_back(item);
 			}
@@ -1181,20 +1183,23 @@ void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
+
+			const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
+
 			for (int i = 0; i < 3; i++) {
 				grid[i] = RS::get_singleton()->mesh_create();
-				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], scenario);
 				RenderingServer::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
-				selection_level_instance[i] = RenderingServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+				selection_level_instance[i] = RenderingServer::get_singleton()->instance_create2(selection_level_mesh[i], scenario);
 				RenderingServer::get_singleton()->instance_set_layer_mask(selection_level_instance[i], 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 			}
 
-			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 			RenderingServer::get_singleton()->instance_set_layer_mask(cursor_instance, 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 			RenderingServer::get_singleton()->instance_set_visible(cursor_instance, false);
-			selection_instance = RenderingServer::get_singleton()->instance_create2(selection_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+			selection_instance = RenderingServer::get_singleton()->instance_create2(selection_mesh, scenario);
 			RenderingServer::get_singleton()->instance_set_layer_mask(selection_instance, 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
-			paste_instance = RenderingServer::get_singleton()->instance_create2(paste_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+			paste_instance = RenderingServer::get_singleton()->instance_create2(paste_mesh, scenario);
 			RenderingServer::get_singleton()->instance_set_layer_mask(paste_instance, 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 
 			_update_selection_transform();
@@ -1271,11 +1276,13 @@ void GridMapEditor::_update_cursor_instance() {
 	}
 	cursor_instance = RID();
 
+	const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
+
 	if (mode_buttons_group->get_pressed_button() == paint_mode_button) {
 		if (selected_palette >= 0 && node && node->get_mesh_library().is_valid()) {
 			Ref<Mesh> mesh = node->get_mesh_library()->get_item_mesh(selected_palette);
 			if (mesh.is_valid() && mesh->get_rid().is_valid()) {
-				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world_3d()->get_scenario());
+				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
 				RS::ShadowCastingSetting cast_shadows = (RS::ShadowCastingSetting)node->get_mesh_library()->get_item_mesh_cast_shadow(selected_palette);
 				RS::get_singleton()->instance_geometry_set_cast_shadows_setting(cursor_instance, cast_shadows);
 			}
@@ -1283,15 +1290,15 @@ void GridMapEditor::_update_cursor_instance() {
 	} else if (mode_buttons_group->get_pressed_button() == select_mode_button) {
 		cursor_inner_mat->set_albedo(Color(default_color, 0.2));
 		cursor_outer_mat->set_albedo(Color(default_color, 0.8));
-		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 	} else if (mode_buttons_group->get_pressed_button() == erase_mode_button) {
 		cursor_inner_mat->set_albedo(Color(erase_color, 0.2));
 		cursor_outer_mat->set_albedo(Color(erase_color, 0.8));
-		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 	} else if (mode_buttons_group->get_pressed_button() == pick_mode_button) {
 		cursor_inner_mat->set_albedo(Color(pick_color, 0.2));
 		cursor_outer_mat->set_albedo(Color(pick_color, 0.8));
-		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 	}
 
 	// Make the cursor translucent so that it can be distinguished from already-placed tiles.
