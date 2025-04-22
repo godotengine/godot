@@ -448,7 +448,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		// Determines the point icon to be used
 		bool smooth = false;
 
-		if (i < len - 1) {
+		if (i == 0) {
 			Vector2 point_out = xform.xform(curve->get_point_position(i) + curve->get_point_out(i));
 			if (point != point_out) {
 				smooth = true;
@@ -457,9 +457,21 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 				vpc->draw_line(point, point_out, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
 				vpc->draw_texture_rect(curve_handle, Rect2(point_out - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
 			}
+			if (curve->is_closed()) {
+				vpc->draw_texture_rect(smooth ? path_smooth_handle : path_sharp_handle,
+						Rect2(point - handle_size * 0.5, handle_size),
+						false,
+						Color(1.0, 0.8, 0));
+			} else {
+				vpc->draw_texture_rect(
+						smooth ? path_smooth_handle : path_sharp_handle,
+						Rect2(point - handle_size * 0.5, handle_size),
+						false,
+						Color(0.2, 1.0, 0.0));
+			}
 		}
 
-		if (i > 0) {
+		if ((i > 0) && (i < len - 1)) {
 			Vector2 point_in = xform.xform(curve->get_point_position(i) + curve->get_point_in(i));
 			if (point != point_in) {
 				smooth = true;
@@ -468,12 +480,19 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 				vpc->draw_line(point, point_in, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
 				vpc->draw_texture_rect(curve_handle, Rect2(point_in - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
 			}
+			vpc->draw_texture_rect(
+					smooth ? path_smooth_handle : path_sharp_handle,
+					Rect2(point - handle_size * 0.5, handle_size),
+					false,
+					Color(1, 1, 1, 0.75));
 		}
-
-		vpc->draw_texture_rect(
-				smooth ? path_smooth_handle : path_sharp_handle,
-				Rect2(point - handle_size * 0.5, handle_size),
-				false);
+		if ((i == len - 1) && !(curve->is_closed())) {
+			vpc->draw_texture_rect(
+					smooth ? path_smooth_handle : path_sharp_handle,
+					Rect2(point - handle_size * 0.5, handle_size),
+					false,
+					Color(1.0, 0.2, 0));
+		}
 	}
 
 	if (on_edge) {
@@ -555,14 +574,15 @@ void Path2DEditor::_mode_selected(int p_mode) {
 		curve_edit_curve->set_pressed(false);
 		curve_del->set_pressed(true);
 	} else if (p_mode == MODE_CLOSE) {
-		if (node->get_curve().is_null()) {
+		Ref<Curve2D> c = node->get_curve();
+		if (c.is_null()) {
 			return;
 		}
-		if (node->get_curve()->get_point_count() < 3) {
+		if (c->get_point_count() < 3) {
 			return;
 		}
-		Vector2 begin = node->get_curve()->get_point_position(0);
-		Vector2 end = node->get_curve()->get_point_position(node->get_curve()->get_point_count() - 1);
+		Vector2 begin = c->get_point_position(0);
+		Vector2 end = c->get_point_position(c->get_point_count() - 1);
 
 		if (begin.is_equal_approx(end)) {
 			return;
@@ -570,9 +590,9 @@ void Path2DEditor::_mode_selected(int p_mode) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 		undo_redo->create_action(TTR("Close the Curve"));
-		undo_redo->add_do_method(node->get_curve().ptr(), "add_point", begin);
-		undo_redo->add_undo_method(node->get_curve().ptr(), "remove_point", node->get_curve()->get_point_count());
+		undo_redo->add_do_method(c.ptr(), "set_closed", !c.ptr()->is_closed());
 		undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+		undo_redo->add_undo_method(c.ptr(), "set_closed", c.ptr()->is_closed());
 		undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 		undo_redo->commit_action();
 		return;
