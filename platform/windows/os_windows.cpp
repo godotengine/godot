@@ -723,7 +723,7 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 			BSTR object_name = SysAllocString(L"DriverName");
 			hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, nullptr, nullptr);
 			SysFreeString(object_name);
-			if (hr == S_OK) {
+			if (hr == S_OK && dn.vt == VT_BSTR) {
 				String d_name = String(V_BSTR(&dn));
 				if (d_name.is_empty()) {
 					object_name = SysAllocString(L"DriverProviderName");
@@ -739,8 +739,10 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 				object_name = SysAllocString(L"DriverProviderName");
 				hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, nullptr, nullptr);
 				SysFreeString(object_name);
-				if (hr == S_OK) {
+				if (hr == S_OK && dn.vt == VT_BSTR) {
 					driver_name = String(V_BSTR(&dn));
+				} else {
+					driver_name = "Unknown";
 				}
 			}
 
@@ -749,8 +751,10 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 			object_name = SysAllocString(L"DriverVersion");
 			hr = pnpSDriverObject[0]->Get(object_name, 0, &dv, nullptr, nullptr);
 			SysFreeString(object_name);
-			if (hr == S_OK) {
+			if (hr == S_OK && dv.vt == VT_BSTR) {
 				driver_version = String(V_BSTR(&dv));
+			} else {
+				driver_version = "Unknown";
 			}
 			for (ULONG i = 0; i < resultCount; i++) {
 				SAFE_RELEASE(pnpSDriverObject[i])
