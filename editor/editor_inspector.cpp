@@ -4144,7 +4144,7 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				if (sub_inspector_use_filter) {//TODO:: check this out
+				if (sub_inspector_use_filter) {
 					EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(ep);
 					if (epr) {
 						epr->set_use_filter(true);
@@ -4311,7 +4311,7 @@ void EditorInspector::update_tree() {
 
 	Button *add_component = nullptr;
 	Button *add_md = nullptr;
-	{//TODO:: put in its own function
+	{
 		Actor *actor = Object::cast_to<Actor>(object);
 		if (actor) {
 			Control *spacer = memnew(Control);
@@ -4321,7 +4321,6 @@ void EditorInspector::update_tree() {
 			add_component = EditorInspector::create_inspector_action_button(TTR("Add Component"));
 			add_component->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			add_component->connect(SceneStringName(pressed), callable_mp(this, &EditorInspector::_show_add_component_dialog));
-//			main_vbox->add_child(add_component);
 			if (all_read_only) {
 				add_component->set_disabled(true);
 			}
@@ -4337,7 +4336,6 @@ void EditorInspector::update_tree() {
 		add_md = EditorInspector::create_inspector_action_button(TTR("Add Metadata"));
 		add_md->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		add_md->connect(SceneStringName(pressed), callable_mp(this, &EditorInspector::_show_add_meta_dialog));
-//		main_vbox->add_child(add_md);
 		if (all_read_only) {
 			add_md->set_disabled(true);
 		}

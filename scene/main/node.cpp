@@ -3917,9 +3917,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 
-//	ClassDB::bind_method(D_METHOD("set_component", "value"), &Node::set_component);
-//	ClassDB::bind_method(D_METHOD("remove_component", "component_class"), &Node::remove_component);
-
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "force_readable_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));

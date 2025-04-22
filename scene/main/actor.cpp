@@ -86,8 +86,6 @@ void Actor::set_component(Ref<Component> value) {
 		(void)_unhandled_key_input_group.insert(value);
 	}
 
-	print_line("Success setting component: ", value->get_component_class());
-
 	notify_property_list_changed();
 }
 
@@ -144,13 +142,13 @@ void Actor::call_components_ready() {
 
 void Actor::call_components_process(double delta) {
 	for (const Ref<Component> &K : _process_group) {
-		K->process(delta);//TODO:: this ideally should call Node::get_process_delta_time()
+		K->process(delta);//NOTE:: this ideally should call Node::get_process_delta_time()
 	}
 }
 
 void Actor::call_components_physics_process(double delta) {
 	for (const Ref<Component> &K : _physics_process_group) {
-		K->physics_process(delta);//TODO:: this ideally should call Node::get_physics_process_delta_time()
+		K->physics_process(delta);//NOTE:: this ideally should call Node::get_physics_process_delta_time()
 	}
 }
 
