@@ -36,11 +36,11 @@
 class DirAccess;
 class GridContainer;
 class HBoxContainer;
+class ItemList;
 class LineEdit;
 class OptionButton;
 class PopupMenu;
 class VBoxContainer;
-class Tree;
 
 class FileDialog : public ConfirmationDialog {
 	GDCLASS(FileDialog, ConfirmationDialog);
@@ -127,7 +127,7 @@ private:
 	Button *show_filename_filter_button = nullptr;
 	Button *make_dir_button = nullptr;
 
-	Tree *tree = nullptr;
+	ItemList *file_list = nullptr;
 	Label *message = nullptr;
 	PopupMenu *item_menu = nullptr;
 
@@ -176,15 +176,16 @@ private:
 
 	void _item_menu_id_pressed(int p_option);
 	void _empty_clicked(const Vector2 &p_pos, MouseButton p_button);
-	void _rmb_select(const Vector2 &p_pos, MouseButton p_button = MouseButton::RIGHT);
+	void _item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_button);
 
 	void _focus_file_text();
 
-	void _tree_multi_selected(Object *p_object, int p_cell, bool p_selected);
-	void _tree_selected();
+	int _get_selected_file_idx();
+	void _file_list_multi_selected(int p_item, bool p_selected);
+	void _file_list_selected(int p_item);
+	void _file_list_item_activated(int p_item);
 
 	void _select_drive(int p_idx);
-	void _tree_item_activated();
 	void _dir_submitted(String p_dir);
 	void _file_submitted(const String &p_file);
 	void _action_pressed();
@@ -193,7 +194,7 @@ private:
 	void _filter_selected(int);
 	void _filename_filter_changed();
 	void _filename_filter_selected();
-	void _tree_select_first();
+	void _file_list_select_first();
 	void _make_dir();
 	void _make_dir_confirm();
 	void _go_up();
