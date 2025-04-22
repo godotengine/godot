@@ -284,9 +284,7 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_c
 
 void Dictionary::_ref(const Dictionary &p_from) const {
 	//make a copy first (thread safe)
-	if (!p_from._p->refcount.ref()) {
-		return; // couldn't copy
-	}
+	p_from._p->refcount.ref();
 
 	//if this is the same, unreference the other one
 	if (p_from._p == _p) {
@@ -708,7 +706,7 @@ const void *Dictionary::id() const {
 
 Dictionary::Dictionary(const Dictionary &p_base, uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {
 	_p = memnew(DictionaryPrivate);
-	_p->refcount.init();
+	_p->refcount.init(1);
 	set_typed(p_key_type, p_key_class_name, p_key_script, p_value_type, p_value_class_name, p_value_script);
 	assign(p_base);
 }
@@ -720,12 +718,12 @@ Dictionary::Dictionary(const Dictionary &p_from) {
 
 Dictionary::Dictionary() {
 	_p = memnew(DictionaryPrivate);
-	_p->refcount.init();
+	_p->refcount.init(1);
 }
 
 Dictionary::Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init) {
 	_p = memnew(DictionaryPrivate);
-	_p->refcount.init();
+	_p->refcount.init(1);
 
 	for (const KeyValue<Variant, Variant> &E : p_init) {
 		operator[](E.key) = E.value;
