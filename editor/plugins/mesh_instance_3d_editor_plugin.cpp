@@ -668,6 +668,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	navigation_mesh_dialog->add_child(navigation_mesh_dialog_vbc);
 
 	Label *navigation_mesh_l = memnew(Label);
+	navigation_mesh_l->set_focus_mode(FOCUS_ACCESSIBILITY);
 	navigation_mesh_l->set_text(TTR("Before converting a rendering mesh to a navigation mesh, please verify:\n\n- The mesh is two-dimensional.\n- The mesh has no surface overlap.\n- The mesh has no self-intersection.\n- The mesh surfaces have indices.\n\nIf the mesh does not fulfill these requirements, the pathfinding will be broken."));
 	navigation_mesh_dialog_vbc->add_child(navigation_mesh_l);
 

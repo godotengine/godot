@@ -99,6 +99,7 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	add_child(vbc);
 
 	method = memnew(Label);
+	method->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	method->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	vbc->add_child(method);
 

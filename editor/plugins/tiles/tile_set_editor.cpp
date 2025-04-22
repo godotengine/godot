@@ -915,6 +915,7 @@ TileSetEditor::TileSetEditor() {
 
 	// No source selected.
 	no_source_selected_label = memnew(Label);
+	no_source_selected_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	no_source_selected_label->set_text(TTR("No TileSet source selected. Select or create a TileSet source.\nYou can create a new source by using the Add button on the left or by dropping a tileset texture onto the source list."));
 	no_source_selected_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	no_source_selected_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
@@ -956,6 +957,7 @@ TileSetEditor::TileSetEditor() {
 	patterns_item_list->hide();
 
 	patterns_help_label = memnew(Label);
+	patterns_help_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	patterns_help_label->set_text(TTR("Add new patterns in the TileMap editing mode."));
 	patterns_help_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

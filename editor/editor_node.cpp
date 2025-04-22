@@ -6013,6 +6013,7 @@ Dictionary EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from
 	Control *drag_control = memnew(Control);
 	TextureRect *drag_preview = memnew(TextureRect);
 	Label *label = memnew(Label);
+	label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	Ref<Texture2D> preview;
@@ -6066,6 +6067,7 @@ Dictionary EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Contro
 		HBoxContainer *hbox = memnew(HBoxContainer);
 		TextureRect *icon = memnew(TextureRect);
 		Label *label = memnew(Label);
+		label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 		if (p_paths[i].ends_with("/")) {
@@ -6084,6 +6086,7 @@ Dictionary EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Contro
 
 	if (p_paths.size() > num_rows) {
 		Label *label = memnew(Label);
+		label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		if (has_file && has_folder) {
 			label->set_text(vformat(TTR("%d more files or folders"), p_paths.size() - num_rows));
 		} else if (has_folder) {
@@ -7750,7 +7753,6 @@ EditorNode::EditorNode() {
 		project_title = memnew(Label);
 		project_title->add_theme_font_override(SceneStringName(font), theme->get_font(SNAME("bold"), EditorStringName(EditorFonts)));
 		project_title->add_theme_font_size_override(SceneStringName(font_size), theme->get_font_size(SNAME("bold_size"), EditorStringName(EditorFonts)));
-		project_title->set_focus_mode(Control::FOCUS_NONE);
 		project_title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 		project_title->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -8050,6 +8052,7 @@ EditorNode::EditorNode() {
 	{
 		VBoxContainer *vbox = memnew(VBoxContainer);
 		install_android_build_template_message = memnew(Label);
+		install_android_build_template_message->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		install_android_build_template_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 		install_android_build_template_message->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 		vbox->add_child(install_android_build_template_message);
@@ -8138,6 +8141,7 @@ EditorNode::EditorNode() {
 		vbc->add_child(dl);
 
 		disk_changed_list = memnew(Tree);
+		disk_changed_list->set_accessibility_name(TTRC("The following files are newer on disk:"));
 		vbc->add_child(disk_changed_list);
 		disk_changed_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 

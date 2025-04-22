@@ -752,6 +752,7 @@ ImportDock::ImportDock() {
 	content->hide();
 
 	imported = memnew(Label);
+	imported->set_focus_mode(FOCUS_ACCESSIBILITY);
 	imported->add_theme_style_override(CoreStringName(normal), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(CoreStringName(normal), SNAME("LineEdit")));
 	imported->set_clip_text(true);
 	content->add_child(imported);
@@ -813,6 +814,7 @@ ImportDock::ImportDock() {
 	params = memnew(ImportDockParameters);
 
 	select_a_resource = memnew(Label);
+	select_a_resource->set_focus_mode(FOCUS_ACCESSIBILITY);
 	select_a_resource->set_text(TTRC("Select a resource file in the filesystem or in the inspector to adjust import settings."));
 	select_a_resource->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	select_a_resource->set_custom_minimum_size(Size2(100 * EDSCALE, 0));

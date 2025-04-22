@@ -643,6 +643,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	add_child(main_vbox);
 
 	event_as_text = memnew(Label);
+	event_as_text->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	event_as_text->set_custom_minimum_size(Size2(500, 0) * EDSCALE);
 	event_as_text->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	event_as_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

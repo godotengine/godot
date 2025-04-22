@@ -734,6 +734,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_hb->add_child(restart_icon);
 
 	restart_label = memnew(Label);
+	restart_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	restart_label->set_text(TTR("Changed settings will be applied to the editor after restarting."));
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();

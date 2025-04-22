@@ -990,6 +990,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_hb->add_child(current_label);
 
 	current_value = memnew(Label);
+	current_value->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	current_hb->add_child(current_value);
 
 	// Current version statuses.

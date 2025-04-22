@@ -4755,6 +4755,7 @@ FindBar::FindBar() {
 	search_text->connect(SceneStringName(text_submitted), callable_mp(this, &FindBar::_search_text_submitted));
 
 	matches_label = memnew(Label);
+	matches_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	add_child(matches_label);
 	matches_label->hide();
 

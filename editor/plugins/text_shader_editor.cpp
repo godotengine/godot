@@ -1257,6 +1257,7 @@ TextShaderEditor::TextShaderEditor() {
 	disk_changed->add_child(vbc);
 
 	Label *dl = memnew(Label);
+	dl->set_focus_mode(FOCUS_ACCESSIBILITY);
 	dl->set_text(TTR("This shader has been modified on disk.\nWhat action should be taken?"));
 	vbc->add_child(dl);
 

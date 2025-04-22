@@ -230,6 +230,7 @@ MaterialEditor::MaterialEditor() {
 	layout_error->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
 	error_label = memnew(Label);
+	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_label->set_text(TTR("Preview is not available for this shader mode."));
 	error_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	error_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

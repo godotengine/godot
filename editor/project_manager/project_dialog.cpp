@@ -1011,6 +1011,7 @@ ProjectDialog::ProjectDialog() {
 	iphb->add_child(install_browse);
 
 	msg = memnew(Label);
+	msg->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	msg->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	msg->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1086,10 +1087,12 @@ ProjectDialog::ProjectDialog() {
 	rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	rshc->add_child(rvb);
 	renderer_info = memnew(Label);
+	renderer_info->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	renderer_info->set_modulate(Color(1, 1, 1, 0.7));
 	rvb->add_child(renderer_info);
 
 	rd_not_supported = memnew(Label);
+	rd_not_supported->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	rd_not_supported->set_text(vformat(TTRC("RenderingDevice-based methods not available on this GPU:\n%s\nPlease use the Compatibility renderer."), RenderingServer::get_singleton()->get_video_adapter_name()));
 	rd_not_supported->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	rd_not_supported->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
@@ -1100,6 +1103,7 @@ ProjectDialog::ProjectDialog() {
 	_renderer_selected();
 
 	l = memnew(Label);
+	l->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	l->set_text(TTRC("The renderer can be changed later, but scenes may need to be adjusted."));
 	// Add some extra spacing to separate it from the list above and the buttons below.
 	l->set_custom_minimum_size(Size2(0, 40) * EDSCALE);
@@ -1118,6 +1122,7 @@ ProjectDialog::ProjectDialog() {
 	vcs_metadata_selection->add_item(TTRC("None"), (int)EditorVCSInterface::VCSMetadata::NONE);
 	vcs_metadata_selection->add_item(TTRC("Git"), (int)EditorVCSInterface::VCSMetadata::GIT);
 	vcs_metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
+	vcs_metadata_selection->set_accessibility_name(TTRC("Version Control Metadata"));
 	default_files_container->add_child(vcs_metadata_selection);
 	Control *spacer = memnew(Control);
 	spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);

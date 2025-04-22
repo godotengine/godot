@@ -793,6 +793,7 @@ FindReplaceBar::FindReplaceBar() {
 
 	matches_label = memnew(Label);
 	hbc_button_search->add_child(matches_label);
+	matches_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	matches_label->hide();
 
 	find_prev = memnew(Button);
@@ -1891,6 +1892,7 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(scroll);
 
 	error = memnew(Label);
+	error->set_focus_mode(FOCUS_ACCESSIBILITY);
 	scroll->add_child(error);
 	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
@@ -1949,6 +1951,7 @@ CodeTextEditor::CodeTextEditor() {
 	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	line_and_col_txt->set_tooltip_text(TTR("Line and column numbers."));
 	line_and_col_txt->set_accessibility_name(TTRC("Line and Column Numbers"));
+	line_and_col_txt->set_focus_mode(FOCUS_ACCESSIBILITY);
 	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
 	status_bar->add_child(memnew(VSeparator));
@@ -1959,6 +1962,7 @@ CodeTextEditor::CodeTextEditor() {
 	indentation_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	indentation_txt->set_tooltip_text(TTR("Indentation"));
 	indentation_txt->set_accessibility_name(TTRC("Indentation"));
+	indentation_txt->set_focus_mode(FOCUS_ACCESSIBILITY);
 	indentation_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
 	text_editor->connect(SceneStringName(gui_input), callable_mp(this, &CodeTextEditor::_text_editor_gui_input));

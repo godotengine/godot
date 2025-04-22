@@ -81,6 +81,7 @@ void ProjectExportTextureFormatError::show_for_texture_format(const String &p_fr
 ProjectExportTextureFormatError::ProjectExportTextureFormatError() {
 	// Set up the label.
 	texture_format_error_label = memnew(Label);
+	texture_format_error_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	add_child(texture_format_error_label);
 	// Set up the fix button.
 	fix_texture_format_button = memnew(LinkButton);
@@ -764,6 +765,7 @@ Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_
 			tr->set_texture(presets->get_item_icon(pos));
 			drag->add_child(tr);
 			Label *label = memnew(Label);
+			label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 			label->set_text(presets->get_item_text(pos));
 			label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
 			drag->add_child(label);
@@ -782,6 +784,7 @@ Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_
 			d["patch"] = item_metadata;
 
 			Label *label = memnew(Label);
+			label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 			label->set_text(item->get_text(0));
 			patches->set_drag_preview(label);
 
@@ -1563,6 +1566,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	include_files->connect("custom_popup_edited", callable_mp(this, &ProjectExportDialog::_tree_popup_edited));
 
 	server_strip_message = memnew(Label);
+	server_strip_message->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	server_strip_message->set_visible(false);
 	server_strip_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	server_strip_message->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
@@ -1692,6 +1696,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_key->set_accessibility_name(TTRC("Encryption Key"));
 	script_key->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key_error = memnew(Label);
+	script_key_error->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	script_key_error->set_text(String::utf8("•  ") + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
 	script_key_error->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
 	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hexadecimal):"), script_key);
@@ -1704,6 +1709,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	sec_vb->add_margin_child(TTR("Initialization vector seed"), seed_input);
 
 	Label *sec_info = memnew(Label);
+	sec_info->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	sec_info->set_text(TTR("Note: Encryption key needs to be stored in the binary,\nyou need to build the export templates from source."));
 	sec_vb->add_child(sec_info);
 
@@ -1789,12 +1795,14 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_texture_format_error->connect("texture_format_enabled", callable_mp(this, &ProjectExportDialog::_update_current_preset));
 
 	export_error = memnew(Label);
+	export_error->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	main_vb->add_child(export_error);
 	export_error->hide();
 	export_error->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_WORD_ELLIPSIS);
 	export_error->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
 
 	export_warning = memnew(Label);
+	export_warning->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	main_vb->add_child(export_warning);
 	export_warning->hide();
 	export_warning->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_WORD_ELLIPSIS);
@@ -1805,6 +1813,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_templates_error->hide();
 
 	Label *export_error2 = memnew(Label);
+	export_error2->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	export_templates_error->add_child(export_error2);
 	export_error2->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_WORD_ELLIPSIS);
 	export_error2->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));

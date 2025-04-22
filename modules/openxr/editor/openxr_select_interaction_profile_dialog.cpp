@@ -126,6 +126,7 @@ OpenXRSelectInteractionProfileDialog::OpenXRSelectInteractionProfileDialog() {
 	scroll->add_child(main_vb);
 
 	all_selected = memnew(Label);
+	all_selected->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	all_selected->set_text(TTR("All interaction profiles have been added to the action map."));
 	main_vb->add_child(all_selected);
 }

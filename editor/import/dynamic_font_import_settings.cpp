@@ -1362,6 +1362,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	root_vb->add_child(main_pages);
 
 	label_warn = memnew(Label);
+	label_warn->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	label_warn->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_warn->set_text("");
 	root_vb->add_child(label_warn);
@@ -1374,6 +1375,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	main_pages->add_child(page1_vb);
 
 	page1_description = memnew(Label);
+	page1_description->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	page1_description->set_text(TTR("Select font rendering options, fallback font, and metadata override:"));
 	page1_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page1_vb->add_child(page1_description);
@@ -1389,6 +1391,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	page1_hb->add_child(page1_lbl_vb);
 
 	font_name_label = memnew(Label);
+	font_name_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	font_name_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	font_name_label->set_clip_text(true);
 	font_name_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1415,6 +1418,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	main_pages->add_child(page2_vb);
 
 	page2_description = memnew(Label);
+	page2_description->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	page2_description->set_text(TTR("Add font size, and variation coordinates, and select glyphs to pre-render:"));
 	page2_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1446,6 +1450,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 
 	vars_list = memnew(Tree);
 	vars_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	vars_list->set_accessibility_name(TTRC("Configuration"));
 	vars_list->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	vars_list->set_hide_root(true);
 	vars_list->set_columns(2);
@@ -1477,6 +1482,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	preload_pages_vb->add_child(gl_hb);
 
 	label_glyphs = memnew(Label);
+	label_glyphs->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	label_glyphs->set_text(vformat(TTR("Preloaded glyphs: %d"), 0));
 	label_glyphs->set_custom_minimum_size(Size2(50 * EDSCALE, 0));
 	gl_hb->add_child(label_glyphs);
@@ -1491,6 +1497,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	preload_pages->add_child(page2_0_vb);
 
 	page2_0_description = memnew(Label);
+	page2_0_description->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	page2_0_description->set_text(TTR("Select translations to add all required glyphs to pre-render list:"));
 	page2_0_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_0_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1524,6 +1531,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	preload_pages->add_child(page2_1_vb);
 
 	page2_1_description = memnew(Label);
+	page2_1_description->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	page2_1_description->set_text(TTR("Enter a text and select OpenType features to shape and add all required glyphs to pre-render list:"));
 	page2_1_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_1_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1562,6 +1570,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	preload_pages->add_child(page2_2_vb);
 
 	page2_2_description = memnew(Label);
+	page2_2_description->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	page2_2_description->set_text(TTR("Add or remove glyphs from the character map to pre-render list:\nNote: Some stylistic alternatives and glyph variants do not have one-to-one correspondence to character, and not shown in this map, use \"Glyphs from the text\" tab to add these."));
 	page2_2_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_2_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);

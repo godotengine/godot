@@ -682,6 +682,7 @@ Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 		fxd["effect"] = md;
 
 		Label *l = memnew(Label);
+		l->set_focus_mode(FOCUS_ACCESSIBILITY);
 		l->set_text(item->get_text(0));
 		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		effects->set_drag_preview(l);
@@ -921,6 +922,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	audio_value_preview_box->add_child(audioprev_hbc);
 
 	audio_value_preview_label = memnew(Label);
+	audio_value_preview_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	audio_value_preview_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	audio_value_preview_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	audio_value_preview_label->set_mouse_filter(MOUSE_FILTER_PASS);
