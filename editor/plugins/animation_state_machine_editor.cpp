@@ -888,9 +888,9 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 
 	if (p_fade_ratio > 0.0) {
 		Color fade_line_color = highlight_color;
-		fade_line_color.set_hsv(1.0, fade_line_color.get_s(), fade_line_color.get_v());
+		fade_line_color.set_hsv(0.16, fade_line_color.get_s(), fade_line_color.get_v());
 		fade_line_color.a *= p_opacity;
-		state_machine_draw->draw_line(p_from, p_from.lerp(p_to, p_fade_ratio), fade_line_color, 2);
+		state_machine_draw->draw_line(p_from, p_from.lerp(p_to, p_fade_ratio), fade_line_color, 4);
 	}
 
 	const int ICON_COUNT = std::size(theme_cache.transition_icons);
