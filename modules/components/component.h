@@ -28,23 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
 
-#ifndef GODOT_FROM_SOURCE_COMPONENT_H
-#define GODOT_FROM_SOURCE_COMPONENT_H
-
-
+#include "core/input/input_event.h"
+#include "core/io/resource.h"
 #include "core/object/object.h"
 #include "core/string/string_name.h"
-#include "core/io/resource.h"
-#include "core/input/input_event.h"
-
 
 class Component : public Resource {
 	GDCLASS(Component, Resource);
 
-
 public:
-	Object* owner = nullptr;
+	Object *owner = nullptr;
 
 public:
 	Component() = default;
@@ -70,7 +65,6 @@ public:
 	bool is_unhandled_input_overridden() const;
 	bool is_unhandled_key_input_overridden() const;
 
-
 protected:
 	static void _bind_methods();
 
@@ -85,5 +79,3 @@ protected:
 	GDVIRTUAL1R(bool, _unhandled_input, Ref<InputEvent>)
 	GDVIRTUAL1R(bool, _unhandled_key_input, Ref<InputEvent>)
 };
-
-#endif //GODOT_FROM_SOURCE_COMPONENT_H

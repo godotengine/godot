@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-
 #include "component.h"
 
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
-
 
 StringName Component::get_component_class() {
 	Ref<Script> s = get_script();

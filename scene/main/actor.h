@@ -28,21 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-
 #pragma once
 
-
 #include "core/object/object.h"
+#include "core/string/string_name.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
-#include "core/string/string_name.h"
 #include "modules/components/component.h"
-
 
 class Actor : public Object {
 	GDCLASS(Actor, Object);
-
 
 protected:
 	HashMap<StringName, Ref<Component>> _component_resources;
@@ -52,7 +48,6 @@ protected:
 	HashSet<Ref<Component>> _shortcut_input_group;
 	HashSet<Ref<Component>> _unhandled_input_group;
 	HashSet<Ref<Component>> _unhandled_key_input_group;
-
 
 public:
 	Actor() = default;
@@ -65,7 +60,6 @@ public:
 	void get_component_list(List<Ref<Component>> *out) const;
 	void get_component_class_list(List<StringName> *out) const;
 
-
 	void call_components_enter_tree();
 	void call_components_exit_tree();
 	void call_components_ready();
@@ -76,7 +70,6 @@ public:
 	bool call_components_shortcut_input(const Ref<InputEvent> &p_key_event);
 	bool call_components_unhandled_input(const Ref<InputEvent> &p_event);
 	bool call_components_unhandled_key_input(const Ref<InputEvent> &p_key_event);
-
 
 protected:
 	static void _bind_methods();

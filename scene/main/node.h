@@ -30,13 +30,13 @@
 
 #pragma once
 
+#include "core/io/resource.h"
 #include "core/string/node_path.h"
+#include "core/templates/hash_set.h"
 #include "core/variant/typed_array.h"
+#include "scene/main/actor.h"
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
-#include "core/io/resource.h"
-#include "core/templates/hash_set.h"
-#include "scene/main/actor.h"
 
 class Viewport;
 class Window;

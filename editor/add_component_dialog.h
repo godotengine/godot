@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "editor/gui/editor_validation_panel.h"
 #include "editor/editor_resource_picker.h"
+#include "editor/gui/editor_validation_panel.h"
+#include "modules/components/component.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
-#include "modules/components/component.h"
 
 class AddComponentDialog : public ConfirmationDialog {
 	GDCLASS(AddComponentDialog, ConfirmationDialog);

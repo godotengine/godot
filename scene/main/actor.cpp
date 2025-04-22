@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-
 #include "actor.h"
 
 #include "core/object/class_db.h"
@@ -36,11 +35,9 @@
 #include "core/string/ustring.h"
 #include "core/variant/variant.h"
 
-
 bool Actor::has_component(StringName component_class) const {
 	return _component_resources.has(component_class);
 }
-
 
 Ref<Component> Actor::get_component(StringName component_class) const {
 	if (!has_component(component_class)) {
@@ -53,7 +50,6 @@ Ref<Component> Actor::get_component(StringName component_class) const {
 
 	return result;
 }
-
 
 void Actor::set_component(Ref<Component> value) {
 	ERR_FAIL_COND_MSG(value->owner != nullptr, vformat("This component already has owner. Remove it first."));
@@ -89,7 +85,6 @@ void Actor::set_component(Ref<Component> value) {
 	notify_property_list_changed();
 }
 
-
 void Actor::remove_component(StringName component_class) {
 	Ref<Component> value = _component_resources.get(component_class);
 	if (value.is_valid()) {
@@ -107,20 +102,17 @@ void Actor::remove_component(StringName component_class) {
 	}
 }
 
-
 void Actor::get_component_list(List<Ref<Component>> *out) const {
 	for (const KeyValue<StringName, Ref<Component>> &K : _component_resources) {
 		out->push_back(K.value);
 	}
 }
 
-
 void Actor::get_component_class_list(List<StringName> *out) const {
 	for (const KeyValue<StringName, Ref<Component>> &K : _component_resources) {
 		out->push_back(K.key);
 	}
 }
-
 
 void Actor::call_components_enter_tree() {
 	for (const KeyValue<StringName, Ref<Component>> &K : _component_resources) {
@@ -142,13 +134,13 @@ void Actor::call_components_ready() {
 
 void Actor::call_components_process(double delta) {
 	for (const Ref<Component> &K : _process_group) {
-		K->process(delta);//NOTE:: this ideally should call Node::get_process_delta_time()
+		K->process(delta); //NOTE:: this ideally should call Node::get_process_delta_time()
 	}
 }
 
 void Actor::call_components_physics_process(double delta) {
 	for (const Ref<Component> &K : _physics_process_group) {
-		K->physics_process(delta);//NOTE:: this ideally should call Node::get_physics_process_delta_time()
+		K->physics_process(delta); //NOTE:: this ideally should call Node::get_physics_process_delta_time()
 	}
 }
 
@@ -199,14 +191,12 @@ void Actor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_component", "component_class"), &Actor::remove_component);
 }
 
-
 void Actor::_get_property_list(List<PropertyInfo> *out) const {
-	for (const KeyValue<StringName, Ref<Component>> &k_v: _component_resources) {
+	for (const KeyValue<StringName, Ref<Component>> &k_v : _component_resources) {
 		PropertyInfo property_info = PropertyInfo(Variant::OBJECT, "components/" + k_v.key.operator String(), PROPERTY_HINT_RESOURCE_TYPE, "Component", PropertyUsageFlags::PROPERTY_USAGE_DEFAULT | PropertyUsageFlags::PROPERTY_USAGE_READ_ONLY);
 		out->push_back(property_info);
 	}
 }
-
 
 bool Actor::_get(const StringName &p_property, Variant &r_value) const {
 	bool result = false;
@@ -225,7 +215,6 @@ bool Actor::_get(const StringName &p_property, Variant &r_value) const {
 
 	return result;
 }
-
 
 bool Actor::_set(const StringName &p_property, const Variant &p_value) {
 	bool result = false;

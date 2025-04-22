@@ -5313,7 +5313,6 @@ Variant EditorInspector::get_property_clipboard() const {
 	return property_clipboard;
 }
 
-
 void EditorInspector::_add_component_confirm() {
 	// Ensure metadata is unfolded when adding a new metadata.
 	object->editor_set_section_unfold("component", true);
@@ -5326,7 +5325,6 @@ void EditorInspector::_add_component_confirm() {
 	undo_redo->add_undo_method(object, "remove_component", name);
 	undo_redo->commit_action();
 }
-
 
 void EditorInspector::_show_add_component_dialog() {
 	Actor *actor = Object::cast_to<Actor>(object);
@@ -5348,7 +5346,6 @@ void EditorInspector::_show_add_component_dialog() {
 	actor->get_component_class_list(&existing_components);
 	add_component_dialog->open(dialog_title, existing_components);
 }
-
 
 void EditorInspector::_show_add_meta_dialog() {
 	if (!add_meta_dialog) {
