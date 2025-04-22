@@ -102,6 +102,9 @@ def library_emitter(target, source, env):
 def configure(env: "SConsEnvironment"):
     env.Append(LIBEMITTER=[library_emitter])
 
+    env["EXPORTED_FUNCTIONS"] = ["_main"]
+    env["EXPORTED_RUNTIME_METHODS"] = []
+
     # Validate arch.
     supported_arches = ["wasm32"]
     validate_arch(env["arch"], get_name(), supported_arches)
@@ -249,7 +252,7 @@ def configure(env: "SConsEnvironment"):
         if not env["dlink_enabled"]:
             # Workaround https://github.com/emscripten-core/emscripten/issues/21844#issuecomment-2116936414.
             # Not needed (and potentially dangerous) when dlink_enabled=yes, since we set EXPORT_ALL=1 in that case.
-            env.Append(LINKFLAGS=["-sEXPORTED_FUNCTIONS=['__emscripten_thread_crashed','_main']"])
+            env["EXPORTED_FUNCTIONS"] += ["__emscripten_thread_crashed"]
 
     elif env["proxy_to_pthread"]:
         print_warning('"threads=no" support requires "proxy_to_pthread=no", disabling proxy to pthread.')
@@ -276,7 +279,7 @@ def configure(env: "SConsEnvironment"):
     if env["proxy_to_pthread"]:
         env.Append(LINKFLAGS=["-sPROXY_TO_PTHREAD=1"])
         env.Append(CPPDEFINES=["PROXY_TO_PTHREAD_ENABLED"])
-        env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=['_emscripten_proxy_main']"])
+        env["EXPORTED_RUNTIME_METHODS"] += ["_emscripten_proxy_main"]
         # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
         env.Append(LINKFLAGS=["-sTEXTDECODER=0"])
 
@@ -303,7 +306,13 @@ def configure(env: "SConsEnvironment"):
     env.Append(LINKFLAGS=["-sINVOKE_RUN=0"])
 
     # callMain for manual start, cwrap for the mono version.
-    env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=['callMain','cwrap']"])
+    # Make sure also to have those memory-related functions available.
+    heap_arrays = [f"HEAP{heap_type}{heap_size}" for heap_size in [8, 16, 32, 64] for heap_type in ["", "U"]] + [
+        "HEAPF32",
+        "HEAPF64",
+    ]
+    env["EXPORTED_RUNTIME_METHODS"] += ["callMain", "cwrap"] + heap_arrays
+    env["EXPORTED_FUNCTIONS"] += ["_malloc", "_free"]
 
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-sEXIT_RUNTIME=1"])
