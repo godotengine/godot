@@ -103,7 +103,9 @@ void VisualInstance::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			// ToDo : Can we turn off notify transform for physics interpolated cases?
+			// This notification should be turned off for physics interpolated cases
+			// via `notify_transform_when_fti_off`, so the check for interpolation
+			// could possibly be removed in future.
 			if (_is_vi_visible() && !(is_inside_tree() && get_tree()->is_physics_interpolation_enabled()) && !_is_using_identity_transform()) {
 				// Physics interpolation global off, always send.
 				VisualServer::get_singleton()->instance_set_transform(instance, get_global_transform());
@@ -211,7 +213,7 @@ VisualInstance::VisualInstance() {
 	layers = 1;
 	sorting_offset = 0.0f;
 	sorting_use_aabb_center = true;
-	set_notify_transform(true);
+	_set_notify_transform_when_fti_off(true);
 }
 
 VisualInstance::~VisualInstance() {
