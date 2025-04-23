@@ -34,7 +34,7 @@ def get_tools(env: "SConsEnvironment"):
 
 
 def get_opts():
-    from SCons.Variables import BoolVariable
+    from SCons.Variables import BoolVariable, EnumVariable
 
     return [
         ("initial_memory", "Initial WASM memory (in MiB)", 32),
@@ -56,6 +56,13 @@ def get_opts():
             "proxy_to_pthread",
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
             False,
+        ),
+        EnumVariable(
+            "memory64",
+            "Set Emscripten MEMORY64 mode",
+            "wasm32",
+            ["wasm32", "wasm64", "wasm32+64bitptrs"],
+            {"no": "wasm32", "yes": "wasm64", "0": "wasm32", "1": "wasm64", "2": "wasm32+64bitptrs"},
         ),
     ]
 
@@ -303,3 +310,14 @@ def configure(env: "SConsEnvironment"):
     # This workaround creates a closure that prevents the garbage collector from freeing the WebGL context.
     # We also only use WebGL2, and changing context version is not widely supported anyway.
     env.Append(LINKFLAGS=["-sGL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0"])
+
+    # Set 32-bit or 64-bit pointers.
+    if env["memory64"] == "wasm32":
+        memory64_value = 0
+    elif env["memory64"] == "wasm64":
+        memory64_value = 1
+    else:
+        # "wasm32+64bitptrs"
+        memory64_value = 2
+    env.Append(CCFLAGS=[f"-sMEMORY64={memory64_value}"])
+    env.Append(LINKFLAGS=[f"-sMEMORY64={memory64_value}"])
