@@ -1512,15 +1512,27 @@ void EditorHelp::_update_doc() {
 			cd.signals.sort();
 		}
 
-		class_desc->add_newline();
-		class_desc->add_newline();
-
-		section_line.push_back(Pair<String, int>(TTR("Signals"), class_desc->get_paragraph_count() - 2));
-		_push_title_font();
-		class_desc->add_text(TTR("Signals"));
-		_pop_title_font();
+		bool header_added = false;
 
 		for (const DocData::MethodDoc &signal : cd.signals) {
+			// Ignore undocumented private.
+			const bool is_documented = signal.is_deprecated || signal.is_experimental || !signal.description.strip_edges().is_empty();
+			if (!is_documented && signal.name.begins_with("_")) {
+				continue;
+			}
+
+			if (!header_added) {
+				header_added = true;
+
+				class_desc->add_newline();
+				class_desc->add_newline();
+
+				section_line.push_back(Pair<String, int>(TTR("Signals"), class_desc->get_paragraph_count() - 2));
+				_push_title_font();
+				class_desc->add_text(TTR("Signals"));
+				_pop_title_font();
+			}
+
 			class_desc->add_newline();
 			class_desc->add_newline();
 
