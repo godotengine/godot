@@ -209,7 +209,7 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 	tb->set_text(p_text);
 	tb->set_shortcut(p_shortcut);
 	tb->set_toggle_mode(true);
-	tb->set_focus_mode(Control::FOCUS_NONE);
+	tb->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	item_vbox->add_child(p_item);
 
 	bottom_hbox->move_to_front();
@@ -309,7 +309,7 @@ EditorBottomPanel::EditorBottomPanel() {
 	left_button->set_tooltip_text(TTR("Scroll Left\nHold Ctrl to scroll to the begin.\nHold Shift to scroll one page."));
 	left_button->set_accessibility_name(TTRC("Scroll Left"));
 	left_button->set_theme_type_variation("BottomPanelButton");
-	left_button->set_focus_mode(Control::FOCUS_NONE);
+	left_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	left_button->connect(SceneStringName(pressed), callable_mp(this, &EditorBottomPanel::_scroll).bind(false));
 	bottom_hbox->add_child(left_button);
 	left_button->hide();
@@ -326,7 +326,7 @@ EditorBottomPanel::EditorBottomPanel() {
 	right_button->set_tooltip_text(TTR("Scroll Right\nHold Ctrl to scroll to the end.\nHold Shift to scroll one page."));
 	right_button->set_accessibility_name(TTRC("Scroll Right"));
 	right_button->set_theme_type_variation("BottomPanelButton");
-	right_button->set_focus_mode(Control::FOCUS_NONE);
+	right_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	right_button->connect(SceneStringName(pressed), callable_mp(this, &EditorBottomPanel::_scroll).bind(true));
 	bottom_hbox->add_child(right_button);
 	right_button->hide();
