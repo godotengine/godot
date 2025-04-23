@@ -168,6 +168,7 @@ void Camera::_update_camera() {
 
 void Camera::_physics_interpolated_changed() {
 	_update_process_mode();
+	Spatial::_physics_interpolated_changed();
 }
 
 void Camera::set_desired_process_modes(bool p_process_internal, bool p_physics_process_internal) {
