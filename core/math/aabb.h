@@ -38,74 +38,72 @@
  * This is implemented by a point (position) and the box size.
  */
 
-class Variant;
-
 struct [[nodiscard]] AABB {
 	Vector3 position;
 	Vector3 size;
 
-	real_t get_volume() const;
-	_FORCE_INLINE_ bool has_volume() const {
+	_FORCE_INLINE_ constexpr real_t get_volume() const;
+	_FORCE_INLINE_ constexpr bool has_volume() const {
 		return size.x > 0.0f && size.y > 0.0f && size.z > 0.0f;
 	}
 
-	_FORCE_INLINE_ bool has_surface() const {
+	_FORCE_INLINE_ constexpr bool has_surface() const {
 		return size.x > 0.0f || size.y > 0.0f || size.z > 0.0f;
 	}
 
-	const Vector3 &get_position() const { return position; }
-	void set_position(const Vector3 &p_pos) { position = p_pos; }
-	const Vector3 &get_size() const { return size; }
-	void set_size(const Vector3 &p_size) { size = p_size; }
+	_FORCE_INLINE_ constexpr const Vector3 &get_position() const { return position; }
+	_FORCE_INLINE_ constexpr void set_position(const Vector3 &p_pos) { position = p_pos; }
+	_FORCE_INLINE_ constexpr const Vector3 &get_size() const { return size; }
+	_FORCE_INLINE_ constexpr void set_size(const Vector3 &p_size) { size = p_size; }
 
-	constexpr bool operator==(const AABB &p_rval) const {
+	_FORCE_INLINE_ constexpr bool operator==(const AABB &p_rval) const {
 		return position == p_rval.position && size == p_rval.size;
 	}
-	constexpr bool operator!=(const AABB &p_rval) const {
+	_FORCE_INLINE_ constexpr bool operator!=(const AABB &p_rval) const {
 		return position != p_rval.position || size != p_rval.size;
 	}
 
-	bool is_equal_approx(const AABB &p_aabb) const;
-	bool is_same(const AABB &p_aabb) const;
-	bool is_finite() const;
+	_FORCE_INLINE_ bool is_equal_approx(const AABB &p_aabb) const;
+	_FORCE_INLINE_ bool is_same(const AABB &p_aabb) const;
+	_FORCE_INLINE_ bool is_finite() const;
 	_FORCE_INLINE_ bool intersects(const AABB &p_aabb) const; /// Both AABBs overlap
 	_FORCE_INLINE_ bool intersects_inclusive(const AABB &p_aabb) const; /// Both AABBs (or their faces) overlap
 	_FORCE_INLINE_ bool encloses(const AABB &p_aabb) const; /// p_aabb is completely inside this
 
-	AABB merge(const AABB &p_with) const;
-	void merge_with(const AABB &p_aabb); ///merge with another AABB
-	AABB intersection(const AABB &p_aabb) const; ///get box where two intersect, empty if no intersection occurs
+	_FORCE_INLINE_ AABB merge(const AABB &p_with) const;
+	_FORCE_INLINE_ void merge_with(const AABB &p_aabb); ///merge with another AABB
+	_FORCE_INLINE_ AABB intersection(const AABB &p_aabb) const; ///get box where two intersect, empty if no intersection occurs
 	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t p_t0, real_t p_t1) const;
 
-	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_intersection_point = nullptr, Vector3 *r_normal = nullptr) const;
-	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir) const {
+	_FORCE_INLINE_ bool intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_intersection_point = nullptr, Vector3 *r_normal = nullptr) const;
+	_FORCE_INLINE_ bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir) const {
 		bool inside;
 		return find_intersects_ray(p_from, p_dir, inside);
 	}
-	bool find_intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, bool &r_inside, Vector3 *r_intersection_point = nullptr, Vector3 *r_normal = nullptr) const;
+	_FORCE_INLINE_ bool find_intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, bool &r_inside, Vector3 *r_intersection_point = nullptr, Vector3 *r_normal = nullptr) const;
 
 	_FORCE_INLINE_ bool intersects_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const;
 	_FORCE_INLINE_ bool inside_convex_shape(const Plane *p_planes, int p_plane_count) const;
-	bool intersects_plane(const Plane &p_plane) const;
+	_FORCE_INLINE_ bool intersects_plane(const Plane &p_plane) const;
 
 	_FORCE_INLINE_ bool has_point(const Vector3 &p_point) const;
 	_FORCE_INLINE_ Vector3 get_support(const Vector3 &p_direction) const;
 
-	Vector3 get_longest_axis() const;
-	int get_longest_axis_index() const;
+	_FORCE_INLINE_ Vector3 get_longest_axis() const;
+	_FORCE_INLINE_ int get_longest_axis_index() const;
 	_FORCE_INLINE_ real_t get_longest_axis_size() const;
 
-	Vector3 get_shortest_axis() const;
-	int get_shortest_axis_index() const;
+	_FORCE_INLINE_ Vector3 get_shortest_axis() const;
+	_FORCE_INLINE_ int get_shortest_axis_index() const;
 	_FORCE_INLINE_ real_t get_shortest_axis_size() const;
 
-	AABB grow(real_t p_by) const;
+	_FORCE_INLINE_ AABB grow(real_t p_by) const;
 	_FORCE_INLINE_ void grow_by(real_t p_amount);
 
-	void get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const;
+	_FORCE_INLINE_ void get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const;
 	_FORCE_INLINE_ Vector3 get_endpoint(int p_point) const;
 
-	AABB expand(const Vector3 &p_vector) const;
+	_FORCE_INLINE_ AABB expand(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ void project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r_max) const;
 	_FORCE_INLINE_ void expand_to(const Vector3 &p_vector); /** expand to contain a point if necessary */
 
@@ -119,28 +117,28 @@ struct [[nodiscard]] AABB {
 	_FORCE_INLINE_ void quantize(real_t p_unit);
 	_FORCE_INLINE_ AABB quantized(real_t p_unit) const;
 
-	_FORCE_INLINE_ void set_end(const Vector3 &p_end) {
+	_FORCE_INLINE_ constexpr void set_end(const Vector3 &p_end) {
 		size = p_end - position;
 	}
 
-	_FORCE_INLINE_ Vector3 get_end() const {
+	_FORCE_INLINE_ constexpr Vector3 get_end() const {
 		return position + size;
 	}
 
-	_FORCE_INLINE_ Vector3 get_center() const {
+	_FORCE_INLINE_ constexpr Vector3 get_center() const {
 		return position + (size * 0.5f);
 	}
 
 	operator String() const;
 
-	AABB() = default;
-	constexpr AABB(const Vector3 &p_pos, const Vector3 &p_size) :
+	_FORCE_INLINE_ constexpr AABB() = default;
+	_FORCE_INLINE_ constexpr AABB(const Vector3 &p_pos, const Vector3 &p_size) :
 			position(p_pos),
 			size(p_size) {
 	}
 };
 
-inline bool AABB::intersects(const AABB &p_aabb) const {
+bool AABB::intersects(const AABB &p_aabb) const {
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
@@ -168,7 +166,7 @@ inline bool AABB::intersects(const AABB &p_aabb) const {
 	return true;
 }
 
-inline bool AABB::intersects_inclusive(const AABB &p_aabb) const {
+bool AABB::intersects_inclusive(const AABB &p_aabb) const {
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
@@ -196,7 +194,7 @@ inline bool AABB::intersects_inclusive(const AABB &p_aabb) const {
 	return true;
 }
 
-inline bool AABB::encloses(const AABB &p_aabb) const {
+bool AABB::encloses(const AABB &p_aabb) const {
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
@@ -342,7 +340,7 @@ bool AABB::has_point(const Vector3 &p_point) const {
 	return true;
 }
 
-inline void AABB::expand_to(const Vector3 &p_vector) {
+void AABB::expand_to(const Vector3 &p_vector) {
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
@@ -385,7 +383,7 @@ void AABB::project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r
 	r_max = distance + length;
 }
 
-inline real_t AABB::get_longest_axis_size() const {
+real_t AABB::get_longest_axis_size() const {
 	real_t max_size = size.x;
 
 	if (size.y > max_size) {
@@ -399,7 +397,7 @@ inline real_t AABB::get_longest_axis_size() const {
 	return max_size;
 }
 
-inline real_t AABB::get_shortest_axis_size() const {
+real_t AABB::get_shortest_axis_size() const {
 	real_t max_size = size.x;
 
 	if (size.y < max_size) {
@@ -498,6 +496,389 @@ AABB AABB::quantized(real_t p_unit) const {
 	AABB ret = *this;
 	ret.quantize(p_unit);
 	return ret;
+}
+
+real_t constexpr AABB::get_volume() const {
+	return size.x * size.y * size.z;
+}
+
+void AABB::merge_with(const AABB &p_aabb) {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
+	Vector3 beg_1, beg_2;
+	Vector3 end_1, end_2;
+	Vector3 min, max;
+
+	beg_1 = position;
+	beg_2 = p_aabb.position;
+	end_1 = size + beg_1;
+	end_2 = p_aabb.size + beg_2;
+
+	min.x = (beg_1.x < beg_2.x) ? beg_1.x : beg_2.x;
+	min.y = (beg_1.y < beg_2.y) ? beg_1.y : beg_2.y;
+	min.z = (beg_1.z < beg_2.z) ? beg_1.z : beg_2.z;
+
+	max.x = (end_1.x > end_2.x) ? end_1.x : end_2.x;
+	max.y = (end_1.y > end_2.y) ? end_1.y : end_2.y;
+	max.z = (end_1.z > end_2.z) ? end_1.z : end_2.z;
+
+	position = min;
+	size = max - min;
+}
+
+bool AABB::is_equal_approx(const AABB &p_aabb) const {
+	return position.is_equal_approx(p_aabb.position) && size.is_equal_approx(p_aabb.size);
+}
+
+bool AABB::is_same(const AABB &p_aabb) const {
+	return position.is_same(p_aabb.position) && size.is_same(p_aabb.size);
+}
+
+bool AABB::is_finite() const {
+	return position.is_finite() && size.is_finite();
+}
+
+AABB AABB::intersection(const AABB &p_aabb) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
+	Vector3 src_min = position;
+	Vector3 src_max = position + size;
+	Vector3 dst_min = p_aabb.position;
+	Vector3 dst_max = p_aabb.position + p_aabb.size;
+
+	Vector3 min, max;
+
+	if (src_min.x > dst_max.x || src_max.x < dst_min.x) {
+		return AABB();
+	} else {
+		min.x = (src_min.x > dst_min.x) ? src_min.x : dst_min.x;
+		max.x = (src_max.x < dst_max.x) ? src_max.x : dst_max.x;
+	}
+
+	if (src_min.y > dst_max.y || src_max.y < dst_min.y) {
+		return AABB();
+	} else {
+		min.y = (src_min.y > dst_min.y) ? src_min.y : dst_min.y;
+		max.y = (src_max.y < dst_max.y) ? src_max.y : dst_max.y;
+	}
+
+	if (src_min.z > dst_max.z || src_max.z < dst_min.z) {
+		return AABB();
+	} else {
+		min.z = (src_min.z > dst_min.z) ? src_min.z : dst_min.z;
+		max.z = (src_max.z < dst_max.z) ? src_max.z : dst_max.z;
+	}
+
+	return AABB(min, max - min);
+}
+
+// Note that this routine returns the BACKTRACKED (i.e. behind the ray origin)
+// intersection point + normal if INSIDE the AABB.
+// The caller can therefore decide when INSIDE whether to use the
+// backtracked intersection, or use p_from as the intersection, and
+// carry on progressing without e.g. reflecting against the normal.
+bool AABB::find_intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, bool &r_inside, Vector3 *r_intersection_point, Vector3 *r_normal) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
+	Vector3 end = position + size;
+	real_t tmin = -1e20;
+	real_t tmax = 1e20;
+	int axis = 0;
+
+	// Make sure r_inside is always initialized,
+	// to prevent reading uninitialized data in the client code.
+	r_inside = false;
+
+	for (int i = 0; i < 3; i++) {
+		if (p_dir[i] == 0) {
+			if ((p_from[i] < position[i]) || (p_from[i] > end[i])) {
+				return false;
+			}
+		} else { // ray not parallel to planes in this direction
+			real_t t1 = (position[i] - p_from[i]) / p_dir[i];
+			real_t t2 = (end[i] - p_from[i]) / p_dir[i];
+
+			if (t1 > t2) {
+				SWAP(t1, t2);
+			}
+			if (t1 >= tmin) {
+				tmin = t1;
+				axis = i;
+			}
+			if (t2 < tmax) {
+				if (t2 < 0) {
+					return false;
+				}
+				tmax = t2;
+			}
+			if (tmin > tmax) {
+				return false;
+			}
+		}
+	}
+
+	// Did the ray start from inside the box?
+	// In which case the intersection returned is the point of entry
+	// (behind the ray start) or the calling routine can use the ray origin as intersection point.
+	r_inside = tmin < 0;
+
+	if (r_intersection_point) {
+		*r_intersection_point = p_from + p_dir * tmin;
+
+		// Prevent float error by making sure the point is exactly
+		// on the AABB border on the relevant axis.
+		r_intersection_point->coord[axis] = (p_dir[axis] >= 0) ? position.coord[axis] : end.coord[axis];
+	}
+	if (r_normal) {
+		*r_normal = Vector3();
+		(*r_normal)[axis] = (p_dir[axis] >= 0) ? -1 : 1;
+	}
+
+	return true;
+}
+
+bool AABB::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_intersection_point, Vector3 *r_normal) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
+	real_t min = 0, max = 1;
+	int axis = 0;
+	real_t sign = 0;
+
+	for (int i = 0; i < 3; i++) {
+		real_t seg_from = p_from[i];
+		real_t seg_to = p_to[i];
+		real_t box_begin = position[i];
+		real_t box_end = box_begin + size[i];
+		real_t cmin, cmax;
+		real_t csign;
+
+		if (seg_from < seg_to) {
+			if (seg_from > box_end || seg_to < box_begin) {
+				return false;
+			}
+			real_t length = seg_to - seg_from;
+			cmin = (seg_from < box_begin) ? ((box_begin - seg_from) / length) : 0;
+			cmax = (seg_to > box_end) ? ((box_end - seg_from) / length) : 1;
+			csign = -1.0;
+
+		} else {
+			if (seg_to > box_end || seg_from < box_begin) {
+				return false;
+			}
+			real_t length = seg_to - seg_from;
+			cmin = (seg_from > box_end) ? (box_end - seg_from) / length : 0;
+			cmax = (seg_to < box_begin) ? (box_begin - seg_from) / length : 1;
+			csign = 1.0;
+		}
+
+		if (cmin > min) {
+			min = cmin;
+			axis = i;
+			sign = csign;
+		}
+		if (cmax < max) {
+			max = cmax;
+		}
+		if (max < min) {
+			return false;
+		}
+	}
+
+	Vector3 rel = p_to - p_from;
+
+	if (r_normal) {
+		Vector3 normal;
+		normal[axis] = sign;
+		*r_normal = normal;
+	}
+
+	if (r_intersection_point) {
+		*r_intersection_point = p_from + rel * min;
+	}
+
+	return true;
+}
+
+bool AABB::intersects_plane(const Plane &p_plane) const {
+	Vector3 points[8] = {
+		Vector3(position.x, position.y, position.z),
+		Vector3(position.x, position.y, position.z + size.z),
+		Vector3(position.x, position.y + size.y, position.z),
+		Vector3(position.x, position.y + size.y, position.z + size.z),
+		Vector3(position.x + size.x, position.y, position.z),
+		Vector3(position.x + size.x, position.y, position.z + size.z),
+		Vector3(position.x + size.x, position.y + size.y, position.z),
+		Vector3(position.x + size.x, position.y + size.y, position.z + size.z),
+	};
+
+	bool over = false;
+	bool under = false;
+
+	for (int i = 0; i < 8; i++) {
+		if (p_plane.distance_to(points[i]) > 0) {
+			over = true;
+		} else {
+			under = true;
+		}
+	}
+
+	return under && over;
+}
+
+Vector3 AABB::get_longest_axis() const {
+	Vector3 axis(1, 0, 0);
+	real_t max_size = size.x;
+
+	if (size.y > max_size) {
+		axis = Vector3(0, 1, 0);
+		max_size = size.y;
+	}
+
+	if (size.z > max_size) {
+		axis = Vector3(0, 0, 1);
+	}
+
+	return axis;
+}
+
+int AABB::get_longest_axis_index() const {
+	int axis = 0;
+	real_t max_size = size.x;
+
+	if (size.y > max_size) {
+		axis = 1;
+		max_size = size.y;
+	}
+
+	if (size.z > max_size) {
+		axis = 2;
+	}
+
+	return axis;
+}
+
+Vector3 AABB::get_shortest_axis() const {
+	Vector3 axis(1, 0, 0);
+	real_t min_size = size.x;
+
+	if (size.y < min_size) {
+		axis = Vector3(0, 1, 0);
+		min_size = size.y;
+	}
+
+	if (size.z < min_size) {
+		axis = Vector3(0, 0, 1);
+	}
+
+	return axis;
+}
+
+int AABB::get_shortest_axis_index() const {
+	int axis = 0;
+	real_t min_size = size.x;
+
+	if (size.y < min_size) {
+		axis = 1;
+		min_size = size.y;
+	}
+
+	if (size.z < min_size) {
+		axis = 2;
+	}
+
+	return axis;
+}
+
+AABB AABB::merge(const AABB &p_with) const {
+	AABB aabb = *this;
+	aabb.merge_with(p_with);
+	return aabb;
+}
+
+AABB AABB::expand(const Vector3 &p_vector) const {
+	AABB aabb = *this;
+	aabb.expand_to(p_vector);
+	return aabb;
+}
+
+AABB AABB::grow(real_t p_by) const {
+	AABB aabb = *this;
+	aabb.grow_by(p_by);
+	return aabb;
+}
+
+void AABB::get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const {
+	ERR_FAIL_INDEX(p_edge, 12);
+	switch (p_edge) {
+		case 0: {
+			r_from = Vector3(position.x + size.x, position.y, position.z);
+			r_to = Vector3(position.x, position.y, position.z);
+		} break;
+		case 1: {
+			r_from = Vector3(position.x + size.x, position.y, position.z + size.z);
+			r_to = Vector3(position.x + size.x, position.y, position.z);
+		} break;
+		case 2: {
+			r_from = Vector3(position.x, position.y, position.z + size.z);
+			r_to = Vector3(position.x + size.x, position.y, position.z + size.z);
+
+		} break;
+		case 3: {
+			r_from = Vector3(position.x, position.y, position.z);
+			r_to = Vector3(position.x, position.y, position.z + size.z);
+
+		} break;
+		case 4: {
+			r_from = Vector3(position.x, position.y + size.y, position.z);
+			r_to = Vector3(position.x + size.x, position.y + size.y, position.z);
+		} break;
+		case 5: {
+			r_from = Vector3(position.x + size.x, position.y + size.y, position.z);
+			r_to = Vector3(position.x + size.x, position.y + size.y, position.z + size.z);
+		} break;
+		case 6: {
+			r_from = Vector3(position.x + size.x, position.y + size.y, position.z + size.z);
+			r_to = Vector3(position.x, position.y + size.y, position.z + size.z);
+
+		} break;
+		case 7: {
+			r_from = Vector3(position.x, position.y + size.y, position.z + size.z);
+			r_to = Vector3(position.x, position.y + size.y, position.z);
+
+		} break;
+		case 8: {
+			r_from = Vector3(position.x, position.y, position.z + size.z);
+			r_to = Vector3(position.x, position.y + size.y, position.z + size.z);
+
+		} break;
+		case 9: {
+			r_from = Vector3(position.x, position.y, position.z);
+			r_to = Vector3(position.x, position.y + size.y, position.z);
+
+		} break;
+		case 10: {
+			r_from = Vector3(position.x + size.x, position.y, position.z);
+			r_to = Vector3(position.x + size.x, position.y + size.y, position.z);
+
+		} break;
+		case 11: {
+			r_from = Vector3(position.x + size.x, position.y, position.z + size.z);
+			r_to = Vector3(position.x + size.x, position.y + size.y, position.z + size.z);
+
+		} break;
+	}
 }
 
 template <>

@@ -39,46 +39,46 @@ struct [[nodiscard]] Transform3D {
 	Basis basis;
 	Vector3 origin;
 
-	void invert();
-	Transform3D inverse() const;
+	_FORCE_INLINE_ void invert();
+	_FORCE_INLINE_ Transform3D inverse() const;
 
-	void affine_invert();
-	Transform3D affine_inverse() const;
+	_FORCE_INLINE_ void affine_invert();
+	_FORCE_INLINE_ Transform3D affine_inverse() const;
 
-	Transform3D rotated(const Vector3 &p_axis, real_t p_angle) const;
-	Transform3D rotated_local(const Vector3 &p_axis, real_t p_angle) const;
+	_FORCE_INLINE_ Transform3D rotated(const Vector3 &p_axis, real_t p_angle) const;
+	_FORCE_INLINE_ Transform3D rotated_local(const Vector3 &p_axis, real_t p_angle) const;
 
-	void rotate(const Vector3 &p_axis, real_t p_angle);
-	void rotate_basis(const Vector3 &p_axis, real_t p_angle);
+	_FORCE_INLINE_ void rotate(const Vector3 &p_axis, real_t p_angle);
+	_FORCE_INLINE_ void rotate_basis(const Vector3 &p_axis, real_t p_angle);
 
-	void set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
-	Transform3D looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false) const;
+	_FORCE_INLINE_ void set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
+	_FORCE_INLINE_ Transform3D looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false) const;
 
-	void scale(const Vector3 &p_scale);
-	Transform3D scaled(const Vector3 &p_scale) const;
-	Transform3D scaled_local(const Vector3 &p_scale) const;
-	void scale_basis(const Vector3 &p_scale);
-	void translate_local(real_t p_tx, real_t p_ty, real_t p_tz);
-	void translate_local(const Vector3 &p_translation);
-	Transform3D translated(const Vector3 &p_translation) const;
-	Transform3D translated_local(const Vector3 &p_translation) const;
+	_FORCE_INLINE_ void scale(const Vector3 &p_scale);
+	_FORCE_INLINE_ Transform3D scaled(const Vector3 &p_scale) const;
+	_FORCE_INLINE_ Transform3D scaled_local(const Vector3 &p_scale) const;
+	_FORCE_INLINE_ void scale_basis(const Vector3 &p_scale);
+	_FORCE_INLINE_ void translate_local(real_t p_tx, real_t p_ty, real_t p_tz);
+	_FORCE_INLINE_ void translate_local(const Vector3 &p_translation);
+	_FORCE_INLINE_ Transform3D translated(const Vector3 &p_translation) const;
+	_FORCE_INLINE_ Transform3D translated_local(const Vector3 &p_translation) const;
 
-	const Basis &get_basis() const { return basis; }
-	void set_basis(const Basis &p_basis) { basis = p_basis; }
+	_FORCE_INLINE_ const Basis &get_basis() const { return basis; }
+	_FORCE_INLINE_ void set_basis(const Basis &p_basis) { basis = p_basis; }
 
-	const Vector3 &get_origin() const { return origin; }
-	void set_origin(const Vector3 &p_origin) { origin = p_origin; }
+	_FORCE_INLINE_ const Vector3 &get_origin() const { return origin; }
+	_FORCE_INLINE_ void set_origin(const Vector3 &p_origin) { origin = p_origin; }
 
-	void orthonormalize();
-	Transform3D orthonormalized() const;
-	void orthogonalize();
-	Transform3D orthogonalized() const;
-	bool is_equal_approx(const Transform3D &p_transform) const;
-	bool is_same(const Transform3D &p_transform) const;
-	bool is_finite() const;
+	_FORCE_INLINE_ void orthonormalize();
+	_FORCE_INLINE_ Transform3D orthonormalized() const;
+	_FORCE_INLINE_ void orthogonalize();
+	_FORCE_INLINE_ Transform3D orthogonalized() const;
+	_FORCE_INLINE_ bool is_equal_approx(const Transform3D &p_transform) const;
+	_FORCE_INLINE_ bool is_same(const Transform3D &p_transform) const;
+	_FORCE_INLINE_ bool is_finite() const;
 
-	constexpr bool operator==(const Transform3D &p_transform) const;
-	constexpr bool operator!=(const Transform3D &p_transform) const;
+	_FORCE_INLINE_ constexpr bool operator==(const Transform3D &p_transform) const;
+	_FORCE_INLINE_ constexpr bool operator!=(const Transform3D &p_transform) const;
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ AABB xform(const AABB &p_aabb) const;
@@ -100,14 +100,14 @@ struct [[nodiscard]] Transform3D {
 	_FORCE_INLINE_ Plane xform_fast(const Plane &p_plane, const Basis &p_basis_inverse_transpose) const;
 	static _FORCE_INLINE_ Plane xform_inv_fast(const Plane &p_plane, const Transform3D &p_inverse, const Basis &p_basis_transpose);
 
-	void operator*=(const Transform3D &p_transform);
-	Transform3D operator*(const Transform3D &p_transform) const;
-	constexpr void operator*=(real_t p_val);
-	constexpr Transform3D operator*(real_t p_val) const;
-	constexpr void operator/=(real_t p_val);
-	constexpr Transform3D operator/(real_t p_val) const;
+	_FORCE_INLINE_ void operator*=(const Transform3D &p_transform);
+	_FORCE_INLINE_ Transform3D operator*(const Transform3D &p_transform) const;
+	_FORCE_INLINE_ constexpr void operator*=(real_t p_val);
+	_FORCE_INLINE_ constexpr Transform3D operator*(real_t p_val) const;
+	_FORCE_INLINE_ constexpr void operator/=(real_t p_val);
+	_FORCE_INLINE_ constexpr Transform3D operator/(real_t p_val) const;
 
-	Transform3D interpolate_with(const Transform3D &p_transform, real_t p_c) const;
+	_FORCE_INLINE_ Transform3D interpolate_with(const Transform3D &p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Transform3D inverse_xform(const Transform3D &t) const {
 		Vector3 v = t.origin - origin;
@@ -115,7 +115,7 @@ struct [[nodiscard]] Transform3D {
 				basis.xform(v));
 	}
 
-	void set(real_t p_xx, real_t p_xy, real_t p_xz, real_t p_yx, real_t p_yy, real_t p_yz, real_t p_zx, real_t p_zy, real_t p_zz, real_t p_tx, real_t p_ty, real_t p_tz) {
+	_FORCE_INLINE_ void set(real_t p_xx, real_t p_xy, real_t p_xz, real_t p_yx, real_t p_yy, real_t p_yz, real_t p_zx, real_t p_zy, real_t p_zz, real_t p_tx, real_t p_ty, real_t p_tz) {
 		basis.set(p_xx, p_xy, p_xz, p_yx, p_yy, p_yz, p_zx, p_zy, p_zz);
 		origin.x = p_tx;
 		origin.y = p_ty;
@@ -124,14 +124,14 @@ struct [[nodiscard]] Transform3D {
 
 	operator String() const;
 
-	Transform3D() = default;
-	constexpr Transform3D(const Basis &p_basis, const Vector3 &p_origin = Vector3()) :
+	_FORCE_INLINE_ constexpr Transform3D() = default;
+	_FORCE_INLINE_ constexpr Transform3D(const Basis &p_basis, const Vector3 &p_origin = Vector3()) :
 			basis(p_basis),
 			origin(p_origin) {}
-	constexpr Transform3D(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z, const Vector3 &p_origin) :
+	_FORCE_INLINE_ constexpr Transform3D(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z, const Vector3 &p_origin) :
 			basis(p_x, p_y, p_z),
 			origin(p_origin) {}
-	constexpr Transform3D(real_t p_xx, real_t p_xy, real_t p_xz, real_t p_yx, real_t p_yy, real_t p_yz, real_t p_zx, real_t p_zy, real_t p_zz, real_t p_ox, real_t p_oy, real_t p_oz) :
+	_FORCE_INLINE_ constexpr Transform3D(real_t p_xx, real_t p_xy, real_t p_xz, real_t p_yx, real_t p_yy, real_t p_yz, real_t p_zx, real_t p_zy, real_t p_zz, real_t p_ox, real_t p_oy, real_t p_oz) :
 			basis(p_xx, p_xy, p_xz, p_yx, p_yy, p_yz, p_zx, p_zy, p_zz),
 			origin(p_ox, p_oy, p_oz) {}
 };
@@ -304,4 +304,164 @@ _FORCE_INLINE_ Plane Transform3D::xform_inv_fast(const Plane &p_plane, const Tra
 
 	real_t d = normal.dot(point);
 	return Plane(normal, d);
+}
+
+void Transform3D::affine_invert() {
+	basis.invert();
+	origin = basis.xform(-origin);
+}
+
+Transform3D Transform3D::affine_inverse() const {
+	Transform3D ret = *this;
+	ret.affine_invert();
+	return ret;
+}
+
+void Transform3D::invert() {
+	basis.transpose();
+	origin = basis.xform(-origin);
+}
+
+Transform3D Transform3D::inverse() const {
+	// FIXME: this function assumes the basis is a rotation matrix, with no scaling.
+	// Transform3D::affine_inverse can handle matrices with scaling, so GDScript should eventually use that.
+	Transform3D ret = *this;
+	ret.invert();
+	return ret;
+}
+
+void Transform3D::rotate(const Vector3 &p_axis, real_t p_angle) {
+	*this = rotated(p_axis, p_angle);
+}
+
+Transform3D Transform3D::rotated(const Vector3 &p_axis, real_t p_angle) const {
+	// Equivalent to left multiplication
+	Basis p_basis(p_axis, p_angle);
+	return Transform3D(p_basis * basis, p_basis.xform(origin));
+}
+
+Transform3D Transform3D::rotated_local(const Vector3 &p_axis, real_t p_angle) const {
+	// Equivalent to right multiplication
+	Basis p_basis(p_axis, p_angle);
+	return Transform3D(basis * p_basis, origin);
+}
+
+void Transform3D::rotate_basis(const Vector3 &p_axis, real_t p_angle) {
+	basis.rotate(p_axis, p_angle);
+}
+
+Transform3D Transform3D::looking_at(const Vector3 &p_target, const Vector3 &p_up, bool p_use_model_front) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(origin.is_equal_approx(p_target), Transform3D(), "The transform's origin and target can't be equal.");
+#endif
+	Transform3D t = *this;
+	t.basis = Basis::looking_at(p_target - origin, p_up, p_use_model_front);
+	return t;
+}
+
+void Transform3D::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up, bool p_use_model_front) {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_MSG(p_eye.is_equal_approx(p_target), "The eye and target vectors can't be equal.");
+#endif
+	basis = Basis::looking_at(p_target - p_eye, p_up, p_use_model_front);
+	origin = p_eye;
+}
+
+Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t p_c) const {
+	Transform3D interp;
+
+	Vector3 src_scale = basis.get_scale();
+	Quaternion src_rot = basis.get_rotation_quaternion();
+	Vector3 src_loc = origin;
+
+	Vector3 dst_scale = p_transform.basis.get_scale();
+	Quaternion dst_rot = p_transform.basis.get_rotation_quaternion();
+	Vector3 dst_loc = p_transform.origin;
+
+	interp.basis.set_quaternion_scale(src_rot.slerp(dst_rot, p_c).normalized(), src_scale.lerp(dst_scale, p_c));
+	interp.origin = src_loc.lerp(dst_loc, p_c);
+
+	return interp;
+}
+
+void Transform3D::scale(const Vector3 &p_scale) {
+	basis.scale(p_scale);
+	origin *= p_scale;
+}
+
+Transform3D Transform3D::scaled(const Vector3 &p_scale) const {
+	// Equivalent to left multiplication
+	return Transform3D(basis.scaled(p_scale), origin * p_scale);
+}
+
+Transform3D Transform3D::scaled_local(const Vector3 &p_scale) const {
+	// Equivalent to right multiplication
+	return Transform3D(basis.scaled_local(p_scale), origin);
+}
+
+void Transform3D::scale_basis(const Vector3 &p_scale) {
+	basis.scale(p_scale);
+}
+
+void Transform3D::translate_local(real_t p_tx, real_t p_ty, real_t p_tz) {
+	translate_local(Vector3(p_tx, p_ty, p_tz));
+}
+
+void Transform3D::translate_local(const Vector3 &p_translation) {
+	for (int i = 0; i < 3; i++) {
+		origin[i] += basis[i].dot(p_translation);
+	}
+}
+
+Transform3D Transform3D::translated(const Vector3 &p_translation) const {
+	// Equivalent to left multiplication
+	return Transform3D(basis, origin + p_translation);
+}
+
+Transform3D Transform3D::translated_local(const Vector3 &p_translation) const {
+	// Equivalent to right multiplication
+	return Transform3D(basis, origin + basis.xform(p_translation));
+}
+
+void Transform3D::orthonormalize() {
+	basis.orthonormalize();
+}
+
+Transform3D Transform3D::orthonormalized() const {
+	Transform3D _copy = *this;
+	_copy.orthonormalize();
+	return _copy;
+}
+
+void Transform3D::orthogonalize() {
+	basis.orthogonalize();
+}
+
+Transform3D Transform3D::orthogonalized() const {
+	Transform3D _copy = *this;
+	_copy.orthogonalize();
+	return _copy;
+}
+
+bool Transform3D::is_equal_approx(const Transform3D &p_transform) const {
+	return basis.is_equal_approx(p_transform.basis) && origin.is_equal_approx(p_transform.origin);
+}
+
+bool Transform3D::is_same(const Transform3D &p_transform) const {
+	return basis.is_same(p_transform.basis) && origin.is_same(p_transform.origin);
+}
+
+bool Transform3D::is_finite() const {
+	return basis.is_finite() && origin.is_finite();
+}
+
+void Transform3D::operator*=(const Transform3D &p_transform) {
+	origin = xform(p_transform.origin);
+	basis *= p_transform.basis;
+}
+
+Transform3D Transform3D::operator*(const Transform3D &p_transform) const {
+	Transform3D t = *this;
+	t *= p_transform;
+	return t;
 }

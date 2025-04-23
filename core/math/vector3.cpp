@@ -39,68 +39,6 @@ void Vector3::rotate(const Vector3 &p_axis, real_t p_angle) {
 	*this = Basis(p_axis, p_angle).xform(*this);
 }
 
-Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_angle) const {
-	Vector3 r = *this;
-	r.rotate(p_axis, p_angle);
-	return r;
-}
-
-Vector3 Vector3::clamp(const Vector3 &p_min, const Vector3 &p_max) const {
-	return Vector3(
-			CLAMP(x, p_min.x, p_max.x),
-			CLAMP(y, p_min.y, p_max.y),
-			CLAMP(z, p_min.z, p_max.z));
-}
-
-Vector3 Vector3::clampf(real_t p_min, real_t p_max) const {
-	return Vector3(
-			CLAMP(x, p_min, p_max),
-			CLAMP(y, p_min, p_max),
-			CLAMP(z, p_min, p_max));
-}
-
-void Vector3::snap(const Vector3 &p_step) {
-	x = Math::snapped(x, p_step.x);
-	y = Math::snapped(y, p_step.y);
-	z = Math::snapped(z, p_step.z);
-}
-
-Vector3 Vector3::snapped(const Vector3 &p_step) const {
-	Vector3 v = *this;
-	v.snap(p_step);
-	return v;
-}
-
-void Vector3::snapf(real_t p_step) {
-	x = Math::snapped(x, p_step);
-	y = Math::snapped(y, p_step);
-	z = Math::snapped(z, p_step);
-}
-
-Vector3 Vector3::snappedf(real_t p_step) const {
-	Vector3 v = *this;
-	v.snapf(p_step);
-	return v;
-}
-
-Vector3 Vector3::limit_length(real_t p_len) const {
-	const real_t l = length();
-	Vector3 v = *this;
-	if (l > 0 && p_len < l) {
-		v /= l;
-		v *= p_len;
-	}
-
-	return v;
-}
-
-Vector3 Vector3::move_toward(const Vector3 &p_to, real_t p_delta) const {
-	Vector3 v = *this;
-	Vector3 vd = p_to - v;
-	real_t len = vd.length();
-	return len <= p_delta || len < (real_t)CMP_EPSILON ? p_to : v + vd / len * p_delta;
-}
-
 Vector2 Vector3::octahedron_encode() const {
 	Vector3 n = *this;
 	n /= Math::abs(n.x) + Math::abs(n.y) + Math::abs(n.z);
@@ -152,20 +90,19 @@ Basis Vector3::outer(const Vector3 &p_with) const {
 	return basis;
 }
 
-bool Vector3::is_equal_approx(const Vector3 &p_v) const {
-	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y) && Math::is_equal_approx(z, p_v.z);
+// slide returns the component of the vector along the given plane, specified by its normal vector.
+Vector3 Vector3::slide(const Vector3 &p_normal) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 " + p_normal.operator String() + " must be normalized.");
+#endif
+	return *this - p_normal * dot(p_normal);
 }
 
-bool Vector3::is_same(const Vector3 &p_v) const {
-	return Math::is_same(x, p_v.x) && Math::is_same(y, p_v.y) && Math::is_same(z, p_v.z);
-}
-
-bool Vector3::is_zero_approx() const {
-	return Math::is_zero_approx(x) && Math::is_zero_approx(y) && Math::is_zero_approx(z);
-}
-
-bool Vector3::is_finite() const {
-	return Math::is_finite(x) && Math::is_finite(y) && Math::is_finite(z);
+Vector3 Vector3::reflect(const Vector3 &p_normal) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 " + p_normal.operator String() + " must be normalized.");
+#endif
+	return 2.0f * p_normal * dot(p_normal) - *this;
 }
 
 Vector3::operator String() const {

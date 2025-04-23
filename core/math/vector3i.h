@@ -30,10 +30,8 @@
 
 #pragma once
 
-#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
 
-class String;
 struct Vector3;
 
 struct [[nodiscard]] Vector3i {
@@ -67,22 +65,22 @@ struct [[nodiscard]] Vector3i {
 		return coord[p_axis];
 	}
 
-	Vector3i::Axis min_axis_index() const;
-	Vector3i::Axis max_axis_index() const;
+	_FORCE_INLINE_ Vector3i::Axis min_axis_index() const;
+	_FORCE_INLINE_ Vector3i::Axis max_axis_index() const;
 
-	Vector3i min(const Vector3i &p_vector3i) const {
+	_FORCE_INLINE_ Vector3i min(const Vector3i &p_vector3i) const {
 		return Vector3i(MIN(x, p_vector3i.x), MIN(y, p_vector3i.y), MIN(z, p_vector3i.z));
 	}
 
-	Vector3i mini(int32_t p_scalar) const {
+	_FORCE_INLINE_ Vector3i mini(int32_t p_scalar) const {
 		return Vector3i(MIN(x, p_scalar), MIN(y, p_scalar), MIN(z, p_scalar));
 	}
 
-	Vector3i max(const Vector3i &p_vector3i) const {
+	_FORCE_INLINE_ Vector3i max(const Vector3i &p_vector3i) const {
 		return Vector3i(MAX(x, p_vector3i.x), MAX(y, p_vector3i.y), MAX(z, p_vector3i.z));
 	}
 
-	Vector3i maxi(int32_t p_scalar) const {
+	_FORCE_INLINE_ Vector3i maxi(int32_t p_scalar) const {
 		return Vector3i(MAX(x, p_scalar), MAX(y, p_scalar), MAX(z, p_scalar));
 	}
 
@@ -93,49 +91,49 @@ struct [[nodiscard]] Vector3i {
 
 	_FORCE_INLINE_ Vector3i abs() const;
 	_FORCE_INLINE_ Vector3i sign() const;
-	Vector3i clamp(const Vector3i &p_min, const Vector3i &p_max) const;
-	Vector3i clampi(int32_t p_min, int32_t p_max) const;
-	Vector3i snapped(const Vector3i &p_step) const;
-	Vector3i snappedi(int32_t p_step) const;
+	_FORCE_INLINE_ Vector3i clamp(const Vector3i &p_min, const Vector3i &p_max) const;
+	_FORCE_INLINE_ Vector3i clampi(int32_t p_min, int32_t p_max) const;
+	_FORCE_INLINE_ Vector3i snapped(const Vector3i &p_step) const;
+	_FORCE_INLINE_ Vector3i snappedi(int32_t p_step) const;
 
 	_FORCE_INLINE_ double distance_to(const Vector3i &p_to) const;
 	_FORCE_INLINE_ int64_t distance_squared_to(const Vector3i &p_to) const;
 
 	/* Operators */
 
-	constexpr Vector3i &operator+=(const Vector3i &p_v);
-	constexpr Vector3i operator+(const Vector3i &p_v) const;
-	constexpr Vector3i &operator-=(const Vector3i &p_v);
-	constexpr Vector3i operator-(const Vector3i &p_v) const;
-	constexpr Vector3i &operator*=(const Vector3i &p_v);
-	constexpr Vector3i operator*(const Vector3i &p_v) const;
-	constexpr Vector3i &operator/=(const Vector3i &p_v);
-	constexpr Vector3i operator/(const Vector3i &p_v) const;
-	constexpr Vector3i &operator%=(const Vector3i &p_v);
-	constexpr Vector3i operator%(const Vector3i &p_v) const;
+	_FORCE_INLINE_ constexpr Vector3i &operator+=(const Vector3i &p_v);
+	_FORCE_INLINE_ constexpr Vector3i operator+(const Vector3i &p_v) const;
+	_FORCE_INLINE_ constexpr Vector3i &operator-=(const Vector3i &p_v);
+	_FORCE_INLINE_ constexpr Vector3i operator-(const Vector3i &p_v) const;
+	_FORCE_INLINE_ constexpr Vector3i &operator*=(const Vector3i &p_v);
+	_FORCE_INLINE_ constexpr Vector3i operator*(const Vector3i &p_v) const;
+	_FORCE_INLINE_ constexpr Vector3i &operator/=(const Vector3i &p_v);
+	_FORCE_INLINE_ constexpr Vector3i operator/(const Vector3i &p_v) const;
+	_FORCE_INLINE_ constexpr Vector3i &operator%=(const Vector3i &p_v);
+	_FORCE_INLINE_ constexpr Vector3i operator%(const Vector3i &p_v) const;
 
-	constexpr Vector3i &operator*=(int32_t p_scalar);
-	constexpr Vector3i operator*(int32_t p_scalar) const;
-	constexpr Vector3i &operator/=(int32_t p_scalar);
-	constexpr Vector3i operator/(int32_t p_scalar) const;
-	constexpr Vector3i &operator%=(int32_t p_scalar);
-	constexpr Vector3i operator%(int32_t p_scalar) const;
+	_FORCE_INLINE_ constexpr Vector3i &operator*=(int32_t p_scalar);
+	_FORCE_INLINE_ constexpr Vector3i operator*(int32_t p_scalar) const;
+	_FORCE_INLINE_ constexpr Vector3i &operator/=(int32_t p_scalar);
+	_FORCE_INLINE_ constexpr Vector3i operator/(int32_t p_scalar) const;
+	_FORCE_INLINE_ constexpr Vector3i &operator%=(int32_t p_scalar);
+	_FORCE_INLINE_ constexpr Vector3i operator%(int32_t p_scalar) const;
 
-	constexpr Vector3i operator-() const;
+	_FORCE_INLINE_ constexpr Vector3i operator-() const;
 
-	constexpr bool operator==(const Vector3i &p_v) const;
-	constexpr bool operator!=(const Vector3i &p_v) const;
-	constexpr bool operator<(const Vector3i &p_v) const;
-	constexpr bool operator<=(const Vector3i &p_v) const;
-	constexpr bool operator>(const Vector3i &p_v) const;
-	constexpr bool operator>=(const Vector3i &p_v) const;
+	_FORCE_INLINE_ constexpr bool operator==(const Vector3i &p_v) const;
+	_FORCE_INLINE_ constexpr bool operator!=(const Vector3i &p_v) const;
+	_FORCE_INLINE_ constexpr bool operator<(const Vector3i &p_v) const;
+	_FORCE_INLINE_ constexpr bool operator<=(const Vector3i &p_v) const;
+	_FORCE_INLINE_ constexpr bool operator>(const Vector3i &p_v) const;
+	_FORCE_INLINE_ constexpr bool operator>=(const Vector3i &p_v) const;
 
 	operator String() const;
 	operator Vector3() const;
 
-	constexpr Vector3i() :
+	_FORCE_INLINE_ constexpr Vector3i() :
 			x(0), y(0), z(0) {}
-	constexpr Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) :
+	_FORCE_INLINE_ constexpr Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) :
 			x(p_x), y(p_y), z(p_z) {}
 };
 
@@ -233,19 +231,19 @@ constexpr Vector3i Vector3i::operator*(int32_t p_scalar) const {
 
 // Multiplication operators required to workaround issues with LLVM using implicit conversion.
 
-constexpr Vector3i operator*(int32_t p_scalar, const Vector3i &p_vector) {
+_FORCE_INLINE_ constexpr Vector3i operator*(int32_t p_scalar, const Vector3i &p_vector) {
 	return p_vector * p_scalar;
 }
 
-constexpr Vector3i operator*(int64_t p_scalar, const Vector3i &p_vector) {
+_FORCE_INLINE_ constexpr Vector3i operator*(int64_t p_scalar, const Vector3i &p_vector) {
 	return p_vector * p_scalar;
 }
 
-constexpr Vector3i operator*(float p_scalar, const Vector3i &p_vector) {
+_FORCE_INLINE_ constexpr Vector3i operator*(float p_scalar, const Vector3i &p_vector) {
 	return p_vector * p_scalar;
 }
 
-constexpr Vector3i operator*(double p_scalar, const Vector3i &p_vector) {
+_FORCE_INLINE_ constexpr Vector3i operator*(double p_scalar, const Vector3i &p_vector) {
 	return p_vector * p_scalar;
 }
 
@@ -333,6 +331,42 @@ constexpr bool Vector3i::operator>=(const Vector3i &p_v) const {
 
 void Vector3i::zero() {
 	x = y = z = 0;
+}
+
+Vector3i::Axis Vector3i::min_axis_index() const {
+	return x < y ? (x < z ? Vector3i::AXIS_X : Vector3i::AXIS_Z) : (y < z ? Vector3i::AXIS_Y : Vector3i::AXIS_Z);
+}
+
+Vector3i::Axis Vector3i::max_axis_index() const {
+	return x < y ? (y < z ? Vector3i::AXIS_Z : Vector3i::AXIS_Y) : (x < z ? Vector3i::AXIS_Z : Vector3i::AXIS_X);
+}
+
+Vector3i Vector3i::clamp(const Vector3i &p_min, const Vector3i &p_max) const {
+	return Vector3i(
+			CLAMP(x, p_min.x, p_max.x),
+			CLAMP(y, p_min.y, p_max.y),
+			CLAMP(z, p_min.z, p_max.z));
+}
+
+Vector3i Vector3i::clampi(int32_t p_min, int32_t p_max) const {
+	return Vector3i(
+			CLAMP(x, p_min, p_max),
+			CLAMP(y, p_min, p_max),
+			CLAMP(z, p_min, p_max));
+}
+
+Vector3i Vector3i::snapped(const Vector3i &p_step) const {
+	return Vector3i(
+			Math::snapped(x, p_step.x),
+			Math::snapped(y, p_step.y),
+			Math::snapped(z, p_step.z));
+}
+
+Vector3i Vector3i::snappedi(int32_t p_step) const {
+	return Vector3i(
+			Math::snapped(x, p_step),
+			Math::snapped(y, p_step),
+			Math::snapped(z, p_step));
 }
 
 template <>

@@ -40,16 +40,16 @@ struct [[nodiscard]] Rect2i {
 	Point2i position;
 	Size2i size;
 
-	const Point2i &get_position() const { return position; }
-	void set_position(const Point2i &p_position) { position = p_position; }
-	const Size2i &get_size() const { return size; }
-	void set_size(const Size2i &p_size) { size = p_size; }
+	_FORCE_INLINE_ const Point2i &get_position() const { return position; }
+	_FORCE_INLINE_ void set_position(const Point2i &p_position) { position = p_position; }
+	_FORCE_INLINE_ const Size2i &get_size() const { return size; }
+	_FORCE_INLINE_ void set_size(const Size2i &p_size) { size = p_size; }
 
-	int get_area() const { return size.width * size.height; }
+	_FORCE_INLINE_ int get_area() const { return size.width * size.height; }
 
 	_FORCE_INLINE_ Vector2i get_center() const { return position + (size / 2); }
 
-	inline bool intersects(const Rect2i &p_rect) const {
+	_FORCE_INLINE_ bool intersects(const Rect2i &p_rect) const {
 #ifdef MATH_CHECKS
 		if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {
 			ERR_PRINT("Rect2i size is negative, this is not supported. Use Rect2i.abs() to get a Rect2i with a positive size.");
@@ -71,7 +71,7 @@ struct [[nodiscard]] Rect2i {
 		return true;
 	}
 
-	inline bool encloses(const Rect2i &p_rect) const {
+	_FORCE_INLINE_ bool encloses(const Rect2i &p_rect) const {
 #ifdef MATH_CHECKS
 		if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {
 			ERR_PRINT("Rect2i size is negative, this is not supported. Use Rect2i.abs() to get a Rect2i with a positive size.");
@@ -87,7 +87,7 @@ struct [[nodiscard]] Rect2i {
 	}
 
 	// Returns the intersection between two Rect2is or an empty Rect2i if there is no intersection.
-	inline Rect2i intersection(const Rect2i &p_rect) const {
+	_FORCE_INLINE_ Rect2i intersection(const Rect2i &p_rect) const {
 		Rect2i new_rect = p_rect;
 
 		if (!intersects(new_rect)) {
@@ -104,7 +104,7 @@ struct [[nodiscard]] Rect2i {
 		return new_rect;
 	}
 
-	inline Rect2i merge(const Rect2i &p_rect) const { ///< return a merged rect
+	_FORCE_INLINE_ Rect2i merge(const Rect2i &p_rect) const { ///< return a merged rect
 #ifdef MATH_CHECKS
 		if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {
 			ERR_PRINT("Rect2i size is negative, this is not supported. Use Rect2i.abs() to get a Rect2i with a positive size.");
@@ -120,7 +120,7 @@ struct [[nodiscard]] Rect2i {
 
 		return new_rect;
 	}
-	bool has_point(const Point2i &p_point) const {
+	_FORCE_INLINE_ bool has_point(const Point2i &p_point) const {
 #ifdef MATH_CHECKS
 		if (unlikely(size.x < 0 || size.y < 0)) {
 			ERR_PRINT("Rect2i size is negative, this is not supported. Use Rect2i.abs() to get a Rect2i with a positive size.");
@@ -143,10 +143,10 @@ struct [[nodiscard]] Rect2i {
 		return true;
 	}
 
-	constexpr bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
-	constexpr bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
+	_FORCE_INLINE_ constexpr bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
+	_FORCE_INLINE_ constexpr bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
-	Rect2i grow(int p_amount) const {
+	_FORCE_INLINE_ Rect2i grow(int p_amount) const {
 		Rect2i g = *this;
 		g.position.x -= p_amount;
 		g.position.y -= p_amount;
@@ -155,7 +155,7 @@ struct [[nodiscard]] Rect2i {
 		return g;
 	}
 
-	inline Rect2i grow_side(Side p_side, int p_amount) const {
+	_FORCE_INLINE_ Rect2i grow_side(Side p_side, int p_amount) const {
 		Rect2i g = *this;
 		g = g.grow_individual((SIDE_LEFT == p_side) ? p_amount : 0,
 				(SIDE_TOP == p_side) ? p_amount : 0,
@@ -164,11 +164,11 @@ struct [[nodiscard]] Rect2i {
 		return g;
 	}
 
-	inline Rect2i grow_side_bind(uint32_t p_side, int p_amount) const {
+	_FORCE_INLINE_ Rect2i grow_side_bind(uint32_t p_side, int p_amount) const {
 		return grow_side(Side(p_side), p_amount);
 	}
 
-	inline Rect2i grow_individual(int p_left, int p_top, int p_right, int p_bottom) const {
+	_FORCE_INLINE_ Rect2i grow_individual(int p_left, int p_top, int p_right, int p_bottom) const {
 		Rect2i g = *this;
 		g.position.x -= p_left;
 		g.position.y -= p_top;
@@ -184,7 +184,7 @@ struct [[nodiscard]] Rect2i {
 		return r;
 	}
 
-	inline void expand_to(const Point2i &p_vector) {
+	_FORCE_INLINE_ void expand_to(const Point2i &p_vector) {
 #ifdef MATH_CHECKS
 		if (unlikely(size.x < 0 || size.y < 0)) {
 			ERR_PRINT("Rect2i size is negative, this is not supported. Use Rect2i.abs() to get a Rect2i with a positive size.");
@@ -226,12 +226,12 @@ struct [[nodiscard]] Rect2i {
 	operator String() const;
 	operator Rect2() const;
 
-	Rect2i() = default;
-	constexpr Rect2i(int p_x, int p_y, int p_width, int p_height) :
+	_FORCE_INLINE_ constexpr Rect2i() = default;
+	_FORCE_INLINE_ constexpr Rect2i(int p_x, int p_y, int p_width, int p_height) :
 			position(Point2i(p_x, p_y)),
 			size(Size2i(p_width, p_height)) {
 	}
-	constexpr Rect2i(const Point2i &p_pos, const Size2i &p_size) :
+	_FORCE_INLINE_ constexpr Rect2i(const Point2i &p_pos, const Size2i &p_size) :
 			position(p_pos),
 			size(p_size) {
 	}
