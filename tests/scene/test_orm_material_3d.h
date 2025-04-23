@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_standard_material_3d.h                                           */
+/*  test_orm_material_3d.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -34,78 +34,83 @@
 
 #include "tests/test_macros.h"
 
-namespace TestStandardMaterial3D {
+namespace TestORMMaterial3D {
 
-TEST_CASE("[Material][StandardMaterial3D] Constructor & default state") {
-	Ref<StandardMaterial3D> mat;
+TEST_CASE("[Material][ORMMaterial3D] Constructor & default state") {
+	Ref<ORMMaterial3D> mat;
 	mat.instantiate();
-
 	CHECK(mat.is_valid());
-	CHECK_MESSAGE(mat->get_roughness() == doctest::Approx(1.0f), "Default roughness should be 1.0");
 	CHECK_MESSAGE(mat->get_metallic() == doctest::Approx(0.0f), "Default metallic should be 0.0");
+	CHECK_MESSAGE(mat->get_roughness() == doctest::Approx(1.0f), "Default roughness should be 1.0");
 }
 
-TEST_CASE("[Material][StandardMaterial3D] Setter & Getter logic") {
-	Ref<StandardMaterial3D> mat;
-	mat.instantiate();
-
-	mat->set_roughness(0.25f);
-	CHECK(mat->get_roughness() == doctest::Approx(0.25f));
-
-	mat->set_metallic(0.9f);
-	CHECK(mat->get_metallic() == doctest::Approx(0.9f));
-
-	Color albedo(0.3, 0.6, 0.9);
-	mat->set_albedo(albedo);
-	CHECK(mat->get_albedo() == albedo);
-}
-
-TEST_CASE("[Material][StandardMaterial3D] Texture assignment") {
-	Ref<StandardMaterial3D> mat;
+TEST_CASE("[Material][ORMMaterial3D] ORM texture assignment") {
+	Ref<ORMMaterial3D> mat;
 	mat.instantiate();
 	Ref<Texture2D> tex;
 	tex.instantiate();
 
-	mat->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, tex);
-	CHECK(mat->get_texture(BaseMaterial3D::TEXTURE_ALBEDO) == tex);
+	mat->set_texture(BaseMaterial3D::TEXTURE_ORM, tex);
+	CHECK(mat->get_texture(BaseMaterial3D::TEXTURE_ORM) == tex);
 }
 
-TEST_CASE("[Material][StandardMaterial3D] Transparency mode") {
-	Ref<StandardMaterial3D> mat;
+TEST_CASE("[Material][ORMMaterial3D] Set AO texture and channel") {
+	Ref<ORMMaterial3D> mat;
+	mat.instantiate();
+	Ref<Texture2D> tex;
+	tex.instantiate();
+
+	mat->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, tex);
+	mat->set_ao_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_GREEN);
+	CHECK(mat->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION) == tex);
+	CHECK(mat->get_ao_texture_channel() == BaseMaterial3D::TEXTURE_CHANNEL_GREEN);
+}
+
+TEST_CASE("[Material][ORMMaterial3D] Metallic and roughness channels") {
+	Ref<ORMMaterial3D> mat;
 	mat.instantiate();
 
-	mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
-	CHECK(mat->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA);
+	mat->set_metallic_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_RED);
+	mat->set_roughness_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
+
+	CHECK(mat->get_metallic_texture_channel() == BaseMaterial3D::TEXTURE_CHANNEL_RED);
+	CHECK(mat->get_roughness_texture_channel() == BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
 }
 
-TEST_CASE("[Material][StandardMaterial3D] Enum parameter setting") {
-	Ref<StandardMaterial3D> mat;
+TEST_CASE("[Material][ORMMaterial3D] Emission and refraction settings") {
+	Ref<ORMMaterial3D> mat;
 	mat.instantiate();
 
-	mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
-	CHECK(mat->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA);
+	Color emission(0.5, 0.7, 1.0);
+	mat->set_emission(emission);
+	CHECK(mat->get_emission() == emission);
 
-	mat->set_blend_mode(BaseMaterial3D::BLEND_MODE_ADD);
-	CHECK(mat->get_blend_mode() == BaseMaterial3D::BLEND_MODE_ADD);
+	mat->set_refraction(0.8f);
+	CHECK(mat->get_refraction() == doctest::Approx(0.8f));
 }
 
-TEST_CASE("[Material][StandardMaterial3D] Double assignment") {
-	Ref<StandardMaterial3D> mat1;
-	Ref<StandardMaterial3D> mat2;
+TEST_CASE("[Material][ORMMaterial3D] AO and feature flag logic") {
+	Ref<ORMMaterial3D> mat;
+	mat.instantiate();
+
+	mat->set_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION, true);
+	CHECK(mat->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION));
+
+	mat->set_feature(BaseMaterial3D::FEATURE_HEIGHT_MAPPING, true);
+	CHECK(mat->get_feature(BaseMaterial3D::FEATURE_HEIGHT_MAPPING));
+}
+
+TEST_CASE("[Material][ORMMaterial3D] Double assignment") {
+	Ref<ORMMaterial3D> mat1;
+	Ref<ORMMaterial3D> mat2;
 	mat1.instantiate();
 	mat2.instantiate();
 
-	mat1->set_roughness(0.1f);
-	mat2->set_roughness(0.7f);
+	mat1->set_metallic(0.1f);
+	mat2->set_metallic(0.7f);
 
-	SUBCASE("Swap roughness") {
-		float tmp = mat1->get_roughness();
-		mat1->set_roughness(mat2->get_roughness());
-		mat2->set_roughness(tmp);
-
-		CHECK(mat1->get_roughness() == doctest::Approx(0.7f));
-		CHECK(mat2->get_roughness() == doctest::Approx(0.1f));
-	}
+	CHECK(mat1->get_metallic() == doctest::Approx(0.1f));
+	CHECK(mat2->get_metallic() == doctest::Approx(0.7f));
 }
 
-} // namespace TestStandardMaterial3D
+} // namespace TestORMMaterial3D
