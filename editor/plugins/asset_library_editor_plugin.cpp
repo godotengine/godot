@@ -1146,7 +1146,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		first->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(0));
 	} else {
 		first->set_disabled(true);
-		first->set_focus_mode(Control::FOCUS_NONE);
+		first->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(first);
 
@@ -1157,7 +1157,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		prev->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page - 1));
 	} else {
 		prev->set_disabled(true);
-		prev->set_focus_mode(Control::FOCUS_NONE);
+		prev->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(prev);
 	hbc->add_child(memnew(VSeparator));
@@ -1169,7 +1169,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		current->set_theme_type_variation("PanelBackgroundButton");
 		if (i == p_page) {
 			current->set_disabled(true);
-			current->set_focus_mode(Control::FOCUS_NONE);
+			current->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		} else {
 			current->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(i));
 		}
@@ -1183,7 +1183,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		next->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page + 1));
 	} else {
 		next->set_disabled(true);
-		next->set_focus_mode(Control::FOCUS_NONE);
+		next->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(memnew(VSeparator));
 	hbc->add_child(next);
@@ -1195,7 +1195,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		last->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page_count - 1));
 	} else {
 		last->set_disabled(true);
-		last->set_focus_mode(Control::FOCUS_NONE);
+		last->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(last);
 
