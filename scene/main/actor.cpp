@@ -221,6 +221,10 @@ bool Actor::_set(const StringName &p_property, const Variant &p_value) {
 }
 
 bool Actor::_remove_component(StringName component_class) {
+	if (!_component_resources.has(component_class)) {
+		return false;
+	}
+
 	bool result = false;
 	Ref<Component> value = _component_resources.get(component_class);
 	if (value.is_valid()) {
