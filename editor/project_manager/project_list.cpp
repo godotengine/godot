@@ -357,6 +357,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		main_vbox->add_child(title_hb);
 
 		project_title = memnew(Label);
+		project_title->set_focus_mode(FOCUS_ACCESSIBILITY);
 		project_title->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		project_title->set_name("ProjectName");
 		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -387,6 +388,7 @@ ProjectListItemControl::ProjectListItemControl() {
 
 		project_path = memnew(Label);
 		project_path->set_name("ProjectPath");
+		project_path->set_focus_mode(FOCUS_ACCESSIBILITY);
 		project_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 		project_path->set_clip_text(true);
 		project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -400,11 +402,13 @@ ProjectListItemControl::ProjectListItemControl() {
 		project_unsupported_features->hide();
 
 		project_version = memnew(Label);
+		project_version->set_focus_mode(FOCUS_ACCESSIBILITY);
 		project_version->set_name("ProjectVersion");
 		project_version->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 		path_hb->add_child(project_version);
 
 		last_edited_info = memnew(Label);
+		last_edited_info->set_focus_mode(FOCUS_ACCESSIBILITY);
 		last_edited_info->set_name("LastEditedInfo");
 		last_edited_info->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 		last_edited_info->set_tooltip_text(TTRC("Last edited timestamp"));

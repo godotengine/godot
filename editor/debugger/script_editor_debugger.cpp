@@ -1944,6 +1944,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		vbc->add_child(hbc);
 
 		reason = memnew(Label);
+		reason->set_focus_mode(FOCUS_ACCESSIBILITY);
 		reason->set_text("");
 		hbc->add_child(reason);
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);

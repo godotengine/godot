@@ -108,6 +108,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 		const char *const *names_ptr = p_src[i];
 		if (*names_ptr) {
 			Label *lbl = memnew(Label);
+			lbl->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 			lbl->set_theme_type_variation("HeaderSmall");
 			lbl->set_text(*itr);
 			vbc->add_child(lbl);
@@ -196,6 +197,7 @@ EditorAbout::EditorAbout() {
 	version_info_vbc->add_child(memnew(EditorVersionButton(EditorVersionButton::FORMAT_WITH_NAME_AND_BUILD)));
 
 	Label *about_text = memnew(Label);
+	about_text->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	about_text->set_text(
 			String::utf8("\xc2\xa9 2014-present ") + TTR("Godot Engine contributors") + "." +
@@ -268,6 +270,7 @@ EditorAbout::EditorAbout() {
 	tc->add_child(license_thirdparty);
 
 	Label *tpl_label = memnew(Label);
+	tpl_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	tpl_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	tpl_label->set_text(TTR("Godot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms."));

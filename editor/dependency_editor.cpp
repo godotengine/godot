@@ -667,6 +667,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	add_child(vb);
 
 	text = memnew(Label);
+	text->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vb->add_child(text);
 
 	Label *files_to_delete_label = memnew(Label);
@@ -757,6 +758,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	set_cancel_button_text(TTR("Close"));
 
 	text = memnew(Label);
+	text->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vb->add_child(text);
 	text->set_text(TTR("Which action should be taken?"));
 

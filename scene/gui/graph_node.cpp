@@ -1264,7 +1264,6 @@ GraphNode::GraphNode() {
 	title_label = memnew(Label);
 	title_label->set_theme_type_variation("GraphNodeTitleLabel");
 	title_label->set_h_size_flags(SIZE_EXPAND_FILL);
-	title_label->set_focus_mode(Control::FOCUS_NONE);
 	titlebar_hbox->add_child(title_label);
 
 	set_mouse_filter(MOUSE_FILTER_STOP);
