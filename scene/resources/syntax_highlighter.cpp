@@ -144,7 +144,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 		in_region = color_region_cache[p_line - 1];
 	}
 
-	const String &str = text_edit->get_line(p_line);
+	const String &str = text_edit->get_line_with_ime(p_line);
 	const int line_length = str.length();
 	Color prev_color;
 
@@ -302,12 +302,12 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 		}
 
 		// Check for dot or underscore or 'x' for hex notation in floating point number or 'e' for scientific notation.
-		if ((str[j] == '.' || str[j] == 'x' || str[j] == '_' || str[j] == 'f' || str[j] == 'e' || (uint_suffix_enabled && str[j] == 'u')) && !in_word && prev_is_number && !is_number) {
+		if ((str[j] == '.' || str[j] == 'x' || str[j] == 'X' || str[j] == '_' || str[j] == 'f' || str[j] == 'e' || str[j] == 'E' || (uint_suffix_enabled && str[j] == 'u')) && !in_word && prev_is_number && !is_number) {
 			is_number = true;
 			is_a_symbol = false;
 			is_char = false;
 
-			if (str[j] == 'x' && str[j - 1] == '0') {
+			if ((str[j] == 'x' || str[j] == 'X') && str[j - 1] == '0') {
 				is_hex_notation = true;
 			}
 		}
@@ -537,16 +537,13 @@ bool CodeHighlighter::has_color_region(const String &p_start_key) const {
 void CodeHighlighter::set_color_regions(const Dictionary &p_color_regions) {
 	color_regions.clear();
 
-	List<Variant> keys;
-	p_color_regions.get_key_list(&keys);
+	for (const KeyValue<Variant, Variant> &kv : p_color_regions) {
+		String key = kv.key;
 
-	for (const Variant &E : keys) {
-		String key = E;
+		String start_key = key.get_slicec(' ', 0);
+		String end_key = key.get_slice_count(" ") > 1 ? key.get_slicec(' ', 1) : String();
 
-		String start_key = key.get_slice(" ", 0);
-		String end_key = key.get_slice_count(" ") > 1 ? key.get_slice(" ", 1) : String();
-
-		add_color_region(start_key, end_key, p_color_regions[key], end_key.is_empty());
+		add_color_region(start_key, end_key, kv.value, end_key.is_empty());
 	}
 	clear_highlighting_cache();
 }

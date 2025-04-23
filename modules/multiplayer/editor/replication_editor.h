@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef REPLICATION_EDITOR_H
-#define REPLICATION_EDITOR_H
+#pragma once
 
 #include "../scene_replication_config.h"
 
@@ -102,7 +101,4 @@ public:
 
 	Button *get_pin() { return pin; }
 	ReplicationEditor();
-	~ReplicationEditor() {}
 };
-
-#endif // REPLICATION_EDITOR_H

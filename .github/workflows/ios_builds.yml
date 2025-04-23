@@ -4,14 +4,13 @@ on:
 
 # Global Settings
 env:
-  # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes strict_checks=yes
 
 jobs:
   ios-template:
     runs-on: macos-latest
     name: Template (target=template_release)
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
@@ -33,7 +32,6 @@ jobs:
           platform: ios
           target: template_release
           tests: false
-          scons-cache-limit: 1
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save

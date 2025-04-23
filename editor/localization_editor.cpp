@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/translation_server.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
@@ -400,6 +401,7 @@ void LocalizationEditor::_pot_add_builtin_toggled() {
 }
 
 void LocalizationEditor::_pot_generate(const String &p_file) {
+	EditorSettings::get_singleton()->set_project_metadata("pot_generator", "last_pot_path", p_file);
 	POTGenerator::get_singleton()->generate_pot(p_file);
 }
 
@@ -437,8 +439,8 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 
 	// Check for the Array elements of the values.
 	Array remap_keys = remaps.keys();
-	for (int i = 0; i < remap_keys.size(); i++) {
-		PackedStringArray remapped_files = remaps[remap_keys[i]];
+	for (const Variant &remap_key : remap_keys) {
+		PackedStringArray remapped_files = remaps[remap_key];
 		bool remapped_files_updated = false;
 
 		for (int j = 0; j < remapped_files.size(); j++) {
@@ -452,12 +454,12 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 				remapped_files.remove_at(j + 1);
 				remaps_changed = true;
 				remapped_files_updated = true;
-				print_verbose(vformat("Changed remap value \"%s\" to \"%s\" of key \"%s\" due to a moved file.", res_path + ":" + locale_name, remapped_files[j], remap_keys[i]));
+				print_verbose(vformat("Changed remap value \"%s\" to \"%s\" of key \"%s\" due to a moved file.", res_path + ":" + locale_name, remapped_files[j], remap_key));
 			}
 		}
 
 		if (remapped_files_updated) {
-			remaps[remap_keys[i]] = remapped_files;
+			remaps[remap_key] = remapped_files;
 		}
 	}
 
@@ -539,11 +541,9 @@ void LocalizationEditor::update_translations() {
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
 		Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
-		List<Variant> rk;
-		remaps.get_key_list(&rk);
 		Vector<String> keys;
-		for (const Variant &E : rk) {
-			keys.push_back(E);
+		for (const KeyValue<Variant, Variant> &kv : remaps) {
+			keys.push_back(kv.key);
 		}
 		keys.sort();
 
@@ -570,7 +570,7 @@ void LocalizationEditor::update_translations() {
 					const String &s2 = selected[j];
 					int qp = s2.rfind_char(':');
 					String path = s2.substr(0, qp);
-					String locale = s2.substr(qp + 1, s2.length());
+					String locale = s2.substr(qp + 1);
 
 					TreeItem *t2 = translation_remap_options->create_item(root2);
 					t2->set_editable(0, false);
@@ -763,6 +763,7 @@ LocalizationEditor::LocalizationEditor() {
 
 		pot_generate_dialog = memnew(EditorFileDialog);
 		pot_generate_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+		pot_generate_dialog->set_current_path(EditorSettings::get_singleton()->get_project_metadata("pot_generator", "last_pot_path", String()));
 		pot_generate_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_pot_generate));
 		add_child(pot_generate_dialog);
 

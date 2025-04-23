@@ -46,7 +46,7 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	"disable_2d_physics",
 	"disable_3d_physics",
 	"disable_navigation",
-	"openxr",
+	"disable_xr",
 	"rendering_device", // FIXME: there's no scons option to disable rendering device
 	"opengl3",
 	"vulkan",
@@ -82,7 +82,7 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	true, // PHYSICS_2D
 	true, // PHYSICS_3D
 	true, // NAVIGATION
-	false, // XR
+	true, // XR
 	false, // RENDERING_DEVICE
 	false, // OPENGL
 	false, // VULKAN
@@ -297,11 +297,9 @@ Error EditorBuildProfile::load_from_file(const String &p_path) {
 
 	if (data.has("disabled_build_options")) {
 		Dictionary disabled_build_options_arr = data["disabled_build_options"];
-		List<Variant> keys;
-		disabled_build_options_arr.get_key_list(&keys);
 
-		for (const Variant &K : keys) {
-			String key = K;
+		for (const KeyValue<Variant, Variant> &kv : disabled_build_options_arr) {
+			String key = kv.key;
 
 			for (int i = 0; i < BUILD_OPTION_MAX; i++) {
 				String f = build_option_identifiers[i];
@@ -810,6 +808,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	HBoxContainer *path_hbc = memnew(HBoxContainer);
 	profile_path = memnew(LineEdit);
 	path_hbc->add_child(profile_path);
+	profile_path->set_accessibility_name(TTRC("Profile Path"));
 	profile_path->set_editable(true);
 	profile_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -868,7 +867,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	import_profile = memnew(EditorFileDialog);
 	add_child(import_profile);
 	import_profile->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	import_profile->add_filter("*.build", TTR("Engine Compilation Profile"));
+	import_profile->add_filter("*.gdbuild,*.build", TTR("Engine Compilation Profile"));
 	import_profile->connect("files_selected", callable_mp(this, &EditorBuildProfileManager::_import_profile));
 	import_profile->set_title(TTR("Load Profile"));
 	import_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -876,12 +875,13 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_profile->add_filter("*.build", TTR("Engine Compilation Profile"));
+	export_profile->add_filter("*.gdbuild,*.build", TTR("Engine Compilation Profile"));
 	export_profile->connect("file_selected", callable_mp(this, &EditorBuildProfileManager::_export_profile));
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
 	force_detect_classes = memnew(LineEdit);
+	force_detect_classes->set_accessibility_name(TTRC("Forced Classes"));
 	main_vbc->add_margin_child(TTR("Forced Classes on Detect:"), force_detect_classes);
 	force_detect_classes->connect(SceneStringName(text_changed), callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
 

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISPLAY_SERVER_MOCK_H
-#define DISPLAY_SERVER_MOCK_H
+#pragma once
 
 #include "servers/display_server_headless.h"
 
@@ -38,6 +37,8 @@
 // Specialized DisplayServer for unittests based on DisplayServerHeadless, that
 // additionally supports things like mouse enter/exit events and clipboard.
 class DisplayServerMock : public DisplayServerHeadless {
+	GDSOFTCLASS(DisplayServerMock, DisplayServerHeadless);
+
 private:
 	friend class DisplayServer;
 
@@ -146,5 +147,3 @@ public:
 		register_create_function("mock", create_func, get_rendering_drivers_func);
 	}
 };
-
-#endif // DISPLAY_SERVER_MOCK_H

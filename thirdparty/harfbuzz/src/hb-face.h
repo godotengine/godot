@@ -73,9 +73,14 @@ hb_face_create_from_file_or_fail (const char   *file_name,
  * @tag: the tag of the table to reference
  * @user_data: User data pointer passed by the caller
  *
- * Callback function for hb_face_create_for_tables().
+ * Callback function for hb_face_create_for_tables(). The @tag is the tag of the
+ * table to reference, and the special tag #HB_TAG_NONE is used to reference the
+ * blob of the face itself. If referencing the face blob is not possible, it is
+ * recommended to set hb_get_table_tags_func_t on the @face to allow
+ * hb_face_reference_blob() to create a face blob out of individual table blobs.
  *
- * Return value: (transfer full): A pointer to the @tag table within @face
+ * Return value: (transfer full): A pointer to the @tag table within @face or
+ * `NULL` if the table is not found or cannot be referenced.
  *
  * Since: 0.9.2
  */

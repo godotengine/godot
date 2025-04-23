@@ -200,13 +200,11 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
 							for (int i = 0; i < poly.size(); i++) {
-								Vector2 points[2] = {
-									p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth))),
-									p_camera->unproject_position(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, poly[(i + 1) % poly.size()].y, depth)))
-								};
+								const Vector2 segment_a = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
+								const Vector2 segment_b = p_camera->unproject_position(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, poly[(i + 1) % poly.size()].y, depth)));
 
-								Vector2 cp = Geometry2D::get_closest_point_to_segment(gpoint, points);
-								if (cp.distance_squared_to(points[0]) < CMP_EPSILON2 || cp.distance_squared_to(points[1]) < CMP_EPSILON2) {
+								Vector2 cp = Geometry2D::get_closest_point_to_segment(gpoint, segment_a, segment_b);
+								if (cp.distance_squared_to(segment_a) < CMP_EPSILON2 || cp.distance_squared_to(segment_b) < CMP_EPSILON2) {
 									continue; //not valid to reuse point
 								}
 
@@ -464,7 +462,7 @@ void Polygon3DEditor::_polygon_draw() {
 
 	imesh->surface_end();
 
-	if (poly.size() == 0) {
+	if (poly.is_empty()) {
 		return;
 	}
 
@@ -475,7 +473,7 @@ void Polygon3DEditor::_polygon_draw() {
 		va.resize(poly.size());
 		Vector3 *w = va.ptrw();
 		for (int i = 0; i < poly.size(); i++) {
-			Vector2 p, p2;
+			Vector2 p;
 			p = i == edited_point ? edited_point_pos : poly[i];
 
 			Vector3 point = Vector3(p.x, p.y, depth);
@@ -535,12 +533,16 @@ Polygon3DEditor::Polygon3DEditor() {
 
 	button_create = memnew(Button);
 	button_create->set_theme_type_variation(SceneStringName(FlatButton));
+	button_create->set_accessibility_name(TTRC("Create Polygon"));
+	button_create->set_tooltip_text(TTRC("Create Polygon"));
 	add_child(button_create);
 	button_create->connect(SceneStringName(pressed), callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_CREATE));
 	button_create->set_toggle_mode(true);
 
 	button_edit = memnew(Button);
 	button_edit->set_theme_type_variation(SceneStringName(FlatButton));
+	button_edit->set_accessibility_name(TTRC("Edit Polygon"));
+	button_edit->set_tooltip_text(TTRC("Edit Polygon"));
 	add_child(button_edit);
 	button_edit->connect(SceneStringName(pressed), callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
@@ -558,6 +560,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 	line_material->set_albedo(Color(1, 1, 1));
 
 	handle_material.instantiate();
@@ -567,6 +570,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	handle_material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 	Ref<Texture2D> handle = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Editor3DHandle"), EditorStringName(EditorIcons));
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);
@@ -606,7 +610,4 @@ Polygon3DEditorPlugin::Polygon3DEditorPlugin() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
 
 	polygon_editor->hide();
-}
-
-Polygon3DEditorPlugin::~Polygon3DEditorPlugin() {
 }

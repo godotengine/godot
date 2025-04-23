@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JAVA_CLASS_WRAPPER_H
-#define JAVA_CLASS_WRAPPER_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 #include "core/variant/typed_array.h"
@@ -271,6 +270,8 @@ class JavaClassWrapper : public Object {
 	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig);
 #endif
 
+	Ref<JavaObject> exception;
+
 	Ref<JavaClass> _wrap(const String &p_class, bool p_allow_private_methods_access);
 
 	static JavaClassWrapper *singleton;
@@ -285,10 +286,12 @@ public:
 		return _wrap(p_class, false);
 	}
 
+	Ref<JavaObject> get_exception() {
+		return exception;
+	}
+
 #ifdef ANDROID_ENABLED
 	Ref<JavaClass> wrap_jclass(jclass p_class, bool p_allow_private_methods_access = false);
 #endif
 	JavaClassWrapper();
 };
-
-#endif // JAVA_CLASS_WRAPPER_H

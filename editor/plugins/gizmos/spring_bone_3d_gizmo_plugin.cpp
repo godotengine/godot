@@ -171,7 +171,7 @@ void SpringBoneSimulator3DGizmoPlugin::draw_sphere(Ref<SurfaceTool> &p_surface_t
 	static const Vector3 VECTOR3_UP = Vector3(0, 1, 0);
 	static const Vector3 VECTOR3_FORWARD = Vector3(0, 0, 1);
 	static const int STEP = 16;
-	static const float SPPI = Math_TAU / (float)STEP;
+	static const float SPPI = Math::TAU / (float)STEP;
 
 	for (int i = 1; i <= STEP; i++) {
 		p_surface_tool->set_color(p_color);
@@ -302,7 +302,7 @@ void SpringBoneCollision3DGizmoPlugin::draw_sphere(Ref<SurfaceTool> &p_surface_t
 	static const Vector3 VECTOR3_UP = Vector3(0, 1, 0);
 	static const Vector3 VECTOR3_FORWARD = Vector3(0, 0, 1);
 	static const int STEP = 16;
-	static const float SPPI = Math_TAU / (float)STEP;
+	static const float SPPI = Math::TAU / (float)STEP;
 
 	for (int i = 1; i <= STEP; i++) {
 		p_surface_tool->set_color(p_color);
@@ -330,8 +330,8 @@ void SpringBoneCollision3DGizmoPlugin::draw_capsule(Ref<SurfaceTool> &p_surface_
 	static const Vector3 VECTOR3_FORWARD = Vector3(0, 0, 1);
 	static const int STEP = 16;
 	static const int HALF_STEP = 8;
-	static const float SPPI = Math_TAU / (float)STEP;
-	static const float HALF_PI = Math_PI * 0.5;
+	static const float SPPI = Math::TAU / (float)STEP;
+	static const float HALF_PI = Math::PI * 0.5;
 
 	Vector3 top = VECTOR3_UP * (p_height * 0.5 - p_radius);
 	Vector3 bottom = -top;
@@ -376,7 +376,7 @@ void SpringBoneCollision3DGizmoPlugin::draw_capsule(Ref<SurfaceTool> &p_surface_
 
 void SpringBoneCollision3DGizmoPlugin::draw_plane(Ref<SurfaceTool> &p_surface_tool, const Color &p_color) {
 	static const Vector3 VECTOR3_UP = Vector3(0, 1, 0);
-	static const float HALF_PI = Math_PI * 0.5;
+	static const float HALF_PI = Math::PI * 0.5;
 	static const float ARROW_LENGTH = 0.3;
 	static const float ARROW_HALF_WIDTH = 0.05;
 	static const float ARROW_TOP_HALF_WIDTH = 0.1;

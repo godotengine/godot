@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_JSON_H
-#define TEST_JSON_H
+#pragma once
 
 #include "core/io/json.h"
 
@@ -153,21 +152,13 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 
 	JSON json;
 
-	TypedArray<String> valid_escapes;
-	valid_escapes.push_back("\";\"");
-	valid_escapes.push_back("\\;\\");
-	valid_escapes.push_back("/;/");
-	valid_escapes.push_back("b;\b");
-	valid_escapes.push_back("f;\f");
-	valid_escapes.push_back("n;\n");
-	valid_escapes.push_back("r;\r");
-	valid_escapes.push_back("t;\t");
+	TypedArray<String> valid_escapes = { "\";\"", "\\;\\", "/;/", "b;\b", "f;\f", "n;\n", "r;\r", "t;\t" };
 
 	SUBCASE("Basic valid escape sequences") {
 		for (int i = 0; i < valid_escapes.size(); i++) {
 			String valid_escape = valid_escapes[i];
-			String valid_escape_string = valid_escape.get_slice(";", 0);
-			String valid_escape_value = valid_escape.get_slice(";", 1);
+			String valid_escape_string = valid_escape.get_slicec(';', 0);
+			String valid_escape_value = valid_escape.get_slicec(';', 1);
 
 			String json_string = "\"\\";
 			json_string += valid_escape_string;
@@ -205,7 +196,7 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 			bool skip = false;
 			for (int j = 0; j < valid_escapes.size(); j++) {
 				String valid_escape = valid_escapes[j];
-				String valid_escape_string = valid_escape.get_slice(";", 0);
+				String valid_escape_string = valid_escape.get_slicec(';', 0);
 				if (valid_escape_string[0] == i) {
 					skip = true;
 					break;
@@ -318,5 +309,3 @@ TEST_CASE("[JSON] Serialization") {
 	}
 }
 } // namespace TestJSON
-
-#endif // TEST_JSON_H

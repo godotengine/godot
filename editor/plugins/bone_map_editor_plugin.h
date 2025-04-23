@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BONE_MAP_EDITOR_PLUGIN_H
-#define BONE_MAP_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
@@ -74,7 +73,6 @@ public:
 	bool is_require() const;
 
 	BoneMapperButton(const StringName &p_profile_bone_name, bool p_require, bool p_selected);
-	~BoneMapperButton();
 };
 
 class BoneMapperItem : public VBoxContainer {
@@ -101,7 +99,6 @@ public:
 	void assign_button_id(int p_button_id);
 
 	BoneMapperItem(Ref<BoneMap> &p_bone_map, const StringName &p_profile_bone_name = StringName());
-	~BoneMapperItem();
 };
 
 class BonePicker : public AcceptDialog {
@@ -125,7 +122,6 @@ private:
 
 public:
 	BonePicker(Skeleton3D *p_skeleton);
-	~BonePicker();
 };
 
 class BoneMapper : public VBoxContainer {
@@ -190,7 +186,6 @@ public:
 	int get_current_bone_idx() const;
 
 	BoneMapper(Skeleton3D *p_skeleton, Ref<BoneMap> &p_bone_map);
-	~BoneMapper();
 };
 
 class BoneMapEditor : public VBoxContainer {
@@ -208,7 +203,6 @@ protected:
 
 public:
 	BoneMapEditor(Ref<BoneMap> &p_bone_map);
-	~BoneMapEditor();
 };
 
 class EditorInspectorPluginBoneMap : public EditorInspectorPlugin {
@@ -227,5 +221,3 @@ public:
 	virtual String get_plugin_name() const override { return "BoneMap"; }
 	BoneMapEditorPlugin();
 };
-
-#endif // BONE_MAP_EDITOR_PLUGIN_H

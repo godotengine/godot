@@ -81,15 +81,19 @@ bool TextureProgressBar::get_nine_patch_stretch() const {
 Size2 TextureProgressBar::get_minimum_size() const {
 	if (nine_patch_stretch) {
 		return Size2(stretch_margin[SIDE_LEFT] + stretch_margin[SIDE_RIGHT], stretch_margin[SIDE_TOP] + stretch_margin[SIDE_BOTTOM]);
-	} else if (under.is_valid()) {
-		return under->get_size();
-	} else if (over.is_valid()) {
-		return over->get_size();
-	} else if (progress.is_valid()) {
-		return progress->get_size();
 	}
 
-	return Size2(1, 1);
+	Size2 size = Size2(1, 1);
+	if (under.is_valid()) {
+		size = size.max(under->get_size());
+	}
+	if (progress.is_valid()) {
+		size = size.max(progress->get_size());
+	}
+	if (over.is_valid()) {
+		size = size.max(over->get_size());
+	}
+	return size;
 }
 
 void TextureProgressBar::set_progress_texture(const Ref<Texture2D> &p_texture) {
@@ -189,7 +193,7 @@ Point2 TextureProgressBar::unit_val_to_uv(float val) {
 	Point2 p = get_relative_center();
 
 	// Minimal version of Liang-Barsky clipping algorithm
-	float angle = (val * Math_TAU) - Math_PI * 0.5;
+	float angle = (val * Math::TAU) - Math::PI * 0.5;
 	Point2 dir = Vector2(Math::cos(angle), Math::sin(angle));
 	float t1 = 1.0;
 	float cp = 0.0;
@@ -425,6 +429,13 @@ void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_textu
 
 void TextureProgressBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_PROGRESS_INDICATOR);
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (under.is_valid()) {
 				if (nine_patch_stretch) {

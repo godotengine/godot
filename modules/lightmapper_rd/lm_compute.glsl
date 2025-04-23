@@ -648,7 +648,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	}
 
 	r_shadow = penumbra;
-	r_light = light_data.color * light_data.energy * attenuation * penumbra * penumbra_color;
+	r_light = light_data.energy * attenuation * penumbra * penumbra_color;
 }
 
 #endif
@@ -1042,7 +1042,6 @@ void main() {
 				0.488603 * ray_dir.x, //l1p1
 				1.092548 * ray_dir.x * ray_dir.y, //l2n2
 				1.092548 * ray_dir.y * ray_dir.z, //l2n1
-				//0.315392 * (ray_dir.x * ray_dir.x + ray_dir.y * ray_dir.y + 2.0 * ray_dir.z * ray_dir.z), //l20
 				0.315392 * (3.0 * ray_dir.z * ray_dir.z - 1.0), //l20
 				1.092548 * ray_dir.x * ray_dir.z, //l2p1
 				0.546274 * (ray_dir.x * ray_dir.x - ray_dir.y * ray_dir.y) //l2p2

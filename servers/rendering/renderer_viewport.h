@@ -28,18 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_VIEWPORT_H
-#define RENDERER_VIEWPORT_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering_server.h"
 #include "storage/render_scene_buffers.h"
-
-#ifndef _3D_DISABLED
-#include "servers/xr/xr_interface.h"
-#endif // _3D_DISABLED
 
 class RendererViewport {
 public:
@@ -139,7 +134,7 @@ public:
 			CanvasKey(const RID &p_canvas, int p_layer, int p_sublayer) {
 				canvas = p_canvas;
 				int64_t sign = p_layer < 0 ? -1 : 1;
-				stacking = sign * (((int64_t)ABS(p_layer)) << 32) + p_sublayer;
+				stacking = sign * (((int64_t)Math::abs(p_layer)) << 32) + p_sublayer;
 			}
 			int get_layer() const { return stacking >> 32; }
 		};
@@ -208,6 +203,7 @@ private:
 	Vector<Viewport *> _sort_active_viewports();
 	void _viewport_set_size(Viewport *p_viewport, int p_width, int p_height, uint32_t p_view_count);
 	bool _viewport_requires_motion_vectors(Viewport *p_viewport);
+	void _viewport_set_force_motion_vectors(Viewport *p_viewport, bool p_force_motion_vectors);
 	void _configure_3d_render_buffers(Viewport *p_viewport);
 	void _draw_3d(Viewport *p_viewport);
 	void _draw_viewport(Viewport *p_viewport);
@@ -322,5 +318,3 @@ public:
 	RendererViewport();
 	virtual ~RendererViewport() {}
 };
-
-#endif // RENDERER_VIEWPORT_H

@@ -302,7 +302,7 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "stiffness/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "drag/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "drag/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "gravity/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "gravity/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,or_less,suffix:m/s"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "gravity/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, path + "gravity/direction"));
 		p_list->push_back(PropertyInfo(Variant::INT, path + "joint_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Joints," + path + "joints/,static,const"));
@@ -314,7 +314,7 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 			p_list->push_back(PropertyInfo(Variant::FLOAT, joint_path + "radius", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, joint_path + "stiffness", PROPERTY_HINT_RANGE, "0,4,0.01,or_greater"));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, joint_path + "drag", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, joint_path + "gravity", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, joint_path + "gravity", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,or_less,suffix:m/s"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, joint_path + "gravity_direction"));
 		}
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "enable_all_child_collisions"));
@@ -396,6 +396,12 @@ void SpringBoneSimulator3D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			update_gizmos();
+		} break;
+		case NOTIFICATION_EDITOR_PRE_SAVE: {
+			saving = true;
+		} break;
+		case NOTIFICATION_EDITOR_POST_SAVE: {
+			saving = false;
 		} break;
 #endif // TOOLS_ENABLED
 	}
@@ -601,6 +607,7 @@ void SpringBoneSimulator3D::set_radius(int p_index, float p_radius) {
 }
 
 float SpringBoneSimulator3D::get_radius(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, settings.size(), 0);
 	return settings[p_index]->radius;
 }
 
@@ -634,6 +641,7 @@ void SpringBoneSimulator3D::set_stiffness(int p_index, float p_stiffness) {
 }
 
 float SpringBoneSimulator3D::get_stiffness(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, settings.size(), 0);
 	return settings[p_index]->stiffness;
 }
 
@@ -756,8 +764,15 @@ SpringBoneSimulator3D::RotationAxis SpringBoneSimulator3D::get_rotation_axis(int
 
 void SpringBoneSimulator3D::set_setting_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
-	int delta = p_count - settings.size() + 1;
+
+	int delta = p_count - settings.size();
+	if (delta < 0) {
+		for (int i = delta; i < 0; i++) {
+			memdelete(settings[settings.size() + i]);
+		}
+	}
 	settings.resize(p_count);
+	delta++;
 	if (delta > 1) {
 		for (int i = 1; i < delta; i++) {
 			settings.write[p_count - i] = memnew(SpringBone3DSetting);
@@ -926,6 +941,10 @@ void SpringBoneSimulator3D::set_joint_rotation_axis(int p_index, int p_joint, Ro
 	Vector<SpringBone3DJointSetting *> &joints = settings[p_index]->joints;
 	ERR_FAIL_INDEX(p_joint, joints.size());
 	joints[p_joint]->rotation_axis = p_axis;
+	Skeleton3D *sk = get_skeleton();
+	if (sk) {
+		_validate_rotation_axis(sk, p_index, p_joint);
+	}
 }
 
 SpringBoneSimulator3D::RotationAxis SpringBoneSimulator3D::get_joint_rotation_axis(int p_index, int p_joint) const {
@@ -939,8 +958,14 @@ void SpringBoneSimulator3D::set_joint_count(int p_index, int p_count) {
 	ERR_FAIL_INDEX(p_index, settings.size());
 	ERR_FAIL_COND(p_count < 0);
 	Vector<SpringBone3DJointSetting *> &joints = settings[p_index]->joints;
-	int delta = p_count - joints.size() + 1;
+	int delta = p_count - joints.size();
+	if (delta < 0) {
+		for (int i = delta; i < 0; i++) {
+			memdelete(joints[joints.size() + i]);
+		}
+	}
 	joints.resize(p_count);
+	delta++;
 	if (delta > 1) {
 		for (int i = 1; i < delta; i++) {
 			joints.write[p_count - i] = memnew(SpringBone3DJointSetting);
@@ -1088,6 +1113,14 @@ LocalVector<ObjectID> SpringBoneSimulator3D::get_valid_collision_instance_ids(in
 	return settings[p_index]->cached_collisions;
 }
 
+void SpringBoneSimulator3D::set_external_force(const Vector3 &p_force) {
+	external_force = p_force;
+}
+
+Vector3 SpringBoneSimulator3D::get_external_force() const {
+	return external_force;
+}
+
 void SpringBoneSimulator3D::_bind_methods() {
 	// Setting.
 	ClassDB::bind_method(D_METHOD("set_root_bone_name", "index", "bone_name"), &SpringBoneSimulator3D::set_root_bone_name);
@@ -1180,9 +1213,13 @@ void SpringBoneSimulator3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_count", "index"), &SpringBoneSimulator3D::get_collision_count);
 	ClassDB::bind_method(D_METHOD("clear_collisions", "index"), &SpringBoneSimulator3D::clear_collisions);
 
+	ClassDB::bind_method(D_METHOD("set_external_force", "force"), &SpringBoneSimulator3D::set_external_force);
+	ClassDB::bind_method(D_METHOD("get_external_force"), &SpringBoneSimulator3D::get_external_force);
+
 	// To process manually.
 	ClassDB::bind_method(D_METHOD("reset"), &SpringBoneSimulator3D::reset);
 
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "external_force", PROPERTY_HINT_RANGE, "-99999,99999,or_greater,or_less,hide_slider,suffix:m/s"), "set_external_force", "get_external_force");
 	ADD_ARRAY_COUNT("Settings", "setting_count", "set_setting_count", "get_setting_count", "settings/");
 
 	BIND_ENUM_CONSTANT(BONE_DIRECTION_PLUS_X);
@@ -1234,6 +1271,35 @@ void SpringBoneSimulator3D::move_child_notify(Node *p_child) {
 void SpringBoneSimulator3D::remove_child_notify(Node *p_child) {
 	if (Object::cast_to<SpringBoneCollision3D>(p_child)) {
 		_make_collisions_dirty();
+	}
+}
+
+void SpringBoneSimulator3D::_validate_rotation_axes(Skeleton3D *p_skeleton) const {
+	for (int i = 0; i < settings.size(); i++) {
+		for (int j = 0; j < settings[i]->joints.size(); j++) {
+			_validate_rotation_axis(p_skeleton, i, j);
+		}
+	}
+}
+
+void SpringBoneSimulator3D::_validate_rotation_axis(Skeleton3D *p_skeleton, int p_index, int p_joint) const {
+	RotationAxis axis = settings[p_index]->joints[p_joint]->rotation_axis;
+	if (axis == ROTATION_AXIS_ALL) {
+		return;
+	}
+	Vector3 rot = get_vector_from_axis(static_cast<Vector3::Axis>((int)axis));
+	Vector3 fwd;
+	if (p_joint < settings[p_index]->joints.size() - 1) {
+		fwd = p_skeleton->get_bone_rest(settings[p_index]->joints[p_joint + 1]->bone).origin;
+	} else if (settings[p_index]->extend_end_bone) {
+		fwd = get_end_bone_axis(settings[p_index]->end_bone, settings[p_index]->end_bone_direction);
+		if (fwd.is_zero_approx()) {
+			return;
+		}
+	}
+	fwd.normalize();
+	if (Math::is_equal_approx(Math::absf(rot.dot(fwd)), 1.0f)) {
+		WARN_PRINT_ED("Setting: " + itos(p_index) + " Joint: " + itos(p_joint) + ": Rotation axis and forward vectors are colinear. This is not advised as it may cause unwanted rotation.");
 	}
 }
 
@@ -1305,6 +1371,9 @@ void SpringBoneSimulator3D::_find_collisions() {
 }
 
 void SpringBoneSimulator3D::_process_collisions() {
+	if (!is_inside_tree()) {
+		return;
+	}
 	for (const ObjectID &oid : collisions) {
 		Object *t_obj = ObjectDB::get_instance(oid);
 		if (!t_obj) {
@@ -1324,12 +1393,12 @@ void SpringBoneSimulator3D::_make_collisions_dirty() {
 
 void SpringBoneSimulator3D::_update_joint_array(int p_index) {
 	_make_joints_dirty(p_index);
-	set_joint_count(p_index, 0);
 
 	Skeleton3D *sk = get_skeleton();
 	int current_bone = settings[p_index]->end_bone;
 	int root_bone = settings[p_index]->root_bone;
 	if (!sk || current_bone < 0 || root_bone < 0) {
+		set_joint_count(p_index, 0);
 		return;
 	}
 
@@ -1342,7 +1411,11 @@ void SpringBoneSimulator3D::_update_joint_array(int p_index) {
 		}
 		current_bone = sk->get_bone_parent(current_bone);
 	}
-	ERR_FAIL_COND_EDMSG(!valid, "End bone must be the same as or a child of root bone.");
+
+	if (!valid) {
+		set_joint_count(p_index, 0);
+		ERR_FAIL_EDMSG("End bone must be the same as or a child of root bone.");
+	}
 
 	Vector<int> new_joints;
 	current_bone = settings[p_index]->end_bone;
@@ -1368,6 +1441,7 @@ void SpringBoneSimulator3D::_update_joints() {
 			continue;
 		}
 		if (settings[i]->individual_config) {
+			settings[i]->simulation_dirty = true;
 			settings[i]->joints_dirty = false;
 			continue; // Abort.
 		}
@@ -1407,6 +1481,10 @@ void SpringBoneSimulator3D::_update_joints() {
 		settings[i]->joints_dirty = false;
 	}
 	joints_dirty = false;
+	Skeleton3D *sk = get_skeleton();
+	if (sk) {
+		_validate_rotation_axes(sk);
+	}
 #ifdef TOOLS_ENABLED
 	update_gizmos();
 #endif // TOOLS_ENABLED
@@ -1418,21 +1496,34 @@ void SpringBoneSimulator3D::_set_active(bool p_active) {
 	}
 }
 
-void SpringBoneSimulator3D::_process_modification() {
+void SpringBoneSimulator3D::_process_modification(double p_delta) {
+	if (!is_inside_tree()) {
+		return;
+	}
+
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton) {
 		return;
 	}
 	_find_collisions();
 	_process_collisions();
-	double delta = skeleton->get_modifier_callback_mode_process() == Skeleton3D::MODIFIER_CALLBACK_MODE_PROCESS_IDLE ? skeleton->get_process_delta_time() : skeleton->get_physics_process_delta_time();
+
+#ifdef TOOLS_ENABLED
+	if (saving) {
+		return; // Collision position has been reset but we don't want to process simulating on saving. Abort.
+	}
+#endif //TOOLS_ENABLED
+
 	for (int i = 0; i < settings.size(); i++) {
 		_init_joints(skeleton, settings[i]);
-		_process_joints(delta, skeleton, settings[i]->joints, get_valid_collision_instance_ids(i), settings[i]->cached_center, settings[i]->cached_inverted_center, settings[i]->cached_inverted_center.basis.get_rotation_quaternion());
+		_process_joints(p_delta, skeleton, settings[i]->joints, get_valid_collision_instance_ids(i), settings[i]->cached_center, settings[i]->cached_inverted_center, settings[i]->cached_inverted_center.basis.get_rotation_quaternion());
 	}
 }
 
 void SpringBoneSimulator3D::reset() {
+	if (!is_inside_tree()) {
+		return;
+	}
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton) {
 		return;
@@ -1483,6 +1574,7 @@ void SpringBoneSimulator3D::_init_joints(Skeleton3D *p_skeleton, SpringBone3DSet
 			setting->joints[i]->verlet->prev_tail = setting->joints[i]->verlet->current_tail;
 			setting->joints[i]->verlet->forward_vector = axis.normalized();
 			setting->joints[i]->verlet->length = axis.length();
+			setting->joints[i]->verlet->current_rot = Quaternion(0, 0, 0, 1);
 		} else if (setting->extend_end_bone && setting->end_bone_length > 0) {
 			Vector3 axis = get_end_bone_axis(setting->end_bone, setting->end_bone_direction);
 			if (axis.is_zero_approx()) {
@@ -1493,6 +1585,7 @@ void SpringBoneSimulator3D::_init_joints(Skeleton3D *p_skeleton, SpringBone3DSet
 			setting->joints[i]->verlet->length = setting->end_bone_length;
 			setting->joints[i]->verlet->current_tail = setting->cached_center.xform(p_skeleton->get_bone_global_pose(setting->joints[i]->bone).xform(axis * setting->end_bone_length));
 			setting->joints[i]->verlet->prev_tail = setting->joints[i]->verlet->current_tail;
+			setting->joints[i]->verlet->current_rot = Quaternion(0, 0, 0, 1);
 		}
 	}
 	setting->simulation_dirty = false;
@@ -1523,7 +1616,7 @@ void SpringBoneSimulator3D::_process_joints(double p_delta, Skeleton3D *p_skelet
 		Transform3D current_world_pose = p_center_transform * current_global_pose;
 		Quaternion current_rot = current_global_pose.basis.get_rotation_quaternion();
 		Vector3 current_origin = p_center_transform.xform(current_global_pose.origin);
-		Vector3 external = p_inverted_center_rotation.xform(p_joints[i]->gravity_direction * p_joints[i]->gravity * p_delta);
+		Vector3 external = p_inverted_center_rotation.xform((external_force + p_joints[i]->gravity_direction * p_joints[i]->gravity) * p_delta);
 
 		// Integration of velocity by verlet.
 		Vector3 next_tail = verlet->current_tail +
@@ -1555,10 +1648,13 @@ void SpringBoneSimulator3D::_process_joints(double p_delta, Skeleton3D *p_skelet
 		verlet->prev_tail = verlet->current_tail;
 		verlet->current_tail = next_tail;
 
-		// Apply rotation.
+		// Convert position to rotation.
 		Vector3 from = current_rot.xform(verlet->forward_vector);
 		Vector3 to = p_inverted_center_transform.basis.xform(next_tail - current_origin).normalized();
-		Quaternion from_to = get_from_to_rotation(from, to);
+		Quaternion from_to = get_from_to_rotation(from, to, verlet->current_rot);
+		verlet->current_rot = from_to;
+
+		// Apply rotation.
 		from_to *= current_rot;
 		from_to = get_local_pose_rotation(p_skeleton, p_joints[i]->bone, from_to);
 		p_skeleton->set_bone_pose_rotation(p_joints[i]->bone, from_to);
@@ -1573,14 +1669,21 @@ Quaternion SpringBoneSimulator3D::get_local_pose_rotation(Skeleton3D *p_skeleton
 	return p_skeleton->get_bone_global_pose(parent).basis.orthonormalized().inverse() * p_global_pose_rotation;
 }
 
-Quaternion SpringBoneSimulator3D::get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to) {
+Quaternion SpringBoneSimulator3D::get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot) {
+	if (Math::is_equal_approx((float)p_from.dot(p_to), -1.0f)) {
+		return p_prev_rot; // For preventing to glitch, checking dot for detecting flip is more accurate than checking cross.
+	}
 	Vector3 axis = p_from.cross(p_to);
 	if (axis.is_zero_approx()) {
-		return Quaternion(0, 0, 0, 1);
+		return p_prev_rot;
 	}
 	float angle = p_from.angle_to(p_to);
 	if (Math::is_zero_approx(angle)) {
 		angle = 0.0;
 	}
 	return Quaternion(axis.normalized(), angle);
+}
+
+SpringBoneSimulator3D::~SpringBoneSimulator3D() {
+	clear_settings();
 }

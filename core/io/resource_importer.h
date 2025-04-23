@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_H
-#define RESOURCE_IMPORTER_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -49,7 +48,7 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 		ResourceUID::ID uid = ResourceUID::INVALID_ID;
 	};
 
-	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid = nullptr) const;
+	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool p_load, bool *r_valid = nullptr) const;
 
 	static ResourceFormatImporter *singleton;
 
@@ -90,8 +89,8 @@ public:
 
 	void remove_importer(const Ref<ResourceImporter> &p_importer) { importers.erase(p_importer); }
 	Ref<ResourceImporter> get_importer_by_name(const String &p_name) const;
-	Ref<ResourceImporter> get_importer_by_extension(const String &p_extension) const;
-	void get_importers_for_extension(const String &p_extension, List<Ref<ResourceImporter>> *r_importers);
+	Ref<ResourceImporter> get_importer_by_file(const String &p_file) const;
+	void get_importers_for_file(const String &p_file, List<Ref<ResourceImporter>> *r_importers);
 	void get_importers(List<Ref<ResourceImporter>> *r_importers);
 
 	bool are_import_settings_valid(const String &p_path) const;
@@ -166,5 +165,3 @@ class ResourceFormatImporterSaver : public ResourceFormatSaver {
 public:
 	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
 };
-
-#endif // RESOURCE_IMPORTER_H

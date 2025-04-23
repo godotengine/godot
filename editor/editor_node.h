@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NODE_H
-#define EDITOR_NODE_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/templates/safe_refcount.h"
@@ -98,8 +97,12 @@ class ProgressDialog;
 class ProjectExportDialog;
 class ProjectSettingsEditor;
 class SceneImportSettingsDialog;
-class SurfaceUpgradeTool;
-class SurfaceUpgradeDialog;
+class ProjectUpgradeTool;
+
+#ifdef ANDROID_ENABLED
+class HBoxContainer;
+class TouchActionsPanel;
+#endif
 
 struct EditorProgress {
 	String task;
@@ -119,6 +122,7 @@ public:
 		SCENE_NAME_CASING_PASCAL_CASE,
 		SCENE_NAME_CASING_SNAKE_CASE,
 		SCENE_NAME_CASING_KEBAB_CASE,
+		SCENE_NAME_CASING_CAMEL_CASE,
 	};
 
 	enum ActionOnPlay {
@@ -142,6 +146,7 @@ public:
 		FILE_SAVE_SCENE,
 		FILE_SAVE_AS_SCENE,
 		FILE_SAVE_ALL_SCENES,
+		FILE_MULTI_SAVE_AS_SCENE,
 		FILE_QUICK_OPEN,
 		FILE_QUICK_OPEN_SCENE,
 		FILE_QUICK_OPEN_SCRIPT,
@@ -165,7 +170,7 @@ public:
 
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_BUILD_PROFILE_MANAGER,
-		TOOLS_SURFACE_UPGRADE,
+		TOOLS_PROJECT_UPGRADE,
 		TOOLS_CUSTOM,
 
 		VCS_METADATA,
@@ -224,7 +229,6 @@ public:
 
 private:
 	friend class EditorSceneTabs;
-	friend class SurfaceUpgradeTool;
 
 	enum {
 		MAX_INIT_CALLBACKS = 128,
@@ -277,6 +281,12 @@ private:
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *renderer = nullptr;
 
+#ifdef ANDROID_ENABLED
+	HBoxContainer *main_hbox = nullptr; // Only created on Android for TouchActionsPanel.
+	TouchActionsPanel *touch_actions_panel = nullptr;
+	void _touch_actions_panel_mode_changed();
+#endif
+
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
 	int renderer_current = 0;
@@ -298,6 +308,7 @@ private:
 
 	int tab_closing_idx = 0;
 	List<String> tabs_to_close;
+	List<int> scenes_to_save_as;
 	int tab_closing_menu_option = -1;
 
 	bool exiting = false;
@@ -348,14 +359,16 @@ private:
 
 	PopupMenu *recent_scenes = nullptr;
 	String _recent_scene;
-	List<String> previous_scenes;
+	List<String> prev_closed_scenes;
 	String defer_load_scene;
 	Node *_last_instantiated_scene = nullptr;
 
 	ConfirmationDialog *confirmation = nullptr;
+	Button *confirmation_button = nullptr;
 	ConfirmationDialog *save_confirmation = nullptr;
 	ConfirmationDialog *import_confirmation = nullptr;
 	ConfirmationDialog *pick_main_scene = nullptr;
+	ConfirmationDialog *open_project_settings = nullptr;
 	Button *select_current_scene_button = nullptr;
 	AcceptDialog *accept = nullptr;
 	AcceptDialog *save_accept = nullptr;
@@ -384,6 +397,7 @@ private:
 	EditorFileDialog *file_export_lib = nullptr;
 	EditorFileDialog *file_script = nullptr;
 	EditorFileDialog *file_android_build_source = nullptr;
+	EditorFileDialog *file_pack_zip = nullptr;
 	String current_path;
 	MenuButton *update_spinner = nullptr;
 
@@ -411,15 +425,15 @@ private:
 
 	Tree *disk_changed_list = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
+	ConfirmationDialog *project_data_missing = nullptr;
 
 	bool scene_distraction_free = false;
 	bool script_distraction_free = false;
 
 	bool changing_scene = false;
-	bool cmdline_export_mode = false;
+	bool cmdline_mode = false;
 	bool convert_old = false;
 	bool immediate_dialog_confirmed = false;
-	bool opening_prev = false;
 	bool restoring_scenes = false;
 	bool unsaved_cache = true;
 
@@ -458,9 +472,8 @@ private:
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
 
-	SurfaceUpgradeTool *surface_upgrade_tool = nullptr;
-	SurfaceUpgradeDialog *surface_upgrade_dialog = nullptr;
-	bool run_surface_upgrade_tool = false;
+	ProjectUpgradeTool *project_upgrade_tool = nullptr;
+	bool run_project_upgrade_tool = false;
 
 	bool was_window_windowed_last = false;
 
@@ -527,7 +540,6 @@ private:
 	void _tool_menu_option(int p_idx);
 	void _export_as_menu_option(int p_idx);
 	void _update_file_menu_opened();
-	void _update_file_menu_closed();
 	void _palette_quick_open_dialog();
 
 	void _remove_plugin_from_enabled(const String &p_name);
@@ -566,6 +578,8 @@ private:
 	void _scene_tab_closed(int p_tab);
 	void _cancel_close_scene_tab();
 
+	void _prepare_save_confirmation_popup();
+
 	void _inherit_request(String p_file);
 	void _instantiate_request(const Vector<String> &p_files);
 
@@ -575,9 +589,12 @@ private:
 	void _project_run_started();
 	void _project_run_stopped();
 
+	void _update_prev_closed_scenes(const String &p_scene_path, bool p_add_scene);
+
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
+
 	void _dropped_files(const Vector<String> &p_files);
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 
@@ -603,6 +620,7 @@ private:
 	bool _find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _mark_unsaved_scenes();
+	bool _is_scene_unsaved(int p_idx);
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
 	void _save_scene_with_preview(String p_file, int p_idx = -1);
@@ -611,7 +629,9 @@ private:
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
 
 	void _proceed_closing_scene_tabs();
+	void _proceed_save_asing_scene_tabs();
 	bool _is_closing_editor() const;
+	void _restart_editor(bool p_goto_project_manager = false);
 
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
@@ -648,7 +668,8 @@ private:
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
 
-	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback = "Object", bool p_fallback_script_to_theme = false);
+	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const String &p_script_path, const String &p_fallback = "Object", bool p_fallback_script_to_theme = false);
+	Ref<Texture2D> _get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
@@ -662,6 +683,10 @@ private:
 
 	void _progress_dialog_visibility_changed();
 	void _load_error_dialog_visibility_changed();
+
+	void _execute_upgrades();
+
+	bool _is_project_data_missing();
 
 protected:
 	friend class FileSystemDock;
@@ -729,7 +754,7 @@ public:
 	ProjectSettingsEditor *get_project_settings() { return project_settings_editor; }
 
 	void trigger_menu_option(int p_option, bool p_confirmed);
-	bool has_previous_scenes() const;
+	bool has_previous_closed_scenes() const;
 
 	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
 
@@ -746,7 +771,6 @@ public:
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
 	void save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path = String());
-	void ensure_uid_file(const String &p_new_resource_path);
 
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
@@ -764,7 +788,6 @@ public:
 	void replace_resources_in_scenes(
 			const Vector<Ref<Resource>> &p_source_resources,
 			const Vector<Ref<Resource>> &p_target_resource);
-	void open_request(const String &p_path, bool p_set_inherited = false);
 	void edit_foreign_resource(Ref<Resource> p_resource);
 
 	bool is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_resources_are_writable = false);
@@ -783,6 +806,7 @@ public:
 	int new_scene();
 	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_force_open_imported = false, bool p_silent_change_tab = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
+	Error load_scene_or_resource(const String &p_file, bool p_ignore_broken_deps = false, bool p_change_scene_tab_if_already_open = true);
 
 	HashMap<StringName, Variant> get_modified_properties_for_node(Node *p_node, bool p_node_references_only);
 	HashMap<StringName, Variant> get_modified_properties_reference_to_nodes(Node *p_node, List<Node *> &p_nodes_referenced_by);
@@ -952,6 +976,7 @@ public:
 	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin_for_type_name(const String &p_type);
 
 	bool ensure_main_scene(bool p_from_native);
+	bool validate_custom_directory();
 };
 
 class EditorPluginList : public Object {
@@ -979,9 +1004,6 @@ public:
 	void remove_plugin(EditorPlugin *p_plugin);
 	void clear();
 	bool is_empty();
-
-	EditorPluginList();
-	~EditorPluginList();
 };
 
 struct EditorProgressBG {
@@ -993,5 +1015,3 @@ struct EditorProgressBG {
 	}
 	~EditorProgressBG() { EditorNode::progress_end_task_bg(task); }
 };
-
-#endif // EDITOR_NODE_H

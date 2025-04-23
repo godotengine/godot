@@ -73,7 +73,7 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 		} else if (l.begins_with("#CODE")) {
 			chunk.type = StageTemplate::Chunk::TYPE_CODE;
 			push_chunk = true;
-			chunk.code = l.replace_first("#CODE", String()).replace(":", "").strip_edges().to_upper();
+			chunk.code = l.replace_first("#CODE", String()).remove_char(':').strip_edges().to_upper();
 		} else {
 			text += l + "\n";
 		}
@@ -690,7 +690,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 
 void ShaderGLES3::_clear_version(Version *p_version) {
 	// Variants not compiled yet, just return
-	if (p_version->variants.size() == 0) {
+	if (p_version->variants.is_empty()) {
 		return;
 	}
 
@@ -841,13 +841,11 @@ bool ShaderGLES3::shader_cache_save_compressed_zstd = true;
 bool ShaderGLES3::shader_cache_save_debug = true;
 
 ShaderGLES3::~ShaderGLES3() {
-	List<RID> remaining;
-	version_owner.get_owned_list(&remaining);
+	LocalVector<RID> remaining = version_owner.get_owned_list();
 	if (remaining.size()) {
 		ERR_PRINT(itos(remaining.size()) + " shaders of type " + name + " were never freed");
-		while (remaining.size()) {
-			version_free(remaining.front()->get());
-			remaining.pop_front();
+		for (RID &rid : remaining) {
+			version_free(rid);
 		}
 	}
 }

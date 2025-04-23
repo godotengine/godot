@@ -93,9 +93,6 @@ void EditorResourcePreviewGenerator::_bind_methods() {
 	GDVIRTUAL_BIND(_can_generate_small_preview);
 }
 
-EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {
-}
-
 void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewport) {
 	Callable request_vp_update_once = callable_mp(RS::get_singleton(), &RS::viewport_set_update_mode).bind(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
 
@@ -265,7 +262,7 @@ const Dictionary EditorResourcePreview::get_preview_metadata(const String &p_pat
 void EditorResourcePreview::_iterate() {
 	preview_mutex.lock();
 
-	if (queue.size() == 0) {
+	if (queue.is_empty()) {
 		preview_mutex.unlock();
 		return;
 	}
@@ -387,7 +384,7 @@ void EditorResourcePreview::_write_preview_cache(Ref<FileAccess> p_file, int p_t
 	p_file->store_line(itos(p_has_small_texture));
 	p_file->store_line(itos(p_modified_time));
 	p_file->store_line(p_hash);
-	p_file->store_line(VariantUtilityFunctions::var_to_str(p_metadata).replace("\n", " "));
+	p_file->store_line(VariantUtilityFunctions::var_to_str(p_metadata).replace_char('\n', ' '));
 	p_file->store_line(itos(CURRENT_METADATA_VERSION));
 }
 

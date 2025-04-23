@@ -166,7 +166,7 @@ AABB Light3D::get_aabb() const {
 		real_t cone_slant_height = param[PARAM_RANGE];
 		real_t cone_angle_rad = Math::deg_to_rad(param[PARAM_SPOT_ANGLE]);
 
-		if (cone_angle_rad > Math_PI / 2.0) {
+		if (cone_angle_rad > Math::PI / 2.0) {
 			// Just return the AABB of an omni light if the spot angle is above 90 degrees.
 			return AABB(Vector3(-1, -1, -1) * cone_slant_height, Vector3(2, 2, 2) * cone_slant_height);
 		}
@@ -632,7 +632,7 @@ PackedStringArray OmniLight3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("Projector texture only works with shadows active."));
 	}
 
-	if (get_projector().is_valid() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+	if (get_projector().is_valid() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
 		warnings.push_back(RTR("Projector textures are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
 	}
 
@@ -668,7 +668,7 @@ PackedStringArray SpotLight3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("Projector texture only works with shadows active."));
 	}
 
-	if (get_projector().is_valid() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+	if (get_projector().is_valid() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
 		warnings.push_back(RTR("Projector textures are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
 	}
 

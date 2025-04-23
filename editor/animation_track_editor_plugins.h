@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_TRACK_EDITOR_PLUGINS_H
-#define ANIMATION_TRACK_EDITOR_PLUGINS_H
+#pragma once
 
 #include "editor/animation_track_editor.h"
 
@@ -88,8 +87,6 @@ public:
 
 	void set_node(Object *p_object);
 	void set_as_coords();
-
-	AnimationTrackEditSpriteFrame() {}
 };
 
 class AnimationTrackEditSubAnim : public AnimationTrackEdit {
@@ -146,7 +143,6 @@ public:
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 	void set_node(Object *p_object);
-	AnimationTrackEditTypeAnimation();
 };
 
 class AnimationTrackEditVolumeDB : public AnimationTrackEdit {
@@ -167,5 +163,3 @@ public:
 	virtual AnimationTrackEdit *create_audio_track_edit() override;
 	virtual AnimationTrackEdit *create_animation_track_edit(Object *p_object) override;
 };
-
-#endif // ANIMATION_TRACK_EDITOR_PLUGINS_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_EDITOR_H
-#define TEXT_EDITOR_H
+#pragma once
 
 #include "script_editor_plugin.h"
 
@@ -146,7 +145,7 @@ public:
 	virtual void set_debugger_active(bool p_active) override;
 	virtual void set_tooltip_request_func(const Callable &p_toolip_callback) override;
 	virtual void add_callback(const String &p_function, const PackedStringArray &p_args) override;
-	void update_toggle_scripts_button() override;
+	void update_toggle_files_button() override;
 
 	virtual Control *get_edit_menu() override;
 	virtual void clear_edit_menu() override;
@@ -162,5 +161,3 @@ public:
 	TextEditor();
 	~TextEditor();
 };
-
-#endif // TEXT_EDITOR_H

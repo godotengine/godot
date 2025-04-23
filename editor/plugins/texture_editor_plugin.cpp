@@ -96,7 +96,7 @@ void TexturePreview::_notification(int p_what) {
 
 			bg_rect->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
 			checkerboard->set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
-			cached_outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
+			theme_cache.outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
 		} break;
 	}
 }
@@ -104,7 +104,7 @@ void TexturePreview::_notification(int p_what) {
 void TexturePreview::_draw_outline() {
 	const float outline_width = Math::round(EDSCALE);
 	const Rect2 outline_rect = Rect2(Vector2(), outline_overlay->get_size()).grow(outline_width * 0.5);
-	outline_overlay->draw_rect(outline_rect, cached_outline_color, false, outline_width);
+	outline_overlay->draw_rect(outline_rect, theme_cache.outline_color, false, outline_width);
 }
 
 void TexturePreview::_update_texture_display_ratio() {
@@ -124,6 +124,11 @@ static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
 		return compressed_texture->get_format();
 	}
 
+	const Ref<PortableCompressedTexture2D> portable_compressed_texture = p_texture;
+	if (portable_compressed_texture.is_valid()) {
+		return portable_compressed_texture->get_format();
+	}
+
 	// AtlasTexture?
 
 	// Unknown
@@ -132,8 +137,21 @@ static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
 
 static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_COND_V(p_texture.is_null(), -1);
+
 	// We are having to download the image only to get its mipmaps count. It would be nice if we didn't have to.
-	Ref<Image> image = p_texture->get_image();
+	Ref<Image> image;
+	Ref<AtlasTexture> at = p_texture;
+	if (at.is_valid()) {
+		// The AtlasTexture tries to obtain the region from the atlas as an image,
+		// which will fail if it is a compressed format.
+		Ref<Texture2D> atlas = at->get_atlas();
+		if (atlas.is_valid()) {
+			image = atlas->get_image();
+		}
+	} else {
+		image = p_texture->get_image();
+	}
+
 	if (image.is_valid()) {
 		return image->get_mipmap_count();
 	}

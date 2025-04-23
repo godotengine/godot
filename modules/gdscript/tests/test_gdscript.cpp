@@ -297,10 +297,10 @@ void test(TestType p_type) {
 	TypedArray<Dictionary> script_classes = ProjectSettings::get_singleton()->get_global_class_list();
 	for (int i = 0; i < script_classes.size(); i++) {
 		Dictionary c = script_classes[i];
-		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base") || !c.has("is_abstract") || !c.has("is_tool")) {
 			continue;
 		}
-		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"]);
+		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"], c["is_abstract"], c["is_tool"]);
 	}
 
 	Vector<uint8_t> buf;
@@ -309,8 +309,7 @@ void test(TestType p_type) {
 	fa->get_buffer(buf.ptrw(), flen);
 	buf.write[flen] = 0;
 
-	String code;
-	code.parse_utf8((const char *)&buf[0]);
+	String code = String::utf8((const char *)&buf[0]);
 
 	Vector<String> lines;
 	int last = 0;

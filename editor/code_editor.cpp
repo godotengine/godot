@@ -123,6 +123,7 @@ GotoLinePopup::GotoLinePopup() {
 	line_input->set_select_all_on_focus(true);
 	line_input->connect(SceneStringName(text_changed), callable_mp(this, &GotoLinePopup::_goto_line).unbind(1));
 	line_input->connect(SceneStringName(text_submitted), callable_mp(this, &GotoLinePopup::_submit).unbind(1));
+	line_input->set_accessibility_name(TTRC("Line Number"));
 	vbc->add_child(line_input);
 }
 
@@ -144,8 +145,13 @@ void FindReplaceBar::_notification(int p_what) {
 			_update_toggle_replace_button(replace_text->is_visible_in_tree());
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_update_toggle_replace_button(replace_text->is_visible_in_tree());
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			set_process_unhandled_input(is_visible_in_tree());
+			set_process_input(is_visible_in_tree());
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -161,11 +167,11 @@ void FindReplaceBar::_notification(int p_what) {
 	}
 }
 
-void FindReplaceBar::unhandled_input(const Ref<InputEvent> &p_event) {
+// Implemented in input(..) as the LineEdit consumes the Escape pressed key.
+void FindReplaceBar::input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
-
 	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
 		Control *focus_owner = get_viewport()->gui_get_focus_owner();
 
@@ -173,13 +179,6 @@ void FindReplaceBar::unhandled_input(const Ref<InputEvent> &p_event) {
 			_hide_bar();
 			accept_event();
 		}
-	}
-}
-
-void FindReplaceBar::_focus_lost() {
-	if (Input::get_singleton()->is_action_pressed(SNAME("ui_cancel"))) {
-		// Unfocused after pressing Escape, so hide the bar.
-		_hide_bar(true);
 	}
 }
 
@@ -564,8 +563,8 @@ bool FindReplaceBar::search_next() {
 	return _search(flags, line, col);
 }
 
-void FindReplaceBar::_hide_bar(bool p_force_focus) {
-	if (replace_text->has_focus() || search_text->has_focus() || p_force_focus) {
+void FindReplaceBar::_hide_bar() {
+	if (replace_text->has_focus() || search_text->has_focus()) {
 		text_editor->grab_focus();
 	}
 
@@ -755,6 +754,7 @@ void FindReplaceBar::_bind_methods() {
 FindReplaceBar::FindReplaceBar() {
 	toggle_replace_button = memnew(Button);
 	add_child(toggle_replace_button);
+	toggle_replace_button->set_accessibility_name(TTRC("Replace Mode"));
 	toggle_replace_button->set_flat(true);
 	toggle_replace_button->set_focus_mode(FOCUS_NONE);
 	toggle_replace_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_toggle_replace_pressed));
@@ -786,10 +786,10 @@ FindReplaceBar::FindReplaceBar() {
 	vbc_lineedit->add_child(search_text);
 	search_text->set_placeholder(TTR("Find"));
 	search_text->set_tooltip_text(TTR("Find"));
+	search_text->set_accessibility_name(TTRC("Find"));
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->connect(SceneStringName(text_changed), callable_mp(this, &FindReplaceBar::_search_text_changed));
 	search_text->connect(SceneStringName(text_submitted), callable_mp(this, &FindReplaceBar::_search_text_submitted));
-	search_text->connect(SceneStringName(focus_exited), callable_mp(this, &FindReplaceBar::_focus_lost));
 
 	matches_label = memnew(Label);
 	hbc_button_search->add_child(matches_label);
@@ -798,6 +798,7 @@ FindReplaceBar::FindReplaceBar() {
 	find_prev = memnew(Button);
 	find_prev->set_flat(true);
 	find_prev->set_tooltip_text(TTR("Previous Match"));
+	find_prev->set_accessibility_name(TTRC("Previous Match"));
 	hbc_button_search->add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::search_prev));
@@ -805,6 +806,7 @@ FindReplaceBar::FindReplaceBar() {
 	find_next = memnew(Button);
 	find_next->set_flat(true);
 	find_next->set_tooltip_text(TTR("Next Match"));
+	find_next->set_accessibility_name(TTRC("Next Match"));
 	hbc_button_search->add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
 	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::search_next));
@@ -826,9 +828,9 @@ FindReplaceBar::FindReplaceBar() {
 	vbc_lineedit->add_child(replace_text);
 	replace_text->set_placeholder(TTR("Replace"));
 	replace_text->set_tooltip_text(TTR("Replace"));
+	replace_text->set_accessibility_name(TTRC("Replace"));
 	replace_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	replace_text->connect(SceneStringName(text_submitted), callable_mp(this, &FindReplaceBar::_replace_text_submitted));
-	replace_text->connect(SceneStringName(focus_exited), callable_mp(this, &FindReplaceBar::_focus_lost));
 
 	replace = memnew(Button);
 	hbc_button_replace->add_child(replace);
@@ -849,8 +851,9 @@ FindReplaceBar::FindReplaceBar() {
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
 	hide_button->set_tooltip_text(TTR("Hide"));
+	hide_button->set_accessibility_name(TTRC("Hide"));
 	hide_button->set_focus_mode(FOCUS_NONE);
-	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_hide_bar).bind(false));
+	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_hide_bar));
 	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
 }
 
@@ -933,12 +936,14 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+#ifndef ANDROID_ENABLED
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
 	if (magnify_gesture.is_valid()) {
 		_zoom_to(zoom_factor * powf(magnify_gesture->get_factor(), 0.25f));
 		accept_event();
 		return;
 	}
+#endif
 
 	Ref<InputEventKey> k = p_event;
 
@@ -1629,10 +1634,10 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 	emit_signal(SNAME("show_warnings_panel"), p_show);
 }
 
-void CodeTextEditor::_toggle_scripts_pressed() {
-	ERR_FAIL_NULL(toggle_scripts_list);
-	toggle_scripts_list->set_visible(!toggle_scripts_list->is_visible());
-	update_toggle_scripts_button();
+void CodeTextEditor::_toggle_files_pressed() {
+	ERR_FAIL_NULL(toggle_files_list);
+	toggle_files_list->set_visible(!toggle_files_list->is_visible());
+	update_toggle_files_button();
 }
 
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
@@ -1650,15 +1655,22 @@ void CodeTextEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			if (toggle_scripts_button->is_visible()) {
-				update_toggle_scripts_button();
+			if (toggle_files_button->is_visible()) {
+				update_toggle_files_button();
 			}
 			_update_text_editor_theme();
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (toggle_files_button->is_visible()) {
+				update_toggle_files_button();
+			}
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (toggle_scripts_button->is_visible()) {
-				update_toggle_scripts_button();
+			if (toggle_files_button->is_visible()) {
+				update_toggle_files_button();
 			}
 			set_process_input(is_visible_in_tree());
 		} break;
@@ -1725,7 +1737,7 @@ void CodeTextEditor::toggle_bookmark() {
 
 void CodeTextEditor::goto_next_bookmark() {
 	PackedInt32Array bmarks = text_editor->get_bookmarked_lines();
-	if (bmarks.size() <= 0) {
+	if (bmarks.is_empty()) {
 		return;
 	}
 
@@ -1741,7 +1753,7 @@ void CodeTextEditor::goto_next_bookmark() {
 
 void CodeTextEditor::goto_prev_bookmark() {
 	PackedInt32Array bmarks = text_editor->get_bookmarked_lines();
-	if (bmarks.size() <= 0) {
+	if (bmarks.is_empty()) {
 		return;
 	}
 
@@ -1815,18 +1827,18 @@ void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_cod
 }
 
 void CodeTextEditor::set_toggle_list_control(Control *p_control) {
-	toggle_scripts_list = p_control;
+	toggle_files_list = p_control;
 }
 
-void CodeTextEditor::show_toggle_scripts_button() {
-	toggle_scripts_button->show();
+void CodeTextEditor::show_toggle_files_button() {
+	toggle_files_button->show();
 }
 
-void CodeTextEditor::update_toggle_scripts_button() {
-	ERR_FAIL_NULL(toggle_scripts_list);
-	bool forward = toggle_scripts_list->is_visible() == is_layout_rtl();
-	toggle_scripts_button->set_button_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
-	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
+void CodeTextEditor::update_toggle_files_button() {
+	ERR_FAIL_NULL(toggle_files_list);
+	bool forward = toggle_files_list->is_visible() == is_layout_rtl();
+	toggle_files_button->set_button_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
+	toggle_files_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Files Panel"), ED_GET_SHORTCUT("script_editor/toggle_files_panel")->get_as_text()));
 }
 
 CodeTextEditor::CodeTextEditor() {
@@ -1863,12 +1875,13 @@ CodeTextEditor::CodeTextEditor() {
 	error_line = 0;
 	error_column = 0;
 
-	toggle_scripts_button = memnew(Button);
-	toggle_scripts_button->set_flat(true);
-	toggle_scripts_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_toggle_scripts_pressed));
-	status_bar->add_child(toggle_scripts_button);
-	toggle_scripts_button->hide();
+	toggle_files_button = memnew(Button);
+	toggle_files_button->set_flat(true);
+	toggle_files_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_toggle_files_pressed));
+	toggle_files_button->set_accessibility_name(TTRC("Scripts"));
+	status_bar->add_child(toggle_files_button);
+	toggle_files_button->hide();
 
 	// Error
 	ScrollContainer *scroll = memnew(ScrollContainer);
@@ -1891,6 +1904,7 @@ CodeTextEditor::CodeTextEditor() {
 	error_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	error_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_error_button_pressed));
 	error_button->set_tooltip_text(TTR("Errors"));
+	error_button->set_accessibility_name(TTRC("Errors"));
 
 	// Warnings
 	warning_button = memnew(Button);
@@ -1900,6 +1914,7 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_warning_button_pressed));
 	warning_button->set_tooltip_text(TTR("Warnings"));
+	warning_button->set_accessibility_name(TTRC("Warnings"));
 
 	status_bar->add_child(memnew(VSeparator));
 
@@ -1909,11 +1924,14 @@ CodeTextEditor::CodeTextEditor() {
 	zoom_button->set_flat(true);
 	zoom_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	zoom_button->set_tooltip_text(
-			TTR("Zoom factor") + "\n" + vformat(TTR("%sMouse wheel, %s/%s: Finetune\n%s: Reset"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), ED_GET_SHORTCUT("script_editor/zoom_in")->get_as_text(), ED_GET_SHORTCUT("script_editor/zoom_out")->get_as_text(), ED_GET_SHORTCUT("script_editor/reset_zoom")->get_as_text()));
+			TTR("Zoom factor") + "\n" +
+			// TRANSLATORS: The placeholders are keyboard shortcuts. The first one is in the form of "Ctrl+"/"Cmd+".
+			vformat(TTR("%sMouse wheel, %s/%s: Finetune\n%s: Reset"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), ED_GET_SHORTCUT("script_editor/zoom_in")->get_as_text(), ED_GET_SHORTCUT("script_editor/zoom_out")->get_as_text(), ED_GET_SHORTCUT("script_editor/reset_zoom")->get_as_text()));
 	zoom_button->set_text("100 %");
+	zoom_button->set_accessibility_name(TTRC("Zoom Factor"));
 
 	PopupMenu *zoom_menu = zoom_button->get_popup();
-	int preset_count = sizeof(ZOOM_FACTOR_PRESETS) / sizeof(float);
+	constexpr int preset_count = std::size(ZOOM_FACTOR_PRESETS);
 
 	for (int i = 0; i < preset_count; i++) {
 		float z = ZOOM_FACTOR_PRESETS[i];
@@ -1930,6 +1948,7 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(line_and_col_txt);
 	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	line_and_col_txt->set_tooltip_text(TTR("Line and column numbers."));
+	line_and_col_txt->set_accessibility_name(TTRC("Line and Column Numbers"));
 	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
 	status_bar->add_child(memnew(VSeparator));
@@ -1939,21 +1958,14 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(indentation_txt);
 	indentation_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	indentation_txt->set_tooltip_text(TTR("Indentation"));
+	indentation_txt->set_accessibility_name(TTRC("Indentation"));
 	indentation_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
 	text_editor->connect(SceneStringName(gui_input), callable_mp(this, &CodeTextEditor::_text_editor_gui_input));
 	text_editor->connect("caret_changed", callable_mp(this, &CodeTextEditor::_line_col_changed));
 	text_editor->connect(SceneStringName(text_changed), callable_mp(this, &CodeTextEditor::_text_changed));
 	text_editor->connect("code_completion_requested", callable_mp(this, &CodeTextEditor::_complete_request));
-	TypedArray<String> cs;
-	cs.push_back(".");
-	cs.push_back(",");
-	cs.push_back("(");
-	cs.push_back("=");
-	cs.push_back("$");
-	cs.push_back("@");
-	cs.push_back("\"");
-	cs.push_back("\'");
+	TypedArray<String> cs = { ".", ",", "(", "=", "$", "@", "\"", "\'" };
 	text_editor->set_code_completion_prefixes(cs);
 	idle->connect("timeout", callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
 

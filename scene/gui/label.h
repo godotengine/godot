@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LABEL_H
-#define LABEL_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/resources/label_settings.h"
@@ -39,6 +38,7 @@ class Label : public Control {
 
 private:
 	enum LabelDrawStep {
+		DRAW_STEP_SHADOW_OUTLINE,
 		DRAW_STEP_SHADOW,
 		DRAW_STEP_OUTLINE,
 		DRAW_STEP_TEXT,
@@ -50,6 +50,7 @@ private:
 	String text;
 	String xl_text;
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
+	BitField<TextServer::LineBreakFlag> autowrap_flags_trim = TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES;
 	BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 	bool clip = false;
 	String el_char = U"…";
@@ -89,6 +90,7 @@ private:
 
 	struct ThemeCache {
 		Ref<StyleBox> normal_style;
+		Ref<StyleBox> focus_style;
 		Ref<Font> font;
 
 		int font_size = 0;
@@ -153,6 +155,9 @@ public:
 	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
 	TextServer::AutowrapMode get_autowrap_mode() const;
 
+	void set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags);
+	BitField<TextServer::LineBreakFlag> get_autowrap_trim_flags() const;
+
 	void set_justification_flags(BitField<TextServer::JustificationFlag> p_flags);
 	BitField<TextServer::JustificationFlag> get_justification_flags() const;
 
@@ -196,5 +201,3 @@ public:
 	Label(const String &p_text = String());
 	~Label();
 };
-
-#endif // LABEL_H

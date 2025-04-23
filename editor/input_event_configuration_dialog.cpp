@@ -668,13 +668,13 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	input_list_search = memnew(LineEdit);
 	input_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	input_list_search->set_placeholder(TTR("Filter Inputs"));
+	input_list_search->set_accessibility_name(TTRC("Filter Inputs"));
 	input_list_search->set_clear_button_enabled(true);
 	input_list_search->connect(SceneStringName(text_changed), callable_mp(this, &InputEventConfigurationDialog::_search_term_updated));
 	manual_vbox->add_child(input_list_search);
 
 	input_list_tree = memnew(Tree);
 	input_list_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	input_list_tree->set_custom_minimum_size(Size2(0, 300 * EDSCALE)); // Min height for tree
 	input_list_tree->connect("item_activated", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_activated));
 	input_list_tree->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
 	input_list_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -709,6 +709,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 		device_id_option->add_item(EventListenerLineEdit::get_device_string(i));
 	}
 	device_id_option->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_device_selection_changed));
+	device_id_option->set_accessibility_name(TTRC("Device"));
 	_set_current_device(InputMap::ALL_DEVICES);
 	device_container->add_child(device_id_option);
 
@@ -763,6 +764,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	key_location->add_item(TTR("Left"), (int)KeyLocation::LEFT);
 	key_location->add_item(TTR("Right"), (int)KeyLocation::RIGHT);
 	key_location->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_key_location_selected));
+	key_location->set_accessibility_name(TTRC("Location"));
 
 	location_container->add_child(key_location);
 	additional_options_container->add_child(location_container);

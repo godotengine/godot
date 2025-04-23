@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_RUN_H
-#define EDITOR_RUN_H
+#pragma once
 
 #include "core/os/os.h"
 
@@ -44,6 +43,14 @@ public:
 	};
 
 	List<OS::ProcessID> pids;
+
+	struct WindowPlacement {
+		int screen = 0;
+		Point2i position = Point2i(INT_MAX, INT_MAX);
+		Size2i size;
+		bool force_maximized = false;
+		bool force_fullscreen = false;
+	};
 
 private:
 	Status status;
@@ -64,7 +71,7 @@ public:
 	int get_child_process_count() const { return pids.size(); }
 	OS::ProcessID get_current_process() const;
 
+	static WindowPlacement get_window_placement();
+
 	EditorRun();
 };
-
-#endif // EDITOR_RUN_H

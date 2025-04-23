@@ -374,7 +374,9 @@ void Node2D::set_transform(const Transform2D &p_transform) {
 	transform = p_transform;
 	_set_xform_dirty(true);
 
-	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), transform);
+	if (!_is_using_identity_transform()) {
+		RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), transform);
+	}
 
 	_notify_transform();
 }
@@ -427,6 +429,13 @@ Point2 Node2D::to_global(Point2 p_local) const {
 
 void Node2D::_notification(int p_notification) {
 	switch (p_notification) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_MAIN_THREAD_GUARD;
 

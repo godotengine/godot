@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_SETTINGS_DIALOG_H
-#define EDITOR_SETTINGS_DIALOG_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 
@@ -137,7 +136,4 @@ public:
 	static void update_navigation_preset();
 
 	EditorSettingsDialog();
-	~EditorSettingsDialog();
 };
-
-#endif // EDITOR_SETTINGS_DIALOG_H

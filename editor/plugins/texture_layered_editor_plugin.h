@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_LAYERED_EDITOR_PLUGIN_H
-#define TEXTURE_LAYERED_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
@@ -41,6 +40,10 @@ class ColorChannelSelector;
 
 class TextureLayeredEditor : public Control {
 	GDCLASS(TextureLayeredEditor, Control);
+
+	struct ThemeCache {
+		Color outline_color;
+	} theme_cache;
 
 	SpinBox *layer = nullptr;
 	Label *info = nullptr;
@@ -56,6 +59,8 @@ class TextureLayeredEditor : public Control {
 	bool setting = false;
 
 	ColorChannelSelector *channel_selector = nullptr;
+
+	void _draw_outline();
 
 	void _make_shaders();
 	void _update_material(bool p_texture_changed);
@@ -83,7 +88,6 @@ public:
 	void edit(Ref<TextureLayered> p_texture);
 
 	TextureLayeredEditor();
-	~TextureLayeredEditor();
 };
 
 class EditorInspectorPluginLayeredTexture : public EditorInspectorPlugin {
@@ -102,5 +106,3 @@ public:
 
 	TextureLayeredEditorPlugin();
 };
-
-#endif // TEXTURE_LAYERED_EDITOR_PLUGIN_H

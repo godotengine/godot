@@ -91,8 +91,59 @@ Control::CursorShape SplitContainerDragger::get_cursor_shape(const Point2 &p_pos
 	return Control::get_cursor_shape(p_pos);
 }
 
+void SplitContainerDragger::_accessibility_action_inc(const Variant &p_data) {
+	SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
+
+	if (sc->collapsed || !sc->_get_sortable_child(0) || !sc->_get_sortable_child(1) || !sc->dragging_enabled) {
+		return;
+	}
+	sc->split_offset -= 10;
+	sc->_compute_split_offset(true);
+	sc->queue_sort();
+}
+
+void SplitContainerDragger::_accessibility_action_dec(const Variant &p_data) {
+	SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
+
+	if (sc->collapsed || !sc->_get_sortable_child(0) || !sc->_get_sortable_child(1) || !sc->dragging_enabled) {
+		return;
+	}
+	sc->split_offset += 10;
+	sc->_compute_split_offset(true);
+	sc->queue_sort();
+}
+
+void SplitContainerDragger::_accessibility_action_set_value(const Variant &p_data) {
+	SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
+
+	if (sc->collapsed || !sc->_get_sortable_child(0) || !sc->_get_sortable_child(1) || !sc->dragging_enabled) {
+		return;
+	}
+	sc->split_offset = p_data;
+	sc->_compute_split_offset(true);
+	sc->queue_sort();
+}
+
 void SplitContainerDragger::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPLITTER);
+
+			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
+			if (sc->collapsed || !sc->_get_sortable_child(0) || !sc->_get_sortable_child(1) || !sc->dragging_enabled) {
+				return;
+			}
+			sc->_compute_split_offset(true);
+			DisplayServer::get_singleton()->accessibility_update_set_num_value(ae, sc->split_offset);
+
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_DECREMENT, callable_mp(this, &SplitContainerDragger::_accessibility_action_dec));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_INCREMENT, callable_mp(this, &SplitContainerDragger::_accessibility_action_inc));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &SplitContainerDragger::_accessibility_action_set_value));
+		} break;
+
 		case NOTIFICATION_MOUSE_ENTER: {
 			mouse_inside = true;
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
@@ -124,7 +175,11 @@ void SplitContainerDragger::_notification(int p_what) {
 	}
 }
 
-Control *SplitContainer::_get_sortable_child(int p_idx, SortableVisbilityMode p_visibility_mode) const {
+SplitContainerDragger::SplitContainerDragger() {
+	set_focus_mode(FOCUS_ACCESSIBILITY);
+}
+
+Control *SplitContainer::_get_sortable_child(int p_idx, SortableVisibilityMode p_visibility_mode) const {
 	int idx = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *c = as_sortable_control(get_child(i, false), p_visibility_mode);
@@ -257,7 +312,7 @@ Size2 SplitContainer::get_minimum_size() const {
 	int sep = _get_separation();
 
 	for (int i = 0; i < 2; i++) {
-		Control *child = _get_sortable_child(i, SortableVisbilityMode::VISIBLE);
+		Control *child = _get_sortable_child(i, SortableVisibilityMode::VISIBLE);
 		if (!child) {
 			break;
 		}

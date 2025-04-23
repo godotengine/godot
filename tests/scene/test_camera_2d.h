@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_CAMERA_2D_H
-#define TEST_CAMERA_2D_H
+#pragma once
 
 #include "scene/2d/camera_2d.h"
 #include "scene/main/viewport.h"
@@ -286,7 +285,7 @@ TEST_CASE("[SceneTree][Camera2D] Transforms") {
 	}
 
 	SUBCASE("Rotation") {
-		test_camera->set_rotation(Math_PI / 2);
+		test_camera->set_rotation(Math::PI / 2);
 		Transform2D xform = mock_viewport->get_canvas_transform();
 		Transform2D test_xform = Transform2D(Vector2(1, 0), Vector2(0, 1), Vector2(200, 100));
 		CHECK(xform.is_equal_approx(test_xform));
@@ -296,7 +295,7 @@ TEST_CASE("[SceneTree][Camera2D] Transforms") {
 		test_xform = Transform2D(Vector2(0, -1), Vector2(1, 0), Vector2(200, 100));
 		CHECK(xform.is_equal_approx(test_xform));
 
-		test_camera->set_rotation(-1 * Math_PI);
+		test_camera->set_rotation(-1 * Math::PI);
 		test_camera->force_update_scroll();
 		xform = mock_viewport->get_canvas_transform();
 		test_xform = Transform2D(Vector2(-1, 0), Vector2(0, -1), Vector2(200, 100));
@@ -314,5 +313,3 @@ TEST_CASE("[SceneTree][Camera2D] Transforms") {
 }
 
 } // namespace TestCamera2D
-
-#endif // TEST_CAMERA_2D_H

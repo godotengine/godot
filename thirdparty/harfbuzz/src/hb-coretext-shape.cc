@@ -45,9 +45,6 @@
  * Functions for using HarfBuzz with the CoreText fonts.
  **/
 
-/* https://developer.apple.com/documentation/coretext/1508745-ctfontcreatewithgraphicsfont */
-#define HB_CORETEXT_DEFAULT_FONT_SIZE 12.f
-
 static CTFontRef create_ct_font (CGFontRef cg_font, CGFloat font_size);
 
 static void
@@ -384,9 +381,9 @@ hb_coretext_face_create_from_file_or_fail (const char   *file_name,
 		      (CTFontDescriptorRef) CFArrayGetValueAtIndex (ct_font_desc_array, index) : nullptr;
   if (unlikely (!ct_font_desc))
   {
-	  CFRelease (ct_font_desc_array);
-	  CFRelease (url);
-	  return nullptr;
+    CFRelease (ct_font_desc_array);
+    CFRelease (url);
+    return nullptr;
   }
   CFRelease (url);
   auto ct_font = ct_font_desc ? CTFontCreateWithFontDescriptor (ct_font_desc, 0, nullptr) : nullptr;
@@ -400,6 +397,7 @@ hb_coretext_face_create_from_file_or_fail (const char   *file_name,
     return nullptr;
 
   hb_face_t *face = hb_coretext_face_create (cg_font);
+  CFRelease (cg_font);
   if (unlikely (hb_face_is_immutable (face)))
     return nullptr;
 
@@ -432,7 +430,7 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
   if (unlikely (!face_data)) return nullptr;
   CGFontRef cg_font = (CGFontRef) (const void *) face->data.coretext;
 
-  CGFloat font_size = (CGFloat) (font->ptem <= 0.f ? HB_CORETEXT_DEFAULT_FONT_SIZE : font->ptem);
+  CGFloat font_size = (CGFloat) (font->ptem > 0.f ? font->ptem : HB_CORETEXT_DEFAULT_FONT_SIZE);
   CTFontRef ct_font = create_ct_font (cg_font, font_size);
 
   if (unlikely (!ct_font))
@@ -451,11 +449,11 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
 
     for (unsigned i = 0; i < font->num_coords; i++)
     {
-      if (font->coords[i] == 0.) continue;
-
       hb_ot_var_axis_info_t info;
       unsigned int c = 1;
       hb_ot_var_get_axis_infos (font->face, i, &c, &info);
+      if (font->design_coords[i] == info.default_value)
+	continue;
       float v = hb_clamp (font->design_coords[i], info.min_value, info.max_value);
 
       CFNumberRef tag_number = CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &info.tag);
@@ -499,7 +497,7 @@ _hb_coretext_shaper_font_data_destroy (hb_coretext_font_data_t *data)
  * CTFontRef.
  *
  * The created font uses the default font functions implemented
- * navitely by HarfBuzz. If you want to use the CoreText font functions
+ * natively by HarfBuzz. If you want to use the CoreText font functions
  * instead (rarely needed), you can do so by calling
  * by hb_coretext_font_set_funcs().
  *
@@ -520,6 +518,36 @@ hb_coretext_font_create (CTFontRef ct_font)
     return font;
 
   hb_font_set_ptem (font, CTFontGetSize (ct_font));
+
+  /* Copy font variations */
+  CFDictionaryRef variations = CTFontCopyVariation (ct_font);
+  if (variations)
+  {
+    hb_vector_t<hb_variation_t> vars;
+    hb_vector_t<CFTypeRef> keys;
+    hb_vector_t<CFTypeRef> values;
+
+    CFIndex count = CFDictionaryGetCount (variations);
+    if (unlikely (!vars.alloc_exact (count) || !keys.resize_exact (count) || !values.resize_exact (count)))
+      goto done;
+
+    // Fetch them one by one and collect in a vector of our own.
+    CFDictionaryGetKeysAndValues (variations, keys.arrayZ, values.arrayZ);
+    for (CFIndex i = 0; i < count; i++)
+    {
+      int tag;
+      float value;
+      CFNumberGetValue ((CFNumberRef) keys.arrayZ[i], kCFNumberIntType, &tag);
+      CFNumberGetValue ((CFNumberRef) values.arrayZ[i], kCFNumberFloatType, &value);
+
+      hb_variation_t var = {tag, value};
+      vars.push (var);
+    }
+    hb_font_set_variations (font, vars.arrayZ, vars.length);
+
+done:
+    CFRelease (variations);
+  }
 
   /* Let there be dragons here... */
   font->data.coretext.cmpexch (nullptr, (hb_coretext_font_data_t *) CFRetain (ct_font));

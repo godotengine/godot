@@ -676,7 +676,7 @@
 		<method name="get_tracked_object_type_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns how many types of trackable objects are.
+				Returns how many types of trackable objects there are.
 				This is only used by Vulkan in debug builds. Godot must also be started with the [code]--extra-gpu-memory-tracking[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			</description>
 		</method>
@@ -703,11 +703,10 @@
 			<param index="1" name="format" type="int" enum="RenderingDevice.IndexBufferFormat" />
 			<param index="2" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<param index="3" name="use_restart_indices" type="bool" default="false" />
-			<param index="4" name="enable_device_address" type="bool" default="false" />
+			<param index="4" name="creation_bits" type="int" enum="RenderingDevice.BufferCreationBits" is_bitfield="true" default="0" />
 			<description>
 				Creates a new index buffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
-				Optionally, set [param enable_device_address] if you wish to use [method buffer_get_device_address] functionality and the GPU supports it.
 			</description>
 		</method>
 		<method name="limit_get" qualifiers="const">
@@ -847,6 +846,7 @@
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<param index="2" name="usage" type="int" enum="RenderingDevice.StorageBufferUsage" is_bitfield="true" default="0" />
+			<param index="3" name="creation_bits" type="int" enum="RenderingDevice.BufferCreationBits" is_bitfield="true" default="0" />
 			<description>
 				Creates a [url=https://vkguide.dev/docs/chapter-4/storage_buffers/]storage buffer[/url] with the specified [param data] and [param usage]. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
@@ -1073,11 +1073,10 @@
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
-			<param index="2" name="enable_device_address" type="bool" default="false" />
+			<param index="2" name="creation_bits" type="int" enum="RenderingDevice.BufferCreationBits" is_bitfield="true" default="0" />
 			<description>
 				Creates a new uniform buffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
-				Optionally, set [param enable_device_address] if you wish to use [method buffer_get_device_address] functionality and the GPU supports it.
 			</description>
 		</method>
 		<method name="uniform_set_create">
@@ -1111,12 +1110,10 @@
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
-			<param index="2" name="use_as_storage" type="bool" default="false" />
-			<param index="3" name="enable_device_address" type="bool" default="false" />
+			<param index="2" name="creation_bits" type="int" enum="RenderingDevice.BufferCreationBits" is_bitfield="true" default="0" />
 			<description>
-				It can be accessed with the RID that is returned.
+				Creates a new vertex buffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
-				Optionally, set [param enable_device_address] if you wish to use [method buffer_get_device_address] functionality and the GPU supports it.
 			</description>
 		</method>
 		<method name="vertex_format_create">
@@ -1305,7 +1302,7 @@
 			8-bit-per-channel signed integer red/green/blue channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8_SRGB" value="28" enum="DataFormat">
-			8-bit-per-channel unsigned floating-point red/green/blue/blue channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
+			8-bit-per-channel unsigned floating-point red/green/blue channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8_UNORM" value="29" enum="DataFormat">
 			8-bit-per-channel unsigned floating-point blue/green/red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
@@ -1874,7 +1871,35 @@
 		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM" value="217" enum="DataFormat">
 			16-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Stored across 3 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
-		<constant name="DATA_FORMAT_MAX" value="218" enum="DataFormat">
+		<constant name="DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK" value="218" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_5x4_SFLOAT_BLOCK" value="219" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_5x5_SFLOAT_BLOCK" value="220" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_6x5_SFLOAT_BLOCK" value="221" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK" value="222" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x5_SFLOAT_BLOCK" value="223" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x6_SFLOAT_BLOCK" value="224" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK" value="225" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x5_SFLOAT_BLOCK" value="226" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x6_SFLOAT_BLOCK" value="227" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x8_SFLOAT_BLOCK" value="228" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x10_SFLOAT_BLOCK" value="229" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_12x10_SFLOAT_BLOCK" value="230" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK" value="231" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_MAX" value="232" enum="DataFormat">
 			Represents the size of the [enum DataFormat] enum.
 		</constant>
 		<constant name="BARRIER_MASK_VERTEX" value="1" enum="BarrierMask" is_bitfield="true">
@@ -2068,8 +2093,20 @@
 		</constant>
 		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage" is_bitfield="true">
 		</constant>
-		<constant name="STORAGE_BUFFER_USAGE_DEVICE_ADDRESS" value="2" enum="StorageBufferUsage" is_bitfield="true">
-			Allows usage of [method buffer_get_device_address] on supported GPUs.
+		<constant name="BUFFER_CREATION_DEVICE_ADDRESS_BIT" value="1" enum="BufferCreationBits" is_bitfield="true">
+			Optionally, set this flag if you wish to use [method buffer_get_device_address] functionality. You must first check the GPU supports it:
+			[codeblocks]
+			[gdscript]
+			rd = RenderingServer.get_rendering_device()
+
+			if rd.has_feature(RenderingDevice.SUPPORTS_BUFFER_DEVICE_ADDRESS):
+			      storage_buffer = rd.storage_buffer_create(bytes.size(), bytes, RenderingDevice.STORAGE_BUFFER_USAGE_SHADER_DEVICE_ADDRESS):
+			      storage_buffer_address = rd.buffer_get_device_address(storage_buffer)
+			[/gdscript]
+			[/codeblocks]
+		</constant>
+		<constant name="BUFFER_CREATION_AS_STORAGE_BIT" value="2" enum="BufferCreationBits" is_bitfield="true">
+			Set this flag so that it is created as storage. This is useful if Compute Shaders need access (for reading or writing) to the buffer, e.g. skeletal animations are processed in Compute Shaders which need access to vertex buffers, to be later consumed by vertex shaders as part of the regular rasterization pipeline.
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
 			Sampler uniform.
@@ -2441,6 +2478,12 @@
 		</constant>
 		<constant name="PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT" value="2" enum="PipelineSpecializationConstantType">
 			Floating-point specialization constant.
+		</constant>
+		<constant name="SUPPORTS_METALFX_SPATIAL" value="3" enum="Features">
+			Support for MetalFX spatial upscaling.
+		</constant>
+		<constant name="SUPPORTS_METALFX_TEMPORAL" value="4" enum="Features">
+			Support for MetalFX temporal upscaling.
 		</constant>
 		<constant name="SUPPORTS_BUFFER_DEVICE_ADDRESS" value="6" enum="Features">
 			Features support for buffer device address extension.

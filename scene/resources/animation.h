@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_H
-#define ANIMATION_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/templates/local_vector.h"
@@ -44,6 +43,7 @@ public:
 	typedef uint32_t TypeHash;
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
+	static inline constexpr real_t DEFAULT_STEP = 1.0 / 30;
 
 	enum TrackType : uint8_t {
 		TYPE_VALUE, // Set a value in a property, can be interpolated.
@@ -281,7 +281,7 @@ private:
 	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
 
 	double length = 1.0;
-	real_t step = 1.0 / 30;
+	real_t step = DEFAULT_STEP;
 	LoopMode loop_mode = LOOP_NONE;
 	bool capture_included = false;
 	void _check_capture_included();
@@ -335,7 +335,7 @@ private:
 	 * data for X / Blend Shape, Y and Z must be normalized first: unorm = float(data) / 65535.0
 	 * **Blend Shape**: (unorm * 2.0 - 1.0) * Compression::BLEND_SHAPE_RANGE
 	 * **Pos/Scale**: unorm_vec3 * bounds[track].size + bounds[track].position
-	 * **Rotation**: Quaternion(Vector3::octahedron_decode(unorm_vec3.xy),unorm_vec3.z * Math_PI * 2.0)
+	 * **Rotation**: Quaternion(Vector3::octahedron_decode(unorm_vec3.xy),unorm_vec3.z * Math::PI * 2.0)
 	 * **Frame**: page.time_offset + frame * (1.0/fps)
 	 */
 
@@ -586,5 +586,3 @@ VARIANT_ENUM_CAST(Animation::FindMode);
 VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::HandleSetMode);
 #endif // TOOLS_ENABLED
-
-#endif // ANIMATION_H

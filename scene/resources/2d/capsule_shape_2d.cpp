@@ -36,7 +36,7 @@
 
 Vector<Vector2> CapsuleShape2D::_get_points() const {
 	Vector<Vector2> points;
-	const real_t turn_step = Math_TAU / 24.0;
+	const real_t turn_step = Math::TAU / 24.0;
 	for (int i = 0; i < 24; i++) {
 		Vector2 ofs = Vector2(0, (i > 6 && i <= 18) ? -height * 0.5 + radius : height * 0.5 - radius);
 
@@ -60,6 +60,9 @@ void CapsuleShape2D::_update_shape() {
 
 void CapsuleShape2D::set_radius(real_t p_radius) {
 	ERR_FAIL_COND_MSG(p_radius < 0, "CapsuleShape2D radius cannot be negative.");
+	if (radius == p_radius) {
+		return;
+	}
 	radius = p_radius;
 	if (radius > height * 0.5) {
 		height = radius * 2.0;
@@ -73,6 +76,9 @@ real_t CapsuleShape2D::get_radius() const {
 
 void CapsuleShape2D::set_height(real_t p_height) {
 	ERR_FAIL_COND_MSG(p_height < 0, "CapsuleShape2D height cannot be negative.");
+	if (height == p_height) {
+		return;
+	}
 	height = p_height;
 	if (radius > height * 0.5) {
 		radius = height * 0.5;

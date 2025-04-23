@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_SPACE_3D_H
-#define JOLT_SPACE_3D_H
+#pragma once
 
 #include "jolt_body_accessor_3d.h"
 
@@ -45,8 +44,6 @@
 #include "Jolt/Physics/Constraints/Constraint.h"
 #include "Jolt/Physics/PhysicsSystem.h"
 
-#include <stdint.h>
-
 class JoltArea3D;
 class JoltBody3D;
 class JoltContactListener3D;
@@ -59,6 +56,7 @@ class JoltShapedObject3D;
 class JoltSpace3D {
 	SelfList<JoltBody3D>::List body_call_queries_list;
 	SelfList<JoltArea3D>::List area_call_queries_list;
+	SelfList<JoltShapedObject3D>::List shapes_changed_list;
 	SelfList<JoltShapedObject3D>::List needs_optimization_list;
 
 	RID rid;
@@ -142,6 +140,9 @@ public:
 	void dequeue_call_queries(SelfList<JoltBody3D> *p_body);
 	void dequeue_call_queries(SelfList<JoltArea3D> *p_area);
 
+	void enqueue_shapes_changed(SelfList<JoltShapedObject3D> *p_object);
+	void dequeue_shapes_changed(SelfList<JoltShapedObject3D> *p_object);
+
 	void enqueue_needs_optimization(SelfList<JoltShapedObject3D> *p_object);
 	void dequeue_needs_optimization(SelfList<JoltShapedObject3D> *p_object);
 
@@ -158,5 +159,3 @@ public:
 	void set_max_debug_contacts(int p_count);
 #endif
 };
-
-#endif // JOLT_SPACE_3D_H

@@ -118,6 +118,8 @@ ParticlesEditorPlugin::ParticlesEditorPlugin() {
 
 	menu = memnew(MenuButton);
 	menu->set_switch_on_hover(true);
+	menu->set_flat(false);
+	menu->set_theme_type_variation("FlatMenuButton");
 	toolbar->add_child(menu);
 	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ParticlesEditorPlugin::_menu_callback));
 }
@@ -291,22 +293,29 @@ Particles2DEditorPlugin::Particles2DEditorPlugin() {
 	emission_mask->connect(SceneStringName(confirmed), callable_mp(this, &Particles2DEditorPlugin::_generate_emission_mask));
 }
 
-void GPUParticles2DEditorPlugin::_selection_changed() {
-	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
+void Particles2DEditorPlugin::_selection_changed() {
+	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
 	if (selected_particles.is_empty() && selected_nodes.is_empty()) {
 		return;
 	}
 
-	for (GPUParticles2D *particles : selected_particles) {
-		particles->set_show_visibility_rect(false);
+	for (Node *particles : selected_particles) {
+		if (GPUParticles2D *gpu_particles = Object::cast_to<GPUParticles2D>(particles)) {
+			gpu_particles->set_show_gizmos(false);
+		} else if (CPUParticles2D *cpu_particles = Object::cast_to<CPUParticles2D>(particles)) {
+			cpu_particles->set_show_gizmos(false);
+		}
 	}
+
 	selected_particles.clear();
 
 	for (Node *node : selected_nodes) {
-		GPUParticles2D *selected_particle = Object::cast_to<GPUParticles2D>(node);
-		if (selected_particle) {
-			selected_particle->set_show_visibility_rect(true);
-			selected_particles.push_back(selected_particle);
+		if (GPUParticles2D *selected_gpu_particle = Object::cast_to<GPUParticles2D>(node)) {
+			selected_gpu_particle->set_show_gizmos(true);
+			selected_particles.push_back(selected_gpu_particle);
+		} else if (CPUParticles2D *selected_cpu_particle = Object::cast_to<CPUParticles2D>(node)) {
+			selected_cpu_particle->set_show_gizmos(true);
+			selected_particles.push_back(selected_cpu_particle);
 		}
 	}
 }
@@ -353,10 +362,10 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 	undo_redo->commit_action();
 }
 
-void GPUParticles2DEditorPlugin::_notification(int p_what) {
+void Particles2DEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
+			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &Particles2DEditorPlugin::_selection_changed));
 		} break;
 	}
 }
@@ -649,7 +658,7 @@ void Particles3DEditorPlugin::_node_selected(const NodePath &p_path) {
 	}
 
 	geometry = mi->get_mesh()->get_faces();
-	if (geometry.size() == 0) {
+	if (geometry.is_empty()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain face geometry."), sel->get_name()));
 		return;
 	}
@@ -819,6 +828,7 @@ Particles3DEditorPlugin::Particles3DEditorPlugin() {
 	generate_aabb->add_child(genvb);
 
 	generate_seconds = memnew(SpinBox);
+	generate_seconds->set_accessibility_name(TTRC("Generation Time"));
 	generate_seconds->set_min(0.1);
 	generate_seconds->set_max(25);
 	generate_seconds->set_value(2);
@@ -843,12 +853,14 @@ Particles3DEditorPlugin::Particles3DEditorPlugin() {
 	emission_dialog->add_child(emd_vb);
 
 	emission_amount = memnew(SpinBox);
+	emission_amount->set_accessibility_name(TTRC("Emission Points"));
 	emission_amount->set_min(1);
 	emission_amount->set_max(100000);
 	emission_amount->set_value(512);
 	emd_vb->add_margin_child(TTR("Emission Points:"), emission_amount);
 
 	emission_fill = memnew(OptionButton);
+	emission_fill->set_accessibility_name(TTRC("Emission Source"));
 	emission_fill->add_item(TTR("Surface Points"));
 	emission_fill->add_item(TTR("Surface Points+Normal (Directed)"));
 	emission_fill->add_item(TTR("Volume"));

@@ -58,7 +58,8 @@ void HistoryDock::refresh_history() {
 	bool include_global = global_history_checkbox->is_pressed();
 
 	if (!include_scene && !include_global) {
-		action_list->add_item(TTR("The Beginning"));
+		action_list->add_item(TTRC("The Beginning"));
+		action_list->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 		return;
 	}
 
@@ -107,7 +108,8 @@ void HistoryDock::refresh_history() {
 		}
 	}
 
-	action_list->add_item(TTR("The Beginning"));
+	action_list->add_item(TTRC("The Beginning"));
+	action_list->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 	refresh_version();
 }
 
@@ -250,17 +252,19 @@ HistoryDock::HistoryDock() {
 	current_scene_checkbox = memnew(CheckBox);
 	mode_hb->add_child(current_scene_checkbox);
 	current_scene_checkbox->set_flat(true);
-	current_scene_checkbox->set_text(TTR("Scene"));
+	current_scene_checkbox->set_text(TTRC("Scene"));
 	current_scene_checkbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	current_scene_checkbox->set_clip_text(true);
+	current_scene_checkbox->set_pressed(true);
 	current_scene_checkbox->connect(SceneStringName(toggled), callable_mp(this, &HistoryDock::refresh_history).unbind(1));
 
 	global_history_checkbox = memnew(CheckBox);
 	mode_hb->add_child(global_history_checkbox);
 	global_history_checkbox->set_flat(true);
-	global_history_checkbox->set_text(TTR("Global"));
+	global_history_checkbox->set_text(TTRC("Global"));
 	global_history_checkbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	global_history_checkbox->set_clip_text(true);
+	global_history_checkbox->set_pressed(true);
 	global_history_checkbox->connect(SceneStringName(toggled), callable_mp(this, &HistoryDock::refresh_history).unbind(1));
 
 	action_list = memnew(ItemList);

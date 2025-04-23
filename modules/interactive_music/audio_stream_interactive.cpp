@@ -123,9 +123,9 @@ void AudioStreamInteractive::set_clip_stream(int p_clip, const Ref<AudioStream> 
 		if (clips[p_clip].name == StringName() && p_stream.is_valid()) {
 			String n;
 			if (!clips[p_clip].stream->get_name().is_empty()) {
-				n = clips[p_clip].stream->get_name().replace(",", " ");
+				n = clips[p_clip].stream->get_name().replace_char(',', ' ');
 			} else if (clips[p_clip].stream->get_path().is_resource_file()) {
-				n = clips[p_clip].stream->get_path().get_file().get_basename().replace(",", " ");
+				n = clips[p_clip].stream->get_path().get_file().get_basename().replace_char(',', ' ');
 				n = n.capitalize();
 			}
 
@@ -173,11 +173,9 @@ int AudioStreamInteractive::get_clip_auto_advance_next_clip(int p_clip) const {
 // TRANSITIONS
 
 void AudioStreamInteractive::_set_transitions(const Dictionary &p_transitions) {
-	List<Variant> keys;
-	p_transitions.get_key_list(&keys);
-	for (const Variant &K : keys) {
-		Vector2i k = K;
-		Dictionary data = p_transitions[K];
+	for (const KeyValue<Variant, Variant> &kv : p_transitions) {
+		Vector2i k = kv.key;
+		Dictionary data = kv.value;
 		ERR_CONTINUE(!data.has("from_time"));
 		ERR_CONTINUE(!data.has("to_time"));
 		ERR_CONTINUE(!data.has("fade_mode"));
@@ -397,13 +395,13 @@ String AudioStreamInteractive::_get_streams_hint() const {
 		if (i > 0) {
 			stream_name_cache += ",";
 		}
-		String n = String(clips[i].name).replace(",", " ");
+		String n = String(clips[i].name).replace_char(',', ' ');
 
 		if (n == "" && clips[i].stream.is_valid()) {
 			if (!clips[i].stream->get_name().is_empty()) {
-				n = clips[i].stream->get_name().replace(",", " ");
+				n = clips[i].stream->get_name().replace_char(',', ' ');
 			} else if (clips[i].stream->get_path().is_resource_file()) {
-				n = clips[i].stream->get_path().get_file().replace(",", " ");
+				n = clips[i].stream->get_path().get_file().replace_char(',', ' ');
 			}
 		}
 

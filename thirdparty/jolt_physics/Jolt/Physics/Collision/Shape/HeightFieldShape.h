@@ -69,14 +69,14 @@ public:
 	/// The height field is a surface defined by: mOffset + mScale * (x, mHeightSamples[y * mSampleCount + x], y).
 	/// where x and y are integers in the range x and y e [0, mSampleCount - 1].
 	Vec3							mOffset = Vec3::sZero();
-	Vec3							mScale = Vec3::sReplicate(1.0f);
+	Vec3							mScale = Vec3::sOne();
 	uint32							mSampleCount = 0;
 
 	/// Artificial minimal value of mHeightSamples, used for compression and can be used to update the terrain after creating with lower height values. If there are any lower values in mHeightSamples, this value will be ignored.
-	float							mMinHeightValue = FLT_MAX;
+	float							mMinHeightValue = cLargeFloat;
 
 	/// Artificial maximum value of mHeightSamples, used for compression and can be used to update the terrain after creating with higher height values. If there are any higher values in mHeightSamples, this value will be ignored.
-	float							mMaxHeightValue = -FLT_MAX;
+	float							mMaxHeightValue = -cLargeFloat;
 
 	/// When bigger than mMaterials.size() the internal material list will be preallocated to support this number of materials.
 	/// This avoids reallocations when calling HeightFieldShape::SetMaterials with new materials later.
@@ -349,7 +349,7 @@ private:
 	/// The height field is a surface defined by: mOffset + mScale * (x, mHeightSamples[y * mSampleCount + x], y).
 	/// where x and y are integers in the range x and y e [0, mSampleCount - 1].
 	Vec3							mOffset = Vec3::sZero();
-	Vec3							mScale = Vec3::sReplicate(1.0f);
+	Vec3							mScale = Vec3::sOne();
 
 	/// Height data
 	uint32							mSampleCount = 0;							///< See HeightFieldShapeSettings::mSampleCount

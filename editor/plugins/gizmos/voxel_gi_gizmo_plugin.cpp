@@ -51,9 +51,6 @@ VoxelGIGizmoPlugin::VoxelGIGizmoPlugin() {
 	create_handle_material("handles");
 }
 
-VoxelGIGizmoPlugin::~VoxelGIGizmoPlugin() {
-}
-
 bool VoxelGIGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<VoxelGI>(p_spatial) != nullptr;
 }

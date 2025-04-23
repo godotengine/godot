@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DICTIONARY_H
-#define DICTIONARY_H
+#pragma once
 
 #include "core/string/ustring.h"
-#include "core/templates/list.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/pair.h"
 #include "core/variant/array.h"
 
@@ -40,6 +40,8 @@ class Variant;
 
 struct ContainerType;
 struct DictionaryPrivate;
+struct StringLikeVariantComparator;
+struct VariantHasher;
 
 class Dictionary {
 	mutable DictionaryPrivate *_p;
@@ -48,7 +50,12 @@ class Dictionary {
 	void _unref() const;
 
 public:
-	void get_key_list(List<Variant> *p_keys) const;
+	using ConstIterator = HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator;
+
+	ConstIterator begin() const;
+	ConstIterator end() const;
+
+	LocalVector<Variant> get_key_list() const;
 	Variant get_key_at_index(int p_index) const;
 	Variant get_value_at_index(int p_index) const;
 
@@ -123,5 +130,3 @@ public:
 	Dictionary();
 	~Dictionary();
 };
-
-#endif // DICTIONARY_H

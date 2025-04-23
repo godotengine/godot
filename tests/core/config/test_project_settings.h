@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_PROJECT_SETTINGS_H
-#define TEST_PROJECT_SETTINGS_H
+#pragma once
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -113,7 +112,7 @@ TEST_CASE("[ProjectSettings] localize_path") {
 	TestProjectSettingsInternalsAccessor::resource_path() = DirAccess::create(DirAccess::ACCESS_FILESYSTEM)->get_current_dir();
 	String root_path = ProjectSettings::get_singleton()->get_resource_path();
 #ifdef WINDOWS_ENABLED
-	String root_path_win = ProjectSettings::get_singleton()->get_resource_path().replace("/", "\\");
+	String root_path_win = ProjectSettings::get_singleton()->get_resource_path().replace_char('/', '\\');
 #endif
 
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("filename"), "res://filename");
@@ -160,5 +159,3 @@ TEST_CASE("[ProjectSettings] localize_path") {
 }
 
 } // namespace TestProjectSettings
-
-#endif // TEST_PROJECT_SETTINGS_H

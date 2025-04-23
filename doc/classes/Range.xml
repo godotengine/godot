@@ -45,7 +45,7 @@
 			If [code]true[/code], [member value] may be less than [member min_value].
 		</member>
 		<member name="exp_edit" type="bool" setter="set_exp_ratio" getter="is_ratio_exp" default="false">
-			If [code]true[/code], and [member min_value] is greater than 0, [member value] will be represented exponentially rather than linearly.
+			If [code]true[/code], and [member min_value] is greater or equal to [code]0[/code], [member value] will be represented exponentially rather than linearly.
 		</member>
 		<member name="max_value" type="float" setter="set_max" getter="get_max" default="100.0">
 			Maximum value. Range is clamped if [member value] is greater than [member max_value].

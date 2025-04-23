@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_FUNCTION_H
-#define GDSCRIPT_FUNCTION_H
+#pragma once
 
 #include "gdscript_utility_functions.h"
 
@@ -616,11 +615,16 @@ public:
 	bool is_valid(bool p_extended_check = false) const;
 	Variant resume(const Variant &p_arg = Variant());
 
+#ifdef DEBUG_ENABLED
+	// Returns a human-readable representation of the function.
+	String get_readable_function() {
+		return state.function_name;
+	}
+#endif
+
 	void _clear_stack();
 	void _clear_connections();
 
 	GDScriptFunctionState();
 	~GDScriptFunctionState();
 };
-
-#endif // GDSCRIPT_FUNCTION_H

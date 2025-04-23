@@ -28,32 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_CONTEXT_DRIVER_D3D12_H
-#define RENDERING_CONTEXT_DRIVER_D3D12_H
+#pragma once
 
-#include "core/error/error_list.h"
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid_owner.h"
 #include "rendering_device_driver_d3d12.h"
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wswitch"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#elif defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-#pragma clang diagnostic ignored "-Wstring-plus-int"
-#pragma clang diagnostic ignored "-Wswitch"
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
-#endif
 
 #if defined(AS)
 #undef AS
@@ -73,20 +55,14 @@
 #include <dcomp.h>
 #endif
 
-#include "d3dx12.h"
+#include <d3dx12.h>
 #include <dxgi1_6.h>
 
 #include <wrl/client.h>
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#elif defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-
 using Microsoft::WRL::ComPtr;
 
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#define ARRAY_SIZE(a) std::size(a)
 
 class RenderingContextDriverD3D12 : public RenderingContextDriver {
 	ComPtr<ID3D12DeviceFactory> device_factory;
@@ -146,5 +122,3 @@ public:
 	RenderingContextDriverD3D12();
 	virtual ~RenderingContextDriverD3D12() override;
 };
-
-#endif // RENDERING_CONTEXT_DRIVER_D3D12_H

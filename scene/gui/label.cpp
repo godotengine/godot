@@ -55,6 +55,27 @@ TextServer::AutowrapMode Label::get_autowrap_mode() const {
 	return autowrap_mode;
 }
 
+void Label::set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags) {
+	if (autowrap_flags_trim == (p_flags & TextServer::BREAK_TRIM_MASK)) {
+		return;
+	}
+
+	autowrap_flags_trim = p_flags & TextServer::BREAK_TRIM_MASK;
+	for (Paragraph &para : paragraphs) {
+		para.lines_dirty = true;
+	}
+	queue_redraw();
+	update_configuration_warnings();
+
+	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+		update_minimum_size();
+	}
+}
+
+BitField<TextServer::LineBreakFlag> Label::get_autowrap_trim_flags() const {
+	return autowrap_flags_trim;
+}
+
 void Label::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {
 	if (jst_flags == p_flags) {
 		return;
@@ -79,6 +100,7 @@ void Label::set_uppercase(bool p_uppercase) {
 	uppercase = p_uppercase;
 	text_dirty = true;
 
+	queue_accessibility_update();
 	queue_redraw();
 }
 
@@ -91,7 +113,15 @@ int Label::get_line_height(int p_line) const {
 	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
 	int font_h = font->get_height(font_size);
 	if (p_line >= 0 && p_line < total_line_count) {
-		return MAX(font_h, TS->shaped_text_get_size(get_line_rid(p_line)).y);
+		RID rid = get_line_rid(p_line);
+		double asc = TS->shaped_text_get_ascent(rid);
+		double dsc = TS->shaped_text_get_descent(rid);
+		if (asc + dsc < font_h) {
+			double diff = font_h - (asc + dsc);
+			asc += diff / 2;
+			dsc += diff - (diff / 2);
+		}
+		return asc + dsc;
 	} else if (total_line_count > 0) {
 		int h = font_h;
 		for (const Paragraph &para : paragraphs) {
@@ -188,7 +218,7 @@ void Label::_shape() const {
 				case TextServer::AUTOWRAP_OFF:
 					break;
 			}
-			autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
+			autowrap_flags = autowrap_flags | autowrap_flags_trim;
 
 			PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(para.text_rid, width, 0, autowrap_flags);
 			for (int i = 0; i < line_breaks.size(); i = i + 2) {
@@ -228,6 +258,17 @@ void Label::_shape() const {
 		if (para.lines_dirty) {
 			BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
 			switch (overrun_behavior) {
+				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS_FORCE: {
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
+					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
+				} break;
+				case TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE: {
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
+					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
+				} break;
 				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
@@ -357,7 +398,14 @@ void Label::_update_visible() const {
 				break;
 			}
 			for (int i = start; i < end; i++) {
-				minsize.height += MAX(font_h, TS->shaped_text_get_size(para.lines_rid[i]).y) + line_spacing;
+				double asc = TS->shaped_text_get_ascent(para.lines_rid[i]);
+				double dsc = TS->shaped_text_get_descent(para.lines_rid[i]);
+				if (asc + dsc < font_h) {
+					double diff = font_h - (asc + dsc);
+					asc += diff / 2;
+					dsc += diff - (diff / 2);
+				}
+				minsize.height += asc + dsc + line_spacing;
 			}
 			minsize.height += paragraph_spacing;
 			line_index += para.lines_rid.size();
@@ -377,14 +425,15 @@ inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_fo
 	}
 }
 
-inline void draw_glyph_shadow(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_color, int p_shadow_outline_size, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
+inline void draw_glyph_shadow(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_color, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
 	if (p_gl.font_rid != RID()) {
-		if (p_font_shadow_color.a > 0) {
-			TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
-		}
-		if (p_font_shadow_color.a > 0 && p_shadow_outline_size > 0) {
-			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
-		}
+		TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
+	}
+}
+
+inline void draw_glyph_shadow_outline(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_color, int p_shadow_outline_size, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
+	if (p_gl.font_rid != RID()) {
+		TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
 	}
 }
 
@@ -454,8 +503,16 @@ Rect2 Label::_get_line_rect(int p_para, int p_line) const {
 	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
 	int font_h = font->get_height(font_size);
 	Size2 size = get_size();
-	Size2 line_size = TS->shaped_text_get_size(paragraphs[p_para].lines_rid[p_line]);
-	line_size.y = MAX(font_h, line_size.y);
+	RID rid = paragraphs[p_para].lines_rid[p_line];
+	Size2 line_size = TS->shaped_text_get_size(rid);
+	double asc = TS->shaped_text_get_ascent(rid);
+	double dsc = TS->shaped_text_get_descent(rid);
+	if (asc + dsc < font_h) {
+		double diff = font_h - (asc + dsc);
+		asc += diff / 2;
+		dsc += diff - (diff / 2);
+	}
+	line_size.y = asc + dsc;
 	Vector2 offset;
 	switch (horizontal_alignment) {
 		case HORIZONTAL_ALIGNMENT_FILL:
@@ -508,8 +565,15 @@ int Label::get_layout_data(Vector2 &r_offset, int &r_last_line, int &r_line_spac
 		} else {
 			int start = (line_index < lines_skipped) ? lines_skipped - line_index : 0;
 			for (int i = start; i < para.lines_rid.size(); i++) {
-				total_h += MAX(font_h, TS->shaped_text_get_size(para.lines_rid[i]).y) + line_spacing;
-				if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
+				double asc = TS->shaped_text_get_ascent(para.lines_rid[i]);
+				double dsc = TS->shaped_text_get_descent(para.lines_rid[i]);
+				if (asc + dsc < font_h) {
+					double diff = font_h - (asc + dsc);
+					asc += diff / 2;
+					dsc += diff - (diff / 2);
+				}
+				total_h += asc + dsc + line_spacing;
+				if (total_h > Math::ceil(get_size().height - style->get_minimum_size().height + line_spacing)) {
 					break;
 				}
 				lines_visible++;
@@ -539,7 +603,14 @@ int Label::get_layout_data(Vector2 &r_offset, int &r_last_line, int &r_line_spac
 				break;
 			}
 			for (int i = start; i < end; i++) {
-				total_h += MAX(font_h, TS->shaped_text_get_size(para.lines_rid[i]).y) + line_spacing;
+				double asc = TS->shaped_text_get_ascent(para.lines_rid[i]);
+				double dsc = TS->shaped_text_get_descent(para.lines_rid[i]);
+				if (asc + dsc < font_h) {
+					double diff = font_h - (asc + dsc);
+					asc += diff / 2;
+					dsc += diff - (diff / 2);
+				}
+				total_h += asc + dsc + line_spacing;
 				total_glyphs += TS->shaped_text_get_glyph_count(para.lines_rid[i]) + TS->shaped_text_get_ellipsis_glyph_count(para.lines_rid[i]);
 			}
 			total_h += paragraph_spacing;
@@ -622,6 +693,15 @@ PackedStringArray Label::get_configuration_warnings() const {
 
 void Label::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
+			DisplayServer::get_singleton()->accessibility_update_set_value(ae, xl_text);
+			DisplayServer::get_singleton()->accessibility_update_set_text_align(ae, horizontal_alignment);
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			String new_text = atr(text);
 			if (new_text == xl_text) {
@@ -633,6 +713,7 @@ void Label::_notification(int p_what) {
 			}
 			text_dirty = true;
 
+			queue_accessibility_update();
 			queue_redraw();
 			update_configuration_warnings();
 		} break;
@@ -666,7 +747,6 @@ void Label::_notification(int p_what) {
 
 			bool has_settings = settings.is_valid();
 
-			Size2 string_size;
 			Ref<StyleBox> style = theme_cache.normal_style;
 			Ref<Font> font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 			int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
@@ -680,7 +760,11 @@ void Label::_notification(int p_what) {
 			int shadow_outline_size = has_settings ? settings->get_shadow_size() : theme_cache.font_shadow_outline_size;
 			bool rtl_layout = is_layout_rtl();
 
-			style->draw(ci, Rect2(Point2(0, 0), get_size()));
+			if (has_focus()) {
+				theme_cache.focus_style->draw(ci, Rect2(Point2(0, 0), get_size()));
+			} else {
+				theme_cache.normal_style->draw(ci, Rect2(Point2(0, 0), get_size()));
+			}
 
 			bool trim_chars = (visible_chars >= 0) && (visible_chars_behavior == TextServer::VC_CHARS_AFTER_SHAPING);
 			bool trim_glyphs_ltr = (visible_chars >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_LTR) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && !rtl_layout));
@@ -710,10 +794,12 @@ void Label::_notification(int p_what) {
 						Vector2 line_offset = _get_line_rect(p, i).position;
 						ofs.x = line_offset.x;
 
-						int asc = TS->shaped_text_get_ascent(line_rid);
-						int dsc = TS->shaped_text_get_descent(line_rid);
+						double asc = TS->shaped_text_get_ascent(line_rid);
+						double dsc = TS->shaped_text_get_descent(line_rid);
 						if (asc + dsc < font_h) {
-							dsc = font_h - asc;
+							double diff = font_h - (asc + dsc);
+							asc += diff / 2;
+							dsc += diff - (diff / 2);
 						}
 
 						const Glyph *glyphs = TS->shaped_text_get_glyphs(line_rid);
@@ -729,7 +815,10 @@ void Label::_notification(int p_what) {
 
 						// Draw shadow, outline and text. Note: Do not merge this into the single loop iteration, to prevent overlaps.
 						int processed_glyphs_step = 0;
-						for (int step = DRAW_STEP_SHADOW; step < DRAW_STEP_MAX; step++) {
+						for (int step = DRAW_STEP_SHADOW_OUTLINE; step < DRAW_STEP_MAX; step++) {
+							if (step == DRAW_STEP_SHADOW_OUTLINE && (font_shadow_color.a == 0 || shadow_outline_size <= 0)) {
+								continue;
+							}
 							if (step == DRAW_STEP_SHADOW && (font_shadow_color.a == 0)) {
 								continue;
 							}
@@ -745,8 +834,10 @@ void Label::_notification(int p_what) {
 									for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 										bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 										if (!skip) {
-											if (step == DRAW_STEP_SHADOW) {
-												draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+											if (step == DRAW_STEP_SHADOW_OUTLINE) {
+												draw_glyph_shadow_outline(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+											} else if (step == DRAW_STEP_SHADOW) {
+												draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, offset_step, shadow_ofs);
 											} else if (step == DRAW_STEP_OUTLINE) {
 												draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, offset_step);
 											} else if (step == DRAW_STEP_TEXT) {
@@ -775,8 +866,10 @@ void Label::_notification(int p_what) {
 								for (int k = 0; k < glyphs[j].repeat; k++) {
 									bool skip = (trim_chars && glyphs[j].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 									if (!skip) {
-										if (step == DRAW_STEP_SHADOW) {
-											draw_glyph_shadow(glyphs[j], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+										if (step == DRAW_STEP_SHADOW_OUTLINE) {
+											draw_glyph_shadow_outline(glyphs[j], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+										} else if (step == DRAW_STEP_SHADOW) {
+											draw_glyph_shadow(glyphs[j], ci, font_shadow_color, offset_step, shadow_ofs);
 										} else if (step == DRAW_STEP_OUTLINE) {
 											draw_glyph_outline(glyphs[j], ci, font_outline_color, outline_size, offset_step);
 										} else if (step == DRAW_STEP_TEXT) {
@@ -793,8 +886,10 @@ void Label::_notification(int p_what) {
 									for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 										bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 										if (!skip) {
-											if (step == DRAW_STEP_SHADOW) {
-												draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+											if (step == DRAW_STEP_SHADOW_OUTLINE) {
+												draw_glyph_shadow_outline(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+											} else if (step == DRAW_STEP_SHADOW) {
+												draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, offset_step, shadow_ofs);
 											} else if (step == DRAW_STEP_OUTLINE) {
 												draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, offset_step);
 											} else if (step == DRAW_STEP_TEXT) {
@@ -877,7 +972,14 @@ Rect2 Label::get_character_bounds(int p_pos) const {
 					}
 					gl_off += glyphs[j].advance * glyphs[j].repeat;
 				}
-				ofs.y += MAX(font_h, TS->shaped_text_get_ascent(line_rid) + TS->shaped_text_get_descent(line_rid)) + line_spacing;
+				double asc = TS->shaped_text_get_ascent(line_rid);
+				double dsc = TS->shaped_text_get_descent(line_rid);
+				if (asc + dsc < font_h) {
+					double diff = font_h - (asc + dsc);
+					asc += diff / 2;
+					dsc += diff - (diff / 2);
+				}
+				ofs.y += asc + dsc + line_spacing;
 			}
 			ofs.y += paragraph_spacing;
 			line_index += para.lines_rid.size();
@@ -894,7 +996,7 @@ Size2 Label::get_minimum_size() const {
 	const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
 
-	min_size.height = MAX(min_size.height, font->get_height(font_size) + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM));
+	min_size.height = MAX(min_size.height, font->get_height(font_size));
 
 	Size2 min_style = theme_cache.normal_style->get_minimum_size();
 	if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
@@ -946,8 +1048,15 @@ int Label::get_visible_line_count() const {
 		} else {
 			int start = (line_index < lines_skipped) ? lines_skipped - line_index : 0;
 			for (int i = start; i < para.lines_rid.size(); i++) {
-				total_h += MAX(font_h, TS->shaped_text_get_size(para.lines_rid[i]).y) + line_spacing;
-				if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
+				double asc = TS->shaped_text_get_ascent(para.lines_rid[i]);
+				double dsc = TS->shaped_text_get_descent(para.lines_rid[i]);
+				if (asc + dsc < font_h) {
+					double diff = font_h - (asc + dsc);
+					asc += diff / 2;
+					dsc += diff - (diff / 2);
+				}
+				total_h += asc + dsc + line_spacing;
+				if (total_h > Math::ceil(get_size().height - style->get_minimum_size().height + line_spacing)) {
 					break;
 				}
 				lines_visible++;
@@ -976,7 +1085,7 @@ void Label::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 		}
 	}
 	horizontal_alignment = p_alignment;
-
+	queue_accessibility_update();
 	queue_redraw();
 }
 
@@ -1009,6 +1118,7 @@ void Label::set_text(const String &p_string) {
 	if (visible_ratio < 1) {
 		visible_chars = get_total_character_count() * visible_ratio;
 	}
+	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();
 	update_configuration_warnings();
@@ -1099,6 +1209,7 @@ void Label::set_paragraph_separator(const String &p_paragraph_separator) {
 	if (paragraph_separator != p_paragraph_separator) {
 		paragraph_separator = p_paragraph_separator;
 		text_dirty = true;
+		queue_accessibility_update();
 		queue_redraw();
 	}
 }
@@ -1191,6 +1302,7 @@ void Label::set_visible_characters(int p_amount) {
 		}
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			text_dirty = true;
+			queue_accessibility_update();
 		}
 		queue_redraw();
 	}
@@ -1215,6 +1327,7 @@ void Label::set_visible_ratio(float p_ratio) {
 
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			text_dirty = true;
+			queue_accessibility_update();
 		}
 		queue_redraw();
 	}
@@ -1232,6 +1345,7 @@ void Label::set_visible_characters_behavior(TextServer::VisibleCharactersBehavio
 	if (visible_chars_behavior != p_behavior) {
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING || p_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			text_dirty = true;
+			queue_accessibility_update();
 		}
 		visible_chars_behavior = p_behavior;
 		queue_redraw();
@@ -1289,6 +1403,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_paragraph_separator"), &Label::get_paragraph_separator);
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &Label::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Label::get_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("set_autowrap_trim_flags", "autowrap_trim_flags"), &Label::set_autowrap_trim_flags);
+	ClassDB::bind_method(D_METHOD("get_autowrap_trim_flags"), &Label::get_autowrap_trim_flags);
 	ClassDB::bind_method(D_METHOD("set_justification_flags", "justification_flags"), &Label::set_justification_flags);
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &Label::get_justification_flags);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enable"), &Label::set_clip_text);
@@ -1327,11 +1443,12 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_trim_flags", PROPERTY_HINT_FLAGS, vformat("Trim Spaces After Break:%d,Trim Spaces Before Break:%d", TextServer::BREAK_TRIM_START_EDGE_SPACES, TextServer::BREAK_TRIM_END_EDGE_SPACES)), "set_autowrap_trim_flags", "get_autowrap_trim_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "paragraph_separator"), "set_paragraph_separator", "get_paragraph_separator");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ellipsis_char"), "set_ellipsis_char", "get_ellipsis_char");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "tab_stops"), "set_tab_stops", "get_tab_stops");
@@ -1351,6 +1468,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Label, normal_style, "normal");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Label, focus_style, "focus");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Label, line_spacing);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Label, paragraph_spacing);
 
@@ -1366,6 +1484,7 @@ void Label::_bind_methods() {
 }
 
 Label::Label(const String &p_text) {
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	set_text(p_text);
 	set_v_size_flags(SIZE_SHRINK_CENTER);

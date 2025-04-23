@@ -241,11 +241,25 @@ GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name)
 	return GDExtension::get_interface_function(p_name);
 }
 
+#ifndef DISABLE_DEPRECATED
 static void gdextension_get_godot_version(GDExtensionGodotVersion *r_godot_version) {
-	r_godot_version->major = VERSION_MAJOR;
-	r_godot_version->minor = VERSION_MINOR;
-	r_godot_version->patch = VERSION_PATCH;
-	r_godot_version->string = VERSION_FULL_NAME;
+	r_godot_version->major = GODOT_VERSION_MAJOR;
+	r_godot_version->minor = GODOT_VERSION_MINOR;
+	r_godot_version->patch = GODOT_VERSION_PATCH;
+	r_godot_version->string = GODOT_VERSION_FULL_NAME;
+}
+#endif
+
+static void gdextension_get_godot_version2(GDExtensionGodotVersion2 *r_godot_version) {
+	r_godot_version->major = GODOT_VERSION_MAJOR;
+	r_godot_version->minor = GODOT_VERSION_MINOR;
+	r_godot_version->patch = GODOT_VERSION_PATCH;
+	r_godot_version->hex = GODOT_VERSION_HEX;
+	r_godot_version->status = GODOT_VERSION_STATUS;
+	r_godot_version->build = GODOT_VERSION_BUILD;
+	r_godot_version->hash = GODOT_VERSION_HASH;
+	r_godot_version->timestamp = GODOT_VERSION_TIMESTAMP;
+	r_godot_version->string = GODOT_VERSION_FULL_NAME;
 }
 
 // Memory Functions
@@ -858,84 +872,82 @@ static GDExtensionPtrUtilityFunction gdextension_variant_get_ptr_utility_functio
 //string helpers
 
 static void gdextension_string_new_with_latin1_chars(GDExtensionUninitializedStringPtr r_dest, const char *p_contents) {
-	memnew_placement(r_dest, String(p_contents));
+	String *dest = memnew_placement(r_dest, String);
+	dest->append_latin1(Span<char>(p_contents, p_contents ? strlen(p_contents) : 0));
 }
 
 static void gdextension_string_new_with_utf8_chars(GDExtensionUninitializedStringPtr r_dest, const char *p_contents) {
-	memnew_placement(r_dest, String);
-	String *dest = reinterpret_cast<String *>(r_dest);
-	dest->parse_utf8(p_contents);
+	String *dest = memnew_placement(r_dest, String);
+	dest->append_utf8(p_contents);
 }
 
 static void gdextension_string_new_with_utf16_chars(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents) {
-	memnew_placement(r_dest, String);
-	String *dest = reinterpret_cast<String *>(r_dest);
-	dest->parse_utf16(p_contents);
+	String *dest = memnew_placement(r_dest, String);
+	dest->append_utf16(p_contents);
 }
 
 static void gdextension_string_new_with_utf32_chars(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents) {
-	memnew_placement(r_dest, String((const char32_t *)p_contents));
+	String *dest = memnew_placement(r_dest, String);
+	dest->append_utf32(Span(p_contents, p_contents ? strlen(p_contents) : 0));
 }
 
 static void gdextension_string_new_with_wide_chars(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents) {
 	if constexpr (sizeof(wchar_t) == 2) {
-		// wchar_t is 16 bit, parse.
-		memnew_placement(r_dest, String);
-		String *dest = reinterpret_cast<String *>(r_dest);
-		dest->parse_utf16((const char16_t *)p_contents);
+		// wchar_t is 16 bit (UTF-16).
+		String *dest = memnew_placement(r_dest, String);
+		dest->append_utf16((const char16_t *)p_contents);
 	} else {
-		// wchar_t is 32 bit, copy.
-		memnew_placement(r_dest, String((const char32_t *)p_contents));
+		// wchar_t is 32 bit (UTF-32).
+		String *string = memnew_placement(r_dest, String);
+		string->append_utf32(Span((const char32_t *)p_contents, p_contents ? strlen(p_contents) : 0));
 	}
 }
 
 static void gdextension_string_new_with_latin1_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
-	memnew_placement(r_dest, String(p_contents, p_size));
+	String *dest = memnew_placement(r_dest, String);
+	dest->append_latin1(Span(p_contents, p_contents ? _strlen_clipped(p_contents, p_size) : 0));
 }
 
 static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
-	memnew_placement(r_dest, String);
-	String *dest = reinterpret_cast<String *>(r_dest);
-	dest->parse_utf8(p_contents, p_size);
+	String *dest = memnew_placement(r_dest, String);
+	dest->append_utf8(p_contents, p_size);
 }
 
 static GDExtensionInt gdextension_string_new_with_utf8_chars_and_len2(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
-	memnew_placement(r_dest, String);
-	String *dest = reinterpret_cast<String *>(r_dest);
-	return (GDExtensionInt)dest->parse_utf8(p_contents, p_size);
+	String *dest = memnew_placement(r_dest, String);
+	return (GDExtensionInt)dest->append_utf8(p_contents, p_size);
 }
 
 static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count) {
-	memnew_placement(r_dest, String);
-	String *dest = reinterpret_cast<String *>(r_dest);
-	dest->parse_utf16(p_contents, p_char_count);
+	String *dest = memnew_placement(r_dest, String);
+	dest->append_utf16(p_contents, p_char_count);
 }
 
 static GDExtensionInt gdextension_string_new_with_utf16_chars_and_len2(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count, GDExtensionBool p_default_little_endian) {
-	memnew_placement(r_dest, String);
-	String *dest = reinterpret_cast<String *>(r_dest);
-	return (GDExtensionInt)dest->parse_utf16(p_contents, p_char_count, p_default_little_endian);
+	String *dest = memnew_placement(r_dest, String);
+	return (GDExtensionInt)dest->append_utf16(p_contents, p_char_count, p_default_little_endian);
 }
 
 static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count) {
-	memnew_placement(r_dest, String((const char32_t *)p_contents, p_char_count));
+	String *string = memnew_placement(r_dest, String);
+	string->append_utf32(Span(p_contents, p_contents ? _strlen_clipped(p_contents, p_char_count) : 0));
 }
 
 static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_char_count) {
 	if constexpr (sizeof(wchar_t) == 2) {
-		// wchar_t is 16 bit, parse.
-		memnew_placement(r_dest, String);
-		String *dest = reinterpret_cast<String *>(r_dest);
-		dest->parse_utf16((const char16_t *)p_contents, p_char_count);
+		// wchar_t is 16 bit (UTF-16).
+		String *dest = memnew_placement(r_dest, String);
+		dest->append_utf16((const char16_t *)p_contents, p_char_count);
 	} else {
-		// wchar_t is 32 bit, copy.
-		memnew_placement(r_dest, String((const char32_t *)p_contents, p_char_count));
+		// wchar_t is 32 bit (UTF-32).
+		String *string = memnew_placement(r_dest, String);
+		string->append_utf32(Span((const char32_t *)p_contents, p_contents ? _strlen_clipped((const char32_t *)p_contents, p_char_count) : 0));
 	}
 }
 
 static GDExtensionInt gdextension_string_to_latin1_chars(GDExtensionConstStringPtr p_self, char *r_text, GDExtensionInt p_max_write_length) {
 	String *self = (String *)p_self;
-	CharString cs = self->ascii(true);
+	CharString cs = self->latin1();
 	GDExtensionInt len = cs.length();
 	if (r_text) {
 		const char *s_text = cs.ptr();
@@ -1040,16 +1052,12 @@ static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializ
 }
 
 static void gdextension_string_name_new_with_utf8_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents) {
-	String tmp;
-	tmp.parse_utf8(p_contents);
-
+	String tmp = String::utf8(p_contents);
 	memnew_placement(r_dest, StringName(tmp));
 }
 
 static void gdextension_string_name_new_with_utf8_chars_and_len(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionInt p_size) {
-	String tmp;
-	tmp.parse_utf8(p_contents, p_size);
-
+	String tmp = String::utf8(p_contents, p_size);
 	memnew_placement(r_dest, StringName(tmp));
 }
 
@@ -1543,11 +1551,8 @@ static void gdextension_placeholder_script_instance_update(GDExtensionScriptInst
 		properties_list.push_back(PropertyInfo::from_dict(d));
 	}
 
-	List<Variant> keys;
-	values.get_key_list(&keys);
-
-	for (const Variant &E : keys) {
-		values_map.insert(E, values[E]);
+	for (const KeyValue<Variant, Variant> &kv : values) {
+		values_map.insert(kv.key, kv.value);
 	}
 
 	placeholder->update(properties_list, values_map);
@@ -1570,6 +1575,15 @@ static GDExtensionScriptInstancePtr gdextension_object_get_script_instance(GDExt
 	}
 
 	return script_instance_extension->instance;
+}
+
+static void gdextension_object_set_script_instance(GDExtensionObjectPtr p_object, GDExtensionScriptInstancePtr p_script_instance) {
+	ERR_FAIL_NULL(p_object);
+
+	Object *o = (Object *)p_object;
+	ScriptInstance *script_instance = (ScriptInstanceExtension *)p_script_instance;
+
+	o->set_script_instance(script_instance);
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -1666,7 +1680,10 @@ static void gdextension_editor_help_load_xml_from_utf8_chars(const char *p_data)
 #define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr) & gdextension_##m_name)
 
 void gdextension_setup_interface() {
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(get_godot_version);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(get_godot_version2);
 	REGISTER_INTERFACE_FUNC(mem_alloc);
 	REGISTER_INTERFACE_FUNC(mem_realloc);
 	REGISTER_INTERFACE_FUNC(mem_free);
@@ -1809,6 +1826,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(placeholder_script_instance_create);
 	REGISTER_INTERFACE_FUNC(placeholder_script_instance_update);
 	REGISTER_INTERFACE_FUNC(object_get_script_instance);
+	REGISTER_INTERFACE_FUNC(object_set_script_instance);
 #ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(callable_custom_create);
 #endif // DISABLE_DEPRECATED

@@ -36,7 +36,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/navigation_obstacle_3d.h"
+#include "scene/3d/navigation/navigation_obstacle_3d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "servers/navigation_server_3d.h"
@@ -466,13 +466,11 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 						Vector2 closest_edge_point;
 						real_t closest_dist = 1e10;
 						for (int i = 0; i < obstacle_vertices.size(); i++) {
-							Vector2 points[2] = {
-								p_camera->unproject_position(gt.xform(obstacle_vertices[i])),
-								p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]))
-							};
+							const Vector2 a = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
+							const Vector2 b = p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]));
 
-							Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, points);
-							if (cp.distance_squared_to(points[0]) < grab_threshold || cp.distance_squared_to(points[1]) < grab_threshold) {
+							Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, a, b);
+							if (cp.distance_squared_to(a) < grab_threshold || cp.distance_squared_to(b) < grab_threshold) {
 								continue; // Skip edge as clicked point is too close to existing vertex.
 							}
 
@@ -548,13 +546,11 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
 							for (int i = 0; i < obstacle_vertices.size(); i++) {
-								Vector2 points[2] = {
-									p_camera->unproject_position(gt.xform(obstacle_vertices[i])),
-									p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]))
-								};
+								const Vector2 a = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
+								const Vector2 b = p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]));
 
-								Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, points);
-								if (cp.distance_squared_to(points[0]) < CMP_EPSILON2 || cp.distance_squared_to(points[1]) < CMP_EPSILON2) {
+								Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, a, b);
+								if (cp.distance_squared_to(a) < CMP_EPSILON2 || cp.distance_squared_to(b) < CMP_EPSILON2) {
 									continue; //not valid to reuse point
 								}
 
@@ -834,12 +830,14 @@ NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
 	button_create->set_theme_type_variation(SceneStringName(FlatButton));
 	obstacle_editor->add_child(button_create);
 	button_create->set_tooltip_text(TTR("Add Vertex"));
+	button_create->set_accessibility_name(TTRC("Add Vertex"));
 	button_create->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::MODE_CREATE));
 	button_create->set_toggle_mode(true);
 	button_create->set_button_group(bg);
 
 	button_edit = memnew(Button);
 	button_edit->set_theme_type_variation(SceneStringName(FlatButton));
+	button_edit->set_accessibility_name(TTRC("Edit"));
 	obstacle_editor->add_child(button_edit);
 	button_edit->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::MODE_EDIT));
 	button_edit->set_toggle_mode(true);
@@ -847,6 +845,7 @@ NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
 
 	button_delete = memnew(Button);
 	button_delete->set_theme_type_variation(SceneStringName(FlatButton));
+	button_delete->set_accessibility_name(TTRC("Delete"));
 	obstacle_editor->add_child(button_delete);
 	button_delete->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::MODE_DELETE));
 	button_delete->set_toggle_mode(true);
@@ -854,12 +853,14 @@ NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
 
 	button_flip = memnew(Button);
 	button_flip->set_theme_type_variation(SceneStringName(FlatButton));
+	button_flip->set_accessibility_name(TTRC("Flip"));
 	obstacle_editor->add_child(button_flip);
 	button_flip->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::ACTION_FLIP));
 	button_flip->set_toggle_mode(true);
 
 	button_clear = memnew(Button);
 	button_clear->set_theme_type_variation(SceneStringName(FlatButton));
+	button_clear->set_accessibility_name(TTRC("Clear"));
 	obstacle_editor->add_child(button_clear);
 	button_clear->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::ACTION_CLEAR));
 	button_clear->set_toggle_mode(true);

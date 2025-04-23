@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_H
-#define GDSCRIPT_H
+#pragma once
 
 #include "gdscript_function.h"
 
@@ -244,6 +243,9 @@ public:
 
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
+	// Cancels all functions of the script that are are waiting to be resumed after using await.
+	void cancel_pending_functions(bool warn);
+
 	virtual bool is_valid() const override { return valid; }
 	virtual bool is_abstract() const override { return false; } // GDScript does not support abstract classes.
 
@@ -309,7 +311,6 @@ public:
 
 	virtual Error reload(bool p_keep_state = false) override;
 
-	virtual void set_path_cache(const String &p_path) override;
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	String get_script_path() const;
 	Error load_source_code(const String &p_path);
@@ -638,7 +639,7 @@ public:
 	/* GLOBAL CLASSES */
 
 	virtual bool handles_global_class_type(const String &p_type) const override;
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const override;
 
 	void add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass);
 	Ref<GDScript> get_orphan_subclass(const String &p_qualified_name);
@@ -656,6 +657,7 @@ public:
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
+	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
 };
 
 class ResourceFormatSaverGDScript : public ResourceFormatSaver {
@@ -664,5 +666,3 @@ public:
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 };
-
-#endif // GDSCRIPT_H

@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PHYSICS_SERVER_3D_H
-#define PHYSICS_SERVER_3D_H
+#pragma once
 
 #ifndef _3D_DISABLED
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
+
+constexpr int MAX_CONTACTS_REPORTED_3D_MAX = 4096;
 
 class PhysicsDirectSpaceState3D;
 template <typename T>
@@ -1056,5 +1057,3 @@ VARIANT_ENUM_CAST(PhysicsServer3D::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer3D::ProcessInfo);
 
 #endif // _3D_DISABLED
-
-#endif // PHYSICS_SERVER_3D_H

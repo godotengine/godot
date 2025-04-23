@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLLISION_POLYGON_3D_H
-#define COLLISION_POLYGON_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 
@@ -46,6 +45,11 @@ protected:
 	uint32_t owner_id = 0;
 	CollisionObject3D *collision_object = nullptr;
 
+	Color debug_color;
+	bool debug_fill = true;
+
+	Color _get_default_debug_color() const;
+
 	bool disabled = false;
 
 	void _build_polygon();
@@ -58,6 +62,12 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+#ifdef DEBUG_ENABLED
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+	void _validate_property(PropertyInfo &p_property) const;
+#endif // DEBUG_ENABLED
+
 public:
 	void set_depth(real_t p_depth);
 	real_t get_depth() const;
@@ -68,6 +78,12 @@ public:
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
 
+	void set_debug_color(const Color &p_color);
+	Color get_debug_color() const;
+
+	void set_debug_fill_enabled(bool p_enable);
+	bool get_debug_fill_enabled() const;
+
 	virtual AABB get_item_rect() const;
 
 	real_t get_margin() const;
@@ -77,5 +93,3 @@ public:
 
 	CollisionPolygon3D();
 };
-
-#endif // COLLISION_POLYGON_3D_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_TRANSFORM_2D_H
-#define TEST_TRANSFORM_2D_H
+#pragma once
 
 #include "core/math/transform_2d.h"
 
@@ -57,8 +56,8 @@ TEST_CASE("[Transform2D] Copy constructor") {
 }
 
 TEST_CASE("[Transform2D] Constructor from angle and position") {
-	constexpr float ROTATION = Math_PI / 4;
-	const Vector2 TRANSLATION = Vector2(20, -20);
+	constexpr float ROTATION = Math::PI / 4;
+	constexpr Vector2 TRANSLATION = Vector2(20, -20);
 
 	const Transform2D test = Transform2D(ROTATION, TRANSLATION);
 	const Transform2D expected = Transform2D().rotated(ROTATION).translated(TRANSLATION);
@@ -66,10 +65,10 @@ TEST_CASE("[Transform2D] Constructor from angle and position") {
 }
 
 TEST_CASE("[Transform2D] Constructor from angle, scale, skew and position") {
-	constexpr float ROTATION = Math_PI / 2;
-	const Vector2 SCALE = Vector2(2, 0.5);
-	constexpr float SKEW = Math_PI / 4;
-	const Vector2 TRANSLATION = Vector2(30, 0);
+	constexpr float ROTATION = Math::PI / 2;
+	constexpr Vector2 SCALE = Vector2(2, 0.5);
+	constexpr float SKEW = Math::PI / 4;
+	constexpr Vector2 TRANSLATION = Vector2(30, 0);
 
 	const Transform2D test = Transform2D(ROTATION, SCALE, SKEW, TRANSLATION);
 	Transform2D expected = Transform2D().scaled(SCALE).rotated(ROTATION).translated(TRANSLATION);
@@ -79,26 +78,26 @@ TEST_CASE("[Transform2D] Constructor from angle, scale, skew and position") {
 }
 
 TEST_CASE("[Transform2D] Constructor from raw values") {
-	const Transform2D test = Transform2D(1, 2, 3, 4, 5, 6);
-	const Transform2D expected = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6));
-	CHECK(test == expected);
+	constexpr Transform2D test = Transform2D(1, 2, 3, 4, 5, 6);
+	constexpr Transform2D expected = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6));
+	static_assert(test == expected);
 }
 
 TEST_CASE("[Transform2D] xform") {
-	const Vector2 v = Vector2(2, 3);
-	const Transform2D T = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6));
-	const Vector2 expected = Vector2(1 * 2 + 3 * 3 + 5 * 1, 2 * 2 + 4 * 3 + 6 * 1);
+	constexpr Vector2 v = Vector2(2, 3);
+	constexpr Transform2D T = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6));
+	constexpr Vector2 expected = Vector2(1 * 2 + 3 * 3 + 5 * 1, 2 * 2 + 4 * 3 + 6 * 1);
 	CHECK(T.xform(v) == expected);
 }
 
 TEST_CASE("[Transform2D] Basis xform") {
-	const Vector2 v = Vector2(2, 2);
-	const Transform2D T1 = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(0, 0));
+	constexpr Vector2 v = Vector2(2, 2);
+	constexpr Transform2D T1 = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(0, 0));
 
 	// Both versions should be the same when the origin is (0,0).
 	CHECK(T1.basis_xform(v) == T1.xform(v));
 
-	const Transform2D T2 = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6));
+	constexpr Transform2D T2 = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6));
 
 	// Each version should be different when the origin is not (0,0).
 	CHECK_FALSE(T2.basis_xform(v) == T2.xform(v));
@@ -130,7 +129,7 @@ TEST_CASE("[Transform2D] Orthonormalized") {
 }
 
 TEST_CASE("[Transform2D] translation") {
-	const Vector2 offset = Vector2(1, 2);
+	constexpr Vector2 offset = Vector2(1, 2);
 
 	// Both versions should give the same result applied to identity.
 	CHECK(identity().translated(offset) == identity().translated_local(offset));
@@ -143,7 +142,7 @@ TEST_CASE("[Transform2D] translation") {
 }
 
 TEST_CASE("[Transform2D] scaling") {
-	const Vector2 scaling = Vector2(1, 2);
+	constexpr Vector2 scaling = Vector2(1, 2);
 
 	// Both versions should give the same result applied to identity.
 	CHECK(identity().scaled(scaling) == identity().scaled_local(scaling));
@@ -182,8 +181,8 @@ TEST_CASE("[Transform2D] Interpolation") {
 }
 
 TEST_CASE("[Transform2D] Finite number checks") {
-	const Vector2 x = Vector2(0, 1);
-	const Vector2 infinite = Vector2(NAN, NAN);
+	constexpr Vector2 x = Vector2(0, 1);
+	constexpr Vector2 infinite = Vector2(Math::NaN, Math::NaN);
 
 	CHECK_MESSAGE(
 			Transform2D(x, x, x).is_finite(),
@@ -240,10 +239,8 @@ TEST_CASE("[Transform2D] Is conformal checks") {
 			"Transform2D with non-uniform scale should not be conformal.");
 
 	CHECK_FALSE_MESSAGE(
-			Transform2D(Vector2(Math_SQRT12, Math_SQRT12), Vector2(0, 1), Vector2()).is_conformal(),
+			Transform2D(Vector2(Math::SQRT12, Math::SQRT12), Vector2(0, 1), Vector2()).is_conformal(),
 			"Transform2D with the X axis skewed 45 degrees should not be conformal.");
 }
 
 } // namespace TestTransform2D
-
-#endif // TEST_TRANSFORM_2D_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_3D_H
-#define SKELETON_3D_H
+#pragma once
 
 #include "core/templates/a_hash_map.h"
 #include "scene/3d/node_3d.h"
@@ -66,16 +65,21 @@ public:
 class Skeleton3D : public Node3D {
 	GDCLASS(Skeleton3D, Node3D);
 
-#ifndef DISABLE_DEPRECATED
+#ifdef TOOLS_ENABLED
+	bool saving = false;
+#endif //TOOLS_ENABLED
+
+#if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 	bool animate_physical_bones = true;
 	Node *simulator = nullptr;
 	void setup_simulator();
-#endif // _DISABLE_DEPRECATED
+#endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
 
 public:
 	enum ModifierCallbackModeProcess {
 		MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS,
 		MODIFIER_CALLBACK_MODE_PROCESS_IDLE,
+		MODIFIER_CALLBACK_MODE_PROCESS_MANUAL,
 	};
 
 private:
@@ -90,6 +94,7 @@ private:
 	void _update_deferred(UpdateFlag p_update_flag = UPDATE_FLAG_POSE);
 	uint8_t update_flags = UPDATE_FLAG_NONE;
 	bool updating = false; // Is updating now?
+	double update_delta = 0.0;
 
 	struct Bone {
 		String name;
@@ -291,6 +296,8 @@ public:
 	void set_modifier_callback_mode_process(ModifierCallbackModeProcess p_mode);
 	ModifierCallbackModeProcess get_modifier_callback_mode_process() const;
 
+	void advance(double p_delta);
+
 #ifndef DISABLE_DEPRECATED
 	Transform3D get_bone_global_pose_no_override(int p_bone) const;
 	void clear_bones_global_pose_override();
@@ -298,12 +305,14 @@ public:
 	void set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent = false);
 
 	Node *get_simulator();
+#ifndef PHYSICS_3D_DISABLED
 	void set_animate_physical_bones(bool p_enabled);
 	bool get_animate_physical_bones() const;
 	void physical_bones_stop_simulation();
 	void physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones);
 	void physical_bones_add_collision_exception(RID p_exception);
 	void physical_bones_remove_collision_exception(RID p_exception);
+#endif // PHYSICS_3D_DISABLED
 #endif // _DISABLE_DEPRECATED
 
 public:
@@ -312,5 +321,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Skeleton3D::ModifierCallbackModeProcess);
-
-#endif // SKELETON_3D_H

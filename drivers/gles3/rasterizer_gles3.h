@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RASTERIZER_GLES3_H
-#define RASTERIZER_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -105,6 +104,7 @@ public:
 
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
+	bool is_opengl() { return true; }
 	void gl_end_frame(bool p_swap_buffers);
 	void end_frame(bool p_swap_buffers);
 
@@ -141,5 +141,3 @@ public:
 };
 
 #endif // GLES3_ENABLED
-
-#endif // RASTERIZER_GLES3_H

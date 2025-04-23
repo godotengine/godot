@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RANDOM_PCG_H
-#define RANDOM_PCG_H
+#pragma once
 
 #include "core/math/math_defs.h"
 
@@ -135,19 +134,17 @@ public:
 		if (temp < CMP_EPSILON) {
 			temp += CMP_EPSILON; // To prevent generating of INF value in log function, resulting to return NaN value from this function.
 		}
-		return p_mean + p_deviation * (cos(Math_TAU * randd()) * sqrt(-2.0 * log(temp))); // Box-Muller transform.
+		return p_mean + p_deviation * (cos(Math::TAU * randd()) * sqrt(-2.0 * log(temp))); // Box-Muller transform.
 	}
 	_FORCE_INLINE_ float randfn(float p_mean, float p_deviation) {
 		float temp = randf();
 		if (temp < CMP_EPSILON) {
 			temp += CMP_EPSILON; // To prevent generating of INF value in log function, resulting to return NaN value from this function.
 		}
-		return p_mean + p_deviation * (cos((float)Math_TAU * randf()) * sqrt(-2.0 * log(temp))); // Box-Muller transform.
+		return p_mean + p_deviation * (cos((float)Math::TAU * randf()) * sqrt(-2.0 * log(temp))); // Box-Muller transform.
 	}
 
 	double random(double p_from, double p_to);
 	float random(float p_from, float p_to);
 	int random(int p_from, int p_to);
 };
-
-#endif // RANDOM_PCG_H

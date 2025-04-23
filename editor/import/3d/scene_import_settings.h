@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_IMPORT_SETTINGS_H
-#define SCENE_IMPORT_SETTINGS_H
+#pragma once
 
 #include "editor/import/3d/resource_importer_scene.h"
 #include "scene/3d/camera_3d.h"
@@ -129,8 +128,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 		TreeItem *mesh_node = nullptr;
 		TreeItem *material_node = nullptr;
 
-		float cam_rot_x = -Math_PI / 4;
-		float cam_rot_y = -Math_PI / 4;
+		float cam_rot_x = -Math::PI / 4;
+		float cam_rot_y = -Math::PI / 4;
 		float cam_zoom = 1;
 
 		HashMap<StringName, Variant> settings;
@@ -144,8 +143,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 		TreeItem *scene_node = nullptr;
 		TreeItem *mesh_node = nullptr;
 
-		float cam_rot_x = -Math_PI / 4;
-		float cam_rot_y = -Math_PI / 4;
+		float cam_rot_x = -Math::PI / 4;
+		float cam_rot_y = -Math::PI / 4;
 		float cam_zoom = 1;
 		HashMap<StringName, Variant> settings;
 	};
@@ -251,5 +250,3 @@ public:
 	SceneImportSettingsDialog();
 	~SceneImportSettingsDialog();
 };
-
-#endif // SCENE_IMPORT_SETTINGS_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_OBJECT_3D_H
-#define JOLT_OBJECT_3D_H
+#pragma once
 
 #include "../shapes/jolt_shape_instance_3d.h"
 
@@ -148,10 +147,7 @@ public:
 
 	virtual bool reports_contacts() const = 0;
 
-	virtual void pre_step(float p_step, JPH::Body &p_jolt_body);
-	virtual void post_step(float p_step, JPH::Body &p_jolt_body);
+	virtual void pre_step(float p_step, JPH::Body &p_jolt_body) {}
 
 	String to_string() const;
 };
-
-#endif // JOLT_OBJECT_3D_H

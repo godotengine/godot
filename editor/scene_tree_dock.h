@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_TREE_DOCK_H
-#define SCENE_TREE_DOCK_H
+#pragma once
 
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/script_create_dialog.h"
@@ -89,6 +88,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_CREATE_FAVORITE,
 		TOOL_CENTER_PARENT,
 		TOOL_HIDE_FILTERED_OUT_PARENTS,
+		TOOL_ACCESSIBILITY_WARNINGS,
 	};
 
 	enum {
@@ -355,5 +355,3 @@ public:
 	SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
 	~SceneTreeDock();
 };
-
-#endif // SCENE_TREE_DOCK_H

@@ -34,6 +34,50 @@
 #include "core/math/expression.h"
 #include "scene/theme/theme_db.h"
 
+void SpinBoxLineEdit::_accessibility_action_inc(const Variant &p_data) {
+	SpinBox *parent_sb = Object::cast_to<SpinBox>(get_parent());
+	if (parent_sb) {
+		double step = ((parent_sb->get_step() > 0) ? parent_sb->get_step() : 1);
+		parent_sb->set_value(parent_sb->get_value() + step);
+	}
+}
+
+void SpinBoxLineEdit::_accessibility_action_dec(const Variant &p_data) {
+	SpinBox *parent_sb = Object::cast_to<SpinBox>(get_parent());
+	if (parent_sb) {
+		double step = ((parent_sb->get_step() > 0) ? parent_sb->get_step() : 1);
+		parent_sb->set_value(parent_sb->get_value() - step);
+	}
+}
+
+void SpinBoxLineEdit::_notification(int p_what) {
+	ERR_MAIN_THREAD_GUARD;
+	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			SpinBox *parent_sb = Object::cast_to<SpinBox>(get_parent());
+			if (parent_sb) {
+				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPIN_BUTTON);
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, parent_sb->get_accessibility_name());
+				DisplayServer::get_singleton()->accessibility_update_set_description(ae, parent_sb->get_accessibility_description());
+				DisplayServer::get_singleton()->accessibility_update_set_live(ae, parent_sb->get_accessibility_live());
+				DisplayServer::get_singleton()->accessibility_update_set_num_value(ae, parent_sb->get_value());
+				DisplayServer::get_singleton()->accessibility_update_set_num_range(ae, parent_sb->get_min(), parent_sb->get_max());
+				if (parent_sb->get_step() > 0) {
+					DisplayServer::get_singleton()->accessibility_update_set_num_step(ae, parent_sb->get_step());
+				} else {
+					DisplayServer::get_singleton()->accessibility_update_set_num_step(ae, 1);
+				}
+				//DisplayServer::get_singleton()->accessibility_update_set_num_jump(ae, ???);
+				DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_DECREMENT, callable_mp(this, &SpinBoxLineEdit::_accessibility_action_dec));
+				DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_INCREMENT, callable_mp(this, &SpinBoxLineEdit::_accessibility_action_inc));
+			}
+		} break;
+	}
+}
+
 Size2 SpinBox::get_minimum_size() const {
 	Size2 ms = line_edit->get_combined_minimum_size();
 	ms.width += sizing_cache.buttons_block_width;
@@ -63,21 +107,40 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 			value += " " + suffix;
 		}
 	}
+
+	if (!accepted && update_on_text_changed && !line_edit->get_text().replace_char(',', '.').contains_char('.')) {
+		value = String::num(get_value(), 0);
+	}
+
 	line_edit->set_text_with_selection(value);
 }
 
 void SpinBox::_text_submitted(const String &p_string) {
 	if (p_string.is_empty()) {
-		_update_text();
 		return;
+	}
+
+	String text = p_string;
+
+	if (update_on_text_changed) {
+		// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
+		text = p_string.replace_char(',', '.');
+
+		if (!text.begins_with(".") && p_string.ends_with(".")) {
+			return;
+		}
+
+		if (text.begins_with(".")) {
+			line_edit->set_text("0.");
+			line_edit->set_caret_column(line_edit->get_text().length());
+			return;
+		}
 	}
 
 	Ref<Expression> expr;
 	expr.instantiate();
 
-	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
-	String text = p_string.replace(",", ".");
-	text = text.replace(";", ",");
+	text = text.replace_char(';', ',');
 	text = TS->parse_number(text);
 	// Ignore the prefix and suffix in the expression.
 	text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
@@ -107,12 +170,17 @@ void SpinBox::_text_submitted(const String &p_string) {
 }
 
 void SpinBox::_text_changed(const String &p_string) {
+	accepted = false;
 	int cursor_pos = line_edit->get_caret_column();
 
 	_text_submitted(p_string);
 
+	String text = p_string.replace_char(',', '.');
+
 	// Line edit 'set_text' method resets the cursor position so we need to undo that.
-	line_edit->set_caret_column(cursor_pos);
+	if (update_on_text_changed && !text.begins_with(".")) {
+		line_edit->set_caret_column(cursor_pos);
+	}
 }
 
 LineEdit *SpinBox::get_line_edit() {
@@ -120,6 +188,9 @@ LineEdit *SpinBox::get_line_edit() {
 }
 
 void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
+	if (drag.enabled) {
+		line_edit->accept_event();
+	}
 }
 
 void SpinBox::_range_click_timeout() {
@@ -189,6 +260,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed()) {
 		switch (mb->get_button_index()) {
 			case MouseButton::LEFT: {
+				accepted = true;
 				line_edit->grab_focus();
 
 				if (mouse_on_up_button || mouse_on_down_button) {
@@ -265,7 +337,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 		if (drag.enabled) {
 			drag.diff_y += mm->get_relative().y;
-			double diff_y = -0.01 * Math::pow(ABS(drag.diff_y), 1.8) * SIGN(drag.diff_y);
+			double diff_y = -0.01 * Math::pow(Math::abs(drag.diff_y), 1.8) * SIGN(drag.diff_y);
 			use_custom_arrow_step = false;
 			set_value(CLAMP(drag.base_val + step * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
@@ -288,9 +360,12 @@ void SpinBox::_line_edit_editing_toggled(bool p_toggled_on) {
 			line_edit->select_all();
 		}
 	} else {
+		accepted = true;
+
 		if (Input::get_singleton()->is_action_pressed("ui_cancel") || line_edit->get_text().is_empty()) {
 			_update_text(); // Revert text if editing was canceled.
 		} else {
+			line_edit->set_text(line_edit->get_text().trim_suffix(".").trim_suffix(","));
 			_update_text(true); // Update text in case value was changed this frame (e.g. on `focus_exited`).
 			_text_submitted(line_edit->get_text());
 		}
@@ -619,7 +694,7 @@ void SpinBox::_bind_methods() {
 }
 
 SpinBox::SpinBox() {
-	line_edit = memnew(LineEdit);
+	line_edit = memnew(SpinBoxLineEdit);
 	line_edit->set_emoji_menu_enabled(false);
 	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 

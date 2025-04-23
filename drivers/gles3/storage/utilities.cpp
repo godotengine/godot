@@ -421,6 +421,9 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 	if (p_feature == "etc2") {
 		return config->etc2_supported;
 	}
+	if (p_feature == "astc_hdr") {
+		return config->astc_hdr_supported;
+	}
 
 	return false;
 }
@@ -463,6 +466,18 @@ Size2i Utilities::get_maximum_viewport_size() const {
 	Config *config = Config::get_singleton();
 	ERR_FAIL_NULL_V(config, Size2i());
 	return Size2i(config->max_viewport_size[0], config->max_viewport_size[1]);
+}
+
+uint32_t Utilities::get_maximum_shader_varyings() const {
+	Config *config = Config::get_singleton();
+	ERR_FAIL_NULL_V(config, 31);
+	return config->max_shader_varyings;
+}
+
+uint64_t Utilities::get_maximum_uniform_buffer_size() const {
+	Config *config = Config::get_singleton();
+	ERR_FAIL_NULL_V(config, 65536);
+	return uint64_t(config->max_uniform_buffer_size);
 }
 
 #endif // GLES3_ENABLED

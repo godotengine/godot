@@ -14,6 +14,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 from types import ModuleType
 
 from SCons import __version__ as scons_raw_version
+from SCons.Builder import ListEmitter
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -57,7 +58,7 @@ import gles3_builders
 import glsl_builders
 import methods
 import scu_builders
-from misc.utility.color import STDERR_COLOR, print_error, print_info, print_warning
+from misc.utility.color import is_stderr_color, print_error, print_info, print_warning
 from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
 
 if ARGUMENTS.get("target", "editor") == "editor":
@@ -107,22 +108,11 @@ for x in sorted(glob.glob("platform/*")):
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
 
-custom_tools = ["default"]
-
-platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
-
-if platform_arg == "android":
-    custom_tools = ["clang", "clang++", "as", "ar", "link"]
-elif platform_arg == "web":
-    # Use generic POSIX build toolchain for Emscripten.
-    custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
-elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", False):
-    custom_tools = ["mingw"]
-
 # We let SCons build its default ENV as it includes OS-specific things which we don't
-# want to have to pull in manually.
+# want to have to pull in manually. However we enforce no "tools", which we register
+# further down after parsing our platform-specific configuration.
 # Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
-env = Environment(tools=custom_tools)
+env = Environment(tools=[])
 env.PrependENVPath("PATH", os.getenv("PATH"))
 env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
@@ -168,11 +158,7 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-if env.scons_version >= (4, 3):
-    opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(platform_list), "")
-else:
-    opts.Add("platform", "Target platform (%s)" % "|".join(platform_list), "")
-    opts.Add("p", "Alias for 'platform'", "")
+opts.Add((["platform", "p"], "Target platform (%s)" % "|".join(platform_list), ""))
 opts.Add(EnumVariable("target", "Compilation target", "editor", ("editor", "template_release", "template_debug")))
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
 opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
@@ -181,7 +167,7 @@ opts.Add(
         "optimize",
         "Optimization level (by default inferred from 'target' and 'dev_build')",
         "auto",
-        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size"),
+        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size", "size_extra"),
     )
 )
 opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
@@ -201,11 +187,12 @@ opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
 opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
 opts.Add(BoolVariable("metal", "Enable the Metal rendering driver on supported platforms (Apple arm64 only)", False))
-opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
+opts.Add(BoolVariable("accesskit", "Use AccessKit C SDK", True))
+opts.Add(("accesskit_sdk_path", "Path to the AccessKit C SDK", ""))
 
 # Advanced options
 opts.Add(
@@ -235,6 +222,11 @@ opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
+opts.Add(BoolVariable("disable_physics_2d", "Disable 2D physics nodes and server", False))
+opts.Add(BoolVariable("disable_physics_3d", "Disable 3D physics nodes and server", False))
+opts.Add(BoolVariable("disable_navigation_2d", "Disable 2D navigation features", False))
+opts.Add(BoolVariable("disable_navigation_3d", "Disable 3D navigation features", False))
+opts.Add(BoolVariable("disable_xr", "Disable XR nodes and server", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
@@ -251,6 +243,13 @@ opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
 opts.Add("cache_path", "Path to a directory where SCons cache files will be stored. No value disables the cache.", "")
 opts.Add("cache_limit", "Max size (in GiB) for the SCons cache. 0 means no limit.", "0")
+opts.Add(
+    BoolVariable(
+        "redirect_build_objects",
+        "Enable redirecting built objects/libraries to `bin/obj/` to declutter the repository.",
+        True,
+    )
+)
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -297,6 +296,9 @@ opts.Add("asflags", "Custom flags for the assembler")
 opts.Add("arflags", "Custom flags for the archive tool")
 opts.Add("rcflags", "Custom flags for Windows resource compiler")
 
+opts.Add("c_compiler_launcher", "C compiler launcher (e.g. `ccache`)")
+opts.Add("cpp_compiler_launcher", "C++ compiler launcher (e.g. `ccache`)")
+
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
 opts.Update(env)
@@ -312,10 +314,7 @@ if env["import_env_vars"]:
 
 # Platform selection: validate input, and add options.
 
-if env.scons_version < (4, 3) and not env["platform"]:
-    env["platform"] = env["p"]
-
-if env["platform"] == "":
+if not env["platform"]:
     # Missing `platform` argument, try to detect platform automatically
     if (
         sys.platform.startswith("linux")
@@ -330,8 +329,8 @@ if env["platform"] == "":
     elif sys.platform == "win32":
         env["platform"] = "windows"
 
-    if env["platform"] != "":
-        print(f'Automatically detected platform: {env["platform"]}')
+    if env["platform"]:
+        print(f"Automatically detected platform: {env['platform']}")
 
 # Deprecated aliases kept for compatibility.
 if env["platform"] in compatibility_platform_aliases:
@@ -352,7 +351,7 @@ if env["platform"] not in platform_list:
 
     if env["platform"] == "list":
         print(text)
-    elif env["platform"] == "":
+    elif not env["platform"]:
         print_error("Could not detect platform automatically.\n" + text)
     else:
         print_error(f'Invalid target platform "{env["platform"]}".\n' + text)
@@ -434,9 +433,35 @@ env.modules_detected = modules_detected
 opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
 Help(opts.GenerateHelpText(env))
 
-# add default include paths
 
+# FIXME: Tool assignment happening at this stage is a direct consequence of getting the platform logic AFTER the SCons
+# environment was already been constructed. Fixing this would require a broader refactor where all options are setup
+# ahead of time with native validator/converter functions.
+tmppath = "./platform/" + env["platform"]
+sys.path.insert(0, tmppath)
+import detect
+
+custom_tools = ["default"]
+try:  # Platform custom tools are optional
+    custom_tools = detect.get_tools(env)
+except AttributeError:
+    pass
+for tool in custom_tools:
+    env.Tool(tool)
+
+
+# Add default include paths.
 env.Prepend(CPPPATH=["#"])
+
+# Allow marking includes as external/system to avoid raising warnings.
+env["_CCCOMCOM"] += " $_CPPEXTINCFLAGS"
+env["CPPEXTPATH"] = []
+if env.scons_version < (4, 2):
+    env["_CPPEXTINCFLAGS"] = "${_concat(EXTINCPREFIX, CPPEXTPATH, EXTINCSUFFIX, __env__, RDirs, TARGET, SOURCE)}"
+else:
+    env["_CPPEXTINCFLAGS"] = (
+        "${_concat(EXTINCPREFIX, CPPEXTPATH, EXTINCSUFFIX, __env__, RDirs, TARGET, SOURCE, affect_signature=False)}"
+    )
 
 # configure ENV for platform
 env.platform_exporters = platform_exporters
@@ -515,10 +540,6 @@ if not env["deprecated"]:
 if env["precision"] == "double":
     env.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
 
-tmppath = "./platform/" + env["platform"]
-sys.path.insert(0, tmppath)
-import detect
-
 # Default num_jobs to local cpu count if not user specified.
 # SCons has a peculiarity where user-specified options won't be overridden
 # by SetOption, so we can rely on this to know if we should use our default.
@@ -587,7 +608,7 @@ if env["dev_mode"]:
 if env["production"]:
     env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
     env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
-    if platform_arg == "android":
+    if env["platform"] == "android":
         env["swappy"] = methods.get_cmdline_bool("swappy", True)
     # LTO "auto" means we handle the preferred option in each platform detect.py.
     env["lto"] = ARGUMENTS.get("lto", "auto")
@@ -701,83 +722,84 @@ if env["arch"] == "x86_32":
 
 # Explicitly specify colored output.
 if methods.using_gcc(env):
-    env.AppendUnique(CCFLAGS=["-fdiagnostics-color" if STDERR_COLOR else "-fno-diagnostics-color"])
+    env.AppendUnique(CCFLAGS=["-fdiagnostics-color" if is_stderr_color() else "-fno-diagnostics-color"])
 elif methods.using_clang(env) or methods.using_emcc(env):
-    env.AppendUnique(CCFLAGS=["-fcolor-diagnostics" if STDERR_COLOR else "-fno-color-diagnostics"])
+    env.AppendUnique(CCFLAGS=["-fcolor-diagnostics" if is_stderr_color() else "-fno-color-diagnostics"])
     if sys.platform == "win32":
         env.AppendUnique(CCFLAGS=["-fansi-escape-codes"])
 
 # Set optimize and debug_symbols flags.
 # "custom" means do nothing and let users set their own optimization flags.
 # Needs to happen after configure to have `env.msvc` defined.
+env.AppendUnique(CCFLAGS=["$OPTIMIZELEVEL"])
 if env.msvc:
     if env["debug_symbols"]:
-        env.Append(CCFLAGS=["/Zi", "/FS"])
-        env.Append(LINKFLAGS=["/DEBUG:FULL"])
+        env.AppendUnique(CCFLAGS=["/Zi", "/FS"])
+        env.AppendUnique(LINKFLAGS=["/DEBUG:FULL"])
     else:
-        env.Append(LINKFLAGS=["/DEBUG:NONE"])
+        env.AppendUnique(LINKFLAGS=["/DEBUG:NONE"])
 
     if env["optimize"].startswith("speed"):
-        env.Append(CCFLAGS=["/O2"])
-        env.Append(LINKFLAGS=["/OPT:REF"])
+        env["OPTIMIZELEVEL"] = "/O2"
+        env.AppendUnique(LINKFLAGS=["/OPT:REF"])
         if env["optimize"] == "speed_trace":
-            env.Append(LINKFLAGS=["/OPT:NOICF"])
-    elif env["optimize"] == "size":
-        env.Append(CCFLAGS=["/O1"])
-        env.Append(LINKFLAGS=["/OPT:REF"])
+            env.AppendUnique(LINKFLAGS=["/OPT:NOICF"])
+    elif env["optimize"].startswith("size"):
+        env["OPTIMIZELEVEL"] = "/O1"
+        env.AppendUnique(LINKFLAGS=["/OPT:REF"])
+        if env["optimize"] == "size_extra":
+            env.AppendUnique(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug" or env["optimize"] == "none":
-        env.Append(CCFLAGS=["/Od"])
+        env["OPTIMIZELEVEL"] = "/Od"
 else:
     if env["debug_symbols"]:
         if env["platform"] == "windows":
             if methods.using_clang(env):
-                env.Append(CCFLAGS=["-gdwarf-4"])  # clang dwarf-5 symbols are broken on Windows.
+                env.AppendUnique(CCFLAGS=["-gdwarf-4"])  # clang dwarf-5 symbols are broken on Windows.
             else:
-                env.Append(CCFLAGS=["-gdwarf-5"])  # For gcc, only dwarf-5 symbols seem usable by libbacktrace.
+                env.AppendUnique(CCFLAGS=["-gdwarf-5"])  # For gcc, only dwarf-5 symbols seem usable by libbacktrace.
         else:
             # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
             # otherwise addr2line doesn't understand them
-            env.Append(CCFLAGS=["-gdwarf-4"])
+            env.AppendUnique(CCFLAGS=["-gdwarf-4"])
         if methods.using_emcc(env):
             # Emscripten only produces dwarf symbols when using "-g3".
-            env.Append(CCFLAGS=["-g3"])
+            env.AppendUnique(CCFLAGS=["-g3"])
             # Emscripten linker needs debug symbols options too.
-            env.Append(LINKFLAGS=["-gdwarf-4"])
-            env.Append(LINKFLAGS=["-g3"])
+            env.AppendUnique(LINKFLAGS=["-gdwarf-4"])
+            env.AppendUnique(LINKFLAGS=["-g3"])
         elif env.dev_build:
-            env.Append(CCFLAGS=["-g3"])
+            env.AppendUnique(CCFLAGS=["-g3"])
         else:
-            env.Append(CCFLAGS=["-g2"])
+            env.AppendUnique(CCFLAGS=["-g2"])
         if env["debug_paths_relative"]:
             # Remap absolute paths to relative paths for debug symbols.
             project_path = Dir("#").abspath
-            env.Append(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
+            env.AppendUnique(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
     else:
         if methods.is_apple_clang(env):
             # Apple Clang, its linker doesn't like -s.
-            env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
+            env.AppendUnique(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
         else:
-            env.Append(LINKFLAGS=["-s"])
+            env.AppendUnique(LINKFLAGS=["-s"])
 
     # Linker needs optimization flags too, at least for Emscripten.
     # For other toolchains, this _may_ be useful for LTO too to disambiguate.
+    env.AppendUnique(LINKFLAGS=["$OPTIMIZELEVEL"])
 
     if env["optimize"] == "speed":
-        env.Append(CCFLAGS=["-O3"])
-        env.Append(LINKFLAGS=["-O3"])
+        env["OPTIMIZELEVEL"] = "-O3"
     # `-O2` is friendlier to debuggers than `-O3`, leading to better crash backtraces.
     elif env["optimize"] == "speed_trace":
-        env.Append(CCFLAGS=["-O2"])
-        env.Append(LINKFLAGS=["-O2"])
-    elif env["optimize"] == "size":
-        env.Append(CCFLAGS=["-Os"])
-        env.Append(LINKFLAGS=["-Os"])
+        env["OPTIMIZELEVEL"] = "-O2"
+    elif env["optimize"].startswith("size"):
+        env["OPTIMIZELEVEL"] = "-Os"
+        if env["optimize"] == "size_extra":
+            env.AppendUnique(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug":
-        env.Append(CCFLAGS=["-Og"])
-        env.Append(LINKFLAGS=["-Og"])
+        env["OPTIMIZELEVEL"] = "-Og"
     elif env["optimize"] == "none":
-        env.Append(CCFLAGS=["-O0"])
-        env.Append(LINKFLAGS=["-O0"])
+        env["OPTIMIZELEVEL"] = "-O0"
 
 # Needs to happen after configure to handle "auto".
 if env["lto"] != "none":
@@ -818,6 +840,7 @@ elif env.msvc:
     env.Append(CXXFLAGS=["/EHsc"])
 
 # Configure compiler warnings
+env.AppendUnique(CCFLAGS=["$WARNLEVEL"])
 if env.msvc and not methods.using_clang(env):  # MSVC
     # Disable warnings which we don't plan to fix.
     disabled_warnings = [
@@ -835,19 +858,23 @@ if env.msvc and not methods.using_clang(env):  # MSVC
     ]
 
     if env["warnings"] == "extra":
-        env.Append(CCFLAGS=["/W4"] + disabled_warnings)
+        env["WARNLEVEL"] = "/W4"
+        env.AppendUnique(CCFLAGS=disabled_warnings)
     elif env["warnings"] == "all":
+        env["WARNLEVEL"] = "/W3"
         # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
-        env.Append(CCFLAGS=["/W3", "/w34458"] + disabled_warnings)
+        env.AppendUnique(CCFLAGS=["/w34458"] + disabled_warnings)
     elif env["warnings"] == "moderate":
-        env.Append(CCFLAGS=["/W2"] + disabled_warnings)
+        env["WARNLEVEL"] = "/W2"
+        env.AppendUnique(CCFLAGS=disabled_warnings)
     else:  # 'no'
+        env["WARNLEVEL"] = "/w"
         # C4267 is particularly finicky & needs to be explicitly disabled.
-        env.Append(CCFLAGS=["/w", "/wd4267"])
+        env.AppendUnique(CCFLAGS=["/wd4267"])
 
     if env["werror"]:
-        env.Append(CCFLAGS=["/WX"])
-        env.Append(LINKFLAGS=["/WX"])
+        env.AppendUnique(CCFLAGS=["/WX"])
+        env.AppendUnique(LINKFLAGS=["/WX"])
 
 else:  # GCC, Clang
     common_warnings = []
@@ -866,14 +893,14 @@ else:  # GCC, Clang
         # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
         common_warnings += ["-Wno-ordered-compare-function-pointers"]
 
-    # clang-cl will interpret `-Wall` as `-Weverything`, workaround with compatibility cast
-    W_ALL = "-Wall" if not env.msvc else "-W3"
+    # clang-cl will interpret `-Wall` as `-Weverything`, workaround with compatibility cast.
+    env["WARNLEVEL"] = "-Wall" if not env.msvc else "-W3"
 
     if env["warnings"] == "extra":
-        env.Append(CCFLAGS=[W_ALL, "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
-        env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
+        env.AppendUnique(CCFLAGS=["-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
+        env.AppendUnique(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
         if methods.using_gcc(env):
-            env.Append(
+            env.AppendUnique(
                 CCFLAGS=[
                     "-Walloc-zero",
                     "-Wduplicated-branches",
@@ -881,25 +908,38 @@ else:  # GCC, Clang
                     "-Wstringop-overflow=4",
                 ]
             )
-            env.Append(CXXFLAGS=["-Wplacement-new=1"])
+            env.AppendUnique(CXXFLAGS=["-Wplacement-new=1", "-Wvirtual-inheritance"])
             # Need to fix a warning with AudioServer lambdas before enabling.
             # if cc_version_major != 9:  # GCC 9 had a regression (GH-36325).
             #    env.Append(CXXFLAGS=["-Wnoexcept"])
             if cc_version_major >= 9:
-                env.Append(CCFLAGS=["-Wattribute-alias=2"])
+                env.AppendUnique(CCFLAGS=["-Wattribute-alias=2"])
             if cc_version_major >= 11:  # Broke on MethodBind templates before GCC 11.
-                env.Append(CCFLAGS=["-Wlogical-op"])
+                env.AppendUnique(CCFLAGS=["-Wlogical-op"])
         elif methods.using_clang(env) or methods.using_emcc(env):
-            env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
+            env.AppendUnique(CCFLAGS=["-Wimplicit-fallthrough"])
     elif env["warnings"] == "all":
-        env.Append(CCFLAGS=[W_ALL] + common_warnings)
+        env.AppendUnique(CCFLAGS=common_warnings)
     elif env["warnings"] == "moderate":
-        env.Append(CCFLAGS=[W_ALL, "-Wno-unused"] + common_warnings)
+        env.AppendUnique(CCFLAGS=["-Wno-unused"] + common_warnings)
     else:  # 'no'
-        env.Append(CCFLAGS=["-w"])
+        env["WARNLEVEL"] = "-w"
 
     if env["werror"]:
-        env.Append(CCFLAGS=["-Werror"])
+        env.AppendUnique(CCFLAGS=["-Werror"])
+
+# Configure external includes.
+if env.msvc:
+    if not methods.using_clang(env):
+        if cc_version_major < 16 or (cc_version_major == 16 and cc_version_minor < 10):
+            env.AppendUnique(CCFLAGS=["/experimental:external"])
+        env.AppendUnique(CCFLAGS=["/external:anglebrackets"])
+    env.AppendUnique(CCFLAGS=["/external:W0"])
+    env["EXTINCPREFIX"] = "/external:I"
+    env["EXTINCSUFFIX"] = ""
+else:
+    env["EXTINCPREFIX"] = "-isystem "
+    env["EXTINCSUFFIX"] = ""
 
 if hasattr(detect, "get_program_suffix"):
     suffix = "." + detect.get_program_suffix()
@@ -922,6 +962,51 @@ suffix += env.extra_suffix
 
 sys.path.remove(tmppath)
 sys.modules.pop("detect")
+
+if env.editor_build:
+    unsupported_opts = []
+    for disable_opt in [
+        "disable_3d",
+        "disable_advanced_gui",
+        "disable_physics_2d",
+        "disable_physics_3d",
+        "disable_navigation_2d",
+        "disable_navigation_3d",
+    ]:
+        if env[disable_opt]:
+            unsupported_opts.append(disable_opt)
+    if unsupported_opts != []:
+        print_error(
+            "The following build option(s) cannot be used for editor builds, but only for export template builds: {}.".format(
+                ", ".join(unsupported_opts)
+            )
+        )
+        Exit(255)
+
+if env["disable_3d"]:
+    env.Append(CPPDEFINES=["_3D_DISABLED"])
+    env["disable_navigation_3d"] = True
+    env["disable_physics_3d"] = True
+    env["disable_xr"] = True
+if env["disable_advanced_gui"]:
+    env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
+if env["disable_physics_2d"]:
+    env.Append(CPPDEFINES=["PHYSICS_2D_DISABLED"])
+if env["disable_physics_3d"]:
+    env.Append(CPPDEFINES=["PHYSICS_3D_DISABLED"])
+if env["disable_navigation_2d"]:
+    env.Append(CPPDEFINES=["NAVIGATION_2D_DISABLED"])
+if env["disable_navigation_3d"]:
+    env.Append(CPPDEFINES=["NAVIGATION_3D_DISABLED"])
+if env["disable_xr"]:
+    env.Append(CPPDEFINES=["XR_DISABLED"])
+if env["minizip"]:
+    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
+if env["brotli"]:
+    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+
+if not env["verbose"]:
+    methods.no_verbose(env)
 
 modules_enabled = OrderedDict()
 env.module_dependencies = {}
@@ -973,8 +1058,6 @@ if env.editor_build:
         print_error("Not all modules required by editor builds are enabled.")
         Exit(255)
 
-env.version_info = methods.get_version_info(env.module_version_string)
-
 env["PROGSUFFIX_WRAP"] = suffix + env.module_version_string + ".console" + env["PROGSUFFIX"]
 env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
 env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
@@ -993,29 +1076,6 @@ env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
 env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]
-
-if env["disable_3d"]:
-    if env.editor_build:
-        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["_3D_DISABLED"])
-if env["disable_advanced_gui"]:
-    if env.editor_build:
-        print_error(
-            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, "
-            "only for export template builds."
-        )
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
-if env["minizip"]:
-    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
-if env["brotli"]:
-    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
-
-if not env["verbose"]:
-    methods.no_verbose(env)
 
 GLSL_BUILDERS = {
     "RD_GLSL": env.Builder(
@@ -1039,6 +1099,9 @@ env.Append(BUILDERS=GLSL_BUILDERS)
 if env["compiledb"]:
     env.Tool("compilation_db")
     env.Alias("compiledb", env.CompilationDatabase())
+    env.NoCache(env.CompilationDatabase())
+    if not env["verbose"]:
+        env["COMPILATIONDB_COMSTR"] = "$GENCOMSTR"
 
 if env["ninja"]:
     if env.scons_version < (4, 2, 0):
@@ -1053,6 +1116,21 @@ if env["ninja"]:
 # Threads
 if env["threads"]:
     env.Append(CPPDEFINES=["THREADS_ENABLED"])
+
+# Ensure build objects are put in their own folder if `redirect_build_objects` is enabled.
+env.Prepend(LIBEMITTER=[methods.redirect_emitter])
+env.Prepend(SHLIBEMITTER=[methods.redirect_emitter])
+for key in (emitters := env.StaticObject.builder.emitter):
+    emitters[key] = ListEmitter([methods.redirect_emitter] + env.Flatten(emitters[key]))
+for key in (emitters := env.SharedObject.builder.emitter):
+    emitters[key] = ListEmitter([methods.redirect_emitter] + env.Flatten(emitters[key]))
+
+# Prepend compiler launchers
+if "c_compiler_launcher" in env:
+    env["CC"] = " ".join([env["c_compiler_launcher"], env["CC"]])
+
+if "cpp_compiler_launcher" in env:
+    env["CXX"] = " ".join([env["cpp_compiler_launcher"], env["CXX"]])
 
 # Build subdirs, the build order is dependent on link order.
 Export("env")
@@ -1085,11 +1163,11 @@ if "check_c_headers" in env:
     for header in headers:
         if conf.CheckCHeader(header):
             env.AppendUnique(CPPDEFINES=[headers[header]])
+conf.Finish()
 
-
-methods.show_progress(env)
-# TODO: replace this with `env.Dump(format="json")`
-# once we start requiring SCons 4.0 as min version.
-methods.dump(env)
-methods.prepare_purge(env)
-methods.prepare_timer()
+# Miscellaneous & post-build methods.
+if not env.GetOption("clean") and not env.GetOption("help"):
+    methods.dump(env)
+    methods.show_progress(env)
+    methods.prepare_purge(env)
+    methods.prepare_timer()

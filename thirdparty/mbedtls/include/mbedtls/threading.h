@@ -30,7 +30,7 @@ typedef struct mbedtls_threading_mutex_t {
     pthread_mutex_t MBEDTLS_PRIVATE(mutex);
 
     /* WARNING - state should only be accessed when holding the mutex lock in
-     * tests/src/threading_helpers.c, otherwise corruption can occur.
+     * framework/tests/src/threading_helpers.c, otherwise corruption can occur.
      * state will be 0 after a failed init or a free, and nonzero after a
      * successful init. This field is for testing only and thus not considered
      * part of the public API of Mbed TLS and may change without notice.*/

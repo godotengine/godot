@@ -94,7 +94,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		in_region = color_region_cache[p_line - 1];
 	}
 
-	const String &str = text_edit->get_line(p_line);
+	const String &str = text_edit->get_line_with_ime(p_line);
 	const int line_length = str.length();
 	Color prev_color;
 
@@ -148,6 +148,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 							if (start_key[k] != str[from + k]) {
 								match = false;
 								break;
+							}
+						}
+						// "#region" and "#endregion" only highlighted if they're the first region on the line.
+						if (color_regions[c].type == ColorRegion::TYPE_CODE_REGION) {
+							Vector<String> str_stripped_split = str.strip_edges().split_spaces(1);
+							if (!str_stripped_split.is_empty() &&
+									str_stripped_split[0] != "#region" &&
+									str_stripped_split[0] != "#endregion") {
+								match = false;
 							}
 						}
 						if (!match) {
@@ -351,15 +360,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 		// Special cases for numbers.
 		if (in_number && !is_a_digit) {
-			if (str[j] == 'b' && str[j - 1] == '0') {
+			if ((str[j] == 'b' || str[j] == 'B') && str[j - 1] == '0') {
 				is_bin_notation = true;
-			} else if (str[j] == 'x' && str[j - 1] == '0') {
+			} else if ((str[j] == 'x' || str[j] == 'X') && str[j - 1] == '0') {
 				is_hex_notation = true;
-			} else if (!((str[j] == '-' || str[j] == '+') && str[j - 1] == 'e' && !prev_is_digit) &&
-					!(str[j] == '_' && (prev_is_digit || str[j - 1] == 'b' || str[j - 1] == 'x' || str[j - 1] == '.')) &&
-					!(str[j] == 'e' && (prev_is_digit || str[j - 1] == '_')) &&
+			} else if (!((str[j] == '-' || str[j] == '+') && (str[j - 1] == 'e' || str[j - 1] == 'E') && !prev_is_digit) &&
+					!(str[j] == '_' && (prev_is_digit || str[j - 1] == 'b' || str[j - 1] == 'B' || str[j - 1] == 'x' || str[j - 1] == 'X' || str[j - 1] == '.')) &&
+					!((str[j] == 'e' || str[j] == 'E') && (prev_is_digit || str[j - 1] == '_')) &&
 					!(str[j] == '.' && (prev_is_digit || (!prev_is_binary_op && (j > 0 && (str[j - 1] == '_' || str[j - 1] == '-' || str[j - 1] == '+' || str[j - 1] == '~'))))) &&
-					!((str[j] == '-' || str[j] == '+' || str[j] == '~') && !is_binary_op && !prev_is_binary_op && str[j - 1] != 'e')) {
+					!((str[j] == '-' || str[j] == '+' || str[j] == '~') && !is_binary_op && !prev_is_binary_op && str[j - 1] != 'e' && str[j - 1] != 'E')) {
 				/* This condition continues number highlighting in special cases.
 				1st row: '+' or '-' after scientific notation (like 3e-4);
 				2nd row: '_' as a numeric separator;
@@ -777,8 +786,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<String> comments;
 	gdscript->get_comment_delimiters(&comments);
 	for (const String &comment : comments) {
-		String beg = comment.get_slice(" ", 0);
-		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
+		String beg = comment.get_slicec(' ', 0);
+		String end = comment.get_slice_count(" ") > 1 ? comment.get_slicec(' ', 1) : String();
 		add_color_region(ColorRegion::TYPE_COMMENT, beg, end, comment_color, end.is_empty());
 	}
 
@@ -787,8 +796,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<String> doc_comments;
 	gdscript->get_doc_comment_delimiters(&doc_comments);
 	for (const String &doc_comment : doc_comments) {
-		String beg = doc_comment.get_slice(" ", 0);
-		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
+		String beg = doc_comment.get_slicec(' ', 0);
+		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slicec(' ', 1) : String();
 		add_color_region(ColorRegion::TYPE_COMMENT, beg, end, doc_comment_color, end.is_empty());
 	}
 

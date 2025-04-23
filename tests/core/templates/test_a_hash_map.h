@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_A_HASH_MAP_H
-#define TEST_A_HASH_MAP_H
+#pragma once
 
 #include "core/templates/a_hash_map.h"
 
@@ -208,7 +207,7 @@ TEST_CASE("[AHashMap] Insert, iterate and remove many elements") {
 
 	//insert order should have been kept
 	int idx = 0;
-	for (auto &K : map) {
+	for (const KeyValue<int, int> &K : map) {
 		CHECK(idx == K.key);
 		CHECK(idx == K.value);
 		CHECK(map.has(idx));
@@ -235,9 +234,13 @@ TEST_CASE("[AHashMap] Insert, iterate and remove many elements") {
 TEST_CASE("[AHashMap] Insert, iterate and remove many strings") {
 	const int elem_max = 432;
 	AHashMap<String, String> map;
+
+	// To not print WARNING: Excessive collision count (NN), is the right hash function being used?
+	ERR_PRINT_OFF;
 	for (int i = 0; i < elem_max; i++) {
 		map.insert(itos(i), itos(i));
 	}
+	ERR_PRINT_ON;
 
 	//insert order should have been kept
 	int idx = 0;
@@ -309,5 +312,3 @@ TEST_CASE("[AHashMap] Array methods") {
 }
 
 } // namespace TestAHashMap
-
-#endif // TEST_A_HASH_MAP_H

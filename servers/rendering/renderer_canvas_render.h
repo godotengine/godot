@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_CANVAS_RENDER_H
-#define RENDERER_CANVAS_RENDER_H
+#pragma once
 
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering_server.h"
@@ -321,6 +320,7 @@ public:
 		bool update_when_visible : 1;
 		bool on_interpolate_transform_list : 1;
 		bool interpolated : 1;
+		bool use_identity_transform : 1;
 
 		struct CanvasGroup {
 			RS::CanvasGroupMode mode;
@@ -486,6 +486,7 @@ public:
 			repeat_source = false;
 			on_interpolate_transform_list = false;
 			interpolated = true;
+			use_identity_transform = false;
 		}
 		virtual ~Item() {
 			clear();
@@ -555,5 +556,3 @@ public:
 		singleton = nullptr;
 	}
 };
-
-#endif // RENDERER_CANVAS_RENDER_H

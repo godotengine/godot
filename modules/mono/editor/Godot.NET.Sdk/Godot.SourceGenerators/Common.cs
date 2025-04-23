@@ -137,6 +137,16 @@ namespace Godot.SourceGenerators
                 "The exported tool button is not a Callable. The '[ExportToolButton]' attribute is only supported on members of type Callable.",
                 helpLinkUri: string.Format(_helpLinkFormat, "GD0110"));
 
+        public static readonly DiagnosticDescriptor ExportToolButtonMustBeExpressionBodiedProperty =
+            new DiagnosticDescriptor(id: "GD0111",
+                title: "The exported tool button must be an expression-bodied property",
+                messageFormat: "The exported tool button '{0}' must be an expression-bodied property",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The exported tool button must be an expression-bodied property. The '[ExportToolButton]' attribute is only supported on expression-bodied properties with a 'new Callable(...)' or 'Callable.From(...)' expression.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0111"));
+
         public static readonly DiagnosticDescriptor SignalDelegateMissingSuffixRule =
             new DiagnosticDescriptor(id: "GD0201",
                 title: "The name of the delegate must end with 'EventHandler'",

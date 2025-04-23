@@ -487,7 +487,7 @@ void LookAtModifier3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ORIGIN_FROM_EXTERNAL_NODE);
 }
 
-void LookAtModifier3D::_process_modification() {
+void LookAtModifier3D::_process_modification(double p_delta) {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -502,10 +502,10 @@ void LookAtModifier3D::_process_modification() {
 	int parent_bone = skeleton->get_bone_parent(bone);
 	if (parent_bone < 0) {
 		bone_rest_space = skeleton->get_global_transform();
-		bone_rest_space.origin += skeleton->get_bone_rest(bone).origin;
+		bone_rest_space.translate_local(skeleton->get_bone_rest(bone).origin);
 	} else {
 		bone_rest_space = skeleton->get_global_transform() * skeleton->get_bone_global_pose(parent_bone);
-		bone_rest_space.origin += skeleton->get_bone_rest(bone).origin;
+		bone_rest_space.translate_local(skeleton->get_bone_rest(bone).origin);
 	}
 
 	// Calculate forward_vector and destination.
@@ -554,13 +554,13 @@ void LookAtModifier3D::_process_modification() {
 		Vector3 prev_forward_vector_nrm = forward_vector.normalized();
 		Vector3 rest_forward_vector = get_vector_from_bone_axis(forward_axis);
 		if (symmetry_limitation) {
-			if ((is_not_max_influence || !Math::is_equal_approx(primary_limit_angle, (float)Math_TAU)) &&
+			if ((is_not_max_influence || !Math::is_equal_approx(primary_limit_angle, (float)Math::TAU)) &&
 					prev_forward_vector_nrm.dot(rest_forward_vector) < 0 &&
 					forward_vector_nrm.dot(rest_forward_vector) < 0) {
 				init_transition();
 			}
 		} else {
-			if ((is_not_max_influence || !Math::is_equal_approx(primary_positive_limit_angle + primary_negative_limit_angle, (float)Math_TAU)) &&
+			if ((is_not_max_influence || !Math::is_equal_approx(primary_positive_limit_angle + primary_negative_limit_angle, (float)Math::TAU)) &&
 					prev_forward_vector_nrm.dot(rest_forward_vector) < 0 &&
 					forward_vector_nrm.dot(rest_forward_vector) < 0) {
 				init_transition();
@@ -570,13 +570,7 @@ void LookAtModifier3D::_process_modification() {
 
 	// Do time-based interpolation.
 	if (remaining > 0) {
-		double delta = 0.0;
-		if (skeleton->get_modifier_callback_mode_process() == Skeleton3D::MODIFIER_CALLBACK_MODE_PROCESS_IDLE) {
-			delta = get_process_delta_time();
-		} else {
-			delta = get_physics_process_delta_time();
-		}
-		remaining = MAX(0, remaining - time_step * delta);
+		remaining = MAX(0, remaining - time_step * p_delta);
 		if (is_flippable) {
 			// Interpolate through the rest same as AnimationTree blending for preventing to penetrate the bone into the body.
 			Quaternion rest = skeleton->get_bone_rest(bone).basis.get_rotation_quaternion();
@@ -666,7 +660,7 @@ float LookAtModifier3D::remap_damped(float p_from, float p_to, float p_damp_thre
 		return sign * CLAMP(abs_value, p_from, p_to);
 	}
 
-	double limit = Math_PI;
+	double limit = Math::PI;
 	double inv_to = 1.0 / p_to;
 	double end_x = limit * inv_to;
 	double position = abs_value * inv_to;

@@ -30,6 +30,7 @@
 
 #include "jolt_shaped_object_3d.h"
 
+#include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../shapes/jolt_custom_double_sided_shape.h"
 #include "../shapes/jolt_shape_3d.h"
@@ -140,14 +141,26 @@ JPH::ShapeRefC JoltShapedObject3D::_try_build_compound_shape(bool p_optimize) {
 	return shape_result.Get();
 }
 
+void JoltShapedObject3D::_enqueue_shapes_changed() {
+	if (space != nullptr) {
+		space->enqueue_shapes_changed(&shapes_changed_element);
+	}
+}
+
+void JoltShapedObject3D::_dequeue_shapes_changed() {
+	if (space != nullptr) {
+		space->dequeue_shapes_changed(&shapes_changed_element);
+	}
+}
+
 void JoltShapedObject3D::_enqueue_needs_optimization() {
-	if (!needs_optimization_element.in_list()) {
+	if (space != nullptr) {
 		space->enqueue_needs_optimization(&needs_optimization_element);
 	}
 }
 
 void JoltShapedObject3D::_dequeue_needs_optimization() {
-	if (needs_optimization_element.in_list()) {
+	if (space != nullptr) {
 		space->dequeue_needs_optimization(&needs_optimization_element);
 	}
 }
@@ -160,7 +173,10 @@ void JoltShapedObject3D::_shapes_changed() {
 void JoltShapedObject3D::_space_changing() {
 	JoltObject3D::_space_changing();
 
+	_dequeue_shapes_changed();
 	_dequeue_needs_optimization();
+
+	previous_jolt_shape = nullptr;
 
 	if (space != nullptr) {
 		const JoltWritableBody3D body = space->write_body(jolt_id);
@@ -172,6 +188,7 @@ void JoltShapedObject3D::_space_changing() {
 
 JoltShapedObject3D::JoltShapedObject3D(ObjectType p_object_type) :
 		JoltObject3D(p_object_type),
+		shapes_changed_element(this),
 		needs_optimization_element(this) {
 	jolt_settings->mAllowSleeping = true;
 	jolt_settings->mFriction = 1.0f;
@@ -317,6 +334,8 @@ void JoltShapedObject3D::commit_shapes(bool p_optimize_compound) {
 
 	space->get_body_iface().SetShape(jolt_id, jolt_shape, false, JPH::EActivation::DontActivate);
 
+	_enqueue_shapes_changed();
+
 	if (!p_optimize_compound && jolt_shape->GetType() == JPH::EShapeType::Compound) {
 		_enqueue_needs_optimization();
 	} else {
@@ -329,7 +348,10 @@ void JoltShapedObject3D::commit_shapes(bool p_optimize_compound) {
 void JoltShapedObject3D::add_shape(JoltShape3D *p_shape, Transform3D p_transform, bool p_disabled) {
 	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, vformat("An invalid transform was passed when adding shape at index %d to physics body '%s'.", shapes.size(), to_string()));
 
-	shapes.push_back(JoltShapeInstance3D(this, p_shape, p_transform.orthonormalized(), p_transform.basis.get_scale(), p_disabled));
+	Vector3 shape_scale;
+	JoltMath::decompose(p_transform, shape_scale);
+
+	shapes.push_back(JoltShapeInstance3D(this, p_shape, p_transform, shape_scale, p_disabled));
 
 	_shapes_changed();
 }
@@ -367,6 +389,10 @@ void JoltShapedObject3D::clear_shapes() {
 	shapes.clear();
 
 	_shapes_changed();
+}
+
+void JoltShapedObject3D::clear_previous_shape() {
+	previous_jolt_shape = nullptr;
 }
 
 int JoltShapedObject3D::find_shape_index(uint32_t p_shape_instance_id) const {
@@ -408,8 +434,8 @@ void JoltShapedObject3D::set_shape_transform(int p_index, Transform3D p_transfor
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
 	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, "Failed to correctly set transform for shape at index %d in body '%s'.");
 
-	Vector3 new_scale = p_transform.basis.get_scale();
-	p_transform.basis.orthonormalize();
+	Vector3 new_scale;
+	JoltMath::decompose(p_transform, new_scale);
 
 	JoltShapeInstance3D &shape = shapes[p_index];
 
@@ -449,10 +475,4 @@ void JoltShapedObject3D::set_shape_disabled(int p_index, bool p_disabled) {
 	}
 
 	_shapes_changed();
-}
-
-void JoltShapedObject3D::post_step(float p_step, JPH::Body &p_jolt_body) {
-	JoltObject3D::post_step(p_step, p_jolt_body);
-
-	previous_jolt_shape = nullptr;
 }

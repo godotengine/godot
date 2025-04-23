@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_SERVER_3D_H
-#define NAVIGATION_SERVER_3D_H
+#pragma once
 
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
@@ -38,6 +37,11 @@
 #include "scene/resources/navigation_mesh.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
+
+struct NavMeshGeometryParser3D {
+	RID self;
+	Callable callback;
+};
 
 /// This server uses the concept of internal mutability.
 /// All the constant functions can be called in multithread because internally
@@ -125,6 +129,7 @@ public:
 
 	/// Creates a new region.
 	virtual RID region_create() = 0;
+	virtual uint32_t region_get_iteration_id(RID p_region) const = 0;
 
 	virtual void region_set_enabled(RID p_region, bool p_enabled) = 0;
 	virtual bool region_get_enabled(RID p_region) const = 0;
@@ -342,7 +347,8 @@ public:
 	/// The result of this process is needed by the physics server,
 	/// so this must be called in the main thread.
 	/// Note: This function is not thread safe.
-	virtual void process(real_t delta_time) = 0;
+	virtual void process(double p_delta_time) = 0;
+	virtual void physics_process(double p_delta_time) = 0;
 	virtual void init() = 0;
 	virtual void sync() = 0;
 	virtual void finish() = 0;
@@ -357,6 +363,12 @@ public:
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const = 0;
 #endif // _3D_DISABLED
 
+protected:
+	static RWLock geometry_parser_rwlock;
+	static RID_Owner<NavMeshGeometryParser3D> geometry_parser_owner;
+	static LocalVector<NavMeshGeometryParser3D *> generator_parsers;
+
+public:
 	virtual RID source_geometry_parser_create() = 0;
 	virtual void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) = 0;
 
@@ -573,8 +585,9 @@ class NavigationServer3DManager {
 public:
 	static void set_default_server(NavigationServer3DCallback p_callback);
 	static NavigationServer3D *new_default_server();
+
+	static void initialize_server();
+	static void finalize_server();
 };
 
 VARIANT_ENUM_CAST(NavigationServer3D::ProcessInfo);
-
-#endif // NAVIGATION_SERVER_3D_H

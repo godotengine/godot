@@ -28,17 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_VIEWPORT_H
-#define TEST_VIEWPORT_H
+#pragma once
 
-#include "scene/2d/physics/area_2d.h"
-#include "scene/2d/physics/collision_shape_2d.h"
+#include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
+
+#ifndef PHYSICS_2D_DISABLED
+#include "scene/2d/physics/area_2d.h"
+#include "scene/2d/physics/collision_shape_2d.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
 #include "servers/physics_server_2d_dummy.h"
+#endif // PHYSICS_2D_DISABLED
 
 #include "tests/test_macros.h"
 
@@ -344,7 +347,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 				CHECK(node_a->has_focus());
 
-				SEND_GUI_MOUSE_BUTTON_EVENT(on_b, MouseButton::RIGHT, (int)MouseButtonMask::LEFT | (int)MouseButtonMask::RIGHT, Key::NONE);
+				SEND_GUI_MOUSE_BUTTON_EVENT(on_b, MouseButton::RIGHT, MouseButtonMask::LEFT | MouseButtonMask::RIGHT, Key::NONE);
 				CHECK(node_a->has_focus());
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_b, MouseButton::RIGHT, MouseButtonMask::LEFT, Key::NONE);
@@ -359,12 +362,12 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_background, MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
 				CHECK_FALSE(root->gui_get_focus_owner());
 
-				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, (int)MouseButtonMask::LEFT | (int)MouseButtonMask::RIGHT, Key::NONE);
+				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT | MouseButtonMask::RIGHT, Key::NONE);
 				CHECK(node_a->has_focus());
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::RIGHT, Key::NONE);
 				CHECK(node_a->has_focus());
 
-				SEND_GUI_MOUSE_BUTTON_EVENT(on_b, MouseButton::LEFT, (int)MouseButtonMask::LEFT | (int)MouseButtonMask::RIGHT, Key::NONE);
+				SEND_GUI_MOUSE_BUTTON_EVENT(on_b, MouseButton::LEFT, MouseButtonMask::LEFT | MouseButtonMask::RIGHT, Key::NONE);
 				CHECK(node_b->has_focus());
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_d, MouseButton::LEFT, MouseButtonMask::RIGHT, Key::NONE);
@@ -410,10 +413,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 			SUBCASE("[Viewport][GuiInputEvent] Signal 'gui_focus_changed' is only emitted if a previously unfocused Control grabs focus.") {
 				SIGNAL_WATCH(root, SNAME("gui_focus_changed"));
-				Array node_array;
-				node_array.push_back(node_a);
-				Array signal_args;
-				signal_args.push_back(node_array);
+				Array signal_args = { { node_a } };
 
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -512,6 +512,45 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_d->invalid_order);
 		}
 
+		SUBCASE("[Viewport][GuiInputEvent] Mouse behavior recursive disables mouse motion events.") {
+			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+
+			// Enabled when parent is set to inherit.
+			node_h->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_INHERITED);
+			node_i->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_INHERITED);
+			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
+			CHECK(node_i->mouse_over);
+			CHECK(node_i->mouse_over_self);
+
+			// Enabled when parent is set to enabled.
+			node_h->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_ENABLED);
+			node_i->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_INHERITED);
+			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
+			CHECK(node_i->mouse_over);
+			CHECK(node_i->mouse_over_self);
+
+			// Disabled when parent is set to disabled.
+			node_h->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_DISABLED);
+			node_i->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_INHERITED);
+			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
+			CHECK_FALSE(node_i->mouse_over);
+			CHECK_FALSE(node_i->mouse_over_self);
+
+			// Enabled when set to enabled and parent is set to disabled.
+			node_h->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_DISABLED);
+			node_i->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_ENABLED);
+			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
+			CHECK(node_i->mouse_over);
+			CHECK(node_i->mouse_over_self);
+
+			// Disabled when it is set to disabled.
+			node_h->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_ENABLED);
+			node_i->set_mouse_behavior_recursive(Control::MOUSE_BEHAVIOR_DISABLED);
+			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
+			CHECK_FALSE(node_i->mouse_over);
+			CHECK_FALSE(node_i->mouse_over_self);
+		}
+
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation.") {
 			node_d->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 			node_g->set_mouse_filter(Control::MOUSE_FILTER_PASS);
@@ -567,8 +606,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation when moving into child.") {
 			SIGNAL_WATCH(node_i, SceneStringName(mouse_entered));
 			SIGNAL_WATCH(node_i, SceneStringName(mouse_exited));
-			Array signal_args;
-			signal_args.push_back(Array());
+			Array signal_args = { {} };
 
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
@@ -775,8 +813,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when changing top level.") {
 			SIGNAL_WATCH(node_i, SceneStringName(mouse_entered));
 			SIGNAL_WATCH(node_i, SceneStringName(mouse_exited));
-			Array signal_args;
-			signal_args.push_back(Array());
+			Array signal_args = { {} };
 
 			node_d->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
@@ -854,8 +891,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when changing the mouse filter to stop.") {
 			SIGNAL_WATCH(node_i, SceneStringName(mouse_entered));
 			SIGNAL_WATCH(node_i, SceneStringName(mouse_exited));
-			Array signal_args;
-			signal_args.push_back(Array());
+			Array signal_args = { {} };
 
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
@@ -907,8 +943,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when changing the mouse filter to ignore.") {
 			SIGNAL_WATCH(node_i, SceneStringName(mouse_entered));
 			SIGNAL_WATCH(node_i, SceneStringName(mouse_exited));
-			Array signal_args;
-			signal_args.push_back(Array());
+			Array signal_args = { {} };
 
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
@@ -984,8 +1019,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when removing the hovered Control.") {
 			SIGNAL_WATCH(node_h, SceneStringName(mouse_entered));
 			SIGNAL_WATCH(node_h, SceneStringName(mouse_exited));
-			Array signal_args;
-			signal_args.push_back(Array());
+			Array signal_args = { {} };
 
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
@@ -1038,8 +1072,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when hiding the hovered Control.") {
 			SIGNAL_WATCH(node_h, SceneStringName(mouse_entered));
 			SIGNAL_WATCH(node_h, SceneStringName(mouse_exited));
-			Array signal_args;
-			signal_args.push_back(Array());
+			Array signal_args = { {} };
 
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
@@ -1092,8 +1125,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		SUBCASE("[Viewport][GuiInputEvent] Window Mouse Enter/Exit signals.") {
 			SIGNAL_WATCH(root, SceneStringName(mouse_entered));
 			SIGNAL_WATCH(root, SceneStringName(mouse_exited));
-			Array signal_args;
-			signal_args.push_back(Array());
+			Array signal_args = { {} };
 
 			SEND_GUI_MOUSE_MOTION_EVENT(on_outside, MouseButtonMask::NONE, Key::NONE);
 			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
@@ -1521,6 +1553,7 @@ TEST_CASE("[SceneTree][Viewport] Control mouse cursor shape") {
 	}
 }
 
+#ifndef PHYSICS_2D_DISABLED
 class TestArea2D : public Area2D {
 	GDCLASS(TestArea2D, Area2D);
 
@@ -1616,15 +1649,8 @@ TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
 	Point2i on_01 = Point2i(10, 50);
 	Point2i on_02 = Point2i(50, 10);
 
-	Array empty_signal_args_2;
-	empty_signal_args_2.push_back(Array());
-	empty_signal_args_2.push_back(Array());
-
-	Array empty_signal_args_4;
-	empty_signal_args_4.push_back(Array());
-	empty_signal_args_4.push_back(Array());
-	empty_signal_args_4.push_back(Array());
-	empty_signal_args_4.push_back(Array());
+	Array empty_signal_args_2 = { Array(), Array() };
+	Array empty_signal_args_4 = { Array(), Array(), Array(), Array() };
 
 	for (PickingCollider E : v) {
 		E.a->init_signals();
@@ -1787,7 +1813,7 @@ TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
 
 	SUBCASE("[Viewport][Picking2D] CollisionObject in CanvasLayer") {
 		CanvasLayer *node_c = memnew(CanvasLayer);
-		node_c->set_rotation(Math_PI);
+		node_c->set_rotation(Math::PI);
 		node_c->set_offset(Point2i(100, 100));
 		root->add_child(node_c);
 
@@ -1928,6 +1954,7 @@ TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
 		memdelete(E.a);
 	}
 }
+#endif // PHYSICS_2D_DISABLED
 
 TEST_CASE("[SceneTree][Viewport] Embedded Windows") {
 	Window *root = SceneTree::get_singleton()->get_root();
@@ -1945,5 +1972,3 @@ TEST_CASE("[SceneTree][Viewport] Embedded Windows") {
 }
 
 } // namespace TestViewport
-
-#endif // TEST_VIEWPORT_H

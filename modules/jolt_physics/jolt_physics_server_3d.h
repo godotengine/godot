@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_PHYSICS_SERVER_3D_H
-#define JOLT_PHYSICS_SERVER_3D_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
 #include "servers/physics_server_3d.h"
@@ -49,7 +48,7 @@ class JoltPhysicsServer3D final : public PhysicsServer3D {
 
 	mutable RID_PtrOwner<JoltSpace3D, true> space_owner;
 	mutable RID_PtrOwner<JoltArea3D, true> area_owner;
-	mutable RID_PtrOwner<JoltBody3D, true> body_owner;
+	mutable RID_PtrOwner<JoltBody3D, true> body_owner{ 65536, 1048576 };
 	mutable RID_PtrOwner<JoltSoftBody3D, true> soft_body_owner;
 	mutable RID_PtrOwner<JoltShape3D, true> shape_owner;
 	mutable RID_PtrOwner<JoltJoint3D, true> joint_owner;
@@ -421,6 +420,7 @@ public:
 
 	virtual int get_process_info(PhysicsServer3D::ProcessInfo p_process_info) override;
 
+	bool is_on_separate_thread() const { return on_separate_thread; }
 	bool is_active() const { return active; }
 
 	void free_space(JoltSpace3D *p_space);
@@ -498,5 +498,3 @@ VARIANT_ENUM_CAST(JoltPhysicsServer3D::ConeTwistJointParamJolt)
 VARIANT_ENUM_CAST(JoltPhysicsServer3D::ConeTwistJointFlagJolt)
 VARIANT_ENUM_CAST(JoltPhysicsServer3D::G6DOFJointAxisParamJolt)
 VARIANT_ENUM_CAST(JoltPhysicsServer3D::G6DOFJointAxisFlagJolt)
-
-#endif // JOLT_PHYSICS_SERVER_3D_H

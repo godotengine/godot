@@ -41,18 +41,10 @@ void EmbeddedProcess::_notification(int p_what) {
 			window = get_window();
 		} break;
 		case NOTIFICATION_PROCESS: {
-			_check_focused_process_id();
-			_check_mouse_over();
-
-			// We need to detect when the control globally changes location or size on the screen.
-			// NOTIFICATION_RESIZED and NOTIFICATION_WM_POSITION_CHANGED are not enough to detect
-			// resized parent to siblings controls that can affect global position.
-			Rect2i new_global_rect = get_global_rect();
-			if (last_global_rect != new_global_rect) {
-				last_global_rect = new_global_rect;
-				_queue_update_embedded_process();
+			if (updated_embedded_process_queued) {
+				updated_embedded_process_queued = false;
+				_update_embedded_process();
 			}
-
 		} break;
 		case NOTIFICATION_DRAW: {
 			_draw();
@@ -60,7 +52,7 @@ void EmbeddedProcess::_notification(int p_what) {
 		case NOTIFICATION_RESIZED:
 		case NOTIFICATION_VISIBILITY_CHANGED:
 		case NOTIFICATION_WM_POSITION_CHANGED: {
-			_queue_update_embedded_process();
+			queue_update_embedded_process();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			focus_style_box = get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles));
@@ -77,24 +69,14 @@ void EmbeddedProcess::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
-			_queue_update_embedded_process();
+			queue_update_embedded_process();
 		} break;
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			application_has_focus = true;
-			if (embedded_process_was_focused) {
-				embedded_process_was_focused = false;
-				// Refocus the embedded process if it was focused when the application lost focus,
-				// but do not refocus if the embedded process is currently focused (indicating it just lost focus)
-				// or if the current window is a different popup or secondary window.
-				if (embedding_completed && current_process_id != focused_process_id && window && window->has_focus()) {
-					grab_focus();
-					_queue_update_embedded_process();
-				}
-			}
+			last_application_focus_time = OS::get_singleton()->get_ticks_msec();
 		} break;
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
 			application_has_focus = false;
-			embedded_process_was_focused = embedding_completed && current_process_id == focused_process_id;
 		} break;
 	}
 }
@@ -102,39 +84,62 @@ void EmbeddedProcess::_notification(int p_what) {
 void EmbeddedProcess::set_window_size(const Size2i p_window_size) {
 	if (window_size != p_window_size) {
 		window_size = p_window_size;
-		_queue_update_embedded_process();
+		queue_update_embedded_process();
 	}
 }
 
 void EmbeddedProcess::set_keep_aspect(bool p_keep_aspect) {
 	if (keep_aspect != p_keep_aspect) {
 		keep_aspect = p_keep_aspect;
-		_queue_update_embedded_process();
+		queue_update_embedded_process();
 	}
 }
 
-Rect2i EmbeddedProcess::_get_global_embedded_window_rect() {
-	Rect2i control_rect = get_global_rect();
-	control_rect = Rect2i(control_rect.position, control_rect.size.maxi(1));
-	if (keep_aspect) {
-		Rect2i desired_rect = control_rect;
-		float ratio = MIN((float)control_rect.size.x / window_size.x, (float)control_rect.size.y / window_size.y);
-		desired_rect.size = Size2i(window_size.x * ratio, window_size.y * ratio).maxi(1);
+Rect2i EmbeddedProcess::get_adjusted_embedded_window_rect(Rect2i p_rect) {
+	Rect2i control_rect = Rect2i(p_rect.position + margin_top_left, (p_rect.size - get_margins_size()).maxi(1));
+	if (window) {
+		control_rect.position += window->get_position();
+	}
+	if (window_size != Size2i()) {
+		Rect2i desired_rect = Rect2i();
+		if (!keep_aspect && control_rect.size.x >= window_size.x && control_rect.size.y >= window_size.y) {
+			// Fixed at the desired size.
+			desired_rect.size = window_size;
+		} else {
+			float ratio = MIN((float)control_rect.size.x / window_size.x, (float)control_rect.size.y / window_size.y);
+			desired_rect.size = Size2i(window_size.x * ratio, window_size.y * ratio).maxi(1);
+		}
 		desired_rect.position = Size2i(control_rect.position.x + ((control_rect.size.x - desired_rect.size.x) / 2), control_rect.position.y + ((control_rect.size.y - desired_rect.size.y) / 2));
 		return desired_rect;
 	} else {
+		// Stretch, use all the control area.
 		return control_rect;
 	}
 }
 
 Rect2i EmbeddedProcess::get_screen_embedded_window_rect() {
-	Rect2i rect = _get_global_embedded_window_rect();
-	if (window) {
-		rect.position += window->get_position();
+	return get_adjusted_embedded_window_rect(get_global_rect());
+}
+
+int EmbeddedProcess::get_margin_size(Side p_side) const {
+	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+
+	switch (p_side) {
+		case SIDE_LEFT:
+			return margin_top_left.x;
+		case SIDE_RIGHT:
+			return margin_bottom_right.x;
+		case SIDE_TOP:
+			return margin_top_left.y;
+		case SIDE_BOTTOM:
+			return margin_bottom_right.y;
 	}
 
-	// Removing margins to make space for the focus border style.
-	return Rect2i(rect.position.x + margin_top_left.x, rect.position.y + margin_top_left.y, MAX(rect.size.x - (margin_top_left.x + margin_bottom_right.x), 1), MAX(rect.size.y - (margin_top_left.y + margin_bottom_right.y), 1));
+	return 0;
+}
+
+Size2 EmbeddedProcess::get_margins_size() {
+	return margin_top_left + margin_bottom_right;
 }
 
 bool EmbeddedProcess::is_embedding_in_progress() {
@@ -143,6 +148,10 @@ bool EmbeddedProcess::is_embedding_in_progress() {
 
 bool EmbeddedProcess::is_embedding_completed() {
 	return embedding_completed;
+}
+
+int EmbeddedProcess::get_embedded_pid() const {
+	return current_process_id;
 }
 
 void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
@@ -162,6 +171,7 @@ void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
 	current_process_id = p_pid;
 	start_embedding_time = OS::get_singleton()->get_ticks_msec();
 	embedding_grab_focus = has_focus();
+	timer_update_embedded_process->start();
 	set_process(true);
 	set_notify_transform(true);
 
@@ -179,9 +189,16 @@ void EmbeddedProcess::reset() {
 	start_embedding_time = 0;
 	embedding_grab_focus = false;
 	timer_embedding->stop();
+	timer_update_embedded_process->stop();
 	set_process(false);
 	set_notify_transform(false);
 	queue_redraw();
+}
+
+void EmbeddedProcess::request_close() {
+	if (current_process_id != 0 && embedding_completed) {
+		DisplayServer::get_singleton()->request_close_embedded_process(current_process_id);
+	}
 }
 
 void EmbeddedProcess::_try_embed_process() {
@@ -211,19 +228,27 @@ bool EmbeddedProcess::_is_embedded_process_updatable() {
 	return window && current_process_id != 0 && embedding_completed;
 }
 
-void EmbeddedProcess::_queue_update_embedded_process() {
-	if (updated_embedded_process_queued || !_is_embedded_process_updatable()) {
-		return;
-	}
-
+void EmbeddedProcess::queue_update_embedded_process() {
 	updated_embedded_process_queued = true;
+}
 
-	callable_mp(this, &EmbeddedProcess::_update_embedded_process).call_deferred();
+void EmbeddedProcess::_timer_update_embedded_process_timeout() {
+	_check_focused_process_id();
+	_check_mouse_over();
+
+	if (!updated_embedded_process_queued) {
+		// We need to detect when the control globally changes location or size on the screen.
+		// NOTIFICATION_RESIZED and NOTIFICATION_WM_POSITION_CHANGED are not enough to detect
+		// resized parent to siblings controls that can affect global position.
+		Rect2i new_global_rect = get_global_rect();
+		if (last_global_rect != new_global_rect) {
+			last_global_rect = new_global_rect;
+			queue_update_embedded_process();
+		}
+	}
 }
 
 void EmbeddedProcess::_update_embedded_process() {
-	updated_embedded_process_queued = false;
-
 	if (!_is_embedded_process_updatable()) {
 		return;
 	}
@@ -257,14 +282,27 @@ void EmbeddedProcess::_check_mouse_over() {
 	// This method checks if the mouse is over the embedded process while the current application is focused.
 	// The goal is to give focus to the embedded process as soon as the mouse hovers over it,
 	// allowing the user to interact with it immediately without needing to click first.
-	if (!is_visible_in_tree() || !embedding_completed || !application_has_focus || !window || !window->has_focus() || Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT) || Input::get_singleton()->is_mouse_button_pressed(MouseButton::RIGHT)) {
+	if (!embedding_completed || !application_has_focus || !window || has_focus() || !is_visible_in_tree() || !window->has_focus() || Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT) || Input::get_singleton()->is_mouse_button_pressed(MouseButton::RIGHT)) {
 		return;
 	}
 
-	bool focused = has_focus();
+	// Before checking whether the mouse is truly inside the embedded process, ensure
+	// the editor has enough time to re-render. When a breakpoint is hit in the script editor,
+	// `_check_mouse_over` may be triggered before the editor hides the game workspace.
+	// This prevents the embedded process from regaining focus immediately after the editor has taken it.
+	if (OS::get_singleton()->get_ticks_msec() - last_application_focus_time < 500) {
+		return;
+	}
+
+	// Input::is_mouse_button_pressed is not sufficient to detect the mouse button state
+	// while the floating game window is being resized.
+	BitField<MouseButtonMask> mouse_button_mask = DisplayServer::get_singleton()->mouse_get_button_state();
+	if (!mouse_button_mask.is_empty()) {
+		return;
+	}
 
 	// Not stealing focus from a textfield.
-	if (!focused && get_viewport()->gui_get_focus_owner() && get_viewport()->gui_get_focus_owner()->is_text_field()) {
+	if (get_viewport()->gui_get_focus_owner() && get_viewport()->gui_get_focus_owner()->is_text_field()) {
 		return;
 	}
 
@@ -280,14 +318,22 @@ void EmbeddedProcess::_check_mouse_over() {
 		return;
 	}
 
-	// When we already have the focus and the user moves the mouse over the embedded process,
-	// we just need to refocus the process.
-	if (focused) {
-		_queue_update_embedded_process();
-	} else {
-		grab_focus();
-		queue_redraw();
+	// Check if there's an exclusive popup, an open menu, or a tooltip.
+	// We don't want to grab focus to prevent the game window from coming to the front of the modal window
+	// or the open menu from closing when the mouse cursor moves outside the menu and over the embedded game.
+	Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+	for (const DisplayServer::WindowID &window_id : wl) {
+		Window *w = Window::get_from_id(window_id);
+		if (w && (w->is_exclusive() || w->get_flag(Window::FLAG_POPUP))) {
+			return;
+		}
 	}
+
+	// Force "regrabbing" the game window focus.
+	last_updated_embedded_process_focused = false;
+
+	grab_focus();
+	queue_redraw();
 }
 
 void EmbeddedProcess::_check_focused_process_id() {
@@ -296,17 +342,48 @@ void EmbeddedProcess::_check_focused_process_id() {
 		focused_process_id = process_id;
 		if (focused_process_id == current_process_id) {
 			// The embedded process got the focus.
-			emit_signal(SNAME("embedded_process_focused"));
-			if (has_focus()) {
-				// Redraw to updated the focus style.
-				queue_redraw();
-			} else {
-				grab_focus();
+
+			// Refocus the current model when focusing the embedded process.
+			Window *modal_window = _get_current_modal_window();
+			if (!modal_window) {
+				emit_signal(SNAME("embedded_process_focused"));
+				if (has_focus()) {
+					// Redraw to updated the focus style.
+					queue_redraw();
+				} else {
+					grab_focus();
+				}
 			}
 		} else if (has_focus()) {
 			release_focus();
 		}
 	}
+
+	// Ensure that the opened modal dialog is refocused when the focused process is the embedded process.
+	if (!application_has_focus && focused_process_id == current_process_id) {
+		Window *modal_window = _get_current_modal_window();
+		if (modal_window) {
+			if (modal_window->get_mode() == Window::MODE_MINIMIZED) {
+				modal_window->set_mode(Window::MODE_WINDOWED);
+			}
+			callable_mp(modal_window, &Window::grab_focus).call_deferred();
+		}
+	}
+}
+
+Window *EmbeddedProcess::_get_current_modal_window() {
+	Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+	for (const DisplayServer::WindowID &window_id : wl) {
+		Window *w = Window::get_from_id(window_id);
+		if (!w) {
+			continue;
+		}
+
+		if (w->is_exclusive()) {
+			return w;
+		}
+	}
+	return nullptr;
 }
 
 void EmbeddedProcess::_bind_methods() {
@@ -322,6 +399,12 @@ EmbeddedProcess::EmbeddedProcess() {
 	timer_embedding->set_one_shot(true);
 	add_child(timer_embedding);
 	timer_embedding->connect("timeout", callable_mp(this, &EmbeddedProcess::_timer_embedding_timeout));
+
+	timer_update_embedded_process = memnew(Timer);
+	timer_update_embedded_process->set_wait_time(0.1);
+	add_child(timer_update_embedded_process);
+	timer_update_embedded_process->connect("timeout", callable_mp(this, &EmbeddedProcess::_timer_update_embedded_process_timeout));
+
 	set_focus_mode(FOCUS_ALL);
 }
 

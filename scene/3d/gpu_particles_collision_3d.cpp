@@ -721,6 +721,12 @@ void GPUParticlesCollisionHeightField3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_update_mode", "update_mode"), &GPUParticlesCollisionHeightField3D::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &GPUParticlesCollisionHeightField3D::get_update_mode);
 
+	ClassDB::bind_method(D_METHOD("set_heightfield_mask", "heightfield_mask"), &GPUParticlesCollisionHeightField3D::set_heightfield_mask);
+	ClassDB::bind_method(D_METHOD("get_heightfield_mask"), &GPUParticlesCollisionHeightField3D::get_heightfield_mask);
+
+	ClassDB::bind_method(D_METHOD("set_heightfield_mask_value", "layer_number", "value"), &GPUParticlesCollisionHeightField3D::set_heightfield_mask_value);
+	ClassDB::bind_method(D_METHOD("get_heightfield_mask_value", "layer_number"), &GPUParticlesCollisionHeightField3D::get_heightfield_mask_value);
+
 	ClassDB::bind_method(D_METHOD("set_follow_camera_enabled", "enabled"), &GPUParticlesCollisionHeightField3D::set_follow_camera_enabled);
 	ClassDB::bind_method(D_METHOD("is_follow_camera_enabled"), &GPUParticlesCollisionHeightField3D::is_follow_camera_enabled);
 
@@ -728,6 +734,7 @@ void GPUParticlesCollisionHeightField3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "256 (Fastest),512 (Fast),1024 (Average),2048 (Slow),4096 (Slower),8192 (Slowest)"), "set_resolution", "get_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "When Moved (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_camera_enabled"), "set_follow_camera_enabled", "is_follow_camera_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "heightfield_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_heightfield_mask", "get_heightfield_mask");
 
 	BIND_ENUM_CONSTANT(RESOLUTION_256);
 	BIND_ENUM_CONSTANT(RESOLUTION_512);
@@ -788,6 +795,33 @@ void GPUParticlesCollisionHeightField3D::set_update_mode(UpdateMode p_update_mod
 
 GPUParticlesCollisionHeightField3D::UpdateMode GPUParticlesCollisionHeightField3D::get_update_mode() const {
 	return update_mode;
+}
+
+void GPUParticlesCollisionHeightField3D::set_heightfield_mask(uint32_t p_heightfield_mask) {
+	heightfield_mask = p_heightfield_mask;
+	RS::get_singleton()->particles_collision_set_height_field_mask(_get_collision(), p_heightfield_mask);
+}
+
+uint32_t GPUParticlesCollisionHeightField3D::get_heightfield_mask() const {
+	return heightfield_mask;
+}
+
+void GPUParticlesCollisionHeightField3D::set_heightfield_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 20, "Render layer number must be between 1 and 20 inclusive.");
+	uint32_t mask = get_heightfield_mask();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
+	} else {
+		mask &= ~(1 << (p_layer_number - 1));
+	}
+	set_heightfield_mask(mask);
+}
+
+bool GPUParticlesCollisionHeightField3D::get_heightfield_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 20, false, "Render layer number must be between 1 and 20 inclusive.");
+	return heightfield_mask & (1 << (p_layer_number - 1));
 }
 
 void GPUParticlesCollisionHeightField3D::set_follow_camera_enabled(bool p_enabled) {
