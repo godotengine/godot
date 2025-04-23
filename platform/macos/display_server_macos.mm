@@ -2682,6 +2682,7 @@ void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool
 
 		float window_buttons_spacing = (is_rtl) ? (cb_frame - mb_frame) : (mb_frame - cb_frame);
 
+		[p_wd.window_object setTitlebarAppearsTransparent:YES];
 		[p_wd.window_object setTitleVisibility:NSWindowTitleHidden];
 		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:YES];
 		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
@@ -2695,9 +2696,10 @@ void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool
 		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
 	} else {
 		[p_wd.window_object setTitleVisibility:NSWindowTitleVisible];
-		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:NO];
+		[p_wd.window_object setTitlebarAppearsTransparent:NO];
 		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
 		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
+		[[p_wd.window_object standardWindowButton:NSWindowCloseButton] setHidden:NO];
 	}
 }
 
@@ -2739,14 +2741,12 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			NSRect rect = [wd.window_object frame];
 			wd.extend_to_title = p_enabled;
 			if (p_enabled) {
-				[wd.window_object setTitlebarAppearsTransparent:YES];
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskFullSizeContentView];
 
 				if (!wd.fullscreen) {
 					window_set_custom_window_buttons(wd, true);
 				}
 			} else {
-				[wd.window_object setTitlebarAppearsTransparent:NO];
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskFullSizeContentView];
 
 				if (!wd.fullscreen) {
