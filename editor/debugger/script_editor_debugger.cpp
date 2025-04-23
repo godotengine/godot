@@ -46,6 +46,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -853,6 +854,15 @@ void ScriptEditorDebugger::_msg_request_quit(uint64_t p_thread_id, const Array &
 	_stop_and_notify();
 }
 
+void ScriptEditorDebugger::_msg_request_pause(uint64_t p_thread_id, const Array &p_data) {
+	if (EditorRunBar::get_singleton()->get_pause_button()->is_pressed()) {
+		EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
+	} else {
+		EditorRunBar::get_singleton()->get_pause_button()->set_pressed(true);
+	}
+	EditorRunBar::get_singleton()->get_pause_button()->emit_signal(SceneStringNames::get_singleton()->pressed);
+}
+
 void ScriptEditorDebugger::_msg_remote_objects_selected(uint64_t p_thread_id, const Array &p_data) {
 	ERR_FAIL_COND(p_data.is_empty());
 	EditorDebuggerRemoteObjects *objs = inspector->set_objects(p_data);
@@ -945,6 +955,7 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["servers:profile_frame"] = &ScriptEditorDebugger::_msg_servers_profile_frame;
 	parse_message_handlers["servers:profile_total"] = &ScriptEditorDebugger::_msg_servers_profile_total;
 	parse_message_handlers["request_quit"] = &ScriptEditorDebugger::_msg_request_quit;
+	parse_message_handlers["request_pause"] = &ScriptEditorDebugger::_msg_request_pause;
 	parse_message_handlers["remote_objects_selected"] = &ScriptEditorDebugger::_msg_remote_objects_selected;
 	parse_message_handlers["remote_nothing_selected"] = &ScriptEditorDebugger::_msg_remote_nothing_selected;
 	parse_message_handlers["remote_selection_invalidated"] = &ScriptEditorDebugger::_msg_remote_selection_invalidated;
@@ -1157,6 +1168,8 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 
 	Array quit_keys = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
 	_put_msg("scene:setup_scene", quit_keys);
+	Array pause_keys = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/pause_running_project"));
+	_put_msg("scene:pause_scene", pause_keys);
 
 	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
 		profiler->set_profiling(true);

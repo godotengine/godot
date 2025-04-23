@@ -109,6 +109,13 @@ void SceneDebugger::_handle_input(const Ref<InputEvent> &p_event, const Ref<Shor
 	}
 }
 
+void SceneDebugger::_handle_pause_input(const Ref<InputEvent> &p_event, const Ref<Shortcut> &p_shortcut) {
+	Ref<InputEventKey> k = p_event;
+	if (p_shortcut.is_valid() && k.is_valid() && k->is_pressed() && !k->is_echo() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("request_pause", Array());
+	}
+}
+
 Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree) {
@@ -127,6 +134,9 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 	r_captured = true;
 	if (p_msg == "setup_scene") {
 		SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args)));
+	}
+	if (p_msg == "pause_scene") {
+		SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_pause_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args)));
 
 	} else if (p_msg == "request_scene_tree") { /// Scene Tree
 		live_editor->_send_tree();
