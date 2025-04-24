@@ -53,8 +53,8 @@ class AudioDriverPulseAudio : public AudioDriver {
 	pa_stream *pa_rec_str = nullptr;
 	pa_channel_map pa_map = {};
 	pa_channel_map pa_rec_map = {};
-	unsigned int pa_channels = 2;
-	unsigned int pa_channel0 = 0;
+	int pa_channels = 2;
+	int pa_channel0 = 0;
 
 	String output_device_name = "Default";
 	String new_output_device = "Default";
