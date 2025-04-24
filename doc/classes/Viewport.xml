@@ -366,7 +366,7 @@
 			See also [member ProjectSettings.rendering/anti_aliasing/quality/msaa_3d] and [method RenderingServer.viewport_set_msaa_3d].
 		</member>
 		<member name="oversampling" type="bool" setter="set_use_oversampling" getter="is_using_oversampling" default="true">
-			If [code]true[/code] and one of the following conditions is true: [member SubViewport.size_2d_override_stretch] and [member SubViewport.size_2d_override] are set, [member Window.content_scale_factor] is set and scaling is enabled, [member oversampling_override] is set, font oversampling is enabled.
+			If [code]true[/code] and one of the following conditions is true: [member SubViewport.size_2d_override_stretch] and [member SubViewport.size_2d_override] are set, [member Window.content_scale_factor] is set and scaling is enabled, [member oversampling_override] is set, font and [SVGTexture] oversampling is enabled.
 		</member>
 		<member name="oversampling_override" type="float" setter="set_oversampling_override" getter="get_oversampling_override" default="0.0">
 			If greater than zero, this value is used as the font oversampling factor, otherwise oversampling is equal to viewport scale.
