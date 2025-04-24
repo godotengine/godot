@@ -206,7 +206,10 @@ void MenuButton::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void MenuButton::_bind_methods() {
+	// TODO: Properly handle popups when advanced GUI is disabled.
+#ifndef ADVANCED_GUI_DISABLED
 	ClassDB::bind_method(D_METHOD("get_popup"), &MenuButton::get_popup);
+#endif // ADVANCED_GUI_DISABLED
 	ClassDB::bind_method(D_METHOD("show_popup"), &MenuButton::show_popup);
 	ClassDB::bind_method(D_METHOD("set_switch_on_hover", "enable"), &MenuButton::set_switch_on_hover);
 	ClassDB::bind_method(D_METHOD("is_switch_on_hover"), &MenuButton::is_switch_on_hover);

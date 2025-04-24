@@ -10,15 +10,12 @@ env:
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
   SCONS_CACHE_MSVC_CONFIG: true
 
-concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-windows
-  cancel-in-progress: true
-
 jobs:
   build-windows:
     # Windows 10 with latest image
-    runs-on: "windows-latest"
+    runs-on: windows-latest
     name: ${{ matrix.name }}
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -29,16 +26,31 @@ jobs:
             tests: true
             # Skip debug symbols, they're way too big with MSVC.
             sconsflags: debug_symbols=no vsproj=yes windows_subsystem=console
-            bin: "./bin/godot.windows.editor.x86_64.exe"
+            bin: ./bin/godot.windows.editor.x86_64.exe
+            compiler: msvc
 
-          - name: Template (target=template_release)
+          - name: Template (target=template_release, tests=yes)
             cache-name: windows-template
             target: template_release
-            tests: false
+            tests: true
             sconsflags: debug_symbols=no
+            bin: ./bin/godot.windows.template_release.x86_64.console.exe
+            compiler: msvc
+
+          - name: Template w/ GCC (target=template_release, tests=yes, use_mingw=yes)
+            cache-name: windows-template-gcc
+            # MinGW takes MUCH longer to compile; save time by only targeting Template.
+            target: template_release
+            tests: true
+            sconsflags: debug_symbols=no use_mingw=yes
+            bin: ./bin/godot.windows.template_release.x86_64.console.exe
+            compiler: gcc
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
@@ -46,7 +58,7 @@ jobs:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
       - name: Setup MSVC problem matcher
@@ -67,17 +79,18 @@ jobs:
         continue-on-error: true
 
       - name: Prepare artifact
+        if: matrix.compiler == 'msvc'
         run: |
           Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
 
       - name: Upload artifact
+        if: matrix.compiler == 'msvc'
         uses: ./.github/actions/upload-artifact
         with:
           name: ${{ matrix.cache-name }}
 
-      # Execute unit tests for the editor
       - name: Unit tests
-        if: ${{ matrix.tests }}
+        if: matrix.tests
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help
