@@ -774,6 +774,65 @@
 				On macOS (sandboxed applications only), this function clears list of user selected folders accessible to the application.
 			</description>
 		</method>
+		<method name="send_notification">
+			<return type="int" enum="Error" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="message" type="String" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="icon" type="Variant" default="null" />
+			<param index="4" name="duration" type="int" default="-1" />
+			<param index="5" name="datetime_to_send" type="Dictionary" default="{}" />
+			<description>
+				Sends a desktop notification to the user with the given title and message.
+
+				The notification behavior and appearance varies depending on the platform, with some platforms potentially ignoring certain parameters:
+				- [param title]: The title of the notification.
+				- [param message]: The main body text of the notification.
+				- [param callback]: Callable to be called when the user interacts with the notification (e.g., clicks on it). Note that not all platforms support this feature.
+				- [param icon]: A custom icon to display with the notification. Pass an Image object or null to use the default application icon.
+				- [param duration]: How long the notification should remain visible in seconds. If set to -1 (default), the system default duration will be used. If set to 0, the notification will remain until manually dismissed (not supported on all platforms).
+				- [param datetime_to_send]: A Dictionary that specifies when to schedule the notification. If empty (default), the notification is sent immediately. The Dictionary can be in one of these formats:
+				  - Full datetime: Must include keys "year", "month", "day", "hour", "minute", and "second".
+				  - Unix timestamp: A single key "unix_time" with a Unix timestamp value.
+				  - Relative time: A single key "relative_seconds" specifying seconds from now when the notification should be sent.
+
+				[b]Note:[/b] This method is currently only implemented on macOS.
+
+				[b]Note:[/b] On macOS, this implementation uses the UserNotifications framework (UNUserNotificationCenter) on macOS 10.14+ and falls back to NSUserNotification on older versions. On macOS 10.14+, notifications are automatically grouped together when multiple notifications are sent. When running in headless mode or with --script, the notification will be printed to the console instead.
+
+				[b]Note:[/b] The [param duration] parameter is not supported on macOS, the notification duration is controlled by the system's accessibility settings.
+
+				[b]Example:[/b] Sending an immediate notification:
+				[codeblocks]
+				[gdscript]
+				func _on_operation_completed() -&gt; void:
+				    OS.send_notification("Operation Completed", "Your task has finished processing.")
+				[/gdscript]
+				[csharp]
+				private void OnOperationCompleted()
+				{
+				    OS.SendNotification("Operation Completed", "Your task has finished processing.");
+				}
+				[/csharp]
+				[/codeblocks]
+
+				[b]Example:[/b] Scheduling a notification for 10 minutes from now:
+				[codeblocks]
+				[gdscript]
+				func schedule_reminder() -&gt; void:
+				    var datetime = {"relative_seconds": 600}  # 10 minutes
+				    OS.send_notification("Reminder", "Your potion is ready!", Callable(), null, -1, datetime)
+				[/gdscript]
+				[csharp]
+				private void ScheduleReminder()
+				{
+				    var datetime = new Godot.Collections.Dictionary { {"relative_seconds", 600} };  // 10 minutes
+				    OS.SendNotification("Reminder", "Your potion is ready!", new Callable(), null, -1, datetime);
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="set_environment" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="variable" type="String" />

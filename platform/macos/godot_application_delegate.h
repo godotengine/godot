@@ -34,8 +34,9 @@
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
+#import <UserNotifications/UserNotifications.h>
 
-@interface GodotApplicationDelegate : NSObject <NSUserInterfaceItemSearching, NSApplicationDelegate> {
+@interface GodotApplicationDelegate : NSObject <NSUserInterfaceItemSearching, NSApplicationDelegate, UNUserNotificationCenterDelegate> {
 	bool high_contrast;
 	bool reduce_motion;
 	bool reduce_transparency;
@@ -51,4 +52,7 @@
 - (bool)getReduceMotion;
 - (bool)getReduceTransparency;
 - (bool)getVoiceOver;
+
+// For notification callbacks
+@property(nonatomic, strong) NSMutableDictionary *notificationCallbacks;
 @end

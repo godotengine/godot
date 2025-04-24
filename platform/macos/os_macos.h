@@ -33,11 +33,17 @@
 #include "crash_handler_macos.h"
 
 #include "core/input/input.h"
+#include "core/io/image.h"
 #import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
+#import <UserNotifications/UserNotifications.h>
+
+@interface GodotNotificationDelegate : NSObject <UNUserNotificationCenterDelegate>
+@property(nonatomic, strong) NSMutableDictionary *callbacks;
+@end
 
 class OS_MacOS : public OS_Unix {
 	const char *execpath = nullptr;
@@ -68,6 +74,7 @@ class OS_MacOS : public OS_Unix {
 	CGFloat _weight_to_ct(int p_weight) const;
 	CGFloat _stretch_to_ct(int p_stretch) const;
 	String _get_default_fontname(const String &p_font_name) const;
+	double _calculate_notification_delay(const Dictionary &p_datetime_dict);
 
 	static _FORCE_INLINE_ String get_framework_executable(const String &p_path);
 	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
@@ -141,6 +148,8 @@ public:
 
 	virtual String get_system_ca_certificates() override;
 	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
+
+	virtual Error send_notification(const String &p_title, const String &p_message, const Callable &p_callback = Callable(), const Ref<Image> &p_icon = Ref<Image>(), int p_duration = -1, const Dictionary &p_datetime_to_send = Dictionary()) override;
 
 	void run(); // Runs macOS native event loop.
 	void start_main(); // Initializes and runs Godot main loop.

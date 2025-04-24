@@ -158,6 +158,8 @@ public:
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
+	Error send_notification(const String &p_title, const String &p_message, const Callable &p_callback = Callable(), const Variant &p_icon = Variant(), int p_duration = -1, const Dictionary &p_datetime_to_send = Dictionary());
+
 	void set_low_processor_usage_mode(bool p_enabled);
 	bool is_in_low_processor_usage_mode() const;
 
