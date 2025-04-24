@@ -593,6 +593,9 @@ EditorRunBar::EditorRunBar() {
 	run_native = memnew(EditorRunNative);
 	main_hbox->add_child(run_native);
 	run_native->connect("native_run", callable_mp(this, &EditorRunBar::_run_native));
+#ifdef ANDROID_ENABLED
+	run_native->hide();
+#endif
 
 	bool add_play_xr_mode_options = false;
 #ifndef XR_DISABLED
