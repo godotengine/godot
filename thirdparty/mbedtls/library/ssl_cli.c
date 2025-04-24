@@ -83,19 +83,20 @@ static int ssl_write_hostname_ext(mbedtls_ssl_context *ssl,
                                   size_t *olen)
 {
     unsigned char *p = buf;
+    const char *hostname = mbedtls_ssl_get_hostname_pointer(ssl);
     size_t hostname_len;
 
     *olen = 0;
 
-    if (ssl->hostname == NULL) {
+    if (hostname == NULL) {
         return 0;
     }
 
     MBEDTLS_SSL_DEBUG_MSG(3,
                           ("client hello, adding server name extension: %s",
-                           ssl->hostname));
+                           hostname));
 
-    hostname_len = strlen(ssl->hostname);
+    hostname_len = strlen(hostname);
 
     MBEDTLS_SSL_CHK_BUF_PTR(p, end, hostname_len + 9);
 
@@ -139,7 +140,7 @@ static int ssl_write_hostname_ext(mbedtls_ssl_context *ssl,
     MBEDTLS_PUT_UINT16_BE(hostname_len, p, 0);
     p += 2;
 
-    memcpy(p, ssl->hostname, hostname_len);
+    memcpy(p, hostname, hostname_len);
 
     *olen = hostname_len + 9;
 
