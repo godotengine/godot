@@ -808,7 +808,14 @@ void CodeEdit::_backspace_internal(int p_caret) {
 		}
 
 		int from_line = to_column > 0 ? to_line : to_line - 1;
-		int from_column = to_column > 0 ? (to_column - 1) : (get_line(to_line - 1).length());
+		int from_column = 0;
+		if (to_column == 0) {
+			from_column = get_line(to_line - 1).length();
+		} else if (TextEdit::is_caret_mid_grapheme_enabled() || !TextEdit::is_backspace_deletes_composite_character_enabled()) {
+			from_column = to_column - 1;
+		} else {
+			from_column = TextEdit::get_previous_composite_character_column(to_line, to_column);
+		}
 
 		merge_gutters(from_line, to_line);
 
