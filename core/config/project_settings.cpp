@@ -1410,8 +1410,7 @@ void ProjectSettings::load_scene_groups_cache() {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
 	if (cf->load(get_scene_groups_cache_path()) == OK) {
-		List<String> scene_paths;
-		cf->get_sections(&scene_paths);
+		Vector<String> scene_paths = cf->get_sections();
 		for (const String &E : scene_paths) {
 			Array scene_groups = cf->get_value(E, "groups", Array());
 			HashSet<StringName> cache;

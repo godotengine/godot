@@ -209,8 +209,7 @@ PluginConfigIOS PluginConfigIOS::load_plugin_config(Ref<ConfigFile> config_file,
 	}
 
 	if (config_file->has_section(PluginConfigIOS::PLIST_SECTION)) {
-		List<String> keys;
-		config_file->get_section_keys(PluginConfigIOS::PLIST_SECTION, &keys);
+		Vector<String> keys = config_file->get_section_keys(PluginConfigIOS::PLIST_SECTION);
 
 		for (const String &key : keys) {
 			Vector<String> key_components = key.split(":");

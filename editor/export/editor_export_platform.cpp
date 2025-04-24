@@ -1378,8 +1378,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				config->set_value("remap", "type", ResourceLoader::get_resource_type(export_path));
 
 				// Erase all Paths.
-				List<String> keys;
-				config->get_section_keys("remap", &keys);
+				Vector<String> keys = config->get_section_keys("remap");
 				for (const String &K : keys) {
 					if (K.begins_with("path")) {
 						config->erase_section_key("remap", K);
@@ -1414,9 +1413,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 			} else {
 				// File is imported and not customized, replace by what it imports.
-				List<String> remaps;
-				config->get_section_keys("remap", &remaps);
-
+				Vector<String> remaps = config->get_section_keys("remap");
 				HashSet<String> remap_features;
 
 				for (const String &F : remaps) {
