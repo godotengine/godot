@@ -236,15 +236,15 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void Window::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "position" && initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "current_screen" && initial_position != WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "theme_type_variation") {
+	if (p_property.name == "position") {
+		if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "current_screen") {
+		if (initial_position != WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "theme_type_variation") {
 		List<StringName> names;
 
 		// Only the default theme and the project theme are used for the list of options.
