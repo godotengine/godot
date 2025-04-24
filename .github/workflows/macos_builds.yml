@@ -5,17 +5,14 @@ on:
 # Global Settings
 env:
   # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: '4.0'
+  GODOT_BASE_BRANCH: "4.0"
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
-
-concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-macos
-  cancel-in-progress: true
 
 jobs:
   build-macos:
-    runs-on: "macos-latest"
+    runs-on: macos-latest
     name: ${{ matrix.name }}
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -24,29 +21,36 @@ jobs:
             cache-name: macos-editor
             target: editor
             tests: true
-            bin: "./bin/godot.macos.editor.universal"
+            bin: ./bin/godot.macos.editor.universal
+
+            # Template builds need various fixes for unit tests to be supported in 4.0,
+            # so we don't enable tests in this legacy branch.
 
           - name: Template (target=template_release)
             cache-name: macos-template
             target: template_release
             tests: false
             sconsflags: debug_symbols=no
+            bin: ./bin/godot.macos.template_release.universal
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: '15.3'
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
       - name: Setup Vulkan SDK
@@ -69,6 +73,12 @@ jobs:
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
 
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
       - name: Prepare artifact
         run: |
           lipo -create ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64 -output ./bin/godot.macos.${{ matrix.target }}.universal
@@ -81,9 +91,8 @@ jobs:
         with:
           name: ${{ matrix.cache-name }}
 
-      # Execute unit tests for the editor
       - name: Unit tests
-        if: ${{ matrix.tests }}
+        if: matrix.tests
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help

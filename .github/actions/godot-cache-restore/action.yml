@@ -1,21 +1,21 @@
-name: Setup Godot build cache
-description: Setup Godot build cache.
+name: Restore Godot build cache
+description: Restore Godot build cache.
 inputs:
   cache-name:
     description: The cache base name (job name by default).
-    default: "${{github.job}}"
+    default: ${{ github.job }}
   scons-cache:
-    description: The scons cache path.
-    default: "${{github.workspace}}/.scons-cache/"
+    description: The SCons cache path.
+    default: ${{ github.workspace }}/.scons_cache/
+
 runs:
-  using: "composite"
+  using: composite
   steps:
-    # Upload cache on completion and check it out now
-    - name: Load .scons_cache directory
-      uses: actions/cache@v3
+    - name: Restore SCons cache directory
+      uses: actions/cache/restore@v4
       with:
-        path: ${{inputs.scons-cache}}
-        key: ${{inputs.cache-name}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+        path: ${{ inputs.scons-cache }}
+        key: ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-${{ github.ref }}-${{ github.sha }}
 
         # We try to match an existing cache to restore from it. Each potential key is checked against
         # all existing caches as a prefix. E.g. 'linux-template-minimal' would match any cache that
@@ -29,7 +29,7 @@ runs:
         #   4. A partial match for the same base branch only (not ideal, matches any PR with the same base branch).
 
         restore-keys: |
-          ${{inputs.cache-name}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-          ${{inputs.cache-name}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
-          ${{inputs.cache-name}}-${{env.GODOT_BASE_BRANCH}}-refs/heads/${{env.GODOT_BASE_BRANCH}}
-          ${{inputs.cache-name}}-${{env.GODOT_BASE_BRANCH}}
+          ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-${{ github.ref }}-${{ github.sha }}
+          ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-${{ github.ref }}
+          ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-refs/heads/${{ env.GODOT_BASE_BRANCH }}
+          ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}
