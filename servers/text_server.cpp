@@ -1238,6 +1238,7 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 	real_t height = (ascent + descent) / 2;
 
 	real_t off = 0.0f;
+	real_t obj_off = -1.0f;
 	CaretInfo caret;
 	caret.l_dir = DIRECTION_AUTO;
 	caret.t_dir = DIRECTION_AUTO;
@@ -1247,6 +1248,11 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 
 	for (int i = 0; i < v_size; i++) {
 		if (glyphs[i].count > 0) {
+			// Skip inline objects.
+			if ((glyphs[i].flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && glyphs[i].start == glyphs[i].end) {
+				obj_off = glyphs[i].advance;
+				continue;
+			}
 			// Caret before grapheme (top / left).
 			if (p_position == glyphs[i].start && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
 				real_t advance = 0.f;
@@ -1335,6 +1341,7 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 						cr.size.y = char_adv;
 					}
 				}
+				cr.position.x += MAX(0.0, obj_off); // Prevent split caret when on an inline object.
 				caret.l_caret = cr;
 			}
 			// Caret inside grapheme (middle).
@@ -1371,6 +1378,10 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 			}
 		}
 		off += glyphs[i].advance * glyphs[i].repeat;
+		if (obj_off >= 0.0) {
+			off += obj_off;
+			obj_off = -1.0;
+		}
 	}
 	return caret;
 }
