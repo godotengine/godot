@@ -1704,8 +1704,8 @@ int64_t TextServer::shaped_text_closest_character_pos(const RID &p_shaped, int64
 PackedInt32Array TextServer::string_get_character_breaks(const String &p_string, const String &p_language) const {
 	PackedInt32Array ret;
 	if (!p_string.is_empty()) {
-		ret.resize(p_string.size() - 1);
-		for (int i = 0; i < p_string.size() - 1; i++) {
+		ret.resize(p_string.length());
+		for (int i = 0; i < p_string.length(); i++) {
 			ret.write[i] = i + 1;
 		}
 	}
@@ -1968,7 +1968,7 @@ void TextServer::shaped_text_debug_print(const RID &p_shaped) const {
 #endif // DEBUG_ENABLED
 
 void TextServer::_diacritics_map_add(const String &p_from, char32_t p_to) {
-	for (int i = 0; i < p_from.size(); i++) {
+	for (int i = 0; i < p_from.length(); i++) {
 		diacritics_map[p_from[i]] = p_to;
 	}
 }

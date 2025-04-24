@@ -213,7 +213,7 @@ ShaderPreprocessor::Tokenizer::Tokenizer(const String &p_code) {
 	code = p_code;
 	line = 0;
 	index = 0;
-	size = code.size();
+	size = code.length() + 1;
 }
 
 // ShaderPreprocessor::CommentRemover
@@ -233,14 +233,14 @@ int ShaderPreprocessor::CommentRemover::get_error_line() const {
 }
 
 char32_t ShaderPreprocessor::CommentRemover::peek() const {
-	if (index < code.size()) {
+	if (index < code.length() + 1) {
 		return code[index];
 	}
 	return 0;
 }
 
 bool ShaderPreprocessor::CommentRemover::advance(char32_t p_what) {
-	while (index < code.size()) {
+	while (index < code.length() + 1) {
 		char32_t c = code[index++];
 
 		if (c == '\n') {
@@ -263,7 +263,7 @@ String ShaderPreprocessor::CommentRemover::strip() {
 	comments_open = 0;
 	strings_open = 0;
 
-	while (index < code.size()) {
+	while (index < code.length() + 1) {
 		char32_t c = code[index++];
 
 		if (c == CURSOR) {
@@ -870,7 +870,7 @@ Error ShaderPreprocessor::expand_condition(const String &p_string, int p_line, S
 		int bracket_start_count = 0;
 		int bracket_end_count = 0;
 
-		for (int i = 0; i < p_string.size(); i++) {
+		for (int i = 0; i < p_string.length() + 1; i++) {
 			switch (p_string[i]) {
 				case CURSOR:
 					state->completion_type = COMPLETION_TYPE_CONDITION;
@@ -906,7 +906,7 @@ Error ShaderPreprocessor::expand_condition(const String &p_string, int p_line, S
 
 		LocalVector<char32_t> text;
 		int post_bracket_index = -1;
-		int size = result.size();
+		int size = result.length() + 1;
 
 		for (int i = (index_start - 1); i < size; i++) {
 			char32_t c = result[i];
@@ -1153,7 +1153,7 @@ void ShaderPreprocessor::concatenate_macro_body(String &r_body) {
 	while (index_start > -1) {
 		int index_end = index_start + 2; // First character after ##.
 		// The macro was checked during creation so this should never happen.
-		ERR_FAIL_INDEX(index_end, r_body.size());
+		ERR_FAIL_INDEX(index_end, r_body.length() + 1);
 
 		// If there more than two # in a row, then it's not a concatenation.
 		bool is_concat = true;

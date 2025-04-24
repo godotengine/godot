@@ -1168,7 +1168,7 @@ Ref<AnimationNodeStateMachine> AnimationNodeStateMachinePlayback::_get_parent_st
 	Ref<AnimationNode> root = p_tree->get_root_animation_node();
 	ERR_FAIL_COND_V_MSG(root.is_null(), Ref<AnimationNodeStateMachine>(), "There is no root AnimationNode in AnimationTree: " + String(p_tree->get_name()));
 	String anodesm_path = String("/").join(split);
-	Ref<AnimationNodeStateMachine> anodesm = !anodesm_path.size() ? root : root->find_node_by_path(anodesm_path);
+	Ref<AnimationNodeStateMachine> anodesm = anodesm_path.is_empty() ? root : root->find_node_by_path(anodesm_path);
 	ERR_FAIL_COND_V_MSG(anodesm.is_null(), Ref<AnimationNodeStateMachine>(), "Can't get state machine with path: " + anodesm_path);
 	return anodesm;
 }

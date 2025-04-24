@@ -123,7 +123,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 
 		String name_string = mesh->get_blend_shape_name(0);
 		CHECK(name_string.contains("ShapeB"));
-		CHECK(name_string.length() > static_cast<String>(name_b).size());
+		CHECK(name_string.length() > static_cast<String>(name_b).length());
 	}
 
 	SUBCASE("Clear all blend shapes before surface has been added.") {

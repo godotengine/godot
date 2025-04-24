@@ -73,7 +73,7 @@ LSP::Position GodotPosition::to_lsp(const Vector<String> &p_lines) const {
 		int in_col = 1;
 		int res_char = 0;
 
-		while (res_char < pos_line.size() && in_col < column) {
+		while (res_char < pos_line.length() && in_col < column) {
 			if (pos_line[res_char] == '\t') {
 				in_col += tab_size;
 				res_char++;
@@ -693,7 +693,7 @@ String ExtendGDScriptParser::get_identifier_under_position(const LSP::Position &
 	if (line.is_empty()) {
 		return "";
 	}
-	ERR_FAIL_INDEX_V(p_position.character, line.size(), "");
+	ERR_FAIL_INDEX_V(p_position.character, line.length() + 1, "");
 
 	// `p_position` cursor is BETWEEN chars, not ON chars.
 	// ->

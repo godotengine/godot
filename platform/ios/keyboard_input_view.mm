@@ -124,7 +124,7 @@
 - (void)enterText:(NSString *)substring {
 	String characters = String::utf8([substring UTF8String]);
 
-	for (int i = 0; i < characters.size(); i++) {
+	for (int i = 0; i < characters.length(); i++) {
 		int character = characters[i];
 		Key key = Key::NONE;
 

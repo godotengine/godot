@@ -1173,10 +1173,10 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 					// No need to move the brace below if we are not taking the text with us.
 					if (p_split_current_line) {
 						brace_indent = true;
-						ins += "\n" + ins.substr(indent_text.size(), ins.length() - 2);
+						ins += "\n" + ins.substr(indent_text.length() + 1, ins.length() - 2);
 					} else {
 						brace_indent = false;
-						ins = "\n" + ins.substr(indent_text.size(), ins.length() - 2);
+						ins = "\n" + ins.substr(indent_text.length() + 1, ins.length() - 2);
 					}
 				}
 			}
@@ -1631,11 +1631,11 @@ bool CodeEdit::can_fold_line(int p_line) const {
 	int in_comment = is_in_comment(p_line);
 	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
 	if (in_string != -1 || in_comment != -1) {
-		if (get_delimiter_start_position(p_line, get_line(p_line).size() - 1).y != p_line) {
+		if (get_delimiter_start_position(p_line, get_line(p_line).length()).y != p_line) {
 			return false;
 		}
 
-		int delimiter_end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
+		int delimiter_end_line = get_delimiter_end_position(p_line, get_line(p_line).length()).y;
 		/* No end line, therefore we have a multiline region over the rest of the file. */
 		if (delimiter_end_line == -1) {
 			return true;
@@ -1697,7 +1697,7 @@ void CodeEdit::fold_line(int p_line) {
 	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
 	if (!is_line_code_region_start(p_line)) {
 		if (in_string != -1 || in_comment != -1) {
-			end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
+			end_line = get_delimiter_end_position(p_line, get_line(p_line).length()).y;
 			// End line is the same therefore we have a block of single line delimiters.
 			if (end_line == p_line) {
 				for (int i = p_line + 1; i <= line_count; i++) {
@@ -1965,7 +1965,7 @@ Point2 CodeEdit::get_delimiter_start_position(int p_line, int p_column) const {
 		return Point2(-1, -1);
 	}
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), Point2(-1, -1));
-	ERR_FAIL_COND_V(p_column - 1 > get_line(p_line).size(), Point2(-1, -1));
+	ERR_FAIL_COND_V(p_column - 1 > get_line(p_line).length() + 1, Point2(-1, -1));
 
 	Point2 start_position;
 	start_position.y = -1;
@@ -2016,7 +2016,7 @@ Point2 CodeEdit::get_delimiter_end_position(int p_line, int p_column) const {
 		return Point2(-1, -1);
 	}
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), Point2(-1, -1));
-	ERR_FAIL_COND_V(p_column - 1 > get_line(p_line).size(), Point2(-1, -1));
+	ERR_FAIL_COND_V(p_column - 1 > get_line(p_line).length() + 1, Point2(-1, -1));
 
 	Point2 end_position;
 	end_position.y = -1;
@@ -2412,7 +2412,7 @@ String CodeEdit::get_text_with_cursor_char(int p_line, int p_column) const {
 	StringBuilder result;
 	for (int i = 0; i < text_size; i++) {
 		String line_text = get_line(i);
-		if (i == p_line && p_column >= 0 && p_column <= line_text.size()) {
+		if (i == p_line && p_column >= 0 && p_column <= line_text.length() + 1) {
 			result += line_text.substr(0, p_column);
 			/* Not unicode, represents the cursor. */
 			result += String::chr(0xFFFF);
@@ -3584,7 +3584,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		}
 
 		String target_lower = option.display.to_lower();
-		int long_option = target_lower.size() > 50;
+		int long_option = target_lower.length() > 50;
 		const char32_t *string_to_complete_char_lower = &string_to_complete_lower[0];
 		const char32_t *target_char_lower = &target_lower[0];
 

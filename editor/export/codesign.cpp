@@ -925,7 +925,7 @@ CodeSignCodeDirectory::CodeSignCodeDirectory(uint8_t p_hash_size, uint8_t p_hash
 	code_slots = pages + (remain > 0 ? 1 : 0);
 	special_slots = 7;
 
-	int cd_size = 8 + sizeof(CodeDirectoryHeader) + (code_slots + special_slots) * p_hash_size + p_id.size() + p_team_id.size();
+	int cd_size = 8 + sizeof(CodeDirectoryHeader) + (code_slots + special_slots) * p_hash_size + p_id.length() + p_team_id.length();
 	int cd_off = 8 + sizeof(CodeDirectoryHeader);
 	blob.append_array({ 0xFA, 0xDE, 0x0C, 0x02 }); // Code Directory magic.
 	for (int i = 3; i >= 0; i--) {
@@ -963,14 +963,14 @@ CodeSignCodeDirectory::CodeSignCodeDirectory(uint8_t p_hash_size, uint8_t p_hash
 
 	// Copy ID.
 	cd->ident_offset = BSWAP32(cd_off);
-	memcpy(blob.ptrw() + cd_off, p_id.get_data(), p_id.size());
-	cd_off += p_id.size();
+	memcpy(blob.ptrw() + cd_off, p_id.get_data(), p_id.length());
+	cd_off += p_id.length();
 
 	// Copy Team ID.
 	if (p_team_id.length() > 0) {
 		cd->team_offset = BSWAP32(cd_off);
-		memcpy(blob.ptrw() + cd_off, p_team_id.get_data(), p_team_id.size());
-		cd_off += p_team_id.size();
+		memcpy(blob.ptrw() + cd_off, p_team_id.get_data(), p_team_id.length());
+		cd_off += p_team_id.length();
 	} else {
 		cd->team_offset = 0;
 	}

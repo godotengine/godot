@@ -1477,7 +1477,7 @@ void SpriteFramesEditor::_update_library_impl() {
 		}
 		missing_anim_label->hide();
 		anim_frames_vb->show();
-		bool searching = anim_search_box->get_text().size();
+		bool searching = !anim_search_box->get_text().is_empty();
 		String searched_string = searching ? anim_search_box->get_text().to_lower() : String();
 
 		TreeItem *selected = nullptr;

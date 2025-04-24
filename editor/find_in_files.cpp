@@ -72,7 +72,7 @@ static bool find_next(const String &line, const String &pattern, int from, bool 
 			if (begin > 0 && (is_ascii_identifier_char(line[begin - 1]))) {
 				continue;
 			}
-			if (end < line.size() && (is_ascii_identifier_char(line[end]))) {
+			if (end < line.length() && (is_ascii_identifier_char(line[end]))) {
 				continue;
 			}
 		}
@@ -772,9 +772,9 @@ void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, in
 	item->set_cell_mode(text_index, TreeItem::CELL_MODE_CUSTOM);
 
 	// Trim result item line.
-	int old_text_size = text.size();
+	int old_text_length = text.length();
 	text = text.strip_edges(true, false);
-	int chars_removed = old_text_size - text.size();
+	int chars_removed = old_text_length - text.length();
 	String start = vformat("%3s: ", line_number);
 
 	item->set_text(text_index, start + text);
@@ -784,7 +784,7 @@ void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, in
 	r.line_number = line_number;
 	r.begin = begin;
 	r.end = end;
-	r.begin_trimmed = begin - chars_removed + start.size() - 1;
+	r.begin_trimmed = begin - chars_removed + start.length();
 	_result_items[item] = r;
 
 	if (_with_replace) {

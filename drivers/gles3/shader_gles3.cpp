@@ -176,7 +176,7 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 			builder.append("#define " + String(specializations[i].name) + "\n");
 		}
 	}
-	if (p_version->uniforms.size()) {
+	if (!p_version->uniforms.is_empty()) {
 		builder.append("#define MATERIAL_UNIFORMS_USED\n");
 	}
 	for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {

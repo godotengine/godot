@@ -573,7 +573,7 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 		}
 
 		// Strip the "input/" from the left.
-		String display_name = property_name.substr(String("input/").size() - 1);
+		String display_name = property_name.substr(strlen("input/"));
 		Dictionary action = GLOBAL_GET(property_name);
 
 		ActionMapEditor::ActionInfo action_info;

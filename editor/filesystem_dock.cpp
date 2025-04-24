@@ -3696,8 +3696,8 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 		} else {
 			// Find parent folder.
 			fpath = fpath.substr(0, fpath.rfind_char('/') + 1);
-			if (fpath.size() > String("res://").size()) {
-				fpath = fpath.left(fpath.size() - 2); // Remove last '/'.
+			if (fpath.length() > String("res://").length()) {
+				fpath = fpath.left(fpath.length() - 1); // Remove last '/'.
 				const int slash_idx = fpath.rfind_char('/');
 				fpath = fpath.substr(slash_idx + 1);
 			}

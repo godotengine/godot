@@ -50,7 +50,7 @@ static Vector2i _extend_interval(const Vector2i &p_a, const Vector2i &p_b) {
 }
 
 static bool _is_word_boundary(const String &p_str, int p_index) {
-	if (p_index == -1 || p_index == p_str.size()) {
+	if (p_index == -1 || p_index == p_str.length()) {
 		return true;
 	}
 	return boundary_chars.find_char(p_str[p_index]) != -1;

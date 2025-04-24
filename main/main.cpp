@@ -4426,7 +4426,7 @@ int Main::start() {
 
 			if (!local_game_path.begins_with("res://")) {
 				bool absolute =
-						(local_game_path.size() > 1) && (local_game_path[0] == '/' || local_game_path[1] == ':');
+						(local_game_path.length() > 1) && (local_game_path[0] == '/' || local_game_path[1] == ':');
 
 				if (!absolute) {
 					if (ProjectSettings::get_singleton()->is_using_datapack()) {

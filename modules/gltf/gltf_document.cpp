@@ -3612,7 +3612,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					const Array &target_names = extras.has("targetNames") ? (Array)extras["targetNames"] : Array();
 					for (int k = 0; k < targets.size(); k++) {
 						String bs_name;
-						if (k < target_names.size() && ((String)target_names[k]).size() != 0) {
+						if (k < target_names.size() && !((String)target_names[k]).is_empty()) {
 							bs_name = (String)target_names[k];
 						} else {
 							bs_name = String("morph_") + itos(k);

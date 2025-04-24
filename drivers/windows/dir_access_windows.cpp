@@ -156,7 +156,7 @@ Error DirAccessWindows::change_dir(String p_dir) {
 	Char16String real_current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
 	real_current_dir_name.resize(str_len + 1);
-	GetCurrentDirectoryW(real_current_dir_name.size(), (LPWSTR)real_current_dir_name.ptrw());
+	GetCurrentDirectoryW(real_current_dir_name.length() + 1, (LPWSTR)real_current_dir_name.ptrw());
 	String prev_dir = String::utf16((const char16_t *)real_current_dir_name.get_data());
 
 	SetCurrentDirectoryW((LPCWSTR)(current_dir.utf16().get_data()));
@@ -166,7 +166,7 @@ Error DirAccessWindows::change_dir(String p_dir) {
 	if (!base.is_empty()) {
 		str_len = GetCurrentDirectoryW(0, nullptr);
 		real_current_dir_name.resize(str_len + 1);
-		GetCurrentDirectoryW(real_current_dir_name.size(), (LPWSTR)real_current_dir_name.ptrw());
+		GetCurrentDirectoryW(real_current_dir_name.length() + 1, (LPWSTR)real_current_dir_name.ptrw());
 		String new_dir = String::utf16((const char16_t *)real_current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/');
 		if (!new_dir.begins_with(base)) {
 			worked = false;
@@ -176,7 +176,7 @@ Error DirAccessWindows::change_dir(String p_dir) {
 	if (worked) {
 		str_len = GetCurrentDirectoryW(0, nullptr);
 		real_current_dir_name.resize(str_len + 1);
-		GetCurrentDirectoryW(real_current_dir_name.size(), (LPWSTR)real_current_dir_name.ptrw());
+		GetCurrentDirectoryW(real_current_dir_name.length() + 1, (LPWSTR)real_current_dir_name.ptrw());
 		current_dir = String::utf16((const char16_t *)real_current_dir_name.get_data());
 	}
 
@@ -476,7 +476,7 @@ DirAccessWindows::DirAccessWindows() {
 	Char16String real_current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
 	real_current_dir_name.resize(str_len + 1);
-	GetCurrentDirectoryW(real_current_dir_name.size(), (LPWSTR)real_current_dir_name.ptrw());
+	GetCurrentDirectoryW(real_current_dir_name.length() + 1, (LPWSTR)real_current_dir_name.ptrw());
 	current_dir = String::utf16((const char16_t *)real_current_dir_name.get_data());
 
 	DWORD mask = GetLogicalDrives();

@@ -60,7 +60,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 	}
 
 	const String debug_uri = EditorDebuggerNode::get_singleton()->get_server_uri();
-	if (debug_uri.size()) {
+	if (!debug_uri.is_empty()) {
 		args.push_back("--remote-debug");
 		args.push_back(debug_uri);
 	}

@@ -837,7 +837,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "new\ntesting\nswap");
 			CHECK(text_edit->get_caret_line() == 2);
-			CHECK(text_edit->get_caret_column() == text_edit->get_line(2).size() - 1);
+			CHECK(text_edit->get_caret_column() == text_edit->get_line(2).length());
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selection_from_line() == 1);
 			CHECK(text_edit->get_selection_from_column() == 0);
@@ -881,7 +881,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "new\ntesting\nafter\nswap");
 			CHECK(text_edit->get_caret_line() == 3);
-			CHECK(text_edit->get_caret_column() == text_edit->get_line(3).size() - 1);
+			CHECK(text_edit->get_caret_column() == text_edit->get_line(3).length());
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selection_from_line() == 0);
 			CHECK(text_edit->get_selection_to_line() == 3);
@@ -1114,7 +1114,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "testing\nswap");
 			CHECK(text_edit->get_caret_line() == 1);
-			CHECK(text_edit->get_caret_column() == text_edit->get_line(1).size() - 1);
+			CHECK(text_edit->get_caret_column() == text_edit->get_line(1).length());
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
@@ -1147,7 +1147,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "new line\nswap");
 			CHECK(text_edit->get_caret_line() == 0);
-			CHECK(text_edit->get_caret_column() == text_edit->get_line(0).size() - 1);
+			CHECK(text_edit->get_caret_column() == text_edit->get_line(0).length());
 			CHECK_FALSE(text_edit->has_selection());
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			SIGNAL_CHECK("text_changed", empty_signal_args);

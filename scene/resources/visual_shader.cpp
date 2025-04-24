@@ -634,7 +634,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 		if (!nend) {
 			code += "\n	}";
 		} else {
-			code.remove_at(code.size() - 1);
+			code.remove_at(code.length());
 			code += "}";
 		}
 		code += "\n";
@@ -669,7 +669,7 @@ String VisualShaderNodeCustom::generate_global_per_func(Shader::Mode p_mode, Vis
 			if (!nend) {
 				code += "\n	}";
 			} else {
-				code.remove_at(code.size() - 1);
+				code.remove_at(code.length());
 				code += "}";
 			}
 			code += "\n";
@@ -4604,7 +4604,7 @@ void VisualShaderNodeGroupBase::add_input_port(int p_id, int p_type, const Strin
 				inputs = inputs.insert(index, str);
 				break;
 			}
-			index += inputs_strings[i].size();
+			index += inputs_strings[i].length() + 1;
 		}
 	} else {
 		inputs += str;
@@ -4615,7 +4615,7 @@ void VisualShaderNodeGroupBase::add_input_port(int p_id, int p_type, const Strin
 
 	for (int i = 0; i < inputs_strings.size(); i++) {
 		int count = 0;
-		for (int j = 0; j < inputs_strings[i].size(); j++) {
+		for (int j = 0; j < inputs_strings[i].length(); j++) {
 			if (inputs_strings[i][j] == ',') {
 				break;
 			}
@@ -4624,7 +4624,7 @@ void VisualShaderNodeGroupBase::add_input_port(int p_id, int p_type, const Strin
 
 		inputs = inputs.left(index) + inputs.substr(index + count);
 		inputs = inputs.insert(index, itos(i));
-		index += inputs_strings[i].size();
+		index += inputs_strings[i].length() + 1;
 	}
 
 	_apply_port_changes();
@@ -4640,10 +4640,10 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 	for (int i = 0; i < inputs_strings.size(); i++) {
 		Vector<String> arr = inputs_strings[i].split(",");
 		if (arr[0].to_int() == p_id) {
-			count = inputs_strings[i].size();
+			count = inputs_strings[i].length() + 1;
 			break;
 		}
-		index += inputs_strings[i].size();
+		index += inputs_strings[i].length() + 1;
 	}
 	inputs = inputs.left(index) + inputs.substr(index + count);
 
@@ -4679,7 +4679,7 @@ void VisualShaderNodeGroupBase::add_output_port(int p_id, int p_type, const Stri
 				outputs = outputs.insert(index, str);
 				break;
 			}
-			index += outputs_strings[i].size();
+			index += outputs_strings[i].length() + 1;
 		}
 	} else {
 		outputs += str;
@@ -4690,7 +4690,7 @@ void VisualShaderNodeGroupBase::add_output_port(int p_id, int p_type, const Stri
 
 	for (int i = 0; i < outputs_strings.size(); i++) {
 		int count = 0;
-		for (int j = 0; j < outputs_strings[i].size(); j++) {
+		for (int j = 0; j < outputs_strings[i].length(); j++) {
 			if (outputs_strings[i][j] == ',') {
 				break;
 			}
@@ -4699,7 +4699,7 @@ void VisualShaderNodeGroupBase::add_output_port(int p_id, int p_type, const Stri
 
 		outputs = outputs.left(index) + outputs.substr(index + count);
 		outputs = outputs.insert(index, itos(i));
-		index += outputs_strings[i].size();
+		index += outputs_strings[i].length() + 1;
 	}
 
 	_apply_port_changes();
@@ -4715,10 +4715,10 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 	for (int i = 0; i < outputs_strings.size(); i++) {
 		Vector<String> arr = outputs_strings[i].split(",");
 		if (arr[0].to_int() == p_id) {
-			count = outputs_strings[i].size();
+			count = outputs_strings[i].length() + 1;
 			break;
 		}
-		index += outputs_strings[i].size();
+		index += outputs_strings[i].length() + 1;
 	}
 	outputs = outputs.left(index) + outputs.substr(index + count);
 
@@ -4765,11 +4765,11 @@ void VisualShaderNodeGroupBase::set_input_port_type(int p_id, int p_type) {
 		ERR_FAIL_COND(arr.size() != 3);
 
 		if (arr[0].to_int() == p_id) {
-			index += arr[0].size();
-			count = arr[1].size() - 1;
+			index += arr[0].length() + 1;
+			count = arr[1].length();
 			break;
 		}
-		index += inputs_strings[i].size();
+		index += inputs_strings[i].length() + 1;
 	}
 
 	inputs = inputs.left(index) + inputs.substr(index + count);
@@ -4800,11 +4800,11 @@ void VisualShaderNodeGroupBase::set_input_port_name(int p_id, const String &p_na
 		ERR_FAIL_COND(arr.size() != 3);
 
 		if (arr[0].to_int() == p_id) {
-			index += arr[0].size() + arr[1].size();
-			count = arr[2].size() - 1;
+			index += arr[0].length() + 1 + arr[1].length() + 1;
+			count = arr[2].length();
 			break;
 		}
-		index += inputs_strings[i].size();
+		index += inputs_strings[i].length() + 1;
 	}
 
 	inputs = inputs.left(index) + inputs.substr(index + count);
@@ -4835,11 +4835,11 @@ void VisualShaderNodeGroupBase::set_output_port_type(int p_id, int p_type) {
 		ERR_FAIL_COND(arr.size() != 3);
 
 		if (arr[0].to_int() == p_id) {
-			index += arr[0].size();
-			count = arr[1].size() - 1;
+			index += arr[0].length() + 1;
+			count = arr[1].length();
 			break;
 		}
-		index += output_strings[i].size();
+		index += output_strings[i].length() + 1;
 	}
 
 	outputs = outputs.left(index) + outputs.substr(index + count);
@@ -4871,11 +4871,11 @@ void VisualShaderNodeGroupBase::set_output_port_name(int p_id, const String &p_n
 		ERR_FAIL_COND(arr.size() != 3);
 
 		if (arr[0].to_int() == p_id) {
-			index += arr[0].size() + arr[1].size();
-			count = arr[2].size() - 1;
+			index += arr[0].length() + 1 + arr[1].length() + 1;
+			count = arr[2].length();
 			break;
 		}
-		index += output_strings[i].size();
+		index += output_strings[i].length() + 1;
 	}
 
 	outputs = outputs.left(index) + outputs.substr(index + count);

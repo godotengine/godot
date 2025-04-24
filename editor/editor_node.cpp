@@ -252,9 +252,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 				scene_name = scene_name.trim_suffix("/");
 				full_path = full_path.trim_suffix("/");
 
-				int scene_name_size = scene_name.size();
-				int full_path_size = full_path.size();
-				int difference = full_path_size - scene_name_size;
+				int difference = full_path.length() - scene_name.length();
 
 				// Find just the parent folder of the current path and append it.
 				// If the current name is foo.tscn, and the full path is /some/folder/foo.tscn
@@ -309,7 +307,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 				// We can proceed if the full path is longer than the scene name,
 				// meaning that there is at least one more parent folder we can
 				// tack onto the name.
-				can_proceed = can_proceed || (path.size() - scene_name.size()) >= 1;
+				can_proceed = can_proceed || (path.length() - scene_name.length()) >= 1;
 
 				E = E->next();
 				if (to_erase) {

@@ -780,7 +780,7 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 			FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
 
 			FcCharSet *char_set = FcCharSetCreate();
-			for (int j = 0; j < p_text.size(); j++) {
+			for (int j = 0; j < p_text.length(); j++) {
 				FcCharSetAddChar(char_set, p_text[j]);
 			}
 			FcPatternAddCharSet(pattern, FC_CHARSET, char_set);

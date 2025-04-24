@@ -77,16 +77,16 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		//compress string
 		CharString src_s = p_from->get_message(E).operator String().utf8();
 		CompressedString ps;
-		ps.orig_len = src_s.size();
+		ps.orig_len = src_s.length();
 		ps.offset = total_compression_size;
 
 		if (ps.orig_len != 0) {
 			CharString dst_s;
-			dst_s.resize(src_s.size());
-			int ret = smaz_compress(src_s.get_data(), src_s.size(), dst_s.ptrw(), src_s.size());
-			if (ret >= src_s.size()) {
+			dst_s.resize(src_s.length() + 1); // + 1 for NUL
+			int ret = smaz_compress(src_s.get_data(), src_s.length() + 1, dst_s.ptrw(), src_s.length() + 1);
+			if (ret >= src_s.length() + 1) {
 				//if compressed is larger than original, just use original
-				ps.orig_len = src_s.size();
+				ps.orig_len = src_s.length() + 1;
 				ps.compressed = src_s;
 			} else {
 				dst_s.resize(ret);
@@ -100,7 +100,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		}
 
 		compressed.write[idx] = ps;
-		total_compression_size += ps.compressed.size();
+		total_compression_size += ps.compressed.length() + 1;
 		idx++;
 	}
 
@@ -160,7 +160,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		for (const KeyValue<uint32_t, int> &E : t) {
 			btw[btindex++] = E.key;
 			btw[btindex++] = compressed[E.value].offset;
-			btw[btindex++] = compressed[E.value].compressed.size();
+			btw[btindex++] = compressed[E.value].compressed.length() + 1;
 			btw[btindex++] = compressed[E.value].orig_len;
 		}
 	}
@@ -169,7 +169,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	uint8_t *cw = strings.ptrw();
 
 	for (int i = 0; i < compressed.size(); i++) {
-		memcpy(&cw[compressed[i].offset], compressed[i].compressed.get_data(), compressed[i].compressed.size());
+		memcpy(&cw[compressed[i].offset], compressed[i].compressed.get_data(), compressed[i].compressed.length() + 1);
 	}
 
 	ERR_FAIL_COND(btindex != bucket_table_size);

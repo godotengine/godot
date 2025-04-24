@@ -221,7 +221,7 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 					builder.append(p_version->custom_defines[j].get_data());
 				}
 				builder.append("\n"); //make sure defines begin at newline
-				if (p_version->uniforms.size()) {
+				if (!p_version->uniforms.is_empty()) {
 					builder.append("#define MATERIAL_UNIFORMS_USED\n");
 				}
 				for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {

@@ -186,8 +186,8 @@ float TextEdit::Text::get_indent_offset(int p_line, bool p_rtl) const {
 	Line &text_line = text.write[p_line];
 	if (text_line.indent_ofs < 0.0) {
 		int char_count = 0;
-		int line_length = text_line.data.size();
-		for (int i = 0; i < line_length - 1; i++) {
+		int line_length = text_line.data.length();
+		for (int i = 0; i < line_length; i++) {
 			if (text_line.data[i] == '\t') {
 				char_count++;
 			} else if (text_line.data[i] == ' ') {
@@ -3770,7 +3770,7 @@ void TextEdit::_clear() {
 		_move_caret_document_start(false);
 		begin_complex_operation();
 
-		_remove_text(0, 0, MAX(0, get_line_count() - 1), MAX(get_line(MAX(get_line_count() - 1, 0)).size() - 1, 0));
+		_remove_text(0, 0, MAX(0, get_line_count() - 1), MAX(get_line(MAX(get_line_count() - 1, 0)).length(), 0));
 		insert_text_at_caret("");
 		text.clear();
 
@@ -3808,7 +3808,7 @@ void TextEdit::set_text(const String &p_text) {
 
 		begin_complex_operation();
 		deselect();
-		_remove_text(0, 0, MAX(0, get_line_count() - 1), MAX(get_line(MAX(get_line_count() - 1, 0)).size() - 1, 0));
+		_remove_text(0, 0, MAX(0, get_line_count() - 1), MAX(get_line(MAX(get_line_count() - 1, 0)).length(), 0));
 		insert_text_at_caret(p_text);
 		end_complex_operation();
 	}
@@ -3923,8 +3923,8 @@ int TextEdit::_get_wrapped_indent_level(int p_line, int &r_first_wrap) const {
 
 	int tab_count = 0;
 	int whitespace_count = 0;
-	int line_length = text[p_line].size();
-	for (int i = 0; i < line_length - 1; i++) {
+	int line_length = text[p_line].length();
+	for (int i = 0; i < line_length; i++) {
 		if (r_first_wrap < wr.size() && i >= wr[r_first_wrap].y) {
 			tab_count = 0;
 			whitespace_count = 0;
@@ -3946,8 +3946,8 @@ int TextEdit::get_indent_level(int p_line) const {
 
 	int tab_count = 0;
 	int whitespace_count = 0;
-	int line_length = text[p_line].size();
-	for (int i = 0; i < line_length - 1; i++) {
+	int line_length = text[p_line].length();
+	for (int i = 0; i < line_length; i++) {
 		if (text[p_line][i] == '\t') {
 			tab_count++;
 		} else if (text[p_line][i] == ' ') {

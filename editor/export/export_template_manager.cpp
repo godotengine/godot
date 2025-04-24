@@ -480,7 +480,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			contents_dir = file.get_base_dir().trim_suffix("/").trim_suffix("\\");
 		}
 
-		if (file.get_file().size() != 0) {
+		if (!file.get_file().is_empty()) {
 			fc++;
 		}
 

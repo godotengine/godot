@@ -236,7 +236,7 @@ void EditorNetworkProfiler::_replication_button_clicked(TreeItem *p_item, int p_
 		return;
 	}
 	String meta = p_item->get_metadata(p_column);
-	if (meta.size() && ResourceLoader::exists(meta)) {
+	if (!meta.is_empty() && ResourceLoader::exists(meta)) {
 		emit_signal("open_request", meta);
 	}
 }
