@@ -493,7 +493,7 @@ def configure_msvc(env: "SConsEnvironment"):
             LIBS += ["vulkan"]
 
     if env["d3d12"]:
-        check_d3d12_installed(env)
+        check_d3d12_installed(env, env["arch"] + "-msvc")
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["dxgi", "dxguid"]
@@ -513,7 +513,10 @@ def configure_msvc(env: "SConsEnvironment"):
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
             LIBS += ["WinPixEventRuntime"]
 
-        env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
+        if os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-msvc"):
+            env.Append(LIBPATH=[env["mesa_libs"] + "-" + env["arch"] + "-msvc/bin"])
+        else:
+            env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
         LIBS += ["libNIR.windows." + env["arch"] + prebuilt_lib_extra_suffix]
 
     if env["opengl3"]:
@@ -879,7 +882,10 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(LIBS=["vulkan"])
 
     if env["d3d12"]:
-        check_d3d12_installed(env)
+        if env["use_llvm"]:
+            check_d3d12_installed(env, env["arch"] + "-llvm")
+        else:
+            check_d3d12_installed(env, env["arch"] + "-gcc")
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         env.Append(LIBS=["dxgi", "dxguid"])
@@ -894,7 +900,12 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
             env.Append(LIBS=["WinPixEventRuntime"])
 
-        env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
+        if env["use_llvm"] and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-llvm"):
+            env.Append(LIBPATH=[env["mesa_libs"] + "-" + env["arch"] + "-llvm/bin"])
+        elif not env["use_llvm"] and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-gcc"):
+            env.Append(LIBPATH=[env["mesa_libs"] + "-" + env["arch"] + "-gcc/bin"])
+        else:
+            env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
         env.Append(LIBS=["libNIR.windows." + env["arch"]])
         env.Append(LIBS=["version"])  # Mesa dependency.
 
@@ -934,8 +945,8 @@ def configure(env: "SConsEnvironment"):
         configure_mingw(env)
 
 
-def check_d3d12_installed(env):
-    if not os.path.exists(env["mesa_libs"]):
+def check_d3d12_installed(env, suffix):
+    if not os.path.exists(env["mesa_libs"]) and not os.path.exists(env["mesa_libs"] + "-" + suffix):
         print_error(
             "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
             "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
