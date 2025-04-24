@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
 import os
+import platform
 import shutil
+import ssl
 import subprocess
 import sys
 import urllib.request
-import platform 
-import ssl
 
 # Check if '-ssl_allow_unverified' is in the command line arguments
-if '-ssl_allow_unverified' in sys.argv:
-    ssl._create_default_https_context = ssl._create_unverified_context
+if "-ssl_allow_unverified" in sys.argv:
+    ssl._create_default_https_context = ssl._create_unverified_context
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
 from misc.utility.color import Ansi, color_print
@@ -25,12 +25,11 @@ else:
 
 # Mesa NIR
 # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
-mesa_version = "23.1.9"
-mesa_filename = "godot-nir-23.1.9.zip"
+mesa_version = "23.1.9-1"
+mesa_filename = "godot-nir-23.1.9-1.zip"
 # Override Mesa version and filename if building on Windows on ARM.
 if platform.system() == "Windows" and platform.machine() == "ARM64":
-   mesa_version = "23.1.9-1"
-   mesa_filename = "godot-nir-static-arm64-msvc-release.zip"
+    mesa_filename = "godot-nir-static-arm64-msvc-release.zip"
 mesa_archive = os.path.join(deps_folder, mesa_filename)
 mesa_folder = os.path.join(deps_folder, "mesa")
 # WinPixEventRuntime
