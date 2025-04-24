@@ -59,20 +59,33 @@
 #endif
 #endif
 
+#ifdef WEB_ENABLED
+#include <mono/jit/jit.h>
+#include <mono/jit/mono-private-unstable.h>
+#include <mono/metadata/appdomain.h>
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/class.h>
+#include <mono/metadata/object.h>
+#endif
+
 GDMono *GDMono::singleton = nullptr;
 
 namespace {
+#ifndef WEB_ENABLED
 hostfxr_initialize_for_dotnet_command_line_fn hostfxr_initialize_for_dotnet_command_line = nullptr;
 hostfxr_initialize_for_runtime_config_fn hostfxr_initialize_for_runtime_config = nullptr;
 hostfxr_get_runtime_delegate_fn hostfxr_get_runtime_delegate = nullptr;
 hostfxr_close_fn hostfxr_close = nullptr;
+#endif
 
 #ifndef TOOLS_ENABLED
+#ifndef WEB_ENABLED
 typedef int(CORECLR_DELEGATE_CALLTYPE *coreclr_create_delegate_fn)(void *hostHandle, unsigned int domainId, const char *entryPointAssemblyName, const char *entryPointTypeName, const char *entryPointMethodName, void **delegate);
 typedef int(CORECLR_DELEGATE_CALLTYPE *coreclr_initialize_fn)(const char *exePath, const char *appDomainFriendlyName, int propertyCount, const char **propertyKeys, const char **propertyValues, void **hostHandle, unsigned int *domainId);
 
 coreclr_create_delegate_fn coreclr_create_delegate = nullptr;
 coreclr_initialize_fn coreclr_initialize = nullptr;
+#endif
 
 #ifdef ANDROID_ENABLED
 mono_install_assembly_preload_hook_fn mono_install_assembly_preload_hook = nullptr;
@@ -81,7 +94,21 @@ mono_assembly_name_get_culture_fn mono_assembly_name_get_culture = nullptr;
 mono_image_open_from_data_with_name_fn mono_image_open_from_data_with_name = nullptr;
 mono_assembly_load_from_full_fn mono_assembly_load_from_full = nullptr;
 #endif
+
+#ifdef WEB_ENABLED
+extern "C" {
+void mono_wasm_load_runtime(int debug_level);
+}
 #endif
+#endif // !TOOLS_ENABLED
+
+#ifdef TOOLS_ENABLED
+using godot_plugins_initialize_fn = bool (*)(void *, bool, gdmono::PluginCallbacks *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
+#else
+using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
+#endif
+
+#ifndef WEB_ENABLED
 
 #ifdef _WIN32
 static_assert(sizeof(char_t) == sizeof(char16_t));
@@ -379,12 +406,6 @@ load_assembly_and_get_function_pointer_fn initialize_hostfxr_self_contained(
 #endif
 
 #ifdef TOOLS_ENABLED
-using godot_plugins_initialize_fn = bool (*)(void *, bool, gdmono::PluginCallbacks *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
-#else
-using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
-#endif
-
-#ifdef TOOLS_ENABLED
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
@@ -476,8 +497,10 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 }
 #endif
 
+#endif // !WEB_ENABLED
+
 #ifndef TOOLS_ENABLED
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p_assemblies_path, void *p_user_data) {
 	constexpr bool ref_only = false;
 
@@ -529,8 +552,9 @@ MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p
 
 	return assembly;
 }
-#endif
+#endif // ANDROID_ENABLED || WEB_ENABLED
 
+#ifndef WEB_ENABLED
 godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
@@ -562,7 +586,64 @@ godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime
 
 	return godot_plugins_initialize;
 }
-#endif
+#endif // !WEB_ENABLED
+
+#ifdef WEB_ENABLED
+MonoMethod *_initialize_method;
+
+godot_plugins_initialize_fn initialize_monovm_and_godot_plugins(bool &r_runtime_initialized) {
+	mono_install_assembly_preload_hook(&load_assembly_from_pck, nullptr);
+
+	mono_wasm_load_runtime(1);
+
+	r_runtime_initialized = true;
+
+	print_verbose(".NET: Mono initialized");
+
+	MonoDomain *root_domain = mono_get_root_domain();
+
+	ERR_FAIL_NULL_V_MSG(root_domain, nullptr, ".NET: Failed to load root domain.");
+
+	String assembly_name = Path::get_csharp_project_name();
+	MonoAssemblyName *aname = mono_assembly_name_new(assembly_name.utf8().get_data());
+	ERR_FAIL_NULL_V_MSG(aname, nullptr, ".NET: Failed to parse assembly name '" + assembly_name + "'.");
+
+	MonoImageOpenStatus status;
+	MonoAssembly *assembly = mono_assembly_load(aname, nullptr, &status);
+	ERR_FAIL_COND_V_MSG(assembly == nullptr || status != MONO_IMAGE_OK, nullptr, vformat(".NET: Failed to load assembly with status '0x%08x'.", status));
+
+	mono_assembly_name_free(aname);
+
+	MonoImage *img = mono_assembly_get_image(assembly);
+	MonoClass *kls = mono_class_from_name(img, "GodotPlugins.Game", "Main");
+	ERR_FAIL_NULL_V_MSG(kls, nullptr, ".NET: Couldn't find class 'GodotPlugins.Game.Main'.");
+
+	_initialize_method = mono_class_get_method_from_name(kls, "InitializeFromGameProject", 4);
+	ERR_FAIL_NULL_V_MSG(_initialize_method, nullptr, ".NET: Couldn't find method 'GodotPlugins.Game.Main.InitializeFromGameProject'.");
+
+	godot_plugins_initialize_fn godot_plugins_initialize = [](void *godot_dll_handler, GDMonoCache::ManagedCallbacks *out_managed_callbacks, const void **unmanaged_callbacks, int32_t unmanaged_callbacks_size) {
+		void *args[] = {
+			&godot_dll_handler,
+			&out_managed_callbacks,
+			&unmanaged_callbacks,
+			&unmanaged_callbacks_size
+		};
+
+		MonoObject *exc = nullptr;
+		MonoObject *ret = mono_runtime_invoke(_initialize_method, nullptr, args, &exc);
+		if (unlikely(exc != nullptr)) {
+			CRASH_NOW();
+		}
+
+		return *(bool *)mono_object_unbox(ret);
+	};
+
+	ERR_FAIL_NULL_V_MSG(godot_plugins_initialize, nullptr, ".NET: Failed to get GodotPlugins initialization function pointer");
+
+	return godot_plugins_initialize;
+}
+#endif // WEB_ENABLED
+#endif // !TOOLS_ENABLED
 
 } // namespace
 
@@ -599,7 +680,7 @@ void GDMono::initialize() {
 
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
-#if !defined(IOS_ENABLED)
+#if !defined(IOS_ENABLED) && !defined(WEB_ENABLED)
 	// Check that the .NET assemblies directory exists before trying to use it.
 	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
 		OS::get_singleton()->alert(vformat(RTR("Unable to find the .NET assemblies directory.\nMake sure the '%s' directory exists and contains the .NET assemblies."), GodotSharpDirs::get_api_assemblies_dir()), RTR(".NET assemblies not found"));
@@ -607,6 +688,11 @@ void GDMono::initialize() {
 	}
 #endif
 
+#ifdef WEB_ENABLED
+	// The web platform always uses Mono to initialize the .NET runtime.
+	godot_plugins_initialize = initialize_monovm_and_godot_plugins(runtime_initialized);
+	ERR_FAIL_NULL_MSG(godot_plugins_initialize, ".NET: Failed to initialize Mono runtime.");
+#else
 	if (load_hostfxr(hostfxr_dll_handle)) {
 		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
 		ERR_FAIL_NULL(godot_plugins_initialize);
@@ -624,8 +710,12 @@ void GDMono::initialize() {
 		if (godot_plugins_initialize == nullptr) {
 			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 		}
-#else
+#endif // !TOOLS_ENABLED
+	}
+#endif // !WEB_ENABLED
 
+	if (!runtime_initialized) {
+#ifdef TOOLS_ENABLED
 		// Show a message box to the user to make the problem explicit (and explain a potential crash).
 		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, specifically hostfxr.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart Godot."), TTR("Failed to load .NET runtime"));
 		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
@@ -639,7 +729,7 @@ void GDMono::initialize() {
 
 	void *godot_dll_handle = nullptr;
 
-#if defined(UNIX_ENABLED) && !defined(MACOS_ENABLED) && !defined(IOS_ENABLED)
+#if defined(UNIX_ENABLED) && !defined(MACOS_ENABLED) && !defined(IOS_ENABLED) && !defined(WEB_ENABLED)
 	// Managed code can access it on its own on other platforms
 	godot_dll_handle = dlopen(nullptr, RTLD_NOW);
 #endif
