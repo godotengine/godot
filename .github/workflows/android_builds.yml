@@ -8,14 +8,11 @@ env:
   GODOT_BASE_BRANCH: 4.3
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes
 
-concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-android
-  cancel-in-progress: true
-
 jobs:
   build-android:
-    runs-on: "ubuntu-20.04"
+    runs-on: ubuntu-24.04
     name: ${{ matrix.name }}
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -39,7 +36,8 @@ jobs:
             sconsflags: arch=arm64
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 

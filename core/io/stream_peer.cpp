@@ -223,13 +223,13 @@ void StreamPeer::put_var(const Variant &p_variant, bool p_full_objects) {
 }
 
 uint8_t StreamPeer::get_u8() {
-	uint8_t buf[1];
+	uint8_t buf[1] = {};
 	get_data(buf, 1);
 	return buf[0];
 }
 
 int8_t StreamPeer::get_8() {
-	uint8_t buf[1];
+	uint8_t buf[1] = {};
 	get_data(buf, 1);
 	return buf[0];
 }
