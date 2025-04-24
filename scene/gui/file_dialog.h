@@ -38,6 +38,7 @@ class GridContainer;
 class HBoxContainer;
 class ItemList;
 class LineEdit;
+class MenuButton;
 class OptionButton;
 class PopupMenu;
 class VBoxContainer;
@@ -49,6 +50,52 @@ class FileDialog : public ConfirmationDialog {
 		String name;
 		Vector<String> values;
 		int default_idx = 0;
+	};
+
+	struct DirInfo {
+		String name;
+		bool bundle = false;
+
+		struct NameComparator {
+			bool operator()(const DirInfo &p_a, const DirInfo &p_b) const {
+				return FileNoCaseComparator()(p_a.name, p_b.name);
+			}
+		};
+	};
+
+	struct FileInfo {
+		String name;
+		String match_string;
+		String type_sort;
+		uint64_t modified_time = 0;
+
+		struct NameComparator {
+			bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+				return FileNoCaseComparator()(p_a.name, p_b.name);
+			}
+		};
+
+		struct TypeComparator {
+			bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+				return FileNoCaseComparator()(p_a.type_sort, p_b.type_sort);
+			}
+		};
+
+		struct TimeComparator {
+			bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+				return p_a.modified_time > p_b.modified_time;
+			}
+		};
+	};
+
+	enum class FileSortOption {
+		FILE_SORT_NAME,
+		FILE_SORT_NAME_REVERSE,
+		FILE_SORT_TYPE,
+		FILE_SORT_TYPE_REVERSE,
+		FILE_SORT_MODIFIED_TIME,
+		FILE_SORT_MODIFIED_TIME_REVERSE,
+		FILE_SORT_MAX
 	};
 
 public:
@@ -89,6 +136,7 @@ private:
 
 	Access access = ACCESS_RESOURCES;
 	FileMode mode = FILE_MODE_SAVE_FILE;
+	FileSortOption file_sort = FILE_SORT_NAME;
 	Ref<DirAccess> dir_access;
 
 	Vector<String> filters;
@@ -123,9 +171,10 @@ private:
 	HBoxContainer *shortcuts_container = nullptr;
 
 	Button *refresh_button = nullptr;
+	Button *make_dir_button = nullptr;
 	Button *show_hidden = nullptr;
 	Button *show_filename_filter_button = nullptr;
-	Button *make_dir_button = nullptr;
+	MenuButton *file_sort_button = nullptr;
 
 	ItemList *file_list = nullptr;
 	Label *message = nullptr;
@@ -156,6 +205,7 @@ private:
 		Ref<Texture2D> folder;
 		Ref<Texture2D> file;
 		Ref<Texture2D> create_folder;
+		Ref<Texture2D> sort;
 
 		Color folder_icon_color;
 		Color file_icon_color;
@@ -204,6 +254,7 @@ private:
 
 	void _change_dir(const String &p_new_dir);
 	void _update_drives(bool p_select = true);
+	void _sort_option_selected(int p_option);
 
 	void _invalidate();
 	void _setup_button(Button *p_button, const Ref<Texture2D> &p_icon);
