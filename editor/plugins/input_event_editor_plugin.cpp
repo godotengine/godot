@@ -79,6 +79,7 @@ void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
 
 InputEventConfigContainer::InputEventConfigContainer() {
 	input_event_text = memnew(Label);
+	input_event_text->set_focus_mode(FOCUS_ACCESSIBILITY);
 	input_event_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	input_event_text->set_autowrap_mode(TextServer::AutowrapMode::AUTOWRAP_WORD_SMART);
 	input_event_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

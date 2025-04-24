@@ -2575,6 +2575,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	middle_vbox_container->add_child(tile_inspector);
 
 	tile_inspector_no_tile_selected_label = memnew(Label);
+	tile_inspector_no_tile_selected_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	tile_inspector_no_tile_selected_label->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	tile_inspector_no_tile_selected_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	tile_inspector_no_tile_selected_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -2668,6 +2669,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(middle_space);
 
 	tool_tile_id_label = memnew(Label);
+	tool_tile_id_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	tool_tile_id_label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	tool_settings->add_child(tool_tile_id_label);
 	_update_tile_id_label();
@@ -2688,6 +2690,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	right_panel->add_child(tile_atlas_view);
 
 	help_label = memnew(Label);
+	help_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	help_label->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	help_label->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	help_label->set_vertical_alignment(VERTICAL_ALIGNMENT_BOTTOM);

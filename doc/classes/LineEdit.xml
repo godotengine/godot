@@ -133,6 +133,22 @@
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
+		<method name="get_next_composite_character_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the correct column at the end of a composite character like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the start of the composite character. Also returns the correct column with the caret at mid grapheme and for non-composite characters.
+				[b]Note:[/b] To check at caret location use [code]get_next_composite_character_column(get_caret_column())[/code]
+			</description>
+		</method>
+		<method name="get_previous_composite_character_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the correct column at the start of a composite character like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the end of the composite character. Also returns the correct column with the caret at mid grapheme and for non-composite characters.
+				[b]Note:[/b] To check at caret location use [code]get_previous_composite_character_column(get_caret_column())[/code]
+			</description>
+		</method>
 		<method name="get_scroll_offset" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -245,6 +261,9 @@
 	<members>
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 			Text alignment as defined in the [enum HorizontalAlignment] enum.
+		</member>
+		<member name="backspace_deletes_composite_character_enabled" type="bool" setter="set_backspace_deletes_composite_character_enabled" getter="is_backspace_deletes_composite_character_enabled" default="false">
+			If [code]true[/code] and [member caret_mid_grapheme] is [code]false[/code], backspace deletes an entire composite character such as ❤️‍🩹, instead of deleting part of the composite character.
 		</member>
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
 			If [code]true[/code], makes the caret blink.

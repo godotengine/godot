@@ -345,6 +345,7 @@ void AnimationPlayer::_blend_post_process() {
 				_set_process(false);
 				if (end_notify) {
 					emit_signal(SceneStringName(animation_finished), playback.assigned);
+					emit_signal(SNAME("current_animation_changed"), "");
 					if (movie_quit_on_finish && OS::get_singleton()->has_feature("movie")) {
 						print_line(vformat("Movie Maker mode is enabled. Quitting on animation finish as requested by: %s", get_path()));
 						get_tree()->quit();

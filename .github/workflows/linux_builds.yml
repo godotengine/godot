@@ -35,11 +35,11 @@ jobs:
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
 
-          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
+          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=mold)
             cache-name: linux-editor-double-sanitizers
             target: editor
             # Debug symbols disabled as they're huge on this build and we hit the 14 GB limit for runners.
-            sconsflags: dev_build=yes scu_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes linker=gold
+            sconsflags: dev_build=yes scu_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes linker=mold
             bin: ./bin/godot.linuxbsd.editor.dev.double.x86_64.san
             build-mono: false
             tests: true
@@ -101,14 +101,11 @@ jobs:
         with:
           submodules: recursive
 
-      # Need newer mesa for lavapipe to work properly.
       - name: Linux dependencies for tests
         if: matrix.proj-test
         run: |
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB8B81E14DA65431D7504EA8F63F0F2B90935439
-          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu jammy main"
-          sudo apt-get install -qq mesa-vulkan-drivers
+          sudo apt-get install mesa-vulkan-drivers
 
       # TODO: Figure out somehow how to embed this one.
       - name: wayland-scanner dependency
@@ -161,6 +158,10 @@ jobs:
 
       - name: Extract pre-built AccessKit
         run: unzip -o accesskit-c-0.15.1/accesskit_c.zip
+
+      - name: Install mold linker
+        if: matrix.proj-test
+        uses: rui314/setup-mold@v1
 
       - name: Compilation
         uses: ./.github/actions/godot-build

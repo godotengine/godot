@@ -3381,6 +3381,7 @@ Variant TextEdit::get_drag_data(const Point2 &p_point) {
 		String t = get_selected_text();
 		Label *l = memnew(Label);
 		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
+		l->set_focus_mode(FOCUS_ACCESSIBILITY);
 		l->set_text(t);
 		set_drag_preview(l);
 		return t;
@@ -3721,6 +3722,14 @@ void TextEdit::set_emoji_menu_enabled(bool p_enabled) {
 
 bool TextEdit::is_emoji_menu_enabled() const {
 	return emoji_menu_enabled;
+}
+
+void TextEdit::set_backspace_deletes_composite_character_enabled(bool p_enabled) {
+	backspace_deletes_composite_character_enabled = p_enabled;
+}
+
+bool TextEdit::is_backspace_deletes_composite_character_enabled() const {
+	return backspace_deletes_composite_character_enabled;
 }
 
 void TextEdit::set_shortcut_keys_enabled(bool p_enabled) {
@@ -6056,6 +6065,26 @@ int TextEdit::get_selection_origin_column(int p_caret) const {
 	return carets[p_caret].selection.origin_column;
 }
 
+int TextEdit::get_next_composite_character_column(int p_line, int p_column) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), -1);
+	ERR_FAIL_INDEX_V(p_column, text[p_line].length() + 1, -1);
+	if (p_column == text[p_line].length()) {
+		return p_column;
+	} else {
+		return TS->shaped_text_next_character_pos(text.get_line_data(p_line)->get_rid(), (p_column));
+	}
+}
+
+int TextEdit::get_previous_composite_character_column(int p_line, int p_column) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), -1);
+	ERR_FAIL_INDEX_V(p_column, text[p_line].length() + 1, -1);
+	if (p_column == 0) {
+		return 0;
+	} else {
+		return TS->shaped_text_prev_character_pos(text.get_line_data(p_line)->get_rid(), p_column);
+	}
+}
+
 int TextEdit::get_selection_from_line(int p_caret) const {
 	ERR_FAIL_INDEX_V(p_caret, carets.size(), -1);
 	if (!has_selection(p_caret)) {
@@ -6957,6 +6986,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emoji_menu_enabled", "enable"), &TextEdit::set_emoji_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_emoji_menu_enabled"), &TextEdit::is_emoji_menu_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_backspace_deletes_composite_character_enabled", "enable"), &TextEdit::set_backspace_deletes_composite_character_enabled);
+	ClassDB::bind_method(D_METHOD("is_backspace_deletes_composite_character_enabled"), &TextEdit::is_backspace_deletes_composite_character_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enabled"), &TextEdit::set_shortcut_keys_enabled);
 	ClassDB::bind_method(D_METHOD("is_shortcut_keys_enabled"), &TextEdit::is_shortcut_keys_enabled);
 
@@ -7150,6 +7182,8 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_caret_column", "column", "adjust_viewport", "caret_index"), &TextEdit::set_caret_column, DEFVAL(true), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_caret_column", "caret_index"), &TextEdit::get_caret_column, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_next_composite_character_column", "line", "column"), &TextEdit::get_next_composite_character_column);
+	ClassDB::bind_method(D_METHOD("get_previous_composite_character_column", "line", "column"), &TextEdit::get_previous_composite_character_column);
 
 	ClassDB::bind_method(D_METHOD("get_caret_wrap_index", "caret_index"), &TextEdit::get_caret_wrap_index, DEFVAL(0));
 
@@ -7359,6 +7393,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emoji_menu_enabled"), "set_emoji_menu_enabled", "is_emoji_menu_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "backspace_deletes_composite_character_enabled"), "set_backspace_deletes_composite_character_enabled", "is_backspace_deletes_composite_character_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
@@ -7595,7 +7630,14 @@ void TextEdit::_backspace_internal(int p_caret) {
 		}
 
 		int from_line = to_column > 0 ? to_line : to_line - 1;
-		int from_column = to_column > 0 ? (to_column - 1) : (text[to_line - 1].length());
+		int from_column = 0;
+		if (to_column == 0) {
+			from_column = text[to_line - 1].length();
+		} else if (caret_mid_grapheme_enabled || !backspace_deletes_composite_character_enabled) {
+			from_column = to_column - 1;
+		} else {
+			from_column = get_previous_composite_character_column(to_line, to_column);
+		}
 
 		merge_gutters(from_line, to_line);
 
