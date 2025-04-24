@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_ANDROID_H
-#define CAMERA_ANDROID_H
+#pragma once
 
 #include "servers/camera/camera_feed.h"
 #include "servers/camera_server.h"
@@ -41,42 +40,57 @@
 #include <media/NdkImageReader.h>
 
 class CameraFeedAndroid : public CameraFeed {
+	GDSOFTCLASS(CameraFeedAndroid, CameraFeed);
+
 private:
-    String camera_id;
-    int32_t format;
+	String camera_id;
+	int32_t orientation;
+	Ref<Image> image_y;
+	Ref<Image> image_uv;
+	Vector<uint8_t> data_y;
+	Vector<uint8_t> data_uv;
 
 	ACameraManager *manager = nullptr;
+	ACameraMetadata *metadata = nullptr;
 	ACameraDevice *device = nullptr;
 	AImageReader *reader = nullptr;
 	ACameraCaptureSession *session = nullptr;
 	ACaptureRequest *request = nullptr;
 
-    static void onError(void *context, ACameraDevice *p_device, int error);
+	void _add_formats();
+
+	static void onError(void *context, ACameraDevice *p_device, int error);
 	static void onDisconnected(void *context, ACameraDevice *p_device);
-    static void onImage(void *context, AImageReader *p_reader);
-    static void onSessionReady(void *context, ACameraCaptureSession *session);
-    static void onSessionActive(void *context, ACameraCaptureSession *session);
-    static void onSessionClosed(void *context, ACameraCaptureSession *session);
+	static void onImage(void *context, AImageReader *p_reader);
+	static void onSessionReady(void *context, ACameraCaptureSession *session);
+	static void onSessionActive(void *context, ACameraCaptureSession *session);
+	static void onSessionClosed(void *context, ACameraCaptureSession *session);
 
 protected:
 public:
-	CameraFeedAndroid(ACameraManager *manager, const char *id, int32_t position, int32_t width, int32_t height,
-                      int32_t format, int32_t orientation);
-	virtual ~CameraFeedAndroid();
+	void set_rotation();
+	bool activate_feed() override;
+	void deactivate_feed() override;
+	bool set_format(int p_index, const Dictionary &p_parameters) override;
+	Array get_formats() const override;
+	FeedFormat get_format() const override;
 
-	bool activate_feed();
-	void deactivate_feed();
+	CameraFeedAndroid(ACameraManager *manager, ACameraMetadata *metadata, const char *id,
+			CameraFeed::FeedPosition position, int32_t orientation);
+	~CameraFeedAndroid() override;
 };
 
 class CameraAndroid : public CameraServer {
+	GDSOFTCLASS(CameraAndroid, CameraServer);
+
 private:
-	ACameraManager *cameraManager;
+	ACameraManager *cameraManager = nullptr;
+	ACameraMetadata *metadata = nullptr;
 
 	void update_feeds();
 
 public:
-	CameraAndroid();
+	void set_monitoring_feeds(bool p_monitoring_feeds) override;
+
 	~CameraAndroid();
 };
-
-#endif // CAMERA_ANDROID_H
