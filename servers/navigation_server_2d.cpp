@@ -218,10 +218,10 @@ NavigationServer2D::NavigationServer2D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults2D::navmesh_cell_size_hint), NavigationDefaults2D::navmesh_cell_size);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults2D::NAV_MESH_CELL_SIZE_HINT), NavigationDefaults2D::NAV_MESH_CELL_SIZE);
 	GLOBAL_DEF("navigation/2d/use_edge_connections", true);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::edge_connection_margin);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::link_connection_radius);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::EDGE_CONNECTION_MARGIN);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::LINK_CONNECTION_RADIUS);
 
 #ifdef DEBUG_ENABLED
 	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/2d/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));

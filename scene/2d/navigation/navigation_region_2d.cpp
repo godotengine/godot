@@ -301,7 +301,7 @@ PackedStringArray NavigationRegion2D::get_configuration_warnings() const {
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (navigation_polygon.is_null()) {
-			warnings.push_back(RTR("A NavigationMesh resource must be set or created for this node to work. Please set a property or draw a polygon."));
+			warnings.push_back(RTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon."));
 		}
 	}
 
