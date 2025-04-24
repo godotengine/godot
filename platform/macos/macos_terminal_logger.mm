@@ -34,7 +34,7 @@
 
 #include <os/log.h>
 
-void MacOSTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+void MacOSTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!should_log(true)) {
 		return;
 	}
@@ -46,36 +46,46 @@ void MacOSTerminalLogger::log_error(const char *p_function, const char *p_file, 
 		err_details = p_code;
 	}
 
+	const char *indent = "";
 	switch (p_type) {
 		case ERR_WARNING:
-			os_log_info(OS_LOG_DEFAULT,
+			indent = "     ";
+			os_log_error(OS_LOG_DEFAULT,
 					"WARNING: %{public}s\nat: %{public}s (%{public}s:%i)",
 					err_details, p_function, p_file, p_line);
 			logf_error("\E[1;33mWARNING:\E[0;93m %s\n", err_details);
-			logf_error("\E[0;90m     at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
+			logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", indent, p_function, p_file, p_line);
 			break;
 		case ERR_SCRIPT:
+			indent = "          ";
 			os_log_error(OS_LOG_DEFAULT,
 					"SCRIPT ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
 					err_details, p_function, p_file, p_line);
 			logf_error("\E[1;35mSCRIPT ERROR:\E[0;95m %s\n", err_details);
-			logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
+			logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", indent, p_function, p_file, p_line);
 			break;
 		case ERR_SHADER:
+			indent = "          ";
 			os_log_error(OS_LOG_DEFAULT,
 					"SHADER ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
 					err_details, p_function, p_file, p_line);
 			logf_error("\E[1;36mSHADER ERROR:\E[0;96m %s\n", err_details);
-			logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
+			logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", indent, p_function, p_file, p_line);
 			break;
 		case ERR_ERROR:
 		default:
+			indent = "   ";
 			os_log_error(OS_LOG_DEFAULT,
 					"ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
 					err_details, p_function, p_file, p_line);
 			logf_error("\E[1;31mERROR:\E[0;91m %s\n", err_details);
-			logf_error("\E[0;90m   at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
+			logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", indent, p_function, p_file, p_line);
 			break;
+	}
+
+	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
+		os_log_error(OS_LOG_DEFAULT, "%{public}s", backtrace->format().utf8().get_data());
+		logf_error("\E[0;90m%s\E[0m\n", backtrace->format(strlen(indent)).utf8().get_data());
 	}
 }
 

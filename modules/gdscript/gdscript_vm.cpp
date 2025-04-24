@@ -621,12 +621,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 	String err_text;
 
+	GDScriptLanguage::get_singleton()->enter_function(p_instance, this, stack, &ip, &line);
+
 #ifdef DEBUG_ENABLED
-
-	if (EngineDebugger::is_active()) {
-		GDScriptLanguage::get_singleton()->enter_function(p_instance, this, stack, &ip, &line);
-	}
-
 #define GD_ERR_BREAK(m_cond)                                                                                           \
 	{                                                                                                                  \
 		if (unlikely(m_cond)) {                                                                                        \
@@ -698,10 +695,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		profile.frame_call_count.increment();
 	}
 	bool exit_ok = false;
-	bool awaited = false;
 	int variant_address_limits[ADDR_TYPE_MAX] = { _stack_size, _constant_count, p_instance ? (int)p_instance->members.size() : 0 };
 #endif
 
+	bool awaited = false;
 	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptrw() : nullptr };
 
 #ifdef DEBUG_ENABLED
@@ -2567,9 +2564,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
+					awaited = true;
+
 #ifdef DEBUG_ENABLED
 					exit_ok = true;
-					awaited = true;
 #endif
 					OPCODE_BREAK;
 				}
@@ -3865,23 +3863,19 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 		}
 	}
+#endif
 
 	// Check if this is not the last time it was interrupted by `await` or if it's the first time executing.
 	// If that is the case then we exit the function as normal. Otherwise we postpone it until the last `await` is completed.
 	// This ensures the call stack can be properly shown when using `await`, showing what resumed the function.
 	if (!p_state || awaited) {
-		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->exit_function();
-		}
-#endif
+		GDScriptLanguage::get_singleton()->exit_function();
 
 		// Free stack, except reserved addresses.
 		for (int i = FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
 			stack[i].~Variant();
 		}
-#ifdef DEBUG_ENABLED
 	}
-#endif
 
 	// Always free reserved addresses, since they are never copied.
 	for (int i = 0; i < FIXED_ADDRESSES_MAX; i++) {
