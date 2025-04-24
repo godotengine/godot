@@ -6681,7 +6681,6 @@ void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event, bool p_timeli
 }
 
 void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
-	last_menu_track_opt = p_option;
 	switch (p_option) {
 		case EDIT_COPY_TRACKS: {
 			track_copy_select->clear();
@@ -6841,11 +6840,15 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 			undo_redo->commit_action();
 		} break;
-
-		case EDIT_SCALE_SELECTION:
+		case EDIT_SCALE_SELECTION: {
+			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
+			scale->get_line_edit()->grab_focus();
+			scale_from_cursor = false;
+		} break;
 		case EDIT_SCALE_FROM_CURSOR: {
 			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 			scale->get_line_edit()->grab_focus();
+			scale_from_cursor = true;
 		} break;
 		case EDIT_SCALE_CONFIRM: {
 			if (selection.is_empty()) {
@@ -6868,9 +6871,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 
 			len = to_t - from_t;
-			if (last_menu_track_opt == EDIT_SCALE_FROM_CURSOR) {
+			if (scale_from_cursor) {
 				pivot = timeline->get_play_position();
-
 			} else {
 				pivot = from_t;
 			}
@@ -6912,7 +6914,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				to_restore.push_back(amr);
 			}
 
-#define NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * Math::abs(s) + from_t
+#define NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * Math::abs(s) + pivot
 			// 3 - Move the keys (re insert them).
 			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 				float newpos = NEW_POS(E->get().pos);
