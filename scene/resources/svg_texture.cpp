@@ -45,35 +45,39 @@ Mutex SVGTexture::mutex;
 HashMap<double, SVGTexture::ScalingLevel> SVGTexture::scaling_levels;
 
 void SVGTexture::reference_scaling_level(double p_scale) {
-	if (Math::is_equal_approx(p_scale, 1.0)) {
+	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
+	if (oversampling == 64) {
 		return;
 	}
+	double scale = double(oversampling) / 64.0;
 
 	MutexLock lock(mutex);
-	ScalingLevel *sl = scaling_levels.getptr(p_scale);
+	ScalingLevel *sl = scaling_levels.getptr(scale);
 	if (sl) {
 		sl->refcount++;
 	} else {
 		ScalingLevel new_sl;
-		scaling_levels.insert(p_scale, new_sl);
+		scaling_levels.insert(scale, new_sl);
 	}
 }
 
 void SVGTexture::unreference_scaling_level(double p_scale) {
-	if (Math::is_equal_approx(p_scale, 1.0)) {
+	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
+	if (oversampling == 64) {
 		return;
 	}
+	double scale = double(oversampling) / 64.0;
 
 	MutexLock lock(mutex);
-	ScalingLevel *sl = scaling_levels.getptr(p_scale);
+	ScalingLevel *sl = scaling_levels.getptr(scale);
 	if (sl) {
 		sl->refcount--;
 		if (sl->refcount == 0) {
 			for (SVGTexture *tx : sl->textures) {
-				tx->_remove_scale(p_scale);
+				tx->_remove_scale(scale);
 			}
 			sl->textures.clear();
-			scaling_levels.erase(p_scale);
+			scaling_levels.erase(scale);
 		}
 	}
 }
@@ -158,24 +162,27 @@ void SVGTexture::_remove_scale(double p_scale) {
 }
 
 RID SVGTexture::_ensure_scale(double p_scale) const {
-	if (Math::is_equal_approx(p_scale, 1.0)) {
+	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
+	if (oversampling == 64) {
 		if (base_texture.is_null()) {
 			base_texture = _load_at_scale(p_scale, true);
 		}
 		return base_texture;
 	}
-	RID *rid = texture_cache.getptr(p_scale);
+	double scale = double(oversampling) / 64.0;
+
+	RID *rid = texture_cache.getptr(scale);
 	if (rid) {
 		return *rid;
 	}
 
 	MutexLock lock(mutex);
-	ScalingLevel *sl = scaling_levels.getptr(p_scale);
+	ScalingLevel *sl = scaling_levels.getptr(scale);
 	ERR_FAIL_NULL_V_MSG(sl, RID(), "Invalid scaling level");
 	sl->textures.insert(const_cast<SVGTexture *>(this));
 
-	RID new_rid = _load_at_scale(p_scale, false);
-	texture_cache[p_scale] = new_rid;
+	RID new_rid = _load_at_scale(scale, false);
+	texture_cache[scale] = new_rid;
 	return new_rid;
 }
 
