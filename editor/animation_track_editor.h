@@ -278,6 +278,7 @@ class AnimationMarkerEdit : public Control {
 
 	enum {
 		MENU_KEY_INSERT,
+		MENU_KEY_INSERT_CURRENT, //added
 		MENU_KEY_RENAME,
 		MENU_KEY_DELETE,
 		MENU_KEY_TOGGLE_MARKER_NAMES,
@@ -311,6 +312,7 @@ class AnimationMarkerEdit : public Control {
 	bool _is_ui_pos_in_current_section(const Point2 &p_pos);
 
 	float insert_at_pos = 0.0f;
+	float insert_at_pos_current = 0.0f;
 	bool moving_selection_attempt = false;
 	bool moving_selection_effective = false;
 	float moving_selection_offset = 0.0f;
@@ -421,6 +423,7 @@ class AnimationTrackEdit : public Control {
 		MENU_LOOP_WRAP,
 		MENU_LOOP_CLAMP,
 		MENU_KEY_INSERT,
+		MENU_KEY_INSERT_CURRENT,
 		MENU_KEY_DUPLICATE,
 		MENU_KEY_CUT,
 		MENU_KEY_COPY,
@@ -476,6 +479,7 @@ class AnimationTrackEdit : public Control {
 
 	mutable int dropping_at = 0;
 	float insert_at_pos = 0.0f;
+	float insert_at_pos_current = 0.0f;
 	bool moving_selection_attempt = false;
 	bool moving_selection_effective = false;
 	float moving_selection_pivot = 0.0f;

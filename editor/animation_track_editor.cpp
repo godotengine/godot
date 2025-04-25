@@ -3103,6 +3103,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 				menu->clear();
 				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Key..."), MENU_KEY_INSERT);
+				
 				if (selected || editor->is_selection_active()) {
 					menu->add_separator();
 					menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Duplicate Key(s)"), MENU_KEY_DUPLICATE);
@@ -3130,7 +3131,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->popup();
 
 				insert_at_pos = offset + timeline->get_value();
-				accept_event();
+				insert_at_pos_current = timeline->get_play_position();
 			}
 		}
 	}
@@ -3470,6 +3471,9 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		} break;
 		case MENU_KEY_INSERT: {
 			emit_signal(SNAME("insert_key"), insert_at_pos);
+		} break;
+		case MENU_KEY_INSERT_CURRENT: {
+			emit_signal(SNAME("duplicate_request"), insert_at_pos_current, true); //change insert_at_pos to be the indicator position
 		} break;
 		case MENU_KEY_DUPLICATE: {
 			emit_signal(SNAME("duplicate_request"), insert_at_pos, true);
@@ -8163,6 +8167,9 @@ void AnimationMarkerEdit::_menu_selected(int p_index) {
 		case MENU_KEY_INSERT: {
 			_insert_marker(insert_at_pos);
 		} break;
+		case MENU_KEY_INSERT_CURRENT: {
+			_insert_marker(insert_at_pos_current);
+		} break;
 		case MENU_KEY_RENAME: {
 			if (selection.size() > 0) {
 				_rename_marker(*selection.last());
@@ -8554,6 +8561,9 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->clear();
 				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Marker..."), MENU_KEY_INSERT);
 
+				//added - works as intended, creates another menu button
+				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Marker on Current Time..."), MENU_KEY_INSERT_CURRENT);
+
 				if (selected || selection.size() > 0) {
 					menu->add_icon_item(get_editor_theme_icon(SNAME("Edit")), TTR("Rename Marker"), MENU_KEY_RENAME);
 					menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete Marker(s)"), MENU_KEY_DELETE);
@@ -8569,6 +8579,7 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->popup();
 
 				insert_at_pos = offset + timeline->get_value();
+				insert_at_pos_current = timeline->get_play_position();
 				accept_event();
 			}
 		}
