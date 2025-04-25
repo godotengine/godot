@@ -17,12 +17,12 @@
 			</description>
 		</method>
 		<method name="get_sync_stream_playback" qualifiers="const">
-+			<return type="AudioStreamPlayback" />
-+			<param index="0" name="stream_index" type="int" />
-+			<description>
+			<return type="AudioStreamPlayback" />
+			<param index="0" name="stream_index" type="int" />
+			<description>
 				Get one of the synchronized streams playback, by index.
-+			</description>
-+		</method>
+			</description>
+		</method>
 		<method name="get_sync_stream_volume" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="stream_index" type="int" />
