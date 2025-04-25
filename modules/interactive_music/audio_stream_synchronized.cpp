@@ -42,12 +42,11 @@ AudioStreamSynchronized::~AudioStreamSynchronized() {
 }
 
 Ref<AudioStreamPlayback> AudioStreamSynchronized::instantiate_playback() {
-	if (!playback_sync.is_valid()) {
-		playback_sync.instantiate();
-		playback_sync->stream = Ref<AudioStreamSynchronized>(this);
-		playback_sync->_update_playback_instances();
-	}
-
+	Ref<AudioStreamPlaybackSynchronized> playsync;
+	playsync.instantiate();
+	playsync->stream = Ref<AudioStreamSynchronized>(this);
+	playsync->_update_playback_instances();
+	playback_sync = playsync.operator->();
 	return playback_sync;
 }
 
