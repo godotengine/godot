@@ -190,9 +190,7 @@ void main() {
 #endif
 
 	{
-
 #CODE : SKY
-
 	}
 
 	color *= luminance_multiplier;

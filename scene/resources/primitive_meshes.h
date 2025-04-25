@@ -75,7 +75,7 @@ protected:
 
 	Vector2 get_uv2_scale(Vector2 p_margin_scale = Vector2(1.0, 1.0)) const;
 	float get_lightmap_texel_size() const;
-	virtual void _update_lightmap_size(){};
+	virtual void _update_lightmap_size() {};
 
 public:
 	virtual int get_surface_count() const override;
