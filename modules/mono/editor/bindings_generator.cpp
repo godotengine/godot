@@ -1632,7 +1632,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n" OPEN_BLOCK);
 
 	for (const ConstantInterface &iconstant : global_constants) {
-		if (iconstant.const_doc && iconstant.const_doc->description.size()) {
+		if (iconstant.const_doc && iconstant.const_doc->description.length()) {
 			String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), nullptr);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
@@ -1696,7 +1696,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 				 << maybe_indent << OPEN_BLOCK;
 
 		for (const ConstantInterface &iconstant : ienum.constants) {
-			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
+			if (iconstant.const_doc && iconstant.const_doc->description.length()) {
 				String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), nullptr);
 				Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
@@ -2158,7 +2158,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	const DocData::ClassDoc *class_doc = itype.class_doc;
 
-	if (class_doc && class_doc->description.size()) {
+	if (class_doc && class_doc->description.length()) {
 		String xml_summary = bbcode_to_xml(fix_doc_description(class_doc->description), &itype);
 		Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
@@ -2220,7 +2220,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	// Add constants
 
 	for (const ConstantInterface &iconstant : itype.constants) {
-		if (iconstant.const_doc && iconstant.const_doc->description.size()) {
+		if (iconstant.const_doc && iconstant.const_doc->description.length()) {
 			String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), &itype);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
@@ -2270,7 +2270,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		const ConstantInterface &last = ienum.constants.back()->get();
 		for (const ConstantInterface &iconstant : ienum.constants) {
-			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
+			if (iconstant.const_doc && iconstant.const_doc->description.length()) {
 				String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), &itype);
 				Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
@@ -2756,7 +2756,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 						"' from the editor API. Core API cannot have dependencies on the editor API.");
 	}
 
-	if (p_iprop.prop_doc && p_iprop.prop_doc->description.size()) {
+	if (p_iprop.prop_doc && p_iprop.prop_doc->description.length()) {
 		String xml_summary = bbcode_to_xml(fix_doc_description(p_iprop.prop_doc->description), &p_itype);
 		Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
@@ -2898,7 +2898,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			self_reference = CS_PROPERTY_SINGLETON;
 		}
 
-		if (p_itype.cs_in.size()) {
+		if (p_itype.cs_in.length()) {
 			cs_in_statements << sformat(p_itype.cs_in, p_itype.c_type, self_reference,
 					String(), String(), String(), INDENT2);
 		}
@@ -2923,7 +2923,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 							arg_type->name + "' from the editor API. Core API cannot have dependencies on the editor API.");
 		}
 
-		if (iarg.default_argument.size()) {
+		if (iarg.default_argument.length()) {
 			CRASH_COND_MSG(!_arg_default_value_is_assignable_to_type(iarg.def_param_value, *arg_type),
 					"Invalid default value for parameter '" + iarg.name + "' of method '" + p_itype.name + "." + p_imethod.name + "'.");
 		}
@@ -2957,7 +2957,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			arguments_sig += iarg.name;
 
-			if (!p_use_span && !p_imethod.is_compat && iarg.default_argument.size()) {
+			if (!p_use_span && !p_imethod.is_compat && iarg.default_argument.length()) {
 				if (iarg.def_param_mode != ArgumentInterface::CONSTANT) {
 					arguments_sig += " = null";
 				} else {
@@ -2968,7 +2968,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		icall_params += ", ";
 
-		if (iarg.default_argument.size() && iarg.def_param_mode != ArgumentInterface::CONSTANT && !use_span_for_arg) {
+		if (iarg.default_argument.length() && iarg.def_param_mode != ArgumentInterface::CONSTANT && !use_span_for_arg) {
 			// The default value of an argument must be constant. Otherwise we make it Nullable and do the following:
 			// Type arg_in = arg.HasValue ? arg.Value : <non-const default value>;
 			String arg_or_defval_local = iarg.name;
@@ -2999,7 +2999,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			cs_in_statements << def_arg << ";\n";
 
-			if (arg_type->cs_in.size()) {
+			if (arg_type->cs_in.length()) {
 				cs_in_statements << sformat(arg_type->cs_in, arg_type->c_type, arg_or_defval_local,
 						String(), String(), String(), INDENT2);
 			}
@@ -3017,7 +3017,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is <c>" + param_def_arg + "</c>.</param>");
 		} else {
-			if (arg_type->cs_in.size()) {
+			if (arg_type->cs_in.length()) {
 				cs_in_statements << sformat(arg_type->cs_in, arg_type->c_type, iarg.name,
 						String(), String(), String(), INDENT2);
 			}
@@ -3054,7 +3054,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 					 << ");\n";
 		}
 
-		if (p_imethod.method_doc && p_imethod.method_doc->description.size()) {
+		if (p_imethod.method_doc && p_imethod.method_doc->description.length()) {
 			String xml_summary = bbcode_to_xml(fix_doc_description(p_imethod.method_doc->description), &p_itype);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
@@ -3265,7 +3265,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 					 << INDENT1 "}\n";
 		}
 
-		if (p_isignal.method_doc && p_isignal.method_doc->description.size()) {
+		if (p_isignal.method_doc && p_isignal.method_doc->description.length()) {
 			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype, true);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
@@ -3435,7 +3435,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 			if (i > 0) {
 				c_args_var_content << ", ";
 			}
-			if (arg_type->c_in.size()) {
+			if (arg_type->c_in.length()) {
 				c_in_statements << sformat(arg_type->c_in, arg_type->c_type, c_param_name,
 						String(), String(), String(), INDENT2);
 			}

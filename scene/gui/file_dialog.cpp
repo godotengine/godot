@@ -1129,7 +1129,7 @@ void FileDialog::set_current_file(const String &p_file) {
 }
 
 void FileDialog::set_current_path(const String &p_path) {
-	if (!p_path.size()) {
+	if (!p_path.length()) {
 		return;
 	}
 	int pos = MAX(p_path.rfind_char('/'), p_path.rfind_char('\\'));

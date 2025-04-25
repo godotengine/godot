@@ -58,12 +58,12 @@ bool is_operator_char(unsigned char c) {
 String remove_spaces(String &p_str) {
 	String res;
 	// Result is guaranteed to not be longer than the input.
-	res.resize(p_str.size());
+	res.resize(p_str.length() + 1); // + 1 for NUL
 	int wp = 0;
 	char32_t last = 0;
 	bool has_removed = false;
 
-	for (int n = 0; n < p_str.size(); n++) {
+	for (int n = 0; n < p_str.length(); n++) {
 		// These test cases only use ASCII.
 		unsigned char c = static_cast<unsigned char>(p_str[n]);
 		if (std::isblank(c)) {
@@ -82,6 +82,7 @@ String remove_spaces(String &p_str) {
 			last = c;
 		}
 	}
+	res[wp++] = 0;
 	res.resize(wp);
 	return res;
 }

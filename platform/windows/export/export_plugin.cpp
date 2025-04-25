@@ -53,12 +53,12 @@ static String fix_path(const String &p_path) {
 		Char16String current_dir_name;
 		size_t str_len = GetCurrentDirectoryW(0, nullptr);
 		current_dir_name.resize(str_len + 1);
-		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+		GetCurrentDirectoryW(current_dir_name.buffer_size(), (LPWSTR)current_dir_name.ptrw());
 		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(path);
 	}
 	path = path.simplify_path();
 	path = path.replace_char('/', '\\');
-	if (path.size() >= MAX_PATH && !path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
+	if (path.buffer_size() >= MAX_PATH && !path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
 		path = R"(\\?\)" + path;
 	}
 	return path;

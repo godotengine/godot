@@ -251,7 +251,7 @@ void RunInstancesDialog::get_argument_list_for_instance(int p_idx, List<String> 
 			}
 
 			// Append Godot-specific custom arguments.
-			custom_args = _split_cmdline_args(raw_custom_args.substr(placeholder_pos + String("%command%").size()));
+			custom_args = _split_cmdline_args(raw_custom_args.substr(placeholder_pos + strlen("%command%") + 1));
 			for (int i = 0; i < custom_args.size(); i++) {
 				r_list.push_back(custom_args[i].replace(" ", "%20"));
 			}

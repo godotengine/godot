@@ -112,12 +112,12 @@ static String fix_path(const String &p_path) {
 		Char16String current_dir_name;
 		size_t str_len = GetCurrentDirectoryW(0, nullptr);
 		current_dir_name.resize(str_len + 1);
-		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+		GetCurrentDirectoryW(current_dir_name.buffer_size(), (LPWSTR)current_dir_name.ptrw());
 		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(path);
 	}
 	path = path.simplify_path();
 	path = path.replace_char('/', '\\');
-	if (path.size() >= MAX_PATH && !path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
+	if (path.buffer_size() >= MAX_PATH && !path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
 		path = R"(\\?\)" + path;
 	}
 	return path;
@@ -943,7 +943,7 @@ uint64_t OS_Windows::get_ticks_usec() const {
 }
 
 String OS_Windows::_quote_command_line_argument(const String &p_text) const {
-	for (int i = 0; i < p_text.size(); i++) {
+	for (int i = 0; i < p_text.length(); i++) {
 		char32_t c = p_text[i];
 		if (c == ' ' || c == '&' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}' || c == '^' || c == '=' || c == ';' || c == '!' || c == '\'' || c == '+' || c == ',' || c == '`' || c == '~') {
 			return "\"" + p_text + "\"";
@@ -1160,14 +1160,14 @@ PackedByteArray OS_Windows::string_to_multibyte(const String &p_encoding, const 
 
 	Char16String charstr = p_string.utf16();
 	PackedByteArray ret;
-	int total_mbchars = WideCharToMultiByte(*encoding, 0, (const wchar_t *)charstr.ptr(), charstr.size(), nullptr, 0, nullptr, nullptr);
+	int total_mbchars = WideCharToMultiByte(*encoding, 0, (const wchar_t *)charstr.ptr(), charstr.buffer_size(), nullptr, 0, nullptr, nullptr);
 	if (total_mbchars == 0) {
 		DWORD err_code = GetLastError();
 		ERR_FAIL_V_MSG(PackedByteArray(), vformat("Conversion failed: %s", format_error_message(err_code)));
 	}
 
 	ret.resize(total_mbchars);
-	if (WideCharToMultiByte(*encoding, 0, (const wchar_t *)charstr.ptr(), charstr.size(), (char *)ret.ptrw(), ret.size(), nullptr, nullptr) == 0) {
+	if (WideCharToMultiByte(*encoding, 0, (const wchar_t *)charstr.ptr(), charstr.buffer_size(), (char *)ret.ptrw(), ret.size(), nullptr, nullptr) == 0) {
 		DWORD err_code = GetLastError();
 		ERR_FAIL_V_MSG(PackedByteArray(), vformat("Conversion failed: %s", format_error_message(err_code)));
 	}
@@ -1300,12 +1300,12 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
 	current_dir_name.resize(str_len + 1);
-	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
-	if (current_dir_name.size() >= MAX_PATH) {
+	GetCurrentDirectoryW(current_dir_name.buffer_size(), (LPWSTR)current_dir_name.ptrw());
+	if (current_dir_name.buffer_size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
 		current_short_dir_name.resize(str_len);
-		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
+		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.buffer_size());
 		current_dir_name = current_short_dir_name;
 	}
 
@@ -1406,12 +1406,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
 	current_dir_name.resize(str_len + 1);
-	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
-	if (current_dir_name.size() >= MAX_PATH) {
+	GetCurrentDirectoryW(current_dir_name.buffer_size(), (LPWSTR)current_dir_name.ptrw());
+	if (current_dir_name.buffer_size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
 		current_short_dir_name.resize(str_len);
-		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
+		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.buffer_size());
 		current_dir_name = current_short_dir_name;
 	}
 
@@ -1505,12 +1505,12 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
 	current_dir_name.resize(str_len + 1);
-	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
-	if (current_dir_name.size() >= MAX_PATH) {
+	GetCurrentDirectoryW(current_dir_name.buffer_size(), (LPWSTR)current_dir_name.ptrw());
+	if (current_dir_name.buffer_size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
 		current_short_dir_name.resize(str_len);
-		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
+		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.buffer_size());
 		current_dir_name = current_short_dir_name;
 	}
 
@@ -2666,12 +2666,12 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
 	current_dir_name.resize(str_len + 1);
-	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+	GetCurrentDirectoryW(current_dir_name.buffer_size(), (LPWSTR)current_dir_name.ptrw());
 
 	Char16String new_current_dir_name;
 	str_len = GetLongPathNameW((LPCWSTR)current_dir_name.get_data(), nullptr, 0);
 	new_current_dir_name.resize(str_len + 1);
-	GetLongPathNameW((LPCWSTR)current_dir_name.get_data(), (LPWSTR)new_current_dir_name.ptrw(), new_current_dir_name.size());
+	GetLongPathNameW((LPCWSTR)current_dir_name.get_data(), (LPWSTR)new_current_dir_name.ptrw(), new_current_dir_name.buffer_size());
 
 	SetCurrentDirectoryW((LPCWSTR)new_current_dir_name.get_data());
 
