@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/zip_io.h"
 #include "core/version.h"
+#include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_settings.h"
@@ -545,6 +546,11 @@ void ProjectDialog::ok_pressed() {
 		initial_settings["application/config/features"] = project_features;
 		initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 		initial_settings["application/config/icon"] = "res://icon.svg";
+		ProjectSettings::CustomMap extra_settings = EditorNode::get_initial_settings();
+		for (const KeyValue<String, Variant> &extra_setting : extra_settings) {
+			// Merge with other initial settings defined above.
+			initial_settings[extra_setting.key] = extra_setting.value;
+		}
 
 		Error err = ProjectSettings::get_singleton()->save_custom(path.path_join("project.godot"), initial_settings, Vector<String>(), false);
 		if (err != OK) {
