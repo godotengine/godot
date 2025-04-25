@@ -39,11 +39,7 @@
 class Main;
 
 class StringName {
-	enum {
-		STRING_TABLE_BITS = 16,
-		STRING_TABLE_LEN = 1 << STRING_TABLE_BITS,
-		STRING_TABLE_MASK = STRING_TABLE_LEN - 1
-	};
+	struct Table;
 
 	struct _Data {
 		SafeRefCount refcount;
@@ -52,20 +48,12 @@ class StringName {
 #ifdef DEBUG_ENABLED
 		uint32_t debug_references = 0;
 #endif
-		const String &get_name() const { return name; }
-		bool operator==(const String &p_name) const;
-		bool operator!=(const String &p_name) const;
-		bool operator==(const char *p_name) const;
-		bool operator!=(const char *p_name) const;
 
-		int idx = 0;
 		uint32_t hash = 0;
 		_Data *prev = nullptr;
 		_Data *next = nullptr;
 		_Data() {}
 	};
-
-	static inline _Data *_table[STRING_TABLE_LEN];
 
 	_Data *_data = nullptr;
 
@@ -73,7 +61,6 @@ class StringName {
 	friend void register_core_types();
 	friend void unregister_core_types();
 	friend class Main;
-	static inline Mutex mutex;
 	static void setup();
 	static void cleanup();
 	static uint32_t get_empty_hash();
