@@ -820,6 +820,7 @@ def configure_mingw(env: "SConsEnvironment"):
             "winmm",
             "gdi32",
             "iphlpapi",
+            "shell32",
             "shlwapi",
             "wsock32",
             "ws2_32",
