@@ -48,15 +48,17 @@ void AudioStreamPlaybackWAV::start(double p_from_pos) {
 			ima_adpcm[i].loop_pos = 0x7FFFFFFF;
 			ima_adpcm[i].window_ofs = 0;
 		}
-
-		offset = 0;
-	} else {
-		seek(p_from_pos);
 	}
 
 	sign = 1;
 	active = true;
 	begin_resample();
+
+	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM || p_from_pos == 0.0) {
+		offset = 0;
+	} else {
+		seek(p_from_pos);
+	}
 }
 
 void AudioStreamPlaybackWAV::stop() {
@@ -438,6 +440,10 @@ void AudioStreamWAV::set_format(Format p_format) {
 
 AudioStreamWAV::Format AudioStreamWAV::get_format() const {
 	return format;
+}
+
+bool AudioStreamWAV::has_loop() const {
+	return loop_mode != LoopMode::LOOP_DISABLED;
 }
 
 void AudioStreamWAV::set_loop_mode(LoopMode p_loop_mode) {

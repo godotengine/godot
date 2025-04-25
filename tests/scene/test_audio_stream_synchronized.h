@@ -31,9 +31,26 @@
 #pragma once
 
 #include "modules/interactive_music/audio_stream_synchronized.h"
+#include "scene/resources/audio_stream_wav.h"
 #include "tests/test_macros.h"
 
 namespace TestAudioStreamSynchronized {
+
+void detach_stream_sync(Ref<AudioStreamSynchronized> audio_stream_synchronized, Ref<AudioStreamPlayback> playback_sync = nullptr) {
+	for (int i = 0; i < audio_stream_synchronized->get_stream_count(); i++) {
+		audio_stream_synchronized->get_sync_stream(i)->detach_from_objectdb();
+
+		if (playback_sync.is_valid()) {
+			audio_stream_synchronized->get_sync_stream_playback(i)->detach_from_objectdb();
+		}
+	}
+
+	if (playback_sync.is_valid()) {
+		playback_sync->detach_from_objectdb();
+	}
+
+	audio_stream_synchronized->detach_from_objectdb();
+}
 
 Ref<AudioStreamSynchronized> gen_default_audio_stream_synchronized(double first_wav_length = 1, double second_wav_length = 1, bool is_looped = true) {
 	Ref<AudioStreamSynchronized> audio_stream_synchronized = memnew(AudioStreamSynchronized);
@@ -71,35 +88,19 @@ TEST_CASE("[Audio][AudioStreamSynchronized] Constructor") {
 
 TEST_CASE("[Audio][AudioStreamSynchronized] get_length") {
 	Ref<AudioStreamSynchronized> audio_stream_synchronized = gen_default_audio_stream_synchronized(1, 1.5);
-	
+
 	double expected_length = 1.5;
 	
 	CHECK(audio_stream_synchronized->get_length() == expected_length);
+
+	detach_stream_sync(audio_stream_synchronized);
 }
 
-TEST_CASE("[Audio][AudioStreamSynchronized][AudioStreamPlaybackSynchronized] seek, start") {
+TEST_CASE("[Audio][AudioStreamSynchronized][AudioStreamPlaybackSynchronized] seek, start, get_playback_position") {
 	Ref<AudioStreamSynchronized> audio_stream_synchronized = gen_default_audio_stream_synchronized(1, 1.5);
 	Ref<AudioStreamPlayback> playback_sync = audio_stream_synchronized->instantiate_playback();
-	// Ref<AudioStreamSynchronized> audio_stream_synchronized = memnew(AudioStreamSynchronized);
-	// Ref<AudioStreamPlayback> playback_sync = audio_stream_synchronized->instantiate_playback();
-	// Ref<AudioStreamWAV> stream_wav1 = TestUtils::gen_audio_stream_wav(AudioStreamWAV::FORMAT_8_BITS, true, 1);
-	// Ref<AudioStreamWAV> stream_wav2 = TestUtils::gen_audio_stream_wav(AudioStreamWAV::FORMAT_8_BITS, true, 1.5);
-	
-	// float default_wav_rate = 44100;
-
-	// Ref<AudioStreamPlaybackWAV> wav1_playback = stream_wav1->instantiate_playback();
-	// stream_wav1->set_loop_mode(AudioStreamWAV::LoopMode::LOOP_FORWARD);
-	// stream_wav1->set_loop_end(default_wav_rate);
-	
-	// Ref<AudioStreamPlaybackWAV> wav2_playback = stream_wav2->instantiate_playback();
-	// stream_wav2->set_loop_mode(AudioStreamWAV::LoopMode::LOOP_FORWARD);
-	// stream_wav2->set_loop_end(default_wav_rate * 1.5);
-	
-	// audio_stream_synchronized->set_stream_count(2);
-	// audio_stream_synchronized->set_sync_stream(0, stream_wav1);
-	// audio_stream_synchronized->set_sync_stream(1, stream_wav2);
-	// Ref<AudioStream> wav1_playback = audio_stream_synchronized->get_sync_stream(0);
-	// Ref<AudioStreamPlaybackWAV> wav2_playback = audio_stream_synchronized->get_sync_stream(1);
+	Ref<AudioStreamPlayback> wav1_playback = audio_stream_synchronized->get_sync_stream_playback(0);
+	Ref<AudioStreamPlayback> wav2_playback = audio_stream_synchronized->get_sync_stream_playback(1);
 	
 	playback_sync->start();
 	playback_sync->seek(1.3);
@@ -109,48 +110,32 @@ TEST_CASE("[Audio][AudioStreamSynchronized][AudioStreamPlaybackSynchronized] see
 	CHECK(playback_sync->get_playback_position() == doctest::Approx(expected_position));
 	playback_sync->stop();
 
-	// SUBCASE("..") {
-	// 	playback_sync->start();
-	// 	playback_sync->seek(1.3);
+	SUBCASE("Whenever a stream has higher length than another, if the one with lower length has loop and seek value is higher than total length, it should adjust accordingly") {
+		playback_sync->start();
+		playback_sync->seek(1.3);
 		
-	// 	double wav1_expected_position = 0.3;
-	// 	double wav2_expected_position = 1.3;
+		double wav1_expected_position = 0.3;
+		double wav2_expected_position = 1.3;
 		
-	// 	CHECK(wav1_playback->get_playback_position() == doctest::Approx(wav1_expected_position));
-	// 	CHECK(wav2_playback->get_playback_position() == doctest::Approx(wav2_expected_position));
+		CHECK(wav1_playback->get_playback_position() == doctest::Approx(wav1_expected_position));
+		CHECK(wav2_playback->get_playback_position() == doctest::Approx(wav2_expected_position));
 
-	// 	playback_sync->stop();
-	// }
+		playback_sync->stop();
+	}
 
-
-
-
-
-
-	// SUBCASE("Whenever a stream has higher length than another, if the one with lower length has loop and seek value is higher than total length, it should adjust accordingly") {
-	// 	playback_sync->start();
-	// 	playback_sync->seek(1.3);
+	SUBCASE("Same behavior as above must be applied with start") {
+		playback_sync->start(1.3);
 		
-	// 	double wav1_expected_position = 0.3;
-	// 	double wav2_expected_position = 1.3;
+		double wav1_expected_position = 0.3;
+		double wav2_expected_position = 1.3;
 		
-	// 	CHECK(wav1_playback->get_playback_position() == doctest::Approx(wav1_expected_position));
-	// 	CHECK(wav2_playback->get_playback_position() == doctest::Approx(wav2_expected_position));
+		CHECK(wav1_playback->get_playback_position() == doctest::Approx(wav1_expected_position));
+		CHECK(wav2_playback->get_playback_position() == doctest::Approx(wav2_expected_position));
 
-	// 	playback_sync->stop();
-	// }
+		playback_sync->stop();
+	}
 
-	// SUBCASE("Same behavior as above must be applied with start") {
-	// 	playback_sync->start(1.3);
-		
-	// 	double wav1_expected_position = 0.3;
-	// 	double wav2_expected_position = 1.3;
-		
-	// 	CHECK(wav1_playback->get_playback_position() == doctest::Approx(wav1_expected_position));
-	// 	CHECK(wav2_playback->get_playback_position() == doctest::Approx(wav2_expected_position));
-
-	// 	playback_sync->stop();
-	// }
+	detach_stream_sync(audio_stream_synchronized, playback_sync);
 }
 
 } // namespace TestAudioStreamSynchronized

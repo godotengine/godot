@@ -42,12 +42,9 @@ AudioStreamSynchronized::~AudioStreamSynchronized() {
 }
 
 Ref<AudioStreamPlayback> AudioStreamSynchronized::instantiate_playback() {
-	if (!playback_sync.is_valid()) {
-		playback_sync.instantiate();
-		playback_sync->stream = Ref<AudioStreamSynchronized>(this);
-		playback_sync->_update_playback_instances();
-	}
-	
+	playback_sync.instantiate();
+	playback_sync->stream = Ref<AudioStreamSynchronized>(this);
+	playback_sync->_update_playback_instances();
 	return playback_sync;
 }
 
@@ -93,6 +90,11 @@ void AudioStreamSynchronized::set_sync_stream_volume(int p_stream_index, float p
 float AudioStreamSynchronized::get_sync_stream_volume(int p_stream_index) const {
 	ERR_FAIL_INDEX_V(p_stream_index, MAX_STREAMS, 0);
 	return audio_stream_volume_db[p_stream_index];
+}
+
+Ref<AudioStreamPlayback> AudioStreamSynchronized::get_sync_stream_playback(int p_stream_index) const {
+	ERR_FAIL_INDEX_V(p_stream_index, MAX_STREAMS, 0);
+	return playback_sync->playbacks[p_stream_index];
 }
 
 double AudioStreamSynchronized::get_bpm() const {
@@ -180,6 +182,7 @@ void AudioStreamSynchronized::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sync_stream", "stream_index"), &AudioStreamSynchronized::get_sync_stream);
 	ClassDB::bind_method(D_METHOD("set_sync_stream_volume", "stream_index", "volume_db"), &AudioStreamSynchronized::set_sync_stream_volume);
 	ClassDB::bind_method(D_METHOD("get_sync_stream_volume", "stream_index"), &AudioStreamSynchronized::get_sync_stream_volume);
+	ClassDB::bind_method(D_METHOD("get_sync_stream_playback", "stream_index"), &AudioStreamSynchronized::get_sync_stream_playback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "0," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Streams,stream_,unfoldable,page_size=999,add_button_text=" + String(RTR("Add Stream"))), "set_stream_count", "get_stream_count");
 
@@ -195,6 +198,12 @@ void AudioStreamSynchronized::_bind_methods() {
 //////////////////////
 
 AudioStreamPlaybackSynchronized::AudioStreamPlaybackSynchronized() {
+}
+
+AudioStreamPlaybackSynchronized::~AudioStreamPlaybackSynchronized() {
+	for (int i = 0; i < stream->stream_count; i++) {
+		playbacks[i].unref();
+	}
 }
 
 void AudioStreamPlaybackSynchronized::stop() {
@@ -228,6 +237,7 @@ void AudioStreamPlaybackSynchronized::_seek_or_start(double p_from_pos, bool is_
 
 			if (is_pos_within_range && audio_stream_length < playback_pos) {
 				if (!stream->audio_streams[i]->has_loop()) {
+					playbacks[i]->stop();
 					continue;
 				}
 
@@ -324,9 +334,11 @@ int AudioStreamPlaybackSynchronized::get_loop_count() const {
 double AudioStreamPlaybackSynchronized::get_playback_position() const {
 	float max_pos = 0;
 	bool pos_found = false;
+
 	for (int i = 0; i < stream->stream_count; i++) {
 		if (playbacks[i].is_valid() && playbacks[i]->is_playing()) {
 			float pos = playbacks[i]->get_playback_position();
+			
 			if (!pos_found || pos > max_pos) {
 				max_pos = pos;
 				pos_found = true;

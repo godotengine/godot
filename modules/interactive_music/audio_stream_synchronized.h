@@ -61,6 +61,7 @@ public:
 	Ref<AudioStream> get_sync_stream(int p_stream_index) const;
 	void set_sync_stream_volume(int p_stream_index, float p_db);
 	float get_sync_stream_volume(int p_stream_index) const;
+	Ref<AudioStreamPlayback> get_sync_stream_playback(int p_stream_index) const;
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
@@ -109,4 +110,5 @@ public:
 	virtual void tag_used_streams() override;
 
 	AudioStreamPlaybackSynchronized();
+	~AudioStreamPlaybackSynchronized();
 };
