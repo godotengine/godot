@@ -52,7 +52,7 @@ void TileAtlasView::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event)
 
 void TileAtlasView::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
 	zoom_widget->set_zoom(zoom_widget->get_zoom() * p_zoom_factor);
-	_update_zoom_and_panning(true);
+	_update_zoom_and_panning(true, p_origin);
 	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
 
@@ -92,7 +92,7 @@ Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
 	return size;
 }
 
-void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
+void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos, const Vector2 &p_mouse_pos) {
 	if (tile_set_atlas_source.is_null()) {
 		return;
 	}
@@ -132,8 +132,7 @@ void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
 
 	// Zoom on the position.
 	if (p_zoom_on_mouse_pos) {
-		// Offset the panning relative to the center of panel.
-		Vector2 relative_mpos = get_local_mouse_position() - get_size() / 2;
+		Vector2 relative_mpos = p_mouse_pos - get_size() / 2;
 		panning = (panning - relative_mpos) * zoom / previous_zoom + relative_mpos;
 	} else {
 		// Center of panel.

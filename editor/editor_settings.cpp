@@ -920,6 +920,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/panning/simple_panning", false);
 	_initial_set("editors/panning/warped_mouse_panning", true);
 	_initial_set("editors/panning/2d_editor_pan_speed", 20, true);
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/zoom_style", 0, "Vertical,Horizontal");
 
 	// Tiles editor
 	_initial_set("editors/tiles_editor/display_grid", true);
