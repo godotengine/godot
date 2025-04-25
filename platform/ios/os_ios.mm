@@ -53,8 +53,8 @@
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
-#import <QuartzCore/CAMetalLayer.h>
 #include "drivers/vulkan/godot_vulkan.h"
+#import <QuartzCore/CAMetalLayer.h>
 #endif
 
 // Initialization order between compilation units is not guaranteed,

@@ -106,9 +106,10 @@ layout(set = 0, binding = 3, std140) uniform DirectionalLights {
 directional_lights;
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
+layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
-} material;
+}
+material;
 #endif
 
 layout(set = 2, binding = 0) uniform textureCube radiance;
@@ -245,9 +246,7 @@ void main() {
 #endif //USE_CUBEMAP_PASS
 
 	{
-
 #CODE : SKY
-
 	}
 
 	frag_color.rgb = color;

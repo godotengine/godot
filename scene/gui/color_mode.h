@@ -50,7 +50,7 @@ public:
 
 	virtual Color get_color() const = 0;
 
-	virtual void _value_changed(){};
+	virtual void _value_changed() {};
 
 	virtual void slider_draw(int p_which) = 0;
 	virtual bool apply_theme() const { return false; }

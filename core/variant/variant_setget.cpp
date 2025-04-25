@@ -428,9 +428,9 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			}                                                                                                                        \
 			m_assign_type num;                                                                                                       \
 			if (value->get_type() == Variant::INT) {                                                                                 \
-				num = (m_assign_type)*VariantGetInternalPtr<int64_t>::get_ptr(value);                                                \
+				num = (m_assign_type) * VariantGetInternalPtr<int64_t>::get_ptr(value);                                              \
 			} else if (value->get_type() == Variant::FLOAT) {                                                                        \
-				num = (m_assign_type)*VariantGetInternalPtr<double>::get_ptr(value);                                                 \
+				num = (m_assign_type) * VariantGetInternalPtr<double>::get_ptr(value);                                               \
 			} else {                                                                                                                 \
 				*oob = false;                                                                                                        \
 				*valid = false;                                                                                                      \
@@ -490,9 +490,9 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			}                                                                                                                  \
 			m_assign_type num;                                                                                                 \
 			if (value->get_type() == Variant::INT) {                                                                           \
-				num = (m_assign_type)*VariantGetInternalPtr<int64_t>::get_ptr(value);                                          \
+				num = (m_assign_type) * VariantGetInternalPtr<int64_t>::get_ptr(value);                                        \
 			} else if (value->get_type() == Variant::FLOAT) {                                                                  \
-				num = (m_assign_type)*VariantGetInternalPtr<double>::get_ptr(value);                                           \
+				num = (m_assign_type) * VariantGetInternalPtr<double>::get_ptr(value);                                         \
 			} else {                                                                                                           \
 				*oob = false;                                                                                                  \
 				*valid = false;                                                                                                \

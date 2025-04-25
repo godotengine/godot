@@ -1373,7 +1373,7 @@ static void gdextension_editor_remove_plugin(GDExtensionConstStringNamePtr p_cla
 #endif
 }
 
-#define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr)&gdextension_##m_name)
+#define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr) & gdextension_##m_name)
 
 void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(get_godot_version);

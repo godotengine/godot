@@ -366,7 +366,7 @@ public:
 	virtual void delete_sub_window(WindowID p_id);
 
 	virtual WindowID window_get_active_popup() const { return INVALID_WINDOW_ID; };
-	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect){};
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) {};
 	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const { return Rect2i(); };
 
 	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const;
@@ -522,7 +522,7 @@ public:
 	virtual int tablet_get_driver_count() const { return 1; };
 	virtual String tablet_get_driver_name(int p_driver) const { return "default"; };
 	virtual String tablet_get_current_driver() const { return "default"; };
-	virtual void tablet_set_current_driver(const String &p_driver){};
+	virtual void tablet_set_current_driver(const String &p_driver) {};
 
 	virtual void process_events() = 0;
 
