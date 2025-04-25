@@ -161,6 +161,7 @@ public:
 
 	/// Creates a new link between positions in the nav map.
 	virtual RID link_create() = 0;
+	virtual uint32_t link_get_iteration_id(RID p_link) const = 0;
 
 	/// Set the map of this link.
 	virtual void link_set_map(RID p_link, RID p_map) = 0;

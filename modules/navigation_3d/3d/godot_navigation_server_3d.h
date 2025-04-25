@@ -185,6 +185,7 @@ public:
 	virtual AABB region_get_bounds(RID p_region) const override;
 
 	virtual RID link_create() override;
+	virtual uint32_t link_get_iteration_id(RID p_link) const override;
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
 	virtual RID link_get_map(RID p_link) const override;
 	COMMAND_2(link_set_enabled, RID, p_link, bool, p_enabled);

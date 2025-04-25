@@ -57,9 +57,13 @@ class NavLink2D : public NavBase2D {
 
 	SelfList<NavLink2D> sync_dirty_request_list_element;
 
+	uint32_t iteration_id = 0;
+
 public:
 	NavLink2D();
 	~NavLink2D();
+
+	uint32_t get_iteration_id() const { return iteration_id; }
 
 	void set_map(NavMap2D *p_map);
 	NavMap2D *get_map() const {
