@@ -677,7 +677,7 @@ PackedByteArray OS_Unix::string_to_multibyte(const String &p_encoding, const Str
 	ERR_FAIL_COND_V_MSG(ctx == (gd_iconv_t)(-1), PackedByteArray(), "Conversion failed: Unknown encoding");
 
 	char *in_ptr = (char *)charstr.ptr();
-	size_t in_size = charstr.size();
+	size_t in_size = charstr.length() + 1; // + 1 for NUL
 
 	ret.resize(in_size);
 	char *out_ptr = (char *)ret.ptrw();
@@ -688,7 +688,7 @@ PackedByteArray OS_Unix::string_to_multibyte(const String &p_encoding, const Str
 			gd_iconv_close(ctx);
 			ERR_FAIL_V_MSG(PackedByteArray(), vformat("Conversion failed: %d - %s", errno, strerror(errno)));
 		}
-		int64_t rate = (ret.size()) / (charstr.size() - in_size);
+		int64_t rate = (ret.size()) / (charstr.length() + 1 - in_size);
 		size_t oldpos = ret.size() - out_size;
 		ret.resize(ret.size() + in_size * rate);
 		out_ptr = (char *)ret.ptrw() + oldpos;

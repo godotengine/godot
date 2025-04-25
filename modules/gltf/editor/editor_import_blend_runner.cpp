@@ -324,8 +324,8 @@ bool EditorImportBlendRunner::_extract_error_message_xml(const Vector<uint8_t> &
 	r_error_message = String();
 	while (parser->read() == OK) {
 		if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-			if (parser->get_node_data().size()) {
-				if (r_error_message.size()) {
+			if (!parser->get_node_data().is_empty()) {
+				if (!r_error_message.is_empty()) {
 					r_error_message += " ";
 				}
 				r_error_message += parser->get_node_data().trim_suffix("\n");
@@ -333,7 +333,7 @@ bool EditorImportBlendRunner::_extract_error_message_xml(const Vector<uint8_t> &
 		}
 	}
 
-	return r_error_message.size();
+	return !r_error_message.is_empty();
 }
 
 Error EditorImportBlendRunner::do_import_direct(const Dictionary &p_options) {

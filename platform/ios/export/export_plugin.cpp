@@ -870,11 +870,9 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		}
 	}
 
-	// !BAS! I'm assuming the 9 in the original code was a typo. I've added -1 or else it seems to also be adding our terminating zero...
-	// should apply the same fix in our macOS export.
 	CharString cs = strnew.utf8();
-	pfile.resize(cs.size() - 1);
-	for (int i = 0; i < cs.size() - 1; i++) {
+	pfile.resize(cs.length());
+	for (int i = 0; i < cs.length(); i++) {
 		pfile.write[i] = cs[i];
 	}
 }
@@ -1546,8 +1544,8 @@ void EditorExportPlatformIOS::_add_assets_to_project(const String &p_out_dir, co
 	str = str.replace("$pbx_embeded_frameworks", pbx_embeded_frameworks);
 
 	CharString cs = str.utf8();
-	p_project_data.resize(cs.size() - 1);
-	for (int i = 0; i < cs.size() - 1; i++) {
+	p_project_data.resize(cs.length());
+	for (int i = 0; i < cs.length(); i++) {
 		p_project_data.write[i] = cs[i];
 	}
 }

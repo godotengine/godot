@@ -152,7 +152,6 @@ class Char16String {
 public:
 	_FORCE_INLINE_ char16_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char16_t *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 
 	_FORCE_INLINE_ operator Span<char16_t>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<char16_t> span() const { return Span(ptr(), length()); }
@@ -180,8 +179,9 @@ public:
 	void operator=(const char16_t *p_cstr);
 	bool operator<(const Char16String &p_right) const;
 	Char16String &operator+=(char16_t p_char);
-	int length() const { return size() ? size() - 1 : 0; }
-	const char16_t *get_data() const;
+	int length() const { return _cowdata.is_empty() ? 0 : _cowdata.size() - 1; }
+	bool is_empty() const { return length() == 0; }
+	const char16_t *get_data() const { return is_empty() ? &_null : _cowdata.ptr(); }
 
 protected:
 	void copy_from(const char16_t *p_cstr);
@@ -198,7 +198,6 @@ class CharString {
 public:
 	_FORCE_INLINE_ char *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 
 	_FORCE_INLINE_ operator Span<char>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<char> span() const { return Span(ptr(), length()); }
@@ -227,8 +226,9 @@ public:
 	bool operator<(const CharString &p_right) const;
 	bool operator==(const CharString &p_right) const;
 	CharString &operator+=(char p_char);
-	int length() const { return size() ? size() - 1 : 0; }
-	const char *get_data() const;
+	int length() const { return _cowdata.is_empty() ? 0 : _cowdata.size() - 1; }
+	bool is_empty() const { return length() == 0; }
+	const char *get_data() const { return is_empty() ? &_null : _cowdata.ptr(); }
 
 protected:
 	void copy_from(const char *p_cstr);
@@ -286,14 +286,13 @@ public:
 
 	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 
 	_FORCE_INLINE_ operator Span<char32_t>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<char32_t> span() const { return Span(ptr(), length()); }
 
 	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 
-	_FORCE_INLINE_ void clear() { resize(0); }
+	_FORCE_INLINE_ void clear() { _cowdata.clear(); }
 
 	_FORCE_INLINE_ char32_t get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char32_t &p_elem) { _cowdata.set(p_index, p_elem); }
@@ -350,13 +349,11 @@ public:
 	signed char filecasecmp_to(const String &p_str) const;
 	signed char filenocasecmp_to(const String &p_str) const;
 
-	const char32_t *get_data() const;
 	/* standard size stuff */
 
-	_FORCE_INLINE_ int length() const {
-		int s = size();
-		return s ? (s - 1) : 0; // length does not include zero
-	}
+	int length() const { return _cowdata.is_empty() ? 0 : _cowdata.size() - 1; }
+	bool is_empty() const { return length() == 0; }
+	const char32_t *get_data() const { return is_empty() ? &_null : _cowdata.ptr(); }
 
 	bool is_valid_string() const;
 
@@ -551,7 +548,6 @@ public:
 	Vector<uint8_t> sha1_buffer() const;
 	Vector<uint8_t> sha256_buffer() const;
 
-	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 	_FORCE_INLINE_ bool contains(const char *p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains(const String &p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains_char(char32_t p_chr) const { return find_char(p_chr) != -1; }

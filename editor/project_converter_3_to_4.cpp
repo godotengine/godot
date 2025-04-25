@@ -374,7 +374,7 @@ bool ProjectConverter3To4::convert() {
 		}
 		String file_content_before = collect_string_from_vector(source_lines);
 		uint64_t hash_before = file_content_before.hash();
-		uint64_t file_size = file_content_before.size();
+		uint64_t file_size = file_content_before.length();
 		print_line(vformat("Trying to convert\t%d/%d file - \"%s\" with size - %d KB", i + 1, collected_files.size(), file_name.trim_prefix("res://"), file_size / 1024));
 
 		Vector<String> reason;
@@ -566,7 +566,7 @@ bool ProjectConverter3To4::validate_conversion() {
 			ERR_CONTINUE_MSG(file.is_null(), vformat("Unable to read content of \"%s\".", file_name));
 			while (!file->eof_reached()) {
 				String line = file->get_line();
-				file_size += line.size();
+				file_size += line.length();
 				lines.append(line);
 			}
 		}
@@ -1046,7 +1046,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 		String expected = "kieliszek.";
 		String got = get_object_of_execution(base);
 		if (got != expected) {
-			ERR_PRINT(vformat("Failed to get proper data from get_object_of_execution. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", base, expected, expected.size(), got, got.size()));
+			ERR_PRINT(vformat("Failed to get proper data from get_object_of_execution. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", base, expected, expected.length(), got, got.length()));
 		}
 		valid = valid && (got == expected);
 	}
@@ -1055,7 +1055,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 		String expected = "r.";
 		String got = get_object_of_execution(base);
 		if (got != expected) {
-			ERR_PRINT(vformat("Failed to get proper data from get_object_of_execution. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", base, expected, expected.size(), got, got.size()));
+			ERR_PRINT(vformat("Failed to get proper data from get_object_of_execution. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", base, expected, expected.length(), got, got.length()));
 		}
 		valid = valid && (got == expected);
 	}
@@ -1064,7 +1064,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 		String expected = "";
 		String got = get_object_of_execution(base);
 		if (got != expected) {
-			ERR_PRINT(vformat("Failed to get proper data from get_object_of_execution. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", base, expected, expected.size(), got, got.size()));
+			ERR_PRINT(vformat("Failed to get proper data from get_object_of_execution. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", base, expected, expected.length(), got, got.length()));
 		}
 		valid = valid && (got == expected);
 	}
@@ -1073,7 +1073,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 		String expected = "$world/ukraine/lviv.";
 		String got = get_object_of_execution(base);
 		if (got != expected) {
-			ERR_PRINT(vformat("Failed to get proper data from get_object_of_execution. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", base, expected, expected.size(), got, got.size()));
+			ERR_PRINT(vformat("Failed to get proper data from get_object_of_execution. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", base, expected, expected.length(), got, got.length()));
 		}
 		valid = valid && (got == expected);
 	}
@@ -1084,7 +1084,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 		String expected = "\t\t\t";
 		String got = get_starting_space(base);
 		if (got != expected) {
-			ERR_PRINT(vformat("Failed to get proper data from get_object_of_execution. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", base, expected, expected.size(), got, got.size()));
+			ERR_PRINT(vformat("Failed to get proper data from get_object_of_execution. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", base, expected, expected.length(), got, got.length()));
 		}
 		valid = valid && (got == expected);
 	}
@@ -1099,7 +1099,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 			got += part + "|||";
 		}
 		if (got != expected) {
-			ERR_PRINT(vformat("Failed to get proper data from parse_arguments. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", line, expected, expected.size(), got, got.size()));
+			ERR_PRINT(vformat("Failed to get proper data from parse_arguments. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", line, expected, expected.length(), got, got.length()));
 		}
 		valid = valid && (got == expected);
 	}
@@ -1112,7 +1112,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 			got += part + "|||";
 		}
 		if (got != expected) {
-			ERR_PRINT(vformat("Failed to get proper data from parse_arguments. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", line, expected, expected.size(), got, got.size()));
+			ERR_PRINT(vformat("Failed to get proper data from parse_arguments. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", line, expected, expected.length(), got, got.length()));
 		}
 		valid = valid && (got == expected);
 	}
@@ -1125,7 +1125,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 			got += part + "|||";
 		}
 		if (got != expected) {
-			ERR_PRINT(vformat("Failed to get proper data from parse_arguments. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", line, expected, expected.size(), got, got.size()));
+			ERR_PRINT(vformat("Failed to get proper data from parse_arguments. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", line, expected, expected.length(), got, got.length()));
 		}
 		valid = valid && (got == expected);
 	}
@@ -1138,7 +1138,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 			got += part + "|||";
 		}
 		if (got != expected) {
-			ERR_PRINT(vformat("Failed to get proper data from parse_arguments. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", line, expected, expected.size(), got, got.size()));
+			ERR_PRINT(vformat("Failed to get proper data from parse_arguments. \"%s\" should return \"%s\"(%d), got \"%s\"(%d), instead.", line, expected, expected.length(), got, got.length()));
 		}
 		valid = valid && (got == expected);
 	}
@@ -1387,7 +1387,7 @@ String ProjectConverter3To4::get_starting_space(const String &line) const {
 	}
 
 	if (line[0] == ' ') {
-		while (current_character < line.size()) {
+		while (current_character < line.length()) {
 			if (line[current_character] == ' ') {
 				empty_space += ' ';
 				current_character++;
@@ -1397,7 +1397,7 @@ String ProjectConverter3To4::get_starting_space(const String &line) const {
 		}
 	}
 	if (line[0] == '\t') {
-		while (current_character < line.size()) {
+		while (current_character < line.length()) {
 			if (line[current_character] == '\t') {
 				empty_space += '\t';
 				current_character++;
@@ -1412,7 +1412,7 @@ String ProjectConverter3To4::get_starting_space(const String &line) const {
 // Returns the object that’s executing the function in the line.
 // e.g. Passing the line "var roman = kieliszek.funkcja()" to this function returns "kieliszek".
 String ProjectConverter3To4::get_object_of_execution(const String &line) const {
-	int end = line.size() - 1; // Last one is \0
+	int end = line.length();
 	int variable_start = end - 1;
 	int start = end - 1;
 
@@ -2908,13 +2908,13 @@ Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[]
 // Prints full info about renamed things e.g.:
 // Line (67) remove -> remove_at  -  LINE """ doubler._blacklist.remove(0) """
 String ProjectConverter3To4::line_formatter(int current_line, String from, String to, String line) {
-	if (from.size() > 200) {
+	if (from.length() > 200) {
 		from = from.substr(0, 197) + "...";
 	}
-	if (to.size() > 200) {
+	if (to.length() > 200) {
 		to = to.substr(0, 197) + "...";
 	}
-	if (line.size() > 400) {
+	if (line.length() > 400) {
 		line = line.substr(0, 397) + "...";
 	}
 
@@ -2928,10 +2928,10 @@ String ProjectConverter3To4::line_formatter(int current_line, String from, Strin
 // Prints only full lines e.g.:
 // Line (1) - FULL LINES - """yield(get_tree().create_timer(3), 'timeout')"""  =====>  """ await get_tree().create_timer(3).timeout """
 String ProjectConverter3To4::simple_line_formatter(int current_line, String old_line, String new_line) {
-	if (old_line.size() > 1000) {
+	if (old_line.length() > 1000) {
 		old_line = old_line.substr(0, 997) + "...";
 	}
-	if (new_line.size() > 1000) {
+	if (new_line.length() > 1000) {
 		new_line = new_line.substr(0, 997) + "...";
 	}
 

@@ -616,7 +616,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			Char16String current_dir_name;
 			size_t str_len = GetCurrentDirectoryW(0, nullptr);
 			current_dir_name.resize(str_len + 1);
-			GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+			GetCurrentDirectoryW(current_dir_name.length() + 1, (LPWSTR)current_dir_name.ptrw());
 			if (dir == ".") {
 				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/');
 			} else {
@@ -3393,7 +3393,7 @@ static INT_PTR input_text_dialog_cmd_proc(HWND hWnd, UINT code, WPARAM wParam, L
 
 		Char16String text;
 		text.resize(GetWindowTextLengthW(text_edit) + 1);
-		GetWindowTextW(text_edit, (LPWSTR)text.get_data(), text.size());
+		GetWindowTextW(text_edit, (LPWSTR)text.get_data(), text.length() + 1);
 
 		const Callable *callback = (const Callable *)GetWindowLongPtrW(hWnd, GWLP_USERDATA);
 		if (callback && callback->is_valid()) {
@@ -7166,7 +7166,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		if (RegOpenKeyW(HKEY_CURRENT_USER_LOCAL_SETTINGS, L"Software\\Microsoft\\Windows\\Shell\\MuiCache", &key) == ERROR_SUCCESS) {
 			Char16String cs_name = name.utf16();
 			String value_name = OS::get_singleton()->get_executable_path().replace_char('/', '\\') + ".FriendlyAppName";
-			RegSetValueExW(key, (LPCWSTR)value_name.utf16().get_data(), 0, REG_SZ, (const BYTE *)cs_name.get_data(), cs_name.size() * sizeof(WCHAR));
+			RegSetValueExW(key, (LPCWSTR)value_name.utf16().get_data(), 0, REG_SZ, (const BYTE *)cs_name.get_data(), (cs_name.length() + 1) * sizeof(WCHAR));
 			RegCloseKey(key);
 		}
 #endif

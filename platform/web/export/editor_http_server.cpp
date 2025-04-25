@@ -94,7 +94,7 @@ void EditorHTTPServer::_send_response() {
 		s += "Connection: Close\r\n";
 		s += "\r\n";
 		CharString cs = s.utf8();
-		peer->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
+		peer->put_data((const uint8_t *)cs.get_data(), cs.length());
 		return;
 	}
 	const String ctype = mimes[req_ext];
@@ -110,7 +110,7 @@ void EditorHTTPServer::_send_response() {
 	s += "Cache-Control: no-store, max-age=0\r\n";
 	s += "\r\n";
 	CharString cs = s.utf8();
-	Error err = peer->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
+	Error err = peer->put_data((const uint8_t *)cs.get_data(), cs.length());
 	if (err != OK) {
 		ERR_FAIL();
 	}

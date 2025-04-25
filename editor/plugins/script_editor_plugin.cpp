@@ -504,7 +504,7 @@ String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *p_se) {
 	String debug_value = EditorDebuggerNode::get_singleton()->get_var_value(p_text);
 	if (!debug_value.is_empty()) {
 		constexpr int DISPLAY_LIMIT = 1024;
-		if (debug_value.size() > DISPLAY_LIMIT) {
+		if (debug_value.length() > DISPLAY_LIMIT) {
 			debug_value = debug_value.left(DISPLAY_LIMIT) + "... " + TTR("(truncated)");
 		}
 		debug_value = TTR("Current value: ") + debug_value;
@@ -2506,7 +2506,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 		bool has_file_flag = false;
 		String script_path = ProjectSettings::get_singleton()->globalize_path(p_resource->get_path());
 
-		if (flags.size()) {
+		if (!flags.is_empty()) {
 			String project_path = ProjectSettings::get_singleton()->get_resource_path();
 
 			flags = flags.replacen("{line}", itos(p_line > 0 ? p_line : 0));
@@ -2517,7 +2517,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			int num_chars = 0;
 			bool inside_quotes = false;
 
-			for (int i = 0; i < flags.size(); i++) {
+			for (int i = 0; i < flags.length(); i++) {
 				if (flags[i] == '"' && (!i || flags[i - 1] != '\\')) {
 					if (!inside_quotes) {
 						from++;

@@ -117,14 +117,6 @@ void Char16String::operator=(const char16_t *p_cstr) {
 	copy_from(p_cstr);
 }
 
-const char16_t *Char16String::get_data() const {
-	if (size()) {
-		return &operator[](0);
-	} else {
-		return u"";
-	}
-}
-
 void Char16String::copy_from(const char16_t *p_cstr) {
 	if (!p_cstr) {
 		resize(0);
@@ -185,14 +177,6 @@ CharString &CharString::operator+=(char p_char) {
 
 void CharString::operator=(const char *p_cstr) {
 	copy_from(p_cstr);
-}
-
-const char *CharString::get_data() const {
-	if (size()) {
-		return &operator[](0);
-	} else {
-		return "";
-	}
 }
 
 void CharString::copy_from(const char *p_cstr) {
@@ -877,11 +861,6 @@ signed char String::filenocasecmp_to(const String &p_str) const {
 	return naturalnocasecmp_to_base(this_str, that_str);
 }
 
-const char32_t *String::get_data() const {
-	static const char32_t zero = 0;
-	return size() ? &operator[](0) : &zero;
-}
-
 String String::_separate_compound_words() const {
 	if (length() == 0) {
 		return *this;
@@ -920,9 +899,9 @@ String String::_separate_compound_words() const {
 		is_prev_digit = is_curr_digit;
 	}
 
-	new_string += substr(start_index, size() - start_index);
+	new_string += substr(start_index);
 
-	for (int i = 0; i < new_string.size(); i++) {
+	for (int i = 0; i < new_string.length(); i++) {
 		const bool whitespace = is_whitespace(new_string[i]);
 		const bool underscore = is_underscore(new_string[i]);
 		const bool hyphen = is_hyphen(new_string[i]);
@@ -1541,7 +1520,7 @@ String String::to_upper() const {
 	}
 
 	String upper;
-	upper.resize(size());
+	upper.resize(length() + 1); // + 1 for NUL
 	const char32_t *old_ptr = ptr();
 	char32_t *upper_ptrw = upper.ptrw();
 
@@ -1560,7 +1539,7 @@ String String::to_lower() const {
 	}
 
 	String lower;
-	lower.resize(size());
+	lower.resize(length() + 1); // + 1 for NUL
 	const char32_t *old_ptr = ptr();
 	char32_t *lower_ptrw = lower.ptrw();
 
@@ -1879,11 +1858,11 @@ CharString String::ascii(bool p_allow_extended) const {
 	}
 
 	CharString cs;
-	cs.resize(size());
+	cs.resize(length() + 1); // + 1 for NUL
 	char *cs_ptrw = cs.ptrw();
 	const char32_t *this_ptr = ptr();
 
-	for (int i = 0; i < size(); i++) {
+	for (int i = 0; i < length(); i++) {
 		char32_t c = this_ptr[i];
 		if ((c <= 0x7f) || (c <= 0xff && p_allow_extended)) {
 			cs_ptrw[i] = char(c);
@@ -1892,6 +1871,7 @@ CharString String::ascii(bool p_allow_extended) const {
 			cs_ptrw[i] = 0x20; // ASCII doesn't have a replacement character like unicode, 0x1a is sometimes used but is kinda arcane.
 		}
 	}
+	cs_ptrw[length()] = 0;
 
 	return cs;
 }
@@ -5509,7 +5489,7 @@ String String::path_join(const String &p_file) const {
 	if (is_empty()) {
 		return p_file;
 	}
-	if (operator[](length() - 1) == '/' || (p_file.size() > 0 && p_file.operator[](0) == '/')) {
+	if (operator[](length() - 1) == '/' || (!p_file.is_empty() && p_file.operator[](0) == '/')) {
 		return *this + p_file;
 	}
 	return *this + "/" + p_file;

@@ -267,7 +267,7 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 		int32_t len = f->get_32();
 		Cache c;
 		c.cs.resize(len + 1);
-		ERR_FAIL_COND_V(c.cs.size() != len + 1, ERR_FILE_CORRUPT); // Out of memory.
+		ERR_FAIL_COND_V(c.cs.length() != len, ERR_FILE_CORRUPT); // Out of memory.
 		c.cs[len] = 0;
 		int32_t rl = f->get_buffer((uint8_t *)c.cs.ptrw(), len);
 		ERR_FAIL_COND_V(rl != len, ERR_FILE_CORRUPT);
@@ -327,7 +327,7 @@ String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const Str
 		int64_t id = p_cache_file->get_64();
 		int32_t len = p_cache_file->get_32();
 		cs.resize(len + 1);
-		ERR_FAIL_COND_V(cs.size() != len + 1, String());
+		ERR_FAIL_COND_V(cs.length() != len, String());
 		cs[len] = 0;
 		int32_t rl = p_cache_file->get_buffer((uint8_t *)cs.ptrw(), len);
 		ERR_FAIL_COND_V(rl != len, String());

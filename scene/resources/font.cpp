@@ -1750,11 +1750,11 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 			int pos = delimiter + 1;
 			HashMap<String, String> keys;
 
-			while (pos < line.size() && line[pos] == ' ') {
+			while (pos < line.length() && line[pos] == ' ') {
 				pos++;
 			}
 
-			while (pos < line.size()) {
+			while (pos < line.length()) {
 				int eq = line.find_char('=', pos);
 				if (eq == -1) {
 					break;
@@ -1772,13 +1772,13 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 				} else {
 					end = line.find_char(' ', eq + 1);
 					if (end == -1) {
-						end = line.size();
+						end = line.length();
 					}
 					value = line.substr(eq + 1, end - eq);
 					pos = end;
 				}
 
-				while (pos < line.size() && line[pos] == ' ') {
+				while (pos < line.length() && line[pos] == ' ') {
 					pos++;
 				}
 

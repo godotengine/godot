@@ -1860,7 +1860,7 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 		if (ime_selection.y != 0) {
 			caret = TS->shaped_text_get_carets(text_rid, caret_column + ime_selection.x + ime_selection.y);
 		} else {
-			caret = TS->shaped_text_get_carets(text_rid, caret_column + ime_text.size());
+			caret = TS->shaped_text_get_carets(text_rid, caret_column + ime_text.length() + 1);
 		}
 		if ((caret.l_caret != Rect2() && (caret.l_dir == TextServer::DIRECTION_AUTO || caret.l_dir == (TextServer::Direction)input_direction)) || (caret.t_caret == Rect2())) {
 			ret.y = x_ofs + caret.l_caret.position.x + scroll_offset;

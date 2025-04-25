@@ -1399,7 +1399,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				String import_text = config->encode_to_text();
 				CharString cs = import_text.utf8();
 				Vector<uint8_t> sarr;
-				sarr.resize(cs.size());
+				sarr.resize(cs.length() + 1); // + 1 for NUL
 				memcpy(sarr.ptrw(), cs.ptr(), sarr.size());
 
 				err = save_proxy.save_file(p_udata, path + ".import", sarr, idx, total, enc_in_filters, enc_ex_filters, key, seed);
@@ -1468,7 +1468,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				String import_text = config->encode_to_text();
 				CharString cs = import_text.utf8();
 				Vector<uint8_t> sarr;
-				sarr.resize(cs.size());
+				sarr.resize(cs.length() + 1); // + 1 for NUL
 				memcpy(sarr.ptrw(), cs.ptr(), sarr.size());
 
 				err = save_proxy.save_file(p_udata, path + ".import", sarr, idx, total, enc_in_filters, enc_ex_filters, key, seed);
@@ -1721,7 +1721,7 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 					1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
 
 			const CharString target_utf8 = da->read_link(f).utf8();
-			zipWriteInFileInZip(p_zip, target_utf8.get_data(), target_utf8.size());
+			zipWriteInFileInZip(p_zip, target_utf8.get_data(), target_utf8.length() + 1); // + 1 for NUL
 			zipCloseFileInZip(p_zip);
 		} else if (da->current_is_dir()) {
 			zip_folder_recursive(p_zip, p_root_path, p_folder.path_join(f), p_pkg_name);

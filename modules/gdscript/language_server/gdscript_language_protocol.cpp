@@ -105,15 +105,15 @@ Error GDScriptLanguageProtocol::LSPeer::send_data() {
 	int sent = 0;
 	while (!res_queue.is_empty()) {
 		CharString c_res = res_queue[0];
-		if (res_sent < c_res.size()) {
-			Error err = connection->put_partial_data((const uint8_t *)c_res.get_data() + res_sent, c_res.size() - res_sent - 1, sent);
+		if (res_sent < c_res.length()) {
+			Error err = connection->put_partial_data((const uint8_t *)c_res.get_data() + res_sent, c_res.length() - res_sent, sent);
 			if (err != OK) {
 				return err;
 			}
 			res_sent += sent;
 		}
 		// Response sent
-		if (res_sent >= c_res.size() - 1) {
+		if (res_sent >= c_res.length()) {
 			res_sent = 0;
 			res_queue.remove_at(0);
 		}

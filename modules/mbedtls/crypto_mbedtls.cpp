@@ -101,9 +101,9 @@ Error CryptoKeyMbedTLS::load_from_string(const String &p_string_key, bool p_publ
 	int ret = 0;
 	const CharString string_key_utf8 = p_string_key.utf8();
 	if (p_public_only) {
-		ret = mbedtls_pk_parse_public_key(&pkey, (const unsigned char *)string_key_utf8.get_data(), string_key_utf8.size());
+		ret = mbedtls_pk_parse_public_key(&pkey, (const unsigned char *)string_key_utf8.get_data(), string_key_utf8.length());
 	} else {
-		ret = _parse_key((const unsigned char *)string_key_utf8.get_data(), string_key_utf8.size());
+		ret = _parse_key((const unsigned char *)string_key_utf8.get_data(), string_key_utf8.length());
 	}
 	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing key '" + itos(ret) + "'.");
 
@@ -227,7 +227,7 @@ Error X509CertificateMbedTLS::load_from_string(const String &p_string_key) {
 	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is already in use.");
 	CharString cs = p_string_key.utf8();
 
-	int ret = mbedtls_x509_crt_parse(&cert, (const unsigned char *)cs.get_data(), cs.size());
+	int ret = mbedtls_x509_crt_parse(&cert, (const unsigned char *)cs.get_data(), cs.length());
 	ERR_FAIL_COND_V_MSG(ret < 0, FAILED, vformat("Error parsing X509 certificates: %d.", ret));
 	if (ret > 0) { // Some certs parsed fine, don't error.
 		print_verbose(vformat("MbedTLS: Some X509 certificates could not be parsed (%d certificates skipped).", ret));
@@ -363,7 +363,7 @@ void CryptoMbedTLS::load_default_certificates(const String &p_path) {
 		String system_certs = OS::get_singleton()->get_system_ca_certificates();
 		if (!system_certs.is_empty()) {
 			CharString cs = system_certs.utf8();
-			default_certs->load_from_memory((const uint8_t *)cs.get_data(), cs.size());
+			default_certs->load_from_memory((const uint8_t *)cs.get_data(), cs.length());
 			print_verbose("Loaded system CA certificates");
 		}
 #ifdef BUILTIN_CERTS_ENABLED

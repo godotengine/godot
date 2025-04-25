@@ -86,7 +86,7 @@ String FileAccessWindows::fix_path(const String &p_path) const {
 		Char16String current_dir_name;
 		size_t str_len = GetCurrentDirectoryW(0, nullptr);
 		current_dir_name.resize(str_len + 1);
-		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+		GetCurrentDirectoryW(current_dir_name.length() + 1, (LPWSTR)current_dir_name.ptrw());
 		r_path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(r_path);
 	}
 	r_path = r_path.simplify_path();

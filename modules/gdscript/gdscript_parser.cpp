@@ -368,7 +368,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 		for (int i = 0; i < lines.size(); i++) {
 			bool found = false;
 			const String &line = lines[i];
-			for (int j = 0; j < line.size(); j++) {
+			for (int j = 0; j < line.length(); j++) {
 				if (line[j] == char32_t(0xFFFF)) {
 					found = true;
 					break;

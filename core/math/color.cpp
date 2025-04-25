@@ -128,7 +128,7 @@ String Color::to_html(bool p_alpha) const {
 	if (p_alpha) {
 		_append_hex(a, ptr + 6);
 	}
-	ptr[txt.size() - 1] = '\0';
+	ptr[txt.length()] = '\0';
 
 	return txt;
 }

@@ -807,8 +807,8 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 	}
 
 	CharString cs = strnew.utf8();
-	plist.resize(cs.size() - 1);
-	for (int i = 0; i < cs.size() - 1; i++) {
+	plist.resize(cs.length());
+	for (int i = 0; i < cs.length(); i++) {
 		plist.write[i] = cs[i];
 	}
 }
@@ -912,8 +912,8 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 	}
 
 	CharString cs = strnew.utf8();
-	plist.resize(cs.size() - 1);
-	for (int i = 0; i < cs.size() - 1; i++) {
+	plist.resize(cs.length());
+	for (int i = 0; i < cs.length(); i++) {
 		plist.write[i] = cs[i];
 	}
 }

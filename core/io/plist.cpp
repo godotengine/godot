@@ -300,7 +300,7 @@ bool PListNode::store_asn1(PackedByteArray &p_stream, uint8_t p_len_octets) cons
 		case PList::PLNodeType::PL_NODE_TYPE_STRING: {
 			p_stream.push_back(0x0C);
 			store_asn1_size(p_stream, p_len_octets);
-			for (int i = 0; i < data_string.size(); i++) {
+			for (int i = 0; i < data_string.length(); i++) {
 				p_stream.push_back(data_string[i]);
 			}
 		} break;
