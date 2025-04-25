@@ -83,12 +83,12 @@ void JoltArea3D::_add_to_space() {
 
 	jolt_settings->SetShape(jolt_shape);
 
-	const JPH::BodyID new_jolt_id = space->add_rigid_body(*this, *jolt_settings);
-	if (new_jolt_id.IsInvalid()) {
+	JPH::Body *new_jolt_body = space->add_rigid_body(*this, *jolt_settings);
+	if (new_jolt_body == nullptr) {
 		return;
 	}
 
-	jolt_id = new_jolt_id;
+	jolt_body = new_jolt_body;
 
 	delete jolt_settings;
 	jolt_settings = nullptr;
@@ -107,8 +107,7 @@ void JoltArea3D::_dequeue_call_queries() {
 }
 
 void JoltArea3D::_add_shape_pair(Overlap &p_overlap, const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id) {
-	const JoltReadableBody3D other_jolt_body = space->read_body(p_body_id);
-	const JoltShapedObject3D *other_object = other_jolt_body.as_shaped();
+	const JoltShapedObject3D *other_object = space->try_get_shaped(p_body_id);
 	ERR_FAIL_NULL(other_object);
 
 	p_overlap.rid = other_object->get_rid();
@@ -187,25 +186,15 @@ void JoltArea3D::_report_event(const Callable &p_callback, PhysicsServer3D::Area
 }
 
 void JoltArea3D::_notify_body_entered(const JPH::BodyID &p_body_id) {
-	const JoltReadableBody3D jolt_body = space->read_body(p_body_id);
-
-	JoltBody3D *body = jolt_body.as_body();
-	if (unlikely(body == nullptr)) {
-		return;
+	if (JoltBody3D *other_body = space->try_get_body(p_body_id)) {
+		other_body->add_area(this);
 	}
-
-	body->add_area(this);
 }
 
 void JoltArea3D::_notify_body_exited(const JPH::BodyID &p_body_id) {
-	const JoltReadableBody3D jolt_body = space->read_body(p_body_id);
-
-	JoltBody3D *body = jolt_body.as_body();
-	if (unlikely(body == nullptr)) {
-		return;
+	if (JoltBody3D *other_body = space->try_get_body(p_body_id)) {
+		other_body->remove_area(this);
 	}
-
-	body->remove_area(this);
 }
 
 void JoltArea3D::_force_bodies_entered() {
@@ -291,10 +280,7 @@ void JoltArea3D::_update_group_filter() {
 		return;
 	}
 
-	const JoltWritableBody3D body = space->write_body(jolt_id);
-	ERR_FAIL_COND(body.is_invalid());
-
-	body->GetCollisionGroup().SetGroupFilter(JoltGroupFilter::instance);
+	jolt_body->GetCollisionGroup().SetGroupFilter(JoltGroupFilter::instance);
 }
 
 void JoltArea3D::_update_default_gravity() {
@@ -384,7 +370,7 @@ void JoltArea3D::set_transform(Transform3D p_transform) {
 		jolt_settings->mPosition = to_jolt_r(p_transform.origin);
 		jolt_settings->mRotation = to_jolt(p_transform.basis);
 	} else {
-		space->get_body_iface().SetPositionAndRotation(jolt_id, to_jolt_r(p_transform.origin), to_jolt(p_transform.basis), JPH::EActivation::DontActivate);
+		space->get_body_iface().SetPositionAndRotation(jolt_body->GetID(), to_jolt_r(p_transform.origin), to_jolt(p_transform.basis), JPH::EActivation::DontActivate);
 	}
 }
 

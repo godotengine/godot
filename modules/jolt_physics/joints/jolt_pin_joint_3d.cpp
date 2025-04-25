@@ -138,21 +138,12 @@ void JoltPinJoint3D::rebuild() {
 	destroy();
 
 	JoltSpace3D *space = get_space();
-
 	if (space == nullptr) {
 		return;
 	}
 
-	const JPH::BodyID body_ids[2] = {
-		body_a != nullptr ? body_a->get_jolt_id() : JPH::BodyID(),
-		body_b != nullptr ? body_b->get_jolt_id() : JPH::BodyID()
-	};
-
-	const JoltWritableBodies3D jolt_bodies = space->write_bodies(body_ids, 2);
-
-	JPH::Body *jolt_body_a = static_cast<JPH::Body *>(jolt_bodies[0]);
-	JPH::Body *jolt_body_b = static_cast<JPH::Body *>(jolt_bodies[1]);
-
+	JPH::Body *jolt_body_a = body_a != nullptr ? body_a->get_jolt_body() : nullptr;
+	JPH::Body *jolt_body_b = body_b != nullptr ? body_b->get_jolt_body() : nullptr;
 	ERR_FAIL_COND(jolt_body_a == nullptr && jolt_body_b == nullptr);
 
 	Transform3D shifted_ref_a;
