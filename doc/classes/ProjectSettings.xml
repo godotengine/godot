@@ -2626,12 +2626,6 @@
 		<member name="physics/jolt_physics_3d/simulation/allow_sleep" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [RigidBody3D] nodes are allowed to go to sleep if their velocity is below the threshold defined in [member physics/jolt_physics_3d/simulation/sleep_velocity_threshold] for the duration set in [member physics/jolt_physics_3d/simulation/sleep_time_threshold]. This can improve physics simulation performance when there are non-moving [RigidBody3D] nodes, at the cost of some nodes possibly failing to wake up in certain scenarios. Consider disabling this temporarily to troubleshoot [RigidBody3D] nodes not moving when they should.
 		</member>
-		<member name="physics/jolt_physics_3d/simulation/areas_detect_static_bodies" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], [Area3D] nodes are able to detect overlaps with [StaticBody3D] nodes.
-			[b]Note:[/b] Enabling this setting can come at a heavy CPU and memory cost if you allow many/large [Area3D] to overlap with complex static geometry, such as [ConcavePolygonShape3D] or [HeightMapShape3D]. It is strongly recommended that you set up your collision layers and masks in such a way that only a few small [Area3D] nodes can detect [StaticBody3D] nodes.
-			[b]Note:[/b] This also applies to overlaps with a [RigidBody3D] frozen with [constant RigidBody3D.FREEZE_MODE_STATIC].
-			[b]Note:[/b] This is not needed to detect overlaps with [AnimatableBody3D], as it is a kinematic body, despite inheriting from [StaticBody3D].
-		</member>
 		<member name="physics/jolt_physics_3d/simulation/baumgarte_stabilization_factor" type="float" setter="" getter="" default="0.2">
 			How much of the position error of a [RigidBody3D] to fix during a physics step, where [code]0.0[/code] is none and [code]1.0[/code] is the full amount. This affects things like how quickly bodies depenetrate.
 			[b]Note:[/b] Setting this value too high can make [RigidBody3D] nodes unstable.
