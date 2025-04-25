@@ -45,10 +45,6 @@
 #endif
 #endif // TOOLS_ENABLED
 
-#ifdef TESTS_ENABLED
-#include "tests/test_gdscript.h"
-#endif
-
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 
@@ -61,10 +57,6 @@
 #include "core/config/engine.h"
 #endif
 #endif // TOOLS_ENABLED
-
-#ifdef TESTS_ENABLED
-#include "tests/test_macros.h"
-#endif
 
 GDScriptLanguage *script_language_gd = nullptr;
 Ref<ResourceFormatLoaderGDScript> resource_loader_gd;
@@ -195,31 +187,3 @@ void uninitialize_gdscript_module(ModuleInitializationLevel p_level) {
 	}
 #endif // TOOLS_ENABLED
 }
-
-#ifdef TESTS_ENABLED
-void test_tokenizer() {
-	GDScriptTests::test(GDScriptTests::TestType::TEST_TOKENIZER);
-}
-
-void test_tokenizer_buffer() {
-	GDScriptTests::test(GDScriptTests::TestType::TEST_TOKENIZER_BUFFER);
-}
-
-void test_parser() {
-	GDScriptTests::test(GDScriptTests::TestType::TEST_PARSER);
-}
-
-void test_compiler() {
-	GDScriptTests::test(GDScriptTests::TestType::TEST_COMPILER);
-}
-
-void test_bytecode() {
-	GDScriptTests::test(GDScriptTests::TestType::TEST_BYTECODE);
-}
-
-REGISTER_TEST_COMMAND("gdscript-tokenizer", &test_tokenizer);
-REGISTER_TEST_COMMAND("gdscript-tokenizer-buffer", &test_tokenizer_buffer);
-REGISTER_TEST_COMMAND("gdscript-parser", &test_parser);
-REGISTER_TEST_COMMAND("gdscript-compiler", &test_compiler);
-REGISTER_TEST_COMMAND("gdscript-bytecode", &test_bytecode);
-#endif
