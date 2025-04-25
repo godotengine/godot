@@ -141,7 +141,7 @@ class Delaunay3D {
 		//Compute the determinant of said matrix
 		R128 determinant = row1_x * (row2_y * row3_z - row3_y * row2_z) - row2_x * (row1_y * row3_z - row3_y * row1_z) + row3_x * (row1_y * row2_z - row2_y * row1_z);
 
-		// Compute the volume of the tetrahedron, and precompute a scalar quantity for re-use in the formula
+		// Compute the volume of the tetrahedron, and precompute a scalar quantity for reuse in the formula
 		R128 volume = determinant / R128(6.f);
 		R128 i12volume = R128(1.f) / (volume * R128(12.f));
 

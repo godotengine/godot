@@ -2920,7 +2920,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	}
 
 	/* Filter Options. */
-	/* For now handle only tradional quoted strings. */
+	/* For now handle only traditional quoted strings. */
 	bool single_quote = in_string != -1 && first_quote_col > 0 && delimiters[in_string].start_key == "'";
 
 	code_completion_options.clear();

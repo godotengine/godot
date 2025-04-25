@@ -11,14 +11,12 @@ from platform_methods import subprocess_main
 
 # See also `editor/icons/editor_icons_builders.py`.
 def make_default_theme_icons_action(target, source, env):
-
     dst = target[0]
     svg_icons = source
 
     icons_string = StringIO()
 
     for f in svg_icons:
-
         fname = str(f)
 
         icons_string.write('\t"')
@@ -49,7 +47,6 @@ def make_default_theme_icons_action(target, source, env):
 
     index = 0
     for f in svg_icons:
-
         fname = str(f)
 
         # Trim the `.svg` extension from the string.

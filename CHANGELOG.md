@@ -640,7 +640,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 
 #### Editor
 
-- Fix cancelling selection while gizmo editing making uncommitted changes ([GH-71156](https://github.com/godotengine/godot/pull/71156)).
+- Fix canceling selection while gizmo editing making uncommitted changes ([GH-71156](https://github.com/godotengine/godot/pull/71156)).
 - Fix `EditorUndoRedoManager`'s handling of `MERGE_ENDS` ([GH-74460](https://github.com/godotengine/godot/pull/74460)).
 - Fix built-in scripts missing their methods on signal connection ([GH-74495](https://github.com/godotengine/godot/pull/74495)).
 - Fix "Download Project Source" for the Web Editor ([GH-75194](https://github.com/godotengine/godot/pull/75194)).
@@ -1778,7 +1778,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-4-is-rele
 - Fix reloading `tool` scripts in the editor ([GH-52883](https://github.com/godotengine/godot/pull/52883)).
 - Fix C# bindings generator for default value types ([GH-49702](https://github.com/godotengine/godot/pull/49702)).
 - Ignore paths with invalid chars in `PathWhich` ([GH-50918](https://github.com/godotengine/godot/pull/50918)).
-- Fix `List<T>` marshalling ([GH-53628](https://github.com/godotengine/godot/pull/53628)).
+- Fix `List<T>` marshaling ([GH-53628](https://github.com/godotengine/godot/pull/53628)).
 - Fix `hint_string` for enum arrays ([GH-53638](https://github.com/godotengine/godot/pull/53638)).
 - Keep order for C# exported members ([GH-54199](https://github.com/godotengine/godot/pull/54199)).
 
@@ -2142,7 +2142,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-3-has-arr
 #### Mono (C#)
 
 - [Fix targeting .NETFramework with .NET 5](https://github.com/godotengine/godot/pull/44135).
-- [Fix System.Collections.Generic.List marshalling](https://github.com/godotengine/godot/pull/45029).
+- [Fix System.Collections.Generic.List marshaling](https://github.com/godotengine/godot/pull/45029).
 - [Fix support for Unicode identifiers](https://github.com/godotengine/godot/pull/45310).
 - [Fixes to Mono on WebAssembly](https://github.com/godotengine/godot/pull/44374).
 

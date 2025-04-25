@@ -1458,7 +1458,6 @@ def make_link(url: str, title: str) -> str:
 
 
 def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_dir: str) -> None:
-
     if dry_run:
         f = open(os.devnull, "w", encoding="utf-8")
     else:
@@ -1884,9 +1883,9 @@ def format_text_block(
                     post_text = text[endurl_pos + 6 :]
 
                     if pre_text and pre_text[-1] not in MARKUP_ALLOWED_PRECEDENT:
-                        pre_text += "\ "
+                        pre_text += "\\ "
                     if post_text and post_text[0] not in MARKUP_ALLOWED_SUBSEQUENT:
-                        post_text = "\ " + post_text
+                        post_text = "\\ " + post_text
 
                     text = pre_text + tag_text + post_text
                     pos = len(pre_text) + len(tag_text)
@@ -1963,9 +1962,9 @@ def format_text_block(
 
         # Properly escape things like `[Node]s`
         if escape_pre and pre_text and pre_text[-1] not in MARKUP_ALLOWED_PRECEDENT:
-            pre_text += "\ "
+            pre_text += "\\ "
         if escape_post and post_text and post_text[0] not in MARKUP_ALLOWED_SUBSEQUENT:
-            post_text = "\ " + post_text
+            post_text = "\\ " + post_text
 
         next_brac_pos = post_text.find("[", 0)
         iter_pos = 0
@@ -1973,7 +1972,7 @@ def format_text_block(
             iter_pos = post_text.find("*", iter_pos, next_brac_pos)
             if iter_pos == -1:
                 break
-            post_text = f"{post_text[:iter_pos]}\*{post_text[iter_pos + 1 :]}"
+            post_text = f"{post_text[:iter_pos]}\\*{post_text[iter_pos + 1 :]}"
             iter_pos += 2
 
         iter_pos = 0
@@ -1982,7 +1981,7 @@ def format_text_block(
             if iter_pos == -1:
                 break
             if not post_text[iter_pos + 1].isalnum():  # don't escape within a snake_case word
-                post_text = f"{post_text[:iter_pos]}\_{post_text[iter_pos + 1 :]}"
+                post_text = f"{post_text[:iter_pos]}\\_{post_text[iter_pos + 1 :]}"
                 iter_pos += 2
             else:
                 iter_pos += 1
@@ -2023,7 +2022,7 @@ def escape_rst(text: str, until_pos: int = -1) -> str:
         pos = text.find("*", pos, until_pos)
         if pos == -1:
             break
-        text = f"{text[:pos]}\*{text[pos + 1 :]}"
+        text = f"{text[:pos]}\\*{text[pos + 1 :]}"
         pos += 2
 
     # Escape _ character at the end of a word to avoid interpreting it as an inline hyperlink
@@ -2033,7 +2032,7 @@ def escape_rst(text: str, until_pos: int = -1) -> str:
         if pos == -1:
             break
         if not text[pos + 1].isalnum():  # don't escape within a snake_case word
-            text = f"{text[:pos]}\_{text[pos + 1 :]}"
+            text = f"{text[:pos]}\\_{text[pos + 1 :]}"
             pos += 2
         else:
             pos += 1

@@ -14,7 +14,6 @@ JSON_SERIALIZABLE_TYPES = (bool, int, float, str)
 def run_in_subprocess(builder_function):
     @functools.wraps(builder_function)
     def wrapper(target, source, env):
-
         # Convert SCons Node instances to absolute paths
         target = [node.srcnode().abspath for node in target]
         source = [node.srcnode().abspath for node in source]

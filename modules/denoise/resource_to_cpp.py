@@ -19,9 +19,9 @@
 import os
 from array import array
 
+
 # Generates a C++ file from the specified binary resource file
 def generate(in_path, out_path):
-
     namespace = "oidn::weights"
     scopes = namespace.split("::")
 

@@ -2215,7 +2215,7 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
 			RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-			//run one pass of fullsize jumpflood to fix up half size arctifacts
+			//run one pass of fullsize jumpflood to fix up half size artifacts
 
 			push_constant.half_size = false;
 			push_constant.step_size = 1;
