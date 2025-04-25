@@ -160,6 +160,16 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 			/* ***************** PROCESSING ******************* */
 			/* this does the actual pitch shifting */
+
+			/* Bogus MinGW/GCC warning:
+			* servers/audio/effects/audio_effect_pitch_shift.cpp: In member function 'void SMBPitchShift::PitchShift(float, long int, long int, long int, float, float*, float*, int)':
+			* servers/audio/effects/audio_effect_pitch_shift.cpp:163:31: error: 'void* memset(void*, int, size_t)' specified bound between 18446744065119617024 and 18446744073709551608
+			*                                                                   exceeds maximum object size 9223372036854775807 [-Werror=stringop-overflow=]
+			* 163 |                         memset(gSynMagn, 0, fftFrameSize*sizeof(float));
+			*     |                         ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			*/
+			GODOT_GCC_WARNING_PUSH
+			GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wstringop-overflow=0") // Can't "ignore" this for some reason.
 			memset(gSynMagn, 0, fftFrameSize*sizeof(float));
 			memset(gSynFreq, 0, fftFrameSize*sizeof(float));
 			for (k = 0; k <= fftFrameSize2; k++) {
@@ -169,6 +179,8 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 					gSynFreq[index] = gAnaFreq[k] * pitchShift;
 				}
 			}
+
+			GODOT_GCC_WARNING_POP
 
 			/* ***************** SYNTHESIS ******************* */
 			/* this is the synthesis step */
