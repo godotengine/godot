@@ -162,6 +162,14 @@ void ExportTemplateManager::_download_current() {
 	}
 	is_downloading_templates = true;
 
+	// Decompressed official export templates are typically around 2 GiB on disk.
+	// However, the compressed file has to stay on disk until the export templates are done extracting,
+	// so we also need to account for its compressed size on top.
+	EditorNode::get_singleton()->check_disk_space(
+			EditorPaths::get_singleton()->get_data_dir(),
+			4.0,
+			TTR("Downloading export templates will fail if the disk runs out of space."));
+
 	install_options_vb->hide();
 	download_progress_hb->show();
 
@@ -428,6 +436,12 @@ void ExportTemplateManager::_install_file() {
 }
 
 bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_skip_progress) {
+	// Decompressed official export templates are typically around 2 GiB on disk.
+	EditorNode::get_singleton()->check_disk_space(
+			EditorPaths::get_singleton()->get_data_dir(),
+			4.0,
+			TTR("Installing export templates will fail if the disk runs out of space."));
+
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
 

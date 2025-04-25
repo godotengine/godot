@@ -1292,6 +1292,10 @@ void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) 
 }
 
 void SceneImportSettingsDialog::_re_import() {
+	// Complex 3D scenes can be quite large. Consider a buffer of 1 GiB to be
+	// safe, since there are also temporary files and thumbnails that come into play.
+	EditorNode::get_singleton()->check_disk_space(base_path, 1.0, TTR("Importing resources will fail if the disk runs out of space."));
+
 	HashMap<StringName, Variant> main_settings;
 
 	main_settings = scene_import_settings_data->current;
