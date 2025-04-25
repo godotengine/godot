@@ -1530,11 +1530,9 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	}
 
 	// Add first in the HashMap, if requested.
-	if (p_flags & CONNECT_FRONTINSERT){	
+	if (p_flags & CONNECT_FRONTINSERT) {
 		s->slot_map.insert(*p_callable.get_base_comparator(), slot, true);
-	}
-	else
-	{
+	} else {
 		//use callable version as key, so binds can be ignored
 		s->slot_map[*p_callable.get_base_comparator()] = slot;
 	}
