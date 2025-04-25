@@ -209,7 +209,7 @@ void GLManagerNative_Windows::_nvapi_setup_profile() {
 		NVDRS_PROFILE profile_info;
 		profile_info.version = NVDRS_PROFILE_VER;
 		profile_info.isPredefined = 0;
-		memcpy(profile_info.profileName, app_profile_name_u16.get_data(), sizeof(char16_t) * app_profile_name_u16.size());
+		memcpy(profile_info.profileName, app_profile_name_u16.get_data(), sizeof(char16_t) * app_profile_name_u16.buffer_size());
 
 		if (!nvapi_err_check("NVAPI: Error creating profile", NvAPI_DRS_CreateProfile(session_handle, &profile_info, &profile_handle))) {
 			NvAPI_DRS_DestroySession(session_handle);
@@ -227,7 +227,7 @@ void GLManagerNative_Windows::_nvapi_setup_profile() {
 		print_verbose("NVAPI: Application not found in profile, creating...");
 
 		app.isPredefined = 0;
-		memcpy(app.appName, app_executable_name_u16.get_data(), sizeof(char16_t) * app_executable_name_u16.size());
+		memcpy(app.appName, app_executable_name_u16.get_data(), sizeof(char16_t) * app_executable_name_u16.buffer_size());
 		memcpy(app.launcher, L"", sizeof(wchar_t));
 		memcpy(app.fileInFolder, L"", sizeof(wchar_t));
 

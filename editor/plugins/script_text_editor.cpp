@@ -1211,7 +1211,7 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 	String debug_value = EditorDebuggerNode::get_singleton()->get_var_value(p_symbol);
 	if (!debug_value.is_empty()) {
 		constexpr int DISPLAY_LIMIT = 1024;
-		if (debug_value.size() > DISPLAY_LIMIT) {
+		if (debug_value.length() > DISPLAY_LIMIT) {
 			debug_value = debug_value.left(DISPLAY_LIMIT) + "... " + TTR("(truncated)");
 		}
 		debug_value = TTR("Current value: ") + debug_value.replace("[", "[lb]");
@@ -1590,7 +1590,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 				for (int i = 0; i < lines.size(); i++) {
 					const String &line = lines[i];
-					String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); // Extract the whitespace at the beginning.
+					String whitespace = line.substr(0, line.length() - line.strip_edges(true, false).length()); // Extract the whitespace at the beginning.
 					if (expression.parse(line) == OK) {
 						Variant result = expression.execute(Array(), Variant(), false, true);
 						if (expression.get_error_text().is_empty()) {

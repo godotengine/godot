@@ -821,7 +821,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 							// Compensate reading cursor position.
 							char_idx += 1;
 						}
-						if (str.size() > 11 || !str.is_valid_hex_number(true)) { // > 0xFFFFFFFF
+						if (str.length() > 10 || !str.is_valid_hex_number(true)) { // > 0xFFFFFFFF
 							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
 						}
 					} else if (period_found || exponent_found || float_suffix_found) { // Float

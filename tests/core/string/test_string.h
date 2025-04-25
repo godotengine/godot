@@ -299,10 +299,6 @@ TEST_CASE("[String] Concatenation") {
 }
 
 TEST_CASE("[String] Testing size and length of string") {
-	// todo: expand this test to do more tests on size() as it is complicated under the hood.
-	CHECK(String("Mellon").size() == 7);
-	CHECK(String("Mellon1").size() == 8);
-
 	// length works fine and is easier to test
 	CHECK(String("Mellon").length() == 6);
 	CHECK(String("Mellon1").length() == 7);
@@ -1551,32 +1547,24 @@ TEST_CASE("[String] Checking case conversion methods") {
 }
 
 TEST_CASE("[String] Checking string is empty when it should be") {
-	bool state = true;
-	bool success;
-
 	String a = "";
-	success = a[0] == 0;
-	if (!success) {
-		state = false;
-	}
+	CHECK(a.is_empty());
+	CHECK(a[0] == 0);
+
 	String b = "Godot";
-	success = b[b.size()] == 0;
-	if (!success) {
-		state = false;
-	}
-	const String c = "";
-	success = c[0] == 0;
-	if (!success) {
-		state = false;
-	}
+	CHECK(!b.is_empty());
+	CHECK(b.length() == 5);
+	CHECK(b[b.length()] == 0);
+
+	const String c = U"";
+	CHECK(c.is_empty());
+	CHECK(c.length() == 0);
+	CHECK(c[0] == 0);
 
 	const String d = "Godot";
-	success = d[d.size()] == 0;
-	if (!success) {
-		state = false;
-	}
-
-	CHECK(state);
+	CHECK(!d.is_empty());
+	CHECK(d.length() == 5);
+	CHECK(d[d.length()] == 0);
 }
 
 TEST_CASE("[String] lstrip and rstrip") {

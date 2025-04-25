@@ -557,7 +557,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	Ref<Texture2D> icon = _get_class_icon(root_node);
 	if (root_node) {
 		String path = prop.substr(0, prop.find_char(':'));
-		String subpath = prop.substr(path.size());
+		String subpath = prop.substr(path.length() + 1);
 		Node *node = root_node->get_node_or_null(path);
 		if (!node) {
 			node = root_node;

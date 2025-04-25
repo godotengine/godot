@@ -173,7 +173,7 @@ static void test_directory(const String &p_dir) {
 						break;
 					}
 				}
-				for (; end < code.size(); ++end) {
+				for (; end < code.length(); ++end) {
 					if (code.get(end) == '\n') {
 						break;
 					}
