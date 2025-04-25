@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef QBO_REGISTER_TYPES_H
-#define QBO_REGISTER_TYPES_H
+#pragma once
 
 #include "modules/register_module_types.h"
 
 void initialize_qbo_module(ModuleInitializationLevel p_level);
 void uninitialize_qbo_module(ModuleInitializationLevel p_level);
-
-#endif // QBO_REGISTER_TYPES_H

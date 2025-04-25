@@ -60,7 +60,8 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 	Vector<Color> colors;
 	HashMap<int, Vector4i> joint_indices_map;
 	HashMap<int, Vector4> joint_weights_map;
-	Ref<SurfaceTool> surf_tool = memnew(SurfaceTool);
+	Ref<SurfaceTool> surf_tool;
+	surf_tool.instantiate();
 	Ref<GLTFMesh> gltf_mesh;
 	gltf_mesh.instantiate();
 	String current_material;
@@ -412,12 +413,14 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 		}
 	}
 
-	if (surf_tool->get_vertex_array().size() > 0) {
+	if (!surf_tool->get_vertex_array().is_empty()) {
 		print_verbose(vformat("\n--- Mesh Details ---\nVertices: %d\nNormals: %d\nUVs: %d\nColors: %d",
 				vertices.size(),
 				normals.size(),
 				uvs.size(),
 				colors.size()));
+
+		surf_tool->index();
 
 		if (normals.is_empty()) {
 			print_verbose("Generating normals...");
@@ -431,7 +434,6 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 		Ref<ImporterMesh> importer_mesh;
 		importer_mesh.instantiate();
 
-		surf_tool->index();
 		Array surface_arrays = surf_tool->commit_to_arrays();
 
 		importer_mesh->add_surface(

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef QBO_DOCUMENT_H
-#define QBO_DOCUMENT_H
+#pragma once
 
 #include "modules/gltf/gltf_document.h"
 
@@ -43,5 +42,3 @@ public:
 	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0) override;
 	QBODocument() {}
 };
-
-#endif // QBO_DOCUMENT_H
