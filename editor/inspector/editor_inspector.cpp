@@ -1907,7 +1907,6 @@ void EditorInspectorSection::_notification(int p_what) {
 
 			bg_color = theme_cache.prop_subsection;
 			bg_color.a /= level;
-			vbox->add_theme_constant_override(SNAME("separation"), theme_cache.vertical_separation);
 		} break;
 
 		case NOTIFICATION_SORT_CHILDREN: {
@@ -3667,6 +3666,22 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 	return false;
 }
 
+void EditorInspector::_add_section_in_tree(EditorInspectorSection *p_section, VBoxContainer *p_current_vbox) {
+	// Place adjacent sections in their own vbox with 0 separation
+	VBoxContainer *container = nullptr;
+	if (p_current_vbox->get_child_count() > 0) {
+		Node *last_child = p_current_vbox->get_child(-1);
+		container = Object::cast_to<VBoxContainer>(last_child);
+	}
+	if (!container) {
+		container = memnew(VBoxContainer);
+		int separation = get_theme_constant(SNAME("v_separation"), SNAME("EditorInspector"));
+		container->add_theme_constant_override("separation", separation);
+		p_current_vbox->add_child(container);
+	}
+	container->add_child(p_section);
+}
+
 void EditorInspector::update_tree() {
 	if (!object) {
 		return;
@@ -4063,16 +4078,16 @@ void EditorInspector::update_tree() {
 		// Recreate the category vbox if it was reset.
 		if (category_vbox == nullptr) {
 			category_vbox = memnew(VBoxContainer);
-			category_vbox->add_theme_constant_override(SNAME("separation"), theme_cache.vertical_separation);
 			category_vbox->hide();
 			main_vbox->add_child(category_vbox);
 		}
 
 		// Find the correct section/vbox to add the property editor to.
-		VBoxContainer *root_vbox = array_prefix.is_empty() ? main_vbox : editor_inspector_array_per_prefix[array_prefix]->get_vbox(array_index);
+		VBoxContainer *root_vbox = array_prefix.is_empty() ? category_vbox : editor_inspector_array_per_prefix[array_prefix]->get_vbox(array_index);
 		if (!root_vbox) {
 			continue;
 		}
+		category_vbox->show();
 
 		if (!vbox_per_path.has(root_vbox)) {
 			vbox_per_path[root_vbox] = HashMap<String, VBoxContainer *>();
@@ -4092,7 +4107,7 @@ void EditorInspector::update_tree() {
 				// If the section does not exists, create it.
 				EditorInspectorSection *section = memnew(EditorInspectorSection);
 				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
-				current_vbox->add_child(section);
+				_add_section_in_tree(section, current_vbox);
 				sections.push_back(section);
 
 				String label;
@@ -4202,7 +4217,7 @@ void EditorInspector::update_tree() {
 			}
 
 			if (editor_inspector_array) {
-				current_vbox->add_child(editor_inspector_array);
+				_add_section_in_tree(editor_inspector_array, current_vbox);
 				editor_inspector_array_per_prefix[array_element_prefix] = editor_inspector_array;
 			}
 

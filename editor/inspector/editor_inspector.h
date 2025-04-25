@@ -769,6 +769,8 @@ class EditorInspector : public ScrollContainer {
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
 
+	void _handle_menu_option(int p_option);
+	void _add_section_in_tree(EditorInspectorSection *p_section, VBoxContainer *p_current_vbox);
 	static EditorInspector *_get_control_parent_inspector(Control *p_control);
 
 protected:
