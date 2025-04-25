@@ -1749,7 +1749,7 @@ void GDScriptByteCodeGenerator::end_block() {
 void GDScriptByteCodeGenerator::clean_temporaries() {
 	List<int>::Element *E = temporaries_pending_clear.front();
 	while (E) {
-		// The temporary may have been re-used as something else than an object
+		// The temporary may have been reused as something else than an object
 		// since it was added to the list. In that case, there's no need to clear it.
 		int slot_idx = E->get();
 		const StackSlot &slot = temporaries[slot_idx];

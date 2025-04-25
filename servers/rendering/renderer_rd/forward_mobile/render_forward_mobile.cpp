@@ -192,7 +192,7 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 	// Now define our subpasses
 	Vector<RD::FramebufferPass> passes;
 
-	// Define our base pass, we'll be re-using this
+	// Define our base pass, we'll be reusing this
 	RD::FramebufferPass pass;
 	pass.color_attachments.push_back(0);
 	pass.depth_attachment = 1;
@@ -300,7 +300,7 @@ RID RenderForwardMobile::reflection_probe_create_framebuffer(RID p_color, RID p_
 	Vector<RD::FramebufferPass> passes;
 	RD::FramebufferPass pass;
 
-	// re-using the same attachments
+	// reusing the same attachments
 	pass.color_attachments.push_back(0);
 	pass.depth_attachment = 1;
 
