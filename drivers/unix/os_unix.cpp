@@ -580,7 +580,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	return meminfo;
 }
 
-#ifndef __GLIBC__
+#if !defined(__GLIBC__) && !defined(WEB_ENABLED)
 void OS_Unix::_load_iconv() {
 #if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	String iconv_lib_aliases[] = { "/usr/lib/libiconv.2.dylib" };
@@ -632,7 +632,7 @@ String OS_Unix::multibyte_to_string(const String &p_encoding, const PackedByteAr
 	ERR_FAIL_COND_V_MSG(!_iconv_ok, String(), "Conversion failed: Unable to load libiconv");
 
 	LocalVector<char> chars;
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(WEB_ENABLED)
 	gd_iconv_t ctx = gd_iconv_open("UTF-8", p_encoding.is_empty() ? nl_langinfo(CODESET) : p_encoding.utf8().get_data());
 #else
 	gd_iconv_t ctx = gd_iconv_open("UTF-8", p_encoding.is_empty() ? gd_locale_charset() : p_encoding.utf8().get_data());
@@ -669,7 +669,7 @@ PackedByteArray OS_Unix::string_to_multibyte(const String &p_encoding, const Str
 	CharString charstr = p_string.utf8();
 
 	PackedByteArray ret;
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(WEB_ENABLED)
 	gd_iconv_t ctx = gd_iconv_open(p_encoding.is_empty() ? nl_langinfo(CODESET) : p_encoding.utf8().get_data(), "UTF-8");
 #else
 	gd_iconv_t ctx = gd_iconv_open(p_encoding.is_empty() ? gd_locale_charset() : p_encoding.utf8().get_data(), "UTF-8");
@@ -1236,7 +1236,7 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 UnixTerminalLogger::~UnixTerminalLogger() {}
 
 OS_Unix::OS_Unix() {
-#ifndef __GLIBC__
+#if !defined(__GLIBC__) && !defined(WEB_ENABLED)
 	_load_iconv();
 #endif
 
