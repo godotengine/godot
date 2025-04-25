@@ -160,8 +160,13 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 			/* ***************** PROCESSING ******************* */
 			/* this does the actual pitch shifting */
-			memset(gSynMagn, 0, fftFrameSize*sizeof(float));
-			memset(gSynFreq, 0, fftFrameSize*sizeof(float));
+			size_t fftBufferSize = static_cast<size_t>(fftFrameSize) * sizeof(float);
+			if (unlikely(fftBufferSize > MAX_FRAME_LENGTH)) {
+				ERR_PRINT_ONCE("Invalid FFT frame size for PitchShift. This is a bug, please report.");
+				return;
+			}
+			memset(gSynMagn, 0, fftBufferSize);
+			memset(gSynFreq, 0, fftBufferSize);
 			for (k = 0; k <= fftFrameSize2; k++) {
 				index = k*pitchShift;
 				if (index <= fftFrameSize2) {
@@ -214,7 +219,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 }
 
 			/* shift accumulator */
-			memmove(gOutputAccum, gOutputAccum+stepSize, fftFrameSize*sizeof(float));
+			memmove(gOutputAccum, gOutputAccum+stepSize, fftBufferSize);
 
 			/* move input FIFO */
 			for (k = 0; k < inFifoLatency; k++) { gInFIFO[k] = gInFIFO[k+stepSize];
