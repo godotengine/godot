@@ -57,7 +57,7 @@ class Range : public Control {
 
 	void _share(Node *p_range);
 
-	void _value_changed_notify();
+	virtual void _value_changed_notify();
 	void _changed_notify(const char *p_what = "");
 	void _set_value_no_signal(double p_val);
 
@@ -77,15 +77,15 @@ protected:
 	GDVIRTUAL1(_value_changed, double)
 
 public:
-	void set_value(double p_val);
-	void set_value_no_signal(double p_val);
+	virtual void set_value(double p_val);
+	virtual void set_value_no_signal(double p_val);
 	void set_min(double p_min);
 	void set_max(double p_max);
 	void set_step(double p_step);
 	void set_page(double p_page);
 	void set_as_ratio(double p_value);
 
-	double get_value() const;
+	virtual double get_value() const;
 	double get_min() const;
 	double get_max() const;
 	double get_step() const;

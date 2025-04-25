@@ -40,9 +40,9 @@
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (!read_only && grabber->is_visible()) {
 		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
-		return TS->format_number(rtos(get_value())) + "\n\n" + vformat(TTR("Hold %s to round to integers.\nHold Shift for more precise changes."), find_keycode_name(key));
+		return TS->format_number(rtos(true_value)) + "\n\n" + vformat(TTR("Hold %s to round to integers.\nHold Shift for more precise changes."), find_keycode_name(key));
 	}
-	return TS->format_number(rtos(get_value()));
+	return TS->format_number(rtos(true_value));
 }
 
 String EditorSpinSlider::get_text_value() const {
@@ -142,6 +142,12 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 	}
+}
+
+void EditorSpinSlider::_value_changed_notify() {
+	_value_changed(true_value);
+	emit_signal(SceneStringName(value_changed), true_value);
+	queue_redraw();
 }
 
 void EditorSpinSlider::_grab_start() {
@@ -746,6 +752,24 @@ void EditorSpinSlider::_ensure_input_popup() {
 	if (is_inside_tree()) {
 		_update_value_input_stylebox();
 	}
+}
+
+void EditorSpinSlider::set_value(double p_val) {
+	bool true_value_changed = p_val != true_value;
+	true_value = p_val;
+	Range::set_value(p_val);
+	if (true_value_changed && is_inside_tree()) {
+		_value_changed_notify();
+	}
+}
+
+void EditorSpinSlider::set_value_no_signal(double p_val) {
+	true_value = p_val;
+	Range::set_value_no_signal(p_val);
+}
+
+double EditorSpinSlider::get_value() const {
+	return true_value;
 }
 
 EditorSpinSlider::EditorSpinSlider() {
