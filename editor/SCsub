@@ -1,64 +1,25 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-Import("env")
-
-env.editor_sources = []
-
 import os
 
 import editor_builders
 
-import methods
+Import("env")
+
+env.editor_sources = []
 
 if env.editor_build:
     # Generate doc data paths
-    def doc_data_class_path_builder(target, source, env):
-        paths = dict(sorted(source[0].read().items()))
-        data = "\n".join([f'\t{{"{key}", "{value}"}},' for key, value in paths.items()])
-        with methods.generated_wrapper(str(target[0])) as file:
-            file.write(
-                f"""\
-struct _DocDataClassPath {{
-	const char *name;
-	const char *path;
-}};
-
-inline constexpr int _doc_data_class_path_count = {len(paths)};
-inline constexpr _DocDataClassPath _doc_data_class_paths[{len(env.doc_class_path) + 1}] = {{
-{data}
-	{{nullptr, nullptr}},
-}};
-"""
-            )
-
-    env.CommandNoCache("doc_data_class_path.gen.h", env.Value(env.doc_class_path), env.Run(doc_data_class_path_builder))
+    env.CommandNoCache(
+        "doc_data_class_path.gen.h", env.Value(env.doc_class_path), env.Run(editor_builders.doc_data_class_path_builder)
+    )
 
     # Register exporters
-    def register_exporters_builder(target, source, env):
-        platforms = source[0].read()
-        exp_inc = "\n".join([f'#include "platform/{p}/export/export.h"' for p in platforms])
-        exp_reg = "\n".join([f"\tregister_{p}_exporter();" for p in platforms])
-        exp_type = "\n".join([f"\tregister_{p}_exporter_types();" for p in platforms])
-        with methods.generated_wrapper(str(target[0])) as file:
-            file.write(
-                f"""\
-#include "register_exporters.h"
-
-{exp_inc}
-
-void register_exporters() {{
-{exp_reg}
-}}
-
-void register_exporter_types() {{
-{exp_type}
-}}
-"""
-            )
-
     gen_exporters = env.CommandNoCache(
-        "register_exporters.gen.cpp", env.Value(env.platform_exporters), env.Run(register_exporters_builder)
+        "register_exporters.gen.cpp",
+        env.Value(env.platform_exporters),
+        env.Run(editor_builders.register_exporters_builder),
     )
     for e in env.platform_exporters:
         # Add all .cpp files in export folder
