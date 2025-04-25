@@ -810,7 +810,7 @@ struct VariantInternalAccessor<bool> {
 #define VARIANT_ACCESSOR_NUMBER(m_type)                                                                        \
 	template <>                                                                                                \
 	struct VariantInternalAccessor<m_type> {                                                                   \
-		static _FORCE_INLINE_ m_type get(const Variant *v) { return (m_type)*VariantInternal::get_int(v); }    \
+		static _FORCE_INLINE_ m_type get(const Variant *v) { return (m_type) * VariantInternal::get_int(v); }  \
 		static _FORCE_INLINE_ void set(Variant *v, m_type p_value) { *VariantInternal::get_int(v) = p_value; } \
 	};
 

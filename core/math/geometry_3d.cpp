@@ -393,7 +393,7 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 		return;
 	}
 
-#define vert(m_idx) Vector3(((m_idx)&4) >> 2, ((m_idx)&2) >> 1, (m_idx)&1)
+#define vert(m_idx) Vector3(((m_idx) & 4) >> 2, ((m_idx) & 2) >> 1, (m_idx) & 1)
 
 	static const uint8_t indices[6][4] = {
 		{ 7, 6, 4, 5 },

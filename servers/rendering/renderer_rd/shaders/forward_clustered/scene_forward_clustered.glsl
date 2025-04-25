@@ -96,9 +96,10 @@ layout(location = 8) out vec4 prev_screen_position;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
+layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
-} material;
+}
+material;
 #endif
 
 float global_time;
@@ -590,11 +591,10 @@ vec2 multiview_uv(vec2 uv) {
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
-
+layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
-
-} material;
+}
+material;
 #endif
 
 #GLOBALS

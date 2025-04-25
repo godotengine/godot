@@ -1341,8 +1341,8 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                                            \
 	{                                                                                       \
 		fp##entrypoint = (PFN_vk##entrypoint)vkGetInstanceProcAddr(inst, "vk" #entrypoint); \
-		ERR_FAIL_COND_V_MSG(fp##entrypoint == nullptr, ERR_CANT_CREATE,                     \
-				"vkGetInstanceProcAddr failed to find vk" #entrypoint);                     \
+	ERR_FAIL_COND_V_MSG(fp##entrypoint == nullptr, ERR_CANT_CREATE,                         \
+			"vkGetInstanceProcAddr failed to find vk" #entrypoint);                         \
 	}
 
 	GET_INSTANCE_PROC_ADDR(inst, GetPhysicalDeviceSurfaceSupportKHR);

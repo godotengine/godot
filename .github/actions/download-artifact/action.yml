@@ -1,15 +1,17 @@
 name: Download Godot artifact
 description: Download the Godot artifact.
+
 inputs:
   name:
     description: The artifact name.
-    default: "${{ github.job }}"
+    default: ${{ github.job }}
   path:
     description: The path to download and extract to.
     required: true
-    default: "./"
+    default: ./
+
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Download Godot Artifact
       uses: actions/download-artifact@v4

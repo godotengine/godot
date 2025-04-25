@@ -116,7 +116,7 @@ void GLManager_Windows::_nvapi_disable_threaded_optimization() {
 
 	void *(__cdecl * NvAPI_QueryInterface)(unsigned int interface_id) = 0;
 
-	NvAPI_QueryInterface = (void *(__cdecl *)(unsigned int))GetProcAddress(nvapi, "nvapi_QueryInterface");
+	NvAPI_QueryInterface = (void *(__cdecl *)(unsigned int))(void *)GetProcAddress(nvapi, "nvapi_QueryInterface");
 
 	if (NvAPI_QueryInterface == NULL) {
 		print_verbose("Error getting NVAPI NvAPI_QueryInterface");

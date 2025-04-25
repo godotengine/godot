@@ -176,12 +176,20 @@ TextureStorage::TextureStorage() {
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 			tf.texture_type = RD::TEXTURE_TYPE_2D;
 
+			// MinGW-GCC gets confused here, though it's clear it can't overflow unless `resize` hits OOM.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wstringop-overflow=0"
+#endif
 			Vector<uint8_t> sv;
 			sv.resize(16 * 2);
 			uint16_t *ptr = (uint16_t *)sv.ptrw();
 			for (int i = 0; i < 16; i++) {
 				ptr[i] = Math::make_half_float(1.0f);
 			}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 			Vector<Vector<uint8_t>> vpv;
 			vpv.push_back(sv);
@@ -450,12 +458,19 @@ TextureStorage::TextureStorage() {
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		tformat.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wstringop-overflow=0"
+#endif
 		Vector<uint8_t> sv;
 		sv.resize(16 * 2);
 		uint16_t *ptr = (uint16_t *)sv.ptrw();
 		for (int i = 0; i < 16; i++) {
 			ptr[i] = Math::make_half_float(1.0f);
 		}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 		{
 			Vector<Vector<uint8_t>> vsv;

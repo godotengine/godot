@@ -289,7 +289,7 @@ Error CowData<T>::resize(int p_size) {
 			if (current_size == 0) {
 				// alloc from scratch
 				uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
-				ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
+				ERR_FAIL_NULL_V(ptr, ERR_OUT_OF_MEMORY);
 				*(ptr - 1) = 0; //size, currently none
 				new (ptr - 2) SafeNumeric<uint32_t>(1); //refcount
 
@@ -297,7 +297,7 @@ Error CowData<T>::resize(int p_size) {
 
 			} else {
 				uint32_t *_ptrnew = (uint32_t *)Memory::realloc_static(_ptr, alloc_size, true);
-				ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
+				ERR_FAIL_NULL_V(_ptrnew, ERR_OUT_OF_MEMORY);
 				new (_ptrnew - 2) SafeNumeric<uint32_t>(rc); //refcount
 
 				_ptr = (T *)(_ptrnew);
@@ -327,7 +327,7 @@ Error CowData<T>::resize(int p_size) {
 
 		if (alloc_size != current_alloc_size) {
 			uint32_t *_ptrnew = (uint32_t *)Memory::realloc_static(_ptr, alloc_size, true);
-			ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
+			ERR_FAIL_NULL_V(_ptrnew, ERR_OUT_OF_MEMORY);
 			new (_ptrnew - 2) SafeNumeric<uint32_t>(rc); //refcount
 
 			_ptr = (T *)(_ptrnew);
