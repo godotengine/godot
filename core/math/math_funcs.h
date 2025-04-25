@@ -735,12 +735,114 @@ _ALWAYS_INLINE_ float pingpong(float p_value, float p_length) {
 }
 
 // double only, as these functions are mainly used by the editor and not performance-critical,
-double ease(double p_x, double p_c);
-int step_decimals(double p_step);
-int range_step_decimals(double p_step); // For editor use only.
-double snapped(double p_value, double p_step);
+_ALWAYS_INLINE_ double ease(double p_x, double p_c) {
+	if (p_x < 0) {
+		p_x = 0;
+	} else if (p_x > 1.0) {
+		p_x = 1.0;
+	}
+	if (p_c > 0) {
+		if (p_c < 1.0) {
+			return 1.0 - Math::pow(1.0 - p_x, 1.0 / p_c);
+		} else {
+			return Math::pow(p_x, p_c);
+		}
+	} else if (p_c < 0) {
+		//inout ease
 
-uint32_t larger_prime(uint32_t p_val);
+		if (p_x < 0.5) {
+			return Math::pow(p_x * 2.0, -p_c) * 0.5;
+		} else {
+			return (1.0 - Math::pow(1.0 - (p_x - 0.5) * 2.0, -p_c)) * 0.5 + 0.5;
+		}
+	} else {
+		return 0; // no ease (raw)
+	}
+}
+
+_ALWAYS_INLINE_ int step_decimals(double p_step) {
+	static const int maxn = 10;
+	static const double sd[maxn] = {
+		0.9999, // somehow compensate for floating point error
+		0.09999,
+		0.009999,
+		0.0009999,
+		0.00009999,
+		0.000009999,
+		0.0000009999,
+		0.00000009999,
+		0.000000009999,
+		0.0000000009999
+	};
+
+	double abs = Math::abs(p_step);
+	double decs = abs - (int)abs; // Strip away integer part
+	for (int i = 0; i < maxn; i++) {
+		if (decs >= sd[i]) {
+			return i;
+		}
+	}
+
+	return 0;
+}
+
+_ALWAYS_INLINE_ int range_step_decimals(double p_step) { // For editor use only.
+	if (p_step < 0.0000000000001) {
+		return 16; // Max value hardcoded in String::num
+	}
+	return step_decimals(p_step);
+}
+
+_ALWAYS_INLINE_ double snapped(double p_value, double p_step) {
+	if (p_step != 0) {
+		p_value = Math::floor(p_value / p_step + 0.5) * p_step;
+	}
+	return p_value;
+}
+
+_ALWAYS_INLINE_ uint32_t larger_prime(uint32_t p_val) {
+	static const uint32_t primes[] = {
+		5,
+		13,
+		23,
+		47,
+		97,
+		193,
+		389,
+		769,
+		1543,
+		3079,
+		6151,
+		12289,
+		24593,
+		49157,
+		98317,
+		196613,
+		393241,
+		786433,
+		1572869,
+		3145739,
+		6291469,
+		12582917,
+		25165843,
+		50331653,
+		100663319,
+		201326611,
+		402653189,
+		805306457,
+		1610612741,
+		0,
+	};
+
+	int idx = 0;
+	while (true) {
+		ERR_FAIL_COND_V(primes[idx] == 0, 0);
+		if (primes[idx] > p_val) {
+			return primes[idx];
+		}
+		idx++;
+	}
+}
 
 void seed(uint64_t p_seed);
 void randomize();

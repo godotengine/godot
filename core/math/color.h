@@ -32,8 +32,6 @@
 
 #include "core/math/math_funcs.h"
 
-class String;
-
 struct [[nodiscard]] Color {
 	union {
 		// NOLINTBEGIN(modernize-use-default-member-init)
@@ -47,17 +45,17 @@ struct [[nodiscard]] Color {
 		// NOLINTEND(modernize-use-default-member-init)
 	};
 
-	uint32_t to_rgba32() const;
-	uint32_t to_argb32() const;
-	uint32_t to_abgr32() const;
-	uint64_t to_rgba64() const;
-	uint64_t to_argb64() const;
-	uint64_t to_abgr64() const;
+	_FORCE_INLINE_ uint32_t to_rgba32() const;
+	_FORCE_INLINE_ uint32_t to_argb32() const;
+	_FORCE_INLINE_ uint32_t to_abgr32() const;
+	_FORCE_INLINE_ uint64_t to_rgba64() const;
+	_FORCE_INLINE_ uint64_t to_argb64() const;
+	_FORCE_INLINE_ uint64_t to_abgr64() const;
 	String to_html(bool p_alpha = true) const;
-	float get_h() const;
-	float get_s() const;
-	float get_v() const;
-	void set_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
+	_FORCE_INLINE_ float get_h() const;
+	_FORCE_INLINE_ float get_s() const;
+	_FORCE_INLINE_ float get_v() const;
+	_FORCE_INLINE_ void set_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 	float get_ok_hsl_h() const;
 	float get_ok_hsl_s() const;
 	float get_ok_hsl_l() const;
@@ -70,36 +68,36 @@ struct [[nodiscard]] Color {
 		return components[p_idx];
 	}
 
-	constexpr bool operator==(const Color &p_color) const {
+	_FORCE_INLINE_ constexpr bool operator==(const Color &p_color) const {
 		return (r == p_color.r && g == p_color.g && b == p_color.b && a == p_color.a);
 	}
-	constexpr bool operator!=(const Color &p_color) const {
+	_FORCE_INLINE_ constexpr bool operator!=(const Color &p_color) const {
 		return (r != p_color.r || g != p_color.g || b != p_color.b || a != p_color.a);
 	}
 
-	constexpr Color operator+(const Color &p_color) const;
-	constexpr void operator+=(const Color &p_color);
+	_FORCE_INLINE_ constexpr Color operator+(const Color &p_color) const;
+	_FORCE_INLINE_ constexpr void operator+=(const Color &p_color);
 
-	constexpr Color operator-() const;
-	constexpr Color operator-(const Color &p_color) const;
-	constexpr void operator-=(const Color &p_color);
+	_FORCE_INLINE_ constexpr Color operator-() const;
+	_FORCE_INLINE_ constexpr Color operator-(const Color &p_color) const;
+	_FORCE_INLINE_ constexpr void operator-=(const Color &p_color);
 
-	constexpr Color operator*(const Color &p_color) const;
-	constexpr Color operator*(float p_scalar) const;
-	constexpr void operator*=(const Color &p_color);
-	constexpr void operator*=(float p_scalar);
+	_FORCE_INLINE_ constexpr Color operator*(const Color &p_color) const;
+	_FORCE_INLINE_ constexpr Color operator*(float p_scalar) const;
+	_FORCE_INLINE_ constexpr void operator*=(const Color &p_color);
+	_FORCE_INLINE_ constexpr void operator*=(float p_scalar);
 
-	constexpr Color operator/(const Color &p_color) const;
-	constexpr Color operator/(float p_scalar) const;
-	constexpr void operator/=(const Color &p_color);
-	constexpr void operator/=(float p_scalar);
+	_FORCE_INLINE_ constexpr Color operator/(const Color &p_color) const;
+	_FORCE_INLINE_ constexpr Color operator/(float p_scalar) const;
+	_FORCE_INLINE_ constexpr void operator/=(const Color &p_color);
+	_FORCE_INLINE_ constexpr void operator/=(float p_scalar);
 
-	bool is_equal_approx(const Color &p_color) const;
-	bool is_same(const Color &p_color) const;
+	_FORCE_INLINE_ bool is_equal_approx(const Color &p_color) const;
+	_FORCE_INLINE_ bool is_same(const Color &p_color) const;
 
-	Color clamp(const Color &p_min = Color(0, 0, 0, 0), const Color &p_max = Color(1, 1, 1, 1)) const;
-	void invert();
-	Color inverted() const;
+	_FORCE_INLINE_ Color clamp(const Color &p_min = Color(0, 0, 0, 0), const Color &p_max = Color(1, 1, 1, 1)) const;
+	_FORCE_INLINE_ void invert();
+	_FORCE_INLINE_ Color inverted() const;
 
 	_FORCE_INLINE_ float get_luminance() const {
 		return 0.2126f * r + 0.7152f * g + 0.0722f * b;
@@ -201,8 +199,8 @@ struct [[nodiscard]] Color {
 				b < 0.0031308f ? 12.92f * b : (1.0 + 0.055) * Math::pow(b, 1.0f / 2.4f) - 0.055, a);
 	}
 
-	static Color hex(uint32_t p_hex);
-	static Color hex64(uint64_t p_hex);
+	static _FORCE_INLINE_ Color hex(uint32_t p_hex);
+	static _FORCE_INLINE_ Color hex64(uint64_t p_hex);
 	static Color html(const String &p_rgba);
 	static bool html_is_valid(const String &p_color);
 	static Color named(const String &p_name);
@@ -212,12 +210,12 @@ struct [[nodiscard]] Color {
 	static String get_named_color_name(int p_idx);
 	static Color get_named_color(int p_idx);
 	static Color from_string(const String &p_string, const Color &p_default);
-	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
+	static _FORCE_INLINE_ Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
-	static Color from_rgbe9995(uint32_t p_rgbe);
-	static Color from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8 = 255);
+	static _FORCE_INLINE_ Color from_rgbe9995(uint32_t p_rgbe);
+	static _FORCE_INLINE_ Color from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8 = 255);
 
-	constexpr bool operator<(const Color &p_color) const; // Used in set keys.
+	_FORCE_INLINE_ constexpr bool operator<(const Color &p_color) const; // Used in set keys.
 	operator String() const;
 
 	// For the binder.
@@ -237,30 +235,30 @@ struct [[nodiscard]] Color {
 	_FORCE_INLINE_ void set_ok_hsl_s(float p_s) { set_ok_hsl(get_ok_hsl_h(), p_s, get_ok_hsl_l(), a); }
 	_FORCE_INLINE_ void set_ok_hsl_l(float p_l) { set_ok_hsl(get_ok_hsl_h(), get_ok_hsl_s(), p_l, a); }
 
-	constexpr Color() :
+	_FORCE_INLINE_ constexpr Color() :
 			r(0), g(0), b(0), a(1) {}
 
 	/**
 	 * RGBA construct parameters.
 	 * Alpha is not optional as otherwise we can't bind the RGB version for scripting.
 	 */
-	constexpr Color(float p_r, float p_g, float p_b, float p_a) :
+	_FORCE_INLINE_ constexpr Color(float p_r, float p_g, float p_b, float p_a) :
 			r(p_r), g(p_g), b(p_b), a(p_a) {}
 
 	/**
 	 * RGB construct parameters.
 	 */
-	constexpr Color(float p_r, float p_g, float p_b) :
+	_FORCE_INLINE_ constexpr Color(float p_r, float p_g, float p_b) :
 			r(p_r), g(p_g), b(p_b), a(1) {}
 
 	/**
 	 * Construct a Color from another Color, but with the specified alpha value.
 	 */
-	constexpr Color(const Color &p_c, float p_a) :
+	_FORCE_INLINE_ constexpr Color(const Color &p_c, float p_a) :
 			r(p_c.r), g(p_c.g), b(p_c.b), a(p_a) {}
 
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
-	Color(const String &p_code) {
+	_FORCE_INLINE_ Color(const String &p_code) {
 		if (html_is_valid(p_code)) {
 			*this = html(p_code);
 		} else {
@@ -268,7 +266,7 @@ struct [[nodiscard]] Color {
 		}
 	}
 
-	Color(const String &p_code, float p_a) {
+	_FORCE_INLINE_ Color(const String &p_code, float p_a) {
 		*this = Color(p_code);
 		a = p_a;
 	}
@@ -389,6 +387,254 @@ constexpr bool Color::operator<(const Color &p_color) const {
 	}
 }
 
-constexpr Color operator*(float p_scalar, const Color &p_color) {
+_FORCE_INLINE_ constexpr Color operator*(float p_scalar, const Color &p_color) {
 	return p_color * p_scalar;
+}
+
+uint32_t Color::to_argb32() const {
+	uint32_t c = (uint8_t)Math::round(a * 255.0f);
+	c <<= 8;
+	c |= (uint8_t)Math::round(r * 255.0f);
+	c <<= 8;
+	c |= (uint8_t)Math::round(g * 255.0f);
+	c <<= 8;
+	c |= (uint8_t)Math::round(b * 255.0f);
+
+	return c;
+}
+
+uint32_t Color::to_abgr32() const {
+	uint32_t c = (uint8_t)Math::round(a * 255.0f);
+	c <<= 8;
+	c |= (uint8_t)Math::round(b * 255.0f);
+	c <<= 8;
+	c |= (uint8_t)Math::round(g * 255.0f);
+	c <<= 8;
+	c |= (uint8_t)Math::round(r * 255.0f);
+
+	return c;
+}
+
+uint32_t Color::to_rgba32() const {
+	uint32_t c = (uint8_t)Math::round(r * 255.0f);
+	c <<= 8;
+	c |= (uint8_t)Math::round(g * 255.0f);
+	c <<= 8;
+	c |= (uint8_t)Math::round(b * 255.0f);
+	c <<= 8;
+	c |= (uint8_t)Math::round(a * 255.0f);
+
+	return c;
+}
+
+uint64_t Color::to_abgr64() const {
+	uint64_t c = (uint16_t)Math::round(a * 65535.0f);
+	c <<= 16;
+	c |= (uint16_t)Math::round(b * 65535.0f);
+	c <<= 16;
+	c |= (uint16_t)Math::round(g * 65535.0f);
+	c <<= 16;
+	c |= (uint16_t)Math::round(r * 65535.0f);
+
+	return c;
+}
+
+uint64_t Color::to_argb64() const {
+	uint64_t c = (uint16_t)Math::round(a * 65535.0f);
+	c <<= 16;
+	c |= (uint16_t)Math::round(r * 65535.0f);
+	c <<= 16;
+	c |= (uint16_t)Math::round(g * 65535.0f);
+	c <<= 16;
+	c |= (uint16_t)Math::round(b * 65535.0f);
+
+	return c;
+}
+
+uint64_t Color::to_rgba64() const {
+	uint64_t c = (uint16_t)Math::round(r * 65535.0f);
+	c <<= 16;
+	c |= (uint16_t)Math::round(g * 65535.0f);
+	c <<= 16;
+	c |= (uint16_t)Math::round(b * 65535.0f);
+	c <<= 16;
+	c |= (uint16_t)Math::round(a * 65535.0f);
+
+	return c;
+}
+
+float Color::get_h() const {
+	float min = MIN(r, g);
+	min = MIN(min, b);
+	float max = MAX(r, g);
+	max = MAX(max, b);
+
+	float delta = max - min;
+
+	if (delta == 0.0f) {
+		return 0.0f;
+	}
+
+	float h;
+	if (r == max) {
+		h = (g - b) / delta; // between yellow & magenta
+	} else if (g == max) {
+		h = 2 + (b - r) / delta; // between cyan & yellow
+	} else {
+		h = 4 + (r - g) / delta; // between magenta & cyan
+	}
+
+	h /= 6.0f;
+	if (h < 0.0f) {
+		h += 1.0f;
+	}
+
+	return h;
+}
+
+float Color::get_s() const {
+	float min = MIN(r, g);
+	min = MIN(min, b);
+	float max = MAX(r, g);
+	max = MAX(max, b);
+
+	float delta = max - min;
+
+	return (max != 0.0f) ? (delta / max) : 0.0f;
+}
+
+float Color::get_v() const {
+	float max = MAX(r, g);
+	max = MAX(max, b);
+	return max;
+}
+
+void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
+	int i;
+	float f, p, q, t;
+	a = p_alpha;
+
+	if (p_s == 0.0f) {
+		// Achromatic (gray)
+		r = g = b = p_v;
+		return;
+	}
+
+	p_h *= 6.0f;
+	p_h = Math::fmod(p_h, 6);
+	i = Math::floor(p_h);
+
+	f = p_h - i;
+	p = p_v * (1.0f - p_s);
+	q = p_v * (1.0f - p_s * f);
+	t = p_v * (1.0f - p_s * (1.0f - f));
+
+	switch (i) {
+		case 0: // Red is the dominant color
+			r = p_v;
+			g = t;
+			b = p;
+			break;
+		case 1: // Green is the dominant color
+			r = q;
+			g = p_v;
+			b = p;
+			break;
+		case 2:
+			r = p;
+			g = p_v;
+			b = t;
+			break;
+		case 3: // Blue is the dominant color
+			r = p;
+			g = q;
+			b = p_v;
+			break;
+		case 4:
+			r = t;
+			g = p;
+			b = p_v;
+			break;
+		default: // (5) Red is the dominant color
+			r = p_v;
+			g = p;
+			b = q;
+			break;
+	}
+}
+
+bool Color::is_equal_approx(const Color &p_color) const {
+	return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
+}
+
+bool Color::is_same(const Color &p_color) const {
+	return Math::is_same(r, p_color.r) && Math::is_same(g, p_color.g) && Math::is_same(b, p_color.b) && Math::is_same(a, p_color.a);
+}
+
+Color Color::clamp(const Color &p_min, const Color &p_max) const {
+	return Color(
+			CLAMP(r, p_min.r, p_max.r),
+			CLAMP(g, p_min.g, p_max.g),
+			CLAMP(b, p_min.b, p_max.b),
+			CLAMP(a, p_min.a, p_max.a));
+}
+
+void Color::invert() {
+	r = 1.0f - r;
+	g = 1.0f - g;
+	b = 1.0f - b;
+}
+
+Color Color::hex(uint32_t p_hex) {
+	float a = (p_hex & 0xFF) / 255.0f;
+	p_hex >>= 8;
+	float b = (p_hex & 0xFF) / 255.0f;
+	p_hex >>= 8;
+	float g = (p_hex & 0xFF) / 255.0f;
+	p_hex >>= 8;
+	float r = (p_hex & 0xFF) / 255.0f;
+
+	return Color(r, g, b, a);
+}
+
+Color Color::hex64(uint64_t p_hex) {
+	float a = (p_hex & 0xFFFF) / 65535.0f;
+	p_hex >>= 16;
+	float b = (p_hex & 0xFFFF) / 65535.0f;
+	p_hex >>= 16;
+	float g = (p_hex & 0xFFFF) / 65535.0f;
+	p_hex >>= 16;
+	float r = (p_hex & 0xFFFF) / 65535.0f;
+
+	return Color(r, g, b, a);
+}
+
+Color Color::inverted() const {
+	Color c = *this;
+	c.invert();
+	return c;
+}
+
+Color Color::from_hsv(float p_h, float p_s, float p_v, float p_alpha) {
+	Color c;
+	c.set_hsv(p_h, p_s, p_v, p_alpha);
+	return c;
+}
+
+Color Color::from_rgbe9995(uint32_t p_rgbe) {
+	float r = p_rgbe & 0x1ff;
+	float g = (p_rgbe >> 9) & 0x1ff;
+	float b = (p_rgbe >> 18) & 0x1ff;
+	float e = (p_rgbe >> 27);
+	float m = Math::pow(2.0f, e - 15.0f - 9.0f);
+
+	float rd = r * m;
+	float gd = g * m;
+	float bd = b * m;
+
+	return Color(rd, gd, bd, 1.0f);
+}
+
+Color Color::from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8) {
+	return Color(p_r8 / 255.0f, p_g8 / 255.0f, p_b8 / 255.0f, p_a8 / 255.0f);
 }
