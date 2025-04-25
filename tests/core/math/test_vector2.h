@@ -353,7 +353,6 @@ TEST_CASE("[Vector2] Plane methods") {
 	const Vector2 vector = Vector2(1.2, 3.4);
 	const Vector2 vector_y = Vector2(0, 1);
 	const Vector2 vector_normal = Vector2(0.95879811270838721622267, 0.2840883296913739899919);
-	const Vector2 vector_non_normal = Vector2(5.4, 1.6);
 	CHECK_MESSAGE(
 			vector.bounce(vector_y) == Vector2(1.2, -3.4),
 			"Vector2 bounce on a plane with normal of the Y axis should.");
@@ -379,6 +378,8 @@ TEST_CASE("[Vector2] Plane methods") {
 			vector.slide(vector_normal).is_equal_approx(Vector2(-0.8292559899117276166456, 2.798738965952080706179)),
 			"Vector2 slide with normal should return expected value.");
 	// There's probably a better way to test these ones?
+#ifdef MATH_CHECKS
+	const Vector2 vector_non_normal = Vector2(5.4, 1.6);
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
 			vector.bounce(vector_non_normal).is_equal_approx(Vector2()),
@@ -390,6 +391,7 @@ TEST_CASE("[Vector2] Plane methods") {
 			vector.slide(vector_non_normal).is_equal_approx(Vector2()),
 			"Vector2 slide should return empty Vector2 with non-normalized input.");
 	ERR_PRINT_ON;
+#endif // MATH_CHECKS
 }
 
 TEST_CASE("[Vector2] Rounding methods") {

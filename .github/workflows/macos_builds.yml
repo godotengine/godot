@@ -8,14 +8,11 @@ env:
   GODOT_BASE_BRANCH: 4.2
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
 
-concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-macos
-  cancel-in-progress: true
-
 jobs:
   build-macos:
-    runs-on: "macos-latest"
+    runs-on: macos-latest
     name: ${{ matrix.name }}
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -24,16 +21,20 @@ jobs:
             cache-name: macos-editor
             target: editor
             tests: true
-            bin: "./bin/godot.macos.editor.universal"
+            bin: ./bin/godot.macos.editor.universal
 
-          - name: Template (target=template_release)
+          - name: Template (target=template_release, tests=yes)
             cache-name: macos-template
             target: template_release
-            tests: false
+            tests: true
             sconsflags: debug_symbols=no
+            bin: ./bin/godot.macos.template_release.universal
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
@@ -41,7 +42,7 @@ jobs:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
       - name: Setup Vulkan SDK
@@ -82,9 +83,8 @@ jobs:
         with:
           name: ${{ matrix.cache-name }}
 
-      # Execute unit tests for the editor
       - name: Unit tests
-        if: ${{ matrix.tests }}
+        if: matrix.tests
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help
