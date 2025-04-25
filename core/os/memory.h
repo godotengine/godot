@@ -43,8 +43,6 @@ class Memory {
 	static SafeNumeric<uint64_t> max_usage;
 #endif
 
-	static SafeNumeric<uint64_t> alloc_count;
-
 public:
 	// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
 	//             ┌─────────────────┬──┬────────────────┬──┬───────────...

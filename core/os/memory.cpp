@@ -62,8 +62,6 @@ SafeNumeric<uint64_t> Memory::mem_usage;
 SafeNumeric<uint64_t> Memory::max_usage;
 #endif
 
-SafeNumeric<uint64_t> Memory::alloc_count;
-
 void *Memory::alloc_aligned_static(size_t p_bytes, size_t p_alignment) {
 	DEV_ASSERT(is_power_of_2(p_alignment));
 
@@ -106,8 +104,6 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 	void *mem = malloc(p_bytes + (prepad ? DATA_OFFSET : 0));
 
 	ERR_FAIL_NULL_V(mem, nullptr);
-
-	alloc_count.increment();
 
 	if (prepad) {
 		uint8_t *s8 = (uint8_t *)mem;
@@ -185,8 +181,6 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 #else
 	bool prepad = p_pad_align;
 #endif
-
-	alloc_count.decrement();
 
 	if (prepad) {
 		mem -= DATA_OFFSET;
