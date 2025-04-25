@@ -1980,6 +1980,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 }
 
 Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	check_disk_space(p_path);
 	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false);
 }
 

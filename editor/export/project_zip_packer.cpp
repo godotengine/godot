@@ -35,6 +35,7 @@
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
+#include "editor/editor_node.h"
 
 String ProjectZIPPacker::get_project_zip_safe_name() {
 	// Name the downloaded ZIP file to contain the project name and download date for easier organization.
@@ -50,6 +51,9 @@ String ProjectZIPPacker::get_project_zip_safe_name() {
 }
 
 void ProjectZIPPacker::pack_project_zip(const String &p_path) {
+	// Project files can grow quite large, so check for a reasonable amount of available space before packing.
+	EditorNode::get_singleton()->check_disk_space(p_path, 10.0, TTR("Packing the project as ZIP will fail if the disk runs out of space."));
+
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
 

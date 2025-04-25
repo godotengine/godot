@@ -31,6 +31,7 @@
 #include "audio_stream_import_settings.h"
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
@@ -515,6 +516,10 @@ void AudioStreamImportSettingsDialog::_settings_changed() {
 }
 
 void AudioStreamImportSettingsDialog::_reimport() {
+	// Long audio files can be quite large. Consider a buffer of 1 GiB to be
+	// safe, since there are also temporary files and thumbnails that come into play.
+	EditorNode::get_singleton()->check_disk_space(path, 1.0, TTR("Importing resources will fail if the disk runs out of space."));
+
 	params["loop"] = loop->is_pressed();
 	params["loop_offset"] = loop_offset->get_value();
 	params["bpm"] = bpm_enabled->is_pressed() ? double(bpm_edit->get_value()) : double(0);
