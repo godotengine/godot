@@ -338,7 +338,7 @@ double AudioStreamPlaybackSynchronized::get_playback_position() const {
 	for (int i = 0; i < stream->stream_count; i++) {
 		if (playbacks[i].is_valid() && playbacks[i]->is_playing()) {
 			float pos = playbacks[i]->get_playback_position();
-			
+
 			if (!pos_found || pos > max_pos) {
 				max_pos = pos;
 				pos_found = true;
