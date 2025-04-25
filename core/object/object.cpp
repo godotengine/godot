@@ -1535,6 +1535,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	}
 	else
 	{
+		//use callable version as key, so binds can be ignored
 		s->slot_map[*p_callable.get_base_comparator()] = slot;
 	}
 
