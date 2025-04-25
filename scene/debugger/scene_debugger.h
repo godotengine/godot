@@ -65,6 +65,7 @@ public:
 #ifdef DEBUG_ENABLED
 private:
 	static void _handle_input(const Ref<InputEvent> &p_event, const Ref<Shortcut> &p_shortcut);
+	static void _handle_embed_input(const Ref<InputEvent> &p_event, const Dictionary &p_settings);
 
 	static void _save_node(ObjectID id, const String &p_path);
 	static void _set_node_owner_recursive(Node *p_node, Node *p_owner);
@@ -80,6 +81,7 @@ private:
 #define HANDLER(name) static Error _msg_##name(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select)
 
 	HANDLER(setup_scene);
+	HANDLER(setup_embedded_shortcuts);
 	HANDLER(request_scene_tree);
 	HANDLER(save_node);
 	HANDLER(inspect_objects);
