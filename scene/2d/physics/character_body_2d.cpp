@@ -658,13 +658,13 @@ void CharacterBody2D::_validate_property(PropertyInfo &p_property) const {
 }
 
 void CharacterBody2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_slide"), &CharacterBody2D::move_and_slide);
+	ClassDB::bind_method(D_METHOD("liiku_ja_liuvu"), &CharacterBody2D::move_and_slide);
 	ClassDB::bind_method(D_METHOD("apply_floor_snap"), &CharacterBody2D::apply_floor_snap);
 
-	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &CharacterBody2D::set_velocity);
-	ClassDB::bind_method(D_METHOD("get_velocity"), &CharacterBody2D::get_velocity);
+	ClassDB::bind_method(D_METHOD("laita_nopeus", "nopeus"), &CharacterBody2D::set_velocity);
+	ClassDB::bind_method(D_METHOD("otta_nopeus"), &CharacterBody2D::get_velocity);
 
-	ClassDB::bind_method(D_METHOD("set_safe_margin", "margin"), &CharacterBody2D::set_safe_margin);
+	ClassDB::bind_method(D_METHOD("laita_turva_reuna", "reuna"), &CharacterBody2D::set_safe_margin);
 	ClassDB::bind_method(D_METHOD("get_safe_margin"), &CharacterBody2D::get_safe_margin);
 	ClassDB::bind_method(D_METHOD("is_floor_stop_on_slope_enabled"), &CharacterBody2D::is_floor_stop_on_slope_enabled);
 	ClassDB::bind_method(D_METHOD("set_floor_stop_on_slope_enabled", "enabled"), &CharacterBody2D::set_floor_stop_on_slope_enabled);
@@ -695,14 +695,14 @@ void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_platform_on_leave", "on_leave_apply_velocity"), &CharacterBody2D::set_platform_on_leave);
 	ClassDB::bind_method(D_METHOD("get_platform_on_leave"), &CharacterBody2D::get_platform_on_leave);
 
-	ClassDB::bind_method(D_METHOD("is_on_floor"), &CharacterBody2D::on_lattiassa);
-	ClassDB::bind_method(D_METHOD("is_on_floor_only"), &CharacterBody2D::on_vain_lattiassa);
-	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &CharacterBody2D::on_katossa);
-	ClassDB::bind_method(D_METHOD("is_on_ceiling_only"), &CharacterBody2D::on_vain_katossa);
-	ClassDB::bind_method(D_METHOD("is_on_wall"), &CharacterBody2D::on_seinassa);
-	ClassDB::bind_method(D_METHOD("is_on_wall_only"), &CharacterBody2D::on_vain_seinassa);
-	ClassDB::bind_method(D_METHOD("get_floor_normal"), &CharacterBody2D::laita_latiaan_normali);
-	ClassDB::bind_method(D_METHOD("get_wall_normal"), &CharacterBody2D::laita_seinaa_normali);
+	ClassDB::bind_method(D_METHOD("on_lattiassa"), &CharacterBody2D::is_on_floor);
+	ClassDB::bind_method(D_METHOD("on_vain_lattiassa"), &CharacterBody2D::is_on_floor_only);
+	ClassDB::bind_method(D_METHOD("on_katossa"), &CharacterBody2D::is_on_ceiling);
+	ClassDB::bind_method(D_METHOD("on_vain_katossa"), &CharacterBody2D::is_on_ceiling_only);
+	ClassDB::bind_method(D_METHOD("on_seinassa"), &CharacterBody2D::is_on_wall);
+	ClassDB::bind_method(D_METHOD("on_vain_seinassa"), &CharacterBody2D::is_on_wall_only);
+	ClassDB::bind_method(D_METHOD("laita_latiaan_normali"), &CharacterBody2D::get_floor_normal);
+	ClassDB::bind_method(D_METHOD("laita_seinaa_normali"), &CharacterBody2D::get_wall_normal);
 	ClassDB::bind_method(D_METHOD("get_last_motion"), &CharacterBody2D::get_last_motion);
 	ClassDB::bind_method(D_METHOD("get_position_delta"), &CharacterBody2D::get_position_delta);
 	ClassDB::bind_method(D_METHOD("get_real_velocity"), &CharacterBody2D::get_real_velocity);
