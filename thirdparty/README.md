@@ -199,7 +199,7 @@ Files extracted from upstream source:
 ## embree
 
 - Upstream: https://github.com/embree/embree
-- Version: 4.3.1 (daa8de0e714e18ad5e5c9841b67c1950d9c91c51, 2024)
+- Version: 4.4.0 (ff9381774dc99fea81a932ad276677aad6a3d4dd, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream:
@@ -216,7 +216,6 @@ Patches:
 - `0003-emscripten-nthreads.patch` (GH-69799)
 - `0004-mingw-no-cpuidex.patch` (GH-92488)
 - `0005-mingw-llvm-arm64.patch` (GH-93364)
-- `0006-include-order-dllexport.patch` (GH-94256)
 
 The `modules/raycast/godot_update_embree.py` script can be used to pull the
 relevant files from the latest Embree release and apply patches automatically.
