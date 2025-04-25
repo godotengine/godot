@@ -2090,7 +2090,7 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 
 	VkImageViewUsageCreateInfo usage_info;
 	if (context->is_device_extension_enabled(VK_KHR_MAINTENANCE_2_EXTENSION_NAME)) {
-		// May need to make VK_KHR_maintenance2 manditory and thus has Vulkan 1.1 be our minimum supported version
+		// May need to make VK_KHR_maintenance2 mandatory and thus has Vulkan 1.1 be our minimum supported version
 		// if we require setting this information. Vulkan 1.0 may simply not care..
 
 		usage_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO;

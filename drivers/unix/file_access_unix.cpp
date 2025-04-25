@@ -45,11 +45,11 @@
 #endif
 
 #ifdef MSVC
-#define S_ISREG(m) ((m)&_S_IFREG)
+#define S_ISREG(m) ((m) & _S_IFREG)
 #include <io.h>
 #endif
 #ifndef S_ISREG
-#define S_ISREG(m) ((m)&S_IFREG)
+#define S_ISREG(m) ((m) & S_IFREG)
 #endif
 
 void FileAccessUnix::check_errors() const {

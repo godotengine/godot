@@ -103,7 +103,7 @@
 			The maximum distance the detail mesh surface should deviate from heightfield, in cell unit.
 		</member>
 		<member name="edge_max_error" type="float" setter="set_edge_max_error" getter="get_edge_max_error" default="1.3">
-			The maximum distance a simplfied contour's border edges should deviate the original raw contour.
+			The maximum distance a simplified contour's border edges should deviate the original raw contour.
 		</member>
 		<member name="edge_max_length" type="float" setter="set_edge_max_length" getter="get_edge_max_length" default="12.0">
 			The maximum allowed length for contour edges along the border of the mesh.

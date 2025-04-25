@@ -240,7 +240,7 @@
 			<return type="void" />
 			<param index="0" name="msg" type="String" />
 			<description>
-				Pops up an error message in the edior which is shown as coming from the underlying VCS. Use this to show VCS specific error messages.
+				Pops up an error message in the editor which is shown as coming from the underlying VCS. Use this to show VCS specific error messages.
 			</description>
 		</method>
 	</methods>

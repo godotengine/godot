@@ -968,7 +968,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 		p_dir->modified_time = current_mtime;
 		//ooooops, dir changed, see what's going on
 
-		//first mark everything as veryfied
+		//first mark everything as verified
 
 		for (int i = 0; i < p_dir->files.size(); i++) {
 			p_dir->files[i]->verified = false;

@@ -36,7 +36,7 @@ void main() {
 	if (any(greaterThanEqual(ssC.xy, params.screen_size))) { //too large, do nothing
 		return;
 	}
-	//do not filter, SSR will generate arctifacts if this is done
+	//do not filter, SSR will generate artifacts if this is done
 
 	float divisor = 0.0;
 	vec4 color;

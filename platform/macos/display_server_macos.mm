@@ -2027,7 +2027,7 @@ void DisplayServerMacOS::warp_mouse(const Point2i &p_position) {
 		NSRect pointInWindowRect = NSMakeRect(p_position.x / scale, contentRect.size.height - (p_position.y / scale), scale, scale);
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 
-		// Point in scren coords.
+		// Point in screen coords.
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 
 		// Do the warping.
@@ -3362,7 +3362,7 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 			uint8_t alpha = (color >> 24) & 0xFF;
 			pixels[i * 4 + 0] = ((color >> 16) & 0xFF) * alpha / 255;
 			pixels[i * 4 + 1] = ((color >> 8) & 0xFF) * alpha / 255;
-			pixels[i * 4 + 2] = ((color)&0xFF) * alpha / 255;
+			pixels[i * 4 + 2] = ((color) & 0xFF) * alpha / 255;
 			pixels[i * 4 + 3] = alpha;
 		}
 

@@ -60,7 +60,7 @@ public:
 
 	virtual RID shader_allocate() override { return RID(); }
 	virtual void shader_initialize(RID p_rid) override {}
-	virtual void shader_free(RID p_rid) override{};
+	virtual void shader_free(RID p_rid) override {};
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) override {}
 	virtual void shader_set_path_hint(RID p_shader, const String &p_code) override {}
@@ -77,7 +77,7 @@ public:
 	/* MATERIAL API */
 	virtual RID material_allocate() override { return RID(); }
 	virtual void material_initialize(RID p_rid) override {}
-	virtual void material_free(RID p_rid) override{};
+	virtual void material_free(RID p_rid) override {};
 
 	virtual void material_set_render_priority(RID p_material, int priority) override {}
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) override {}

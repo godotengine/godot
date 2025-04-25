@@ -1566,7 +1566,7 @@ struct SignatureHelp {
 	/**
 	 * The active signature. If omitted or the value lies outside the
 	 * range of `signatures` the value defaults to zero or is ignored if
-	 * `signatures.length === 0`. Whenever possible implementors should
+	 * `signatures.length === 0`. Whenever possible implementers should
 	 * make an active decision about the active signature and shouldn't
 	 * rely on a default value.
 	 * In future version of the protocol this property might become
