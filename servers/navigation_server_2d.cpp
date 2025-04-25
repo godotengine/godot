@@ -102,6 +102,7 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_bounds", "region"), &NavigationServer2D::region_get_bounds);
 
 	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer2D::link_create);
+	ClassDB::bind_method(D_METHOD("link_get_iteration_id", "link"), &NavigationServer2D::link_get_iteration_id);
 	ClassDB::bind_method(D_METHOD("link_set_map", "link", "map"), &NavigationServer2D::link_set_map);
 	ClassDB::bind_method(D_METHOD("link_get_map", "link"), &NavigationServer2D::link_get_map);
 	ClassDB::bind_method(D_METHOD("link_set_enabled", "link", "enabled"), &NavigationServer2D::link_set_enabled);
