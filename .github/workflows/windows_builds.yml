@@ -7,6 +7,7 @@ on:
 env:
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes strict_checks=yes "angle_libs=${{ github.workspace }}/" "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.15.1/"
   SCONS_CACHE_MSVC_CONFIG: true
+  PYTHONIOENCODING: utf8
 
 jobs:
   build-windows:
