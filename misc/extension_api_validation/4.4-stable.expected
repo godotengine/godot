@@ -82,3 +82,10 @@ Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shap
 Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_draw_outline/arguments': size changed value in new API, from 7 to 8.
 
 Optional "oversmpling" argument added. Compatibility methods registered.
+
+
+GH-105795
+=========
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_table/arguments': size changed value in new API, from 3 to 6.
+
+Optional arguments added. Compatibility method registered.
