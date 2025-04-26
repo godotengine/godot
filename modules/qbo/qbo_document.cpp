@@ -92,7 +92,8 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 			current_animation.instantiate();
 			current_animation->set_name("animation");
 			frames_parsed = 0;
-			print_verbose(vformat("Motion: Frame Count = %d, Frame Time = %f", frame_count, frame_time));
+			print_verbose(vformat("Motion: Frame Count = %d, Frame Time = %f",
+					frame_count, frame_time));
 		} else if (in_hierarchy) {
 			if (l.begins_with("End Site")) {
 				int brace_count = 0;
@@ -368,22 +369,26 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 
 			for (GLTFNodeIndex node_idx = 0; node_idx < p_state->nodes.size(); node_idx++) {
 				if (data_idx + 7 > frame.size()) {
+					WARN_PRINT(vformat("Frame %d: Not enough data for node %d (expected 7 values, got %d remaining).",
+							frame_idx, node_idx, frame.size() - data_idx));
+					data_idx = frame.size();
 					break;
 				}
 
-				float pos_x = frame[data_idx++].to_float();
-				float pos_y = frame[data_idx++].to_float();
-				float pos_z = frame[data_idx++].to_float();
-				Vector3 position(pos_x, pos_y, pos_z);
+				double pos_x = frame[data_idx++].to_float();
+				double pos_y = frame[data_idx++].to_float();
+				double pos_z = frame[data_idx++].to_float();
+				Vector3 position = Vector3(pos_x, pos_y, pos_z);
 
-				float rot_x = frame[data_idx++].to_float();
-				float rot_y = frame[data_idx++].to_float();
-				float rot_z = frame[data_idx++].to_float();
-				float rot_w = frame[data_idx++].to_float();
-				Quaternion rotation(rot_x, rot_y, rot_z, rot_w);
+				double rot_x_file = frame[data_idx++].to_float();
+				double rot_y_file = frame[data_idx++].to_float();
+				double rot_z_file = frame[data_idx++].to_float();
+				double rot_w_file = frame[data_idx++].to_float();
+				Quaternion rotation = Quaternion(rot_x_file, rot_y_file, rot_z_file, rot_w_file);
 
 				double time = frame_idx * frame_time;
 				GLTFAnimation::NodeTrack &track = current_animation->get_node_tracks()[node_idx];
+
 				track.position_track.times.push_back(time);
 				track.position_track.values.push_back(position);
 				track.rotation_track.times.push_back(time);
@@ -391,9 +396,6 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 			}
 		}
 		p_state->animations.push_back(current_animation);
-		print_verbose(vformat("Added animation '%s' with %d tracks",
-				current_animation->get_name(),
-				current_animation->get_node_tracks().size()));
 	}
 
 	print_verbose("\n--- Skin/Joint Validation ---");
