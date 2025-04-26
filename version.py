@@ -1,9 +1,9 @@
-short_name = "godot"
-name = "Godot Engine"
-major = 4
-minor = 5
+short_name = "FT engine"
+name = "FT Engine"
+major = 1
+minor = 0
 patch = 0
 status = "dev"
 module_config = ""
-website = "https://godotengine.org"
+website = ""
 docs = "latest"
