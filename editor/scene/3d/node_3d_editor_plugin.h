@@ -87,6 +87,7 @@ class ViewportRotationControl : public Control {
 	Vector<int> axis_menu_options;
 	Vector2i orbiting_mouse_start;
 	Point2 original_mouse_pos;
+	View3DController::Cursor saved_cursor;
 	int orbiting_index = -1;
 	int focused_axis = -2;
 	bool gizmo_activated = false;
@@ -365,8 +366,6 @@ private:
 
 	void _freelook_changed();
 	void _freelook_speed_scaled();
-
-	View3DController::Cursor previous_cursor; // Storing previous cursor state for canceling purposes.
 
 	real_t zoom_indicator_delay;
 	int zoom_failed_attempts_count = 0;
