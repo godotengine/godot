@@ -109,6 +109,22 @@
 	self.layer.needsDisplayOnBoundsChange = YES;
 }
 
+- (void)addObserver:(NSObject *)targetObserver forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(void *)context {
+	[registered_observers addObject:[[targetObserver description] stringByAppendingString:keyPath]];
+	[super addObserver:targetObserver forKeyPath:keyPath options:options context:context];
+}
+
+- (void)removeObserver:(NSObject *)targetObserver forKeyPath:(NSString *)keyPath {
+	if ([registered_observers containsObject:[[targetObserver description] stringByAppendingString:keyPath]]) {
+		@try {
+			[super removeObserver:targetObserver forKeyPath:keyPath];
+			[registered_observers removeObject:[[targetObserver description] stringByAppendingString:keyPath]];
+		} @catch (NSException *exception) {
+			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
+		}
+	}
+}
+
 - (id)init {
 	self = [super init];
 	layer_delegate = [[GodotContentLayerDelegate alloc] init];
@@ -118,6 +134,7 @@
 	mouse_down_control = false;
 	ignore_momentum_scroll = false;
 	last_pen_inverted = false;
+	registered_observers = [[NSMutableSet alloc] init];
 	[self updateTrackingAreas];
 
 	self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
