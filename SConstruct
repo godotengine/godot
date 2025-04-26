@@ -877,7 +877,7 @@ if env.msvc and not methods.using_clang(env):  # MSVC
         env.AppendUnique(LINKFLAGS=["/WX"])
 
 else:  # GCC, Clang
-    common_warnings = []
+    common_warnings = ["-Wenum-conversion"]
 
     if methods.using_gcc(env):
         common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]

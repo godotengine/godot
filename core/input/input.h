@@ -78,9 +78,7 @@ public:
 		CURSOR_MAX
 	};
 
-	enum {
-		JOYPADS_MAX = 16,
-	};
+	static constexpr int32_t JOYPADS_MAX = 16;
 
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
 
