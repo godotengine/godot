@@ -510,7 +510,7 @@
 			If the [code]--log-file &lt;file&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] is used, log rotation is always disabled.
 		</member>
 		<member name="debug/gdscript/warnings/access_private_member" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a class member is accessed from external places, such as accessing a private member from other classes that are not derived from the class where the member is defined.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a script's private member (property, method, or signal) is accessed from an external script that does not inherit the original script. A member is considered private when its name begins with an underscore ([code]_[/code]).
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]false[/code].
@@ -519,7 +519,7 @@
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]true[/code].
 		</member>
 		<member name="debug/gdscript/warnings/call_private_method" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a class method is called from external places, such as calling a private method from other classes that are not derived from the class where the method is defined.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a script's private method is called from an external script that does not inherit the original script. A method is considered private when its name begins with an underscore ([code]_[/code]).
 		</member>
 		<member name="debug/gdscript/warnings/confusable_capture_reassignment" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable captured by a lambda is reassigned, since this does not modify the outer local variable.
