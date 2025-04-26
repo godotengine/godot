@@ -266,7 +266,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 #endif
 
 	if (channel_count != get_channel_count()) {
-		// Amount of channels changed due to a output_device change
+		// Amount of channels changed due to a output_device change, or override_channels/speaker_mode change
 		// reinitialize the buses channels and buffers
 		init_channels_and_buffers();
 	}
@@ -284,8 +284,9 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 		int from = buffer_size - to_mix;
 		int from_buf = p_frames - todo;
 
-		//master master, send to output
-		int cs = master->channels.size();
+		// Channels size from driver and channels used by master
+		int cs = get_driver_channel_count();
+		int mcs = master->channels.size();
 
 		// Take away 1 from the stride, as we are manually incrementing by 1 for stereo.
 		uintptr_t stride_minus_one = (cs * 2) - 1;
@@ -294,12 +295,14 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 			// The destination start for data will be the same in all cases.
 			int32_t *dest = &p_buffer[from_buf * (cs * 2) + (k * 2)];
 
+			int rk = override_channels ? override_remap_channel[k] : k;
+
 #ifdef DEBUG_ENABLED
-			if (!debug_mute && master->channels[k].active) {
+			if (!debug_mute && rk < mcs && master->channels[rk].active) {
 #else
-			if (master->channels[k].active) {
+			if (rk < mcs && master->channels[rk].active) {
 #endif // DEBUG_ENABLED
-				const AudioFrame *buf = master->channels[k].buffer.ptr();
+				const AudioFrame *buf = master->channels[rk].buffer.ptr();
 
 				for (int j = 0; j < to_copy; j++) {
 					float l = CLAMP(buf[from + j].left, -1.0, 1.0);
@@ -1487,6 +1490,54 @@ String AudioServer::get_driver_name() const {
 	return AudioDriver::get_singleton()->get_name();
 }
 
+AudioServer::SpeakerMode AudioServer::get_driver_speaker_mode() const {
+	return (AudioServer::SpeakerMode)AudioDriver::get_singleton()->get_speaker_mode();
+}
+
+int AudioServer::get_driver_channel_count() const {
+	switch (get_driver_speaker_mode()) {
+		case SPEAKER_MODE_STEREO:
+			return 1;
+		case SPEAKER_SURROUND_31:
+			return 2;
+		case SPEAKER_SURROUND_51:
+			return 3;
+		case SPEAKER_SURROUND_71:
+			return 4;
+	}
+	ERR_FAIL_V(1);
+}
+
+void AudioServer::_project_settings_changed() {
+	override_channels = GLOBAL_GET("audio/buses/channel_override/override_channels");
+	override_speaker_mode = (SpeakerMode) int(GLOBAL_GET("audio/buses/channel_override/speaker_mode"));
+
+	_get_configured_channel_remap();
+}
+
+void AudioServer::_get_configured_channel_remap() {
+	bool remap_changed = false;
+	for (int i = 0; i < MAX_CHANNELS_PER_BUS; i++) {
+		const String channel_key = vformat("audio/buses/channel_override/remap_channel_%d", i);
+		int channel = int(GLOBAL_GET(channel_key));
+		if (channel < 0 || channel > MAX_CHANNELS_PER_BUS) {
+			if (override_channels) {
+				WARN_PRINT(vformat("Invalid %s set to source channel %d. Muting channel.",
+						channel_key, channel));
+			}
+			// Source channels outside valid range will get muted.
+			remap_changed = remap_changed || override_remap_channel[i] != MAX_CHANNELS_PER_BUS;
+			override_remap_channel[i] = MAX_CHANNELS_PER_BUS;
+		} else {
+			remap_changed = remap_changed || override_remap_channel[i] != channel;
+			override_remap_channel[i] = channel;
+		}
+	}
+	if (remap_changed && override_channels) {
+		print_verbose(vformat("AudioServer: override channel remap: [%d, %d, %d, %d]", override_remap_channel[0], override_remap_channel[1], override_remap_channel[2], override_remap_channel[3]))
+	}
+}
+
 void AudioServer::notify_listener_changed() {
 	for (CallbackItem *ci : listener_changed_callback_list) {
 		ci->callback(ci->userdata);
@@ -1495,6 +1546,13 @@ void AudioServer::notify_listener_changed() {
 
 void AudioServer::init_channels_and_buffers() {
 	channel_count = get_channel_count();
+
+	if (override_channels) {
+		print_verbose(vformat("AudioServer: initializing %d override stereo channel(s), detected %d device stereo channel(s)", channel_count, get_driver_channel_count()));
+	} else {
+		print_verbose(vformat("AudioServer: initializing %d stereo channel(s)", channel_count));
+	}
+
 	temp_buffer.resize(channel_count);
 	mix_buffer.resize(buffer_size + LOOKAHEAD_BUFFER_SIZE);
 
@@ -1514,6 +1572,16 @@ void AudioServer::init_channels_and_buffers() {
 void AudioServer::init() {
 	channel_disable_threshold_db = GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_threshold_db", PROPERTY_HINT_RANGE, "-80,0,0.1,suffix:dB"), -60.0);
 	channel_disable_frames = float(GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 2.0)) * get_mix_rate();
+
+	override_channels = GLOBAL_DEF("audio/buses/channel_override/override_channels", false);
+	override_speaker_mode = (SpeakerMode) int(GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/buses/channel_override/speaker_mode", PROPERTY_HINT_ENUM, "Stereo,Surround 3.1,Surround 5.1,Surround 7.1"), SpeakerMode::SPEAKER_MODE_STEREO));
+
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/buses/channel_override/remap_channel_0", PROPERTY_HINT_ENUM, "Front Left/Right,Center/LFE,Rear Left/Right,Side Left/Right,Muted"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/buses/channel_override/remap_channel_1", PROPERTY_HINT_ENUM, "Front Left/Right,Center/LFE,Rear Left/Right,Side Left/Right,Muted"), 1);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/buses/channel_override/remap_channel_2", PROPERTY_HINT_ENUM, "Front Left/Right,Center/LFE,Rear Left/Right,Side Left/Right,Muted"), 2);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/buses/channel_override/remap_channel_3", PROPERTY_HINT_ENUM, "Front Left/Right,Center/LFE,Rear Left/Right,Side Left/Right,Muted"), 3);
+	_get_configured_channel_remap();
+
 	// TODO: Buffer size is hardcoded for now. This would be really nice to have as a project setting because currently it limits audio latency to an absolute minimum of 11ms with default mix rate, but there's some additional work required to make that happen. See TODOs in `_mix_step_for_channel`.
 	// When this becomes a project setting, it should be specified in milliseconds rather than raw sample count, because 512 samples at 192khz is shorter than it is at 48khz, for example.
 	buffer_size = 512;
@@ -1534,6 +1602,8 @@ void AudioServer::init() {
 #endif
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/video/video_delay_compensation_ms", PROPERTY_HINT_RANGE, "-1000,1000,1,suffix:ms"), 0);
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &AudioServer::_project_settings_changed));
 }
 
 void AudioServer::update() {
@@ -1656,7 +1726,10 @@ void AudioServer::unlock() {
 }
 
 AudioServer::SpeakerMode AudioServer::get_speaker_mode() const {
-	return (AudioServer::SpeakerMode)AudioDriver::get_singleton()->get_speaker_mode();
+	if (override_channels) {
+		return override_speaker_mode;
+	}
+	return get_driver_speaker_mode();
 }
 
 float AudioServer::get_mix_rate() const {
