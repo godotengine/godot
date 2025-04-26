@@ -1234,8 +1234,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			for (const Node *node : selection) {
 				String class_name;
 				Ref<Script> script_base = node->get_script();
-				if (script_base.is_valid()) {
+				while (script_base.is_valid()) {
 					class_name = script_base->get_global_name();
+					if (!class_name.is_empty()) {
+						break;
+					}
+					script_base = script_base->get_base_script();
 				}
 				if (class_name.is_empty()) {
 					class_name = node->get_class();
