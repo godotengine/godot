@@ -305,8 +305,8 @@ private:
 		uint64_t last_pass = 0;
 		real_t activity = 0.0;
 	};
-	mutable HashMap<StringName, LocalVector<Activity>> input_activity_map;
-	mutable HashMap<StringName, LocalVector<Activity> *> input_activity_map_get;
+	mutable AHashMap<StringName, LocalVector<Activity>> input_activity_map;
+	mutable AHashMap<StringName, int> input_activity_map_get;
 
 	NodePath animation_player;
 
