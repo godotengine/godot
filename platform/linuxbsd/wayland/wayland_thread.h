@@ -104,7 +104,7 @@ public:
 
 	// Message data for window rect changes.
 	class WindowRectMessage : public WindowMessage {
-		GDSOFTCLASS(WindowRectMessage, Message);
+		GDSOFTCLASS(WindowRectMessage, WindowMessage);
 
 	public:
 		// NOTE: This is in "scaled" terms. For example, if there's a 1920x1080 rect
@@ -113,7 +113,7 @@ public:
 	};
 
 	class WindowEventMessage : public WindowMessage {
-		GDSOFTCLASS(WindowEventMessage, Message);
+		GDSOFTCLASS(WindowEventMessage, WindowMessage);
 
 	public:
 		DisplayServer::WindowEvent event;
@@ -127,14 +127,14 @@ public:
 	};
 
 	class DropFilesEventMessage : public WindowMessage {
-		GDSOFTCLASS(DropFilesEventMessage, Message);
+		GDSOFTCLASS(DropFilesEventMessage, WindowMessage);
 
 	public:
 		Vector<String> files;
 	};
 
 	class IMEUpdateEventMessage : public WindowMessage {
-		GDSOFTCLASS(IMEUpdateEventMessage, Message);
+		GDSOFTCLASS(IMEUpdateEventMessage, WindowMessage);
 
 	public:
 		String text;
@@ -142,7 +142,7 @@ public:
 	};
 
 	class IMECommitEventMessage : public WindowMessage {
-		GDSOFTCLASS(IMECommitEventMessage, Message);
+		GDSOFTCLASS(IMECommitEventMessage, WindowMessage);
 
 	public:
 		String text;
@@ -216,6 +216,10 @@ public:
 
 		struct zwp_text_input_manager_v3 *wp_text_input_manager = nullptr;
 		uint32_t wp_text_input_manager_name = 0;
+
+		// We're really not meant to use this one directly but we still need to know
+		// whether it's available.
+		uint32_t wp_fifo_manager_name = 0;
 	};
 
 	// General Wayland-specific states. Shouldn't be accessed directly.
@@ -341,7 +345,7 @@ public:
 		Vector2 relative_motion;
 		uint32_t relative_motion_time = 0;
 
-		BitField<MouseButtonMask> pressed_button_mask;
+		BitField<MouseButtonMask> pressed_button_mask = MouseButtonMask::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;
@@ -371,7 +375,7 @@ public:
 		Vector2 tilt;
 		uint32_t pressure = 0;
 
-		BitField<MouseButtonMask> pressed_button_mask;
+		BitField<MouseButtonMask> pressed_button_mask = MouseButtonMask::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;
@@ -1068,6 +1072,7 @@ public:
 	void set_frame();
 	bool get_reset_frame();
 	bool wait_frame_suspend_ms(int p_timeout);
+	bool is_fifo_available() const;
 
 	uint64_t window_get_last_frame_time(DisplayServer::WindowID p_window_id) const;
 	bool window_is_suspended(DisplayServer::WindowID p_window_id) const;

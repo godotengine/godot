@@ -264,7 +264,7 @@
 			The source of hand tracking is a controller, bone positions are inferred from controller inputs.
 		</constant>
 		<constant name="HAND_TRACKED_SOURCE_MAX" value="3" enum="HandTrackedSource">
-			Maximum value for the hand tracked source enum.
+			Represents the size of the [enum HandTrackedSource] enum.
 		</constant>
 		<constant name="HAND_JOINT_PALM" value="0" enum="HandJoints">
 			Palm joint.
@@ -285,67 +285,67 @@
 			Thumb tip joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_METACARPAL" value="6" enum="HandJoints">
-			Index metacarpal joint.
+			Index finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_PROXIMAL" value="7" enum="HandJoints">
-			Index proximal joint.
+			Index finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_INTERMEDIATE" value="8" enum="HandJoints">
-			Index intermediate joint.
+			Index finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_DISTAL" value="9" enum="HandJoints">
-			Index distal joint.
+			Index finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_TIP" value="10" enum="HandJoints">
-			Index tip joint.
+			Index finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_METACARPAL" value="11" enum="HandJoints">
-			Middle metacarpal joint.
+			Middle finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_PROXIMAL" value="12" enum="HandJoints">
-			Middle proximal joint.
+			Middle finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_INTERMEDIATE" value="13" enum="HandJoints">
-			Middle intermediate joint.
+			Middle finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_DISTAL" value="14" enum="HandJoints">
-			Middle distal joint.
+			Middle finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_TIP" value="15" enum="HandJoints">
-			Middle tip joint.
+			Middle finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_METACARPAL" value="16" enum="HandJoints">
-			Ring metacarpal joint.
+			Ring finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_PROXIMAL" value="17" enum="HandJoints">
-			Ring proximal joint.
+			Ring finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_INTERMEDIATE" value="18" enum="HandJoints">
-			Ring intermediate joint.
+			Ring finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_DISTAL" value="19" enum="HandJoints">
-			Ring distal joint.
+			Ring finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_TIP" value="20" enum="HandJoints">
-			Ring tip joint.
+			Ring finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_METACARPAL" value="21" enum="HandJoints">
-			Little metacarpal joint.
+			Pinky finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_PROXIMAL" value="22" enum="HandJoints">
-			Little proximal joint.
+			Pinky finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_INTERMEDIATE" value="23" enum="HandJoints">
-			Little intermediate joint.
+			Pinky finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_DISTAL" value="24" enum="HandJoints">
-			Little distal joint.
+			Pinky finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_TIP" value="25" enum="HandJoints">
-			Little tip joint.
+			Pinky finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_MAX" value="26" enum="HandJoints">
-			Maximum value for the hand joint enum.
+			Represents the size of the [enum HandJoints] enum.
 		</constant>
 		<constant name="PERF_SETTINGS_LEVEL_POWER_SAVINGS" value="0" enum="PerfSettingsLevel">
 			The application has entered a non-XR section (head-locked / static screen), during which power savings are to be prioritized.

@@ -64,7 +64,7 @@
 #undef CursorShape
 
 class DisplayServerMacOS : public DisplayServer {
-	GDCLASS(DisplayServerMacOS, DisplayServer); // Note: required for Object::cast_to.
+	GDSOFTCLASS(DisplayServerMacOS, DisplayServer);
 
 	_THREAD_SAFE_CLASS_
 
@@ -123,6 +123,8 @@ public:
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
+		bool no_min_btn = false;
+		bool no_max_btn = false;
 		bool no_focus = false;
 		bool is_popup = false;
 		bool mpass = false;
@@ -424,6 +426,11 @@ public:
 
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual int accessibility_should_increase_contrast() const override;
+	virtual int accessibility_should_reduce_animation() const override;
+	virtual int accessibility_should_reduce_transparency() const override;
+	virtual int accessibility_screen_reader_active() const override;
 
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;

@@ -398,7 +398,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 	AndroidInputHandler::JoypadEvent jevent;
 	jevent.device = p_device;
 	jevent.type = AndroidInputHandler::JOY_EVENT_HAT;
-	BitField<HatMask> hat;
+	BitField<HatMask> hat = HatMask::CENTER;
 	if (p_hat_x != 0) {
 		if (p_hat_x < 0) {
 			hat.set_flag(HatMask::LEFT);
@@ -545,6 +545,13 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onNightModeChanged(JN
 	DisplayServerAndroid *ds = (DisplayServerAndroid *)DisplayServer::get_singleton();
 	if (ds) {
 		ds->emit_system_theme_changed();
+	}
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hardwareKeyboardConnected(JNIEnv *env, jclass clazz, jboolean p_connected) {
+	DisplayServerAndroid *ds = (DisplayServerAndroid *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->emit_hardware_keyboard_connection_changed(p_connected);
 	}
 }
 

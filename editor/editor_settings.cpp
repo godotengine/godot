@@ -473,7 +473,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		if (String(GODOT_VERSION_STATUS) == String("stable")) {
 			default_update_mode = EngineUpdateLabel::UpdateMode::NEWEST_STABLE;
 		}
-		EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/engine_version_update_mode", int(default_update_mode), "Disable Update Checks,Check Newest Preview,Check Newest Stable,Check Newest Patch"); // Uses EngineUpdateLabel::UpdateMode.
+		EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/check_for_updates", int(default_update_mode), "Disable Update Checks,Check Newest Preview,Check Newest Stable,Check Newest Patch"); // Uses EngineUpdateLabel::UpdateMode.
 	}
 
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
@@ -591,6 +591,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/increase_scrollbar_touch_area", is_native_touchscreen, "")
 	set_restart_if_changed("interface/touchscreen/increase_scrollbar_touch_area", true);
 
+	// Only available in the Android editor.
+	String touch_actions_panel_hints = "Disabled:0,Embedded Panel:1,Floating Panel:2";
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/touchscreen/touch_actions_panel", 1, touch_actions_panel_hints)
+
 	// Scene tabs
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/scene_tabs/display_close_button", 1, "Never,If Tab Active,Always"); // TabBar::CloseButtonDisplayPolicy
 	_initial_set("interface/scene_tabs/show_thumbnail_on_hover", true);
@@ -657,6 +661,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/scene_tree/auto_expand_to_selected", true);
 	_initial_set("docks/scene_tree/center_node_on_reparent", false);
 	_initial_set("docks/scene_tree/hide_filtered_out_parents", true);
+	_initial_set("docks/scene_tree/accessibility_warnings", false);
 
 	// FileSystem
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "docks/filesystem/thumbnail_size", 64, "32,128,16")

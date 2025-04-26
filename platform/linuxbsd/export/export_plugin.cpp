@@ -72,11 +72,16 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 		}
 	}
 
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (da->file_exists(template_path.get_base_dir().path_join("libaccesskit." + arch + ".so"))) {
+		da->copy(template_path.get_base_dir().path_join("libaccesskit." + arch + ".so"), p_path.get_base_dir().path_join("libaccesskit." + arch + ".so"), get_chmod_flags());
+	}
+
 	bool export_as_zip = p_path.ends_with("zip");
 
 	String pkg_name;
-	if (String(GLOBAL_GET("application/config/name")) != "") {
-		pkg_name = String(GLOBAL_GET("application/config/name"));
+	if (String(get_project_setting(p_preset, "application/config/name")) != "") {
+		pkg_name = String(get_project_setting(p_preset, "application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
 	}

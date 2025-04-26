@@ -414,10 +414,10 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Dictionary dictionary = p_var;
 			Array arr;
 
-			for (int i = 0; i < dictionary.size(); i++) {
+			for (const KeyValue<Variant, Variant> &kv : dictionary) {
 				DAP::Variable var;
-				var.name = dictionary.get_key_at_index(i);
-				Variant value = dictionary.get_value_at_index(i);
+				var.name = kv.key;
+				Variant value = kv.value;
 				var.type = Variant::get_type_name(value.get_type());
 				var.value = value;
 				var.variablesReference = parse_variant(value);
@@ -1163,12 +1163,14 @@ void DebugAdapterProtocol::on_debug_data(const String &p_msg, const Array &p_dat
 		return;
 	}
 
-	if (p_msg == "scene:inspect_object") {
-		// An object was requested from the debuggee; parse it.
-		SceneDebuggerObject remote_obj;
-		remote_obj.deserialize(p_data);
+	if (p_msg == "scene:inspect_objects") {
+		if (!p_data.is_empty()) {
+			// An object was requested from the debuggee; parse it.
+			SceneDebuggerObject remote_obj;
+			remote_obj.deserialize(p_data[0]);
 
-		parse_object(remote_obj);
+			parse_object(remote_obj);
+		}
 	} else if (p_msg == "evaluation_return") {
 		// An evaluation was requested from the debuggee; parse it.
 		DebuggerMarshalls::ScriptStackVariable remote_evaluation;

@@ -60,6 +60,10 @@
 #define DEBUG_LOG_WAYLAND_THREAD(...)
 #endif
 
+// Since we're never going to use this interface directly, it's not worth
+// generating the whole deal.
+#define FIFO_INTERFACE_NAME "wp_fifo_manager_v1"
+
 // Read the content pointed by fd into a Vector<uint8_t>.
 Vector<uint8_t> WaylandThread::_read_fd(int fd) {
 	// This is pretty much an arbitrary size.
@@ -640,6 +644,10 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 
 		return;
 	}
+
+	if (strcmp(interface, FIFO_INTERFACE_NAME) == 0) {
+		registry->wp_fifo_manager_name = name;
+	}
 }
 
 void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
@@ -1027,6 +1035,10 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 			it = it->next();
 		}
+	}
+
+	if (name == registry->wp_fifo_manager_name) {
+		registry->wp_fifo_manager_name = 0;
 	}
 }
 
@@ -1779,7 +1791,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 	}
 
 	if (old_pd.pressed_button_mask != pd.pressed_button_mask) {
-		BitField<MouseButtonMask> pressed_mask_delta = old_pd.pressed_button_mask ^ pd.pressed_button_mask;
+		BitField<MouseButtonMask> pressed_mask_delta = old_pd.pressed_button_mask.get_different(pd.pressed_button_mask);
 
 		const MouseButton buttons_to_test[] = {
 			MouseButton::LEFT,
@@ -2147,7 +2159,7 @@ void WaylandThread::_wl_data_device_on_drop(void *data, struct wl_data_device *w
 
 		msg->files = String::utf8((const char *)list_data.ptr(), list_data.size()).split("\r\n", false);
 		for (int i = 0; i < msg->files.size(); i++) {
-			msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode();
+			msg->files.write[i] = msg->files[i].replace("file://", "").uri_file_decode();
 		}
 
 		wayland_thread->push_message(msg);
@@ -2746,7 +2758,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 	if (old_td.pressed_button_mask != td.pressed_button_mask) {
 		td.button_time = time;
 
-		BitField<MouseButtonMask> pressed_mask_delta = BitField<MouseButtonMask>((int64_t)old_td.pressed_button_mask ^ (int64_t)td.pressed_button_mask);
+		BitField<MouseButtonMask> pressed_mask_delta = old_td.pressed_button_mask.get_different(td.pressed_button_mask);
 
 		for (MouseButton test_button : { MouseButton::LEFT, MouseButton::RIGHT }) {
 			MouseButtonMask test_button_mask = mouse_button_to_mask(test_button);
@@ -4275,6 +4287,10 @@ Error WaylandThread::init() {
 	}
 #endif // DBUS_ENABLED
 
+	if (!registry.wp_fifo_manager_name) {
+		WARN_PRINT("FIFO protocol not found! Frame pacing will be degraded.");
+	}
+
 	// Wait for seat capabilities.
 	wl_display_roundtrip(wl_display);
 
@@ -4775,6 +4791,10 @@ uint64_t WaylandThread::window_get_last_frame_time(DisplayServer::WindowID p_win
 bool WaylandThread::window_is_suspended(DisplayServer::WindowID p_window_id) const {
 	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
 	return windows[p_window_id].suspended;
+}
+
+bool WaylandThread::is_fifo_available() const {
+	return registry.wp_fifo_manager_name != 0;
 }
 
 bool WaylandThread::is_suspended() const {

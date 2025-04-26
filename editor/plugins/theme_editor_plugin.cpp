@@ -1957,6 +1957,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	edit_items_add_color = memnew(Button);
 	edit_items_add_color->set_tooltip_text(TTR("Add Color Item"));
+	edit_items_add_color->set_accessibility_name(TTRC("Add Color Item"));
 	edit_items_add_color->set_flat(true);
 	edit_items_add_color->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_color);
@@ -1964,6 +1965,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	edit_items_add_constant = memnew(Button);
 	edit_items_add_constant->set_tooltip_text(TTR("Add Constant Item"));
+	edit_items_add_constant->set_accessibility_name(TTRC("Add Constant Item"));
 	edit_items_add_constant->set_flat(true);
 	edit_items_add_constant->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_constant);
@@ -1971,6 +1973,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	edit_items_add_font = memnew(Button);
 	edit_items_add_font->set_tooltip_text(TTR("Add Font Item"));
+	edit_items_add_font->set_accessibility_name(TTRC("Add Font Item"));
 	edit_items_add_font->set_flat(true);
 	edit_items_add_font->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_font);
@@ -1978,6 +1981,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	edit_items_add_font_size = memnew(Button);
 	edit_items_add_font_size->set_tooltip_text(TTR("Add Font Size Item"));
+	edit_items_add_font_size->set_accessibility_name(TTRC("Add Font Size Item"));
 	edit_items_add_font_size->set_flat(true);
 	edit_items_add_font_size->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_font_size);
@@ -1985,6 +1989,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	edit_items_add_icon = memnew(Button);
 	edit_items_add_icon->set_tooltip_text(TTR("Add Icon Item"));
+	edit_items_add_icon->set_accessibility_name(TTRC("Add Icon Item"));
 	edit_items_add_icon->set_flat(true);
 	edit_items_add_icon->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_icon);
@@ -1992,6 +1997,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	edit_items_add_stylebox = memnew(Button);
 	edit_items_add_stylebox->set_tooltip_text(TTR("Add StyleBox Item"));
+	edit_items_add_stylebox->set_accessibility_name(TTRC("Add StyleBox Item"));
 	edit_items_add_stylebox->set_flat(true);
 	edit_items_add_stylebox->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_stylebox);
@@ -2005,6 +2011,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	edit_items_remove_class = memnew(Button);
 	edit_items_remove_class->set_tooltip_text(TTR("Remove Class Items"));
+	edit_items_remove_class->set_accessibility_name(TTRC("Remove Class Items"));
 	edit_items_remove_class->set_flat(true);
 	edit_items_remove_class->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_class);
@@ -2012,6 +2019,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	edit_items_remove_custom = memnew(Button);
 	edit_items_remove_custom->set_tooltip_text(TTR("Remove Custom Items"));
+	edit_items_remove_custom->set_accessibility_name(TTRC("Remove Custom Items"));
 	edit_items_remove_custom->set_flat(true);
 	edit_items_remove_custom->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_custom);
@@ -2019,6 +2027,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	edit_items_remove_all = memnew(Button);
 	edit_items_remove_all->set_tooltip_text(TTR("Remove All Items"));
+	edit_items_remove_all->set_accessibility_name(TTRC("Remove All Items"));
 	edit_items_remove_all->set_flat(true);
 	edit_items_remove_all->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_all);
@@ -2473,6 +2482,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		Button *item_rename_button = memnew(Button);
 		item_rename_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 		item_rename_button->set_tooltip_text(TTR("Rename Item"));
+		item_rename_button->set_accessibility_name(TTRC("Rename Item"));
 		item_rename_button->set_flat(true);
 		item_name_container->add_child(item_rename_button);
 		item_rename_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_rename_cbk).bind(p_data_type, p_item_name, item_name_container));
@@ -2480,6 +2490,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		Button *item_remove_button = memnew(Button);
 		item_remove_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 		item_remove_button->set_tooltip_text(TTR("Remove Item"));
+		item_remove_button->set_accessibility_name(TTRC("Remove Item"));
 		item_remove_button->set_flat(true);
 		item_name_container->add_child(item_remove_button);
 		item_remove_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_remove_cbk).bind(p_data_type, p_item_name));
@@ -2487,6 +2498,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		Button *item_rename_confirm_button = memnew(Button);
 		item_rename_confirm_button->set_button_icon(get_editor_theme_icon(SNAME("ImportCheck")));
 		item_rename_confirm_button->set_tooltip_text(TTR("Confirm Item Rename"));
+		item_rename_confirm_button->set_accessibility_name(TTRC("Confirm Item Rename"));
 		item_rename_confirm_button->set_flat(true);
 		item_name_container->add_child(item_rename_confirm_button);
 		item_rename_confirm_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_rename_confirmed).bind(p_data_type, p_item_name, item_name_container));
@@ -2495,6 +2507,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		Button *item_rename_cancel_button = memnew(Button);
 		item_rename_cancel_button->set_button_icon(get_editor_theme_icon(SNAME("ImportFail")));
 		item_rename_cancel_button->set_tooltip_text(TTR("Cancel Item Rename"));
+		item_rename_cancel_button->set_accessibility_name(TTRC("Cancel Item Rename"));
 		item_rename_cancel_button->set_flat(true);
 		item_name_container->add_child(item_rename_cancel_button);
 		item_rename_cancel_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_rename_canceled).bind(p_data_type, p_item_name, item_name_container));
@@ -2505,6 +2518,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		Button *item_override_button = memnew(Button);
 		item_override_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		item_override_button->set_tooltip_text(TTR("Override Item"));
+		item_override_button->set_accessibility_name(TTRC("Override Item"));
 		item_override_button->set_flat(true);
 		item_name_container->add_child(item_override_button);
 		item_override_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_override_cbk).bind(p_data_type, p_item_name));
@@ -2714,6 +2728,7 @@ void ThemeTypeEditor::_update_type_items() {
 			pin_leader_button->set_pressed(true);
 			pin_leader_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 			pin_leader_button->set_tooltip_text(TTR("Unpin this StyleBox as a main style."));
+			pin_leader_button->set_accessibility_name(TTRC("Unpin StyleBox"));
 			item_control->add_child(pin_leader_button);
 			pin_leader_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_on_unpin_leader_button_pressed));
 
@@ -2757,6 +2772,7 @@ void ThemeTypeEditor::_update_type_items() {
 				pin_leader_button->set_toggle_mode(true);
 				pin_leader_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 				pin_leader_button->set_tooltip_text(TTR("Pin this StyleBox as a main style. Editing its properties will update the same properties in all other StyleBoxes of this type."));
+				pin_leader_button->set_accessibility_name(TTRC("Pin StyleBox as a Main Style"));
 				item_control->add_child(pin_leader_button);
 				pin_leader_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_on_pin_leader_button_pressed).bind(item_editor, E.key));
 			} else {
@@ -3443,11 +3459,13 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	theme_type_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	theme_type_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	theme_type_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	theme_type_list->set_accessibility_name(TTRC("Type"));
 	type_list_hb->add_child(theme_type_list);
 	theme_type_list->connect(SceneStringName(item_selected), callable_mp(this, &ThemeTypeEditor::_list_type_selected));
 
 	add_type_button = memnew(Button);
 	add_type_button->set_tooltip_text(TTR("Add a type from a list of available types or create a new one."));
+	add_type_button->set_accessibility_name(TTRC("Add Type"));
 	type_list_hb->add_child(add_type_button);
 	add_type_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_add_type_button_cbk));
 
@@ -3510,9 +3528,11 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_variation_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	type_variation_edit->connect(SceneStringName(text_changed), callable_mp(this, &ThemeTypeEditor::_type_variation_changed));
 	type_variation_edit->connect(SceneStringName(focus_exited), callable_mp(this, &ThemeTypeEditor::_update_type_items));
+	type_variation_edit->set_accessibility_name(TTRC("Base Type"));
 	type_variation_button = memnew(Button);
 	type_variation_hb->add_child(type_variation_button);
 	type_variation_button->set_tooltip_text(TTR("Select the variation base type from a list of available types."));
+	type_variation_button->set_accessibility_name(TTRC("Select Base Type"));
 	type_variation_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_add_type_variation_cbk));
 
 	type_variation_locked = memnew(Label);

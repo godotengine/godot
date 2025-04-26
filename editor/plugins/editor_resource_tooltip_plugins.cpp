@@ -30,6 +30,7 @@
 
 #include "editor_resource_tooltip_plugins.h"
 
+#include "editor/editor_file_system.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -60,6 +61,12 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 	vb->add_theme_constant_override("separation", -4 * EDSCALE);
 	{
 		Label *label = memnew(Label(p_resource_path.get_file()));
+		vb->add_child(label);
+	}
+
+	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_resource_path);
+	if (id != ResourceUID::INVALID_ID) {
+		Label *label = memnew(Label(ResourceUID::get_singleton()->id_to_text(id)));
 		vb->add_child(label);
 	}
 

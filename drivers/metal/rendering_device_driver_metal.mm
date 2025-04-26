@@ -2524,7 +2524,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 			su.writable = uniform.writable;
 			su.length = uniform.length;
 			su.binding = uniform.binding;
-			su.stages = uniform.stages;
+			su.stages = (ShaderStage)(uint8_t)uniform.stages;
 			uset.write[i] = su;
 
 			UniformInfo ui;
@@ -2590,7 +2590,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 		sc.type = c.type;
 		sc.constant_id = c.constant_id;
 		sc.int_value = c.int_value;
-		sc.stages = c.stages;
+		sc.stages = (ShaderStage)(uint8_t)c.stages;
 		r_shader_desc.specialization_constants.write[i] = sc;
 	}
 
@@ -3062,7 +3062,7 @@ void RenderingDeviceDriverMetal::command_bind_push_constants(CommandBufferID p_c
 
 String RenderingDeviceDriverMetal::_pipeline_get_cache_path() const {
 	String path = OS::get_singleton()->get_user_data_dir() + "/metal/pipelines";
-	path += "." + context_device.name.validate_filename().replace(" ", "_").to_lower();
+	path += "." + context_device.name.validate_filename().replace_char(' ', '_').to_lower();
 	if (Engine::get_singleton()->is_editor_hint()) {
 		path += ".editor";
 	}

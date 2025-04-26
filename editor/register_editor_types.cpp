@@ -65,6 +65,7 @@
 #include "editor/import/resource_importer_imagefont.h"
 #include "editor/import/resource_importer_layered_texture.h"
 #include "editor/import/resource_importer_shader_file.h"
+#include "editor/import/resource_importer_svg.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
@@ -197,6 +198,7 @@ void register_editor_types() {
 	GDREGISTER_CLASS(ResourceImporterDynamicFont);
 	GDREGISTER_CLASS(ResourceImporterImage);
 	GDREGISTER_CLASS(ResourceImporterImageFont);
+	GDREGISTER_CLASS(ResourceImporterSVG);
 	GDREGISTER_CLASS(ResourceImporterLayeredTexture);
 	GDREGISTER_CLASS(ResourceImporterOBJ);
 	GDREGISTER_CLASS(ResourceImporterScene);
@@ -279,8 +281,8 @@ void register_editor_types() {
 
 	GLOBAL_DEF("editor/naming/default_signal_callback_name", "_on_{node_name}_{signal_name}");
 	GLOBAL_DEF("editor/naming/default_signal_callback_to_self_name", "_on_{signal_name}");
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/scene_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case,kebab-case"), EditorNode::SCENE_NAME_CASING_SNAKE_CASE);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/script_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case,kebab-case"), ScriptLanguage::SCRIPT_NAME_CASING_AUTO);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/scene_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case,kebab-case,camelCase"), EditorNode::SCENE_NAME_CASING_SNAKE_CASE);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/script_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case,kebab-case,camelCase"), ScriptLanguage::SCRIPT_NAME_CASING_AUTO);
 
 	GLOBAL_DEF("editor/import/reimport_missing_imported_files", true);
 	GLOBAL_DEF("editor/import/use_multiple_threads", true);

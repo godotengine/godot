@@ -74,5 +74,7 @@
 		</constant>
 		<constant name="COMPRESSION_MODE_BPTC" value="5" enum="CompressionMode">
 		</constant>
+		<constant name="COMPRESSION_MODE_ASTC" value="6" enum="CompressionMode">
+		</constant>
 	</constants>
 </class>

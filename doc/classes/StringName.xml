@@ -350,12 +350,12 @@
 				[gdscript]
 				var text = "hello world"
 				var encoded = text.to_utf8_buffer().hex_encode() # outputs "68656c6c6f20776f726c64"
-				print(buf.hex_decode().get_string_from_utf8())
+				print(encoded.hex_decode().get_string_from_utf8())
 				[/gdscript]
 				[csharp]
 				var text = "hello world";
 				var encoded = text.ToUtf8Buffer().HexEncode(); // outputs "68656c6c6f20776f726c64"
-				GD.Print(buf.HexDecode().GetStringFromUtf8());
+				GD.Print(encoded.HexDecode().GetStringFromUtf8());
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -700,6 +700,22 @@
 				Replaces all occurrences of [param what] inside the string with the given [param forwhat].
 			</description>
 		</method>
+		<method name="replace_char" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="key" type="int" />
+			<param index="1" name="with" type="int" />
+			<description>
+				Replaces all occurrences of the Unicode character with code [param key] with the Unicode character with code [param with]. Faster version of [method replace] when the key is only one character long. To get a single character use [code]"X".unicode_at(0)[/code] (note that some strings, like compound letters and emoji, can be made up of multiple unicode codepoints, and will not work with this method, use [method length] to make sure).
+			</description>
+		</method>
+		<method name="replace_chars" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="keys" type="String" />
+			<param index="1" name="with" type="int" />
+			<description>
+				Replaces any occurrence of the characters in [param keys] with the Unicode character with code [param with]. See also [method replace_char].
+			</description>
+		</method>
 		<method name="replacen" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="what" type="String" />
@@ -932,6 +948,25 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="to_kebab_case" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to [code]kebab-case[/code].
+				[b]Note:[/b] Numbers followed by a [i]single[/i] letter are not separated in the conversion to keep some words (such as "2D") together.
+				[codeblocks]
+				[gdscript]
+				"Node2D".to_kebab_case()               # Returns "node-2d"
+				"2nd place".to_kebab_case()            # Returns "2-nd-place"
+				"Texture3DAssetFolder".to_kebab_case() # Returns "texture-3d-asset-folder"
+				[/gdscript]
+				[csharp]
+				"Node2D".ToKebabCase();               // Returns "node-2d"
+				"2nd place".ToKebabCase();            // Returns "2-nd-place"
+				"Texture3DAssetFolder".ToKebabCase(); // Returns "texture-3d-asset-folder"
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="to_lower" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -1038,6 +1073,7 @@
 				GD.Print(url.URIDecode()) // Prints "$DOCS_URL/?highlight=Godot Engine:docs"
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] This method decodes [code]+[/code] as space.
 			</description>
 		</method>
 		<method name="uri_encode" qualifiers="const">
@@ -1058,6 +1094,12 @@
 				GD.Print(url); // Prints "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="uri_file_decode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Decodes the file path from its URL-encoded format. Unlike [method uri_decode] this method leaves [code]+[/code] as is.
 			</description>
 		</method>
 		<method name="validate_filename" qualifiers="const">

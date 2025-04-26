@@ -85,6 +85,15 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 			_open_popup(selected_menu, true);
 		}
 		return;
+	} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
+		if (focused_menu == -1) {
+			focused_menu = 0;
+		}
+		selected_menu = focused_menu;
+		if (active_menu >= 0) {
+			get_menu_popup(active_menu)->hide();
+		}
+		_open_popup(selected_menu, true);
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -276,6 +285,12 @@ void MenuBar::unbind_global_menu() {
 
 void MenuBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_MENU_BAR);
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			if (get_menu_count() > 0) {
 				_refresh_menu_names();
@@ -950,6 +965,7 @@ String MenuBar::get_tooltip(const Point2 &p_pos) const {
 }
 
 MenuBar::MenuBar() {
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_process_shortcut_input(true);
 }
 

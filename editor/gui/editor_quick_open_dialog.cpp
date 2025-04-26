@@ -115,6 +115,7 @@ EditorQuickOpenDialog::EditorQuickOpenDialog() {
 		search_box = memnew(LineEdit);
 		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		search_box->set_placeholder(TTR("Search files..."));
+		search_box->set_accessibility_name(TTRC("Search"));
 		search_box->set_clear_button_enabled(true);
 		mc->add_child(search_box);
 	}
@@ -204,6 +205,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 			panel_container->add_child(no_results_container);
 
 			no_results_label = memnew(Label);
+			no_results_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 			no_results_label->add_theme_font_size_override(SceneStringName(font_size), 24 * EDSCALE);
 			no_results_container->add_child(no_results_label);
 			no_results_container->hide();
@@ -244,6 +246,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 	{
 		// Selected filepath
 		file_details_path = memnew(Label);
+		file_details_path->set_focus_mode(FOCUS_ACCESSIBILITY);
 		file_details_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		file_details_path->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
 		file_details_path->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
@@ -278,6 +281,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		bottom_bar->add_child(vsep);
 
 		display_mode_toggle = memnew(Button);
+		display_mode_toggle->set_accessibility_name(TTRC("Display Mode"));
 		style_button(display_mode_toggle);
 		display_mode_toggle->connect(SceneStringName(pressed), callable_mp(this, &QuickOpenResultContainer::_toggle_display_mode));
 		bottom_bar->add_child(display_mode_toggle);
@@ -604,7 +608,7 @@ void QuickOpenResultContainer::handle_search_box_input(const Ref<InputEvent> &p_
 			case Key::RIGHT: {
 				if (content_display_mode == QuickOpenDisplayMode::GRID) {
 					// Maybe strip off the shift modifier to allow non-selecting navigation by character?
-					if (key_event->get_modifiers_mask() == 0) {
+					if (key_event->get_modifiers_mask().is_empty()) {
 						move_selection = true;
 					}
 				}

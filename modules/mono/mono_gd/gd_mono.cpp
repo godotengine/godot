@@ -53,6 +53,12 @@
 #include <dlfcn.h>
 #endif
 
+#ifndef TOOLS_ENABLED
+#ifdef ANDROID_ENABLED
+#include "../thirdparty/mono_delegates.h"
+#endif
+#endif
+
 GDMono *GDMono::singleton = nullptr;
 
 namespace {
@@ -67,6 +73,14 @@ typedef int(CORECLR_DELEGATE_CALLTYPE *coreclr_initialize_fn)(const char *exePat
 
 coreclr_create_delegate_fn coreclr_create_delegate = nullptr;
 coreclr_initialize_fn coreclr_initialize = nullptr;
+
+#ifdef ANDROID_ENABLED
+mono_install_assembly_preload_hook_fn mono_install_assembly_preload_hook = nullptr;
+mono_assembly_name_get_name_fn mono_assembly_name_get_name = nullptr;
+mono_assembly_name_get_culture_fn mono_assembly_name_get_culture = nullptr;
+mono_image_open_from_data_with_name_fn mono_image_open_from_data_with_name = nullptr;
+mono_assembly_load_from_full_fn mono_assembly_load_from_full = nullptr;
+#endif
 #endif
 
 #ifdef _WIN32
@@ -276,6 +290,28 @@ bool load_coreclr(void *&r_coreclr_dll_handle) {
 	ERR_FAIL_COND_V(err != OK, false);
 	coreclr_create_delegate = (coreclr_create_delegate_fn)symbol;
 
+#ifdef ANDROID_ENABLED
+	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "mono_install_assembly_preload_hook", symbol);
+	ERR_FAIL_COND_V(err != OK, false);
+	mono_install_assembly_preload_hook = (mono_install_assembly_preload_hook_fn)symbol;
+
+	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "mono_assembly_name_get_name", symbol);
+	ERR_FAIL_COND_V(err != OK, false);
+	mono_assembly_name_get_name = (mono_assembly_name_get_name_fn)symbol;
+
+	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "mono_assembly_name_get_culture", symbol);
+	ERR_FAIL_COND_V(err != OK, false);
+	mono_assembly_name_get_culture = (mono_assembly_name_get_culture_fn)symbol;
+
+	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "mono_image_open_from_data_with_name", symbol);
+	ERR_FAIL_COND_V(err != OK, false);
+	mono_image_open_from_data_with_name = (mono_image_open_from_data_with_name_fn)symbol;
+
+	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "mono_assembly_load_from_full", symbol);
+	ERR_FAIL_COND_V(err != OK, false);
+	mono_assembly_load_from_full = (mono_assembly_load_from_full_fn)symbol;
+#endif
+
 	return (coreclr_initialize &&
 			coreclr_create_delegate);
 }
@@ -441,38 +477,76 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 #endif
 
 #ifndef TOOLS_ENABLED
-String make_tpa_list() {
-	String tpa_list;
+#ifdef ANDROID_ENABLED
+MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p_assemblies_path, void *p_user_data) {
+	constexpr bool ref_only = false;
 
-#if defined(WINDOWS_ENABLED)
-	String separator = ";";
-#else
-	String separator = ":";
-#endif
+	const char *name = mono_assembly_name_get_name(p_assembly_name);
+	const char *culture = mono_assembly_name_get_culture(p_assembly_name);
 
-	String assemblies_dir = GodotSharpDirs::get_api_assemblies_dir();
-	PackedStringArray files = DirAccess::get_files_at(assemblies_dir);
-	for (const String &file : files) {
-		tpa_list += assemblies_dir.path_join(file);
-		tpa_list += separator;
+	String assembly_name;
+	if (culture && strcmp(culture, "")) {
+		assembly_name += culture;
+		assembly_name += "/";
+	}
+	assembly_name += name;
+	if (!assembly_name.ends_with(".dll")) {
+		assembly_name += ".dll";
 	}
 
-	return tpa_list;
+	String path = GodotSharpDirs::get_api_assemblies_dir();
+	path = path.path_join(assembly_name);
+
+	print_verbose(".NET: Loading assembly '" + assembly_name + "' from '" + path + "'.");
+
+	if (!FileAccess::exists(path)) {
+		// We could not find the assembly, return null so another hook may find it.
+		return nullptr;
+	}
+
+	Vector<uint8_t> data = FileAccess::get_file_as_bytes(path);
+	ERR_FAIL_COND_V_MSG(data.is_empty(), nullptr, ".NET: Could not read assembly in '" + path + "'.");
+
+	MonoImageOpenStatus status = MONO_IMAGE_OK;
+
+	MonoImage *image = mono_image_open_from_data_with_name(
+			reinterpret_cast<char *>(data.ptrw()), data.size(),
+			/*need_copy*/ true,
+			&status,
+			ref_only,
+			assembly_name.utf8().get_data());
+
+	ERR_FAIL_COND_V_MSG(status != MONO_IMAGE_OK || image == nullptr, nullptr, ".NET: Failed to open assembly image.");
+
+	status = MONO_IMAGE_OK;
+
+	MonoAssembly *assembly = mono_assembly_load_from_full(
+			image, assembly_name.utf8().get_data(),
+			&status,
+			ref_only);
+
+	ERR_FAIL_COND_V_MSG(status != MONO_IMAGE_OK || assembly == nullptr, nullptr, ".NET: Failed to load assembly from image.");
+
+	return assembly;
 }
+#endif
 
 godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
 	String assembly_name = Path::get_csharp_project_name();
 
-	String tpa_list = make_tpa_list();
-	const char *prop_keys[] = { "TRUSTED_PLATFORM_ASSEMBLIES" };
-	const char *prop_values[] = { tpa_list.utf8().get_data() };
-	constexpr int nprops = std::size(prop_keys);
+#ifdef ANDROID_ENABLED
+	// Android requires installing a preload hook to load assemblies from inside the APK,
+	// other platforms can find the assemblies with the default lookup.
+	if (mono_install_assembly_preload_hook != nullptr) {
+		mono_install_assembly_preload_hook(&load_assembly_from_pck, nullptr);
+	}
+#endif
 
 	void *coreclr_handle = nullptr;
 	unsigned int domain_id = 0;
-	int rc = coreclr_initialize(nullptr, nullptr, nprops, (const char **)&prop_keys, (const char **)&prop_values, &coreclr_handle, &domain_id);
+	int rc = coreclr_initialize(nullptr, nullptr, 0, nullptr, nullptr, &coreclr_handle, &domain_id);
 	ERR_FAIL_COND_V_MSG(rc != 0, nullptr, ".NET: Failed to initialize CoreCLR.");
 
 	r_runtime_initialized = true;

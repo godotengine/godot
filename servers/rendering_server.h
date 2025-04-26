@@ -183,6 +183,7 @@ public:
 		Image::Format format;
 		int64_t bytes;
 		String path;
+		TextureType type;
 	};
 
 	virtual void texture_debug_usage(List<TextureInfo> *r_info) = 0;
@@ -441,6 +442,20 @@ public:
 
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) = 0;
 	virtual void mesh_clear(RID p_mesh) = 0;
+
+	struct MeshInfo {
+		RID mesh;
+		String path;
+		uint32_t vertex_buffer_size = 0;
+		uint32_t attribute_buffer_size = 0;
+		uint32_t skin_buffer_size = 0;
+		uint32_t index_buffer_size = 0;
+		uint32_t blend_shape_buffer_size = 0;
+		uint32_t lod_index_buffers_size = 0;
+		uint64_t vertex_count = 0;
+	};
+
+	virtual void mesh_debug_usage(List<MeshInfo> *r_info) = 0;
 
 	/* MULTIMESH API */
 
@@ -1433,6 +1448,8 @@ public:
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) = 0;
 	virtual void instance_set_visible(RID p_instance, bool p_visible) = 0;
+
+	virtual void instance_teleport(RID p_instance) = 0;
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB aabb) = 0;
 

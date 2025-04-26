@@ -366,7 +366,7 @@ class DropTargetWindows;
 #endif
 
 class DisplayServerWindows : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerWindows, DisplayServer);
 
 	friend class DropTargetWindows;
 
@@ -459,6 +459,7 @@ class DisplayServerWindows : public DisplayServer {
 	String rendering_driver;
 	bool app_focused = false;
 	bool keep_screen_on = false;
+	bool get_object_recieved = false;
 	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
@@ -466,6 +467,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	struct WindowData {
 		HWND hWnd;
+		WindowID id;
 
 		Vector<Vector2> mpath;
 
@@ -479,6 +481,8 @@ class DisplayServerWindows : public DisplayServer {
 		bool multiwindow_fs = false;
 		bool borderless = false;
 		bool resizable = true;
+		bool no_min_btn = false;
+		bool no_max_btn = false;
 		bool window_focused = false;
 		int activate_state = 0;
 		bool was_maximized_pre_fs = false;
@@ -617,7 +621,7 @@ class DisplayServerWindows : public DisplayServer {
 	HashMap<int64_t, Vector2> pointer_last_pos;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
@@ -822,6 +826,11 @@ public:
 
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override;
+
+	virtual int accessibility_should_increase_contrast() const override;
+	virtual int accessibility_should_reduce_animation() const override;
+	virtual int accessibility_should_reduce_transparency() const override;
+	virtual int accessibility_screen_reader_active() const override;
 
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;

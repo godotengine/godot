@@ -274,7 +274,7 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		List<FileInfo> file_list;
 		for (int i = 0; i < p_dir->get_file_count(); i++) {
 			String file_type = p_dir->get_file_type(i);
-			if (file_type != "TextFile" && file_type != "OtherFile" && _is_file_type_disabled_by_feature_profile(file_type)) {
+			if (_is_file_type_disabled_by_feature_profile(file_type)) {
 				// If type is disabled, file won't be displayed.
 				continue;
 			}
@@ -848,7 +848,7 @@ void FileSystemDock::_set_file_display(bool p_active) {
 
 bool FileSystemDock::_is_file_type_disabled_by_feature_profile(const StringName &p_class) {
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
-	if (profile.is_null()) {
+	if (profile.is_null() || !ClassDB::class_exists(p_class)) {
 		return false;
 	}
 
@@ -1732,9 +1732,7 @@ void FileSystemDock::_folder_removed(const String &p_folder) {
 
 	// Remove assigned folder color for all subfolders.
 	bool folder_colors_updated = false;
-	List<Variant> paths;
-	assigned_folder_colors.get_key_list(&paths);
-	for (const Variant &E : paths) {
+	for (const Variant &E : assigned_folder_colors.get_key_list()) {
 		const String &path = E;
 		// These folder paths are guaranteed to end with a "/".
 		if (path.begins_with(p_folder)) {
@@ -2857,12 +2855,12 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		}
 
 		// Moving favorite around.
-		TreeItem *ti = tree->get_item_at_position(p_point);
+		TreeItem *ti = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_selected() : tree->get_item_at_position(p_point);
 		if (!ti) {
 			return false;
 		}
 
-		int drop_section = tree->get_drop_section_at_position(p_point);
+		int drop_section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
 		if (ti == favorites_item) {
 			return (drop_section == 1); // The parent, first fav.
 		}
@@ -2935,11 +2933,11 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			return;
 		}
 		// Moving favorite around.
-		TreeItem *ti = tree->get_item_at_position(p_point);
+		TreeItem *ti = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_selected() : tree->get_item_at_position(p_point);
 		if (!ti) {
 			return;
 		}
-		int drop_section = tree->get_drop_section_at_position(p_point);
+		int drop_section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
 
 		int drop_position;
 		Vector<String> drag_files = drag_data["files"];
@@ -3059,7 +3057,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 
 	// In the file list.
 	if (p_from == files) {
-		int pos = files->get_item_at_position(p_point, true);
+		int pos = (p_point == Vector2(Math::INF, Math::INF)) ? -1 : files->get_item_at_position(p_point, true);
 		if (pos == -1) {
 			target = get_current_directory();
 			return;
@@ -3072,8 +3070,8 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 
 	// In the tree.
 	if (p_from == tree) {
-		TreeItem *ti = tree->get_item_at_position(p_point);
-		int section = tree->get_drop_section_at_position(p_point);
+		TreeItem *ti = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_selected() : tree->get_item_at_position(p_point);
+		int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
 		if (ti) {
 			// Check the favorites first.
 			if (ti == tree->get_root()->get_first_child() && section >= 0) {
@@ -3887,6 +3885,7 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 	button->set_flat(false);
 	button->set_theme_type_variation("FlatMenuButton");
 	button->set_tooltip_text(TTRC("Sort Files"));
+	button->set_accessibility_name(TTRC("Sort Files"));
 
 	PopupMenu *p = button->get_popup();
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_file_sort_popup));
@@ -4081,6 +4080,7 @@ FileSystemDock::FileSystemDock() {
 	button_hist_prev->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_NONE);
 	button_hist_prev->set_tooltip_text(TTRC("Go to previous selected folder/file."));
+	button_hist_prev->set_accessibility_name(TTRC("Previous"));
 	nav_hbc->add_child(button_hist_prev);
 
 	button_hist_next = memnew(Button);
@@ -4088,10 +4088,12 @@ FileSystemDock::FileSystemDock() {
 	button_hist_next->set_disabled(true);
 	button_hist_next->set_focus_mode(FOCUS_NONE);
 	button_hist_next->set_tooltip_text(TTRC("Go to next selected folder/file."));
+	button_hist_next->set_accessibility_name(TTRC("Next"));
 	nav_hbc->add_child(button_hist_next);
 
 	current_path_line_edit = memnew(LineEdit);
 	current_path_line_edit->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
+	current_path_line_edit->set_accessibility_name(TTRC("Path"));
 	current_path_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	_set_current_path_line_edit_text(current_path);
 	toolbar_hbc->add_child(current_path_line_edit);
@@ -4100,11 +4102,13 @@ FileSystemDock::FileSystemDock() {
 	button_toggle_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_split_mode));
 	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
 	button_toggle_display_mode->set_tooltip_text(TTRC("Change Split Mode"));
+	button_toggle_display_mode->set_accessibility_name(TTRC("Change Split Mode"));
 	button_toggle_display_mode->set_theme_type_variation("FlatMenuButton");
 	toolbar_hbc->add_child(button_toggle_display_mode);
 
 	button_dock_placement = memnew(Button);
 	button_dock_placement->set_theme_type_variation("FlatMenuButton");
+	button_dock_placement->set_accessibility_name(TTRC("Dock Placement"));
 	button_dock_placement->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_bottom_dock_placement));
 	button_dock_placement->hide();
 	toolbar_hbc->add_child(button_dock_placement);
@@ -4115,6 +4119,7 @@ FileSystemDock::FileSystemDock() {
 	tree_search_box = memnew(LineEdit);
 	tree_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	tree_search_box->set_placeholder(TTRC("Filter Files"));
+	tree_search_box->set_accessibility_name(TTRC("Filter Files"));
 	tree_search_box->set_clear_button_enabled(true);
 	tree_search_box->connect(SceneStringName(text_changed), callable_mp(this, &FileSystemDock::_search_changed).bind(tree_search_box));
 	toolbar2_hbc->add_child(tree_search_box);
@@ -4137,6 +4142,7 @@ FileSystemDock::FileSystemDock() {
 	add_child(split_box);
 
 	tree = memnew(FileSystemTree);
+	tree->set_accessibility_name(TTRC("Directories"));
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -4167,6 +4173,7 @@ FileSystemDock::FileSystemDock() {
 	file_list_search_box = memnew(LineEdit);
 	file_list_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	file_list_search_box->set_placeholder(TTRC("Filter Files"));
+	file_list_search_box->set_accessibility_name(TTRC("Filter Files"));
 	file_list_search_box->set_clear_button_enabled(true);
 	file_list_search_box->connect(SceneStringName(text_changed), callable_mp(this, &FileSystemDock::_search_changed).bind(file_list_search_box));
 	path_hb->add_child(file_list_search_box);
@@ -4175,11 +4182,13 @@ FileSystemDock::FileSystemDock() {
 	path_hb->add_child(file_list_button_sort);
 
 	button_file_list_display_mode = memnew(Button);
+	button_file_list_display_mode->set_accessibility_name(TTRC("Display Mode"));
 	button_file_list_display_mode->set_theme_type_variation("FlatMenuButton");
 	path_hb->add_child(button_file_list_display_mode);
 
 	files = memnew(FileSystemList);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
+	files->set_accessibility_name(TTRC("Files"));
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_theme_type_variation("ItemListSecondary");
 	SET_DRAG_FORWARDING_GCD(files, FileSystemDock);
@@ -4202,6 +4211,7 @@ FileSystemDock::FileSystemDock() {
 	scanning_vb->add_child(slabel);
 
 	scanning_progress = memnew(ProgressBar);
+	scanning_progress->set_accessibility_name(TTRC("Filesystem Scan"));
 	scanning_vb->add_child(scanning_progress);
 
 	deps_editor = memnew(DependencyEditor);

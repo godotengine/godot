@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-Import("env")
-
 import os
 
 import core_builders
 
 import methods
+
+Import("env")
 
 env.core_sources = []
 
@@ -161,95 +161,33 @@ env.core_sources += thirdparty_obj
 
 
 # Godot source files
-
 env.add_source_files(env.core_sources, "*.cpp")
 
-
 # Generate disabled classes
-def disabled_class_builder(target, source, env):
-    with methods.generated_wrapper(str(target[0])) as file:
-        for c in source[0].read():
-            if cs := c.strip():
-                file.write(f"#define ClassDB_Disable_{cs} 1\n")
-
-
-env.CommandNoCache("disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(disabled_class_builder))
-
+env.CommandNoCache(
+    "disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(core_builders.disabled_class_builder)
+)
 
 # Generate version info
-def version_info_builder(target, source, env):
-    with methods.generated_wrapper(str(target[0])) as file:
-        file.write(
-            """\
-#define GODOT_VERSION_SHORT_NAME "{short_name}"
-#define GODOT_VERSION_NAME "{name}"
-#define GODOT_VERSION_MAJOR {major}
-#define GODOT_VERSION_MINOR {minor}
-#define GODOT_VERSION_PATCH {patch}
-#define GODOT_VERSION_STATUS "{status}"
-#define GODOT_VERSION_BUILD "{build}"
-#define GODOT_VERSION_MODULE_CONFIG "{module_config}"
-#define GODOT_VERSION_WEBSITE "{website}"
-#define GODOT_VERSION_DOCS_BRANCH "{docs_branch}"
-#define GODOT_VERSION_DOCS_URL "https://docs.godotengine.org/en/" GODOT_VERSION_DOCS_BRANCH
-""".format(**source[0].read())
-        )
-
-
 env.CommandNoCache(
     "version_generated.gen.h",
     env.Value(methods.get_version_info(env.module_version_string)),
-    env.Run(version_info_builder),
+    env.Run(core_builders.version_info_builder),
 )
 
-
 # Generate version hash
-def version_hash_builder(target, source, env):
-    with methods.generated_wrapper(str(target[0])) as file:
-        file.write(
-            """\
-#include "core/version.h"
-
-const char *const GODOT_VERSION_HASH = "{git_hash}";
-const uint64_t GODOT_VERSION_TIMESTAMP = {git_timestamp};
-""".format(**source[0].read())
-        )
-
-
-gen_hash = env.CommandNoCache("version_hash.gen.cpp", env.Value(methods.get_git_info()), env.Run(version_hash_builder))
+gen_hash = env.CommandNoCache(
+    "version_hash.gen.cpp", env.Value(methods.get_git_info()), env.Run(core_builders.version_hash_builder)
+)
 env.add_source_files(env.core_sources, gen_hash)
 
-
 # Generate AES256 script encryption key
-def encryption_key_builder(target, source, env):
-    with methods.generated_wrapper(str(target[0])) as file:
-        file.write(
-            f"""\
-#include "core/config/project_settings.h"
-
-uint8_t script_encryption_key[32] = {{
-	{source[0]}
-}};"""
-        )
-
-
-gdkey = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY", "0" * 64)
-ec_valid = len(gdkey) == 64
-if ec_valid:
-    try:
-        gdkey = ", ".join([str(int(f"{a}{b}", 16)) for a, b in zip(gdkey[0::2], gdkey[1::2])])
-    except Exception:
-        ec_valid = False
-if not ec_valid:
-    methods.print_error(
-        f'Invalid AES256 encryption key, not 64 hexadecimal characters: "{gdkey}".\n'
-        "Unset `SCRIPT_AES256_ENCRYPTION_KEY` in your environment "
-        "or make sure that it contains exactly 64 hexadecimal characters."
-    )
-    Exit(255)
-gen_encrypt = env.CommandNoCache("script_encryption_key.gen.cpp", env.Value(gdkey), env.Run(encryption_key_builder))
+gen_encrypt = env.CommandNoCache(
+    "script_encryption_key.gen.cpp",
+    env.Value(os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")),
+    env.Run(core_builders.encryption_key_builder),
+)
 env.add_source_files(env.core_sources, gen_encrypt)
-
 
 # Certificates
 env.CommandNoCache(

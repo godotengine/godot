@@ -99,6 +99,11 @@ class ProjectSettingsEditor;
 class SceneImportSettingsDialog;
 class ProjectUpgradeTool;
 
+#ifdef ANDROID_ENABLED
+class HBoxContainer;
+class TouchActionsPanel;
+#endif
+
 struct EditorProgress {
 	String task;
 	bool force_background = false;
@@ -117,6 +122,7 @@ public:
 		SCENE_NAME_CASING_PASCAL_CASE,
 		SCENE_NAME_CASING_SNAKE_CASE,
 		SCENE_NAME_CASING_KEBAB_CASE,
+		SCENE_NAME_CASING_CAMEL_CASE,
 	};
 
 	enum ActionOnPlay {
@@ -275,6 +281,12 @@ private:
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *renderer = nullptr;
 
+#ifdef ANDROID_ENABLED
+	HBoxContainer *main_hbox = nullptr; // Only created on Android for TouchActionsPanel.
+	TouchActionsPanel *touch_actions_panel = nullptr;
+	void _touch_actions_panel_mode_changed();
+#endif
+
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
 	int renderer_current = 0;
@@ -385,6 +397,7 @@ private:
 	EditorFileDialog *file_export_lib = nullptr;
 	EditorFileDialog *file_script = nullptr;
 	EditorFileDialog *file_android_build_source = nullptr;
+	EditorFileDialog *file_pack_zip = nullptr;
 	String current_path;
 	MenuButton *update_spinner = nullptr;
 

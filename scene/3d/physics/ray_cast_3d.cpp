@@ -413,7 +413,7 @@ void RayCast3D::_update_debug_shape_vertices() {
 		int vertices_strip_order[14] = { 4, 5, 0, 1, 2, 5, 6, 4, 7, 0, 3, 2, 7, 6 };
 		for (int v = 0; v < 14; v++) {
 			Vector3 vertex = vertices_strip_order[v] < 4 ? normal : normal / 3.0 + target_position;
-			debug_shape_vertices.push_back(vertex.rotated(dir, Math_PI * (0.5 * (vertices_strip_order[v] % 4) + 0.25)));
+			debug_shape_vertices.push_back(vertex.rotated(dir, Math::PI * (0.5 * (vertices_strip_order[v] % 4) + 0.25)));
 		}
 	}
 }

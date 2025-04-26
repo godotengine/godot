@@ -48,6 +48,8 @@ void Window::set_root_layout_direction(int p_root_dir) {
 
 // Dynamic properties.
 
+Window *Window::focused_window = nullptr;
+
 bool Window::_set(const StringName &p_name, const Variant &p_value) {
 	ERR_MAIN_THREAD_GUARD_V(false);
 	String name = p_name;
@@ -234,15 +236,15 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void Window::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "position" && initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "current_screen" && initial_position != WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "theme_type_variation") {
+	if (p_property.name == "position") {
+		if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "current_screen") {
+		if (initial_position != WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "theme_type_variation") {
 		List<StringName> names;
 
 		// Only the default theme and the project theme are used for the list of options.
@@ -314,6 +316,7 @@ void Window::set_title(const String &p_title) {
 		EngineDebugger::get_singleton()->send_message("window:title", arr);
 	}
 #endif
+	queue_accessibility_update();
 }
 
 String Window::get_title() const {
@@ -687,6 +690,11 @@ void Window::_make_window() {
 		}
 	}
 
+	if (get_tree() && get_tree()->is_accessibility_supported()) {
+		get_tree()->_accessibility_force_update();
+		_accessibility_notify_enter(this);
+	}
+
 	_update_window_callbacks();
 
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
@@ -717,6 +725,10 @@ void Window::_clear_window() {
 	}
 
 	_update_from_window();
+
+	if (get_tree() && get_tree()->is_accessibility_supported()) {
+		_accessibility_notify_exit(this);
+	}
 
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
 	window_id = DisplayServer::INVALID_WINDOW_ID;
@@ -749,6 +761,14 @@ void Window::_rect_changed_callback(const Rect2i &p_callback) {
 		size = p_callback.size;
 		_update_viewport_size();
 	}
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		Vector2 sz_out = DisplayServer::get_singleton()->window_get_size_with_decorations(window_id);
+		Vector2 pos_out = DisplayServer::get_singleton()->window_get_position_with_decorations(window_id);
+		Vector2 sz_in = DisplayServer::get_singleton()->window_get_size(window_id);
+		Vector2 pos_in = DisplayServer::get_singleton()->window_get_position(window_id);
+		DisplayServer::get_singleton()->accessibility_set_window_rect(window_id, Rect2(pos_out, sz_out), Rect2(pos_in, sz_in));
+	}
+	queue_accessibility_update();
 }
 
 void Window::_propagate_window_notification(Node *p_node, int p_notification) {
@@ -807,12 +827,15 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
 			focused = true;
+			focused_window = this;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
 			emit_signal(SceneStringName(focus_entered));
-
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
+			if (focused_window == this) {
+				focused_window = nullptr;
+			}
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_OUT);
 			emit_signal(SceneStringName(focus_exited));
 		} break;
@@ -868,6 +891,36 @@ void Window::hide() {
 	set_visible(false);
 }
 
+void Window::_accessibility_notify_enter(Node *p_node) {
+	p_node->queue_accessibility_update();
+
+	if (p_node != this) {
+		const Window *window = Object::cast_to<Window>(p_node);
+		if (window && !window->is_embedded()) {
+			return;
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_accessibility_notify_enter(p_node->get_child(i));
+	}
+}
+
+void Window::_accessibility_notify_exit(Node *p_node) {
+	p_node->notification(Node::NOTIFICATION_ACCESSIBILITY_INVALIDATE);
+
+	if (p_node != this) {
+		const Window *window = Object::cast_to<Window>(p_node);
+		if (window && !window->is_embedded()) {
+			return;
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_accessibility_notify_exit(p_node->get_child(i));
+	}
+}
+
 void Window::set_visible(bool p_visible) {
 	ERR_MAIN_THREAD_GUARD;
 	if (visible == p_visible) {
@@ -907,9 +960,11 @@ void Window::set_visible(bool p_visible) {
 				}
 			}
 			embedder->_sub_window_register(this);
+			embedder->queue_accessibility_update();
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
 		} else {
 			embedder->_sub_window_remove(this);
+			embedder->queue_accessibility_update();
 			embedder = nullptr;
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 		}
@@ -918,7 +973,11 @@ void Window::set_visible(bool p_visible) {
 
 	if (!visible) {
 		focused = false;
+		if (focused_window == this) {
+			focused_window = nullptr;
+		}
 	}
+
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringName(visibility_changed));
 
@@ -1137,7 +1196,6 @@ void Window::_update_viewport_size() {
 	Size2i final_size;
 	Size2 final_size_override;
 	Rect2i attach_to_screen_rect(Point2i(), size);
-	double font_oversampling = 1.0;
 	window_transform = Transform2D();
 
 	if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_INTEGER) {
@@ -1152,7 +1210,6 @@ void Window::_update_viewport_size() {
 	}
 
 	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
-		font_oversampling = content_scale_factor;
 		final_size = size;
 		final_size_override = Size2(size) / content_scale_factor;
 	} else {
@@ -1230,14 +1287,11 @@ void Window::_update_viewport_size() {
 
 		switch (content_scale_mode) {
 			case CONTENT_SCALE_MODE_DISABLED: {
-				// Already handled above
-				//_update_font_oversampling(1.0);
 			} break;
 			case CONTENT_SCALE_MODE_CANVAS_ITEMS: {
 				final_size = screen_size;
 				final_size_override = viewport_size / content_scale_factor;
 				attach_to_screen_rect = Rect2(margin, screen_size);
-				font_oversampling = (screen_size.x / viewport_size.x) * content_scale_factor;
 
 				window_transform.translate_local(margin);
 			} break;
@@ -1256,25 +1310,12 @@ void Window::_update_viewport_size() {
 	}
 
 	bool allocate = is_inside_tree() && visible && (window_id != DisplayServer::INVALID_WINDOW_ID || embedder != nullptr);
-	bool ci_updated = _set_size(final_size, final_size_override, allocate);
+	_set_size(final_size, final_size_override, allocate);
 
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), attach_to_screen_rect, window_id);
 	} else if (!is_embedded()) {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), Rect2i(), DisplayServer::INVALID_WINDOW_ID);
-	}
-
-	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
-		if (!use_font_oversampling) {
-			font_oversampling = 1.0;
-		}
-		if (!Math::is_equal_approx(TS->font_get_global_oversampling(), font_oversampling)) {
-			TS->font_set_global_oversampling(font_oversampling);
-			if (!ci_updated) {
-				update_canvas_items();
-				emit_signal(SNAME("size_changed"));
-			}
-		}
 	}
 
 	notification(NOTIFICATION_WM_SIZE_CHANGED);
@@ -1332,9 +1373,78 @@ Viewport *Window::get_embedder() const {
 	return nullptr;
 }
 
+RID Window::get_accessibility_element() const {
+	if (is_part_of_edited_scene()) {
+		return RID();
+	}
+	if (get_embedder()) {
+		return Node::get_accessibility_element();
+	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->accessibility_get_window_root(window_id);
+	} else {
+		return RID();
+	}
+}
+
+RID Window::get_focused_accessibility_element() const {
+	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+		if (get_child_count() > 0) {
+			return get_child(0)->get_focused_accessibility_element(); // Try scene tree root node.
+		}
+	}
+	return Node::get_focused_accessibility_element();
+}
+
 void Window::_notification(int p_what) {
 	ERR_MAIN_THREAD_GUARD;
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
+			accessibility_title_element = RID();
+			accessibility_announcement_element = RID();
+		} break;
+
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_WINDOW);
+			DisplayServer::get_singleton()->accessibility_update_set_name(ae, tr_title);
+			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_MODAL, exclusive);
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Window::_accessibility_action_grab_focus));
+			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !visible);
+
+			if (get_embedder()) {
+				Control *parent_ctrl = Object::cast_to<Control>(get_parent());
+				Transform2D parent_tr = parent_ctrl ? parent_ctrl->get_global_transform() : Transform2D();
+				Transform2D tr;
+				tr.set_origin(position);
+				DisplayServer::get_singleton()->accessibility_update_set_transform(ae, parent_tr.affine_inverse() * tr);
+				DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Point2(), size));
+
+				if (accessibility_title_element.is_null()) {
+					accessibility_title_element = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_TITLE_BAR);
+				}
+
+				int w = get_theme_constant(SNAME("title_height"));
+				DisplayServer::get_singleton()->accessibility_update_set_name(accessibility_title_element, tr_title);
+				DisplayServer::get_singleton()->accessibility_update_set_bounds(accessibility_title_element, Rect2(Vector2(0, -w), Size2(size.x, w)));
+			} else {
+				DisplayServer::get_singleton()->accessibility_update_set_transform(ae, Transform2D());
+				DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Point2(), size));
+
+				if (accessibility_announcement_element.is_null()) {
+					accessibility_announcement_element = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
+				}
+
+				if (announcement.is_empty()) {
+					DisplayServer::get_singleton()->accessibility_update_set_live(accessibility_announcement_element, DisplayServer::LIVE_OFF);
+				} else {
+					DisplayServer::get_singleton()->accessibility_update_set_name(accessibility_announcement_element, announcement);
+					DisplayServer::get_singleton()->accessibility_update_set_live(accessibility_announcement_element, DisplayServer::LIVE_ASSERTIVE);
+				}
+			}
+		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			initialized = true;
 
@@ -1389,6 +1499,7 @@ void Window::_notification(int p_what) {
 					// It's the root window!
 					visible = true; // Always visible.
 					window_id = DisplayServer::MAIN_WINDOW_ID;
+					focused_window = this;
 					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 					_update_from_window();
 					// Since this window already exists (created on start), we must update pos and size from it.
@@ -1467,6 +1578,7 @@ void Window::_notification(int p_what) {
 					}
 				}
 			}
+			queue_accessibility_update();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1484,6 +1596,9 @@ void Window::_notification(int p_what) {
 			}
 
 			set_theme_context(nullptr, false);
+
+			accessibility_title_element = RID();
+			accessibility_announcement_element = RID();
 
 			if (transient) {
 				_clear_transient();
@@ -1588,23 +1703,14 @@ real_t Window::get_content_scale_factor() const {
 	return content_scale_factor;
 }
 
-void Window::set_use_font_oversampling(bool p_oversampling) {
-	ERR_MAIN_THREAD_GUARD;
-	if (is_inside_tree() && window_id != DisplayServer::MAIN_WINDOW_ID) {
-		ERR_FAIL_MSG("Only the root window can set and use font oversampling.");
-	}
-	use_font_oversampling = p_oversampling;
-	_update_viewport_size();
-}
-
-bool Window::is_using_font_oversampling() const {
-	ERR_READ_THREAD_GUARD_V(false);
-	return use_font_oversampling;
-}
-
 DisplayServer::WindowID Window::get_window_id() const {
 	ERR_READ_THREAD_GUARD_V(DisplayServer::INVALID_WINDOW_ID);
-	if (embedder) {
+	if (get_embedder()) {
+#ifdef TOOLS_ENABLED
+		if (is_part_of_edited_scene()) {
+			return DisplayServer::MAIN_WINDOW_ID;
+		}
+#endif
 		return parent->get_window_id();
 	}
 	return window_id;
@@ -2078,6 +2184,11 @@ Rect2i Window::get_usable_parent_rect() const {
 		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen(w->get_window_id()));
 	}
 	return parent_rect;
+}
+
+void Window::accessibility_announcement(const String &p_announcement) {
+	announcement = p_announcement;
+	queue_accessibility_update();
 }
 
 void Window::add_child_notify(Node *p_child) {
@@ -2812,6 +2923,15 @@ bool Window::is_layout_rtl() const {
 }
 
 #ifndef DISABLE_DEPRECATED
+
+void Window::set_use_font_oversampling(bool p_oversampling) {
+	Viewport::set_use_oversampling(p_oversampling);
+}
+
+bool Window::is_using_font_oversampling() const {
+	return Viewport::is_using_oversampling();
+}
+
 void Window::set_auto_translate(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 	set_auto_translate_mode(p_enable ? AUTO_TRANSLATE_MODE_ALWAYS : AUTO_TRANSLATE_MODE_DISABLED);
@@ -2906,8 +3026,6 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
 
-	ClassDB::bind_method(D_METHOD("get_window_id"), &Window::get_window_id);
-
 	ClassDB::bind_method(D_METHOD("set_initial_position", "initial_position"), &Window::set_initial_position);
 	ClassDB::bind_method(D_METHOD("get_initial_position"), &Window::get_initial_position);
 
@@ -2997,9 +3115,6 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_content_scale_factor", "factor"), &Window::set_content_scale_factor);
 	ClassDB::bind_method(D_METHOD("get_content_scale_factor"), &Window::get_content_scale_factor);
 
-	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &Window::set_use_font_oversampling);
-	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &Window::is_using_font_oversampling);
-
 	ClassDB::bind_method(D_METHOD("set_mouse_passthrough_polygon", "polygon"), &Window::set_mouse_passthrough_polygon);
 	ClassDB::bind_method(D_METHOD("get_mouse_passthrough_polygon"), &Window::get_mouse_passthrough_polygon);
 
@@ -3055,6 +3170,10 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_theme_default_font"), &Window::get_theme_default_font);
 	ClassDB::bind_method(D_METHOD("get_theme_default_font_size"), &Window::get_theme_default_font_size);
 
+	ClassDB::bind_method(D_METHOD("get_window_id"), &Window::get_window_id);
+
+	ClassDB::bind_static_method("Window", D_METHOD("get_focused_window"), &Window::get_focused_window);
+
 	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Window::set_layout_direction);
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Window::get_layout_direction);
 	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Window::is_layout_rtl);
@@ -3062,6 +3181,9 @@ void Window::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Window::set_auto_translate);
 	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Window::is_auto_translating);
+
+	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &Window::set_use_font_oversampling);
+	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &Window::is_using_font_oversampling);
 #endif
 
 	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
@@ -3106,6 +3228,8 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "sharp_corners"), "set_flag", "get_flag", FLAG_SHARP_CORNERS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "exclude_from_capture"), "set_flag", "get_flag", FLAG_EXCLUDE_FROM_CAPTURE);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_wm_hint"), "set_flag", "get_flag", FLAG_POPUP_WM_HINT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "minimize_disabled"), "set_flag", "get_flag", FLAG_MINIMIZE_DISABLED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "maximize_disabled"), "set_flag", "get_flag", FLAG_MAXIMIZE_DISABLED);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_native"), "set_force_native", "get_force_native");
 
 	ADD_GROUP("Limits", "");
@@ -3163,6 +3287,8 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_SHARP_CORNERS);
 	BIND_ENUM_CONSTANT(FLAG_EXCLUDE_FROM_CAPTURE);
 	BIND_ENUM_CONSTANT(FLAG_POPUP_WM_HINT);
+	BIND_ENUM_CONSTANT(FLAG_MINIMIZE_DISABLED);
+	BIND_ENUM_CONSTANT(FLAG_MAXIMIZE_DISABLED);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);
@@ -3227,6 +3353,9 @@ Window::Window() {
 }
 
 Window::~Window() {
+	if (focused_window == this) {
+		focused_window = nullptr;
+	}
 	memdelete(theme_owner);
 
 	// Resources need to be disconnected.

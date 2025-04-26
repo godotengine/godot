@@ -128,14 +128,14 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	// Nodes where instantiation failed (because something is missing.)
 	List<Node *> stray_instances;
 
-#define NODE_FROM_ID(p_name, p_id)                      \
-	Node *p_name;                                       \
-	if (p_id & FLAG_ID_IS_PATH) {                       \
-		NodePath np = node_paths[p_id & FLAG_MASK];     \
-		p_name = ret_nodes[0]->get_node_or_null(np);    \
-	} else {                                            \
-		ERR_FAIL_INDEX_V(p_id &FLAG_MASK, nc, nullptr); \
-		p_name = ret_nodes[p_id & FLAG_MASK];           \
+#define NODE_FROM_ID(p_name, p_id)                       \
+	Node *p_name;                                        \
+	if (p_id & FLAG_ID_IS_PATH) {                        \
+		NodePath np = node_paths[p_id & FLAG_MASK];      \
+		p_name = ret_nodes[0]->get_node_or_null(np);     \
+	} else {                                             \
+		ERR_FAIL_INDEX_V(p_id & FLAG_MASK, nc, nullptr); \
+		p_name = ret_nodes[p_id & FLAG_MASK];            \
 	}
 
 	int nc = nodes.size();
@@ -177,7 +177,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 #ifdef DEBUG_ENABLED
 			if (!nparent && (n.parent & FLAG_ID_IS_PATH)) {
 				WARN_PRINT(String("Parent path '" + String(node_paths[n.parent & FLAG_MASK]) + "' for node '" + String(snames[n.name]) + "' has vanished when instantiating: '" + get_path() + "'.").ascii().get_data());
-				old_parent_path = String(node_paths[n.parent & FLAG_MASK]).trim_prefix("./").replace("/", "@");
+				old_parent_path = String(node_paths[n.parent & FLAG_MASK]).trim_prefix("./").replace_char('/', '@');
 				nparent = ret_nodes[0];
 			}
 #endif
@@ -549,12 +549,12 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			bool convert_value = dict.get_typed_value_builtin() == Variant::OBJECT &&
 					ClassDB::is_parent_class(dict.get_typed_value_class_name(), "Node");
 
-			for (int i = 0; i < paths.size(); i++) {
-				Variant key = paths.get_key_at_index(i);
+			for (const KeyValue<Variant, Variant> &kv : paths) {
+				Variant key = kv.key;
 				if (convert_key) {
 					key = base->get_node_or_null(key);
 				}
-				Variant value = paths.get_value_at_index(i);
+				Variant value = kv.value;
 				if (convert_value) {
 					value = base->get_node_or_null(value);
 				}
@@ -881,14 +881,14 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					use_deferred_node_path_bit = true;
 					Dictionary dict = value;
 					Dictionary new_dict;
-					for (int i = 0; i < dict.size(); i++) {
-						Variant new_key = dict.get_key_at_index(i);
+					for (const KeyValue<Variant, Variant> &kv : dict) {
+						Variant new_key = kv.key;
 						if (convert_key && new_key.get_type() == Variant::OBJECT) {
 							if (Node *n = Object::cast_to<Node>(new_key)) {
 								new_key = p_node->get_path_to(n);
 							}
 						}
-						Variant new_value = dict.get_value_at_index(i);
+						Variant new_value = kv.value;
 						if (convert_value && new_value.get_type() == Variant::OBJECT) {
 							if (Node *n = Object::cast_to<Node>(new_value)) {
 								new_value = p_node->get_path_to(n);

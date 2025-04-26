@@ -808,7 +808,14 @@ void CodeEdit::_backspace_internal(int p_caret) {
 		}
 
 		int from_line = to_column > 0 ? to_line : to_line - 1;
-		int from_column = to_column > 0 ? (to_column - 1) : (get_line(to_line - 1).length());
+		int from_column = 0;
+		if (to_column == 0) {
+			from_column = get_line(to_line - 1).length();
+		} else if (TextEdit::is_caret_mid_grapheme_enabled() || !TextEdit::is_backspace_deletes_composite_character_enabled()) {
+			from_column = to_column - 1;
+		} else {
+			from_column = TextEdit::get_previous_composite_character_column(to_line, to_column);
+		}
 
 		merge_gutters(from_line, to_line);
 
@@ -1247,9 +1254,8 @@ void CodeEdit::add_auto_brace_completion_pair(const String &p_open_key, const St
 void CodeEdit::set_auto_brace_completion_pairs(const Dictionary &p_auto_brace_completion_pairs) {
 	auto_brace_completion_pairs.clear();
 
-	Array keys = p_auto_brace_completion_pairs.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		add_auto_brace_completion_pair(keys[i], p_auto_brace_completion_pairs[keys[i]]);
+	for (const KeyValue<Variant, Variant> &kv : p_auto_brace_completion_pairs) {
+		add_auto_brace_completion_pair(kv.key, kv.value);
 	}
 }
 
@@ -1645,12 +1651,12 @@ bool CodeEdit::can_fold_line(int p_line) const {
 		if (delimiter_end_line == p_line) {
 			/* Check we are the start of the block. */
 			if (p_line - 1 >= 0) {
-				if ((in_string != -1 && is_in_string(p_line - 1) != -1) || (in_comment != -1 && is_in_comment(p_line - 1) != -1)) {
+				if ((in_string != -1 && is_in_string(p_line - 1) != -1) || (in_comment != -1 && is_in_comment(p_line - 1) != -1 && !is_line_code_region_start(p_line - 1) && !is_line_code_region_end(p_line - 1))) {
 					return false;
 				}
 			}
 			/* Check it continues for at least one line. */
-			return ((in_string != -1 && is_in_string(p_line + 1) != -1) || (in_comment != -1 && is_in_comment(p_line + 1) != -1));
+			return ((in_string != -1 && is_in_string(p_line + 1) != -1) || (in_comment != -1 && is_in_comment(p_line + 1) != -1 && !is_line_code_region_start(p_line + 1) && !is_line_code_region_end(p_line + 1)));
 		}
 		return ((in_string != -1 && is_in_string(delimiter_end_line) != -1) || (in_comment != -1 && is_in_comment(delimiter_end_line) != -1));
 	}
@@ -1703,6 +1709,10 @@ void CodeEdit::fold_line(int p_line) {
 			if (end_line == p_line) {
 				for (int i = p_line + 1; i <= line_count; i++) {
 					if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
+						break;
+					}
+					if (in_comment != -1 && (is_line_code_region_start(i) || is_line_code_region_end(i))) {
+						// A code region tag should split a comment block, ending it early.
 						break;
 					}
 					end_line = i;

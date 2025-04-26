@@ -173,7 +173,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 
 	if (dir->change_dir(path) == OK) {
 		String cwd = dir->get_current_dir();
-		cwd = cwd.replace("\\", "/");
+		cwd = cwd.replace_char('\\', '/');
 
 		// Ensure that we end with a '/'.
 		// This is important to ensure that we do not wrongly localize the resource path
@@ -359,6 +359,29 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 
+Variant ProjectSettings::get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features) const {
+	_THREAD_SAFE_METHOD_
+
+	StringName name = p_name;
+	if (feature_overrides.has(name)) {
+		const LocalVector<Pair<StringName, StringName>> &overrides = feature_overrides[name];
+		for (uint32_t i = 0; i < overrides.size(); i++) {
+			if (p_features.has(String(overrides[i].first).to_lower())) {
+				if (props.has(overrides[i].second)) {
+					name = overrides[i].second;
+					break;
+				}
+			}
+		}
+	}
+
+	if (!props.has(name)) {
+		WARN_PRINT("Property not found: " + String(name));
+		return Variant();
+	}
+	return props[name].variant;
+}
+
 Variant ProjectSettings::get_setting_with_override(const StringName &p_name) const {
 	_THREAD_SAFE_METHOD_
 
@@ -399,6 +422,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
 	RBSet<_VCSort> vclist;
+	HashMap<String, Vector<_VCSort>> setting_overrides;
 
 	for (const KeyValue<StringName, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -439,23 +463,41 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		if (v->restart_if_changed) {
 			vc.flags |= PROPERTY_USAGE_RESTART_IF_CHANGED;
 		}
-		vclist.insert(vc);
+
+		int dot = vc.name.rfind_char('.');
+		if (dot != -1 && !custom_prop_info.has(vc.name)) {
+			StringName n = vc.name.substr(0, dot);
+			if (props.has(n)) { // Property is an override.
+				setting_overrides[n].append(vc);
+			} else {
+				vclist.insert(vc);
+			}
+		} else {
+			vclist.insert(vc);
+		}
 	}
 
-	for (const _VCSort &E : vclist) {
-		String prop_info_name = E.name;
-		int dot = prop_info_name.find_char('.');
-		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
-			prop_info_name = prop_info_name.substr(0, dot);
-		}
-
-		if (custom_prop_info.has(prop_info_name)) {
-			PropertyInfo pi = custom_prop_info[prop_info_name];
-			pi.name = E.name;
-			pi.usage = E.flags;
+	for (const _VCSort &base : vclist) {
+		if (custom_prop_info.has(base.name)) {
+			PropertyInfo pi = custom_prop_info[base.name];
+			pi.name = base.name;
+			pi.usage = base.flags;
 			p_list->push_back(pi);
 		} else {
-			p_list->push_back(PropertyInfo(E.type, E.name, PROPERTY_HINT_NONE, "", E.flags));
+			p_list->push_back(PropertyInfo(base.type, base.name, PROPERTY_HINT_NONE, "", base.flags));
+		}
+
+		if (setting_overrides.has(base.name)) {
+			for (const _VCSort &over : setting_overrides.get(base.name)) {
+				if (custom_prop_info.has(over.name)) {
+					PropertyInfo pi = custom_prop_info[over.name];
+					pi.name = over.name;
+					pi.usage = over.flags;
+					p_list->push_back(pi);
+				} else {
+					p_list->push_back(PropertyInfo(over.type, over.name, PROPERTY_HINT_NONE, "", over.flags));
+				}
+			}
 		}
 	}
 }
@@ -568,7 +610,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
 		// If the OS would rather use a specific location, then it will not be empty.
-		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");
+		resource_path = OS::get_singleton()->get_resource_dir().replace_char('\\', '/');
 		if (!resource_path.is_empty() && resource_path[resource_path.length() - 1] == '/') {
 			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
 		}
@@ -689,7 +731,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	while (true) {
 		// Set the resource path early so things can be resolved when loading.
 		resource_path = current_dir;
-		resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
+		resource_path = resource_path.replace_char('\\', '/'); // Windows path to Unix path just in case.
 		err = _load_settings_text_or_binary(current_dir.path_join("project.godot"), current_dir.path_join("project.binary"));
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
@@ -1411,6 +1453,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_setting", "name", "default_value"), &ProjectSettings::get_setting, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_setting_with_override", "name"), &ProjectSettings::get_setting_with_override);
 	ClassDB::bind_method(D_METHOD("get_global_class_list"), &ProjectSettings::get_global_class_list);
+	ClassDB::bind_method(D_METHOD("get_setting_with_override_and_custom_features", "name", "features"), &ProjectSettings::get_setting_with_override_and_custom_features);
 	ClassDB::bind_method(D_METHOD("set_order", "name", "position"), &ProjectSettings::set_order);
 	ClassDB::bind_method(D_METHOD("get_order", "name"), &ProjectSettings::get_order);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &ProjectSettings::set_initial_value);
@@ -1491,6 +1534,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/auto_accept_quit", true);
 	GLOBAL_DEF("application/config/quit_on_go_back", true);
 
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/accessibility_support", PROPERTY_HINT_ENUM, "Auto (When Screen Reader is Running),Always Active,Disabled"), 0);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/updates_per_second", PROPERTY_HINT_RANGE, "1,100,1"), 60);
+
 	// The default window size is tuned to:
 	// - Have a 16:9 aspect ratio,
 	// - Have both dimensions divisible by 8 to better play along with video recording,
@@ -1513,6 +1559,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/size/extend_to_title", false);
 	GLOBAL_DEF("display/window/size/no_focus", false);
 	GLOBAL_DEF("display/window/size/sharp_corners", false);
+	GLOBAL_DEF("display/window/size/minimize_disabled", false);
+	GLOBAL_DEF("display/window/size/maximize_disabled", false);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
@@ -1622,6 +1670,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
 	GLOBAL_DEF("input_devices/pointing/android/override_volume_buttons", false);
+	GLOBAL_DEF_BASIC("input_devices/pointing/android/disable_scroll_deadzone", false);
 
 	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());

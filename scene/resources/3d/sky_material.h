@@ -55,9 +55,11 @@ private:
 	float global_energy_multiplier = 1.0f;
 
 	static Mutex shader_mutex;
-	static RID shader_cache[2];
+	static RID shader_cache[4];
 	static void _update_shader();
 	mutable bool shader_set = false;
+
+	RID get_shader_cache() const;
 
 protected:
 	static void _bind_methods();
@@ -164,7 +166,9 @@ class PhysicalSkyMaterial : public Material {
 
 private:
 	static Mutex shader_mutex;
-	static RID shader_cache[2];
+	static RID shader_cache[4];
+
+	RID get_shader_cache() const;
 
 	float rayleigh = 0.0f;
 	Color rayleigh_color;

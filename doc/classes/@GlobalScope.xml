@@ -551,14 +551,14 @@
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns whether [param x] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity.
+				Returns whether [param x] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity. See also [method is_inf] and [method is_nan].
 			</description>
 		</method>
 		<method name="is_inf">
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]true[/code] if [param x] is either positive infinity or negative infinity.
+				Returns [code]true[/code] if [param x] is either positive infinity or negative infinity. See also [method is_finite] and [method is_nan].
 			</description>
 		</method>
 		<method name="is_instance_id_valid">
@@ -579,7 +579,7 @@
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]true[/code] if [param x] is a NaN ("Not a Number" or invalid) value.
+				Returns [code]true[/code] if [param x] is a NaN ("Not a Number" or invalid) value. This method is needed as [constant @GDScript.NAN] is not equal to itself, which means [code]x == NAN[/code] can't be used to check whether a value is a NaN.
 			</description>
 		</method>
 		<method name="is_same">
@@ -2954,7 +2954,10 @@
 		<constant name="PROPERTY_HINT_ONESHOT" value="40" enum="PropertyHint">
 			Hints that a property will be changed on its own after setting, such as [member AudioStreamPlayer.playing] or [member GPUParticles3D.emitting].
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GROUP_ENABLE" value="42" enum="PropertyHint">
+			Hints that a boolean property will enable the feature associated with the group that it occurs in. Only works within a group or subgroup.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="43" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">

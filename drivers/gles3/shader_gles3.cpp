@@ -841,13 +841,11 @@ bool ShaderGLES3::shader_cache_save_compressed_zstd = true;
 bool ShaderGLES3::shader_cache_save_debug = true;
 
 ShaderGLES3::~ShaderGLES3() {
-	List<RID> remaining;
-	version_owner.get_owned_list(&remaining);
+	LocalVector<RID> remaining = version_owner.get_owned_list();
 	if (remaining.size()) {
 		ERR_PRINT(itos(remaining.size()) + " shaders of type " + name + " were never freed");
-		while (remaining.size()) {
-			version_free(remaining.front()->get());
-			remaining.pop_front();
+		for (RID &rid : remaining) {
+			version_free(rid);
 		}
 	}
 }

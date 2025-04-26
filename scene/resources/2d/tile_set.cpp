@@ -3784,20 +3784,20 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			for (int i = 0; i < p.size(); i++) {
 				CompatibilityShapeData csd;
 				Dictionary d = p[i];
-				for (int j = 0; j < d.size(); j++) {
-					String key = d.get_key_at_index(j);
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					String key = kv.key;
 					if (key == "autotile_coord") {
-						csd.autotile_coords = d[key];
+						csd.autotile_coords = kv.value;
 					} else if (key == "one_way") {
-						csd.one_way = d[key];
+						csd.one_way = kv.value;
 					} else if (key == "one_way_margin") {
-						csd.one_way_margin = d[key];
+						csd.one_way_margin = kv.value;
 					} else if (key == "shape") {
 #ifndef PHYSICS_2D_DISABLED
-						csd.shape = d[key];
+						csd.shape = kv.value;
 #endif // PHYSICS_2D_DISABLED
 					} else if (key == "shape_transform") {
-						csd.transform = d[key];
+						csd.transform = kv.value;
 					}
 				}
 				ctd->shapes.push_back(csd);
@@ -6952,6 +6952,16 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 			}
 		}
 #endif // NAVIGATION_2D_DISABLED
+		else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_int()) {
+			// Custom data layers.
+			int layer_index = components[0].trim_prefix("custom_data_").to_int();
+			ERR_FAIL_COND_V(layer_index < 0, false);
+			if (layer_index >= custom_data.size()) {
+				return false;
+			}
+			r_ret = get_custom_data_by_layer_id(layer_index);
+			return true;
+		}
 	}
 
 	return false;

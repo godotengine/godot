@@ -525,6 +525,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 
 	// Scenes collection source inspector.
 	scenes_collection_source_inspector_label = memnew(Label);
+	scenes_collection_source_inspector_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	scenes_collection_source_inspector_label->set_text(TTR("Scenes collection properties:"));
 	middle_vbox_container->add_child(scenes_collection_source_inspector_label);
 
@@ -573,12 +574,14 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	scene_tile_add_button = memnew(Button);
 	scene_tile_add_button->set_theme_type_variation(SceneStringName(FlatButton));
 	scene_tile_add_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_add_pressed));
+	scene_tile_add_button->set_accessibility_name(TTRC("Add"));
 	scenes_bottom_actions->add_child(scene_tile_add_button);
 
 	scene_tile_delete_button = memnew(Button);
 	scene_tile_delete_button->set_theme_type_variation(SceneStringName(FlatButton));
 	scene_tile_delete_button->set_disabled(true);
 	scene_tile_delete_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_delete_pressed));
+	scene_tile_delete_button->set_accessibility_name(TTRC("Delete"));
 	scenes_bottom_actions->add_child(scene_tile_delete_button);
 
 	EditorInspector::add_inspector_plugin(memnew(TileSourceInspectorPlugin));

@@ -269,6 +269,9 @@ void GDScriptParser::override_completion_context(const Node *p_for_node, Complet
 	context.current_argument = p_argument;
 	context.node = p_node;
 	context.parser = this;
+	if (!completion_call_stack.is_empty()) {
+		context.call = completion_call_stack.back()->get();
+	}
 	completion_context = context;
 }
 
@@ -288,6 +291,9 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node
 	context.current_argument = p_argument;
 	context.node = p_node;
 	context.parser = this;
+	if (!completion_call_stack.is_empty()) {
+		context.call = completion_call_stack.back()->get();
+	}
 	completion_context = context;
 }
 
@@ -306,6 +312,9 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Variant::Typ
 	context.current_line = tokenizer->get_cursor_line();
 	context.builtin_type = p_builtin_type;
 	context.parser = this;
+	if (!completion_call_stack.is_empty()) {
+		context.call = completion_call_stack.back()->get();
+	}
 	completion_context = context;
 }
 
@@ -317,9 +326,6 @@ void GDScriptParser::push_completion_call(Node *p_call) {
 	call.call = p_call;
 	call.argument = 0;
 	completion_call_stack.push_back(call);
-	if (previous.cursor_place == GDScriptTokenizerText::CURSOR_MIDDLE || previous.cursor_place == GDScriptTokenizerText::CURSOR_END || current.cursor_place == GDScriptTokenizerText::CURSOR_BEGINNING) {
-		completion_call = call;
-	}
 }
 
 void GDScriptParser::pop_completion_call() {
@@ -331,7 +337,7 @@ void GDScriptParser::pop_completion_call() {
 }
 
 void GDScriptParser::set_last_completion_call_arg(int p_argument) {
-	if (!for_completion || passed_cursor) {
+	if (!for_completion) {
 		return;
 	}
 	ERR_FAIL_COND_MSG(completion_call_stack.is_empty(), "Trying to set argument on empty completion call stack");
@@ -477,12 +483,6 @@ GDScriptTokenizer::Token GDScriptParser::advance() {
 	if (current.type == GDScriptTokenizer::Token::TK_EOF) {
 		ERR_FAIL_COND_V_MSG(current.type == GDScriptTokenizer::Token::TK_EOF, current, "GDScript parser bug: Trying to advance past the end of stream.");
 	}
-	if (for_completion && !completion_call_stack.is_empty()) {
-		if (completion_call.call == nullptr && tokenizer->is_past_cursor()) {
-			completion_call = completion_call_stack.back()->get();
-			passed_cursor = true;
-		}
-	}
 	previous = current;
 	current = tokenizer->scan();
 	while (current.type == GDScriptTokenizer::Token::ERROR) {
@@ -613,12 +613,12 @@ void GDScriptParser::parse_program() {
 	current_class = head;
 	bool can_have_class_or_extends = true;
 
-#define PUSH_PENDING_ANNOTATIONS_TO_HEAD                  \
-	if (!annotation_stack.is_empty()) {                   \
-		for (AnnotationNode * annot : annotation_stack) { \
-			head->annotations.push_back(annot);           \
-		}                                                 \
-		annotation_stack.clear();                         \
+#define PUSH_PENDING_ANNOTATIONS_TO_HEAD                 \
+	if (!annotation_stack.is_empty()) {                  \
+		for (AnnotationNode *annot : annotation_stack) { \
+			head->annotations.push_back(annot);          \
+		}                                                \
+		annotation_stack.clear();                        \
 	}
 
 	while (!check(GDScriptTokenizer::Token::TK_EOF)) {
@@ -1087,7 +1087,27 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				// Display a completion with identifiers.
 				make_completion_context(COMPLETION_IDENTIFIER, nullptr);
 				advance();
-				push_error(vformat(R"(Unexpected %s in class body.)", previous.get_debug_name()));
+				if (previous.get_identifier() == "export") {
+					push_error(R"(The "export" keyword was removed in Godot 4. Use an export annotation ("@export", "@export_range", etc.) instead.)");
+				} else if (previous.get_identifier() == "tool") {
+					push_error(R"(The "tool" keyword was removed in Godot 4. Use the "@tool" annotation instead.)");
+				} else if (previous.get_identifier() == "onready") {
+					push_error(R"(The "onready" keyword was removed in Godot 4. Use the "@onready" annotation instead.)");
+				} else if (previous.get_identifier() == "remote") {
+					push_error(R"(The "remote" keyword was removed in Godot 4. Use the "@rpc" annotation with "any_peer" instead.)");
+				} else if (previous.get_identifier() == "remotesync") {
+					push_error(R"(The "remotesync" keyword was removed in Godot 4. Use the "@rpc" annotation with "any_peer" and "call_local" instead.)");
+				} else if (previous.get_identifier() == "puppet") {
+					push_error(R"(The "puppet" keyword was removed in Godot 4. Use the "@rpc" annotation with "authority" instead.)");
+				} else if (previous.get_identifier() == "puppetsync") {
+					push_error(R"(The "puppetsync" keyword was removed in Godot 4. Use the "@rpc" annotation with "authority" and "call_local" instead.)");
+				} else if (previous.get_identifier() == "master") {
+					push_error(R"(The "master" keyword was removed in Godot 4. Use the "@rpc" annotation with "any_peer" and perform a check inside the function instead.)");
+				} else if (previous.get_identifier() == "mastersync") {
+					push_error(R"(The "mastersync" keyword was removed in Godot 4. Use the "@rpc" annotation with "any_peer" and "call_local", and perform a check inside the function instead.)");
+				} else {
+					push_error(vformat(R"(Unexpected %s in class body.)", previous.get_debug_name()));
+				}
 				break;
 		}
 		if (token.type != GDScriptTokenizer::Token::STATIC) {
@@ -2720,16 +2740,16 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_builtin_constant(Expressio
 
 	switch (op_type) {
 		case GDScriptTokenizer::Token::CONST_PI:
-			constant->value = Math_PI;
+			constant->value = Math::PI;
 			break;
 		case GDScriptTokenizer::Token::CONST_TAU:
-			constant->value = Math_TAU;
+			constant->value = Math::TAU;
 			break;
 		case GDScriptTokenizer::Token::CONST_INF:
-			constant->value = INFINITY;
+			constant->value = Math::INF;
 			break;
 		case GDScriptTokenizer::Token::CONST_NAN:
-			constant->value = NAN;
+			constant->value = Math::NaN;
 			break;
 		default:
 			return nullptr; // Unreachable.
@@ -3122,13 +3142,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 				case DictionaryNode::LUA_TABLE:
 					if (key != nullptr && key->type != Node::IDENTIFIER && key->type != Node::LITERAL) {
 						push_error(R"(Expected identifier or string as Lua-style dictionary key (e.g "{ key = value }").)");
-						advance();
-						break;
 					}
 					if (key != nullptr && key->type == Node::LITERAL && static_cast<LiteralNode *>(key)->value.get_type() != Variant::STRING) {
 						push_error(R"(Expected identifier or string as Lua-style dictionary key (e.g "{ key = value }").)");
-						advance();
-						break;
 					}
 					if (!match(GDScriptTokenizer::Token::EQUAL)) {
 						if (match(GDScriptTokenizer::Token::COLON)) {
@@ -3168,6 +3184,21 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 			if (key != nullptr && value != nullptr) {
 				dictionary->elements.push_back({ key, value });
 			}
+
+			// Do phrase level recovery by inserting an imaginary expression for missing keys or values.
+			// This ensures the successfully parsed expression is part of the AST and can be analyzed.
+			if (key != nullptr && value == nullptr) {
+				LiteralNode *dummy = alloc_recovery_node<LiteralNode>();
+				dummy->value = Variant();
+
+				dictionary->elements.push_back({ key, dummy });
+			} else if (key == nullptr && value != nullptr) {
+				LiteralNode *dummy = alloc_recovery_node<LiteralNode>();
+				dummy->value = Variant();
+
+				dictionary->elements.push_back({ dummy, value });
+			}
+
 		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
 	}
 	pop_multiline();
@@ -3340,6 +3371,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	int argument_index = 0;
 	do {
 		make_completion_context(ct, call, argument_index);
+		set_last_completion_call_arg(argument_index);
 		if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
 			// Allow for trailing comma.
 			break;
@@ -4357,7 +4389,7 @@ static StringName _find_narrowest_native_or_global_class(const GDScriptParser::D
 			}
 
 			if (p_type.is_meta_type) {
-				return script.is_valid() ? script->get_class() : Script::get_class_static();
+				return script.is_valid() ? script->get_class_name() : Script::get_class_static();
 			}
 			if (script.is_null()) {
 				return p_type.native_type;
@@ -5257,7 +5289,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 		case SCRIPT:
 			result.type = Variant::OBJECT;
 			if (is_meta_type) {
-				result.class_name = script_type.is_valid() ? script_type->get_class() : Script::get_class_static();
+				result.class_name = script_type.is_valid() ? script_type->get_class_name() : Script::get_class_static();
 			} else if (script_type.is_valid() && script_type->get_global_name() != StringName()) {
 				result.class_name = script_type->get_global_name();
 			} else {

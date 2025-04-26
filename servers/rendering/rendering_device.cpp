@@ -1108,6 +1108,7 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 	// Create view.
 
 	Texture texture = *src_texture;
+	texture.slice_trackers = nullptr;
 	texture.shared_fallback = nullptr;
 
 	RDD::TextureView tv;
@@ -1165,8 +1166,6 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 	}
 
 	ERR_FAIL_COND_V(!texture.driver_id, RID());
-
-	texture.slice_trackers.clear();
 
 	if (texture.draw_tracker != nullptr) {
 		texture.draw_tracker->reference_count++;
@@ -1262,6 +1261,7 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 	}
 
 	Texture texture = *src_texture;
+	texture.slice_trackers = nullptr;
 	texture.shared_fallback = nullptr;
 
 	get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, p_mipmap + 1, &texture.width, &texture.height);
@@ -2759,6 +2759,10 @@ void RenderingDevice::_vrs_detect_method() {
 		default:
 			break;
 	}
+}
+
+RD::VRSMethod RenderingDevice::vrs_get_method() const {
+	return vrs_method;
 }
 
 RD::DataFormat RenderingDevice::vrs_get_format() const {
@@ -4407,7 +4411,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	thread_local LocalVector<RDD::RenderPassClearValue> clear_values;
 	thread_local LocalVector<RDG::ResourceTracker *> resource_trackers;
 	thread_local LocalVector<RDG::ResourceUsage> resource_usages;
-	BitField<RDD::PipelineStageBits> stages;
+	BitField<RDD::PipelineStageBits> stages = {};
 	operations.resize(framebuffer->texture_ids.size());
 	clear_values.resize(framebuffer->texture_ids.size());
 	resource_trackers.clear();
@@ -5869,9 +5873,12 @@ bool RenderingDevice::_texture_make_mutable(Texture *p_texture, RID p_texture_id
 					p_texture->draw_tracker->reference_count++;
 				} else {
 					// Slice texture.
-					HashMap<Rect2i, RDG::ResourceTracker *>::ConstIterator draw_tracker_iterator = owner_texture->slice_trackers.find(p_texture->slice_rect);
+					if (owner_texture->slice_trackers == nullptr) {
+						owner_texture->slice_trackers = memnew((HashMap<Rect2i, RDG::ResourceTracker *>));
+					}
+					HashMap<Rect2i, RDG::ResourceTracker *>::ConstIterator draw_tracker_iterator = owner_texture->slice_trackers->find(p_texture->slice_rect);
 					RDG::ResourceTracker *draw_tracker = nullptr;
-					if (draw_tracker_iterator != owner_texture->slice_trackers.end()) {
+					if (draw_tracker_iterator != owner_texture->slice_trackers->end()) {
 						// Reuse the tracker at the matching rectangle.
 						draw_tracker = draw_tracker_iterator->value;
 					} else {
@@ -5883,10 +5890,9 @@ bool RenderingDevice::_texture_make_mutable(Texture *p_texture, RID p_texture_id
 						draw_tracker->texture_subresources = p_texture->barrier_range();
 						draw_tracker->texture_usage = p_texture->usage_flags;
 						draw_tracker->texture_slice_or_dirty_rect = p_texture->slice_rect;
-						owner_texture->slice_trackers[p_texture->slice_rect] = draw_tracker;
+						(*owner_texture->slice_trackers)[p_texture->slice_rect] = draw_tracker;
 					}
 
-					p_texture->slice_trackers.clear();
 					p_texture->draw_tracker = draw_tracker;
 					p_texture->draw_tracker->reference_count++;
 				}
@@ -6045,8 +6051,13 @@ void RenderingDevice::_free_internal(RID p_id) {
 				if (texture->owner.is_valid() && (texture->slice_type != TEXTURE_SLICE_MAX)) {
 					// If this was a texture slice, erase the tracker from the map.
 					Texture *owner_texture = texture_owner.get_or_null(texture->owner);
-					if (owner_texture != nullptr) {
-						owner_texture->slice_trackers.erase(texture->slice_rect);
+					if (owner_texture != nullptr && owner_texture->slice_trackers != nullptr) {
+						owner_texture->slice_trackers->erase(texture->slice_rect);
+
+						if (owner_texture->slice_trackers->is_empty()) {
+							memdelete(owner_texture->slice_trackers);
+							owner_texture->slice_trackers = nullptr;
+						}
 					}
 				}
 			}
@@ -6694,7 +6705,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	// Pick the main queue family. It is worth noting we explicitly do not request the transfer bit, as apparently the specification defines
 	// that the existence of either the graphics or compute bit implies that the queue can also do transfer operations, but it is optional
 	// to indicate whether it supports them or not with the dedicated transfer bit if either is set.
-	BitField<RDD::CommandQueueFamilyBits> main_queue_bits;
+	BitField<RDD::CommandQueueFamilyBits> main_queue_bits = {};
 	main_queue_bits.set_flag(RDD::COMMAND_QUEUE_FAMILY_GRAPHICS_BIT);
 	main_queue_bits.set_flag(RDD::COMMAND_QUEUE_FAMILY_COMPUTE_BIT);
 
@@ -6839,7 +6850,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		// Only the instance that is not a local device and is also the singleton is allowed to manage a pipeline cache.
 		pipeline_cache_file_path = vformat("user://vulkan/pipelines.%s.%s",
 				OS::get_singleton()->get_current_rendering_method(),
-				device.name.validate_filename().replace(" ", "_").to_lower());
+				device.name.validate_filename().replace_char(' ', '_').to_lower());
 		if (Engine::get_singleton()->is_editor_hint()) {
 			pipeline_cache_file_path += ".editor";
 		}
@@ -6935,21 +6946,20 @@ void RenderingDevice::_save_pipeline_cache(void *p_data) {
 
 template <typename T>
 void RenderingDevice::_free_rids(T &p_owner, const char *p_type) {
-	List<RID> owned;
-	p_owner.get_owned_list(&owned);
+	LocalVector<RID> owned = p_owner.get_owned_list();
 	if (owned.size()) {
 		if (owned.size() == 1) {
 			WARN_PRINT(vformat("1 RID of type \"%s\" was leaked.", p_type));
 		} else {
 			WARN_PRINT(vformat("%d RIDs of type \"%s\" were leaked.", owned.size(), p_type));
 		}
-		for (const RID &E : owned) {
+		for (const RID &rid : owned) {
 #ifdef DEV_ENABLED
-			if (resource_names.has(E)) {
-				print_line(String(" - ") + resource_names[E]);
+			if (resource_names.has(rid)) {
+				print_line(String(" - ") + resource_names[rid]);
 			}
 #endif
-			free(E);
+			free(rid);
 		}
 	}
 }
@@ -7146,36 +7156,35 @@ void RenderingDevice::finalize() {
 	_free_rids(sampler_owner, "Sampler");
 	{
 		// For textures it's a bit more difficult because they may be shared.
-		List<RID> owned;
-		texture_owner.get_owned_list(&owned);
+		LocalVector<RID> owned = texture_owner.get_owned_list();
 		if (owned.size()) {
 			if (owned.size() == 1) {
 				WARN_PRINT("1 RID of type \"Texture\" was leaked.");
 			} else {
 				WARN_PRINT(vformat("%d RIDs of type \"Texture\" were leaked.", owned.size()));
 			}
+			LocalVector<RID> owned_non_shared;
 			// Free shared first.
-			for (List<RID>::Element *E = owned.front(); E;) {
-				List<RID>::Element *N = E->next();
-				if (texture_is_shared(E->get())) {
+			for (const RID &texture_rid : owned) {
+				if (texture_is_shared(texture_rid)) {
 #ifdef DEV_ENABLED
-					if (resource_names.has(E->get())) {
-						print_line(String(" - ") + resource_names[E->get()]);
+					if (resource_names.has(texture_rid)) {
+						print_line(String(" - ") + resource_names[texture_rid]);
 					}
 #endif
-					free(E->get());
-					owned.erase(E);
+					free(texture_rid);
+				} else {
+					owned_non_shared.push_back(texture_rid);
 				}
-				E = N;
 			}
 			// Free non shared second, this will avoid an error trying to free unexisting textures due to dependencies.
-			for (const RID &E : owned) {
+			for (const RID &texture_rid : owned_non_shared) {
 #ifdef DEV_ENABLED
-				if (resource_names.has(E)) {
-					print_line(String(" - ") + resource_names[E]);
+				if (resource_names.has(texture_rid)) {
+					print_line(String(" - ") + resource_names[texture_rid]);
 				}
 #endif
-				free(E);
+				free(texture_rid);
 			}
 		}
 	}

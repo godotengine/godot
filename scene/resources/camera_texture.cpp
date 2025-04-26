@@ -142,7 +142,12 @@ bool CameraTexture::get_camera_active() const {
 	}
 }
 
-CameraTexture::CameraTexture() {}
+CameraTexture::CameraTexture() {
+	// Note: When any CameraTexture is created, we need to automatically activate monitoring
+	//       of camera feeds. This may incur a small lag spike, so it may be preferable to
+	//       enable it manually before creating the camera texture.
+	CameraServer::get_singleton()->set_monitoring_feeds(true);
+}
 
 CameraTexture::~CameraTexture() {
 	if (_texture.is_valid()) {

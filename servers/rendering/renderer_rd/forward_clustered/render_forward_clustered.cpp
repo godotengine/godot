@@ -1015,7 +1015,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 				}
 			}
 			if (p_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || p_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI || p_pass_mode == PASS_MODE_COLOR) {
-				bool transform_changed = inst->prev_transform_change_frame == frame;
+				bool transform_changed = inst->transform_status == GeometryInstanceForwardClustered::TransformStatus::MOVED;
 				bool has_mesh_instance = inst->mesh_instance.is_valid();
 				bool uses_particles = inst->base_flags & INSTANCE_DATA_FLAG_PARTICLES;
 				bool is_multimesh_with_motion = !uses_particles && (inst->base_flags & INSTANCE_DATA_FLAG_MULTIMESH) && mesh_storage->_multimesh_uses_motion_vectors_offsets(inst->data->base);
@@ -1044,9 +1044,9 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 			lod_distance = surface_distance.length();
 		}
 
-		if (unlikely(inst->prev_transform_dirty && frame > inst->prev_transform_change_frame + 1 && inst->prev_transform_change_frame)) {
+		if (unlikely(inst->transform_status != GeometryInstanceForwardClustered::TransformStatus::NONE && frame > inst->prev_transform_change_frame + 1 && inst->prev_transform_change_frame)) {
 			inst->prev_transform = inst->transform;
-			inst->prev_transform_dirty = false;
+			inst->transform_status = GeometryInstanceForwardClustered::TransformStatus::NONE;
 		}
 
 		while (surf) {
@@ -1902,16 +1902,25 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		color_framebuffer = rb_data->get_color_pass_fb(color_pass_flags);
 	}
 
-	if (using_sss || using_separate_specular || scene_state.used_lightmap || using_voxelgi) {
+	// Ensure this is allocated so we don't get a stutter the first time an object with SSS appears on screen.
+	if (global_surface_data.sss_used) {
+		rb_data->ensure_specular();
+	}
+
+	if (global_surface_data.normal_texture_used) {
+		rb_data->ensure_normal_roughness_texture();
+	}
+
+	if (using_sss || using_separate_specular || scene_state.used_lightmap || using_voxelgi || global_surface_data.sss_used) {
 		scene_shader.enable_advanced_shader_group(p_render_data->scene_data->view_count > 1);
 	}
 
 	// Update the global pipeline requirements with all the features found to be in use in this scene.
-	if (depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS) {
+	if (depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || global_surface_data.normal_texture_used) {
 		global_pipeline_data_required.use_normal_and_roughness = true;
 	}
 
-	if (scene_state.used_lightmap) {
+	if (scene_state.used_lightmap || scene_state.lightmaps_used > 0) {
 		global_pipeline_data_required.use_lightmaps = true;
 	}
 
@@ -1919,7 +1928,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		global_pipeline_data_required.use_voxelgi = true;
 	}
 
-	if (using_separate_specular) {
+	if (using_separate_specular || global_surface_data.sss_used) {
 		global_pipeline_data_required.use_separate_specular = true;
 	}
 
@@ -2290,18 +2299,26 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		rb->ensure_upscaled();
 	}
 
-	if (scene_state.used_screen_texture) {
+	if (scene_state.used_screen_texture || global_surface_data.screen_texture_used) {
 		RENDER_TIMESTAMP("Copy Screen Texture");
 
-		// Copy screen texture to backbuffer so we can read from it
-		_render_buffers_copy_screen_texture(p_render_data);
+		_render_buffers_ensure_screen_texture(p_render_data);
+
+		if (scene_state.used_screen_texture) {
+			// Copy screen texture to backbuffer so we can read from it
+			_render_buffers_copy_screen_texture(p_render_data);
+		}
 	}
 
-	if (scene_state.used_depth_texture) {
+	if (scene_state.used_depth_texture || global_surface_data.depth_texture_used) {
 		RENDER_TIMESTAMP("Copy Depth Texture");
 
-		// Copy depth texture to backbuffer so we can read from it
-		_render_buffers_copy_depth_texture(p_render_data);
+		_render_buffers_ensure_depth_texture(p_render_data);
+
+		if (scene_state.used_depth_texture) {
+			// Copy depth texture to backbuffer so we can read from it
+			_render_buffers_copy_depth_texture(p_render_data);
+		}
 	}
 
 	{
@@ -3935,18 +3952,22 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 
 	if (p_material->shader_data->uses_sss) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SUBSURFACE_SCATTERING;
+		global_surface_data.sss_used = true;
 	}
 
 	if (p_material->shader_data->uses_screen_texture) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SCREEN_TEXTURE;
+		global_surface_data.screen_texture_used = true;
 	}
 
 	if (p_material->shader_data->uses_depth_texture) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_DEPTH_TEXTURE;
+		global_surface_data.depth_texture_used = true;
 	}
 
 	if (p_material->shader_data->uses_normal_texture) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_NORMAL_TEXTURE;
+		global_surface_data.normal_texture_used = true;
 	}
 
 	if (ginstance->data->cast_double_sided_shadows) {
@@ -4673,10 +4694,17 @@ void RenderForwardClustered::GeometryInstanceForwardClustered::set_transform(con
 	if (frame != prev_transform_change_frame) {
 		prev_transform = transform;
 		prev_transform_change_frame = frame;
-		prev_transform_dirty = true;
+		transform_status = TransformStatus::MOVED;
+	} else if (unlikely(transform_status == TransformStatus::TELEPORTED)) {
+		prev_transform = transform;
 	}
 
 	RenderGeometryInstanceBase::set_transform(p_transform, p_aabb, p_transformed_aabb);
+}
+
+void RenderForwardClustered::GeometryInstanceForwardClustered::reset_motion_vectors() {
+	prev_transform = transform;
+	transform_status = TransformStatus::TELEPORTED;
 }
 
 void RenderForwardClustered::GeometryInstanceForwardClustered::set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {

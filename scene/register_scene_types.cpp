@@ -57,6 +57,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/foldable_container.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/graph_frame.h"
 #include "scene/gui/graph_node.h"
@@ -147,6 +148,7 @@
 #include "scene/resources/style_box_line.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
@@ -518,6 +520,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GraphNode);
 	GDREGISTER_CLASS(GraphFrame);
 	GDREGISTER_CLASS(GraphEdit);
+
+	GDREGISTER_CLASS(FoldableGroup);
+	GDREGISTER_CLASS(FoldableContainer);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -1015,6 +1020,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PlaceholderTexture2DArray);
 	GDREGISTER_CLASS(PlaceholderCubemap);
 	GDREGISTER_CLASS(PlaceholderCubemapArray);
+	GDREGISTER_CLASS(SVGTexture);
 
 	// These classes are part of renderer_rd
 	GDREGISTER_CLASS(Texture2DRD);

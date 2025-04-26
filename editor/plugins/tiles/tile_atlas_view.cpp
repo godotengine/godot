@@ -650,6 +650,7 @@ TileAtlasView::TileAtlasView() {
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
 	button_center_view->set_tooltip_text(TTR("Center View"));
+	button_center_view->set_accessibility_name(TTRC("Center View"));
 	add_child(button_center_view);
 
 	panner.instantiate();
@@ -665,6 +666,7 @@ TileAtlasView::TileAtlasView() {
 	panel->add_child(center_container);
 
 	missing_source_label = memnew(Label);
+	missing_source_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	missing_source_label->set_text(TTR("The selected atlas source has no valid texture. Assign a texture in the TileSet bottom tab."));
 	center_container->add_child(missing_source_label);
 

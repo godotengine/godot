@@ -213,6 +213,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_ROUGHNESS_GRAY",
 	"HINT_ANISOTROPY_TEXTURE",
 	"HINT_SOURCE_COLOR",
+	"HINT_COLOR_CONVERSION_DISABLED",
 	"HINT_RANGE",
 	"HINT_ENUM",
 	"HINT_INSTANCE_INDEX",
@@ -368,6 +369,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	// hints
 
 	{ TK_HINT_SOURCE_COLOR, "source_color", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_COLOR_CONVERSION_DISABLED, "color_conversion_disabled", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_RANGE, "hint_range", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_ENUM, "hint_enum", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_INSTANCE_INDEX, "instance_index", CF_UNSPECIFIED, {}, {} },
@@ -1188,6 +1190,9 @@ String ShaderLanguage::get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint) {
 		case ShaderNode::Uniform::HINT_SOURCE_COLOR: {
 			result = "source_color";
 		} break;
+		case ShaderNode::Uniform::HINT_COLOR_CONVERSION_DISABLED: {
+			result = "color_conversion_disabled";
+		} break;
 		case ShaderNode::Uniform::HINT_NORMAL: {
 			result = "hint_normal";
 		} break;
@@ -1394,6 +1399,9 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 			if (r_is_const) {
 				*r_is_const = p_function_info.built_ins[p_identifier].constant;
 			}
+			if (r_constant_values) {
+				*r_constant_values = p_function_info.built_ins[p_identifier].values;
+			}
 			if (r_type) {
 				*r_type = IDENTIFIER_BUILTIN_VAR;
 			}
@@ -1546,7 +1554,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 	return false;
 }
 
-bool ShaderLanguage::_validate_operator(const BlockNode *p_block, OperatorNode *p_op, DataType *r_ret_type, int *r_ret_size) {
+bool ShaderLanguage::_validate_operator(const BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_op, DataType *r_ret_type, int *r_ret_size) {
 	bool valid = false;
 	DataType ret_type = TYPE_VOID;
 	int ret_size = 0;
@@ -2012,18 +2020,18 @@ bool ShaderLanguage::_validate_operator(const BlockNode *p_block, OperatorNode *
 
 	if (valid && (!p_block || p_block->use_op_eval)) {
 		// Need to be placed here and not in the `_reduce_expression` because otherwise expressions like `1 + 2 / 2` will not work correctly.
-		valid = _eval_operator(p_block, p_op);
+		valid = _eval_operator(p_block, p_function_info, p_op);
 	}
 
 	return valid;
 }
 
-Vector<ShaderLanguage::Scalar> ShaderLanguage::_get_node_values(const BlockNode *p_block, Node *p_node) {
+Vector<ShaderLanguage::Scalar> ShaderLanguage::_get_node_values(const BlockNode *p_block, const FunctionInfo &p_function_info, Node *p_node) {
 	Vector<Scalar> result;
 
 	switch (p_node->type) {
 		case Node::NODE_TYPE_VARIABLE: {
-			_find_identifier(p_block, false, FunctionInfo(), static_cast<VariableNode *>(p_node)->name, nullptr, nullptr, nullptr, nullptr, nullptr, &result);
+			_find_identifier(p_block, false, p_function_info, static_cast<VariableNode *>(p_node)->name, nullptr, nullptr, nullptr, nullptr, nullptr, &result);
 		} break;
 		default: {
 			result = p_node->get_values();
@@ -2033,7 +2041,7 @@ Vector<ShaderLanguage::Scalar> ShaderLanguage::_get_node_values(const BlockNode 
 	return result;
 }
 
-bool ShaderLanguage::_eval_operator(const BlockNode *p_block, OperatorNode *p_op) {
+bool ShaderLanguage::_eval_operator(const BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_op) {
 	bool is_valid = true;
 
 	switch (p_op->op) {
@@ -2075,8 +2083,8 @@ bool ShaderLanguage::_eval_operator(const BlockNode *p_block, OperatorNode *p_op
 				}
 			}
 
-			Vector<Scalar> va = _get_node_values(p_block, p_op->arguments[0]);
-			Vector<Scalar> vb = _get_node_values(p_block, p_op->arguments[1]);
+			Vector<Scalar> va = _get_node_values(p_block, p_function_info, p_op->arguments[0]);
+			Vector<Scalar> vb = _get_node_values(p_block, p_function_info, p_op->arguments[1]);
 
 			if (is_op_vec_transform) {
 				p_op->values = _eval_vector_transform(va, vb, a, b, p_op->get_datatype());
@@ -2087,7 +2095,7 @@ bool ShaderLanguage::_eval_operator(const BlockNode *p_block, OperatorNode *p_op
 		case OP_NOT:
 		case OP_NEGATE:
 		case OP_BIT_INVERT: {
-			p_op->values = _eval_unary_vector(_get_node_values(p_block, p_op->arguments[0]), p_op->get_datatype(), p_op->op);
+			p_op->values = _eval_unary_vector(_get_node_values(p_block, p_function_info, p_op->arguments[0]), p_op->get_datatype(), p_op->op);
 		} break;
 		default: {
 		} break;
@@ -3656,7 +3664,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 								int max = builtin_func_const_args[constarg_idx].max;
 
 								bool error = false;
-								Vector<Scalar> values = _get_node_values(p_block, p_func->arguments[arg]);
+								Vector<Scalar> values = _get_node_values(p_block, p_function_info, p_func->arguments[arg]);
 								if (p_func->arguments[arg]->get_datatype() == TYPE_INT && !values.is_empty()) {
 									if (values[0].sint < min || values[0].sint > max) {
 										error = true;
@@ -4195,6 +4203,10 @@ bool ShaderLanguage::is_sampler_type(DataType p_type) {
 	return p_type > TYPE_MAT4 && p_type < TYPE_STRUCT;
 }
 
+bool ShaderLanguage::ShaderLanguage::is_hint_color(ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
+	return p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR || p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR_CONVERSION_DISABLED;
+}
+
 Variant ShaderLanguage::constant_value_to_variant(const Vector<Scalar> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
 	int array_size = p_array_size;
 
@@ -4379,7 +4391,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<Scalar> &p_value,
 				if (array_size > 0) {
 					array_size *= 3;
 
-					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					if (ShaderLanguage::is_hint_color(p_hint)) {
 						PackedColorArray array;
 						for (int i = 0; i < array_size; i += 3) {
 							array.push_back(Color(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
@@ -4393,7 +4405,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<Scalar> &p_value,
 						value = Variant(array);
 					}
 				} else {
-					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					if (ShaderLanguage::is_hint_color(p_hint)) {
 						value = Variant(Color(p_value[0].real, p_value[1].real, p_value[2].real));
 					} else {
 						value = Variant(Vector3(p_value[0].real, p_value[1].real, p_value[2].real));
@@ -4404,7 +4416,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<Scalar> &p_value,
 				if (array_size > 0) {
 					array_size *= 4;
 
-					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					if (ShaderLanguage::is_hint_color(p_hint)) {
 						PackedColorArray array;
 						for (int i = 0; i < array_size; i += 4) {
 							array.push_back(Color(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real, p_value[i + 3].real));
@@ -4418,7 +4430,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<Scalar> &p_value,
 						value = Variant(array);
 					}
 				} else {
-					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					if (ShaderLanguage::is_hint_color(p_hint)) {
 						value = Variant(Color(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
 					} else {
 						value = Variant(Vector4(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
@@ -4922,14 +4934,14 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			break;
 		case ShaderLanguage::TYPE_VEC3:
 			if (p_uniform.array_size > 0) {
-				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+				if (ShaderLanguage::is_hint_color(p_uniform.hint)) {
 					pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
 					pi.type = Variant::PACKED_COLOR_ARRAY;
 				} else {
 					pi.type = Variant::PACKED_VECTOR3_ARRAY;
 				}
 			} else {
-				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+				if (ShaderLanguage::is_hint_color(p_uniform.hint)) {
 					pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
 					pi.type = Variant::COLOR;
 				} else {
@@ -4939,13 +4951,13 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			break;
 		case ShaderLanguage::TYPE_VEC4: {
 			if (p_uniform.array_size > 0) {
-				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+				if (ShaderLanguage::is_hint_color(p_uniform.hint)) {
 					pi.type = Variant::PACKED_COLOR_ARRAY;
 				} else {
 					pi.type = Variant::PACKED_VECTOR4_ARRAY;
 				}
 			} else {
-				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+				if (ShaderLanguage::is_hint_color(p_uniform.hint)) {
 					pi.type = Variant::COLOR;
 				} else {
 					pi.type = Variant::VECTOR4;
@@ -5653,7 +5665,7 @@ Error ShaderLanguage::_parse_array_size(BlockNode *p_block, const FunctionInfo &
 		Node *expr = _parse_and_reduce_expression(p_block, p_function_info);
 
 		if (expr) {
-			Vector<Scalar> values = _get_node_values(p_block, expr);
+			Vector<Scalar> values = _get_node_values(p_block, p_function_info, expr);
 
 			if (!values.is_empty()) {
 				switch (expr->get_datatype()) {
@@ -7270,7 +7282,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				op->op = tk.type == TK_OP_DECREMENT ? OP_POST_DECREMENT : OP_POST_INCREMENT;
 				op->arguments.push_back(expr);
 
-				if (!_validate_operator(p_block, op, &op->return_cache, &op->return_array_size)) {
+				if (!_validate_operator(p_block, p_function_info, op, &op->return_cache, &op->return_array_size)) {
 					_set_error(RTR("Invalid base type for increment/decrement operator."));
 					return nullptr;
 				}
@@ -7622,7 +7634,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				expression.write[i].is_op = false;
 				expression.write[i].node = op;
 
-				if (!_validate_operator(p_block, op, &op->return_cache, &op->return_array_size)) {
+				if (!_validate_operator(p_block, p_function_info, op, &op->return_cache, &op->return_array_size)) {
 					if (error_set) {
 						return nullptr;
 					}
@@ -7664,7 +7676,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			expression.write[next_op - 1].is_op = false;
 			expression.write[next_op - 1].node = op;
-			if (!_validate_operator(p_block, op, &op->return_cache, &op->return_array_size)) {
+			if (!_validate_operator(p_block, p_function_info, op, &op->return_cache, &op->return_array_size)) {
 				if (error_set) {
 					return nullptr;
 				}
@@ -7731,7 +7743,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			//replace all 3 nodes by this operator and make it an expression
 
-			if (!_validate_operator(p_block, op, &op->return_cache, &op->return_array_size)) {
+			if (!_validate_operator(p_block, p_function_info, op, &op->return_cache, &op->return_array_size)) {
 				if (error_set) {
 					return nullptr;
 				}
@@ -9064,6 +9076,40 @@ Error ShaderLanguage::_validate_precision(DataType p_type, DataPrecision p_preci
 	return OK;
 }
 
+bool ShaderLanguage::_parse_numeric_constant_expression(const FunctionInfo &p_function_info, float &r_constant) {
+	ShaderLanguage::Node *expr = _parse_and_reduce_expression(nullptr, p_function_info);
+	if (expr == nullptr) {
+		return false;
+	}
+
+	Vector<Scalar> values;
+	if (expr->type == Node::NODE_TYPE_VARIABLE) {
+		_find_identifier(nullptr, false, p_function_info, static_cast<VariableNode *>(expr)->name, nullptr, nullptr, nullptr, nullptr, nullptr, &values);
+	} else {
+		values = expr->get_values();
+	}
+
+	if (values.is_empty()) {
+		return false; // To prevent possible crash.
+	}
+
+	switch (expr->get_datatype()) {
+		case TYPE_FLOAT:
+			r_constant = values[0].real;
+			break;
+		case TYPE_INT:
+			r_constant = static_cast<float>(values[0].sint);
+			break;
+		case TYPE_UINT:
+			r_constant = static_cast<float>(values[0].uint);
+			break;
+		default:
+			return false;
+	}
+
+	return true;
+}
+
 Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types) {
 	Token tk;
 	TkPos prev_pos;
@@ -9720,7 +9766,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 							if (uniform.array_size > 0) {
 								static Vector<int> supported_hints = {
-									TK_HINT_SOURCE_COLOR, TK_REPEAT_DISABLE, TK_REPEAT_ENABLE,
+									TK_HINT_SOURCE_COLOR, TK_HINT_COLOR_CONVERSION_DISABLED, TK_REPEAT_DISABLE, TK_REPEAT_ENABLE,
 									TK_FILTER_LINEAR, TK_FILTER_LINEAR_MIPMAP, TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC,
 									TK_FILTER_NEAREST, TK_FILTER_NEAREST_MIPMAP, TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC
 								};
@@ -9750,6 +9796,18 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									} else {
 										new_hint = ShaderNode::Uniform::HINT_SOURCE_COLOR;
 									}
+								} break;
+								case TK_HINT_COLOR_CONVERSION_DISABLED: {
+									if (type != TYPE_VEC3 && type != TYPE_VEC4) {
+										_set_error(vformat(RTR("Source color conversion disabled hint is for '%s', '%s'."), "vec3", "vec4"));
+										return ERR_PARSE_ERROR;
+									}
+									if (uniform.hint != ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+										_set_error(vformat(RTR("Hint '%s' should be preceded by '%s'."), "color_conversion_disabled", "source_color"));
+										return ERR_PARSE_ERROR;
+									}
+									uniform.hint = ShaderNode::Uniform::HINT_NONE;
+									new_hint = ShaderNode::Uniform::HINT_COLOR_CONVERSION_DISABLED;
 								} break;
 								case TK_HINT_DEFAULT_BLACK_TEXTURE: {
 									new_hint = ShaderNode::Uniform::HINT_DEFAULT_BLACK;
@@ -9796,58 +9854,30 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										return ERR_PARSE_ERROR;
 									}
 
-									tk = _get_token();
-
-									float sign = 1.0;
-
-									if (tk.type == TK_OP_SUB) {
-										sign = -1.0;
-										tk = _get_token();
-									}
-
-									if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
-										_set_error(RTR("Expected an integer constant."));
+									if (!_parse_numeric_constant_expression(constants, uniform.hint_range[0])) {
+										_set_error(RTR("Expected a valid numeric expression."));
 										return ERR_PARSE_ERROR;
 									}
-
-									uniform.hint_range[0] = tk.constant;
-									uniform.hint_range[0] *= sign;
 
 									tk = _get_token();
 
 									if (tk.type != TK_COMMA) {
-										_set_error(RTR("Expected ',' after integer constant."));
+										_set_expected_error(",");
 										return ERR_PARSE_ERROR;
 									}
 
-									tk = _get_token();
-
-									sign = 1.0;
-
-									if (tk.type == TK_OP_SUB) {
-										sign = -1.0;
-										tk = _get_token();
-									}
-
-									if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
-										_set_error(RTR("Expected an integer constant after ','."));
+									if (!_parse_numeric_constant_expression(constants, uniform.hint_range[1])) {
+										_set_error(RTR("Expected a valid numeric expression after ','."));
 										return ERR_PARSE_ERROR;
 									}
-
-									uniform.hint_range[1] = tk.constant;
-									uniform.hint_range[1] *= sign;
 
 									tk = _get_token();
 
 									if (tk.type == TK_COMMA) {
-										tk = _get_token();
-
-										if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
-											_set_error(RTR("Expected an integer constant after ','."));
+										if (!_parse_numeric_constant_expression(constants, uniform.hint_range[2])) {
+											_set_error(RTR("Expected a valid numeric expression after ','."));
 											return ERR_PARSE_ERROR;
 										}
-
-										uniform.hint_range[2] = tk.constant;
 										tk = _get_token();
 									} else {
 										if (type == TYPE_INT) {
@@ -9993,7 +10023,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									break;
 							}
 
-							bool is_sampler_hint = new_hint != ShaderNode::Uniform::HINT_NONE && new_hint != ShaderNode::Uniform::HINT_SOURCE_COLOR && new_hint != ShaderNode::Uniform::HINT_RANGE && new_hint != ShaderNode::Uniform::HINT_ENUM;
+							bool is_sampler_hint = new_hint != ShaderNode::Uniform::HINT_NONE && new_hint != ShaderNode::Uniform::HINT_SOURCE_COLOR && new_hint != ShaderNode::Uniform::HINT_COLOR_CONVERSION_DISABLED && new_hint != ShaderNode::Uniform::HINT_RANGE && new_hint != ShaderNode::Uniform::HINT_ENUM;
 							if (((new_filter != FILTER_DEFAULT || new_repeat != REPEAT_DEFAULT) || is_sampler_hint) && !is_sampler_type(type)) {
 								_set_error(RTR("This hint is only for sampler types."));
 								return ERR_PARSE_ERROR;
@@ -11788,6 +11818,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
 					ScriptLanguage::CodeCompletionOption option("source_color", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 					r_options->push_back(option);
+					r_options->push_back({ "color_conversion_disabled", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT });
 				}
 			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
 				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {

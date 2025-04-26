@@ -153,6 +153,9 @@
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the [Label]'s text.
 		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Label] is focused (when used with assistive apps).
+		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			Background [StyleBox] for the [Label].
 		</theme_item>

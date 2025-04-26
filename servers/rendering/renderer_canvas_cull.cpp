@@ -1440,7 +1440,7 @@ void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 		// Store circle center in the last point.
 		points_ptr[circle_segments + 1] = p_pos;
 
-		const real_t circle_point_step = Math_TAU / circle_segments;
+		const real_t circle_point_step = Math::TAU / circle_segments;
 
 		for (int i = 0; i < circle_segments + 1; i++) {
 			float angle = i * circle_point_step;
@@ -1484,7 +1484,7 @@ void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 		points.resize(2 * circle_segments + 2);
 		colors.resize(2 * circle_segments + 2);
 
-		const real_t circle_point_step = Math_TAU / circle_segments;
+		const real_t circle_point_step = Math::TAU / circle_segments;
 
 		Vector2 *points_ptr = points.ptrw();
 		Color *colors_ptr = colors.ptrw();
@@ -2670,16 +2670,15 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 template <typename T>
 void RendererCanvasCull::_free_rids(T &p_owner, const char *p_type) {
-	List<RID> owned;
-	p_owner.get_owned_list(&owned);
+	LocalVector<RID> owned = p_owner.get_owned_list();
 	if (owned.size()) {
 		if (owned.size() == 1) {
 			WARN_PRINT(vformat("1 RID of type \"%s\" was leaked.", p_type));
 		} else {
 			WARN_PRINT(vformat("%d RIDs of type \"%s\" were leaked.", owned.size(), p_type));
 		}
-		for (const RID &E : owned) {
-			free(E);
+		for (const RID &rid : owned) {
+			free(rid);
 		}
 	}
 }

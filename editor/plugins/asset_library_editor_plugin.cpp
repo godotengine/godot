@@ -136,6 +136,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	add_child(hb);
 
 	icon = memnew(TextureButton);
+	icon->set_accessibility_name(TTRC("Open asset details"));
 	icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	hb->add_child(icon);
 
@@ -145,11 +146,13 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	title = memnew(LinkButton);
+	title->set_accessibility_name(TTRC("Title"));
 	title->set_auto_translate_mode(AutoTranslateMode::AUTO_TRANSLATE_MODE_DISABLED);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(title);
 
 	category = memnew(LinkButton);
+	category->set_accessibility_name(TTRC("Category"));
 	category->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(category);
 
@@ -159,6 +162,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 
 	author = memnew(LinkButton);
 	author->set_tooltip_text(TTR("Author"));
+	author->set_accessibility_name(TTRC("Author"));
 	author_price_hbox->add_child(author);
 
 	author_price_hbox->add_child(memnew(HSeparator));
@@ -182,8 +186,10 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	label_margin->set_content_margin_all(0);
 
 	price = memnew(Label);
+	price->set_focus_mode(FOCUS_ACCESSIBILITY);
 	price->add_theme_style_override(CoreStringName(normal), label_margin);
 	price->set_tooltip_text(TTR("License"));
+	price->set_accessibility_name(TTRC("License"));
 	price->set_mouse_filter(MOUSE_FILTER_PASS);
 
 	author_price_hbox->add_child(price);
@@ -574,11 +580,13 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	HBoxContainer *title_hb = memnew(HBoxContainer);
 	vb->add_child(title_hb);
 	title = memnew(Label);
+	title->set_focus_mode(FOCUS_ACCESSIBILITY);
 	title_hb->add_child(title);
 	title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	dismiss_button = memnew(TextureButton);
 	dismiss_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItemDownload::_close));
+	dismiss_button->set_accessibility_name(TTRC("Close"));
 	title_hb->add_child(dismiss_button);
 
 	title->set_clip_text(true);
@@ -708,11 +716,11 @@ void EditorAssetLibrary::_update_repository_options() {
 	default_urls["godotengine.org (Official)"] = "https://godotengine.org/asset-library/api";
 	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
 	repository->clear();
-	Array keys = available_urls.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		String key = keys[i];
-		repository->add_item(key);
-		repository->set_item_metadata(i, available_urls[key]);
+	int i = 0;
+	for (const KeyValue<Variant, Variant> &kv : available_urls) {
+		repository->add_item(kv.key);
+		repository->set_item_metadata(i, kv.value);
+		i++;
 	}
 }
 
@@ -1707,6 +1715,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb->add_child(library_message_box);
 
 	library_message = memnew(Label);
+	library_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	library_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	library_message_box->add_child(library_message);
 
@@ -1740,6 +1749,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
 	error_label = memnew(Label);
+	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_hb->add_child(error_label);
 	error_tr = memnew(TextureRect);
 	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);

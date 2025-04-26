@@ -42,8 +42,6 @@
 #include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
 
-ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
-
 void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
 	localization_editor->connect_filesystem_dock_signals(p_fs_dock);
 	group_settings->connect_filesystem_dock_signals(p_fs_dock);
@@ -179,35 +177,45 @@ void ProjectSettingsEditor::_property_box_changed(const String &p_text) {
 }
 
 void ProjectSettingsEditor::_feature_selected(int p_index) {
-	Vector<String> t = property_box->get_text().strip_edges().split(".", true, 1);
-	const String feature = p_index ? "." + feature_box->get_item_text(p_index) : "";
-	property_box->set_text(t[0] + feature);
+	const String property = property_box->get_text().strip_edges().get_slicec('.', 0);
+	if (p_index == FEATURE_ALL) {
+		property_box->set_text(property);
+	} else if (p_index == FEATURE_CUSTOM) {
+		property_box->set_text(property + ".custom");
+		const int len = property.length() + 1;
+		property_box->select(len);
+		property_box->set_caret_column(len);
+		property_box->grab_focus();
+	} else {
+		property_box->set_text(property + "." + feature_box->get_item_text(p_index));
+	};
 	_update_property_box();
 }
 
 void ProjectSettingsEditor::_update_property_box() {
 	const String setting = _get_setting_name();
-	const Vector<String> t = setting.split(".", true, 1);
-	const String &name = t[0];
-	const String feature = (t.size() == 2) ? t[1] : "";
-	bool feature_invalid = (t.size() == 2) && (t[1].is_empty());
+	int slices = setting.get_slice_count(".");
+	const String name = setting.get_slicec('.', 0);
+	const String feature = setting.get_slicec('.', 1);
+	bool feature_invalid = slices > 2 || (slices == 2 && feature.is_empty());
 
 	add_button->set_disabled(true);
 	del_button->set_disabled(true);
 
-	if (!feature.is_empty()) {
-		feature_invalid = true;
-		for (int i = 1; i < feature_box->get_item_count(); i++) {
+	if (feature.is_empty() || feature_invalid) {
+		feature_box->select(FEATURE_ALL);
+	} else {
+		bool is_custom = true;
+		for (int i = FEATURE_FIRST; i < feature_box->get_item_count(); i++) {
 			if (feature == feature_box->get_item_text(i)) {
-				feature_invalid = false;
+				is_custom = false;
 				feature_box->select(i);
 				break;
 			}
 		}
-	}
-
-	if (feature.is_empty() || feature_invalid) {
-		feature_box->select(0);
+		if (is_custom) {
+			feature_box->select(FEATURE_CUSTOM);
+		}
 	}
 
 	if (property_box->get_text().is_empty()) {
@@ -330,8 +338,11 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	}
 
 	feature_box->clear();
-	feature_box->add_item(TTR("(All)"), 0); // So it is always on top.
-	int id = 1;
+	feature_box->add_item(TTR("(All)"), FEATURE_ALL); // So it is always on top.
+	feature_box->add_item(TTR("Custom"), FEATURE_CUSTOM);
+	feature_box->add_separator();
+
+	int id = FEATURE_FIRST;
 	for (const String &E : presets) {
 		feature_box->add_item(E, id++);
 	}
@@ -659,6 +670,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Filter Settings"));
+	search_box->set_accessibility_name(TTRC("Filter Settings"));
 	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_bar->add_child(search_box);
@@ -672,17 +684,20 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	property_box = memnew(LineEdit);
 	property_box->set_placeholder(TTR("Select a Setting or Type its Name"));
+	property_box->set_accessibility_name(TTRC("Setting Name"));
 	property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	property_box->connect(SceneStringName(text_changed), callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
 	custom_properties->add_child(property_box);
 
 	feature_box = memnew(OptionButton);
 	feature_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
+	feature_box->set_accessibility_name(TTRC("Feature"));
 	feature_box->connect(SceneStringName(item_selected), callable_mp(this, &ProjectSettingsEditor::_feature_selected));
 	custom_properties->add_child(feature_box);
 
 	type_box = memnew(OptionButton);
 	type_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
+	type_box->set_accessibility_name(TTRC("Type"));
 	custom_properties->add_child(type_box);
 
 	add_button = memnew(Button);
@@ -719,6 +734,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_hb->add_child(restart_icon);
 
 	restart_label = memnew(Label);
+	restart_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	restart_label->set_text(TTR("Changed settings will be applied to the editor after restarting."));
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
@@ -731,6 +747,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_close_button = memnew(Button);
 	restart_close_button->set_flat(true);
 	restart_close_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
+	restart_close_button->set_accessibility_name(TTRC("Close"));
 	restart_hb->add_child(restart_close_button);
 
 	action_map_editor = memnew(ActionMapEditor);
