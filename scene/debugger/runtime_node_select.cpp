@@ -1424,12 +1424,6 @@ void RuntimeNodeSelect::_cursor_interpolated() {
 }
 
 bool RuntimeNodeSelect::_handle_3d_input(const Ref<InputEvent> &p_event) {
-	Ref<InputEventMouseButton> b = p_event;
-	if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT) {
-		view_3d_controller->set_freelook_enabled(b->is_pressed());
-		return true;
-	}
-
 	Window *root = SceneTree::get_singleton()->get_root();
 	ERR_FAIL_COND_V(!root->is_camera_3d_override_enabled(), true);
 
@@ -1448,6 +1442,12 @@ bool RuntimeNodeSelect::_handle_3d_input(const Ref<InputEvent> &p_event) {
 
 	if (view_3d_input_received) {
 		root->get_override_camera_3d()->set_transform(view_3d_controller->interp_to_camera_transform());
+		return true;
+	}
+
+	Ref<InputEventMouseButton> b = p_event;
+	if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT) {
+		view_3d_controller->set_freelook_enabled(b->is_pressed());
 		return true;
 	}
 

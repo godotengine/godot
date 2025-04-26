@@ -464,7 +464,7 @@ void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event
 		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 			orbiting_mouse_start = p_position;
-			viewport->previous_cursor = viewport->view_3d_controller->cursor;
+			saved_cursor = viewport->view_3d_controller->cursor;
 		}
 		viewport->view_3d_controller->cursor_orbit(p_event, p_relative_position);
 		focused_axis = -1;
@@ -483,7 +483,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
 			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(orbiting_mouse_start);
-			viewport->view_3d_controller->cursor = viewport->previous_cursor;
+			viewport->view_3d_controller->cursor = saved_cursor;
 			gizmo_activated = false;
 		}
 	}
@@ -502,7 +502,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 			if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
 				Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 				Input::get_singleton()->warp_mouse(orbiting_mouse_start);
-				viewport->view_3d_controller->cursor = viewport->previous_cursor;
+				viewport->view_3d_controller->cursor = saved_cursor;
 				gizmo_activated = false;
 			}
 		}
@@ -1740,7 +1740,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	}
 
 	// Several parts of the 3D navigation are handled here.
+	bool was_navigating = view_3d_controller->is_navigating();
 	view_3d_controller->gui_input(p_event, surface->get_global_rect());
+	if (was_navigating && !view_3d_controller->is_navigating()) {
+		return;
+	}
 
 	Ref<InputEventMouseButton> b = p_event;
 
