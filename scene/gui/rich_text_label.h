@@ -139,6 +139,7 @@ protected:
 	void _add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region);
 	void _add_image_bind_compat_76829(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, const Variant &p_key, bool p_pad, const String &p_tooltip, bool p_size_in_percent);
 	void _push_table_bind_compat_76829(int p_columns, InlineAlignment p_alignment, int p_align_to_row);
+	void _push_table_bind_compat_105795(int p_columns, InlineAlignment p_alignment, int p_align_to_row, const String &p_name);
 	bool _remove_paragraph_bind_compat_91098(int p_paragraph);
 	void _set_table_column_expand_bind_compat_101482(int p_column, bool p_expand, int p_ratio);
 
@@ -389,14 +390,17 @@ private:
 
 		LocalVector<Column> columns;
 		LocalVector<float> rows;
+		LocalVector<float> rows_width;
 		LocalVector<float> rows_no_padding;
 		LocalVector<float> rows_baseline;
 		String name;
 
 		int align_to_row = -1;
+		int use_row_width = -1;
 		int total_width = 0;
 		int total_height = 0;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_TOP;
+		HorizontalAlignment row_align = HORIZONTAL_ALIGNMENT_CENTER;
 		ItemTable() { type = ITEM_TABLE; }
 	};
 
@@ -781,7 +785,7 @@ public:
 	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = String::utf8("•"));
 	void push_meta(const Variant &p_meta, MetaUnderline p_underline_mode = META_UNDERLINE_ALWAYS, const String &p_tooltip = String());
 	void push_hint(const String &p_string);
-	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP, int p_align_to_row = -1, const String &p_name = String());
+	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP, int p_align_to_row = -1, const String &p_name = String(), int p_use_row_width = -1, HorizontalAlignment p_row_align = HORIZONTAL_ALIGNMENT_CENTER);
 	void push_fade(int p_start_index, int p_length);
 	void push_shake(int p_strength, float p_rate, bool p_connected);
 	void push_wave(float p_frequency, float p_amplitude, bool p_connected);
