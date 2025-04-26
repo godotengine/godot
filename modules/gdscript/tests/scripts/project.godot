@@ -9,6 +9,10 @@ config_version=5
 
 config/name="GDScript Integration Test Suite"
 
+[debug]
+
+settings/gdscript/always_track_call_stacks=true
+
 [input]
 
 test_input_action={
