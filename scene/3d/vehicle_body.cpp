@@ -30,6 +30,8 @@
 
 #include "vehicle_body.h"
 
+#include "core/engine.h"
+
 #define ROLLING_INFLUENCE_FIX
 
 class btVehicleJacobianEntry {
@@ -112,6 +114,40 @@ String VehicleWheel::get_configuration_warning() const {
 	}
 
 	return warning;
+}
+
+void VehicleWheel::FTIData::update_world_xform(Transform &r_xform, real_t p_interpolation_fraction) {
+	// Note that when unset (during the first few frames before a physics tick)
+	// the xform will be whatever it was loaded as.
+	if (!unset) {
+		real_t f = p_interpolation_fraction;
+
+		WheelXform i;
+		i.up = prev.up.linear_interpolate(curr.up, f);
+		i.up.normalize();
+		i.right = prev.right.linear_interpolate(curr.right, f);
+		i.right.normalize();
+
+		Vector3 fwd = i.up.cross(i.right);
+		fwd.normalize();
+
+		i.origin = prev.origin.linear_interpolate(curr.origin, f);
+		i.steering = Math::lerp(prev.steering, curr.steering, f);
+
+		real_t rotation = Math::lerp(curr_rotation - curr_rotation_delta, curr_rotation, f);
+
+		Basis steeringMat(i.up, i.steering);
+
+		Basis rotatingMat(i.right, rotation);
+
+		Basis basis2(
+				i.right[0], i.up[0], fwd[0],
+				i.right[1], i.up[1], fwd[1],
+				i.right[2], i.up[2], fwd[2]);
+
+		r_xform.set_basis(steeringMat * rotatingMat * basis2);
+		r_xform.set_origin(i.origin);
+	}
 }
 
 void VehicleWheel::_update(PhysicsDirectBodyState *s) {
@@ -395,6 +431,28 @@ void VehicleBody::_update_wheel(int p_idx, PhysicsDirectBodyState *s) {
 	Vector3 fwd = up.cross(right);
 	fwd = fwd.normalized();
 
+	VehicleWheel::FTIData &id = wheel.fti_data;
+
+	Vector3 origin = wheel.m_raycastInfo.m_hardPointWS + wheel.m_raycastInfo.m_wheelDirectionWS * wheel.m_raycastInfo.m_suspensionLength;
+
+	if (is_physics_interpolated_and_enabled()) {
+		id.curr.up = up;
+		id.curr.right = right;
+		id.curr.steering = wheel.m_steering;
+		id.curr.origin = origin;
+
+		// Pump the xform the first update to the wheel,
+		// otherwise the world xform prev will be NULL.
+		if (id.unset || id.reset_queued) {
+			id.unset = false;
+			id.reset_queued = false;
+			id.pump();
+		}
+
+		// The physics etc relies on the rest of this being correct, even with FTI,
+		// so we can't pre-maturely return here.
+	}
+
 	Basis steeringMat(up, wheel.m_steering);
 
 	Basis rotatingMat(right, wheel.m_rotation);
@@ -406,8 +464,7 @@ void VehicleBody::_update_wheel(int p_idx, PhysicsDirectBodyState *s) {
 
 	wheel.m_worldTransform.set_basis(steeringMat * rotatingMat * basis2);
 	//wheel.m_worldTransform.set_basis(basis2 * (steeringMat * rotatingMat));
-	wheel.m_worldTransform.set_origin(
-			wheel.m_raycastInfo.m_hardPointWS + wheel.m_raycastInfo.m_wheelDirectionWS * wheel.m_raycastInfo.m_suspensionLength);
+	wheel.m_worldTransform.set_origin(origin);
 }
 
 real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
@@ -826,6 +883,58 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 	}
 }
 
+void VehicleBody::_physics_interpolated_changed() {
+	_update_process_mode();
+	RigidBody::_physics_interpolated_changed();
+}
+
+void VehicleBody::fti_pump_xform() {
+	for (int i = 0; i < wheels.size(); i++) {
+		VehicleWheel &w = *wheels[i];
+		w.fti_data.pump();
+	}
+
+	RigidBody::fti_pump_xform();
+}
+
+void VehicleBody::_update_process_mode() {
+	set_process_internal(is_physics_interpolated_and_enabled());
+}
+
+void VehicleBody::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			_update_process_mode();
+		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+#ifdef DEV_ENABLED
+			if (!is_physics_interpolated_and_enabled()) {
+				WARN_PRINT_ONCE("VehicleBody NOTIFICATION_INTERNAL_PROCESS with physics interpolation OFF. (benign)");
+			}
+#endif
+			real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+
+			Transform xform;
+			Transform inv_vehicle_xform = get_global_transform_interpolated().affine_inverse();
+
+			for (int i = 0; i < wheels.size(); i++) {
+				VehicleWheel &w = *wheels[i];
+				w.fti_data.update_world_xform(xform, f);
+				w.set_transform(inv_vehicle_xform * xform);
+			}
+		} break;
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			_update_process_mode();
+			for (int i = 0; i < wheels.size(); i++) {
+				VehicleWheel &w = *wheels[i];
+				w.fti_data.reset_queued = true;
+			}
+		} break;
+		default:
+			break;
+	}
+}
+
 void VehicleBody::_direct_state_changed(Object *p_state) {
 	RigidBody::_direct_state_changed(p_state);
 
@@ -838,9 +947,14 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 		_update_wheel(i, state);
 	}
 
+	bool use_fti = is_physics_interpolated_and_enabled();
+
 	for (int i = 0; i < wheels.size(); i++) {
 		_ray_cast(i, state);
-		wheels[i]->set_transform(state->get_transform().inverse() * wheels[i]->m_worldTransform);
+		if (!use_fti) {
+			// TODO: can this path also just use world space directly instead of inverse parent space?
+			wheels[i]->set_transform(state->get_transform().inverse() * wheels[i]->m_worldTransform);
+		}
 	}
 
 	_update_suspension(state);
@@ -885,6 +999,10 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 		}
 
 		wheel.m_rotation += wheel.m_deltaRotation;
+		if (use_fti) {
+			wheel.fti_data.rotate(wheel.m_deltaRotation);
+		}
+
 		wheel.m_rpm = ((wheel.m_deltaRotation / step) * 60) / Math_TAU;
 
 		wheel.m_deltaRotation *= real_t(0.99); //damping of rotation when not in contact
