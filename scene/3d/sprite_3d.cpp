@@ -243,6 +243,27 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_COLOR]], v_color, 4);
 	}
 
+	switch (get_billboard_mode()) {
+		case StandardMaterial3D::BILLBOARD_ENABLED: {
+			real_t size_new = MAX(Math::abs(final_rect.position.x) * px_size, (final_rect.position.x + final_rect.size.x) * px_size);
+			size_new = MAX(size_new, MAX(Math::abs(final_rect.position.y) * px_size, (final_rect.position.y + final_rect.size.y) * px_size));
+			aabb_new.position = Vector3(-size_new, -size_new, -size_new);
+			aabb_new.size = Vector3(size_new * 2.0, size_new * 2.0, size_new * 2.0);
+		} break;
+		case StandardMaterial3D::BILLBOARD_FIXED_Y: {
+			real_t size_new = MAX(Math::abs(final_rect.position.x) * px_size, (final_rect.position.x + final_rect.size.x) * px_size);
+			if (ax == Vector3::AXIS_Y) {
+				size_new = MAX(size_new, MAX(Math::abs(final_rect.position.y) * px_size, (final_rect.position.y + final_rect.size.y) * px_size));
+			}
+			aabb_new.position.x = -size_new;
+			aabb_new.position.z = -size_new;
+			aabb_new.size.x = size_new * 2.0;
+			aabb_new.size.z = size_new * 2.0;
+		} break;
+		default:
+			break;
+	}
+
 	RID mesh_new = get_mesh();
 	RS::get_singleton()->mesh_surface_update_vertex_region(mesh_new, 0, 0, vertex_buffer);
 	RS::get_singleton()->mesh_surface_update_attribute_region(mesh_new, 0, 0, attribute_buffer);
