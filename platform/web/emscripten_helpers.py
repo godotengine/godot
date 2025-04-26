@@ -30,25 +30,46 @@ def create_engine_file(env, target, source, externs, threads_enabled):
     return env.Substfile(target=target, source=[env.File(s) for s in source], SUBST_DICT=subst_dict)
 
 
-def create_template_zip(env, js, wasm, side):
+def create_template_zip(
+    env,
+    js,
+    main_wasm,
+    side_wasm=None,
+    main_wasm_dwarf=None,
+    main_wasm_dwarf_package=None,
+    side_wasm_dwarf=None,
+    side_wasm_dwarf_package=None,
+):
     binary_name = "godot.editor" if env.editor_build else "godot"
     zip_dir = env.Dir(env.GetTemplateZipPath())
-    in_files = [
-        js,
-        wasm,
-        "#platform/web/js/libs/audio.worklet.js",
-        "#platform/web/js/libs/audio.position.worklet.js",
-    ]
-    out_files = [
-        zip_dir.File(binary_name + ".js"),
-        zip_dir.File(binary_name + ".wasm"),
-        zip_dir.File(binary_name + ".audio.worklet.js"),
-        zip_dir.File(binary_name + ".audio.position.worklet.js"),
-    ]
+
+    in_files = []
+    out_files = []
+
+    def add_to_template(in_file, zip_file):
+        out_file = zip_dir.File(zip_file)
+        in_files.append(in_file)
+        out_files.append(out_file)
+
+    add_to_template(js, binary_name + ".js")
+    add_to_template(main_wasm, binary_name + ".wasm")
+    add_to_template("#platform/web/js/libs/audio.worklet.js", binary_name + ".audio.worklet.js")
+    add_to_template("#platform/web/js/libs/audio.position.worklet.js", binary_name + ".audio.position.worklet.js")
+
     # Dynamic linking (extensions) specific.
-    if env["dlink_enabled"]:
-        in_files.append(side)  # Side wasm (contains the actual Godot code).
-        out_files.append(zip_dir.File(binary_name + ".side.wasm"))
+    if side_wasm is not None:
+        add_to_template(side_wasm, binary_name + ".side.wasm")
+
+    # Those files cannot be renamed, as their relative .wasm file has their name baked in the binary.
+    # They must also reside besides their original .wasm files.
+    if main_wasm_dwarf is not None:
+        add_to_template(main_wasm_dwarf, main_wasm_dwarf.name)
+        if main_wasm_dwarf_package is not None:
+            add_to_template(main_wasm_dwarf_package, main_wasm_dwarf_package.name)
+    if side_wasm_dwarf is not None:
+        add_to_template(side_wasm_dwarf, side_wasm_dwarf.name)
+        if side_wasm_dwarf_package is not None:
+            add_to_template(side_wasm_dwarf_package, side_wasm_dwarf_package.name)
 
     service_worker = "#misc/dist/html/service-worker.js"
     if env.editor_build:
@@ -74,33 +95,24 @@ def create_template_zip(env, js, wasm, side):
             "___GODOT_ENSURE_CROSSORIGIN_ISOLATION_HEADERS___": "true",
         }
         html = env.Substfile(target="#bin/godot${PROGSUFFIX}.html", source=html, SUBST_DICT=subst_dict)
-        in_files.append(html)
-        out_files.append(zip_dir.File(binary_name + ".html"))
+        add_to_template(html, binary_name + ".html")
         # And logo/favicon
-        in_files.append("#misc/dist/html/logo.svg")
-        out_files.append(zip_dir.File("logo.svg"))
-        in_files.append("#icon.png")
-        out_files.append(zip_dir.File("favicon.png"))
+        add_to_template("#misc/dist/html/logo.svg", "logo.svg")
+        add_to_template("#icon.png", "favicon.svg")
         # PWA
         service_worker = env.Substfile(
             target="#bin/godot${PROGSUFFIX}.service.worker.js",
             source=service_worker,
             SUBST_DICT=subst_dict,
         )
-        in_files.append(service_worker)
-        out_files.append(zip_dir.File("service.worker.js"))
-        in_files.append("#misc/dist/html/manifest.json")
-        out_files.append(zip_dir.File("manifest.json"))
-        in_files.append("#misc/dist/html/offline.html")
-        out_files.append(zip_dir.File("offline.html"))
+        add_to_template(service_worker, "service.worker.js")
+        add_to_template("#misc/dist/html/manifest.json", "manifest.json")
+        add_to_template("#misc/dist/html/offline.html", "offline.html")
     else:
         # HTML
-        in_files.append("#misc/dist/html/full-size.html")
-        out_files.append(zip_dir.File(binary_name + ".html"))
-        in_files.append(service_worker)
-        out_files.append(zip_dir.File(binary_name + ".service.worker.js"))
-        in_files.append("#misc/dist/html/offline-export.html")
-        out_files.append(zip_dir.File("godot.offline.html"))
+        add_to_template("#misc/dist/html/full-size.html", binary_name + ".html")
+        add_to_template(service_worker, binary_name + ".service.worker.js")
+        add_to_template("#misc/dist/html/offline-export.html", binary_name + ".offline.html")
 
     zip_files = env.NoCache(env.InstallAs(out_files, in_files))
     env.NoCache(
