@@ -439,6 +439,7 @@ private:
 	};
 
 	NavigationMode _get_nav_mode_from_shortcut_check(ViewportNavMouseButton p_mouse_button, Vector<ShortcutCheckSet> p_shortcut_check_sets, bool p_use_not_empty);
+	bool navigating = false;
 
 	void set_freelook_active(bool active_now);
 	void scale_freelook_speed(real_t scale);
