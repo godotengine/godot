@@ -61,6 +61,7 @@ env.add_source_files(sources, common_win)
 sources += res_obj
 
 if env["accesskit"] and not env.msvc:
+    env["BUILDERS"]["DEF"].emitter = redirect_emitter
     def_file = "uiautomationcore." + env["arch"] + ".def"
     def_target = "libuiautomationcore." + env["arch"] + ".a"
     def_obj = env.DEF(def_target, def_file)
