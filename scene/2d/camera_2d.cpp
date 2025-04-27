@@ -271,7 +271,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
 	
-	if (limit_enabled && (!position_smoothing_enabled || !limit_smoothing_enabled)){
+	if (limit_enabled && (!position_smoothing_enabled || !limit_smoothing_enabled)) {
 		Point2 bottomRightCorner = Point2(screen_rect.position + 2.0 * (camera_pos - screen_rect.position));
 
 		if (screen_rect.position.x < limit[SIDE_LEFT]) {
