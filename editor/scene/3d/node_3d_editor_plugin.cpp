@@ -2496,28 +2496,46 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			cancel_transform();
 		}
 		if (!is_freelook_active() && !k->is_echo()) {
-			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event) && (_edit.mode != TRANSFORM_TRANSLATE || collision_reposition)) {
-				if (_edit.mode == TRANSFORM_NONE) {
-					begin_transform(TRANSFORM_TRANSLATE, true);
-				} else if (_edit.instant || collision_reposition) {
-					commit_transform();
-					begin_transform(TRANSFORM_TRANSLATE, true);
+			TransformMode requested_transform = TRANSFORM_NONE;
+
+			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event)) {
+				requested_transform = TRANSFORM_TRANSLATE;
+			} else if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event)) {
+				requested_transform = TRANSFORM_ROTATE;
+			} else if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event)) {
+				requested_transform = TRANSFORM_SCALE;
+			} else if (ED_IS_SHORTCUT("spatial_editor/instant_tool_mode", p_event)) {
+				switch (spatial_editor->get_tool_mode()) {
+					case Node3DEditor::TOOL_MODE_SELECT:
+						requested_transform = TRANSFORM_TRANSLATE;
+						break;
+					case Node3DEditor::TOOL_MODE_MOVE:
+						requested_transform = TRANSFORM_TRANSLATE;
+						break;
+					case Node3DEditor::TOOL_MODE_ROTATE:
+						requested_transform = TRANSFORM_ROTATE;
+						break;
+					case Node3DEditor::TOOL_MODE_SCALE:
+						requested_transform = TRANSFORM_SCALE;
+						break;
+					case Node3DEditor::TOOL_RULER:
+						requested_transform = TRANSFORM_TRANSLATE;
+						break;
+					default:
+						break;
 				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event) && _edit.mode != TRANSFORM_ROTATE) {
-				if (_edit.mode == TRANSFORM_NONE) {
-					begin_transform(TRANSFORM_ROTATE, true);
-				} else if (_edit.instant || collision_reposition) {
-					commit_transform();
-					begin_transform(TRANSFORM_ROTATE, true);
-				}
+
+			if (requested_transform == _edit.mode && requested_transform != TRANSFORM_NONE) {
+				return;
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event) && _edit.mode != TRANSFORM_SCALE) {
+
+			if (requested_transform != TRANSFORM_NONE) {
 				if (_edit.mode == TRANSFORM_NONE) {
-					begin_transform(TRANSFORM_SCALE, true);
+					begin_transform(requested_transform, true);
 				} else if (_edit.instant || collision_reposition) {
 					commit_transform();
-					begin_transform(TRANSFORM_SCALE, true);
+					begin_transform(requested_transform, true);
 				}
 			}
 			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", p_event) && editor_selection->get_top_selected_node_list().size() == 1 && !collision_reposition) {
@@ -5808,6 +5826,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ED_SHORTCUT("spatial_editor/instant_translate", TTRC("Begin Translate Transformation"));
 	ED_SHORTCUT("spatial_editor/instant_rotate", TTRC("Begin Rotate Transformation"));
 	ED_SHORTCUT("spatial_editor/instant_scale", TTRC("Begin Scale Transformation"));
+	ED_SHORTCUT("spatial_editor/instant_tool_mode", TTRC("Begin Tool Mode Transformation"), Key::G);
 	ED_SHORTCUT("spatial_editor/collision_reposition", TTRC("Reposition Using Collisions"), KeyModifierMask::SHIFT | Key::G);
 
 	translation_preview_button = memnew(EditorTranslationPreviewButton);
