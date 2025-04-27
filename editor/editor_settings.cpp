@@ -1216,6 +1216,7 @@ const String EditorSettings::_get_project_metadata_path() const {
 
 #ifndef DISABLE_DEPRECATED
 void EditorSettings::_remove_deprecated_settings() {
+	erase("network/connection/engine_version_update_mode");
 	erase("run/output/always_open_output_on_play");
 	erase("run/output/always_close_output_on_stop");
 }
