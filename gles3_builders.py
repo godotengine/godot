@@ -1,7 +1,10 @@
 """Functions used to generate source files during build time"""
 
 import os.path
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from godot_typing import GodotSConsEnvironment
 from methods import generated_wrapper, print_error, to_raw_cstring
 
 
@@ -514,7 +517,7 @@ protected:
 """)
 
 
-def build_gles3_headers(target, source, env):
+def build_gles3_headers(target, source, env: "GodotSConsEnvironment") -> None:
     env.NoCache(target)
     for src in source:
         build_gles3_header(f"{src}.gen.h", str(src))

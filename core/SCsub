@@ -2,10 +2,16 @@
 from misc.utility.scons_hints import *
 
 import os
+from typing import TYPE_CHECKING
 
 import core_builders
 
 import methods
+
+if TYPE_CHECKING:
+    from godot_typing import GodotSConsEnvironment
+
+    env: "GodotSConsEnvironment"
 
 Import("env")
 
@@ -156,9 +162,7 @@ if env["builtin_zstd"]:
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zstd_sources)
 
-
 env.core_sources += thirdparty_obj
-
 
 # Godot source files
 env.add_source_files(env.core_sources, "*.cpp")
@@ -221,7 +225,6 @@ SConscript("templates/SCsub")
 SConscript("string/SCsub")
 SConscript("config/SCsub")
 SConscript("error/SCsub")
-
 
 # Build it all as a library
 lib = env.add_library("core", env.core_sources)

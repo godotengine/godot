@@ -1,3 +1,7 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from godot_typing import PositiveInt
 script_call = """ScriptInstance *_script_instance = ((Object *)(this))->get_script_instance();\\
 		if (_script_instance) {\\
 			Callable::CallError ce;\\
@@ -88,7 +92,9 @@ proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 """
 
 
-def generate_version(argcount, const=False, returns=False, required=False, compat=False):
+def generate_version(
+    argcount: "PositiveInt", const: bool = False, returns: bool = False, required: bool = False, compat: bool = False
+) -> str:
     s = proto
     if compat:
         s = s.replace("$SCRIPTCALL", "")
@@ -211,7 +217,7 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
     return s
 
 
-def run(target, source, env):
+def run(target, source, env) -> None:
     max_versions = 12
 
     txt = """/* THIS FILE IS GENERATED DO NOT EDIT */

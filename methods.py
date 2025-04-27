@@ -11,10 +11,13 @@ import zlib
 from collections import OrderedDict
 from io import StringIO, TextIOBase
 from pathlib import Path
-from typing import Generator, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Final, Generator, List, Literal, Optional, TypedDict, Union, cast
 
 from misc.utility.color import print_error, print_info, print_warning
 from platform_methods import detect_arch
+
+if TYPE_CHECKING:
+    from godot_typing import GodotSConsEnvironment, PositiveInt
 
 # Get the "Godot" folder name ahead of time
 base_folder = Path(__file__).resolve().parent
@@ -26,13 +29,13 @@ compiler_version_cache = None
 _scu_folders = set()
 
 
-def set_scu_folders(scu_folders):
+def set_scu_folders(scu_folders) -> None:
     global _scu_folders
     _scu_folders = scu_folders
 
 
-def add_source_files_orig(self, sources, files, allow_gen=False):
-    # Convert string to list of absolute paths (including expanding wildcard)
+def add_source_files_orig(self: "GodotSConsEnvironment", sources, files, allow_gen: bool = False) -> None:
+    # Convert string into the list of absolute paths (including expanding wildcard)
     if isinstance(files, str):
         # Exclude .gen.cpp files from globbing, to avoid including obsolete ones.
         # They should instead be added manually.
@@ -41,7 +44,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
         if skip_gen_cpp and not allow_gen:
             files = [f for f in files if not str(f).endswith(".gen.cpp")]
 
-    # Add each path as compiled Object following environment (self) configuration
+    # Add each path as a compiled Object following environment (self) configuration
     for path in files:
         obj = self.Object(path)
         if obj in sources:
@@ -50,7 +53,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
         sources.append(obj)
 
 
-def add_source_files_scu(self, sources, files, allow_gen=False):
+def add_source_files_scu(self: "GodotSConsEnvironment", sources, files, allow_gen: bool = False) -> bool:
     if self["scu_build"] and isinstance(files, str):
         if "*." not in files:
             return False
@@ -64,7 +67,7 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
         # if the section name is in the hash table?
         # i.e. is it part of the SCU build?
         global _scu_folders
-        if section_name not in (_scu_folders):
+        if section_name not in _scu_folders:
             return False
 
         # Add all the gen.cpp files in the SCU directory
@@ -75,7 +78,7 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
 
 # Either builds the folder using the SCU system,
 # or reverts to regular build.
-def add_source_files(self, sources, files, allow_gen=False):
+def add_source_files(self: "GodotSConsEnvironment", sources, files, allow_gen: bool = False) -> bool:
     if not add_source_files_scu(self, sources, files, allow_gen):
         # Wraps the original function when scu build is not active.
         add_source_files_orig(self, sources, files, allow_gen)
@@ -106,16 +109,14 @@ def redirect_emitter(target, source, env):
     return redirected_targets, source
 
 
-def disable_warnings(self):
-    # 'self' is the environment
+def disable_warnings(self: "GodotSConsEnvironment") -> None:
     if self.msvc and not using_clang(self):
         self["WARNLEVEL"] = "/w"
     else:
         self["WARNLEVEL"] = "-w"
 
 
-def force_optimization_on_debug(self):
-    # 'self' is the environment
+def force_optimization_on_debug(self: "GodotSConsEnvironment") -> None:
     if self["target"] == "template_release":
         return
     elif self.msvc:
@@ -124,11 +125,24 @@ def force_optimization_on_debug(self):
         self["OPTIMIZELEVEL"] = "-O3"
 
 
-def add_module_version_string(self, s):
+def add_module_version_string(self: "GodotSConsEnvironment", s: str) -> None:
     self.module_version_string += "." + s
 
 
-def get_version_info(module_version_string="", silent=False):
+class VersionInfo(TypedDict):
+    short_name: str
+    name: str
+    major: int
+    minor: int
+    patch: int
+    status: str
+    build: str
+    module_config: str
+    website: str
+    docs_branch: str
+
+
+def get_version_info(module_version_string: str = "", silent: bool = False) -> VersionInfo:
     build_name = "custom_build"
     if os.getenv("BUILD_NAME") is not None:
         build_name = str(os.getenv("BUILD_NAME"))
@@ -137,7 +151,7 @@ def get_version_info(module_version_string="", silent=False):
 
     import version
 
-    version_info = {
+    version_info: VersionInfo = {
         "short_name": str(version.short_name),
         "name": str(version.name),
         "major": int(version.major),
@@ -160,7 +174,12 @@ def get_version_info(module_version_string="", silent=False):
     return version_info
 
 
-def get_git_info():
+class GitInfo(TypedDict):
+    git_hash: str
+    git_timestamp: Union[int, str]
+
+
+def get_git_info() -> GitInfo:
     os.chdir(base_folder)
 
     # Parse Git hash if we're in a Git repo.
@@ -201,7 +220,7 @@ def get_git_info():
             git_hash = head
 
     # Get the UNIX timestamp of the build commit.
-    git_timestamp = 0
+    git_timestamp: Union[int, str] = 0
     if os.path.exists(".git"):
         try:
             git_timestamp = subprocess.check_output(
@@ -231,8 +250,8 @@ def get_cmdline_bool(option, default):
         return default
 
 
-def detect_modules(search_path, recursive=False):
-    """Detects and collects a list of C++ modules at specified path
+def detect_modules(search_path: str, recursive: bool = False):
+    """Detects and collects a list of C++ modules at the specified path
 
     `search_path` - a directory path containing modules. The path may point to
     a single module, which may have other nested modules. A module must have
@@ -249,12 +268,12 @@ def detect_modules(search_path, recursive=False):
     """
     modules = OrderedDict()
 
-    def add_module(path):
+    def add_module(path) -> None:
         module_name = os.path.basename(path)
         module_path = path.replace("\\", "/")  # win32
         modules[module_name] = module_path
 
-    def is_engine(path):
+    def is_engine(path: str) -> bool:
         # Prevent recursively detecting modules in self and other
         # Godot sources when using `custom_modules` build option.
         version_path = os.path.join(path, "version.py")
@@ -264,7 +283,7 @@ def detect_modules(search_path, recursive=False):
                     return True
         return False
 
-    def get_files(path):
+    def get_files(path: str) -> List[str]:
         files = glob.glob(os.path.join(path, "*"))
         # Sort so that `register_module_types` does not change that often,
         # and plugins are registered in alphabetic order as well.
@@ -294,7 +313,7 @@ def detect_modules(search_path, recursive=False):
     return modules
 
 
-def is_module(path):
+def is_module(path) -> bool:
     if not os.path.isdir(path):
         return False
     must_exist = ["register_types.h", "SCsub", "config.py"]
@@ -316,7 +335,7 @@ def convert_custom_modules_path(path):
     return path
 
 
-def module_add_dependencies(self, module, dependencies, optional=False):
+def module_add_dependencies(self: "GodotSConsEnvironment", module, dependencies, optional: bool = False) -> None:
     """
     Adds dependencies for a given module.
     Meant to be used in module `can_build` methods.
@@ -329,7 +348,7 @@ def module_add_dependencies(self, module, dependencies, optional=False):
         self.module_dependencies[module][0].extend(dependencies)
 
 
-def module_check_dependencies(self, module):
+def module_check_dependencies(self: "GodotSConsEnvironment", module) -> bool:
     """
     Checks if module dependencies are enabled for a given module,
     and prints a warning if they aren't.
@@ -356,7 +375,7 @@ def module_check_dependencies(self, module):
         return True
 
 
-def sort_module_list(env):
+def sort_module_list(env: "GodotSConsEnvironment") -> None:
     deps = {k: v[0] + list(filter(lambda x: x in env.module_list, v[1])) for k, v in env.module_dependencies.items()}
 
     frontier = list(env.module_list.keys())
@@ -373,7 +392,7 @@ def sort_module_list(env):
         env.module_list.move_to_end(k)
 
 
-def use_windows_spawn_fix(self, platform=None):
+def use_windows_spawn_fix(self: "GodotSConsEnvironment", platform=None) -> Any:
     if os.name != "nt":
         return  # not needed, only for windows
 
@@ -387,8 +406,8 @@ def use_windows_spawn_fix(self, platform=None):
             "startupinfo": startupinfo,
             "shell": False,
             "env": env,
+            "text": True,
         }
-        popen_args["text"] = True
         proc = subprocess.Popen(cmdline, **popen_args)
         _, err = proc.communicate()
         rv = proc.wait()
@@ -407,7 +426,6 @@ def use_windows_spawn_fix(self, platform=None):
         newargs = " ".join(args[1:])
         cmdline = cmd + " " + newargs
 
-        rv = 0
         env = {str(key): str(value) for key, value in iter(env.items())}
         rv = mySubProcess(cmdline, env)
 
@@ -416,10 +434,12 @@ def use_windows_spawn_fix(self, platform=None):
     self["SPAWN"] = mySpawn
 
 
-def no_verbose(env):
+def no_verbose(env) -> None:
     from misc.utility.color import Ansi, is_stdout_color
 
-    colors = [Ansi.BLUE, Ansi.BOLD, Ansi.REGULAR, Ansi.RESET] if is_stdout_color() else ["", "", "", ""]
+    colors: List[Union[str, Ansi]] = (
+        [Ansi.BLUE, Ansi.BOLD, Ansi.REGULAR, Ansi.RESET] if is_stdout_color() else ["", "", "", ""]
+    )
 
     # There is a space before "..." to ensure that source file names can be
     # Ctrl + clicked in the VS Code terminal.
@@ -538,7 +558,7 @@ def find_visual_c_batch_file(env):
     return find_batch_file(msvc_version, host_platform, target_platform, product_dir)[0]
 
 
-def generate_cpp_hint_file(filename):
+def generate_cpp_hint_file(filename) -> None:
     if os.path.isfile(filename):
         # Don't overwrite an existing hint file since the user may have customized it.
         pass
@@ -573,44 +593,45 @@ def glob_recursive(pattern, node="."):
     return results
 
 
-def precious_program(env, program, sources, **args):
+def precious_program(env: "GodotSConsEnvironment", program, sources, **args):
     program = env.Program(program, sources, **args)
     env.Precious(program)
     return program
 
 
-def add_shared_library(env, name, sources, **args):
+def add_shared_library(env: "GodotSConsEnvironment", name: str, sources, **args):
     library = env.SharedLibrary(name, sources, **args)
     env.NoCache(library)
     return library
 
 
-def add_library(env, name, sources, **args):
+def add_library(env: "GodotSConsEnvironment", name, sources, **args):
     library = env.Library(name, sources, **args)
     env.NoCache(library)
     return library
 
 
-def add_program(env, name, sources, **args):
+def add_program(env: "GodotSConsEnvironment", name, sources, **args):
     program = env.Program(name, sources, **args)
     env.NoCache(program)
     return program
 
 
-def CommandNoCache(env, target, sources, command, **args):
+def CommandNoCache(env: "GodotSConsEnvironment", target, sources, command, **args):
     result = env.Command(target, sources, command, **args)
     env.NoCache(result)
     return result
 
 
-def Run(env, function):
+def Run(env: "GodotSConsEnvironment", function):
     from SCons.Script import Action
 
     return Action(function, "$GENCOMSTR")
 
 
-def detect_darwin_sdk_path(platform, env):
-    sdk_name = ""
+def detect_darwin_sdk_path(platform: str, env) -> None:
+    sdk_name: str
+    var_name: str
     if platform == "macos":
         sdk_name = "macosx"
         var_name = "MACOS_SDK_PATH"
@@ -633,7 +654,7 @@ def detect_darwin_sdk_path(platform, env):
             raise
 
 
-def is_apple_clang(env):
+def is_apple_clang(env: "GodotSConsEnvironment") -> bool:
     import shlex
 
     if env["platform"] not in ["macos", "ios"]:
@@ -648,7 +669,36 @@ def is_apple_clang(env):
     return version.startswith("Apple")
 
 
-def get_compiler_version(env):
+CompiledVersionKey = Literal[
+    "major",
+    "minor",
+    "patch",
+    "metadata1",
+    "metadata2",
+    "date",
+    "apple_major",
+    "apple_minor",
+    "apple_patch1",
+    "apple_patch2",
+    "apple_patch3",
+]
+
+
+class CompilerVersion(TypedDict):
+    major: int
+    minor: int
+    patch: int
+    metadata1: str
+    metadata2: str
+    date: str
+    apple_major: int
+    apple_minor: int
+    apple_patch1: int
+    apple_patch2: int
+    apple_patch3: int
+
+
+def get_compiler_version(env: "GodotSConsEnvironment"):
     """
     Returns a dictionary with various version information:
 
@@ -659,11 +709,12 @@ def get_compiler_version(env):
 
     global compiler_version_cache
     if compiler_version_cache is not None:
-        return compiler_version_cache
+        # mypy says this line is unreachable
+        return compiler_version_cache  # type: ignore
 
     import shlex
 
-    ret = {
+    result: CompilerVersion = {
         "major": -1,
         "minor": -1,
         "patch": -1,
@@ -698,16 +749,16 @@ def get_compiler_version(env):
                 split = line.split(":", 1)
                 if split[0] == "catalog_productDisplayVersion":
                     sem_ver = split[1].split(".")
-                    ret["major"] = int(sem_ver[0])
-                    ret["minor"] = int(sem_ver[1])
-                    ret["patch"] = int(sem_ver[2].split()[0])
+                    result["major"] = int(sem_ver[0])
+                    result["minor"] = int(sem_ver[1])
+                    result["patch"] = int(sem_ver[2].split()[0])
                 # Could potentially add section for determining preview version, but
                 # that can wait until metadata is actually used for something.
                 if split[0] == "catalog_buildVersion":
-                    ret["metadata1"] = split[1]
+                    result["metadata1"] = split[1]
         except (subprocess.CalledProcessError, OSError):
             print_warning("Couldn't find vswhere to determine compiler version.")
-        return update_compiler_version_cache(ret)
+        return update_compiler_version_cache(result)
 
     # Not using -dumpversion as some GCC distros only return major, and
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
@@ -717,7 +768,7 @@ def get_compiler_version(env):
         ).strip()
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
-        return update_compiler_version_cache(ret)
+        return update_compiler_version_cache(result)
 
     match = re.search(
         r"(?:(?<=version )|(?<=\) )|(?<=^))"
@@ -732,7 +783,7 @@ def get_compiler_version(env):
     if match is not None:
         for key, value in match.groupdict().items():
             if value is not None:
-                ret[key] = value
+                result[cast(CompiledVersionKey, key)] = value
 
     match_apple = re.search(
         r"(?:(?<=clang-)|(?<=\) )|(?<=^))"
@@ -746,10 +797,10 @@ def get_compiler_version(env):
     if match_apple is not None:
         for key, value in match_apple.groupdict().items():
             if value is not None:
-                ret[key] = value
+                result[cast(CompiledVersionKey, key)] = value
 
     # Transform semantic versioning to integers
-    for key in [
+    int_keys: List[CompiledVersionKey] = [
         "major",
         "minor",
         "patch",
@@ -758,30 +809,31 @@ def get_compiler_version(env):
         "apple_patch1",
         "apple_patch2",
         "apple_patch3",
-    ]:
-        ret[key] = int(ret[key] or -1)
-    return update_compiler_version_cache(ret)
+    ]
+    for key in int_keys:
+        result[key] = int(result[key] or -1)
+    return update_compiler_version_cache(result)
 
 
-def update_compiler_version_cache(value):
+def update_compiler_version_cache(value: CompilerVersion) -> CompilerVersion:
     global compiler_version_cache
     compiler_version_cache = value
     return value
 
 
-def using_gcc(env):
+def using_gcc(env: "GodotSConsEnvironment") -> bool:
     return "gcc" in os.path.basename(env["CC"])
 
 
-def using_clang(env):
+def using_clang(env: "GodotSConsEnvironment") -> bool:
     return "clang" in os.path.basename(env["CC"])
 
 
-def using_emcc(env):
+def using_emcc(env) -> bool:
     return "emcc" in os.path.basename(env["CC"])
 
 
-def show_progress(env):
+def show_progress(env: "GodotSConsEnvironment"):
     # Ninja has its own progress/tracking tool that clashes with ours.
     if env["ninja"]:
         return
@@ -857,7 +909,7 @@ def clean_cache(cache_path: str, cache_limit: int, verbose: bool) -> None:
     if not files:
         return
 
-    # Store files in list of (filename, size, atime).
+    # Store files in a list of (filename, size, atime).
     stats = []
     for file in files:
         try:
@@ -865,7 +917,7 @@ def clean_cache(cache_path: str, cache_limit: int, verbose: bool) -> None:
         except OSError:
             print_error(f'Failed to access cache file "{file}"; skipping.')
 
-    # Sort by most recent access (most sensible to keep) first. Search for the first entry where
+    # Sort by the most recent access (most sensible to keep) first. Search for the first entry where
     # the cache limit is reached.
     stats.sort(key=lambda x: x[2], reverse=True)
     sum = 0
@@ -1207,8 +1259,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
     all_items = []
     properties = []
-    activeItems = []
-    extraItems = []
+    active_items = []
+    extra_items = []
 
     set_headers = set(headers_active)
     set_sources = set(sources_active)
@@ -1221,7 +1273,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         )
         all_items.append("</ClInclude>")
         if file in set_headers:
-            activeItems.append(file)
+            active_items.append(file)
 
     for file in sources:
         base_path = os.path.dirname(file).replace("\\", "_")
@@ -1231,7 +1283,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         )
         all_items.append("</ClCompile>")
         if file in set_sources:
-            activeItems.append(file)
+            active_items.append(file)
 
     for file in others:
         base_path = os.path.dirname(file).replace("\\", "_")
@@ -1241,7 +1293,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         )
         all_items.append("</None>")
         if file in set_others:
-            activeItems.append(file)
+            active_items.append(file)
 
     if vs_configuration:
         vsconf = ""
@@ -1250,9 +1302,9 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 vsconf = f"{target}|{a['platform']}"
                 break
 
-        condition = "'$(GodotConfiguration)|$(GodotPlatform)'=='" + vsconf + "'"
+        condition = f"'$(GodotConfiguration)|$(GodotPlatform)'=='{vsconf}'"
         itemlist = {}
-        for item in activeItems:
+        for item in active_items:
             key = os.path.dirname(item).replace("\\", "_")
             if key not in itemlist:
                 itemlist[key] = [item]
@@ -1270,7 +1322,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         props_template = props_template.replace("%%CONDITION%%", condition)
         props_template = props_template.replace("%%PROPERTIES%%", "\n    ".join(properties))
-        props_template = props_template.replace("%%EXTRA_ITEMS%%", "\n    ".join(extraItems))
+        props_template = props_template.replace("%%EXTRA_ITEMS%%", "\n    ".join(extra_items))
 
         props_template = props_template.replace("%%OUTPUT%%", output)
 
@@ -1552,7 +1604,9 @@ def compress_buffer(buffer: bytes) -> bytes:
     return zlib.compress(buffer, zlib.Z_BEST_COMPRESSION)
 
 
-def format_buffer(buffer: bytes, indent: int = 0, width: int = 120, initial_indent: bool = False) -> str:
+def format_buffer(
+    buffer: bytes, indent: "PositiveInt" = 0, width: "PositiveInt" = 120, initial_indent: bool = False
+) -> str:
     return textwrap.fill(
         ", ".join(str(byte) for byte in buffer),
         width=width,
@@ -1586,7 +1640,7 @@ def to_escaped_cstring(value: str) -> str:
 
 
 def to_raw_cstring(value: Union[str, List[str]]) -> str:
-    MAX_LITERAL = 16 * 1024
+    MAX_LITERAL: Final[int] = 16 * 1024
 
     if isinstance(value, list):
         value = "\n".join(value) + "\n"
@@ -1625,11 +1679,11 @@ def to_raw_cstring(value: Union[str, List[str]]) -> str:
     if len(split) == 1:
         return f'R"<!>({split[0].decode()})<!>"'
     else:
-        # Wrap multiple segments in parenthesis to suppress `string-concatenation` warnings on clang.
+        # Wrap multiple segments in parentheses to suppress `string-concatenation` warnings on clang.
         return "({})".format(" ".join(f'R"<!>({segment.decode()})<!>"' for segment in split))
 
 
-def get_default_include_paths(env):
+def get_default_include_paths(env: "GodotSConsEnvironment") -> List[str]:
     if env.msvc:
         return []
     compiler = env.subst("$CXX")

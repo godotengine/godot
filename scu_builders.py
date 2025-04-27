@@ -4,6 +4,7 @@ import glob
 import math
 import os
 from pathlib import Path
+from typing import Collection, List, Optional, Set, Tuple, Union
 
 from methods import print_error
 
@@ -14,7 +15,7 @@ _scu_folders = set()
 _max_includes_per_scu = 1024
 
 
-def clear_out_stale_files(output_folder, extension, fresh_files):
+def clear_out_stale_files(output_folder: str, extension: str, fresh_files: Collection[Optional[Path]]) -> None:
     output_folder = os.path.abspath(output_folder)
     # print("clear_out_stale_files from folder: " + output_folder)
 
@@ -23,19 +24,26 @@ def clear_out_stale_files(output_folder, extension, fresh_files):
         # no files to clearout. (this is not an error)
         return
 
-    for file in glob.glob(output_folder + "/*." + extension):
-        file = Path(file)
+    for file_str in glob.glob(output_folder + "/*." + extension):
+        file = Path(file_str)
         if file not in fresh_files:
             # print("removed stale file: " + str(file))
             os.remove(file)
 
 
-def folder_not_found(folder):
+def folder_not_found(folder: str) -> bool:
     abs_folder = base_folder_path + folder + "/"
     return not os.path.isdir(abs_folder)
 
 
-def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exceptions, found_exceptions):
+def find_files_in_folder(
+    folder: str,
+    sub_folder: str,
+    include_list: List[str],
+    extension: str,
+    sought_exceptions: Collection[str],
+    found_exceptions: List[str],
+) -> Tuple[List[str], List[str]]:
     abs_folder = base_folder_path + folder + "/" + sub_folder
 
     if not os.path.isdir(abs_folder):
@@ -64,7 +72,15 @@ def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exc
     return include_list, found_exceptions
 
 
-def write_output_file(file_count, include_list, start_line, end_line, output_folder, output_filename_prefix, extension):
+def write_output_file(
+    file_count: int,
+    include_list: List[str],
+    start_line: int,
+    end_line: int,
+    output_folder: str,
+    output_filename_prefix: str,
+    extension: str,
+) -> Union[Path, None]:
     output_folder = os.path.abspath(output_folder)
 
     if not os.path.isdir(output_folder):
@@ -72,7 +88,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
         os.mkdir(output_folder)
         if not os.path.isdir(output_folder):
             print_error(f'SCU: "{output_folder}" could not be created.')
-            return
+            return None
         if _verbose:
             print("SCU: Creating folder: %s" % output_folder)
 
@@ -81,8 +97,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
     for i in range(start_line, end_line):
         if i < len(include_list):
             line = include_list[i]
-            li = line + "\n"
-            file_text += li
+            file_text += line + "\n"
 
     num_string = ""
     if file_count > 0:
@@ -102,11 +117,13 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
     return output_path
 
 
-def write_exception_output_file(file_count, exception_string, output_folder, output_filename_prefix, extension):
+def write_exception_output_file(
+    file_count: int, exception_string: str, output_folder: str, output_filename_prefix: str, extension: str
+) -> Union[Path, None]:
     output_folder = os.path.abspath(output_folder)
     if not os.path.isdir(output_folder):
         print_error(f"SCU: {output_folder} does not exist.")
-        return
+        return None
 
     file_text = exception_string + "\n"
 
@@ -129,14 +146,14 @@ def write_exception_output_file(file_count, exception_string, output_folder, out
     return output_path
 
 
-def find_section_name(sub_folder):
+def find_section_name(sub_folder: str) -> str:
     # Construct a useful name for the section from the path for debug logging
     section_path = os.path.abspath(base_folder_path + sub_folder) + "/"
 
     folders = []
-    folder = ""
 
-    for i in range(8):
+    folder: str
+    for _ in range(8):
         folder = os.path.dirname(section_path)
         folder = os.path.basename(folder)
         if folder == base_folder_only:
@@ -171,19 +188,24 @@ def find_section_name(sub_folder):
 
 
 # "extension" will usually be cpp, but can also be set to c (for e.g. third party libraries that use c)
-def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension="cpp"):
+def process_folder(
+    folders: List[str],
+    sought_exceptions: Union[Collection[str], None] = None,
+    includes_per_scu: int = 0,
+    extension: str = "cpp",
+):
     if len(folders) == 0:
         return
 
+    if sought_exceptions is None:
+        sought_exceptions = []
+
     # Construct the filename prefix from the FIRST folder name
     # e.g. "scene_3d"
-    out_filename = find_section_name(folders[0])
+    out_filename: str = find_section_name(folders[0])
 
-    found_includes = []
-    found_exceptions = []
-
-    main_folder = folders[0]
-    abs_main_folder = base_folder_path + main_folder
+    main_folder: str = folders[0]
+    abs_main_folder: str = base_folder_path + main_folder
 
     # Keep a record of all folders that have been processed for SCU,
     # this enables deciding what to do when we call "add_source_files()"
@@ -191,14 +213,12 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
     _scu_folders.add(main_folder)
 
     # main folder (first)
-    found_includes, found_exceptions = find_files_in_folder(
-        main_folder, "", found_includes, extension, sought_exceptions, found_exceptions
-    )
+    found_includes, found_exceptions = find_files_in_folder(main_folder, "", [], extension, sought_exceptions, [])
 
     # sub folders
-    for d in range(1, len(folders)):
+    for folder in folders[1:]:
         found_includes, found_exceptions = find_files_in_folder(
-            main_folder, folders[d], found_includes, extension, sought_exceptions, found_exceptions
+            main_folder, folder, found_includes, extension, sought_exceptions, found_exceptions
         )
 
     found_includes = sorted(found_includes)
@@ -206,16 +226,14 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
     # calculate how many lines to write in each file
     total_lines = len(found_includes)
 
-    # adjust number of output files according to whether DEV or release
-    num_output_files = 1
-
     if includes_per_scu == 0:
         includes_per_scu = _max_includes_per_scu
     else:
-        if includes_per_scu > _max_includes_per_scu:
-            includes_per_scu = _max_includes_per_scu
+        includes_per_scu = max(includes_per_scu, _max_includes_per_scu)
 
-    num_output_files = max(math.ceil(total_lines / float(includes_per_scu)), 1)
+    # adjust number of output files according to whether DEV or release
+    num_output_files = math.ceil(total_lines / float(includes_per_scu))
+    num_output_files = max(num_output_files, 1)
 
     lines_per_file = math.ceil(total_lines / float(num_output_files))
     lines_per_file = max(lines_per_file, 1)
@@ -228,11 +246,12 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
 
     fresh_files = set()
 
-    for file_count in range(0, num_output_files):
+    for file_count in range(num_output_files):
         end_line = start_line + lines_per_file
 
         # special case to cover rounding error in final file
-        if file_count == (num_output_files - 1):
+        is_final_file = file_count == (num_output_files - 1)
+        if is_final_file:
             end_line = len(found_includes)
 
         fresh_file = write_output_file(
@@ -245,20 +264,20 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
 
     # Write the exceptions each in their own scu gen file,
     # so they can effectively compile in "old style / normal build".
-    for exception_count in range(len(found_exceptions)):
+    for exception_index, exception in enumerate(found_exceptions):
         fresh_file = write_exception_output_file(
-            exception_count, found_exceptions[exception_count], output_folder, output_filename_prefix, extension
+            exception_index, exception, output_folder, output_filename_prefix, extension
         )
 
         fresh_files.add(fresh_file)
 
     # Clear out any stale file (usually we will be overwriting if necessary,
     # but we want to remove any that are pre-existing that will not be
-    # overwritten, so as to not compile anything stale).
+    # overwritten, so as not to compile anything stale).
     clear_out_stale_files(output_folder, extension, fresh_files)
 
 
-def generate_scu_files(max_includes_per_scu):
+def generate_scu_files(max_includes_per_scu: int) -> Set[str]:
     global _max_includes_per_scu
     _max_includes_per_scu = max_includes_per_scu
 
@@ -269,7 +288,6 @@ def generate_scu_files(max_includes_per_scu):
     # check we are running from the correct folder
     if folder_not_found("core") or folder_not_found("platform") or folder_not_found("scene"):
         raise RuntimeError("scu_builders.py must be run from the godot folder.")
-        return
 
     process_folder(["core"])
     process_folder(["core/crypto"])

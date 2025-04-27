@@ -1,7 +1,10 @@
 """Functions used to generate source files during build time"""
 
 from collections import OrderedDict
-from io import TextIOWrapper
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from io import TextIOWrapper
 
 import methods
 
@@ -71,7 +74,7 @@ uint8_t script_encryption_key[32] = {{
         )
 
 
-def make_certs_header(target, source, env):
+def make_certs_header(target, source, env) -> None:
     buffer = methods.get_buffer(str(source[0]))
     decomp_size = len(buffer)
     buffer = methods.compress_buffer(buffer)
@@ -92,7 +95,7 @@ inline constexpr unsigned char _certs_compressed[] = {{
 """)
 
 
-def make_authors_header(target, source, env):
+def make_authors_header(target, source, env) -> None:
     SECTIONS = {
         "Project Founders": "AUTHORS_FOUNDERS",
         "Lead Developer": "AUTHORS_LEAD_DEVELOPERS",
@@ -123,7 +126,7 @@ def make_authors_header(target, source, env):
             close_section()
 
 
-def make_donors_header(target, source, env):
+def make_donors_header(target, source, env) -> None:
     SECTIONS = {
         "Patrons": "DONORS_PATRONS",
         "Platinum sponsors": "DONORS_SPONSORS_PLATINUM",
@@ -163,7 +166,7 @@ def make_license_header(target, source, env):
     src_license = str(source[1])
 
     class LicenseReader:
-        def __init__(self, license_file: TextIOWrapper):
+        def __init__(self, license_file: "TextIOWrapper"):
             self._license_file = license_file
             self.line_num = 0
             self.current = self.next_line()
