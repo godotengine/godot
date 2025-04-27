@@ -239,9 +239,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 		GDScriptLanguage::get_singleton()->exit_function();
 
-#ifdef DEBUG_ENABLED
 		_clear_stack();
-#endif
 	}
 
 	return ret;
