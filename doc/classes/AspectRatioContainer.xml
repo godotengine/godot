@@ -16,7 +16,10 @@
 		<member name="alignment_vertical" type="int" setter="set_alignment_vertical" getter="get_alignment_vertical" enum="AspectRatioContainer.AlignmentMode" default="1">
 			Specifies the vertical relative position of child controls.
 		</member>
-		<member name="ratio" type="float" setter="set_ratio" getter="get_ratio" default="1.0">
+		<member name="aspect" type="Vector2" setter="set_aspect" getter="get_aspect" default="Vector2(1, 1)">
+			The aspect ratio to enforce on child controls. The ratio depends on the [member stretch_mode].
+		</member>
+		<member name="ratio" type="float" setter="set_ratio" getter="get_ratio" deprecated="Use [member aspect] instead.">
 			The aspect ratio to enforce on child controls. This is the width divided by the height. The ratio depends on the [member stretch_mode].
 		</member>
 		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="AspectRatioContainer.StretchMode" default="2">

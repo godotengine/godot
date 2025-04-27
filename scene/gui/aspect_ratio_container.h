@@ -54,14 +54,19 @@ public:
 	};
 
 private:
-	float ratio = 1.0;
+	Vector2 aspect = Vector2(1, 1);
 	StretchMode stretch_mode = STRETCH_FIT;
 	AlignmentMode alignment_horizontal = ALIGNMENT_CENTER;
 	AlignmentMode alignment_vertical = ALIGNMENT_CENTER;
 
 public:
+	void set_aspect(const Vector2 &p_aspect);
+	Vector2 get_aspect() const { return aspect; }
+
+#ifndef DISABLE_DEPRECATED
 	void set_ratio(float p_ratio);
-	float get_ratio() const { return ratio; }
+	float get_ratio() const;
+#endif // DISABLE_DEPRECATED
 
 	void set_stretch_mode(StretchMode p_mode);
 	StretchMode get_stretch_mode() const { return stretch_mode; }

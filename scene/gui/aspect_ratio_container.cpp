@@ -45,11 +45,24 @@ Size2 AspectRatioContainer::get_minimum_size() const {
 	return ms;
 }
 
+#ifndef DISABLE_DEPRECATED
 void AspectRatioContainer::set_ratio(float p_ratio) {
-	if (ratio == p_ratio) {
+	set_aspect(Vector2(p_ratio, 1));
+}
+
+float AspectRatioContainer::get_ratio() const {
+	return aspect.aspect();
+}
+#endif // DISABLE_DEPRECATED
+
+void AspectRatioContainer::set_aspect(const Vector2 &p_aspect) {
+	ERR_FAIL_COND_MSG(p_aspect.x <= 0, "Aspect ratio X must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_aspect.y <= 0, "Aspect ratio Y must be greater than 0.");
+
+	if (aspect == p_aspect) {
 		return;
 	}
-	ratio = p_ratio;
+	aspect = p_aspect;
 	queue_sort();
 }
 
@@ -116,24 +129,26 @@ void AspectRatioContainer::_notification(int p_what) {
 				}
 
 				Size2 child_minsize = c->get_combined_minimum_size();
-				Size2 child_size = Size2(ratio, 1.0);
-				float scale_factor = 1.0;
 
+				Size2 child_size;
 				switch (stretch_mode) {
 					case STRETCH_WIDTH_CONTROLS_HEIGHT: {
-						scale_factor = size.x / child_size.x;
+						child_size = Size2(size.x, size.x * aspect.y / aspect.x);
 					} break;
 					case STRETCH_HEIGHT_CONTROLS_WIDTH: {
-						scale_factor = size.y / child_size.y;
+						child_size = Size2(size.y * aspect.x / aspect.y, size.y);
 					} break;
 					case STRETCH_FIT: {
-						scale_factor = MIN(size.x / child_size.x, size.y / child_size.y);
+						child_size = Size2(
+								MIN(size.x * aspect.y / aspect.x, size.y) * aspect.x / aspect.y,
+								MIN(size.x * aspect.y / aspect.x, size.y));
 					} break;
 					case STRETCH_COVER: {
-						scale_factor = MAX(size.x / child_size.x, size.y / child_size.y);
+						child_size = Size2(
+								MAX(size.x * aspect.y / aspect.x, size.y) * aspect.x / aspect.y,
+								MAX(size.x * aspect.y / aspect.x, size.y));
 					} break;
 				}
-				child_size *= scale_factor;
 				child_size = child_size.max(child_minsize);
 
 				float align_x = 0.5;
@@ -173,8 +188,8 @@ void AspectRatioContainer::_notification(int p_what) {
 }
 
 void AspectRatioContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_ratio", "ratio"), &AspectRatioContainer::set_ratio);
-	ClassDB::bind_method(D_METHOD("get_ratio"), &AspectRatioContainer::get_ratio);
+	ClassDB::bind_method(D_METHOD("set_aspect", "aspect"), &AspectRatioContainer::set_aspect);
+	ClassDB::bind_method(D_METHOD("get_aspect"), &AspectRatioContainer::get_aspect);
 
 	ClassDB::bind_method(D_METHOD("set_stretch_mode", "stretch_mode"), &AspectRatioContainer::set_stretch_mode);
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &AspectRatioContainer::get_stretch_mode);
@@ -185,7 +200,14 @@ void AspectRatioContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alignment_vertical", "alignment_vertical"), &AspectRatioContainer::set_alignment_vertical);
 	ClassDB::bind_method(D_METHOD("get_alignment_vertical"), &AspectRatioContainer::get_alignment_vertical);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "0.001,10.0,0.0001,or_greater"), "set_ratio", "get_ratio");
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_ratio", "ratio"), &AspectRatioContainer::set_ratio);
+	ClassDB::bind_method(D_METHOD("get_ratio"), &AspectRatioContainer::get_ratio);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_ratio", "get_ratio");
+#endif // DISABLE_DEPRECATED
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "aspect"), "set_aspect", "get_aspect");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Width Controls Height,Height Controls Width,Fit,Cover"), "set_stretch_mode", "get_stretch_mode");
 
 	ADD_GROUP("Alignment", "alignment_");
