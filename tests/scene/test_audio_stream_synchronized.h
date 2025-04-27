@@ -92,16 +92,16 @@ TEST_CASE("[Audio][AudioStreamSynchronized] set_sync_stream, get_sync_stream") {
 	Ref<AudioStreamSynchronized> audio_stream_synchronized = memnew(AudioStreamSynchronized);
 	Ref<AudioStreamPlayback> playback_sync = audio_stream_synchronized->instantiate_playback();
 	Ref<AudioStreamWAV> stream_wav1 = TestUtils::gen_audio_stream_wav(AudioStreamWAV::FORMAT_8_BITS, true);
-	
+
 	audio_stream_synchronized->set_stream_count(2);
 	audio_stream_synchronized->set_sync_stream(0, stream_wav1);
-	
+
 	CHECK(audio_stream_synchronized->get_sync_stream(0)->get_instance_id() == stream_wav1->get_instance_id());
-	
+
 	SUBCASE("Stream should start at current position if set while playing") {
 		playback_sync->start();
 		playback_sync->seek(0.8);
-		
+
 		Ref<AudioStreamWAV> stream_wav2 = TestUtils::gen_audio_stream_wav(AudioStreamWAV::FORMAT_8_BITS, true);
 		audio_stream_synchronized->set_sync_stream(1, stream_wav2);
 
