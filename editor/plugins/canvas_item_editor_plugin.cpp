@@ -6128,7 +6128,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		Ref<PackedScene> scene = res;
 		if (scene.is_valid()) {
 			// Without root node act the same as "Load Inherited Scene".
-			Error err = EditorNode::get_singleton()->load_scene(path, false, true);
+			Error err = EditorNode::get_singleton()->load_scene(path, EditorNode::FLAG_SET_INHERITED);
 			if (err != OK) {
 				accept->set_text(vformat(TTR("Error instantiating scene from %s."), path.get_file()));
 				accept->popup_centered();

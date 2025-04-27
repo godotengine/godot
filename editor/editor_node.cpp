@@ -1348,7 +1348,7 @@ void EditorNode::_reload_modified_scenes() {
 			editor_data.set_edited_scene(i);
 			_remove_edited_scene(false);
 
-			Error err = load_scene(filename, false, false, false, true);
+			Error err = load_scene(filename, FLAG_SILENT_CHANGE_TAB);
 			if (err != OK) {
 				ERR_PRINT(vformat("Failed to load scene: %s", filename));
 			}
@@ -2218,7 +2218,7 @@ void EditorNode::_dialog_action(String p_file) {
 				_menu_option_confirm(FILE_CLOSE, true);
 			}
 
-			load_scene(p_file, false, true);
+			load_scene(p_file, FLAG_SET_INHERITED);
 		} break;
 		case FILE_OPEN_SCENE: {
 			load_scene(p_file);
@@ -4166,7 +4166,7 @@ int EditorNode::new_scene() {
 	return idx;
 }
 
-Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, bool p_set_inherited, bool p_force_open_imported, bool p_silent_change_tab) {
+Error EditorNode::load_scene(const String &p_scene, BitField<LoadSceneFlags> p_flags) {
 	if (!is_inside_tree()) {
 		defer_load_scene = p_scene;
 		return OK;
@@ -4175,7 +4175,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	String lpath = ProjectSettings::get_singleton()->localize_path(ResourceUID::ensure_path(p_scene));
 	_update_prev_closed_scenes(lpath, false);
 
-	if (!p_set_inherited) {
+	if (!p_flags.has_flag(FLAG_SET_INHERITED)) {
 		for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 			if (editor_data.get_scene_path(i) == lpath) {
 				_set_current_scene(i);
@@ -4183,7 +4183,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			}
 		}
 
-		if (!p_force_open_imported && FileAccess::exists(lpath + ".import")) {
+		if (!p_flags.has_flag(FLAG_FORCE_OPEN_IMPORTED) && FileAccess::exists(lpath + ".import")) {
 			open_imported->set_text(vformat(TTR("Scene '%s' was automatically imported, so it can't be modified.\nTo make changes to it, a new inherited scene can be created."), lpath.get_file()));
 			open_imported->popup_centered();
 			new_inherited_button->grab_focus();
@@ -4203,7 +4203,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (prev == -1 || editor_data.get_edited_scene_root() || !editor_data.get_scene_path(prev).is_empty()) {
 		idx = editor_data.add_edited_scene(-1);
 
-		if (p_silent_change_tab) {
+		if (p_flags.has_flag(FLAG_SILENT_CHANGE_TAB)) {
 			_set_current_scene_nocheck(idx);
 		} else {
 			_set_current_scene(idx);
@@ -4217,7 +4217,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	Error err;
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
 
-	if (!p_ignore_broken_deps && dependency_errors.has(lpath)) {
+	if (!p_flags.has_flag(FLAG_IGNORE_BROKEN_DEPS) && dependency_errors.has(lpath)) {
 		current_menu_option = -1;
 		Vector<String> errors;
 		for (const String &E : dependency_errors[lpath]) {
@@ -4265,7 +4265,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		sdata->set_path(lpath, true); // Take over path.
 	}
 
-	Node *new_scene = sdata->instantiate(p_set_inherited ? PackedScene::GEN_EDIT_STATE_MAIN_INHERITED : PackedScene::GEN_EDIT_STATE_MAIN);
+	Node *new_scene = sdata->instantiate(p_flags.has_flag(FLAG_SET_INHERITED) ? PackedScene::GEN_EDIT_STATE_MAIN_INHERITED : PackedScene::GEN_EDIT_STATE_MAIN);
 	if (!new_scene) {
 		sdata.unref();
 		_dialog_display_load_error(lpath, ERR_FILE_CORRUPT);
@@ -4276,7 +4276,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		return ERR_FILE_CORRUPT;
 	}
 
-	if (p_set_inherited) {
+	if (p_flags.has_flag(FLAG_SET_INHERITED)) {
 		Ref<SceneState> state = sdata->get_state();
 		state->set_path(lpath);
 		new_scene->set_scene_inherited_state(state);
@@ -4328,7 +4328,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		save_editor_layout_delayed();
 	}
 
-	if (p_set_inherited) {
+	if (p_flags.has_flag(FLAG_SET_INHERITED)) {
 		EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(editor_data.get_current_edited_scene_history_id());
 	}
 
@@ -6259,7 +6259,7 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	// Reload scene.
 	_remove_scene(scene_idx, false);
-	load_scene(p_path, true, false, true);
+	load_scene(p_path, FLAG_IGNORE_BROKEN_DEPS | FLAG_FORCE_OPEN_IMPORTED);
 
 	// Adjust index so tab is back a the previous position.
 	editor_data.move_edited_scene_to_index(scene_idx);
@@ -6793,11 +6793,11 @@ bool EditorNode::call_build() {
 
 void EditorNode::_inherit_imported(const String &p_action) {
 	open_imported->hide();
-	load_scene(open_import_request, true, true);
+	load_scene(open_import_request, FLAG_IGNORE_BROKEN_DEPS | FLAG_SET_INHERITED);
 }
 
 void EditorNode::_open_imported() {
-	load_scene(open_import_request, true, false, true);
+	load_scene(open_import_request, FLAG_IGNORE_BROKEN_DEPS | FLAG_FORCE_OPEN_IMPORTED);
 }
 
 void EditorNode::dim_editor(bool p_dimming) {
