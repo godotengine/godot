@@ -38,7 +38,9 @@ namespace TestAudioStreamSynchronized {
 
 void detach_stream_sync(Ref<AudioStreamSynchronized> audio_stream_synchronized, Ref<AudioStreamPlayback> playback_sync = nullptr) {
 	for (int i = 0; i < audio_stream_synchronized->get_stream_count(); i++) {
-		audio_stream_synchronized->get_sync_stream(i)->detach_from_objectdb();
+		if (playback_sync.is_valid()) {
+			audio_stream_synchronized->get_sync_stream(i)->detach_from_objectdb();
+		}
 
 		if (playback_sync.is_valid()) {
 			audio_stream_synchronized->get_sync_stream_playback(i)->detach_from_objectdb();
@@ -86,12 +88,51 @@ TEST_CASE("[Audio][AudioStreamSynchronized] Constructor") {
 	CHECK(audio_stream_synchronized->get_stream_name() == "Synchronized");
 }
 
+TEST_CASE("[Audio][AudioStreamSynchronized] set_sync_stream, get_sync_stream") {
+	Ref<AudioStreamSynchronized> audio_stream_synchronized = memnew(AudioStreamSynchronized);
+	Ref<AudioStreamPlayback> playback_sync = audio_stream_synchronized->instantiate_playback();
+	Ref<AudioStreamWAV> stream_wav1 = TestUtils::gen_audio_stream_wav(AudioStreamWAV::FORMAT_8_BITS, true);
+	
+	audio_stream_synchronized->set_stream_count(2);
+	audio_stream_synchronized->set_sync_stream(0, stream_wav1);
+	
+	CHECK(audio_stream_synchronized->get_sync_stream(0)->get_instance_id() == stream_wav1->get_instance_id());
+	
+	SUBCASE("Stream should start at current position if set while playing") {
+		playback_sync->start();
+		playback_sync->seek(0.8);
+		
+		Ref<AudioStreamWAV> stream_wav2 = TestUtils::gen_audio_stream_wav(AudioStreamWAV::FORMAT_8_BITS, true);
+		audio_stream_synchronized->set_sync_stream(1, stream_wav2);
+
+		double wav2_expected_position = 0.8;
+
+		Ref<AudioStreamPlayback> wav2_playback = audio_stream_synchronized->get_sync_stream_playback(1);
+		CHECK(wav2_playback->get_playback_position() == doctest::Approx(wav2_expected_position));
+		CHECK(audio_stream_synchronized->get_sync_stream(1)->get_instance_id() == stream_wav2->get_instance_id());
+
+		playback_sync->stop();
+	}
+
+	detach_stream_sync(audio_stream_synchronized, playback_sync);
+}
+
 TEST_CASE("[Audio][AudioStreamSynchronized] get_length") {
 	Ref<AudioStreamSynchronized> audio_stream_synchronized = gen_default_audio_stream_synchronized(1, 1.5);
 
 	double expected_length = 1.5;
 
 	CHECK(audio_stream_synchronized->get_length() == expected_length);
+
+	detach_stream_sync(audio_stream_synchronized);
+}
+
+TEST_CASE("[Audio][AudioStreamSynchronized] set_stream_count, get_stream_count") {
+	Ref<AudioStreamSynchronized> audio_stream_synchronized = gen_default_audio_stream_synchronized();
+
+	audio_stream_synchronized->set_stream_count(5);
+
+	CHECK(audio_stream_synchronized->get_stream_count() == 5);
 
 	detach_stream_sync(audio_stream_synchronized);
 }
