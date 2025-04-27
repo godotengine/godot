@@ -42,8 +42,12 @@ bool EditorPaths::are_paths_valid() const {
 	return paths_valid;
 }
 
-String EditorPaths::get_data_dir() const {
-	return data_dir;
+String EditorPaths::get_data_home() const {
+	return data_home;
+}
+
+const Vector<String> &EditorPaths::get_data_dirs() const {
+	return data_dirs;
 }
 
 String EditorPaths::get_config_dir() const {
@@ -70,15 +74,15 @@ String EditorPaths::get_self_contained_file() const {
 	return self_contained_file;
 }
 
-String EditorPaths::get_export_templates_dir() const {
-	return get_data_dir().path_join(export_templates_folder);
+const Vector<String> &EditorPaths::get_export_templates_dirs() const {
+	return export_template_dirs;
 }
 
 String EditorPaths::get_debug_keystore_path() const {
 #ifdef ANDROID_ENABLED
 	return "assets://keystores/debug.keystore";
 #else
-	return get_data_dir().path_join("keystores/debug.keystore");
+	return get_data_home().path_join("keystores/debug.keystore");
 #endif
 }
 
@@ -113,7 +117,8 @@ void EditorPaths::free() {
 }
 
 void EditorPaths::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_data_dir"), &EditorPaths::get_data_dir);
+	// TODO: provide alias for compatibility?
+	ClassDB::bind_method(D_METHOD("get_data_home"), &EditorPaths::get_data_home);
 	ClassDB::bind_method(D_METHOD("get_config_dir"), &EditorPaths::get_config_dir);
 	ClassDB::bind_method(D_METHOD("get_cache_dir"), &EditorPaths::get_cache_dir);
 	ClassDB::bind_method(D_METHOD("is_self_contained"), &EditorPaths::is_self_contained);
@@ -160,27 +165,35 @@ EditorPaths::EditorPaths() {
 	if (self_contained) {
 		// editor is self contained, all in same folder
 		data_path = exe_path;
-		data_dir = data_path.path_join("editor_data");
+		data_home = data_path.path_join("editor_data");
 		config_path = exe_path;
-		config_dir = data_dir;
+		config_dir = data_home;
 		cache_path = exe_path;
-		cache_dir = data_dir.path_join("cache");
-		temp_dir = data_dir.path_join("temp");
+		cache_dir = data_home.path_join("cache");
+		temp_dir = data_home.path_join("temp");
 	} else {
 		// Typically XDG_DATA_HOME or %APPDATA%.
-		data_path = OS::get_singleton()->get_data_path();
-		data_dir = data_path.path_join(OS::get_singleton()->get_godot_dir_name());
+		data_path = OS::get_singleton()->get_data_home();
+		data_home = data_path.path_join(OS::get_singleton()->get_godot_dir_name());
+		for (auto const &dir : OS::get_singleton()->get_data_dirs()) {
+			data_dirs.push_back(dir.path_join(OS::get_singleton()->get_godot_dir_name()));
+		}
 		// Can be different from data_path e.g. on Linux or macOS.
 		config_path = OS::get_singleton()->get_config_path();
 		config_dir = config_path.path_join(OS::get_singleton()->get_godot_dir_name());
-		// Can be different from above paths, otherwise a subfolder of data_dir.
+		// Can be different from above paths, otherwise a subfolder of data_home.
 		cache_path = OS::get_singleton()->get_cache_path();
 		if (cache_path == data_path) {
-			cache_dir = data_dir.path_join("cache");
+			cache_dir = data_home.path_join("cache");
 		} else {
 			cache_dir = cache_path.path_join(OS::get_singleton()->get_godot_dir_name());
 		}
 		temp_dir = OS::get_singleton()->get_temp_path();
+	}
+
+	export_template_dirs.push_back(data_home.path_join(export_templates_folder));
+	for (auto const &dir : data_dirs) {
+		export_template_dirs.push_back(dir.path_join(export_templates_folder));
 	}
 
 	paths_valid = (!data_path.is_empty() && !config_path.is_empty() && !cache_path.is_empty());
@@ -192,10 +205,10 @@ EditorPaths::EditorPaths() {
 
 	// Data dir.
 	{
-		if (dir->change_dir(data_dir) != OK) {
-			dir->make_dir_recursive(data_dir);
-			if (dir->change_dir(data_dir) != OK) {
-				ERR_PRINT("Could not create editor data directory: " + data_dir);
+		if (dir->change_dir(data_home) != OK) {
+			dir->make_dir_recursive(data_home);
+			if (dir->change_dir(data_home) != OK) {
+				ERR_PRINT("Could not create editor data directory: " + data_home);
 				paths_valid = false;
 			}
 		}
@@ -252,7 +265,7 @@ EditorPaths::EditorPaths() {
 	// including shader cache subdir.
 	if (Engine::get_singleton()->is_project_manager_hint() || (Main::is_cmdline_tool() && !ProjectSettings::get_singleton()->is_project_loaded())) {
 		// Nothing to create, use shared editor data dir for shader cache.
-		Engine::get_singleton()->set_shader_cache_path(data_dir);
+		Engine::get_singleton()->set_shader_cache_path(data_home);
 	} else {
 		Ref<DirAccess> dir_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (dir_res->change_dir(project_data_dir) != OK) {

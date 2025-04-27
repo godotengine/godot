@@ -1377,6 +1377,6 @@ ProjectList::ProjectList() {
 	project_list_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(project_list_vbox);
 
-	_config_path = EditorPaths::get_singleton()->get_data_dir().path_join("projects.cfg");
+	_config_path = EditorPaths::get_singleton()->get_data_home().path_join("projects.cfg");
 	_migrate_config();
 }

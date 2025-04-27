@@ -641,8 +641,8 @@ String OS::get_config_dir() const {
 }
 
 String OS::get_data_dir() const {
-	// Exposed as `get_data_dir()` instead of `get_data_path()` for consistency with other exposed OS methods.
-	return ::OS::get_singleton()->get_data_path();
+	// Exposed as `get_data_dir()` instead of `get_data_home()` for consistency with other exposed OS methods.
+	return ::OS::get_singleton()->get_data_home();
 }
 
 String OS::get_cache_dir() const {

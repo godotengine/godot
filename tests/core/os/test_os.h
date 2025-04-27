@@ -94,7 +94,7 @@ TEST_CASE("[OS] Executable and data paths") {
 			OS::get_singleton()->get_executable_path().is_absolute_path(),
 			"The executable path returned should be an absolute path.");
 	CHECK_MESSAGE(
-			OS::get_singleton()->get_data_path().is_absolute_path(),
+			OS::get_singleton()->get_data_home().is_absolute_path(),
 			"The user data path returned should be an absolute path.");
 	CHECK_MESSAGE(
 			OS::get_singleton()->get_config_path().is_absolute_path(),

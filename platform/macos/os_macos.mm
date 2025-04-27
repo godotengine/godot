@@ -328,7 +328,7 @@ String OS_MacOS::get_config_path() const {
 	return ".";
 }
 
-String OS_MacOS::get_data_path() const {
+String OS_MacOS::get_data_home() const {
 	return get_config_path();
 }
 

@@ -227,7 +227,7 @@ public:
 	virtual uint64_t get_embedded_pck_offset() const override;
 
 	virtual String get_config_path() const override;
-	virtual String get_data_path() const override;
+	virtual String get_data_home() const override;
 	virtual String get_cache_path() const override;
 	virtual String get_temp_path() const override;
 	virtual String get_godot_dir_name() const override;

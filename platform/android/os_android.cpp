@@ -442,7 +442,7 @@ String OS_Android::get_model_name() const {
 	return OS_Unix::get_model_name();
 }
 
-String OS_Android::get_data_path() const {
+String OS_Android::get_data_home() const {
 	return OS::get_user_data_dir();
 }
 

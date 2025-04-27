@@ -886,7 +886,7 @@ String OS_LinuxBSD::get_config_path() const {
 	}
 }
 
-String OS_LinuxBSD::get_data_path() const {
+String OS_LinuxBSD::get_data_home() const {
 	if (has_environment("XDG_DATA_HOME")) {
 		if (get_environment("XDG_DATA_HOME").is_absolute_path()) {
 			return get_environment("XDG_DATA_HOME");
@@ -898,6 +898,17 @@ String OS_LinuxBSD::get_data_path() const {
 		return get_environment("HOME").path_join(".local/share");
 	} else {
 		return get_config_path();
+	}
+}
+
+Vector<String> OS_LinuxBSD::get_data_dirs() const {
+	if (has_environment("XDG_DATA_DIRS")) {
+		return get_environment("XDG_DATA_DIRS").split(":", false);
+	} else {
+		return Vector<String>{
+			"/usr/local/share/",
+			"/usr/share/",
+		};
 	}
 }
 

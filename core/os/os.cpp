@@ -286,8 +286,13 @@ String OS::get_godot_dir_name() const {
 }
 
 // OS equivalent of XDG_DATA_HOME
-String OS::get_data_path() const {
+String OS::get_data_home() const {
 	return ".";
+}
+
+// OS equivalent of XDG_DATA_DIRS
+Vector<String> OS::get_data_dirs() const {
+	return Vector<String>();
 }
 
 // OS equivalent of XDG_CONFIG_HOME
