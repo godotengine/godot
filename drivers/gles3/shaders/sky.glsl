@@ -157,7 +157,7 @@ float acos_approx(float p_x) {
 	float x = abs(p_x);
 	float res = -0.156583f * x + (M_PI / 2.0);
 	res *= sqrt(1.0f - x);
-	return (p_x >= 0) ? res : M_PI - res;
+	return (p_x >= 0.0) ? res : M_PI - res;
 }
 
 // Based on https://math.stackexchange.com/questions/1098487/atan2-faster-approximation
