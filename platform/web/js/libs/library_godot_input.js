@@ -33,7 +33,7 @@
  */
 
 const GodotIME = {
-	$GodotIME__deps: ['$GodotRuntime', '$GodotEventListeners'],
+	$GodotIME__deps: ['$GodotRuntime', '$GodotEventListeners', '$GodotInput'],
 	$GodotIME__postset: 'GodotOS.atexit(function(resolve, reject) { GodotIME.clear(); resolve(); });',
 	$GodotIME: {
 		ime: null,
@@ -92,12 +92,19 @@ const GodotIME = {
 		},
 
 		init: function (ime_cb, key_cb, code, key) {
-			function key_event_cb(pressed, evt) {
-				const modifiers = GodotIME.getModifiers(evt);
-				GodotRuntime.stringToHeap(evt.code, code, 32);
-				GodotRuntime.stringToHeap(evt.key, key, 32);
-				key_cb(pressed, evt.repeat, modifiers);
-				evt.preventDefault();
+			/**
+			 * @param {boolean} pressed
+			 * @param {KeyboardEvent} event
+			 */
+			function key_event_cb(pressed, event) {
+				const modifiers = GodotIME.getModifiers(event);
+				GodotRuntime.stringToHeap(event.code, code, 32);
+				GodotRuntime.stringToHeap(event.key, key, 32);
+				key_cb(pressed, event.repeat, modifiers);
+				// eslint-disable-next-line no-use-before-define
+				if (GodotInput.canPreventDefault(event)) {
+					event.preventDefault();
+				}
 			}
 			function ime_event_cb(event) {
 				if (GodotIME.ime == null) {
@@ -480,7 +487,7 @@ mergeInto(LibraryManager.library, GodotInputDragDrop);
  * Godot exposed input functions.
  */
 const GodotInput = {
-	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInputGamepads', '$GodotInputDragDrop', '$GodotIME'],
+	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInputGamepads', '$GodotInputDragDrop', '$GodotIME', '$GodotOS'],
 	$GodotInput: {
 		getModifiers: function (evt) {
 			return (evt.shiftKey + 0) + ((evt.altKey + 0) << 1) + ((evt.ctrlKey + 0) << 2) + ((evt.metaKey + 0) << 3);
@@ -492,6 +499,37 @@ const GodotInput = {
 			const x = (evt.clientX - rect.x) * rw;
 			const y = (evt.clientY - rect.y) * rh;
 			return [x, y];
+		},
+		/**
+		 * Returns true if the `KeyboardEvent` is "CmdOrCtrl" based on the host platform.
+		 * @param {KeyboardEvent} event
+		 */
+		isCmdOrCtrl: function (event) {
+			if (GodotOS.has_feature_web('web_macos') || GodotOS.has_feature_web('web_ios')) {
+				return event.metaKey;
+			}
+			return event.ctrlKey;
+		},
+		/**
+		 * Returns `true` if `event.preventDefault()` is safe to use.
+		 * @param {KeyboardEvent} event
+		 * @returns {boolean}
+		 */
+		canPreventDefault: function (event) {
+			if (!GodotInput.isCmdOrCtrl(event)) {
+				return true;
+			}
+			switch (event.key) {
+			// Preventing default for clipboard shortcuts prevent
+			// the Clipboard API to actually being triggered.
+			// This makes it impossible to use {Ctrl,Cmd}-{X,C,V} keyboard shortcuts.
+			case 'x':
+			case 'c':
+			case 'v':
+				return false;
+			default:
+				return true;
+			}
 		},
 	},
 
@@ -590,14 +628,20 @@ const GodotInput = {
 	 */
 	godot_js_input_key_cb__proxy: 'sync',
 	godot_js_input_key_cb__sig: 'viii',
-	godot_js_input_key_cb: function (callback, code, key) {
-		const func = GodotRuntime.get_func(callback);
-		function key_cb(pressed, evt) {
-			const modifiers = GodotInput.getModifiers(evt);
-			GodotRuntime.stringToHeap(evt.code, code, 32);
-			GodotRuntime.stringToHeap(evt.key, key, 32);
-			func(pressed, evt.repeat, modifiers);
-			evt.preventDefault();
+	godot_js_input_key_cb: function (pCallback, code, key) {
+		const callback = GodotRuntime.get_func(pCallback);
+		/**
+		 * @param {boolean} pressed
+		 * @param {KeyboardEvent} event
+		 */
+		function key_cb(pressed, event) {
+			const modifiers = GodotInput.getModifiers(event);
+			GodotRuntime.stringToHeap(event.code, code, 32);
+			GodotRuntime.stringToHeap(event.key, key, 32);
+			callback(pressed, event.repeat, modifiers);
+			if (GodotInput.canPreventDefault(event)) {
+				event.preventDefault();
+			}
 		}
 		GodotEventListeners.add(GodotConfig.canvas, 'keydown', key_cb.bind(null, 1), false);
 		GodotEventListeners.add(GodotConfig.canvas, 'keyup', key_cb.bind(null, 0), false);
@@ -707,14 +751,21 @@ const GodotInput = {
 	/* Paste API */
 	godot_js_input_paste_cb__proxy: 'sync',
 	godot_js_input_paste_cb__sig: 'vi',
-	godot_js_input_paste_cb: function (callback) {
-		const func = GodotRuntime.get_func(callback);
-		GodotEventListeners.add(window, 'paste', function (evt) {
-			const text = evt.clipboardData.getData('text');
+	godot_js_input_paste_cb: function (pCallback) {
+		const callback = GodotRuntime.get_func(pCallback);
+		/**
+		 * @param {KeyboardEvent} event
+		 */
+		const eventListener = (event) => {
+			const text = event.clipboardData?.getData('text');
+			if (text == null) {
+				// TODO: Handle error.
+			}
 			const ptr = GodotRuntime.allocString(text);
-			func(ptr);
+			callback(ptr);
 			GodotRuntime.free(ptr);
-		}, false);
+		};
+		GodotEventListeners.add(window, 'paste', eventListener, false);
 	},
 
 	godot_js_input_vibrate_handheld__proxy: 'sync',
