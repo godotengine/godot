@@ -3547,7 +3547,7 @@ void EditorInspector::update_tree() {
 			List<PropertyInfo>::Element *N = E_property->next();
 			bool valid = true;
 			while (N) {
-				if (!N->get().name.begins_with("metadata/_") && N->get().usage & PROPERTY_USAGE_EDITOR &&
+				if (!N->get().name.begins_with("metadata/_") && !(N->get().name == "script") && N->get().usage & PROPERTY_USAGE_EDITOR &&
 						(!filter.is_empty() || !restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 					break;
 				}
@@ -3559,7 +3559,7 @@ void EditorInspector::update_tree() {
 				}
 				N = N->next();
 			}
-			if (!valid) {
+			if (!valid || !N) {
 				continue; // Empty, ignore it.
 			}
 
