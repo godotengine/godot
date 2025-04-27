@@ -1592,6 +1592,9 @@ msgstr "Argumentos de Sinal de Desvinculação:"
 msgid "Receiver Method:"
 msgstr "Método Recetor:"
 
+msgid "Pick"
+msgstr "Escolher"
+
 msgid "Advanced"
 msgstr "Avançado"
 
@@ -5247,6 +5250,9 @@ msgstr "Instalar do Ficheiro"
 msgid "Install templates from a local file."
 msgstr "Instalar modelos a partir de um ficheiro local."
 
+msgid "Go Online"
+msgstr "Ficar Online"
+
 msgid "Cancel the download of the templates."
 msgstr "Cancelar a transferência dos modelos."
 
@@ -8053,9 +8059,6 @@ msgid ""
 msgstr ""
 "A Biblioteca de Assets requer uma conexão online e envolve a transferência de "
 "dados através da internet."
-
-msgid "Go Online"
-msgstr "Ficar Online"
 
 msgid "Failed to get repository configuration."
 msgstr "Incapaz de obter configuração de repositório."
@@ -15438,9 +15441,6 @@ msgstr "Marcadores de recursos"
 
 msgid "Pick Root Node Type"
 msgstr "Escolha o Tipo de Nó Raiz"
-
-msgid "Pick"
-msgstr "Escolher"
 
 msgid "Scene name is empty."
 msgstr "O nome da cena está vazio."

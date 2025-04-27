@@ -497,7 +497,7 @@ ScreenSelect::ScreenSelect() {
 		set_disabled(true);
 		set_tooltip_text(EditorNode::get_singleton()->get_multiwindow_support_tooltip_text());
 	} else {
-		set_tooltip_text(TTR("Make this panel floating.\nRight-click to open the screen selector."));
+		set_tooltip_text(TTR("Make this panel floating.") + "\n" + TTR("Right-click to open the screen selector."));
 	}
 
 	// Create the popup.

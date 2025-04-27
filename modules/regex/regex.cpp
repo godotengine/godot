@@ -69,7 +69,7 @@ String RegExMatch::get_subject() const {
 }
 
 int RegExMatch::get_group_count() const {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return 0;
 	}
 	return data.size() - 1;
@@ -326,7 +326,7 @@ int RegEx::_sub(const String &p_subject, const String &p_replacement, int p_offs
 	pcre2_match_context_free_32(mctx);
 
 	if (res >= 0) {
-		r_output = String(output.ptr(), olength) + p_subject.substr(length);
+		r_output = String::utf32(Span(output.ptr(), olength)) + p_subject.substr(length);
 	}
 
 	return res;

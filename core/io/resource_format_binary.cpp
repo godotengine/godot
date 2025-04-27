@@ -162,9 +162,7 @@ StringName ResourceLoaderBinary::_get_string() {
 			return StringName();
 		}
 		f->get_buffer((uint8_t *)&str_buf[0], len);
-		String s;
-		s.parse_utf8(&str_buf[0], len);
-		return s;
+		return String::utf8(&str_buf[0], len);
 	}
 
 	return string_map[id];
@@ -918,9 +916,7 @@ static String get_ustring(Ref<FileAccess> f) {
 	Vector<char> str_buf;
 	str_buf.resize(len);
 	f->get_buffer((uint8_t *)&str_buf[0], len);
-	String s;
-	s.parse_utf8(&str_buf[0], len);
-	return s;
+	return String::utf8(&str_buf[0], len);
 }
 
 String ResourceLoaderBinary::get_unicode_string() {
@@ -932,9 +928,7 @@ String ResourceLoaderBinary::get_unicode_string() {
 		return String();
 	}
 	f->get_buffer((uint8_t *)&str_buf[0], len);
-	String s;
-	s.parse_utf8(&str_buf[0], len);
-	return s;
+	return String::utf8(&str_buf[0], len);
 }
 
 void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_f, HashSet<StringName> *p_classes) {
@@ -1028,10 +1022,10 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	print_bl("minor: " + itos(ver_minor));
 	print_bl("format: " + itos(ver_format));
 
-	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_format > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		f.unref();
 		ERR_FAIL_MSG(vformat("File '%s' can't be loaded, as it uses a format version (%d) or engine version (%d.%d) which are not supported by your engine version (%s).",
-				local_path, ver_format, ver_major, ver_minor, VERSION_BRANCH));
+				local_path, ver_format, ver_major, ver_minor, GODOT_VERSION_BRANCH));
 	}
 
 	type = get_unicode_string();
@@ -1155,7 +1149,7 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 	f->get_32(); // ver_minor
 	uint32_t ver_fmt = f->get_32();
 
-	if (ver_fmt > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_fmt > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		f.unref();
 		return "";
 	}
@@ -1196,7 +1190,7 @@ String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
 	f->get_32(); // ver_minor
 	uint32_t ver_fmt = f->get_32();
 
-	if (ver_fmt > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_fmt > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		f.unref();
 		return "";
 	}
@@ -1348,13 +1342,10 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	bool use_real64 = f->get_32();
 
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
-#ifdef BIG_ENDIAN_ENABLED
-	fw->store_32(!big_endian);
-#else
+
 	fw->store_32(big_endian);
-#endif
-	fw->set_big_endian(big_endian != 0);
 	fw->store_32(use_real64); //use real64
+	fw->set_big_endian(big_endian != 0);
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -1392,10 +1383,10 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		return ResourceFormatSaverBinary::singleton->save(res, p_path);
 	}
 
-	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_format > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED,
 				vformat("File '%s' can't be loaded, as it uses a format version (%d) or engine version (%d.%d) which are not supported by your engine version (%s).",
-						local_path, ver_format, ver_major, ver_minor, VERSION_BRANCH));
+						local_path, ver_format, ver_major, ver_minor, GODOT_VERSION_BRANCH));
 	}
 
 	// Since we're not actually converting the file contents, leave the version
@@ -1876,12 +1867,9 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			Dictionary d = p_property;
 			f->store_32(uint32_t(d.size()));
 
-			List<Variant> keys;
-			d.get_key_list(&keys);
-
-			for (const Variant &E : keys) {
-				write_variant(f, E, resource_map, external_resources, string_map);
-				write_variant(f, d[E], resource_map, external_resources, string_map);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				write_variant(f, kv.key, resource_map, external_resources, string_map);
+				write_variant(f, kv.value, resource_map, external_resources, string_map);
 			}
 
 		} break;
@@ -2086,12 +2074,9 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 			Dictionary d = p_variant;
 			_find_resources(d.get_typed_key_script());
 			_find_resources(d.get_typed_value_script());
-			List<Variant> keys;
-			d.get_key_list(&keys);
-			for (const Variant &E : keys) {
-				_find_resources(E);
-				Variant v = d[E];
-				_find_resources(v);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				_find_resources(kv.key);
+				_find_resources(kv.value);
 			}
 		} break;
 		case Variant::NODE_PATH: {
@@ -2180,14 +2165,14 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	if (big_endian) {
 		f->store_32(1);
-		f->set_big_endian(true);
 	} else {
 		f->store_32(0);
 	}
-
 	f->store_32(0); //64 bits file, false for now
-	f->store_32(VERSION_MAJOR);
-	f->store_32(VERSION_MINOR);
+	f->set_big_endian(big_endian);
+
+	f->store_32(GODOT_VERSION_MAJOR);
+	f->store_32(GODOT_VERSION_MINOR);
 	f->store_32(FORMAT_VERSION);
 
 	if (f->get_error() != OK && f->get_error() != ERR_FILE_EOF) {
@@ -2424,13 +2409,10 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 	big_endian = f->get_32();
 	bool use_real64 = f->get_32();
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
-#ifdef BIG_ENDIAN_ENABLED
-	fw->store_32(!big_endian);
-#else
+
 	fw->store_32(big_endian);
-#endif
-	fw->set_big_endian(big_endian != 0);
 	fw->store_32(use_real64); //use real64
+	fw->set_big_endian(big_endian != 0);
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -2450,10 +2432,10 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 		return ERR_UNAVAILABLE;
 	}
 
-	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_format > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED,
 				vformat("File '%s' can't be loaded, as it uses a format version (%d) or engine version (%d.%d) which are not supported by your engine version (%s).",
-						local_path, ver_format, ver_major, ver_minor, VERSION_BRANCH));
+						local_path, ver_format, ver_major, ver_minor, GODOT_VERSION_BRANCH));
 	}
 
 	// Since we're not actually converting the file contents, leave the version

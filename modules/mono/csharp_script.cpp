@@ -66,8 +66,6 @@
 #include "editor/node_dock.h"
 #endif
 
-#include <stdint.h>
-
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
 const Vector<String> ignored_types = {};
@@ -364,7 +362,7 @@ Ref<Script> CSharpLanguage::make_template(const String &p_template, const String
 	Ref<CSharpScript> scr;
 	scr.instantiate();
 
-	String class_name_no_spaces = p_class_name.replace(" ", "_");
+	String class_name_no_spaces = p_class_name.replace_char(' ', '_');
 	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
 	String processed_template = p_template;
 	processed_template = processed_template.replace("_BINDINGS_NAMESPACE_", BINDINGS_NAMESPACE)
@@ -492,7 +490,6 @@ String CSharpLanguage::debug_get_stack_level_source(int p_level) const {
 }
 
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
-#ifdef DEBUG_ENABLED
 	// Printing an error here will result in endless recursion, so we must be careful
 	static thread_local bool _recursion_flag_ = false;
 	if (_recursion_flag_) {
@@ -514,9 +511,6 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 	}
 
 	return si;
-#else
-	return Vector<StackInfo>();
-#endif
 }
 
 void CSharpLanguage::post_unsafe_reference(Object *p_obj) {
@@ -615,7 +609,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 			return false; // Already up to date
 		}
 	} else {
-		String assembly_name = path::get_csharp_project_name();
+		String assembly_name = Path::get_csharp_project_name();
 
 		assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
 								.path_join(assembly_name + ".dll");
@@ -652,7 +646,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		for (SelfList<CSharpScript> *elem = script_list.first(); elem; elem = elem->next()) {
 			// Do not reload scripts with only non-collectible instances to avoid disrupting event subscriptions and such.
-			bool is_reloadable = elem->self()->instances.size() == 0;
+			bool is_reloadable = elem->self()->instances.is_empty();
 			for (Object *obj : elem->self()->instances) {
 				ERR_CONTINUE(!obj->get_script_instance());
 				CSharpInstance *csi = static_cast<CSharpInstance *>(obj->get_script_instance());

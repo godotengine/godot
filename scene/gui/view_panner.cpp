@@ -226,9 +226,7 @@ void ViewPanner::set_force_drag(bool p_force) {
 }
 
 ViewPanner::ViewPanner() {
-	Array inputs;
-	inputs.append(InputEventKey::create_reference(Key::SPACE));
-
+	Array inputs = { InputEventKey::create_reference(Key::SPACE) };
 	pan_view_shortcut.instantiate();
 	pan_view_shortcut->set_events(inputs);
 }

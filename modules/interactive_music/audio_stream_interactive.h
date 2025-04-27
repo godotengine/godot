@@ -182,6 +182,8 @@ public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 	virtual double get_length() const override { return 0; }
+	virtual bool is_meta_stream() const override { return true; }
+
 	AudioStreamInteractive();
 
 protected:

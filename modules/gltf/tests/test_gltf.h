@@ -70,8 +70,10 @@ static Node *gltf_import(const String &p_file) {
 
 	// Once editor import convert pngs to ctex, we will need to load it as ctex resource.
 	Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_stream_texture;
-	resource_loader_stream_texture.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
+	if (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
+		resource_loader_stream_texture.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
+	}
 
 	HashMap<StringName, Variant> options(21);
 	options["nodes/root_type"] = "";
@@ -105,7 +107,10 @@ static Node *gltf_import(const String &p_file) {
 
 	ResourceImporterScene::remove_scene_importer(import_gltf);
 	ResourceFormatImporter::get_singleton()->remove_importer(import_texture);
-	ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
+	if (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
+		resource_loader_stream_texture.unref();
+	}
 	return p_scene;
 }
 

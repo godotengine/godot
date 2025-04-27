@@ -182,9 +182,6 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 	return ImageTexture::create_from_image(img);
 }
 
-EditorTexturePreviewPlugin::EditorTexturePreviewPlugin() {
-}
-
 ////////////////////////////////////////////////////////////////////////////
 
 bool EditorImagePreviewPlugin::handles(const String &p_type) const {
@@ -220,9 +217,6 @@ Ref<Texture2D> EditorImagePreviewPlugin::generate(const Ref<Resource> &p_from, c
 	post_process_preview(img);
 
 	return ImageTexture::create_from_image(img);
-}
-
-EditorImagePreviewPlugin::EditorImagePreviewPlugin() {
 }
 
 bool EditorImagePreviewPlugin::generate_small_preview_automatically() const {
@@ -287,9 +281,6 @@ bool EditorBitmapPreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
 
-EditorBitmapPreviewPlugin::EditorBitmapPreviewPlugin() {
-}
-
 ///////////////////////////////////////////////////////////////////////////
 
 bool EditorPackedScenePreviewPlugin::handles(const String &p_type) const {
@@ -323,9 +314,6 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	} else {
 		return Ref<Texture2D>();
 	}
-}
-
-EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
 }
 
 //////////////////////////////////////////////////////////////////
@@ -405,22 +393,22 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 
 	int lats = 32;
 	int lons = 32;
-	const double lat_step = Math_TAU / lats;
-	const double lon_step = Math_TAU / lons;
+	const double lat_step = Math::TAU / lats;
+	const double lon_step = Math::TAU / lons;
 	real_t radius = 1.0;
 
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
 	Vector<Vector2> uvs;
 	Vector<real_t> tangents;
-	Basis tt = Basis(Vector3(0, 1, 0), Math_PI * 0.5);
+	Basis tt = Basis(Vector3(0, 1, 0), Math::PI * 0.5);
 
 	for (int i = 1; i <= lats; i++) {
-		double lat0 = lat_step * (i - 1) - Math_TAU / 4;
+		double lat0 = lat_step * (i - 1) - Math::TAU / 4;
 		double z0 = Math::sin(lat0);
 		double zr0 = Math::cos(lat0);
 
-		double lat1 = lat_step * i - Math_TAU / 4;
+		double lat1 = lat_step * i - Math::TAU / 4;
 		double z1 = Math::sin(lat1);
 		double zr1 = Math::cos(lat1);
 
@@ -445,7 +433,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	vertices.push_back(v[m_idx] * radius);                                                     \
 	{                                                                                          \
 		Vector2 uv(Math::atan2(v[m_idx].x, v[m_idx].z), Math::atan2(-v[m_idx].y, v[m_idx].z)); \
-		uv /= Math_PI;                                                                         \
+		uv /= Math::PI;                                                                        \
 		uv *= 4.0;                                                                             \
 		uv = uv * 0.5 + Vector2(0.5, 0.5);                                                     \
 		uvs.push_back(uv);                                                                     \
@@ -649,9 +637,6 @@ Ref<Texture2D> EditorScriptPreviewPlugin::_generate_from_source_code(const Scrip
 	return ImageTexture::create_from_image(img);
 }
 
-EditorScriptPreviewPlugin::EditorScriptPreviewPlugin() {
-}
-
 ///////////////////////////////////////////////////////////////////
 
 bool EditorAudioStreamPreviewPlugin::handles(const String &p_type) const {
@@ -731,9 +716,6 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 	return ImageTexture::create_from_image(image);
 }
 
-EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
-}
-
 ///////////////////////////////////////////////////////////////////////////
 
 void EditorMeshPreviewPlugin::abort() {
@@ -754,8 +736,8 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const Ref<Resource> &p_from, co
 	Vector3 ofs = aabb.get_center();
 	aabb.position -= ofs;
 	Transform3D xform;
-	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI * 0.125);
-	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.125) * xform.basis;
+	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math::PI * 0.125);
+	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math::PI * 0.125) * xform.basis;
 	AABB rot_aabb = xform.xform(aabb);
 	real_t m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 	if (m == 0) {
@@ -951,7 +933,4 @@ Ref<Texture2D> EditorGradientPreviewPlugin::generate(const Ref<Resource> &p_from
 		return ImageTexture::create_from_image(ptex->get_image());
 	}
 	return Ref<Texture2D>();
-}
-
-EditorGradientPreviewPlugin::EditorGradientPreviewPlugin() {
 }

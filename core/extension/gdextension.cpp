@@ -679,6 +679,13 @@ void GDExtension::_get_library_path(GDExtensionClassLibraryPtr p_library, GDExte
 	memnew_placement(r_path, String(library_path));
 }
 
+void GDExtension::_register_get_classes_used_callback(GDExtensionClassLibraryPtr p_library, GDExtensionEditorGetClassesUsedCallback p_callback) {
+#ifdef TOOLS_ENABLED
+	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
+	self->get_classes_used_callback = p_callback;
+#endif
+}
+
 HashMap<StringName, GDExtensionInterfaceFunctionPtr> GDExtension::gdextension_interface_functions;
 
 void GDExtension::register_interface_function(const StringName &p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer) {
@@ -799,6 +806,7 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("classdb_register_extension_class_signal", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_signal);
 	register_interface_function("classdb_unregister_extension_class", (GDExtensionInterfaceFunctionPtr)&GDExtension::_unregister_extension_class);
 	register_interface_function("get_library_path", (GDExtensionInterfaceFunctionPtr)&GDExtension::_get_library_path);
+	register_interface_function("editor_register_get_classes_used_callback", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_get_classes_used_callback);
 }
 
 void GDExtension::finalize_gdextensions() {
@@ -1032,6 +1040,14 @@ void GDExtension::_untrack_instance(void *p_user_data, void *p_instance) {
 	Object *obj = reinterpret_cast<Object *>(p_instance);
 
 	extension->instances.erase(obj->get_instance_id());
+}
+
+PackedStringArray GDExtension::get_classes_used() const {
+	PackedStringArray ret;
+	if (get_classes_used_callback) {
+		get_classes_used_callback((GDExtensionTypePtr)&ret);
+	}
+	return ret;
 }
 
 Vector<StringName> GDExtensionEditorPlugins::extension_classes;

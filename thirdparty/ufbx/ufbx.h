@@ -267,7 +267,7 @@ struct ufbx_converter { };
 // `ufbx_source_version` contains the version of the corresponding source file.
 // HINT: The version can be compared numerically to the result of `ufbx_pack_version()`,
 // for example `#if UFBX_VERSION >= ufbx_pack_version(0, 12, 0)`.
-#define UFBX_HEADER_VERSION ufbx_pack_version(0, 17, 1)
+#define UFBX_HEADER_VERSION ufbx_pack_version(0, 18, 0)
 #define UFBX_VERSION UFBX_HEADER_VERSION
 
 // -- Basic types
@@ -2353,6 +2353,9 @@ typedef enum ufbx_shader_type UFBX_ENUM_REPR {
 	// 3ds glTF Material
 	// https://help.autodesk.com/view/3DSMAX/2023/ENU/?guid=GUID-7ABFB805-1D9F-417E-9C22-704BFDF160FA
 	UFBX_SHADER_GLTF_MATERIAL,
+	// 3ds OpenPBR Material
+	// https://help.autodesk.com/view/3DSMAX/2025/ENU/?guid=GUID-CD90329C-1E2B-4BBA-9285-3BB46253B9C2
+	UFBX_SHADER_OPENPBR_MATERIAL,
 	// Stingray ShaderFX shader graph.
 	// Contains a serialized `"ShaderGraph"` in `ufbx_props`.
 	UFBX_SHADER_SHADERFX_GRAPH,
@@ -2437,6 +2440,7 @@ typedef enum ufbx_material_pbr_map UFBX_ENUM_REPR {
 	UFBX_MATERIAL_PBR_COAT_NORMAL,
 	UFBX_MATERIAL_PBR_COAT_AFFECT_BASE_COLOR,
 	UFBX_MATERIAL_PBR_COAT_AFFECT_BASE_ROUGHNESS,
+	UFBX_MATERIAL_PBR_THIN_FILM_FACTOR,
 	UFBX_MATERIAL_PBR_THIN_FILM_THICKNESS,
 	UFBX_MATERIAL_PBR_THIN_FILM_IOR,
 	UFBX_MATERIAL_PBR_EMISSION_FACTOR,
@@ -2561,6 +2565,7 @@ typedef struct ufbx_material_pbr_maps {
 			ufbx_material_map coat_normal;
 			ufbx_material_map coat_affect_base_color;
 			ufbx_material_map coat_affect_base_roughness;
+			ufbx_material_map thin_film_factor;
 			ufbx_material_map thin_film_thickness;
 			ufbx_material_map thin_film_ior;
 			ufbx_material_map emission_factor;
@@ -3141,6 +3146,26 @@ typedef enum ufbx_interpolation UFBX_ENUM_REPR {
 
 UFBX_ENUM_TYPE(ufbx_interpolation, UFBX_INTERPOLATION, UFBX_INTERPOLATION_CUBIC);
 
+typedef enum ufbx_extrapolation_mode UFBX_ENUM_REPR {
+	UFBX_EXTRAPOLATION_CONSTANT,        // < Use the value of the first/last keyframe
+	UFBX_EXTRAPOLATION_REPEAT,          // < Repeat the whole animation curve
+	UFBX_EXTRAPOLATION_MIRROR,          // < Repeat with mirroring
+	UFBX_EXTRAPOLATION_SLOPE,           // < Use the tangent of the last keyframe to linearly extrapolate
+	UFBX_EXTRAPOLATION_REPEAT_RELATIVE, // < Repeat the animation curve but connect the first and last keyframe values
+
+	UFBX_ENUM_FORCE_WIDTH(UFBX_EXTRAPOLATION)
+} ufbx_extrapolation_mode;
+
+UFBX_ENUM_TYPE(ufbx_extrapolation_mode, UFBX_EXTRAPOLATION_MODE, UFBX_EXTRAPOLATION_REPEAT_RELATIVE);
+
+typedef struct ufbx_extrapolation {
+	ufbx_extrapolation_mode mode;
+
+	// Count used for repeating modes.
+	// Negative values mean infinite repetition.
+	int32_t repeat_count;
+} ufbx_extrapolation;
+
 // Tangent vector at a keyframe, may be split into left/right
 typedef struct ufbx_tangent {
 	float dx; // < Derivative in the time axis
@@ -3177,10 +3202,21 @@ struct ufbx_anim_curve {
 		uint32_t typed_id;
 	}; };
 
+	// List of keyframes that define the curve.
 	ufbx_keyframe_list keyframes;
 
+	// Extrapolation before the curve.
+	ufbx_extrapolation pre_extrapolation;
+	// Extrapolation after the curve.
+	ufbx_extrapolation post_extrapolation;
+
+	// Value range for all the keyframes.
 	ufbx_real min_value;
 	ufbx_real max_value;
+
+	// Time range for all the keyframes.
+	double min_time;
+	double max_time;
 };
 
 // -- Collections
@@ -3500,6 +3536,10 @@ typedef enum ufbx_warning_type UFBX_ENUM_REPR {
 
 	// Missing polygon mapping type.
 	UFBX_WARNING_MISSING_POLYGON_MAPPING,
+
+	// Unsupported version, loaded but may be incorrect.
+	// If the loading fails `UFBX_ERROR_UNSUPPORTED_VERSION` is issued instead.
+	UFBX_WARNING_UNSUPPORTED_VERSION,
 
 	// Out-of-bounds index has been clamped to be in-bounds.
 	// HINT: You can use `ufbx_index_error_handling` to adjust behavior.
@@ -4179,10 +4219,14 @@ typedef enum ufbx_error_type UFBX_ENUM_REPR {
 	// Duplicated override property in `ufbx_create_anim()`
 	UFBX_ERROR_DUPLICATE_OVERRIDE,
 
+	// Unsupported file format version.
+	// ufbx still tries to load files with unsupported versions, see `UFBX_WARNING_UNSUPPORTED_VERSION`.
+	UFBX_ERROR_UNSUPPORTED_VERSION,
+
 	UFBX_ENUM_FORCE_WIDTH(UFBX_ERROR_TYPE)
 } ufbx_error_type;
 
-UFBX_ENUM_TYPE(ufbx_error_type, UFBX_ERROR_TYPE, UFBX_ERROR_DUPLICATE_OVERRIDE);
+UFBX_ENUM_TYPE(ufbx_error_type, UFBX_ERROR_TYPE, UFBX_ERROR_UNSUPPORTED_VERSION);
 
 // Error description with detailed stack trace
 // HINT: You can use `ufbx_format_error()` for formatting the error
@@ -4598,6 +4642,15 @@ typedef struct ufbx_thread_opts {
 
 } ufbx_thread_opts;
 
+// Flags to control nanimation evaluation functions.
+typedef enum ufbx_evaluate_flags UFBX_FLAG_REPR {
+
+	// Do not extrapolate past the keyframes.
+	UFBX_EVALUATE_FLAG_NO_EXTRAPOLATION = 0x1,
+
+	UFBX_FLAG_FORCE_WIDTH(ufbx_evaluate_flags)
+} ufbx_evaluate_flags;
+
 // -- Main API
 
 // Options for `ufbx_load_file/memory/stream/stdio()`
@@ -4784,7 +4837,7 @@ typedef struct ufbx_load_opts {
 	bool use_root_transform;
 	ufbx_transform root_transform;
 
-	// Animation keyframe clamp threhsold, only applies to specific interpolation modes.
+	// Animation keyframe clamp threshold, only applies to specific interpolation modes.
 	double key_clamp_threshold;
 
 	// Specify how to handle Unicode errors in strings.
@@ -4859,6 +4912,10 @@ typedef struct ufbx_evaluate_opts {
 
 	bool evaluate_skinning; // < Evaluate skinning (see ufbx_mesh.skinned_vertices)
 	bool evaluate_caches;   // < Evaluate vertex caches (see ufbx_mesh.skinned_vertices)
+
+	// Evaluation flags.
+	// See `ufbx_evaluate_flags` for information.
+	uint32_t evaluate_flags;
 
 	// WARNING: Potentially unsafe! Try to open external files such as geometry caches
 	bool load_external_files;
@@ -5000,6 +5057,10 @@ typedef struct ufbx_bake_opts {
 	// Defined as the minimum fractional decrease/increase in key time, ie.
 	// `time / (1.0 + step_custom_epsilon)` and `time * (1.0 + step_custom_epsilon)`.
 	double step_custom_epsilon;
+
+	// Flags passed to animation evaluation functions.
+	// See `ufbx_evaluate_flags`.
+	uint32_t evaluate_flags;
 
 	// Enable key reduction.
 	bool key_reduction_enabled;
@@ -5330,20 +5391,26 @@ ufbx_unsafe ufbx_abi bool ufbx_open_memory_ctx(ufbx_stream *stream, ufbx_open_fi
 // Evaluate a single animation `curve` at a `time`.
 // Returns `default_value` only if `curve == NULL` or it has no keyframes.
 ufbx_abi ufbx_real ufbx_evaluate_curve(const ufbx_anim_curve *curve, double time, ufbx_real default_value);
+ufbx_abi ufbx_real ufbx_evaluate_curve_flags(const ufbx_anim_curve *curve, double time, ufbx_real default_value, uint32_t flags);
 
 // Evaluate a value from bundled animation curves.
 ufbx_abi ufbx_real ufbx_evaluate_anim_value_real(const ufbx_anim_value *anim_value, double time);
 ufbx_abi ufbx_vec3 ufbx_evaluate_anim_value_vec3(const ufbx_anim_value *anim_value, double time);
+ufbx_abi ufbx_real ufbx_evaluate_anim_value_real_flags(const ufbx_anim_value *anim_value, double time, uint32_t flags);
+ufbx_abi ufbx_vec3 ufbx_evaluate_anim_value_vec3_flags(const ufbx_anim_value *anim_value, double time, uint32_t flags);
 
 // Evaluate an animated property `name` from `element` at `time`.
 // NOTE: If the property is not found it will have the flag `UFBX_PROP_FLAG_NOT_FOUND`.
 ufbx_abi ufbx_prop ufbx_evaluate_prop_len(const ufbx_anim *anim, const ufbx_element *element, const char *name, size_t name_len, double time);
 ufbx_abi ufbx_prop ufbx_evaluate_prop(const ufbx_anim *anim, const ufbx_element *element, const char *name, double time);
+ufbx_abi ufbx_prop ufbx_evaluate_prop_len_flags(const ufbx_anim *anim, const ufbx_element *element, const char *name, size_t name_len, double time, uint32_t flags);
+ufbx_abi ufbx_prop ufbx_evaluate_prop_flags(const ufbx_anim *anim, const ufbx_element *element, const char *name, double time, uint32_t flags);
 
 // Evaluate all _animated_ properties of `element`.
 // HINT: This function returns an `ufbx_props` structure with the original properties as
 // `ufbx_props.defaults`. This lets you use `ufbx_find_prop/value()` for the results.
 ufbx_abi ufbx_props ufbx_evaluate_props(const ufbx_anim *anim, const ufbx_element *element, double time, ufbx_prop *buffer, size_t buffer_size);
+ufbx_abi ufbx_props ufbx_evaluate_props_flags(const ufbx_anim *anim, const ufbx_element *element, double time, ufbx_prop *buffer, size_t buffer_size, uint32_t flags);
 
 // Flags to control `ufbx_evaluate_transform_flags()`.
 typedef enum ufbx_transform_flags UFBX_FLAG_REPR {
@@ -5366,6 +5433,10 @@ typedef enum ufbx_transform_flags UFBX_FLAG_REPR {
 	// If `UFBX_TRANSFORM_FLAG_EXPLICIT_INCLUDES`: Evaluate `ufbx_transform.scale`.
 	UFBX_TRANSFORM_FLAG_INCLUDE_SCALE = 0x40,
 
+	// Do not extrapolate keyframes.
+	// See `UFBX_EVALUATE_FLAG_NO_EXTRAPOLATION`.
+	UFBX_TRANSFORM_FLAG_NO_EXTRAPOLATION = 0x80,
+
 	UFBX_FLAG_FORCE_WIDTH(UFBX_TRANSFORM_FLAGS)
 } ufbx_transform_flags;
 
@@ -5378,6 +5449,7 @@ ufbx_abi ufbx_transform ufbx_evaluate_transform_flags(const ufbx_anim *anim, con
 // Evaluate the blend shape weight of a blend channel.
 // NOTE: Return value uses `1.0` for full weight, instead of `100.0` that the internal property `UFBX_Weight` uses.
 ufbx_abi ufbx_real ufbx_evaluate_blend_weight(const ufbx_anim *anim, const ufbx_blend_channel *channel, double time);
+ufbx_abi ufbx_real ufbx_evaluate_blend_weight_flags(const ufbx_anim *anim, const ufbx_blend_channel *channel, double time, uint32_t flags);
 
 // Evaluate the whole `scene` at a specific `time` in the animation `anim`.
 // The returned scene behaves as if it had been exported at a specific time

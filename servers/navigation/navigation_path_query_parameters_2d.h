@@ -68,6 +68,8 @@ private:
 	BitField<PathMetadataFlags> metadata_flags = PATH_METADATA_INCLUDE_ALL;
 	bool simplify_path = false;
 	real_t simplify_epsilon = 0.0;
+	LocalVector<RID> _excluded_regions;
+	LocalVector<RID> _included_regions;
 
 public:
 	void set_pathfinding_algorithm(const PathfindingAlgorithm p_pathfinding_algorithm);
@@ -96,6 +98,12 @@ public:
 
 	void set_simplify_epsilon(real_t p_epsilon);
 	real_t get_simplify_epsilon() const;
+
+	void set_excluded_regions(const TypedArray<RID> &p_regions);
+	TypedArray<RID> get_excluded_regions() const;
+
+	void set_included_regions(const TypedArray<RID> &p_regions);
+	TypedArray<RID> get_included_regions() const;
 };
 
 VARIANT_ENUM_CAST(NavigationPathQueryParameters2D::PathfindingAlgorithm);

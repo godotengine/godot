@@ -81,5 +81,4 @@ public:
 	void config(const String &p_config_path);
 
 	PluginConfigDialog();
-	~PluginConfigDialog();
 };

@@ -82,13 +82,6 @@ void ResourceImporterTexture::_texture_reimport_normal(const Ref<CompressedTextu
 	singleton->make_flags[path].flags |= MAKE_NORMAL_FLAG;
 }
 
-inline void ResourceImporterTexture::_print_callback_message(const String &p_message) {
-#ifdef TOOLS_ENABLED
-	EditorToaster::get_singleton()->popup_str(p_message);
-#endif
-	print_line(p_message);
-}
-
 void ResourceImporterTexture::update_imports() {
 	if (EditorFileSystem::get_singleton()->is_scanning() || EditorFileSystem::get_singleton()->is_importing()) {
 		return; // Don't update when EditorFileSystem is doing something else.
@@ -112,7 +105,7 @@ void ResourceImporterTexture::update_imports() {
 		bool changed = false;
 
 		if (E.value.flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
-			_print_callback_message(
+			print_line(
 					vformat(TTR("%s: Texture detected as used as a normal map in 3D. Enabling red-green texture compression to reduce memory usage (blue channel is discarded)."),
 							String(E.key)));
 
@@ -121,7 +114,7 @@ void ResourceImporterTexture::update_imports() {
 		}
 
 		if (E.value.flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
-			_print_callback_message(
+			print_line(
 					vformat(TTR("%s: Texture detected as used as a roughness map in 3D. Enabling roughness limiter based on the detected associated normal map at %s."),
 							String(E.key), E.value.normal_path_for_roughness));
 
@@ -146,7 +139,7 @@ void ResourceImporterTexture::update_imports() {
 				compress_string = "Basis Universal";
 			}
 
-			_print_callback_message(
+			print_line(
 					vformat(TTR("%s: Texture detected as used in 3D. Enabling mipmap generation and setting the texture compression mode to %s."),
 							String(E.key), compress_string));
 
@@ -240,7 +233,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_compression", PROPERTY_HINT_ENUM, "Disabled,Opaque Only,Always"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/normal_map", PROPERTY_HINT_ENUM, "Detect,Enable,Disabled"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/generate"), (p_preset == PRESET_3D ? true : false)));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/generate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), (p_preset == PRESET_3D ? true : false)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.tga,*.webp"), ""));

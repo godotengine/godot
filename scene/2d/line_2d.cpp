@@ -38,7 +38,7 @@ Line2D::Line2D() {
 
 #ifdef DEBUG_ENABLED
 Rect2 Line2D::_edit_get_rect() const {
-	if (_points.size() == 0) {
+	if (_points.is_empty()) {
 		return Rect2(0, 0, 0, 0);
 	}
 	Vector2 min = _points[0];
@@ -58,14 +58,14 @@ bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	const real_t d = _width / 2 + p_tolerance;
 	const Vector2 *points = _points.ptr();
 	for (int i = 0; i < _points.size() - 1; i++) {
-		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, &points[i]);
+		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, points[i], points[i + 1]);
 		if (p_point.distance_to(p) <= d) {
 			return true;
 		}
 	}
+	// Closing segment between the first and last point.
 	if (_closed && _points.size() > 2) {
-		const Vector2 closing_segment[2] = { points[0], points[_points.size() - 1] };
-		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, closing_segment);
+		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, points[0], points[_points.size() - 1]);
 		if (p_point.distance_to(p) <= d) {
 			return true;
 		}

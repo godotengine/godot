@@ -256,8 +256,7 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 float AnimationPlayer::get_current_blend_amount() {
 	Playback &c = playback;
 	float blend = 1.0;
-	for (List<Blend>::Element *E = c.blend.front(); E; E = E->next()) {
-		Blend &b = E->get();
+	for (const Blend &b : c.blend) {
 		blend = blend - b.blend_left;
 	}
 	return MAX(0, blend);
@@ -346,6 +345,7 @@ void AnimationPlayer::_blend_post_process() {
 				_set_process(false);
 				if (end_notify) {
 					emit_signal(SceneStringName(animation_finished), playback.assigned);
+					emit_signal(SNAME("current_animation_changed"), "");
 					if (movie_quit_on_finish && OS::get_singleton()->has_feature("movie")) {
 						print_line(vformat("Movie Maker mode is enabled. Quitting on animation finish as requested by: %s", get_path()));
 						get_tree()->quit();

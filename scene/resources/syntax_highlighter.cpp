@@ -537,16 +537,13 @@ bool CodeHighlighter::has_color_region(const String &p_start_key) const {
 void CodeHighlighter::set_color_regions(const Dictionary &p_color_regions) {
 	color_regions.clear();
 
-	List<Variant> keys;
-	p_color_regions.get_key_list(&keys);
-
-	for (const Variant &E : keys) {
-		String key = E;
+	for (const KeyValue<Variant, Variant> &kv : p_color_regions) {
+		String key = kv.key;
 
 		String start_key = key.get_slicec(' ', 0);
 		String end_key = key.get_slice_count(" ") > 1 ? key.get_slicec(' ', 1) : String();
 
-		add_color_region(start_key, end_key, p_color_regions[key], end_key.is_empty());
+		add_color_region(start_key, end_key, kv.value, end_key.is_empty());
 	}
 	clear_highlighting_cache();
 }

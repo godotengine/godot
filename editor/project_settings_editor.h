@@ -49,7 +49,14 @@ class FileSystemDock;
 class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
-	static ProjectSettingsEditor *singleton;
+	inline static ProjectSettingsEditor *singleton = nullptr;
+
+	enum {
+		FEATURE_ALL,
+		FEATURE_CUSTOM,
+		FEATURE_FIRST,
+	};
+
 	ProjectSettings *ps = nullptr;
 	Timer *timer = nullptr;
 
@@ -80,6 +87,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	ImportDefaultsEditor *import_defaults_editor = nullptr;
 	EditorData *data = nullptr;
+
+	bool settings_changed = false;
 
 	void _advanced_toggled(bool p_button_pressed);
 	void _update_advanced(bool p_is_advanced);
@@ -113,6 +122,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before);
 	void _update_action_map_editor();
 	void _update_theme();
+	void _save();
 
 protected:
 	void _notification(int p_what);

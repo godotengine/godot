@@ -29,15 +29,6 @@
             android:enabled="true"
             tools:targetApi="29" />
 
-        <!-- Records the version of the Godot editor used for building -->
-        <meta-data
-            android:name="org.godotengine.editor.version"
-            android:value="${godotEditorVersion}" />
-        <!-- Records the rendering method used by the Godot engine -->
-        <meta-data
-            android:name="org.godotengine.rendering.method"
-            android:value="${godotRenderingMethod}"/>
-
         <activity
             android:name=".GodotApp"
             android:label="@string/godot_project_name_string"

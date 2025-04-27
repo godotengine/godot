@@ -45,6 +45,7 @@ void CameraTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "camera_feed_id"), "set_camera_feed_id", "get_camera_feed_id");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "which_feed"), "set_which_feed", "get_which_feed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "camera_is_active"), "set_camera_active", "get_camera_active");
+	ADD_PROPERTY_DEFAULT("camera_is_active", false);
 }
 
 void CameraTexture::_on_format_changed() {
@@ -141,7 +142,12 @@ bool CameraTexture::get_camera_active() const {
 	}
 }
 
-CameraTexture::CameraTexture() {}
+CameraTexture::CameraTexture() {
+	// Note: When any CameraTexture is created, we need to automatically activate monitoring
+	//       of camera feeds. This may incur a small lag spike, so it may be preferable to
+	//       enable it manually before creating the camera texture.
+	CameraServer::get_singleton()->set_monitoring_feeds(true);
+}
 
 CameraTexture::~CameraTexture() {
 	if (_texture.is_valid()) {

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+      <!-- override the PlatformToolset, which is set in the godot.vcxproj-->
+      <!-- Unknown matches to a set of conservative rules for the code analysis-->
+    <PlatformToolset>Unknown</PlatformToolset>
+    <LocalDebuggerCommand Condition="'$(LocalDebuggerCommand)' == ''">$(NMakeOutput)</LocalDebuggerCommand>
+  </PropertyGroup>
+  <!-- Build/Rebuild/Clean targets for NMake are defined in MSVC, so we need to provide them, when using MSBuild without MSVC targets -->
+  <Target Name="Build">
+    <Exec Command="$(NMakeBuildCommandLine)"/>
+  </Target>
+  <Target Name="Rebuild">
+    <Exec Command="$(NMakeReBuildCommandLine)"/>
+  </Target>
+  <Target Name="Clean">
+    <Exec Command="$(NMakeCleanCommandLine)"/>
+  </Target>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalOptions>$(AdditionalOptions)</AdditionalOptions>
+      <ForcedIncludeFiles>$(NMakeForcedIncludes)</ForcedIncludeFiles>
+      <ForcedUsingFiles>$(NMakeForcedUsingAssemblies)</ForcedUsingFiles>
+      <PreprocessorDefinitions>$(NMakePreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <!-- check get_platforms in each msvs.py for possible value of those conditions -->
+    <!-- MSVC Platform.Common.props for possible TargetMachine values -->
+    <Link Condition="'$(Platform)' == 'arm64'">
+      <TargetMachine>MachineARM64</TargetMachine>
+    </Link>
+    <Link Condition="'$(Platform)' == 'x64'">
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <Link Condition="'$(Platform)' == 'Win32'">
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>

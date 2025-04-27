@@ -119,7 +119,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			//normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_Kd", "").replace("\\", "/").strip_edges();
+			String p = l.replace("map_Kd", "").replace_char('\\', '/').strip_edges();
 			String path;
 			if (p.is_absolute_path()) {
 				path = p;
@@ -139,7 +139,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			//normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_Ks", "").replace("\\", "/").strip_edges();
+			String p = l.replace("map_Ks", "").replace_char('\\', '/').strip_edges();
 			String path;
 			if (p.is_absolute_path()) {
 				path = p;
@@ -159,7 +159,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			//normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_Ns", "").replace("\\", "/").strip_edges();
+			String p = l.replace("map_Ns", "").replace_char('\\', '/').strip_edges();
 			String path;
 			if (p.is_absolute_path()) {
 				path = p;
@@ -178,7 +178,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			//normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_bump", "").replace("\\", "/").strip_edges();
+			String p = l.replace("map_bump", "").replace_char('\\', '/').strip_edges();
 			String path = base_path.path_join(p);
 
 			Ref<Texture2D> texture = ResourceLoader::load(path);
@@ -402,7 +402,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
 				//another group going on, commit it
-				if (normals.size() == 0) {
+				if (normals.is_empty()) {
 					surf_tool->generate_normals();
 				}
 
@@ -584,9 +584,6 @@ void EditorOBJImporter::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("obj");
 }
 
-EditorOBJImporter::EditorOBJImporter() {
-}
-
 ////////////////////////////////////////////////////
 
 String ResourceImporterOBJ::get_importer_name() const {
@@ -681,7 +678,4 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 	r_gen_files->push_back(save_path);
 
 	return OK;
-}
-
-ResourceImporterOBJ::ResourceImporterOBJ() {
 }

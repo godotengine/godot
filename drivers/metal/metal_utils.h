@@ -32,6 +32,8 @@
 
 #import <os/log.h>
 
+#import <functional>
+
 #pragma mark - Boolean flags
 
 namespace flags {

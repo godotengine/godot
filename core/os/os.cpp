@@ -84,13 +84,13 @@ String OS::get_identifier() const {
 	return get_name().to_lower();
 }
 
-void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type) {
+void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!_stderr_enabled) {
 		return;
 	}
 
 	if (_logger) {
-		_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+		_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type, p_script_backtraces);
 	}
 }
 
@@ -199,6 +199,14 @@ void OS::set_stderr_enabled(bool p_enabled) {
 	_stderr_enabled = p_enabled;
 }
 
+String OS::multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const {
+	return String();
+}
+
+PackedByteArray OS::string_to_multibyte(const String &p_encoding, const String &p_string) const {
+	return PackedByteArray();
+}
+
 int OS::get_exit_code() const {
 	return _exit_code;
 }
@@ -246,7 +254,7 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 	if (p_allow_paths) {
 		// Dir separators are allowed, but disallow ".." to avoid going up the filesystem
 		invalid_chars.push_back("..");
-		safe_dir_name = safe_dir_name.replace("\\", "/").strip_edges();
+		safe_dir_name = safe_dir_name.replace_char('\\', '/').replace("//", "/").strip_edges();
 	} else {
 		invalid_chars.push_back("/");
 		invalid_chars.push_back("\\");
@@ -274,7 +282,7 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 // Get properly capitalized engine name for system paths
 String OS::get_godot_dir_name() const {
 	// Default to lowercase, so only override when different case is needed
-	return String(VERSION_SHORT_NAME).to_lower();
+	return String(GODOT_VERSION_SHORT_NAME).to_lower();
 }
 
 // OS equivalent of XDG_DATA_HOME

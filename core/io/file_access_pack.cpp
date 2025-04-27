@@ -264,7 +264,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	f->get_32(); // patch number, not used for validation.
 
 	ERR_FAIL_COND_V_MSG(version != PACK_FORMAT_VERSION, false, vformat("Pack version unsupported: %d.", version));
-	ERR_FAIL_COND_V_MSG(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false, vformat("Pack created with a newer version of the engine: %d.%d.", ver_major, ver_minor));
+	ERR_FAIL_COND_V_MSG(ver_major > GODOT_VERSION_MAJOR || (ver_major == GODOT_VERSION_MAJOR && ver_minor > GODOT_VERSION_MINOR), false, vformat("Pack created with a newer version of the engine: %d.%d.", ver_major, ver_minor));
 
 	uint32_t pack_flags = f->get_32();
 	uint64_t file_base = f->get_64();
@@ -306,9 +306,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		f->get_buffer((uint8_t *)cs.ptr(), sl);
 		cs[sl] = 0;
 
-		String path;
-		path.parse_utf8(cs.ptr(), sl);
-
+		String path = String::utf8(cs.ptr(), sl);
 		uint64_t ofs = f->get_64();
 		uint64_t size = f->get_64();
 		uint8_t md5[16];
@@ -550,7 +548,7 @@ String DirAccessPack::get_drive(int p_drive) {
 }
 
 PackedData::PackedDir *DirAccessPack::_find_dir(const String &p_dir) {
-	String nd = p_dir.replace("\\", "/");
+	String nd = p_dir.replace_char('\\', '/');
 
 	// Special handling since simplify_path() will forbid it
 	if (p_dir == "..") {

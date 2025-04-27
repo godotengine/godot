@@ -210,13 +210,14 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	Ref<FontVariation> japanese_font_bold = make_bold_font(japanese_font, embolden_strength, &fallbacks_bold);
 
 	if (OS::get_singleton()->has_feature("system_fonts")) {
-		PackedStringArray emoji_font_names;
-		emoji_font_names.push_back("Apple Color Emoji");
-		emoji_font_names.push_back("Segoe UI Emoji");
-		emoji_font_names.push_back("Noto Color Emoji");
-		emoji_font_names.push_back("Twitter Color Emoji");
-		emoji_font_names.push_back("OpenMoji");
-		emoji_font_names.push_back("EmojiOne Color");
+		PackedStringArray emoji_font_names = {
+			"Apple Color Emoji",
+			"Segoe UI Emoji",
+			"Noto Color Emoji",
+			"Twitter Color Emoji",
+			"OpenMoji",
+			"EmojiOne Color"
+		};
 		Ref<SystemFont> emoji_font = load_system_font(emoji_font_names, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false);
 		fallbacks.push_back(emoji_font);
 		fallbacks_bold.push_back(emoji_font);
@@ -238,8 +239,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font);
+			TypedArray<Font> fallback_custom = { default_font };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		default_fc->set_base_font(custom_font);
@@ -255,8 +255,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_msdf);
+			TypedArray<Font> fallback_custom = { default_font_msdf };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		default_fc_msdf->set_base_font(custom_font);
@@ -272,16 +271,14 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	if (custom_font_path_bold.length() > 0 && dir->file_exists(custom_font_path_bold)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold);
+			TypedArray<Font> fallback_custom = { default_font_bold };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		bold_fc->set_base_font(custom_font);
 	} else if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold);
+			TypedArray<Font> fallback_custom = { default_font_bold };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		bold_fc->set_base_font(custom_font);
@@ -298,16 +295,14 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	if (custom_font_path_bold.length() > 0 && dir->file_exists(custom_font_path_bold)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold_msdf);
+			TypedArray<Font> fallback_custom = { default_font_bold_msdf };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		bold_fc_msdf->set_base_font(custom_font);
 	} else if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold_msdf);
+			TypedArray<Font> fallback_custom = { default_font_bold_msdf };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		bold_fc_msdf->set_base_font(custom_font);
@@ -324,8 +319,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	if (custom_font_path_source.length() > 0 && dir->file_exists(custom_font_path_source)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path_source, font_mono_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_mono);
+			TypedArray<Font> fallback_custom = { default_font_mono };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		mono_fc->set_base_font(custom_font);

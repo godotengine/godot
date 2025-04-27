@@ -49,7 +49,7 @@ private:
 
 		bool enable_constraint = false;
 		float constraint_angle_min = 0;
-		float constraint_angle_max = (2.0 * Math_PI);
+		float constraint_angle_max = (2.0 * Math::PI);
 		bool constraint_angle_invert = false;
 		bool constraint_in_localspace = true;
 

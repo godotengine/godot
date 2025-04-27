@@ -53,6 +53,7 @@ private:
 	JavaVM *vm;
 	jobject activity_object;
 	bool loader_init_extension_available = false;
+	bool loader_init_android_extension_available = false;
 	bool create_instance_extension_available = false;
 
 	// Initialize the loader

@@ -168,7 +168,6 @@ public:
 	void update_graph();
 
 	AnimationNodeBlendTreeEditor();
-	~AnimationNodeBlendTreeEditor();
 };
 
 // EditorPluginAnimationNodeAnimation
@@ -191,7 +190,6 @@ class AnimationNodeAnimationEditorDialog : public ConfirmationDialog {
 
 public:
 	AnimationNodeAnimationEditorDialog();
-	~AnimationNodeAnimationEditorDialog();
 };
 
 class AnimationNodeAnimationEditor : public VBoxContainer {
@@ -206,7 +204,6 @@ class AnimationNodeAnimationEditor : public VBoxContainer {
 
 public:
 	AnimationNodeAnimationEditor(Ref<AnimationNodeAnimation> p_animation_node_animation);
-	~AnimationNodeAnimationEditor();
 
 protected:
 	void _notification(int p_what);

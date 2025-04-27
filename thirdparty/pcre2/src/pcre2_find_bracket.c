@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2023 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -76,18 +76,19 @@ for (;;)
   if (c == OP_END) return NULL;
 
   /* XCLASS is used for classes that cannot be represented just by a bit map.
-  This includes negated single high-valued characters. CALLOUT_STR is used for
-  callouts with string arguments. In both cases the length in the table is
+  This includes negated single high-valued characters. ECLASS is used for
+  classes that use set operations internally. CALLOUT_STR is used for
+  callouts with string arguments. In each case the length in the table is
   zero; the actual length is stored in the compiled code. */
 
-  if (c == OP_XCLASS) code += GET(code, 1);
-    else if (c == OP_CALLOUT_STR) code += GET(code, 1 + 2*LINK_SIZE);
+  if (c == OP_XCLASS || c == OP_ECLASS) code += GET(code, 1);
+  else if (c == OP_CALLOUT_STR) code += GET(code, 1 + 2*LINK_SIZE);
 
   /* Handle lookbehind */
 
   else if (c == OP_REVERSE || c == OP_VREVERSE)
     {
-    if (number < 0) return (PCRE2_UCHAR *)code;
+    if (number < 0) return code;
     code += PRIV(OP_lengths)[c];
     }
 
@@ -97,7 +98,7 @@ for (;;)
            c == OP_CBRAPOS || c == OP_SCBRAPOS)
     {
     int n = (int)GET2(code, 1+LINK_SIZE);
-    if (n == number) return (PCRE2_UCHAR *)code;
+    if (n == number) return code;
     code += PRIV(OP_lengths)[c];
     }
 

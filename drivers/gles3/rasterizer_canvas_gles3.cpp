@@ -1572,7 +1572,7 @@ void RasterizerCanvasGLES3::_add_to_batch(uint32_t &r_index, bool &r_batch_broke
 }
 
 void RasterizerCanvasGLES3::_new_batch(bool &r_batch_broken) {
-	if (state.canvas_instance_batches.size() == 0) {
+	if (state.canvas_instance_batches.is_empty()) {
 		Batch new_batch;
 		new_batch.instance_buffer_index = state.current_instance_buffer_index;
 		state.canvas_instance_batches.push_back(new_batch);
@@ -1692,7 +1692,7 @@ void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, c
 	}
 
 	// Precomputed:
-	// Vector3 cam_target = Basis::from_euler(Vector3(0, 0, Math_TAU * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
+	// Vector3 cam_target = Basis::from_euler(Vector3(0, 0, Math::TAU * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
 	// projection = projection * Projection(Transform3D().looking_at(cam_targets[i], Vector3(0, 0, -1)).affine_inverse());
 	const Projection projections[4] = {
 		projection * Projection(Vector4(0, 0, -1, 0), Vector4(1, 0, 0, 0), Vector4(0, -1, 0, 0), Vector4(0, 0, 0, 1)),
@@ -1767,7 +1767,7 @@ void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_sha
 
 	Vector2 center = p_clip_rect.get_center();
 
-	float to_edge_distance = ABS(light_dir.dot(p_clip_rect.get_support(-light_dir)) - light_dir.dot(center));
+	float to_edge_distance = Math::abs(light_dir.dot(p_clip_rect.get_support(-light_dir)) - light_dir.dot(center));
 
 	Vector2 from_pos = center - light_dir * (to_edge_distance + p_cull_distance);
 	float distance = to_edge_distance * 2.0 + p_cull_distance;

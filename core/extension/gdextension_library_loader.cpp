@@ -307,12 +307,12 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 
 	bool compatible = true;
 	// Check version lexicographically.
-	if (VERSION_MAJOR != compatibility_minimum[0]) {
-		compatible = VERSION_MAJOR > compatibility_minimum[0];
-	} else if (VERSION_MINOR != compatibility_minimum[1]) {
-		compatible = VERSION_MINOR > compatibility_minimum[1];
+	if (GODOT_VERSION_MAJOR != compatibility_minimum[0]) {
+		compatible = GODOT_VERSION_MAJOR > compatibility_minimum[0];
+	} else if (GODOT_VERSION_MINOR != compatibility_minimum[1]) {
+		compatible = GODOT_VERSION_MINOR > compatibility_minimum[1];
 	} else {
-		compatible = VERSION_PATCH >= compatibility_minimum[2];
+		compatible = GODOT_VERSION_PATCH >= compatibility_minimum[2];
 	}
 	if (!compatible) {
 		ERR_PRINT(vformat("GDExtension only compatible with Godot version %d.%d.%d or later: %s", compatibility_minimum[0], compatibility_minimum[1], compatibility_minimum[2], p_path));
@@ -334,15 +334,15 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 		}
 
 		compatible = true;
-		if (VERSION_MAJOR != compatibility_maximum[0]) {
-			compatible = VERSION_MAJOR < compatibility_maximum[0];
-		} else if (VERSION_MINOR != compatibility_maximum[1]) {
-			compatible = VERSION_MINOR < compatibility_maximum[1];
+		if (GODOT_VERSION_MAJOR != compatibility_maximum[0]) {
+			compatible = GODOT_VERSION_MAJOR < compatibility_maximum[0];
+		} else if (GODOT_VERSION_MINOR != compatibility_maximum[1]) {
+			compatible = GODOT_VERSION_MINOR < compatibility_maximum[1];
 		}
-#if VERSION_PATCH
+#if GODOT_VERSION_PATCH
 		// #if check to avoid -Wtype-limits warning when 0.
 		else {
-			compatible = VERSION_PATCH <= compatibility_maximum[2];
+			compatible = GODOT_VERSION_PATCH <= compatibility_maximum[2];
 		}
 #endif
 

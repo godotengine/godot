@@ -45,6 +45,12 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="monitoring_feeds" type="bool" setter="set_monitoring_feeds" getter="is_monitoring_feeds" default="false">
+			If [code]true[/code], the server is actively monitoring available camera feeds.
+			This has a performance cost, so only set it to [code]true[/code] when you're actively accessing the camera.
+		</member>
+	</members>
 	<signals>
 		<signal name="camera_feed_added">
 			<param index="0" name="id" type="int" />

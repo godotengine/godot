@@ -79,7 +79,7 @@ void FreeDesktopScreenSaver::inhibit() {
 	if (dbus_error_is_set(&error)) {
 		dbus_error_free(&error);
 		dbus_connection_unref(bus);
-		unsupported = false;
+		unsupported = true;
 		return;
 	}
 
@@ -116,6 +116,7 @@ void FreeDesktopScreenSaver::uninhibit() {
 			DBUS_TYPE_INVALID);
 
 	DBusMessage *reply = dbus_connection_send_with_reply_and_block(bus, message, 50, &error);
+	dbus_message_unref(message);
 	if (dbus_error_is_set(&error)) {
 		dbus_error_free(&error);
 		dbus_connection_unref(bus);
@@ -125,7 +126,6 @@ void FreeDesktopScreenSaver::uninhibit() {
 
 	print_verbose("FreeDesktopScreenSaver: Released screensaver inhibition cookie: " + uitos(cookie));
 
-	dbus_message_unref(message);
 	dbus_message_unref(reply);
 	dbus_connection_unref(bus);
 }

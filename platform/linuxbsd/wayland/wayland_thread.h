@@ -88,41 +88,62 @@ class WaylandThread {
 public:
 	// Messages used for exchanging information between Godot's and Wayland's thread.
 	class Message : public RefCounted {
+		GDSOFTCLASS(Message, RefCounted);
+
 	public:
 		Message() {}
 		virtual ~Message() = default;
 	};
 
+	class WindowMessage : public Message {
+		GDSOFTCLASS(WindowMessage, Message);
+
+	public:
+		DisplayServer::WindowID id = DisplayServer::INVALID_WINDOW_ID;
+	};
+
 	// Message data for window rect changes.
-	class WindowRectMessage : public Message {
+	class WindowRectMessage : public WindowMessage {
+		GDSOFTCLASS(WindowRectMessage, WindowMessage);
+
 	public:
 		// NOTE: This is in "scaled" terms. For example, if there's a 1920x1080 rect
 		// with a scale factor of 2, the actual value of `rect` will be 3840x2160.
 		Rect2i rect;
 	};
 
-	class WindowEventMessage : public Message {
+	class WindowEventMessage : public WindowMessage {
+		GDSOFTCLASS(WindowEventMessage, WindowMessage);
+
 	public:
 		DisplayServer::WindowEvent event;
 	};
 
 	class InputEventMessage : public Message {
+		GDSOFTCLASS(InputEventMessage, Message);
+
 	public:
 		Ref<InputEvent> event;
 	};
 
-	class DropFilesEventMessage : public Message {
+	class DropFilesEventMessage : public WindowMessage {
+		GDSOFTCLASS(DropFilesEventMessage, WindowMessage);
+
 	public:
 		Vector<String> files;
 	};
 
-	class IMEUpdateEventMessage : public Message {
+	class IMEUpdateEventMessage : public WindowMessage {
+		GDSOFTCLASS(IMEUpdateEventMessage, WindowMessage);
+
 	public:
 		String text;
 		Vector2i selection;
 	};
 
-	class IMECommitEventMessage : public Message {
+	class IMECommitEventMessage : public WindowMessage {
+		GDSOFTCLASS(IMECommitEventMessage, WindowMessage);
+
 	public:
 		String text;
 	};
@@ -195,13 +216,18 @@ public:
 
 		struct zwp_text_input_manager_v3 *wp_text_input_manager = nullptr;
 		uint32_t wp_text_input_manager_name = 0;
+
+		// We're really not meant to use this one directly but we still need to know
+		// whether it's available.
+		uint32_t wp_fifo_manager_name = 0;
 	};
 
 	// General Wayland-specific states. Shouldn't be accessed directly.
 	// TODO: Make private?
 
 	struct WindowState {
-		DisplayServer::WindowID id;
+		DisplayServer::WindowID id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServer::WindowID parent_id = DisplayServer::INVALID_WINDOW_ID;
 
 		Rect2i rect;
 		DisplayServer::WindowMode mode = DisplayServer::WINDOW_MODE_WINDOWED;
@@ -223,6 +249,7 @@ public:
 		// be called even after being destroyed, pointing to probably invalid window
 		// data by then and segfaulting hard.
 		struct wl_callback *frame_callback = nullptr;
+		uint64_t last_frame_time = 0;
 
 		struct wl_surface *wl_surface = nullptr;
 		struct xdg_surface *xdg_surface = nullptr;
@@ -235,6 +262,8 @@ public:
 		struct zxdg_exported_v1 *xdg_exported_v1 = nullptr;
 
 		struct zxdg_exported_v2 *xdg_exported_v2 = nullptr;
+
+		struct xdg_popup *xdg_popup = nullptr;
 
 		String exported_handle;
 
@@ -316,10 +345,13 @@ public:
 		Vector2 relative_motion;
 		uint32_t relative_motion_time = 0;
 
-		BitField<MouseButtonMask> pressed_button_mask;
+		BitField<MouseButtonMask> pressed_button_mask = MouseButtonMask::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;
+
+		DisplayServer::WindowID pointed_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServer::WindowID last_pointed_id = DisplayServer::INVALID_WINDOW_ID;
 
 		// This is needed to check for a new double click every time.
 		bool double_click_begun = false;
@@ -343,27 +375,24 @@ public:
 		Vector2 tilt;
 		uint32_t pressure = 0;
 
-		BitField<MouseButtonMask> pressed_button_mask;
+		BitField<MouseButtonMask> pressed_button_mask = MouseButtonMask::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;
 
 		bool double_click_begun = false;
 
-		// Note: the protocol doesn't have it (I guess that this isn't really meant to
-		// be used as a mouse...), but we'll hack one in with the current ticks.
 		uint64_t button_time = 0;
-
 		uint64_t motion_time = 0;
 
+		DisplayServer::WindowID proximal_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServer::WindowID last_proximal_id = DisplayServer::INVALID_WINDOW_ID;
 		uint32_t proximity_serial = 0;
-		struct wl_surface *proximal_surface = nullptr;
 	};
 
 	struct TabletToolState {
 		struct wl_seat *wl_seat = nullptr;
 
-		struct wl_surface *last_surface = nullptr;
 		bool is_eraser = false;
 
 		TabletToolData data_pending;
@@ -386,9 +415,6 @@ public:
 		struct wl_pointer *wl_pointer = nullptr;
 
 		uint32_t pointer_enter_serial = 0;
-
-		struct wl_surface *pointed_surface = nullptr;
-		struct wl_surface *last_pointed_surface = nullptr;
 
 		struct zwp_relative_pointer_v1 *wp_relative_pointer = nullptr;
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
@@ -420,6 +446,9 @@ public:
 		// Keyboard.
 		struct wl_keyboard *wl_keyboard = nullptr;
 
+		// For key events.
+		DisplayServer::WindowID focused_id = DisplayServer::INVALID_WINDOW_ID;
+
 		struct xkb_context *xkb_context = nullptr;
 		struct xkb_keymap *xkb_keymap = nullptr;
 		struct xkb_state *xkb_state = nullptr;
@@ -448,6 +477,7 @@ public:
 		struct wl_data_device *wl_data_device = nullptr;
 
 		// Drag and drop.
+		DisplayServer::WindowID dnd_id = DisplayServer::INVALID_WINDOW_ID;
 		struct wl_data_offer *wl_data_offer_dnd = nullptr;
 		uint32_t dnd_enter_serial = 0;
 
@@ -472,6 +502,7 @@ public:
 
 		// IME.
 		struct zwp_text_input_v3 *wp_text_input = nullptr;
+		DisplayServer::WindowID ime_window_id = DisplayServer::INVALID_WINDOW_ID;
 		bool ime_enabled = false;
 		bool ime_active = false;
 		String ime_text;
@@ -502,7 +533,7 @@ private:
 	Thread events_thread;
 	ThreadData thread_data;
 
-	WindowState main_window;
+	HashMap<DisplayServer::WindowID, WindowState> windows;
 
 	List<Ref<Message>> messages;
 
@@ -613,6 +644,10 @@ private:
 	static void _xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel);
 	static void _xdg_toplevel_on_configure_bounds(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height);
 	static void _xdg_toplevel_on_wm_capabilities(void *data, struct xdg_toplevel *xdg_toplevel, struct wl_array *capabilities);
+
+	static void _xdg_popup_on_configure(void *data, struct xdg_popup *xdg_popup, int32_t x, int32_t y, int32_t width, int32_t height);
+	static void _xdg_popup_on_popup_done(void *data, struct xdg_popup *xdg_popup);
+	static void _xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token);
 
 	// wayland-protocols event handlers.
 	static void _wp_fractional_scale_on_preferred_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale);
@@ -767,6 +802,12 @@ private:
 		.close = _xdg_toplevel_on_close,
 		.configure_bounds = _xdg_toplevel_on_configure_bounds,
 		.wm_capabilities = _xdg_toplevel_on_wm_capabilities,
+	};
+
+	static constexpr struct xdg_popup_listener xdg_popup_listener = {
+		.configure = _xdg_popup_on_configure,
+		.popup_done = _xdg_popup_on_popup_done,
+		.repositioned = _xdg_popup_on_repositioned,
 	};
 
 	// wayland-protocols event listeners.
@@ -954,8 +995,13 @@ public:
 	void beep() const;
 
 	void window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+	void window_create_popup(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id, Rect2i p_rect);
+	void window_destroy(DisplayServer::WindowID p_window_Id);
+
+	void window_set_parent(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id);
 
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
+	WindowState *window_get_state(DisplayServer::WindowID p_window_id);
 
 	void window_start_resize(DisplayServer::WindowResizeEdge p_edge, DisplayServer::WindowID p_window);
 
@@ -988,6 +1034,7 @@ public:
 	void pointer_set_hint(const Point2i &p_hint);
 	PointerConstraint pointer_get_constraint() const;
 	DisplayServer::WindowID pointer_get_pointed_window_id() const;
+	DisplayServer::WindowID pointer_get_last_pointed_window_id() const;
 	BitField<MouseButtonMask> pointer_get_button_mask() const;
 
 	void cursor_set_visible(bool p_visible);
@@ -1025,7 +1072,10 @@ public:
 	void set_frame();
 	bool get_reset_frame();
 	bool wait_frame_suspend_ms(int p_timeout);
+	bool is_fifo_available() const;
 
+	uint64_t window_get_last_frame_time(DisplayServer::WindowID p_window_id) const;
+	bool window_is_suspended(DisplayServer::WindowID p_window_id) const;
 	bool is_suspended() const;
 
 	Error init();

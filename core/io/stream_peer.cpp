@@ -125,54 +125,90 @@ void StreamPeer::put_8(int8_t p_val) {
 }
 
 void StreamPeer::put_u16(uint16_t p_val) {
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		p_val = BSWAP16(p_val);
+	}
+#else
 	if (big_endian) {
 		p_val = BSWAP16(p_val);
 	}
+#endif
 	uint8_t buf[2];
 	encode_uint16(p_val, buf);
 	put_data(buf, 2);
 }
 
 void StreamPeer::put_16(int16_t p_val) {
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		p_val = BSWAP16(p_val);
+	}
+#else
 	if (big_endian) {
 		p_val = BSWAP16(p_val);
 	}
+#endif
 	uint8_t buf[2];
 	encode_uint16(p_val, buf);
 	put_data(buf, 2);
 }
 
 void StreamPeer::put_u32(uint32_t p_val) {
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		p_val = BSWAP32(p_val);
+	}
+#else
 	if (big_endian) {
 		p_val = BSWAP32(p_val);
 	}
+#endif
 	uint8_t buf[4];
 	encode_uint32(p_val, buf);
 	put_data(buf, 4);
 }
 
 void StreamPeer::put_32(int32_t p_val) {
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		p_val = BSWAP32(p_val);
+	}
+#else
 	if (big_endian) {
 		p_val = BSWAP32(p_val);
 	}
+#endif
 	uint8_t buf[4];
 	encode_uint32(p_val, buf);
 	put_data(buf, 4);
 }
 
 void StreamPeer::put_u64(uint64_t p_val) {
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		p_val = BSWAP64(p_val);
+	}
+#else
 	if (big_endian) {
 		p_val = BSWAP64(p_val);
 	}
+#endif
 	uint8_t buf[8];
 	encode_uint64(p_val, buf);
 	put_data(buf, 8);
 }
 
 void StreamPeer::put_64(int64_t p_val) {
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		p_val = BSWAP64(p_val);
+	}
+#else
 	if (big_endian) {
 		p_val = BSWAP64(p_val);
 	}
+#endif
 	uint8_t buf[8];
 	encode_uint64(p_val, buf);
 	put_data(buf, 8);
@@ -183,9 +219,15 @@ void StreamPeer::put_half(float p_val) {
 
 	encode_half(p_val, buf);
 	uint16_t *p16 = (uint16_t *)buf;
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		*p16 = BSWAP16(*p16);
+	}
+#else
 	if (big_endian) {
 		*p16 = BSWAP16(*p16);
 	}
+#endif
 
 	put_data(buf, 2);
 }
@@ -194,10 +236,17 @@ void StreamPeer::put_float(float p_val) {
 	uint8_t buf[4];
 
 	encode_float(p_val, buf);
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		uint32_t *p32 = (uint32_t *)buf;
+		*p32 = BSWAP32(*p32);
+	}
+#else
 	if (big_endian) {
 		uint32_t *p32 = (uint32_t *)buf;
 		*p32 = BSWAP32(*p32);
 	}
+#endif
 
 	put_data(buf, 4);
 }
@@ -206,10 +255,17 @@ void StreamPeer::put_double(double p_val) {
 	uint8_t buf[8];
 
 	encode_double(p_val, buf);
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		uint64_t *p64 = (uint64_t *)buf;
+		*p64 = BSWAP64(*p64);
+	}
+#else
 	if (big_endian) {
 		uint64_t *p64 = (uint64_t *)buf;
 		*p64 = BSWAP64(*p64);
 	}
+#endif
 
 	put_data(buf, 8);
 }
@@ -253,9 +309,15 @@ uint16_t StreamPeer::get_u16() {
 	get_data(buf, 2);
 
 	uint16_t r = decode_uint16(buf);
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		r = BSWAP16(r);
+	}
+#else
 	if (big_endian) {
 		r = BSWAP16(r);
 	}
+#endif
 
 	return r;
 }
@@ -265,9 +327,15 @@ int16_t StreamPeer::get_16() {
 	get_data(buf, 2);
 
 	uint16_t r = decode_uint16(buf);
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		r = BSWAP16(r);
+	}
+#else
 	if (big_endian) {
 		r = BSWAP16(r);
 	}
+#endif
 
 	return int16_t(r);
 }
@@ -277,9 +345,15 @@ uint32_t StreamPeer::get_u32() {
 	get_data(buf, 4);
 
 	uint32_t r = decode_uint32(buf);
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		r = BSWAP32(r);
+	}
+#else
 	if (big_endian) {
 		r = BSWAP32(r);
 	}
+#endif
 
 	return r;
 }
@@ -289,9 +363,15 @@ int32_t StreamPeer::get_32() {
 	get_data(buf, 4);
 
 	uint32_t r = decode_uint32(buf);
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		r = BSWAP32(r);
+	}
+#else
 	if (big_endian) {
 		r = BSWAP32(r);
 	}
+#endif
 
 	return int32_t(r);
 }
@@ -301,9 +381,15 @@ uint64_t StreamPeer::get_u64() {
 	get_data(buf, 8);
 
 	uint64_t r = decode_uint64(buf);
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		r = BSWAP64(r);
+	}
+#else
 	if (big_endian) {
 		r = BSWAP64(r);
 	}
+#endif
 
 	return r;
 }
@@ -313,9 +399,15 @@ int64_t StreamPeer::get_64() {
 	get_data(buf, 8);
 
 	uint64_t r = decode_uint64(buf);
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		r = BSWAP64(r);
+	}
+#else
 	if (big_endian) {
 		r = BSWAP64(r);
 	}
+#endif
 
 	return int64_t(r);
 }
@@ -324,10 +416,17 @@ float StreamPeer::get_half() {
 	uint8_t buf[2];
 	get_data(buf, 2);
 
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		uint16_t *p16 = (uint16_t *)buf;
+		*p16 = BSWAP16(*p16);
+	}
+#else
 	if (big_endian) {
 		uint16_t *p16 = (uint16_t *)buf;
 		*p16 = BSWAP16(*p16);
 	}
+#endif
 
 	return decode_half(buf);
 }
@@ -336,10 +435,17 @@ float StreamPeer::get_float() {
 	uint8_t buf[4];
 	get_data(buf, 4);
 
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		uint32_t *p32 = (uint32_t *)buf;
+		*p32 = BSWAP32(*p32);
+	}
+#else
 	if (big_endian) {
 		uint32_t *p32 = (uint32_t *)buf;
 		*p32 = BSWAP32(*p32);
 	}
+#endif
 
 	return decode_float(buf);
 }
@@ -348,10 +454,17 @@ double StreamPeer::get_double() {
 	uint8_t buf[8];
 	get_data(buf, 8);
 
+#ifdef BIG_ENDIAN_ENABLED
+	if (!big_endian) {
+		uint64_t *p64 = (uint64_t *)buf;
+		*p64 = BSWAP64(*p64);
+	}
+#else
 	if (big_endian) {
 		uint64_t *p64 = (uint64_t *)buf;
 		*p64 = BSWAP64(*p64);
 	}
+#endif
 
 	return decode_double(buf);
 }
@@ -383,9 +496,7 @@ String StreamPeer::get_utf8_string(int p_bytes) {
 	err = get_data(buf.ptrw(), p_bytes);
 	ERR_FAIL_COND_V(err != OK, String());
 
-	String ret;
-	ret.parse_utf8((const char *)buf.ptr(), buf.size());
-	return ret;
+	return String::utf8((const char *)buf.ptr(), buf.size());
 }
 
 Variant StreamPeer::get_var(bool p_allow_objects) {

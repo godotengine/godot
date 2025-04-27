@@ -563,7 +563,7 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 
 	// Begin astar.
 	while (!found_route) {
-		if (open_list.size() == 0) {
+		if (open_list.is_empty()) {
 			break; // No path found.
 		}
 
@@ -911,7 +911,7 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 		}
 
 		if (transition_path.has(next.node)) {
-			WARN_PRINT_ONCE_ED("AnimationNodeStateMachinePlayback: " + base_path + "playback aborts the transition by detecting one or more looped transitions in the same frame to prevent to infinity loop. You may need to check the transition settings.");
+			WARN_PRINT_ONCE_ED("AnimationNodeStateMachinePlayback: " + base_path + "playback has detected one or more looped transitions in a single frame and aborted to prevent an infinite loop. You may need to check the transition settings.");
 			break; // Maybe infinity loop, do nothing more.
 		}
 

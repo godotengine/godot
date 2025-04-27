@@ -135,7 +135,7 @@ TranslationServer::Locale::operator String() const {
 
 TranslationServer::Locale::Locale(const TranslationServer &p_server, const String &p_locale, bool p_add_defaults) {
 	// Replaces '-' with '_' for macOS style locales.
-	String univ_locale = p_locale.replace("-", "_");
+	String univ_locale = p_locale.replace_char('-', '_');
 
 	// Extract locale elements.
 	Vector<String> locale_elements = univ_locale.get_slicec('@', 0).split("_");
@@ -504,10 +504,10 @@ String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		const PackedStringArray &locales = editor_domain->get_loaded_locales();
-		if (locales.is_empty()) {
-			return "en";
+		if (locales.has(locale)) {
+			return locale;
 		}
-		return locales[0];
+		return "en";
 	} else {
 #else
 	{

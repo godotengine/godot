@@ -101,6 +101,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		fun reset2DCamera()
 		fun reset3DCamera()
 		fun manipulateCamera(mode: CameraMode)
+		fun muteAudio(enabled: Boolean)
 
 		fun isGameEmbeddingSupported(): Boolean
 		fun embedGameOnPlay(embedded: Boolean)
@@ -147,6 +148,9 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	}
 	private val listSelectButton: RadioButton? by lazy {
 		view?.findViewById(R.id.game_menu_list_select_button)
+	}
+	private val audioMuteButton: View? by lazy {
+		view?.findViewById(R.id.game_menu_audio_mute_button)
 	}
 	private val optionsButton: View? by lazy {
 		view?.findViewById(R.id.game_menu_options_button)
@@ -319,6 +323,13 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 				}
 			}
 		}
+		audioMuteButton?.apply{
+			setOnClickListener {
+				val isActivated = !it.isActivated
+				menuListener?.muteAudio(isActivated)
+				it.isActivated = isActivated
+			}
+		}
 		optionsButton?.setOnClickListener {
 			popupMenu.show()
 		}
@@ -350,6 +361,8 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		val selectMode = gameMenuState.getSerializable(BaseGodotEditor.GAME_MENU_ACTION_SET_SELECT_MODE) as GameMenuListener.SelectMode? ?: GameMenuListener.SelectMode.SINGLE
 		toolSelectButton?.isChecked = selectMode == GameMenuListener.SelectMode.SINGLE
 		listSelectButton?.isChecked = selectMode == GameMenuListener.SelectMode.LIST
+
+		audioMuteButton?.isActivated = gameMenuState.getBoolean(BaseGodotEditor.GAME_MENU_ACTION_SET_DEBUG_MUTE_AUDIO, false)
 
 		popupMenu.menu.apply {
 			if (menuListener?.isGameEmbeddingSupported() == false) {

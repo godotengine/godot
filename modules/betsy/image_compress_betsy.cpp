@@ -371,6 +371,13 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		return ERR_INVALID_DATA;
 	}
 
+	int img_width = r_img->get_width();
+	int img_height = r_img->get_height();
+	if (img_width % 4 != 0 || img_height % 4 != 0) {
+		img_width = img_width <= 2 ? img_width : (img_width + 3) & ~3;
+		img_height = img_height <= 2 ? img_height : (img_height + 3) & ~3;
+	}
+
 	Error err = OK;
 
 	// Destination format.
@@ -441,7 +448,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 	// Container for the compressed data.
 	Vector<uint8_t> dst_data;
-	dst_data.resize(Image::get_image_data_size(r_img->get_width(), r_img->get_height(), dest_format, r_img->has_mipmaps()));
+	dst_data.resize(Image::get_image_data_size(img_width, img_height, dest_format, r_img->has_mipmaps()));
 	uint8_t *dst_data_ptr = dst_data.ptrw();
 
 	Vector<Vector<uint8_t>> src_images;
@@ -450,9 +457,12 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 	// Compress each mipmap.
 	for (int i = 0; i < mip_count; i++) {
-		int64_t ofs, size;
 		int width, height;
-		r_img->get_mipmap_offset_size_and_dimensions(i, ofs, size, width, height);
+		Image::get_image_mipmap_offset_and_dimensions(img_width, img_height, dest_format, i, width, height);
+
+		int64_t src_mip_ofs, src_mip_size;
+		int src_mip_w, src_mip_h;
+		r_img->get_mipmap_offset_size_and_dimensions(i, src_mip_ofs, src_mip_size, src_mip_w, src_mip_h);
 
 		// Set the source texture width and size.
 		src_texture_format.height = height;
@@ -462,9 +472,38 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		dst_texture_format.height = (height + 3) >> 2;
 		dst_texture_format.width = (width + 3) >> 2;
 
-		// Create a buffer filled with the source mip layer data.
-		src_image_ptr[0].resize(size);
-		memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + ofs, size);
+		// Pad textures to nearest block by smearing.
+		if (width != src_mip_w || height != src_mip_h) {
+			const uint8_t *src_mip_read = r_img->ptr() + src_mip_ofs;
+
+			// Reserve the buffer for padded image data.
+			int px_size = Image::get_format_pixel_size(r_img->get_format());
+			src_image_ptr[0].resize(width * height * px_size);
+			uint8_t *ptrw = src_image_ptr[0].ptrw();
+
+			int x = 0, y = 0;
+			for (y = 0; y < src_mip_h; y++) {
+				for (x = 0; x < src_mip_w; x++) {
+					memcpy(ptrw + (width * y + x) * px_size, src_mip_read + (src_mip_w * y + x) * px_size, px_size);
+				}
+
+				// First, smear in x.
+				for (; x < width; x++) {
+					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - 1) * px_size, px_size);
+				}
+			}
+
+			// Then, smear in y.
+			for (; y < height; y++) {
+				for (x = 0; x < width; x++) {
+					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - width) * px_size, px_size);
+				}
+			}
+		} else {
+			// Create a buffer filled with the source mip layer data.
+			src_image_ptr[0].resize(src_mip_size);
+			memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + src_mip_ofs, src_mip_size);
+		}
 
 		// Create the textures on the GPU.
 		RID src_texture = compress_rd->texture_create(src_texture_format, RD::TextureView(), src_images);
@@ -644,7 +683,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 		// Copy data from the GPU to the buffer.
 		const Vector<uint8_t> texture_data = compress_rd->texture_get_data(dst_texture_rid, 0);
-		int64_t dst_ofs = Image::get_image_mipmap_offset(r_img->get_width(), r_img->get_height(), dest_format, i);
+		int64_t dst_ofs = Image::get_image_mipmap_offset(img_width, img_height, dest_format, i);
 
 		memcpy(dst_data_ptr + dst_ofs, texture_data.ptr(), texture_data.size());
 
@@ -656,12 +695,12 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 	src_images.clear();
 
 	// Set the compressed data to the image.
-	r_img->set_data(r_img->get_width(), r_img->get_height(), r_img->has_mipmaps(), dest_format, dst_data);
+	r_img->set_data(img_width, img_height, r_img->has_mipmaps(), dest_format, dst_data);
 
 	print_verbose(
 			vformat("Betsy: Encoding a %dx%d image with %d mipmaps as %s took %d ms.",
-					r_img->get_width(),
-					r_img->get_height(),
+					img_width,
+					img_height,
 					r_img->get_mipmap_count(),
 					Image::get_format_name(dest_format),
 					OS::get_singleton()->get_ticks_msec() - start_time));

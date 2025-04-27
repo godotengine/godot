@@ -12,7 +12,7 @@
 	</tutorials>
 	<members>
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
-			Governs how high the filter frequencies sweep. Low value will primarily affect bass frequencies. High value can sweep high into the treble. Value can range from 0.1 to 4.
+			Determines how high the filter frequencies sweep. Low value will primarily affect bass frequencies. High value can sweep high into the treble. Value can range from [code]0.1[/code] to [code]4.0[/code].
 		</member>
 		<member name="feedback" type="float" setter="set_feedback" getter="get_feedback" default="0.7">
 			Output percent of modified sound. Value can range from 0.1 to 0.9.

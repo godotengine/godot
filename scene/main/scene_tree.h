@@ -178,6 +178,11 @@ private:
 
 	List<ObjectID> delete_queue;
 
+	uint64_t accessibility_upd_per_sec = 0;
+	bool accessibility_force_update = true;
+	HashSet<ObjectID> accessibility_change_queue;
+	uint64_t accessibility_last_update = 0;
+
 	HashMap<UGCall, Vector<Variant>, UGCall> unique_group_calls;
 	bool ugc_locked = false;
 	void _flush_ugc();
@@ -187,8 +192,8 @@ private:
 	TypedArray<Node> _get_nodes_in_group(const StringName &p_group);
 
 	Node *current_scene = nullptr;
-	Node *prev_scene = nullptr;
-	Node *pending_new_scene = nullptr;
+	ObjectID prev_scene_id;
+	ObjectID pending_new_scene_id;
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
@@ -319,6 +324,13 @@ public:
 	}
 
 	void flush_transform_notifications();
+
+	bool is_accessibility_enabled() const;
+	bool is_accessibility_supported() const;
+	void _accessibility_force_update();
+	void _accessibility_notify_change(const Node *p_node, bool p_remove = false);
+	void _flush_accessibility_changes();
+	void _process_accessibility_changes(DisplayServer::WindowID p_window_id);
 
 	virtual void initialize() override;
 

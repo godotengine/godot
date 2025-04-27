@@ -631,7 +631,7 @@ bool PList::load_file(const String &p_filename) {
 	unsigned char magic[8];
 	fb->get_buffer(magic, 8);
 
-	if (String((const char *)magic, 8) == "bplist00") {
+	if (String::ascii(Span((const char *)magic, 8)) == "bplist00") {
 		fb->seek_end(-26);
 		trailer.offset_size = fb->get_8();
 		trailer.ref_size = fb->get_8();
@@ -647,10 +647,8 @@ bool PList::load_file(const String &p_filename) {
 		Vector<uint8_t> array = FileAccess::get_file_as_bytes(p_filename, &err);
 		ERR_FAIL_COND_V(err != OK, false);
 
-		String ret;
-		ret.parse_utf8((const char *)array.ptr(), array.size());
 		String err_str;
-		bool ok = load_string(ret, err_str);
+		bool ok = load_string(String::utf8((const char *)array.ptr(), array.size()), err_str);
 		ERR_FAIL_COND_V_MSG(!ok, false, "PList: " + err_str);
 
 		return true;

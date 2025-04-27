@@ -5,6 +5,7 @@ plugins {
 
 ext {
     PUBLISH_ARTIFACT_ID = 'godot'
+    TOOLS_PUBLISH_ARTIFACT_ID = 'godot-tools'
 }
 
 apply from: "../scripts/publish-module.gradle"
@@ -182,6 +183,10 @@ android {
 
     publishing {
         singleVariant("templateRelease") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+        singleVariant("editorRelease") {
             withSourcesJar()
             withJavadocJar()
         }

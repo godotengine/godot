@@ -389,8 +389,6 @@ public:
 
 		return E->value.cache;
 	}
-
-	virtual ~EditorScriptCodeCompletionCache() {}
 };
 
 void ScriptEditorQuickOpen::popup_dialog(const Vector<String> &p_functions, bool p_dontclear) {
@@ -824,7 +822,8 @@ void ScriptEditor::_update_recent_scripts() {
 
 	recent_scripts->add_separator();
 	recent_scripts->add_shortcut(ED_GET_SHORTCUT("script_editor/clear_recent"));
-	recent_scripts->set_item_disabled(recent_scripts->get_item_id(recent_scripts->get_item_count() - 1), rc.is_empty());
+	recent_scripts->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
+	recent_scripts->set_item_disabled(-1, rc.is_empty());
 
 	recent_scripts->reset_size();
 }
@@ -865,13 +864,8 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	} else if (path.contains("::")) {
 		// built-in script
 		String res_path = path.get_slice("::", 0);
-		if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
-			if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
-				EditorNode::get_singleton()->load_scene(res_path);
-			}
-		} else {
-			EditorNode::get_singleton()->load_resource(res_path);
-		}
+		EditorNode::get_singleton()->load_scene_or_resource(res_path, false, false);
+
 		Ref<Script> scr = ResourceLoader::load(path);
 		if (scr.is_valid()) {
 			edit(scr, true);
@@ -1310,13 +1304,13 @@ TypedArray<Script> ScriptEditor::_get_open_scripts() const {
 	return ret;
 }
 
-bool ScriptEditor::toggle_scripts_panel() {
+bool ScriptEditor::toggle_files_panel() {
 	list_split->set_visible(!list_split->is_visible());
-	EditorSettings::get_singleton()->set_project_metadata("scripts_panel", "show_scripts_panel", list_split->is_visible());
+	EditorSettings::get_singleton()->set_project_metadata("files_panel", "show_files_panel", list_split->is_visible());
 	return list_split->is_visible();
 }
 
-bool ScriptEditor::is_scripts_panel_toggled() {
+bool ScriptEditor::is_files_panel_toggled() {
 	return list_split->is_visible();
 }
 
@@ -1376,13 +1370,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			if (extensions.find(path.get_extension()) || built_in) {
 				if (built_in) {
 					String res_path = path.get_slice("::", 0);
-					if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
-						if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
-							EditorNode::get_singleton()->load_scene(res_path);
-						}
-					} else {
-						EditorNode::get_singleton()->load_resource(res_path);
-					}
+					EditorNode::get_singleton()->load_scene_or_resource(res_path, false, false);
 				}
 
 				Ref<Resource> scr = ResourceLoader::load(path);
@@ -1434,10 +1422,10 @@ void ScriptEditor::_menu_option(int p_option) {
 			}
 			if (native_class_doc) {
 				String name = eh->get_class().to_lower();
-				String doc_url = vformat(VERSION_DOCS_URL "/classes/class_%s.html", name);
+				String doc_url = vformat(GODOT_VERSION_DOCS_URL "/classes/class_%s.html", name);
 				OS::get_singleton()->shell_open(doc_url);
 			} else {
-				OS::get_singleton()->shell_open(VERSION_DOCS_URL "/");
+				OS::get_singleton()->shell_open(GODOT_VERSION_DOCS_URL "/");
 			}
 		} break;
 		case WINDOW_NEXT: {
@@ -1450,15 +1438,15 @@ void ScriptEditor::_menu_option(int p_option) {
 			_sort_list_on_update = true;
 			_update_script_names();
 		} break;
-		case TOGGLE_SCRIPTS_PANEL: {
-			toggle_scripts_panel();
+		case TOGGLE_FILES_PANEL: {
+			toggle_files_panel();
 			if (current) {
-				current->update_toggle_scripts_button();
+				current->update_toggle_files_button();
 			} else {
 				Control *tab = tab_container->get_current_tab_control();
 				EditorHelp *editor_help = Object::cast_to<EditorHelp>(tab);
 				if (editor_help) {
-					editor_help->update_toggle_scripts_button();
+					editor_help->update_toggle_files_button();
 				}
 			}
 		}
@@ -1796,7 +1784,10 @@ void ScriptEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 
-		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			disk_changed_list->set_accessibility_name(TTR("The following files are newer on disk"));
+			[[fallthrough]];
+		}
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			tab_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
@@ -2297,39 +2288,9 @@ void ScriptEditor::_update_script_names() {
 			sedata.push_back(sd);
 		}
 
-		Vector<String> disambiguated_script_names;
-		Vector<String> full_script_paths;
-		for (int j = 0; j < sedata.size(); j++) {
-			String name = sedata[j].name.replace("(*)", "");
-			ScriptListName script_display = (ScriptListName)(int)EDITOR_GET("text_editor/script_list/list_script_names_as");
-			switch (script_display) {
-				case DISPLAY_NAME: {
-					name = name.get_file();
-				} break;
-				case DISPLAY_DIR_AND_NAME: {
-					name = name.get_base_dir().get_file().path_join(name.get_file());
-				} break;
-				default:
-					break;
-			}
-
-			disambiguated_script_names.append(name);
-			full_script_paths.append(sedata[j].tooltip);
-		}
-
-		EditorNode::disambiguate_filenames(full_script_paths, disambiguated_script_names);
-
-		for (int j = 0; j < sedata.size(); j++) {
-			if (sedata[j].name.ends_with("(*)")) {
-				sedata.write[j].name = disambiguated_script_names[j] + "(*)";
-			} else {
-				sedata.write[j].name = disambiguated_script_names[j];
-			}
-		}
-
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
-		if (eh) {
-			String name = eh->get_class();
+		if (eh && !eh->get_class().is_empty()) {
+			String name = eh->get_class().unquote();
 			Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Help"));
 			String tooltip = vformat(TTR("%s Class Reference"), name);
 
@@ -2344,6 +2305,36 @@ void ScriptEditor::_update_script_names() {
 			sd.ref = eh;
 
 			sedata.push_back(sd);
+		}
+	}
+
+	Vector<String> disambiguated_script_names;
+	Vector<String> full_script_paths;
+	for (int j = 0; j < sedata.size(); j++) {
+		String name = sedata[j].name.replace("(*)", "");
+		ScriptListName script_display = (ScriptListName)(int)EDITOR_GET("text_editor/script_list/list_script_names_as");
+		switch (script_display) {
+			case DISPLAY_NAME: {
+				name = name.get_file();
+			} break;
+			case DISPLAY_DIR_AND_NAME: {
+				name = name.get_base_dir().get_file().path_join(name.get_file());
+			} break;
+			default:
+				break;
+		}
+
+		disambiguated_script_names.append(name);
+		full_script_paths.append(sedata[j].tooltip);
+	}
+
+	EditorNode::disambiguate_filenames(full_script_paths, disambiguated_script_names);
+
+	for (int j = 0; j < sedata.size(); j++) {
+		if (sedata[j].name.ends_with("(*)")) {
+			sedata.write[j].name = disambiguated_script_names[j] + "(*)";
+		} else {
+			sedata.write[j].name = disambiguated_script_names[j];
 		}
 	}
 
@@ -3218,7 +3209,7 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	if (String(d["type"]) == "nodes") {
 		Array nodes = d["nodes"];
-		if (nodes.size() == 0) {
+		if (nodes.is_empty()) {
 			return false;
 		}
 		Node *node = get_node((nodes[0]));
@@ -3236,7 +3227,7 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
-		if (files.size() == 0) {
+		if (files.is_empty()) {
 			return false; //weird
 		}
 
@@ -3284,7 +3275,15 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		if (se || eh) {
 			int new_index = 0;
 			if (script_list->get_item_count() > 0) {
-				new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+				int pos = 0;
+				if (p_point == Vector2(Math::INF, Math::INF)) {
+					if (script_list->is_anything_selected()) {
+						pos = script_list->get_selected_items()[0];
+					}
+				} else {
+					pos = script_list->get_item_at_position(p_point);
+				}
+				new_index = script_list->get_item_metadata(pos);
 			}
 			tab_container->move_child(node, new_index);
 			tab_container->set_current_tab(new_index);
@@ -3294,7 +3293,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 
 	if (String(d["type"]) == "nodes") {
 		Array nodes = d["nodes"];
-		if (nodes.size() == 0) {
+		if (nodes.is_empty()) {
 			return;
 		}
 		Node *node = get_node(nodes[0]);
@@ -3304,7 +3303,15 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		if (se || eh) {
 			int new_index = 0;
 			if (script_list->get_item_count() > 0) {
-				new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+				int pos = 0;
+				if (p_point == Vector2(Math::INF, Math::INF)) {
+					if (script_list->is_anything_selected()) {
+						pos = script_list->get_selected_items()[0];
+					}
+				} else {
+					pos = script_list->get_item_at_position(p_point);
+				}
+				new_index = script_list->get_item_metadata(pos);
 			}
 			tab_container->move_child(node, new_index);
 			tab_container->set_current_tab(new_index);
@@ -3317,7 +3324,15 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 
 		int new_index = 0;
 		if (script_list->get_item_count() > 0) {
-			new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+			int pos = 0;
+			if (p_point == Vector2(Math::INF, Math::INF)) {
+				if (script_list->is_anything_selected()) {
+					pos = script_list->get_selected_items()[0];
+				}
+			} else {
+				pos = script_list->get_item_at_position(p_point);
+			}
+			new_index = script_list->get_item_metadata(pos);
 		}
 		int num_tabs_before = tab_container->get_tab_count();
 		for (int i = 0; i < files.size(); i++) {
@@ -3464,7 +3479,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), WINDOW_MOVE_UP);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_down"), WINDOW_MOVE_DOWN);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_sort"), WINDOW_SORT);
-	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_scripts_panel"), TOGGLE_SCRIPTS_PANEL);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"), TOGGLE_FILES_PANEL);
 
 	context_menu->set_item_disabled(context_menu->get_item_index(CLOSE_ALL), tab_container->get_tab_count() <= 0);
 	context_menu->set_item_disabled(context_menu->get_item_index(CLOSE_OTHER_TABS), tab_container->get_tab_count() <= 1);
@@ -3715,7 +3730,7 @@ bool ScriptEditor::_help_tab_goto(const String &p_name, const String &p_desc) {
 }
 
 void ScriptEditor::update_doc(const String &p_name) {
-	ERR_FAIL_COND(!EditorHelp::get_doc_data()->has_doc(p_name));
+	ERR_FAIL_COND(!EditorHelp::has_doc(p_name));
 
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
@@ -4184,6 +4199,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	filter_scripts = memnew(LineEdit);
 	filter_scripts->set_placeholder(TTR("Filter Scripts"));
+	filter_scripts->set_accessibility_name(TTRC("Filter Scripts"));
 	filter_scripts->set_clear_button_enabled(true);
 	filter_scripts->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_scripts_text_changed));
 	scripts_vbox->add_child(filter_scripts);
@@ -4209,11 +4225,13 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	list_split->add_child(overview_vbox);
-	list_split->set_visible(EditorSettings::get_singleton()->get_project_metadata("scripts_panel", "show_scripts_panel", true));
+	list_split->set_visible(EditorSettings::get_singleton()->get_project_metadata("files_panel", "show_files_panel", true));
 	buttons_hbox = memnew(HBoxContainer);
 	overview_vbox->add_child(buttons_hbox);
 
 	filename = memnew(Label);
+	filename->set_focus_mode(FOCUS_ACCESSIBILITY);
+	filename->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	filename->set_clip_text(true);
 	filename->set_h_size_flags(SIZE_EXPAND_FILL);
 	filename->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
@@ -4222,6 +4240,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	members_overview_alphabeta_sort_button = memnew(Button);
 	members_overview_alphabeta_sort_button->set_flat(true);
+	members_overview_alphabeta_sort_button->set_accessibility_name(TTRC("Alphabetical Sorting"));
 	members_overview_alphabeta_sort_button->set_tooltip_text(TTR("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
 	members_overview_alphabeta_sort_button->set_pressed(EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically"));
@@ -4231,6 +4250,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	filter_methods = memnew(LineEdit);
 	filter_methods->set_placeholder(TTR("Filter Methods"));
+	filter_methods->set_accessibility_name(TTRC("Filter Methods"));
 	filter_methods->set_clear_button_enabled(true);
 	filter_methods->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_methods_text_changed));
 	overview_vbox->add_child(filter_methods);
@@ -4288,6 +4308,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/reopen_closed_script"), FILE_REOPEN_CLOSED);
 
 	recent_scripts = memnew(PopupMenu);
+	recent_scripts->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	file_menu->get_popup()->add_submenu_node_item(TTR("Open Recent"), recent_scripts, FILE_OPEN_RECENT);
 	recent_scripts->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_open_recent_script));
 
@@ -4338,7 +4359,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTRC("Run"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::X), FILE_RUN);
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTRC("Toggle Scripts Panel"), KeyModifierMask::CMD_OR_CTRL | Key::BACKSLASH), TOGGLE_SCRIPTS_PANEL);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_files_panel", TTRC("Toggle Files Panel"), KeyModifierMask::CMD_OR_CTRL | Key::BACKSLASH), TOGGLE_FILES_PANEL);
 	file_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_menu_option));
 	file_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ScriptEditor::_prepare_file_menu));
 	file_menu->get_popup()->connect("popup_hide", callable_mp(this, &ScriptEditor::_file_menu_closed));
@@ -4368,6 +4389,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_icon = memnew(TextureRect);
 	menu_hb->add_child(script_icon);
 	script_name_label = memnew(Label);
+	script_name_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	menu_hb->add_child(script_name_label);
 
 	script_icon->hide();
@@ -4376,6 +4398,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	menu_hb->add_spacer();
 
 	site_search = memnew(Button);
+	site_search->set_accessibility_name(TTRC("Site Search"));
 	site_search->set_flat(true);
 	site_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
@@ -4390,6 +4413,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	menu_hb->add_child(memnew(VSeparator));
 
 	script_back = memnew(Button);
+	script_back->set_accessibility_name(TTRC("Previous"));
 	script_back->set_flat(true);
 	script_back->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_back));
 	menu_hb->add_child(script_back);
@@ -4397,6 +4421,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_back->set_tooltip_text(TTR("Go to previous edited document."));
 
 	script_forward = memnew(Button);
+	script_forward->set_accessibility_name(TTRC("Next"));
 	script_forward->set_flat(true);
 	script_forward->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_forward));
 	menu_hb->add_child(script_forward);
@@ -4410,7 +4435,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
 	if (!make_floating->is_disabled()) {
 		// Override default ScreenSelect tooltip if multi-window support is available.
-		make_floating->set_tooltip_text(TTR("Make the script editor floating.\nRight-click to open the screen selector."));
+		make_floating->set_tooltip_text(TTR("Make the script editor floating.") + "\n" + TTR("Right-click to open the screen selector."));
 	}
 
 	menu_hb->add_child(make_floating);
@@ -4558,13 +4583,7 @@ void ScriptEditorPlugin::edit(Object *p_object) {
 		String res_path = p_script->get_path().get_slice("::", 0);
 
 		if (p_script->is_built_in() && !res_path.is_empty()) {
-			if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
-				if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
-					EditorNode::get_singleton()->load_scene(res_path);
-				}
-			} else {
-				EditorNode::get_singleton()->load_resource(res_path);
-			}
+			EditorNode::get_singleton()->load_scene_or_resource(res_path, false, false);
 		}
 		script_editor->edit(p_script);
 	} else if (Object::cast_to<JSON>(p_object)) {
@@ -4724,7 +4743,4 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 	window_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditorPlugin::_window_visibility_changed));
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_GET("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save"));
-}
-
-ScriptEditorPlugin::~ScriptEditorPlugin() {
 }

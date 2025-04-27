@@ -145,9 +145,6 @@ class EditorAudioBusDrop : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-
-public:
-	EditorAudioBusDrop();
 };
 
 class EditorAudioBuses : public VBoxContainer {
@@ -262,9 +259,6 @@ private:
 	static void _bind_methods();
 	void _notification(int p_what);
 	void _draw_audio_notches();
-
-public:
-	EditorAudioMeterNotches() {}
 };
 
 class AudioBusesEditorPlugin : public EditorPlugin {
@@ -280,5 +274,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	AudioBusesEditorPlugin(EditorAudioBuses *p_node);
-	~AudioBusesEditorPlugin();
 };

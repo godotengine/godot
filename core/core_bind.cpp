@@ -42,7 +42,7 @@
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
-namespace core_bind {
+namespace CoreBind {
 
 ////// ResourceLoader //////
 
@@ -210,7 +210,78 @@ void ResourceSaver::_bind_methods() {
 	BIND_BITFIELD_FLAG(FLAG_REPLACE_SUBRESOURCE_PATHS);
 }
 
+////// Logger ///////
+
+void Logger::_bind_methods() {
+	GDVIRTUAL_BIND(_log_error, "function", "file", "line", "code", "rationale", "editor_notify", "error_type", "script_backtraces");
+	GDVIRTUAL_BIND(_log_message, "message", "error");
+	BIND_ENUM_CONSTANT(ERROR_TYPE_ERROR);
+	BIND_ENUM_CONSTANT(ERROR_TYPE_WARNING);
+	BIND_ENUM_CONSTANT(ERROR_TYPE_SCRIPT);
+	BIND_ENUM_CONSTANT(ERROR_TYPE_SHADER);
+}
+
+void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const TypedArray<ScriptBacktrace> &p_script_backtraces) {
+	GDVIRTUAL_CALL(_log_error, String::utf8(p_function), String::utf8(p_file), p_line, String::utf8(p_code), String::utf8(p_rationale), p_editor_notify, p_type, p_script_backtraces);
+}
+
+void Logger::log_message(const String &p_text, bool p_error) {
+	GDVIRTUAL_CALL(_log_message, p_text, p_error);
+}
+
 ////// OS //////
+
+void OS::LoggerBind::logv(const char *p_format, va_list p_list, bool p_err) {
+	if (!should_log(p_err) || is_logging) {
+		return;
+	}
+
+	is_logging = true;
+
+	constexpr int static_buf_size = 1024;
+	char static_buf[static_buf_size] = { '\0' };
+	char *buf = static_buf;
+	va_list list_copy;
+	va_copy(list_copy, p_list);
+	int len = vsnprintf(buf, static_buf_size, p_format, p_list);
+	if (len >= static_buf_size) {
+		buf = (char *)Memory::alloc_static(len + 1);
+		vsnprintf(buf, len + 1, p_format, list_copy);
+	}
+	va_end(list_copy);
+
+	String str;
+	str.append_utf8(buf, len);
+	for (Ref<CoreBind::Logger> &logger : loggers) {
+		logger->log_message(str, p_err);
+	}
+
+	if (len >= static_buf_size) {
+		Memory::free_static(buf);
+	}
+
+	is_logging = false;
+}
+
+void OS::LoggerBind::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
+	if (!should_log(true) || is_logging) {
+		return;
+	}
+
+	TypedArray<ScriptBacktrace> backtraces;
+	backtraces.resize(p_script_backtraces.size());
+	for (int i = 0; i < p_script_backtraces.size(); i++) {
+		backtraces[i] = p_script_backtraces[i];
+	}
+
+	is_logging = true;
+
+	for (Ref<CoreBind::Logger> &logger : loggers) {
+		logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, CoreBind::Logger::ErrorType(p_type), backtraces);
+	}
+
+	is_logging = false;
+}
 
 PackedByteArray OS::get_entropy(int p_bytes) {
 	PackedByteArray pba;
@@ -466,8 +537,8 @@ bool OS::is_restart_on_exit_set() const {
 Vector<String> OS::get_restart_on_exit_arguments() const {
 	List<String> args = ::OS::get_singleton()->get_restart_on_exit_arguments();
 	Vector<String> args_vector;
-	for (List<String>::Element *E = args.front(); E; E = E->next()) {
-		args_vector.push_back(E->get());
+	for (const String &arg : args) {
+		args_vector.push_back(arg);
 	}
 
 	return args_vector;
@@ -628,6 +699,24 @@ String OS::get_unique_id() const {
 	return ::OS::get_singleton()->get_unique_id();
 }
 
+void OS::add_logger(const Ref<Logger> &p_logger) {
+	ERR_FAIL_COND(p_logger.is_null());
+
+	if (!logger_bind) {
+		logger_bind = memnew(LoggerBind);
+		::OS::get_singleton()->add_logger(logger_bind);
+	}
+
+	ERR_FAIL_COND_MSG(logger_bind->loggers.find(p_logger) != -1, "Could not add logger, as it has already been added.");
+	logger_bind->loggers.push_back(p_logger);
+}
+
+void OS::remove_logger(const Ref<Logger> &p_logger) {
+	ERR_FAIL_COND(p_logger.is_null());
+	ERR_FAIL_COND_MSG(!logger_bind || logger_bind->loggers.find(p_logger) == -1, "Could not remove logger, as it hasn't been added.");
+	logger_bind->loggers.erase(p_logger);
+}
+
 OS *OS::singleton = nullptr;
 
 void OS::_bind_methods() {
@@ -734,6 +823,9 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &OS::get_granted_permissions);
 	ClassDB::bind_method(D_METHOD("revoke_granted_permissions"), &OS::revoke_granted_permissions);
 
+	ClassDB::bind_method(D_METHOD("add_logger", "logger"), &OS::add_logger);
+	ClassDB::bind_method(D_METHOD("remove_logger", "logger"), &OS::remove_logger);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
@@ -762,6 +854,20 @@ void OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(STD_HANDLE_FILE);
 	BIND_ENUM_CONSTANT(STD_HANDLE_PIPE);
 	BIND_ENUM_CONSTANT(STD_HANDLE_UNKNOWN);
+}
+
+OS::OS() {
+	singleton = this;
+}
+
+OS::~OS() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+
+	if (logger_bind) {
+		logger_bind->clear();
+	}
 }
 
 ////// Geometry2D //////
@@ -806,13 +912,11 @@ Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p
 }
 
 Vector2 Geometry2D::get_closest_point_to_segment(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-	Vector2 s[2] = { p_a, p_b };
-	return ::Geometry2D::get_closest_point_to_segment(p_point, s);
+	return ::Geometry2D::get_closest_point_to_segment(p_point, p_a, p_b);
 }
 
 Vector2 Geometry2D::get_closest_point_to_segment_uncapped(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-	Vector2 s[2] = { p_a, p_b };
-	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, s);
+	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
 bool Geometry2D::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
@@ -1069,13 +1173,11 @@ Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p
 }
 
 Vector3 Geometry3D::get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return ::Geometry3D::get_closest_point_to_segment(p_point, s);
+	return ::Geometry3D::get_closest_point_to_segment(p_point, p_a, p_b);
 }
 
 Vector3 Geometry3D::get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, s);
+	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
 Vector3 Geometry3D::get_triangle_barycentric_coords(const Vector3 &p_point, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
@@ -1241,6 +1343,9 @@ Vector<uint8_t> Marshalls::base64_to_raw(const String &p_str) {
 }
 
 String Marshalls::utf8_to_base64(const String &p_str) {
+	if (p_str.is_empty()) {
+		return String();
+	}
 	CharString cstr = p_str.utf8();
 	String ret = CryptoCore::b64_encode_str((unsigned char *)cstr.get_data(), cstr.length());
 	ERR_FAIL_COND_V(ret.is_empty(), ret);
@@ -1340,6 +1445,7 @@ void Thread::_start_func(void *ud) {
 	// When the call returns, we will reference the thread again if possible.
 	ObjectID th_instance_id = t->get_instance_id();
 	Callable target_callable = t->target_callable;
+	String id = t->get_id();
 	t = Ref<Thread>();
 
 	Callable::CallError ce;
@@ -1347,7 +1453,7 @@ void Thread::_start_func(void *ud) {
 	target_callable.callp(nullptr, 0, ret, ce);
 	// If script properly kept a reference to the thread, we should be able to re-reference it now
 	// (well, or if the call failed, since we had to break chains anyway because the outcome isn't known upfront).
-	t = Ref<Thread>(ObjectDB::get_instance(th_instance_id));
+	t = ObjectDB::get_ref<Thread>(th_instance_id);
 	if (t.is_valid()) {
 		t->ret = ret;
 		t->running.clear();
@@ -1357,7 +1463,7 @@ void Thread::_start_func(void *ud) {
 	}
 
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_MSG(vformat("Could not call function '%s' to start thread %d: %s.", func_name, t->get_id(), Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce)));
+		ERR_FAIL_MSG(vformat("Could not call function '%s' to start thread %s: %s.", func_name, id, Variant::get_callable_error_text(target_callable, nullptr, 0, ce)));
 	}
 }
 
@@ -1419,7 +1525,7 @@ void Thread::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRIORITY_HIGH);
 }
 
-namespace special {
+namespace Special {
 
 ////// ClassDB //////
 
@@ -1438,8 +1544,8 @@ PackedStringArray ClassDB::get_class_list() const {
 }
 
 PackedStringArray ClassDB::get_inheriters_from_class(const StringName &p_class) const {
-	List<StringName> classes;
-	::ClassDB::get_inheriters_from_class(p_class, &classes);
+	LocalVector<StringName> classes;
+	::ClassDB::get_inheriters_from_class(p_class, classes);
 
 	PackedStringArray ret;
 	ret.resize(classes.size());
@@ -1746,7 +1852,7 @@ void ClassDB::_bind_methods() {
 	BIND_ENUM_CONSTANT(API_NONE);
 }
 
-} // namespace special
+} // namespace Special
 
 ////// Engine //////
 
@@ -1876,8 +1982,8 @@ Vector<String> Engine::get_singleton_list() const {
 	List<::Engine::Singleton> singletons;
 	::Engine::get_singleton()->get_singletons(&singletons);
 	Vector<String> ret;
-	for (List<::Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
-		ret.push_back(E->get().name);
+	for (const ::Engine::Singleton &E : singletons) {
+		ret.push_back(E.name);
 	}
 	return ret;
 }
@@ -1896,6 +2002,16 @@ int Engine::get_script_language_count() {
 
 ScriptLanguage *Engine::get_script_language(int p_index) const {
 	return ScriptServer::get_language(p_index);
+}
+
+TypedArray<ScriptBacktrace> Engine::capture_script_backtraces(bool p_include_variables) const {
+	Vector<Ref<ScriptBacktrace>> backtraces = ScriptServer::capture_script_backtraces(p_include_variables);
+	TypedArray<ScriptBacktrace> result;
+	result.resize(backtraces.size());
+	for (int i = 0; i < backtraces.size(); i++) {
+		result[i] = backtraces[i];
+	}
+	return result;
 }
 
 void Engine::set_editor_hint(bool p_enabled) {
@@ -1985,6 +2101,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_script_language", "language"), &Engine::unregister_script_language);
 	ClassDB::bind_method(D_METHOD("get_script_language_count"), &Engine::get_script_language_count);
 	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
+	ClassDB::bind_method(D_METHOD("capture_script_backtraces", "include_variables"), &Engine::capture_script_backtraces, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_embedded_in_editor"), &Engine::is_embedded_in_editor);
@@ -2190,4 +2307,4 @@ void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_breakpoints"), &EngineDebugger::clear_breakpoints);
 }
 
-} // namespace core_bind
+} // namespace CoreBind

@@ -290,6 +290,32 @@ public:
 	Vector3 get_hand_joint_angular_velocity(Hand p_hand, HandJoints p_joint) const;
 
 	virtual RID get_vrs_texture() override;
+	virtual VRSTextureFormat get_vrs_texture_format() override;
+
+	// Performance settings.
+	enum PerfSettingsLevel {
+		PERF_SETTINGS_LEVEL_POWER_SAVINGS,
+		PERF_SETTINGS_LEVEL_SUSTAINED_LOW,
+		PERF_SETTINGS_LEVEL_SUSTAINED_HIGH,
+		PERF_SETTINGS_LEVEL_BOOST,
+	};
+
+	enum PerfSettingsSubDomain {
+		PERF_SETTINGS_SUB_DOMAIN_COMPOSITING,
+		PERF_SETTINGS_SUB_DOMAIN_RENDERING,
+		PERF_SETTINGS_SUB_DOMAIN_THERMAL,
+	};
+
+	enum PerfSettingsNotificationLevel {
+		PERF_SETTINGS_NOTIF_LEVEL_NORMAL,
+		PERF_SETTINGS_NOTIF_LEVEL_WARNING,
+		PERF_SETTINGS_NOTIF_LEVEL_IMPAIRED,
+	};
+
+	void set_cpu_level(PerfSettingsLevel p_level);
+	void set_gpu_level(PerfSettingsLevel p_level);
+	void on_cpu_level_changed(PerfSettingsSubDomain p_sub_domain, PerfSettingsNotificationLevel p_from_level, PerfSettingsNotificationLevel p_to_level);
+	void on_gpu_level_changed(PerfSettingsSubDomain p_sub_domain, PerfSettingsNotificationLevel p_from_level, PerfSettingsNotificationLevel p_to_level);
 
 	OpenXRInterface();
 	~OpenXRInterface();
@@ -299,4 +325,7 @@ VARIANT_ENUM_CAST(OpenXRInterface::Hand)
 VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange)
 VARIANT_ENUM_CAST(OpenXRInterface::HandTrackedSource)
 VARIANT_ENUM_CAST(OpenXRInterface::HandJoints)
+VARIANT_ENUM_CAST(OpenXRInterface::PerfSettingsLevel)
+VARIANT_ENUM_CAST(OpenXRInterface::PerfSettingsSubDomain)
+VARIANT_ENUM_CAST(OpenXRInterface::PerfSettingsNotificationLevel)
 VARIANT_BITFIELD_CAST(OpenXRInterface::HandJointFlags)

@@ -6,6 +6,7 @@
 	<description>
 		A color represented in RGBA format by a red ([member r]), green ([member g]), blue ([member b]), and alpha ([member a]) component. Each component is a 32-bit floating-point value, usually ranging from [code]0.0[/code] to [code]1.0[/code]. Some properties (such as [member CanvasItem.modulate]) may support values greater than [code]1.0[/code], for overbright or HDR (High Dynamic Range) colors.
 		Colors can be created in various ways: By the various [Color] constructors, by static methods such as [method from_hsv], and by using a name from the set of standardized colors based on [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url] with the addition of [constant TRANSPARENT]. GDScript also provides [method @GDScript.Color8], which uses integers from [code]0[/code] to [code]255[/code] and doesn't support overbright colors.
+		Color data may be stored in many color spaces and encodings. The [method srgb_to_linear] and [method linear_to_srgb] methods can convert between nonlinear sRGB encoding and linear RGB encoding.
 		[b]Note:[/b] In a boolean context, a Color will evaluate to [code]false[/code] if it is equal to [code]Color(0, 0, 0, 1)[/code] (opaque black). Otherwise, a Color will always evaluate to [code]true[/code].
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/color_constants.png]Color constants cheatsheet[/url]
 	</description>
@@ -364,12 +365,14 @@
 			<return type="Color" />
 			<description>
 				Returns the color converted to the [url=https://en.wikipedia.org/wiki/SRGB]sRGB[/url] color space. This method assumes the original color is in the linear color space. See also [method srgb_to_linear] which performs the opposite operation.
+				[b]Note:[/b] The color's [member a]lpha channel is not affected. The alpha channel is always stored with linear encoding, regardless of the color space of the other color channels.
 			</description>
 		</method>
 		<method name="srgb_to_linear" qualifiers="const">
 			<return type="Color" />
 			<description>
 				Returns the color converted to the linear color space. This method assumes the original color already is in the sRGB color space. See also [method linear_to_srgb] which performs the opposite operation.
+				[b]Note:[/b] The color's [member a]lpha channel is not affected. The alpha channel is always stored with linear encoding, regardless of the color space of the other color channels.
 			</description>
 		</method>
 		<method name="to_abgr32" qualifiers="const">
@@ -492,6 +495,7 @@
 	<members>
 		<member name="a" type="float" setter="" getter="" default="1.0">
 			The color's alpha component, typically on the range of 0 to 1. A value of 0 means that the color is fully transparent. A value of 1 means that the color is fully opaque.
+			[b]Note:[/b] The alpha channel is always stored with linear encoding, regardless of the color space of the other color channels. The [method linear_to_srgb] and [method srgb_to_linear] methods do not affect the alpha channel.
 		</member>
 		<member name="a8" type="int" setter="" getter="" default="255">
 			Wrapper for [member a] that uses the range 0 to 255, instead of 0 to 1.

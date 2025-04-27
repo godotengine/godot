@@ -19,7 +19,7 @@
 			<return type="bool" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns [code]true[/code] if the all child [SpringBoneCollision3D]s are contained in the collision list at [param index] in the settings.
+				Returns [code]true[/code] if all child [SpringBoneCollision3D]s are contained in the collision list at [param index] in the settings.
 			</description>
 		</method>
 		<method name="clear_collisions">
@@ -378,8 +378,8 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If sets [param enabled] to [code]true[/code], the all child [SpringBoneCollision3D]s are collided and [method set_exclude_collision_path] is enabled as an exclusion list at [param index] in the settings.
-				If sets [param enabled] to [code]false[/code], you need to manually register all valid collisions with [method set_collision_path].
+				If [param enabled] is [code]true[/code], all child [SpringBoneCollision3D]s are colliding and [method set_exclude_collision_path] is enabled as an exclusion list at [param index] in the settings.
+				If [param enabled] is [code]false[/code], you need to manually register all valid collisions with [method set_collision_path].
 			</description>
 		</method>
 		<method name="set_end_bone">
@@ -594,6 +594,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="external_force" type="Vector3" setter="set_external_force" getter="get_external_force" default="Vector3(0, 0, 0)">
+			The constant force that always affected bones. It is equal to the result when the parent [Skeleton3D] moves at this speed in the opposite direction.
+			This is useful for effects such as wind and anti-gravity.
+		</member>
 		<member name="setting_count" type="int" setter="set_setting_count" getter="get_setting_count" default="0">
 			The number of settings.
 		</member>

@@ -972,6 +972,3 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 		memdelete(prof_skeleton);
 	}
 }
-
-PostImportPluginSkeletonRestFixer::PostImportPluginSkeletonRestFixer() {
-}

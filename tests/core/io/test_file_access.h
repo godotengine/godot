@@ -196,6 +196,28 @@ TEST_CASE("[FileAccess] Get/Store floating point half precision values") {
 
 		DirAccess::remove_file_or_error(file_path_new);
 	}
+
+	SUBCASE("4096 bytes fastlz compressed") {
+		const String file_path = TestUtils::get_data_path("exactly_4096_bytes_fastlz.bin");
+
+		Ref<FileAccess> f = FileAccess::open_compressed(file_path, FileAccess::READ, FileAccess::COMPRESSION_FASTLZ);
+		const Vector<uint8_t> full_data = f->get_buffer(4096 * 2);
+		CHECK(full_data.size() == 4096);
+		CHECK(f->eof_reached());
+
+		// Data should be empty.
+		PackedByteArray reference;
+		reference.resize_zeroed(4096);
+		CHECK(reference == full_data);
+
+		f->seek(0);
+		const Vector<uint8_t> partial_data = f->get_buffer(4095);
+		CHECK(partial_data.size() == 4095);
+		CHECK(!f->eof_reached());
+
+		reference.resize_zeroed(4095);
+		CHECK(reference == partial_data);
+	}
 }
 
 } // namespace TestFileAccess

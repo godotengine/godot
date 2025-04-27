@@ -65,13 +65,14 @@
 # Bintang AP <prep77070@gmail.com>, 2024.
 # "Achmad Izzuddin (Adin)" <achmadizzuddin999@gmail.com>, 2024.
 # meghundul <meghundul@gmail.com>, 2025.
+# Fatih Faisal Faruk <honeylimecraft@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-23 17:31+0000\n"
-"Last-Translator: meghundul <meghundul@gmail.com>\n"
+"PO-Revision-Date: 2025-03-18 23:08+0000\n"
+"Last-Translator: Fatih Faisal Faruk <honeylimecraft@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -79,7 +80,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "Utas Utama"
@@ -436,6 +437,9 @@ msgstr "Tampilkan Tersembunyi"
 
 msgid "Swap Input Direction"
 msgstr "Tukar Arah Masukan"
+
+msgid "Start Unicode Character Input"
+msgstr "Mulai Input Karakter Unicode"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Masukkan tidak sah %d (tidak lulus) dalam ekspresi"
@@ -2611,6 +2615,9 @@ msgstr "Impor Profil"
 msgid "Manage Editor Feature Profiles"
 msgstr "Kelola Editor Profil Fitur"
 
+msgid "Initializing plugins..."
+msgstr "Menginisialisasi plugin..."
+
 msgid "Restart"
 msgstr "Mulai Ulang"
 
@@ -2632,6 +2639,9 @@ msgstr "Mengimpor ulang Aset"
 
 msgid "Import resources of type: %s"
 msgstr "Mengimpor sumber daya dengan tipe: %s"
+
+msgid "Finalizing Asset Import..."
+msgstr "Menyelesaikan impor asset..."
 
 msgid "This method supports a variable number of arguments."
 msgstr "Metode ini mendukung jumlah argumen yang bervariasi."
@@ -2916,6 +2926,12 @@ msgstr "Anggota ini ditandai sebagai tidak digunakan lagi."
 msgid "This member is marked as experimental."
 msgstr "Anggota ini ditandai sebagai eksperimental."
 
+msgid "Make this property be put back at its original place."
+msgstr "Buat properti ini diletakkan kembali di posisi semula."
+
+msgid "Make this property be placed at the top for all objects of this class."
+msgstr "Buat properti ini diletakkan di atas untuk semua objek di kelas ini."
+
 msgid "Pin Value"
 msgstr "Nilai Pin"
 
@@ -3103,6 +3119,9 @@ msgstr "Inspektur Sumber Shader Asli"
 msgid "Unnamed Project"
 msgstr "Proyek Tanpa Nama"
 
+msgid "Recovery Mode is enabled. Editor functionality has been restricted."
+msgstr "Mode pemulihan diaktifkan. Fungsionalitas editor dibatasi."
+
 msgid ""
 "Spins when the editor window redraws.\n"
 "Update Continuously is enabled, which can increase power usage. Click to "
@@ -3234,6 +3253,9 @@ msgstr ""
 
 msgid "Save Scene As..."
 msgstr "Simpan Adegan Sebagai..."
+
+msgid "Pack Project as ZIP..."
+msgstr "Bungkus proyek sebagai ZIP..."
 
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "Tidak bisa membatalkan ketika tombol mouse ditekan."
@@ -4017,8 +4039,14 @@ msgstr "Gagal untuk ekstrak biner tipis."
 msgid "Invalid binary format."
 msgstr "Format biner tidak valid."
 
+msgid "Already signed!"
+msgstr "Sudah ditandai!"
+
 msgid "Failed to create _CodeSignature subfolder."
 msgstr "Gagal membuat subfolder _CodeSignature."
+
+msgid "Can't resize signature load command."
+msgstr "Tidak bisa mengubah signatur komando load."
 
 msgid "Failed to create fat binary."
 msgstr "Gagal membuat biner tebal."

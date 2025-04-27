@@ -5,6 +5,18 @@ respective folder names. Use two empty lines to separate categories for
 readability.
 
 
+## accesskit
+
+- Upstream: https://github.com/AccessKit/accesskit-c
+- Version: 0.15.1 (0d1da94a33708041b07c61eb702c67cfa3a5f95b, 2025)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `accesskit.h`
+- `LICENSE-MIT`
+
+
 ## amd-fsr
 
 - Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR
@@ -187,7 +199,7 @@ Files extracted from upstream source:
 ## embree
 
 - Upstream: https://github.com/embree/embree
-- Version: 4.3.1 (daa8de0e714e18ad5e5c9841b67c1950d9c91c51, 2024)
+- Version: 4.4.0 (ff9381774dc99fea81a932ad276677aad6a3d4dd, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream:
@@ -204,7 +216,6 @@ Patches:
 - `0003-emscripten-nthreads.patch` (GH-69799)
 - `0004-mingw-no-cpuidex.patch` (GH-92488)
 - `0005-mingw-llvm-arm64.patch` (GH-93364)
-- `0006-include-order-dllexport.patch` (GH-94256)
 
 The `modules/raycast/godot_update_embree.py` script can be used to pull the
 relevant files from the latest Embree release and apply patches automatically.
@@ -420,13 +431,13 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 76.1 (8eca245c7484ac6cc179e3e5f7c1ea7680810f39, 2024)
+- Version: 77.1 (457157a92aa053e632cc7fcfd0e12f8a943b2d11, 2025)
 - License: Unicode
 
 Files extracted from upstream source:
 
 - The `common` folder
-- `scriptset.*`, `ucln_in.*`, `uspoof.cpp"` and `uspoof_impl.cpp` from the `i18n` folder
+- `scriptset.*`, `ucln_in.*`, `uspoof.cpp` and `uspoof_impl.*` from the `i18n` folder
 - `uspoof.h` from the `i18n/unicode` folder
 - `LICENSE`
 
@@ -448,7 +459,7 @@ Files generated from upstream source:
 ## jolt_physics
 
 - Upstream: https://github.com/jrouwe/JoltPhysics
-- Version: 5.2.1 (f094082aa2bbfcbebc725dbe8b8f65c7d5152886, 2024)
+- Version: 5.3.0 (0373ec0dd762e4bc2f6acdb08371ee84fa23c6db, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -530,14 +541,13 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.45 (51f5bd68b9b806d2c92b4318164d28b49357da31, 2024)
+- Version: 1.6.47 (872555f4ba910252783af1507f9e7fe1653be252, 2025)
 - License: libpng/zlib
 
 Files extracted from upstream source:
 
-- All `.c` and `.h` files of the main directory, apart from `example.c` and
-  `pngtest.c`
-- `arm/` (minus `filter_neon.S`), `intel/`, `loongarch/`, and `powerpc/` (minus `.editorconfig`) folders
+- All `.c` and `.h` files of the main directory, apart from `example.c` and `pngtest.c`
+- `arm/`, `intel/`, `loongarch/`, and `powerpc/` folders, except `arm/filter_neon.S` and `.editorconfig` files
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
 - `LICENSE`
 
@@ -571,7 +581,7 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.4.0 (845d5476a866141ba35ac133f856fa62f0b7445f, 2024)
+- Version: 1.5.0 (a4d7a715337ded4451fec90ff8ce79728e04126c, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -606,7 +616,7 @@ File extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 3.6.2 (107ea89daaefb9867ea9121002fbbdf926780e98, 2024)
+- Version: 3.6.3 (22098d41c6620ce07cf8a0134d37302355e1e5ef, 2025)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -617,7 +627,7 @@ File extracted from upstream release tarball:
 - From `library/` to `thirdparty/mbedtls/library/`:
   - All `.c` and `.h` files
   - Except `bignum_mod.c`, `block_cipher.c`, `ecp_curves_new.c`, `lmots.c`,
-  `lms.c`
+  `lms.c`, `bignum_core_invasive.h`
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core
@@ -627,7 +637,6 @@ File extracted from upstream release tarball:
 Patches:
 
 - `0001-msvc-2019-psa-redeclaration.patch` (GH-90535)
-- `0002-pr-9981-defragment-incoming-tls-handshake-messages.patch` (GH-103247)
 
 
 ## meshoptimizer
@@ -854,7 +863,7 @@ Patches:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.43 (3864abdb713f78831dd12d898ab31bbb0fa630b6, 2024)
+- Version: 10.45 (2dce7761b1831fd3f82a9c2bd5476259d945da4d, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -864,8 +873,8 @@ Files extracted from upstream source:
 - `src/pcre2_jit_match.c`
 - `src/pcre2_jit_misc.c`
 - `src/pcre2_ucptables.c`
-- `src/sljit/`
-- `AUTHORS` and `LICENCE`
+- `deps/sljit/sljit_src`
+- `AUTHORS.md` and `LICENCE.md`
 
 
 ## recastnavigation
@@ -945,7 +954,7 @@ Patches:
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.15.10 (bca94d244c67f573c6eddc27d783d9a6b1ef2f1b, 2025)
+- Version: 0.15.12 (91bd6f35b94e92abfc1a320632e66cd124943524, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -956,6 +965,7 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
+- `0002-png-explicit-variable-scope.patch` (GH-105093)
 
 
 ## tinyexr
@@ -976,7 +986,7 @@ Patches:
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.17.1 (6ca5309972f03625e6990f3084ff4c1cc55a09b6, 2025)
+- Version: 0.18.0 (729ab835444f5f229e5f7cff332692ce6c00415d, 2025)
 - License: MIT
 
 Files extracted from upstream source:

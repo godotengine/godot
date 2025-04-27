@@ -74,9 +74,7 @@ if (__builtin_mul_overflow(a, b, &m)) return TRUE;
 #else
 INT64_OR_DOUBLE m;
 
-#ifdef PCRE2_DEBUG
-if (a < 0 || b < 0) abort();
-#endif
+PCRE2_ASSERT(a >= 0 && b >= 0);
 
 m = (INT64_OR_DOUBLE)a * (INT64_OR_DOUBLE)b;
 
@@ -93,4 +91,4 @@ if (m > PCRE2_SIZE_MAX) return TRUE;
 return FALSE;
 }
 
-/* End of pcre_chkdint.c */
+/* End of pcre2_chkdint.c */

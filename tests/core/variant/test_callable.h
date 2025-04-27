@@ -154,11 +154,7 @@ public:
 	}
 
 	static String get_output(const Callable &p_callable) {
-		Array effective_args;
-		effective_args.push_back(7);
-		effective_args.push_back(8);
-		effective_args.push_back(9);
-
+		Array effective_args = { 7, 8, 9 };
 		effective_args.resize(3 - p_callable.get_unbound_arguments_count());
 		effective_args.append_array(p_callable.get_bound_arguments());
 

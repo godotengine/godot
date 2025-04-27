@@ -46,9 +46,6 @@ protected:
 	virtual Variant _get_polygon(int p_idx) const override;
 	virtual void _set_polygon(int p_idx, const Variant &p_polygon) const override;
 	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) override;
-
-public:
-	Line2DEditor();
 };
 
 class Line2DEditorPlugin : public AbstractPolygon2DEditorPlugin {

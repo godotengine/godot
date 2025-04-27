@@ -51,6 +51,4 @@ public:
 	EditorInterface *get_editor_interface() const;
 
 	virtual void run();
-
-	EditorScript() {}
 };

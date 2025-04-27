@@ -193,6 +193,7 @@ public:
 	List<String> get_input_presets() const { return input_presets; }
 
 	Variant get_setting_with_override(const StringName &p_name) const;
+	Variant get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features) const;
 
 	bool is_using_datapack() const;
 	bool is_project_loaded() const;

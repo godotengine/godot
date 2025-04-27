@@ -178,6 +178,23 @@ TEST_CASE("[LocalVector] Remove Unordered.") {
 	CHECK(vector.size() == 0);
 }
 
+TEST_CASE("[LocalVector] Erase Unordered.") {
+	LocalVector<int> vector;
+	vector.push_back(1);
+	vector.push_back(3);
+	vector.push_back(0);
+	vector.push_back(2);
+	vector.push_back(4);
+
+	CHECK(vector.find(1) == 0);
+
+	vector.erase_unordered(1);
+
+	CHECK(vector.find(1) == -1);
+	CHECK(vector.size() == 4);
+	CHECK(vector[0] == 4);
+}
+
 TEST_CASE("[LocalVector] Erase.") {
 	LocalVector<int> vector;
 	vector.push_back(1);

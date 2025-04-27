@@ -72,8 +72,8 @@ Error ENetConnection::create_host(int p_max_peers, int p_max_channels, int p_in_
 
 void ENetConnection::destroy() {
 	ERR_FAIL_NULL_MSG(host, "Host already destroyed.");
-	for (List<Ref<ENetPacketPeer>>::Element *E = peers.front(); E; E = E->next()) {
-		E->get()->_on_disconnect();
+	for (const Ref<ENetPacketPeer> &peer : peers) {
+		peer->_on_disconnect();
 	}
 	peers.clear();
 	enet_host_destroy(host);
@@ -320,14 +320,10 @@ Error ENetConnection::_create(ENetAddress *p_address, int p_max_peers, int p_max
 }
 
 Array ENetConnection::_service(int p_timeout) {
-	Array out;
 	Event event;
 	Ref<ENetPacketPeer> peer;
 	EventType ret = service(p_timeout, event);
-	out.push_back(ret);
-	out.push_back(event.peer);
-	out.push_back(event.data);
-	out.push_back(event.channel_id);
+	Array out = { ret, event.peer, event.data, event.channel_id };
 	if (event.packet && event.peer.is_valid()) {
 		event.peer->_queue_packet(event.packet);
 	}

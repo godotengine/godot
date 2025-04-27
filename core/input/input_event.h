@@ -208,7 +208,7 @@ public:
 class InputEventMouse : public InputEventWithModifiers {
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
-	BitField<MouseButtonMask> button_mask;
+	BitField<MouseButtonMask> button_mask = MouseButtonMask::NONE;
 
 	Vector2 pos;
 	Vector2 global_pos;

@@ -30,12 +30,10 @@
 
 #pragma once
 
-#include <cstdint>
+#include "core/typedefs.h"
 
 #ifdef THREADS_ENABLED
 
-#include "core/error/error_list.h"
-#include "core/typedefs.h"
 #ifdef DEBUG_ENABLED
 #include "core/error/error_macros.h"
 #endif

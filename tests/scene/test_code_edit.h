@@ -905,8 +905,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_string_delimiters().size() == 2);
 
 			/* Set should override existing, and test multiline */
-			TypedArray<String> delimiters;
-			delimiters.push_back("^^ ^^");
+			TypedArray<String> delimiters = { "^^ ^^" };
 
 			code_edit->set_string_delimiters(delimiters);
 			CHECK_FALSE(code_edit->has_string_delimiter("\""));
@@ -971,8 +970,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_comment_delimiters().size() == 2);
 
 			/* Set should override existing, and test multiline. */
-			TypedArray<String> delimiters;
-			delimiters.push_back("^^ ^^");
+			TypedArray<String> delimiters = { "^^ ^^" };
 
 			code_edit->set_comment_delimiters(delimiters);
 			CHECK_FALSE(code_edit->has_comment_delimiter("\""));
@@ -1770,10 +1768,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		CHECK(code_edit->is_indent_using_spaces());
 
 		/* Only the first char is registered. */
-		TypedArray<String> auto_indent_prefixes;
-		auto_indent_prefixes.push_back("::");
-		auto_indent_prefixes.push_back("s");
-		auto_indent_prefixes.push_back("1");
+		TypedArray<String> auto_indent_prefixes = { "::", "s", "1" };
 		code_edit->set_auto_indent_prefixes(auto_indent_prefixes);
 
 		auto_indent_prefixes = code_edit->get_auto_indent_prefixes();
@@ -3274,6 +3269,47 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 4);
 	}
 
+	SUBCASE("[CodeEdit] folding comments including and/or adjacent to code regions") {
+		code_edit->add_comment_delimiter("#", "", true);
+
+		// Single line comment directly above a code region tag is not foldable.
+		code_edit->set_text("#line0\n#region a\nnothing\n#line3\n#endregion");
+		CHECK_FALSE(code_edit->can_fold_line(0));
+		CHECK_FALSE(code_edit->can_fold_line(3));
+
+		// Comment blocks.
+		// Foldable even when directly below a code region start tag.
+		code_edit->set_text("#line0\n#line1\n#region a\n#line3\n#line4\nnothing\n#endregion");
+		CHECK(code_edit->can_fold_line(3));
+
+		// Doesn't fold beyond region start tag.
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(0, 1), 1);
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(2, 2), 1);
+
+		// Foldable even when directly below a code region end tag.
+		code_edit->set_text("#region a\nnothing\n#line2\n#line3\n#endregion\n#line5\n#line6");
+		CHECK(code_edit->can_fold_line(5));
+
+		// Doesn't fold beyond region end tag.
+		code_edit->fold_line(2);
+		CHECK(code_edit->is_line_folded(2));
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(2, 3), 1);
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(4, 4), 1);
+
+		code_edit->add_comment_delimiter("/*", "*/", false);
+
+		// Multiline comments.
+		// Folds a region tag inside it.
+		code_edit->set_text("/*\nnothing\n#region a\n*/\n#endregion");
+		CHECK(code_edit->can_fold_line(0));
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(0, 3), 1);
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(4, 4), 1);
+	}
+
 	SUBCASE("[CodeEdit] folding carets") {
 		// Folding a line moves all carets that would be hidden.
 		code_edit->set_text("test\n\tline1\n\t\tline 2\n");
@@ -3936,11 +3972,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(code_edit->is_code_completion_enabled());
 
 		/* Set prefixes, single char only, disallow empty. */
-		TypedArray<String> completion_prefixes;
-		completion_prefixes.push_back("");
-		completion_prefixes.push_back(".");
-		completion_prefixes.push_back(".");
-		completion_prefixes.push_back(",,");
+		TypedArray<String> completion_prefixes = { "", ".", ".", ",," };
 
 		ERR_PRINT_OFF;
 		code_edit->set_code_completion_prefixes(completion_prefixes);
@@ -3958,8 +3990,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		SIGNAL_WATCH(code_edit, "code_completion_requested");
 		code_edit->set_code_completion_enabled(true);
 
-		Array signal_args;
-		signal_args.push_back(Array());
+		Array signal_args = { {} };
 
 		/* Force request. */
 		code_edit->request_code_completion();
@@ -3972,8 +4003,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Insert prefix. */
-		TypedArray<String> completion_prefixes;
-		completion_prefixes.push_back(".");
+		TypedArray<String> completion_prefixes = { "." };
 		code_edit->set_code_completion_prefixes(completion_prefixes);
 
 		code_edit->insert_text_at_caret(".");
@@ -4118,10 +4148,10 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 			Point2 caret_pos = code_edit->get_caret_draw_pos();
 			caret_pos.y += code_edit->get_line_height();
-			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::WHEEL_DOWN, 0, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::WHEEL_DOWN, MouseButtonMask::NONE, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 1);
 
-			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::WHEEL_UP, 0, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::WHEEL_UP, MouseButtonMask::NONE, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 			/* Single click selects. */

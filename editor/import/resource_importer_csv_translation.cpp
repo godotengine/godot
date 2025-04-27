@@ -162,6 +162,3 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 
 	return OK;
 }
-
-ResourceImporterCSVTranslation::ResourceImporterCSVTranslation() {
-}

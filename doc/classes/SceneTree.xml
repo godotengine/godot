@@ -58,6 +58,7 @@
 				1. The current scene node is immediately removed from the tree. From that point, [method Node.get_tree] called on the current (outgoing) scene will return [code]null[/code]. [member current_scene] will be [code]null[/code], too, because the new scene is not available yet.
 				2. At the end of the frame, the formerly current scene, already removed from the tree, will be deleted (freed from memory) and then the new scene will be instantiated and added to the tree. [method Node.get_tree] and [member current_scene] will be back to working as usual.
 				This ensures that both scenes aren't running at the same time, while still freeing the previous scene in a safe way similar to [method Node.queue_free].
+				If you want to reliably access the new scene, await the [signal scene_changed] signal.
 			</description>
 		</method>
 		<method name="create_timer">
@@ -149,6 +150,18 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a node added to the given group [param name] exists in the tree.
+			</description>
+		</method>
+		<method name="is_accessibility_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if accessibility features are enabled, and accessibility information updates are actively processed.
+			</description>
+		</method>
+		<method name="is_accessibility_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if accessibility features are supported by the OS and enabled in project settings.
 			</description>
 		</method>
 		<method name="notify_group">
@@ -265,8 +278,9 @@
 			- Depending on each node's [member Node.process_mode], their [method Node._process], [method Node._physics_process] and [method Node._input] callback methods may not called anymore.
 		</member>
 		<member name="physics_interpolation" type="bool" setter="set_physics_interpolation_enabled" getter="is_physics_interpolation_enabled" default="false">
-			If [code]true[/code], the renderer will interpolate the transforms of physics objects between the last two transforms, so that smooth motion is seen even when physics ticks do not coincide with rendered frames.
+			If [code]true[/code], the renderer will interpolate the transforms of objects (both physics and non-physics) between the last two transforms, so that smooth motion is seen even when physics ticks do not coincide with rendered frames.
 			The default value of this property is controlled by [member ProjectSettings.physics/common/physics_interpolation].
+			[b]Note:[/b] Although this is a global setting, finer control of individual branches of the [SceneTree] is possible using [member Node.physics_interpolation_mode].
 		</member>
 		<member name="quit_on_go_back" type="bool" setter="set_quit_on_go_back" getter="is_quit_on_go_back" default="true">
 			If [code]true[/code], the application quits automatically when navigating back (e.g. using the system "Back" button on Android).
@@ -310,6 +324,17 @@
 		<signal name="process_frame">
 			<description>
 				Emitted immediately before [method Node._process] is called on every node in this tree.
+			</description>
+		</signal>
+		<signal name="scene_changed">
+			<description>
+				Emitted after the new scene is added to scene tree and initialized. Can be used to reliably access [member current_scene] when changing scenes.
+				[codeblock]
+				# This code should be inside an autoload.
+				get_tree().change_scene_to_file(other_scene_path)
+				await get_tree().scene_changed
+				print(get_tree().current_scene) # Prints the new scene.
+				[/codeblock]
 			</description>
 		</signal>
 		<signal name="tree_changed">

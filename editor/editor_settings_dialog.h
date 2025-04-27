@@ -136,5 +136,4 @@ public:
 	static void update_navigation_preset();
 
 	EditorSettingsDialog();
-	~EditorSettingsDialog();
 };

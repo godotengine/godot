@@ -15,12 +15,14 @@ namespace embree
 
   public:
     UserGeometry (Device* device, unsigned int items = 0, unsigned int numTimeSteps = 1);
-    virtual void setMask (unsigned mask);
-    virtual void setBoundsFunction (RTCBoundsFunction bounds, void* userPtr);
-    virtual void setIntersectFunctionN (RTCIntersectFunctionN intersect);
-    virtual void setOccludedFunctionN (RTCOccludedFunctionN occluded);
-    virtual void build() {}
-    virtual void addElementsToCount (GeometryCounts & counts) const;
+    virtual void setMask (unsigned mask) override;
+    virtual void setBoundsFunction (RTCBoundsFunction bounds, void* userPtr) override;
+    virtual void setIntersectFunctionN (RTCIntersectFunctionN intersect) override;
+    virtual void setOccludedFunctionN (RTCOccludedFunctionN occluded) override;
+    virtual void build() override {}
+    virtual void addElementsToCount (GeometryCounts & counts) const override;
+    virtual size_t getGeometryDataDeviceByteSize() const override;
+    virtual void convertToDeviceRepresentation(size_t offset, char* data_host, char* data_device) const override;
 
     __forceinline float projectedPrimitiveArea(const size_t i) const { return 0.0f; }
   };

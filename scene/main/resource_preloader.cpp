@@ -67,9 +67,7 @@ Array ResourcePreloader::_get_resources() const {
 		i++;
 	}
 
-	Array res;
-	res.push_back(names);
-	res.push_back(arr);
+	Array res = { names, arr };
 	return res;
 }
 

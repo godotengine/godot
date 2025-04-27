@@ -33,7 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "scene/2d/navigation_region_2d.h"
+#include "scene/2d/navigation/navigation_region_2d.h"
 #include "scene/gui/dialogs.h"
 
 Ref<NavigationPolygon> NavigationPolygonEditor::_ensure_navpoly() const {
@@ -158,6 +158,7 @@ NavigationPolygonEditor::NavigationPolygonEditor() {
 	button_reset->connect(SceneStringName(pressed), callable_mp(this, &NavigationPolygonEditor::_clear_pressed));
 
 	bake_info = memnew(Label);
+	bake_info->set_focus_mode(FOCUS_ACCESSIBILITY);
 	bake_hbox->add_child(bake_info);
 
 	rebake_timer = memnew(Timer);

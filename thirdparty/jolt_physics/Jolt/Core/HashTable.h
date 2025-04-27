@@ -26,10 +26,10 @@ private:
 	class IteratorBase
 	{
 	public:
-        /// Properties
+		/// Properties
 		using difference_type = typename Table::difference_type;
-        using value_type = typename Table::value_type;
-        using iterator_category = std::forward_iterator_tag;
+		using value_type = typename Table::value_type;
+		using iterator_category = std::forward_iterator_tag;
 
 		/// Copy constructor
 							IteratorBase(const IteratorBase &inRHS) = default;
@@ -179,17 +179,9 @@ private:
 		mSize = inRHS.mSize;
 	}
 
-	/// Grow the table to the next power of 2
-	void					GrowTable()
+	/// Grow the table to a new size
+	void					GrowTable(size_type inNewMaxSize)
 	{
-		// Calculate new size
-		size_type new_max_size = max<size_type>(mMaxSize << 1, 16);
-		if (new_max_size < mMaxSize)
-		{
-			JPH_ASSERT(false, "Overflow in hash table size, can't grow!");
-			return;
-		}
-
 		// Move the old table to a temporary structure
 		size_type old_max_size = mMaxSize;
 		KeyValue *old_data = mData;
@@ -201,7 +193,7 @@ private:
 		mLoadLeft = 0;
 
 		// Allocate new table
-		AllocateTable(new_max_size);
+		AllocateTable(inNewMaxSize);
 
 		// Reset all control bytes
 		memset(mControl, cBucketEmpty, mMaxSize + 15);
@@ -252,7 +244,16 @@ protected:
 			if (num_deleted * cMaxDeletedElementsDenominator > mMaxSize * cMaxDeletedElementsNumerator)
 				rehash(0);
 			else
-				GrowTable();
+			{
+				// Grow by a power of 2
+				size_type new_max_size = max<size_type>(mMaxSize << 1, 16);
+				if (new_max_size < mMaxSize)
+				{
+					JPH_ASSERT(false, "Overflow in hash table size, can't grow!");
+					return false;
+				}
+				GrowTable(new_max_size);
+			}
 		}
 
 		// Split hash into index and control value
@@ -363,9 +364,9 @@ public:
 		using Base = IteratorBase<HashTable, iterator>;
 
 	public:
-        /// Properties
-        using reference = typename Base::value_type &;
-        using pointer = typename Base::value_type *;
+		/// Properties
+		using reference = typename Base::value_type &;
+		using pointer = typename Base::value_type *;
 
 		/// Constructors
 		explicit			iterator(HashTable *inTable) : Base(inTable) { }
@@ -400,9 +401,9 @@ public:
 		using Base = IteratorBase<const HashTable, const_iterator>;
 
 	public:
-        /// Properties
-        using reference = const typename Base::value_type &;
-        using pointer = const typename Base::value_type *;
+		/// Properties
+		using reference = const typename Base::value_type &;
+		using pointer = const typename Base::value_type *;
 
 		/// Constructors
 		explicit			const_iterator(const HashTable *inTable) : Base(inTable) { }
@@ -489,11 +490,7 @@ public:
 		if (max_size <= mMaxSize)
 			return;
 
-		// Allocate buffers
-		AllocateTable(max_size);
-
-		// Reset all control bytes
-		memset(mControl, cBucketEmpty, mMaxSize + 15);
+		GrowTable(max_size);
 	}
 
 	/// Destroy the entire hash table
@@ -520,6 +517,27 @@ public:
 			mSize = 0;
 			mMaxSize = 0;
 			mLoadLeft = 0;
+		}
+	}
+
+	/// Destroy the entire hash table but keeps the memory allocated
+	void					ClearAndKeepMemory()
+	{
+		// Destruct elements
+		if constexpr (!std::is_trivially_destructible<KeyValue>())
+			if (!empty())
+				for (size_type i = 0; i < mMaxSize; ++i)
+					if (mControl[i] & cBucketUsed)
+						mData[i].~KeyValue();
+		mSize = 0;
+
+		// If there are elements that are not marked cBucketEmpty, we reset them
+		size_type max_load = sGetMaxLoad(mMaxSize);
+		if (mLoadLeft != max_load)
+		{
+			// Reset all control bytes
+			memset(mControl, cBucketEmpty, mMaxSize + 15);
+			mLoadLeft = max_load;
 		}
 	}
 

@@ -179,8 +179,8 @@ void JointGizmosDrawer::draw_circle(Vector3::Axis p_axis, real_t p_radius, const
 
 	} else {
 		if (p_limit_lower > p_limit_upper) {
-			p_limit_lower = -Math_PI;
-			p_limit_upper = Math_PI;
+			p_limit_lower = -Math::PI;
+			p_limit_upper = Math::PI;
 		}
 
 		const int points = 32;

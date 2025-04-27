@@ -101,5 +101,4 @@ public:
 
 	Button *get_pin() { return pin; }
 	ReplicationEditor();
-	~ReplicationEditor() {}
 };

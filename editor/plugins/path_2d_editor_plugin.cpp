@@ -110,6 +110,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						moving_screen_from = gpoint;
 						return true;
 					} else if (mode == MODE_EDIT || mode == MODE_EDIT_CURVE) {
+						control_points_in_range = 0;
 						// In/out controls can be moved in multiple modes.
 						if (dist_to_p_out < grab_threshold && i < (curve->get_point_count() - 1)) {
 							action = ACTION_MOVING_OUT;
@@ -117,13 +118,17 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 							moving_from = curve->get_point_out(i);
 							moving_screen_from = gpoint;
 							orig_in_length = curve->get_point_in(action_point).length();
-							return true;
-						} else if (dist_to_p_in < grab_threshold && i > 0) {
+							control_points_in_range += 1;
+						}
+						if (dist_to_p_in < grab_threshold && i > 0) {
 							action = ACTION_MOVING_IN;
 							action_point = i;
 							moving_from = curve->get_point_in(i);
 							moving_screen_from = gpoint;
 							orig_out_length = curve->get_point_out(action_point).length();
+							control_points_in_range += 1;
+						}
+						if (control_points_in_range > 0) {
 							return true;
 						}
 					}
@@ -298,6 +303,27 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
+		// When both control points were in range of click,
+		// pick the point that drags the curve outwards.
+		if (control_points_in_range == 2) {
+			control_points_in_range = 0;
+			Ref<Curve2D> curve = node->get_curve();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
+			Point2 relative = xform.affine_inverse().basis_xform(mm->get_relative());
+			real_t angle_in = relative.angle_to(curve->get_point_position(action_point - 1) - curve->get_point_position(action_point));
+			real_t angle_out = relative.angle_to(curve->get_point_position(action_point + 1) - curve->get_point_position(action_point));
+
+			if (Math::abs(angle_in) < Math::abs(angle_out)) {
+				action = ACTION_MOVING_IN;
+				moving_from = curve->get_point_in(action_point);
+				orig_out_length = curve->get_point_out(action_point).length();
+			} else {
+				action = ACTION_MOVING_OUT;
+				moving_from = curve->get_point_out(action_point);
+				orig_in_length = curve->get_point_in(action_point).length();
+			}
+		}
+
 		if (action == ACTION_NONE && mode == MODE_EDIT) {
 			// Handle Edge Follow
 			bool old_edge = on_edge;
@@ -696,6 +722,7 @@ Path2DEditor::Path2DEditor() {
 	curve_edit->set_pressed(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
+	curve_edit->set_accessibility_name(TTRC("Select Points"));
 	curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_EDIT));
 	toolbar->add_child(curve_edit);
 
@@ -704,6 +731,7 @@ Path2DEditor::Path2DEditor() {
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_curve->set_tooltip_text(TTR("Select Control Points (Shift+Drag)"));
+	curve_edit_curve->set_accessibility_name(TTRC("Select Control Points"));
 	curve_edit_curve->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_EDIT_CURVE));
 	toolbar->add_child(curve_edit_curve);
 
@@ -712,6 +740,7 @@ Path2DEditor::Path2DEditor() {
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip_text(TTR("Add Point (in empty space)") + "\n" + TTR("Right Click: Delete Point"));
+	curve_create->set_accessibility_name(TTRC("Add Point"));
 	curve_create->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CREATE));
 	toolbar->add_child(curve_create);
 
@@ -720,6 +749,7 @@ Path2DEditor::Path2DEditor() {
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip_text(TTR("Delete Point"));
+	curve_del->set_accessibility_name(TTRC("Delete Point"));
 	curve_del->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_DELETE));
 	toolbar->add_child(curve_del);
 
@@ -727,6 +757,7 @@ Path2DEditor::Path2DEditor() {
 	curve_close->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip_text(TTR("Close Curve"));
+	curve_close->set_accessibility_name(TTRC("Close Curve"));
 	curve_close->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CLOSE));
 	toolbar->add_child(curve_close);
 
@@ -734,6 +765,7 @@ Path2DEditor::Path2DEditor() {
 	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_clear_points->set_focus_mode(Control::FOCUS_NONE);
 	curve_clear_points->set_tooltip_text(TTR("Clear Points"));
+	curve_clear_points->set_accessibility_name(TTRC("Clear Points"));
 	curve_clear_points->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_confirm_clear_points));
 	toolbar->add_child(curve_clear_points);
 
@@ -786,7 +818,4 @@ Path2DEditorPlugin::Path2DEditorPlugin() {
 	path2d_editor = memnew(Path2DEditor);
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(path2d_editor);
 	path2d_editor->hide();
-}
-
-Path2DEditorPlugin::~Path2DEditorPlugin() {
 }

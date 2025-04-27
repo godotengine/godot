@@ -380,7 +380,13 @@ png_fixed_inches_from_microns(png_const_structrp png_ptr, png_int_32 microns)
     * Notice that this can overflow - a warning is output and 0 is
     * returned.
     */
-   return png_muldiv_warn(png_ptr, microns, 500, 127);
+   png_fixed_point result;
+
+   if (png_muldiv(&result, microns, 500, 127) != 0)
+      return result;
+
+   png_warning(png_ptr, "fixed point overflow ignored");
+   return 0;
 }
 
 png_fixed_point PNGAPI
@@ -390,7 +396,7 @@ png_get_x_offset_inches_fixed(png_const_structrp png_ptr,
    return png_fixed_inches_from_microns(png_ptr,
        png_get_x_offset_microns(png_ptr, info_ptr));
 }
-#endif
+#endif /* FIXED_POINT */
 
 #ifdef PNG_FIXED_POINT_SUPPORTED
 png_fixed_point PNGAPI
@@ -518,44 +524,31 @@ png_get_bKGD(png_const_structrp png_ptr, png_inforp info_ptr,
 #  ifdef PNG_FLOATING_POINT_SUPPORTED
 png_uint_32 PNGAPI
 png_get_cHRM(png_const_structrp png_ptr, png_const_inforp info_ptr,
-    double *white_x, double *white_y, double *red_x, double *red_y,
-    double *green_x, double *green_y, double *blue_x, double *blue_y)
+    double *whitex, double *whitey, double *redx, double *redy,
+    double *greenx, double *greeny, double *bluex, double *bluey)
 {
    png_debug1(1, "in %s retrieval function", "cHRM");
 
-   /* Quiet API change: this code used to only return the end points if a cHRM
-    * chunk was present, but the end points can also come from iCCP or sRGB
-    * chunks, so in 1.6.0 the png_get_ APIs return the end points regardless and
-    * the png_set_ APIs merely check that set end points are mutually
-    * consistent.
-    */
+   /* PNGv3: this just returns the values store from the cHRM, if any. */
    if (png_ptr != NULL && info_ptr != NULL &&
-      (info_ptr->colorspace.flags & PNG_COLORSPACE_HAVE_ENDPOINTS) != 0)
+       (info_ptr->valid & PNG_INFO_cHRM) != 0)
    {
-      if (white_x != NULL)
-         *white_x = png_float(png_ptr,
-             info_ptr->colorspace.end_points_xy.whitex, "cHRM white X");
-      if (white_y != NULL)
-         *white_y = png_float(png_ptr,
-             info_ptr->colorspace.end_points_xy.whitey, "cHRM white Y");
-      if (red_x != NULL)
-         *red_x = png_float(png_ptr, info_ptr->colorspace.end_points_xy.redx,
-             "cHRM red X");
-      if (red_y != NULL)
-         *red_y = png_float(png_ptr, info_ptr->colorspace.end_points_xy.redy,
-             "cHRM red Y");
-      if (green_x != NULL)
-         *green_x = png_float(png_ptr,
-             info_ptr->colorspace.end_points_xy.greenx, "cHRM green X");
-      if (green_y != NULL)
-         *green_y = png_float(png_ptr,
-             info_ptr->colorspace.end_points_xy.greeny, "cHRM green Y");
-      if (blue_x != NULL)
-         *blue_x = png_float(png_ptr, info_ptr->colorspace.end_points_xy.bluex,
-             "cHRM blue X");
-      if (blue_y != NULL)
-         *blue_y = png_float(png_ptr, info_ptr->colorspace.end_points_xy.bluey,
-             "cHRM blue Y");
+      if (whitex != NULL)
+         *whitex = png_float(png_ptr, info_ptr->cHRM.whitex, "cHRM wx");
+      if (whitey != NULL)
+         *whitey = png_float(png_ptr, info_ptr->cHRM.whitey, "cHRM wy");
+      if (redx   != NULL)
+         *redx   = png_float(png_ptr, info_ptr->cHRM.redx,   "cHRM rx");
+      if (redy   != NULL)
+         *redy   = png_float(png_ptr, info_ptr->cHRM.redy,   "cHRM ry");
+      if (greenx != NULL)
+         *greenx = png_float(png_ptr, info_ptr->cHRM.greenx, "cHRM gx");
+      if (greeny != NULL)
+         *greeny = png_float(png_ptr, info_ptr->cHRM.greeny, "cHRM gy");
+      if (bluex  != NULL)
+         *bluex  = png_float(png_ptr, info_ptr->cHRM.bluex,  "cHRM bx");
+      if (bluey  != NULL)
+         *bluey  = png_float(png_ptr, info_ptr->cHRM.bluey,  "cHRM by");
       return PNG_INFO_cHRM;
    }
 
@@ -568,38 +561,31 @@ png_get_cHRM_XYZ(png_const_structrp png_ptr, png_const_inforp info_ptr,
     double *green_Y, double *green_Z, double *blue_X, double *blue_Y,
     double *blue_Z)
 {
+   png_XYZ XYZ;
    png_debug1(1, "in %s retrieval function", "cHRM_XYZ(float)");
 
    if (png_ptr != NULL && info_ptr != NULL &&
-       (info_ptr->colorspace.flags & PNG_COLORSPACE_HAVE_ENDPOINTS) != 0)
+       (info_ptr->valid & PNG_INFO_cHRM) != 0 &&
+       png_XYZ_from_xy(&XYZ, &info_ptr->cHRM) == 0)
    {
       if (red_X != NULL)
-         *red_X = png_float(png_ptr, info_ptr->colorspace.end_points_XYZ.red_X,
-             "cHRM red X");
+         *red_X = png_float(png_ptr, XYZ.red_X, "cHRM red X");
       if (red_Y != NULL)
-         *red_Y = png_float(png_ptr, info_ptr->colorspace.end_points_XYZ.red_Y,
-             "cHRM red Y");
+         *red_Y = png_float(png_ptr, XYZ.red_Y, "cHRM red Y");
       if (red_Z != NULL)
-         *red_Z = png_float(png_ptr, info_ptr->colorspace.end_points_XYZ.red_Z,
-             "cHRM red Z");
+         *red_Z = png_float(png_ptr, XYZ.red_Z, "cHRM red Z");
       if (green_X != NULL)
-         *green_X = png_float(png_ptr,
-             info_ptr->colorspace.end_points_XYZ.green_X, "cHRM green X");
+         *green_X = png_float(png_ptr, XYZ.green_X, "cHRM green X");
       if (green_Y != NULL)
-         *green_Y = png_float(png_ptr,
-             info_ptr->colorspace.end_points_XYZ.green_Y, "cHRM green Y");
+         *green_Y = png_float(png_ptr, XYZ.green_Y, "cHRM green Y");
       if (green_Z != NULL)
-         *green_Z = png_float(png_ptr,
-             info_ptr->colorspace.end_points_XYZ.green_Z, "cHRM green Z");
+         *green_Z = png_float(png_ptr, XYZ.green_Z, "cHRM green Z");
       if (blue_X != NULL)
-         *blue_X = png_float(png_ptr,
-             info_ptr->colorspace.end_points_XYZ.blue_X, "cHRM blue X");
+         *blue_X = png_float(png_ptr, XYZ.blue_X, "cHRM blue X");
       if (blue_Y != NULL)
-         *blue_Y = png_float(png_ptr,
-             info_ptr->colorspace.end_points_XYZ.blue_Y, "cHRM blue Y");
+         *blue_Y = png_float(png_ptr, XYZ.blue_Y, "cHRM blue Y");
       if (blue_Z != NULL)
-         *blue_Z = png_float(png_ptr,
-             info_ptr->colorspace.end_points_XYZ.blue_Z, "cHRM blue Z");
+         *blue_Z = png_float(png_ptr, XYZ.blue_Z, "cHRM blue Z");
       return PNG_INFO_cHRM;
    }
 
@@ -616,29 +602,22 @@ png_get_cHRM_XYZ_fixed(png_const_structrp png_ptr, png_const_inforp info_ptr,
     png_fixed_point *int_blue_X, png_fixed_point *int_blue_Y,
     png_fixed_point *int_blue_Z)
 {
+   png_XYZ XYZ;
    png_debug1(1, "in %s retrieval function", "cHRM_XYZ");
 
    if (png_ptr != NULL && info_ptr != NULL &&
-      (info_ptr->colorspace.flags & PNG_COLORSPACE_HAVE_ENDPOINTS) != 0)
+       (info_ptr->valid & PNG_INFO_cHRM) != 0U &&
+       png_XYZ_from_xy(&XYZ, &info_ptr->cHRM) == 0)
    {
-      if (int_red_X != NULL)
-         *int_red_X = info_ptr->colorspace.end_points_XYZ.red_X;
-      if (int_red_Y != NULL)
-         *int_red_Y = info_ptr->colorspace.end_points_XYZ.red_Y;
-      if (int_red_Z != NULL)
-         *int_red_Z = info_ptr->colorspace.end_points_XYZ.red_Z;
-      if (int_green_X != NULL)
-         *int_green_X = info_ptr->colorspace.end_points_XYZ.green_X;
-      if (int_green_Y != NULL)
-         *int_green_Y = info_ptr->colorspace.end_points_XYZ.green_Y;
-      if (int_green_Z != NULL)
-         *int_green_Z = info_ptr->colorspace.end_points_XYZ.green_Z;
-      if (int_blue_X != NULL)
-         *int_blue_X = info_ptr->colorspace.end_points_XYZ.blue_X;
-      if (int_blue_Y != NULL)
-         *int_blue_Y = info_ptr->colorspace.end_points_XYZ.blue_Y;
-      if (int_blue_Z != NULL)
-         *int_blue_Z = info_ptr->colorspace.end_points_XYZ.blue_Z;
+      if (int_red_X != NULL) *int_red_X = XYZ.red_X;
+      if (int_red_Y != NULL) *int_red_Y = XYZ.red_Y;
+      if (int_red_Z != NULL) *int_red_Z = XYZ.red_Z;
+      if (int_green_X != NULL) *int_green_X = XYZ.green_X;
+      if (int_green_Y != NULL) *int_green_Y = XYZ.green_Y;
+      if (int_green_Z != NULL) *int_green_Z = XYZ.green_Z;
+      if (int_blue_X != NULL) *int_blue_X = XYZ.blue_X;
+      if (int_blue_Y != NULL) *int_blue_Y = XYZ.blue_Y;
+      if (int_blue_Z != NULL) *int_blue_Z = XYZ.blue_Z;
       return PNG_INFO_cHRM;
    }
 
@@ -647,31 +626,24 @@ png_get_cHRM_XYZ_fixed(png_const_structrp png_ptr, png_const_inforp info_ptr,
 
 png_uint_32 PNGAPI
 png_get_cHRM_fixed(png_const_structrp png_ptr, png_const_inforp info_ptr,
-    png_fixed_point *white_x, png_fixed_point *white_y, png_fixed_point *red_x,
-    png_fixed_point *red_y, png_fixed_point *green_x, png_fixed_point *green_y,
-    png_fixed_point *blue_x, png_fixed_point *blue_y)
+    png_fixed_point *whitex, png_fixed_point *whitey, png_fixed_point *redx,
+    png_fixed_point *redy, png_fixed_point *greenx, png_fixed_point *greeny,
+    png_fixed_point *bluex, png_fixed_point *bluey)
 {
    png_debug1(1, "in %s retrieval function", "cHRM");
 
+   /* PNGv3: this just returns the values store from the cHRM, if any. */
    if (png_ptr != NULL && info_ptr != NULL &&
-      (info_ptr->colorspace.flags & PNG_COLORSPACE_HAVE_ENDPOINTS) != 0)
+       (info_ptr->valid & PNG_INFO_cHRM) != 0)
    {
-      if (white_x != NULL)
-         *white_x = info_ptr->colorspace.end_points_xy.whitex;
-      if (white_y != NULL)
-         *white_y = info_ptr->colorspace.end_points_xy.whitey;
-      if (red_x != NULL)
-         *red_x = info_ptr->colorspace.end_points_xy.redx;
-      if (red_y != NULL)
-         *red_y = info_ptr->colorspace.end_points_xy.redy;
-      if (green_x != NULL)
-         *green_x = info_ptr->colorspace.end_points_xy.greenx;
-      if (green_y != NULL)
-         *green_y = info_ptr->colorspace.end_points_xy.greeny;
-      if (blue_x != NULL)
-         *blue_x = info_ptr->colorspace.end_points_xy.bluex;
-      if (blue_y != NULL)
-         *blue_y = info_ptr->colorspace.end_points_xy.bluey;
+      if (whitex != NULL) *whitex = info_ptr->cHRM.whitex;
+      if (whitey != NULL) *whitey = info_ptr->cHRM.whitey;
+      if (redx   != NULL) *redx   = info_ptr->cHRM.redx;
+      if (redy   != NULL) *redy   = info_ptr->cHRM.redy;
+      if (greenx != NULL) *greenx = info_ptr->cHRM.greenx;
+      if (greeny != NULL) *greeny = info_ptr->cHRM.greeny;
+      if (bluex  != NULL) *bluex  = info_ptr->cHRM.bluex;
+      if (bluey  != NULL) *bluey  = info_ptr->cHRM.bluey;
       return PNG_INFO_cHRM;
    }
 
@@ -688,11 +660,11 @@ png_get_gAMA_fixed(png_const_structrp png_ptr, png_const_inforp info_ptr,
 {
    png_debug1(1, "in %s retrieval function", "gAMA");
 
+   /* PNGv3 compatibility: only report gAMA if it is really present. */
    if (png_ptr != NULL && info_ptr != NULL &&
-       (info_ptr->colorspace.flags & PNG_COLORSPACE_HAVE_GAMMA) != 0 &&
-       file_gamma != NULL)
+       (info_ptr->valid & PNG_INFO_gAMA) != 0)
    {
-      *file_gamma = info_ptr->colorspace.gamma;
+      if (file_gamma != NULL) *file_gamma = info_ptr->gamma;
       return PNG_INFO_gAMA;
    }
 
@@ -707,12 +679,13 @@ png_get_gAMA(png_const_structrp png_ptr, png_const_inforp info_ptr,
 {
    png_debug1(1, "in %s retrieval function", "gAMA(float)");
 
+   /* PNGv3 compatibility: only report gAMA if it is really present. */
    if (png_ptr != NULL && info_ptr != NULL &&
-      (info_ptr->colorspace.flags & PNG_COLORSPACE_HAVE_GAMMA) != 0 &&
-      file_gamma != NULL)
+       (info_ptr->valid & PNG_INFO_gAMA) != 0)
    {
-      *file_gamma = png_float(png_ptr, info_ptr->colorspace.gamma,
-          "png_get_gAMA");
+      if (file_gamma != NULL)
+         *file_gamma = png_float(png_ptr, info_ptr->gamma, "gAMA");
+
       return PNG_INFO_gAMA;
    }
 
@@ -729,9 +702,10 @@ png_get_sRGB(png_const_structrp png_ptr, png_const_inforp info_ptr,
    png_debug1(1, "in %s retrieval function", "sRGB");
 
    if (png_ptr != NULL && info_ptr != NULL &&
-      (info_ptr->valid & PNG_INFO_sRGB) != 0 && file_srgb_intent != NULL)
+      (info_ptr->valid & PNG_INFO_sRGB) != 0)
    {
-      *file_srgb_intent = info_ptr->colorspace.rendering_intent;
+      if (file_srgb_intent != NULL)
+         *file_srgb_intent = info_ptr->rendering_intent;
       return PNG_INFO_sRGB;
    }
 
@@ -787,7 +761,7 @@ png_get_sPLT(png_const_structrp png_ptr, png_inforp info_ptr,
 #ifdef PNG_cICP_SUPPORTED
 png_uint_32 PNGAPI
 png_get_cICP(png_const_structrp png_ptr,
-             png_inforp info_ptr, png_bytep colour_primaries,
+             png_const_inforp info_ptr, png_bytep colour_primaries,
              png_bytep transfer_function, png_bytep matrix_coefficients,
              png_bytep video_full_range_flag)
 {
@@ -805,9 +779,114 @@ png_get_cICP(png_const_structrp png_ptr,
         return (PNG_INFO_cICP);
     }
 
-    return (0);
+    return 0;
 }
 #endif
+
+#ifdef PNG_cLLI_SUPPORTED
+#  ifdef PNG_FIXED_POINT_SUPPORTED
+png_uint_32 PNGAPI
+png_get_cLLI_fixed(png_const_structrp png_ptr, png_const_inforp info_ptr,
+    png_uint_32p maxCLL,
+    png_uint_32p maxFALL)
+{
+   png_debug1(1, "in %s retrieval function", "cLLI");
+
+   if (png_ptr != NULL && info_ptr != NULL &&
+       (info_ptr->valid & PNG_INFO_cLLI) != 0)
+   {
+      if (maxCLL != NULL) *maxCLL = info_ptr->maxCLL;
+      if (maxFALL != NULL) *maxFALL = info_ptr->maxFALL;
+      return PNG_INFO_cLLI;
+   }
+
+   return 0;
+}
+#  endif
+
+#  ifdef PNG_FLOATING_POINT_SUPPORTED
+png_uint_32 PNGAPI
+png_get_cLLI(png_const_structrp png_ptr, png_const_inforp info_ptr,
+      double *maxCLL, double *maxFALL)
+{
+   png_debug1(1, "in %s retrieval function", "cLLI(float)");
+
+   if (png_ptr != NULL && info_ptr != NULL &&
+       (info_ptr->valid & PNG_INFO_cLLI) != 0)
+   {
+      if (maxCLL != NULL) *maxCLL = info_ptr->maxCLL * .0001;
+      if (maxFALL != NULL) *maxFALL = info_ptr->maxFALL * .0001;
+      return PNG_INFO_cLLI;
+   }
+
+   return 0;
+}
+#  endif
+#endif /* cLLI */
+
+#ifdef PNG_mDCV_SUPPORTED
+#  ifdef PNG_FIXED_POINT_SUPPORTED
+png_uint_32 PNGAPI
+png_get_mDCV_fixed(png_const_structrp png_ptr, png_const_inforp info_ptr,
+    png_fixed_point *white_x, png_fixed_point *white_y,
+    png_fixed_point *red_x, png_fixed_point *red_y,
+    png_fixed_point *green_x, png_fixed_point *green_y,
+    png_fixed_point *blue_x, png_fixed_point *blue_y,
+    png_uint_32p mastering_maxDL, png_uint_32p mastering_minDL)
+{
+   png_debug1(1, "in %s retrieval function", "mDCV");
+
+   if (png_ptr != NULL && info_ptr != NULL &&
+       (info_ptr->valid & PNG_INFO_mDCV) != 0)
+   {
+      if (white_x != NULL) *white_x = info_ptr->mastering_white_x * 2;
+      if (white_y != NULL) *white_y = info_ptr->mastering_white_y * 2;
+      if (red_x != NULL) *red_x = info_ptr->mastering_red_x * 2;
+      if (red_y != NULL) *red_y = info_ptr->mastering_red_y * 2;
+      if (green_x != NULL) *green_x = info_ptr->mastering_green_x * 2;
+      if (green_y != NULL) *green_y = info_ptr->mastering_green_y * 2;
+      if (blue_x != NULL) *blue_x = info_ptr->mastering_blue_x * 2;
+      if (blue_y != NULL) *blue_y = info_ptr->mastering_blue_y * 2;
+      if (mastering_maxDL != NULL) *mastering_maxDL = info_ptr->mastering_maxDL;
+      if (mastering_minDL != NULL) *mastering_minDL = info_ptr->mastering_minDL;
+      return PNG_INFO_mDCV;
+   }
+
+   return 0;
+}
+#  endif
+
+#  ifdef PNG_FLOATING_POINT_SUPPORTED
+png_uint_32 PNGAPI
+png_get_mDCV(png_const_structrp png_ptr, png_const_inforp info_ptr,
+    double *white_x, double *white_y, double *red_x, double *red_y,
+    double *green_x, double *green_y, double *blue_x, double *blue_y,
+    double *mastering_maxDL, double *mastering_minDL)
+{
+   png_debug1(1, "in %s retrieval function", "mDCV(float)");
+
+   if (png_ptr != NULL && info_ptr != NULL &&
+       (info_ptr->valid & PNG_INFO_mDCV) != 0)
+   {
+      if (white_x != NULL) *white_x = info_ptr->mastering_white_x * .00002;
+      if (white_y != NULL) *white_y = info_ptr->mastering_white_y * .00002;
+      if (red_x != NULL) *red_x = info_ptr->mastering_red_x * .00002;
+      if (red_y != NULL) *red_y = info_ptr->mastering_red_y * .00002;
+      if (green_x != NULL) *green_x = info_ptr->mastering_green_x * .00002;
+      if (green_y != NULL) *green_y = info_ptr->mastering_green_y * .00002;
+      if (blue_x != NULL) *blue_x = info_ptr->mastering_blue_x * .00002;
+      if (blue_y != NULL) *blue_y = info_ptr->mastering_blue_y * .00002;
+      if (mastering_maxDL != NULL)
+         *mastering_maxDL = info_ptr->mastering_maxDL * .0001;
+      if (mastering_minDL != NULL)
+         *mastering_minDL = info_ptr->mastering_minDL * .0001;
+      return PNG_INFO_mDCV;
+   }
+
+   return 0;
+}
+#  endif /* FLOATING_POINT */
+#endif /* mDCV */
 
 #ifdef PNG_eXIf_SUPPORTED
 png_uint_32 PNGAPI

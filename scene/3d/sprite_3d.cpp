@@ -1186,7 +1186,7 @@ void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 		List<StringName> al;
 		frames->get_animation_list(&al);
-		if (al.size() == 0) {
+		if (al.is_empty()) {
 			set_animation(StringName());
 			autoplay = String();
 		} else {

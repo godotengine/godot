@@ -31,6 +31,7 @@
 #include "crash_handler_linuxbsd.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
@@ -81,10 +82,10 @@ static void handle_crash(int sig) {
 	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, sig));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).is_empty()) {
-		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
+	if (String(GODOT_VERSION_HASH).is_empty()) {
+		print_error(vformat("Engine version: %s", GODOT_VERSION_FULL_NAME));
 	} else {
-		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
+		print_error(vformat("Engine version: %s (%s)", GODOT_VERSION_FULL_NAME, GODOT_VERSION_HASH));
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 	char **strings = backtrace_symbols(bt_buffer, size);
@@ -145,6 +146,18 @@ static void handle_crash(int sig) {
 	}
 	print_error("-- END OF BACKTRACE --");
 	print_error("================================================================");
+
+	Vector<Ref<ScriptBacktrace>> script_backtraces;
+	if (ScriptServer::are_languages_initialized()) {
+		script_backtraces = ScriptServer::capture_script_backtraces(false);
+	}
+	if (!script_backtraces.is_empty()) {
+		for (const Ref<ScriptBacktrace> &backtrace : script_backtraces) {
+			print_error(backtrace->format());
+		}
+		print_error("-- END OF SCRIPT BACKTRACE --");
+		print_error("================================================================");
+	}
 
 	// Abort to pass the error to the OS
 	abort();

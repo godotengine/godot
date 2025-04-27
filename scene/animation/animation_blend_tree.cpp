@@ -907,7 +907,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlend3::_process(const AnimationMixer::
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 	pi.weight = MAX(0, -amount);
 	NodeTimeInfo nti0 = blend_input(0, pi, FILTER_IGNORE, sync, p_test_only);
-	pi.weight = 1.0 - ABS(amount);
+	pi.weight = 1.0 - Math::abs(amount);
 	NodeTimeInfo nti1 = blend_input(1, pi, FILTER_IGNORE, sync, p_test_only);
 	pi.weight = MAX(0, amount);
 	NodeTimeInfo nti2 = blend_input(2, pi, FILTER_IGNORE, sync, p_test_only);

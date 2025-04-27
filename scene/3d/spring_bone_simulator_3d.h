@@ -141,6 +141,7 @@ public:
 
 protected:
 	Vector<SpringBone3DSetting *> settings;
+	Vector3 external_force;
 
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
@@ -152,7 +153,7 @@ protected:
 	static void _bind_methods();
 
 	virtual void _set_active(bool p_active) override;
-	virtual void _process_modification() override;
+	virtual void _process_modification(double p_delta) override;
 	void _init_joints(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
 	void _process_joints(double p_delta, Skeleton3D *p_skeleton, Vector<SpringBone3DJointSetting *> &p_joints, const LocalVector<ObjectID> &p_collisions, const Transform3D &p_center_transform, const Transform3D &p_inverted_center_transform, const Quaternion &p_inverted_center_rotation);
 
@@ -268,6 +269,9 @@ public:
 
 	LocalVector<ObjectID> get_valid_collision_instance_ids(int p_index);
 
+	void set_external_force(const Vector3 &p_force);
+	Vector3 get_external_force() const;
+
 	// Helper.
 	static Quaternion get_local_pose_rotation(Skeleton3D *p_skeleton, int p_bone, const Quaternion &p_global_pose_rotation);
 	static Quaternion get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot);
@@ -280,6 +284,8 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual bool is_processed_on_saving() const override { return true; }
 #endif
+
+	~SpringBoneSimulator3D();
 };
 
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::BoneDirection);

@@ -44,13 +44,14 @@
 # "Tom B." <burloe@proton.me>, 2024.
 # tygyh <jonis9898@hotmail.com>, 2024.
 # Muhammad <muhammadshamaeem@gmail.com>, 2025.
+# Aglo <wilmer.heltborg2008@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-20 18:26+0000\n"
-"Last-Translator: Muhammad <muhammadshamaeem@gmail.com>\n"
+"PO-Revision-Date: 2025-03-09 19:54+0000\n"
+"Last-Translator: Aglo <wilmer.heltborg2008@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -58,7 +59,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Huvudtråd"
@@ -416,6 +417,9 @@ msgstr "Visa dolda"
 msgid "Swap Input Direction"
 msgstr "Byt inmatningsriktning"
 
+msgid "Start Unicode Character Input"
+msgstr "Starta Unicode karaktär Inmatning"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Ogiltig inmatning %d (passerades inte) i uttrycket"
 
@@ -656,6 +660,28 @@ msgstr "Ändra animationens längd"
 
 msgid "Change Animation Loop"
 msgstr "Ändra animationens slinga"
+
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Kan inte ändra loopläge på en animation instanserad från en importerad scen.\n"
+"\n"
+"För att ändra loopläget för denna animation, gå till scenens Avancerade "
+"Importinställningar och välj animationen.\n"
+"Du kan sedan ändra loopläget från inspektörmenyn."
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Kan inte ändra sling-läge på animation som är inbäddad i en annan scen.\n"
+"\n"
+"Du måste öppna denna scen och ändra animations sling-läget därifrån."
 
 msgid "Property Track..."
 msgstr "Egenskaps-spår…"
@@ -1048,6 +1074,15 @@ msgstr "Visa bara spår från markerade noder i trädet."
 msgid "Group tracks by node or display them as plain list."
 msgstr "Gruppera spår efter nod eller visa dem som enkel lista."
 
+msgid "Apply snapping to timeline cursor."
+msgstr "Applicera snappning till tidslinjemarkören."
+
+msgid "Apply snapping to selected key(s)."
+msgstr "Applicera snappning på markerade nycklar.."
+
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "Applicera snappning till närmaste heltal av FPS."
+
 msgid "Animation step value."
 msgstr "Animations-stegvärde."
 
@@ -1434,6 +1469,9 @@ msgstr "Koppla bort signal-argument:"
 msgid "Receiver Method:"
 msgstr "Mottagarmetod:"
 
+msgid "Pick"
+msgstr "Välj"
+
 msgid "Advanced"
 msgstr "Avancerad"
 
@@ -1517,6 +1555,9 @@ msgstr "Skapa ny %s"
 
 msgid "No results for \"%s\"."
 msgstr "Inga resultat för ”%s”."
+
+msgid "Script path: %s"
+msgstr "Skript sökväg: %s"
 
 msgid "This class is marked as deprecated."
 msgstr "Den här klassen har markerats som utfasad."
@@ -1904,6 +1945,9 @@ msgstr ""
 msgid "Cannot remove:"
 msgstr "Kan inte ta bort:"
 
+msgid "Files to be deleted:"
+msgstr "Radera markerade:"
+
 msgid "Error loading:"
 msgstr "Fel vid inläsning:"
 
@@ -1957,6 +2001,9 @@ msgstr "En mapp med det namnet finns redan."
 
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr "Snedstreck i mappnamn skapar rekursiva undermappar."
+
+msgid "Base path: %s"
+msgstr "Grundsökvägen: %s"
 
 msgid "Folder name is valid."
 msgstr "Mappnamnet är giltigt."
@@ -2503,6 +2550,12 @@ msgstr "[tom]"
 msgid "[unsaved]"
 msgstr "[osparad]"
 
+msgid "Open the %s dock."
+msgstr "Öppna %s fliken."
+
+msgid "Focus on the %s dock."
+msgstr "Fokusera på %s fliken."
+
 msgid "Move this dock right one tab."
 msgstr "Flytta den här fliken åt höger."
 
@@ -2676,6 +2729,9 @@ msgstr "Spara & starta om"
 msgid "ScanSources"
 msgstr "Scan-källor"
 
+msgid "Updating Scene Groups"
+msgstr "Uppdaterar Scengrupper"
+
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
 "aborted"
@@ -2685,6 +2741,9 @@ msgstr ""
 
 msgid "(Re)Importing Assets"
 msgstr "(Om)importerar assets"
+
+msgid "Preparing files to reimport..."
+msgstr "Förbereder scener för omladdning..."
 
 msgid "Import resources of type: %s"
 msgstr "Importerar resurser av typen: %s"
@@ -2963,8 +3022,17 @@ msgstr "Klass"
 msgid "Constant"
 msgstr "Konstant"
 
+msgid "Metadata"
+msgstr "Metadata"
+
+msgid "Setting"
+msgstr "Inställning"
+
 msgid "Property"
 msgstr "Egenskap"
+
+msgid "Internal Property"
+msgstr "Intern egenskap"
 
 msgid "This property can only be set in the Inspector."
 msgstr "Den här egenskapen kan bara ställas in i Granskaren."
@@ -2981,8 +3049,14 @@ msgstr "Signal"
 msgid "Annotation"
 msgstr "Anteckning"
 
+msgid "TextFile"
+msgstr "Textfil"
+
 msgid "File"
 msgstr "Arkiv"
+
+msgid "Invalid path"
+msgstr "Ogiltig sökväg"
 
 msgid "%d match."
 msgstr "%d träff."
@@ -3046,6 +3120,9 @@ msgstr "Den här medlemmen har markerats som utfasad."
 
 msgid "This member is marked as experimental."
 msgstr "Den här medlemmen har markerats som experimentell."
+
+msgid "Unfavorite Property"
+msgstr "Ta bort från favoriter"
 
 msgid "Pin Value"
 msgstr "Fäst värde"
@@ -3610,6 +3687,9 @@ msgstr "Rensa Senaste scener"
 msgid "There is no defined scene to run."
 msgstr "Det finns ingen definierad scen att köra."
 
+msgid "Editor layout ready."
+msgstr "Reddigerarlayout redo."
+
 msgid "Save Layout..."
 msgstr "Spara layout..."
 
@@ -3985,6 +4065,15 @@ msgstr "Mallpaket"
 msgid "Open & Run a Script"
 msgstr "Öppna & kör ett skript"
 
+msgid "The following files are newer on disk:"
+msgstr "Följande filer är nyare på disk:"
+
+msgid "What action should be taken?"
+msgstr "Vilken åtgärd ska tas?"
+
+msgid "Reload from disk"
+msgstr "Ladda om från disk"
+
 msgid "Create/Override Version Control Metadata..."
 msgstr "Skapa/skriv över versionshanterings-metadata..."
 
@@ -4109,6 +4198,12 @@ msgstr "Ny nyckel:"
 msgid "New Value:"
 msgstr "Nytt värde:"
 
+msgid "%s%s (size %d)"
+msgstr "%s%s (storlek %s)"
+
+msgid "%s (size %d)"
+msgstr "%s (storlek %d)"
+
 msgid "Size:"
 msgstr "Storlek:"
 
@@ -4203,6 +4298,9 @@ msgstr "Inget"
 
 msgid "Common"
 msgstr "Vanliga"
+
+msgid "Event %d"
+msgstr "Händelse %d"
 
 msgid "Editor Settings"
 msgstr "Redigerarinställningar"
@@ -4411,6 +4509,9 @@ msgstr "Lagrar filen:"
 msgid "No export template found at the expected path:"
 msgstr "Ingen exportmall hittades i den väntade sökvägen:"
 
+msgid "ZIP Creation"
+msgstr "ZIP Skapande"
+
 msgid "Could not open file to read from path \"%s\"."
 msgstr "Kunde inte öppna fil för läsning med sökvägen \"%s\"."
 
@@ -4425,6 +4526,9 @@ msgstr "Kan inte skapa filen \"%s\"."
 
 msgid "Failed to export project files."
 msgstr "Kunde inte exportera projektfiler."
+
+msgid "No files or changes to export."
+msgstr "Inga filer eller ändringar att exportera."
 
 msgid "Can't open file for writing at path \"%s\"."
 msgstr "Kan inte öppna fil för skrivning med sökvägen \"%s\"."
@@ -4443,6 +4547,9 @@ msgstr "Kan inte öppna fil för läsning med sökvägen \"%s\"."
 
 msgid "Save ZIP"
 msgstr "Spara ZIP"
+
+msgid "Failed to move temporary file \"%s\" to \"%s\"."
+msgstr "Misslyckades att flytta temporär fil \"%s\" till \"%s\"."
 
 msgid "Custom debug template not found."
 msgstr "Anpassad avlusningsmall hittades ej."
@@ -4475,6 +4582,9 @@ msgstr "PCK-inbäddning"
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 "Vid 32-bitars-export får den inbäddade PCK:ns storlek inte överskrida 4 GiB."
+
+msgid "Failed to copy shared object \"%s\"."
+msgstr "Misslyckades att kopiera delat objekt \"%s\"."
 
 msgid "Plugin \"%s\" is not supported on \"%s\""
 msgstr "Pluginet \"%s\" stöds inte på \"%s\""
@@ -4649,6 +4759,9 @@ msgstr "Installera från fil"
 
 msgid "Install templates from a local file."
 msgstr "Installera mallar från lokal fil."
+
+msgid "Go Online"
+msgstr "Gå online"
 
 msgid "Cancel the download of the templates."
 msgstr "Avbryt nedladdningen av mallar."
@@ -5484,6 +5597,9 @@ msgstr "Inga under-resurser hittades."
 
 msgid "Open a list of sub-resources."
 msgstr "Öppna en lista med alla under-resurser."
+
+msgid " (recently opened)"
+msgstr " Nyligen uppdaterad"
 
 msgid "Play the project."
 msgstr "Kör projektet."
@@ -7080,9 +7196,6 @@ msgstr ""
 "Assetbiblioteket kräver en uppkoppling och innebär att data skickas över "
 "nätet."
 
-msgid "Go Online"
-msgstr "Gå online"
-
 msgid "Failed to get repository configuration."
 msgstr "Kunde inte hämta repo-konfiguration."
 
@@ -8002,6 +8115,9 @@ msgstr "Östasiatiska bredder"
 msgid "Numeral Alignment"
 msgstr "Numerisk rättning"
 
+msgid "Variation"
+msgstr "Variant"
+
 msgid "Unable to preview font"
 msgstr "Kan inte förhandsvisa typsnitt"
 
@@ -8549,6 +8665,9 @@ msgstr "Ortogonal bakifrån"
 
 msgid "Rear Perspective"
 msgstr "Perspektiv bakifrån"
+
+msgid "[auto]"
+msgstr "[auto]"
 
 msgid "X-Axis Transform."
 msgstr "X-axel-transformering."
@@ -13924,9 +14043,6 @@ msgstr "Featuretaggar"
 msgid "Pick Root Node Type"
 msgstr "Välj rotnods-typ"
 
-msgid "Pick"
-msgstr "Välj"
-
 msgid "Scene name is empty."
 msgstr "Scenens namn är tomt."
 
@@ -16166,14 +16282,54 @@ msgstr "Duplicerat filterläge: '%s'."
 msgid "Duplicated repeat mode: '%s'."
 msgstr "Duplicerat repeteringsläge: '%s'."
 
+msgid "Expected '(' after function identifier."
+msgstr "Förväntade '(' efter funktion identifierare."
+
+msgid ""
+"Global non-constant variables are not supported. Expected '%s' keyword before "
+"constant definition."
+msgstr ""
+"Global icke-konstant variabel är inte stöttade. Förväntade '%s' nyckelord "
+"innan konstant definition."
+
+msgid "Expected an identifier after type."
+msgstr "Förväntade en identifierare efter typ."
+
+msgid "Expected a valid data type for argument."
+msgstr "Förväntade en giltig datatyp för argumentet."
+
+msgid "Expected an identifier for argument name."
+msgstr "Förväntade en identifierare för argument namnet."
+
+msgid "Function '%s' expects no arguments."
+msgstr "Funktion '%s' förväntade inga argument."
+
+msgid "Function '%s' must be of '%s' return type."
+msgstr "Funktionen '%s' måste ha returtypen '%s'."
+
+msgid "Expected a '{' to begin function."
+msgstr "Förväntade '{' för att skapa en ny funktion."
+
+msgid "Expected a '%s'."
+msgstr "Förväntade en '%s'."
+
 msgid "Expected a '%s' or '%s'."
-msgstr "Förväntade en'%s' eller '%s'."
+msgstr "Förväntade en '%s' eller '%s'."
 
 msgid "Expected a '%s' after '%s'."
 msgstr "Förväntat \"%s\" efter \"%s\"."
 
 msgid "Redefinition of '%s'."
 msgstr "Omdefiniering av '%s'."
+
+msgid "Unmatched '%s' directive."
+msgstr "Oöverträffad \"%s\" direktiv."
+
+msgid "Missing condition."
+msgstr "Saknar villkor."
+
+msgid "Invalid '%s' directive."
+msgstr "Ogiltigt '%s' direktiv."
 
 msgid "Shader include file does not exist:"
 msgstr "Inkluderbar shaderfil finns inte:"

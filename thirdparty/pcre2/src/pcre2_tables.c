@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2021 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -171,9 +171,9 @@ are implementing).
 6. Do not break after Prepend characters.
 
 7. Do not break within emoji modifier sequences or emoji zwj sequences. That
-   is, do not break between characters with the Extended_Pictographic property.
-   Extend and ZWJ characters are allowed between the characters; this cannot be
-   represented in this table, the code has to deal with it.
+   is, do not break between characters with the Extended_Pictographic property
+   if a ZWJ intervenes. Extend characters are allowed between the characters;
+   this cannot be represented in this table, the code has to deal with it.
 
 8. Do not break within emoji flag sequences. That is, do not break between
    regional indicator (RI) symbols if there are an odd number of RI characters
@@ -203,8 +203,8 @@ const uint32_t PRIV(ucp_gbtable)[] = {
    ESZ|(1u<<ucp_gbT),                                   /* 10 LVT */
    (1u<<ucp_gbRegional_Indicator),                      /* 11 Regional Indicator */
    ESZ,                                                 /* 12 Other */
-   ESZ,                                                 /* 13 ZWJ */
-   ESZ|(1u<<ucp_gbExtended_Pictographic)                /* 14 Extended Pictographic */
+   ESZ|(1u<<ucp_gbExtended_Pictographic),               /* 13 ZWJ */
+   ESZ                                                  /* 14 Extended Pictographic */
 };
 
 #undef ESZ

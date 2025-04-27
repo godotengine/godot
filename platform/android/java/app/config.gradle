@@ -11,7 +11,7 @@ ext.versions = [
     nexusPublishVersion: '1.3.0',
     javaVersion        : JavaVersion.VERSION_17,
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
-    ndkVersion         : '23.2.8568313',
+    ndkVersion         : '27.2.12479018',
     splashscreenVersion: '1.0.1',
     openxrVendorsVersion: '3.1.2-stable'
 
@@ -69,25 +69,6 @@ ext.getExportTargetSdkVersion = { ->
     } catch (NumberFormatException ignored) {
         return versions.targetSdk
     }
-}
-
-ext.getGodotRenderingMethod = { ->
-    String renderingMethod = project.hasProperty("godot_rendering_method") ? project.property("godot_rendering_method") : ""
-    return renderingMethod
-}
-
-ext.getGodotEditorVersion = { ->
-    String editorVersion = project.hasProperty("godot_editor_version") ? project.property("godot_editor_version") : ""
-    if (editorVersion == null || editorVersion.isEmpty()) {
-        // Try the library version first
-        editorVersion = getGodotLibraryVersionName()
-
-        if (editorVersion.isEmpty()) {
-            // Fallback value.
-            editorVersion = "custom_build"
-        }
-    }
-    return editorVersion
 }
 
 ext.getGodotLibraryVersionCode = { ->

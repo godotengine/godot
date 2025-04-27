@@ -51,6 +51,4 @@ public:
 	void unfold_scene(Node *p_scene);
 
 	bool has_folding_data(const String &p_path);
-
-	EditorFolding();
 };

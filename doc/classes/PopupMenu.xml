@@ -237,6 +237,13 @@
 				Returns the accelerator of the item at the given [param index]. An accelerator is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The return value is an integer which is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]). If no accelerator is defined for the specified [param index], [method get_item_accelerator] returns [code]0[/code] (corresponding to [constant @GlobalScope.KEY_NONE]).
 			</description>
 		</method>
+		<method name="get_item_auto_translate_mode" qualifiers="const">
+			<return type="int" enum="Node.AutoTranslateMode" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the auto translate mode of the item at the given [param index].
+			</description>
+		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="index" type="int" />
@@ -460,6 +467,15 @@
 			<param index="1" name="enable" type="bool" />
 			<description>
 				Mark the item at the given [param index] as a separator, which means that it would be displayed as a line. If [code]false[/code], sets the type of the item to plain text.
+			</description>
+		</method>
+		<method name="set_item_auto_translate_mode">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="mode" type="int" enum="Node.AutoTranslateMode" />
+			<description>
+				Sets the auto translate mode of the item at the given [param index].
+				Items use [constant Node.AUTO_TRANSLATE_MODE_INHERIT] by default, which uses the same auto translate mode as the [PopupMenu] itself.
 			</description>
 		</method>
 		<method name="set_item_checked">

@@ -54,6 +54,8 @@ class TTS_Android {
 
 	static HashMap<int, Char16String> ids;
 
+	static void initialize_tts();
+
 public:
 	static void setup(jobject p_tts);
 	static void terminate();

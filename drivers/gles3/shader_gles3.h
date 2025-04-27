@@ -188,7 +188,7 @@ protected:
 		Version *version = version_owner.get_or_null(p_version);
 		ERR_FAIL_NULL_V(version, false);
 
-		if (version->variants.size() == 0) {
+		if (version->variants.is_empty()) {
 			_initialize_version(version); //may lack initialization
 		}
 

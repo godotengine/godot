@@ -35,23 +35,30 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 #include "servers/rendering_server.h"
+
+#ifndef PHYSICS_3D_DISABLED
 #include "shape_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 class MeshLibrary : public Resource {
 	GDCLASS(MeshLibrary, Resource);
 	RES_BASE_EXTENSION("meshlib");
 
 public:
+#ifndef PHYSICS_3D_DISABLED
 	struct ShapeData {
 		Ref<Shape3D> shape;
 		Transform3D local_transform;
 	};
+#endif // PHYSICS_3D_DISABLED
 	struct Item {
 		String name;
 		Ref<Mesh> mesh;
 		Transform3D mesh_transform;
 		RS::ShadowCastingSetting mesh_cast_shadow = RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON;
+#ifndef PHYSICS_3D_DISABLED
 		Vector<ShapeData> shapes;
+#endif // PHYSICS_3D_DISABLED
 		Ref<Texture2D> preview;
 		Ref<NavigationMesh> navigation_mesh;
 		Transform3D navigation_mesh_transform;
@@ -60,8 +67,10 @@ public:
 
 	RBMap<int, Item> item_map;
 
+#ifndef PHYSICS_3D_DISABLED
 	void _set_item_shapes(int p_item, const Array &p_shapes);
 	Array _get_item_shapes(int p_item) const;
+#endif // PHYSICS_3D_DISABLED
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -80,7 +89,9 @@ public:
 	void set_item_navigation_mesh(int p_item, const Ref<NavigationMesh> &p_navigation_mesh);
 	void set_item_navigation_mesh_transform(int p_item, const Transform3D &p_transform);
 	void set_item_navigation_layers(int p_item, uint32_t p_navigation_layers);
+#ifndef PHYSICS_3D_DISABLED
 	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
+#endif // PHYSICS_3D_DISABLED
 	void set_item_preview(int p_item, const Ref<Texture2D> &p_preview);
 	String get_item_name(int p_item) const;
 	Ref<Mesh> get_item_mesh(int p_item) const;
@@ -89,7 +100,9 @@ public:
 	Ref<NavigationMesh> get_item_navigation_mesh(int p_item) const;
 	Transform3D get_item_navigation_mesh_transform(int p_item) const;
 	uint32_t get_item_navigation_layers(int p_item) const;
+#ifndef PHYSICS_3D_DISABLED
 	Vector<ShapeData> get_item_shapes(int p_item) const;
+#endif // PHYSICS_3D_DISABLED
 	Ref<Texture2D> get_item_preview(int p_item) const;
 
 	void remove_item(int p_item);

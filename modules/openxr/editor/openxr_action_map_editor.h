@@ -110,5 +110,4 @@ public:
 	void open_action_map(String p_path);
 
 	OpenXRActionMapEditor();
-	~OpenXRActionMapEditor();
 };

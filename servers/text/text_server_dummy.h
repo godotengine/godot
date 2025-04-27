@@ -51,6 +51,7 @@ public:
 	virtual void font_set_fixed_size_scale_mode(const RID &p_font_rid, TextServer::FixedSizeScaleMode p_fixed_size_scale_mode) override {}
 	virtual TextServer::FixedSizeScaleMode font_get_fixed_size_scale_mode(const RID &p_font_rid) const override { return FIXED_SIZE_SCALE_DISABLE; }
 	virtual TypedArray<Vector2i> font_get_size_cache_list(const RID &p_font_rid) const override { return TypedArray<Vector2i>(); }
+	virtual TypedArray<Dictionary> font_get_size_cache_info(const RID &p_font_rid) const override { return TypedArray<Dictionary>(); }
 	virtual void font_clear_size_cache(const RID &p_font_rid) override {}
 	virtual void font_remove_size_cache(const RID &p_font_rid, const Vector2i &p_size) override {}
 	virtual void font_set_ascent(const RID &p_font_rid, int64_t p_size, double p_ascent) override {}
@@ -88,8 +89,8 @@ public:
 	virtual bool font_has_char(const RID &p_font_rid, int64_t p_char) const override { return false; }
 	virtual String font_get_supported_chars(const RID &p_font_rid) const override { return String(); }
 	virtual PackedInt32Array font_get_supported_glyphs(const RID &p_font_rid) const override { return PackedInt32Array(); }
-	virtual void font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const override {}
-	virtual void font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const override {}
+	virtual void font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const override {}
+	virtual void font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const override {}
 
 	virtual RID create_shaped_text(TextServer::Direction p_direction, TextServer::Orientation p_orientation) override { return RID(); }
 	virtual void shaped_text_clear(const RID &p_shaped) override {}

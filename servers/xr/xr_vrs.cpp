@@ -104,13 +104,12 @@ void XRVRS::set_vrs_render_region(const Rect2i &p_vrs_render_region) {
 RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array &p_eye_foci) {
 	ERR_FAIL_COND_V(p_eye_foci.is_empty(), RID());
 
-	int32_t texel_width = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_WIDTH);
-	int32_t texel_height = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_HEIGHT);
+	Size2i texel_size = RD::get_singleton()->vrs_get_texel_size();
 
 	// Should return sensible data or graphics API does not support VRS.
-	ERR_FAIL_COND_V(texel_width < 1 || texel_height < 1, RID());
+	ERR_FAIL_COND_V(texel_size.x < 1 || texel_size.y < 1, RID());
 
-	Size2 vrs_size = Size2(0.5 + p_target_size.x / texel_width, 0.5 + p_target_size.y / texel_height).round();
+	Size2 vrs_size = Size2(0.5 + p_target_size.x / texel_size.x, 0.5 + p_target_size.y / texel_size.y).floor();
 
 	// Make sure we have at least one pixel.
 	vrs_size = vrs_size.maxf(1.0);
@@ -150,16 +149,18 @@ RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array
 
 			Vector2i view_center;
 			view_center.x = int(vrs_size.x * (eye_foci[i].x + 1.0) * region_ratio.x * 0.5) + region_offset.x;
-			view_center.y = int(vrs_size.y * (eye_foci[i].y + 1.0) * region_ratio.y * 0.5) + region_offset.y;
+			view_center.y = int(vrs_size.y * (-eye_foci[i].y + 1.0) * region_ratio.y * 0.5) + region_offset.y;
 
 			int d = 0;
 			for (int y = 0; y < vrs_sizei.y; y++) {
 				for (int x = 0; x < vrs_sizei.x; x++) {
+					// Generate a density map that represents the distance to the view focus point. While this leaves the opportunities
+					// offered by the density map being different in each direction currently unused, it was found to give better tile
+					// distribution on hardware that supports the feature natively. This area is open to improvements in the future.
 					Vector2 offset = Vector2(x - view_center.x, y - view_center.y) / region_ratio;
-					real_t density = 255.0 * MAX(0.0, (Math::abs(offset.x) - min_radius) / outer_radius);
-					data_ptr[d++] = MIN(255, density);
-					density = 255.0 * MAX(0.0, (Math::abs(offset.y) - min_radius) / outer_radius);
-					data_ptr[d++] = MIN(255, density);
+					real_t density = MAX(offset.length() - min_radius, 0.0) / outer_radius;
+					data_ptr[d++] = CLAMP(255.0 * density, 0, 255);
+					data_ptr[d++] = CLAMP(255.0 * density, 0, 255);
 				}
 			}
 			images.push_back(Image::create_from_data(vrs_sizei.x, vrs_sizei.y, false, Image::FORMAT_RG8, data));

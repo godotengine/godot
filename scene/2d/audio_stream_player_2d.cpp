@@ -33,12 +33,15 @@
 
 #include "core/config/project_settings.h"
 #include "scene/2d/audio_listener_2d.h"
-#include "scene/2d/physics/area_2d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/world_2d.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
+
+#ifndef PHYSICS_2D_DISABLED
+#include "scene/2d/physics/area_2d.h"
+#endif // PHYSICS_2D_DISABLED
 
 void AudioStreamPlayer2D::_notification(int p_what) {
 	internal->notification(p_what);
@@ -76,6 +79,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 // Interacts with PhysicsServer2D, so can only be called during _physics_process.
 StringName AudioStreamPlayer2D::_get_actual_bus() {
+#ifndef PHYSICS_2D_DISABLED
 	Vector2 global_pos = get_global_position();
 
 	//check if any area is diverting sound into a bus
@@ -93,7 +97,6 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 	point_params.collide_with_areas = true;
 
 	int areas = space_state->intersect_point(point_params, sr, MAX_INTERSECT_AREAS);
-
 	for (int i = 0; i < areas; i++) {
 		Area2D *area2d = Object::cast_to<Area2D>(sr[i].collider);
 		if (!area2d) {
@@ -106,6 +109,8 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 
 		return area2d->get_audio_bus_name();
 	}
+#endif // PHYSICS_2D_DISABLED
+
 	return internal->bus;
 }
 

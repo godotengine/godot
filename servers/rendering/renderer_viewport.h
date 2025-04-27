@@ -134,7 +134,7 @@ public:
 			CanvasKey(const RID &p_canvas, int p_layer, int p_sublayer) {
 				canvas = p_canvas;
 				int64_t sign = p_layer < 0 ? -1 : 1;
-				stacking = sign * (((int64_t)ABS(p_layer)) << 32) + p_sublayer;
+				stacking = sign * (((int64_t)Math::abs(p_layer)) << 32) + p_sublayer;
 			}
 			int get_layer() const { return stacking >> 32; }
 		};
@@ -203,6 +203,7 @@ private:
 	Vector<Viewport *> _sort_active_viewports();
 	void _viewport_set_size(Viewport *p_viewport, int p_width, int p_height, uint32_t p_view_count);
 	bool _viewport_requires_motion_vectors(Viewport *p_viewport);
+	void _viewport_set_force_motion_vectors(Viewport *p_viewport, bool p_force_motion_vectors);
 	void _configure_3d_render_buffers(Viewport *p_viewport);
 	void _draw_3d(Viewport *p_viewport);
 	void _draw_viewport(Viewport *p_viewport);

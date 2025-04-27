@@ -58,3 +58,6 @@ public:
 	_ALWAYS_INLINE_ explicit ObjectID(const uint64_t p_id) { id = p_id; }
 	_ALWAYS_INLINE_ explicit ObjectID(const int64_t p_id) { id = p_id; }
 };
+
+template <>
+struct is_zero_constructible<ObjectID> : std::true_type {};

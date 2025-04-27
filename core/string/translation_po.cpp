@@ -30,9 +30,9 @@
 
 #include "translation_po.h"
 
+#ifdef DEBUG_TRANSLATION_PO
 #include "core/io/file_access.h"
 
-#ifdef DEBUG_TRANSLATION_PO
 void TranslationPO::print_translation_map() {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open("translation_map_print_test.txt", FileAccess::WRITE, &err);
@@ -53,8 +53,7 @@ void TranslationPO::print_translation_map() {
 
 		List<StringName> id_l;
 		inner_map.get_key_list(&id_l);
-		for (List<StringName>::Element *E2 = id_l.front(); E2; E2 = E2->next()) {
-			StringName id = E2->get();
+		for (const StringName &id : id_l) {
 			file->store_line("msgid: " + String::utf8(String(id).utf8()));
 			for (int i = 0; i < inner_map[id].size(); i++) {
 				file->store_line("msgstr[" + String::num_int64(i) + "]: " + String::utf8(String(inner_map[id][i]).utf8()));
@@ -86,20 +85,16 @@ Dictionary TranslationPO::_get_messages() const {
 void TranslationPO::_set_messages(const Dictionary &p_messages) {
 	// Construct translation_map from a Dictionary.
 
-	List<Variant> context_l;
-	p_messages.get_key_list(&context_l);
-	for (const Variant &ctx : context_l) {
-		const Dictionary &id_str_map = p_messages[ctx];
+	for (const KeyValue<Variant, Variant> &kv : p_messages) {
+		const Dictionary &id_str_map = kv.value;
 
 		HashMap<StringName, Vector<StringName>> temp_map;
-		List<Variant> id_l;
-		id_str_map.get_key_list(&id_l);
-		for (List<Variant>::Element *E2 = id_l.front(); E2; E2 = E2->next()) {
-			StringName id = E2->get();
-			temp_map[id] = id_str_map[id];
+		for (const KeyValue<Variant, Variant> &kv_id : id_str_map) {
+			StringName id = kv_id.key;
+			temp_map[id] = kv_id.value;
 		}
 
-		translation_map[ctx] = temp_map;
+		translation_map[kv.key] = temp_map;
 	}
 }
 

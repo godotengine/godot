@@ -64,7 +64,7 @@
 #undef CursorShape
 
 class DisplayServerMacOS : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerMacOS, DisplayServer);
 
 	_THREAD_SAFE_CLASS_
 
@@ -123,6 +123,8 @@ public:
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
+		bool no_min_btn = false;
+		bool no_max_btn = false;
 		bool no_focus = false;
 		bool is_popup = false;
 		bool mpass = false;
@@ -237,6 +239,8 @@ private:
 
 	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
 
+	void initialize_tts() const;
+
 public:
 	void menu_callback(id p_sender);
 
@@ -253,6 +257,7 @@ public:
 	void send_event(NSEvent *p_event);
 	void send_window_event(const WindowData &p_wd, WindowEvent p_event);
 	void release_pressed_events();
+	void sync_mouse_state();
 	void get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const;
 	void update_mouse_pos(WindowData &p_wd, NSPoint p_location_in_window);
 	void push_to_key_event_buffer(const KeyEvent &p_event);
@@ -422,6 +427,11 @@ public:
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
 
+	virtual int accessibility_should_increase_contrast() const override;
+	virtual int accessibility_should_reduce_animation() const override;
+	virtual int accessibility_should_reduce_transparency() const override;
+	virtual int accessibility_screen_reader_active() const override;
+
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;
 
@@ -441,6 +451,7 @@ public:
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 	virtual void show_emoji_and_symbol_picker() const override;
 
+	void _process_events(bool p_pump);
 	virtual void process_events() override;
 	virtual void force_process_and_drop_events() override;
 

@@ -34,13 +34,14 @@
 # Douper <besinauda@gmail.com>, 2025.
 # Cheesymoon Brainstorms <alexsergiuhd@gmail.com>, 2025.
 # GREEN MONSTER <racovitavvalentin@gmail.com>, 2025.
+# Alin Gheorghe <yovngra@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-17 23:01+0000\n"
-"Last-Translator: GREEN MONSTER <racovitavvalentin@gmail.com>\n"
+"PO-Revision-Date: 2025-03-04 16:11+0000\n"
+"Last-Translator: Alin Gheorghe <yovngra@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -49,7 +50,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Fir principal"
@@ -110,6 +111,9 @@ msgstr "Joystick Dreapta axa Y, Joystick 1 axa Y"
 
 msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
 msgstr "Joystick 2 axa X, declanșare stânga, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Joystick 2 Axa Y, Trigger dreapta, Sony R2, Xbox RT"
 
 msgid "Joystick 3 X-Axis"
 msgstr "Joystick 3 axa X"

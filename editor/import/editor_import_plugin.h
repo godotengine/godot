@@ -57,7 +57,6 @@ protected:
 	Error _append_import_external_resource(const String &p_file, const Dictionary &p_custom_options = Dictionary(), const String &p_custom_importer = String(), Variant p_generator_parameters = Variant());
 
 public:
-	EditorImportPlugin();
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;

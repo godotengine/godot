@@ -234,6 +234,7 @@ ReplicationEditor::ReplicationEditor() {
 
 	np_line_edit = memnew(LineEdit);
 	np_line_edit->set_placeholder(":property");
+	np_line_edit->set_accessibility_name(TTRC("Path"));
 	np_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	np_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ReplicationEditor::_np_text_submitted));
 	hb->add_child(np_line_edit);
@@ -251,6 +252,7 @@ ReplicationEditor::ReplicationEditor() {
 	pin->set_theme_type_variation(SceneStringName(FlatButton));
 	pin->set_toggle_mode(true);
 	pin->set_tooltip_text(TTR("Pin replication editor"));
+	pin->set_accessibility_name(TTRC("Pin"));
 	hb->add_child(pin);
 
 	tree = memnew(Tree);
@@ -273,6 +275,7 @@ ReplicationEditor::ReplicationEditor() {
 	vb->add_child(tree);
 
 	drop_label = memnew(Label);
+	drop_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	drop_label->set_text(TTR("Add properties using the options above, or\ndrag them from the inspector and drop them here."));
 	drop_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	drop_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

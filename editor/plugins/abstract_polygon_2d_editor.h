@@ -162,5 +162,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, const String &p_class);
-	~AbstractPolygon2DEditorPlugin();
 };

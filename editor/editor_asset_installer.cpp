@@ -674,6 +674,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	asset_status->add_child(asset_label);
 
 	asset_title_label = memnew(Label);
+	asset_title_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	asset_status->add_child(asset_title_label);
 
 	// File remapping controls.
@@ -684,6 +685,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	show_source_files_button = memnew(Button);
 	show_source_files_button->set_toggle_mode(true);
 	show_source_files_button->set_tooltip_text(TTR("Open the list of the asset contents and select which files to install."));
+	show_source_files_button->set_accessibility_name(TTRC("Show Asset Contents"));
 	remapping_tools->add_child(show_source_files_button);
 	show_source_files_button->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
 
@@ -704,10 +706,12 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	remapping_tools->add_spacer();
 
 	asset_conflicts_label = memnew(Label);
+	asset_conflicts_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	asset_conflicts_label->set_theme_type_variation("HeaderSmall");
 	asset_conflicts_label->set_text(TTR("No files conflict with your project"));
 	remapping_tools->add_child(asset_conflicts_label);
 	asset_conflicts_link = memnew(LinkButton);
+	asset_conflicts_link->set_accessibility_name(TTRC("Show Conflicting Files"));
 	asset_conflicts_link->set_theme_type_variation("HeaderSmallLink");
 	asset_conflicts_link->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	asset_conflicts_link->set_tooltip_text(TTR("Show contents of the asset and conflicting files."));
@@ -732,6 +736,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	source_tree_vb->add_child(source_tree_label);
 
 	source_tree = memnew(Tree);
+	source_tree->set_accessibility_name(TTRC("Source Files"));
 	source_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	source_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	source_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
@@ -748,6 +753,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	destination_tree_vb->add_child(destination_tree_label);
 
 	destination_tree = memnew(Tree);
+	destination_tree->set_accessibility_name(TTRC("Destination Files"));
 	destination_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	destination_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	destination_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));

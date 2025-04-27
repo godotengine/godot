@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-11 01:02+0000\n"
+"PO-Revision-Date: 2025-03-17 08:22+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ka/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "მთავარი ნაკადი"
@@ -478,6 +478,9 @@ msgstr ""
 msgid "property '%s'"
 msgstr "თვისება '%s'"
 
+msgid "Nearest FPS: %d"
+msgstr "უახლოესი FPS: %d"
+
 msgid "Change Animation Step"
 msgstr "ანიმაციის ბიჯის შეცვლა"
 
@@ -767,6 +770,9 @@ msgstr "სიგნალის არგუმენტების მოხ�
 
 msgid "Receiver Method:"
 msgstr "მიმღების მეთოდი:"
+
+msgid "Pick"
+msgstr "აირჩიეთ"
 
 msgid "Advanced"
 msgstr "დამატებითი"
@@ -3821,9 +3827,6 @@ msgstr "გაშვებული ასლების გაშვება"
 
 msgid "Pick Root Node Type"
 msgstr "აირჩიეთ ძირითადი კვანძის ტიპი"
-
-msgid "Pick"
-msgstr "აირჩიეთ"
 
 msgid "Scene name is empty."
 msgstr "სცენის სახელი ცარიელია."

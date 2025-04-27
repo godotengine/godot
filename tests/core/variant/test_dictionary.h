@@ -115,19 +115,18 @@ TEST_CASE("[Dictionary] List init") {
 	CHECK_EQ(tdict[5.0], Variant(2.0));
 }
 
-TEST_CASE("[Dictionary] get_key_lists()") {
+TEST_CASE("[Dictionary] get_key_list()") {
 	Dictionary map;
-	List<Variant> keys;
-	List<Variant> *ptr = &keys;
-	map.get_key_list(ptr);
+	LocalVector<Variant> keys;
+	keys = map.get_key_list();
 	CHECK(keys.is_empty());
 	map[1] = 3;
-	map.get_key_list(ptr);
+	keys = map.get_key_list();
 	CHECK(keys.size() == 1);
-	CHECK(int(keys.front()->get()) == 1);
+	CHECK(int(keys[0]) == 1);
 	map[2] = 4;
-	map.get_key_list(ptr);
-	CHECK(keys.size() == 3);
+	keys = map.get_key_list();
+	CHECK(keys.size() == 2);
 }
 
 TEST_CASE("[Dictionary] get_key_at_index()") {
@@ -545,11 +544,7 @@ TEST_CASE("[Dictionary] Order and find") {
 	d[12] = "twelve";
 	d["4"] = "four";
 
-	Array keys;
-	keys.append(4);
-	keys.append(8);
-	keys.append(12);
-	keys.append("4");
+	Array keys = { 4, 8, 12, "4" };
 
 	CHECK_EQ(d.keys(), keys);
 	CHECK_EQ(d.find_key("four"), Variant(4));
@@ -591,6 +586,47 @@ TEST_CASE("[Dictionary] Typed copying") {
 	d4.clear();
 	d5.clear();
 	d6.clear();
+}
+
+TEST_CASE("[Dictionary] Iteration") {
+	Dictionary a1 = build_dictionary(1, 2, 3, 4, 5, 6);
+	Dictionary a2 = build_dictionary(1, 2, 3, 4, 5, 6);
+
+	int idx = 0;
+
+	for (const KeyValue<Variant, Variant> &kv : (const Dictionary &)a1) {
+		CHECK_EQ(int(a2[kv.key]), int(kv.value));
+		idx++;
+	}
+
+	CHECK_EQ(idx, a1.size());
+
+	a1.clear();
+	a2.clear();
+}
+
+TEST_CASE("[Dictionary] Object value init") {
+	Object *a = memnew(Object);
+	Object *b = memnew(Object);
+	TypedDictionary<double, Object *> tdict = {
+		{ 0.0, a },
+		{ 5.0, b },
+	};
+	CHECK_EQ(tdict[0.0], Variant(a));
+	CHECK_EQ(tdict[5.0], Variant(b));
+	memdelete(a);
+	memdelete(b);
+}
+
+TEST_CASE("[Dictionary] RefCounted value init") {
+	Ref<RefCounted> a = memnew(RefCounted);
+	Ref<RefCounted> b = memnew(RefCounted);
+	TypedDictionary<double, Ref<RefCounted>> tdict = {
+		{ 0.0, a },
+		{ 5.0, b },
+	};
+	CHECK_EQ(tdict[0.0], Variant(a));
+	CHECK_EQ(tdict[5.0], Variant(b));
 }
 
 } // namespace TestDictionary

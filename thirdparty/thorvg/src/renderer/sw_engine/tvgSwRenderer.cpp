@@ -121,8 +121,7 @@ struct SwShapeTask : SwTask
         auto visibleFill = false;
 
         //This checks also for the case, if the invisible shape turned to visible by alpha.
-        auto prepareShape = false;
-        if (!shapePrepared(&shape) && (flags & RenderUpdateFlag::Color)) prepareShape = true;
+        auto prepareShape = !shapePrepared(&shape) && flags & (RenderUpdateFlag::Color | RenderUpdateFlag::Gradient);
 
         //Shape
         if (flags & (RenderUpdateFlag::Path | RenderUpdateFlag::Transform) || prepareShape) {
@@ -186,6 +185,7 @@ struct SwShapeTask : SwTask
     err:
         bbox.reset();
         shapeReset(&shape);
+        rleReset(shape.strokeRle);
         shapeDelOutline(&shape, mpool, tid);
     }
 

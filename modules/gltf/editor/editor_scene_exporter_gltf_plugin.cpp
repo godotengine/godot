@@ -30,8 +30,6 @@
 
 #include "editor_scene_exporter_gltf_plugin.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "editor_scene_exporter_gltf_settings.h"
 
 #include "editor/editor_file_system.h"
@@ -118,5 +116,3 @@ void SceneExporterGLTFPlugin::_export_scene_as_gltf(const String &p_file_path) {
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
 }
-
-#endif // TOOLS_ENABLED
