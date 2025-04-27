@@ -33,20 +33,17 @@
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/control.h"
-#include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/texture_rect.h"
 
+class CheckBox;
 class CheckButton;
 class EditorSelection;
 class GridContainer;
+class Label;
+class OptionButton;
+class PanelContainer;
+class Separator;
+class TextureRect;
 
 // Inspector controls.
 class ControlPositioningWarning : public MarginContainer {
@@ -84,6 +81,7 @@ class EditorPropertyAnchorsPreset : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
 
 public:
 	void setup(const Vector<String> &p_options);
