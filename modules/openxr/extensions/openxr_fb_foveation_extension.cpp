@@ -72,9 +72,11 @@ HashMap<String, bool *> OpenXRFBFoveationExtension::get_requested_extensions() {
 	request_extensions[XR_FB_FOVEATION_EXTENSION_NAME] = &fb_foveation_ext;
 	request_extensions[XR_FB_FOVEATION_CONFIGURATION_EXTENSION_NAME] = &fb_foveation_configuration_ext;
 
+#ifdef XR_USE_GRAPHICS_API_VULKAN
 	if (rendering_driver == "vulkan") {
 		request_extensions[XR_FB_FOVEATION_VULKAN_EXTENSION_NAME] = &fb_foveation_vulkan_ext;
 	}
+#endif // XR_USE_GRAPHICS_API_VULKAN
 
 	return request_extensions;
 }
@@ -97,9 +99,11 @@ void OpenXRFBFoveationExtension::on_instance_destroyed() {
 
 bool OpenXRFBFoveationExtension::is_enabled() const {
 	bool enabled = swapchain_update_state_ext != nullptr && swapchain_update_state_ext->is_enabled() && fb_foveation_ext && fb_foveation_configuration_ext;
+#ifdef XR_USE_GRAPHICS_API_VULKAN
 	if (rendering_driver == "vulkan") {
 		enabled = enabled && fb_foveation_vulkan_ext;
 	}
+#endif // XR_USE_GRAPHICS_API_VULKAN
 	return enabled;
 }
 

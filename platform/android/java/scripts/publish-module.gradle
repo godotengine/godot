@@ -43,7 +43,11 @@ afterEvaluate {
                             name = 'Rémi Verschelde'
                             email = 'rverschelde@gmail.com'
                         }
-                        // Add all other devs here...
+                        developer {
+                            id = 'godotengine'
+                            name = 'Godot Engine contributors'
+                            email = 'contact@godotengine.org'
+                        }
                     }
 
                     // Version control info - if you're using GitHub, follow the
@@ -91,7 +95,11 @@ afterEvaluate {
                             name = 'Rémi Verschelde'
                             email = 'rverschelde@gmail.com'
                         }
-                        // Add all other devs here...
+                        developer {
+                            id = 'godotengine'
+                            name = 'Godot Engine contributors'
+                            email = 'contact@godotengine.org'
+                        }
                     }
 
                     // Version control info - if you're using GitHub, follow the

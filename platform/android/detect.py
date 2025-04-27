@@ -34,8 +34,13 @@ def get_opts():
             "android-" + str(get_min_target_api()),
         ),
         BoolVariable("store_release", "Editor build for Google Play Store (for official builds only)", False),
-        BoolVariable("generate_apk", "Generate an APK/AAB after building Android library by calling Gradle", False),
+        BoolVariable(
+            "generate_android_binaries",
+            "Generate APK, AAB & AAR binaries after building Android library by calling Gradle",
+            False,
+        ),
         BoolVariable("swappy", "Use Swappy Frame Pacing library", False),
+        BoolVariable("gradle_do_not_strip", "Whether Gradle should strip the Android *.so libraries or not", False),
     ]
 
 
@@ -64,7 +69,7 @@ def get_android_ndk_root(env: "SConsEnvironment"):
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_ndk_version():
-    return "23.2.8568313"
+    return "27.2.12479018"
 
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.

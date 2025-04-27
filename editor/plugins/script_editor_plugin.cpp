@@ -1784,7 +1784,10 @@ void ScriptEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 
-		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			disk_changed_list->set_accessibility_name(TTR("The following files are newer on disk"));
+			[[fallthrough]];
+		}
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			tab_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
@@ -4227,6 +4230,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	overview_vbox->add_child(buttons_hbox);
 
 	filename = memnew(Label);
+	filename->set_focus_mode(FOCUS_ACCESSIBILITY);
 	filename->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	filename->set_clip_text(true);
 	filename->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -4385,6 +4389,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_icon = memnew(TextureRect);
 	menu_hb->add_child(script_icon);
 	script_name_label = memnew(Label);
+	script_name_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	menu_hb->add_child(script_name_label);
 
 	script_icon->hide();

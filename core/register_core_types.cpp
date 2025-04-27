@@ -71,6 +71,7 @@
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
 #include "core/object/class_db.h"
+#include "core/object/script_backtrace.h"
 #include "core/object/script_language_extension.h"
 #include "core/object/undo_redo.h"
 #include "core/object/worker_thread_pool.h"
@@ -162,7 +163,7 @@ void register_core_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(Script);
 	GDREGISTER_ABSTRACT_CLASS(ScriptLanguage);
-
+	GDREGISTER_CLASS(ScriptBacktrace);
 	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);
 	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageExtension);
 
@@ -254,6 +255,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(CoreBind::Thread);
 	GDREGISTER_CLASS(CoreBind::Mutex);
 	GDREGISTER_CLASS(CoreBind::Semaphore);
+	GDREGISTER_VIRTUAL_CLASS(CoreBind::Logger);
 
 	GDREGISTER_CLASS(XMLParser);
 	GDREGISTER_CLASS(JSON);

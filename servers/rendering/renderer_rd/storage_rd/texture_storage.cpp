@@ -1640,10 +1640,7 @@ void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, RS::Te
 }
 
 void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
-	List<RID> textures;
-	texture_owner.get_owned_list(&textures);
-
-	for (const RID &rid : textures) {
+	for (const RID &rid : texture_owner.get_owned_list()) {
 		Texture *t = texture_owner.get_or_null(rid);
 		if (!t) {
 			continue;
@@ -1654,6 +1651,7 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.width = t->width;
 		tinfo.height = t->height;
 		tinfo.bytes = Image::get_image_data_size(t->width, t->height, t->format, t->mipmaps > 1);
+		tinfo.type = static_cast<RenderingServer::TextureType>(t->type);
 
 		switch (t->type) {
 			case TextureType::TYPE_3D:

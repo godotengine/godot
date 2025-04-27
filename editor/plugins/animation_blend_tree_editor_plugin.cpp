@@ -1222,6 +1222,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
 	error_label = memnew(Label);
+	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_panel->add_child(error_label);
 	error_label->set_text("eh");
 

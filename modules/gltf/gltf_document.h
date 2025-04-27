@@ -60,13 +60,21 @@ public:
 		ROOT_NODE_MODE_KEEP_ROOT,
 		ROOT_NODE_MODE_MULTI_ROOT,
 	};
+	enum VisibilityMode {
+		VISIBILITY_MODE_INCLUDE_REQUIRED,
+		VISIBILITY_MODE_INCLUDE_OPTIONAL,
+		VISIBILITY_MODE_EXCLUDE,
+	};
 
 private:
 	int _naming_version = 1;
 	String _image_format = "PNG";
 	float _lossy_quality = 0.75f;
+	String _fallback_image_format = "None";
+	float _fallback_image_quality = 0.25f;
 	Ref<GLTFDocumentExtension> _image_save_extension;
 	RootNodeMode _root_node_mode = RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT;
+	VisibilityMode _visibility_mode = VisibilityMode::VISIBILITY_MODE_INCLUDE_REQUIRED;
 
 protected:
 	static void _bind_methods();
@@ -92,8 +100,14 @@ public:
 	String get_image_format() const;
 	void set_lossy_quality(float p_lossy_quality);
 	float get_lossy_quality() const;
+	void set_fallback_image_format(const String &p_fallback_image_format);
+	String get_fallback_image_format() const;
+	void set_fallback_image_quality(float p_fallback_image_quality);
+	float get_fallback_image_quality() const;
 	void set_root_node_mode(RootNodeMode p_root_node_mode);
 	RootNodeMode get_root_node_mode() const;
+	void set_visibility_mode(VisibilityMode p_visibility_mode);
+	VisibilityMode get_visibility_mode() const;
 	static String _gen_unique_name_static(HashSet<String> &r_unique_names, const String &p_name);
 
 private:
@@ -182,6 +196,7 @@ private:
 	Error _serialize_textures(Ref<GLTFState> p_state);
 	Error _serialize_texture_samplers(Ref<GLTFState> p_state);
 	Error _serialize_images(Ref<GLTFState> p_state);
+	Dictionary _serialize_image(Ref<GLTFState> p_state, Ref<Image> p_image, const String &p_image_format, float p_lossy_quality, Ref<GLTFDocumentExtension> p_image_save_extension);
 	Error _serialize_lights(Ref<GLTFState> p_state);
 	Ref<Image> _parse_image_bytes_into_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_mime_type, int p_index, String &r_file_extension);
 	void _parse_image_save_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_resource_uri, const String &p_file_extension, int p_index, Ref<Image> p_image);
@@ -378,3 +393,4 @@ public:
 };
 
 VARIANT_ENUM_CAST(GLTFDocument::RootNodeMode);
+VARIANT_ENUM_CAST(GLTFDocument::VisibilityMode);

@@ -186,6 +186,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	label_margin->set_content_margin_all(0);
 
 	price = memnew(Label);
+	price->set_focus_mode(FOCUS_ACCESSIBILITY);
 	price->add_theme_style_override(CoreStringName(normal), label_margin);
 	price->set_tooltip_text(TTR("License"));
 	price->set_accessibility_name(TTRC("License"));
@@ -579,6 +580,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	HBoxContainer *title_hb = memnew(HBoxContainer);
 	vb->add_child(title_hb);
 	title = memnew(Label);
+	title->set_focus_mode(FOCUS_ACCESSIBILITY);
 	title_hb->add_child(title);
 	title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -1713,6 +1715,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb->add_child(library_message_box);
 
 	library_message = memnew(Label);
+	library_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	library_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	library_message_box->add_child(library_message);
 
@@ -1746,6 +1749,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
 	error_label = memnew(Label);
+	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_hb->add_child(error_label);
 	error_tr = memnew(TextureRect);
 	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);

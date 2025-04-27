@@ -296,6 +296,9 @@ opts.Add("asflags", "Custom flags for the assembler")
 opts.Add("arflags", "Custom flags for the archive tool")
 opts.Add("rcflags", "Custom flags for Windows resource compiler")
 
+opts.Add("c_compiler_launcher", "C compiler launcher (e.g. `ccache`)")
+opts.Add("cpp_compiler_launcher", "C++ compiler launcher (e.g. `ccache`)")
+
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
 opts.Update(env)
@@ -1122,6 +1125,13 @@ for key in (emitters := env.StaticObject.builder.emitter):
 for key in (emitters := env.SharedObject.builder.emitter):
     emitters[key] = ListEmitter([methods.redirect_emitter] + env.Flatten(emitters[key]))
 
+# Prepend compiler launchers
+if "c_compiler_launcher" in env:
+    env["CC"] = " ".join([env["c_compiler_launcher"], env["CC"]])
+
+if "cpp_compiler_launcher" in env:
+    env["CXX"] = " ".join([env["cpp_compiler_launcher"], env["CXX"]])
+
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
@@ -1145,15 +1155,6 @@ if env["vsproj"]:
     methods.generate_cpp_hint_file("cpp.hint")
     env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
     methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
-
-# Check for the existence of headers
-conf = Configure(env)
-if "check_c_headers" in env:
-    headers = env["check_c_headers"]
-    for header in headers:
-        if conf.CheckCHeader(header):
-            env.AppendUnique(CPPDEFINES=[headers[header]])
-conf.Finish()
 
 # Miscellaneous & post-build methods.
 if not env.GetOption("clean") and not env.GetOption("help"):

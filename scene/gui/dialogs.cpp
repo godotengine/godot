@@ -463,6 +463,7 @@ AcceptDialog::AcceptDialog() {
 	buttons_hbox = memnew(HBoxContainer);
 
 	message_label = memnew(Label);
+	message_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	message_label->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
 	message_label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
 	add_child(message_label, false, INTERNAL_MODE_FRONT);

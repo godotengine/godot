@@ -148,6 +148,7 @@
 #include "scene/resources/style_box_line.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
@@ -1019,6 +1020,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PlaceholderTexture2DArray);
 	GDREGISTER_CLASS(PlaceholderCubemap);
 	GDREGISTER_CLASS(PlaceholderCubemapArray);
+	GDREGISTER_CLASS(SVGTexture);
 
 	// These classes are part of renderer_rd
 	GDREGISTER_CLASS(Texture2DRD);

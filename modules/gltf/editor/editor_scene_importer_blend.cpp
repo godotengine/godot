@@ -529,6 +529,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		vb->add_child(hb);
 
 		path_status = memnew(Label);
+		path_status->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		vb->add_child(path_status);
 
 		configure_blender_dialog->add_child(vb);

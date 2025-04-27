@@ -771,10 +771,12 @@ ConnectDialog::ConnectDialog() {
 	vbc_left->add_child(tree);
 
 	warning_label = memnew(Label);
+	warning_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vbc_left->add_child(warning_label);
 	warning_label->hide();
 
 	error_label = memnew(Label);
+	error_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	error_label->set_text(TTR("Scene does not contain any script."));
 	vbc_left->add_child(error_label);
 	error_label->hide();

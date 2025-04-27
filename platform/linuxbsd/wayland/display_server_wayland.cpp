@@ -822,8 +822,9 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 		}
 #endif
 
-		// NOTE: The public window-handling methods might depend on this flag being
-		// set. Ensure to not make any of these calls before this assignment.
+		// NOTE: Some public window-handling methods might depend on this flag being
+		// set. Make sure the method you're calling does not depend on it before this
+		// assignment.
 		wd.visible = true;
 
 		// Actually try to apply the window's mode now that it's visible.
@@ -1349,7 +1350,7 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 	if (rendering_context) {
 		rendering_context->window_set_vsync_mode(p_window_id, p_vsync_mode);
 
-		wd.emulate_vsync = (rendering_context->window_get_vsync_mode(p_window_id) == DisplayServer::VSYNC_ENABLED);
+		wd.emulate_vsync = (!wayland_thread.is_fifo_available() && rendering_context->window_get_vsync_mode(p_window_id) == DisplayServer::VSYNC_ENABLED);
 
 		if (wd.emulate_vsync) {
 			print_verbose("VSYNC: manually throttling frames using MAILBOX.");
@@ -1362,6 +1363,8 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 	if (egl_manager) {
 		egl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 
+		// NOTE: Mesa's EGL implementation does not seem to make use of fifo_v1 so
+		// we'll have to always emulate V-Sync.
 		wd.emulate_vsync = egl_manager->is_using_vsync();
 
 		if (wd.emulate_vsync) {
@@ -1542,38 +1545,14 @@ bool DisplayServerWayland::color_picker(const Callable &p_callback) {
 }
 
 void DisplayServerWayland::try_suspend() {
-	bool must_emulate = false;
-
-	for (KeyValue<DisplayServer::WindowID, WindowData> &pair : windows) {
-		if (pair.value.emulate_vsync) {
-			must_emulate = true;
-			break;
-		}
-	}
-
 	// Due to various reasons, we manually handle display synchronization by
 	// waiting for a frame event (request to draw) or, if available, the actual
 	// window's suspend status. When a window is suspended, we can avoid drawing
 	// altogether, either because the compositor told us that we don't need to or
 	// because the pace of the frame events became unreliable.
-	if (must_emulate) {
-		bool frame = wayland_thread.wait_frame_suspend_ms(WAYLAND_MAX_FRAME_TIME_US / 1000);
-		if (!frame) {
-			suspend_state = SuspendState::TIMEOUT;
-		}
-	}
-
-	// If we suspended by capability, we'll know with this check. We must do this
-	// after `wait_frame_suspend_ms` as it progressively dispatches the event queue
-	// during the "timeout".
-	if (wayland_thread.is_suspended()) {
-		suspend_state = SuspendState::CAPABILITY;
-	}
-
-	if (suspend_state == SuspendState::TIMEOUT) {
-		DEBUG_LOG_WAYLAND("Suspending. Reason: timeout.");
-	} else if (suspend_state == SuspendState::CAPABILITY) {
-		DEBUG_LOG_WAYLAND("Suspending. Reason: capability.");
+	bool frame = wayland_thread.wait_frame_suspend_ms(WAYLAND_MAX_FRAME_TIME_US / 1000);
+	if (!frame) {
+		suspend_state = SuspendState::TIMEOUT;
 	}
 }
 
@@ -1724,39 +1703,54 @@ void DisplayServerWayland::process_events() {
 
 	wayland_thread.keyboard_echo_keys();
 
-	if (suspend_state == SuspendState::NONE) {
-		// Due to the way legacy suspension works, we have to treat low processor
-		// usage mode very differently than the regular one.
-		if (OS::get_singleton()->is_in_low_processor_usage_mode()) {
-			// NOTE: We must avoid committing a surface if we expect a new frame, as we
-			// might otherwise commit some inconsistent data (e.g. buffer scale). Note
-			// that if a new frame is expected it's going to be committed by the renderer
-			// soon anyways.
-			if (!RenderingServer::get_singleton()->has_changed()) {
-				// We _can't_ commit in a different thread (such as in the frame callback
-				// itself) because we would risk to step on the renderer's feet, which would
-				// cause subtle but severe issues, such as crashes on setups with explicit
-				// sync. This isn't normally a problem, as the renderer commits at every
-				// frame (which is what we need for atomic surface updates anyways), but in
-				// low processor usage mode that expectation is broken. When it's on, our
-				// frame rate stops being constant. This also reflects in the frame
-				// information we use for legacy suspension. In order to avoid issues, let's
-				// manually commit all surfaces, so that we can get fresh frame data.
-				wayland_thread.commit_surfaces();
-				try_suspend();
+	switch (suspend_state) {
+		case SuspendState::NONE: {
+			bool emulate_vsync = false;
+			for (KeyValue<DisplayServer::WindowID, WindowData> &pair : windows) {
+				if (pair.value.emulate_vsync) {
+					emulate_vsync = true;
+					break;
+				}
 			}
-		} else {
-			try_suspend();
-		}
-	} else {
-		if (suspend_state == SuspendState::CAPABILITY) {
-			// If we suspended by capability we can assume that it will be reset when
-			// the compositor wants us to repaint.
-			if (!wayland_thread.is_suspended()) {
-				suspend_state = SuspendState::NONE;
-				DEBUG_LOG_WAYLAND("Unsuspending from capability.");
+
+			if (emulate_vsync) {
+				// Due to the way legacy suspension works, we have to treat low processor
+				// usage mode very differently than the regular one.
+				if (OS::get_singleton()->is_in_low_processor_usage_mode()) {
+					// NOTE: We must avoid committing a surface if we expect a new frame, as we
+					// might otherwise commit some inconsistent data (e.g. buffer scale). Note
+					// that if a new frame is expected it's going to be committed by the renderer
+					// soon anyways.
+					if (!RenderingServer::get_singleton()->has_changed()) {
+						// We _can't_ commit in a different thread (such as in the frame callback
+						// itself) because we would risk to step on the renderer's feet, which would
+						// cause subtle but severe issues, such as crashes on setups with explicit
+						// sync. This isn't normally a problem, as the renderer commits at every
+						// frame (which is what we need for atomic surface updates anyways), but in
+						// low processor usage mode that expectation is broken. When it's on, our
+						// frame rate stops being constant. This also reflects in the frame
+						// information we use for legacy suspension. In order to avoid issues, let's
+						// manually commit all surfaces, so that we can get fresh frame data.
+						wayland_thread.commit_surfaces();
+						try_suspend();
+					}
+				} else {
+					try_suspend();
+				}
 			}
-		} else if (suspend_state == SuspendState::TIMEOUT) {
+
+			if (wayland_thread.is_suspended()) {
+				suspend_state = SuspendState::CAPABILITY;
+			}
+
+			if (suspend_state == SuspendState::TIMEOUT) {
+				DEBUG_LOG_WAYLAND("Suspending. Reason: timeout.");
+			} else if (suspend_state == SuspendState::CAPABILITY) {
+				DEBUG_LOG_WAYLAND("Suspending. Reason: capability.");
+			}
+		} break;
+
+		case SuspendState::TIMEOUT: {
 			// Certain compositors might not report the "suspended" wm_capability flag.
 			// Because of this we'll wake up at the next frame event, indicating the
 			// desire for the compositor to let us repaint.
@@ -1764,11 +1758,20 @@ void DisplayServerWayland::process_events() {
 				suspend_state = SuspendState::NONE;
 				DEBUG_LOG_WAYLAND("Unsuspending from timeout.");
 			}
-		}
 
-		// Since we're not rendering, nothing is committing the windows'
-		// surfaces. We have to do it ourselves.
-		wayland_thread.commit_surfaces();
+			// Since we're not rendering, nothing is committing the windows'
+			// surfaces. We have to do it ourselves.
+			wayland_thread.commit_surfaces();
+		} break;
+
+		case SuspendState::CAPABILITY: {
+			// If we suspended by capability we can assume that it will be reset when
+			// the compositor wants us to repaint.
+			if (!wayland_thread.is_suspended()) {
+				suspend_state = SuspendState::NONE;
+				DEBUG_LOG_WAYLAND("Unsuspending from capability.");
+			}
+		} break;
 	}
 
 #ifdef DBUS_ENABLED

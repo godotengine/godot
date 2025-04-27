@@ -33,13 +33,13 @@
 #include "core/debugger/engine_profiler.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/script_backtrace.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
+#include "core/variant/typed_array.h"
 
 class MainLoop;
-template <typename T>
-class TypedArray;
 
 namespace CoreBind {
 
@@ -119,10 +119,45 @@ public:
 	ResourceSaver() { singleton = this; }
 };
 
+class Logger : public RefCounted {
+	GDCLASS(Logger, RefCounted);
+
+public:
+	enum ErrorType {
+		ERROR_TYPE_ERROR,
+		ERROR_TYPE_WARNING,
+		ERROR_TYPE_SCRIPT,
+		ERROR_TYPE_SHADER,
+	};
+
+protected:
+	GDVIRTUAL2(_log_message, String, bool);
+	GDVIRTUAL8(_log_error, String, String, int, String, String, bool, int, TypedArray<ScriptBacktrace>);
+	static void _bind_methods();
+
+public:
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERROR_TYPE_ERROR, const TypedArray<ScriptBacktrace> &p_script_backtraces = {});
+	virtual void log_message(const String &p_text, bool p_error);
+};
+
 class OS : public Object {
 	GDCLASS(OS, Object);
 
 	mutable HashMap<String, bool> feature_cache;
+
+	class LoggerBind : public ::Logger {
+		inline static thread_local bool is_logging = false;
+
+	public:
+		LocalVector<Ref<CoreBind::Logger>> loggers;
+
+		virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
+		virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {}) override;
+
+		void clear() { loggers.clear(); }
+	};
+
+	LoggerBind *logger_bind = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -274,9 +309,13 @@ public:
 	Vector<String> get_granted_permissions() const;
 	void revoke_granted_permissions();
 
+	void add_logger(const Ref<Logger> &p_logger);
+	void remove_logger(const Ref<Logger> &p_logger);
+
 	static OS *get_singleton() { return singleton; }
 
-	OS() { singleton = this; }
+	OS();
+	~OS();
 };
 
 class Geometry2D : public Object {
@@ -579,6 +618,7 @@ public:
 	Error unregister_script_language(const ScriptLanguage *p_language);
 	int get_script_language_count();
 	ScriptLanguage *get_script_language(int p_index) const;
+	TypedArray<ScriptBacktrace> capture_script_backtraces(bool p_include_variables = false) const;
 
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
@@ -653,6 +693,7 @@ public:
 
 } // namespace CoreBind
 
+VARIANT_ENUM_CAST(CoreBind::Logger::ErrorType);
 VARIANT_ENUM_CAST(CoreBind::ResourceLoader::ThreadLoadStatus);
 VARIANT_ENUM_CAST(CoreBind::ResourceLoader::CacheMode);
 

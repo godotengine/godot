@@ -1484,7 +1484,6 @@ void Label::_bind_methods() {
 }
 
 Label::Label(const String &p_text) {
-	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	set_text(p_text);
 	set_v_size_flags(SIZE_SHRINK_CENTER);

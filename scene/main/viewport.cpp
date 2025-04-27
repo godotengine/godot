@@ -44,6 +44,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/world_2d.h"
 #include "servers/audio_server.h"
@@ -1085,6 +1086,9 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 	if (new_font_oversampling != font_oversampling) {
 		TS->reference_oversampling_level(new_font_oversampling);
 		TS->unreference_oversampling_level(font_oversampling);
+
+		SVGTexture::reference_scaling_level(new_font_oversampling);
+		SVGTexture::unreference_scaling_level(font_oversampling);
 	}
 
 	size = new_size;

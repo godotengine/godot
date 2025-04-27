@@ -31,6 +31,7 @@
 #import "crash_handler_macos.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
@@ -176,6 +177,18 @@ static void handle_crash(int sig) {
 	}
 	print_error("-- END OF BACKTRACE --");
 	print_error("================================================================");
+
+	Vector<Ref<ScriptBacktrace>> script_backtraces;
+	if (ScriptServer::are_languages_initialized()) {
+		script_backtraces = ScriptServer::capture_script_backtraces(false);
+	}
+	if (!script_backtraces.is_empty()) {
+		for (const Ref<ScriptBacktrace> &backtrace : script_backtraces) {
+			print_error(backtrace->format());
+		}
+		print_error("-- END OF SCRIPT BACKTRACE --");
+		print_error("================================================================");
+	}
 
 	// Abort to pass the error to the OS
 	abort();

@@ -2045,6 +2045,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	delete_anim->set_shortcut(ED_SHORTCUT("sprite_frames/delete_animation", TTRC("Delete Animation"), Key::KEY_DELETE));
 
 	missing_anim_label = memnew(Label);
+	missing_anim_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	missing_anim_label->set_text(TTR("This resource does not have any animations."));
 	missing_anim_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	missing_anim_label->set_v_size_flags(SIZE_EXPAND_FILL);

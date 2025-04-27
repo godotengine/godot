@@ -275,6 +275,7 @@ ReplicationEditor::ReplicationEditor() {
 	vb->add_child(tree);
 
 	drop_label = memnew(Label);
+	drop_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	drop_label->set_text(TTR("Add properties using the options above, or\ndrag them from the inspector and drop them here."));
 	drop_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	drop_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

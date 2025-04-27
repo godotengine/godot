@@ -293,6 +293,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	vbc->add_child(lbl_preview_title);
 
 	lbl_preview = memnew(Label);
+	lbl_preview->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	lbl_preview->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	lbl_preview->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	vbc->add_child(lbl_preview);

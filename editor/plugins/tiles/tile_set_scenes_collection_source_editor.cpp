@@ -525,6 +525,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 
 	// Scenes collection source inspector.
 	scenes_collection_source_inspector_label = memnew(Label);
+	scenes_collection_source_inspector_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	scenes_collection_source_inspector_label->set_text(TTR("Scenes collection properties:"));
 	middle_vbox_container->add_child(scenes_collection_source_inspector_label);
 

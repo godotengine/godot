@@ -580,7 +580,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	return meminfo;
 }
 
-#ifndef __GLIBC__
+#if !defined(__GLIBC__) && !defined(WEB_ENABLED)
 void OS_Unix::_load_iconv() {
 #if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	String iconv_lib_aliases[] = { "/usr/lib/libiconv.2.dylib" };
@@ -632,7 +632,7 @@ String OS_Unix::multibyte_to_string(const String &p_encoding, const PackedByteAr
 	ERR_FAIL_COND_V_MSG(!_iconv_ok, String(), "Conversion failed: Unable to load libiconv");
 
 	LocalVector<char> chars;
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(WEB_ENABLED)
 	gd_iconv_t ctx = gd_iconv_open("UTF-8", p_encoding.is_empty() ? nl_langinfo(CODESET) : p_encoding.utf8().get_data());
 #else
 	gd_iconv_t ctx = gd_iconv_open("UTF-8", p_encoding.is_empty() ? gd_locale_charset() : p_encoding.utf8().get_data());
@@ -669,7 +669,7 @@ PackedByteArray OS_Unix::string_to_multibyte(const String &p_encoding, const Str
 	CharString charstr = p_string.utf8();
 
 	PackedByteArray ret;
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(WEB_ENABLED)
 	gd_iconv_t ctx = gd_iconv_open(p_encoding.is_empty() ? nl_langinfo(CODESET) : p_encoding.utf8().get_data(), "UTF-8");
 #else
 	gd_iconv_t ctx = gd_iconv_open(p_encoding.is_empty() ? gd_locale_charset() : p_encoding.utf8().get_data(), "UTF-8");
@@ -1178,7 +1178,7 @@ String OS_Unix::get_executable_path() const {
 #endif
 }
 
-void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!should_log(true)) {
 		return;
 	}
@@ -1205,31 +1205,38 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	const char *cyan_bold = tty ? "\E[1;36m" : "";
 	const char *reset = tty ? "\E[0m" : "";
 
+	const char *indent = "";
 	switch (p_type) {
 		case ERR_WARNING:
+			indent = "     ";
 			logf_error("%sWARNING:%s %s\n", yellow_bold, yellow, err_details);
-			logf_error("%s     at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
 			break;
 		case ERR_SCRIPT:
+			indent = "          ";
 			logf_error("%sSCRIPT ERROR:%s %s\n", magenta_bold, magenta, err_details);
-			logf_error("%s          at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
 			break;
 		case ERR_SHADER:
+			indent = "          ";
 			logf_error("%sSHADER ERROR:%s %s\n", cyan_bold, cyan, err_details);
-			logf_error("%s          at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
 			break;
 		case ERR_ERROR:
 		default:
+			indent = "   ";
 			logf_error("%sERROR:%s %s\n", red_bold, red, err_details);
-			logf_error("%s   at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
 			break;
+	}
+
+	logf_error("%s%sat: %s (%s:%i)%s\n", gray, indent, p_function, p_file, p_line, reset);
+
+	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
+		logf_error("%s%s%s\n", gray, backtrace->format(strlen(indent)).utf8().get_data(), reset);
 	}
 }
 
 UnixTerminalLogger::~UnixTerminalLogger() {}
 
 OS_Unix::OS_Unix() {
-#ifndef __GLIBC__
+#if !defined(__GLIBC__) && !defined(WEB_ENABLED)
 	_load_iconv();
 #endif
 

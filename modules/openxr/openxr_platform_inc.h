@@ -68,6 +68,11 @@
 #endif // X11_ENABLED
 #endif // defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 
+#ifdef D3D12_ENABLED
+#define XR_USE_GRAPHICS_API_D3D12
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#endif // D3D12_ENABLED
+
 #ifdef X11_ENABLED
 #include <X11/Xlib.h>
 #endif // X11_ENABLED

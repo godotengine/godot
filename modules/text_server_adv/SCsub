@@ -1,31 +1,12 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-import methods
+import text_server_adv_builders
 
 Import("env")
 Import("env_modules")
 
 env_text_server_adv = env_modules.Clone()
-
-
-def make_icu_data(target, source, env):
-    buffer = methods.get_buffer(str(source[0]))
-    with methods.generated_wrapper(str(target[0])) as file:
-        file.write(f"""\
-/* (C) 2016 and later: Unicode, Inc. and others. */
-/* License & terms of use: https://www.unicode.org/copyright.html */
-
-#include <unicode/utypes.h>
-#include <unicode/udata.h>
-#include <unicode/uversion.h>
-
-extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = {len(buffer)};
-extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {{
-	{methods.format_buffer(buffer, 1)}
-}};
-""")
-
 
 # Thirdparty source files
 
@@ -512,7 +493,9 @@ if env["builtin_icu4c"]:
 
     if env.editor_build:
         icudata = env_icu.CommandNoCache(
-            "#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/icudt_godot.dat", env.Run(make_icu_data)
+            "#thirdparty/icu4c/icudata.gen.h",
+            "#thirdparty/icu4c/icudt_godot.dat",
+            env.Run(text_server_adv_builders.make_icu_data),
         )
         env_text_server_adv.Prepend(CPPEXTPATH=["#thirdparty/icu4c/"])
         env_icu.Depends(lib, icudata)

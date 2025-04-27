@@ -352,6 +352,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	atlas_merging_right_panel->add_child(preview);
 
 	select_2_atlases_label = memnew(Label);
+	select_2_atlases_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	select_2_atlases_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	select_2_atlases_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	select_2_atlases_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

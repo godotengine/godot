@@ -741,6 +741,7 @@ void GroupsEditor::_show_remove_group_dialog() {
 
 		VBoxContainer *vbox = memnew(VBoxContainer);
 		remove_label = memnew(Label);
+		remove_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 		vbox->add_child(remove_label);
 
 		remove_check_box = memnew(CheckBox);

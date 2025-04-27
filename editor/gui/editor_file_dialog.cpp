@@ -2061,7 +2061,6 @@ void EditorFileDialog::_update_option_controls() {
 		} else {
 			Label *lbl = memnew(Label);
 			lbl->set_text(opt.name);
-			lbl->set_focus_mode(Control::FOCUS_NONE);
 			grid_select_options->add_child(lbl);
 
 			OptionButton *ob = memnew(OptionButton);
@@ -2428,7 +2427,6 @@ EditorFileDialog::EditorFileDialog() {
 	dir_up->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_go_up));
 
 	Label *l = memnew(Label(TTRC("Path:")));
-	l->set_focus_mode(Control::FOCUS_NONE);
 	l->set_theme_type_variation("HeaderSmall");
 	pathhb->add_child(l);
 
@@ -2504,7 +2502,6 @@ EditorFileDialog::EditorFileDialog() {
 	fav_vb->add_child(fav_hb);
 
 	l = memnew(Label(TTRC("Favorites:")));
-	l->set_focus_mode(Control::FOCUS_NONE);
 	l->set_theme_type_variation("HeaderSmall");
 	fav_hb->add_child(l);
 
@@ -2555,7 +2552,6 @@ EditorFileDialog::EditorFileDialog() {
 	lower_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	l = memnew(Label(TTRC("Directories & Files:")));
-	l->set_focus_mode(Control::FOCUS_NONE);
 	l->set_theme_type_variation("HeaderSmall");
 	l->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -2665,7 +2661,6 @@ EditorFileDialog::EditorFileDialog() {
 	file_box = memnew(HBoxContainer);
 
 	l = memnew(Label(TTRC("File:")));
-	l->set_focus_mode(Control::FOCUS_NONE);
 	l->set_theme_type_variation("HeaderSmall");
 	file_box->add_child(l);
 

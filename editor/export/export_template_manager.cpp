@@ -45,6 +45,7 @@
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
@@ -990,6 +991,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_hb->add_child(current_label);
 
 	current_value = memnew(Label);
+	current_value->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	current_hb->add_child(current_value);
 
 	// Current version statuses.

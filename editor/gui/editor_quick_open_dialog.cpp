@@ -205,6 +205,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 			panel_container->add_child(no_results_container);
 
 			no_results_label = memnew(Label);
+			no_results_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 			no_results_label->add_theme_font_size_override(SceneStringName(font_size), 24 * EDSCALE);
 			no_results_container->add_child(no_results_label);
 			no_results_container->hide();
@@ -245,6 +246,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 	{
 		// Selected filepath
 		file_details_path = memnew(Label);
+		file_details_path->set_focus_mode(FOCUS_ACCESSIBILITY);
 		file_details_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		file_details_path->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
 		file_details_path->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
