@@ -164,10 +164,10 @@ String GDScriptWarning::get_message() const {
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
 		case ACCESS_PRIVATE_MEMBER:
 			CHECK_SYMBOLS(1);
-			return vformat(R"(Trying to access a private member "%s" from an external place, which would cause problems during runtime.)", symbols[0]);
+			return vformat(R"(The member "%s" is private. It should not be accessed from an external script.)", symbols[0]);
 		case CALL_PRIVATE_METHOD:
 			CHECK_SYMBOLS(1);
-			return vformat(R"*(Trying to call a private method "%s()" from an external place, which would cause problems during runtime.)*", symbols[0]);
+			return vformat(R"*(The method "%s()" is private. It should not be called from an external script.)*", symbols[0]);
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
