@@ -1072,8 +1072,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		}
 
 		if (p_extra_config->has_section("presets")) {
-			List<String> keys;
-			p_extra_config->get_section_keys("presets", &keys);
+			Vector<String> keys = p_extra_config->get_section_keys("presets");
 
 			for (const String &key : keys) {
 				Variant val = p_extra_config->get_value("presets", key);
@@ -1660,8 +1659,7 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
 	if (cf->load(favorite_properties_file) == OK) {
-		List<String> secs;
-		cf->get_sections(&secs);
+		Vector<String> secs = cf->get_sections();
 
 		for (String &E : secs) {
 			PackedStringArray properties = PackedStringArray(cf->get_value(E, "properties"));
@@ -1730,8 +1728,7 @@ void EditorSettings::load_text_editor_theme() {
 		return;
 	}
 
-	List<String> keys;
-	cf->get_section_keys("color_theme", &keys);
+	Vector<String> keys = cf->get_section_keys("color_theme");
 
 	for (const String &key : keys) {
 		String val = cf->get_value("color_theme", key);
@@ -2150,8 +2147,7 @@ void EditorSettings::get_argument_options(const StringName &p_function, int p_id
 				r_options->push_back(E.key.quote());
 			}
 		} else if (pf == "get_project_metadata" && project_metadata.is_valid()) {
-			List<String> sections;
-			project_metadata->get_sections(&sections);
+			Vector<String> sections = project_metadata->get_sections();
 			for (const String &section : sections) {
 				r_options->push_back(section.quote());
 			}
