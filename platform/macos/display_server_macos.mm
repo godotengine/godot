@@ -30,6 +30,10 @@
 
 #import "display_server_macos.h"
 
+#ifdef DEBUG_ENABLED
+#import "editor/embedded_process_macos.h"
+#endif
+#import "godot_application.h"
 #import "godot_application_delegate.h"
 #import "godot_button_view.h"
 #import "godot_content_view.h"
@@ -40,6 +44,7 @@
 #import "godot_window.h"
 #import "godot_window_delegate.h"
 #import "key_mapping_macos.h"
+#import "macos_quartz_core_spi.h"
 #import "os_macos.h"
 #import "tts_macos.h"
 
@@ -140,7 +145,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			[wd.window_object setTabbingMode:NSWindowTabbingModeDisallowed];
 		}
 
-		CALayer *layer = [(NSView *)wd.window_view layer];
+		CALayer *layer = [wd.window_view layer];
 		if (layer) {
 			layer.contentsScale = scale;
 		}
@@ -198,7 +203,6 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			}
 		}
 		if (gl_manager_angle) {
-			CALayer *layer = [(NSView *)wd.window_view layer];
 			Error err = gl_manager_angle->window_create(window_id_counter, nullptr, (__bridge void *)layer, p_rect.size.width, p_rect.size.height);
 			if (err != OK) {
 				gl_failed = true;
@@ -880,6 +884,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_WINDOW_DRAG:
 		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
+		case FEATURE_WINDOW_EMBEDDING:
 			return true;
 #ifdef ACCESSKIT_ENABLED
 		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
@@ -1765,11 +1770,10 @@ float DisplayServerMacOS::screen_get_scale(int p_screen) const {
 
 	p_screen = _get_screen_index(p_screen);
 	if (OS::get_singleton()->is_hidpi_allowed()) {
-		NSArray *screenArray = [NSScreen screens];
-		if ((NSUInteger)p_screen < [screenArray count]) {
-			if ([[screenArray objectAtIndex:p_screen] respondsToSelector:@selector(backingScaleFactor)]) {
-				return std::fmax(1.0, [[screenArray objectAtIndex:p_screen] backingScaleFactor]);
-			}
+		NSArray<NSScreen *> *screens = NSScreen.screens;
+		NSUInteger index = (NSUInteger)p_screen;
+		if (index < screens.count) {
+			return std::fmax(1.0f, screens[index].backingScaleFactor);
 		}
 	}
 
@@ -2010,8 +2014,8 @@ void DisplayServerMacOS::show_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
 	if (p_id == MAIN_WINDOW_ID) {
-		[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-		static_cast<OS_MacOS *>(OS::get_singleton())->activate();
+		[GodotApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+		[GodotApp activateApplication];
 	}
 
 	popup_open(p_id);
@@ -2033,6 +2037,7 @@ void DisplayServerMacOS::delete_sub_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
 	[wd.window_object setContentView:nil];
+	// This will cause the delegate to release the window.
 	[wd.window_object close];
 
 	mouse_enter_window(get_window_at_screen_position(mouse_get_position()));
@@ -2601,19 +2606,13 @@ bool DisplayServerMacOS::window_is_maximize_allowed(WindowID p_window) const {
 }
 
 bool DisplayServerMacOS::window_maximize_on_title_dbl_click() const {
-	id value = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleActionOnDoubleClick"];
-	if ([value isKindOfClass:[NSString class]]) {
-		return [value isEqualToString:@"Maximize"];
-	}
-	return false;
+	NSString *value = [NSUserDefaults.standardUserDefaults stringForKey:@"AppleActionOnDoubleClick"];
+	return [value isEqualToString:@"Maximize"];
 }
 
 bool DisplayServerMacOS::window_minimize_on_title_dbl_click() const {
-	id value = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleActionOnDoubleClick"];
-	if ([value isKindOfClass:[NSString class]]) {
-		return [value isEqualToString:@"Minimize"];
-	}
-	return false;
+	NSString *value = [NSUserDefaults.standardUserDefaults stringForKey:@"AppleActionOnDoubleClick"];
+	return [value isEqualToString:@"Minimize"];
 }
 
 void DisplayServerMacOS::window_start_drag(WindowID p_window) {
@@ -2645,7 +2644,7 @@ void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offs
 	wd.wb_offset = p_offset / scale;
 	wd.wb_offset = wd.wb_offset.maxi(12);
 	if (wd.window_button_view) {
-		[(GodotButtonView *)wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
+		[wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
 	}
 }
 
@@ -3273,6 +3272,75 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 
 bool DisplayServerMacOS::get_swap_cancel_ok() {
 	return false;
+}
+
+void DisplayServerMacOS::enable_for_stealing_focus(OS::ProcessID pid) {
+}
+
+#define GET_OR_FAIL_V(m_val, m_map, m_key, m_retval) \
+	m_val = m_map.getptr(m_key);                     \
+	if (m_val == nullptr) {                          \
+		ERR_FAIL_V(m_retval);                        \
+	}
+
+#ifdef DEBUG_ENABLED
+
+Error DisplayServerMacOS::embed_process_update(WindowID p_window, const EmbeddedProcessMacOS *p_process) {
+	_THREAD_SAFE_METHOD_
+
+	WindowData *wd;
+	GET_OR_FAIL_V(wd, windows, p_window, FAILED);
+
+	OS::ProcessID p_pid = p_process->get_embedded_pid();
+
+	[CATransaction begin];
+	[CATransaction setDisableActions:YES];
+
+	EmbeddedProcessData *ed = embedded_processes.getptr(p_pid);
+	if (ed == nil) {
+		ed = &embedded_processes.insert(p_pid, EmbeddedProcessData())->value;
+
+		ed->process = p_process;
+
+		CALayerHost *host = [CALayerHost new];
+		uint32_t p_context_id = p_process->get_context_id();
+		host.contextId = static_cast<CAContextID>(p_context_id);
+		host.contentsScale = wd->window_object.backingScaleFactor;
+		host.contentsGravity = kCAGravityCenter;
+		ed->layer_host = host;
+		[wd->window_view.layer addSublayer:host];
+	}
+
+	Rect2i p_rect = p_process->get_screen_embedded_window_rect();
+	CGRect rect = CGRectMake(p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y);
+	rect = CGRectApplyAffineTransform(rect, CGAffineTransformMakeScale(0.5, 0.5));
+
+	CGFloat height = wd->window_view.frame.size.height;
+	CGFloat x = rect.origin.x;
+	CGFloat y = (height - rect.origin.y);
+	ed->layer_host.position = CGPointMake(x, y);
+	ed->layer_host.hidden = !p_process->is_visible_in_tree();
+
+	[CATransaction commit];
+
+	return OK;
+}
+
+#endif
+
+Error DisplayServerMacOS::request_close_embedded_process(OS::ProcessID p_pid) {
+	return OK;
+}
+
+Error DisplayServerMacOS::remove_embedded_process(OS::ProcessID p_pid) {
+	_THREAD_SAFE_METHOD_
+
+	EmbeddedProcessData *ed;
+	GET_OR_FAIL_V(ed, embedded_processes, p_pid, ERR_DOES_NOT_EXIST);
+	[ed->layer_host removeFromSuperlayer];
+	embedded_processes.erase(p_pid);
+
+	return OK;
 }
 
 int DisplayServerMacOS::keyboard_get_layout_count() const {

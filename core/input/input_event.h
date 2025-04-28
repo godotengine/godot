@@ -89,6 +89,8 @@ public:
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
 
+	virtual InputEventType get_type() const { return InputEventType::INVALID; }
+
 	InputEvent() {}
 };
 
@@ -202,6 +204,8 @@ public:
 
 	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks, bool p_physical = false);
 
+	InputEventType get_type() const final override { return InputEventType::KEY; }
+
 	InputEventKey() {}
 };
 
@@ -261,6 +265,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::MOUSE_BUTTON; }
+
 	InputEventMouseButton() {}
 };
 
@@ -306,6 +312,8 @@ public:
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
+	InputEventType get_type() const final override { return InputEventType::MOUSE_MOTION; }
+
 	InputEventMouseMotion() {}
 };
 
@@ -332,6 +340,8 @@ public:
 	virtual String to_string() override;
 
 	static Ref<InputEventJoypadMotion> create_reference(JoyAxis p_axis, float p_value);
+
+	InputEventType get_type() const final override { return InputEventType::JOY_MOTION; }
 
 	InputEventJoypadMotion() {}
 };
@@ -363,6 +373,8 @@ public:
 
 	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index);
 
+	InputEventType get_type() const final override { return InputEventType::JOY_BUTTON; }
+
 	InputEventJoypadButton() {}
 };
 
@@ -391,6 +403,8 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String to_string() override;
+
+	InputEventType get_type() const final override { return InputEventType::SCREEN_TOUCH; }
 
 	InputEventScreenTouch() {}
 };
@@ -444,6 +458,8 @@ public:
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
+	InputEventType get_type() const final override { return InputEventType::SCREEN_DRAG; }
+
 	InputEventScreenDrag() {}
 };
 
@@ -479,6 +495,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::ACTION; }
+
 	InputEventAction() {}
 };
 
@@ -510,6 +528,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::MAGNIFY_GESTURE; }
+
 	InputEventMagnifyGesture() {}
 };
 
@@ -527,6 +547,8 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String to_string() override;
+
+	InputEventType get_type() const final override { return InputEventType::PAN_GESTURE; }
 
 	InputEventPanGesture() {}
 };
@@ -574,6 +596,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::MIDI; }
+
 	InputEventMIDI() {}
 };
 
@@ -591,6 +615,8 @@ public:
 
 	virtual String as_text() const override;
 	virtual String to_string() override;
+
+	InputEventType get_type() const final override { return InputEventType::SHORTCUT; }
 
 	InputEventShortcut();
 };
