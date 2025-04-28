@@ -139,7 +139,7 @@ void Range::_set_value_no_signal(double p_val) {
 		return;
 	}
 
-	if (shared->step > 0) {
+	if (shared->step > 0 && !shared->skip_step_rounding) {
 		p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
 	}
 
@@ -212,6 +212,10 @@ void Range::set_step(double p_step) {
 	shared->emit_changed();
 
 	queue_accessibility_update();
+}
+
+void Range::set_disallow_step_rounding(bool disallow) {
+	shared->skip_step_rounding = disallow;
 }
 
 void Range::set_page(double p_page) {
@@ -307,6 +311,7 @@ void Range::unshare() {
 	nshared->max = shared->max;
 	nshared->val = shared->val;
 	nshared->step = shared->step;
+	nshared->skip_step_rounding = shared->skip_step_rounding;
 	nshared->page = shared->page;
 	nshared->exp_ratio = shared->exp_ratio;
 	nshared->allow_greater = shared->allow_greater;
