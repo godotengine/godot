@@ -49,9 +49,8 @@ class StringName {
 		uint32_t debug_references = 0;
 #endif
 
+		uint32_t index_in_bucket = 0;
 		uint32_t hash = 0;
-		_Data *prev = nullptr;
-		_Data *next = nullptr;
 		_Data() {}
 	};
 
@@ -134,10 +133,6 @@ public:
 
 		return String();
 	}
-
-	static StringName search(const char *p_name);
-	static StringName search(const char32_t *p_name);
-	static StringName search(const String &p_name);
 
 	struct AlphCompare {
 		template <typename LT, typename RT>
