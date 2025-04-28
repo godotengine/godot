@@ -706,6 +706,11 @@ void TextEdit::_notification(int p_what) {
 				text.update_accessibility(i, ae);
 				const Ref<TextParagraph> &ac_buf = text.get_line_data(i);
 				const Vector<RID> &text_aes = text.get_accessibility_elements(i);
+				int first_indent_line = 0;
+				if (text.is_indent_wrapped_lines()) {
+					_get_wrapped_indent_level(i, first_indent_line);
+				}
+				float indent_ofs = MIN(text.get_indent_offset(i, rtl), wrap_at_column * 0.6);
 				for (int j = 0; j < text_aes.size(); j++) {
 					float text_off_x = 0.0;
 					float text_off_y = 0.0;
@@ -721,9 +726,12 @@ void TextEdit::_notification(int p_what) {
 					text_off_y -= (first_vis_line + first_visible_line_wrap_ofs) * row_height;
 					text_off_y -= _get_v_scroll_offset() * row_height;
 
+					float wrap_indent = j > first_indent_line ? indent_ofs : 0.0;
 					int char_margin = xmargin_beg - first_visible_col;
 					if (rtl) {
-						char_margin = size.width - char_margin - ac_buf->get_line_width(j);
+						char_margin = size.width - char_margin - ac_buf->get_line_width(j) - wrap_indent;
+					} else {
+						char_margin += wrap_indent;
 					}
 
 					DisplayServer::get_singleton()->accessibility_update_set_flag(text_aes[j], DisplayServer::AccessibilityFlags::FLAG_HIDDEN, _is_line_hidden(i));
@@ -1419,7 +1427,7 @@ void TextEdit::_notification(int p_what) {
 					float wrap_indent = line_wrap_index > first_indent_line ? indent_ofs : 0.0;
 
 					if (rtl) {
-						char_margin = size.width - char_margin - (TS->shaped_text_get_size(rid).x + wrap_indent);
+						char_margin = size.width - char_margin - TS->shaped_text_get_size(rid).x - wrap_indent;
 					} else {
 						char_margin += wrap_indent;
 					}
@@ -1682,7 +1690,7 @@ void TextEdit::_notification(int p_what) {
 									int h = theme_cache.font->get_height(theme_cache.font_size);
 									if (rtl) {
 										ts_caret.l_dir = TextServer::DIRECTION_RTL;
-										ts_caret.l_caret = Rect2(Vector2(xmargin_end - char_margin + ofs_x, -h / 2), Size2(caret_width * 4, h));
+										ts_caret.l_caret = Rect2(Vector2(TS->shaped_text_get_size(rid).x, -h / 2), Size2(caret_width * 4, h));
 									} else {
 										ts_caret.l_dir = TextServer::DIRECTION_LTR;
 										ts_caret.l_caret = Rect2(Vector2(char_ofs, -h / 2), Size2(caret_width * 4, h));
@@ -1695,7 +1703,7 @@ void TextEdit::_notification(int p_what) {
 									carets.write[c].draw_pos.x = char_margin + ofs_x + ts_caret.t_caret.position.x;
 								}
 
-								if (get_caret_draw_pos(c).x >= xmargin_beg && get_caret_draw_pos(c).x < xmargin_end) {
+								if (get_caret_draw_pos(c).x >= xmargin_beg && get_caret_draw_pos(c).x <= xmargin_end) {
 									carets.write[c].visible = true;
 									if (draw_caret || drag_caret_force_displayed) {
 										if (caret_type == CaretType::CARET_TYPE_BLOCK || overtype_mode) {
