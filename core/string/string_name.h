@@ -178,8 +178,6 @@ public:
 	StringName(const String &p_name, bool p_static = false);
 	StringName() {}
 
-	static void assign_static_unique_class_name(StringName *ptr, const char *p_name);
-
 #ifdef SIZE_EXTRA
 	_NO_INLINE_
 #else
