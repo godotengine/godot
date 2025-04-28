@@ -4078,7 +4078,7 @@ Vector<Vector2i> TileMapLayerEditor::get_line(const TileMapLayer *p_tile_map_lay
 					if (sign.x == 0) {
 						current += Vector2(sign.y, 0);
 					} else {
-						current += Vector2(bool(current.y % 2) ^ (sign.x < 0) ? sign.x : 0, sign.y);
+						current += Vector2(bool(current.y % 2) != (sign.x < 0) ? sign.x : 0, sign.y);
 					}
 					err -= err_step.x;
 				} else {
@@ -4095,7 +4095,7 @@ Vector<Vector2i> TileMapLayerEditor::get_line(const TileMapLayer *p_tile_map_lay
 					if (sign.x == 0) {
 						current += Vector2(0, sign.y);
 					} else {
-						current += Vector2(bool(current.y % 2) ^ (sign.x < 0) ? sign.x : 0, sign.y);
+						current += Vector2(bool(current.y % 2) != (sign.x < 0) ? sign.x : 0, sign.y);
 					}
 					err -= err_step.y;
 				} else {

@@ -7287,7 +7287,10 @@ void RenderingDevice::_set_max_fps(int p_max_fps) {
 
 RenderingDevice *RenderingDevice::create_local_device() {
 	RenderingDevice *rd = memnew(RenderingDevice);
-	rd->initialize(context);
+	if (rd->initialize(context) != OK) {
+		memdelete(rd);
+		return nullptr;
+	}
 	return rd;
 }
 
