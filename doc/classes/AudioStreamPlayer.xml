@@ -44,6 +44,18 @@
 				Plays a sound from the beginning, or the given [param from_position] in seconds.
 			</description>
 		</method>
+		<method name="play_scheduled">
+			<return type="void" />
+			<param index="0" name="absolute_time" type="float" />
+			<param index="1" name="from_position" type="float" default="0.0" />
+			<description>
+				Schedules a sound to be played at [param absolute_time] on the [AudioServer] timeline. Use in conjunction with [method AudioServer.get_absolute_time]. The sound starts from the given [param from_position] in seconds.
+				[b]Note:[/b] Sounds scheduled to play earlier than [method AudioServer.get_absolute_time] will be played immediately.
+				[b]Note:[/b] By default, scheduled sounds will stop the currently playing sound on this player. Consider changing [member max_polyphony] to prevent this.
+				[b]Note:[/b] [member pitch_scale] does not affect the scheduling time.
+				[b]Note:[/b] On the Web platform, [member playback_type] must be set to [constant AudioServer.PLAYBACK_TYPE_STREAM] for [method play_scheduled] to work.
+			</description>
+		</method>
 		<method name="seek">
 			<return type="void" />
 			<param index="0" name="to_position" type="float" />
