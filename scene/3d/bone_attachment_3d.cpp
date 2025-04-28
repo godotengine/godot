@@ -56,21 +56,25 @@ void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 bool BoneAttachment3D::_set(const StringName &p_path, const Variant &p_value) {
 	if (p_path == SNAME("use_external_skeleton")) {
 		set_use_external_skeleton(p_value);
+		return true;
 	} else if (p_path == SNAME("external_skeleton")) {
 		set_external_skeleton(p_value);
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 bool BoneAttachment3D::_get(const StringName &p_path, Variant &r_ret) const {
 	if (p_path == SNAME("use_external_skeleton")) {
 		r_ret = get_use_external_skeleton();
+		return true;
 	} else if (p_path == SNAME("external_skeleton")) {
 		r_ret = get_external_skeleton();
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 void BoneAttachment3D::_get_property_list(List<PropertyInfo> *p_list) const {
