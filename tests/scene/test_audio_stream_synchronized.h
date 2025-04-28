@@ -38,7 +38,7 @@ namespace TestAudioStreamSynchronized {
 
 void detach_stream_sync(Ref<AudioStreamSynchronized> audio_stream_synchronized, Ref<AudioStreamPlayback> playback_sync = nullptr) {
 	for (int i = 0; i < audio_stream_synchronized->get_stream_count(); i++) {
-		if (playback_sync.is_valid()) {
+		if (audio_stream_synchronized->get_sync_stream(i).is_valid()) {
 			audio_stream_synchronized->get_sync_stream(i)->detach_from_objectdb();
 		}
 
