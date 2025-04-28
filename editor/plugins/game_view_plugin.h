@@ -37,7 +37,7 @@
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/box_container.h"
 
-class EmbeddedProcess;
+class EmbeddedProcessBase;
 class VSeparator;
 class WindowWrapper;
 class ScriptEditorDebugger;
@@ -154,7 +154,7 @@ class GameView : public VBoxContainer {
 	MenuButton *embed_options_menu = nullptr;
 	Label *game_size_label = nullptr;
 	Panel *panel = nullptr;
-	EmbeddedProcess *embedded_process = nullptr;
+	EmbeddedProcessBase *embedded_process = nullptr;
 	Label *state_label = nullptr;
 
 	void _sessions_changed();
@@ -214,11 +214,11 @@ public:
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
 
-	GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper);
+	GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process, WindowWrapper *p_wrapper);
 };
 
-class GameViewPlugin : public EditorPlugin {
-	GDCLASS(GameViewPlugin, EditorPlugin);
+class GameViewPluginBase : public EditorPlugin {
+	GDCLASS(GameViewPluginBase, EditorPlugin);
 
 #ifndef ANDROID_ENABLED
 	GameView *game_view = nullptr;
@@ -238,6 +238,9 @@ class GameViewPlugin : public EditorPlugin {
 
 protected:
 	void _notification(int p_what);
+#ifndef ANDROID_ENABLED
+	void setup(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process);
+#endif
 
 public:
 	virtual String get_plugin_name() const override { return TTRC("Game"); }
@@ -254,6 +257,12 @@ public:
 	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
 	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
 #endif // ANDROID_ENABLED
+	GameViewPluginBase();
+};
 
+class GameViewPlugin : public GameViewPluginBase {
+	GDCLASS(GameViewPlugin, GameViewPluginBase);
+
+public:
 	GameViewPlugin();
 };

@@ -7108,6 +7108,14 @@ void EditorNode::_touch_actions_panel_mode_changed() {
 }
 #endif
 
+#ifdef MACOS_ENABLED
+extern "C" GameViewPluginBase *get_game_view_plugin();
+#else
+GameViewPluginBase *get_game_view_plugin() {
+	return memnew(GameViewPlugin);
+}
+#endif
+
 EditorNode::EditorNode() {
 	DEV_ASSERT(!singleton);
 	singleton = this;
@@ -8186,7 +8194,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(ScriptEditorPlugin));
 
 	if (!Engine::get_singleton()->is_recovery_mode_hint()) {
-		add_editor_plugin(memnew(GameViewPlugin));
+		add_editor_plugin(get_game_view_plugin());
 	}
 
 	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();

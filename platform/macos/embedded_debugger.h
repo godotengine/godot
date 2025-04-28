@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_application.h                                                   */
+/*  embedded_debugger.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,21 +30,41 @@
 
 #pragma once
 
-#include "core/os/os.h"
+#include "core/templates/hash_map.h"
+#include "core/variant/array.h"
 
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
-#import <IOKit/hidsystem/ev_keymap.h>
+class DisplayServerEmbedded;
 
-@class GodotApplicationDelegate;
+/// @brief Singleton class to process embedded debugging message in the child process.
+class EmbeddedDebugger {
+	inline static EmbeddedDebugger *singleton = nullptr;
 
-@interface GodotApplication : NSApplication
+	EmbeddedDebugger(DisplayServerEmbedded *p_ds);
 
-extern "C" GodotApplication *GodotApp;
+public:
+	static void initialize(DisplayServerEmbedded *p_ds);
+	static void deinitialize();
 
-@property(readonly, nonatomic) GodotApplicationDelegate *godotDelegate;
+	~EmbeddedDebugger();
 
-- (GodotApplication *)init;
+#ifdef DEBUG_ENABLED
+private:
+	DisplayServerEmbedded *ds;
 
-- (void)activateApplication;
-@end
+	/// Message handler function for parse_message.
+	typedef Error (EmbeddedDebugger::*ParseMessageFunc)(const Array &p_args);
+	static HashMap<String, ParseMessageFunc> parse_message_handlers;
+	static void _init_parse_message_handlers();
+
+	Error _msg_window_size(const Array &p_args);
+	Error _msg_mouse_set_mode(const Array &p_args);
+	Error _msg_event(const Array &p_args);
+	Error _msg_win_event(const Array &p_args);
+	Error _msg_ime_update(const Array &p_args);
+	Error _msg_joy_add(const Array &p_args);
+	Error _msg_joy_del(const Array &p_args);
+
+public:
+	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
+#endif
+};

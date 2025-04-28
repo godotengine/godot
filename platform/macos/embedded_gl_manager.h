@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gl_manager_macos_angle.h                                              */
+/*  embedded_gl_manager.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -34,33 +34,75 @@
 
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
-#include "drivers/egl/egl_manager.h"
 #include "servers/display_server.h"
-
-// Suppress redefinition conflicts
-#define FontVariation __FontVariation
-#define BitMap __BitMap
 
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <CoreVideo/CoreVideo.h>
 
-#undef BitMap
-#undef FontVariation
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in macOS 10.14.
 
-class GLManagerANGLE_MacOS : public EGLManager {
-private:
-	virtual const char *_get_platform_extension_name() const override;
-	virtual EGLenum _get_platform_extension_enum() const override;
-	virtual EGLenum _get_platform_api_enum() const override;
-	virtual Vector<EGLAttrib> _get_platform_display_attributes() const override;
-	virtual Vector<EGLint> _get_platform_context_attribs() const override;
+typedef CGLContextObj (*CGLGetCurrentContextPtr)(void);
+typedef CGLError (*CGLTexImageIOSurface2DPtr)(CGLContextObj ctx, GLenum target, GLenum internal_format,
+		GLsizei width, GLsizei height, GLenum format, GLenum type, IOSurfaceRef ioSurface, GLuint plane);
+typedef const char *(*CGLErrorStringPtr)(CGLError);
+
+class GLManagerEmbedded {
+	/// @brief The number of framebuffers to create for each window.
+	///
+	/// Triple-buffering is used to avoid stuttering.
+	static constexpr uint32_t BUFFER_COUNT = 3;
+
+	struct FrameBuffer {
+		IOSurfaceRef surface = nullptr;
+		unsigned int tex = 0;
+		unsigned int fbo = 0;
+	};
+
+	struct GLWindow {
+		uint32_t width = 0;
+		uint32_t height = 0;
+		CALayer *layer = nullptr;
+		NSOpenGLContext *context = nullptr;
+		FrameBuffer framebuffers[BUFFER_COUNT];
+		uint32_t current_fb = 0;
+		bool is_valid = false;
+
+		void destroy_framebuffers();
+
+		~GLWindow() { destroy_framebuffers(); }
+	};
+
+	RBMap<DisplayServer::WindowID, GLWindow> windows;
+	typedef RBMap<DisplayServer::WindowID, GLWindow>::Element GLWindowElement;
+
+	NSOpenGLContext *shared_context = nullptr;
+	DisplayServer::WindowID current_window = DisplayServer::INVALID_WINDOW_ID;
+
+	Error create_context(GLWindow &p_win);
+
+	bool framework_loaded = false;
+	CGLGetCurrentContextPtr CGLGetCurrentContext = nullptr;
+	CGLTexImageIOSurface2DPtr CGLTexImageIOSurface2D = nullptr;
+	CGLErrorStringPtr CGLErrorString = nullptr;
 
 public:
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
+	Error window_create(DisplayServer::WindowID p_window_id, CALayer *p_layer, int p_width, int p_height);
+	void window_destroy(DisplayServer::WindowID p_window_id);
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+	Size2i window_get_size(DisplayServer::WindowID p_window_id) const;
 
-	GLManagerANGLE_MacOS() {}
-	~GLManagerANGLE_MacOS() {}
+	void release_current();
+	void swap_buffers();
+
+	void window_make_current(DisplayServer::WindowID p_window_id);
+
+	Error initialize();
+
+	GLManagerEmbedded();
+	~GLManagerEmbedded();
 };
+
+GODOT_CLANG_WARNING_PUSH
 
 #endif // MACOS_ENABLED && GLES3_ENABLED

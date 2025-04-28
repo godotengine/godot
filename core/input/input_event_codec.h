@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_application.h                                                   */
+/*  input_event_codec.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,21 +30,20 @@
 
 #pragma once
 
-#include "core/os/os.h"
+#include "core/input/input_event.h"
 
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
-#import <IOKit/hidsystem/ev_keymap.h>
+/**
+ * Encodes the input event as a byte array.
+ *
+ * Returns `true` if the event was successfully encoded, `false` otherwise.
+ */
+bool encode_input_event(const Ref<InputEvent> &p_event, PackedByteArray &r_data);
+void decode_input_event(const PackedByteArray &p_data, Ref<InputEvent> &r_event);
 
-@class GodotApplicationDelegate;
-
-@interface GodotApplication : NSApplication
-
-extern "C" GodotApplication *GodotApp;
-
-@property(readonly, nonatomic) GodotApplicationDelegate *godotDelegate;
-
-- (GodotApplication *)init;
-
-- (void)activateApplication;
-@end
+void encode_input_event_key(const Ref<InputEventKey> &p_event, PackedByteArray &r_data);
+void encode_input_event_mouse_button(const Ref<InputEventMouseButton> &p_event, PackedByteArray &r_data);
+void encode_input_event_mouse_motion(const Ref<InputEventMouseMotion> &p_event, PackedByteArray &r_data);
+void encode_input_event_joypad_button(const Ref<InputEventJoypadButton> &p_event, PackedByteArray &r_data);
+void encode_input_event_joypad_motion(const Ref<InputEventJoypadMotion> &p_event, PackedByteArray &r_data);
+void encode_input_event_gesture_pan(const Ref<InputEventPanGesture> &p_event, PackedByteArray &r_data);
+void encode_input_event_gesture_magnify(const Ref<InputEventMagnifyGesture> &p_event, PackedByteArray &r_data);

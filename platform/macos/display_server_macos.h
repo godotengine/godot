@@ -51,6 +51,7 @@
 #endif
 #endif // RD_ENABLED
 
+#define FontVariation __FontVariation
 #define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
 #import <AppKit/AppKit.h>
@@ -60,8 +61,18 @@
 #import <Foundation/Foundation.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
 
+@class GodotWindow;
+@class GodotContentView;
+@class GodotWindowDelegate;
+@class GodotButtonView;
+@class GodotEmbeddedView;
+@class CALayerHost;
+
 #undef BitMap
 #undef CursorShape
+#undef FontVariation
+
+class EmbeddedProcessMacOS;
 
 class DisplayServerMacOS : public DisplayServer {
 	GDSOFTCLASS(DisplayServerMacOS, DisplayServer);
@@ -83,10 +94,10 @@ public:
 	};
 
 	struct WindowData {
-		id window_delegate;
-		id window_object;
-		id window_view;
-		id window_button_view;
+		GodotWindowDelegate *window_delegate;
+		GodotWindow *window_object;
+		GodotContentView *window_view;
+		GodotButtonView *window_button_view;
 
 		Vector<Vector2> mpath;
 
@@ -240,6 +251,12 @@ private:
 	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
 
 	void initialize_tts() const;
+
+	struct EmbeddedProcessData {
+		const EmbeddedProcessMacOS *process;
+		CALayer *layer_host = nil;
+	};
+	HashMap<OS::ProcessID, EmbeddedProcessData> embedded_processes;
 
 public:
 	void menu_callback(id p_sender);
@@ -441,6 +458,13 @@ public:
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
 	virtual bool get_swap_cancel_ok() override;
+
+	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
+#ifdef DEBUG_ENABLED
+	Error embed_process_update(WindowID p_window, const EmbeddedProcessMacOS *p_process);
+#endif
+	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
+	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
 
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;

@@ -40,16 +40,6 @@
 #include "servers/audio_server.h"
 
 class OS_MacOS : public OS_Unix {
-	const char *execpath = nullptr;
-	int argc = 0;
-	char **argv = nullptr;
-
-	id delegate = nullptr;
-	bool should_terminate = false;
-	bool main_stared = false;
-
-	JoypadApple *joypad_apple = nullptr;
-
 #ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
 #endif
@@ -59,10 +49,6 @@ class OS_MacOS : public OS_Unix {
 
 	CrashHandler crash_handler;
 
-	CFRunLoopObserverRef pre_wait_observer = nil;
-
-	MainLoop *main_loop = nullptr;
-
 	List<String> launch_service_args;
 
 	CGFloat _weight_to_ct(int p_weight) const;
@@ -70,11 +56,15 @@ class OS_MacOS : public OS_Unix {
 	String _get_default_fontname(const String &p_font_name) const;
 
 	static _FORCE_INLINE_ String get_framework_executable(const String &p_path);
-	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
-
-	void terminate();
 
 protected:
+	const char *execpath = nullptr;
+	int argc = 0;
+	char **argv = nullptr;
+
+	JoypadApple *joypad_apple = nullptr;
+	MainLoop *main_loop = nullptr;
+
 	virtual void initialize_core() override;
 	virtual void initialize() override;
 	virtual void finalize() override;
@@ -132,6 +122,11 @@ public:
 	virtual Vector<String> get_granted_permissions() const override;
 	virtual void revoke_granted_permissions() override;
 
+#ifdef TOOLS_ENABLED
+	static bool is_debugger_attached();
+	void wait_for_debugger(uint32_t p_msec);
+#endif
+
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
 	virtual void disable_crash_handler() override;
@@ -142,13 +137,38 @@ public:
 	virtual String get_system_ca_certificates() override;
 	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
 
-	void run(); // Runs macOS native event loop.
+	virtual void run() = 0;
+
+	OS_MacOS(const char *p_execpath, int p_argc, char **p_argv);
+};
+
+class OS_MacOS_NSApp : public OS_MacOS {
+	id delegate = nullptr;
+	bool should_terminate = false;
+	bool main_started = false;
+
+	CFRunLoopObserverRef pre_wait_observer = nil;
+
+	void terminate();
+
+public:
 	void start_main(); // Initializes and runs Godot main loop.
-	void activate();
 	void cleanup();
 	bool os_should_terminate() const { return should_terminate; }
 	int get_cmd_argc() const { return argc; }
 
-	OS_MacOS(const char *p_execpath, int p_argc, char **p_argv);
-	~OS_MacOS();
+	virtual void run() override;
+
+	OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv);
 };
+
+#ifdef DEBUG_ENABLED
+
+class OS_MacOS_Embedded : public OS_MacOS {
+public:
+	virtual void run() override;
+
+	OS_MacOS_Embedded(const char *p_execpath, int p_argc, char **p_argv);
+};
+
+#endif

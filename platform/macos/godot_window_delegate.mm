@@ -32,6 +32,7 @@
 
 #import "display_server_macos.h"
 #import "godot_button_view.h"
+#import "godot_content_view.h"
 #import "godot_window.h"
 
 @implementation GodotWindowDelegate
@@ -307,7 +308,7 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 
 	if (wd.window_button_view) {
-		[(GodotButtonView *)wd.window_button_view displayButtons];
+		[wd.window_button_view displayButtons];
 	}
 
 	if (ds->mouse_get_mode() == DisplayServer::MOUSE_MODE_CAPTURED) {
@@ -339,7 +340,7 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 
 	if (wd.window_button_view) {
-		[(GodotButtonView *)wd.window_button_view displayButtons];
+		[wd.window_button_view displayButtons];
 	}
 
 	wd.focused = false;
