@@ -30,7 +30,7 @@
 
 #include "property_selector.h"
 
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"

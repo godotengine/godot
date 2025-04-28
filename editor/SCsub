@@ -12,7 +12,9 @@ env.editor_sources = []
 if env.editor_build:
     # Generate doc data paths
     env.CommandNoCache(
-        "doc_data_class_path.gen.h", env.Value(env.doc_class_path), env.Run(editor_builders.doc_data_class_path_builder)
+        "doc/doc_data_class_path.gen.h",
+        env.Value(env.doc_class_path),
+        env.Run(editor_builders.doc_data_class_path_builder),
     )
 
     # Register exporters
@@ -87,6 +89,7 @@ if env.editor_build:
 
     SConscript("animation/SCsub")
     SConscript("debugger/SCsub")
+    SConscript("doc/SCsub")
     SConscript("docks/SCsub")
     SConscript("export/SCsub")
     SConscript("gui/SCsub")
