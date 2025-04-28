@@ -36,13 +36,6 @@
 #include "core/debugger/script_debugger.h"
 #include "core/os/os.h"
 
-EngineDebugger *EngineDebugger::singleton = nullptr;
-ScriptDebugger *EngineDebugger::script_debugger = nullptr;
-
-HashMap<StringName, EngineDebugger::Profiler> EngineDebugger::profilers;
-HashMap<StringName, EngineDebugger::Capture> EngineDebugger::captures;
-HashMap<String, EngineDebugger::CreatePeerFunc> EngineDebugger::protocols;
-
 void (*EngineDebugger::allow_focus_steal_fn)();
 
 void EngineDebugger::register_profiler(const StringName &p_name, const Profiler &p_func) {

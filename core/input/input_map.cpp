@@ -37,10 +37,6 @@
 #include "core/os/os.h"
 #include "core/variant/typed_array.h"
 
-InputMap *InputMap::singleton = nullptr;
-
-int InputMap::ALL_DEVICES = -1;
-
 void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_action", "action"), &InputMap::has_action);
 	ClassDB::bind_method(D_METHOD("get_actions"), &InputMap::_get_actions);
