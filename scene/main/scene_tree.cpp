@@ -1972,12 +1972,26 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 
 #ifdef TOOLS_ENABLED
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	const String pf = p_function;
 	bool add_options = false;
 	if (p_idx == 0) {
-		add_options = pf == "get_nodes_in_group" || pf == "has_group" || pf == "get_first_node_in_group" || pf == "set_group" || pf == "notify_group" || pf == "call_group" || pf == "add_to_group";
+		static const Vector<StringName> names = {
+			StringName("add_to_group", true),
+			StringName("call_group", true),
+			StringName("get_first_node_in_group", true),
+			StringName("get_node_count_in_group", true),
+			StringName("get_nodes_in_group", true),
+			StringName("has_group", true),
+			StringName("notify_group", true),
+			StringName("set_group", true),
+		};
+		add_options = names.has(p_function);
 	} else if (p_idx == 1) {
-		add_options = pf == "set_group_flags" || pf == "call_group_flags" || pf == "notify_group_flags";
+		static const Vector<StringName> names = {
+			StringName("call_group_flags", true),
+			StringName("notify_group_flags", true),
+			StringName("set_group_flags", true),
+		};
+		add_options = names.has(p_function);
 	}
 	if (add_options) {
 		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
