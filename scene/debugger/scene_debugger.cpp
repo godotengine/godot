@@ -114,6 +114,29 @@ void SceneDebugger::_handle_input(const Ref<InputEvent> &p_event, const Ref<Shor
 	}
 }
 
+void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Dictionary &p_settings) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_null() || !k->is_pressed()) {
+		return;
+	}
+
+	Ref<Shortcut> p_shortcut = p_settings.get("editor/next_frame_embedded_project", Ref<Shortcut>());
+	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("request_embed_next_frame", Array());
+		return;
+	}
+
+	if (k->is_echo()) {
+		return;
+	} // Shortcuts that doesn't need is_echo goes below here
+
+	p_shortcut = p_settings.get("editor/suspend_resume_embedded_project", Ref<Shortcut>());
+	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("request_embed_suspend_toggle", Array());
+		return;
+	}
+}
+
 Error SceneDebugger::_msg_setup_scene(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
 	p_scene_tree->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args)));
 	return OK;
@@ -225,6 +248,19 @@ Error SceneDebugger::_msg_reload_cached_files(const Array &p_args, SceneTree *p_
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	PackedStringArray files = p_args[0];
 	reload_cached_files(files);
+	return OK;
+}
+
+Error SceneDebugger::_msg_setup_embedded_shortcuts(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+	ERR_FAIL_COND_V(p_args.is_empty() || p_args[0].get_type() != Variant::DICTIONARY, ERR_INVALID_DATA);
+	Dictionary dict = p_args[0];
+	LocalVector<Variant> keys = dict.get_key_list();
+
+	for (const Variant &key : keys) {
+		dict[key] = DebuggerMarshalls::deserialize_key_shortcut(dict[key]);
+	}
+
+	SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_embed_input).bind(dict));
 	return OK;
 }
 
@@ -427,6 +463,7 @@ void SceneDebugger::_init_parse_message_handlers() {
 #define HANDLER(name) parse_message_handlers[#name] = _msg_##name
 
 	HANDLER(setup_scene);
+	HANDLER(setup_embedded_shortcuts);
 	HANDLER(request_scene_tree);
 	HANDLER(save_node);
 	HANDLER(inspect_objects);
