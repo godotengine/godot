@@ -247,7 +247,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			if (scaling_type == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL) {
 				// Implementation has been copied from ffxFsr2GetJitterPhaseCount.
 				// Also used for MetalFX Temporal scaling.
-				jitter_phase_count = uint32_t(8.0f * pow(float(target_width) / render_width, 2.0f));
+				jitter_phase_count = uint32_t(8.0f * std::pow(float(target_width) / render_width, 2.0f));
 			} else if (use_taa) {
 				// Default jitter count for TAA.
 				jitter_phase_count = 16;
@@ -258,7 +258,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 
 			// At resolution scales lower than 1.0, use negative texture mipmap bias
 			// to compensate for the loss of sharpness.
-			const float texture_mipmap_bias = log2f(MIN(scaling_3d_scale, 1.0)) + p_viewport->texture_mipmap_bias;
+			const float texture_mipmap_bias = std::log2(MIN(scaling_3d_scale, 1.0)) + p_viewport->texture_mipmap_bias;
 
 			RenderSceneBuffersConfiguration rb_config;
 			rb_config.set_render_target(p_viewport->render_target);
