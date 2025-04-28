@@ -33,7 +33,7 @@
 
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_inspector.h"
-#include "editor/doc_tools.h"
+#include "editor/doc/doc_tools.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_main_screen.h"

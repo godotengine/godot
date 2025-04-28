@@ -32,9 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/templates/hash_set.h"
+#include "editor/doc/editor_help.h"
 #include "editor/docks/node_dock.h"
 #include "editor/docks/scene_tree_dock.h"
-#include "editor/editor_help.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"

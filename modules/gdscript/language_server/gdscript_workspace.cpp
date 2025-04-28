@@ -36,9 +36,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/script_language.h"
-#include "editor/doc_tools.h"
+#include "editor/doc/doc_tools.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_file_system.h"
-#include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "scene/resources/packed_scene.h"
