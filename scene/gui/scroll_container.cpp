@@ -399,6 +399,7 @@ void ScrollContainer::_reposition_children() {
 	}
 
 	if (draw_focus_border) {
+		focus_panel->set_position(Vector2(0, 0));
 		focus_panel->set_size(get_size());
 	}
 	queue_redraw();
