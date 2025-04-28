@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 

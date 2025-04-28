@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/os/thread.h"
-#include "editor/doc_tools.h"
+#include "editor/doc/doc_tools.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/popup.h"

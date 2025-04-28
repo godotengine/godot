@@ -31,9 +31,9 @@
 #include "editor_resource_picker.h"
 
 #include "editor/audio_stream_preview.h"
+#include "editor/doc/editor_help.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/scene_tree_dock.h"
-#include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"

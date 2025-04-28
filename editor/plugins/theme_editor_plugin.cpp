@@ -30,10 +30,10 @@
 
 #include "theme_editor_plugin.h"
 
+#include "editor/doc/editor_help.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_file_system.h"
-#include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
