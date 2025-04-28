@@ -89,8 +89,7 @@ Patches:
 - `0002-external-jpgd.patch` (GH-88508)
 - `0003-external-tinyexr.patch` (GH-97582)
 - `0004-remove-tinydds-qoi.patch` (GH-97582)
-- `0005-windows-illegal-character.patch` (GH-103968)
-- `0006-ambiguous-calls.patch` (GH-103968)
+- `0005-ambiguous-calls.patch` (GH-103968)
 
 
 ## brotli
