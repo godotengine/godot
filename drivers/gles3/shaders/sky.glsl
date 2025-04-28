@@ -236,7 +236,15 @@ void main() {
 #endif
 
 	{
+#if !defined(USE_CUBEMAP_PASS) && defined(USE_RADIANCE_AS_BACKGROUND)
+		// Render background using the radiance map to improve performance, especially on low-end GPUs
+		// limited by fragment shading rate. The downside is that the background resolution is
+		// limited by the radiance map, which can make skies with high-frequency data look blurry.
+		// Additionally, the update rate of the background is decided by the radiance map's update mode.
+		color = texture(samplerCube(radiance, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_normal).rgb;
+#else
 #CODE : SKY
+#endif
 	}
 
 	color *= sky_energy_multiplier;

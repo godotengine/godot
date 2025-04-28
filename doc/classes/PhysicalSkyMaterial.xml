@@ -43,5 +43,9 @@
 		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="get_use_debanding" default="true">
 			If [code]true[/code], enables debanding. Debanding adds a small amount of noise which helps reduce banding that appears from the smooth changes in color in the sky.
 		</member>
+		<member name="use_radiance_as_background" type="bool" setter="set_use_radiance_as_background" getter="get_use_radiance_as_background" default="false">
+			If [code]true[/code], uses the generated radiance map to render the background. This is an optimization that speeds up sky rendering, especially on low-end GPUs that are limited by their fragment shading rate (which is common on mobile).
+			As a downside, the background's resolution is limited by the radiance size configured in the environment sky (see [member Sky.radiance_size] and [member Environment.sky]). Additionally, its update rate is limited by the update mode chosen in [member Sky.process_mode].
+		</member>
 	</members>
 </class>
