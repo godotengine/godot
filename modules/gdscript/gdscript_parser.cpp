@@ -4637,8 +4637,43 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	bool use_default_variable_type_check = true;
 
 	if (p_annotation->name == SNAME("@export_range")) {
-		if (export_type.builtin_type == Variant::INT) {
-			variable->export_info.type = Variant::INT;
+		use_default_variable_type_check = false;
+
+		switch (export_type.builtin_type) {
+			case Variant::NIL:
+				break;
+			case Variant::INT:
+			case Variant::FLOAT:
+			case Variant::VECTOR2:
+			case Variant::VECTOR2I:
+			case Variant::RECT2:
+			case Variant::RECT2I:
+			case Variant::VECTOR3:
+			case Variant::VECTOR3I:
+			case Variant::VECTOR4:
+			case Variant::VECTOR4I:
+			case Variant::TRANSFORM2D:
+			case Variant::TRANSFORM3D:
+			case Variant::PLANE:
+			case Variant::QUATERNION:
+			case Variant::AABB:
+			case Variant::BASIS:
+			case Variant::PROJECTION:
+			case Variant::PACKED_BYTE_ARRAY:
+			case Variant::PACKED_INT32_ARRAY:
+			case Variant::PACKED_INT64_ARRAY:
+			case Variant::PACKED_FLOAT32_ARRAY:
+			case Variant::PACKED_FLOAT64_ARRAY:
+			case Variant::PACKED_VECTOR2_ARRAY:
+			case Variant::PACKED_VECTOR3_ARRAY:
+			case Variant::PACKED_VECTOR4_ARRAY: {
+				variable->export_info.type = export_type.builtin_type;
+				break;
+			}
+			default: {
+				push_error(vformat(R"("@export_range" annotation requires a numeric variable or array, but %s was given instead.)", variable->get_datatype().to_string()), p_annotation);
+				return false;
+			}
 		}
 	} else if (p_annotation->name == SNAME("@export_multiline")) {
 		use_default_variable_type_check = false;
