@@ -2016,7 +2016,10 @@ void ScriptEditor::_update_members_overview_visibility() {
 	if (!se) {
 		members_overview_alphabeta_sort_button->set_visible(false);
 		members_overview->set_visible(false);
-		overview_vbox->set_visible(help_overview_enabled);
+
+		Node *current = tab_container->get_tab_control(tab_container->get_current_tab());
+		EditorHelp *editor_help = Object::cast_to<EditorHelp>(current);
+		overview_vbox->set_visible(help_overview_enabled && editor_help);
 		return;
 	}
 
