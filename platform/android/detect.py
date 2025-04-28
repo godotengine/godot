@@ -40,7 +40,6 @@ def get_opts():
             False,
         ),
         BoolVariable("swappy", "Use Swappy Frame Pacing library", False),
-        BoolVariable("gradle_do_not_strip", "Whether Gradle should strip the Android *.so libraries or not", False),
     ]
 
 
