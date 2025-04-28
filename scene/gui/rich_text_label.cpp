@@ -7089,6 +7089,41 @@ int RichTextLabel::get_content_width() const {
 	return total_width;
 }
 
+int RichTextLabel::get_line_height(int p_line) const {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
+	int line_count = 0;
+	int to_line = main->first_invalid_line.load();
+	for (int i = 0; i < to_line; i++) {
+		MutexLock lock(main->lines[i].text_buf->get_mutex());
+		int lc = main->lines[i].text_buf->get_line_count();
+
+		if (p_line < line_count + lc) {
+			const Ref<TextParagraph> text_buf = main->lines[i].text_buf;
+			return text_buf->get_line_ascent(p_line - line_count) + text_buf->get_line_descent(p_line - line_count) + theme_cache.line_separation;
+		}
+		line_count += lc;
+	}
+	return 0;
+}
+
+int RichTextLabel::get_line_width(int p_line) const {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
+	int line_count = 0;
+	int to_line = main->first_invalid_line.load();
+	for (int i = 0; i < to_line; i++) {
+		MutexLock lock(main->lines[i].text_buf->get_mutex());
+		int lc = main->lines[i].text_buf->get_line_count();
+
+		if (p_line < line_count + lc) {
+			return main->lines[i].text_buf->get_line_width(p_line - line_count);
+		}
+		line_count += lc;
+	}
+	return 0;
+}
+
 #ifndef DISABLE_DEPRECATED
 // People will be very angry, if their texts get erased, because of #39148. (3.x -> 4.0)
 // Although some people may not used bbcode_text, so we only overwrite, if bbcode_text is not empty.
@@ -7259,6 +7294,9 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_content_height"), &RichTextLabel::get_content_height);
 	ClassDB::bind_method(D_METHOD("get_content_width"), &RichTextLabel::get_content_width);
+
+	ClassDB::bind_method(D_METHOD("get_line_height", "line"), &RichTextLabel::get_line_height);
+	ClassDB::bind_method(D_METHOD("get_line_width", "line"), &RichTextLabel::get_line_width);
 
 	ClassDB::bind_method(D_METHOD("get_line_offset", "line"), &RichTextLabel::get_line_offset);
 	ClassDB::bind_method(D_METHOD("get_paragraph_offset", "paragraph"), &RichTextLabel::get_paragraph_offset);
