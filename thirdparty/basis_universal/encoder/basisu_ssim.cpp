@@ -91,6 +91,8 @@ namespace basisu
 
 	void gaussian_filter(imagef &dst, const imagef &orig_img, uint32_t odd_filter_width, float sigma_sqr, bool wrapping, uint32_t width_divisor, uint32_t height_divisor)
 	{
+		assert(&dst != &orig_img);
+
 		assert(odd_filter_width && (odd_filter_width & 1));
 		odd_filter_width |= 1;
 

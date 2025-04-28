@@ -1,29 +1,20 @@
-// basisu_astc_hdr_enc.h
+// basisu_uastc_hdr_4x4_enc.h
 #pragma once
 #include "basisu_enc.h"
 #include "basisu_gpu_texture.h"
 #include "../transcoder/basisu_astc_helpers.h"
 #include "../transcoder/basisu_astc_hdr_core.h"
+#include "basisu_astc_hdr_common.h"
 
 namespace basisu
 {
-	// This MUST be called before encoding any blocks.
-	void astc_hdr_enc_init();
-
-	const uint32_t MODE11_FIRST_ISE_RANGE = astc_helpers::BISE_3_LEVELS, MODE11_LAST_ISE_RANGE = astc_helpers::BISE_16_LEVELS;
-	const uint32_t MODE7_PART1_FIRST_ISE_RANGE = astc_helpers::BISE_3_LEVELS, MODE7_PART1_LAST_ISE_RANGE = astc_helpers::BISE_16_LEVELS;
-	const uint32_t MODE7_PART2_FIRST_ISE_RANGE = astc_helpers::BISE_3_LEVELS, MODE7_PART2_LAST_ISE_RANGE = astc_helpers::BISE_8_LEVELS;
-	const uint32_t MODE11_PART2_FIRST_ISE_RANGE = astc_helpers::BISE_3_LEVELS, MODE11_PART2_LAST_ISE_RANGE = astc_helpers::BISE_4_LEVELS;
-	const uint32_t MODE11_TOTAL_SUBMODES = 8; // plus an extra hidden submode, directly encoded, for direct, so really 9 (see tables 99/100 of the ASTC spec)
-	const uint32_t MODE7_TOTAL_SUBMODES = 6;
-		
-	struct astc_hdr_codec_options
+	struct uastc_hdr_4x4_codec_options : astc_hdr_codec_base_options
 	{
 		float m_bc6h_err_weight;
 
 		bool m_use_solid;
 
-		bool m_use_mode11;
+		bool m_use_mode11_part1;
 		bool m_mode11_uber_mode;
 		uint32_t m_first_mode11_weight_ise_range;
 		uint32_t m_last_mode11_weight_ise_range;
@@ -45,8 +36,6 @@ namespace basisu
 		uint32_t m_first_mode11_part2_weight_ise_range;
 		uint32_t m_last_mode11_part2_weight_ise_range;
 
-		float m_r_err_scale, m_g_err_scale;
-
 		bool m_refine_weights;
 
 		uint32_t m_level;
@@ -54,13 +43,10 @@ namespace basisu
 		bool m_use_estimated_partitions;
 		uint32_t m_max_estimated_partitions;
 
-		// If true, the ASTC HDR compressor is allowed to more aggressively vary weight indices for slightly higher compression in non-fastest mode. This will hurt BC6H quality, however.
-		bool m_allow_uber_mode;
-
-		astc_hdr_codec_options();
+		uastc_hdr_4x4_codec_options();
 
 		void init();
-				
+
 		// TODO: set_quality_level() is preferred to configure the codec for transcoding purposes.
 		static const int cMinLevel = 0;
 		static const int cMaxLevel = 4;
@@ -73,7 +59,7 @@ namespace basisu
 		void set_quality_fastest();
 	};
 
-	struct astc_hdr_pack_results
+	struct astc_hdr_4x4_pack_results
 	{
 		double m_best_block_error;
 		double m_bc6h_block_error; // note this is not used/set by the encoder, here for convienance 
@@ -119,35 +105,6 @@ namespace basisu
 		}
 	};
 			
-	void interpolate_qlog12_colors(
-		const int e[2][3],
-		basist::half_float* pDecoded_half,
-		vec3F* pDecoded_float,
-		uint32_t n, uint32_t ise_weight_range);
-		
-	bool get_astc_hdr_mode_11_block_colors(
-		const uint8_t* pEndpoints,
-		basist::half_float* pDecoded_half,
-		vec3F* pDecoded_float,
-		uint32_t n, uint32_t ise_weight_range, uint32_t ise_endpoint_range);
-		
-	bool get_astc_hdr_mode_7_block_colors(
-		const uint8_t* pEndpoints,
-		basist::half_float* pDecoded_half,
-		vec3F* pDecoded_float,
-		uint32_t n, uint32_t ise_weight_range, uint32_t ise_endpoint_range);
-
-	double eval_selectors(
-		uint32_t num_pixels,
-		uint8_t* pWeights,
-		const basist::half_float* pBlock_pixels_half,
-		uint32_t num_weight_levels,
-		const basist::half_float* pDecoded_half,
-		const astc_hdr_codec_options& coptions,
-		uint32_t usable_selector_bitmask = UINT32_MAX);
-
-	double compute_block_error(const basist::half_float* pOrig_block, const basist::half_float* pPacked_block, const astc_hdr_codec_options& coptions);
-
 	// Encodes a 4x4 ASTC HDR block given a 4x4 array of source block pixels/texels.
 	// Supports solid color blocks, mode 11 (all submodes), mode 7/1 partition (all submodes), 
 	// and mode 7/2 partitions (all submodes) - 30 patterns, only the ones also in common with the BC6H format.
@@ -164,16 +121,16 @@ namespace basisu
 	// astc_hdr_enc_init() MUST have been called first to initialized the codec.
 	// Input pixels are checked and cannot be NaN's, Inf's, signed, or too large (greater than MAX_HALF_FLOAT, or 65504). 
 	// Normal values and denormals are okay.
-	bool astc_hdr_enc_block(
-		const float* pRGBPixels,
-		const astc_hdr_codec_options& coptions,
-		basisu::vector<astc_hdr_pack_results> &all_results);
+	bool astc_hdr_4x4_enc_block(
+		const float* pRGBPixels, const basist::half_float *pRGBPixelsHalf,
+		const uastc_hdr_4x4_codec_options& coptions,
+		basisu::vector<astc_hdr_4x4_pack_results> &all_results);
 
-	bool astc_hdr_pack_results_to_block(basist::astc_blk& dst_blk, const astc_hdr_pack_results& results);
+	bool astc_hdr_4x4_pack_results_to_block(basist::astc_blk& dst_blk, const astc_hdr_4x4_pack_results& results);
 		
-	bool astc_hdr_refine_weights(const basist::half_float* pSource_block, astc_hdr_pack_results& cur_results, const astc_hdr_codec_options& coptions, float bc6h_weight, bool* pImproved_flag);
+	bool astc_hdr_4x4_refine_weights(const basist::half_float* pSource_block, astc_hdr_4x4_pack_results& cur_results, const uastc_hdr_4x4_codec_options& coptions, float bc6h_weight, bool* pImproved_flag);
 
-	struct astc_hdr_block_stats
+	struct astc_hdr_4x4_block_stats
 	{
 		std::mutex m_mutex;
 
@@ -195,7 +152,7 @@ namespace basisu
 
 		uint32_t m_total_refined;
 								
-		astc_hdr_block_stats() { clear(); }
+		astc_hdr_4x4_block_stats() { clear(); }
 
 		void clear()
 		{
@@ -215,7 +172,7 @@ namespace basisu
 			clear_obj(m_part_hist);
 		}
 
-		void update(const astc_hdr_pack_results& log_blk);
+		void update(const astc_hdr_4x4_pack_results& log_blk);
 		
 		void print();
 	};

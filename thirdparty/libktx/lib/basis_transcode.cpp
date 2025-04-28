@@ -658,7 +658,7 @@ ktxTexture2_transcodeUastc(ktxTexture2* This,
     ktxLevelIndexEntry* protoLevelIndex = protoPriv._levelIndex;
     ktx_size_t levelOffsetWrite = 0;
 
-    basisu_lowlevel_uastc_transcoder uit;
+    basisu_lowlevel_uastc_ldr_4x4_transcoder uit;
     // See comment on same declaration in transcodeEtc1s.
     std::vector<basisu_transcoder_state> xcoderStates;
     xcoderStates.resize(This->isVideo ? This->numFaces : 1);
