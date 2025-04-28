@@ -34,8 +34,8 @@
 
 #include "core/os/os.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "editor/settings/editor_settings.h"
 
 String get_default_android_sdk_path();
 

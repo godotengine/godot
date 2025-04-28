@@ -37,7 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/plugins/editor_plugin.h"
-#include "editor/project_settings_editor.h"
+#include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
 

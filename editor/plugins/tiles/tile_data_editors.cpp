@@ -37,10 +37,10 @@
 #include "core/os/keyboard.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_properties.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
 #include "scene/gui/control.h"

@@ -30,8 +30,8 @@
 
 #include "physics_bone_3d_gizmo_plugin.h"
 
-#include "editor/editor_settings.h"
 #include "editor/plugins/gizmos/joint_3d_gizmo_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/physics/physical_bone_3d.h"
 #include "scene/3d/physics/physical_bone_simulator_3d.h"
 

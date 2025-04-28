@@ -35,7 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/bit_map.h"
