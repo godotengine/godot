@@ -43,7 +43,7 @@ public:
 	typedef uint32_t TypeHash;
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
-	static inline constexpr real_t DEFAULT_STEP = 1.0 / 30;
+	static constexpr real_t DEFAULT_STEP = 1.0 / 30;
 
 	enum TrackType : uint8_t {
 		TYPE_VALUE, // Set a value in a property, can be interpolated.
