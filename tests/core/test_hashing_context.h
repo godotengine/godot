@@ -54,17 +54,17 @@ TEST_CASE("[HashingContext] Default - MD5/SHA1/SHA256") {
 	CHECK(ctx.start(HashingContext::HASH_MD5) == OK);
 	PackedByteArray result = ctx.finish();
 	REQUIRE(result.size() == 16);
-	CHECK(memcmp(result.ptr(), md5_expected, 16) == 0);
+	CHECK(std::memcmp(result.ptr(), md5_expected, 16) == 0);
 
 	CHECK(ctx.start(HashingContext::HASH_SHA1) == OK);
 	result = ctx.finish();
 	REQUIRE(result.size() == 20);
-	CHECK(memcmp(result.ptr(), sha1_expected, 20) == 0);
+	CHECK(std::memcmp(result.ptr(), sha1_expected, 20) == 0);
 
 	CHECK(ctx.start(HashingContext::HASH_SHA256) == OK);
 	result = ctx.finish();
 	REQUIRE(result.size() == 32);
-	CHECK(memcmp(result.ptr(), sha256_expected, 32) == 0);
+	CHECK(std::memcmp(result.ptr(), sha256_expected, 32) == 0);
 }
 
 TEST_CASE("[HashingContext] Multiple updates - MD5/SHA1/SHA256") {
@@ -95,7 +95,7 @@ TEST_CASE("[HashingContext] Multiple updates - MD5/SHA1/SHA256") {
 	CHECK(ctx.update(s_byte_parts[2]) == OK);
 	PackedByteArray result = ctx.finish();
 	REQUIRE(result.size() == 16);
-	CHECK(memcmp(result.ptr(), md5_expected, 16) == 0);
+	CHECK(std::memcmp(result.ptr(), md5_expected, 16) == 0);
 
 	CHECK(ctx.start(HashingContext::HASH_SHA1) == OK);
 	CHECK(ctx.update(s_byte_parts[0]) == OK);
@@ -103,7 +103,7 @@ TEST_CASE("[HashingContext] Multiple updates - MD5/SHA1/SHA256") {
 	CHECK(ctx.update(s_byte_parts[2]) == OK);
 	result = ctx.finish();
 	REQUIRE(result.size() == 20);
-	CHECK(memcmp(result.ptr(), sha1_expected, 20) == 0);
+	CHECK(std::memcmp(result.ptr(), sha1_expected, 20) == 0);
 
 	CHECK(ctx.start(HashingContext::HASH_SHA256) == OK);
 	CHECK(ctx.update(s_byte_parts[0]) == OK);
@@ -111,7 +111,7 @@ TEST_CASE("[HashingContext] Multiple updates - MD5/SHA1/SHA256") {
 	CHECK(ctx.update(s_byte_parts[2]) == OK);
 	result = ctx.finish();
 	REQUIRE(result.size() == 32);
-	CHECK(memcmp(result.ptr(), sha256_expected, 32) == 0);
+	CHECK(std::memcmp(result.ptr(), sha256_expected, 32) == 0);
 }
 
 TEST_CASE("[HashingContext] Invalid use of start") {

@@ -207,7 +207,7 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 			// Copy the source mipmap's data to a BasisU image.
 			if (is_hdr) {
 				basisu::imagef basisu_image(width, height);
-				memcpy(reinterpret_cast<uint8_t *>(basisu_image.get_ptr()), image_mip_data, size);
+				std::memcpy(reinterpret_cast<uint8_t *>(basisu_image.get_ptr()), image_mip_data, size);
 
 				if (i == 0) {
 					params.m_source_images_hdr.push_back(basisu_image);
@@ -217,7 +217,7 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 
 			} else {
 				basisu::image basisu_image(width, height);
-				memcpy(basisu_image.get_ptr(), image_mip_data, size);
+				std::memcpy(basisu_image.get_ptr(), image_mip_data, size);
 
 				if (i == 0) {
 					params.m_source_images.push_back(basisu_image);
@@ -249,7 +249,7 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 
 	// Copy the encoded BasisU data into the output buffer.
 	*(uint32_t *)basisu_data_ptr = decompress_format;
-	memcpy(basisu_data_ptr + 4, basisu_encoded.get_ptr(), basisu_encoded.size());
+	std::memcpy(basisu_data_ptr + 4, basisu_encoded.get_ptr(), basisu_encoded.size());
 
 	print_verbose(vformat("BasisU: Encoding a %dx%d image with %d mipmaps took %d ms.", p_image->get_width(), p_image->get_height(), p_image->get_mipmap_count(), OS::get_singleton()->get_ticks_msec() - start_time));
 
@@ -411,7 +411,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 	out_data.resize(Image::get_image_data_size(basisu_info.m_width, basisu_info.m_height, image_format, basisu_info.m_total_levels > 1));
 
 	uint8_t *dst = out_data.ptrw();
-	memset(dst, 0, out_data.size());
+	std::memset(dst, 0, out_data.size());
 
 	for (uint32_t i = 0; i < basisu_info.m_total_levels; i++) {
 		basist::basisu_image_level_info basisu_level;

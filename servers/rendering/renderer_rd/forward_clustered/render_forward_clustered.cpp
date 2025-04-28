@@ -4721,7 +4721,7 @@ void RenderForwardClustered::GeometryInstanceForwardClustered::set_lightmap_capt
 			lightmap_sh = RenderForwardClustered::get_singleton()->geometry_instance_lightmap_sh.alloc();
 		}
 
-		memcpy(lightmap_sh->sh, p_sh9, sizeof(Color) * 9);
+		std::memcpy(lightmap_sh->sh, p_sh9, sizeof(Color) * 9);
 	} else {
 		if (lightmap_sh != nullptr) {
 			RenderForwardClustered::get_singleton()->geometry_instance_lightmap_sh.free(lightmap_sh);

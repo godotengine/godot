@@ -167,7 +167,7 @@ struct ClearAttKey {
 	_FORCE_INLINE_ bool is_layered_rendering_enabled() const { return flags::any(flags, CLEAR_FLAGS_LAYERED); }
 
 	_FORCE_INLINE_ bool operator==(const ClearAttKey &p_rhs) const {
-		return memcmp(this, &p_rhs, sizeof(ClearAttKey)) == 0;
+		return std::memcmp(this, &p_rhs, sizeof(ClearAttKey)) == 0;
 	}
 
 	uint32_t hash() const {
@@ -668,7 +668,7 @@ struct SHA256Digest {
 template <>
 struct HashMapComparatorDefault<SHA256Digest> {
 	static bool compare(const SHA256Digest &p_lhs, const SHA256Digest &p_rhs) {
-		return memcmp(p_lhs.data, p_rhs.data, CC_SHA256_DIGEST_LENGTH) == 0;
+		return std::memcmp(p_lhs.data, p_rhs.data, CC_SHA256_DIGEST_LENGTH) == 0;
 	}
 };
 

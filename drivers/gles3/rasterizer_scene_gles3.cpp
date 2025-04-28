@@ -154,7 +154,7 @@ void RasterizerSceneGLES3::GeometryInstanceGLES3::set_lightmap_capture(const Col
 			lightmap_sh = memnew(GeometryInstanceLightmapSH);
 		}
 
-		memcpy(lightmap_sh->sh, p_sh9, sizeof(Color) * 9);
+		std::memcpy(lightmap_sh->sh, p_sh9, sizeof(Color) * 9);
 	} else {
 		if (lightmap_sh != nullptr) {
 			memdelete(lightmap_sh);

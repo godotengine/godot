@@ -242,7 +242,7 @@ void editor_copy_icons(const Ref<Theme> &p_theme, const Ref<Theme> &p_old_theme)
 String get_default_project_icon() {
 	// FIXME: This icon can probably be predefined in editor_icons.gen.h so we don't have to look up.
 	for (int i = 0; i < editor_icons_count; i++) {
-		if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0) {
+		if (std::strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0) {
 			return String(editor_icons_sources[i]);
 		}
 	}

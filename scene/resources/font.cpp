@@ -2096,7 +2096,7 @@ void FontFile::set_data(const PackedByteArray &p_data) {
 PackedByteArray FontFile::get_data() const {
 	if (unlikely((size_t)data.size() != data_size)) {
 		data.resize(data_size);
-		memcpy(data.ptrw(), data_ptr, data_size);
+		std::memcpy(data.ptrw(), data_ptr, data_size);
 	}
 	return data;
 }

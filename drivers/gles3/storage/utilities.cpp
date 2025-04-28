@@ -135,7 +135,7 @@ Vector<uint8_t> Utilities::buffer_get_data(GLenum p_target, GLuint p_buffer, uin
 	ERR_FAIL_NULL_V(data, Vector<uint8_t>());
 	{
 		uint8_t *w = ret.ptrw();
-		memcpy(w, data, p_buffer_size);
+		std::memcpy(w, data, p_buffer_size);
 	}
 	glUnmapBuffer(p_target);
 #endif

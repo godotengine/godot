@@ -251,7 +251,7 @@ void WebSocketMultiplayerPeer::_poll_client() {
 			ERR_FAIL_COND(size <= 0);
 			Packet packet;
 			packet.data = (uint8_t *)memalloc(size);
-			memcpy(packet.data, in_buffer, size);
+			std::memcpy(packet.data, in_buffer, size);
 			packet.size = size;
 			packet.source = 1;
 			incoming_packets.push_back(packet);
@@ -385,7 +385,7 @@ void WebSocketMultiplayerPeer::_poll_server() {
 			}
 			Packet packet;
 			packet.data = (uint8_t *)memalloc(size);
-			memcpy(packet.data, in_buffer, size);
+			std::memcpy(packet.data, in_buffer, size);
 			packet.size = size;
 			packet.source = E.key;
 			incoming_packets.push_back(packet);

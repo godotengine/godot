@@ -639,7 +639,7 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, 
 
 	int ofs = p_dest.size();
 	p_dest.resize(p_dest.size() + result.size());
-	memcpy(&p_dest.write[ofs], result.ptr(), result.size());
+	std::memcpy(&p_dest.write[ofs], result.ptr(), result.size());
 }
 
 void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
@@ -684,10 +684,10 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 				int ofs = data.size();
 				uint64_t len = png_buffer.size();
 				data.resize(data.size() + len + 8);
-				memcpy(&data.write[ofs + 8], png_buffer.ptr(), len);
+				std::memcpy(&data.write[ofs + 8], png_buffer.ptr(), len);
 				len += 8;
 				len = BSWAP32(len);
-				memcpy(&data.write[ofs], icon_infos[i].name, 4);
+				std::memcpy(&data.write[ofs], icon_infos[i].name, 4);
 				encode_uint32(len, &data.write[ofs + 4]);
 			}
 		} else {
@@ -707,7 +707,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 
 				int len = data.size() - ofs;
 				len = BSWAP32(len);
-				memcpy(&data.write[ofs], icon_infos[i].name, 4);
+				std::memcpy(&data.write[ofs], icon_infos[i].name, 4);
 				encode_uint32(len, &data.write[ofs + 4]);
 			}
 
@@ -722,7 +722,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 				}
 				len += 8;
 				len = BSWAP32(len);
-				memcpy(&data.write[ofs], icon_infos[i].mask_name, 4);
+				std::memcpy(&data.write[ofs], icon_infos[i].mask_name, 4);
 				encode_uint32(len, &data.write[ofs + 4]);
 			}
 		}

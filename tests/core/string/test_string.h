@@ -1955,15 +1955,15 @@ TEST_CASE("[String] SHA1/SHA256/MD5") {
 	};
 
 	PackedByteArray buf = s.sha1_buffer();
-	CHECK(memcmp(sha1_buf, buf.ptr(), 20) == 0);
+	CHECK(std::memcmp(sha1_buf, buf.ptr(), 20) == 0);
 	CHECK(s.sha1_text() == sha1);
 
 	buf = s.sha256_buffer();
-	CHECK(memcmp(sha256_buf, buf.ptr(), 32) == 0);
+	CHECK(std::memcmp(sha256_buf, buf.ptr(), 32) == 0);
 	CHECK(s.sha256_text() == sha256);
 
 	buf = s.md5_buffer();
-	CHECK(memcmp(md5_buf, buf.ptr(), 16) == 0);
+	CHECK(std::memcmp(md5_buf, buf.ptr(), 16) == 0);
 	CHECK(s.md5_text() == md5);
 }
 

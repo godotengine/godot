@@ -3038,32 +3038,32 @@ Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p
 
 Variant Control::get_used_theme_item(const String &p_full_name, const StringName &p_theme_type) const {
 	if (p_full_name.begins_with("theme_override_icons/")) {
-		String name = p_full_name.substr(strlen("theme_override_icons/"));
+		String name = p_full_name.substr(std::strlen("theme_override_icons/"));
 		if (has_theme_icon(name)) { // Exclude cached and default ones.
 			return get_theme_icon(name);
 		}
 	} else if (p_full_name.begins_with("theme_override_styles/")) {
-		String name = p_full_name.substr(strlen("theme_override_styles/"));
+		String name = p_full_name.substr(std::strlen("theme_override_styles/"));
 		if (has_theme_stylebox(name)) {
 			return get_theme_stylebox(name);
 		}
 	} else if (p_full_name.begins_with("theme_override_fonts/")) {
-		String name = p_full_name.substr(strlen("theme_override_fonts/"));
+		String name = p_full_name.substr(std::strlen("theme_override_fonts/"));
 		if (has_theme_font(name)) {
 			return get_theme_font(name);
 		}
 	} else if (p_full_name.begins_with("theme_override_font_sizes/")) {
-		String name = p_full_name.substr(strlen("theme_override_font_sizes/"));
+		String name = p_full_name.substr(std::strlen("theme_override_font_sizes/"));
 		if (has_theme_font_size(name)) {
 			return get_theme_font_size(name);
 		}
 	} else if (p_full_name.begins_with("theme_override_colors/")) {
-		String name = p_full_name.substr(strlen("theme_override_colors/"));
+		String name = p_full_name.substr(std::strlen("theme_override_colors/"));
 		if (has_theme_color(name)) {
 			return get_theme_color(name);
 		}
 	} else if (p_full_name.begins_with("theme_override_constants/")) {
-		String name = p_full_name.substr(strlen("theme_override_constants/"));
+		String name = p_full_name.substr(std::strlen("theme_override_constants/"));
 		if (has_theme_constant(name)) {
 			return get_theme_constant(name);
 		}

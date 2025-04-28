@@ -30,8 +30,6 @@
 
 #include "string_builder.h"
 
-#include <string.h>
-
 StringBuilder &StringBuilder::append(const String &p_string) {
 	if (p_string.is_empty()) {
 		return *this;
@@ -46,7 +44,7 @@ StringBuilder &StringBuilder::append(const String &p_string) {
 }
 
 StringBuilder &StringBuilder::append(const char *p_cstring) {
-	int32_t len = strlen(p_cstring);
+	int32_t len = std::strlen(p_cstring);
 
 	c_strings.push_back(p_cstring);
 	appended_strings.push_back(len);
@@ -77,7 +75,7 @@ String StringBuilder::as_string() const {
 			// Godot string
 			const String &s = strings[godot_string_elem];
 
-			memcpy(buffer + current_position, s.ptr(), s.length() * sizeof(char32_t));
+			std::memcpy(buffer + current_position, s.ptr(), s.length() * sizeof(char32_t));
 
 			current_position += s.length();
 

@@ -213,7 +213,7 @@ static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_basis, float *p_ar
 void SkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier, float p_brightness_multiplier) {
 	SkyPushConstant sky_push_constant;
 
-	memset(&sky_push_constant, 0, sizeof(SkyPushConstant));
+	std::memset(&sky_push_constant, 0, sizeof(SkyPushConstant));
 
 	// We only need key components of our projection matrix
 	sky_push_constant.projection[0] = p_projection.columns[2][0];

@@ -539,7 +539,7 @@ void ParticlesStorage::_particles_allocate_emission_buffer(Particles *particles)
 	ERR_FAIL_COND(particles->emission_buffer != nullptr);
 
 	particles->emission_buffer_data.resize(sizeof(ParticleEmissionBuffer::Data) * particles->amount + sizeof(uint32_t) * 4);
-	memset(particles->emission_buffer_data.ptrw(), 0, particles->emission_buffer_data.size());
+	std::memset(particles->emission_buffer_data.ptrw(), 0, particles->emission_buffer_data.size());
 	particles->emission_buffer = reinterpret_cast<ParticleEmissionBuffer *>(particles->emission_buffer_data.ptrw());
 	particles->emission_buffer->particle_max = particles->amount;
 
@@ -1483,7 +1483,7 @@ void ParticlesStorage::update_particles() {
 
 			if (uint32_t(history_size) != particles->frame_history.size()) {
 				particles->frame_history.resize(history_size);
-				memset(particles->frame_history.ptr(), 0, sizeof(ParticlesFrameParams) * history_size);
+				std::memset(particles->frame_history.ptr(), 0, sizeof(ParticlesFrameParams) * history_size);
 				// Set the frame number so that we are able to distinguish an uninitialized
 				// frame from the true frame number zero. See issue #88712 for details.
 				for (int i = 0; i < history_size; i++) {

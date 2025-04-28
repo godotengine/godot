@@ -228,7 +228,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			// Unfortunately, we need to copy the buffer, which is fine as doing a resize triggers a CoW anyway.
 			Vector<uint8_t> new_vertex_data;
 			new_vertex_data.resize_zeroed(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
-			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
+			std::memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
 			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, new_vertex_data.size(), new_vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
 			s->vertex_buffer_size = new_vertex_data.size();
 		} else {
@@ -1050,7 +1050,7 @@ void MeshStorage::mesh_surface_remove(RID p_mesh, int p_surface) {
 	_mesh_surface_clear(mesh, p_surface);
 
 	if ((uint32_t)p_surface < mesh->surface_count - 1) {
-		memmove(mesh->surfaces + p_surface, mesh->surfaces + p_surface + 1, sizeof(Mesh::Surface *) * (mesh->surface_count - (p_surface + 1)));
+		std::memmove(mesh->surfaces + p_surface, mesh->surfaces + p_surface + 1, sizeof(Mesh::Surface *) * (mesh->surface_count - (p_surface + 1)));
 	}
 	mesh->surfaces = (Mesh::Surface **)memrealloc(mesh->surfaces, sizeof(Mesh::Surface *) * (mesh->surface_count - 1));
 	--mesh->surface_count;
@@ -1617,10 +1617,10 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 
 			{
 				const uint8_t *r = buffer.ptr();
-				memcpy(w, r, buffer.size());
+				std::memcpy(w, r, buffer.size());
 			}
 		} else {
-			memset(w, 0, (size_t)multimesh->instances * multimesh->stride_cache * sizeof(float));
+			std::memset(w, 0, (size_t)multimesh->instances * multimesh->stride_cache * sizeof(float));
 		}
 	}
 	uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
@@ -1791,7 +1791,7 @@ void MeshStorage::_multimesh_instance_set_color(RID p_multimesh, int p_index, co
 
 		float *dataptr = w + p_index * multimesh->stride_cache + multimesh->color_offset_cache;
 		uint16_t val[4] = { Math::make_half_float(p_color.r), Math::make_half_float(p_color.g), Math::make_half_float(p_color.b), Math::make_half_float(p_color.a) };
-		memcpy(dataptr, val, 2 * 4);
+		std::memcpy(dataptr, val, 2 * 4);
 	}
 
 	_multimesh_mark_dirty(multimesh, p_index, false);
@@ -1810,7 +1810,7 @@ void MeshStorage::_multimesh_instance_set_custom_data(RID p_multimesh, int p_ind
 
 		float *dataptr = w + p_index * multimesh->stride_cache + multimesh->custom_data_offset_cache;
 		uint16_t val[4] = { Math::make_half_float(p_color.r), Math::make_half_float(p_color.g), Math::make_half_float(p_color.b), Math::make_half_float(p_color.a) };
-		memcpy(dataptr, val, 2 * 4);
+		std::memcpy(dataptr, val, 2 * 4);
 	}
 
 	_multimesh_mark_dirty(multimesh, p_index, false);
@@ -1918,7 +1918,7 @@ Color MeshStorage::_multimesh_instance_get_color(RID p_multimesh, int p_index) c
 
 		const float *dataptr = r + p_index * multimesh->stride_cache + multimesh->color_offset_cache;
 		uint16_t raw_data[4];
-		memcpy(raw_data, dataptr, 2 * 4);
+		std::memcpy(raw_data, dataptr, 2 * 4);
 		c.r = Math::half_to_float(raw_data[0]);
 		c.g = Math::half_to_float(raw_data[1]);
 		c.b = Math::half_to_float(raw_data[2]);
@@ -1942,7 +1942,7 @@ Color MeshStorage::_multimesh_instance_get_custom_data(RID p_multimesh, int p_in
 
 		const float *dataptr = r + p_index * multimesh->stride_cache + multimesh->custom_data_offset_cache;
 		uint16_t raw_data[4];
-		memcpy(raw_data, dataptr, 2 * 4);
+		std::memcpy(raw_data, dataptr, 2 * 4);
 		c.r = Math::half_to_float(raw_data[0]);
 		c.g = Math::half_to_float(raw_data[1]);
 		c.b = Math::half_to_float(raw_data[2]);
@@ -1975,27 +1975,27 @@ void MeshStorage::_multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_
 				float *dataptr = w + i * old_stride;
 				float *newptr = w + i * multimesh->stride_cache;
 				float vals[8] = { dataptr[0], dataptr[1], dataptr[2], dataptr[3], dataptr[4], dataptr[5], dataptr[6], dataptr[7] };
-				memcpy(newptr, vals, 8 * 4);
+				std::memcpy(newptr, vals, 8 * 4);
 			}
 
 			if (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_3D) {
 				float *dataptr = w + i * old_stride + 8;
 				float *newptr = w + i * multimesh->stride_cache + 8;
 				float vals[8] = { dataptr[0], dataptr[1], dataptr[2], dataptr[3] };
-				memcpy(newptr, vals, 4 * 4);
+				std::memcpy(newptr, vals, 4 * 4);
 			}
 
 			if (multimesh->uses_colors) {
 				float *dataptr = w + i * old_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12);
 				float *newptr = w + i * multimesh->stride_cache + multimesh->color_offset_cache;
 				uint16_t val[4] = { Math::make_half_float(dataptr[0]), Math::make_half_float(dataptr[1]), Math::make_half_float(dataptr[2]), Math::make_half_float(dataptr[3]) };
-				memcpy(newptr, val, 2 * 4);
+				std::memcpy(newptr, val, 2 * 4);
 			}
 			if (multimesh->uses_custom_data) {
 				float *dataptr = w + i * old_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12) + (multimesh->uses_colors ? 4 : 0);
 				float *newptr = w + i * multimesh->stride_cache + multimesh->custom_data_offset_cache;
 				uint16_t val[4] = { Math::make_half_float(dataptr[0]), Math::make_half_float(dataptr[1]), Math::make_half_float(dataptr[2]), Math::make_half_float(dataptr[3]) };
-				memcpy(newptr, val, 2 * 4);
+				std::memcpy(newptr, val, 2 * 4);
 			}
 		}
 
@@ -2065,7 +2065,7 @@ Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 		{
 			float *w = ret.ptrw();
 			const uint8_t *r = buffer.ptr();
-			memcpy(w, r, buffer.size());
+			std::memcpy(w, r, buffer.size());
 		}
 	}
 	if (multimesh->uses_colors || multimesh->uses_custom_data) {
@@ -2084,21 +2084,21 @@ Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 				float *newptr = w + i * new_stride;
 				const float *oldptr = r + i * multimesh->stride_cache;
 				float vals[8] = { oldptr[0], oldptr[1], oldptr[2], oldptr[3], oldptr[4], oldptr[5], oldptr[6], oldptr[7] };
-				memcpy(newptr, vals, 8 * 4);
+				std::memcpy(newptr, vals, 8 * 4);
 			}
 
 			if (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_3D) {
 				float *newptr = w + i * new_stride + 8;
 				const float *oldptr = r + i * multimesh->stride_cache + 8;
 				float vals[8] = { oldptr[0], oldptr[1], oldptr[2], oldptr[3] };
-				memcpy(newptr, vals, 4 * 4);
+				std::memcpy(newptr, vals, 4 * 4);
 			}
 
 			if (multimesh->uses_colors) {
 				float *newptr = w + i * new_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12);
 				const float *oldptr = r + i * multimesh->stride_cache + multimesh->color_offset_cache;
 				uint16_t raw_data[4];
-				memcpy(raw_data, oldptr, 2 * 4);
+				std::memcpy(raw_data, oldptr, 2 * 4);
 				newptr[0] = Math::half_to_float(raw_data[0]);
 				newptr[1] = Math::half_to_float(raw_data[1]);
 				newptr[2] = Math::half_to_float(raw_data[2]);
@@ -2108,7 +2108,7 @@ Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 				float *newptr = w + i * new_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12) + (multimesh->uses_colors ? 4 : 0);
 				const float *oldptr = r + i * multimesh->stride_cache + multimesh->custom_data_offset_cache;
 				uint16_t raw_data[4];
-				memcpy(raw_data, oldptr, 2 * 4);
+				std::memcpy(raw_data, oldptr, 2 * 4);
 				newptr[0] = Math::half_to_float(raw_data[0]);
 				newptr[1] = Math::half_to_float(raw_data[1]);
 				newptr[2] = Math::half_to_float(raw_data[2]);
@@ -2276,7 +2276,7 @@ void MeshStorage::skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_
 		glBindTexture(GL_TEXTURE_2D, 0);
 		GLES3::Utilities::get_singleton()->texture_allocated_data(skeleton->transforms_texture, skeleton->data.size() * sizeof(float), "Skeleton transforms texture");
 
-		memset(skeleton->data.ptr(), 0, skeleton->data.size() * sizeof(float));
+		std::memset(skeleton->data.ptr(), 0, skeleton->data.size() * sizeof(float));
 
 		_skeleton_make_dirty(skeleton);
 	}

@@ -73,7 +73,7 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	RendererSceneRenderRD *render_scene_render = RendererSceneRenderRD::get_singleton();
 
 	UBODATA ubo_data;
-	memset(&ubo_data, 0, sizeof(UBODATA));
+	std::memset(&ubo_data, 0, sizeof(UBODATA));
 
 	// just for easy access..
 	UBO &ubo = ubo_data.ubo;
@@ -261,7 +261,7 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 
 	if (calculate_motion_vectors) {
 		// Q : Should we make a complete copy or should we define a separate UBO with just the components we need?
-		memcpy(&prev_ubo, &ubo, sizeof(UBO));
+		std::memcpy(&prev_ubo, &ubo, sizeof(UBO));
 
 		Projection prev_correction;
 		prev_correction.set_depth_correction(true);

@@ -580,7 +580,7 @@ Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_buffer(const Vector<ui
 			if (copy_size > OGG_SYNC_BUFFER_SIZE) {
 				copy_size = OGG_SYNC_BUFFER_SIZE;
 			}
-			memcpy(sync_buf, &p_stream_data[cursor], copy_size);
+			std::memcpy(sync_buf, &p_stream_data[cursor], copy_size);
 			ogg_sync_wrote(&sync_state, copy_size);
 			cursor += copy_size;
 			err = ogg_sync_check(&sync_state);
@@ -635,7 +635,7 @@ Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_buffer(const Vector<ui
 			if (packet.bytes > 0) {
 				PackedByteArray data;
 				data.resize(packet.bytes);
-				memcpy(data.ptrw(), packet.packet, packet.bytes);
+				std::memcpy(data.ptrw(), packet.packet, packet.bytes);
 				sorted_packets[granule_pos].push_back(data);
 				packet_count++;
 			}

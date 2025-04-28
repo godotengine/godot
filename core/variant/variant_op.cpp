@@ -246,10 +246,10 @@ public:
 		((void)0)
 
 void Variant::_register_variant_operators() {
-	memset(operator_return_type_table, 0, sizeof(operator_return_type_table));
-	memset(operator_evaluator_table, 0, sizeof(operator_evaluator_table));
-	memset(validated_operator_evaluator_table, 0, sizeof(validated_operator_evaluator_table));
-	memset(ptr_operator_evaluator_table, 0, sizeof(ptr_operator_evaluator_table));
+	std::memset(operator_return_type_table, 0, sizeof(operator_return_type_table));
+	std::memset(operator_evaluator_table, 0, sizeof(operator_evaluator_table));
+	std::memset(validated_operator_evaluator_table, 0, sizeof(validated_operator_evaluator_table));
+	std::memset(ptr_operator_evaluator_table, 0, sizeof(ptr_operator_evaluator_table));
 
 	register_op<OperatorEvaluatorAdd<int64_t, int64_t, int64_t>>(Variant::OP_ADD, Variant::INT, Variant::INT);
 	register_op<OperatorEvaluatorAdd<double, int64_t, double>>(Variant::OP_ADD, Variant::INT, Variant::FLOAT);

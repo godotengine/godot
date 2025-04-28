@@ -400,7 +400,7 @@ void PolygonOccluder3D::_update_arrays(PackedVector3Array &r_vertices, PackedInt
 	}
 
 	r_indices.resize(occluder_indices.size());
-	memcpy(r_indices.ptrw(), occluder_indices.ptr(), occluder_indices.size() * sizeof(int));
+	std::memcpy(r_indices.ptrw(), occluder_indices.ptr(), occluder_indices.size() * sizeof(int));
 }
 
 bool PolygonOccluder3D::_has_editable_3d_polygon_no_depth() const {
@@ -553,7 +553,7 @@ void OccluderInstance3D::_bake_surface(const Transform3D &p_transform, Array p_s
 
 	int vertex_offset = r_vertices.size();
 	r_vertices.resize(vertex_offset + vertices.size());
-	memcpy(r_vertices.ptrw() + vertex_offset, vertices.ptr(), vertices.size() * sizeof(Vector3));
+	std::memcpy(r_vertices.ptrw() + vertex_offset, vertices.ptr(), vertices.size() * sizeof(Vector3));
 
 	int index_offset = r_indices.size();
 	r_indices.resize(index_offset + indices.size());

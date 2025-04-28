@@ -43,14 +43,6 @@
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
 
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
-#endif
-
-#if defined(MINGW_ENABLED) || defined(_MSC_VER)
-#define snprintf _snprintf_s
-#endif
-
 static const int MAX_DECIMALS = 32;
 
 static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
@@ -223,7 +215,7 @@ void String::append_utf32(const Span<char32_t> &p_cstr) {
 void String::copy_from_unchecked(const char32_t *p_char, const int p_length) {
 	resize(p_length + 1); // + 1 for \0
 	char32_t *dst = ptrw();
-	memcpy(dst, p_char, p_length * sizeof(char32_t));
+	std::memcpy(dst, p_char, p_length * sizeof(char32_t));
 	*(dst + p_length) = _null;
 }
 
@@ -305,7 +297,7 @@ String &String::operator+=(const wchar_t *p_str) {
 }
 
 String &String::operator+=(const char32_t *p_str) {
-	append_utf32(Span(p_str, strlen(p_str)));
+	append_utf32(Span(p_str, std::strlen(p_str)));
 	return *this;
 }
 
@@ -316,7 +308,7 @@ String &String::operator+=(char32_t p_char) {
 
 bool String::operator==(const char *p_str) const {
 	// compare Latin-1 encoded c-string
-	int len = strlen(p_str);
+	int len = std::strlen(p_str);
 
 	if (length() != len) {
 		return false;
@@ -350,7 +342,7 @@ bool String::operator==(const wchar_t *p_str) const {
 }
 
 bool String::operator==(const char32_t *p_str) const {
-	const int len = strlen(p_str);
+	const int len = std::strlen(p_str);
 
 	if (length() != len) {
 		return false;
@@ -359,7 +351,7 @@ bool String::operator==(const char32_t *p_str) const {
 		return true;
 	}
 
-	return memcmp(ptr(), p_str, len * sizeof(char32_t)) == 0;
+	return std::memcmp(ptr(), p_str, len * sizeof(char32_t)) == 0;
 }
 
 bool String::operator==(const String &p_str) const {
@@ -370,7 +362,7 @@ bool String::operator==(const String &p_str) const {
 		return true;
 	}
 
-	return memcmp(ptr(), p_str.ptr(), length() * sizeof(char32_t)) == 0;
+	return std::memcmp(ptr(), p_str.ptr(), length() * sizeof(char32_t)) == 0;
 }
 
 bool String::operator==(const Span<char32_t> &p_str_range) const {
@@ -383,7 +375,7 @@ bool String::operator==(const Span<char32_t> &p_str_range) const {
 		return true;
 	}
 
-	return memcmp(ptr(), p_str_range.ptr(), len * sizeof(char32_t)) == 0;
+	return std::memcmp(ptr(), p_str_range.ptr(), len * sizeof(char32_t)) == 0;
 }
 
 bool operator==(const char *p_chr, const String &p_str) {
@@ -896,7 +888,7 @@ int String::get_slice_count(const char *p_splitter) const {
 
 	int pos = 0;
 	int slices = 1;
-	int splitter_length = strlen(p_splitter);
+	int splitter_length = std::strlen(p_splitter);
 
 	while ((pos = find(p_splitter, pos)) >= 0) {
 		slices++;
@@ -962,7 +954,7 @@ String String::get_slice(const char *p_splitter, int p_slice) const {
 	}
 
 	int i = 0;
-	const int splitter_length = strlen(p_splitter);
+	const int splitter_length = std::strlen(p_splitter);
 	while (true) {
 		pos = find(p_splitter, pos);
 		if (pos == -1) {
@@ -1118,7 +1110,7 @@ Vector<String> String::split(const char *p_splitter, bool p_allow_empty, int p_m
 
 	int from = 0;
 	int len = length();
-	const int splitter_length = strlen(p_splitter);
+	const int splitter_length = std::strlen(p_splitter);
 
 	while (true) {
 		int end;
@@ -1200,7 +1192,7 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 Vector<String> String::rsplit(const char *p_splitter, bool p_allow_empty, int p_maxsplit) const {
 	Vector<String> ret;
 	const int len = length();
-	const int splitter_length = strlen(p_splitter);
+	const int splitter_length = std::strlen(p_splitter);
 	int remaining_len = len;
 
 	while (true) {
@@ -1377,13 +1369,13 @@ String String::join(const Vector<String> &parts) const {
 		if (first) {
 			first = false;
 		} else if (this_length) {
-			memcpy(ret_ptrw, this_ptr, this_length * sizeof(char32_t));
+			std::memcpy(ret_ptrw, this_ptr, this_length * sizeof(char32_t));
 			ret_ptrw += this_length;
 		}
 
 		const int part_length = part.length();
 		if (part_length) {
-			memcpy(ret_ptrw, part.ptr(), part_length * sizeof(char32_t));
+			std::memcpy(ret_ptrw, part.ptr(), part_length * sizeof(char32_t));
 			ret_ptrw += part_length;
 		}
 	}
@@ -1815,7 +1807,7 @@ Error String::append_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	}
 
 	if (p_len < 0) {
-		p_len = strlen(p_utf8);
+		p_len = std::strlen(p_utf8);
 	}
 
 	const int prev_length = length();
@@ -2926,15 +2918,15 @@ String String::insert(int p_at_pos, const String &p_string) const {
 	const char32_t *this_ptr = ptr();
 
 	if (p_at_pos > 0) {
-		memcpy(ret_ptrw, this_ptr, p_at_pos * sizeof(char32_t));
+		std::memcpy(ret_ptrw, this_ptr, p_at_pos * sizeof(char32_t));
 		ret_ptrw += p_at_pos;
 	}
 
-	memcpy(ret_ptrw, p_string.ptr(), p_string.length() * sizeof(char32_t));
+	std::memcpy(ret_ptrw, p_string.ptr(), p_string.length() * sizeof(char32_t));
 	ret_ptrw += p_string.length();
 
 	if (p_at_pos < length()) {
-		memcpy(ret_ptrw, this_ptr + p_at_pos, (length() - p_at_pos) * sizeof(char32_t));
+		std::memcpy(ret_ptrw, this_ptr + p_at_pos, (length() - p_at_pos) * sizeof(char32_t));
 		ret_ptrw += length() - p_at_pos;
 	}
 
@@ -2989,7 +2981,7 @@ String String::remove_char(char32_t p_char) const {
 	char32_t *new_ptr = new_string.ptrw();
 
 	// Copy part of input before `char`.
-	memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
+	std::memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
 
 	int new_size = index;
 
@@ -3044,7 +3036,7 @@ static String _remove_chars_common(const String &p_this, const T *p_chars, int p
 	char32_t *new_ptr = new_string.ptrw();
 
 	// Copy part of input before `char`.
-	memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
+	std::memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
 
 	int new_size = index;
 
@@ -3070,7 +3062,7 @@ String String::remove_chars(const String &p_chars) const {
 }
 
 String String::remove_chars(const char *p_chars) const {
-	return _remove_chars_common(*this, p_chars, strlen(p_chars));
+	return _remove_chars_common(*this, p_chars, std::strlen(p_chars));
 }
 
 String String::substr(int p_from, int p_chars) const {
@@ -3144,7 +3136,7 @@ int String::find(const char *p_str, int p_from) const {
 		return -1;
 	}
 
-	const int src_len = strlen(p_str);
+	const int src_len = std::strlen(p_str);
 
 	const int len = length();
 
@@ -3303,7 +3295,7 @@ int String::findn(const char *p_str, int p_from) const {
 		return -1;
 	}
 
-	int src_len = strlen(p_str);
+	int src_len = std::strlen(p_str);
 
 	if (src_len == 0 || length() == 0) {
 		return -1; // won't find anything!
@@ -3387,7 +3379,7 @@ int String::rfind(const String &p_str, int p_from) const {
 
 int String::rfind(const char *p_str, int p_from) const {
 	const int source_length = length();
-	int substring_length = strlen(p_str);
+	int substring_length = std::strlen(p_str);
 
 	if (source_length == 0 || substring_length == 0) {
 		return -1; // won't find anything!
@@ -3498,7 +3490,7 @@ int String::rfindn(const String &p_str, int p_from) const {
 
 int String::rfindn(const char *p_str, int p_from) const {
 	const int source_length = length();
-	int substring_length = strlen(p_str);
+	int substring_length = std::strlen(p_str);
 
 	if (source_length == 0 || substring_length == 0) {
 		return -1; // won't find anything!
@@ -3559,7 +3551,7 @@ bool String::ends_with(const String &p_string) const {
 		return true;
 	}
 
-	return memcmp(ptr() + (length() - l), p_string.ptr(), l * sizeof(char32_t)) == 0;
+	return std::memcmp(ptr() + (length() - l), p_string.ptr(), l * sizeof(char32_t)) == 0;
 }
 
 bool String::ends_with(const char *p_string) const {
@@ -3567,7 +3559,7 @@ bool String::ends_with(const char *p_string) const {
 		return false;
 	}
 
-	int l = strlen(p_string);
+	int l = std::strlen(p_string);
 	if (l > length()) {
 		return false;
 	}
@@ -3596,7 +3588,7 @@ bool String::begins_with(const String &p_string) const {
 		return true;
 	}
 
-	return memcmp(ptr(), p_string.ptr(), l * sizeof(char32_t)) == 0;
+	return std::memcmp(ptr(), p_string.ptr(), l * sizeof(char32_t)) == 0;
 }
 
 bool String::begins_with(const char *p_string) const {
@@ -3683,7 +3675,7 @@ int String::_count(const String &p_string, int p_from, int p_to, bool p_case_ins
 }
 
 int String::_count(const char *p_string, int p_from, int p_to, bool p_case_insensitive) const {
-	int substring_length = strlen(p_string);
+	int substring_length = std::strlen(p_string);
 	if (substring_length == 0) {
 		return 0;
 	}
@@ -3936,18 +3928,18 @@ static String _replace_common(const String &p_this, const String &p_key, const S
 
 	for (const int &pos : found) {
 		if (last_pos != pos) {
-			memcpy(new_ptrw, old_ptr + last_pos, (pos - last_pos) * sizeof(char32_t));
+			std::memcpy(new_ptrw, old_ptr + last_pos, (pos - last_pos) * sizeof(char32_t));
 			new_ptrw += (pos - last_pos);
 		}
 		if (with_length) {
-			memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
+			std::memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
 			new_ptrw += with_length;
 		}
 		last_pos = pos + key_length;
 	}
 
 	if (last_pos != old_length) {
-		memcpy(new_ptrw, old_ptr + last_pos, (old_length - last_pos) * sizeof(char32_t));
+		std::memcpy(new_ptrw, old_ptr + last_pos, (old_length - last_pos) * sizeof(char32_t));
 		new_ptrw += old_length - last_pos;
 	}
 
@@ -3957,7 +3949,7 @@ static String _replace_common(const String &p_this, const String &p_key, const S
 }
 
 static String _replace_common(const String &p_this, char const *p_key, char const *p_with, bool p_case_insensitive) {
-	size_t key_length = strlen(p_key);
+	size_t key_length = std::strlen(p_key);
 
 	if (key_length == 0 || p_this.is_empty()) {
 		return p_this;
@@ -3995,18 +3987,18 @@ static String _replace_common(const String &p_this, char const *p_key, char cons
 
 	for (const int &pos : found) {
 		if (last_pos != pos) {
-			memcpy(new_ptrw, old_ptr + last_pos, (pos - last_pos) * sizeof(char32_t));
+			std::memcpy(new_ptrw, old_ptr + last_pos, (pos - last_pos) * sizeof(char32_t));
 			new_ptrw += (pos - last_pos);
 		}
 		if (with_length) {
-			memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
+			std::memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
 			new_ptrw += with_length;
 		}
 		last_pos = pos + key_length;
 	}
 
 	if (last_pos != old_length) {
-		memcpy(new_ptrw, old_ptr + last_pos, (old_length - last_pos) * sizeof(char32_t));
+		std::memcpy(new_ptrw, old_ptr + last_pos, (old_length - last_pos) * sizeof(char32_t));
 		new_ptrw += old_length - last_pos;
 	}
 
@@ -4038,18 +4030,18 @@ String String::replace_first(const String &p_key, const String &p_with) const {
 		const char32_t *with_ptr = p_with.ptr();
 
 		if (pos > 0) {
-			memcpy(new_ptrw, old_ptr, pos * sizeof(char32_t));
+			std::memcpy(new_ptrw, old_ptr, pos * sizeof(char32_t));
 			new_ptrw += pos;
 		}
 
 		if (with_length) {
-			memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
+			std::memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
 			new_ptrw += with_length;
 		}
 		pos += key_length;
 
 		if (pos != old_length) {
-			memcpy(new_ptrw, old_ptr + pos, (old_length - pos) * sizeof(char32_t));
+			std::memcpy(new_ptrw, old_ptr + pos, (old_length - pos) * sizeof(char32_t));
 			new_ptrw += (old_length - pos);
 		}
 
@@ -4065,8 +4057,8 @@ String String::replace_first(const char *p_key, const char *p_with) const {
 	int pos = find(p_key);
 	if (pos >= 0) {
 		const int old_length = length();
-		const int key_length = strlen(p_key);
-		const int with_length = strlen(p_with);
+		const int key_length = std::strlen(p_key);
+		const int with_length = std::strlen(p_with);
 
 		String new_string;
 		new_string.resize(old_length + (with_length - key_length) + 1);
@@ -4075,7 +4067,7 @@ String String::replace_first(const char *p_key, const char *p_with) const {
 		const char32_t *old_ptr = ptr();
 
 		if (pos > 0) {
-			memcpy(new_ptrw, old_ptr, pos * sizeof(char32_t));
+			std::memcpy(new_ptrw, old_ptr, pos * sizeof(char32_t));
 			new_ptrw += pos;
 		}
 
@@ -4085,7 +4077,7 @@ String String::replace_first(const char *p_key, const char *p_with) const {
 		pos += key_length;
 
 		if (pos != old_length) {
-			memcpy(new_ptrw, old_ptr + pos, (old_length - pos) * sizeof(char32_t));
+			std::memcpy(new_ptrw, old_ptr + pos, (old_length - pos) * sizeof(char32_t));
 			new_ptrw += (old_length - pos);
 		}
 
@@ -4128,7 +4120,7 @@ String String::replace_char(char32_t p_key, char32_t p_with) const {
 	char32_t *new_ptr = new_string.ptrw();
 
 	// Copy part of input before `key`.
-	memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
+	std::memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
 
 	new_ptr[index] = p_with;
 
@@ -4181,7 +4173,7 @@ static String _replace_chars_common(const String &p_this, const T *p_keys, int p
 	char32_t *new_ptr = new_string.ptrw();
 
 	// Copy part of input before `key`.
-	memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
+	std::memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
 
 	new_ptr[index] = p_with;
 
@@ -4205,7 +4197,7 @@ String String::replace_chars(const String &p_keys, char32_t p_with) const {
 }
 
 String String::replace_chars(const char *p_keys, char32_t p_with) const {
-	return _replace_chars_common(*this, p_keys, strlen(p_keys), p_with);
+	return _replace_chars_common(*this, p_keys, std::strlen(p_keys), p_with);
 }
 
 String String::replacen(const String &p_key, const String &p_with) const {
@@ -4235,7 +4227,7 @@ String String::repeat(int p_count) const {
 	int offset = 1;
 	int stride = 1;
 	while (offset < p_count) {
-		memcpy(dst + offset * len, dst, stride * len * sizeof(char32_t));
+		std::memcpy(dst + offset * len, dst, stride * len * sizeof(char32_t));
 		offset += stride;
 		stride = MIN(stride * 2, p_count - offset);
 	}
@@ -5011,7 +5003,7 @@ String String::trim_prefix(const String &p_prefix) const {
 String String::trim_prefix(const char *p_prefix) const {
 	String s = *this;
 	if (s.begins_with(p_prefix)) {
-		int prefix_length = strlen(p_prefix);
+		int prefix_length = std::strlen(p_prefix);
 		return s.substr(prefix_length);
 	}
 	return s;
@@ -5028,7 +5020,7 @@ String String::trim_suffix(const String &p_suffix) const {
 String String::trim_suffix(const char *p_suffix) const {
 	String s = *this;
 	if (s.ends_with(p_suffix)) {
-		return s.substr(0, s.length() - strlen(p_suffix));
+		return s.substr(0, s.length() - std::strlen(p_suffix));
 	}
 	return s;
 }
@@ -5915,7 +5907,7 @@ Vector<uint8_t> String::to_ascii_buffer() const {
 	size_t len = charstr.length();
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	memcpy(w, charstr.ptr(), len);
+	std::memcpy(w, charstr.ptr(), len);
 
 	return retval;
 }
@@ -5931,7 +5923,7 @@ Vector<uint8_t> String::to_utf8_buffer() const {
 	size_t len = charstr.length();
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	memcpy(w, charstr.ptr(), len);
+	std::memcpy(w, charstr.ptr(), len);
 
 	return retval;
 }
@@ -5947,7 +5939,7 @@ Vector<uint8_t> String::to_utf16_buffer() const {
 	size_t len = charstr.length() * sizeof(char16_t);
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	memcpy(w, (const void *)charstr.ptr(), len);
+	std::memcpy(w, (const void *)charstr.ptr(), len);
 
 	return retval;
 }
@@ -5962,7 +5954,7 @@ Vector<uint8_t> String::to_utf32_buffer() const {
 	size_t len = s->length() * sizeof(char32_t);
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	memcpy(w, (const void *)s->ptr(), len);
+	std::memcpy(w, (const void *)s->ptr(), len);
 
 	return retval;
 }

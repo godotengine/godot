@@ -69,7 +69,7 @@ void SurfaceTool::strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32A
 		}
 
 		if (i != filtered_indices_count) {
-			memcpy(idx_ptr + (filtered_indices_count * 3), tri, sizeof(int) * 3);
+			std::memcpy(idx_ptr + (filtered_indices_count * 3), tri, sizeof(int) * 3);
 		}
 
 		found_triangles.insert_new(tri, true);
@@ -1290,7 +1290,7 @@ void SurfaceTool::optimize_indices_for_cache() {
 	ERR_FAIL_COND(index_array.size() % 3 != 0);
 
 	LocalVector old_index_array = index_array;
-	memset(index_array.ptr(), 0, index_array.size() * sizeof(int));
+	std::memset(index_array.ptr(), 0, index_array.size() * sizeof(int));
 	optimize_vertex_cache_func((unsigned int *)index_array.ptr(), (unsigned int *)old_index_array.ptr(), old_index_array.size(), vertex_array.size());
 }
 

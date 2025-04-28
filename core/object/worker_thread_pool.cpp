@@ -540,7 +540,7 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 void WorkerThreadPool::_switch_runlevel(Runlevel p_runlevel) {
 	DEV_ASSERT(p_runlevel > runlevel);
 	runlevel = p_runlevel;
-	memset(&runlevel_data, 0, sizeof(runlevel_data));
+	std::memset(&runlevel_data, 0, sizeof(runlevel_data));
 	for (uint32_t i = 0; i < threads.size(); i++) {
 		threads[i].cond_var.notify_one();
 		threads[i].signaled = true;

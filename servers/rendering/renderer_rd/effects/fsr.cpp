@@ -73,7 +73,7 @@ void FSR::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_te
 	RID upscale_texture = p_render_buffers->get_texture(SNAME("FSR"), SNAME("upscale_texture"));
 
 	FSRUpscalePushConstant push_constant;
-	memset(&push_constant, 0, sizeof(FSRUpscalePushConstant));
+	std::memset(&push_constant, 0, sizeof(FSRUpscalePushConstant));
 
 	int dispatch_x = (target_size.x + 15) / 16;
 	int dispatch_y = (target_size.y + 15) / 16;

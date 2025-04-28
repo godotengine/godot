@@ -365,7 +365,7 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 #endif
 
 	ENetPacket *packet = enet_packet_create(nullptr, p_buffer_size, packet_flags);
-	memcpy(&packet->data[0], p_buffer, p_buffer_size);
+	std::memcpy(&packet->data[0], p_buffer, p_buffer_size);
 
 	if (is_server()) {
 		if (target_peer == 0) {

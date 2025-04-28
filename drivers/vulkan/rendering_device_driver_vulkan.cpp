@@ -1244,7 +1244,7 @@ Error RenderingDeviceDriverVulkan::_initialize_pipeline_cache() {
 	header->device_id = physical_device_properties.deviceID;
 	header->vendor_id = physical_device_properties.vendorID;
 	header->driver_version = physical_device_properties.driverVersion;
-	memcpy(header->uuid, physical_device_properties.pipelineCacheUUID, VK_UUID_SIZE);
+	std::memcpy(header->uuid, physical_device_properties.pipelineCacheUUID, VK_UUID_SIZE);
 	header->driver_abi = sizeof(void *);
 
 	pipeline_cache_id = String::hex_encode_buffer(physical_device_properties.pipelineCacheUUID, VK_UUID_SIZE);
@@ -3635,7 +3635,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 				} else {
 					Vector<uint8_t> smv;
 					smv.resize(smolv.size());
-					memcpy(smv.ptrw(), &smolv[0], smolv.size());
+					std::memcpy(smv.ptrw(), &smolv[0], smolv.size());
 					zstd_size.push_back(0); // Not using zstd.
 					compressed_stages.push_back(smv);
 				}
@@ -3684,19 +3684,19 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 		offset += sizeof(uint32_t);
 		encode_uint32(0, binptr + offset); // Pad to align ShaderBinary::Data to 8 bytes.
 		offset += sizeof(uint32_t);
-		memcpy(binptr + offset, &binary_data, sizeof(ShaderBinary::Data));
+		std::memcpy(binptr + offset, &binary_data, sizeof(ShaderBinary::Data));
 		offset += sizeof(ShaderBinary::Data);
 
-#define ADVANCE_OFFSET_WITH_ALIGNMENT(m_bytes)                         \
-	{                                                                  \
-		offset += m_bytes;                                             \
-		uint32_t padding = STEPIFY(m_bytes, 4) - m_bytes;              \
-		memset(binptr + offset, 0, padding); /* Avoid garbage data. */ \
-		offset += padding;                                             \
+#define ADVANCE_OFFSET_WITH_ALIGNMENT(m_bytes)                              \
+	{                                                                       \
+		offset += m_bytes;                                                  \
+		uint32_t padding = STEPIFY(m_bytes, 4) - m_bytes;                   \
+		std::memset(binptr + offset, 0, padding); /* Avoid garbage data. */ \
+		offset += padding;                                                  \
 	}
 
 		if (binary_data.shader_name_len > 0) {
-			memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
+			std::memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
 			ADVANCE_OFFSET_WITH_ALIGNMENT(binary_data.shader_name_len);
 		}
 
@@ -3705,13 +3705,13 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 			encode_uint32(count, binptr + offset);
 			offset += sizeof(uint32_t);
 			if (count > 0) {
-				memcpy(binptr + offset, uniforms[i].ptr(), sizeof(ShaderBinary::DataBinding) * count);
+				std::memcpy(binptr + offset, uniforms[i].ptr(), sizeof(ShaderBinary::DataBinding) * count);
 				offset += sizeof(ShaderBinary::DataBinding) * count;
 			}
 		}
 
 		if (specialization_constants.size()) {
-			memcpy(binptr + offset, specialization_constants.ptr(), sizeof(ShaderBinary::SpecializationConstant) * specialization_constants.size());
+			std::memcpy(binptr + offset, specialization_constants.ptr(), sizeof(ShaderBinary::SpecializationConstant) * specialization_constants.size());
 			offset += sizeof(ShaderBinary::SpecializationConstant) * specialization_constants.size();
 		}
 
@@ -3722,7 +3722,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 			offset += sizeof(uint32_t);
 			encode_uint32(zstd_size[i], binptr + offset);
 			offset += sizeof(uint32_t);
-			memcpy(binptr + offset, compressed_stages[i].ptr(), compressed_stages[i].size());
+			std::memcpy(binptr + offset, compressed_stages[i].ptr(), compressed_stages[i].size());
 			ADVANCE_OFFSET_WITH_ALIGNMENT(compressed_stages[i].size());
 		}
 
@@ -4555,7 +4555,7 @@ void RenderingDeviceDriverVulkan::command_resolve_texture(CommandBufferID p_cmd_
 
 void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) {
 	VkClearColorValue vk_color = {};
-	memcpy(&vk_color.float32, p_color.components, sizeof(VkClearColorValue::float32));
+	std::memcpy(&vk_color.float32, p_color.components, sizeof(VkClearColorValue::float32));
 
 	VkImageSubresourceRange vk_subresources = {};
 	_texture_subresource_range_to_vk(p_subresources, &vk_subresources);
@@ -4653,7 +4653,7 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 						loaded_header->vendor_id != current_header->vendor_id ||
 						loaded_header->device_id != current_header->device_id ||
 						loaded_header->driver_version != current_header->driver_version ||
-						memcmp(loaded_header->uuid, current_header->uuid, VK_UUID_SIZE) != 0 ||
+						std::memcmp(loaded_header->uuid, current_header->uuid, VK_UUID_SIZE) != 0 ||
 						loaded_header->driver_abi != current_header->driver_abi) {
 					print_verbose("Invalid Vulkan pipelines cache header. This may be due to an engine change, GPU change or graphics driver version change. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
 				} else {
@@ -4987,7 +4987,7 @@ void RenderingDeviceDriverVulkan::command_render_clear_attachments(CommandBuffer
 	VkClearAttachment *vk_clears = ALLOCA_ARRAY(VkClearAttachment, p_attachment_clears.size());
 	for (uint32_t i = 0; i < p_attachment_clears.size(); i++) {
 		vk_clears[i] = {};
-		memcpy(&vk_clears[i].clearValue, &p_attachment_clears[i].value, sizeof(VkClearValue));
+		std::memcpy(&vk_clears[i].clearValue, &p_attachment_clears[i].value, sizeof(VkClearValue));
 		vk_clears[i].colorAttachment = p_attachment_clears[i].color_attachment;
 		vk_clears[i].aspectMask = p_attachment_clears[i].aspect;
 	}

@@ -716,7 +716,7 @@ _FORCE_INLINE_ void ot_tag_to_string(int32_t p_tag, char *p_buf) {
 String TextServer::tag_to_name(int64_t p_tag) const {
 	// No readable name, use tag string.
 	char name[5];
-	memset(name, 0, 5);
+	std::memset(name, 0, 5);
 	ot_tag_to_string(p_tag, name);
 	return String("custom_") + String(name);
 }

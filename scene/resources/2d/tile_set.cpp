@@ -6168,7 +6168,7 @@ TileData *TileData::duplicate() {
 #endif // PHYSICS_2D_DISABLED
 	// Terrain
 	output->terrain_set = -1;
-	memcpy(output->terrain_peering_bits, terrain_peering_bits, 16 * sizeof(int));
+	std::memcpy(output->terrain_peering_bits, terrain_peering_bits, 16 * sizeof(int));
 #ifndef NAVIGATION_2D_DISABLED
 	// Navigation
 	output->navigation = navigation;

@@ -282,7 +282,7 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 		.alpha = MTLTextureSwizzleAlpha,
 	};
 
-	bool no_swizzle = memcmp(&IDENTITY_SWIZZLE, &swizzle, sizeof(MTLTextureSwizzleChannels)) == 0;
+	bool no_swizzle = std::memcmp(&IDENTITY_SWIZZLE, &swizzle, sizeof(MTLTextureSwizzleChannels)) == 0;
 	if (!no_swizzle) {
 		desc.swizzle = swizzle;
 	}
@@ -1206,7 +1206,7 @@ private:
 		write(p_length);
 
 		DEV_ASSERT(pos + p_length <= length);
-		memcpy(data + pos, p_buffer, p_length);
+		std::memcpy(data + pos, p_buffer, p_length);
 		pos += p_length;
 	}
 };
@@ -1307,7 +1307,7 @@ public:
 		read(len);
 		CHECK(len);
 		p_val.resize(len + 1 /* NUL */);
-		memcpy(p_val.ptrw(), data + pos, len);
+		std::memcpy(p_val.ptrw(), data + pos, len);
 		p_val.set(len, 0);
 		pos += len;
 	}
@@ -1335,7 +1335,7 @@ public:
 		read(len);
 		CHECK(len);
 		p_val.resize(len);
-		memcpy(p_val.ptr(), data + pos, len);
+		std::memcpy(p_val.ptr(), data + pos, len);
 		pos += len;
 	}
 
@@ -2450,7 +2450,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 	BufReader reader(binptr, binsize);
 	uint8_t header[4];
 	reader.read((uint32_t &)header);
-	ERR_FAIL_COND_V_MSG(memcmp(header, "GMSL", 4) != 0, ShaderID(), "Invalid header");
+	ERR_FAIL_COND_V_MSG(std::memcmp(header, "GMSL", 4) != 0, ShaderID(), "Invalid header");
 	uint32_t version = 0;
 	reader.read(version);
 	ERR_FAIL_COND_V_MSG(version != SHADER_BINARY_VERSION, ShaderID(), "Invalid shader binary version");
@@ -3792,7 +3792,7 @@ void RenderingDeviceDriverMetal::command_timestamp_write(CommandBufferID p_cmd_b
 
 void RenderingDeviceDriverMetal::command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	NSString *s = [[NSString alloc] initWithBytesNoCopy:(void *)p_label_name length:strlen(p_label_name) encoding:NSUTF8StringEncoding freeWhenDone:NO];
+	NSString *s = [[NSString alloc] initWithBytesNoCopy:(void *)p_label_name length:std::strlen(p_label_name) encoding:NSUTF8StringEncoding freeWhenDone:NO];
 	[cb->get_command_buffer() pushDebugGroup:s];
 }
 

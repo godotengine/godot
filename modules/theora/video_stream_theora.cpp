@@ -169,7 +169,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 			/* identify the codec: try theora */
 			if (!theora_p && th_decode_headerin(&ti, &tc, &ts, &op) >= 0) {
 				/* it is theora */
-				memcpy(&to, &test, sizeof(test));
+				std::memcpy(&to, &test, sizeof(test));
 				theora_p = 1;
 			} else if (!vorbis_p && vorbis_synthesis_headerin(&vi, &vc, &op) >= 0) {
 				/* it is vorbis */
@@ -182,7 +182,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 					audio_track_skip--;
 				} else {
-					memcpy(&vo, &test, sizeof(test));
+					std::memcpy(&vo, &test, sizeof(test));
 					vorbis_p = 1;
 				}
 			} else {

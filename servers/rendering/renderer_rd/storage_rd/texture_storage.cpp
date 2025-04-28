@@ -997,7 +997,7 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 		for (int i = 0; i < p_data.size(); i++) {
 			uint32_t s = images[i]->get_data().size();
 
-			memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
+			std::memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
 			{
 				Texture::BufferSlice3D slice;
 				slice.size.width = images[i]->get_width();
@@ -1360,7 +1360,7 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 
 		for (int i = 0; i < p_data.size(); i++) {
 			uint32_t s = images[i]->get_data().size();
-			memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
+			std::memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
 			offset += s;
 		}
 	}
@@ -2862,7 +2862,7 @@ void TextureStorage::update_decal_atlas() {
 			v_offsetsv.resize(base_size);
 
 			int *v_offsets = v_offsetsv.ptrw();
-			memset(v_offsets, 0, sizeof(int) * base_size);
+			std::memset(v_offsets, 0, sizeof(int) * base_size);
 
 			int max_height = 0;
 
@@ -3874,7 +3874,7 @@ RID TextureStorage::render_target_get_sdf_texture(RID p_render_target) {
 
 		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
-		memset(pv.ptrw(), 0, 16 * 4);
+		std::memset(pv.ptrw(), 0, 16 * 4);
 		Vector<Vector<uint8_t>> vpv;
 
 		rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);

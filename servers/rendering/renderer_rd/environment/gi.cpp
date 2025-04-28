@@ -2037,7 +2037,7 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 		//clear dispatch indirect data
 
 		SDFGIShader::PreprocessPushConstant push_constant;
-		memset(&push_constant, 0, sizeof(SDFGIShader::PreprocessPushConstant));
+		std::memset(&push_constant, 0, sizeof(SDFGIShader::PreprocessPushConstant));
 
 		RENDER_TIMESTAMP("SDFGI Scroll SDF");
 
@@ -3131,7 +3131,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				RendererSceneRenderRD::get_singleton()->_render_material(to_world_xform * xform, cm, true, RendererSceneRenderRD::get_singleton()->cull_argument, dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size), exposure_normalization);
 
 				VoxelGIDynamicPushConstant push_constant;
-				memset(&push_constant, 0, sizeof(VoxelGIDynamicPushConstant));
+				std::memset(&push_constant, 0, sizeof(VoxelGIDynamicPushConstant));
 				push_constant.limits[0] = octree_size.x;
 				push_constant.limits[1] = octree_size.y;
 				push_constant.limits[2] = octree_size.z;

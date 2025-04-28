@@ -78,7 +78,7 @@ Error CryptoKeyMbedTLS::save(const String &p_path, bool p_public_only) {
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	unsigned char w[16000];
-	memset(w, 0, sizeof(w));
+	std::memset(w, 0, sizeof(w));
 
 	int ret = 0;
 	if (p_public_only) {
@@ -91,7 +91,7 @@ Error CryptoKeyMbedTLS::save(const String &p_path, bool p_public_only) {
 		ERR_FAIL_V_MSG(FAILED, "Error writing key '" + itos(ret) + "'.");
 	}
 
-	size_t len = strlen((char *)w);
+	size_t len = std::strlen((char *)w);
 	f->store_buffer(w, len);
 	mbedtls_platform_zeroize(w, sizeof(w)); // Zeroize temporary buffer.
 	return OK;
@@ -113,7 +113,7 @@ Error CryptoKeyMbedTLS::load_from_string(const String &p_string_key, bool p_publ
 
 String CryptoKeyMbedTLS::save_to_string(bool p_public_only) {
 	unsigned char w[16000];
-	memset(w, 0, sizeof(w));
+	std::memset(w, 0, sizeof(w));
 
 	int ret = 0;
 	if (p_public_only) {
@@ -421,7 +421,7 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	mbedtls_x509write_crt_set_basic_constraints(&crt, 1, 0);
 
 	unsigned char buf[4096];
-	memset(buf, 0, 4096);
+	std::memset(buf, 0, 4096);
 	int ret = mbedtls_x509write_crt_pem(&crt, buf, 4096, mbedtls_ctr_drbg_random, &ctr_drbg);
 #if MBEDTLS_VERSION_MAJOR < 3
 	mbedtls_mpi_free(&serial);
@@ -432,7 +432,7 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 
 	Ref<X509CertificateMbedTLS> out;
 	out.instantiate();
-	out->load_from_memory(buf, strlen((char *)buf) + 1); // Use strlen to find correct output size.
+	out->load_from_memory(buf, std::strlen((char *)buf) + 1); // Use strlen to find correct output size.
 	return out;
 }
 
@@ -492,7 +492,7 @@ Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, const 
 			&sig_size, mbedtls_ctr_drbg_random, &ctr_drbg);
 	ERR_FAIL_COND_V_MSG(ret, out, "Error while signing: " + itos(ret));
 	out.resize(sig_size);
-	memcpy(out.ptrw(), buf, sig_size);
+	std::memcpy(out.ptrw(), buf, sig_size);
 	return out;
 }
 
@@ -515,7 +515,7 @@ Vector<uint8_t> CryptoMbedTLS::encrypt(Ref<CryptoKey> p_key, const Vector<uint8_
 	int ret = mbedtls_pk_encrypt(&(key->pkey), p_plaintext.ptr(), p_plaintext.size(), buf, &size, sizeof(buf), mbedtls_ctr_drbg_random, &ctr_drbg);
 	ERR_FAIL_COND_V_MSG(ret, out, "Error while encrypting: " + itos(ret));
 	out.resize(size);
-	memcpy(out.ptrw(), buf, size);
+	std::memcpy(out.ptrw(), buf, size);
 	return out;
 }
 
@@ -529,6 +529,6 @@ Vector<uint8_t> CryptoMbedTLS::decrypt(Ref<CryptoKey> p_key, const Vector<uint8_
 	int ret = mbedtls_pk_decrypt(&(key->pkey), p_ciphertext.ptr(), p_ciphertext.size(), buf, &size, sizeof(buf), mbedtls_ctr_drbg_random, &ctr_drbg);
 	ERR_FAIL_COND_V_MSG(ret, out, "Error while decrypting: " + itos(ret));
 	out.resize(size);
-	memcpy(out.ptrw(), buf, size);
+	std::memcpy(out.ptrw(), buf, size);
 	return out;
 }

@@ -384,7 +384,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 					Vector<uint8_t> id = mipmap_images[i]->get_data();
 					int len = id.size();
 					const uint8_t *r = id.ptr();
-					memcpy(&wr[ofs], r, len);
+					std::memcpy(&wr[ofs], r, len);
 					ofs += len;
 				}
 			}

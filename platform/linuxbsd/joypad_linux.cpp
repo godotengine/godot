@@ -240,7 +240,7 @@ void JoypadLinux::monitor_joypads() {
 			char fname[64];
 
 			while ((current = readdir(input_directory)) != nullptr) {
-				if (strncmp(current->d_name, "event", 5) != 0) {
+				if (std::strncmp(current->d_name, "event", 5) != 0) {
 					continue;
 				}
 				sprintf(fname, "/dev/input/%.*s", 16, current->d_name);
@@ -412,7 +412,7 @@ void JoypadLinux::open_joypad(const char *p_path) {
 
 			if (inpid.vendor == VALVE_GAMEPAD_VID && inpid.product == VALVE_GAMEPAD_PID) {
 				if (name.begins_with(VALVE_GAMEPAD_NAME_PREFIX)) {
-					String idx_str = name.substr(strlen(VALVE_GAMEPAD_NAME_PREFIX));
+					String idx_str = name.substr(std::strlen(VALVE_GAMEPAD_NAME_PREFIX));
 					if (idx_str.is_valid_int()) {
 						joypad_info["steam_input_index"] = idx_str.to_int();
 					}

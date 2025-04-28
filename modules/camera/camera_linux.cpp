@@ -67,7 +67,7 @@ void CameraLinux::_update_devices() {
 			if (count != -1) {
 				for (int i = 0; i < count; i++) {
 					struct dirent *device = devices[i];
-					if (strncmp(device->d_name, "video", 5) == 0) {
+					if (std::strncmp(device->d_name, "video", 5) == 0) {
 						String device_name = String("/dev/") + String(device->d_name);
 						if (!_has_device(device_name)) {
 							_add_device(device_name);
@@ -156,7 +156,7 @@ bool CameraLinux::_is_video_capture_device(int p_file_descriptor) {
 
 bool CameraLinux::_can_query_format(int p_file_descriptor, int p_type) {
 	struct v4l2_format format;
-	memset(&format, 0, sizeof(format));
+	std::memset(&format, 0, sizeof(format));
 	format.type = p_type;
 
 	return ioctl(p_file_descriptor, VIDIOC_G_FMT, &format) != -1;

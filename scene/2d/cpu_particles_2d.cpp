@@ -1173,7 +1173,7 @@ void CPUParticles2D::_update_particle_data_buffer() {
 			ptr[7] = t.columns[2][1];
 
 		} else {
-			memset(ptr, 0, sizeof(float) * 8);
+			std::memset(ptr, 0, sizeof(float) * 8);
 		}
 
 		Color c = r[idx].color;

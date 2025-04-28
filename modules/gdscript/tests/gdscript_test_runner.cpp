@@ -485,7 +485,7 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 
 	StringBuilder error_string;
 	error_string.append(vformat(">> %s: %s\n", header, String::utf8(p_error)));
-	if (strlen(p_explanation) > 0) {
+	if (std::strlen(p_explanation) > 0) {
 		error_string.append(vformat(">>   %s\n", String::utf8(p_explanation)));
 	}
 

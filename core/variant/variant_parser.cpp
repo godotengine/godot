@@ -103,7 +103,7 @@ uint32_t VariantParser::StreamString::_read_buffer(char32_t *p_buffer, uint32_t 
 	if (available >= (int)p_num_chars) {
 		const char32_t *src = s.ptr();
 		src += pos;
-		memcpy(p_buffer, src, p_num_chars * sizeof(char32_t));
+		std::memcpy(p_buffer, src, p_num_chars * sizeof(char32_t));
 		pos += p_num_chars;
 
 		return p_num_chars;
@@ -113,7 +113,7 @@ uint32_t VariantParser::StreamString::_read_buffer(char32_t *p_buffer, uint32_t 
 	if (available) {
 		const char32_t *src = s.ptr();
 		src += pos;
-		memcpy(p_buffer, src, available * sizeof(char32_t));
+		std::memcpy(p_buffer, src, available * sizeof(char32_t));
 		pos += available;
 	}
 

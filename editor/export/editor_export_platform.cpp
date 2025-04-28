@@ -1399,7 +1399,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				CharString cs = import_text.utf8();
 				Vector<uint8_t> sarr;
 				sarr.resize(cs.size());
-				memcpy(sarr.ptrw(), cs.ptr(), sarr.size());
+				std::memcpy(sarr.ptrw(), cs.ptr(), sarr.size());
 
 				err = save_proxy.save_file(p_udata, path + ".import", sarr, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 				if (err != OK) {
@@ -1466,7 +1466,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				CharString cs = import_text.utf8();
 				Vector<uint8_t> sarr;
 				sarr.resize(cs.size());
-				memcpy(sarr.ptrw(), cs.ptr(), sarr.size());
+				std::memcpy(sarr.ptrw(), cs.ptr(), sarr.size());
 
 				err = save_proxy.save_file(p_udata, path + ".import", sarr, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 

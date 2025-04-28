@@ -88,7 +88,7 @@ public:
 	// Must be a power of two.
 	static constexpr uint32_t INITIAL_CAPACITY = 16;
 	static constexpr uint32_t EMPTY_HASH = 0;
-	static_assert(EMPTY_HASH == 0, "EMPTY_HASH must always be 0 for the memcpy() optimization.");
+	static_assert(EMPTY_HASH == 0, "EMPTY_HASH must always be 0 for the std::memcpy() optimization.");
 
 private:
 	typedef KeyValue<TKey, TValue> MapKeyValue;
@@ -217,7 +217,7 @@ private:
 		map_data = reinterpret_cast<HashMapData *>(Memory::alloc_static(sizeof(HashMapData) * real_capacity));
 		elements = reinterpret_cast<MapKeyValue *>(Memory::realloc_static(elements, sizeof(MapKeyValue) * (_get_resize_count(capacity) + 1)));
 
-		memset(map_data, EMPTY_HASH, real_capacity * sizeof(HashMapData));
+		std::memset(map_data, EMPTY_HASH, real_capacity * sizeof(HashMapData));
 
 		if (num_elements != 0) {
 			for (uint32_t i = 0; i < real_old_capacity; i++) {
@@ -239,7 +239,7 @@ private:
 			map_data = reinterpret_cast<HashMapData *>(Memory::alloc_static(sizeof(HashMapData) * real_capacity));
 			elements = reinterpret_cast<MapKeyValue *>(Memory::alloc_static(sizeof(MapKeyValue) * (_get_resize_count(capacity) + 1)));
 
-			memset(map_data, EMPTY_HASH, real_capacity * sizeof(HashMapData));
+			std::memset(map_data, EMPTY_HASH, real_capacity * sizeof(HashMapData));
 		}
 
 		if (unlikely(num_elements > _get_resize_count(capacity))) {
@@ -268,14 +268,14 @@ private:
 		if constexpr (std::is_trivially_copyable_v<TKey> && std::is_trivially_copyable_v<TValue>) {
 			void *destination = elements;
 			const void *source = p_other.elements;
-			memcpy(destination, source, sizeof(MapKeyValue) * num_elements);
+			std::memcpy(destination, source, sizeof(MapKeyValue) * num_elements);
 		} else {
 			for (uint32_t i = 0; i < num_elements; i++) {
 				memnew_placement(&elements[i], MapKeyValue(p_other.elements[i]));
 			}
 		}
 
-		memcpy(map_data, p_other.map_data, sizeof(HashMapData) * real_capacity);
+		std::memcpy(map_data, p_other.map_data, sizeof(HashMapData) * real_capacity);
 	}
 
 public:
@@ -293,7 +293,7 @@ public:
 			return;
 		}
 
-		memset(map_data, EMPTY_HASH, (capacity + 1) * sizeof(HashMapData));
+		std::memset(map_data, EMPTY_HASH, (capacity + 1) * sizeof(HashMapData));
 		if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
 			for (uint32_t i = 0; i < num_elements; i++) {
 				elements[i].key.~TKey();
@@ -373,7 +373,7 @@ public:
 		if (element_pos < num_elements) {
 			void *destination = &elements[element_pos];
 			const void *source = &elements[num_elements];
-			memcpy(destination, source, sizeof(MapKeyValue));
+			std::memcpy(destination, source, sizeof(MapKeyValue));
 			uint32_t h_pos = 0;
 			_lookup_pos(elements[num_elements].key, pos, h_pos);
 			map_data[h_pos].hash_to_key = element_pos;

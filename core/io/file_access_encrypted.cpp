@@ -150,7 +150,7 @@ void FileAccessEncrypted::_close() {
 		ERR_FAIL_COND(CryptoCore::md5(data.ptr(), data.size(), hash) != OK); // Bug?
 
 		compressed.resize(len);
-		memset(compressed.ptrw(), 0, len);
+		std::memset(compressed.ptrw(), 0, len);
 		for (int i = 0; i < data.size(); i++) {
 			compressed.write[i] = data[i];
 		}
@@ -231,7 +231,7 @@ uint64_t FileAccessEncrypted::get_buffer(uint8_t *p_dst, uint64_t p_length) cons
 
 	uint64_t to_copy = MIN(p_length, get_length() - pos);
 
-	memcpy(p_dst, data.ptr() + pos, to_copy);
+	std::memcpy(p_dst, data.ptr() + pos, to_copy);
 	pos += to_copy;
 
 	if (to_copy < p_length) {
@@ -258,7 +258,7 @@ bool FileAccessEncrypted::store_buffer(const uint8_t *p_src, uint64_t p_length) 
 		ERR_FAIL_COND_V(data.resize(pos + p_length) != OK, false);
 	}
 
-	memcpy(data.ptrw() + pos, p_src, p_length);
+	std::memcpy(data.ptrw() + pos, p_src, p_length);
 	pos += p_length;
 
 	return true;

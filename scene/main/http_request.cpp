@@ -108,7 +108,7 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 	if (len > 0) {
 		raw_data.resize(len);
 		uint8_t *w = raw_data.ptrw();
-		memcpy(w, charstr.ptr(), len);
+		std::memcpy(w, charstr.ptr(), len);
 	}
 
 	return request_raw(p_url, p_custom_headers, p_method, raw_data);

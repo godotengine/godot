@@ -486,7 +486,7 @@ private:
 		uint16_t uniform_type[UNIFORM_TYPE_MAX] = {};
 
 		bool operator<(const DescriptorSetPoolKey &p_other) const {
-			return memcmp(uniform_type, p_other.uniform_type, sizeof(uniform_type)) < 0;
+			return std::memcmp(uniform_type, p_other.uniform_type, sizeof(uniform_type)) < 0;
 		}
 	};
 

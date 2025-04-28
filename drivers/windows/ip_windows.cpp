@@ -41,8 +41,6 @@
 
 #include <stdio.h>
 
-#include <string.h>
-
 static IPAddress _sockaddr2ip(struct sockaddr *p_addr) {
 	IPAddress ip;
 
@@ -61,7 +59,7 @@ void IPWindows::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_
 	struct addrinfo hints;
 	struct addrinfo *result = nullptr;
 
-	memset(&hints, 0, sizeof(struct addrinfo));
+	std::memset(&hints, 0, sizeof(struct addrinfo));
 	if (p_type == TYPE_IPV4) {
 		hints.ai_family = AF_INET;
 	} else if (p_type == TYPE_IPV6) {

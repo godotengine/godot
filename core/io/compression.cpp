@@ -56,8 +56,8 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 		case MODE_FASTLZ: {
 			if (p_src_size < 16) {
 				uint8_t src[16];
-				memset(&src[p_src_size], 0, 16 - p_src_size);
-				memcpy(src, p_src, p_src_size);
+				std::memset(&src[p_src_size], 0, 16 - p_src_size);
+				std::memcpy(src, p_src, p_src_size);
 				return fastlz_compress(src, 16, p_dst);
 			} else {
 				return fastlz_compress(p_src, p_src_size, p_dst);
@@ -161,7 +161,7 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 			if (p_dst_max_size < 16) {
 				uint8_t dst[16];
 				fastlz_decompress(p_src, p_src_size, dst, 16);
-				memcpy(p_dst, dst, p_dst_max_size);
+				std::memcpy(p_dst, dst, p_dst_max_size);
 				ret_size = p_dst_max_size;
 			} else {
 				ret_size = fastlz_decompress(p_src, p_src_size, p_dst, p_dst_max_size);

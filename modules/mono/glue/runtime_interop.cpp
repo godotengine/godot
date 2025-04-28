@@ -397,7 +397,7 @@ godot_packed_array godotsharp_packed_byte_array_new_mem_copy(const uint8_t *p_sr
 	PackedByteArray *array = reinterpret_cast<PackedByteArray *>(&ret);
 	array->resize(p_length);
 	uint8_t *dst = array->ptrw();
-	memcpy(dst, p_src, p_length * sizeof(uint8_t));
+	std::memcpy(dst, p_src, p_length * sizeof(uint8_t));
 	return ret;
 }
 
@@ -407,7 +407,7 @@ godot_packed_array godotsharp_packed_int32_array_new_mem_copy(const int32_t *p_s
 	PackedInt32Array *array = reinterpret_cast<PackedInt32Array *>(&ret);
 	array->resize(p_length);
 	int32_t *dst = array->ptrw();
-	memcpy(dst, p_src, p_length * sizeof(int32_t));
+	std::memcpy(dst, p_src, p_length * sizeof(int32_t));
 	return ret;
 }
 
@@ -417,7 +417,7 @@ godot_packed_array godotsharp_packed_int64_array_new_mem_copy(const int64_t *p_s
 	PackedInt64Array *array = reinterpret_cast<PackedInt64Array *>(&ret);
 	array->resize(p_length);
 	int64_t *dst = array->ptrw();
-	memcpy(dst, p_src, p_length * sizeof(int64_t));
+	std::memcpy(dst, p_src, p_length * sizeof(int64_t));
 	return ret;
 }
 
@@ -427,7 +427,7 @@ godot_packed_array godotsharp_packed_float32_array_new_mem_copy(const float *p_s
 	PackedFloat32Array *array = reinterpret_cast<PackedFloat32Array *>(&ret);
 	array->resize(p_length);
 	float *dst = array->ptrw();
-	memcpy(dst, p_src, p_length * sizeof(float));
+	std::memcpy(dst, p_src, p_length * sizeof(float));
 	return ret;
 }
 
@@ -437,7 +437,7 @@ godot_packed_array godotsharp_packed_float64_array_new_mem_copy(const double *p_
 	PackedFloat64Array *array = reinterpret_cast<PackedFloat64Array *>(&ret);
 	array->resize(p_length);
 	double *dst = array->ptrw();
-	memcpy(dst, p_src, p_length * sizeof(double));
+	std::memcpy(dst, p_src, p_length * sizeof(double));
 	return ret;
 }
 
@@ -447,7 +447,7 @@ godot_packed_array godotsharp_packed_vector2_array_new_mem_copy(const Vector2 *p
 	PackedVector2Array *array = reinterpret_cast<PackedVector2Array *>(&ret);
 	array->resize(p_length);
 	Vector2 *dst = array->ptrw();
-	memcpy(dst, p_src, p_length * sizeof(Vector2));
+	std::memcpy(dst, p_src, p_length * sizeof(Vector2));
 	return ret;
 }
 
@@ -457,7 +457,7 @@ godot_packed_array godotsharp_packed_vector3_array_new_mem_copy(const Vector3 *p
 	PackedVector3Array *array = reinterpret_cast<PackedVector3Array *>(&ret);
 	array->resize(p_length);
 	Vector3 *dst = array->ptrw();
-	memcpy(dst, p_src, p_length * sizeof(Vector3));
+	std::memcpy(dst, p_src, p_length * sizeof(Vector3));
 	return ret;
 }
 
@@ -467,7 +467,7 @@ godot_packed_array godotsharp_packed_vector4_array_new_mem_copy(const Vector4 *p
 	PackedVector4Array *array = reinterpret_cast<PackedVector4Array *>(&ret);
 	array->resize(p_length);
 	Vector4 *dst = array->ptrw();
-	memcpy(dst, p_src, p_length * sizeof(Vector4));
+	std::memcpy(dst, p_src, p_length * sizeof(Vector4));
 	return ret;
 }
 
@@ -477,7 +477,7 @@ godot_packed_array godotsharp_packed_color_array_new_mem_copy(const Color *p_src
 	PackedColorArray *array = reinterpret_cast<PackedColorArray *>(&ret);
 	array->resize(p_length);
 	Color *dst = array->ptrw();
-	memcpy(dst, p_src, p_length * sizeof(Color));
+	std::memcpy(dst, p_src, p_length * sizeof(Color));
 	return ret;
 }
 

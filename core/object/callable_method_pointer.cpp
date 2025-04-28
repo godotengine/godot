@@ -41,7 +41,7 @@ bool CallableCustomMethodPointerBase::compare_equal(const CallableCustom *p_a, c
 	// Avoid sorting by memory address proximity, which leads to unpredictable performance over time
 	// due to the reuse of old addresses for newer objects. Use byte-wise comparison to leverage the
 	// backwards encoding of little-endian systems as a way to decouple spatiality and time.
-	return memcmp(a->comp_ptr, b->comp_ptr, a->comp_size * 4) == 0;
+	return std::memcmp(a->comp_ptr, b->comp_ptr, a->comp_size * 4) == 0;
 }
 
 bool CallableCustomMethodPointerBase::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
@@ -53,7 +53,7 @@ bool CallableCustomMethodPointerBase::compare_less(const CallableCustom *p_a, co
 	}
 
 	// See note in compare_equal().
-	return memcmp(a->comp_ptr, b->comp_ptr, a->comp_size * 4) < 0;
+	return std::memcmp(a->comp_ptr, b->comp_ptr, a->comp_size * 4) < 0;
 }
 
 CallableCustom::CompareEqualFunc CallableCustomMethodPointerBase::get_compare_equal_func() const {

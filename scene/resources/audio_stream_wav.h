@@ -266,8 +266,8 @@ public:
 		dst_data.resize(8 + frames_len + slices_len);
 
 		for (uint32_t c = 0; c < p_desc->channels; c++) {
-			memset(p_desc->lms[c].history, 0, sizeof(p_desc->lms[c].history));
-			memset(p_desc->lms[c].weights, 0, sizeof(p_desc->lms[c].weights));
+			std::memset(p_desc->lms[c].history, 0, sizeof(p_desc->lms[c].history));
+			std::memset(p_desc->lms[c].weights, 0, sizeof(p_desc->lms[c].weights));
 			p_desc->lms[c].weights[2] = -(1 << 13);
 			p_desc->lms[c].weights[3] = (1 << 14);
 		}

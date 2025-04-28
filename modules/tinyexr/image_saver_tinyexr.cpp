@@ -278,7 +278,7 @@ Vector<uint8_t> save_exr_buffer(const Ref<Image> &p_img, bool p_grayscale) {
 	}
 	Vector<uint8_t> buffer;
 	buffer.resize(bytes);
-	memcpy(buffer.ptrw(), mem, bytes);
+	std::memcpy(buffer.ptrw(), mem, bytes);
 	free(mem);
 	return buffer;
 }

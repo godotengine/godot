@@ -495,7 +495,7 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 		}
 		int prev_size = src_data.size();
 		src_data.resize(prev_size + mip_size);
-		memcpy(src_data.ptrw() + prev_size, ktxTexture_GetData(ktx_texture) + offset, mip_size);
+		std::memcpy(src_data.ptrw() + prev_size, ktxTexture_GetData(ktx_texture) + offset, mip_size);
 	}
 
 	Ref<Image> img = memnew(Image(width, height, mipmaps - 1, format, src_data));

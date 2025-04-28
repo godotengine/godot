@@ -81,7 +81,7 @@ static Vector<Vector<Vector3>> convex_decompose(const real_t *p_vertices, int p_
 			Vector<uint32_t> &indices = r_convex_indices->write[i];
 			indices.resize(hull.m_nTriangles * 3);
 
-			memcpy(indices.ptrw(), hull.m_triangles, hull.m_nTriangles * 3 * sizeof(uint32_t));
+			std::memcpy(indices.ptrw(), hull.m_triangles, hull.m_nTriangles * 3 * sizeof(uint32_t));
 		}
 	}
 

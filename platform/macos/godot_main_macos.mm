@@ -32,7 +32,6 @@
 
 #include "main/main.h"
 
-#include <string.h>
 #include <unistd.h>
 
 #if defined(SANITIZERS_ENABLED)
@@ -54,7 +53,7 @@ int main(int argc, char **argv) {
 	int first_arg = 1;
 	const char *dbg_arg = "-NSDocumentRevisionsDebugMode";
 	for (int i = 0; i < argc; i++) {
-		if (strcmp(dbg_arg, argv[i]) == 0) {
+		if (std::strcmp(dbg_arg, argv[i]) == 0) {
 			first_arg = i + 2;
 		}
 	}

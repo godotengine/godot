@@ -303,7 +303,7 @@ void write_array_std140(const Vector<From> &p_values, To *p_write, int p_array_s
 	const From *read = p_values.ptr();
 	const T default_value{};
 
-	memset(p_write, 0, sizeof(To) * stride_count);
+	std::memset(p_write, 0, sizeof(To) * stride_count);
 
 	for (int i = 0, j = 0; i < dst_count; i += elements, j += p_stride) {
 		if (i + elements - 1 < src_count) {

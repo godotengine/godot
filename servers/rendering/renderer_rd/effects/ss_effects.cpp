@@ -666,7 +666,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 	RD::get_singleton()->buffer_update(ssil.projection_uniform_buffer, 0, sizeof(SSILProjectionUniforms), &projection_uniforms);
 
-	memset(&ssil.gather_push_constant, 0, sizeof(SSILGatherPushConstant));
+	std::memset(&ssil.gather_push_constant, 0, sizeof(SSILGatherPushConstant));
 
 	RID shader = ssil.gather_shader.version_get_shader(ssil.gather_shader_version, SSIL_GATHER);
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -1063,7 +1063,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 	}
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	memset(&ssao.gather_push_constant, 0, sizeof(SSAOGatherPushConstant));
+	std::memset(&ssao.gather_push_constant, 0, sizeof(SSAOGatherPushConstant));
 	/* FIRST PASS */
 
 	RID shader = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, SSAO_GATHER);

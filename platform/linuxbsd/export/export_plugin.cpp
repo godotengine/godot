@@ -373,7 +373,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 		f->seek(section_header_pos);
 
 		uint32_t name_offset = f->get_32();
-		if (strcmp((char *)strings + name_offset, "pck") == 0) {
+		if (std::strcmp((char *)strings + name_offset, "pck") == 0) {
 			// "pck" section found, let's patch!
 
 			if (bits == 32) {

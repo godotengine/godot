@@ -37,9 +37,6 @@
 #include "core/string/ustring.h"
 
 #include <stdlib.h>
-
-#include <cstring>
-
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -151,7 +148,7 @@ int DetectPrimeEGL::detect_prime(EGLenum p_platform_enum) {
 				// Leave it 'Unknown' otherwise.
 				if (read(fdset[0], string, sizeof(string) - 1) > 0) {
 					vendors[i] = string;
-					renderers[i] = string + strlen(string) + 1;
+					renderers[i] = string + std::strlen(string) + 1;
 				}
 			}
 
@@ -176,15 +173,15 @@ int DetectPrimeEGL::detect_prime(EGLenum p_platform_enum) {
 			const char *vendor = (const char *)glGetString(GL_VENDOR);
 			const char *renderer = (const char *)glGetString(GL_RENDERER);
 
-			unsigned int vendor_len = strlen(vendor) + 1;
-			unsigned int renderer_len = strlen(renderer) + 1;
+			unsigned int vendor_len = std::strlen(vendor) + 1;
+			unsigned int renderer_len = std::strlen(renderer) + 1;
 
 			if (vendor_len + renderer_len >= sizeof(string)) {
 				renderer_len = 200 - vendor_len;
 			}
 
-			memcpy(&string, vendor, vendor_len);
-			memcpy(&string[vendor_len], renderer, renderer_len);
+			std::memcpy(&string, vendor, vendor_len);
+			std::memcpy(&string[vendor_len], renderer, renderer_len);
 
 			if (write(fdset[1], string, vendor_len + renderer_len) == -1) {
 				print_verbose("Couldn't write vendor/renderer string.");

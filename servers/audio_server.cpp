@@ -43,8 +43,6 @@
 #include "servers/audio/audio_stream.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
 
-#include <cstring>
-
 #ifdef TOOLS_ENABLED
 #define MARK_EDITED set_edited(true);
 #else
@@ -1263,7 +1261,7 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 	playback_node->highshelf_gain.set(p_highshelf_gain);
 	playback_node->attenuation_filter_cutoff_hz.set(p_attenuation_cutoff_hz);
 
-	memset(playback_node->prev_bus_details->volume, 0, sizeof(playback_node->prev_bus_details->volume));
+	std::memset(playback_node->prev_bus_details->volume, 0, sizeof(playback_node->prev_bus_details->volume));
 
 	for (AudioFrame &frame : playback_node->lookahead) {
 		frame = AudioFrame(0, 0);

@@ -519,7 +519,7 @@ void DisplayServerWeb::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 		}
 
 		png_image png_meta;
-		memset(&png_meta, 0, sizeof png_meta);
+		std::memset(&png_meta, 0, sizeof png_meta);
 		png_meta.version = PNG_IMAGE_VERSION;
 		png_meta.width = texture_size.width;
 		png_meta.height = texture_size.height;
@@ -1045,7 +1045,7 @@ void DisplayServerWeb::set_icon(const Ref<Image> &p_icon) {
 		}
 
 		png_image png_meta;
-		memset(&png_meta, 0, sizeof png_meta);
+		std::memset(&png_meta, 0, sizeof png_meta);
 		png_meta.version = PNG_IMAGE_VERSION;
 		png_meta.width = icon->get_width();
 		png_meta.height = icon->get_height();

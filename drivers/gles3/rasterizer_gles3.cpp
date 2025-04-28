@@ -84,10 +84,6 @@
 
 #include "platform_gl.h"
 
-#if defined(MINGW_ENABLED) || defined(_MSC_VER)
-#define strcpy strcpy_s
-#endif
-
 #ifdef WINDOWS_ENABLED
 bool RasterizerGLES3::screen_flipped_y = false;
 #endif
@@ -145,42 +141,42 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		return;
 	}
 
-	char debSource[256], debType[256], debSev[256];
+	String debSource, debType, debSev;
 
 	if (source == _EXT_DEBUG_SOURCE_API_ARB) {
-		strcpy(debSource, "OpenGL");
+		debSource = "OpenGL";
 	} else if (source == _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB) {
-		strcpy(debSource, "Windows");
+		debSource = "Windows";
 	} else if (source == _EXT_DEBUG_SOURCE_SHADER_COMPILER_ARB) {
-		strcpy(debSource, "Shader Compiler");
+		debSource = "Shader Compiler";
 	} else if (source == _EXT_DEBUG_SOURCE_THIRD_PARTY_ARB) {
-		strcpy(debSource, "Third Party");
+		debSource = "Third Party";
 	} else if (source == _EXT_DEBUG_SOURCE_APPLICATION_ARB) {
-		strcpy(debSource, "Application");
+		debSource = "Application";
 	} else if (source == _EXT_DEBUG_SOURCE_OTHER_ARB) {
-		strcpy(debSource, "Other");
+		debSource = "Other";
 	} else {
 		ERR_FAIL_MSG(vformat("GL ERROR: Invalid or unhandled source '%d' in debug callback.", source));
 	}
 
 	if (type == _EXT_DEBUG_TYPE_ERROR_ARB) {
-		strcpy(debType, "Error");
+		debType = "Error";
 	} else if (type == _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB) {
-		strcpy(debType, "Deprecated behavior");
+		debType = "Deprecated behavior";
 	} else if (type == _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB) {
-		strcpy(debType, "Undefined behavior");
+		debType = "Undefined behavior";
 	} else if (type == _EXT_DEBUG_TYPE_PORTABILITY_ARB) {
-		strcpy(debType, "Portability");
+		debType = "Portability";
 	} else {
 		ERR_FAIL_MSG(vformat("GL ERROR: Invalid or unhandled type '%d' in debug callback.", type));
 	}
 
 	if (severity == _EXT_DEBUG_SEVERITY_HIGH_ARB) {
-		strcpy(debSev, "High");
+		debSev = "High";
 	} else if (severity == _EXT_DEBUG_SEVERITY_MEDIUM_ARB) {
-		strcpy(debSev, "Medium");
+		debSev = "Medium";
 	} else if (severity == _EXT_DEBUG_SEVERITY_LOW_ARB) {
-		strcpy(debSev, "Low");
+		debSev = "Low";
 	} else {
 		ERR_FAIL_MSG(vformat("GL ERROR: Invalid or unhandled severity '%d' in debug callback.", severity));
 	}

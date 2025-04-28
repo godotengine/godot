@@ -186,7 +186,7 @@ TEST_CASE("[RID_Owner] Thread safety") {
 
 							// 2. Each thread makes a RID holding unique data.
 							DataHolder initial_data;
-							memset(&initial_data, _compute_thread_unique_byte(self_th_idx), Thread::CACHE_LINE_BYTES);
+							std::memset(&initial_data, _compute_thread_unique_byte(self_th_idx), Thread::CACHE_LINE_BYTES);
 							RID my_rid = rot->rid_owner.make_rid(initial_data);
 							rot->rids[self_th_idx].store(my_rid.get_id(), std::memory_order_relaxed);
 

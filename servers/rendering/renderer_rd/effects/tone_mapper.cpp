@@ -87,7 +87,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&tonemap.push_constant, 0, sizeof(TonemapPushConstant));
+	std::memset(&tonemap.push_constant, 0, sizeof(TonemapPushConstant));
 
 	tonemap.push_constant.flags |= p_settings.use_bcs ? TONEMAP_FLAG_USE_BCS : 0;
 	tonemap.push_constant.bcs[0] = p_settings.brightness;
@@ -184,7 +184,7 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&tonemap.push_constant, 0, sizeof(TonemapPushConstant));
+	std::memset(&tonemap.push_constant, 0, sizeof(TonemapPushConstant));
 
 	tonemap.push_constant.flags |= p_settings.use_bcs ? TONEMAP_FLAG_USE_BCS : 0;
 	tonemap.push_constant.bcs[0] = p_settings.brightness;

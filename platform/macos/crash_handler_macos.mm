@@ -37,7 +37,6 @@
 #include "core/version.h"
 #include "main/main.h"
 
-#include <string.h>
 #include <unistd.h>
 
 #if defined(DEBUG_ENABLED)
@@ -63,7 +62,7 @@ static uint64_t load_address() {
 		uint32_t dyld_count = _dyld_image_count();
 		for (uint32_t i = 0; i < dyld_count; i++) {
 			const char *image_name = _dyld_get_image_name(i);
-			if (image_name && strncmp(image_name, full_path, 1024) == 0) {
+			if (image_name && std::strncmp(image_name, full_path, 1024) == 0) {
 				return cmd->vmaddr + _dyld_get_image_vmaddr_slide(i);
 			}
 		}

@@ -120,7 +120,7 @@ unzFile ZipArchive::get_file_handle(const String &p_file) const {
 	File file = files[p_file];
 
 	zlib_filefunc_def io;
-	memset(&io, 0, sizeof(io));
+	std::memset(&io, 0, sizeof(io));
 
 	io.opaque = nullptr;
 	io.zopen_file = godot_open;
@@ -155,7 +155,7 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint6
 	}
 
 	zlib_filefunc_def io;
-	memset(&io, 0, sizeof(io));
+	std::memset(&io, 0, sizeof(io));
 
 	io.opaque = nullptr;
 	io.zopen_file = godot_open;

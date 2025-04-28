@@ -964,7 +964,7 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 	ERR_FAIL_NULL_MSG(mem, "Unable to allocate memory for clipboard contents.");
 
 	LPWSTR lptstrCopy = (LPWSTR)GlobalLock(mem);
-	memcpy(lptstrCopy, utf16.get_data(), (utf16.length() + 1) * sizeof(WCHAR));
+	std::memcpy(lptstrCopy, utf16.get_data(), (utf16.length() + 1) * sizeof(WCHAR));
 	GlobalUnlock(mem);
 
 	SetClipboardData(CF_UNICODETEXT, mem);
@@ -975,7 +975,7 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 	ERR_FAIL_NULL_MSG(mem, "Unable to allocate memory for clipboard contents.");
 
 	LPTSTR ptr = (LPTSTR)GlobalLock(mem);
-	memcpy(ptr, utf8.get_data(), utf8.length());
+	std::memcpy(ptr, utf8.get_data(), utf8.length());
 	ptr[utf8.length()] = 0;
 	GlobalUnlock(mem);
 
@@ -1251,7 +1251,7 @@ static BOOL CALLBACK _MonitorEnumProcUsableSize(HMONITOR hMonitor, HDC hdcMonito
 	EnumRectData *data = (EnumRectData *)dwData;
 	if (data->count == data->screen) {
 		MONITORINFO minfo;
-		memset(&minfo, 0, sizeof(MONITORINFO));
+		std::memset(&minfo, 0, sizeof(MONITORINFO));
 		minfo.cbSize = sizeof(MONITORINFO);
 		GetMonitorInfoA(hMonitor, &minfo);
 
@@ -1269,14 +1269,14 @@ static BOOL CALLBACK _MonitorEnumProcRefreshRate(HMONITOR hMonitor, HDC hdcMonit
 	EnumRefreshRateData *data = (EnumRefreshRateData *)dwData;
 	if (data->count == data->screen) {
 		MONITORINFOEXW minfo;
-		memset(&minfo, 0, sizeof(minfo));
+		std::memset(&minfo, 0, sizeof(minfo));
 		minfo.cbSize = sizeof(minfo);
 		GetMonitorInfoW(hMonitor, &minfo);
 
 		bool found = false;
 		for (const DISPLAYCONFIG_PATH_INFO &path : data->paths) {
 			DISPLAYCONFIG_SOURCE_DEVICE_NAME source_name;
-			memset(&source_name, 0, sizeof(source_name));
+			std::memset(&source_name, 0, sizeof(source_name));
 			source_name.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
 			source_name.header.size = sizeof(source_name);
 			source_name.header.adapterId = path.sourceInfo.adapterId;
@@ -1291,7 +1291,7 @@ static BOOL CALLBACK _MonitorEnumProcRefreshRate(HMONITOR hMonitor, HDC hdcMonit
 		}
 		if (!found) {
 			DEVMODEW dm;
-			memset(&dm, 0, sizeof(dm));
+			std::memset(&dm, 0, sizeof(dm));
 			dm.dmSize = sizeof(dm);
 			EnumDisplaySettingsW(minfo.szDevice, ENUM_CURRENT_SETTINGS, &dm);
 
@@ -3585,7 +3585,7 @@ String DisplayServerWindows::keyboard_get_layout_language(int p_index) const {
 	GetKeyboardLayoutList(layout_count, layouts);
 
 	WCHAR buf[LOCALE_NAME_MAX_LENGTH];
-	memset(buf, 0, LOCALE_NAME_MAX_LENGTH * sizeof(WCHAR));
+	std::memset(buf, 0, LOCALE_NAME_MAX_LENGTH * sizeof(WCHAR));
 	LCIDToLocaleName(MAKELCID(LOWORD(layouts[p_index]), SORT_DEFAULT), buf, LOCALE_NAME_MAX_LENGTH, 0);
 
 	memfree(layouts);
@@ -3649,7 +3649,7 @@ Key DisplayServerWindows::keyboard_get_label_from_physical(Key p_keycode) const 
 
 	HKL current_layout = GetKeyboardLayout(0);
 	static BYTE keyboard_state[256];
-	memset(keyboard_state, 0, 256);
+	std::memset(keyboard_state, 0, 256);
 	wchar_t chars[256] = {};
 	UINT extended_code = MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
 	if (ToUnicodeEx(extended_code, scancode, keyboard_state, chars, 255, 4, current_layout) > 0) {
@@ -3757,11 +3757,11 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 	String ret = _get_keyboard_layout_display_name(_get_klid(layouts[p_index])); // Try reading full name from Windows registry, fallback to locale name if failed (e.g. on Wine).
 	if (ret.is_empty()) {
 		WCHAR buf[LOCALE_NAME_MAX_LENGTH];
-		memset(buf, 0, LOCALE_NAME_MAX_LENGTH * sizeof(WCHAR));
+		std::memset(buf, 0, LOCALE_NAME_MAX_LENGTH * sizeof(WCHAR));
 		LCIDToLocaleName(MAKELCID(LOWORD(layouts[p_index]), SORT_DEFAULT), buf, LOCALE_NAME_MAX_LENGTH, 0);
 
 		WCHAR name[1024];
-		memset(name, 0, 1024 * sizeof(WCHAR));
+		std::memset(name, 0, 1024 * sizeof(WCHAR));
 		GetLocaleInfoEx(buf, LOCALE_SLOCALIZEDDISPLAYNAME, (LPWSTR)&name, 1024);
 
 		ret = String::utf16((const char16_t *)name);
@@ -4058,7 +4058,7 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 	ndat.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 	ndat.uCallbackMessage = WM_INDICATOR_CALLBACK_MESSAGE;
 	ndat.hIcon = hicon;
-	memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
+	std::memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
 	ndat.uVersion = NOTIFYICON_VERSION;
 
 	Shell_NotifyIconW(NIM_ADD, &ndat);
@@ -4141,7 +4141,7 @@ void DisplayServerWindows::status_indicator_set_tooltip(IndicatorID p_id, const 
 	ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
 	ndat.uID = p_id;
 	ndat.uFlags = NIF_TIP;
-	memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
+	std::memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
 	ndat.uVersion = NOTIFYICON_VERSION;
 
 	Shell_NotifyIconW(NIM_MODIFY, &ndat);
@@ -6092,7 +6092,7 @@ void DisplayServerWindows::_process_key_events() {
 					Key physical_keycode = KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
 
 					static BYTE keyboard_state[256];
-					memset(keyboard_state, 0, 256);
+					std::memset(keyboard_state, 0, 256);
 					wchar_t chars[256] = {};
 					UINT extended_code = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK_EX);
 					if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 4, GetKeyboardLayout(0)) > 0) {
@@ -6154,7 +6154,7 @@ void DisplayServerWindows::_process_key_events() {
 				KeyLocation location = KeyMappingWindows::get_location((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
 
 				static BYTE keyboard_state[256];
-				memset(keyboard_state, 0, 256);
+				std::memset(keyboard_state, 0, 256);
 				wchar_t chars[256] = {};
 				UINT extended_code = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK_EX);
 				if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 4, GetKeyboardLayout(0)) > 0) {
@@ -6936,7 +6936,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	OleInitialize(nullptr);
 
-	memset(&wc, 0, sizeof(WNDCLASSEXW));
+	std::memset(&wc, 0, sizeof(WNDCLASSEXW));
 	wc.cbSize = sizeof(WNDCLASSEXW);
 	wc.style = CS_OWNDC | CS_DBLCLKS;
 	wc.lpfnWndProc = (WNDPROC)::WndProc;

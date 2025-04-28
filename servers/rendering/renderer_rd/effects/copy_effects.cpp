@@ -59,7 +59,7 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		blur_modes.push_back("\n#define MODE_SET_COLOR\n"); // BLUR_MODE_SET_COLOR
 
 		blur_raster.shader.initialize(blur_modes);
-		memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+		std::memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
 		blur_raster.shader_version = blur_raster.shader.version_create();
 
 		for (int i = 0; i < BLUR_MODE_MAX; i++) {
@@ -90,7 +90,7 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		copy_modes.push_back("\n#define MODE_CUBEMAP_ARRAY_TO_PANORAMA\n");
 
 		copy.shader.initialize(copy_modes);
-		memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
+		std::memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 		copy.shader_version = copy.shader.version_create();
 
@@ -342,7 +342,7 @@ void CopyEffects::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, cons
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
+	std::memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 	if (p_flip_y) {
 		copy.push_constant.flags |= COPY_FLAG_FLIP_Y;
 	}
@@ -391,7 +391,7 @@ void CopyEffects::copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panoram
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
+	std::memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	copy.push_constant.section[0] = 0;
 	copy.push_constant.section[1] = 0;
@@ -426,7 +426,7 @@ void CopyEffects::copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_texture
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
+	std::memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 	if (p_flip_y) {
 		copy.push_constant.flags |= COPY_FLAG_FLIP_Y;
 	}
@@ -463,7 +463,7 @@ void CopyEffects::copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID 
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
+	std::memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 	if (p_flip_y) {
 		copy.push_constant.flags |= COPY_FLAG_FLIP_Y;
 	}
@@ -502,7 +502,7 @@ void CopyEffects::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuff
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
+	std::memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
 
 	copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_USE_SECTION;
 	copy_to_fb.push_constant.section[0] = p_uv_rect.position.x;
@@ -539,7 +539,7 @@ void CopyEffects::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffe
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
+	std::memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
 	copy_to_fb.push_constant.luminance_multiplier = 1.0;
 
 	if (p_flip_y) {
@@ -611,7 +611,7 @@ void CopyEffects::copy_to_drawlist(RD::DrawListID p_draw_list, RD::FramebufferFo
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
+	std::memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
 	copy_to_fb.push_constant.luminance_multiplier = 1.0;
 
 	if (p_linear) {
@@ -647,7 +647,7 @@ void CopyEffects::copy_raster(RID p_source_texture, RID p_dest_framebuffer) {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+	std::memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
 
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -675,7 +675,7 @@ void CopyEffects::gaussian_blur(RID p_source_rd_texture, RID p_texture, const Re
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
+	std::memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	copy.push_constant.section[0] = p_region.position.x;
 	copy.push_constant.section[1] = p_region.position.y;
@@ -716,7 +716,7 @@ void CopyEffects::gaussian_blur_raster(RID p_source_rd_texture, RID p_dest_textu
 
 	RID dest_framebuffer = FramebufferCacheRD::get_singleton()->get_cache(p_dest_texture);
 
-	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+	std::memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
 
 	BlurRasterMode blur_mode = BLUR_MODE_GAUSSIAN_BLUR;
 
@@ -749,7 +749,7 @@ void CopyEffects::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, con
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
+	std::memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	CopyMode copy_mode = p_first_pass && p_auto_exposure.is_valid() ? COPY_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE : COPY_MODE_GAUSSIAN_GLOW;
 	uint32_t base_flags = 0;
@@ -803,7 +803,7 @@ void CopyEffects::gaussian_glow_raster(RID p_source_rd_texture, RID p_half_textu
 	RID half_framebuffer = FramebufferCacheRD::get_singleton()->get_cache(p_half_texture);
 	RID dest_framebuffer = FramebufferCacheRD::get_singleton()->get_cache(p_dest_texture);
 
-	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+	std::memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
 
 	BlurRasterMode blur_mode = p_first_pass && p_auto_exposure.is_valid() ? BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE : BLUR_MODE_GAUSSIAN_GLOW;
 	uint32_t base_flags = 0;
@@ -872,7 +872,7 @@ void CopyEffects::make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
+	std::memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	copy.push_constant.section[0] = 0;
 	copy.push_constant.section[1] = 0;
@@ -908,7 +908,7 @@ void CopyEffects::make_mipmap_raster(RID p_source_rd_texture, RID p_dest_texture
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+	std::memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
 
 	BlurRasterMode mode = BLUR_MIPMAP;
 
@@ -938,7 +938,7 @@ void CopyEffects::set_color(RID p_dest_texture, const Color &p_color, const Rect
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 
-	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
+	std::memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	copy.push_constant.section[0] = 0;
 	copy.push_constant.section[1] = 0;
@@ -974,7 +974,7 @@ void CopyEffects::set_color_raster(RID p_dest_texture, const Color &p_color, con
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
+	std::memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
 
 	copy_to_fb.push_constant.set_color[0] = p_color.r;
 	copy_to_fb.push_constant.set_color[1] = p_color.g;
@@ -1188,7 +1188,7 @@ void CopyEffects::cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture,
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&roughness.push_constant, 0, sizeof(CubemapRoughnessPushConstant));
+	std::memset(&roughness.push_constant, 0, sizeof(CubemapRoughnessPushConstant));
 
 	roughness.push_constant.face_id = p_face_id > 9 ? 0 : p_face_id;
 	// Remap to perceptual-roughness^2 to create more detail in lower mips and match the mapping of cubemap_filter.
@@ -1231,7 +1231,7 @@ void CopyEffects::cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_f
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	memset(&roughness.push_constant, 0, sizeof(CubemapRoughnessPushConstant));
+	std::memset(&roughness.push_constant, 0, sizeof(CubemapRoughnessPushConstant));
 
 	roughness.push_constant.face_id = p_face_id;
 	roughness.push_constant.roughness = p_roughness * p_roughness; // Shader expects roughness, not perceptual roughness, so multiply before passing in.

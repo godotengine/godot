@@ -232,7 +232,7 @@ String TextServerFallback::_tag_to_name(int64_t p_tag) const {
 
 	// No readable name, use tag string.
 	char name[5];
-	memset(name, 0, 5);
+	std::memset(name, 0, 5);
 	ot_tag_to_string(p_tag, name);
 	return String("custom_") + String(name);
 }
@@ -832,13 +832,13 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 #endif
 			}
 
-			memset(&fd->stream, 0, sizeof(FT_StreamRec));
+			std::memset(&fd->stream, 0, sizeof(FT_StreamRec));
 			fd->stream.base = (unsigned char *)p_font_data->data_ptr;
 			fd->stream.size = p_font_data->data_size;
 			fd->stream.pos = 0;
 
 			FT_Open_Args fargs;
-			memset(&fargs, 0, sizeof(FT_Open_Args));
+			std::memset(&fargs, 0, sizeof(FT_Open_Args));
 			fargs.memory_base = (unsigned char *)p_font_data->data_ptr;
 			fargs.memory_size = p_font_data->data_size;
 			fargs.flags = FT_OPEN_MEMORY;
@@ -1182,13 +1182,13 @@ int64_t TextServerFallback::_font_get_face_count(const RID &p_font_rid) const {
 		}
 
 		FT_StreamRec stream;
-		memset(&stream, 0, sizeof(FT_StreamRec));
+		std::memset(&stream, 0, sizeof(FT_StreamRec));
 		stream.base = (unsigned char *)fd->data_ptr;
 		stream.size = fd->data_size;
 		stream.pos = 0;
 
 		FT_Open_Args fargs;
-		memset(&fargs, 0, sizeof(FT_Open_Args));
+		std::memset(&fargs, 0, sizeof(FT_Open_Args));
 		fargs.memory_base = (unsigned char *)fd->data_ptr;
 		fargs.memory_size = fd->data_size;
 		fargs.flags = FT_OPEN_MEMORY;

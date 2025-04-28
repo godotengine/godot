@@ -95,15 +95,15 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitF
 	int idxB = -1;
 	int idxA = -1;
 	for (int c = 0; c < exr_header.num_channels; c++) {
-		if (strcmp(exr_header.channels[c].name, "R") == 0) {
+		if (std::strcmp(exr_header.channels[c].name, "R") == 0) {
 			idxR = c;
-		} else if (strcmp(exr_header.channels[c].name, "G") == 0) {
+		} else if (std::strcmp(exr_header.channels[c].name, "G") == 0) {
 			idxG = c;
-		} else if (strcmp(exr_header.channels[c].name, "B") == 0) {
+		} else if (std::strcmp(exr_header.channels[c].name, "B") == 0) {
 			idxB = c;
-		} else if (strcmp(exr_header.channels[c].name, "A") == 0) {
+		} else if (std::strcmp(exr_header.channels[c].name, "A") == 0) {
 			idxA = c;
-		} else if (strcmp(exr_header.channels[c].name, "Y") == 0) {
+		} else if (std::strcmp(exr_header.channels[c].name, "Y") == 0) {
 			idxR = c;
 			idxG = c;
 			idxB = c;

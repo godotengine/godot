@@ -265,9 +265,9 @@ int test_main(int argc, char *argv[]) {
 			CharString cs = test_args[x].utf8();
 			const char *str = cs.get_data();
 			// Allocate the string copy.
-			doctest_args[x] = new char[strlen(str) + 1];
+			doctest_args[x] = new char[std::strlen(str) + 1];
 			// Copy this into memory.
-			memcpy(doctest_args[x], str, strlen(str) + 1);
+			std::memcpy(doctest_args[x], str, std::strlen(str) + 1);
 		}
 
 		test_context.applyCommandLine(test_args.size(), doctest_args);

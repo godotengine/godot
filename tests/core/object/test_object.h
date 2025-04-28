@@ -544,7 +544,7 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 			// Unfortunately, we may not poison the memory after the deletion, because the memory would no longer belong to us
 			// and on doing so we may cause a more generalized crash on some platforms (allocator implementations).
 			p_self->~Object();
-			memset((void *)p_self, 0, sizeof(Object));
+			std::memset((void *)p_self, 0, sizeof(Object));
 			Memory::free_static(p_self, false);
 #endif
 		}

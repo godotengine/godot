@@ -5129,7 +5129,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 						}
 						encode_uint32(time_tracks[i].packets.size(), page_ptr + (track_header_size * i + 4));
 						encode_uint32(base_offset, page_ptr + (track_header_size * i + 8));
-						memcpy(page_ptr + base_offset, data_tracks[i].data.ptr(), data_tracks[i].data.size());
+						std::memcpy(page_ptr + base_offset, data_tracks[i].data.ptr(), data_tracks[i].data.size());
 						base_offset += data_tracks[i].data.size();
 
 						//reset track

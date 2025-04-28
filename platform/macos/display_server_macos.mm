@@ -3854,7 +3854,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 	r_error = OK;
 
-	memset(cursors, 0, sizeof(cursors));
+	std::memset(cursors, 0, sizeof(cursors));
 
 	event_source = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
 	ERR_FAIL_COND(!event_source);

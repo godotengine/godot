@@ -63,7 +63,7 @@ void CameraFeedLinux::_query_device(const String &p_device_name) {
 
 	for (int index = 0;; index++) {
 		struct v4l2_fmtdesc fmtdesc;
-		memset(&fmtdesc, 0, sizeof(fmtdesc));
+		std::memset(&fmtdesc, 0, sizeof(fmtdesc));
 		fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 		fmtdesc.index = index;
 
@@ -73,7 +73,7 @@ void CameraFeedLinux::_query_device(const String &p_device_name) {
 
 		for (int res_index = 0;; res_index++) {
 			struct v4l2_frmsizeenum frmsizeenum;
-			memset(&frmsizeenum, 0, sizeof(frmsizeenum));
+			std::memset(&frmsizeenum, 0, sizeof(frmsizeenum));
 			frmsizeenum.pixel_format = fmtdesc.pixelformat;
 			frmsizeenum.index = res_index;
 
@@ -83,7 +83,7 @@ void CameraFeedLinux::_query_device(const String &p_device_name) {
 
 			for (int framerate_index = 0;; framerate_index++) {
 				struct v4l2_frmivalenum frmivalenum;
-				memset(&frmivalenum, 0, sizeof(frmivalenum));
+				std::memset(&frmivalenum, 0, sizeof(frmivalenum));
 				frmivalenum.pixel_format = fmtdesc.pixelformat;
 				frmivalenum.width = frmsizeenum.discrete.width;
 				frmivalenum.height = frmsizeenum.discrete.height;
@@ -119,7 +119,7 @@ void CameraFeedLinux::_add_format(v4l2_fmtdesc p_description, v4l2_frmsize_discr
 bool CameraFeedLinux::_request_buffers() {
 	struct v4l2_requestbuffers requestbuffers;
 
-	memset(&requestbuffers, 0, sizeof(requestbuffers));
+	std::memset(&requestbuffers, 0, sizeof(requestbuffers));
 	requestbuffers.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	requestbuffers.memory = V4L2_MEMORY_MMAP;
 	requestbuffers.count = 4;
@@ -136,7 +136,7 @@ bool CameraFeedLinux::_request_buffers() {
 	for (unsigned int i = 0; i < buffer_count; i++) {
 		struct v4l2_buffer buffer;
 
-		memset(&buffer, 0, sizeof(buffer));
+		std::memset(&buffer, 0, sizeof(buffer));
 		buffer.type = requestbuffers.type;
 		buffer.memory = V4L2_MEMORY_MMAP;
 		buffer.index = i;
@@ -165,7 +165,7 @@ bool CameraFeedLinux::_start_capturing() {
 	for (unsigned int i = 0; i < buffer_count; i++) {
 		struct v4l2_buffer buffer;
 
-		memset(&buffer, 0, sizeof(buffer));
+		std::memset(&buffer, 0, sizeof(buffer));
 		buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 		buffer.memory = V4L2_MEMORY_MMAP;
 		buffer.index = i;
@@ -187,7 +187,7 @@ bool CameraFeedLinux::_start_capturing() {
 
 void CameraFeedLinux::_read_frame() {
 	struct v4l2_buffer buffer;
-	memset(&buffer, 0, sizeof(buffer));
+	std::memset(&buffer, 0, sizeof(buffer));
 	buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	buffer.memory = V4L2_MEMORY_MMAP;
 
@@ -318,7 +318,7 @@ bool CameraFeedLinux::set_format(int p_index, const Dictionary &p_parameters) {
 	file_descriptor = open(device_name.ascii().get_data(), O_RDWR | O_NONBLOCK, 0);
 
 	struct v4l2_format format;
-	memset(&format, 0, sizeof(format));
+	std::memset(&format, 0, sizeof(format));
 	format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	format.fmt.pix.width = feed_format.width;
 	format.fmt.pix.height = feed_format.height;
@@ -331,7 +331,7 @@ bool CameraFeedLinux::set_format(int p_index, const Dictionary &p_parameters) {
 
 	if (feed_format.frame_numerator > 0) {
 		struct v4l2_streamparm param;
-		memset(&param, 0, sizeof(param));
+		std::memset(&param, 0, sizeof(param));
 
 		param.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 		param.parm.capture.capability = V4L2_CAP_TIMEPERFRAME;

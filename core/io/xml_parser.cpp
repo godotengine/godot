@@ -464,7 +464,7 @@ Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
 
 	length = p_buffer.size();
 	data_copy = memnew_arr(char, length + 1);
-	memcpy(data_copy, p_buffer.ptr(), length);
+	std::memcpy(data_copy, p_buffer.ptr(), length);
 	data_copy[length] = 0;
 	data = data_copy;
 	P = data;

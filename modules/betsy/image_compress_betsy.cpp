@@ -439,7 +439,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 	if ((dest_format == Image::FORMAT_DXT1 || dest_format == Image::FORMAT_DXT5) && dxt1_encoding_table_buffer.is_null()) {
 		Vector<uint8_t> data;
 		data.resize(1024 * 4);
-		memcpy(data.ptrw(), dxt1_encoding_table, 1024 * 4);
+		std::memcpy(data.ptrw(), dxt1_encoding_table, 1024 * 4);
 
 		dxt1_encoding_table_buffer = compress_rd->storage_buffer_create(1024 * 4, data);
 	}
@@ -484,25 +484,25 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 			int x = 0, y = 0;
 			for (y = 0; y < src_mip_h; y++) {
 				for (x = 0; x < src_mip_w; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, src_mip_read + (src_mip_w * y + x) * px_size, px_size);
+					std::memcpy(ptrw + (width * y + x) * px_size, src_mip_read + (src_mip_w * y + x) * px_size, px_size);
 				}
 
 				// First, smear in x.
 				for (; x < width; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - 1) * px_size, px_size);
+					std::memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - 1) * px_size, px_size);
 				}
 			}
 
 			// Then, smear in y.
 			for (; y < height; y++) {
 				for (x = 0; x < width; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - width) * px_size, px_size);
+					std::memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - width) * px_size, px_size);
 				}
 			}
 		} else {
 			// Create a buffer filled with the source mip layer data.
 			src_image_ptr[0].resize(src_mip_size);
-			memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + src_mip_ofs, src_mip_size);
+			std::memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + src_mip_ofs, src_mip_size);
 		}
 
 		// Create the textures on the GPU.
@@ -685,7 +685,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		const Vector<uint8_t> texture_data = compress_rd->texture_get_data(dst_texture_rid, 0);
 		int64_t dst_ofs = Image::get_image_mipmap_offset(img_width, img_height, dest_format, i);
 
-		memcpy(dst_data_ptr + dst_ofs, texture_data.ptr(), texture_data.size());
+		std::memcpy(dst_data_ptr + dst_ofs, texture_data.ptr(), texture_data.size());
 
 		// Free the source and dest texture.
 		compress_rd->free(src_texture);

@@ -60,7 +60,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		int n_entries = cache_data[0];
 		unsigned int read_idx = 1;
 		for (int i = 0; i < n_entries; ++i) {
-			if (memcmp(&cache_data[read_idx], hash, 16) == 0) {
+			if (std::memcmp(&cache_data[read_idx], hash, 16) == 0) {
 				cached = true;
 				cache_idx = read_idx;
 				break;
@@ -187,7 +187,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		unsigned int new_cache_idx = 0;
 
 		// hash
-		memcpy(&new_cache_data[new_cache_idx], hash, 16);
+		std::memcpy(&new_cache_data[new_cache_idx], hash, 16);
 		new_cache_idx += 4;
 
 		// size hint
@@ -200,11 +200,11 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		new_cache_idx++;
 
 		// vertices
-		memcpy(&new_cache_data[new_cache_idx], *r_vertex, sizeof(int) * (*r_vertex_count));
+		std::memcpy(&new_cache_data[new_cache_idx], *r_vertex, sizeof(int) * (*r_vertex_count));
 		new_cache_idx += *r_vertex_count;
 
 		// uvs
-		memcpy(&new_cache_data[new_cache_idx], *r_uv, sizeof(float) * (*r_vertex_count) * 2);
+		std::memcpy(&new_cache_data[new_cache_idx], *r_uv, sizeof(float) * (*r_vertex_count) * 2);
 		new_cache_idx += *r_vertex_count * 2;
 
 		// index count
@@ -212,7 +212,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		new_cache_idx++;
 
 		// indices
-		memcpy(&new_cache_data[new_cache_idx], *r_index, sizeof(int) * (*r_index_count));
+		std::memcpy(&new_cache_data[new_cache_idx], *r_index, sizeof(int) * (*r_index_count));
 
 		// Return cache data to the caller
 		*r_mesh_cache = (uint8_t *)new_cache_data;

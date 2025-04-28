@@ -522,7 +522,7 @@ Error RenderingContextDriverVulkan::_find_validation_layers(TightLocalVector<con
 				layers_found = false;
 
 				for (const VkLayerProperties &properties : layer_properties) {
-					if (!strcmp(properties.layerName, layer_name)) {
+					if (!std::strcmp(properties.layerName, layer_name)) {
 						layers_found = true;
 						break;
 					}
@@ -549,24 +549,24 @@ Error RenderingContextDriverVulkan::_find_validation_layers(TightLocalVector<con
 
 VKAPI_ATTR VkBool32 VKAPI_CALL RenderingContextDriverVulkan::_debug_messenger_callback(VkDebugUtilsMessageSeverityFlagBitsEXT p_message_severity, VkDebugUtilsMessageTypeFlagsEXT p_message_type, const VkDebugUtilsMessengerCallbackDataEXT *p_callback_data, void *p_user_data) {
 	// This error needs to be ignored because the AMD allocator will mix up memory types on IGP processors.
-	if (strstr(p_callback_data->pMessage, "Mapping an image with layout") != nullptr && strstr(p_callback_data->pMessage, "can result in undefined behavior if this memory is used by the device") != nullptr) {
+	if (std::strstr(p_callback_data->pMessage, "Mapping an image with layout") != nullptr && std::strstr(p_callback_data->pMessage, "can result in undefined behavior if this memory is used by the device") != nullptr) {
 		return VK_FALSE;
 	}
 	// This needs to be ignored because Validator is wrong here.
-	if (strstr(p_callback_data->pMessage, "Invalid SPIR-V binary version 1.3") != nullptr) {
+	if (std::strstr(p_callback_data->pMessage, "Invalid SPIR-V binary version 1.3") != nullptr) {
 		return VK_FALSE;
 	}
 	// This needs to be ignored because Validator is wrong here.
-	if (strstr(p_callback_data->pMessage, "Shader requires flag") != nullptr) {
+	if (std::strstr(p_callback_data->pMessage, "Shader requires flag") != nullptr) {
 		return VK_FALSE;
 	}
 
 	// This needs to be ignored because Validator is wrong here.
-	if (strstr(p_callback_data->pMessage, "SPIR-V module not valid: Pointer operand") != nullptr && strstr(p_callback_data->pMessage, "must be a memory object") != nullptr) {
+	if (std::strstr(p_callback_data->pMessage, "SPIR-V module not valid: Pointer operand") != nullptr && std::strstr(p_callback_data->pMessage, "must be a memory object") != nullptr) {
 		return VK_FALSE;
 	}
 
-	if (p_callback_data->pMessageIdName && strstr(p_callback_data->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != nullptr) {
+	if (p_callback_data->pMessageIdName && std::strstr(p_callback_data->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != nullptr) {
 		return VK_FALSE;
 	}
 
@@ -595,7 +595,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL RenderingContextDriverVulkan::_debug_messenger_ca
 					" - " + string_VkObjectType(p_callback_data->pObjects[object].objectType) +
 					", Handle " + String::num_int64(p_callback_data->pObjects[object].objectHandle);
 
-			if (p_callback_data->pObjects[object].pObjectName != nullptr && strlen(p_callback_data->pObjects[object].pObjectName) > 0) {
+			if (p_callback_data->pObjects[object].pObjectName != nullptr && std::strlen(p_callback_data->pObjects[object].pObjectName) > 0) {
 				objects_string += ", Name \"" + String(p_callback_data->pObjects[object].pObjectName) + "\"";
 			}
 		}

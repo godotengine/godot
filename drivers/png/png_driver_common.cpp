@@ -33,7 +33,6 @@
 #include "core/config/engine.h"
 
 #include <png.h>
-#include <string.h>
 
 namespace PNGDriverCommon {
 
@@ -49,7 +48,7 @@ static bool check_error(const png_image &image) {
 		// suppress this warning, to avoid log spam when opening assetlib
 		const static char *const noisy = "iCCP: known incorrect sRGB profile";
 		const Engine *const eng = Engine::get_singleton();
-		if (eng && eng->is_editor_hint() && !strcmp(image.message, noisy)) {
+		if (eng && eng->is_editor_hint() && !std::strcmp(image.message, noisy)) {
 			return false;
 		}
 #endif
@@ -60,7 +59,7 @@ static bool check_error(const png_image &image) {
 
 Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, Ref<Image> p_image) {
 	png_image png_img;
-	memset(&png_img, 0, sizeof(png_img));
+	std::memset(&png_img, 0, sizeof(png_img));
 	png_img.version = PNG_IMAGE_VERSION;
 
 	// fetch image properties
@@ -134,7 +133,7 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 	ERR_FAIL_COND_V(source_image->is_compressed(), FAILED);
 
 	png_image png_img;
-	memset(&png_img, 0, sizeof(png_img));
+	std::memset(&png_img, 0, sizeof(png_img));
 	png_img.version = PNG_IMAGE_VERSION;
 	png_img.width = source_image->get_width();
 	png_img.height = source_image->get_height();

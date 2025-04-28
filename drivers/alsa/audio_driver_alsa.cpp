@@ -292,7 +292,7 @@ PackedStringArray AudioDriverALSA::get_output_device_list() {
 		char *name = snd_device_name_get_hint(*n, "NAME");
 		char *desc = snd_device_name_get_hint(*n, "DESC");
 
-		if (name != nullptr && !strncmp(name, "plughw", 6)) {
+		if (name != nullptr && !std::strncmp(name, "plughw", 6)) {
 			if (desc) {
 				list.push_back(String::utf8(name) + ";" + String::utf8(desc));
 			} else {

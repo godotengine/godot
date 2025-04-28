@@ -43,8 +43,6 @@
 #include "core/variant/variant.h"
 #include "core/version.h"
 
-#include <string.h>
-
 class CallableCustomExtension : public CallableCustom {
 	void *userdata;
 	void *token;
@@ -873,7 +871,7 @@ static GDExtensionPtrUtilityFunction gdextension_variant_get_ptr_utility_functio
 
 static void gdextension_string_new_with_latin1_chars(GDExtensionUninitializedStringPtr r_dest, const char *p_contents) {
 	String *dest = memnew_placement(r_dest, String);
-	dest->append_latin1(Span<char>(p_contents, p_contents ? strlen(p_contents) : 0));
+	dest->append_latin1(Span<char>(p_contents, p_contents ? std::strlen(p_contents) : 0));
 }
 
 static void gdextension_string_new_with_utf8_chars(GDExtensionUninitializedStringPtr r_dest, const char *p_contents) {
@@ -888,7 +886,7 @@ static void gdextension_string_new_with_utf16_chars(GDExtensionUninitializedStri
 
 static void gdextension_string_new_with_utf32_chars(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents) {
 	String *dest = memnew_placement(r_dest, String);
-	dest->append_utf32(Span(p_contents, p_contents ? strlen(p_contents) : 0));
+	dest->append_utf32(Span(p_contents, p_contents ? std::strlen(p_contents) : 0));
 }
 
 static void gdextension_string_new_with_wide_chars(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents) {
@@ -899,7 +897,7 @@ static void gdextension_string_new_with_wide_chars(GDExtensionUninitializedStrin
 	} else {
 		// wchar_t is 32 bit (UTF-32).
 		String *string = memnew_placement(r_dest, String);
-		string->append_utf32(Span((const char32_t *)p_contents, p_contents ? strlen(p_contents) : 0));
+		string->append_utf32(Span((const char32_t *)p_contents, p_contents ? std::strlen(p_contents) : 0));
 	}
 }
 
@@ -1672,7 +1670,7 @@ static void gdextension_editor_help_load_xml_from_utf8_chars_and_len(const char 
 
 static void gdextension_editor_help_load_xml_from_utf8_chars(const char *p_data) {
 #ifdef TOOLS_ENABLED
-	size_t len = strlen(p_data);
+	size_t len = std::strlen(p_data);
 	gdextension_editor_help_load_xml_from_utf8_chars_and_len(p_data, len);
 #endif
 }

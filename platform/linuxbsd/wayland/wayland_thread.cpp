@@ -426,32 +426,32 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	RegistryState *registry = (RegistryState *)data;
 	ERR_FAIL_NULL(registry);
 
-	if (strcmp(interface, wl_shm_interface.name) == 0) {
+	if (std::strcmp(interface, wl_shm_interface.name) == 0) {
 		registry->wl_shm = (struct wl_shm *)wl_registry_bind(wl_registry, name, &wl_shm_interface, 1);
 		registry->wl_shm_name = name;
 		return;
 	}
 
 	// NOTE: Deprecated.
-	if (strcmp(interface, zxdg_exporter_v1_interface.name) == 0) {
+	if (std::strcmp(interface, zxdg_exporter_v1_interface.name) == 0) {
 		registry->xdg_exporter_v1 = (struct zxdg_exporter_v1 *)wl_registry_bind(wl_registry, name, &zxdg_exporter_v1_interface, 1);
 		registry->xdg_exporter_v1_name = name;
 		return;
 	}
 
-	if (strcmp(interface, zxdg_exporter_v2_interface.name) == 0) {
+	if (std::strcmp(interface, zxdg_exporter_v2_interface.name) == 0) {
 		registry->xdg_exporter_v2 = (struct zxdg_exporter_v2 *)wl_registry_bind(wl_registry, name, &zxdg_exporter_v2_interface, 1);
 		registry->xdg_exporter_v2_name = name;
 		return;
 	}
 
-	if (strcmp(interface, wl_compositor_interface.name) == 0) {
+	if (std::strcmp(interface, wl_compositor_interface.name) == 0) {
 		registry->wl_compositor = (struct wl_compositor *)wl_registry_bind(wl_registry, name, &wl_compositor_interface, CLAMP((int)version, 1, 6));
 		registry->wl_compositor_name = name;
 		return;
 	}
 
-	if (strcmp(interface, wl_data_device_manager_interface.name) == 0) {
+	if (std::strcmp(interface, wl_data_device_manager_interface.name) == 0) {
 		registry->wl_data_device_manager = (struct wl_data_device_manager *)wl_registry_bind(wl_registry, name, &wl_data_device_manager_interface, CLAMP((int)version, 1, 3));
 		registry->wl_data_device_manager_name = name;
 
@@ -468,7 +468,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
-	if (strcmp(interface, wl_output_interface.name) == 0) {
+	if (std::strcmp(interface, wl_output_interface.name) == 0) {
 		struct wl_output *wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, CLAMP((int)version, 1, 4));
 		wl_proxy_tag_godot((struct wl_proxy *)wl_output);
 
@@ -483,7 +483,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
-	if (strcmp(interface, wl_seat_interface.name) == 0) {
+	if (std::strcmp(interface, wl_seat_interface.name) == 0) {
 		struct wl_seat *wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, CLAMP((int)version, 1, 9));
 		wl_proxy_tag_godot((struct wl_proxy *)wl_seat);
 
@@ -534,7 +534,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
-	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
+	if (std::strcmp(interface, xdg_wm_base_interface.name) == 0) {
 		registry->xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, CLAMP((int)version, 1, 6));
 		registry->xdg_wm_base_name = name;
 
@@ -542,12 +542,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
-	if (strcmp(interface, wp_viewporter_interface.name) == 0) {
+	if (std::strcmp(interface, wp_viewporter_interface.name) == 0) {
 		registry->wp_viewporter = (struct wp_viewporter *)wl_registry_bind(wl_registry, name, &wp_viewporter_interface, 1);
 		registry->wp_viewporter_name = name;
 	}
 
-	if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
+	if (std::strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
 		registry->wp_fractional_scale_manager = (struct wp_fractional_scale_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_fractional_scale_manager_v1_interface, 1);
 		registry->wp_fractional_scale_manager_name = name;
 
@@ -556,25 +556,25 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		// knows), add a conditional branch for creating the add-on object.
 	}
 
-	if (strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
+	if (std::strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
 		registry->xdg_decoration_manager = (struct zxdg_decoration_manager_v1 *)wl_registry_bind(wl_registry, name, &zxdg_decoration_manager_v1_interface, 1);
 		registry->xdg_decoration_manager_name = name;
 		return;
 	}
 
-	if (strcmp(interface, xdg_system_bell_v1_interface.name) == 0) {
+	if (std::strcmp(interface, xdg_system_bell_v1_interface.name) == 0) {
 		registry->xdg_system_bell = (struct xdg_system_bell_v1 *)wl_registry_bind(wl_registry, name, &xdg_system_bell_v1_interface, 1);
 		registry->xdg_system_bell_name = name;
 		return;
 	}
 
-	if (strcmp(interface, xdg_activation_v1_interface.name) == 0) {
+	if (std::strcmp(interface, xdg_activation_v1_interface.name) == 0) {
 		registry->xdg_activation = (struct xdg_activation_v1 *)wl_registry_bind(wl_registry, name, &xdg_activation_v1_interface, 1);
 		registry->xdg_activation_name = name;
 		return;
 	}
 
-	if (strcmp(interface, zwp_primary_selection_device_manager_v1_interface.name) == 0) {
+	if (std::strcmp(interface, zwp_primary_selection_device_manager_v1_interface.name) == 0) {
 		registry->wp_primary_selection_device_manager = (struct zwp_primary_selection_device_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_primary_selection_device_manager_v1_interface, 1);
 
 		// This global creates some seat data. Let's do that for the ones already available.
@@ -589,31 +589,31 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		}
 	}
 
-	if (strcmp(interface, zwp_relative_pointer_manager_v1_interface.name) == 0) {
+	if (std::strcmp(interface, zwp_relative_pointer_manager_v1_interface.name) == 0) {
 		registry->wp_relative_pointer_manager = (struct zwp_relative_pointer_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_relative_pointer_manager_v1_interface, 1);
 		registry->wp_relative_pointer_manager_name = name;
 		return;
 	}
 
-	if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
+	if (std::strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
 		registry->wp_pointer_constraints = (struct zwp_pointer_constraints_v1 *)wl_registry_bind(wl_registry, name, &zwp_pointer_constraints_v1_interface, 1);
 		registry->wp_pointer_constraints_name = name;
 		return;
 	}
 
-	if (strcmp(interface, zwp_pointer_gestures_v1_interface.name) == 0) {
+	if (std::strcmp(interface, zwp_pointer_gestures_v1_interface.name) == 0) {
 		registry->wp_pointer_gestures = (struct zwp_pointer_gestures_v1 *)wl_registry_bind(wl_registry, name, &zwp_pointer_gestures_v1_interface, 1);
 		registry->wp_pointer_gestures_name = name;
 		return;
 	}
 
-	if (strcmp(interface, zwp_idle_inhibit_manager_v1_interface.name) == 0) {
+	if (std::strcmp(interface, zwp_idle_inhibit_manager_v1_interface.name) == 0) {
 		registry->wp_idle_inhibit_manager = (struct zwp_idle_inhibit_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_idle_inhibit_manager_v1_interface, 1);
 		registry->wp_idle_inhibit_manager_name = name;
 		return;
 	}
 
-	if (strcmp(interface, zwp_tablet_manager_v2_interface.name) == 0) {
+	if (std::strcmp(interface, zwp_tablet_manager_v2_interface.name) == 0) {
 		registry->wp_tablet_manager = (struct zwp_tablet_manager_v2 *)wl_registry_bind(wl_registry, name, &zwp_tablet_manager_v2_interface, 1);
 		registry->wp_tablet_manager_name = name;
 
@@ -629,7 +629,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
-	if (strcmp(interface, zwp_text_input_manager_v3_interface.name) == 0) {
+	if (std::strcmp(interface, zwp_text_input_manager_v3_interface.name) == 0) {
 		registry->wp_text_input_manager = (struct zwp_text_input_manager_v3 *)wl_registry_bind(wl_registry, name, &zwp_text_input_manager_v3_interface, 1);
 		registry->wp_text_input_manager_name = name;
 
@@ -645,7 +645,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
-	if (strcmp(interface, FIFO_INTERFACE_NAME) == 0) {
+	if (std::strcmp(interface, FIFO_INTERFACE_NAME) == 0) {
 		registry->wp_fifo_manager_name = name;
 	}
 }
@@ -2219,9 +2219,9 @@ void WaylandThread::_wl_data_source_on_send(void *data, struct wl_data_source *w
 
 		bool valid_mime = false;
 
-		if (strcmp(mime_type, "text/plain;charset=utf-8") == 0) {
+		if (std::strcmp(mime_type, "text/plain;charset=utf-8") == 0) {
 			valid_mime = true;
-		} else if (strcmp(mime_type, "text/plain") == 0) {
+		} else if (std::strcmp(mime_type, "text/plain") == 0) {
 			valid_mime = true;
 		}
 
@@ -2413,7 +2413,7 @@ void WaylandThread::_wp_primary_selection_source_on_send(void *data, struct zwp_
 	if (data_to_send) {
 		ssize_t written_bytes = 0;
 
-		if (strcmp(mime_type, "text/plain") == 0) {
+		if (std::strcmp(mime_type, "text/plain") == 0) {
 			written_bytes = write(fd, data_to_send->ptr(), data_to_send->size());
 		}
 

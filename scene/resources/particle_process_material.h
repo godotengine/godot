@@ -129,17 +129,17 @@ private:
 		uint64_t orbit_uses_curve_xyz : 1;
 
 		MaterialKey() {
-			memset(this, 0, sizeof(MaterialKey));
+			std::memset(this, 0, sizeof(MaterialKey));
 		}
 
 		static uint32_t hash(const MaterialKey &p_key) {
 			return hash_djb2_buffer((const uint8_t *)&p_key, sizeof(MaterialKey));
 		}
 		bool operator==(const MaterialKey &p_key) const {
-			return memcmp(this, &p_key, sizeof(MaterialKey)) == 0;
+			return std::memcmp(this, &p_key, sizeof(MaterialKey)) == 0;
 		}
 		bool operator<(const MaterialKey &p_key) const {
-			return memcmp(this, &p_key, sizeof(MaterialKey)) < 0;
+			return std::memcmp(this, &p_key, sizeof(MaterialKey)) < 0;
 		}
 	};
 

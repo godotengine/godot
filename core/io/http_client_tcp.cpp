@@ -670,7 +670,7 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 
 					ret.resize(chunk_size - 2);
 					uint8_t *w = ret.ptrw();
-					memcpy(w, chunk.ptr(), chunk_size - 2);
+					std::memcpy(w, chunk.ptr(), chunk_size - 2);
 					chunk.clear();
 				}
 

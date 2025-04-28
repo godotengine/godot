@@ -264,7 +264,7 @@ Error RenderingDevice::_buffer_initialize(Buffer *p_buffer, const uint8_t *p_dat
 	uint8_t *data_ptr = driver->buffer_map(transfer_worker->staging_buffer);
 	ERR_FAIL_NULL_V(data_ptr, ERR_CANT_CREATE);
 
-	memcpy(data_ptr + transfer_worker_offset, p_data, p_data_size);
+	std::memcpy(data_ptr + transfer_worker_offset, p_data, p_data_size);
 	driver->buffer_unmap(transfer_worker->staging_buffer);
 
 	// Copy from the staging buffer to the real buffer.
@@ -521,7 +521,7 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 		ERR_FAIL_NULL_V(data_ptr, ERR_CANT_CREATE);
 
 		// Copy to staging buffer.
-		memcpy(data_ptr + block_write_offset, src_data + submit_from, block_write_amount);
+		std::memcpy(data_ptr + block_write_offset, src_data + submit_from, block_write_amount);
 
 		// Unmap.
 		driver->buffer_unmap(upload_staging_buffers.blocks[upload_staging_buffers.current].driver_id);
@@ -693,7 +693,7 @@ Vector<uint8_t> RenderingDevice::buffer_get_data(RID p_buffer, uint32_t p_offset
 	{
 		buffer_data.resize(p_size);
 		uint8_t *w = buffer_data.ptrw();
-		memcpy(w, buffer_mem, p_size);
+		std::memcpy(w, buffer_mem, p_size);
 	}
 
 	driver->buffer_unmap(tmp_buffer);
@@ -1941,7 +1941,7 @@ Vector<uint8_t> RenderingDevice::_texture_get_data(Texture *tex, uint32_t p_laye
 						const uint8_t *rptr = slice_read_ptr + y * layout.row_pitch;
 						uint8_t *wptr = write_ptr + y * line_width;
 
-						memcpy(wptr, rptr, line_width);
+						std::memcpy(wptr, rptr, line_width);
 					}
 
 				} else {
@@ -1949,7 +1949,7 @@ Vector<uint8_t> RenderingDevice::_texture_get_data(Texture *tex, uint32_t p_laye
 					for (uint32_t y = 0; y < height; y++) {
 						const uint8_t *rptr = slice_read_ptr + y * layout.row_pitch;
 						uint8_t *wptr = write_ptr + y * pixel_size * width;
-						memcpy(wptr, rptr, (uint64_t)pixel_size * width);
+						std::memcpy(wptr, rptr, (uint64_t)pixel_size * width);
 					}
 				}
 			}
@@ -2060,7 +2060,7 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 			const uint8_t *rp = read_ptr;
 			uint8_t *wp = write_ptr;
 			for (uint32_t row = h * d / block_h; row != 0; row--) {
-				memcpy(wp, rp, tight_row_pitch);
+				std::memcpy(wp, rp, tight_row_pitch);
 				rp += mip_layouts[i].row_pitch;
 				wp += tight_row_pitch;
 			}
@@ -5238,7 +5238,7 @@ void RenderingDevice::compute_list_set_push_constant(ComputeListID p_list, const
 	draw_graph.add_compute_list_set_push_constant(compute_list.state.pipeline_shader_driver_id, p_data, p_data_size);
 
 	// Store it in the state in case we need to restart the compute list.
-	memcpy(compute_list.state.push_constant_data, p_data, p_data_size);
+	std::memcpy(compute_list.state.push_constant_data, p_data, p_data_size);
 	compute_list.state.push_constant_size = p_data_size;
 
 #ifdef DEBUG_ENABLED
@@ -6553,7 +6553,7 @@ void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
 					uint32_t local_index = request.frame_local_index + j;
 					const RDD::BufferCopyRegion &region = frames[p_frame].download_buffer_copy_regions[local_index];
 					uint8_t *buffer_data = driver->buffer_map(frames[p_frame].download_buffer_staging_buffers[local_index]);
-					memcpy(&packed_byte_array.write[array_offset], &buffer_data[region.dst_offset], region.size);
+					std::memcpy(&packed_byte_array.write[array_offset], &buffer_data[region.dst_offset], region.size);
 					driver->buffer_unmap(frames[p_frame].download_buffer_staging_buffers[local_index]);
 					array_offset += region.size;
 				}
@@ -6604,7 +6604,7 @@ void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
 
 					write_ptr += ((region.texture_offset.y / block_h) * (w / block_w) + (region.texture_offset.x / block_w)) * unit_size;
 					for (uint32_t y = region_h / block_h; y > 0; y--) {
-						memcpy(write_ptr, read_ptr, (region_w / block_w) * unit_size);
+						std::memcpy(write_ptr, read_ptr, (region_w / block_w) * unit_size);
 						write_ptr += (w / block_w) * unit_size;
 						read_ptr += region_pitch;
 					}

@@ -32,8 +32,6 @@
 
 #include "drivers/png/png_driver_common.h"
 
-#include <string.h>
-
 Error ImageLoaderPNG::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	const uint64_t buffer_size = f->get_length();
 	Vector<uint8_t> file_buffer;
@@ -86,7 +84,7 @@ Vector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image) {
 	{
 		// must be closed before call to image_to_png
 		uint8_t *writer = out_buffer.ptrw();
-		memcpy(writer, "PNG ", 4);
+		std::memcpy(writer, "PNG ", 4);
 	}
 
 	Error err = PNGDriverCommon::image_to_png(p_image, out_buffer);

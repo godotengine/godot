@@ -516,34 +516,34 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 		case ShaderLanguage::TYPE_INT:
 		case ShaderLanguage::TYPE_UINT:
 		case ShaderLanguage::TYPE_FLOAT: {
-			memset(data, 0, 4 * p_array_size);
+			std::memset(data, 0, 4 * p_array_size);
 		} break;
 		case ShaderLanguage::TYPE_BVEC2:
 		case ShaderLanguage::TYPE_IVEC2:
 		case ShaderLanguage::TYPE_UVEC2:
 		case ShaderLanguage::TYPE_VEC2: {
-			memset(data, 0, 8 * p_array_size);
+			std::memset(data, 0, 8 * p_array_size);
 		} break;
 		case ShaderLanguage::TYPE_BVEC3:
 		case ShaderLanguage::TYPE_IVEC3:
 		case ShaderLanguage::TYPE_UVEC3:
 		case ShaderLanguage::TYPE_VEC3: {
-			memset(data, 0, 12 * p_array_size);
+			std::memset(data, 0, 12 * p_array_size);
 		} break;
 		case ShaderLanguage::TYPE_BVEC4:
 		case ShaderLanguage::TYPE_IVEC4:
 		case ShaderLanguage::TYPE_UVEC4:
 		case ShaderLanguage::TYPE_VEC4: {
-			memset(data, 0, 16 * p_array_size);
+			std::memset(data, 0, 16 * p_array_size);
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
-			memset(data, 0, 32 * p_array_size);
+			std::memset(data, 0, 32 * p_array_size);
 		} break;
 		case ShaderLanguage::TYPE_MAT3: {
-			memset(data, 0, 48 * p_array_size);
+			std::memset(data, 0, 48 * p_array_size);
 		} break;
 		case ShaderLanguage::TYPE_MAT4: {
-			memset(data, 0, 64 * p_array_size);
+			std::memset(data, 0, 64 * p_array_size);
 		} break;
 
 		default: {
@@ -1104,7 +1104,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		ubo_data[p_use_linear_color].resize(p_ubo_size);
 		if (ubo_data[p_use_linear_color].size()) {
 			uniform_buffer[p_use_linear_color] = RD::get_singleton()->uniform_buffer_create(ubo_data[p_use_linear_color].size());
-			memset(ubo_data[p_use_linear_color].ptrw(), 0, ubo_data[p_use_linear_color].size()); //clear
+			std::memset(ubo_data[p_use_linear_color].ptrw(), 0, ubo_data[p_use_linear_color].size()); //clear
 		}
 
 		//clear previous uniform set
@@ -1269,10 +1269,10 @@ MaterialStorage::MaterialStorage() {
 
 	global_shader_uniforms.buffer_size = MAX(4096, (int)GLOBAL_GET("rendering/limits/global_shader_variables/buffer_size"));
 	global_shader_uniforms.buffer_values = memnew_arr(GlobalShaderUniforms::Value, global_shader_uniforms.buffer_size);
-	memset(global_shader_uniforms.buffer_values, 0, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size);
+	std::memset(global_shader_uniforms.buffer_values, 0, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size);
 	global_shader_uniforms.buffer_usage = memnew_arr(GlobalShaderUniforms::ValueUsage, global_shader_uniforms.buffer_size);
 	global_shader_uniforms.buffer_dirty_regions = memnew_arr(bool, 1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE));
-	memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * (1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE)));
+	std::memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * (1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE)));
 	global_shader_uniforms.buffer = RD::get_singleton()->storage_buffer_create(sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size);
 }
 
@@ -1880,7 +1880,7 @@ void MaterialStorage::_update_global_shader_uniforms() {
 		if (total_regions / global_shader_uniforms.buffer_dirty_region_count <= 4) {
 			// 25% of regions dirty, just update all buffer
 			RD::get_singleton()->buffer_update(global_shader_uniforms.buffer, 0, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size, global_shader_uniforms.buffer_values);
-			memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * total_regions);
+			std::memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * total_regions);
 		} else {
 			uint32_t region_byte_size = sizeof(GlobalShaderUniforms::Value) * GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE;
 

@@ -485,7 +485,7 @@ bool TextServerAdvanced::_save_support_data(const String &p_filename) const {
 
 	PackedByteArray icu_data_static;
 	icu_data_static.resize(U_ICUDATA_SIZE);
-	memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
+	std::memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
 	f->store_buffer(icu_data_static);
 
 	return true;
@@ -500,7 +500,7 @@ PackedByteArray TextServerAdvanced::_get_support_data() const {
 
 	PackedByteArray icu_data_static;
 	icu_data_static.resize(U_ICUDATA_SIZE);
-	memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
+	std::memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
 
 	return icu_data_static;
 #else
@@ -810,7 +810,7 @@ String TextServerAdvanced::_tag_to_name(int64_t p_tag) const {
 
 	// No readable name, use tag string.
 	char name[5];
-	memset(name, 0, 5);
+	std::memset(name, 0, 5);
 	hb_tag_to_string(p_tag, name);
 	return String("custom_") + String(name);
 }
@@ -1408,13 +1408,13 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 #endif
 			}
 
-			memset(&fd->stream, 0, sizeof(FT_StreamRec));
+			std::memset(&fd->stream, 0, sizeof(FT_StreamRec));
 			fd->stream.base = (unsigned char *)p_font_data->data_ptr;
 			fd->stream.size = p_font_data->data_size;
 			fd->stream.pos = 0;
 
 			FT_Open_Args fargs;
-			memset(&fargs, 0, sizeof(FT_Open_Args));
+			std::memset(&fargs, 0, sizeof(FT_Open_Args));
 			fargs.memory_base = (unsigned char *)p_font_data->data_ptr;
 			fargs.memory_size = p_font_data->data_size;
 			fargs.flags = FT_OPEN_MEMORY;
@@ -1771,7 +1771,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 						PackedInt32Array lbl;
 						unsigned int text_size = hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), nullptr, nullptr) + 1;
 						lbl.resize(text_size);
-						memset((uint32_t *)lbl.ptrw(), 0, sizeof(uint32_t) * text_size);
+						std::memset((uint32_t *)lbl.ptrw(), 0, sizeof(uint32_t) * text_size);
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
 						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
@@ -1800,7 +1800,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 						PackedInt32Array lbl;
 						unsigned int text_size = hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), nullptr, nullptr) + 1;
 						lbl.resize(text_size);
-						memset((uint32_t *)lbl.ptrw(), 0, sizeof(uint32_t) * text_size);
+						std::memset((uint32_t *)lbl.ptrw(), 0, sizeof(uint32_t) * text_size);
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
 						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
@@ -2056,13 +2056,13 @@ int64_t TextServerAdvanced::_font_get_face_count(const RID &p_font_rid) const {
 		}
 
 		FT_StreamRec stream;
-		memset(&stream, 0, sizeof(FT_StreamRec));
+		std::memset(&stream, 0, sizeof(FT_StreamRec));
 		stream.base = (unsigned char *)fd->data_ptr;
 		stream.size = fd->data_size;
 		stream.pos = 0;
 
 		FT_Open_Args fargs;
-		memset(&fargs, 0, sizeof(FT_Open_Args));
+		std::memset(&fargs, 0, sizeof(FT_Open_Args));
 		fargs.memory_base = (unsigned char *)fd->data_ptr;
 		fargs.memory_size = fd->data_size;
 		fargs.flags = FT_OPEN_MEMORY;

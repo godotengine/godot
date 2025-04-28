@@ -1755,7 +1755,7 @@ void RenderingDeviceGraph::add_compute_list_set_push_constant(RDD::ShaderID p_sh
 	instruction->type = ComputeListInstruction::TYPE_SET_PUSH_CONSTANT;
 	instruction->size = p_data_size;
 	instruction->shader = p_shader;
-	memcpy(instruction->data(), p_data, p_data_size);
+	std::memcpy(instruction->data(), p_data, p_data_size);
 }
 
 void RenderingDeviceGraph::add_compute_list_uniform_set_prepare_for_use(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
@@ -1800,7 +1800,7 @@ void RenderingDeviceGraph::add_compute_list_end() {
 	command->type = RecordedCommand::TYPE_COMPUTE_LIST;
 	command->self_stages = compute_instruction_list.stages;
 	command->instruction_data_size = instruction_data_size;
-	memcpy(command->instruction_data(), compute_instruction_list.data.ptr(), instruction_data_size);
+	std::memcpy(command->instruction_data(), compute_instruction_list.data.ptr(), instruction_data_size);
 	_add_command_to_graph(compute_instruction_list.command_trackers.ptr(), compute_instruction_list.command_tracker_usages.ptr(), compute_instruction_list.command_trackers.size(), command_index, command);
 }
 
@@ -1953,7 +1953,7 @@ void RenderingDeviceGraph::add_draw_list_set_push_constant(RDD::ShaderID p_shade
 	instruction->type = DrawListInstruction::TYPE_SET_PUSH_CONSTANT;
 	instruction->size = p_data_size;
 	instruction->shader = p_shader;
-	memcpy(instruction->data(), p_data, p_data_size);
+	std::memcpy(instruction->data(), p_data, p_data_size);
 }
 
 void RenderingDeviceGraph::add_draw_list_set_scissor(Rect2i p_rect) {
@@ -2060,7 +2060,7 @@ void RenderingDeviceGraph::add_draw_list_end() {
 		clear_values[i] = draw_instruction_list.attachment_clear_values[i];
 	}
 
-	memcpy(command->instruction_data(), draw_instruction_list.data.ptr(), instruction_data_size);
+	std::memcpy(command->instruction_data(), draw_instruction_list.data.ptr(), instruction_data_size);
 	_add_command_to_graph(draw_instruction_list.command_trackers.ptr(), draw_instruction_list.command_tracker_usages.ptr(), draw_instruction_list.command_trackers.size(), command_index, command);
 }
 
@@ -2223,7 +2223,7 @@ void RenderingDeviceGraph::begin_label(const String &p_label_name, const Color &
 	PackedByteArray command_label_utf8 = p_label_name.to_utf8_buffer();
 	int command_label_utf8_size = command_label_utf8.size();
 	command_label_chars.resize(command_label_offset + command_label_utf8_size + 1);
-	memcpy(&command_label_chars[command_label_offset], command_label_utf8.ptr(), command_label_utf8.size());
+	std::memcpy(&command_label_chars[command_label_offset], command_label_utf8.ptr(), command_label_utf8.size());
 	command_label_chars[command_label_offset + command_label_utf8_size] = '\0';
 	command_label_colors.push_back(p_color);
 	command_label_offsets.push_back(command_label_offset);
@@ -2251,7 +2251,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 
 		// Count all the incoming connections to every node by traversing their adjacency list.
 		command_degrees.resize(command_count);
-		memset(command_degrees.ptr(), 0, sizeof(uint32_t) * command_degrees.size());
+		std::memset(command_degrees.ptr(), 0, sizeof(uint32_t) * command_degrees.size());
 		for (uint32_t i = 0; i < command_count; i++) {
 			const RecordedCommand &recorded_command = *reinterpret_cast<const RecordedCommand *>(&command_data[command_data_offsets[i]]);
 			adjacency_list_index = recorded_command.adjacent_command_list_index;

@@ -47,7 +47,7 @@ Error ENetConnection::create_host_bound(const IPAddress &p_bind_address, int p_p
 	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
 
 	ENetAddress address;
-	memset(&address, 0, sizeof(address));
+	std::memset(&address, 0, sizeof(address));
 	address.port = p_port;
 #ifdef GODOT_ENET
 	if (p_bind_address.is_wildcard()) {
@@ -427,7 +427,7 @@ size_t ENetConnection::Compressor::enet_compress(void *context, const ENetBuffer
 	while (total) {
 		for (size_t i = 0; i < inBufferCount; i++) {
 			int to_copy = MIN(total, int(inBuffers[i].dataLength));
-			memcpy(&compressor->src_mem.write[ofs], inBuffers[i].data, to_copy);
+			std::memcpy(&compressor->src_mem.write[ofs], inBuffers[i].data, to_copy);
 			ofs += to_copy;
 			total -= to_copy;
 		}
@@ -464,7 +464,7 @@ size_t ENetConnection::Compressor::enet_compress(void *context, const ENetBuffer
 		return 0; // Do not bother
 	}
 
-	memcpy(outData, compressor->dst_mem.ptr(), ret);
+	std::memcpy(outData, compressor->dst_mem.ptr(), ret);
 
 	return ret;
 }

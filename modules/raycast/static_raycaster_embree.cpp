@@ -75,7 +75,7 @@ void StaticRaycasterEmbree::add_mesh(const PackedVector3Array &p_vertices, const
 	int vertex_count = p_vertices.size();
 
 	Vector3 *embree_vertices = (Vector3 *)rtcSetNewGeometryBuffer(embree_mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vector3), vertex_count);
-	memcpy(embree_vertices, p_vertices.ptr(), sizeof(Vector3) * vertex_count);
+	std::memcpy(embree_vertices, p_vertices.ptr(), sizeof(Vector3) * vertex_count);
 
 	if (p_indices.is_empty()) {
 		ERR_FAIL_COND(vertex_count % 3 != 0);
@@ -85,7 +85,7 @@ void StaticRaycasterEmbree::add_mesh(const PackedVector3Array &p_vertices, const
 		}
 	} else {
 		uint32_t *embree_triangles = (uint32_t *)rtcSetNewGeometryBuffer(embree_mesh, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, sizeof(uint32_t) * 3, p_indices.size() / 3);
-		memcpy(embree_triangles, p_indices.ptr(), sizeof(uint32_t) * p_indices.size());
+		std::memcpy(embree_triangles, p_indices.ptr(), sizeof(uint32_t) * p_indices.size());
 	}
 
 	rtcCommitGeometry(embree_mesh);

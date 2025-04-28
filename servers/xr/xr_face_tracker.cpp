@@ -211,7 +211,7 @@ PackedFloat32Array XRFaceTracker::get_blend_shapes() const {
 	// Create a packed float32 array and copy the blend shape values into it.
 	PackedFloat32Array data;
 	data.resize(FT_MAX);
-	memcpy(data.ptrw(), blend_shape_values, sizeof(blend_shape_values));
+	std::memcpy(data.ptrw(), blend_shape_values, sizeof(blend_shape_values));
 
 	// Return the blend shape array.
 	return data;
@@ -222,7 +222,7 @@ void XRFaceTracker::set_blend_shapes(const PackedFloat32Array &p_blend_shapes) {
 	ERR_FAIL_COND(p_blend_shapes.size() != FT_MAX);
 
 	// Copy the blend shape values into the blend shape array.
-	memcpy(blend_shape_values, p_blend_shapes.ptr(), sizeof(blend_shape_values));
+	std::memcpy(blend_shape_values, p_blend_shapes.ptr(), sizeof(blend_shape_values));
 }
 
 XRFaceTracker::XRFaceTracker() {

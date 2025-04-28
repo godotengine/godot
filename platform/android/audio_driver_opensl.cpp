@@ -30,8 +30,6 @@
 
 #include "audio_driver_opensl.h"
 
-#include <string.h>
-
 #define MAX_NUMBER_INTERFACES 3
 #define MAX_NUMBER_OUTPUT_DEVICES 6
 
@@ -103,7 +101,7 @@ void AudioDriverOpenSL::start() {
 
 	for (int i = 0; i < BUFFER_COUNT; i++) {
 		buffers[i] = memnew_arr(int16_t, buffer_size * 2);
-		memset(buffers[i], 0, buffer_size * 4);
+		std::memset(buffers[i], 0, buffer_size * 4);
 	}
 
 	mixdown_buffer = memnew_arr(int32_t, buffer_size * 2);

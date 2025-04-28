@@ -99,10 +99,10 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 				int block_index = (x - x_start) / 4;
 				int block_element = (x - x_start) % 4 + first_input_element;
 				if (is_hdr) {
-					memcpy(input_blocks_hdr[block_index].m_pixels[block_element], pixel_start, bytes_per_pixel);
+					std::memcpy(input_blocks_hdr[block_index].m_pixels[block_element], pixel_start, bytes_per_pixel);
 					input_blocks_hdr[block_index].m_pixels[block_element][3] = 0x3c00; // 1.0 (unused)
 				} else {
-					memcpy(input_blocks_ldr[block_index].m_pixels[block_element], pixel_start, bytes_per_pixel);
+					std::memcpy(input_blocks_ldr[block_index].m_pixels[block_element], pixel_start, bytes_per_pixel);
 				}
 			}
 		}
@@ -124,7 +124,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 			num_real_blocks = cvtt::NumParallelBlocks;
 		}
 
-		memcpy(out_bytes, output_blocks, 16 * num_real_blocks);
+		std::memcpy(out_bytes, output_blocks, 16 * num_real_blocks);
 		out_bytes += 16 * num_real_blocks;
 	}
 }
@@ -235,25 +235,25 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 			int x = 0, y = 0;
 			for (y = 0; y < src_mip_h; y++) {
 				for (x = 0; x < src_mip_w; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, src_mip_read + (src_mip_w * y + x) * px_size, px_size);
+					std::memcpy(ptrw + (width * y + x) * px_size, src_mip_read + (src_mip_w * y + x) * px_size, px_size);
 				}
 
 				// First, smear in x.
 				for (; x < width; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - 1) * px_size, px_size);
+					std::memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - 1) * px_size, px_size);
 				}
 			}
 
 			// Then, smear in y.
 			for (; y < height; y++) {
 				for (x = 0; x < width; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - width) * px_size, px_size);
+					std::memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - width) * px_size, px_size);
 				}
 			}
 		} else {
 			// Create a buffer filled with the source mip layer data.
 			in_data.resize(src_mip_size);
-			memcpy(in_data.ptrw(), p_image->ptr() + src_mip_ofs, src_mip_size);
+			std::memcpy(in_data.ptrw(), p_image->ptr() + src_mip_ofs, src_mip_size);
 		}
 
 		//const uint8_t *in_bytes = &rb[src_ofs];
@@ -338,14 +338,14 @@ void image_decompress_cvtt(Image *p_image) {
 
 			for (int x_start = 0; x_start < w; x_start += 4 * cvtt::NumParallelBlocks) {
 				uint8_t input_blocks[16 * cvtt::NumParallelBlocks];
-				memset(input_blocks, 0, sizeof(input_blocks));
+				std::memset(input_blocks, 0, sizeof(input_blocks));
 
 				unsigned int num_real_blocks = ((w - x_start) + 3) / 4;
 				if (num_real_blocks > cvtt::NumParallelBlocks) {
 					num_real_blocks = cvtt::NumParallelBlocks;
 				}
 
-				memcpy(input_blocks, in_bytes, 16 * num_real_blocks);
+				std::memcpy(input_blocks, in_bytes, 16 * num_real_blocks);
 				in_bytes += 16 * num_real_blocks;
 
 				int x_end = x_start + 4 * num_real_blocks;
@@ -380,9 +380,9 @@ void image_decompress_cvtt(Image *p_image) {
 						int block_index = (x - x_start) / 4;
 						int block_element = (x - x_start) % 4 + first_input_element;
 						if (is_hdr) {
-							memcpy(pixel_start, output_blocks_hdr[block_index].m_pixels[block_element], bytes_per_pixel);
+							std::memcpy(pixel_start, output_blocks_hdr[block_index].m_pixels[block_element], bytes_per_pixel);
 						} else {
-							memcpy(pixel_start, output_blocks_ldr[block_index].m_pixels[block_element], bytes_per_pixel);
+							std::memcpy(pixel_start, output_blocks_ldr[block_index].m_pixels[block_element], bytes_per_pixel);
 						}
 					}
 				}

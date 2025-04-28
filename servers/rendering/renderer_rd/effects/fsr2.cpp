@@ -223,7 +223,7 @@ static FfxErrorCode create_resource_rd(FfxFsr2Interface *p_backend_interface, co
 	if (p_create_resource_description->initDataSize) {
 		PackedByteArray byte_array;
 		byte_array.resize(p_create_resource_description->initDataSize);
-		memcpy(byte_array.ptrw(), p_create_resource_description->initData, p_create_resource_description->initDataSize);
+		std::memcpy(byte_array.ptrw(), p_create_resource_description->initData, p_create_resource_description->initDataSize);
 		initial_data.push_back(byte_array);
 	}
 
@@ -317,15 +317,15 @@ static FfxErrorCode create_pipeline_rd(FfxFsr2Interface *p_backend_interface, Ff
 
 	p_out_pipeline->srvCount = effect_pass.sampled_bindings.size();
 	ERR_FAIL_COND_V(p_out_pipeline->srvCount > FFX_MAX_NUM_SRVS, FFX_ERROR_OUT_OF_RANGE);
-	memcpy(p_out_pipeline->srvResourceBindings, effect_pass.sampled_bindings.ptr(), sizeof(FfxResourceBinding) * p_out_pipeline->srvCount);
+	std::memcpy(p_out_pipeline->srvResourceBindings, effect_pass.sampled_bindings.ptr(), sizeof(FfxResourceBinding) * p_out_pipeline->srvCount);
 
 	p_out_pipeline->uavCount = effect_pass.storage_bindings.size();
 	ERR_FAIL_COND_V(p_out_pipeline->uavCount > FFX_MAX_NUM_UAVS, FFX_ERROR_OUT_OF_RANGE);
-	memcpy(p_out_pipeline->uavResourceBindings, effect_pass.storage_bindings.ptr(), sizeof(FfxResourceBinding) * p_out_pipeline->uavCount);
+	std::memcpy(p_out_pipeline->uavResourceBindings, effect_pass.storage_bindings.ptr(), sizeof(FfxResourceBinding) * p_out_pipeline->uavCount);
 
 	p_out_pipeline->constCount = effect_pass.uniform_bindings.size();
 	ERR_FAIL_COND_V(p_out_pipeline->constCount > FFX_MAX_NUM_CONST_BUFFERS, FFX_ERROR_OUT_OF_RANGE);
-	memcpy(p_out_pipeline->cbResourceBindings, effect_pass.uniform_bindings.ptr(), sizeof(FfxResourceBinding) * p_out_pipeline->constCount);
+	std::memcpy(p_out_pipeline->cbResourceBindings, effect_pass.uniform_bindings.ptr(), sizeof(FfxResourceBinding) * p_out_pipeline->constCount);
 
 	bool low_resolution_mvs = (p_pipeline_description->contextFlags & FFX_FSR2_ENABLE_DISPLAY_RESOLUTION_MOTION_VECTORS) == 0;
 

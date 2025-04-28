@@ -35,7 +35,6 @@
 #include "core/templates/safe_refcount.h"
 #include "core/templates/span.h"
 
-#include <string.h>
 #include <initializer_list>
 #include <type_traits>
 
@@ -300,7 +299,7 @@ typename CowData<T>::USize CowData<T>::_copy_on_write() {
 
 		// initialize new elements
 		if constexpr (std::is_trivially_copyable_v<T>) {
-			memcpy((uint8_t *)_data_ptr, _ptr, current_size * sizeof(T));
+			std::memcpy((uint8_t *)_data_ptr, _ptr, current_size * sizeof(T));
 		} else {
 			for (USize i = 0; i < current_size; i++) {
 				memnew_placement(&_data_ptr[i], T(_ptr[i]));

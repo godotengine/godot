@@ -70,7 +70,6 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
@@ -170,7 +169,7 @@ String OS_LinuxBSD::get_unique_id() const {
 #if defined(__FreeBSD__)
 		const int mib[2] = { CTL_KERN, KERN_HOSTUUID };
 		char buf[4096];
-		memset(buf, 0, sizeof(buf));
+		std::memset(buf, 0, sizeof(buf));
 		size_t len = sizeof(buf) - 1;
 		if (sysctl(mib, 2, buf, &len, 0x0, 0) != -1) {
 			machine_id = String::utf8(buf).remove_char('-');
@@ -191,7 +190,7 @@ String OS_LinuxBSD::get_processor_name() const {
 #if defined(__FreeBSD__)
 	const int mib[2] = { CTL_HW, HW_MODEL };
 	char buf[4096];
-	memset(buf, 0, sizeof(buf));
+	std::memset(buf, 0, sizeof(buf));
 	size_t len = sizeof(buf) - 1;
 	if (sysctl(mib, 2, buf, &len, 0x0, 0) != -1) {
 		return String::utf8(buf);
@@ -653,7 +652,7 @@ uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
 		f->seek(section_header_pos);
 
 		uint32_t name_offset = f->get_32();
-		if (strcmp((char *)strings + name_offset, "pck") == 0) {
+		if (std::strcmp((char *)strings + name_offset, "pck") == 0) {
 			if (bits == 32) {
 				f->seek(section_header_pos + 0x10);
 				off = f->get_32();

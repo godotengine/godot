@@ -1150,7 +1150,7 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 
 	if (gen_cache_size > 0) {
 		r_dst_cache.resize(gen_cache_size);
-		memcpy(r_dst_cache.ptrw(), gen_cache, gen_cache_size);
+		std::memcpy(r_dst_cache.ptrw(), gen_cache, gen_cache_size);
 		memfree(gen_cache);
 	}
 

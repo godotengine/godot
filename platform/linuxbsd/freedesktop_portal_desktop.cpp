@@ -382,7 +382,7 @@ bool FreeDesktopPortalDesktop::color_picker_parse_response(DBusMessageIter *p_it
 
 				DBusMessageIter var_iter;
 				dbus_message_iter_recurse(&iter, &var_iter);
-				if (strcmp(key, "color") == 0) { // (ddd)
+				if (std::strcmp(key, "color") == 0) { // (ddd)
 					if (dbus_message_iter_get_arg_type(&var_iter) == DBUS_TYPE_STRUCT) {
 						DBusMessageIter struct_iter;
 						dbus_message_iter_recurse(&var_iter, &struct_iter);
@@ -437,7 +437,7 @@ bool FreeDesktopPortalDesktop::file_chooser_parse_response(DBusMessageIter *p_it
 
 				DBusMessageIter var_iter;
 				dbus_message_iter_recurse(&iter, &var_iter);
-				if (strcmp(key, "current_filter") == 0) { // (sa(us))
+				if (std::strcmp(key, "current_filter") == 0) { // (sa(us))
 					if (dbus_message_iter_get_arg_type(&var_iter) == DBUS_TYPE_STRUCT) {
 						DBusMessageIter struct_iter;
 						dbus_message_iter_recurse(&var_iter, &struct_iter);
@@ -452,7 +452,7 @@ bool FreeDesktopPortalDesktop::file_chooser_parse_response(DBusMessageIter *p_it
 							}
 						}
 					}
-				} else if (strcmp(key, "choices") == 0) { // a(ss) {
+				} else if (std::strcmp(key, "choices") == 0) { // a(ss) {
 					if (dbus_message_iter_get_arg_type(&var_iter) == DBUS_TYPE_ARRAY) {
 						DBusMessageIter struct_iter;
 						dbus_message_iter_recurse(&var_iter, &struct_iter);
@@ -483,7 +483,7 @@ bool FreeDesktopPortalDesktop::file_chooser_parse_response(DBusMessageIter *p_it
 							}
 						}
 					}
-				} else if (strcmp(key, "uris") == 0) { // as
+				} else if (std::strcmp(key, "uris") == 0) { // as
 					if (dbus_message_iter_get_arg_type(&var_iter) == DBUS_TYPE_ARRAY) {
 						DBusMessageIter uri_iter;
 						dbus_message_iter_recurse(&var_iter, &uri_iter);

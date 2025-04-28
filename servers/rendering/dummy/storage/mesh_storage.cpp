@@ -91,7 +91,7 @@ void MeshStorage::_multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_
 	ERR_FAIL_NULL(multimesh);
 	multimesh->buffer.resize(p_buffer.size());
 	float *cache_data = multimesh->buffer.ptrw();
-	memcpy(cache_data, p_buffer.ptr(), p_buffer.size() * sizeof(float));
+	std::memcpy(cache_data, p_buffer.ptr(), p_buffer.size() * sizeof(float));
 }
 
 Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {

@@ -61,7 +61,6 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -779,7 +778,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 							} else {
 								// New chunk, resize to be safe and append data.
 								incr_data.resize(MAX(data_size + len, prev_size));
-								memcpy(incr_data.ptr() + data_size, data, len);
+								std::memcpy(incr_data.ptr() + data_size, data, len);
 								data_size += len;
 							}
 						} else {
@@ -1024,7 +1023,7 @@ Ref<Image> DisplayServerX11::clipboard_get_image() const {
 							uint32_t prev_size = incr_data.size();
 							// New chunk, resize to be safe and append data.
 							incr_data.resize(MAX(data_size + len, prev_size));
-							memcpy(incr_data.ptr() + data_size, data, len);
+							std::memcpy(incr_data.ptr() + data_size, data, len);
 							data_size += len;
 						} else if (!(format == 0 && len == 0)) {
 							// For unclear reasons the first GetWindowProperty always returns a length and format of 0.
@@ -2648,7 +2647,7 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 		Atom *atoms = (Atom *)data;
 		Atom wm_act_max_horz;
 		Atom wm_act_max_vert;
-		bool checking_state = strcmp(p_atom_name, "_NET_WM_STATE") == 0;
+		bool checking_state = std::strcmp(p_atom_name, "_NET_WM_STATE") == 0;
 		if (checking_state) {
 			wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
 			wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
@@ -2791,7 +2790,7 @@ void DisplayServerX11::_validate_mode_on_map(WindowID p_window) {
 		Atom wm_above = XInternAtom(x11_display, "_NET_WM_STATE_ABOVE", False);
 
 		XClientMessageEvent xev;
-		memset(&xev, 0, sizeof(xev));
+		std::memset(&xev, 0, sizeof(xev));
 		xev.type = ClientMessage;
 		xev.window = wd.x11_window;
 		xev.message_type = wm_state;
@@ -2818,7 +2817,7 @@ void DisplayServerX11::_set_wm_maximized(WindowID p_window, bool p_enabled) {
 	Atom wm_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
 	Atom wm_max_vert = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
 
-	memset(&xev, 0, sizeof(xev));
+	std::memset(&xev, 0, sizeof(xev));
 	xev.type = ClientMessage;
 	xev.xclient.window = wd.x11_window;
 	xev.xclient.message_type = wm_state;
@@ -2846,7 +2845,7 @@ void DisplayServerX11::_set_wm_minimized(WindowID p_window, bool p_enabled) {
 	XEvent xev;
 	Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
 
-	memset(&xev, 0, sizeof(xev));
+	std::memset(&xev, 0, sizeof(xev));
 	xev.type = ClientMessage;
 	xev.xclient.window = wd.x11_window;
 	xev.xclient.message_type = wm_change;
@@ -2858,7 +2857,7 @@ void DisplayServerX11::_set_wm_minimized(WindowID p_window, bool p_enabled) {
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_hidden = XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False);
 
-	memset(&xev, 0, sizeof(xev));
+	std::memset(&xev, 0, sizeof(xev));
 	xev.type = ClientMessage;
 	xev.xclient.window = wd.x11_window;
 	xev.xclient.message_type = wm_state;
@@ -2896,7 +2895,7 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, boo
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
 
-	memset(&xev, 0, sizeof(xev));
+	std::memset(&xev, 0, sizeof(xev));
 	xev.type = ClientMessage;
 	xev.xclient.window = wd.x11_window;
 	xev.xclient.message_type = wm_state;
@@ -3110,7 +3109,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			Atom wm_above = XInternAtom(x11_display, "_NET_WM_STATE_ABOVE", False);
 
 			XClientMessageEvent xev;
-			memset(&xev, 0, sizeof(xev));
+			std::memset(&xev, 0, sizeof(xev));
 			xev.type = ClientMessage;
 			xev.window = wd.x11_window;
 			xev.message_type = wm_state;
@@ -3226,7 +3225,7 @@ void DisplayServerX11::window_request_attention(WindowID p_window) {
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_attention = XInternAtom(x11_display, "_NET_WM_STATE_DEMANDS_ATTENTION", False);
 
-	memset(&xev, 0, sizeof(xev));
+	std::memset(&xev, 0, sizeof(xev));
 	xev.type = ClientMessage;
 	xev.xclient.window = wd.x11_window;
 	xev.xclient.message_type = wm_state;
@@ -3247,7 +3246,7 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 	XEvent xev;
 	Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
 
-	memset(&xev, 0, sizeof(xev));
+	std::memset(&xev, 0, sizeof(xev));
 	xev.type = ClientMessage;
 	xev.xclient.window = wd.x11_window;
 	xev.xclient.message_type = net_active_window;
@@ -5438,7 +5437,7 @@ void DisplayServerX11::process_events() {
 
 					//Reply that all is well.
 					XClientMessageEvent m;
-					memset(&m, 0, sizeof(m));
+					std::memset(&m, 0, sizeof(m));
 					m.type = ClientMessage;
 					m.display = x11_display;
 					m.window = xdnd_source_window;
@@ -5476,7 +5475,7 @@ void DisplayServerX11::process_events() {
 					//xdnd position event, reply with an XDND status message
 					//just depending on type of data for now
 					XClientMessageEvent m;
-					memset(&m, 0, sizeof(m));
+					std::memset(&m, 0, sizeof(m));
 					m.type = ClientMessage;
 					m.display = event.xclient.display;
 					m.window = event.xclient.data.l[0];
@@ -5501,7 +5500,7 @@ void DisplayServerX11::process_events() {
 					} else {
 						//Reply that we're not interested.
 						XClientMessageEvent m;
-						memset(&m, 0, sizeof(m));
+						std::memset(&m, 0, sizeof(m));
 						m.type = ClientMessage;
 						m.display = event.xclient.display;
 						m.window = event.xclient.data.l[0];
@@ -5772,7 +5771,7 @@ void DisplayServerX11::window_start_drag(WindowID p_window) {
 	}
 
 	XClientMessageEvent m;
-	memset(&m, 0, sizeof(m));
+	std::memset(&m, 0, sizeof(m));
 
 	XUngrabPointer(x11_display, CurrentTime);
 
@@ -5812,7 +5811,7 @@ void DisplayServerX11::window_start_resize(WindowResizeEdge p_edge, WindowID p_w
 	}
 
 	XClientMessageEvent m;
-	memset(&m, 0, sizeof(m));
+	std::memset(&m, 0, sizeof(m));
 
 	XUngrabPointer(x11_display, CurrentTime);
 
@@ -5960,7 +5959,7 @@ void DisplayServerX11::_set_window_taskbar_pager_enabled(Window p_window, bool p
 	Atom skipPager = XInternAtom(x11_display, "_NET_WM_STATE_SKIP_PAGER", False);
 
 	XClientMessageEvent xev;
-	memset(&xev, 0, sizeof(xev));
+	std::memset(&xev, 0, sizeof(xev));
 	xev.type = ClientMessage;
 	xev.window = p_window;
 	xev.message_type = wmState;
@@ -6128,7 +6127,7 @@ Error DisplayServerX11::request_close_embedded_process(OS::ProcessID p_pid) {
 	if (XGetWindowAttributes(x11_display, ep->process_window, &attr)) {
 		// Send the message to gracefully close the window.
 		XEvent ev;
-		memset(&ev, 0, sizeof(ev));
+		std::memset(&ev, 0, sizeof(ev));
 		ev.xclient.type = ClientMessage;
 		ev.xclient.window = ep->process_window;
 		ev.xclient.message_type = XInternAtom(x11_display, "WM_PROTOCOLS", True);

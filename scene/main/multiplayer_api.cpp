@@ -223,7 +223,7 @@ Error MultiplayerAPI::encode_and_compress_variants(const Variant **p_variants, i
 			*r_raw = true;
 			const PackedByteArray pba = v;
 			if (p_buffer) {
-				memcpy(p_buffer, pba.ptr(), pba.size());
+				std::memcpy(p_buffer, pba.ptr(), pba.size());
 			}
 			r_len += pba.size();
 		} else {
@@ -253,7 +253,7 @@ Error MultiplayerAPI::decode_and_decompress_variants(Vector<Variant> &r_variants
 		r_len = p_len;
 		PackedByteArray pba;
 		pba.resize(p_len);
-		memcpy(pba.ptrw(), p_buffer, p_len);
+		std::memcpy(pba.ptrw(), p_buffer, p_len);
 		r_variants.write[0] = pba;
 		return OK;
 	}

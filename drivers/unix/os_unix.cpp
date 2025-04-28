@@ -75,7 +75,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -144,7 +143,7 @@ static void handle_interrupt(int sig) {
 void OS_Unix::initialize_debugging() {
 	if (EngineDebugger::is_active()) {
 		struct sigaction action;
-		memset(&action, 0, sizeof(action));
+		std::memset(&action, 0, sizeof(action));
 		action.sa_handler = handle_interrupt;
 		sigaction(SIGINT, &action, nullptr);
 	}
@@ -406,13 +405,13 @@ Dictionary OS_Unix::get_memory_info() const {
 	int pagesize = 0;
 	size_t len = sizeof(pagesize);
 	if (sysctlbyname("vm.pagesize", &pagesize, &len, nullptr, 0) < 0) {
-		ERR_PRINT(vformat("Could not get vm.pagesize, error code: %d - %s", errno, strerror(errno)));
+		ERR_PRINT(vformat("Could not get vm.pagesize, error code: %d - %s", errno, std::strerror(errno)));
 	}
 
 	int64_t phy_mem = 0;
 	len = sizeof(phy_mem);
 	if (sysctlbyname("hw.memsize", &phy_mem, &len, nullptr, 0) < 0) {
-		ERR_PRINT(vformat("Could not get hw.memsize, error code: %d - %s", errno, strerror(errno)));
+		ERR_PRINT(vformat("Could not get hw.memsize, error code: %d - %s", errno, std::strerror(errno)));
 	}
 
 	mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
@@ -423,7 +422,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	struct xsw_usage swap_used;
 	len = sizeof(swap_used);
 	if (sysctlbyname("vm.swapusage", &swap_used, &len, nullptr, 0) < 0) {
-		ERR_PRINT(vformat("Could not get vm.swapusage, error code: %d - %s", errno, strerror(errno)));
+		ERR_PRINT(vformat("Could not get vm.swapusage, error code: %d - %s", errno, std::strerror(errno)));
 	}
 
 	if (phy_mem != 0) {
@@ -439,18 +438,18 @@ Dictionary OS_Unix::get_memory_info() const {
 	int pagesize = 0;
 	size_t len = sizeof(pagesize);
 	if (sysctlbyname("vm.stats.vm.v_page_size", &pagesize, &len, nullptr, 0) < 0) {
-		ERR_PRINT(vformat("Could not get vm.stats.vm.v_page_size, error code: %d - %s", errno, strerror(errno)));
+		ERR_PRINT(vformat("Could not get vm.stats.vm.v_page_size, error code: %d - %s", errno, std::strerror(errno)));
 	}
 
 	uint64_t mtotal = 0;
 	len = sizeof(mtotal);
 	if (sysctlbyname("vm.stats.vm.v_page_count", &mtotal, &len, nullptr, 0) < 0) {
-		ERR_PRINT(vformat("Could not get vm.stats.vm.v_page_count, error code: %d - %s", errno, strerror(errno)));
+		ERR_PRINT(vformat("Could not get vm.stats.vm.v_page_count, error code: %d - %s", errno, std::strerror(errno)));
 	}
 	uint64_t mfree = 0;
 	len = sizeof(mfree);
 	if (sysctlbyname("vm.stats.vm.v_free_count", &mfree, &len, nullptr, 0) < 0) {
-		ERR_PRINT(vformat("Could not get vm.stats.vm.v_free_count, error code: %d - %s", errno, strerror(errno)));
+		ERR_PRINT(vformat("Could not get vm.stats.vm.v_free_count, error code: %d - %s", errno, std::strerror(errno)));
 	}
 
 	uint64_t stotal = 0;
@@ -485,7 +484,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	uvmexp uvmexp_info;
 	size_t len = sizeof(uvmexp_info);
 	if (sysctl(mib, 2, &uvmexp_info, &len, nullptr, 0) < 0) {
-		ERR_PRINT(vformat("Could not get CTL_VM, VM_UVMEXP, error code: %d - %s", errno, strerror(errno)));
+		ERR_PRINT(vformat("Could not get CTL_VM, VM_UVMEXP, error code: %d - %s", errno, std::strerror(errno)));
 	}
 
 	uint64_t stotal = 0;
@@ -519,7 +518,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	uvmexp_sysctl uvmexp_info;
 	size_t len = sizeof(uvmexp_info);
 	if (sysctl(mib, 2, &uvmexp_info, &len, nullptr, 0) < 0) {
-		ERR_PRINT(vformat("Could not get CTL_VM, VM_UVMEXP2, error code: %d - %s", errno, strerror(errno)));
+		ERR_PRINT(vformat("Could not get CTL_VM, VM_UVMEXP2, error code: %d - %s", errno, std::strerror(errno)));
 	}
 
 	if (uvmexp_info.npages * pagesize != 0) {
@@ -649,7 +648,7 @@ String OS_Unix::multibyte_to_string(const String &p_encoding, const PackedByteAr
 	while (gd_iconv(ctx, &in_ptr, &in_size, &out_ptr, &out_size) == (size_t)-1) {
 		if (errno != E2BIG) {
 			gd_iconv_close(ctx);
-			ERR_FAIL_V_MSG(String(), vformat("Conversion failed: %d - %s", errno, strerror(errno)));
+			ERR_FAIL_V_MSG(String(), vformat("Conversion failed: %d - %s", errno, std::strerror(errno)));
 		}
 		int64_t rate = (chars.size()) / (p_array.size() - in_size);
 		size_t oldpos = chars.size() - out_size;
@@ -686,7 +685,7 @@ PackedByteArray OS_Unix::string_to_multibyte(const String &p_encoding, const Str
 	while (gd_iconv(ctx, &in_ptr, &in_size, &out_ptr, &out_size) == (size_t)-1) {
 		if (errno != E2BIG) {
 			gd_iconv_close(ctx);
-			ERR_FAIL_V_MSG(PackedByteArray(), vformat("Conversion failed: %d - %s", errno, strerror(errno)));
+			ERR_FAIL_V_MSG(PackedByteArray(), vformat("Conversion failed: %d - %s", errno, std::strerror(errno)));
 		}
 		int64_t rate = (ret.size()) / (charstr.size() - in_size);
 		size_t oldpos = ret.size() - out_size;
@@ -1115,7 +1114,7 @@ String OS_Unix::get_executable_path() const {
 #ifdef __linux__
 	//fix for running from a symlink
 	char buf[256];
-	memset(buf, 0, 256);
+	std::memset(buf, 0, 256);
 	ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf));
 	String b;
 	if (len > 0) {
@@ -1229,7 +1228,7 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	logf_error("%s%sat: %s (%s:%i)%s\n", gray, indent, p_function, p_file, p_line, reset);
 
 	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
-		logf_error("%s%s%s\n", gray, backtrace->format(strlen(indent)).utf8().get_data(), reset);
+		logf_error("%s%s%s\n", gray, backtrace->format(std::strlen(indent)).utf8().get_data(), reset);
 	}
 }
 

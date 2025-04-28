@@ -1229,7 +1229,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			const int64_t old_size = gltf_buffer.size();
 			const size_t buffer_size = buffer.size() * sizeof(int8_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			std::memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE: {
@@ -1277,7 +1277,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			const int64_t old_size = gltf_buffer.size();
 			const size_t buffer_size = buffer.size() * sizeof(int16_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			std::memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT: {
@@ -1302,7 +1302,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			const int64_t old_size = gltf_buffer.size();
 			const size_t buffer_size = buffer.size() * sizeof(uint16_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			std::memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT: {
@@ -1323,7 +1323,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			const int64_t old_size = gltf_buffer.size();
 			const size_t buffer_size = buffer.size() * sizeof(int32_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			std::memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT: {
@@ -1344,7 +1344,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			const int64_t old_size = gltf_buffer.size();
 			const size_t buffer_size = buffer.size() * sizeof(uint32_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			std::memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT: {
@@ -1365,7 +1365,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			const int64_t old_size = gltf_buffer.size();
 			const size_t buffer_size = buffer.size() * sizeof(float);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			std::memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT: {
@@ -1386,7 +1386,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			const int64_t old_size = gltf_buffer.size();
 			const size_t buffer_size = buffer.size() * sizeof(double);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			std::memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT: {
@@ -1411,7 +1411,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			const int64_t old_size = gltf_buffer.size();
 			const size_t buffer_size = buffer.size() * sizeof(int64_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			std::memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG: {
@@ -1433,7 +1433,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			const int64_t old_size = gltf_buffer.size();
 			const size_t buffer_size = buffer.size() * sizeof(uint64_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			std::memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 	}
@@ -3955,7 +3955,7 @@ Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_i
 
 		bv->byte_length = buffer.size();
 		p_state->buffers.write[bi].resize(p_state->buffers[bi].size() + bv->byte_length);
-		memcpy(&p_state->buffers.write[bi].write[bv->byte_offset], buffer.ptr(), buffer.size());
+		std::memcpy(&p_state->buffers.write[bi].write[bv->byte_offset], buffer.ptr(), buffer.size());
 		ERR_FAIL_COND_V(bv->byte_offset + bv->byte_length > p_state->buffers[bi].size(), image_dict);
 
 		p_state->buffer_views.push_back(bv);

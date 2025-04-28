@@ -54,26 +54,26 @@ static void decompress_image(EtcpakFormat format, const void *src, void *dst, co
 		dst_pos += 3 * width * m_color_bytesize;                       \
 	}
 
-#define DECOMPRESS_LOOP_SAFE(m_func, m_block_size, m_color_bytesize, m_output)                                                                                \
-	for (uint64_t y = 0; y < height; y += 4) {                                                                                                                \
-		for (uint64_t x = 0; x < width; x += 4) {                                                                                                             \
-			const uint32_t yblock = MIN(height - y, 4ul);                                                                                                     \
-			const uint32_t xblock = MIN(width - x, 4ul);                                                                                                      \
-                                                                                                                                                              \
-			const bool incomplete = yblock < 4 && xblock < 4;                                                                                                 \
-			uint8_t *dec_out = incomplete ? m_output : &dec_blocks[y * 4 * width + x * m_color_bytesize];                                                     \
-                                                                                                                                                              \
-			m_func(&src_blocks[src_pos], dec_out, incomplete ? 4 : width);                                                                                    \
-			src_pos += m_block_size;                                                                                                                          \
-                                                                                                                                                              \
-			if (incomplete) {                                                                                                                                 \
-				for (uint32_t cy = 0; cy < yblock; cy++) {                                                                                                    \
-					for (uint32_t cx = 0; cx < xblock; cx++) {                                                                                                \
-						memcpy(&dec_blocks[(y + cy) * 4 * width + (x + cx) * m_color_bytesize], &m_output[cy * 4 + cx * m_color_bytesize], m_color_bytesize); \
-					}                                                                                                                                         \
-				}                                                                                                                                             \
-			}                                                                                                                                                 \
-		}                                                                                                                                                     \
+#define DECOMPRESS_LOOP_SAFE(m_func, m_block_size, m_color_bytesize, m_output)                                                                                     \
+	for (uint64_t y = 0; y < height; y += 4) {                                                                                                                     \
+		for (uint64_t x = 0; x < width; x += 4) {                                                                                                                  \
+			const uint32_t yblock = MIN(height - y, 4ul);                                                                                                          \
+			const uint32_t xblock = MIN(width - x, 4ul);                                                                                                           \
+                                                                                                                                                                   \
+			const bool incomplete = yblock < 4 && xblock < 4;                                                                                                      \
+			uint8_t *dec_out = incomplete ? m_output : &dec_blocks[y * 4 * width + x * m_color_bytesize];                                                          \
+                                                                                                                                                                   \
+			m_func(&src_blocks[src_pos], dec_out, incomplete ? 4 : width);                                                                                         \
+			src_pos += m_block_size;                                                                                                                               \
+                                                                                                                                                                   \
+			if (incomplete) {                                                                                                                                      \
+				for (uint32_t cy = 0; cy < yblock; cy++) {                                                                                                         \
+					for (uint32_t cx = 0; cx < xblock; cx++) {                                                                                                     \
+						std::memcpy(&dec_blocks[(y + cy) * 4 * width + (x + cx) * m_color_bytesize], &m_output[cy * 4 + cx * m_color_bytesize], m_color_bytesize); \
+					}                                                                                                                                              \
+				}                                                                                                                                                  \
+			}                                                                                                                                                      \
+		}                                                                                                                                                          \
 	}
 
 	if (width % 4 != 0 || height % 4 != 0) {

@@ -264,7 +264,7 @@ uint64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, uint64_t p_length) con
 	while (true) {
 		// Copy over as much of our current block as possible.
 		const uint32_t copied_bytes_count = MIN(p_length - dst_idx, read_block_size - read_pos);
-		memcpy(p_dst + dst_idx, read_ptr + read_pos, copied_bytes_count);
+		std::memcpy(p_dst + dst_idx, read_ptr + read_pos, copied_bytes_count);
 		dst_idx += copied_bytes_count;
 		read_pos += copied_bytes_count;
 
@@ -322,7 +322,7 @@ bool FileAccessCompressed::store_buffer(const uint8_t *p_src, uint64_t p_length)
 	}
 
 	if (p_length) {
-		memcpy(write_ptr + write_pos, p_src, p_length);
+		std::memcpy(write_ptr + write_pos, p_src, p_length);
 	}
 
 	write_pos += p_length;

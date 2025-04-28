@@ -34,7 +34,6 @@
 #include "main/main.h"
 
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 
 static OS_IOS *os = nullptr;
@@ -72,7 +71,7 @@ int add_cmdline(int p_argc, char **p_args) {
 }
 
 int ios_main(int argc, char **argv) {
-	size_t len = strlen(argv[0]);
+	size_t len = std::strlen(argv[0]);
 
 	while (len--) {
 		if (argv[0][len] == '/') {
@@ -82,7 +81,7 @@ int ios_main(int argc, char **argv) {
 
 	if (len >= 0) {
 		char path[512];
-		memcpy(path, argv[0], len > sizeof(path) ? sizeof(path) : len);
+		std::memcpy(path, argv[0], len > sizeof(path) ? sizeof(path) : len);
 		path[len] = 0;
 		chdir(path);
 	}

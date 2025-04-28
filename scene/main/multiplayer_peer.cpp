@@ -158,7 +158,7 @@ Error MultiplayerPeerExtension::put_packet(const uint8_t *p_buffer, int p_buffer
 	if (GDVIRTUAL_IS_OVERRIDDEN(_put_packet_script)) {
 		PackedByteArray a;
 		a.resize(p_buffer_size);
-		memcpy(a.ptrw(), p_buffer, p_buffer_size);
+		std::memcpy(a.ptrw(), p_buffer, p_buffer_size);
 
 		if (!GDVIRTUAL_CALL(_put_packet_script, a, err)) {
 			return FAILED;

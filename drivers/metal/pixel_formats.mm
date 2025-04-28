@@ -99,7 +99,7 @@
 
 template <typename T>
 void clear(T *p_val, size_t p_count = 1) {
-	memset(p_val, 0, sizeof(T) * p_count);
+	std::memset(p_val, 0, sizeof(T) * p_count);
 }
 
 #pragma mark -

@@ -165,7 +165,7 @@ void ResourceUID::set_id(ID p_id, const String &p_path) {
 	if (update_ptr == nullptr && cached_ptr == nullptr) {
 		return; // Both are empty strings.
 	}
-	if ((update_ptr == nullptr) != (cached_ptr == nullptr) || strcmp(update_ptr, cached_ptr) != 0) {
+	if ((update_ptr == nullptr) != (cached_ptr == nullptr) || std::strcmp(update_ptr, cached_ptr) != 0) {
 		unique_ids[p_id].cs = cs;
 		unique_ids[p_id].saved_to_cache = false; //changed
 		changed = true;

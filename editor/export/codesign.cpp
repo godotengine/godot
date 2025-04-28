@@ -933,7 +933,7 @@ CodeSignCodeDirectory::CodeSignCodeDirectory(uint8_t p_hash_size, uint8_t p_hash
 		blob.push_back(x);
 	}
 	blob.resize(cd_size);
-	memset(blob.ptrw() + 8, 0x00, cd_size - 8);
+	std::memset(blob.ptrw() + 8, 0x00, cd_size - 8);
 	CodeDirectoryHeader *cd = reinterpret_cast<CodeDirectoryHeader *>(blob.ptrw() + 8);
 
 	bool is_64_cl = (p_code_limit >= std::numeric_limits<uint32_t>::max());
@@ -963,13 +963,13 @@ CodeSignCodeDirectory::CodeSignCodeDirectory(uint8_t p_hash_size, uint8_t p_hash
 
 	// Copy ID.
 	cd->ident_offset = BSWAP32(cd_off);
-	memcpy(blob.ptrw() + cd_off, p_id.get_data(), p_id.size());
+	std::memcpy(blob.ptrw() + cd_off, p_id.get_data(), p_id.size());
 	cd_off += p_id.size();
 
 	// Copy Team ID.
 	if (p_team_id.length() > 0) {
 		cd->team_offset = BSWAP32(cd_off);
-		memcpy(blob.ptrw() + cd_off, p_team_id.get_data(), p_team_id.size());
+		std::memcpy(blob.ptrw() + cd_off, p_team_id.get_data(), p_team_id.size());
 		cd_off += p_team_id.size();
 	} else {
 		cd->team_offset = 0;

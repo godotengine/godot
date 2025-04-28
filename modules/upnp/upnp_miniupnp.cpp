@@ -86,7 +86,7 @@ int UPNPMiniUPNP::discover(int timeout, int ttl, const String &device_filter) {
 	struct UPNPDev *dev = devlist;
 
 	while (dev) {
-		if (device_filter.is_empty() || strstr(dev->st, device_filter.utf8().get_data())) {
+		if (device_filter.is_empty() || std::strstr(dev->st, device_filter.utf8().get_data())) {
 			add_device_to_list(dev, devlist);
 		}
 

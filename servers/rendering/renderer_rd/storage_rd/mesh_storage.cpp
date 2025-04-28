@@ -384,7 +384,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			// Unfortunately, we need to copy the buffer, which is fine as doing a resize triggers a CoW anyway.
 			Vector<uint8_t> new_vertex_data;
 			new_vertex_data.resize_zeroed(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
-			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
+			std::memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
 			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data, as_storage_flag);
 			s->vertex_buffer_size = new_vertex_data.size();
 		} else {
@@ -884,7 +884,7 @@ void MeshStorage::mesh_surface_remove(RID p_mesh, int p_surface) {
 	_mesh_surface_clear(mesh, p_surface);
 
 	if ((uint32_t)p_surface < mesh->surface_count - 1) {
-		memmove(mesh->surfaces + p_surface, mesh->surfaces + p_surface + 1, sizeof(Mesh::Surface *) * (mesh->surface_count - (p_surface + 1)));
+		std::memmove(mesh->surfaces + p_surface, mesh->surfaces + p_surface + 1, sizeof(Mesh::Surface *) * (mesh->surface_count - (p_surface + 1)));
 	}
 	mesh->surfaces = (Mesh::Surface **)memrealloc(mesh->surfaces, sizeof(Mesh::Surface *) * (mesh->surface_count - 1));
 	--mesh->surface_count;
@@ -1711,19 +1711,19 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 			Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
 			{
 				const uint8_t *r = buffer.ptr();
-				memcpy(w, r, buffer.size());
+				std::memcpy(w, r, buffer.size());
 			}
 		} else {
-			memset(w, 0, buffer_size * sizeof(float));
+			std::memset(w, 0, buffer_size * sizeof(float));
 		}
 	}
 	uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 	multimesh->data_cache_dirty_regions = memnew_arr(bool, data_cache_dirty_region_count);
-	memset(multimesh->data_cache_dirty_regions, 0, data_cache_dirty_region_count * sizeof(bool));
+	std::memset(multimesh->data_cache_dirty_regions, 0, data_cache_dirty_region_count * sizeof(bool));
 	multimesh->data_cache_dirty_region_count = 0;
 
 	multimesh->previous_data_cache_dirty_regions = memnew_arr(bool, data_cache_dirty_region_count);
-	memset(multimesh->previous_data_cache_dirty_regions, 0, data_cache_dirty_region_count * sizeof(bool));
+	std::memset(multimesh->previous_data_cache_dirty_regions, 0, data_cache_dirty_region_count * sizeof(bool));
 	multimesh->previous_data_cache_dirty_region_count = 0;
 }
 
@@ -1751,7 +1751,7 @@ void MeshStorage::_multimesh_update_motion_vectors_data_cache(MultiMesh *multime
 			for (uint32_t i = 0; i < visible_region_count; i++) {
 				if (multimesh->previous_data_cache_dirty_regions[i]) {
 					uint32_t offset = i * region_size;
-					memcpy(data + current_ofs + offset, data + previous_ofs + offset, MIN(region_size, size - offset));
+					std::memcpy(data + current_ofs + offset, data + previous_ofs + offset, MIN(region_size, size - offset));
 				}
 			}
 		}
@@ -2112,7 +2112,7 @@ void MeshStorage::_multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_
 
 	if (multimesh->data_cache.size()) {
 		float *cache_data = multimesh->data_cache.ptrw();
-		memcpy(cache_data + (multimesh->motion_vectors_current_offset * multimesh->stride_cache), p_buffer.ptr(), p_buffer.size() * sizeof(float));
+		std::memcpy(cache_data + (multimesh->motion_vectors_current_offset * multimesh->stride_cache), p_buffer.ptr(), p_buffer.size() * sizeof(float));
 		_multimesh_mark_all_dirty(multimesh, true, true); //update AABB
 	} else if (multimesh->mesh.is_valid()) {
 		//if we have a mesh set, we need to re-generate the AABB from the new data
@@ -2149,11 +2149,11 @@ Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 
 		if (multimesh->data_cache.size()) {
 			const uint8_t *r = (uint8_t *)multimesh->data_cache.ptr() + multimesh->motion_vectors_current_offset * multimesh->stride_cache * sizeof(float);
-			memcpy(w, r, ret.size() * sizeof(float));
+			std::memcpy(w, r, ret.size() * sizeof(float));
 		} else {
 			Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
 			const uint8_t *r = buffer.ptr() + multimesh->motion_vectors_current_offset * multimesh->stride_cache * sizeof(float);
-			memcpy(w, r, ret.size() * sizeof(float));
+			std::memcpy(w, r, ret.size() * sizeof(float));
 		}
 		return ret;
 	}
@@ -2260,8 +2260,8 @@ void MeshStorage::_update_dirty_multimeshes() {
 					}
 				}
 
-				memcpy(multimesh->previous_data_cache_dirty_regions, multimesh->data_cache_dirty_regions, data_cache_dirty_region_count * sizeof(bool));
-				memset(multimesh->data_cache_dirty_regions, 0, data_cache_dirty_region_count * sizeof(bool));
+				std::memcpy(multimesh->previous_data_cache_dirty_regions, multimesh->data_cache_dirty_regions, data_cache_dirty_region_count * sizeof(bool));
+				std::memset(multimesh->data_cache_dirty_regions, 0, data_cache_dirty_region_count * sizeof(bool));
 
 				multimesh->previous_data_cache_dirty_region_count = multimesh->data_cache_dirty_region_count;
 				multimesh->data_cache_dirty_region_count = 0;
@@ -2334,7 +2334,7 @@ void MeshStorage::skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_
 	if (skeleton->size) {
 		skeleton->data.resize(skeleton->size * (skeleton->use_2d ? 8 : 12));
 		skeleton->buffer = RD::get_singleton()->storage_buffer_create(skeleton->data.size() * sizeof(float));
-		memset(skeleton->data.ptr(), 0, skeleton->data.size() * sizeof(float));
+		std::memset(skeleton->data.ptr(), 0, skeleton->data.size() * sizeof(float));
 
 		_skeleton_make_dirty(skeleton);
 

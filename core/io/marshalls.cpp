@@ -1308,7 +1308,7 @@ static void _encode_string(const String &p_string, uint8_t *&buf, int &r_len) {
 	if (buf) {
 		encode_uint32(utf8.length(), buf);
 		buf += 4;
-		memcpy(buf, utf8.get_data(), utf8.length());
+		std::memcpy(buf, utf8.get_data(), utf8.length());
 		buf += utf8.length();
 	}
 
@@ -1518,7 +1518,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				if (buf) {
 					encode_uint32(utf8.length(), buf);
 					buf += 4;
-					memcpy(buf, utf8.get_data(), utf8.length());
+					std::memcpy(buf, utf8.get_data(), utf8.length());
 					buf += pad + utf8.length();
 				}
 
@@ -1602,7 +1602,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Transform2D val = p_variant;
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 2; j++) {
-						memcpy(&buf[(i * 2 + j) * sizeof(real_t)], &val.columns[i][j], sizeof(real_t));
+						std::memcpy(&buf[(i * 2 + j) * sizeof(real_t)], &val.columns[i][j], sizeof(real_t));
 					}
 				}
 			}
@@ -1677,7 +1677,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Basis val = p_variant;
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
-						memcpy(&buf[(i * 3 + j) * sizeof(real_t)], &val.rows[i][j], sizeof(real_t));
+						std::memcpy(&buf[(i * 3 + j) * sizeof(real_t)], &val.rows[i][j], sizeof(real_t));
 					}
 				}
 			}
@@ -1690,7 +1690,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Transform3D val = p_variant;
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
-						memcpy(&buf[(i * 3 + j) * sizeof(real_t)], &val.basis.rows[i][j], sizeof(real_t));
+						std::memcpy(&buf[(i * 3 + j) * sizeof(real_t)], &val.basis.rows[i][j], sizeof(real_t));
 					}
 				}
 
@@ -1707,7 +1707,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Projection val = p_variant;
 				for (int i = 0; i < 4; i++) {
 					for (int j = 0; j < 4; j++) {
-						memcpy(&buf[(i * 4 + j) * sizeof(real_t)], &val.columns[i][j], sizeof(real_t));
+						std::memcpy(&buf[(i * 4 + j) * sizeof(real_t)], &val.columns[i][j], sizeof(real_t));
 					}
 				}
 			}
@@ -1910,7 +1910,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				buf += 4;
 				const uint8_t *r = data.ptr();
 				if (r) {
-					memcpy(buf, &r[0], datalen * datasize);
+					std::memcpy(buf, &r[0], datalen * datasize);
 					buf += datalen * datasize;
 				}
 			}
@@ -2009,7 +2009,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				if (buf) {
 					encode_uint32(utf8.length() + 1, buf);
 					buf += 4;
-					memcpy(buf, utf8.get_data(), utf8.length() + 1);
+					std::memcpy(buf, utf8.get_data(), utf8.length() + 1);
 					buf += utf8.length() + 1;
 				}
 
@@ -2133,7 +2133,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 }
 
 Vector<float> vector3_to_float32_array(const Vector3 *vecs, size_t count) {
-	// We always allocate a new array, and we don't `memcpy()`.
+	// We always allocate a new array, and we don't `std::memcpy()`.
 	// We also don't consider returning a pointer to the passed vectors when `sizeof(real_t) == 4`.
 	// One reason is that we could decide to put a 4th component in `Vector3` for SIMD/mobile performance,
 	// which would cause trouble with these optimizations.

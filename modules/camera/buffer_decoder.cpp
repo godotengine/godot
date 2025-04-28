@@ -187,7 +187,7 @@ CopyBufferDecoder::CopyBufferDecoder(CameraFeed *p_camera_feed, bool p_rgba) :
 
 void CopyBufferDecoder::decode(StreamingBuffer p_buffer) {
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
-	memcpy(dst, p_buffer.start, p_buffer.length);
+	std::memcpy(dst, p_buffer.start, p_buffer.length);
 
 	if (image.is_valid()) {
 		image->set_data(width, height, false, rgba ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8, image_data);
@@ -205,7 +205,7 @@ JpegBufferDecoder::JpegBufferDecoder(CameraFeed *p_camera_feed) :
 void JpegBufferDecoder::decode(StreamingBuffer p_buffer) {
 	image_data.resize(p_buffer.length);
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
-	memcpy(dst, p_buffer.start, p_buffer.length);
+	std::memcpy(dst, p_buffer.start, p_buffer.length);
 	if (image->load_jpg_from_buffer(image_data) == OK) {
 		camera_feed->set_rgb_image(image);
 	}

@@ -166,7 +166,7 @@ void Luminance::luminance_reduction(RID p_source_texture, const Size2i p_source_
 
 	if (prefer_raster_effects) {
 		LuminanceReduceRasterPushConstant push_constant;
-		memset(&push_constant, 0, sizeof(LuminanceReduceRasterPushConstant));
+		std::memset(&push_constant, 0, sizeof(LuminanceReduceRasterPushConstant));
 
 		push_constant.max_luminance = p_max_luminance;
 		push_constant.min_luminance = p_min_luminance;
@@ -201,7 +201,7 @@ void Luminance::luminance_reduction(RID p_source_texture, const Size2i p_source_
 		}
 	} else {
 		LuminanceReducePushConstant push_constant;
-		memset(&push_constant, 0, sizeof(LuminanceReducePushConstant));
+		std::memset(&push_constant, 0, sizeof(LuminanceReducePushConstant));
 
 		push_constant.source_size[0] = p_source_size.x;
 		push_constant.source_size[1] = p_source_size.y;

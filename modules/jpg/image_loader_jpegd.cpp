@@ -33,8 +33,6 @@
 #include <jpgd.h>
 #include <jpge.h>
 
-#include <string.h>
-
 Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
 	jpgd::jpeg_decoder_mem_stream mem_stream(p_buffer, p_buffer_len);
 
@@ -75,7 +73,7 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 		jpgd::uint8 *pDst = pImage_data + y * dst_bpl;
 
 		if (comps == 1) {
-			memcpy(pDst, pScan_line, dst_bpl);
+			std::memcpy(pDst, pScan_line, dst_bpl);
 		} else {
 			// For images with more than 1 channel pScan_line will always point to a buffer
 			// containing 32-bit RGBA pixels. Alpha is always 255 and we ignore it.
@@ -146,7 +144,7 @@ public:
 	virtual bool put_buf(const void *Pbuf, int len) {
 		uint32_t base = buffer->size();
 		buffer->resize(base + len);
-		memcpy(buffer->ptrw() + base, Pbuf, len);
+		std::memcpy(buffer->ptrw() + base, Pbuf, len);
 		return true;
 	}
 };

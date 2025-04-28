@@ -45,7 +45,7 @@ void EditorHTTPServer::_clear_client() {
 	peer = Ref<StreamPeer>();
 	tls = Ref<StreamPeerTLS>();
 	tcp = Ref<StreamPeerTCP>();
-	memset(req_buf, 0, sizeof(req_buf));
+	std::memset(req_buf, 0, sizeof(req_buf));
 	time = 0;
 	req_pos = 0;
 }

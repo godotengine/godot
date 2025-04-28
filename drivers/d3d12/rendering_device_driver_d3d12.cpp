@@ -3424,7 +3424,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 
 			Vector<uint8_t> blob_copy;
 			blob_copy.resize(dxil_blob.size);
-			memcpy(blob_copy.ptrw(), dxil_blob.data, dxil_blob.size);
+			std::memcpy(blob_copy.ptrw(), dxil_blob.data, dxil_blob.size);
 			blob_finish(&dxil_blob);
 			dxil_blobs.insert(stage, blob_copy);
 		}
@@ -3705,19 +3705,19 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 		offset += sizeof(uint32_t);
 		encode_uint32(sizeof(ShaderBinary::Data), binptr + offset);
 		offset += sizeof(uint32_t);
-		memcpy(binptr + offset, &binary_data, sizeof(ShaderBinary::Data));
+		std::memcpy(binptr + offset, &binary_data, sizeof(ShaderBinary::Data));
 		offset += sizeof(ShaderBinary::Data);
 
-#define ADVANCE_OFFSET_WITH_ALIGNMENT(m_bytes)                         \
-	{                                                                  \
-		offset += m_bytes;                                             \
-		uint32_t padding = STEPIFY(m_bytes, 4) - m_bytes;              \
-		memset(binptr + offset, 0, padding); /* Avoid garbage data. */ \
-		offset += padding;                                             \
+#define ADVANCE_OFFSET_WITH_ALIGNMENT(m_bytes)                              \
+	{                                                                       \
+		offset += m_bytes;                                                  \
+		uint32_t padding = STEPIFY(m_bytes, 4) - m_bytes;                   \
+		std::memset(binptr + offset, 0, padding); /* Avoid garbage data. */ \
+		offset += padding;                                                  \
 	}
 
 		if (binary_data.shader_name_len > 0) {
-			memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
+			std::memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
 			ADVANCE_OFFSET_WITH_ALIGNMENT(binary_data.shader_name_len);
 		}
 
@@ -3726,13 +3726,13 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 			encode_uint32(count, binptr + offset);
 			offset += sizeof(uint32_t);
 			if (count > 0) {
-				memcpy(binptr + offset, sets_bindings[i].ptr(), sizeof(ShaderBinary::DataBinding) * count);
+				std::memcpy(binptr + offset, sets_bindings[i].ptr(), sizeof(ShaderBinary::DataBinding) * count);
 				offset += sizeof(ShaderBinary::DataBinding) * count;
 			}
 		}
 
 		if (specialization_constants.size()) {
-			memcpy(binptr + offset, specialization_constants.ptr(), sizeof(ShaderBinary::SpecializationConstant) * specialization_constants.size());
+			std::memcpy(binptr + offset, specialization_constants.ptr(), sizeof(ShaderBinary::SpecializationConstant) * specialization_constants.size());
 			offset += sizeof(ShaderBinary::SpecializationConstant) * specialization_constants.size();
 		}
 
@@ -3743,11 +3743,11 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 			offset += sizeof(uint32_t);
 			encode_uint32(zstd_size[i], binptr + offset);
 			offset += sizeof(uint32_t);
-			memcpy(binptr + offset, compressed_stages[i].ptr(), compressed_stages[i].size());
+			std::memcpy(binptr + offset, compressed_stages[i].ptr(), compressed_stages[i].size());
 			ADVANCE_OFFSET_WITH_ALIGNMENT(compressed_stages[i].size());
 		}
 
-		memcpy(binptr + offset, root_sig_blob->GetBufferPointer(), root_sig_blob->GetBufferSize());
+		std::memcpy(binptr + offset, root_sig_blob->GetBufferPointer(), root_sig_blob->GetBufferSize());
 		offset += root_sig_blob->GetBufferSize();
 
 		ERR_FAIL_COND_V(offset != (uint32_t)ret.size(), Vector<uint8_t>());
@@ -3826,7 +3826,7 @@ RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vect
 			binding.writable = set_ptr[j].writable;
 #endif
 			static_assert(sizeof(ShaderInfo::UniformBindingInfo::root_sig_locations) == sizeof(ShaderBinary::DataBinding::root_sig_locations));
-			memcpy((void *)&binding.root_sig_locations, (void *)&set_ptr[j].root_sig_locations, sizeof(ShaderInfo::UniformBindingInfo::root_sig_locations));
+			std::memcpy((void *)&binding.root_sig_locations, (void *)&set_ptr[j].root_sig_locations, sizeof(ShaderInfo::UniformBindingInfo::root_sig_locations));
 
 			if (binding.root_sig_locations.resource.root_param_idx != UINT32_MAX) {
 				shader_info_in.sets[i].num_root_params.resources++;
@@ -3858,7 +3858,7 @@ RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vect
 		ShaderInfo::SpecializationConstant ssc;
 		ssc.constant_id = src_sc.constant_id;
 		ssc.int_value = src_sc.int_value;
-		memcpy(ssc.stages_bit_offsets, src_sc.stages_bit_offsets, sizeof(ssc.stages_bit_offsets));
+		std::memcpy(ssc.stages_bit_offsets, src_sc.stages_bit_offsets, sizeof(ssc.stages_bit_offsets));
 		shader_info_in.specialization_constants[i] = ssc;
 
 		read_offset += sizeof(ShaderBinary::SpecializationConstant);
@@ -6143,7 +6143,7 @@ void RenderingDeviceDriverD3D12::timestamp_query_pool_get_results(QueryPoolID p_
 
 	void *results_buffer_data = nullptr;
 	results_buffer->Map(0, &VOID_RANGE, &results_buffer_data);
-	memcpy(r_results, results_buffer_data, sizeof(uint64_t) * p_query_count);
+	std::memcpy(r_results, results_buffer_data, sizeof(uint64_t) * p_query_count);
 	results_buffer->Unmap(0, &VOID_RANGE);
 }
 
@@ -6499,7 +6499,7 @@ Error RenderingDeviceDriverD3D12::_initialize_device() {
 			}
 			DXGI_ADAPTER_DESC1 desc;
 			desired_adapter->GetDesc1(&desc);
-			if (!memcmp(&desc.AdapterLuid, &adapter_luid, sizeof(LUID))) {
+			if (!std::memcmp(&desc.AdapterLuid, &adapter_luid, sizeof(LUID))) {
 				break;
 			}
 		}

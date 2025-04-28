@@ -44,7 +44,7 @@ void BitMap::create(const Size2i &p_size) {
 	width = p_size.width;
 	height = p_size.height;
 
-	memset(bitmask.ptrw(), 0, bitmask.size());
+	std::memset(bitmask.ptrw(), 0, bitmask.size());
 }
 
 void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshold) {

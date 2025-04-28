@@ -436,7 +436,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							float vector[2] = { (float)src[i].x, (float)src[i].y };
 
-							memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 2);
+							std::memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 2);
 
 							if (i == 0) {
 								aabb = Rect2(src[i], SMALL_VEC2); // Must have a bit of size.
@@ -469,7 +469,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 									(uint16_t)0
 								};
 
-								memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
+								std::memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
 							}
 							continue;
 						}
@@ -505,7 +505,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 										(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 									};
 
-									memcpy(&vw[p_offsets[RS::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
+									std::memcpy(&vw[p_offsets[RS::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
 								}
 
 								// Store vertex position + angle.
@@ -518,7 +518,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 										(uint16_t)CLAMP(angle * 65535, 0, 65535)
 									};
 
-									memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
+									std::memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
 								}
 							}
 						} else if (tangent_type == Variant::PACKED_FLOAT64_ARRAY) {
@@ -541,7 +541,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 										(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 									};
 
-									memcpy(&vw[p_offsets[RS::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
+									std::memcpy(&vw[p_offsets[RS::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
 								}
 
 								// Store vertex position + angle.
@@ -554,7 +554,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 										(uint16_t)CLAMP(angle * 65535, 0, 65535)
 									};
 
-									memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
+									std::memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
 								}
 							}
 						} else { // No tangent array.
@@ -576,7 +576,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 										(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 									};
 
-									memcpy(&vw[p_offsets[RS::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
+									std::memcpy(&vw[p_offsets[RS::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
 								}
 
 								// Store vertex position + angle.
@@ -589,7 +589,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 										(uint16_t)CLAMP(angle * 65535, 0, 65535)
 									};
 
-									memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
+									std::memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
 								}
 							}
 						}
@@ -597,7 +597,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							float vector[3] = { (float)src[i].x, (float)src[i].y, (float)src[i].z };
 
-							memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 3);
+							std::memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 3);
 						}
 					}
 				}
@@ -619,7 +619,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 							(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 						};
 
-						memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
+						std::memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 					}
 				}
 			} break;
@@ -649,7 +649,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								vector[0] = 65535;
 							}
 
-							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
+							std::memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
 					} else if (type == Variant::PACKED_FLOAT64_ARRAY) {
 						Vector<double> array = p_arrays[ai];
@@ -670,7 +670,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								vector[0] = 65535;
 							}
 
-							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
+							std::memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
 					} else { // No tangent array.
 						ERR_FAIL_COND_V(p_arrays[RS::ARRAY_NORMAL].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
@@ -695,7 +695,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								vector[0] = 65535;
 							}
 
-							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
+							std::memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
 					}
 				}
@@ -715,7 +715,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						uint8_t(CLAMP(src[i].b * 255.0, 0.0, 255.0)),
 						uint8_t(CLAMP(src[i].a * 255.0, 0.0, 255.0))
 					};
-					memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], color8, 4);
+					std::memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], color8, 4);
 				}
 			} break;
 			case RS::ARRAY_TEX_UV: {
@@ -735,12 +735,12 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						}
 
 						uint16_t uv[2] = { (uint16_t)CLAMP(vec.x * 65535, 0, 65535), (uint16_t)CLAMP(vec.y * 65535, 0, 65535) };
-						memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 4);
+						std::memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 4);
 					}
 				} else {
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						float uv[2] = { (float)src[i].x, (float)src[i].y };
-						memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 4);
+						std::memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 4);
 					}
 				}
 			} break;
@@ -762,12 +762,12 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 							vec = vec / (Vector2(r_uv_scale.z, r_uv_scale.w)) + Vector2(0.5, 0.5);
 						}
 						uint16_t uv[2] = { (uint16_t)CLAMP(vec.x * 65535, 0, 65535), (uint16_t)CLAMP(vec.y * 65535, 0, 65535) };
-						memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 4);
+						std::memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 4);
 					}
 				} else {
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						float uv[2] = { (float)src[i].x, (float)src[i].y };
-						memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 4);
+						std::memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 4);
 					}
 				}
 			} break;
@@ -790,7 +790,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						const uint8_t *src = array.ptr();
 
 						for (int i = 0; i < p_vertex_array_len; i++) {
-							memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * 4], 4);
+							std::memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * 4], 4);
 						}
 
 					} break;
@@ -805,7 +805,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						const uint8_t *src = array.ptr();
 
 						for (int i = 0; i < p_vertex_array_len; i++) {
-							memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * 8], 8);
+							std::memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * 8], 8);
 						}
 					} break;
 					case ARRAY_CUSTOM_R_FLOAT:
@@ -823,7 +823,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						const float *src = array.ptr();
 
 						for (int i = 0; i < p_vertex_array_len; i++) {
-							memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * s], sizeof(float) * s);
+							std::memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * s], sizeof(float) * s);
 						}
 					} break;
 					default: {
@@ -846,7 +846,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								data[j] = CLAMP(src[i * bone_count + j] * 65535, 0, 65535);
 							}
 
-							memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
+							std::memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
 						}
 					}
 				} else { // PACKED_FLOAT64_ARRAY
@@ -860,7 +860,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								data[j] = CLAMP(src[i * bone_count + j] * 65535, 0, 65535);
 							}
 
-							memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
+							std::memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
 						}
 					}
 				}
@@ -884,7 +884,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						max_bone = MAX(data[j], max_bone);
 					}
 
-					memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
+					std::memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
 				}
 
 			} break;
@@ -906,11 +906,11 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 					if (p_vertex_array_len <= (1 << 16) && p_vertex_array_len > 0) {
 						uint16_t v = src[i];
 
-						memcpy(&iw[i * 2], &v, 2);
+						std::memcpy(&iw[i * 2], &v, 2);
 					} else {
 						uint32_t v = src[i];
 
-						memcpy(&iw[i * 4], &v, 4);
+						std::memcpy(&iw[i * 4], &v, 4);
 					}
 				}
 			} break;
@@ -1598,7 +1598,7 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 
 						for (int j = 0; j < p_vertex_len; j++) {
 							const uint8_t *v = reinterpret_cast<const uint8_t *>(&ar[j * attrib_elem_size + offsets[i]]);
-							memcpy(&w[j * s], v, s);
+							std::memcpy(&w[j * s], v, s);
 						}
 
 						ret[i] = arr;
@@ -1617,7 +1617,7 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 
 						for (int j = 0; j < p_vertex_len; j++) {
 							const float *v = reinterpret_cast<const float *>(&ar[j * attrib_elem_size + offsets[i]]);
-							memcpy(&w[j * s], v, s * sizeof(float));
+							std::memcpy(&w[j * s], v, s * sizeof(float));
 						}
 						ret[i] = arr;
 

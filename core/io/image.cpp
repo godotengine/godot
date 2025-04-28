@@ -139,12 +139,12 @@ Ref<Image> (*Image::basis_universal_unpacker_ptr)(const uint8_t *, int) = nullpt
 
 void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel) {
 	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
-	memcpy(p_data + ofs, p_pixel, p_pixel_size);
+	std::memcpy(p_data + ofs, p_pixel, p_pixel_size);
 }
 
 void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel) {
 	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
-	memcpy(p_pixel, p_data + ofs, p_pixel_size);
+	std::memcpy(p_pixel, p_data + ofs, p_pixel_size);
 }
 
 int Image::get_format_pixel_size(Format p_format) {
@@ -544,11 +544,11 @@ static void _convert_fast(int p_width, int p_height, const T *p_src, T *p_dst) {
 	const int resolution = p_width * p_height;
 
 	for (int i = 0; i < resolution; i++) {
-		memcpy(p_dst + dst_count, p_src + src_count, MIN(read_channels, write_channels) * sizeof(T));
+		std::memcpy(p_dst + dst_count, p_src + src_count, MIN(read_channels, write_channels) * sizeof(T));
 
 		if constexpr (write_channels > read_channels) {
 			const T def_value[4] = { def_zero, def_zero, def_zero, def_one };
-			memcpy(p_dst + dst_count + read_channels, &def_value[read_channels], (write_channels - read_channels) * sizeof(T));
+			std::memcpy(p_dst + dst_count + read_channels, &def_value[read_channels], (write_channels - read_channels) * sizeof(T));
 		}
 
 		dst_count += write_channels;
@@ -599,7 +599,7 @@ void Image::convert(Format p_new_format) {
 			int64_t mip_size = 0;
 			new_img.get_mipmap_offset_and_size(mip, mip_offset, mip_size);
 
-			memcpy(new_img.data.ptrw() + mip_offset, new_mip->data.ptr(), mip_size);
+			std::memcpy(new_img.data.ptrw() + mip_offset, new_mip->data.ptr(), mip_size);
 		}
 
 		_copy_internals_from(new_img);
@@ -1565,13 +1565,13 @@ void Image::rotate_90(ClockDirection p_direction) {
 			for (int y = 0; y < h / 2; y++) {
 				for (int x = 0; x < (w + 1) / 2; x++) {
 					int current = y * w + x;
-					memcpy(single_pixel_buffer, data_ptr + current * pixel_size, pixel_size);
+					std::memcpy(single_pixel_buffer, data_ptr + current * pixel_size, pixel_size);
 					for (int i = 0; i < 3; i++) {
 						int prev = PREV_INDEX_IN_CYCLE(current);
-						memcpy(data_ptr + current * pixel_size, data_ptr + prev * pixel_size, pixel_size);
+						std::memcpy(data_ptr + current * pixel_size, data_ptr + prev * pixel_size, pixel_size);
 						current = prev;
 					}
-					memcpy(data_ptr + current * pixel_size, single_pixel_buffer, pixel_size);
+					std::memcpy(data_ptr + current * pixel_size, single_pixel_buffer, pixel_size);
 				}
 			}
 		} else { // Rectangular case (w != h), kinda unpredictable cycles.
@@ -1597,13 +1597,13 @@ void Image::rotate_90(ClockDirection p_direction) {
 				}
 
 				// Save the in-cycle pixel with the smallest index (`i`).
-				memcpy(single_pixel_buffer, data_ptr + i * pixel_size, pixel_size);
+				std::memcpy(single_pixel_buffer, data_ptr + i * pixel_size, pixel_size);
 
 				// Overwrite pixels one by one by the preceding pixel in the cycle.
 				int current = i;
 				prev = PREV_INDEX_IN_CYCLE(current);
 				while (prev != i) {
-					memcpy(data_ptr + current * pixel_size, data_ptr + prev * pixel_size, pixel_size);
+					std::memcpy(data_ptr + current * pixel_size, data_ptr + prev * pixel_size, pixel_size);
 					permuted_pixels_count++;
 
 					current = prev;
@@ -1611,7 +1611,7 @@ void Image::rotate_90(ClockDirection p_direction) {
 				};
 
 				// Overwrite the remaining pixel in the cycle by the saved pixel with the smallest index.
-				memcpy(data_ptr + current * pixel_size, single_pixel_buffer, pixel_size);
+				std::memcpy(data_ptr + current * pixel_size, single_pixel_buffer, pixel_size);
 				permuted_pixels_count++;
 
 				if (permuted_pixels_count == size) {
@@ -1651,9 +1651,9 @@ void Image::rotate_180() {
 		uint8_t *from_end_ptr = data_ptr + (width * height - 1) * pixel_size;
 
 		while (from_begin_ptr < from_end_ptr) {
-			memcpy(single_pixel_buffer, from_begin_ptr, pixel_size);
-			memcpy(from_begin_ptr, from_end_ptr, pixel_size);
-			memcpy(from_end_ptr, single_pixel_buffer, pixel_size);
+			std::memcpy(single_pixel_buffer, from_begin_ptr, pixel_size);
+			std::memcpy(from_begin_ptr, from_end_ptr, pixel_size);
+			std::memcpy(from_end_ptr, single_pixel_buffer, pixel_size);
 
 			from_begin_ptr += pixel_size;
 			from_end_ptr -= pixel_size;
@@ -1918,7 +1918,7 @@ void Image::shrink_x2() {
 		new_data.resize(new_size);
 		ERR_FAIL_COND(new_data.is_empty());
 
-		memcpy(new_data.ptrw(), data.ptr() + ofs, new_size);
+		std::memcpy(new_data.ptrw(), data.ptr() + ofs, new_size);
 	} else {
 		// Generate a mipmap and replace the original.
 		ERR_FAIL_COND(is_compressed());
@@ -2217,7 +2217,7 @@ void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Forma
 
 	{
 		uint8_t *w = data.ptrw();
-		memset(w, 0, size);
+		std::memset(w, 0, size);
 	}
 
 	width = p_width;
@@ -3085,11 +3085,11 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 void Image::_repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_size, int p_count) {
 	int offset = 1;
 	for (int stride = 1; offset + stride <= p_count; stride *= 2) {
-		memcpy(p_pixel + offset * p_pixel_size, p_pixel, stride * p_pixel_size);
+		std::memcpy(p_pixel + offset * p_pixel_size, p_pixel, stride * p_pixel_size);
 		offset += stride;
 	}
 	if (offset < p_count) {
-		memcpy(p_pixel + offset * p_pixel_size, p_pixel, (p_count - offset) * p_pixel_size);
+		std::memcpy(p_pixel + offset * p_pixel_size, p_pixel, (p_count - offset) * p_pixel_size);
 	}
 }
 
@@ -3134,7 +3134,7 @@ void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
 	} else {
 		_repeat_pixel_over_subsequent_memory(rect_first_pixel_ptr, pixel_size, r.size.x);
 		for (int y = 1; y < r.size.y; y++) {
-			memcpy(rect_first_pixel_ptr + y * width * pixel_size, rect_first_pixel_ptr, r.size.x * pixel_size);
+			std::memcpy(rect_first_pixel_ptr + y * width * pixel_size, rect_first_pixel_ptr, r.size.x * pixel_size);
 		}
 	}
 }
@@ -3764,7 +3764,7 @@ Ref<Image> Image::get_image_from_mipmap(int p_mipmap) const {
 	{
 		uint8_t *wr = new_data.ptrw();
 		const uint8_t *rd = data.ptr();
-		memcpy(wr, rd + ofs, size);
+		std::memcpy(wr, rd + ofs, size);
 	}
 
 	Ref<Image> image;
@@ -4296,7 +4296,7 @@ Ref<Resource> Image::duplicate(bool p_subresources) const {
 }
 
 void Image::set_as_black() {
-	memset(data.ptrw(), 0, data.size());
+	std::memset(data.ptrw(), 0, data.size());
 }
 
 void Image::copy_internals_from(const Ref<Image> &p_image) {
@@ -4359,7 +4359,7 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 
 	// Histogram approach originally due to Charles Bloom.
 	double hist[256];
-	memset(hist, 0, sizeof(hist));
+	std::memset(hist, 0, sizeof(hist));
 
 	for (uint32_t y = 0; y < h; y++) {
 		for (uint32_t x = 0; x < w; x++) {

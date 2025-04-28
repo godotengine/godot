@@ -308,7 +308,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	rcCalcBounds(verts, nverts, bmin, bmax);
 
 	rcConfig cfg;
-	memset(&cfg, 0, sizeof(cfg));
+	std::memset(&cfg, 0, sizeof(cfg));
 
 	cfg.cs = p_navigation_mesh->get_cell_size();
 	cfg.ch = p_navigation_mesh->get_cell_height();
@@ -400,7 +400,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 		ERR_FAIL_COND(tri_areas.is_empty());
 
-		memset(tri_areas.ptrw(), 0, ntris * sizeof(unsigned char));
+		std::memset(tri_areas.ptrw(), 0, ntris * sizeof(unsigned char));
 		rcMarkWalkableTriangles(&ctx, cfg.walkableSlopeAngle, verts, nverts, tris, ntris, tri_areas.ptrw());
 
 		ERR_FAIL_COND(!rcRasterizeTriangles(&ctx, verts, nverts, tris, tri_areas.ptr(), ntris, *hf, cfg.walkableClimb));

@@ -233,14 +233,14 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		}
 
 		float v_uv[2] = { (float)uvs[i].x, (float)uvs[i].y };
-		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_TEX_UV]], v_uv, 8);
+		std::memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_TEX_UV]], v_uv, 8);
 
 		float v_vertex[3] = { (float)vtx.x, (float)vtx.y, (float)vtx.z };
 
-		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
-		memcpy(&vertex_write_buffer[i * normal_tangent_stride + mesh_surface_offsets[RS::ARRAY_NORMAL]], &v_normal, 4);
-		memcpy(&vertex_write_buffer[i * normal_tangent_stride + mesh_surface_offsets[RS::ARRAY_TANGENT]], &v_tangent, 4);
-		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_COLOR]], v_color, 4);
+		std::memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
+		std::memcpy(&vertex_write_buffer[i * normal_tangent_stride + mesh_surface_offsets[RS::ARRAY_NORMAL]], &v_normal, 4);
+		std::memcpy(&vertex_write_buffer[i * normal_tangent_stride + mesh_surface_offsets[RS::ARRAY_TANGENT]], &v_tangent, 4);
+		std::memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_COLOR]], v_color, 4);
 	}
 
 	RID mesh_new = get_mesh();

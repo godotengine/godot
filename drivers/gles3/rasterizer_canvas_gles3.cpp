@@ -297,7 +297,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 #else
 		// On Desktop and mobile we map the memory without synchronizing for maximum speed.
 		void *ubo = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(LightUniform) * light_count, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-		memcpy(ubo, state.light_uniforms, sizeof(LightUniform) * light_count);
+		std::memcpy(ubo, state.light_uniforms, sizeof(LightUniform) * light_count);
 		glUnmapBuffer(GL_UNIFORM_BUFFER);
 #endif
 
@@ -672,7 +672,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 #else
 	// On Desktop and mobile we map the memory without synchronizing for maximum speed.
 	void *buffer = glMapBufferRange(GL_ARRAY_BUFFER, state.last_item_index * sizeof(InstanceData), index * sizeof(InstanceData), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-	memcpy(buffer, state.instance_data_array, index * sizeof(InstanceData));
+	std::memcpy(buffer, state.instance_data_array, index * sizeof(InstanceData));
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 #endif
 
@@ -1559,7 +1559,7 @@ void RasterizerCanvasGLES3::_add_to_batch(uint32_t &r_index, bool &r_batch_broke
 #else
 		// On Desktop and mobile we map the memory without synchronizing for maximum speed.
 		void *buffer = glMapBufferRange(GL_ARRAY_BUFFER, state.last_item_index * sizeof(InstanceData), r_index * sizeof(InstanceData), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-		memcpy(buffer, state.instance_data_array, r_index * sizeof(InstanceData));
+		std::memcpy(buffer, state.instance_data_array, r_index * sizeof(InstanceData));
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 #endif
 		_allocate_instance_buffer();
@@ -2555,7 +2555,7 @@ RendererCanvasRender::PolygonID RasterizerCanvasGLES3::request_polygon(const Vec
 		index_buffer.resize(p_indices.size() * sizeof(int32_t));
 		{
 			uint8_t *w = index_buffer.ptrw();
-			memcpy(w, p_indices.ptr(), sizeof(int32_t) * p_indices.size());
+			std::memcpy(w, p_indices.ptr(), sizeof(int32_t) * p_indices.size());
 		}
 		glGenBuffers(1, &pb.index_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pb.index_buffer);

@@ -34,8 +34,6 @@ IPAddress::operator Variant() const {
 	return operator String();
 }*/
 
-#include <string.h>
-
 IPAddress::operator String() const {
 	if (wildcard) {
 		return "*";
@@ -161,7 +159,7 @@ void IPAddress::_parse_ipv4(const String &p_string, int p_start, uint8_t *p_ret)
 }
 
 void IPAddress::clear() {
-	memset(&field8[0], 0, sizeof(field8));
+	std::memset(&field8[0], 0, sizeof(field8));
 	valid = false;
 	wildcard = false;
 }

@@ -86,7 +86,7 @@ public:
 		ERR_FAIL_COND_V(p_bytes < (int)p.size, ERR_OUT_OF_MEMORY);
 
 		r_read = p.size;
-		memcpy(r_info, &p.info, sizeof(T));
+		std::memcpy(r_info, &p.info, sizeof(T));
 		_payload.read(r_payload, p.size);
 		return OK;
 	}

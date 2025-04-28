@@ -1456,7 +1456,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 			_append_to_pipe(bytes.ptr(), bytes_to_convert, r_pipe, p_pipe_mutex);
 
 			bytes_in_buffer = read - (newline_index + 1);
-			memmove(bytes.ptr(), bytes.ptr() + bytes_to_convert, bytes_in_buffer);
+			std::memmove(bytes.ptr(), bytes.ptr() + bytes_to_convert, bytes_in_buffer);
 		}
 
 		if (bytes_in_buffer > 0) {
@@ -2323,7 +2323,7 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 		f->get_buffer(section_name, 8);
 		section_name[8] = '\0';
 
-		if (strcmp((char *)section_name, "pck") == 0) {
+		if (std::strcmp((char *)section_name, "pck") == 0) {
 			f->seek(section_header_pos + 20);
 			off = f->get_32();
 			break;
@@ -2603,7 +2603,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
 
 	WNDCLASSEXW wc_probe;
-	memset(&wc_probe, 0, sizeof(WNDCLASSEXW));
+	std::memset(&wc_probe, 0, sizeof(WNDCLASSEXW));
 	wc_probe.cbSize = sizeof(WNDCLASSEXW);
 	wc_probe.style = CS_OWNDC | CS_DBLCLKS;
 	wc_probe.lpfnWndProc = (WNDPROC)::DefWindowProcW;

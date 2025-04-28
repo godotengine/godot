@@ -686,7 +686,7 @@ struct _VariantCall {
 			const uint8_t *r = p_instance->ptr();
 			CharString cs;
 			cs.resize(p_instance->size() + 1);
-			memcpy(cs.ptrw(), r, p_instance->size());
+			std::memcpy(cs.ptrw(), r, p_instance->size());
 			cs[(int)p_instance->size()] = 0;
 
 			s = cs.get_data();
@@ -966,7 +966,7 @@ struct _VariantCall {
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int32_t));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(int32_t));
+		std::memcpy(dest.ptrw(), r, dest.size() * sizeof(int32_t));
 		return dest;
 	}
 
@@ -980,7 +980,7 @@ struct _VariantCall {
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int64_t));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(int64_t));
+		std::memcpy(dest.ptrw(), r, dest.size() * sizeof(int64_t));
 		return dest;
 	}
 
@@ -994,7 +994,7 @@ struct _VariantCall {
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(float));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(float));
+		std::memcpy(dest.ptrw(), r, dest.size() * sizeof(float));
 		return dest;
 	}
 
@@ -1008,7 +1008,7 @@ struct _VariantCall {
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(double));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(double));
+		std::memcpy(dest.ptrw(), r, dest.size() * sizeof(double));
 		return dest;
 	}
 

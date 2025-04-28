@@ -35,8 +35,6 @@
 #include <webp/decode.h>
 #include <webp/encode.h>
 
-#include <string.h>
-
 namespace WebPCommon {
 Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {
 	ERR_FAIL_COND_V(p_image.is_null() || p_image->is_empty(), Vector<uint8_t>());
@@ -116,7 +114,7 @@ Vector<uint8_t> _webp_packer(const Ref<Image> &p_image, float p_quality, bool p_
 	Vector<uint8_t> dst;
 	dst.resize(wrt.size);
 	uint8_t *w = dst.ptrw();
-	memcpy(w, wrt.mem, wrt.size);
+	std::memcpy(w, wrt.mem, wrt.size);
 	WebPMemoryWriterClear(&wrt);
 	return dst;
 }

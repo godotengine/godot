@@ -75,8 +75,8 @@ void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas
 	// transform is normally concatenated with the item global transform.
 	_current_camera_transform = p_transform;
 
-	memset(z_list, 0, z_range * sizeof(RendererCanvasRender::Item *));
-	memset(z_last_list, 0, z_range * sizeof(RendererCanvasRender::Item *));
+	std::memset(z_list, 0, z_range * sizeof(RendererCanvasRender::Item *));
+	std::memset(z_last_list, 0, z_range * sizeof(RendererCanvasRender::Item *));
 
 	for (int i = 0; i < p_child_item_count; i++) {
 		_cull_canvas_item(p_child_items[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr, false, p_canvas_cull_mask, Point2(), 1, nullptr);

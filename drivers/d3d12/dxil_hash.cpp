@@ -33,7 +33,7 @@
 
 #include "dxil_hash.h"
 
-#include <memory.h>
+#include "core/typedefs.h"
 
 #define S11 7
 #define S12 12
@@ -102,18 +102,18 @@ void compute_dxil_hash(const BYTE *pData, UINT byteCount, BYTE *pOutHash) {
 			if (!bTwoRowsPadding && i == N - 1) {
 				UINT remainder = byteCount - offset;
 				x[0] = byteCount << 3;
-				memcpy((BYTE *)x + 4, pCurrData, remainder);
-				memcpy((BYTE *)x + 4 + remainder, padding, padAmount);
+				std::memcpy((BYTE *)x + 4, pCurrData, remainder);
+				std::memcpy((BYTE *)x + 4 + remainder, padding, padAmount);
 				x[15] = 1 | (byteCount << 1);
 			} else if (bTwoRowsPadding) {
 				if (i == N - 2) {
 					UINT remainder = byteCount - offset;
-					memcpy(x, pCurrData, remainder);
-					memcpy((BYTE *)x + remainder, padding, padAmount - 56);
+					std::memcpy(x, pCurrData, remainder);
+					std::memcpy((BYTE *)x + remainder, padding, padAmount - 56);
 					NextEndState = N - 1;
 				} else if (i == N - 1) {
 					x[0] = byteCount << 3;
-					memcpy((BYTE *)x + 4, padding + padAmount - 56, 56);
+					std::memcpy((BYTE *)x + 4, padding + padAmount - 56, 56);
 					x[15] = 1 | (byteCount << 1);
 				}
 			}
@@ -205,5 +205,5 @@ void compute_dxil_hash(const BYTE *pData, UINT byteCount, BYTE *pOutHash) {
 		state[3] += d;
 	}
 
-	memcpy(pOutHash, state, 16);
+	std::memcpy(pOutHash, state, 16);
 }

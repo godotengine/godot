@@ -46,6 +46,8 @@ class CharStringT;
 /*  Utility Functions                                                    */
 /*************************************************************************/
 
+namespace std {
+
 // Not defined by std.
 // strlen equivalent function for char16_t * arguments.
 constexpr size_t strlen(const char16_t *p_str) {
@@ -66,20 +68,22 @@ constexpr size_t strlen(const char32_t *p_str) {
 }
 
 // strlen equivalent function for wchar_t * arguments; depends on the platform.
-constexpr size_t strlen(const wchar_t *str) {
+constexpr size_t strlen(const wchar_t *p_str) {
 	// Use static_cast twice because reinterpret_cast is not allowed in constexpr
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit
-	return strlen(static_cast<const char16_t *>(static_cast<const void *>(str)));
+	return strlen(static_cast<const char16_t *>(static_cast<const void *>(p_str)));
 #else
 	// wchar_t is 32-bit
-	return strlen(static_cast<const char32_t *>(static_cast<const void *>(str)));
+	return strlen(static_cast<const char32_t *>(static_cast<const void *>(p_str)));
 #endif
 }
 
+} //namespace std
+
 constexpr size_t _strlen_clipped(const char *p_str, int p_clip_to_len) {
 	if (p_clip_to_len < 0) {
-		return strlen(p_str);
+		return std::strlen(p_str);
 	}
 
 	int len = 0;
@@ -91,7 +95,7 @@ constexpr size_t _strlen_clipped(const char *p_str, int p_clip_to_len) {
 
 constexpr size_t _strlen_clipped(const char32_t *p_str, int p_clip_to_len) {
 	if (p_clip_to_len < 0) {
-		return strlen(p_str);
+		return std::strlen(p_str);
 	}
 
 	int len = 0;
@@ -200,7 +204,7 @@ public:
 		if (length() != p_other.length()) {
 			return false;
 		}
-		return memcmp(ptr(), p_other.ptr(), length() * sizeof(T)) == 0;
+		return std::memcmp(ptr(), p_other.ptr(), length() * sizeof(T)) == 0;
 	}
 	_FORCE_INLINE_ bool operator!=(const CharStringT<T> &p_other) const { return !(*this == p_other); }
 	_FORCE_INLINE_ bool operator<(const CharStringT<T> &p_other) const {
@@ -235,7 +239,7 @@ protected:
 			return;
 		}
 
-		size_t len = strlen(p_cstr);
+		size_t len = std::strlen(p_cstr);
 		if (len == 0) {
 			resize(0);
 			return;
@@ -245,7 +249,7 @@ protected:
 
 		ERR_FAIL_COND_MSG(err != OK, "Failed to copy C-string.");
 
-		memcpy(ptrw(), p_cstr, len * sizeof(T));
+		std::memcpy(ptrw(), p_cstr, len * sizeof(T));
 	}
 };
 
@@ -269,10 +273,10 @@ class String {
 
 	// NULL-terminated c string copy - automatically parse the string to find the length.
 	void append_latin1(const char *p_cstr) {
-		append_latin1(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
+		append_latin1(Span(p_cstr, p_cstr ? std::strlen(p_cstr) : 0));
 	}
 	void append_utf32(const char32_t *p_cstr) {
-		append_utf32(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
+		append_utf32(Span(p_cstr, p_cstr ? std::strlen(p_cstr) : 0));
 	}
 
 	// wchar_t copy_from depends on the platform.

@@ -33,7 +33,6 @@
 #include "core/error/error_macros.h"
 #include "core/templates/safe_refcount.h"
 
-#include <cstring>
 #include <new> // IWYU pragma: keep // `new` operators.
 #include <type_traits>
 
@@ -202,7 +201,7 @@ _FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
 		(void)p_num;
 	} else if constexpr (is_zero_constructible_v<T>) {
 		// Can optimize with memset.
-		memset(static_cast<void *>(p_start), 0, p_num * sizeof(T));
+		std::memset(static_cast<void *>(p_start), 0, p_num * sizeof(T));
 	} else {
 		// Need to use a for loop.
 		for (size_t i = 0; i < p_num; i++) {

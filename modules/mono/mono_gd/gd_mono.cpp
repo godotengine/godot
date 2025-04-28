@@ -485,7 +485,7 @@ MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p
 	const char *culture = mono_assembly_name_get_culture(p_assembly_name);
 
 	String assembly_name;
-	if (culture && strcmp(culture, "")) {
+	if (culture && std::strcmp(culture, "")) {
 		assembly_name += culture;
 		assembly_name += "/";
 	}

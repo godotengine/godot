@@ -107,7 +107,7 @@ public:
 	}
 
 	CallableCustomMethodPointer(T *p_instance, R (T::*p_method)(P...)) {
-		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
+		std::memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.instance = p_instance;
 		data.object_id = p_instance->get_instance_id();
 		data.method = p_method;
@@ -176,7 +176,7 @@ public:
 	}
 
 	CallableCustomMethodPointerC(T *p_instance, R (T::*p_method)(P...) const) {
-		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
+		std::memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.instance = p_instance;
 		data.object_id = p_instance->get_instance_id();
 		data.method = p_method;
@@ -249,7 +249,7 @@ public:
 	}
 
 	CallableCustomStaticMethodPointer(R (*p_method)(P...)) {
-		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
+		std::memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.method = p_method;
 		_setup((uint32_t *)&data, sizeof(Data));
 	}

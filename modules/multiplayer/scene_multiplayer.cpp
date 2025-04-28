@@ -100,7 +100,7 @@ Error SceneMultiplayer::poll() {
 			PackedByteArray pba;
 			pba.resize(len - 2);
 			if (pba.size()) {
-				memcpy(pba.ptrw(), &packet[2], len - 2);
+				std::memcpy(pba.ptrw(), &packet[2], len - 2);
 				// User callback
 				const Variant sv = sender;
 				const Variant pbav = pba;
@@ -448,7 +448,7 @@ Error SceneMultiplayer::send_bytes(Vector<uint8_t> p_data, int p_to, Multiplayer
 
 	const uint8_t *r = p_data.ptr();
 	packet_cache.write[0] = NETWORK_COMMAND_RAW;
-	memcpy(&packet_cache.write[1], &r[0], p_data.size());
+	std::memcpy(&packet_cache.write[1], &r[0], p_data.size());
 
 	multiplayer_peer->set_transfer_channel(p_channel);
 	multiplayer_peer->set_transfer_mode(p_mode);
@@ -468,7 +468,7 @@ Error SceneMultiplayer::send_auth(int p_to, Vector<uint8_t> p_data) {
 
 	packet_cache.write[0] = NETWORK_COMMAND_SYS;
 	packet_cache.write[1] = SYS_COMMAND_AUTH;
-	memcpy(&packet_cache.write[2], p_data.ptr(), p_data.size());
+	std::memcpy(&packet_cache.write[2], p_data.ptr(), p_data.size());
 
 	multiplayer_peer->set_target_peer(p_to);
 	multiplayer_peer->set_transfer_channel(0);
@@ -523,7 +523,7 @@ void SceneMultiplayer::_process_raw(int p_from, const uint8_t *p_packet, int p_p
 	out.resize(len);
 	{
 		uint8_t *w = out.ptrw();
-		memcpy(&w[0], &p_packet[1], len);
+		std::memcpy(&w[0], &p_packet[1], len);
 	}
 	emit_signal(SNAME("peer_packet"), p_from, out);
 }

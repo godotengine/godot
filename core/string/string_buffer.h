@@ -92,7 +92,7 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const S
 
 template <int SHORT_BUFFER_SIZE>
 StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const char *p_str) {
-	int len = strlen(p_str);
+	int len = std::strlen(p_str);
 	reserve(string_length + len + 1);
 
 	char32_t *buf = current_buffer_ptr();
@@ -109,7 +109,7 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const c
 		++len;
 	}
 	reserve(string_length + len + 1);
-	memcpy(&(current_buffer_ptr()[string_length]), p_str, len * sizeof(char32_t));
+	std::memcpy(&(current_buffer_ptr()[string_length]), p_str, len * sizeof(char32_t));
 	string_length += len;
 
 	return *this;
@@ -125,7 +125,7 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::reserve(int p_
 	bool need_copy = string_length > 0 && buffer.is_empty();
 	buffer.resize(next_power_of_2(p_size));
 	if (need_copy) {
-		memcpy(buffer.ptrw(), short_buffer, string_length * sizeof(char32_t));
+		std::memcpy(buffer.ptrw(), short_buffer, string_length * sizeof(char32_t));
 	}
 
 	return *this;

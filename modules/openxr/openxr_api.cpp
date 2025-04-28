@@ -444,7 +444,7 @@ bool OpenXRAPI::is_extension_enabled(const String &p_extension) const {
 	CharString extension = p_extension.ascii();
 
 	for (int i = 0; i < enabled_extensions.size(); i++) {
-		if (strcmp(enabled_extensions[i].ptr(), extension.ptr()) == 0) {
+		if (std::strcmp(enabled_extensions[i].ptr(), extension.ptr()) == 0) {
 			return true;
 		}
 	}
@@ -521,10 +521,10 @@ void OpenXRAPI::copy_string_to_char_buffer(const String p_string, char *p_buffer
 	int len = char_string.length();
 	if (len < p_buffer_len - 1) {
 		// was having weird CI issues with strcpy so....
-		memcpy(p_buffer, char_string.get_data(), len);
+		std::memcpy(p_buffer, char_string.get_data(), len);
 		p_buffer[len] = '\0';
 	} else {
-		memcpy(p_buffer, char_string.get_data(), p_buffer_len - 1);
+		std::memcpy(p_buffer, char_string.get_data(), p_buffer_len - 1);
 		p_buffer[p_buffer_len - 1] = '\0';
 	}
 }

@@ -41,7 +41,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
@@ -195,15 +194,15 @@ void DirAccessUnix::list_dir_end() {
 #if __has_include(<mntent.h>) && defined(LINUXBSD_ENABLED)
 static bool _filter_drive(struct mntent *mnt) {
 	// Ignore devices that don't point to /dev
-	if (strncmp(mnt->mnt_fsname, "/dev", 4) != 0) {
+	if (std::strncmp(mnt->mnt_fsname, "/dev", 4) != 0) {
 		return false;
 	}
 
 	// Accept devices mounted at common locations
-	if (strncmp(mnt->mnt_dir, "/media", 6) == 0 ||
-			strncmp(mnt->mnt_dir, "/mnt", 4) == 0 ||
-			strncmp(mnt->mnt_dir, "/home", 5) == 0 ||
-			strncmp(mnt->mnt_dir, "/run/media", 10) == 0) {
+	if (std::strncmp(mnt->mnt_dir, "/media", 6) == 0 ||
+			std::strncmp(mnt->mnt_dir, "/mnt", 4) == 0 ||
+			std::strncmp(mnt->mnt_dir, "/home", 5) == 0 ||
+			std::strncmp(mnt->mnt_dir, "/run/media", 10) == 0) {
 		return true;
 	}
 
@@ -255,7 +254,7 @@ static void _get_drives(List<String> *list) {
 			char string[1024];
 			while (fgets(string, 1024, fd)) {
 				// Parse only file:// links
-				if (strncmp(string, "file://", 7) == 0) {
+				if (std::strncmp(string, "file://", 7) == 0) {
 					// Strip any unwanted edges on the strings and push_back if it's not a duplicate.
 					String fpath = String::utf8(string + 7).strip_edges().split_spaces()[0].uri_file_decode();
 					if (!list->find(fpath)) {
@@ -483,7 +482,7 @@ String DirAccessUnix::read_link(String p_file) {
 	}
 
 	char buf[256];
-	memset(buf, 0, 256);
+	std::memset(buf, 0, 256);
 	ssize_t len = readlink(p_file.utf8().get_data(), buf, sizeof(buf));
 	String link;
 	if (len > 0) {

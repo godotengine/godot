@@ -152,8 +152,8 @@ Dictionary detect_wgl() {
 										const String device_vendor = String::utf8((const char *)gd_wglGetString(WGL_VENDOR)).strip_edges().trim_suffix(" Corporation");
 										const String device_name = String::utf8((const char *)gd_wglGetString(WGL_RENDERER)).strip_edges().trim_suffix("/PCIe/SSE2");
 										for (int i = 0; prefixes[i]; i++) {
-											size_t length = strlen(prefixes[i]);
-											if (strncmp(version, prefixes[i], length) == 0) {
+											size_t length = std::strlen(prefixes[i]);
+											if (std::strncmp(version, prefixes[i], length) == 0) {
 												version += length;
 												break;
 											}

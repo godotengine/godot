@@ -61,8 +61,6 @@
 #include "../os_android.h"
 #endif
 
-#include <string.h>
-
 static const char *ANDROID_PERMS[] = {
 	"ACCESS_CHECKIN_PROPERTIES",
 	"ACCESS_COARSE_LOCATION",
@@ -1286,7 +1284,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 					uint32_t manifest_cur_size = p_manifest.size();
 
 					manifest_end.resize(p_manifest.size() - ofs);
-					memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());
+					std::memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());
 
 					int32_t attr_name_string = string_table.find("name");
 					ERR_FAIL_COND_MSG(attr_name_string == -1, "Template does not have 'name' attribute.");
@@ -1563,7 +1561,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 					}
 
 					// copy footer back in
-					memcpy(&p_manifest.write[ofs], manifest_end.ptr(), manifest_end.size());
+					std::memcpy(&p_manifest.write[ofs], manifest_end.ptr(), manifest_end.size());
 				}
 			} break;
 		}
@@ -1783,7 +1781,7 @@ void EditorExportPlatformAndroid::_load_image_data(const Ref<Image> &p_splash_im
 	Error err = PNGDriverCommon::image_to_png(p_splash_image, png_buffer);
 	if (err == OK) {
 		p_data.resize(png_buffer.size());
-		memcpy(p_data.ptrw(), png_buffer.ptr(), p_data.size());
+		std::memcpy(p_data.ptrw(), png_buffer.ptr(), p_data.size());
 	} else {
 		String err_str = String("Failed to convert splash image to png.");
 		WARN_PRINT(err_str.utf8().get_data());
@@ -1802,7 +1800,7 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 	Error err = PNGDriverCommon::image_to_png(working_image, png_buffer);
 	if (err == OK) {
 		p_data.resize(png_buffer.size());
-		memcpy(p_data.ptrw(), png_buffer.ptr(), p_data.size());
+		std::memcpy(p_data.ptrw(), png_buffer.ptr(), p_data.size());
 	} else {
 		String err_str = String("Failed to convert resized icon (") + p_file_name + ") to png.";
 		WARN_PRINT(err_str.utf8().get_data());
@@ -3032,7 +3030,7 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 			}
 			r_command_line_flags.resize(base + 4 + length);
 			encode_uint32(length, &r_command_line_flags.write[base]);
-			memcpy(&r_command_line_flags.write[base + 4], command_line_argument.ptr(), length);
+			std::memcpy(&r_command_line_flags.write[base + 4], command_line_argument.ptr(), length);
 		}
 	}
 }
@@ -3974,7 +3972,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	int bias = 0;
 	while (ret == UNZ_OK) {
 		unz_file_info info;
-		memset(&info, 0, sizeof(info));
+		std::memset(&info, 0, sizeof(info));
 
 		char fname[16384];
 		char extra[16384];
@@ -4003,7 +4001,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			padding = (ZIP_ALIGNMENT - (new_offset % ZIP_ALIGNMENT)) % ZIP_ALIGNMENT;
 		}
 
-		memset(extra + info.size_file_extra, 0, padding);
+		std::memset(extra + info.size_file_extra, 0, padding);
 
 		zip_fileinfo fileinfo = get_zip_fileinfo();
 		zipOpenNewFileInZip2(final_apk,

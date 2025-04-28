@@ -42,7 +42,7 @@
 #endif
 
 size_t NetSocketWinSock::_set_addr_storage(struct sockaddr_storage *p_addr, const IPAddress &p_ip, uint16_t p_port, IP::Type p_ip_type) {
-	memset(p_addr, 0, sizeof(struct sockaddr_storage));
+	std::memset(p_addr, 0, sizeof(struct sockaddr_storage));
 	if (p_ip_type == IP::TYPE_IPV6 || p_ip_type == IP::TYPE_ANY) { // IPv6 socket.
 
 		// IPv6 only socket with IPv4 address.
@@ -52,7 +52,7 @@ size_t NetSocketWinSock::_set_addr_storage(struct sockaddr_storage *p_addr, cons
 		addr6->sin6_family = AF_INET6;
 		addr6->sin6_port = htons(p_port);
 		if (p_ip.is_valid()) {
-			memcpy(&addr6->sin6_addr.s6_addr, p_ip.get_ipv6(), 16);
+			std::memcpy(&addr6->sin6_addr.s6_addr, p_ip.get_ipv6(), 16);
 		} else {
 			addr6->sin6_addr = in6addr_any;
 		}
@@ -67,7 +67,7 @@ size_t NetSocketWinSock::_set_addr_storage(struct sockaddr_storage *p_addr, cons
 		addr4->sin_port = htons(p_port); // Short, network byte order.
 
 		if (p_ip.is_valid()) {
-			memcpy(&addr4->sin_addr.s_addr, p_ip.get_ipv4(), 4);
+			std::memcpy(&addr4->sin_addr.s_addr, p_ip.get_ipv4(), 4);
 		} else {
 			addr4->sin_addr.s_addr = INADDR_ANY;
 		}
@@ -196,13 +196,13 @@ _FORCE_INLINE_ Error NetSocketWinSock::_change_multicast_group(IPAddress p_ip, S
 		ERR_FAIL_COND_V(!if_ip.is_valid(), ERR_INVALID_PARAMETER);
 		struct ip_mreq greq;
 		int sock_opt = p_add ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP;
-		memcpy(&greq.imr_multiaddr, p_ip.get_ipv4(), 4);
-		memcpy(&greq.imr_interface, if_ip.get_ipv4(), 4);
+		std::memcpy(&greq.imr_multiaddr, p_ip.get_ipv4(), 4);
+		std::memcpy(&greq.imr_interface, if_ip.get_ipv4(), 4);
 		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
 	} else {
 		struct ipv6_mreq greq;
 		int sock_opt = p_add ? IPV6_ADD_MEMBERSHIP : IPV6_DROP_MEMBERSHIP;
-		memcpy(&greq.ipv6mr_multiaddr, p_ip.get_ipv6(), 16);
+		std::memcpy(&greq.ipv6mr_multiaddr, p_ip.get_ipv6(), 16);
 		greq.ipv6mr_interface = if_v6id;
 		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
 	}
@@ -420,7 +420,7 @@ Error NetSocketWinSock::recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IPAd
 
 	struct sockaddr_storage from;
 	socklen_t len = sizeof(struct sockaddr_storage);
-	memset(&from, 0, len);
+	std::memset(&from, 0, len);
 
 	r_read = ::recvfrom(_sock, (char *)p_buffer, p_len, p_peek ? MSG_PEEK : 0, (struct sockaddr *)&from, &len);
 

@@ -1937,7 +1937,7 @@ void TextureStorage::update_texture_atlas() {
 			v_offsetsv.resize(base_size);
 
 			int *v_offsets = v_offsetsv.ptrw();
-			memset(v_offsets, 0, sizeof(int) * base_size);
+			std::memset(v_offsets, 0, sizeof(int) * base_size);
 
 			int max_height = 0;
 
