@@ -37,14 +37,13 @@
 #include "core/string/print_string.h"
 #include "core/templates/list.h"
 
-#include <errno.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
 
 #if __has_include(<mntent.h>)
 #include <mntent.h>

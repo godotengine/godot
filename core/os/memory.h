@@ -33,7 +33,6 @@
 #include "core/error/error_macros.h"
 #include "core/templates/safe_refcount.h"
 
-#include <cstring>
 #include <new> // IWYU pragma: keep // `new` operators.
 #include <type_traits>
 

@@ -33,9 +33,8 @@
 #include "core/string/ustring.h"
 #include "main/main.h"
 
-#include <stdio.h>
-#include <string.h>
 #include <unistd.h>
+#include <cstdio>
 
 static OS_IOS *os = nullptr;
 
