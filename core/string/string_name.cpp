@@ -38,16 +38,18 @@ struct StringName::Table {
 	constexpr static uint32_t TABLE_LEN = 1 << TABLE_BITS;
 	constexpr static uint32_t TABLE_MASK = TABLE_LEN - 1;
 
-	static inline _Data *table[TABLE_LEN];
+	struct Entry {
+		uint32_t hash;
+		_Data *data;
+	};
+
+	static inline LocalVector<Entry> table[TABLE_LEN];
 	static inline Mutex mutex;
 	static inline PagedAllocator<_Data> allocator;
 };
 
 void StringName::setup() {
 	ERR_FAIL_COND(configured);
-	for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
-		Table::table[i] = nullptr;
-	}
 	configured = true;
 }
 
@@ -56,12 +58,10 @@ void StringName::cleanup() {
 
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
-		Vector<_Data *> data;
+		LocalVector<_Data *> data;
 		for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
-			_Data *d = Table::table[i];
-			while (d) {
-				data.push_back(d);
-				d = d->next;
+			for (const Table::Entry &entry : Table::table[i]) {
+				data.push_back(entry.data);
 			}
 		}
 
@@ -70,7 +70,7 @@ void StringName::cleanup() {
 		data.sort_custom<DebugSortReferences>();
 		int unreferenced_stringnames = 0;
 		int rarely_referenced_stringnames = 0;
-		for (int i = 0; i < data.size(); i++) {
+		for (uint32_t i = 0; i < data.size(); i++) {
 			print_line(itos(i + 1) + ": " + data[i]->name + " - " + itos(data[i]->debug_references));
 			if (data[i]->debug_references == 0) {
 				unreferenced_stringnames += 1;
@@ -85,8 +85,8 @@ void StringName::cleanup() {
 #endif
 	int lost_strings = 0;
 	for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
-		while (Table::table[i]) {
-			_Data *d = Table::table[i];
+		for (const Table::Entry &entry : Table::table[i]) {
+			_Data *d = entry.data;
 			if (d->static_count.get() != d->refcount.get()) {
 				lost_strings++;
 
@@ -95,9 +95,9 @@ void StringName::cleanup() {
 				}
 			}
 
-			Table::table[i] = Table::table[i]->next;
 			Table::allocator.free(d);
 		}
+		Table::table[i].reset();
 	}
 	if (lost_strings) {
 		print_verbose(vformat("StringName: %d unclaimed string names at exit.", lost_strings));
@@ -114,16 +114,15 @@ void StringName::unref() {
 		if (CoreGlobals::leak_reporting_enabled && _data->static_count.get() > 0) {
 			ERR_PRINT("BUG: Unreferenced static string to 0: " + _data->name);
 		}
-		if (_data->prev) {
-			_data->prev->next = _data->next;
-		} else {
-			const uint32_t idx = _data->hash & Table::TABLE_MASK;
-			Table::table[idx] = _data->next;
+
+		const uint32_t bucket_index = _data->hash & Table::TABLE_MASK;
+		LocalVector<Table::Entry> &vector = Table::table[bucket_index];
+		vector.remove_at_unordered(_data->index_in_bucket);
+		if (vector.size() > _data->index_in_bucket) {
+			// Wasn't the last entry, we need to fix the index of the entry we just moved.
+			vector[_data->index_in_bucket].data->index_in_bucket = _data->index_in_bucket;
 		}
 
-		if (_data->next) {
-			_data->next->prev = _data->prev;
-		}
 		Table::allocator.free(_data);
 	}
 
@@ -227,28 +226,28 @@ StringName::StringName(const char *p_name, bool p_static) {
 	const uint32_t hash = String::hash(p_name);
 	const uint32_t idx = hash & Table::TABLE_MASK;
 
+	LocalVector<Table::Entry> &entries = Table::table[idx];
 	MutexLock lock(Table::mutex);
-	_data = Table::table[idx];
 
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->name == p_name) {
-			break;
-		}
-		_data = _data->next;
-	}
+	for (const Table::Entry &entry : entries) {
+		if (entry.hash == hash && entry.data->name == p_name) {
+			if (!entry.data->refcount.ref()) {
+				// Entry was destructed just as we were trying to access it, so we need to make a new entry.
+				break;
+			}
 
-	if (_data && _data->refcount.ref()) {
-		// exists
-		if (p_static) {
-			_data->static_count.increment();
-		}
+			_data = entry.data;
+
+			if (p_static) {
+				_data->static_count.increment();
+			}
 #ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
+			if (unlikely(debug_stringname)) {
+				_data->debug_references++;
+			}
 #endif
-		return;
+			return;
+		}
 	}
 
 	_data = Table::allocator.alloc();
@@ -256,8 +255,9 @@ StringName::StringName(const char *p_name, bool p_static) {
 	_data->refcount.init();
 	_data->static_count.set(p_static ? 1 : 0);
 	_data->hash = hash;
-	_data->next = Table::table[idx];
-	_data->prev = nullptr;
+	_data->index_in_bucket = entries.size();
+
+	entries.push_back(Table::Entry{ hash, _data });
 
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
@@ -266,10 +266,6 @@ StringName::StringName(const char *p_name, bool p_static) {
 		_data->static_count.increment();
 	}
 #endif
-	if (Table::table[idx]) {
-		Table::table[idx]->prev = _data;
-	}
-	Table::table[idx] = _data;
 }
 
 StringName::StringName(const String &p_name, bool p_static) {
@@ -284,27 +280,28 @@ StringName::StringName(const String &p_name, bool p_static) {
 	const uint32_t hash = p_name.hash();
 	const uint32_t idx = hash & Table::TABLE_MASK;
 
+	LocalVector<Table::Entry> &entries = Table::table[idx];
 	MutexLock lock(Table::mutex);
-	_data = Table::table[idx];
 
-	while (_data) {
-		if (_data->hash == hash && _data->name == p_name) {
-			break;
-		}
-		_data = _data->next;
-	}
+	for (const Table::Entry &entry : entries) {
+		if (entry.hash == hash && entry.data->name == p_name) {
+			if (!entry.data->refcount.ref()) {
+				// Entry was destructed just as we were trying to access it, so we need to make a new entry.
+				break;
+			}
 
-	if (_data && _data->refcount.ref()) {
-		// exists
-		if (p_static) {
-			_data->static_count.increment();
-		}
+			_data = entry.data;
+
+			if (p_static) {
+				_data->static_count.increment();
+			}
 #ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
+			if (unlikely(debug_stringname)) {
+				_data->debug_references++;
+			}
 #endif
-		return;
+			return;
+		}
 	}
 
 	_data = Table::allocator.alloc();
@@ -312,8 +309,10 @@ StringName::StringName(const String &p_name, bool p_static) {
 	_data->refcount.init();
 	_data->static_count.set(p_static ? 1 : 0);
 	_data->hash = hash;
-	_data->next = Table::table[idx];
-	_data->prev = nullptr;
+	_data->index_in_bucket = entries.size();
+
+	entries.push_back(Table::Entry{ hash, _data });
+
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
 		// Keep in memory, force static.
@@ -321,104 +320,6 @@ StringName::StringName(const String &p_name, bool p_static) {
 		_data->static_count.increment();
 	}
 #endif
-
-	if (Table::table[idx]) {
-		Table::table[idx]->prev = _data;
-	}
-	Table::table[idx] = _data;
-}
-
-StringName StringName::search(const char *p_name) {
-	ERR_FAIL_COND_V(!configured, StringName());
-
-	ERR_FAIL_NULL_V(p_name, StringName());
-	if (!p_name[0]) {
-		return StringName();
-	}
-
-	const uint32_t hash = String::hash(p_name);
-	const uint32_t idx = hash & Table::TABLE_MASK;
-
-	MutexLock lock(Table::mutex);
-	_Data *_data = Table::table[idx];
-
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->name == p_name) {
-			break;
-		}
-		_data = _data->next;
-	}
-
-	if (_data && _data->refcount.ref()) {
-#ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
-#endif
-
-		return StringName(_data);
-	}
-
-	return StringName(); //does not exist
-}
-
-StringName StringName::search(const char32_t *p_name) {
-	ERR_FAIL_COND_V(!configured, StringName());
-
-	ERR_FAIL_NULL_V(p_name, StringName());
-	if (!p_name[0]) {
-		return StringName();
-	}
-
-	const uint32_t hash = String::hash(p_name);
-	const uint32_t idx = hash & Table::TABLE_MASK;
-
-	MutexLock lock(Table::mutex);
-	_Data *_data = Table::table[idx];
-
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->name == p_name) {
-			break;
-		}
-		_data = _data->next;
-	}
-
-	if (_data && _data->refcount.ref()) {
-		return StringName(_data);
-	}
-
-	return StringName(); //does not exist
-}
-
-StringName StringName::search(const String &p_name) {
-	ERR_FAIL_COND_V(p_name.is_empty(), StringName());
-
-	const uint32_t hash = p_name.hash();
-	const uint32_t idx = hash & Table::TABLE_MASK;
-
-	MutexLock lock(Table::mutex);
-	_Data *_data = Table::table[idx];
-
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->name == p_name) {
-			break;
-		}
-		_data = _data->next;
-	}
-
-	if (_data && _data->refcount.ref()) {
-#ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
-#endif
-		return StringName(_data);
-	}
-
-	return StringName(); //does not exist
 }
 
 bool operator==(const String &p_name, const StringName &p_string_name) {
