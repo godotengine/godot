@@ -226,6 +226,14 @@
 				Returns the rotation axis at [param joint] in the bone chain's joint list.
 			</description>
 		</method>
+		<method name="get_joint_rotation_axis_vector" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the rotation axis vector for the specified joint in the bone chain. This vector represents the axis around which the joint can rotate. It is determined based on the rotation axis set for the joint.
+			</description>
+		</method>
 		<method name="get_joint_stiffness" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="index" type="int" />
@@ -267,6 +275,13 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the rotation axis of the bone chain.
+			</description>
+		</method>
+		<method name="get_rotation_axis_vector" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the rotation axis vector of the bone chain. This vector represents the axis around which the bone chain can rotate. It is determined based on the rotation axis set for the bone chain.
 			</description>
 		</method>
 		<method name="get_stiffness" qualifiers="const">
@@ -522,6 +537,15 @@
 				Sets the rotation axis at [param joint] in the bone chain's joint list when [method is_config_individual] is [code]true[/code].
 			</description>
 		</method>
+		<method name="set_joint_rotation_axis_vector">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<param index="2" name="vector" type="Vector3" />
+			<description>
+				Sets the rotation axis vector for the specified joint in the bone chain. This vector represents the axis around which the joint can rotate.
+			</description>
+		</method>
 		<method name="set_joint_stiffness">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -572,6 +596,14 @@
 				Sets the rotation axis of the bone chain. If sets a specific axis, it acts like a hinge joint.
 				The value is cached in each joint setting in the joint list.
 				[b]Note:[/b] The rotation axis and the forward vector shouldn't be colinear to avoid unintended rotation since [SpringBoneSimulator3D] does not factor in twisting forces.
+			</description>
+		</method>
+		<method name="set_rotation_axis_vector">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="vector" type="Vector3" />
+			<description>
+				Sets the rotation axis vector of the bone chain. This vector represents the axis around which the bone chain can rotate.
 			</description>
 		</method>
 		<method name="set_stiffness">
@@ -646,6 +678,9 @@
 		</constant>
 		<constant name="ROTATION_AXIS_ALL" value="3" enum="RotationAxis">
 			Enumerated value for the unconstrained rotation.
+		</constant>
+		<constant name="ROTATION_AXIS_OPTIONAL" value="4" enum="RotationAxis">
+			Enumerated value for an optional rotation axis. See also [method set_joint_rotation_axis_vector].
 		</constant>
 	</constants>
 </class>
