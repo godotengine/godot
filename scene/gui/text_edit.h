@@ -122,6 +122,7 @@ public:
 	};
 
 private:
+	static constexpr int RIGHT_SIDE_BUFFER = 5;
 	struct GutterInfo {
 		GutterType type = GutterType::GUTTER_TYPE_STRING;
 		String name = "";
