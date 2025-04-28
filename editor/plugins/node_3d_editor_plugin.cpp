@@ -2986,9 +2986,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 			if (_camera_moved_externally()) {
 				// If camera moved after this plugin last set it, presumably a tool script has moved it, accept the new camera transform as the cursor position.
 				_apply_camera_transform_to_cursor();
+				_update_camera(0);
+			} else {
+				_update_camera(delta);
 			}
-
-			_update_camera(delta);
 
 			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
@@ -3494,8 +3495,18 @@ bool Node3DEditorViewport::_camera_moved_externally() {
 
 void Node3DEditorViewport::_apply_camera_transform_to_cursor() {
 	// Effectively the reverse of to_camera_transform, use camera transform to set cursor position and rotation.
-	Transform3D camera_transform = camera->get_camera_transform();
-	cursor.pos = camera_transform.origin;
+	const Transform3D camera_transform = camera->get_camera_transform();
+	const Basis basis = camera_transform.basis;
+
+	real_t distance;
+	if (orthogonal) {
+		distance = (get_zfar() - get_znear()) / 2.0;
+	} else {
+		distance = cursor.distance;
+	}
+
+	cursor.pos = camera_transform.origin - basis.get_column(2) * distance;
+
 	cursor.x_rot = -camera_transform.basis.get_euler().x;
 	cursor.y_rot = -camera_transform.basis.get_euler().y;
 }
