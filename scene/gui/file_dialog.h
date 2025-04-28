@@ -66,6 +66,11 @@ public:
 		FILE_MODE_SAVE_FILE,
 	};
 
+	enum DisplayMode {
+		DISPLAY_THUMBNAILS,
+		DISPLAY_LIST,
+	};
+
 	enum ItemMenu {
 		ITEM_MENU_COPY_PATH,
 		ITEM_MENU_SHOW_IN_EXPLORER,
@@ -89,6 +94,7 @@ private:
 
 	Access access = ACCESS_RESOURCES;
 	FileMode mode = FILE_MODE_SAVE_FILE;
+	DisplayMode display_mode = DISPLAY_THUMBNAILS;
 	Ref<DirAccess> dir_access;
 
 	Vector<String> filters;
@@ -126,6 +132,8 @@ private:
 	Button *show_hidden = nullptr;
 	Button *show_filename_filter_button = nullptr;
 	Button *make_dir_button = nullptr;
+	Button *thumbnail_mode_button = nullptr;
+	Button *list_mode_button = nullptr;
 
 	ItemList *file_list = nullptr;
 	Label *message = nullptr;
@@ -147,15 +155,21 @@ private:
 	ConfirmationDialog *confirm_save = nullptr;
 
 	struct ThemeCache {
+		int thumbnail_size = 64;
+
 		Ref<Texture2D> parent_folder;
 		Ref<Texture2D> forward_folder;
 		Ref<Texture2D> back_folder;
 		Ref<Texture2D> reload;
 		Ref<Texture2D> toggle_hidden;
 		Ref<Texture2D> toggle_filename_filter;
+		Ref<Texture2D> thumbnail_mode;
+		Ref<Texture2D> list_mode;
 		Ref<Texture2D> folder;
 		Ref<Texture2D> file;
 		Ref<Texture2D> create_folder;
+		Ref<Texture2D> file_thumbnail;
+		Ref<Texture2D> folder_thumbnail;
 
 		Color folder_icon_color;
 		Color file_icon_color;
@@ -283,6 +297,9 @@ public:
 	void set_file_mode(FileMode p_mode);
 	FileMode get_file_mode() const;
 
+	void set_display_mode(DisplayMode p_mode);
+	DisplayMode get_display_mode() const;
+
 	VBoxContainer *get_vbox() { return main_vbox; }
 	LineEdit *get_line_edit() { return filename_edit; }
 
@@ -306,3 +323,4 @@ public:
 
 VARIANT_ENUM_CAST(FileDialog::FileMode);
 VARIANT_ENUM_CAST(FileDialog::Access);
+VARIANT_ENUM_CAST(FileDialog::DisplayMode);
