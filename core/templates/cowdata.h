@@ -271,6 +271,10 @@ void CowData<T>::_unref() {
 		}
 	}
 
+	// If any destructors access us through pointers, it would be a bug.
+	// We can't really test for that, but we can at least check no items have been added.
+	DEV_ASSERT(_ptr == nullptr);
+
 	// free mem
 	Memory::free_static((uint8_t *)prev_ptr - DATA_OFFSET, false);
 }
