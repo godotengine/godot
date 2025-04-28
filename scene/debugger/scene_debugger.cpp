@@ -2188,11 +2188,6 @@ void RuntimeNodeSelect::_update_selection() {
 		RS::get_singleton()->instance_set_transform(sb->instance_ofs, t_offset);
 		RS::get_singleton()->instance_set_transform(sb->instance_xray, t);
 		RS::get_singleton()->instance_set_transform(sb->instance_xray_ofs, t_offset);
-
-		RS::get_singleton()->instance_reset_physics_interpolation(sb->instance);
-		RS::get_singleton()->instance_reset_physics_interpolation(sb->instance_ofs);
-		RS::get_singleton()->instance_reset_physics_interpolation(sb->instance_xray);
-		RS::get_singleton()->instance_reset_physics_interpolation(sb->instance_xray_ofs);
 	}
 #endif // _3D_DISABLED
 }
