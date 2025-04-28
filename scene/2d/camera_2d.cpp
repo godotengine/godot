@@ -616,14 +616,6 @@ void Camera2D::_make_current(Object *p_which) {
 	}
 }
 
-void Camera2D::_update_process_internal_for_smoothing() {
-	bool is_not_in_scene_or_editor = !(is_inside_tree() && is_part_of_edited_scene());
-	bool is_any_smoothing_valid = position_smoothing_speed > 0 || rotation_smoothing_speed > 0;
-
-	bool enable = is_any_smoothing_valid && is_not_in_scene_or_editor;
-	set_process_internal(enable);
-}
-
 void Camera2D::_set_limit_rect(const Rect2 &p_limit_rect) {
 	Point2 limit_rect_end = p_limit_rect.get_end();
 	set_limit(SIDE_LEFT, p_limit_rect.position.x);
@@ -756,7 +748,7 @@ void Camera2D::set_position_smoothing_speed(real_t p_speed) {
 		return;
 	}
 	position_smoothing_speed = MAX(0, p_speed);
-	_update_process_internal_for_smoothing();
+	_update_process_callback();
 }
 
 real_t Camera2D::get_position_smoothing_speed() const {
@@ -768,7 +760,7 @@ void Camera2D::set_rotation_smoothing_speed(real_t p_speed) {
 		return;
 	}
 	rotation_smoothing_speed = MAX(0, p_speed);
-	_update_process_internal_for_smoothing();
+	_update_process_callback();
 }
 
 real_t Camera2D::get_rotation_smoothing_speed() const {
