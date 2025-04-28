@@ -208,7 +208,7 @@
 				Returns the points which would make up a connection between [param from_node] and [param to_node].
 			</description>
 		</method>
-		<method name="get_connection_list_from_node" qualifiers="const">
+		<method name="get_connections_by_node" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="node" type="StringName" />
 			<description>
@@ -328,7 +328,7 @@
 		<member name="connection_lines_thickness" type="float" setter="set_connection_lines_thickness" getter="get_connection_lines_thickness" default="4.0">
 			The thickness of the lines between the nodes.
 		</member>
-		<member name="connections" type="Dictionary[]" setter="set_connections" getter="get_connection_list" default="[]">
+		<member name="connections" type="Dictionary[]" setter="set_connections" getter="get_connections" default="[]">
 			The connections between [GraphNode]s.
 			A connection is represented as a [Dictionary] in the form of:
 			[codeblock]
