@@ -1509,7 +1509,15 @@ Variant CodeTextEditor::get_navigation_state() {
 }
 
 void CodeTextEditor::set_error(const String &p_error) {
-	error->set_text(p_error);
+	// Trim the error message if it is more than 2 lines long.
+	if (p_error.count("\n") >= 2) {
+		Vector<String> splits = p_error.split("\n");
+		String trimmed_error = String("\n").join(splits.slice(0, 2));
+		error->set_text(trimmed_error + "...");
+	} else {
+		error->set_text(p_error);
+	}
+
 	if (!p_error.is_empty()) {
 		error->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	} else {
