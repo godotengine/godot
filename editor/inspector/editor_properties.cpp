@@ -2005,8 +2005,8 @@ void EditorPropertyRect2::setup(const EditorPropertyRangeHint &p_range_hint) {
 		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
-		spin[i]->set_allow_greater(true);
-		spin[i]->set_allow_lesser(true);
+		spin[i]->set_allow_greater(p_range_hint.or_greater);
+		spin[i]->set_allow_lesser(p_range_hint.or_less);
 		spin[i]->set_suffix(p_range_hint.suffix);
 	}
 }
@@ -2098,8 +2098,8 @@ void EditorPropertyRect2i::setup(const EditorPropertyRangeHint &p_range_hint) {
 		spin[i]->set_min(p_range_hint.min);
 		spin[i]->set_max(p_range_hint.max);
 		spin[i]->set_step(1);
-		spin[i]->set_allow_greater(true);
-		spin[i]->set_allow_lesser(true);
+		spin[i]->set_allow_greater(p_range_hint.or_greater);
+		spin[i]->set_allow_lesser(p_range_hint.or_less);
 		spin[i]->set_suffix(p_range_hint.suffix);
 		spin[i]->set_editing_integer(true);
 	}
@@ -2195,8 +2195,8 @@ void EditorPropertyPlane::setup(const EditorPropertyRangeHint &p_range_hint) {
 		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
-		spin[i]->set_allow_greater(true);
-		spin[i]->set_allow_lesser(true);
+		spin[i]->set_allow_greater(p_range_hint.or_greater);
+		spin[i]->set_allow_lesser(p_range_hint.or_less);
 	}
 	spin[3]->set_suffix(p_range_hint.suffix);
 }
@@ -2346,8 +2346,8 @@ void EditorPropertyQuaternion::setup(const EditorPropertyRangeHint &p_range_hint
 		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
-		spin[i]->set_allow_greater(true);
-		spin[i]->set_allow_lesser(true);
+		spin[i]->set_allow_greater(p_range_hint.or_greater);
+		spin[i]->set_allow_lesser(p_range_hint.or_less);
 		// Quaternion is inherently unitless, however someone may want to use it as
 		// a generic way to store 4 values, so we'll still respect the suffix.
 		spin[i]->set_suffix(p_range_hint.suffix);
@@ -2495,8 +2495,8 @@ void EditorPropertyAABB::setup(const EditorPropertyRangeHint &p_range_hint) {
 		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
-		spin[i]->set_allow_greater(true);
-		spin[i]->set_allow_lesser(true);
+		spin[i]->set_allow_greater(p_range_hint.or_greater);
+		spin[i]->set_allow_lesser(p_range_hint.or_less);
 		spin[i]->set_suffix(p_range_hint.suffix);
 	}
 }
@@ -2575,8 +2575,8 @@ void EditorPropertyTransform2D::setup(const EditorPropertyRangeHint &p_range_hin
 		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
-		spin[i]->set_allow_greater(true);
-		spin[i]->set_allow_lesser(true);
+		spin[i]->set_allow_greater(p_range_hint.or_greater);
+		spin[i]->set_allow_lesser(p_range_hint.or_less);
 		if (i % 3 == 2) {
 			spin[i]->set_suffix(p_range_hint.suffix);
 		}
@@ -2659,8 +2659,8 @@ void EditorPropertyBasis::setup(const EditorPropertyRangeHint &p_range_hint) {
 		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
-		spin[i]->set_allow_greater(true);
-		spin[i]->set_allow_lesser(true);
+		spin[i]->set_allow_greater(p_range_hint.or_greater);
+		spin[i]->set_allow_lesser(p_range_hint.or_less);
 		// Basis is inherently unitless, however someone may want to use it as
 		// a generic way to store 9 values, so we'll still respect the suffix.
 		spin[i]->set_suffix(p_range_hint.suffix);
@@ -2750,8 +2750,8 @@ void EditorPropertyTransform3D::setup(const EditorPropertyRangeHint &p_range_hin
 		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
-		spin[i]->set_allow_greater(true);
-		spin[i]->set_allow_lesser(true);
+		spin[i]->set_allow_greater(p_range_hint.or_greater);
+		spin[i]->set_allow_lesser(p_range_hint.or_less);
 		if (i % 4 == 3) {
 			spin[i]->set_suffix(p_range_hint.suffix);
 		}
@@ -2849,8 +2849,8 @@ void EditorPropertyProjection::setup(const EditorPropertyRangeHint &p_range_hint
 		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
-		spin[i]->set_allow_greater(true);
-		spin[i]->set_allow_lesser(true);
+		spin[i]->set_allow_greater(p_range_hint.or_greater);
+		spin[i]->set_allow_lesser(p_range_hint.or_less);
 		if (i % 4 == 3) {
 			spin[i]->set_suffix(p_range_hint.suffix);
 		}
