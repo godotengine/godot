@@ -718,7 +718,7 @@ if env["arch"] == "x86_32":
     if env.msvc:
         env.Append(CCFLAGS=["/arch:SSE2"])
     else:
-        env.Append(CCFLAGS=["-msse2"])
+        env.Append(CCFLAGS=["-msse2", "-mfpmath=sse", "-mstackrealign"])
 
 # Explicitly specify colored output.
 if methods.using_gcc(env):
