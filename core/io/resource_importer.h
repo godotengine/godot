@@ -50,7 +50,7 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 
 	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool p_load, bool *r_valid = nullptr) const;
 
-	static ResourceFormatImporter *singleton;
+	static inline ResourceFormatImporter *singleton = nullptr;
 
 	//need them to stay in order to compute the settings hash
 	struct SortImporterByName {
@@ -109,7 +109,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static ResourceFormatImporterLoadOnStartup load_on_startup;
+	static inline ResourceFormatImporterLoadOnStartup load_on_startup = nullptr;
 
 	virtual String get_importer_name() const = 0;
 	virtual String get_visible_name() const = 0;

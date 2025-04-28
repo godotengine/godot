@@ -61,8 +61,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	static const int DEVICE_ID_EMULATION;
-	static const int DEVICE_ID_INTERNAL;
+	static constexpr int DEVICE_ID_EMULATION = -1;
+	static constexpr int DEVICE_ID_INTERNAL = -2;
 
 	void set_device(int p_device);
 	int get_device() const;

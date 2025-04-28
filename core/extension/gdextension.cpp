@@ -686,8 +686,6 @@ void GDExtension::_register_get_classes_used_callback(GDExtensionClassLibraryPtr
 #endif
 }
 
-HashMap<StringName, GDExtensionInterfaceFunctionPtr> GDExtension::gdextension_interface_functions;
-
 void GDExtension::register_interface_function(const StringName &p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer) {
 	ERR_FAIL_COND_MSG(gdextension_interface_functions.has(p_function_name), vformat("Attempt to register interface function '%s', which appears to be already registered.", p_function_name));
 	gdextension_interface_functions.insert(p_function_name, p_function_pointer);
@@ -1050,10 +1048,6 @@ PackedStringArray GDExtension::get_classes_used() const {
 	return ret;
 }
 
-Vector<StringName> GDExtensionEditorPlugins::extension_classes;
-GDExtensionEditorPlugins::EditorPluginRegisterFunc GDExtensionEditorPlugins::editor_node_add_plugin = nullptr;
-GDExtensionEditorPlugins::EditorPluginRegisterFunc GDExtensionEditorPlugins::editor_node_remove_plugin = nullptr;
-
 void GDExtensionEditorPlugins::add_extension_class(const StringName &p_class_name) {
 	if (editor_node_add_plugin) {
 		editor_node_add_plugin(p_class_name);
@@ -1069,9 +1063,6 @@ void GDExtensionEditorPlugins::remove_extension_class(const StringName &p_class_
 		extension_classes.erase(p_class_name);
 	}
 }
-
-GDExtensionEditorHelp::EditorHelpLoadXmlBufferFunc GDExtensionEditorHelp::editor_help_load_xml_buffer = nullptr;
-GDExtensionEditorHelp::EditorHelpRemoveClassFunc GDExtensionEditorHelp::editor_help_remove_class = nullptr;
 
 void GDExtensionEditorHelp::load_xml_buffer(const uint8_t *p_buffer, int p_size) {
 	ERR_FAIL_NULL(editor_help_load_xml_buffer);

@@ -49,8 +49,6 @@ bool Logger::should_log(bool p_err) {
 	return (!p_err || CoreGlobals::print_error_enabled) && (p_err || CoreGlobals::print_line_enabled);
 }
 
-bool Logger::_flush_stdout_on_print = true;
-
 void Logger::set_flush_stdout_on_print(bool value) {
 	_flush_stdout_on_print = value;
 }
