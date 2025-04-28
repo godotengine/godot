@@ -2158,6 +2158,11 @@ Control::FocusBehaviorRecursive Control::get_focus_behavior_recursive() const {
 	return data.focus_behavior_recursive;
 }
 
+bool Control::_is_focusable() const {
+	bool ac_enabled = is_inside_tree() && get_tree()->is_accessibility_enabled();
+	return (is_visible_in_tree() && ((get_focus_mode_with_override() == FOCUS_ALL) || (get_focus_mode_with_override() == FOCUS_CLICK) || (ac_enabled && get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)));
+}
+
 bool Control::_is_focus_mode_enabled() const {
 	if (data.focus_behavior_recursive == FOCUS_BEHAVIOR_INHERITED) {
 		if (data.parent_control) {
@@ -2270,7 +2275,7 @@ Control *Control::find_next_valid_focus() const {
 		ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + data.focus_next + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Next focus node is not a control: '" + n->get_name() + "'.");
-		if (c->is_visible_in_tree() && c->get_focus_mode_with_override() != FOCUS_NONE) {
+		if (c->_is_focusable()) {
 			return c;
 		}
 	}
@@ -2374,7 +2379,7 @@ Control *Control::find_prev_valid_focus() const {
 		ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + data.focus_prev + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Previous focus node is not a control: '" + n->get_name() + "'.");
-		if (c->is_visible_in_tree() && c->get_focus_mode_with_override() != FOCUS_NONE) {
+		if (c->_is_focusable()) {
 			return c;
 		}
 	}
@@ -2494,7 +2499,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		ERR_FAIL_NULL_V_MSG(n, nullptr, "Neighbor focus node path is invalid: '" + data.focus_neighbor[p_side] + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Neighbor focus node is not a control: '" + n->get_name() + "'.");
-		if (c->is_visible_in_tree() && c->get_focus_mode_with_override() != FOCUS_NONE) {
+		if (c->_is_focusable()) {
 			return c;
 		}
 
