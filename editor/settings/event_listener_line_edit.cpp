@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor/event_listener_line_edit.h"
+#include "editor/settings/event_listener_line_edit.h"
 
 #include "core/input/input_map.h"
 

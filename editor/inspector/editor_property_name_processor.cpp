@@ -31,7 +31,7 @@
 #include "editor_property_name_processor.h"
 
 #include "core/string/translation_server.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 
 EditorPropertyNameProcessor *EditorPropertyNameProcessor::singleton = nullptr;
 

@@ -37,7 +37,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
-#include "editor/project_settings_editor.h"
+#include "editor/settings/project_settings_editor.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 

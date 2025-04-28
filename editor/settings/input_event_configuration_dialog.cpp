@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor/input_event_configuration_dialog.h"
+#include "editor/settings/input_event_configuration_dialog.h"
 #include "core/input/input_map.h"
 #include "editor/editor_string_names.h"
-#include "editor/event_listener_line_edit.h"
+#include "editor/settings/event_listener_line_edit.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"

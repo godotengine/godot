@@ -30,9 +30,9 @@
 
 #include "occluder_instance_3d_gizmo_plugin.h"
 
-#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/3d/node_3d_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/occluder_instance_3d.h"
 
 OccluderInstance3DGizmoPlugin::OccluderInstance3DGizmoPlugin() {

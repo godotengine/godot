@@ -31,7 +31,7 @@
 #include "editor_layouts_dialog.h"
 
 #include "core/io/config_file.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"

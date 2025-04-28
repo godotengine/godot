@@ -32,11 +32,11 @@
 
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/plugins/tiles/tile_set_editor.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
 #include "scene/gui/button.h"

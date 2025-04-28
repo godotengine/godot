@@ -31,8 +31,8 @@
 #include "engine_update_label.h"
 
 #include "core/io/json.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/main/http_request.h"
 
 bool EngineUpdateLabel::_can_check_updates() const {

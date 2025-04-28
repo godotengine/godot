@@ -39,8 +39,8 @@
 #include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
 #include "core/string/translation_server.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 

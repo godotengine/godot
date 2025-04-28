@@ -32,7 +32,6 @@
 
 #include "editor/doc/editor_help.h"
 #include "editor/docks/inspector_dock.h"
-#include "editor/editor_command_palette.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -41,6 +40,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/progress_dialog.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"

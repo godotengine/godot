@@ -32,9 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_importer.h"
-#include "editor/action_map_editor.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_sectioned_inspector.h"
+#include "editor/settings/action_map_editor.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 

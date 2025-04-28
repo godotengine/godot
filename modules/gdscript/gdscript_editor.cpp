@@ -48,7 +48,7 @@
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"
 #include "editor/editor_file_system.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 Vector<String> GDScriptLanguage::get_comment_delimiters() const {
