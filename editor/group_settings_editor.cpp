@@ -176,6 +176,10 @@ void GroupSettingsEditor::_add_group() {
 void GroupSettingsEditor::_text_submitted(const String &p_text) {
 	if (!add_button->is_disabled()) {
 		_add_group();
+
+		if (group_description->has_focus()) {
+			group_name->grab_focus();
+		}
 	}
 }
 
@@ -501,6 +505,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	group_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	group_name->set_clear_button_enabled(true);
 	group_name->set_accessibility_name(TTRC("Group Name"));
+	group_name->set_keep_editing_on_text_submit(true);
 	group_name->connect(SceneStringName(text_changed), callable_mp(this, &GroupSettingsEditor::_group_name_text_changed));
 	group_name->connect(SceneStringName(text_submitted), callable_mp(this, &GroupSettingsEditor::_text_submitted));
 	hbc->add_child(group_name);
@@ -513,6 +518,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	group_description->set_clear_button_enabled(true);
 	group_description->set_accessibility_name(TTRC("Group Description"));
 	group_description->set_h_size_flags(SIZE_EXPAND_FILL);
+	group_description->set_keep_editing_on_text_submit(true);
 	group_description->connect(SceneStringName(text_submitted), callable_mp(this, &GroupSettingsEditor::_text_submitted));
 	hbc->add_child(group_description);
 
