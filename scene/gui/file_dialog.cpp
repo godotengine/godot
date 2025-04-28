@@ -270,8 +270,10 @@ void FileDialog::_notification(int p_what) {
 			_setup_button(dir_up, theme_cache.parent_folder);
 			_setup_button(refresh_button, theme_cache.reload);
 			_setup_button(favorite_button, theme_cache.favorite);
-			_setup_button(show_hidden, theme_cache.toggle_hidden);
 			_setup_button(make_dir_button, theme_cache.create_folder);
+			_setup_button(show_hidden, theme_cache.toggle_hidden);
+			_setup_button(thumbnail_mode_button, theme_cache.thumbnail_mode);
+			_setup_button(list_mode_button, theme_cache.list_mode);
 			_setup_button(show_filename_filter_button, theme_cache.toggle_filename_filter);
 			_setup_button(file_sort_button, theme_cache.sort);
 			_setup_button(fav_up_button, theme_cache.favorite_up);
@@ -761,8 +763,22 @@ void FileDialog::update_file_list() {
 	// Scroll back to the top after opening a directory
 	file_list->get_v_scroll_bar()->set_value(0);
 
-	dir_access->list_dir_begin();
+	if (display_mode == DISPLAY_THUMBNAILS) {
+		file_list->set_max_columns(0);
+		file_list->set_icon_mode(ItemList::ICON_MODE_TOP);
+		file_list->set_fixed_column_width(theme_cache.thumbnail_size * 3 / 2);
+		file_list->set_max_text_lines(2);
+		file_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+		file_list->set_fixed_icon_size(Size2(theme_cache.thumbnail_size, theme_cache.thumbnail_size));
+	} else {
+		file_list->set_icon_mode(ItemList::ICON_MODE_LEFT);
+		file_list->set_max_columns(1);
+		file_list->set_max_text_lines(1);
+		file_list->set_fixed_column_width(0);
+		file_list->set_fixed_icon_size(Size2());
+	}
 
+	dir_access->list_dir_begin();
 	if (dir_access->is_readable(dir_access->get_current_dir().utf8().get_data())) {
 		message->hide();
 	} else {
@@ -862,7 +878,11 @@ void FileDialog::update_file_list() {
 	}
 
 	for (const DirInfo &info : filtered_dirs) {
-		file_list->add_item(info.name, theme_cache.folder);
+		if (display_mode == DISPLAY_THUMBNAILS) {
+			file_list->add_item(info.name, theme_cache.folder_thumbnail);
+		} else {
+			file_list->add_item(info.name, theme_cache.folder);
+		}
 		file_list->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
 
 		Dictionary d;
@@ -924,8 +944,15 @@ void FileDialog::update_file_list() {
 	}
 
 	for (const FileInfo &info : filtered_files) {
-		const Ref<Texture2D> icon = get_icon_func ? get_icon_func(base_dir.path_join(info.name)) : theme_cache.file;
-		file_list->add_item(info.name, icon);
+		file_list->add_item(info.name);
+		if (get_icon_func) {
+			Ref<Texture2D> icon = get_icon_func(base_dir.path_join(info.name));
+			file_list->set_item_icon(-1, icon);
+		} else if (display_mode == DISPLAY_THUMBNAILS) {
+			file_list->set_item_icon(-1, theme_cache.file_thumbnail);
+		} else {
+			file_list->set_item_icon(-1, theme_cache.file);
+		}
 		file_list->set_item_icon_modulate(-1, theme_cache.file_icon_color);
 
 		if (mode == FILE_MODE_OPEN_DIR) {
@@ -1272,6 +1299,27 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 
 FileDialog::FileMode FileDialog::get_file_mode() const {
 	return mode;
+}
+
+void FileDialog::set_display_mode(DisplayMode p_mode) {
+	ERR_FAIL_INDEX((int)p_mode, 2);
+	if (display_mode == p_mode) {
+		return;
+	}
+	display_mode = p_mode;
+
+	if (p_mode == DISPLAY_THUMBNAILS) {
+		thumbnail_mode_button->set_pressed(true);
+		list_mode_button->set_pressed(false);
+	} else {
+		thumbnail_mode_button->set_pressed(false);
+		list_mode_button->set_pressed(true);
+	}
+	invalidate();
+}
+
+FileDialog::DisplayMode FileDialog::get_display_mode() const {
+	return display_mode;
 }
 
 void FileDialog::set_access(Access p_access) {
@@ -1826,6 +1874,8 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_mode_overriding_title"), &FileDialog::is_mode_overriding_title);
 	ClassDB::bind_method(D_METHOD("set_file_mode", "mode"), &FileDialog::set_file_mode);
 	ClassDB::bind_method(D_METHOD("get_file_mode"), &FileDialog::get_file_mode);
+	ClassDB::bind_method(D_METHOD("set_display_mode", "mode"), &FileDialog::set_display_mode);
+	ClassDB::bind_method(D_METHOD("get_display_mode"), &FileDialog::get_display_mode);
 	ClassDB::bind_method(D_METHOD("get_vbox"), &FileDialog::get_vbox);
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &FileDialog::get_line_edit);
 	ClassDB::bind_method(D_METHOD("set_access", "access"), &FileDialog::set_access);
@@ -1842,6 +1892,7 @@ void FileDialog::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_overrides_title"), "set_mode_overrides_title", "is_mode_overriding_title");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "file_mode", PROPERTY_HINT_ENUM, "Open File,Open Files,Open Folder,Open Any,Save"), "set_file_mode", "get_file_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List"), "set_display_mode", "get_display_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User Data,File System"), "set_access", "get_access");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "root_subfolder"), "set_root_subfolder", "get_root_subfolder");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "filters"), "set_filters", "get_filters");
@@ -1868,6 +1919,11 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(ACCESS_USERDATA);
 	BIND_ENUM_CONSTANT(ACCESS_FILESYSTEM);
 
+	BIND_ENUM_CONSTANT(DISPLAY_THUMBNAILS);
+	BIND_ENUM_CONSTANT(DISPLAY_LIST);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FileDialog, thumbnail_size);
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, parent_folder);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, forward_folder);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, back_folder);
@@ -1881,6 +1937,10 @@ void FileDialog::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, sort);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, favorite_up);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, favorite_down);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, thumbnail_mode);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, list_mode);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, file_thumbnail);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, folder_thumbnail);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, folder_icon_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, file_icon_color);
@@ -2116,6 +2176,30 @@ FileDialog::FileDialog() {
 	show_hidden->set_tooltip_text(ETR("Toggle the visibility of hidden files."));
 	lower_toolbar->add_child(show_hidden);
 	show_hidden->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_hidden_files));
+
+	lower_toolbar->add_child(memnew(VSeparator));
+
+	Ref<ButtonGroup> view_mode_group;
+	view_mode_group.instantiate();
+
+	thumbnail_mode_button = memnew(Button);
+	thumbnail_mode_button->set_toggle_mode(true);
+	thumbnail_mode_button->set_pressed(true);
+	thumbnail_mode_button->set_button_group(view_mode_group);
+	thumbnail_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
+	thumbnail_mode_button->set_accessibility_name(ETR("View as Thumbnails"));
+	thumbnail_mode_button->set_tooltip_text(ETR("View items as a grid of thumbnails."));
+	lower_toolbar->add_child(thumbnail_mode_button);
+	thumbnail_mode_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::set_display_mode).bind(DISPLAY_THUMBNAILS));
+
+	list_mode_button = memnew(Button);
+	list_mode_button->set_toggle_mode(true);
+	list_mode_button->set_button_group(view_mode_group);
+	list_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
+	list_mode_button->set_accessibility_name(ETR("View as List"));
+	list_mode_button->set_tooltip_text(ETR("View items as a list."));
+	lower_toolbar->add_child(list_mode_button);
+	list_mode_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::set_display_mode).bind(DISPLAY_LIST));
 
 	lower_toolbar->add_child(memnew(VSeparator));
 

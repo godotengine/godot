@@ -137,6 +137,9 @@
 			The currently selected file path of the file dialog.
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
+		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="FileDialog.DisplayMode" default="0">
+			Display mode of the dialog's file list.
+		</member>
 		<member name="file_mode" type="int" setter="set_file_mode" getter="get_file_mode" enum="FileDialog.FileMode" default="4">
 			The dialog's open or save mode, which affects the selection behavior. See [enum FileMode].
 		</member>
@@ -223,6 +226,12 @@
 		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
 			The dialog allows accessing files on the whole file system.
 		</constant>
+		<constant name="DISPLAY_THUMBNAILS" value="0" enum="DisplayMode">
+			The dialog displays files as a grid of thumbnails. Use [theme_item thumbnail_size] to adjust their size.
+		</constant>
+		<constant name="DISPLAY_LIST" value="1" enum="DisplayMode">
+			The dialog displays files as a list of filenames.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="file_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.25)">
@@ -233,6 +242,9 @@
 		</theme_item>
 		<theme_item name="folder_icon_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The color modulation applied to the folder icon.
+		</theme_item>
+		<theme_item name="thumbnail_size" data_type="constant" type="int" default="64">
+			The size of thumbnail icons when [constant DISPLAY_THUMBNAILS] is enabled.
 		</theme_item>
 		<theme_item name="back_folder" data_type="icon" type="Texture2D">
 			Custom icon for the back arrow.
@@ -252,11 +264,20 @@
 		<theme_item name="file" data_type="icon" type="Texture2D">
 			Custom icon for files.
 		</theme_item>
+		<theme_item name="file_thumbnail" data_type="icon" type="Texture2D">
+			Icon for files when in thumbnail mode.
+		</theme_item>
 		<theme_item name="folder" data_type="icon" type="Texture2D">
 			Custom icon for folders.
 		</theme_item>
+		<theme_item name="folder_thumbnail" data_type="icon" type="Texture2D">
+			Icon for folders when in thumbnail mode.
+		</theme_item>
 		<theme_item name="forward_folder" data_type="icon" type="Texture2D">
 			Custom icon for the forward arrow.
+		</theme_item>
+		<theme_item name="list_mode" data_type="icon" type="Texture2D">
+			Icon for the button that enables list mode.
 		</theme_item>
 		<theme_item name="parent_folder" data_type="icon" type="Texture2D">
 			Custom icon for the parent folder arrow.
@@ -266,6 +287,9 @@
 		</theme_item>
 		<theme_item name="sort" data_type="icon" type="Texture2D">
 			Custom icon for the sorting options menu.
+		</theme_item>
+		<theme_item name="thumbnail_mode" data_type="icon" type="Texture2D">
+			Icon for the button that enables thumbnail mode.
 		</theme_item>
 		<theme_item name="toggle_filename_filter" data_type="icon" type="Texture2D">
 			Custom icon for the toggle button for the filter for file names.
