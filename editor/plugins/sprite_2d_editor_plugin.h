@@ -119,6 +119,11 @@ class Sprite2DEditorPlugin : public EditorPlugin {
 
 	Sprite2DEditor *sprite_editor = nullptr;
 
+	Label *dragging_mode_hint = nullptr;
+
+	void _editor_theme_changed();
+	void _update_dragging_mode_hint(bool p_region_enabled);
+
 public:
 	virtual String get_plugin_name() const override { return "Sprite2D"; }
 	bool has_main_screen() const override { return false; }
