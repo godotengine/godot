@@ -35,7 +35,7 @@
 #include "core/io/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 /// Android implementation of the DirAccess interface used to provide access to
 /// ACCESS_FILESYSTEM and ACCESS_RESOURCES directory resources.

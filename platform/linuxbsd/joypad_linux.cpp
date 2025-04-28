@@ -35,10 +35,10 @@
 #include "core/os/os.h"
 
 #include <dirent.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <linux/input.h>
 #include <unistd.h>
+#include <cerrno>
 
 #ifdef UDEV_ENABLED
 #ifdef SOWRAP_ENABLED

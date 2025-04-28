@@ -38,8 +38,8 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-#include <stdio.h>
-#include <wchar.h>
+#include <cstdio>
+#include <cwchar>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 

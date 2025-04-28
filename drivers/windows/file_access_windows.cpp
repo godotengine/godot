@@ -41,12 +41,12 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include <errno.h>
 #include <io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
-#include <wchar.h>
+#include <cerrno>
+#include <cwchar>
 
 #ifdef _MSC_VER
 #define S_ISREG(m) ((m) & _S_IFREG)

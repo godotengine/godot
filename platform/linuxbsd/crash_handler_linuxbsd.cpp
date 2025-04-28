@@ -46,8 +46,8 @@
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <link.h>
-#include <signal.h>
-#include <stdlib.h>
+#include <csignal>
+#include <cstdlib>
 
 static void handle_crash(int sig) {
 	signal(SIGSEGV, SIG_DFL);

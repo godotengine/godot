@@ -35,8 +35,6 @@
 #include <webp/decode.h>
 #include <webp/encode.h>
 
-#include <string.h>
-
 namespace WebPCommon {
 Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {
 	ERR_FAIL_COND_V(p_image.is_null() || p_image->is_empty(), Vector<uint8_t>());
