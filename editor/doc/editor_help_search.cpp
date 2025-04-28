@@ -30,11 +30,11 @@
 
 #include "editor_help_search.h"
 
-#include "editor/editor_feature_profile.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_feature_profile.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/line_edit.h"

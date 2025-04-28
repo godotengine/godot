@@ -51,7 +51,7 @@
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script/script_editor_plugin.h"
-#include "editor/project_settings_editor.h"
+#include "editor/settings/project_settings_editor.h"
 #include "editor/translations/editor_translation_parser.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"

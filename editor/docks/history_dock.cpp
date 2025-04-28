@@ -32,9 +32,9 @@
 
 #include "core/io/config_file.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/item_list.h"
 

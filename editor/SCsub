@@ -98,6 +98,7 @@ if env.editor_build:
     SConscript("import/SCsub")
     SConscript("plugins/SCsub")
     SConscript("project_manager/SCsub")
+    SConscript("settings/SCsub")
     SConscript("themes/SCsub")
     SConscript("translations/SCsub")
 

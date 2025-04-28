@@ -30,9 +30,9 @@
 
 #include "editor_script_plugin.h"
 
-#include "editor/editor_command_palette.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_script.h"
+#include "editor/settings/editor_command_palette.h"
 
 Ref<EditorScript> create_instance(const StringName &p_name) {
 	Ref<EditorScript> es;

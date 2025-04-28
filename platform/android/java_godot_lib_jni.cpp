@@ -56,7 +56,7 @@
 #endif // XR_DISABLED
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 #include <android/asset_manager_jni.h>

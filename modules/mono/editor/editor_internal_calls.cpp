@@ -44,10 +44,10 @@
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/export/lipo.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/plugins/script/script_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 

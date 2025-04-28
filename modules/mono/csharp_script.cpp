@@ -63,7 +63,7 @@
 #include "editor/docks/node_dock.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
