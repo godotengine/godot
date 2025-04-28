@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "time.h"
+#include "time.h" // NOLINT(modernize-deprecated-headers) False positive with C-Header of the same name.
 
 #include "core/os/os.h"
 

@@ -50,6 +50,7 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <utility>
 
 // IWYU pragma: end_exports

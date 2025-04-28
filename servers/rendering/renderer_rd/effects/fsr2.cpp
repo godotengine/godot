@@ -36,7 +36,7 @@
 using namespace RendererRD;
 
 #ifndef _MSC_VER
-#include <wchar.h>
+#include <cwchar>
 #define wcscpy_s wcscpy
 #endif
 

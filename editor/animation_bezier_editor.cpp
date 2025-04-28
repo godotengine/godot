@@ -40,7 +40,7 @@
 #include "scene/gui/view_panner.h"
 #include "scene/resources/text_line.h"
 
-#include <limits.h>
+#include <climits>
 
 float AnimationBezierTrackEdit::_bezier_h_to_pixel(float p_h) {
 	float h = p_h;
@@ -1578,7 +1578,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (scaling_selection && mb.is_valid() && !read_only && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		if (abs(scaling_selection_scale.x - 1) > CMP_EPSILON || abs(scaling_selection_scale.y - 1) > CMP_EPSILON) {
+		if (std::abs(scaling_selection_scale.x - 1) > CMP_EPSILON || std::abs(scaling_selection_scale.y - 1) > CMP_EPSILON) {
 			// Scale it.
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Scale Bezier Points"));

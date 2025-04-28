@@ -38,8 +38,8 @@
 
 #include <objbase.h>
 #include <sapi.h>
-#include <wchar.h>
 #include <winnls.h>
+#include <cwchar>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

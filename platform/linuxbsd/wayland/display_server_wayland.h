@@ -61,8 +61,8 @@
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
-#include <limits.h>
-#include <stdio.h>
+#include <climits>
+#include <cstdio>
 
 #undef CursorShape
 

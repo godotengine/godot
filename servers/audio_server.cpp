@@ -43,8 +43,6 @@
 #include "servers/audio/audio_stream.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
 
-#include <cstring>
-
 #ifdef TOOLS_ENABLED
 #define MARK_EDITED set_edited(true);
 #else

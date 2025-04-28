@@ -40,8 +40,8 @@
 #ifdef CRASH_HANDLER_EXCEPTION
 
 #include <cxxabi.h>
-#include <signal.h>
 #include <algorithm>
+#include <csignal>
 #include <cstdlib>
 #include <iterator>
 #include <string>
