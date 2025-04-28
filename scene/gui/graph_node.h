@@ -111,6 +111,8 @@ class GraphNode : public GraphElement {
 
 	void _port_pos_update();
 
+	String _get_ac_name() const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -123,6 +125,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	PackedStringArray get_accessibility_configuration_warnings() const override;
 
 public:
 	virtual String get_accessibility_container_name(const Node *p_node) const override;

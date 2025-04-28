@@ -113,6 +113,8 @@ protected:
 	virtual void _queue_update_size_cache();
 	virtual String _get_translated_text(const String &p_text) const;
 
+	PackedStringArray get_accessibility_configuration_warnings() const override;
+
 	Size2 _fit_icon_size(const Size2 &p_size) const;
 	Ref<StyleBox> _get_current_stylebox() const;
 	Size2 _get_largest_stylebox_size() const;

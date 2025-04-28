@@ -185,6 +185,19 @@ Ref<StyleBox> Button::_get_current_stylebox() const {
 	return stylebox;
 }
 
+PackedStringArray Button::get_accessibility_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
+
+	String ac_name = get_accessibility_name();
+	if (!xl_text.is_empty() && ac_name.is_empty()) {
+		ac_name = xl_text;
+	}
+	_accessibility_configuration_check_name(String(), ac_name, RTR("Text"), warnings);
+
+	return warnings;
+}
+
 void Button::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {

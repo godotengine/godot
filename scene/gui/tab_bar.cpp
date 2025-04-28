@@ -386,6 +386,18 @@ void TabBar::_accessibility_action_focus(const Variant &p_data, int p_index) {
 	set_current_tab(p_index);
 }
 
+PackedStringArray TabBar::get_accessibility_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray warnings = Control::get_accessibility_configuration_warnings();
+
+	for (int i = 0; i < tabs.size(); i++) {
+		const Tab &item = tabs[i];
+		_accessibility_configuration_check_name(vformat(RTR("Tab %d"), i), item.text.strip_edges(), RTR("Text"), warnings);
+	}
+
+	return warnings;
+}
+
 void TabBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

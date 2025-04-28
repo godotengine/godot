@@ -282,6 +282,8 @@ protected:
 	void _accessibility_action_set_value(const Variant &p_data);
 	void _accessibility_action_menu(const Variant &p_data);
 
+	PackedStringArray get_accessibility_configuration_warnings() const override;
+
 public:
 	void edit();
 	void unedit();

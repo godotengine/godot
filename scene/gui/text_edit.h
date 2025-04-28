@@ -758,6 +758,8 @@ protected:
 	void _accessibility_scroll_set(const Variant &p_data);
 	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_line, int p_wrap);
 
+	PackedStringArray get_accessibility_configuration_warnings() const override;
+
 	GDVIRTUAL2(_handle_unicode_input, int, int)
 	GDVIRTUAL1(_backspace, int)
 	GDVIRTUAL1(_cut, int)

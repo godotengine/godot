@@ -2070,6 +2070,8 @@ void SceneTreeEditor::set_accessibility_warnings(bool p_enable, bool p_update_se
 		EditorSettings::get_singleton()->set("docks/scene_tree/accessibility_warnings", p_enable);
 	}
 	accessibility_warnings = p_enable;
+	node_cache.force_update = true;
+	_update_tree();
 }
 
 void SceneTreeEditor::set_connect_to_script_mode(bool p_enable) {
