@@ -1285,11 +1285,22 @@ static const char *_joy_button_descriptions[(size_t)JoyButton::SDL_MAX] = {
 	TTRC("PS4/5 Touchpad"),
 };
 
+static const char *_virtual_joy_button_descriptions[(size_t)JoyButton::INVALID - (size_t)JoyButton::MIN - 1] = {
+	TTRC("Semantic \"Yes\", Sony Cross, Xbox A, Nintendo A"),
+	TTRC("Semantic \"No\", Sony Circle, Xbox B, Nintendo B"),
+};
+
 String InputEventJoypadButton::as_text() const {
 	String text = vformat(RTR("Joypad Button %d"), (int64_t)button_index);
 
 	if (button_index > JoyButton::INVALID && button_index < JoyButton::SDL_MAX) {
 		text += vformat(" (%s)", TTRGET(_joy_button_descriptions[(size_t)button_index]));
+	} else if (button_index < JoyButton::INVALID && button_index > JoyButton::MIN) {
+		text = vformat(RTR("Virtual Joypad Button %d"), (int64_t)button_index);
+		size_t virtual_index = (size_t)button_index;
+		virtual_index -= ((size_t)JoyButton::INVALID - 1); // Zero-indexed
+		virtual_index *= -1;
+		text += vformat(" (%s)", TTRGET(_virtual_joy_button_descriptions[virtual_index]));
 	}
 
 	if (pressure != 0) {
