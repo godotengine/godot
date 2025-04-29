@@ -3658,7 +3658,7 @@ void EditorNode::_update_file_menu_opened() {
 
 void EditorNode::_palette_quick_open_dialog() {
 	quick_open_color_palette->popup_dialog({ "ColorPalette" }, palette_file_selected_callback);
-	quick_open_color_palette->set_title(TTR("Quick Open Color Palette..."));
+	quick_open_color_palette->set_title(TTRC("Quick Open Color Palette..."));
 }
 
 void EditorNode::replace_resources_in_object(Object *p_object, const Vector<Ref<Resource>> &p_source_resources, const Vector<Ref<Resource>> &p_target_resource) {
