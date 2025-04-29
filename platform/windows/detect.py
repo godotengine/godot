@@ -190,7 +190,7 @@ def get_opts():
             "Targeted Windows version, >= 0x0601 (Windows 7)",
             "0x0601",
         ),
-        EnumVariable("windows_subsystem", "Windows subsystem", "gui", ("gui", "console")),
+        EnumVariable("windows_subsystem", "Windows subsystem", "gui", ["gui", "console"], ignorecase=2),
         ("msvc_version", "MSVC version to use. Handled automatically by SCons if omitted.", ""),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
