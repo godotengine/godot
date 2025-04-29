@@ -362,7 +362,7 @@ PrimitiveMesh::PrimitiveMesh() {
 	mesh = RenderingServer::get_singleton()->mesh_create();
 
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
-	texel_size = float(GLOBAL_GET("rendering/lightmapping/primitive_meshes/texel_size"));
+	texel_size = float(GLOBAL_GET_CACHED(float, "rendering/lightmapping/primitive_meshes/texel_size"));
 	if (texel_size <= 0.0) {
 		texel_size = 0.2;
 	}

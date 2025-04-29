@@ -1200,7 +1200,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 		// Also, take into account resolution scaling for the multiplier, since we have more leeway with quality
 		// degradation visibility. Conversely, allow upwards scaling, too, for increased mesh detail at high res.
-		const float scaling_3d_scale = GLOBAL_GET("rendering/scaling_3d/scale");
+		const float scaling_3d_scale = GLOBAL_GET_CACHED(float, "rendering/scaling_3d/scale");
 		scene_data.lod_distance_multiplier = lod_distance_multiplier * (1.0 / scaling_3d_scale);
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
@@ -1480,7 +1480,7 @@ bool RendererSceneRenderRD::is_volumetric_supported() const {
 }
 
 uint32_t RendererSceneRenderRD::get_max_elements() const {
-	return GLOBAL_GET("rendering/limits/cluster_builder/max_clustered_elements");
+	return GLOBAL_GET_CACHED(uint32_t, "rendering/limits/cluster_builder/max_clustered_elements");
 }
 
 RendererSceneRenderRD::RendererSceneRenderRD() {

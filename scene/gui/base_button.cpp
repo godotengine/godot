@@ -453,7 +453,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 				shortcut_feedback_timer = memnew(Timer);
 				shortcut_feedback_timer->set_one_shot(true);
 				add_child(shortcut_feedback_timer);
-				shortcut_feedback_timer->set_wait_time(GLOBAL_GET("gui/timers/button_shortcut_feedback_highlight_time"));
+				shortcut_feedback_timer->set_wait_time(GLOBAL_GET_CACHED(double, "gui/timers/button_shortcut_feedback_highlight_time"));
 				shortcut_feedback_timer->connect("timeout", callable_mp(this, &BaseButton::_shortcut_feedback_timeout));
 			}
 

@@ -664,7 +664,7 @@ Rect2 Control::get_parent_anchorable_rect() const {
 		Node *scene_root_parent = edited_scene_root ? edited_scene_root->get_parent() : nullptr;
 
 		if (scene_root_parent && get_viewport() == scene_root_parent->get_viewport()) {
-			parent_rect.size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+			parent_rect.size = Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
 		} else {
 			parent_rect = get_viewport()->get_visible_rect();
 		}
@@ -3391,14 +3391,14 @@ bool Control::is_layout_rtl() const {
 		data.is_rtl_dirty = false;
 		if (data.layout_dir == LAYOUT_DIRECTION_INHERITED) {
 #ifdef TOOLS_ENABLED
-			if (is_part_of_edited_scene() && GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+			if (is_part_of_edited_scene() && GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 				data.is_rtl = true;
 				return data.is_rtl;
 			}
 			if (is_inside_tree()) {
 				Node *edited_scene_root = get_tree()->get_edited_scene_root();
 				if (edited_scene_root == this) {
-					int proj_root_layout_direction = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
+					int proj_root_layout_direction = GLOBAL_GET_CACHED(int, "internationalization/rendering/root_node_layout_direction");
 					if (proj_root_layout_direction == 1) {
 						data.is_rtl = false;
 					} else if (proj_root_layout_direction == 2) {
@@ -3414,7 +3414,7 @@ bool Control::is_layout_rtl() const {
 				}
 			}
 #else
-			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+			if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 				data.is_rtl = true;
 				return data.is_rtl;
 			}
@@ -3447,14 +3447,14 @@ bool Control::is_layout_rtl() const {
 				data.is_rtl = TS->is_locale_right_to_left(locale);
 			}
 		} else if (data.layout_dir == LAYOUT_DIRECTION_APPLICATION_LOCALE) {
-			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+			if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 				data.is_rtl = true;
 			} else {
 				String locale = TranslationServer::get_singleton()->get_tool_locale();
 				data.is_rtl = TS->is_locale_right_to_left(locale);
 			}
 		} else if (data.layout_dir == LAYOUT_DIRECTION_SYSTEM_LOCALE) {
-			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+			if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 				const_cast<Control *>(this)->data.is_rtl = true;
 			} else {
 				String locale = OS::get_singleton()->get_locale();

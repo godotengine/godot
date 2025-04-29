@@ -2374,7 +2374,7 @@ MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_b
 	Samplers samplers;
 	samplers.mipmap_bias = p_mipmap_bias;
 	samplers.anisotropic_filtering_level = (int)anisotropic_filtering_level;
-	samplers.use_nearest_mipmap_filter = GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter");
+	samplers.use_nearest_mipmap_filter = GLOBAL_GET_CACHED(bool, "rendering/textures/default_filters/use_nearest_mipmap_filter");
 
 	RD::SamplerFilter mip_filter = samplers.use_nearest_mipmap_filter ? RD::SAMPLER_FILTER_NEAREST : RD::SAMPLER_FILTER_LINEAR;
 	float anisotropy_max = float(1 << samplers.anisotropic_filtering_level);

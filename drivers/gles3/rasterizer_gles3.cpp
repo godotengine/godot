@@ -100,7 +100,7 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 
 	time_total += frame_step;
 
-	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	double time_roll_over = GLOBAL_GET_CACHED(double, "rendering/limits/time/time_rollover_secs");
 	time_total = Math::fmod(time_total, time_roll_over);
 
 	canvas->set_time(time_total);

@@ -38,7 +38,7 @@
 #include "scene/theme/theme_db.h"
 
 void CodeEdit::_apply_project_settings() {
-	symbol_tooltip_timer->set_wait_time(GLOBAL_GET("gui/timers/tooltip_delay_sec"));
+	symbol_tooltip_timer->set_wait_time(GLOBAL_GET_CACHED(double, "gui/timers/tooltip_delay_sec"));
 }
 
 void CodeEdit::_notification(int p_what) {

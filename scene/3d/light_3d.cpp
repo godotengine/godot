@@ -122,7 +122,7 @@ uint32_t Light3D::get_cull_mask() const {
 void Light3D::set_color(const Color &p_color) {
 	color = p_color;
 
-	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		Color combined = color.srgb_to_linear();
 		combined *= correlated_color.srgb_to_linear();
 		RS::get_singleton()->light_set_color(light, combined.linear_to_srgb());
@@ -257,7 +257,7 @@ Color _color_from_temperature(float p_temperature) {
 
 void Light3D::set_temperature(const float p_temperature) {
 	temperature = p_temperature;
-	if (!GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		return;
 	}
 	correlated_color = _color_from_temperature(temperature);
@@ -334,7 +334,7 @@ void Light3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (!GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units") && (p_property.name == "light_intensity_lumens" || p_property.name == "light_intensity_lux" || p_property.name == "light_temperature")) {
+	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && (p_property.name == "light_intensity_lumens" || p_property.name == "light_intensity_lux" || p_property.name == "light_temperature")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 

@@ -112,7 +112,7 @@ float Environment::get_bg_intensity() const {
 }
 
 void Environment::_update_bg_energy() {
-	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		RS::get_singleton()->environment_set_bg_energy(environment, bg_energy_multiplier, bg_intensity);
 	} else {
 		RS::get_singleton()->environment_set_bg_energy(environment, bg_energy_multiplier, 1.0);
@@ -1158,7 +1158,7 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
-	if (p_property.name == "background_intensity" && !GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if (p_property.name == "background_intensity" && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 

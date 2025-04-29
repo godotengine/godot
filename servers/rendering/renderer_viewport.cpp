@@ -741,7 +741,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 #endif // XR_DISABLED
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		RSG::texture_storage->set_default_clear_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
+		RSG::texture_storage->set_default_clear_color(GLOBAL_GET_CACHED(Color, "rendering/environment/defaults/default_clear_color"));
 	}
 
 	if (sorted_active_viewports_dirty) {

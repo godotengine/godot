@@ -109,7 +109,7 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 	delta = frame_step;
 	time += frame_step;
 
-	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	double time_roll_over = GLOBAL_GET_CACHED(double, "rendering/limits/time/time_rollover_secs");
 	time = Math::fmod(time, time_roll_over);
 
 	canvas->set_time(time);
