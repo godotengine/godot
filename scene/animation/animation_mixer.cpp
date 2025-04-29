@@ -636,8 +636,8 @@ bool AnimationMixer::_update_caches() {
 	List<StringName> sname_list;
 	get_animation_list(&sname_list);
 
-	bool check_path = GLOBAL_GET("animation/warnings/check_invalid_track_paths");
-	bool check_angle_interpolation = GLOBAL_GET("animation/warnings/check_angle_interpolation_type_conflicting");
+	bool check_path = GLOBAL_GET_CACHED(bool, "animation/warnings/check_invalid_track_paths");
+	bool check_angle_interpolation = GLOBAL_GET_CACHED(bool, "animation/warnings/check_angle_interpolation_type_conflicting");
 
 	Node *parent = get_node_or_null(root_node);
 	if (!parent) {

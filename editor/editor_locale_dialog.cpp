@@ -242,7 +242,7 @@ void EditorLocaleDialog::_update_tree() {
 
 	int filter = SHOW_ALL_LOCALES;
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/locale_filter_mode")) {
-		filter = GLOBAL_GET("internationalization/locale/locale_filter_mode");
+		filter = GLOBAL_GET_CACHED(int, "internationalization/locale/locale_filter_mode");
 	}
 	Array f_lang_all;
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/language_filter")) {

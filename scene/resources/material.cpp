@@ -2068,7 +2068,7 @@ Color BaseMaterial3D::get_emission() const {
 void BaseMaterial3D::set_emission_energy_multiplier(float p_emission_energy_multiplier) {
 	emission_energy_multiplier = p_emission_energy_multiplier;
 
-	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		_material_set_param(shader_names->emission_energy, p_emission_energy_multiplier * emission_intensity);
 	} else {
 		_material_set_param(shader_names->emission_energy, p_emission_energy_multiplier);
@@ -2080,7 +2080,7 @@ float BaseMaterial3D::get_emission_energy_multiplier() const {
 }
 
 void BaseMaterial3D::set_emission_intensity(float p_emission_intensity) {
-	ERR_FAIL_COND_EDMSG(!GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units"), "Cannot set material emission intensity when Physical Light Units disabled.");
+	ERR_FAIL_COND_EDMSG(!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units"), "Cannot set material emission intensity when Physical Light Units disabled.");
 	emission_intensity = p_emission_intensity;
 	_material_set_param(shader_names->emission_energy, emission_energy_multiplier * emission_intensity);
 }
@@ -2449,7 +2449,7 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 	_validate_feature("refraction", FEATURE_REFRACTION, p_property);
 	_validate_feature("detail", FEATURE_DETAIL, p_property);
 
-	if (p_property.name == "emission_intensity" && !GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if (p_property.name == "emission_intensity" && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 

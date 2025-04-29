@@ -526,7 +526,7 @@ float VoxelGI::_get_camera_exposure_normalization() {
 	float exposure_normalization = 1.0;
 	if (camera_attributes.is_valid()) {
 		exposure_normalization = camera_attributes->get_exposure_multiplier();
-		if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 			exposure_normalization = camera_attributes->calculate_exposure_normalization();
 		}
 	}

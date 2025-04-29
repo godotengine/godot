@@ -727,7 +727,7 @@ bool SceneTree::process(double p_time) {
 #ifdef TOOLS_ENABLED
 #ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		String env_path = GLOBAL_GET(SNAME("rendering/environment/defaults/default_environment"));
+		String env_path = GLOBAL_GET("rendering/environment/defaults/default_environment");
 		env_path = env_path.strip_edges(); // User may have added a space or two.
 
 		bool can_load = true;

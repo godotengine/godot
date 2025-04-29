@@ -276,7 +276,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 		// Unlike PCVR, there's no additional 2D screen onto which to render the boot logo,
 		// so we skip this step if xr is enabled.
 		if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
-			xr_enabled = GLOBAL_GET("xr/shaders/enabled");
+			xr_enabled = GLOBAL_GET_CACHED(bool, "xr/shaders/enabled");
 		} else {
 			xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
 		}

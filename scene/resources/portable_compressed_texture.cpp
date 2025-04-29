@@ -165,7 +165,7 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 	switch (p_compression_mode) {
 		case COMPRESSION_MODE_LOSSLESS:
 		case COMPRESSION_MODE_LOSSY: {
-			bool lossless_force_png = GLOBAL_GET("rendering/textures/lossless_compression/force_png") ||
+			bool lossless_force_png = GLOBAL_GET_CACHED(bool, "rendering/textures/lossless_compression/force_png") ||
 					!Image::_webp_mem_loader_func; // WebP module disabled.
 			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit.
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
