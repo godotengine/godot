@@ -43,11 +43,6 @@
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
 
-#ifdef MINGW_ENABLED
-#define near
-#define far
-#endif
-
 #ifdef WINDOWS_ENABLED
 #include <shlwapi.h>
 #endif

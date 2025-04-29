@@ -64,10 +64,6 @@ public:
 	DependencyEditor();
 };
 
-#ifdef MINGW_ENABLED
-#undef FILE_OPEN
-#endif
-
 class DependencyEditorOwners : public AcceptDialog {
 	GDCLASS(DependencyEditorOwners, AcceptDialog);
 
@@ -84,7 +80,7 @@ class DependencyEditorOwners : public AcceptDialog {
 
 private:
 	enum FileMenu {
-		FILE_OPEN
+		FILE_OPEN_,
 	};
 
 public:
