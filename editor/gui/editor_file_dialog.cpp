@@ -51,12 +51,6 @@
 #include "scene/gui/texture_rect.h"
 #include "servers/display_server.h"
 
-EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = nullptr;
-EditorFileDialog::GetIconFunc EditorFileDialog::get_thumbnail_func = nullptr;
-
-EditorFileDialog::RegisterFunc EditorFileDialog::register_func = nullptr;
-EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
-
 void EditorFileDialog::_native_popup() {
 	// Show native dialog directly.
 	String root;
@@ -1982,10 +1976,6 @@ void EditorFileDialog::_go_forward() {
 	dir_prev->set_disabled(local_history_pos == 0);
 	dir_next->set_disabled(local_history_pos == local_history.size() - 1);
 }
-
-bool EditorFileDialog::default_show_hidden_files = false;
-
-EditorFileDialog::DisplayMode EditorFileDialog::default_display_mode = DISPLAY_THUMBNAILS;
 
 void EditorFileDialog::set_display_mode(DisplayMode p_mode) {
 	if (display_mode == p_mode) {
