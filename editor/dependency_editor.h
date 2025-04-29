@@ -80,7 +80,7 @@ class DependencyEditorOwners : public AcceptDialog {
 
 private:
 	enum FileMenu {
-		FILE_OPEN_,
+		FILE_MENU_OPEN,
 	};
 
 public:

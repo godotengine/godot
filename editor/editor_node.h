@@ -138,23 +138,23 @@ public:
 
 	enum MenuOptions {
 		// Scene menu.
-		FILE_NEW_SCENE,
-		FILE_NEW_INHERITED_SCENE,
-		FILE_OPEN_SCENE,
-		FILE_OPEN_PREV,
-		FILE_OPEN_RECENT,
-		FILE_SAVE_SCENE,
-		FILE_SAVE_AS_SCENE,
-		FILE_SAVE_ALL_SCENES,
-		FILE_MULTI_SAVE_AS_SCENE,
-		FILE_QUICK_OPEN,
-		FILE_QUICK_OPEN_SCENE,
-		FILE_QUICK_OPEN_SCRIPT,
-		FILE_UNDO,
-		FILE_REDO,
-		FILE_RELOAD_SAVED_SCENE,
-		FILE_CLOSE,
-		FILE_QUIT,
+		SCENE_NEW_SCENE,
+		SCENE_NEW_INHERITED_SCENE,
+		SCENE_OPEN_SCENE,
+		SCENE_OPEN_PREV,
+		SCENE_OPEN_RECENT,
+		SCENE_SAVE_SCENE,
+		SCENE_SAVE_AS_SCENE,
+		SCENE_SAVE_ALL_SCENES,
+		SCENE_MULTI_SAVE_AS_SCENE,
+		SCENE_QUICK_OPEN,
+		SCENE_QUICK_OPEN_SCENE,
+		SCENE_QUICK_OPEN_SCRIPT,
+		SCENE_UNDO,
+		SCENE_REDO,
+		SCENE_RELOAD_SAVED_SCENE,
+		SCENE_CLOSE,
+		SCENE_QUIT,
 
 		FILE_EXPORT_MESH_LIBRARY,
 
@@ -210,8 +210,8 @@ public:
 
 		// Non-menu options.
 		SCENE_TAB_CLOSE,
-		FILE_SAVE_AND_RUN,
-		FILE_SAVE_AND_RUN_MAIN_SCENE,
+		SAVE_AND_RUN,
+		SAVE_AND_RUN_MAIN_SCENE,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
 		SETTINGS_PICK_MAIN_SCENE,
@@ -756,7 +756,7 @@ public:
 	void trigger_menu_option(int p_option, bool p_confirmed);
 	bool has_previous_closed_scenes() const;
 
-	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
+	void new_inherited_scene() { _menu_option_confirm(SCENE_NEW_INHERITED_SCENE, false); }
 
 	void update_distraction_free_mode();
 	void set_distraction_free_mode(bool p_enter);
