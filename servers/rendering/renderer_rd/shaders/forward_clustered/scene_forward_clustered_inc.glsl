@@ -147,6 +147,10 @@ bool sc_multimesh_has_custom_data() {
 	return ((sc_packed_1() >> 3) & 1U) != 0;
 }
 
+bool sc_use_directional_projector() {
+	return ((sc_packed_1() >> 4) & 1U) != 0;
+}
+
 float sc_luminance_multiplier() {
 	// Not used in clustered renderer but we share some code with the mobile renderer that requires this.
 	return 1.0;

@@ -1627,7 +1627,6 @@ void main() {
 						float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor2 + (1.0 - blur_factor2) * blend_split_weight), pssm_coord, scene_data.taa_frame_count);
 						shadow = mix(shadow, shadow2, pssm_blend);
 					}
-
 #ifdef USE_LIGHTMAP
 					if (shadowmask_mode == LIGHTMAP_SHADOWMASK_MODE_REPLACE) {
 						shadow = mix(shadow, shadowmask, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z)); //done with negative values for performance
@@ -1708,9 +1707,43 @@ void main() {
 #endif
 
 			float size_A = sc_use_light_soft_shadows() ? directional_lights.data[i].size : 0.0;
+			vec3 light_color = directional_lights.data[i].color;
+
+			// Directional light projector
+			if (sc_use_directional_projector() && directional_lights.data[i].projector_rect != vec4(0.0)) {
+				vec4 splane = (directional_lights.data[i].projector_matrix * vec4(vertex, 1.0));
+				splane /= splane.w;
+
+				if (sc_projector_use_mipmaps()) {
+					//ensure we have proper mipmaps
+					vec4 splane_ddx = (directional_lights.data[i].projector_matrix * vec4(vertex + vertex_ddx, 1.0));
+					splane_ddx /= splane_ddx.w;
+					vec2 proj_uv_ddx = (splane_ddx.xy - splane.xy) * directional_lights.data[i].projector_rect.zw;
+
+					vec4 splane_ddy = (directional_lights.data[i].projector_matrix * vec4(vertex + vertex_ddy, 1.0));
+					splane_ddy /= splane_ddy.w;
+					vec2 proj_uv_ddy = (splane_ddy.xy - splane.xy) * directional_lights.data[i].projector_rect.zw;
+
+					splane.xy = (splane.xy * 0.5 + 0.5) * directional_lights.data[i].projector_scale.xy + directional_lights.data[i].projector_offset.xy;
+
+					// Repeating
+					splane.xy = fract(splane.xy);
+					vec2 proj_uv = splane.xy * directional_lights.data[i].projector_rect.zw;
+
+					vec4 proj = textureGrad(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + directional_lights.data[i].projector_rect.xy, proj_uv_ddx, proj_uv_ddy);
+					light_color *= proj.rgb * proj.a;
+				} else {
+					splane.xy = (splane.xy * 0.5 + 0.5) * directional_lights.data[i].projector_scale.xy + directional_lights.data[i].projector_offset.xy;
+					splane.xy = fract(splane.xy);
+					vec2 proj_uv = splane.xy * directional_lights.data[i].projector_rect.zw;
+
+					vec4 proj = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + directional_lights.data[i].projector_rect.xy, 0.0);
+					light_color *= proj.rgb * proj.a;
+				}
+			}
 
 			light_compute(normal, directional_lights.data[i].direction, view, size_A,
-					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
+					light_color * directional_lights.data[i].energy * tint,
 					true, shadow, f0, orms, directional_lights.data[i].specular, albedo, alpha,
 					screen_uv, vec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED

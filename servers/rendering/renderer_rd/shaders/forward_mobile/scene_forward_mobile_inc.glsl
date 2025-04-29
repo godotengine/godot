@@ -160,6 +160,10 @@ bool sc_scene_roughness_limiter_enabled() {
 	return ((sc_packed_0() >> 17) & 1U) != 0;
 }
 
+bool sc_use_directional_projector() {
+	return ((sc_packed_0() >> 18) & 1U) != 0;
+}
+
 uint sc_soft_shadow_samples() {
 	return (sc_packed_0() >> 20) & 63U;
 }
