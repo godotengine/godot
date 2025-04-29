@@ -1090,103 +1090,107 @@ void Environment::_update_adjustment() {
 // Private methods, constructor and destructor
 
 void Environment::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "sky" || p_property.name == "sky_custom_fov" || p_property.name == "sky_rotation" || p_property.name == "ambient_light_sky_contribution") {
-		if (bg_mode != BG_SKY && ambient_source != AMBIENT_SOURCE_SKY && reflection_source != REFLECTION_SOURCE_SKY) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
-
-	if (p_property.name == "fog_depth_curve" || p_property.name == "fog_depth_begin" || p_property.name == "fog_depth_end") {
-		if (fog_mode == FOG_MODE_EXPONENTIAL) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
-
-	if (p_property.name == "ambient_light_color" || p_property.name == "ambient_light_energy") {
-		if (ambient_source == AMBIENT_SOURCE_DISABLED) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
-
-	if (p_property.name == "ambient_light_sky_contribution") {
-		if (ambient_source == AMBIENT_SOURCE_DISABLED || ambient_source == AMBIENT_SOURCE_COLOR) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
-
-	if (p_property.name == "fog_aerial_perspective") {
-		if (bg_mode != BG_SKY) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
-
-	if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR || tone_mapper == TONE_MAPPER_AGX)) {
-		// Whitepoint adjustment is not available with AgX or linear as it's hardcoded there.
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (p_property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		// Hide glow properties we do not support in GL Compatibility.
-		if (p_property.name.begins_with("glow_levels") || p_property.name == "glow_normalized" || p_property.name == "glow_strength" || p_property.name == "glow_mix" || p_property.name == "glow_blend_mode" || p_property.name == "glow_map_strength" || p_property.name == "glow_map") {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	} else {
-		if (p_property.name == "glow_mix" && glow_blend_mode != GLOW_BLEND_MODE_MIX) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
-
-	if (p_property.name == "background_color") {
-		if (bg_mode != BG_COLOR && ambient_source != AMBIENT_SOURCE_COLOR) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
-
-	if (p_property.name == "background_canvas_max_layer") {
-		if (bg_mode != BG_CANVAS) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
-
-	if (p_property.name == "background_camera_feed_id") {
-		if (bg_mode != BG_CAMERA_FEED) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
-
-	if (p_property.name == "background_intensity" && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	static const char *hide_prefixes[] = {
-		"fog_",
-		"volumetric_fog_",
-		"ssr_",
-		"ssao_",
-		"ssil_",
-		"sdfgi_",
-		"glow_",
-		"adjustment_",
-		nullptr
-
-	};
-
-	const char **prefixes = hide_prefixes;
-	while (*prefixes) {
-		String prefix = String(*prefixes);
-
-		String enabled = prefix + "enabled";
-		if (p_property.name.begins_with(prefix) && p_property.name != enabled && !bool(get(enabled))) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-			return;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "sky" || p_property.name == "sky_custom_fov" || p_property.name == "sky_rotation" || p_property.name == "ambient_light_sky_contribution") {
+			if (bg_mode != BG_SKY && ambient_source != AMBIENT_SOURCE_SKY && reflection_source != REFLECTION_SOURCE_SKY) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 
-		prefixes++;
+		if (p_property.name == "fog_depth_curve" || p_property.name == "fog_depth_begin" || p_property.name == "fog_depth_end") {
+			if (fog_mode == FOG_MODE_EXPONENTIAL) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		}
+
+		if (p_property.name == "ambient_light_color" || p_property.name == "ambient_light_energy") {
+			if (ambient_source == AMBIENT_SOURCE_DISABLED) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		}
+
+		if (p_property.name == "ambient_light_sky_contribution") {
+			if (ambient_source == AMBIENT_SOURCE_DISABLED || ambient_source == AMBIENT_SOURCE_COLOR) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		}
+
+		if (p_property.name == "fog_aerial_perspective") {
+			if (bg_mode != BG_SKY) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		}
+
+		if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR || tone_mapper == TONE_MAPPER_AGX)) {
+			// Whitepoint adjustment is not available with AgX or linear as it's hardcoded there.
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (p_property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+			// Hide glow properties we do not support in GL Compatibility.
+			if (p_property.name.begins_with("glow_levels") || p_property.name == "glow_normalized" || p_property.name == "glow_strength" || p_property.name == "glow_mix" || p_property.name == "glow_blend_mode" || p_property.name == "glow_map_strength" || p_property.name == "glow_map") {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else {
+			if (p_property.name == "glow_mix" && glow_blend_mode != GLOW_BLEND_MODE_MIX) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		}
+
+		if (p_property.name == "background_color") {
+			if (bg_mode != BG_COLOR && ambient_source != AMBIENT_SOURCE_COLOR) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		}
+
+		if (p_property.name == "background_canvas_max_layer") {
+			if (bg_mode != BG_CANVAS) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		}
+
+		if (p_property.name == "background_camera_feed_id") {
+			if (bg_mode != BG_CAMERA_FEED) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		}
+
+		if (p_property.name == "background_intensity" && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		static const char *hide_prefixes[] = {
+			"fog_",
+			"volumetric_fog_",
+			"ssr_",
+			"ssao_",
+			"ssil_",
+			"sdfgi_",
+			"glow_",
+			"adjustment_",
+			nullptr
+
+		};
+
+		const char **prefixes = hide_prefixes;
+		while (*prefixes) {
+			String prefix = String(*prefixes);
+
+			String enabled = prefix + "enabled";
+			if (p_property.name.begins_with(prefix) && p_property.name != enabled && !bool(get(enabled))) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+				return;
+			}
+
+			prefixes++;
+		}
 	}
+#endif
 }
 
 #ifndef DISABLE_DEPRECATED

@@ -431,9 +431,13 @@ void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "seed" && !use_fixed_seed) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (p_property.name == "emitting") {
-		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "emitting") {
+			p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
+		}
 	}
+#endif
 }
 
 void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {

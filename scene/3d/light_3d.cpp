@@ -323,9 +323,13 @@ bool Light3D::is_editor_only() const {
 }
 
 void Light3D::_validate_property(PropertyInfo &p_property) const {
-	if (!shadow && (p_property.name == "shadow_bias" || p_property.name == "shadow_normal_bias" || p_property.name == "shadow_reverse_cull_face" || p_property.name == "shadow_transmittance_bias" || p_property.name == "shadow_opacity" || p_property.name == "shadow_blur" || p_property.name == "distance_fade_shadow" || p_property.name == "shadow_caster_mask")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (!shadow && (p_property.name == "shadow_bias" || p_property.name == "shadow_normal_bias" || p_property.name == "shadow_reverse_cull_face" || p_property.name == "shadow_transmittance_bias" || p_property.name == "shadow_opacity" || p_property.name == "shadow_blur" || p_property.name == "distance_fade_shadow" || p_property.name == "shadow_caster_mask")) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 
 	if (get_light_type() != RS::LIGHT_DIRECTIONAL && (p_property.name == "light_angular_distance" || p_property.name == "light_intensity_lux")) {
 		// Angular distance and Light Intensity Lux are only used in DirectionalLight3D.
@@ -337,10 +341,13 @@ void Light3D::_validate_property(PropertyInfo &p_property) const {
 	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && (p_property.name == "light_intensity_lumens" || p_property.name == "light_intensity_lux" || p_property.name == "light_temperature")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-
-	if (!distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_shadow" || p_property.name == "distance_fade_length")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (!distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_shadow" || p_property.name == "distance_fade_length")) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 void Light3D::_bind_methods() {
@@ -550,16 +557,19 @@ DirectionalLight3D::SkyMode DirectionalLight3D::get_sky_mode() const {
 }
 
 void DirectionalLight3D::_validate_property(PropertyInfo &p_property) const {
-	if (shadow_mode == SHADOW_ORTHOGONAL && (p_property.name == "directional_shadow_split_1" || p_property.name == "directional_shadow_blend_splits")) {
-		// Split 2 and split blending are only used with the PSSM 2 Splits and PSSM 4 Splits shadow modes.
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (shadow_mode == SHADOW_ORTHOGONAL && (p_property.name == "directional_shadow_split_1" || p_property.name == "directional_shadow_blend_splits")) {
+			// Split 2 and split blending are only used with the PSSM 2 Splits and PSSM 4 Splits shadow modes.
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (p_property.name == "directional_shadow_split_2" || p_property.name == "directional_shadow_split_3")) {
-		// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (p_property.name == "directional_shadow_split_2" || p_property.name == "directional_shadow_split_3")) {
+			// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
-
+#endif
 	if (p_property.name == "light_size" || p_property.name == "light_projector") {
 		// Not implemented in DirectionalLight3D (`light_size` is replaced by `light_angular_distance`).
 		p_property.usage = PROPERTY_USAGE_NONE;

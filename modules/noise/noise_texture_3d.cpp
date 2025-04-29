@@ -83,11 +83,15 @@ void NoiseTexture3D::_bind_methods() {
 }
 
 void NoiseTexture3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "seamless_blend_skirt") {
-		if (!seamless) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "seamless_blend_skirt") {
+			if (!seamless) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 	}
+#endif
 }
 
 void NoiseTexture3D::_set_texture_data(const TypedArray<Image> &p_data) {

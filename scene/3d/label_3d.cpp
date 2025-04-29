@@ -180,19 +180,23 @@ void Label3D::_bind_methods() {
 }
 
 void Label3D::_validate_property(PropertyInfo &p_property) const {
-	if (
-			p_property.name == "material_override" ||
-			p_property.name == "material_overlay" ||
-			p_property.name == "lod_bias" ||
-			p_property.name == "gi_mode" ||
-			p_property.name == "gi_lightmap_scale") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (
+				p_property.name == "material_override" ||
+				p_property.name == "material_overlay" ||
+				p_property.name == "lod_bias" ||
+				p_property.name == "gi_mode" ||
+				p_property.name == "gi_lightmap_scale") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "cast_shadow" && alpha_cut == ALPHA_CUT_DISABLED) {
-		// Alpha-blended materials can't cast shadows.
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if (p_property.name == "cast_shadow" && alpha_cut == ALPHA_CUT_DISABLED) {
+			// Alpha-blended materials can't cast shadows.
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 void Label3D::_notification(int p_what) {

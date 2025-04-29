@@ -2203,15 +2203,19 @@ void TileMapLayer::_bind_methods() {
 }
 
 void TileMapLayer::_validate_property(PropertyInfo &p_property) const {
-	if (is_y_sort_enabled()) {
-		if (p_property.name == "rendering_quadrant_size") {
-			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-		}
-	} else {
-		if (p_property.name == "x_draw_order_reversed") {
-			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (is_y_sort_enabled()) {
+			if (p_property.name == "rendering_quadrant_size") {
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
+		} else {
+			if (p_property.name == "x_draw_order_reversed") {
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
 		}
 	}
+#endif
 }
 
 void TileMapLayer::_update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) {

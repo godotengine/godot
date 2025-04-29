@@ -677,19 +677,23 @@ bool OpenXRCompositionLayer::_set(const StringName &p_property, const Variant &p
 }
 
 void OpenXRCompositionLayer::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "layer_viewport") {
-		if (use_android_surface) {
-			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
-		} else {
-			p_property.usage |= PROPERTY_USAGE_EDITOR;
-		}
-	} else if (p_property.name == "android_surface_size") {
-		if (use_android_surface) {
-			p_property.usage |= PROPERTY_USAGE_EDITOR;
-		} else {
-			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "layer_viewport") {
+			if (use_android_surface) {
+				p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+			} else {
+				p_property.usage |= PROPERTY_USAGE_EDITOR;
+			}
+		} else if (p_property.name == "android_surface_size") {
+			if (use_android_surface) {
+				p_property.usage |= PROPERTY_USAGE_EDITOR;
+			} else {
+				p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+			}
 		}
 	}
+#endif
 }
 
 PackedStringArray OpenXRCompositionLayer::get_configuration_warnings() const {

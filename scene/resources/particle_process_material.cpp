@@ -1882,17 +1882,21 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (!turbulence_enabled) {
-		if (p_property.name == "turbulence_noise_strength" ||
-				p_property.name == "turbulence_noise_scale" ||
-				p_property.name == "turbulence_noise_speed" ||
-				p_property.name == "turbulence_noise_speed_random" ||
-				p_property.name == "turbulence_influence_over_life" ||
-				p_property.name == "turbulence_influence" ||
-				p_property.name == "turbulence_initial_displacement") {
-			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (!turbulence_enabled) {
+			if (p_property.name == "turbulence_noise_strength" ||
+					p_property.name == "turbulence_noise_scale" ||
+					p_property.name == "turbulence_noise_speed" ||
+					p_property.name == "turbulence_noise_speed_random" ||
+					p_property.name == "turbulence_influence_over_life" ||
+					p_property.name == "turbulence_influence" ||
+					p_property.name == "turbulence_initial_displacement") {
+				p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+			}
 		}
 	}
+#endif
 
 	if (p_property.name == "collision_friction" && collision_mode != COLLISION_RIGID) {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -1904,16 +1908,20 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 	if ((p_property.name == "directional_velocity_min" || p_property.name == "directional_velocity_max") && !tex_parameters[PARAM_DIRECTIONAL_VELOCITY].is_valid()) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if ((p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") && !tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if ((p_property.name == "orbit_velocity_min" || p_property.name == "orbit_velocity_max") && (!tex_parameters[PARAM_ORBIT_VELOCITY].is_valid() && !particle_flags[PARTICLE_FLAG_DISABLE_Z])) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if ((p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") && !tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+		if ((p_property.name == "orbit_velocity_min" || p_property.name == "orbit_velocity_max") && (!tex_parameters[PARAM_ORBIT_VELOCITY].is_valid() && !particle_flags[PARTICLE_FLAG_DISABLE_Z])) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.usage & PROPERTY_USAGE_EDITOR && (p_property.name.ends_with("_min") || p_property.name.ends_with("_max"))) {
-		p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+		if (p_property.usage & PROPERTY_USAGE_EDITOR && (p_property.name.ends_with("_min") || p_property.name.ends_with("_max"))) {
+			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+		}
 	}
+#endif
 }
 
 void ParticleProcessMaterial::set_sub_emitter_mode(SubEmitterMode p_sub_emitter_mode) {

@@ -305,9 +305,13 @@ void CanvasLayer::_update_follow_viewport(bool p_force_exit) {
 }
 
 void CanvasLayer::_validate_property(PropertyInfo &p_property) const {
-	if (!follow_viewport && p_property.name == "follow_viewport_scale") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (!follow_viewport && p_property.name == "follow_viewport_scale") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 void CanvasLayer::_bind_methods() {

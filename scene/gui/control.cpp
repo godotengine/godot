@@ -457,147 +457,166 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void Control::_validate_property(PropertyInfo &p_property) const {
-	// Update theme type variation options.
-	if (p_property.name == "theme_type_variation") {
-		List<StringName> names;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// Update theme type variation options.
+		if (p_property.name == "theme_type_variation") {
+			List<StringName> names;
 
-		// Only the default theme and the project theme are used for the list of options.
-		// This is an imposed limitation to simplify the logic needed to leverage those options.
-		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
-		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
-		}
-		names.sort_custom<StringName::AlphCompare>();
+			// Only the default theme and the project theme are used for the list of options.
+			// This is an imposed limitation to simplify the logic needed to leverage those options.
+			ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
+			if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+				ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
+			}
+			names.sort_custom<StringName::AlphCompare>();
 
-		Vector<StringName> unique_names;
-		String hint_string;
-		for (const StringName &E : names) {
-			// Skip duplicate values.
-			if (unique_names.has(E)) {
-				continue;
+			Vector<StringName> unique_names;
+			String hint_string;
+			for (const StringName &E : names) {
+				// Skip duplicate values.
+				if (unique_names.has(E)) {
+					continue;
+				}
+
+				hint_string += String(E) + ",";
+				unique_names.append(E);
 			}
 
-			hint_string += String(E) + ",";
-			unique_names.append(E);
+			p_property.hint_string = hint_string;
 		}
 
-		p_property.hint_string = hint_string;
-	}
+		if (p_property.name == "mouse_force_pass_scroll_events") {
+			// Disable force pass if the control is not stopping the event.
+			if (data.mouse_filter != MOUSE_FILTER_STOP) {
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
+		}
 
-	if (p_property.name == "mouse_force_pass_scroll_events") {
-		// Disable force pass if the control is not stopping the event.
-		if (data.mouse_filter != MOUSE_FILTER_STOP) {
-			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+		if (p_property.name == "scale") {
+			p_property.hint = PROPERTY_HINT_LINK;
 		}
 	}
-
-	if (p_property.name == "scale") {
-		p_property.hint = PROPERTY_HINT_LINK;
-	}
-
+#endif
 	// Validate which positioning properties should be displayed depending on the parent and the layout mode.
 	Control *parent_control = get_parent_control();
 	if (!parent_control) {
-		// If there is no parent control, display both anchor and container options.
+#if TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint()) {
+			// If there is no parent control, display both anchor and container options.
 
-		// Set the layout mode to be disabled with the proper value.
-		if (p_property.name == "layout_mode") {
-			p_property.hint_string = "Position,Anchors,Container,Uncontrolled";
-			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-		}
+			// Set the layout mode to be disabled with the proper value.
+			if (p_property.name == "layout_mode") {
+				p_property.hint_string = "Position,Anchors,Container,Uncontrolled";
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
 
-		// Use the layout mode to display or hide advanced anchoring properties.
-		bool use_custom_anchors = _get_anchors_layout_preset() == -1; // Custom "preset".
-		if (!use_custom_anchors && (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_"))) {
-			p_property.usage ^= PROPERTY_USAGE_EDITOR;
+			// Use the layout mode to display or hide advanced anchoring properties.
+			bool use_custom_anchors = _get_anchors_layout_preset() == -1; // Custom "preset".
+			if (!use_custom_anchors && (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_"))) {
+				p_property.usage ^= PROPERTY_USAGE_EDITOR;
+			}
 		}
+#endif
 	} else if (Object::cast_to<Container>(parent_control)) {
 		// If the parent is a container, display only container-related properties.
 		if (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_") || p_property.name == "anchors_preset") {
 			p_property.usage ^= PROPERTY_USAGE_DEFAULT;
-		} else if (p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset") {
-			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
-		} else if (p_property.name == "layout_mode") {
-			// Set the layout mode to be disabled with the proper value.
-			p_property.hint_string = "Position,Anchors,Container,Uncontrolled";
-			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-		} else if (p_property.name == "size_flags_horizontal" || p_property.name == "size_flags_vertical") {
-			// Filter allowed size flags based on the parent container configuration.
-			Container *parent_container = Object::cast_to<Container>(parent_control);
-			Vector<int> size_flags;
-			if (p_property.name == "size_flags_horizontal") {
-				size_flags = parent_container->get_allowed_size_flags_horizontal();
-			} else if (p_property.name == "size_flags_vertical") {
-				size_flags = parent_container->get_allowed_size_flags_vertical();
-			}
-
-			// Enforce the order of the options, regardless of what the container provided.
-			String hint_string;
-			if (size_flags.has(SIZE_FILL)) {
-				hint_string += "Fill:1";
-			}
-			if (size_flags.has(SIZE_EXPAND)) {
-				if (!hint_string.is_empty()) {
-					hint_string += ",";
-				}
-				hint_string += "Expand:2";
-			}
-			if (size_flags.has(SIZE_SHRINK_CENTER)) {
-				if (!hint_string.is_empty()) {
-					hint_string += ",";
-				}
-				hint_string += "Shrink Center:4";
-			}
-			if (size_flags.has(SIZE_SHRINK_END)) {
-				if (!hint_string.is_empty()) {
-					hint_string += ",";
-				}
-				hint_string += "Shrink End:8";
-			}
-
-			if (hint_string.is_empty()) {
-				p_property.hint_string = "";
+		}
+#if TOOLS_ENABLED
+		else if (Engine::get_singleton()->is_editor_hint()) {
+			if (p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset") {
+				p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+			} else if (p_property.name == "layout_mode") {
+				// Set the layout mode to be disabled with the proper value.
+				p_property.hint_string = "Position,Anchors,Container,Uncontrolled";
 				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-			} else {
-				p_property.hint_string = hint_string;
+			} else if (p_property.name == "size_flags_horizontal" || p_property.name == "size_flags_vertical") {
+				// Filter allowed size flags based on the parent container configuration.
+				Container *parent_container = Object::cast_to<Container>(parent_control);
+				Vector<int> size_flags;
+				if (p_property.name == "size_flags_horizontal") {
+					size_flags = parent_container->get_allowed_size_flags_horizontal();
+				} else if (p_property.name == "size_flags_vertical") {
+					size_flags = parent_container->get_allowed_size_flags_vertical();
+				}
+
+				// Enforce the order of the options, regardless of what the container provided.
+				String hint_string;
+				if (size_flags.has(SIZE_FILL)) {
+					hint_string += "Fill:1";
+				}
+				if (size_flags.has(SIZE_EXPAND)) {
+					if (!hint_string.is_empty()) {
+						hint_string += ",";
+					}
+					hint_string += "Expand:2";
+				}
+				if (size_flags.has(SIZE_SHRINK_CENTER)) {
+					if (!hint_string.is_empty()) {
+						hint_string += ",";
+					}
+					hint_string += "Shrink Center:4";
+				}
+				if (size_flags.has(SIZE_SHRINK_END)) {
+					if (!hint_string.is_empty()) {
+						hint_string += ",";
+					}
+					hint_string += "Shrink End:8";
+				}
+
+				if (hint_string.is_empty()) {
+					p_property.hint_string = "";
+					p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+				} else {
+					p_property.hint_string = hint_string;
+				}
 			}
 		}
+#endif
 	} else {
-		// If the parent is a non-container control, display only anchoring-related properties.
-		if (p_property.name.begins_with("size_flags_")) {
-			p_property.usage ^= PROPERTY_USAGE_EDITOR;
+#if TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint()) {
+			// If the parent is a non-container control, display only anchoring-related properties.
+			if (p_property.name.begins_with("size_flags_")) {
+				p_property.usage ^= PROPERTY_USAGE_EDITOR;
 
-		} else if (p_property.name == "layout_mode") {
-			// Set the layout mode to be enabled with proper options.
-			p_property.hint_string = "Position,Anchors";
-		}
+			} else if (p_property.name == "layout_mode") {
+				// Set the layout mode to be enabled with proper options.
+				p_property.hint_string = "Position,Anchors";
+			}
 
-		// Use the layout mode to display or hide advanced anchoring properties.
-		LayoutMode _layout = _get_layout_mode();
-		bool use_anchors = (_layout == LayoutMode::LAYOUT_MODE_ANCHORS || _layout == LayoutMode::LAYOUT_MODE_UNCONTROLLED);
-		if (!use_anchors && p_property.name == "anchors_preset") {
-			p_property.usage ^= PROPERTY_USAGE_EDITOR;
+			// Use the layout mode to display or hide advanced anchoring properties.
+			LayoutMode _layout = _get_layout_mode();
+			bool use_anchors = (_layout == LayoutMode::LAYOUT_MODE_ANCHORS || _layout == LayoutMode::LAYOUT_MODE_UNCONTROLLED);
+			if (!use_anchors && p_property.name == "anchors_preset") {
+				p_property.usage ^= PROPERTY_USAGE_EDITOR;
+			}
+			bool use_custom_anchors = use_anchors && _get_anchors_layout_preset() == -1; // Custom "preset".
+			if (!use_custom_anchors && (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_"))) {
+				p_property.usage ^= PROPERTY_USAGE_EDITOR;
+			}
 		}
-		bool use_custom_anchors = use_anchors && _get_anchors_layout_preset() == -1; // Custom "preset".
-		if (!use_custom_anchors && (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_"))) {
-			p_property.usage ^= PROPERTY_USAGE_EDITOR;
-		}
+#endif
 	}
-
-	// Disable the property if it's managed by the parent container.
-	if (!Object::cast_to<Container>(parent_control)) {
-		return;
-	}
-	bool property_is_managed_by_container = false;
-	for (unsigned i = 0; i < properties_managed_by_container_count; i++) {
-		property_is_managed_by_container = properties_managed_by_container[i] == p_property.name;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// Disable the property if it's managed by the parent container.
+		if (!Object::cast_to<Container>(parent_control)) {
+			return;
+		}
+		bool property_is_managed_by_container = false;
+		for (unsigned i = 0; i < properties_managed_by_container_count; i++) {
+			property_is_managed_by_container = properties_managed_by_container[i] == p_property.name;
+			if (property_is_managed_by_container) {
+				break;
+			}
+		}
 		if (property_is_managed_by_container) {
-			break;
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 	}
-	if (property_is_managed_by_container) {
-		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-	}
+#endif
 }
 
 bool Control::_property_can_revert(const StringName &p_name) const {

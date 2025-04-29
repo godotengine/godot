@@ -167,9 +167,13 @@ AABB Decal::get_aabb() const {
 }
 
 void Decal::_validate_property(PropertyInfo &p_property) const {
-	if (!distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (!distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 
 	if (p_property.name == "sorting_offset") {
 		p_property.usage = PROPERTY_USAGE_DEFAULT;

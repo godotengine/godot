@@ -44,16 +44,22 @@ PackedStringArray SpringBoneCollision3D::get_configuration_warnings() const {
 }
 
 void SpringBoneCollision3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "bone_name") {
-		Skeleton3D *sk = get_skeleton();
-		if (sk) {
-			p_property.hint = PROPERTY_HINT_ENUM_SUGGESTION;
-			p_property.hint_string = sk->get_concatenated_bone_names();
-		} else {
-			p_property.hint = PROPERTY_HINT_NONE;
-			p_property.hint_string = "";
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "bone_name") {
+			Skeleton3D *sk = get_skeleton();
+			if (sk) {
+				p_property.hint = PROPERTY_HINT_ENUM_SUGGESTION;
+				p_property.hint_string = sk->get_concatenated_bone_names();
+			} else {
+				p_property.hint = PROPERTY_HINT_NONE;
+				p_property.hint_string = "";
+			}
+			return;
 		}
-	} else if (bone < 0 && (p_property.name == "position_offset" || p_property.name == "rotation_offset")) {
+	}
+#endif
+	if (bone < 0 && (p_property.name == "position_offset" || p_property.name == "rotation_offset")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }

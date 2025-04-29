@@ -103,9 +103,13 @@ bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toler
 #endif // DEBUG_ENABLED
 
 void Polygon2D::_validate_property(PropertyInfo &p_property) const {
-	if (!invert && p_property.name == "invert_border") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (!invert && p_property.name == "invert_border") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 void Polygon2D::_skeleton_bone_setup_changed() {

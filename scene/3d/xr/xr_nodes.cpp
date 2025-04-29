@@ -274,24 +274,28 @@ void XRNode3D::_bind_methods() {
 }
 
 void XRNode3D::_validate_property(PropertyInfo &p_property) const {
-	XRServer *xr_server = XRServer::get_singleton();
-	ERR_FAIL_NULL(xr_server);
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		XRServer *xr_server = XRServer::get_singleton();
+		ERR_FAIL_NULL(xr_server);
 
-	if (p_property.name == "tracker") {
-		PackedStringArray names = xr_server->get_suggested_tracker_names();
-		String hint_string;
-		for (const String &name : names) {
-			hint_string += name + ",";
+		if (p_property.name == "tracker") {
+			PackedStringArray names = xr_server->get_suggested_tracker_names();
+			String hint_string;
+			for (const String &name : names) {
+				hint_string += name + ",";
+			}
+			p_property.hint_string = hint_string;
+		} else if (p_property.name == "pose") {
+			PackedStringArray names = xr_server->get_suggested_pose_names(tracker_name);
+			String hint_string;
+			for (const String &name : names) {
+				hint_string += name + ",";
+			}
+			p_property.hint_string = hint_string;
 		}
-		p_property.hint_string = hint_string;
-	} else if (p_property.name == "pose") {
-		PackedStringArray names = xr_server->get_suggested_pose_names(tracker_name);
-		String hint_string;
-		for (const String &name : names) {
-			hint_string += name + ",";
-		}
-		p_property.hint_string = hint_string;
 	}
+#endif
 }
 
 void XRNode3D::set_tracker(const StringName &p_tracker_name) {

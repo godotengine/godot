@@ -88,13 +88,17 @@ void GraphElement::_notification(int p_what) {
 }
 
 void GraphElement::_validate_property(PropertyInfo &p_property) const {
-	Control::_validate_property(p_property);
-	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
-	if (graph) {
-		if (p_property.name == "position") {
-			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		Control::_validate_property(p_property);
+		GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+		if (graph) {
+			if (p_property.name == "position") {
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
 		}
 	}
+#endif
 }
 
 void GraphElement::set_position_offset(const Vector2 &p_offset) {
