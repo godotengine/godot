@@ -818,7 +818,9 @@ public:
 	virtual void get_property_state(List<Pair<StringName, Variant>> &state) override {
 		if (native_info->get_property_state_func) {
 			native_info->get_property_state_func(instance, _add_property_with_state, &state);
+			return;
 		}
+		ScriptInstance::get_property_state(state);
 	}
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const override {
