@@ -230,17 +230,13 @@ class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
 class FindInFilesPanel;
 
-#ifdef MINGW_ENABLED
-#undef FILE_OPEN
-#endif
-
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
 
 	enum {
 		FILE_NEW,
 		FILE_NEW_TEXTFILE,
-		FILE_OPEN,
+		FILE_OPEN_, // Conflict with WinAPI.
 		FILE_REOPEN_CLOSED,
 		FILE_OPEN_RECENT,
 		FILE_SAVE,

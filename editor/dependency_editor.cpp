@@ -302,9 +302,9 @@ void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos,
 		}
 
 		if (only_scenes_selected) {
-			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRN("Open Scene", "Open Scenes", selected_items.size()), FILE_OPEN);
+			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRN("Open Scene", "Open Scenes", selected_items.size()), FILE_OPEN_);
 		} else if (selected_items.size() == 1) {
-			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open"), FILE_OPEN);
+			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open"), FILE_OPEN_);
 		} else {
 			return;
 		}
@@ -333,7 +333,7 @@ void DependencyEditorOwners::_empty_clicked(const Vector2 &p_pos, MouseButton p_
 
 void DependencyEditorOwners::_file_option(int p_option) {
 	switch (p_option) {
-		case FILE_OPEN: {
+		case FILE_OPEN_: {
 			PackedInt32Array selected_items = owners->get_selected_items();
 			for (int i = 0; i < selected_items.size(); i++) {
 				int item_idx = selected_items[i];

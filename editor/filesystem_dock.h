@@ -101,7 +101,7 @@ public:
 
 private:
 	enum FileMenu {
-		FILE_OPEN,
+		FILE_OPEN_, // Conflict with WinAPI.
 		FILE_INHERIT,
 		FILE_MAIN_SCENE,
 		FILE_INSTANTIATE,

@@ -44,10 +44,6 @@ class HBoxContainer;
 class VisualShaderEditor;
 class WindowWrapper;
 
-#ifdef MINGW_ENABLED
-#undef FILE_OPEN
-#endif
-
 class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
@@ -64,7 +60,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 	enum {
 		FILE_NEW,
 		FILE_NEW_INCLUDE,
-		FILE_OPEN,
+		FILE_OPEN_,
 		FILE_OPEN_INCLUDE,
 		FILE_SAVE,
 		FILE_SAVE_AS,
