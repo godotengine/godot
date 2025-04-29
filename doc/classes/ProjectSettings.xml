@@ -2348,6 +2348,13 @@
 		<member name="navigation/2d/merge_rasterizer_cell_scale" type="float" setter="" getter="" default="1.0">
 			Default merge rasterizer cell scale for 2D navigation maps. See [method NavigationServer2D.map_set_merge_rasterizer_cell_scale].
 		</member>
+		<member name="navigation/2d/navigation_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+			Sets which navigation engine to use for 2D navigation.
+			[b]DEFAULT[/b] is equivalent to [b]GodotNavigation2D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
+			[b]GodotNavigation2D[/b] is Godot's internal 2D navigation engine.
+			[b]Dummy[/b] is a 2D navigation server that does nothing and returns only dummy values, effectively disabling all 2D navigation functionality.
+			Third-party modules can add other navigation engines to select with this setting.
+		</member>
 		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 2D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World2D default navigation maps.
 		</member>
@@ -2374,6 +2381,13 @@
 		</member>
 		<member name="navigation/3d/merge_rasterizer_cell_scale" type="float" setter="" getter="" default="1.0">
 			Default merge rasterizer cell scale for 3D navigation maps. See [method NavigationServer3D.map_set_merge_rasterizer_cell_scale].
+		</member>
+		<member name="navigation/3d/navigation_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+			Sets which navigation engine to use for 3D navigation.
+			[b]DEFAULT[/b] is equivalent to [b]GodotNavigation3D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
+			[b]GodotNavigation3D[/b] is Godot's internal 3D navigation engine.
+			[b]Dummy[/b] is a 3D navigation server that does nothing and returns only dummy values, effectively disabling all 3D navigation functionality.
+			Third-party modules can add other navigation engines to select with this setting.
 		</member>
 		<member name="navigation/3d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 3D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World3D default navigation maps.
