@@ -75,6 +75,12 @@
 		<member name="min_space" type="float" setter="set_min_space" getter="get_min_space" default="-1.0">
 			The blend space's axis's lower limit for the points' position. See [method add_blend_point].
 		</member>
+		<member name="smooth" type="bool" setter="set_use_smooth" getter="is_using_smooth" default="false">
+			If [code]true[/code], while [member sync] is [code]true[/code] a blend point's weight is applied over time using [member smooth_speed].
+		</member>
+		<member name="smooth_speed" type="float" setter="set_smooth_speed" getter="get_smooth_speed" default="1.0">
+			Controls the blend point smoothing speed.
+		</member>
 		<member name="snap" type="float" setter="set_snap" getter="get_snap" default="0.1">
 			Position increment to snap to when moving a point on the axis.
 		</member>

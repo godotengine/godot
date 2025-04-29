@@ -104,6 +104,12 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeBlendSpace1D::set_use_sync);
 	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeBlendSpace1D::is_using_sync);
 
+	ClassDB::bind_method(D_METHOD("set_smooth_speed", "speed"), &AnimationNodeBlendSpace1D::set_smooth_speed);
+	ClassDB::bind_method(D_METHOD("get_smooth_speed"), &AnimationNodeBlendSpace1D::get_smooth_speed);
+
+	ClassDB::bind_method(D_METHOD("set_use_smooth", "enable"), &AnimationNodeBlendSpace1D::set_use_smooth);
+	ClassDB::bind_method(D_METHOD("is_using_smooth"), &AnimationNodeBlendSpace1D::is_using_smooth);
+
 	ClassDB::bind_method(D_METHOD("_add_blend_point", "index", "node"), &AnimationNodeBlendSpace1D::_add_blend_point);
 
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
@@ -117,6 +123,8 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "value_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_value_label", "get_value_label");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Interpolated,Discrete,Carry", PROPERTY_USAGE_NO_EDITOR), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_sync", "is_using_sync");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_smooth", "is_using_smooth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "smooth_speed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_smooth_speed", "get_smooth_speed");
 
 	BIND_ENUM_CONSTANT(BLEND_MODE_INTERPOLATED);
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISCRETE);
@@ -269,6 +277,21 @@ bool AnimationNodeBlendSpace1D::is_using_sync() const {
 	return sync;
 }
 
+void AnimationNodeBlendSpace1D::set_smooth_speed(const float &p_speed) {
+	smooth_speed = p_speed;
+}
+
+float AnimationNodeBlendSpace1D::get_smooth_speed() const {
+	return smooth_speed;
+}
+void AnimationNodeBlendSpace1D::set_use_smooth(const bool &p_smooth) {
+	smooth = p_smooth;
+}
+
+bool AnimationNodeBlendSpace1D::is_using_smooth() const {
+	return smooth;
+}
+
 void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node) {
 	if (p_index == blend_points_used) {
 		add_blend_point(p_node, 0);
@@ -281,7 +304,6 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 	if (!blend_points_used) {
 		return NodeTimeInfo();
 	}
-
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 
 	if (blend_points_used == 1) {
@@ -347,18 +369,48 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 		// actually blend the animations now
 		bool first = true;
 		double max_weight = 0.0;
+
+		int mind_idx = 0;
+		Engine *eng = Engine::get_singleton();
+		double delta = eng->get_process_step() * eng->get_time_scale();
+		//calculate the true weights before hand
 		for (int i = 0; i < blend_points_used; i++) {
+			bool found = false;
 			if (i == point_lower || i == point_higher) {
-				pi.weight = weights[i];
-				NodeTimeInfo t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
-				if (first || pi.weight > max_weight) {
+				blend_points[i].weight = (smooth && sync) ? Math::move_toward(blend_points[i].weight, weights[i], static_cast<float>(delta * smooth_speed)) : weights[i];
+				if (first || blend_points[i].weight > max_weight) {
 					max_weight = pi.weight;
-					mind = t;
 					first = false;
 				}
-			} else if (sync) {
-				pi.weight = 0;
-				blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+				found = true;
+			}
+			if (!found) {
+				if (sync) {
+					blend_points[i].weight = (smooth) ? MAX(Math::move_toward(blend_points[i].weight, 0.0f, static_cast<float>(delta * smooth_speed)), 0.0) : 0.0;
+				} else {
+					blend_points[i].weight = -1.0;
+				}
+			}
+		}
+		float sum_of_weight = 0.0;
+		if (smooth && sync) {
+			for (int i = 0; i < blend_points_used; i++) {
+				sum_of_weight += blend_points[i].weight;
+			}
+			if (sum_of_weight <= 0.0) {
+				sum_of_weight = 1.0;
+			}
+		}
+		//now we apply them
+		for (int i = 0; i < blend_points_used; i++) {
+			blend_points[i].weight = (smooth && sync) ? blend_points[i].weight / sum_of_weight : blend_points[i].weight;
+			if (blend_points[i].weight == -1.0) {
+				continue;
+			}
+			pi.weight = blend_points[i].weight;
+			NodeTimeInfo t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+			if (mind_idx == i) {
+				mind = t;
 			}
 		}
 	} else {

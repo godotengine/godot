@@ -82,6 +82,7 @@ void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_
 	}
 	blend_points[p_at_index].node = p_node;
 	blend_points[p_at_index].position = p_position;
+	blend_points[p_at_index].fade = Vector2();
 
 	blend_points[p_at_index].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace2D::_tree_changed), CONNECT_REFERENCE_COUNTED);
 	blend_points[p_at_index].node->connect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendSpace2D::_animation_node_renamed), CONNECT_REFERENCE_COUNTED);
@@ -119,6 +120,16 @@ void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<Anim
 Vector2 AnimationNodeBlendSpace2D::get_blend_point_position(int p_point) const {
 	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, Vector2());
 	return blend_points[p_point].position;
+}
+
+void AnimationNodeBlendSpace2D::set_blend_point_fade(int p_point, const Vector2 &p_fade) {
+	ERR_FAIL_INDEX(p_point, blend_points_used);
+	blend_points[p_point].fade = p_fade;
+}
+
+Vector2 AnimationNodeBlendSpace2D::get_blend_point_fade(int p_point) const {
+	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, Vector2());
+	return blend_points[p_point].fade;
 }
 
 Ref<AnimationRootNode> AnimationNodeBlendSpace2D::get_blend_point_node(int p_point) const {
@@ -510,28 +521,55 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationM
 		}
 
 		first = true;
-
 		double max_weight = 0.0;
+
+		int mind_idx = 0;
+		Engine *eng = Engine::get_singleton();
+		double delta = override_delta ? (eng->get_process_step() * eng->get_time_scale()) : pi.delta;
+		bool fading = !Math::is_zero_approx(default_blend_time);
+		//calculate blend points before hand
 		for (int i = 0; i < blend_points_used; i++) {
 			bool found = false;
+			double fade_in = Math::is_zero_approx(blend_points[i].fade.x) ? default_blend_time : blend_points[i].fade.x;
+			double fade_out = Math::is_zero_approx(blend_points[i].fade.y) ? default_blend_time : blend_points[i].fade.y;
+
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
-					//blend with the given weight
-					pi.weight = blend_weights[j];
-					NodeTimeInfo t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
-					if (first || pi.weight > max_weight) {
-						mind = t;
+					blend_points[i].weight = (fading && sync) ? Math::move_toward(blend_points[i].weight, blend_weights[j], static_cast<float>(delta / fade_in)) : blend_weights[j];
+					found = true;
+					if (first || blend_points[i].weight > max_weight) {
+						mind_idx = i;
 						max_weight = pi.weight;
 						first = false;
 					}
-					found = true;
-					break;
 				}
 			}
-
-			if (sync && !found) {
-				pi.weight = 0;
-				blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+			if (!found) {
+				if (sync) {
+					blend_points[i].weight = fading ? MAX(Math::move_toward(blend_points[i].weight, 0.0f, static_cast<float>(delta / fade_out)), 0.0) : 0.0;
+				} else {
+					blend_points[i].weight = -1.0;
+				}
+			}
+		}
+		float sum_of_weight = 0.0;
+		if (fading && sync) {
+			for (int i = 0; i < blend_points_used; i++) {
+				sum_of_weight += blend_points[i].weight;
+			}
+			if (sum_of_weight <= 0.0) {
+				sum_of_weight = 1.0;
+			}
+		}
+		//now we apply them
+		for (int i = 0; i < blend_points_used; i++) {
+			if (blend_points[i].weight == -1.0) { //retaining non sync beheivour
+				continue;
+			}
+			pi.weight = (fading && sync) ? blend_points[i].weight / sum_of_weight : blend_points[i].weight;
+			NodeTimeInfo t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+			if (mind_idx == i) {
+				mind = t;
 			}
 		}
 	} else {
@@ -653,10 +691,28 @@ void AnimationNodeBlendSpace2D::_animation_node_removed(const ObjectID &p_oid, c
 	AnimationRootNode::_animation_node_removed(p_oid, p_node);
 }
 
+void AnimationNodeBlendSpace2D::set_default_blend_time(const double &p_default_blend_time) {
+	default_blend_time = p_default_blend_time;
+}
+
+double AnimationNodeBlendSpace2D::get_default_blend_time() const {
+	return default_blend_time;
+}
+
+void AnimationNodeBlendSpace2D::set_override_delta(bool p_override_delta) {
+	override_delta = p_override_delta;
+}
+
+bool AnimationNodeBlendSpace2D::get_override_delta() const {
+	return override_delta;
+}
+
 void AnimationNodeBlendSpace2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_blend_point", "node", "pos", "at_index"), &AnimationNodeBlendSpace2D::add_blend_point, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_blend_point_position", "point", "pos"), &AnimationNodeBlendSpace2D::set_blend_point_position);
 	ClassDB::bind_method(D_METHOD("get_blend_point_position", "point"), &AnimationNodeBlendSpace2D::get_blend_point_position);
+	ClassDB::bind_method(D_METHOD("set_blend_point_fade", "point", "fade"), &AnimationNodeBlendSpace2D::set_blend_point_fade);
+	ClassDB::bind_method(D_METHOD("get_blend_point_fade", "point"), &AnimationNodeBlendSpace2D::get_blend_point_fade);
 	ClassDB::bind_method(D_METHOD("set_blend_point_node", "point", "node"), &AnimationNodeBlendSpace2D::set_blend_point_node);
 	ClassDB::bind_method(D_METHOD("get_blend_point_node", "point"), &AnimationNodeBlendSpace2D::get_blend_point_node);
 	ClassDB::bind_method(D_METHOD("remove_blend_point", "point"), &AnimationNodeBlendSpace2D::remove_blend_point);
@@ -693,14 +749,21 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_mode", "mode"), &AnimationNodeBlendSpace2D::set_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_mode"), &AnimationNodeBlendSpace2D::get_blend_mode);
 
+	ClassDB::bind_method(D_METHOD("set_default_blend_time", "time"), &AnimationNodeBlendSpace2D::set_default_blend_time);
+	ClassDB::bind_method(D_METHOD("get_default_blend_time"), &AnimationNodeBlendSpace2D::get_default_blend_time);
+
 	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeBlendSpace2D::set_use_sync);
 	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeBlendSpace2D::is_using_sync);
+
+	ClassDB::bind_method(D_METHOD("set_override_delta", "enable"), &AnimationNodeBlendSpace2D::set_override_delta);
+	ClassDB::bind_method(D_METHOD("get_override_delta"), &AnimationNodeBlendSpace2D::get_override_delta);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_triangles", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_auto_triangles", "get_auto_triangles");
 
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "blend_point_" + itos(i) + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_add_blend_point", "get_blend_point_node", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::VECTOR2, "blend_point_" + itos(i) + "/pos", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_blend_point_position", "get_blend_point_position", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::VECTOR2, "blend_point_" + itos(i) + "/fade", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_blend_point_fade", "get_blend_point_fade", i);
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "triangles", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_triangles", "_get_triangles");
@@ -712,6 +775,8 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "y_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_y_label", "get_y_label");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Interpolated,Discrete,Carry", PROPERTY_USAGE_NO_EDITOR), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_sync", "is_using_sync");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_blend_time", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_default_blend_time", "get_default_blend_time");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_delta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_override_delta", "get_override_delta");
 
 	ADD_SIGNAL(MethodInfo("triangles_updated"));
 	BIND_ENUM_CONSTANT(BLEND_MODE_INTERPOLATED);

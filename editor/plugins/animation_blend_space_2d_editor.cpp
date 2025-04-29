@@ -38,6 +38,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/inspector_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
@@ -52,6 +53,21 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/main/window.h"
+
+//void BlendPointEditor::_bind_methods() {
+//	ClassDB::bind_method(D_METHOD("set_fade_in", "value"), &BlendPointEditor::set_fade_in);
+//	ClassDB::bind_method(D_METHOD("get_fade_in"), &BlendPointEditor::get_fade_in);
+//	ClassDB::bind_method(D_METHOD("set_fade_out", "value"), &BlendPointEditor::set_fade_out);
+//	ClassDB::bind_method(D_METHOD("get_fade_out"), &BlendPointEditor::get_fade_out);
+//	//ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &BlendPointEditor::_dont_undo_redo);
+//	//ClassDB::bind_method(D_METHOD("_hide_script_from_inspector"), &BlendPointEditor::_hide_script_from_inspector);
+//	//ClassDB::bind_method(D_METHOD("_hide_metadata_from_inspector"), &BlendPointEditor::_hide_metadata_from_inspector);
+//	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_in", PROPERTY_HINT_NONE, "0,60,0.01,or_greater,suffix:s"), "set_fade_in", "get_fade_in");
+//	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_out", PROPERTY_HINT_NONE, "0,60,0.01,or_greater,suffix:s"), "set_fade_out", "get_fade_out");
+//	ClassDB::bind_method(D_METHOD("get_anim_node"), &BlendPointEditor::get_anim_node);
+//
+//	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode"), "", "get_anim_node");
+//}
 
 bool AnimationNodeBlendSpace2DEditor::can_edit(const Ref<AnimationNode> &p_node) {
 	Ref<AnimationNodeBlendSpace2D> bs2d = p_node;
@@ -88,6 +104,8 @@ void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 	tool_triangle->set_disabled(read_only);
 	auto_triangles->set_disabled(read_only);
 	sync->set_disabled(read_only);
+	default_blend_time->set_editable(!read_only);
+	override_delta->set_disabled(read_only);
 	interpolation->set_disabled(read_only);
 }
 
@@ -176,7 +194,9 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
 				selected_point = i;
 				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
-				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
+				current_blend_point_editor->setup(blend_space, selected_point, node);
+				//EditorNode::get_singleton()->push_item(current_blend_point_editor.ptr(), "", true);
+				InspectorDock::get_inspector_singleton()->edit(current_blend_point_editor.ptr());
 				dragging_selected_attempt = true;
 				drag_from = mb->get_position();
 				_update_tool_erase();
@@ -184,7 +204,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 				return;
 			}
 		}
-
 		//then try to see if a triangle can be selected
 		if (!blend_space->get_auto_triangles()) { //if autotriangles use, disable this
 			for (int i = 0; i < blend_space->get_triangle_count(); i++) {
@@ -650,6 +669,9 @@ void AnimationNodeBlendSpace2DEditor::_update_space() {
 
 	sync->set_pressed(blend_space->is_using_sync());
 	interpolation->select(blend_space->get_blend_mode());
+	default_blend_time->set_value(blend_space->get_default_blend_time());
+	override_delta->set_pressed(blend_space->get_override_delta());
+	//smooth_speed->set_value(blend_space->get_smooth_speed());
 
 	max_x_value->set_value(blend_space->get_max_space().x);
 	max_y_value->set_value(blend_space->get_max_space().y);
@@ -686,6 +708,13 @@ void AnimationNodeBlendSpace2DEditor::_config_changed(double) {
 	undo_redo->add_undo_method(blend_space.ptr(), "set_use_sync", blend_space->is_using_sync());
 	undo_redo->add_do_method(blend_space.ptr(), "set_blend_mode", interpolation->get_selected());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_mode", blend_space->get_blend_mode());
+	undo_redo->add_do_method(blend_space.ptr(), "set_default_blend_time", default_blend_time->get_value());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_default_blend_time", blend_space->get_default_blend_time());
+	undo_redo->add_do_method(blend_space.ptr(), "set_override_delta", override_delta->is_pressed());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_override_delta", blend_space->get_override_delta());
+	blending_hb->set_visible(sync->is_pressed());
+	//edit_fade_hb->set_visible(sync->is_pressed() && !Math::is_zero_approx(default_blend_time->get_value()));
+
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -861,6 +890,64 @@ void AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled() {
 	undo_redo->commit_action();
 }
 
+void BlendPointEditor::_edit_point_fade() {
+	if (updating) {
+		return;
+	}
+	updating = true;
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Change Node Fade"));
+	undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_fade", selected_point, fades);
+	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_fade", selected_point, blend_space->get_blend_point_fade(selected_point));
+	undo_redo->commit_action();
+	updating = false;
+}
+void BlendPointEditor::setup(Ref<AnimationNodeBlendSpace2D> p_blend_space, int p_idx, Ref<AnimationNode> p_anim_node) {
+	blend_space = p_blend_space;
+	selected_point = p_idx;
+	anim_node = p_anim_node;
+}
+
+void BlendPointEditor::set_fade_in(float p_value) {
+	if (blend_space.is_valid()) {
+		fades = blend_space->get_blend_point_fade(selected_point);
+		fades.x = p_value;
+		_edit_point_fade();
+	}
+}
+double BlendPointEditor::get_fade_in() const {
+	return (blend_space.is_valid()) ? blend_space->get_blend_point_fade(selected_point).x : 0;
+}
+
+void BlendPointEditor::set_fade_out(float p_value) {
+	if (blend_space.is_valid()) {
+		fades = blend_space->get_blend_point_fade(selected_point);
+		fades.y = p_value;
+		_edit_point_fade();
+	}
+}
+double BlendPointEditor::get_fade_out() const {
+	return (blend_space.is_valid()) ? blend_space->get_blend_point_fade(selected_point).y : 0;
+}
+
+Ref<AnimationNode> BlendPointEditor::get_anim_node() const {
+	return anim_node;
+}
+
+void BlendPointEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_fade_in", "value"), &BlendPointEditor::set_fade_in);
+	ClassDB::bind_method(D_METHOD("get_fade_in"), &BlendPointEditor::get_fade_in);
+	ClassDB::bind_method(D_METHOD("set_fade_out", "value"), &BlendPointEditor::set_fade_out);
+	ClassDB::bind_method(D_METHOD("get_fade_out"), &BlendPointEditor::get_fade_out);
+	ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &BlendPointEditor::_dont_undo_redo);
+	ClassDB::bind_method(D_METHOD("_hide_script_from_inspector"), &BlendPointEditor::_hide_script_from_inspector);
+	ClassDB::bind_method(D_METHOD("_hide_metadata_from_inspector"), &BlendPointEditor::_hide_metadata_from_inspector);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_in", PROPERTY_HINT_NONE, "0,60,0.01,or_greater,suffix:s"), "set_fade_in", "get_fade_in");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_out", PROPERTY_HINT_NONE, "0,60,0.01,or_greater,suffix:s"), "set_fade_out", "get_fade_out");
+	ClassDB::bind_method(D_METHOD("get_anim_node"), &BlendPointEditor::get_anim_node);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode"), "", "get_anim_node");
+}
+
 void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 	ClassDB::bind_method("_update_space", &AnimationNodeBlendSpace2DEditor::_update_space);
 	ClassDB::bind_method("_update_tool_erase", &AnimationNodeBlendSpace2DEditor::_update_tool_erase);
@@ -978,6 +1065,26 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(interpolation);
 	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
+	blending_hb = memnew(HBoxContainer);
+	top_hb->add_child(blending_hb);
+	blending_hb->add_child(memnew(VSeparator));
+
+	blending_hb->add_child(memnew(Label(TTR("Default Blend Time:"))));
+	default_blend_time = memnew(SpinBox);
+	blending_hb->add_child(default_blend_time);
+	default_blend_time->set_min(0.0);
+	default_blend_time->set_step(0.01);
+	default_blend_time->set_max(60.0);
+	default_blend_time->set_suffix("s");
+	default_blend_time->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+
+	blending_hb->add_child(memnew(Label(TTR("Override delta:"))));
+	override_delta = memnew(CheckBox);
+	blending_hb->add_child(override_delta);
+	override_delta->connect(SceneStringName(toggled), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+
+	current_blend_point_editor.instantiate();
+
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);
 	edit_hb->add_child(memnew(VSeparator));
@@ -996,6 +1103,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	edit_y->set_max(1000);
 	edit_y->set_accessibility_name(TTRC("Blend X Value"));
 	edit_y->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_pos));
+
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
 	open_editor->set_text(TTR("Open Editor"));
@@ -1113,4 +1221,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	dragging_selected = false;
 	dragging_selected_attempt = false;
+}
+AnimationNodeBlendSpace2DEditor::~AnimationNodeBlendSpace2DEditor() {
+	SceneTree::get_singleton()->queue_delete(current_blend_point_editor.ptr());
 }
