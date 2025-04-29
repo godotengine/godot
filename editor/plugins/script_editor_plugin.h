@@ -252,6 +252,7 @@ class ScriptEditor : public PanelContainer {
 		CLOSE_DOCS,
 		CLOSE_ALL,
 		CLOSE_OTHER_TABS,
+		CLOSE_TABS_BELOW,
 		TOGGLE_FILES_PANEL,
 		SHOW_IN_FILE_SYSTEM,
 		FILE_COPY_PATH,
@@ -398,6 +399,7 @@ class ScriptEditor : public PanelContainer {
 	void _close_discard_current_tab(const String &p_str);
 	void _close_docs_tab();
 	void _close_other_tabs();
+	void _close_tabs_below();
 	void _close_all_tabs();
 	void _queue_close_tabs();
 
@@ -415,8 +417,6 @@ class ScriptEditor : public PanelContainer {
 	void _live_auto_reload_running_scripts();
 
 	void _update_selected_editor_menu();
-
-	EditorScriptCodeCompletionCache *completion_cache = nullptr;
 
 	void _editor_stop();
 
@@ -601,7 +601,6 @@ public:
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
 	ScriptEditor(WindowWrapper *p_wrapper);
-	~ScriptEditor();
 };
 
 class ScriptEditorPlugin : public EditorPlugin {

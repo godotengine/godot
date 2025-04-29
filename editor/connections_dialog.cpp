@@ -1491,10 +1491,12 @@ void ConnectionsDock::update_tree() {
 				for (const MethodInfo &signal : base_signals) {
 					base_signal_names.insert(signal.name);
 				}
-				for (List<MethodInfo>::Element *F = class_signals.front(); F; F = F->next()) {
+				for (List<MethodInfo>::Element *F = class_signals.front(); F;) {
+					List<MethodInfo>::Element *N = F->next();
 					if (base_signal_names.has(F->get().name)) {
 						class_signals.erase(F);
 					}
+					F = N;
 				}
 			}
 

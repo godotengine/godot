@@ -38,8 +38,7 @@
 Vector<SharedObject> GDExtensionLibraryLoader::find_extension_dependencies(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature) {
 	Vector<SharedObject> dependencies_shared_objects;
 	if (p_config->has_section("dependencies")) {
-		List<String> config_dependencies;
-		p_config->get_section_keys("dependencies", &config_dependencies);
+		Vector<String> config_dependencies = p_config->get_section_keys("dependencies");
 
 		for (const String &dependency : config_dependencies) {
 			Vector<String> dependency_tags = dependency.split(".");
@@ -73,8 +72,7 @@ Vector<SharedObject> GDExtensionLibraryLoader::find_extension_dependencies(const
 String GDExtensionLibraryLoader::find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags) {
 	// First, check the explicit libraries.
 	if (p_config->has_section("libraries")) {
-		List<String> libraries;
-		p_config->get_section_keys("libraries", &libraries);
+		Vector<String> libraries = p_config->get_section_keys("libraries");
 
 		// Iterate the libraries, finding the best matching tags.
 		String best_library_path;
@@ -378,8 +376,7 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 
 	// Handle icons if any are specified.
 	if (config->has_section("icons")) {
-		List<String> keys;
-		config->get_section_keys("icons", &keys);
+		Vector<String> keys = config->get_section_keys("icons");
 		for (const String &key : keys) {
 			String icon_path = config->get_value("icons", key);
 			if (icon_path.is_relative_path()) {

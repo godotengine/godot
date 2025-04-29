@@ -22,6 +22,9 @@ if command -v jq 2>&1 >/dev/null; then
 			fi
 		fi
 	done
+else
+	echo 'Error: Could not find 'jq' command. Is jq installed? Try running "brew install jq" or "port install jq" and rerunning this script.'
+	exit 0
 fi
 
 # Download and install the Vulkan SDK.

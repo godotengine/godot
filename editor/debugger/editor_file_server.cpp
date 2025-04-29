@@ -69,8 +69,7 @@ void EditorFileServer::_scan_files_changed(EditorFileSystemDirectory *efd, const
 				continue;
 			}
 
-			List<String> remaps;
-			cf->get_section_keys("remap", &remaps);
+			Vector<String> remaps = cf->get_section_keys("remap");
 
 			for (const String &remap : remaps) {
 				if (remap == "path") {

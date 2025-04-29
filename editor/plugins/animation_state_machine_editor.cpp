@@ -448,8 +448,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		{
 			//snap
 			Vector2 cpos = state_machine->get_node_position(selected_node) + drag_ofs / EDSCALE;
-			List<StringName> nodes;
-			state_machine->get_node_list(&nodes);
+			LocalVector<StringName> nodes = state_machine->get_node_list();
 
 			float best_d_x = 1e20;
 			float best_d_y = 1e20;
@@ -661,8 +660,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path) {
 	String prev_path;
 
-	List<StringName> nodes;
-	p_nodesm->get_node_list(&nodes);
+	LocalVector<StringName> nodes = p_nodesm->get_node_list();
 
 	PopupMenu *nodes_menu = memnew(PopupMenu);
 	nodes_menu->set_name(p_name);
@@ -961,8 +959,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	}
 	int sep = 3 * EDSCALE;
 
-	List<StringName> nodes;
-	state_machine->get_node_list(&nodes);
+	LocalVector<StringName> nodes = state_machine->get_node_list();
 
 	node_rects.clear();
 	Rect2 scroll_range;

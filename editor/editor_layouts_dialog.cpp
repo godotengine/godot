@@ -95,8 +95,7 @@ void EditorLayoutsDialog::_post_popup() {
 		return;
 	}
 
-	List<String> layouts;
-	config.ptr()->get_sections(&layouts);
+	Vector<String> layouts = config->get_sections();
 
 	for (const String &E : layouts) {
 		layout_names->add_item(E);

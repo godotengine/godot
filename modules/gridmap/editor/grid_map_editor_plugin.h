@@ -48,9 +48,7 @@ class BaseButton;
 class GridMapEditor : public VBoxContainer {
 	GDCLASS(GridMapEditor, VBoxContainer);
 
-	enum {
-		GRID_CURSOR_SIZE = 50
-	};
+	static constexpr int32_t GRID_CURSOR_SIZE = 50;
 
 	enum InputAction {
 		INPUT_NONE,

@@ -342,7 +342,7 @@ void CanvasItemEditor::_snap_other_nodes(
 
 	if (ci && !exception) {
 		Transform2D ci_transform = ci->get_screen_transform();
-		if (fmod(ci_transform.get_rotation() - p_transform_to_snap.get_rotation(), (real_t)360.0) == 0.0) {
+		if (std::fmod(ci_transform.get_rotation() - p_transform_to_snap.get_rotation(), (real_t)360.0) == 0.0) {
 			if (ci->_edit_use_rect()) {
 				Point2 begin = ci_transform.xform(ci->_edit_get_rect().get_position());
 				Point2 end = ci_transform.xform(ci->_edit_get_rect().get_position() + ci->_edit_get_rect().get_size());
@@ -447,7 +447,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 				get_tree()->get_edited_scene_root());
 	}
 
-	if (((is_snap_active && snap_guides && (p_modes & SNAP_GUIDES)) || (p_forced_modes & SNAP_GUIDES)) && fmod(rotation, (real_t)360.0) == 0.0) {
+	if (((is_snap_active && snap_guides && (p_modes & SNAP_GUIDES)) || (p_forced_modes & SNAP_GUIDES)) && std::fmod(rotation, (real_t)360.0) == 0.0) {
 		// Guides.
 		if (Node *scene = EditorNode::get_singleton()->get_edited_scene()) {
 			Array vguides = scene->get_meta("_edit_vertical_guides_", Array());
@@ -462,7 +462,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 		}
 	}
 
-	if (((grid_snap_active && (p_modes & SNAP_GRID)) || (p_forced_modes & SNAP_GRID)) && fmod(rotation, (real_t)360.0) == 0.0) {
+	if (((grid_snap_active && (p_modes & SNAP_GRID)) || (p_forced_modes & SNAP_GRID)) && std::fmod(rotation, (real_t)360.0) == 0.0) {
 		// Grid
 		Point2 offset = grid_offset;
 		if (snap_relative) {
@@ -3136,8 +3136,8 @@ void CanvasItemEditor::_draw_grid() {
 
 		if (snap_relative && selection.size() > 0) {
 			const Vector2 topleft = _get_encompassing_rect_from_list(selection).position;
-			real_grid_offset.x = fmod(topleft.x, grid_step.x * (real_t)Math::pow(2.0, grid_step_multiplier));
-			real_grid_offset.y = fmod(topleft.y, grid_step.y * (real_t)Math::pow(2.0, grid_step_multiplier));
+			real_grid_offset.x = std::fmod(topleft.x, grid_step.x * (real_t)Math::pow(2.0, grid_step_multiplier));
+			real_grid_offset.y = std::fmod(topleft.y, grid_step.y * (real_t)Math::pow(2.0, grid_step_multiplier));
 		} else {
 			real_grid_offset = grid_offset;
 		}
@@ -3282,8 +3282,8 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		viewport->draw_string(font, text_pos, TS->format_number(vformat("%.1f px", length_vector.length())), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 
 		if (draw_secondary_lines) {
-			const int horizontal_angle = round(180 * horizontal_angle_rad / Math::PI);
-			const int vertical_angle = round(180 * vertical_angle_rad / Math::PI);
+			const int horizontal_angle = std::round(180 * horizontal_angle_rad / Math::PI);
+			const int vertical_angle = std::round(180 * vertical_angle_rad / Math::PI);
 
 			Point2 text_pos2 = text_pos;
 			text_pos2.x = begin.x < text_pos.x ? MIN(text_pos.x - text_width, begin.x - text_width / 2) : MAX(text_pos.x + text_width, begin.x - text_width / 2);
@@ -3331,16 +3331,16 @@ void CanvasItemEditor::_draw_ruler_tool() {
 
 				Point2 text_pos2 = text_pos;
 				text_pos2.x = begin.x < text_pos.x ? MIN(text_pos.x - text_width, begin.x - text_width / 2) : MAX(text_pos.x + text_width, begin.x - text_width / 2);
-				viewport->draw_string_outline(font, text_pos2, TS->format_number(vformat("%d " + TTR("units"), roundf(length_vector.y / grid_step.y))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
-				viewport->draw_string(font, text_pos2, TS->format_number(vformat("%d " + TTR("units"), roundf(length_vector.y / grid_step.y))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
+				viewport->draw_string_outline(font, text_pos2, TS->format_number(vformat("%d " + TTR("units"), std::round(length_vector.y / grid_step.y))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
+				viewport->draw_string(font, text_pos2, TS->format_number(vformat("%d " + TTR("units"), std::round(length_vector.y / grid_step.y))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
 
 				text_pos2 = text_pos;
 				text_pos2.y = end.y < text_pos.y ? MIN(text_pos.y - text_height * 2, end.y + text_height / 2) : MAX(text_pos.y + text_height * 2, end.y + text_height / 2);
-				viewport->draw_string_outline(font, text_pos2, TS->format_number(vformat("%d " + TTR("units"), roundf(length_vector.x / grid_step.x))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
-				viewport->draw_string(font, text_pos2, TS->format_number(vformat("%d " + TTR("units"), roundf(length_vector.x / grid_step.x))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
+				viewport->draw_string_outline(font, text_pos2, TS->format_number(vformat("%d " + TTR("units"), std::round(length_vector.x / grid_step.x))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
+				viewport->draw_string(font, text_pos2, TS->format_number(vformat("%d " + TTR("units"), std::round(length_vector.x / grid_step.x))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
 			} else {
-				viewport->draw_string_outline(font, text_pos, TS->format_number(vformat("%d " + TTR("units"), roundf((length_vector / grid_step).length()))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
-				viewport->draw_string(font, text_pos, TS->format_number(vformat("%d " + TTR("units"), roundf((length_vector / grid_step).length()))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+				viewport->draw_string_outline(font, text_pos, TS->format_number(vformat("%d " + TTR("units"), std::round((length_vector / grid_step).length()))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
+				viewport->draw_string(font, text_pos, TS->format_number(vformat("%d " + TTR("units"), std::round((length_vector / grid_step).length()))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 			}
 		}
 	} else {
@@ -3439,7 +3439,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			Vector2 line_starts[4];
 			Vector2 line_ends[4];
 			for (int i = 0; i < 4; i++) {
-				real_t anchor_val = (i >= 2) ? ANCHOR_END - anchors_values[i] : anchors_values[i];
+				real_t anchor_val = (i >= 2) ? (real_t)ANCHOR_END - anchors_values[i] : anchors_values[i];
 				line_starts[i] = corners_pos[i].lerp(corners_pos[(i + 1) % 4], anchor_val);
 				line_ends[i] = corners_pos[(i + 3) % 4].lerp(corners_pos[(i + 2) % 4], anchor_val);
 				bool anchor_snapped = anchors_values[i] == 0.0 || anchors_values[i] == 0.5 || anchors_values[i] == 1.0;
@@ -3457,11 +3457,11 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			_draw_percentage_at_position(percent_val, (anchors_pos[dragged_anchor] + anchors_pos[(dragged_anchor + 3) % 4]) / 2, (Side)(dragged_anchor));
 
 			percent_val = anchors_values[(dragged_anchor + 1) % 4];
-			percent_val = ((dragged_anchor + 1) % 4 >= 2) ? ANCHOR_END - percent_val : percent_val;
+			percent_val = ((dragged_anchor + 1) % 4 >= 2) ? (real_t)ANCHOR_END - percent_val : percent_val;
 			_draw_percentage_at_position(percent_val, (line_starts[dragged_anchor] + anchors_pos[dragged_anchor]) / 2, (Side)(dragged_anchor));
 
 			percent_val = anchors_values[dragged_anchor];
-			percent_val = (dragged_anchor >= 2) ? ANCHOR_END - percent_val : percent_val;
+			percent_val = (dragged_anchor >= 2) ? (real_t)ANCHOR_END - percent_val : percent_val;
 			_draw_percentage_at_position(percent_val, (line_ends[(dragged_anchor + 1) % 4] + anchors_pos[dragged_anchor]) / 2, (Side)((dragged_anchor + 1) % 4));
 		}
 

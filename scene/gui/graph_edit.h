@@ -401,6 +401,8 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
+	void key_input(const Ref<InputEvent> &p_ev);
+
 	// This method has to be public (for undo redo).
 	// TODO: Find a better way to do this.
 	void _update_graph_frame(GraphFrame *p_frame);

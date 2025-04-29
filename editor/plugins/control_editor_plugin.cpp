@@ -31,13 +31,17 @@
 #include "control_editor_plugin.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/texture_rect.h"
 
 // Inspector controls.
 
@@ -160,6 +164,41 @@ void EditorPropertyAnchorsPreset::_set_read_only(bool p_read_only) {
 	options->set_disabled(p_read_only);
 }
 
+void EditorPropertyAnchorsPreset::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			for (int i = 0; i < options->get_item_count(); i++) {
+				if (options->is_item_separator(i)) {
+					continue;
+				}
+				int64_t preset = options->get_item_metadata(i);
+				if (preset < 0 || PRESET_FULL_RECT < preset) {
+					continue;
+				}
+				static const StringName icon_names[] = {
+					StringName("ControlAlignTopLeft", true),
+					StringName("ControlAlignTopRight", true),
+					StringName("ControlAlignBottomLeft", true),
+					StringName("ControlAlignBottomRight", true),
+					StringName("ControlAlignCenterLeft", true),
+					StringName("ControlAlignCenterTop", true),
+					StringName("ControlAlignCenterRight", true),
+					StringName("ControlAlignCenterBottom", true),
+					StringName("ControlAlignCenter", true),
+					StringName("ControlAlignLeftWide", true),
+					StringName("ControlAlignTopWide", true),
+					StringName("ControlAlignRightWide", true),
+					StringName("ControlAlignBottomWide", true),
+					StringName("ControlAlignVCenterWide", true),
+					StringName("ControlAlignHCenterWide", true),
+					StringName("ControlAlignFullRect", true),
+				};
+				options->set_item_icon(i, get_editor_theme_icon(icon_names[preset]));
+			}
+		} break;
+	}
+}
+
 void EditorPropertyAnchorsPreset::_option_selected(int p_which) {
 	int64_t val = options->get_item_metadata(p_which);
 	emit_changed(get_edited_property(), val);
@@ -180,30 +219,22 @@ void EditorPropertyAnchorsPreset::update_property() {
 void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 	options->clear();
 
-	Vector<String> split_after;
-	split_after.append("Custom");
-	split_after.append("PresetFullRect");
-	split_after.append("PresetBottomLeft");
-	split_after.append("PresetCenter");
+	const Vector<int> split_after = {
+		-1,
+		PRESET_FULL_RECT,
+		PRESET_BOTTOM_LEFT,
+		PRESET_CENTER,
+	};
 
-	for (int i = 0, j = 0; i < p_options.size(); i++, j++) {
+	for (int i = 0; i < p_options.size(); i++) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
 
 		const String &option_name = text_split[0];
-		if (option_name.begins_with("Preset")) {
-			String preset_name = option_name.trim_prefix("Preset");
-			String humanized_name = preset_name.capitalize();
-			String icon_name = "ControlAlign" + preset_name;
-			options->add_icon_item(EditorNode::get_singleton()->get_editor_theme()->get_icon(icon_name, EditorStringName(EditorIcons)), humanized_name);
-		} else {
-			options->add_item(option_name);
-		}
-
-		options->set_item_metadata(j, current_val);
-		if (split_after.has(option_name)) {
+		options->add_item(option_name);
+		options->set_item_metadata(-1, current_val);
+		if (split_after.has(current_val)) {
 			options->add_separator();
-			j++;
 		}
 	}
 }
@@ -613,33 +644,33 @@ AnchorPresetPicker::AnchorPresetPicker() {
 	top_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(top_row);
 
-	_add_row_button(top_row, PRESET_TOP_LEFT, TTR("Top Left"));
-	_add_row_button(top_row, PRESET_CENTER_TOP, TTR("Center Top"));
-	_add_row_button(top_row, PRESET_TOP_RIGHT, TTR("Top Right"));
+	_add_row_button(top_row, PRESET_TOP_LEFT, TTRC("Top Left"));
+	_add_row_button(top_row, PRESET_CENTER_TOP, TTRC("Center Top"));
+	_add_row_button(top_row, PRESET_TOP_RIGHT, TTRC("Top Right"));
 	_add_separator(top_row, memnew(VSeparator));
-	_add_row_button(top_row, PRESET_TOP_WIDE, TTR("Top Wide"));
+	_add_row_button(top_row, PRESET_TOP_WIDE, TTRC("Top Wide"));
 
 	HBoxContainer *mid_row = memnew(HBoxContainer);
 	mid_row->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	mid_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(mid_row);
 
-	_add_row_button(mid_row, PRESET_CENTER_LEFT, TTR("Center Left"));
-	_add_row_button(mid_row, PRESET_CENTER, TTR("Center"));
-	_add_row_button(mid_row, PRESET_CENTER_RIGHT, TTR("Center Right"));
+	_add_row_button(mid_row, PRESET_CENTER_LEFT, TTRC("Center Left"));
+	_add_row_button(mid_row, PRESET_CENTER, TTRC("Center"));
+	_add_row_button(mid_row, PRESET_CENTER_RIGHT, TTRC("Center Right"));
 	_add_separator(mid_row, memnew(VSeparator));
-	_add_row_button(mid_row, PRESET_HCENTER_WIDE, TTR("HCenter Wide"));
+	_add_row_button(mid_row, PRESET_HCENTER_WIDE, TTRC("HCenter Wide"));
 
 	HBoxContainer *bot_row = memnew(HBoxContainer);
 	bot_row->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	bot_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(bot_row);
 
-	_add_row_button(bot_row, PRESET_BOTTOM_LEFT, TTR("Bottom Left"));
-	_add_row_button(bot_row, PRESET_CENTER_BOTTOM, TTR("Center Bottom"));
-	_add_row_button(bot_row, PRESET_BOTTOM_RIGHT, TTR("Bottom Right"));
+	_add_row_button(bot_row, PRESET_BOTTOM_LEFT, TTRC("Bottom Left"));
+	_add_row_button(bot_row, PRESET_CENTER_BOTTOM, TTRC("Center Bottom"));
+	_add_row_button(bot_row, PRESET_BOTTOM_RIGHT, TTRC("Bottom Right"));
 	_add_separator(bot_row, memnew(VSeparator));
-	_add_row_button(bot_row, PRESET_BOTTOM_WIDE, TTR("Bottom Wide"));
+	_add_row_button(bot_row, PRESET_BOTTOM_WIDE, TTRC("Bottom Wide"));
 
 	_add_separator(main_vb, memnew(HSeparator));
 
@@ -648,11 +679,11 @@ AnchorPresetPicker::AnchorPresetPicker() {
 	extra_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(extra_row);
 
-	_add_row_button(extra_row, PRESET_LEFT_WIDE, TTR("Left Wide"));
-	_add_row_button(extra_row, PRESET_VCENTER_WIDE, TTR("VCenter Wide"));
-	_add_row_button(extra_row, PRESET_RIGHT_WIDE, TTR("Right Wide"));
+	_add_row_button(extra_row, PRESET_LEFT_WIDE, TTRC("Left Wide"));
+	_add_row_button(extra_row, PRESET_VCENTER_WIDE, TTRC("VCenter Wide"));
+	_add_row_button(extra_row, PRESET_RIGHT_WIDE, TTRC("Right Wide"));
 	_add_separator(extra_row, memnew(VSeparator));
-	_add_row_button(extra_row, PRESET_FULL_RECT, TTR("Full Rect"));
+	_add_row_button(extra_row, PRESET_FULL_RECT, TTRC("Full Rect"));
 }
 
 void SizeFlagPresetPicker::_preset_button_pressed(const int p_preset) {

@@ -548,11 +548,6 @@ Vector<Ref<ScriptBacktrace>> ScriptServer::capture_script_backtraces(bool p_incl
 
 ////////////////////
 
-ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
-ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
-	singleton = this;
-}
-
 void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const {
 	p_core_type_words->push_back("String");
 	p_core_type_words->push_back("Vector2");

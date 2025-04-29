@@ -3609,7 +3609,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				} else {
 					for (int vert = 0; vert < normals.size(); vert++) {
 						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-						if (abs(tan.dot(normals[vert])) > 0.0001) {
+						if (std::abs(tan.dot(normals[vert])) > 0.0001) {
 							// Tangent is not perpendicular to the normal, so we can't use compression.
 							flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 						}

@@ -2609,18 +2609,23 @@ void TileMapLayer::draw_tile(RID p_canvas_item, const Vector2 &p_position, const
 
 		bool transpose = tile_data->get_transpose() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
 		if (transpose) {
-			dest_rect.position = (p_position - Vector2(dest_rect.size.y, dest_rect.size.x) / 2 - tile_offset);
+			dest_rect.position = (p_position - Vector2(dest_rect.size.y, dest_rect.size.x) / 2);
+			SWAP(tile_offset.x, tile_offset.y);
 		} else {
-			dest_rect.position = (p_position - dest_rect.size / 2 - tile_offset);
+			dest_rect.position = (p_position - dest_rect.size / 2);
 		}
 
 		if (tile_data->get_flip_h() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_H)) {
 			dest_rect.size.x = -dest_rect.size.x;
+			tile_offset.x = -tile_offset.x;
 		}
 
 		if (tile_data->get_flip_v() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_V)) {
 			dest_rect.size.y = -dest_rect.size.y;
+			tile_offset.y = -tile_offset.y;
 		}
+
+		dest_rect.position -= tile_offset;
 
 		// Draw the tile.
 		if (p_frame >= 0) {

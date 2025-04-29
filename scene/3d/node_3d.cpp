@@ -126,7 +126,7 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 			callable_mp(this, &Node3D::_propagate_transform_changed_deferred).call_deferred();
 		}
 	}
-	_set_dirty_bits(DIRTY_GLOBAL_TRANSFORM);
+	_set_dirty_bits(DIRTY_GLOBAL_TRANSFORM | DIRTY_GLOBAL_INTERPOLATED_TRANSFORM);
 }
 
 void Node3D::_notification(int p_what) {
@@ -164,15 +164,39 @@ void Node3D::_notification(int p_what) {
 				}
 			}
 
-			_set_dirty_bits(DIRTY_GLOBAL_TRANSFORM); // Global is always dirty upon entering a scene.
+			_set_dirty_bits(DIRTY_GLOBAL_TRANSFORM | DIRTY_GLOBAL_INTERPOLATED_TRANSFORM); // Global is always dirty upon entering a scene.
 			_notify_dirty();
 
 			notification(NOTIFICATION_ENTER_WORLD);
 			_update_visibility_parent(true);
+
+			if (is_inside_tree() && get_tree()->is_physics_interpolation_enabled()) {
+				// Always reset FTI when entering tree and update the servers,
+				// both for interpolated and non-interpolated nodes,
+				// to ensure the server xforms are up to date.
+				fti_pump_xform();
+
+				// No need to interpolate as we are doing a reset.
+				data.global_transform_interpolated = get_global_transform();
+
+				// Make sure servers are up to date.
+				fti_update_servers_xform();
+
+				// As well as a reset based on the transform when adding, the user may change
+				// the transform during the first tick / frame, and we want to reset automatically
+				// at the end of the frame / tick (unless the user manually called `reset_physics_interpolation()`).
+				if (is_physics_interpolated()) {
+					get_tree()->get_scene_tree_fti().node_3d_request_reset(this);
+				}
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_MAIN_THREAD_GUARD;
+
+			if (is_inside_tree()) {
+				get_tree()->get_scene_tree_fti().node_3d_notify_delete(this);
+			}
 
 			notification(NOTIFICATION_EXIT_WORLD, true);
 			if (xform_change.in_list()) {
@@ -240,6 +264,18 @@ void Node3D::_notification(int p_what) {
 			if (data.client_physics_interpolation_data) {
 				data.client_physics_interpolation_data->global_xform_prev = data.client_physics_interpolation_data->global_xform_curr;
 			}
+
+			// In most cases, nodes derived from Node3D will have to already have reset code available for SceneTreeFTI,
+			// so it makes sense for them to reuse this method rather than respond individually to NOTIFICATION_RESET_PHYSICS_INTERPOLATION,
+			// unless they need to perform specific tasks (like changing process modes).
+			fti_pump_xform();
+			fti_pump_property();
+		} break;
+		case NOTIFICATION_SUSPENDED:
+		case NOTIFICATION_PAUSED: {
+			if (is_physics_interpolated_and_enabled()) {
+				data.local_transform_prev = get_transform();
+			}
 		} break;
 	}
 }
@@ -251,6 +287,7 @@ void Node3D::set_basis(const Basis &p_basis) {
 }
 void Node3D::set_quaternion(const Quaternion &p_quaternion) {
 	ERR_THREAD_GUARD;
+	fti_notify_node_changed();
 
 	if (_test_dirty_bits(DIRTY_EULER_ROTATION_AND_SCALE)) {
 		// We need the scale part, so if these are dirty, update it
@@ -317,8 +354,19 @@ void Node3D::set_global_rotation_degrees(const Vector3 &p_euler_degrees) {
 	set_global_rotation(radians);
 }
 
+void Node3D::fti_pump_xform() {
+	data.local_transform_prev = get_transform();
+}
+
+void Node3D::fti_notify_node_changed(bool p_transform_changed) {
+	if (is_inside_tree()) {
+		get_tree()->get_scene_tree_fti().node_3d_notify_changed(*this, p_transform_changed);
+	}
+}
+
 void Node3D::set_transform(const Transform3D &p_transform) {
 	ERR_THREAD_GUARD;
+	fti_notify_node_changed();
 	data.local_transform = p_transform;
 	_replace_dirty_mask(DIRTY_EULER_ROTATION_AND_SCALE); // Make rot/scale dirty.
 
@@ -452,9 +500,19 @@ Transform3D Node3D::_get_global_transform_interpolated(real_t p_interpolation_fr
 }
 
 Transform3D Node3D::get_global_transform_interpolated() {
+#if 1
 	// Pass through if physics interpolation is switched off.
 	// This is a convenience, as it allows you to easy turn off interpolation
 	// without changing any code.
+	if (data.fti_global_xform_interp_set && is_physics_interpolated_and_enabled() && !Engine::get_singleton()->is_in_physics_frame() && is_visible_in_tree()) {
+		return data.global_transform_interpolated;
+	}
+
+	return get_global_transform();
+#else
+	// OLD METHOD - deprecated since moving to SceneTreeFTI,
+	// but leaving for reference and comparison for debugging.
+
 	if (!is_physics_interpolated_and_enabled()) {
 		return get_global_transform();
 	}
@@ -467,6 +525,7 @@ Transform3D Node3D::get_global_transform_interpolated() {
 	}
 
 	return _get_global_transform_interpolated(Engine::get_singleton()->get_physics_interpolation_fraction());
+#endif
 }
 
 Transform3D Node3D::get_global_transform() const {
@@ -537,6 +596,7 @@ Transform3D Node3D::get_relative_transform(const Node *p_parent) const {
 
 void Node3D::set_position(const Vector3 &p_position) {
 	ERR_THREAD_GUARD;
+	fti_notify_node_changed();
 	data.local_transform.origin = p_position;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
@@ -618,6 +678,7 @@ EulerOrder Node3D::get_rotation_order() const {
 
 void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 	ERR_THREAD_GUARD;
+	fti_notify_node_changed();
 	if (_test_dirty_bits(DIRTY_EULER_ROTATION_AND_SCALE)) {
 		// Update scale only if rotation and scale are dirty, as rotation will be overridden.
 		data.scale = data.local_transform.basis.get_scale();
@@ -640,6 +701,7 @@ void Node3D::set_rotation_degrees(const Vector3 &p_euler_degrees) {
 
 void Node3D::set_scale(const Vector3 &p_scale) {
 	ERR_THREAD_GUARD;
+	fti_notify_node_changed();
 	if (_test_dirty_bits(DIRTY_EULER_ROTATION_AND_SCALE)) {
 		// Update rotation only if rotation and scale are dirty, as scale will be overridden.
 		data.euler_rotation = data.local_transform.basis.get_euler_normalized(data.euler_rotation_order);
@@ -1380,6 +1442,13 @@ Node3D::Node3D() :
 	data.disable_scale = false;
 	data.vi_visible = true;
 
+	data.fti_on_frame_xform_list = false;
+	data.fti_on_frame_property_list = false;
+	data.fti_on_tick_xform_list = false;
+	data.fti_on_tick_property_list = false;
+	data.fti_global_xform_interp_set = false;
+	data.fti_frame_xform_force_update = false;
+
 #ifdef TOOLS_ENABLED
 	data.gizmos_disabled = false;
 	data.gizmos_dirty = false;
@@ -1389,4 +1458,8 @@ Node3D::Node3D() :
 
 Node3D::~Node3D() {
 	_disable_client_physics_interpolation();
+
+	if (is_inside_tree()) {
+		get_tree()->get_scene_tree_fti().node_3d_notify_delete(this);
+	}
 }

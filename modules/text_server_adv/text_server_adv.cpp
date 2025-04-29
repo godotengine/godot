@@ -3865,8 +3865,12 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 		}
 	}
 	bool skip_oversampling = fd->msdf || fd->fixed_size > 0;
-	uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
-	oversampling_factor = double(oversampling_level) / 64.0;
+	if (skip_oversampling) {
+		oversampling_factor = 1.0;
+	} else {
+		uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
+		oversampling_factor = double(oversampling_level) / 64.0;
+	}
 
 	Vector2i size;
 	if (skip_oversampling) {
@@ -3943,8 +3947,8 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 					Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
 					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, 0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
 				} else {
-					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
 					Point2 cpos = p_pos;
+					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
 					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
 						cpos.x = cpos.x + 0.125;
 					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
@@ -4005,14 +4009,18 @@ void TextServerAdvanced::_font_draw_glyph_outline(const RID &p_font_rid, const R
 		}
 	}
 	bool skip_oversampling = fd->msdf || fd->fixed_size > 0;
-	uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
-	oversampling_factor = double(oversampling_level) / 64.0;
+	if (skip_oversampling) {
+		oversampling_factor = 1.0;
+	} else {
+		uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
+		oversampling_factor = double(oversampling_level) / 64.0;
+	}
 
 	Vector2i size;
 	if (skip_oversampling) {
 		size = _get_size_outline(fd, Vector2i(p_size, p_outline_size));
 	} else {
-		size = Vector2i(p_size * 64 * oversampling_factor, p_outline_size);
+		size = Vector2i(p_size * 64 * oversampling_factor, p_outline_size * oversampling_factor);
 	}
 
 	FontForSizeAdvanced *ffsd = nullptr;

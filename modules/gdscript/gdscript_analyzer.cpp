@@ -5335,7 +5335,7 @@ Variant GDScriptAnalyzer::make_call_reduced_value(GDScriptParser::CallNode *p_ca
 
 		Vector<Variant> args;
 		args.resize(p_call->arguments.size());
-		const Variant **argptrs = (const Variant **)alloca(sizeof(const Variant **) * args.size());
+		const Variant **argptrs = (const Variant **)alloca(sizeof(const Variant *) * args.size());
 		for (int i = 0; i < p_call->arguments.size(); i++) {
 			bool is_arg_value_reduced = false;
 			Variant arg_value = make_expression_reduced_value(p_call->arguments[i], is_arg_value_reduced);

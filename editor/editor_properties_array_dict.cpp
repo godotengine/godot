@@ -865,6 +865,14 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 
 			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1);
 			subtype = Variant::Type(subtype_string.to_int());
+		} else {
+			subtype = Variant::get_type_by_name(p_hint_string);
+
+			if (subtype == Variant::VARIANT_MAX) {
+				subtype = Variant::OBJECT;
+				subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				subtype_hint_string = p_hint_string;
+			}
 		}
 	}
 }
@@ -1155,12 +1163,21 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 
 			key_subtype_hint_string = key.substr(hint_key_subtype_separator + 1);
 			key_subtype = Variant::Type(key_subtype_string.to_int());
+		} else {
+			key_subtype = Variant::get_type_by_name(key);
 
-			Variant new_key = object->get_new_item_key();
-			VariantInternal::initialize(&new_key, key_subtype);
-			object->set_new_item_key(new_key);
+			if (key_subtype == Variant::VARIANT_MAX) {
+				key_subtype = Variant::OBJECT;
+				key_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				key_subtype_hint_string = key;
+			}
 		}
+
+		Variant new_key = object->get_new_item_key();
+		VariantInternal::initialize(&new_key, key_subtype);
+		object->set_new_item_key(new_key);
 	}
+
 	if (types.size() > 1 && !types[1].is_empty()) {
 		String value = types[1];
 		int hint_value_subtype_separator = value.find_char(':');
@@ -1174,11 +1191,19 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 
 			value_subtype_hint_string = value.substr(hint_value_subtype_separator + 1);
 			value_subtype = Variant::Type(value_subtype_string.to_int());
+		} else {
+			value_subtype = Variant::get_type_by_name(value);
 
-			Variant new_value = object->get_new_item_value();
-			VariantInternal::initialize(&new_value, value_subtype);
-			object->set_new_item_value(new_value);
+			if (value_subtype == Variant::VARIANT_MAX) {
+				value_subtype = Variant::OBJECT;
+				value_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				value_subtype_hint_string = value;
+			}
 		}
+
+		Variant new_value = object->get_new_item_value();
+		VariantInternal::initialize(&new_value, value_subtype);
+		object->set_new_item_value(new_value);
 	}
 }
 

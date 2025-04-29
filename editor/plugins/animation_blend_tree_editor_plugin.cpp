@@ -139,8 +139,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 
 	animations.clear();
 
-	List<StringName> nodes;
-	blend_tree->get_node_list(&nodes);
+	LocalVector<StringName> nodes = blend_tree->get_node_list();
 
 	for (const StringName &E : nodes) {
 		GraphNode *node = memnew(GraphNode);
@@ -1024,6 +1023,11 @@ void AnimationNodeBlendTreeEditor::_scroll_changed(const Vector2 &p_scroll) {
 	if (updating) {
 		return;
 	}
+
+	if (blend_tree.is_null()) {
+		return;
+	}
+
 	updating = true;
 	blend_tree->set_graph_offset(p_scroll / EDSCALE);
 	updating = false;

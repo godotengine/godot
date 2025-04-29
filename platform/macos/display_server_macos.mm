@@ -1753,7 +1753,7 @@ int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 
 		float den2 = (displayPhysicalSize.width / 25.4f) * (displayPhysicalSize.width / 25.4f) + (displayPhysicalSize.height / 25.4f) * (displayPhysicalSize.height / 25.4f);
 		if (den2 > 0.0f) {
-			return ceil(sqrt(displayPixelSize.width * displayPixelSize.width + displayPixelSize.height * displayPixelSize.height) / sqrt(den2) * scale);
+			return std::ceil(std::sqrt(displayPixelSize.width * displayPixelSize.width + displayPixelSize.height * displayPixelSize.height) / std::sqrt(den2) * scale);
 		}
 	}
 
@@ -1768,7 +1768,7 @@ float DisplayServerMacOS::screen_get_scale(int p_screen) const {
 		NSArray *screenArray = [NSScreen screens];
 		if ((NSUInteger)p_screen < [screenArray count]) {
 			if ([[screenArray objectAtIndex:p_screen] respondsToSelector:@selector(backingScaleFactor)]) {
-				return fmax(1.0, [[screenArray objectAtIndex:p_screen] backingScaleFactor]);
+				return std::fmax(1.0, [[screenArray objectAtIndex:p_screen] backingScaleFactor]);
 			}
 		}
 	}
@@ -1829,7 +1829,7 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
 		if (color_space) {
 			uint8_t img_data[4];
-			CGContextRef context = CGBitmapContextCreate(img_data, 1, 1, 8, 4, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			CGContextRef context = CGBitmapContextCreate(img_data, 1, 1, 8, 4, color_space, (uint32_t)kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
 			if (context) {
 				CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), image);
 				color = Color(img_data[0] / 255.0f, img_data[1] / 255.0f, img_data[2] / 255.0f, img_data[3] / 255.0f);
@@ -1878,7 +1878,7 @@ Ref<Image> DisplayServerMacOS::screen_get_image(int p_screen) const {
 
 			Vector<uint8_t> img_data;
 			img_data.resize(height * width * 4);
-			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, (uint32_t)kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
 			if (context) {
 				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
 				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
@@ -1926,7 +1926,7 @@ Ref<Image> DisplayServerMacOS::screen_get_image_rect(const Rect2i &p_rect) const
 
 			Vector<uint8_t> img_data;
 			img_data.resize_zeroed(height * width * 4);
-			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, (uint32_t)kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
 			if (context) {
 				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
 				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
@@ -3230,7 +3230,7 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 		int len = int(texture_size.width * texture_size.height);
 
 		for (int i = 0; i < len; i++) {
-			int row_index = floor(i / texture_size.width);
+			int row_index = std::floor(i / texture_size.width);
 			int column_index = i % int(texture_size.width);
 
 			uint32_t color = image->get_pixel(column_index, row_index).to_argb32();
@@ -3863,7 +3863,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 	int screen_count = get_screen_count();
 	for (int i = 0; i < screen_count; i++) {
-		display_max_scale = fmax(display_max_scale, screen_get_scale(i));
+		display_max_scale = std::fmax(display_max_scale, screen_get_scale(i));
 	}
 
 	// Register to be notified on keyboard layout changes.

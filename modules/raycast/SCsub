@@ -71,7 +71,6 @@ if env["builtin_embree"]:
             env.Append(LINKFLAGS=["psapi.lib"])
         else:
             env.Append(LIBS=["psapi"])
-            env_raycast.Append(CCFLAGS=["-mstackrealign"])
 
     if env.msvc:  # Disable bogus warning about intentional struct padding.
         env_raycast.Append(CCFLAGS=["/wd4324"])

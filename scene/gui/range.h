@@ -46,7 +46,7 @@ class Range : public Control {
 		bool allow_lesser = false;
 		HashSet<Range *> owners;
 		void emit_value_changed();
-		void emit_changed(const char *p_what = "");
+		void emit_changed();
 		void redraw_owners();
 	};
 
@@ -58,7 +58,7 @@ class Range : public Control {
 	void _share(Node *p_range);
 
 	void _value_changed_notify();
-	void _changed_notify(const char *p_what = "");
+	void _changed_notify();
 	void _set_value_no_signal(double p_val);
 
 protected:

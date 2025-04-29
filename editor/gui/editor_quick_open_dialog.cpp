@@ -348,8 +348,7 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 		file_type_icons.insert(SNAME("__default_icon"), get_editor_theme_icon(SNAME("Object")));
 
 		bool history_modified = false;
-		List<String> history_keys;
-		history_file->get_section_keys("selected_history", &history_keys);
+		Vector<String> history_keys = history_file->get_section_keys("selected_history");
 		for (const String &type : history_keys) {
 			const StringName type_name = type;
 			const PackedStringArray paths = history_file->get_value("selected_history", type);
@@ -789,10 +788,10 @@ String QuickOpenResultContainer::get_selected() const {
 
 QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const Vector<StringName> &p_base_types) {
 	static const Vector<StringName> grid_preferred_types = {
-		"Font",
-		"Texture2D",
-		"Material",
-		"Mesh"
+		StringName("Font", true),
+		StringName("Texture2D", true),
+		StringName("Material", true),
+		StringName("Mesh", true),
 	};
 
 	for (const StringName &type : grid_preferred_types) {

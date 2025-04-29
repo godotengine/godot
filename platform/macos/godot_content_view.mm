@@ -109,6 +109,22 @@
 	self.layer.needsDisplayOnBoundsChange = YES;
 }
 
+- (void)addObserver:(NSObject *)targetObserver forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(void *)context {
+	[registered_observers addObject:[[targetObserver description] stringByAppendingString:keyPath]];
+	[super addObserver:targetObserver forKeyPath:keyPath options:options context:context];
+}
+
+- (void)removeObserver:(NSObject *)targetObserver forKeyPath:(NSString *)keyPath {
+	if ([registered_observers containsObject:[[targetObserver description] stringByAppendingString:keyPath]]) {
+		@try {
+			[super removeObserver:targetObserver forKeyPath:keyPath];
+			[registered_observers removeObject:[[targetObserver description] stringByAppendingString:keyPath]];
+		} @catch (NSException *exception) {
+			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
+		}
+	}
+}
+
 - (id)init {
 	self = [super init];
 	layer_delegate = [[GodotContentLayerDelegate alloc] init];
@@ -118,6 +134,7 @@
 	mouse_down_control = false;
 	ignore_momentum_scroll = false;
 	last_pen_inverted = false;
+	registered_observers = [[NSMutableSet alloc] init];
 	[self updateTrackingAreas];
 
 	self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
@@ -871,11 +888,11 @@
 	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
 		[self processPanEvent:event dx:delta_x dy:delta_y];
 	} else {
-		if (fabs(delta_x)) {
-			[self processScrollEvent:event button:(0 > delta_x ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT) factor:fabs(delta_x * 0.3)];
+		if (std::abs(delta_x)) {
+			[self processScrollEvent:event button:(0 > delta_x ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT) factor:std::abs(delta_x * 0.3)];
 		}
-		if (fabs(delta_y)) {
-			[self processScrollEvent:event button:(0 < delta_y ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN) factor:fabs(delta_y * 0.3)];
+		if (std::abs(delta_y)) {
+			[self processScrollEvent:event button:(0 < delta_y ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN) factor:std::abs(delta_y * 0.3)];
 		}
 	}
 }

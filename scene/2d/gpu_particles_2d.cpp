@@ -833,7 +833,7 @@ void GPUParticles2D::_draw_emission_gizmo() {
 				draw_circle(Vector2(), pm->get_emission_ring_radius(), emission_ring_color, false);
 			} else {
 				Vector2 a = Vector2(pm->get_emission_ring_height() / -2.0, pm->get_emission_ring_radius() / -1.0);
-				Vector2 b = Vector2(-a.x, MIN(a.y + tan((90.0 - pm->get_emission_ring_cone_angle()) * 0.01745329) * pm->get_emission_ring_height(), 0.0));
+				Vector2 b = Vector2(-a.x, MIN(a.y + std::tan((90.0 - pm->get_emission_ring_cone_angle()) * 0.01745329) * pm->get_emission_ring_height(), 0.0));
 				Vector2 c = Vector2(b.x, -b.y);
 				Vector2 d = Vector2(a.x, -a.y);
 				if (ring_axis.is_equal_approx(Vector3(1.0, 0.0, 0.0))) {
