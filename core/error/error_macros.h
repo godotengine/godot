@@ -34,6 +34,10 @@
 
 #include <atomic> // IWYU pragma: keep // Used in macro. We'd normally use `safe_refcount.h`, but that would cause circular includes.
 
+#ifdef _MSC_VER
+#include <intrin.h> // `__fastfail()`.
+#endif
+
 class String;
 class ObjectID;
 
@@ -85,7 +89,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 /**
  * Don't use GENERATE_TRAP() directly, should only be used be the macros below.
  */
-#define GENERATE_TRAP() __debugbreak()
+#define GENERATE_TRAP() __fastfail(7 /* FAST_FAIL_FATAL_APP_EXIT */)
 #else
 /**
  * Don't use GENERATE_TRAP() directly, should only be used be the macros below.
