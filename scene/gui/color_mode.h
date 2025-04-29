@@ -132,7 +132,7 @@ public:
 	float slider_max[4] = { 359, 100, 100, 255 };
 	float cached_hue = 0.0;
 	float cached_saturation = 0.0;
-	Ref<GradientTexture2D> hue_texture = nullptr;
+	Ref<GradientTexture2D> hue_texture;
 
 	virtual String get_name() const override { return "OKHSL"; }
 

@@ -54,6 +54,7 @@ class ColorPresetButton : public BaseButton {
 	GDCLASS(ColorPresetButton, BaseButton);
 
 	Color preset_color;
+	bool recent = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> foreground_style;
@@ -71,7 +72,9 @@ public:
 	void set_preset_color(const Color &p_color);
 	Color get_preset_color() const;
 
-	ColorPresetButton(Color p_color, int p_size);
+	virtual String get_tooltip(const Point2 &p_pos) const override;
+
+	ColorPresetButton(Color p_color, int p_size, bool p_recent);
 	~ColorPresetButton();
 };
 
@@ -181,7 +184,7 @@ private:
 	HBoxContainer *hex_hbc = nullptr;
 	MenuButton *btn_mode = nullptr;
 	Button *mode_btns[MODE_BUTTON_COUNT];
-	Ref<ButtonGroup> mode_group = nullptr;
+	Ref<ButtonGroup> mode_group;
 	ColorPresetButton *selected_recent_preset = nullptr;
 	Ref<ButtonGroup> preset_group;
 	Ref<ButtonGroup> recent_preset_group;
@@ -301,7 +304,9 @@ private:
 	void _update_controls();
 	void _update_color(bool p_update_sliders = true);
 	void _update_text_value();
+#ifdef TOOLS_ENABLED
 	void _text_type_toggled();
+#endif // TOOLS_ENABLED
 	void _sample_input(const Ref<InputEvent> &p_event);
 	void _sample_draw();
 	void _slider_draw(int p_which);
@@ -344,6 +349,8 @@ private:
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control);
 
+	void _ensure_file_dialog();
+
 protected:
 	virtual void _update_theme_item_cache() override;
 
@@ -355,7 +362,10 @@ public:
 	void set_editor_settings(Object *p_editor_settings);
 	void set_quick_open_callback(const Callable &p_file_selected);
 	void set_palette_saved_callback(const Callable &p_palette_saved);
+
+	void _quick_open_palette_file_selected(const String &p_path);
 #endif
+
 	HSlider *get_slider(int idx);
 	Vector<float> get_active_slider_values();
 
@@ -373,7 +383,7 @@ public:
 	Color get_pick_color() const;
 	void set_old_color(const Color &p_color);
 	Color get_old_color() const;
-	void _quick_open_palette_file_selected(const String &p_path);
+
 	void _palette_file_selected(const String &p_path);
 
 	void set_display_old_color(bool p_enabled);
