@@ -51,6 +51,7 @@ protected:
 		StringName name;
 		Ref<AnimationRootNode> node;
 		float position = 0.0;
+		float weight = 0.0;
 	};
 
 	BlendPoint blend_points[MAX_BLEND_POINTS];
@@ -60,6 +61,9 @@ protected:
 	float min_space = -1.0;
 
 	float snap = 0.1;
+
+	bool smooth = false;
+	float smooth_speed = 1.0;
 
 	String value_label = "value";
 
@@ -111,6 +115,12 @@ public:
 
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
+
+	void set_smooth_speed(const float &p_speed);
+	float get_smooth_speed() const;
+
+	void set_use_smooth(const bool &p_smooth);
+	bool is_using_smooth() const;
 
 	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 	String get_caption() const override;

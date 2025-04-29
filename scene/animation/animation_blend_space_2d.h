@@ -51,6 +51,7 @@ protected:
 		StringName name;
 		Ref<AnimationRootNode> node;
 		Vector2 position;
+		float weight;
 	};
 
 	BlendPoint blend_points[MAX_BLEND_POINTS];
@@ -70,6 +71,8 @@ protected:
 	String x_label = "x";
 	String y_label = "y";
 	BlendMode blend_mode = BLEND_MODE_INTERPOLATED;
+	bool smooth = false;
+	float smooth_speed = 1.0;
 
 	void _add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node);
 	void _set_triangles(const Vector<int> &p_triangles);
@@ -140,6 +143,12 @@ public:
 
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
+
+	void set_smooth_speed(const float &p_speed);
+	float get_smooth_speed() const;
+
+	void set_use_smooth(const bool &p_smooth);
+	bool is_using_smooth() const;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
 

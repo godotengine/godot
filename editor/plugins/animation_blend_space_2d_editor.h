@@ -60,7 +60,12 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	SpinBox *snap_x = nullptr;
 	SpinBox *snap_y = nullptr;
 	CheckBox *sync = nullptr;
+
 	OptionButton *interpolation = nullptr;
+
+	HBoxContainer *smooth_hb = nullptr;
+	CheckBox *smooth = nullptr;
+	SpinBox *smooth_speed = nullptr;
 
 	Button *auto_triangles = nullptr;
 
