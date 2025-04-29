@@ -296,7 +296,10 @@ bool FuzzySearch::search(const String &p_target, FuzzySearchResult &p_result) co
 	// which does not conflict with prior token matches. This is not ensured to find the highest scoring
 	// combination of matches, or necessarily the highest scoring single subsequence, as it only considers
 	// eager subsequences for a given index, and likewise eagerly finds matches for each token in sequence.
-	for (const FuzzySearchToken &token : tokens) {
+	for (FuzzySearchToken token : tokens) {
+		if (!case_sensitive) {
+			token.string = token.string.to_lower();
+		}
 		FuzzyTokenMatch best_match;
 		int offset = start_offset;
 
