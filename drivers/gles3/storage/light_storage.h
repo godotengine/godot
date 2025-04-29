@@ -50,6 +50,8 @@ struct Light {
 	float param[RS::LIGHT_PARAM_MAX];
 	Color color = Color(1, 1, 1, 1);
 	RID projector;
+	Vector2 projector_scale;
+	Vector2 projector_offset;
 	bool shadow = false;
 	bool negative = false;
 	bool reverse_cull = false;
@@ -322,6 +324,8 @@ public:
 	virtual void light_set_param(RID p_light, RS::LightParam p_param, float p_value) override;
 	virtual void light_set_shadow(RID p_light, bool p_enabled) override;
 	virtual void light_set_projector(RID p_light, RID p_texture) override;
+	virtual void light_set_projector_scale(RID p_light, const Vector2 &p_scale) override;
+	virtual void light_set_projector_offset(RID p_light, const Vector2 &p_offset) override;
 	virtual void light_set_negative(RID p_light, bool p_enable) override;
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) override;
 	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) override;
