@@ -81,6 +81,10 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_blend_point", "node", "pos", "at_index"), &AnimationNodeBlendSpace1D::add_blend_point, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_blend_point_position", "point", "pos"), &AnimationNodeBlendSpace1D::set_blend_point_position);
 	ClassDB::bind_method(D_METHOD("get_blend_point_position", "point"), &AnimationNodeBlendSpace1D::get_blend_point_position);
+	ClassDB::bind_method(D_METHOD("set_blend_point_vl", "point", "velocity_limit"), &AnimationNodeBlendSpace1D::set_blend_point_vl);
+	ClassDB::bind_method(D_METHOD("get_blend_point_vl", "point"), &AnimationNodeBlendSpace1D::get_blend_point_vl);
+	ClassDB::bind_method(D_METHOD("set_blend_point_ovl", "point", "override_velocity_limit"), &AnimationNodeBlendSpace1D::set_blend_point_ovl);
+	ClassDB::bind_method(D_METHOD("get_blend_point_ovl", "point"), &AnimationNodeBlendSpace1D::get_blend_point_ovl);
 	ClassDB::bind_method(D_METHOD("set_blend_point_node", "point", "node"), &AnimationNodeBlendSpace1D::set_blend_point_node);
 	ClassDB::bind_method(D_METHOD("get_blend_point_node", "point"), &AnimationNodeBlendSpace1D::get_blend_point_node);
 	ClassDB::bind_method(D_METHOD("remove_blend_point", "point"), &AnimationNodeBlendSpace1D::remove_blend_point);
@@ -104,11 +108,22 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeBlendSpace1D::set_use_sync);
 	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeBlendSpace1D::is_using_sync);
 
+	ClassDB::bind_method(D_METHOD("set_use_velocity_limit", "enable"), &AnimationNodeBlendSpace1D::set_use_velocity_limit);
+	ClassDB::bind_method(D_METHOD("get_use_velocity_limit"), &AnimationNodeBlendSpace1D::get_use_velocity_limit);
+
+	ClassDB::bind_method(D_METHOD("set_velocity_limit", "speed"), &AnimationNodeBlendSpace1D::set_velocity_limit);
+	ClassDB::bind_method(D_METHOD("get_velocity_limit"), &AnimationNodeBlendSpace1D::get_velocity_limit);
+
+	ClassDB::bind_method(D_METHOD("set_velocity_limit_ease", "ease"), &AnimationNodeBlendSpace1D::set_velocity_limit_ease);
+	ClassDB::bind_method(D_METHOD("get_velocity_limit_ease"), &AnimationNodeBlendSpace1D::get_velocity_limit_ease);
+
 	ClassDB::bind_method(D_METHOD("_add_blend_point", "index", "node"), &AnimationNodeBlendSpace1D::_add_blend_point);
 
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "blend_point_" + itos(i) + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_add_blend_point", "get_blend_point_node", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "blend_point_" + itos(i) + "/pos", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_blend_point_position", "get_blend_point_position", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "blend_point_" + itos(i) + "/velocity_limit", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_blend_point_vl", "get_blend_point_vl", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "blend_point_" + itos(i) + "/override_velocity_limit", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_blend_point_ovl", "get_blend_point_ovl", i);
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_min_space", "get_min_space");
@@ -117,6 +132,9 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "value_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_value_label", "get_value_label");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Interpolated,Discrete,Carry", PROPERTY_USAGE_NO_EDITOR), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_sync", "is_using_sync");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_velocity_limit", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_velocity_limit", "get_use_velocity_limit");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "velocity_limit", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity_limit", "get_velocity_limit");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "velocity_limit_ease", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity_limit_ease", "get_velocity_limit_ease");
 
 	BIND_ENUM_CONSTANT(BLEND_MODE_INTERPOLATED);
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISCRETE);
@@ -184,6 +202,26 @@ void AnimationNodeBlendSpace1D::set_blend_point_node(int p_point, const Ref<Anim
 float AnimationNodeBlendSpace1D::get_blend_point_position(int p_point) const {
 	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, 0);
 	return blend_points[p_point].position;
+}
+
+void AnimationNodeBlendSpace1D::set_blend_point_vl(int p_point, const float &p_velocity_limit) {
+	ERR_FAIL_INDEX(p_point, blend_points_used);
+	blend_points[p_point].velocity_limit = p_velocity_limit;
+}
+
+float AnimationNodeBlendSpace1D::get_blend_point_vl(int p_point) const {
+	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, 0.f);
+	return blend_points[p_point].velocity_limit;
+}
+
+void AnimationNodeBlendSpace1D::set_blend_point_ovl(int p_point, const bool &p_override_velocity_limit) {
+	ERR_FAIL_INDEX(p_point, blend_points_used);
+	blend_points[p_point].override_velocity_limit = p_override_velocity_limit;
+}
+
+bool AnimationNodeBlendSpace1D::get_blend_point_ovl(int p_point) const {
+	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, false);
+	return blend_points[p_point].override_velocity_limit;
 }
 
 Ref<AnimationRootNode> AnimationNodeBlendSpace1D::get_blend_point_node(int p_point) const {
@@ -269,6 +307,29 @@ bool AnimationNodeBlendSpace1D::is_using_sync() const {
 	return sync;
 }
 
+void AnimationNodeBlendSpace1D::set_use_velocity_limit(bool p_use_velocity_limit) {
+	use_velocity_limit = p_use_velocity_limit;
+}
+
+bool AnimationNodeBlendSpace1D::get_use_velocity_limit() const {
+	return use_velocity_limit;
+}
+
+void AnimationNodeBlendSpace1D::set_velocity_limit(const double &p_default_velocity_limit) {
+	default_velocity_limit = p_default_velocity_limit;
+}
+
+double AnimationNodeBlendSpace1D::get_velocity_limit() const {
+	return default_velocity_limit;
+}
+
+void AnimationNodeBlendSpace1D::set_velocity_limit_ease(const float p_ease) {
+	velocity_limit_ease = p_ease;
+}
+float AnimationNodeBlendSpace1D::get_velocity_limit_ease() const {
+	return velocity_limit_ease;
+}
+
 void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node) {
 	if (p_index == blend_points_used) {
 		add_blend_point(p_node, 0);
@@ -277,11 +338,22 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 	}
 }
 
+float AnimationNodeBlendSpace1D::velocity_limit(float p_start, float p_target, float p_velocity_limit, float p_delta) {
+	float distance = Math::abs(p_target - p_start);
+	if (Math::is_zero_approx(distance)) {
+		return p_target;
+	}
+	float max_step = p_velocity_limit * p_delta;
+	float ratio = CLAMP(max_step / distance, 0.0f, 1.0f);
+	float eased_ratio = static_cast<float>(Math::ease(ratio, velocity_limit_ease));
+	float result = Math::lerp(p_start, p_target, eased_ratio);
+	return Math::is_equal_approx(result, p_target) ? p_target : result;
+}
+
 AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	if (!blend_points_used) {
 		return NodeTimeInfo();
 	}
-
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 
 	if (blend_points_used == 1) {
@@ -347,21 +419,56 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 		// actually blend the animations now
 		bool first = true;
 		double max_weight = 0.0;
+
+		int mind_idx = 0;
+		double delta = pi.delta;
+		//calculate the true weights before hand
 		for (int i = 0; i < blend_points_used; i++) {
+			bool found = false;
+			float point_velocity_limit = blend_points[i].override_velocity_limit ? blend_points[i].velocity_limit : default_velocity_limit;
 			if (i == point_lower || i == point_higher) {
-				pi.weight = weights[i];
-				NodeTimeInfo t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
-				if (first || pi.weight > max_weight) {
+				if (sync && use_velocity_limit && blend_points[i].weight == -1.0) {
+					blend_points[i].weight = weights[i];
+				}
+				blend_points[i].weight = (sync && use_velocity_limit) ? velocity_limit(blend_points[i].weight, weights[i], point_velocity_limit, delta) : weights[i];
+				if (first || blend_points[i].weight > max_weight) {
+					mind_idx = i;
 					max_weight = pi.weight;
-					mind = t;
 					first = false;
 				}
-			} else if (sync) {
-				pi.weight = 0;
-				blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+				found = true;
+			}
+			if (!found) {
+				if (sync) {
+					blend_points[i].weight = (use_velocity_limit) ? velocity_limit(blend_points[i].weight, 0.0, point_velocity_limit, delta) : 0.0;
+				} else {
+					blend_points[i].weight = -1.0;
+				}
+			}
+		}
+		float sum_of_weight = 0.0;
+		if (sync && use_velocity_limit) {
+			for (int i = 0; i < blend_points_used; i++) {
+				sum_of_weight += MAX(blend_points[i].weight, 0.0);
+			}
+			if (sum_of_weight <= 0.0) {
+				sum_of_weight = 1.0;
+			}
+		}
+		//now we apply them
+		for (int i = 0; i < blend_points_used; i++) {
+			if (blend_points[i].weight == -1.0) { //retaining non sync beheivour
+				continue;
+			}
+			pi.weight = (sync && use_velocity_limit) ? blend_points[i].weight / sum_of_weight : blend_points[i].weight;
+			NodeTimeInfo t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+			if (mind_idx == i) {
+				mind = t;
 			}
 		}
 	} else {
+		double delta = pi.delta;
+		int mind_idx = 0;
 		int new_closest = -1;
 		double new_closest_dist = 1e20;
 
@@ -394,26 +501,48 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 				from = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, true);
 				pi.time = from.position;
 			}
-			pi.seeked = true;
-			pi.weight = 1.0;
-			mind = blend_node(blend_points[new_closest].node, blend_points[new_closest].name, pi, FILTER_IGNORE, true, p_test_only);
+			float point_velocity_limit = blend_points[new_closest].override_velocity_limit ? blend_points[new_closest].velocity_limit : default_velocity_limit;
+			blend_points[new_closest].weight = (sync && use_velocity_limit) ? velocity_limit(blend_points[new_closest].weight, 1.0, point_velocity_limit, delta) : 1.0;
+			mind_idx = new_closest;
 			cur_closest = new_closest;
 		} else {
-			pi.weight = 1.0;
-			mind = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, p_test_only);
+			float point_velocity_limit = blend_points[cur_closest].override_velocity_limit ? blend_points[cur_closest].velocity_limit : default_velocity_limit;
+			blend_points[cur_closest].weight = (sync && use_velocity_limit) ? velocity_limit(blend_points[cur_closest].weight, 1.0, point_velocity_limit, delta) : 1.0;
+			mind_idx = cur_closest;
 		}
-
-		if (sync) {
-			pi = p_playback_info;
-			pi.weight = 0;
-			for (int i = 0; i < blend_points_used; i++) {
-				if (i != cur_closest) {
-					blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+		for (int i = 0; i < blend_points_used; i++) {
+			float point_velocity_limit = blend_points[i].override_velocity_limit ? blend_points[i].velocity_limit : default_velocity_limit;
+			if (i != cur_closest) {
+				if (sync) {
+					blend_points[i].weight = (use_velocity_limit) ? MAX(velocity_limit(blend_points[i].weight, 0.0, point_velocity_limit, delta), 0.0) : 0.0;
+				} else {
+					blend_points[i].weight = -1.0;
 				}
 			}
 		}
-	}
 
+		float sum_of_weight = 1.0;
+		if (sync && use_velocity_limit) {
+			sum_of_weight = 0.0;
+			for (int i = 0; i < blend_points_used; i++) {
+				sum_of_weight += MAX(blend_points[i].weight, 0.0);
+			}
+			if (sum_of_weight <= 0.0) {
+				sum_of_weight = 1.0;
+			}
+		}
+
+		for (int i = 0; i < blend_points_used; i++) {
+			if (blend_points[i].weight == -1.0) { //retaining non sync beheivour
+				continue;
+			}
+			pi.weight = (sync && use_velocity_limit) ? blend_points[i].weight / sum_of_weight : blend_points[i].weight;
+			NodeTimeInfo t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+			if (mind_idx == i) {
+				mind = t;
+			}
+		}
+	}
 	set_parameter(closest, cur_closest);
 	return mind;
 }

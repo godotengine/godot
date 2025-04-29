@@ -33,7 +33,9 @@
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_blend_space_2d.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/tree.h"
 
 class Button;
 class CheckBox;
@@ -43,6 +45,7 @@ class PanelContainer;
 class SpinBox;
 class VSeparator;
 
+class BlendPointEditor2D;
 class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendSpace2DEditor, AnimationTreeNodeEditorPlugin);
 
@@ -60,7 +63,13 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	SpinBox *snap_x = nullptr;
 	SpinBox *snap_y = nullptr;
 	CheckBox *sync = nullptr;
+
 	OptionButton *interpolation = nullptr;
+
+	HBoxContainer *blending_hb = nullptr;
+	CheckBox *use_velocity_limit = nullptr;
+	SpinBox *default_velocity_limit = nullptr;
+	Ref<BlendPointEditor2D> current_blend_point_editor;
 
 	Button *auto_triangles = nullptr;
 
@@ -145,4 +154,35 @@ public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
 	AnimationNodeBlendSpace2DEditor();
+	~AnimationNodeBlendSpace2DEditor();
+};
+
+class BlendPointEditor2D : public RefCounted {
+	GDCLASS(BlendPointEditor2D, RefCounted);
+
+private:
+	Ref<AnimationNodeBlendSpace2D> blend_space;
+	Ref<AnimationNode> anim_node;
+	float velocity_limit_ease;
+	int selected_point = -1;
+	float velocity_limit = 0.0;
+	bool override_velocity_limit = false;
+	bool updating = false;
+
+public:
+	void setup(Ref<AnimationNodeBlendSpace2D> p_blend_space, int idx, Ref<AnimationNode> p_anim_node);
+
+	void set_velocity_limit(float p_value);
+	double get_velocity_limit() const;
+	void set_override_velocity_limit(bool const p_ovl);
+	bool get_override_velocity_limit() const;
+
+	Ref<AnimationNode> get_anim_node() const;
+	void set_velocity_limit_ease(float const p_ease);
+	float get_velocity_limit_ease() const;
+	bool _hide_script_from_inspector() { return true; }
+	bool _hide_metadata_from_inspector() { return true; }
+	bool _dont_undo_redo() { return true; }
+
+	static void _bind_methods();
 };
