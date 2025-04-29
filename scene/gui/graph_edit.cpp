@@ -2268,7 +2268,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 void GraphEdit::key_input(const Ref<InputEvent> &p_ev) {
 	if (p_ev->is_pressed()) {
-		if (p_ev->is_action("ui_graph_duplicate", true)) {
+		if (p_ev->is_action("ui_graph_duplicate", true)) { //maybe create a function to do this
 			TypedArray<StringName> nodes;
 
 			for (int i = 0; i < get_child_count(); i++) {
