@@ -4469,10 +4469,10 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 	}
 #endif
 
-	last_bind->root_tables.resources.reserve(shader_set.num_root_params.resources);
 	last_bind->root_tables.resources.clear();
-	last_bind->root_tables.samplers.reserve(shader_set.num_root_params.samplers);
 	last_bind->root_tables.samplers.clear();
+	last_bind->root_tables.resources.reserve(shader_set.num_root_params.resources);
+	last_bind->root_tables.samplers.reserve(shader_set.num_root_params.samplers);
 	last_bind->uses++;
 
 	struct {
