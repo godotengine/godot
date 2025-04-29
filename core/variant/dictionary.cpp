@@ -225,7 +225,7 @@ bool Dictionary::has_all(const Array &p_keys) const {
 	for (int i = 0; i < p_keys.size(); i++) {
 		Variant key = p_keys[i];
 		ERR_FAIL_COND_V(!_p->typed_key.validate(key, "use 'has_all'"), false);
-		if (!has(key)) {
+		if (!_p->variant_map.has(key)) {
 			return false;
 		}
 	}
