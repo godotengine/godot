@@ -3902,6 +3902,9 @@ void TextureStorage::decal_atlas_redraw_textures() {
 	ERR_FAIL_COND(decal_atlas.texture.is_null());
 
 	RID prev_texture;
+
+	// Note for the reviewers: This is the solution 2
+	// int border = 1 << decal_atlas.mipmaps;
 	for (int i = 0; i < decal_atlas.texture_mipmaps.size(); i++) {
 		const DecalAtlas::MipMap &mm = decal_atlas.texture_mipmaps[i];
 
@@ -3912,7 +3915,17 @@ void TextureStorage::decal_atlas_redraw_textures() {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
 					if (t->drawn) {
 						Texture *src_tex = get_texture(E.key);
-						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+
+						// Note for the reviewers: This is the solution 2
+						// Computed to repeat the texture inside the borders
+						// Rect2 border_uv_rect = t->uv_rect;
+						// border_uv_rect.position -= Vector2(border / 2, border / 2) / Size2(decal_atlas.size);
+						// border_uv_rect.size += Vector2(border, border) / Size2(decal_atlas.size);
+
+						// Vector2 border_offset = Vector2(border, border) / Vector2(src_tex->width, src_tex->height);
+						// copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, border_uv_rect, draw_list, false, t->panorama_to_dp_users > 0, border_offset);
+
+						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->border_uv_rect, draw_list, false, t->panorama_to_dp_users > 0, t->border_offset);
 						t->drawn = false;
 					}
 				}
@@ -4067,6 +4080,17 @@ void TextureStorage::update_decal_atlas() {
 
 			t->uv_rect.position /= Size2(decal_atlas.size);
 			t->uv_rect.size /= Size2(decal_atlas.size);
+
+			// Note for the reviewers: This is the solution 1
+			// Computed to repeat the texture inside the borders
+			t->border_uv_rect.position = items[i].pos * border;
+			t->border_uv_rect.size = items[i].pixel_size + Vector2i(border, border);
+
+			t->border_uv_rect.position /= Size2(decal_atlas.size);
+			t->border_uv_rect.size /= Size2(decal_atlas.size);
+
+			Texture *src_tex = get_texture(items[i].texture);
+			t->border_offset = Vector2(border, border) / Vector2(src_tex->width, src_tex->height);
 		}
 	} else {
 		//use border as size, so it at least has enough mipmaps
@@ -4130,7 +4154,18 @@ void TextureStorage::update_decal_atlas() {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
 					Texture *src_tex = get_texture(E.key);
 
-					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+					// Note for the reviewers: This is the solution 2
+					// Computed to repeat the texture inside the borders
+					// Rect2 border_uv_rect = t->uv_rect;
+					// border_uv_rect.position -= Vector2(border / 2, border / 2) / Size2(decal_atlas.size);
+					// border_uv_rect.size += Vector2(border, border) / Size2(decal_atlas.size);
+
+					// Vector2 border_offset = Vector2(border, border) / Vector2(src_tex->width, src_tex->height);
+
+					// copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, border_uv_rect, draw_list, false, t->panorama_to_dp_users > 0, border_offset);
+
+					// Note for the reviewers: This is the solution 1
+					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->border_uv_rect, draw_list, false, t->panorama_to_dp_users > 0, t->border_offset);
 					t->drawn = false;
 				}
 
