@@ -1323,7 +1323,7 @@
 				sqrt(10.24) # Returns 3.2
 				sqrt(-1)    # Returns NaN
 				[/codeblock]
-				[b]Note:[/b] Negative values of [param x] return NaN ("Not a Number"). in C#, if you need negative inputs, use [code]System.Numerics.Complex[/code].
+				[b]Note:[/b] Negative values of [param x] return NaN ("Not a Number"). In C#, if you need negative inputs, use [code]System.Numerics.Complex[/code].
 			</description>
 		</method>
 		<method name="step_decimals">
