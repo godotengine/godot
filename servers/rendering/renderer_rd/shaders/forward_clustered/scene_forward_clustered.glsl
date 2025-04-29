@@ -1949,11 +1949,11 @@ void fragment_shader(in SceneData scene_data) {
 		}
 
 		if (ambient_accum.a < 1.0) {
-			ambient_accum.rgb = mix(ambient_light, ambient_accum.rgb, ambient_accum.a);
+			ambient_accum.rgb = ambient_light * (1.0 - ambient_accum.a) + ambient_accum.rgb;
 		}
 
 		if (reflection_accum.a < 1.0) {
-			reflection_accum.rgb = mix(specular_light, reflection_accum.rgb, reflection_accum.a);
+			reflection_accum.rgb = specular_light * (1.0 - reflection_accum.a) + reflection_accum.rgb;
 		}
 
 		if (reflection_accum.a > 0.0) {
