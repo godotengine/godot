@@ -46,6 +46,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/dtls_server.h"
 #include "core/io/file_access_encrypted.h"
+#include "core/io/filesystem.h"
+#include "core/io/filesystem_protocol.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
@@ -250,6 +252,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(ResourceFormatLoader);
 	GDREGISTER_CLASS(ResourceFormatSaver);
 
+	GDREGISTER_ABSTRACT_CLASS(FileSystemProtocol);
 	GDREGISTER_ABSTRACT_CLASS(FileAccess);
 	GDREGISTER_ABSTRACT_CLASS(DirAccess);
 	GDREGISTER_CLASS(CoreBind::Thread);
@@ -337,6 +340,9 @@ void register_early_core_singletons() {
 
 	GDREGISTER_CLASS(Time);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
+
+	GDREGISTER_CLASS(FileSystem);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("FileSystem", FileSystem::get_singleton()));
 }
 
 void register_core_singletons() {

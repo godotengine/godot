@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  file_access_unix_pipe.h                                               */
+/*  filesystem_protocol_os_android.cpp                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,54 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "filesystem_protocol_os_android.h"
+#include "core/io/filesystem.h"
+#include "file_access_android.h"
+#include <android/asset_manager_jni.h>
 
-#include "core/io/file_access.h"
-#include "core/os/memory.h"
+String FileSystemProtocolOSAndroid::fix_path(const String &p_path) {
+	String r_path = FileSystem::fix_path(p_path);
+	return r_path;
+}
 
-#include <stdio.h>
+Ref<FileAccess> FileSystemProtocolOSAndroid::open_file(const String &p_path, int p_mode_flags, Error &r_error) const {
+	Ref<FileAccessAndroid> file = Ref<FileAccessAndroid>();
+	file.instantiate();
 
-#if defined(UNIX_ENABLED)
+	r_error = file->open_internal(p_path, p_mode_flags);
 
-class FileAccessUnixPipe : public FileAccess {
-	GDSOFTCLASS(FileAccessUnixPipe, FileAccess);
-	bool unlink_on_close = false;
+	if (r_error != OK) {
+		file.unref();
+	}
 
-	int fd[2] = { -1, -1 };
+	return file;
+}
 
-	mutable Error last_error = OK;
-	String path;
+bool FileSystemProtocolOSAndroid::file_exists(const String &p_path) const {
+	String path = fix_path(p_path).simplify_path();
+	if (path.begins_with("/")) {
+		path = path.substr(1);
+	}
 
-	void _close();
+	AAsset *at = AAssetManager_open(FileAccessAndroid::asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
 
-protected:
-	virtual String _get_path() const override; /// returns the path for the current open file
+	if (!at) {
+		return false;
+	}
 
-public:
-	Error open_existing(int p_rfd, int p_wfd, bool p_blocking);
-	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
+	AAsset_close(at);
+	return true;
+}
 
-	virtual bool is_open() const override; ///< true when file is open
+int64_t FileSystemProtocolOSAndroid::get_size(const String &p_path) const {
+	String path = fix_path(p_path).simplify_path();
+	if (path.begins_with("/")) {
+		path = path.substr(1);
+	}
 
-	virtual void seek(uint64_t p_position) override {}
-	virtual void seek_end(int64_t p_position = 0) override {}
-	virtual uint64_t get_position() const override { return 0; }
-	virtual uint64_t get_length() const override;
+	AAsset *at = AAssetManager_open(FileAccessAndroid::asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
 
-	virtual bool eof_reached() const override { return false; }
+	if (!at) {
+		return -1;
+	}
 
-	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
+	int64_t size = AAsset_getLength64(at);
 
-	virtual Error get_error() const override; ///< get last error
-
-	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
-	virtual void flush() override {}
-	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
-
-	virtual void close() override;
-
-	FileAccessUnixPipe() {}
-	virtual ~FileAccessUnixPipe();
-};
-
-#endif // UNIX_ENABLED
+	AAsset_close(at);
+	return size;
+}

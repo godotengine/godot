@@ -34,6 +34,7 @@
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "filesystem_protocol_os_unix.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -65,8 +66,7 @@ void FileAccessUnix::check_errors(bool p_write) const {
 Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 	_close();
 
-	path_src = p_path;
-	path = fix_path(p_path);
+	path = FileSystemProtocolOSUnix::fix_path(p_path);
 	//printf("opening %s, %i\n", path.utf8().get_data(), Memory::get_static_mem_usage());
 
 	ERR_FAIL_COND_V_MSG(f, ERR_ALREADY_IN_USE, "File is already in use.");
@@ -194,11 +194,7 @@ bool FileAccessUnix::is_open() const {
 	return (f != nullptr);
 }
 
-String FileAccessUnix::get_path() const {
-	return path_src;
-}
-
-String FileAccessUnix::get_path_absolute() const {
+String FileAccessUnix::_get_path() const {
 	return path;
 }
 
@@ -308,172 +304,6 @@ bool FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	bool res = fwrite(p_src, 1, p_length, f) == p_length;
 	check_errors(true);
 	return res;
-}
-
-bool FileAccessUnix::file_exists(const String &p_path) {
-	struct stat st = {};
-	const CharString filename_utf8 = fix_path(p_path).utf8();
-
-	// Does the name exist at all?
-	if (stat(filename_utf8.get_data(), &st)) {
-		return false;
-	}
-
-	// See if we have access to the file
-	if (access(filename_utf8.get_data(), F_OK)) {
-		return false;
-	}
-
-	// See if this is a regular file
-	switch (st.st_mode & S_IFMT) {
-		case S_IFLNK:
-		case S_IFREG:
-			return true;
-		default:
-			return false;
-	}
-}
-
-uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
-	String file = fix_path(p_file);
-	struct stat st = {};
-	int err = stat(file.utf8().get_data(), &st);
-
-	if (!err) {
-		uint64_t modified_time = 0;
-		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG || (st.st_mode & S_IFDIR) == S_IFDIR) {
-			modified_time = st.st_mtime;
-		}
-#ifdef ANDROID_ENABLED
-		// Workaround for GH-101007
-		//FIXME: After saving, all timestamps (st_mtime, st_ctime, st_atime) are set to the same value.
-		// After exporting or after some time, only 'modified_time' resets to a past timestamp.
-		uint64_t created_time = st.st_ctime;
-		if (modified_time < created_time) {
-			modified_time = created_time;
-		}
-#endif
-		return modified_time;
-	} else {
-		return 0;
-	}
-}
-
-uint64_t FileAccessUnix::_get_access_time(const String &p_file) {
-	String file = fix_path(p_file);
-	struct stat st = {};
-	int err = stat(file.utf8().get_data(), &st);
-
-	if (!err) {
-		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG || (st.st_mode & S_IFDIR) == S_IFDIR) {
-			return st.st_atime;
-		}
-	}
-	ERR_FAIL_V_MSG(0, "Failed to get access time for: " + p_file + "");
-}
-
-int64_t FileAccessUnix::_get_size(const String &p_file) {
-	String file = fix_path(p_file);
-	struct stat st = {};
-	int err = stat(file.utf8().get_data(), &st);
-
-	if (!err) {
-		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG) {
-			return st.st_size;
-		}
-	}
-	ERR_FAIL_V_MSG(-1, "Failed to get size for: " + p_file + "");
-}
-
-BitField<FileAccess::UnixPermissionFlags> FileAccessUnix::_get_unix_permissions(const String &p_file) {
-	String file = fix_path(p_file);
-	struct stat status = {};
-	int err = stat(file.utf8().get_data(), &status);
-
-	if (!err) {
-		return status.st_mode & 0xFFF; //only permissions
-	} else {
-		ERR_FAIL_V_MSG(0, "Failed to get unix permissions for: " + p_file + ".");
-	}
-}
-
-Error FileAccessUnix::_set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) {
-	String file = fix_path(p_file);
-
-	int err = chmod(file.utf8().get_data(), p_permissions);
-	if (!err) {
-		return OK;
-	}
-
-	return FAILED;
-}
-
-bool FileAccessUnix::_get_hidden_attribute(const String &p_file) {
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
-	String file = fix_path(p_file);
-
-	struct stat st = {};
-	int err = stat(file.utf8().get_data(), &st);
-	ERR_FAIL_COND_V_MSG(err, false, "Failed to get attributes for: " + p_file);
-
-	return (st.st_flags & UF_HIDDEN);
-#else
-	return false;
-#endif
-}
-
-Error FileAccessUnix::_set_hidden_attribute(const String &p_file, bool p_hidden) {
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
-	String file = fix_path(p_file);
-
-	struct stat st = {};
-	int err = stat(file.utf8().get_data(), &st);
-	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to get attributes for: " + p_file);
-
-	if (p_hidden) {
-		err = chflags(file.utf8().get_data(), st.st_flags | UF_HIDDEN);
-	} else {
-		err = chflags(file.utf8().get_data(), st.st_flags & ~UF_HIDDEN);
-	}
-	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to set attributes for: " + p_file);
-	return OK;
-#else
-	return ERR_UNAVAILABLE;
-#endif
-}
-
-bool FileAccessUnix::_get_read_only_attribute(const String &p_file) {
-#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
-	String file = fix_path(p_file);
-
-	struct stat st = {};
-	int err = stat(file.utf8().get_data(), &st);
-	ERR_FAIL_COND_V_MSG(err, false, "Failed to get attributes for: " + p_file);
-
-	return st.st_flags & UF_IMMUTABLE;
-#else
-	return false;
-#endif
-}
-
-Error FileAccessUnix::_set_read_only_attribute(const String &p_file, bool p_ro) {
-#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
-	String file = fix_path(p_file);
-
-	struct stat st = {};
-	int err = stat(file.utf8().get_data(), &st);
-	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to get attributes for: " + p_file);
-
-	if (p_ro) {
-		err = chflags(file.utf8().get_data(), st.st_flags | UF_IMMUTABLE);
-	} else {
-		err = chflags(file.utf8().get_data(), st.st_flags & ~UF_IMMUTABLE);
-	}
-	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to set attributes for: " + p_file);
-	return OK;
-#else
-	return ERR_UNAVAILABLE;
-#endif
 }
 
 void FileAccessUnix::close() {

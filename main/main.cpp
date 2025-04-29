@@ -42,6 +42,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/file_access_zip.h"
+#include "core/io/filesystem.h"
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
 #include "core/io/ip.h"
@@ -159,6 +160,7 @@ static Input *input = nullptr;
 static InputMap *input_map = nullptr;
 static TranslationServer *translation_server = nullptr;
 static Performance *performance = nullptr;
+static FileSystem *filesystem = nullptr;
 static PackedData *packed_data = nullptr;
 #ifdef MINIZIP_ENABLED
 static ZipArchive *zip_packed_data = nullptr;
@@ -719,6 +721,11 @@ Error Main::test_setup() {
 
 	globals = memnew(ProjectSettings);
 
+	filesystem = memnew(FileSystem);
+	OS::get_singleton()->initialize_filesystem();
+	filesystem->register_protocols();
+	OS::get_singleton()->initialize_filesystem_additional();
+
 	register_core_settings(); // Here globals are present.
 
 	translation_server = memnew(TranslationServer);
@@ -888,6 +895,9 @@ void Main::test_cleanup() {
 	if (globals) {
 		memdelete(globals);
 	}
+	if (filesystem) {
+		memdelete(filesystem);
+	}
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
@@ -977,6 +987,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	input_map = memnew(InputMap);
 	globals = memnew(ProjectSettings);
+
+	filesystem = memnew(FileSystem);
+	OS::get_singleton()->initialize_filesystem();
+	filesystem->register_protocols();
+	OS::get_singleton()->initialize_filesystem_additional();
 
 	register_core_settings(); //here globals are present
 
@@ -2114,7 +2129,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// and even if file logging is disabled in the Project Settings.
 	// `--log-file` can be used with any path (including absolute paths outside the project folder),
 	// so check for filesystem access if it's used.
-	if (FileAccess::get_create_func(!log_file.is_empty() ? FileAccess::ACCESS_FILESYSTEM : FileAccess::ACCESS_USERDATA) &&
+	if (FileSystem::get_singleton()->has_protocol(!log_file.is_empty() ? FileSystem::protocol_name_os : FileSystem::protocol_name_user) &&
 			(!log_file.is_empty() || (!project_manager && !editor && GLOBAL_GET("debug/file_logging/enable_file_logging")))) {
 		// Don't create logs for the project manager as they would be written to
 		// the current working directory, which is inconvenient.
@@ -2827,6 +2842,9 @@ error:
 	}
 	if (globals) {
 		memdelete(globals);
+	}
+	if (filesystem) {
+		memdelete(filesystem);
 	}
 	if (packed_data) {
 		memdelete(packed_data);
@@ -5015,6 +5033,9 @@ void Main::cleanup(bool p_force) {
 #endif // PHYSICS_2D_DISABLED
 	if (globals) {
 		memdelete(globals);
+	}
+	if (filesystem) {
+		memdelete(filesystem);
 	}
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
