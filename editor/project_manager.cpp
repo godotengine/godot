@@ -109,9 +109,14 @@ void ProjectManager::_notification(int p_what) {
 			// TRANSLATORS: This refers to the application where users manage their Godot projects.
 			SceneTree::get_singleton()->get_root()->set_title(GODOT_VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
-			const String line1 = TTR("You don't have any projects yet.");
-			const String line2 = TTR("Get started by creating a new one,\nimporting one that exists, or by downloading a project template from the Asset Library!");
-			empty_list_message->set_text(vformat("[center][b]%s[/b] %s[/center]", line1, line2));
+			empty_list_message->clear();
+			empty_list_message->push_bold();
+			empty_list_message->add_text(TTR("You don't have any projects yet."));
+			empty_list_message->pop();
+			// The bold text above and the regular text below are in the same paragraph, so a space is added.
+			// This space may be redundant when the text is translated (e.g., into Chinese).
+			// It is kept as-is since it's hard to find a better solution.
+			empty_list_message->add_text(" " + TTR("Get started by creating a new one,\nimporting one that exists, or by downloading a project template from the Asset Library!"));
 
 			_titlebar_resized();
 		} break;
@@ -1504,6 +1509,8 @@ ProjectManager::ProjectManager() {
 				project_list_panel->add_child(empty_list_placeholder);
 
 				empty_list_message = memnew(RichTextLabel);
+				empty_list_message->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+				empty_list_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 				empty_list_message->set_use_bbcode(true);
 				empty_list_message->set_fit_content(true);
 				empty_list_message->set_h_size_flags(SIZE_EXPAND_FILL);
