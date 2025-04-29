@@ -134,8 +134,14 @@ public:
 		};
 
 		union {
-			float packed_2;
-			float luminance_multiplier;
+			uint32_t packed_2;
+
+			struct {
+				uint32_t use_directional_projector : 1;
+				uint32_t padding : 15;
+				
+				uint32_t luminance_multiplier : 16;
+			};
 		};
 	};
 
