@@ -37,8 +37,8 @@
 
 class CompressedTexture2D;
 
-class EditorTextureImportPlugin : public RefCounted {
-	GDCLASS(EditorTextureImportPlugin, RefCounted);
+class EditorTexturePostImportPlugin : public RefCounted {
+	GDCLASS(EditorTexturePostImportPlugin, RefCounted);
 
 public:
 	enum Preset {
@@ -74,12 +74,12 @@ public:
 	virtual Ref<Image> pre_process(Ref<Image> p_image, const HashMap<StringName, Variant> &p_options) const;
 	virtual Ref<Image> post_process(Ref<Image> p_image, const HashMap<StringName, Variant> &p_options) const;
 };
-VARIANT_ENUM_CAST(EditorTextureImportPlugin::Preset);
+VARIANT_ENUM_CAST(EditorTexturePostImportPlugin::Preset);
 
 class ResourceImporterTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterTexture, ResourceImporter);
 
-	static Vector<Ref<EditorTextureImportPlugin>> texture_import_plugins;
+	static Vector<Ref<EditorTexturePostImportPlugin>> texture_import_plugins;
 
 public:
 	enum CompressMode {
@@ -125,8 +125,8 @@ public:
 
 	static ResourceImporterTexture *get_singleton() { return singleton; }
 
-	static void add_texture_import_plugin(Ref<EditorTextureImportPlugin> p_plugin, bool p_first_priority = false);
-	static void remove_texture_import_plugin(Ref<EditorTextureImportPlugin> p_plugin);
+	static void add_post_import_plugin(Ref<EditorTexturePostImportPlugin> p_plugin, bool p_first_priority = false);
+	static void remove_post_import_plugin(Ref<EditorTexturePostImportPlugin> p_plugin);
 	static void clean_up_importer_plugins();
 
 	virtual String get_importer_name() const override;

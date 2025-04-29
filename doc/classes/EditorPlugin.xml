@@ -544,12 +544,12 @@
 				If [param first_priority] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
 			</description>
 		</method>
-		<method name="add_texture_import_plugin">
+		<method name="add_texture_post_import_plugin">
 			<return type="void" />
-			<param index="0" name="importer" type="EditorTextureImportPlugin" />
+			<param index="0" name="importer" type="EditorTexturePostImportPlugin" />
 			<param index="1" name="first_priority" type="bool" default="false" />
 			<description>
-				Add a [EditorTextureImportPlugin]. These plugins allow customizing the import process of [CompressedTexture2D].
+				Add a [EditorTexturePostImportPlugin]. These plugins allow customizing the import process of [CompressedTexture2D].
 				If [param first_priority] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
 			</description>
 		</method>
@@ -741,11 +741,11 @@
 				Remove the [EditorScenePostImportPlugin], added with [method add_scene_post_import_plugin].
 			</description>
 		</method>
-		<method name="remove_texture_import_plugin">
+		<method name="remove_texture_post_import_plugin">
 			<return type="void" />
-			<param index="0" name="importer" type="EditorTextureImportPlugin" />
+			<param index="0" name="importer" type="EditorTexturePostImportPlugin" />
 			<description>
-				Remove the [EditorTextureImportPlugin], added with [method add_texture_import_plugin].
+				Remove the [EditorTexturePostImportPlugin], added with [method add_texture_post_import_plugin].
 			</description>
 		</method>
 		<method name="remove_tool_menu_item">

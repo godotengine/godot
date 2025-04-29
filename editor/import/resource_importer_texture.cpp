@@ -41,23 +41,23 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/resources/compressed_texture.h"
 
-Variant EditorTextureImportPlugin::get_option_value(const StringName &p_name) const {
+Variant EditorTexturePostImportPlugin::get_option_value(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(current_options == nullptr, Variant(), "get_option_value() called from a function where option values are not available.");
 	ERR_FAIL_COND_V_MSG(!current_options->has(p_name), Variant(), "get_option_value() called with unexisting option argument: " + String(p_name));
 	return (*current_options)[p_name];
 }
 
-void EditorTextureImportPlugin::add_import_option(const String &p_name, const Variant &p_default_value) {
+void EditorTexturePostImportPlugin::add_import_option(const String &p_name, const Variant &p_default_value) {
 	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option() can only be called from get_import_options().");
 	add_import_option_advanced(p_default_value.get_type(), p_name, p_default_value);
 }
 
-void EditorTextureImportPlugin::add_import_option_advanced(Variant::Type p_type, const String &p_name, const Variant &p_default_value, PropertyHint p_hint, const String &p_hint_string, int p_usage_flags) {
+void EditorTexturePostImportPlugin::add_import_option_advanced(Variant::Type p_type, const String &p_name, const Variant &p_default_value, PropertyHint p_hint, const String &p_hint_string, int p_usage_flags) {
 	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option_advanced() can only be called from get_import_options().");
 	current_option_list->push_back(ResourceImporter::ImportOption(PropertyInfo(p_type, p_name, p_hint, p_hint_string, p_usage_flags), p_default_value));
 }
 
-void EditorTextureImportPlugin::get_recognized_extensions(List<String> *p_extensions) const {
+void EditorTexturePostImportPlugin::get_recognized_extensions(List<String> *p_extensions) const {
 	Vector<String> extensions;
 	GDVIRTUAL_CALL(_get_recognized_extensions, extensions);
 	for (int i = 0; i < extensions.size(); i++) {
@@ -65,13 +65,13 @@ void EditorTextureImportPlugin::get_recognized_extensions(List<String> *p_extens
 	}
 }
 
-void EditorTextureImportPlugin::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options, Preset p_preset) const {
+void EditorTexturePostImportPlugin::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options, Preset p_preset) const {
 	current_option_list = r_options;
 	GDVIRTUAL_CALL(_get_import_options, p_path, p_preset);
 	current_option_list = nullptr;
 }
 
-Variant EditorTextureImportPlugin::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+Variant EditorTexturePostImportPlugin::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	current_options = &p_options;
 	Variant ret;
 	GDVIRTUAL_CALL(_get_option_visibility, p_path, p_option, ret);
@@ -79,7 +79,7 @@ Variant EditorTextureImportPlugin::get_option_visibility(const String &p_path, c
 	return ret;
 }
 
-Ref<Image> EditorTextureImportPlugin::load_image(const String &p_source_file, bool *r_use_custom_loader, const HashMap<StringName, Variant> &p_options) const {
+Ref<Image> EditorTexturePostImportPlugin::load_image(const String &p_source_file, bool *r_use_custom_loader, const HashMap<StringName, Variant> &p_options) const {
 	Ref<Image> image;
 	current_options = &p_options;
 	bool use_custom_loader = GDVIRTUAL_CALL(_load_image, p_source_file, image);
@@ -90,7 +90,7 @@ Ref<Image> EditorTextureImportPlugin::load_image(const String &p_source_file, bo
 	return image;
 }
 
-Ref<Image> EditorTextureImportPlugin::pre_process(Ref<Image> p_image, const HashMap<StringName, Variant> &p_options) const {
+Ref<Image> EditorTexturePostImportPlugin::pre_process(Ref<Image> p_image, const HashMap<StringName, Variant> &p_options) const {
 	Ref<Image> image = p_image;
 	current_options = &p_options;
 	GDVIRTUAL_CALL(_pre_process, p_image, image);
@@ -98,7 +98,7 @@ Ref<Image> EditorTextureImportPlugin::pre_process(Ref<Image> p_image, const Hash
 	return image;
 }
 
-Ref<Image> EditorTextureImportPlugin::post_process(Ref<Image> p_image, const HashMap<StringName, Variant> &p_options) const {
+Ref<Image> EditorTexturePostImportPlugin::post_process(Ref<Image> p_image, const HashMap<StringName, Variant> &p_options) const {
 	Ref<Image> image = p_image;
 	current_options = &p_options;
 	GDVIRTUAL_CALL(_post_process, p_image, image);
@@ -106,10 +106,10 @@ Ref<Image> EditorTextureImportPlugin::post_process(Ref<Image> p_image, const Has
 	return image;
 }
 
-void EditorTextureImportPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_option_value", "name"), &EditorTextureImportPlugin::get_option_value);
-	ClassDB::bind_method(D_METHOD("add_import_option", "name", "value"), &EditorTextureImportPlugin::add_import_option);
-	ClassDB::bind_method(D_METHOD("add_import_option_advanced", "type", "name", "default_value", "hint", "hint_string", "usage_flags"), &EditorTextureImportPlugin::add_import_option_advanced, DEFVAL(PROPERTY_HINT_NONE), DEFVAL(""), DEFVAL(PROPERTY_USAGE_DEFAULT));
+void EditorTexturePostImportPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_option_value", "name"), &EditorTexturePostImportPlugin::get_option_value);
+	ClassDB::bind_method(D_METHOD("add_import_option", "name", "value"), &EditorTexturePostImportPlugin::add_import_option);
+	ClassDB::bind_method(D_METHOD("add_import_option_advanced", "type", "name", "default_value", "hint", "hint_string", "usage_flags"), &EditorTexturePostImportPlugin::add_import_option_advanced, DEFVAL(PROPERTY_HINT_NONE), DEFVAL(""), DEFVAL(PROPERTY_USAGE_DEFAULT));
 
 	BIND_ENUM_CONSTANT(PRESET_DETECT);
 	BIND_ENUM_CONSTANT(PRESET_2D);
@@ -254,7 +254,7 @@ String ResourceImporterTexture::get_visible_name() const {
 
 void ResourceImporterTexture::get_recognized_extensions(List<String> *p_extensions) const {
 	ImageLoader::get_recognized_extensions(p_extensions);
-	for (const Ref<EditorTextureImportPlugin> &plugin : texture_import_plugins) {
+	for (const Ref<EditorTexturePostImportPlugin> &plugin : texture_import_plugins) {
 		plugin->get_recognized_extensions(p_extensions);
 	}
 }
@@ -296,7 +296,7 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_path, const 
 		return p_options["mipmaps/generate"];
 	}
 
-	for (const Ref<EditorTextureImportPlugin> &plugin : texture_import_plugins) {
+	for (const Ref<EditorTexturePostImportPlugin> &plugin : texture_import_plugins) {
 		Variant ret = plugin->get_option_visibility(p_path, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL && !ret) {
 			return false;
@@ -351,7 +351,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "editor/convert_colors_with_editor_theme"), false));
 	}
 
-	for (const Ref<EditorTextureImportPlugin> &plugin : texture_import_plugins) {
+	for (const Ref<EditorTexturePostImportPlugin> &plugin : texture_import_plugins) {
 		plugin->get_import_options(p_path, r_options);
 	}
 }
@@ -436,7 +436,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 	}
 }
 
-void ResourceImporterTexture::add_texture_import_plugin(Ref<EditorTextureImportPlugin> p_plugin, bool p_first_priority) {
+void ResourceImporterTexture::add_post_import_plugin(Ref<EditorTexturePostImportPlugin> p_plugin, bool p_first_priority) {
 	ERR_FAIL_COND(p_plugin.is_null());
 	if (p_first_priority) {
 		texture_import_plugins.insert(0, p_plugin);
@@ -445,7 +445,7 @@ void ResourceImporterTexture::add_texture_import_plugin(Ref<EditorTextureImportP
 	}
 }
 
-void ResourceImporterTexture::remove_texture_import_plugin(Ref<EditorTextureImportPlugin> p_importer) {
+void ResourceImporterTexture::remove_post_import_plugin(Ref<EditorTexturePostImportPlugin> p_importer) {
 	texture_import_plugins.erase(p_importer);
 }
 
@@ -677,7 +677,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	Error err = OK;
 	bool use_custom_loader = false;
 
-	for (const Ref<EditorTextureImportPlugin> &plugin : texture_import_plugins) {
+	for (const Ref<EditorTexturePostImportPlugin> &plugin : texture_import_plugins) {
 		image = plugin->load_image(p_source_file, &use_custom_loader, p_options);
 	}
 	ERR_FAIL_COND_V_MSG(image.is_null(), ERR_INVALID_DATA, "The returned image of _load_image() is null.");
@@ -687,7 +687,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 		ERR_FAIL_COND_V(err != OK, err);
 	}
 
-	for (const Ref<EditorTextureImportPlugin> &plugin : texture_import_plugins) {
+	for (const Ref<EditorTexturePostImportPlugin> &plugin : texture_import_plugins) {
 		image = plugin->pre_process(image, p_options);
 	}
 	ERR_FAIL_COND_V_MSG(image.is_null(), ERR_INVALID_DATA, "The returned image of _pre_process() is null.");
@@ -765,7 +765,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 		}
 	}
 
-	for (const Ref<EditorTextureImportPlugin> &plugin : texture_import_plugins) {
+	for (const Ref<EditorTexturePostImportPlugin> &plugin : texture_import_plugins) {
 		image = plugin->post_process(image, p_options);
 	}
 	ERR_FAIL_COND_V_MSG(image.is_null(), ERR_INVALID_DATA, "The returned image of _post_process() is null.");
@@ -971,7 +971,7 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path, co
 }
 
 ResourceImporterTexture *ResourceImporterTexture::singleton = nullptr;
-Vector<Ref<EditorTextureImportPlugin>> ResourceImporterTexture::texture_import_plugins;
+Vector<Ref<EditorTexturePostImportPlugin>> ResourceImporterTexture::texture_import_plugins;
 
 ResourceImporterTexture::ResourceImporterTexture(bool p_singleton) {
 	// This should only be set through the EditorNode.

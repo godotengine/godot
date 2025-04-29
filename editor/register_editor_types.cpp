@@ -205,7 +205,7 @@ void register_editor_types() {
 	GDREGISTER_CLASS(ResourceImporterTextureAtlas);
 	GDREGISTER_CLASS(ResourceImporterWAV);
 
-	GDREGISTER_CLASS(EditorTextureImportPlugin);
+	GDREGISTER_CLASS(EditorTexturePostImportPlugin);
 
 	// This list is alphabetized, and plugins that depend on Node2D are in their own section below.
 	EditorPlugins::add_by_type<AnimationTreeEditorPlugin>();
