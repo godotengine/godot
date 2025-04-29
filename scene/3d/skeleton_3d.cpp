@@ -1116,6 +1116,12 @@ void Skeleton3D::_force_update_bone_children_transforms(int p_bone_idx) const {
 
 	// Loop through nested set.
 	for (int offset = 0; offset < bone_size; offset++) {
+		if (rest_dirty) {
+			int current_bone_idx = nested_set_offset_to_bone_index[offset];
+			Bone &b = bonesptr[current_bone_idx];
+			b.global_rest = b.parent >= 0 ? bonesptr[b.parent].global_rest * b.rest : b.rest; // Rest needs update apert from pose.
+		}
+
 		if (!bone_global_pose_dirty[offset]) {
 			continue;
 		}
@@ -1139,9 +1145,6 @@ void Skeleton3D::_force_update_bone_children_transforms(int p_bone_idx) const {
 			} else {
 				b.global_pose = b.rest;
 			}
-		}
-		if (rest_dirty) {
-			b.global_rest = b.parent >= 0 ? bonesptr[b.parent].global_rest * b.rest : b.rest;
 		}
 
 #ifndef DISABLE_DEPRECATED
