@@ -164,6 +164,7 @@ void Camera3D::_update_camera() {
 
 void Camera3D::_physics_interpolated_changed() {
 	_update_process_mode();
+	Node3D::_physics_interpolated_changed();
 }
 
 void Camera3D::set_desired_process_modes(bool p_process_internal, bool p_physics_process_internal) {
