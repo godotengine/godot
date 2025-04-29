@@ -138,6 +138,9 @@ void main() {
 	vec3 uv = uv_interp;
 #else
 	vec2 uv = uv_interp;
+
+	// params.color.xy contain the XY atlas border size scaled to the current texture UV space
+	uv.xy = uv.xy * (1.0 + params.color.xy) - params.color.xy * 0.5;
 #endif
 
 #ifdef MODE_PANORAMA_TO_DP

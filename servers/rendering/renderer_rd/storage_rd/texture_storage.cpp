@@ -2822,6 +2822,7 @@ void TextureStorage::update_decal_atlas() {
 	}
 
 	int border = 1 << decal_atlas.mipmaps;
+	HashMap<RID, Rect2> true_uv_rects; // The texture full UV including the borders
 
 	if (decal_atlas.textures.size()) {
 		//generate atlas
@@ -2918,8 +2919,15 @@ void TextureStorage::update_decal_atlas() {
 			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
 			t->uv_rect.size = items[i].pixel_size;
 
+			Rect2 true_uv_rect = Rect2(items[i].pos * border, items[i].pixel_size + Vector2i(border, border));
+
 			t->uv_rect.position /= Size2(decal_atlas.size);
 			t->uv_rect.size /= Size2(decal_atlas.size);
+
+			true_uv_rect.position /= Size2(decal_atlas.size);
+			true_uv_rect.size /= Size2(decal_atlas.size);
+
+			true_uv_rects[items[i].texture] = true_uv_rect;
 		}
 	} else {
 		//use border as size, so it at least has enough mipmaps
@@ -2982,7 +2990,12 @@ void TextureStorage::update_decal_atlas() {
 				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
 					Texture *src_tex = get_texture(E.key);
-					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+
+					// To repeat the texture inside the borders
+					Vector2 border_offset = Vector2(border, border) / Vector2(src_tex->width, src_tex->height);
+					Rect2 true_uv_rect = true_uv_rects[E.key];
+
+					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, true_uv_rect, draw_list, false, t->panorama_to_dp_users > 0, border_offset);
 				}
 
 				RD::get_singleton()->draw_list_end();

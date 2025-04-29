@@ -240,18 +240,30 @@ void LightStorage::light_set_projector(RID p_light, RID p_texture) {
 
 	ERR_FAIL_COND(p_texture.is_valid() && !texture_storage->owns_texture(p_texture));
 
-	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
+	if (light->projector.is_valid()) {
 		texture_storage->texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 	}
 
 	light->projector = p_texture;
 
-	if (light->type != RS::LIGHT_DIRECTIONAL) {
-		if (light->projector.is_valid()) {
-			texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
-		}
-		light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+	if (light->projector.is_valid()) {
+		texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 	}
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+}
+
+void LightStorage::light_set_projector_scale(RID p_light, const Vector2 &p_scale) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->projector_scale = p_scale;
+}
+
+void LightStorage::light_set_projector_offset(RID p_light, const Vector2 &p_offset) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->projector_offset = p_offset;
 }
 
 void LightStorage::light_set_negative(RID p_light, bool p_enable) {
@@ -597,7 +609,7 @@ void LightStorage::set_max_lights(const uint32_t p_max_lights) {
 	directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
 }
 
-void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
+void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows, bool &r_directional_light_use_projectors) {
 	ForwardIDStorage *forward_id_storage = ForwardIDStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -610,6 +622,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 	spot_light_count = 0;
 
 	r_directional_light_soft_shadows = false;
+	r_directional_light_use_projectors = false;
 
 	for (int i = 0; i < (int)p_lights.size(); i++) {
 		LightInstance *light_instance = light_instance_owner.get_or_null(p_lights[i]);
@@ -692,6 +705,40 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 					if (angular_diameter <= 0.0) {
 						light_data.soft_shadow_scale *= RendererSceneRenderRD::get_singleton()->directional_shadow_quality_radius_get(); // Only use quality radius for PCF
+					}
+
+					RID projector = light->projector;
+
+					if (projector.is_valid()) {
+						Rect2 rect = texture_storage->decal_atlas_get_texture_rect(projector);
+
+						light_data.projector_rect[0] = rect.position.x;
+						light_data.projector_rect[1] = rect.position.y + rect.size.height; //flip because shadow is flipped
+						light_data.projector_rect[2] = rect.size.width;
+						light_data.projector_rect[3] = -rect.size.height;
+
+						light_data.projector_scale[0] = light->projector_scale.x;
+						light_data.projector_scale[1] = light->projector_scale.y;
+						light_data.projector_offset[0] = light->projector_offset.x;
+						light_data.projector_offset[1] = light->projector_offset.y;
+
+						// Compute projector matrix
+						Projection projector_projection;
+						projector_projection.set_orthogonal(50.0f, 1.0f, 0.0f, 0.0f, true);
+
+						Transform3D modelview = (inverse_transform * light_transform).inverse();
+
+						Projection projector_mtx = projector_projection * modelview;
+
+						RendererRD::MaterialStorage::store_camera(projector_mtx, light_data.projector_matrix);
+
+						r_directional_light_use_projectors = true;
+
+					} else {
+						light_data.projector_rect[0] = 0;
+						light_data.projector_rect[1] = 0;
+						light_data.projector_rect[2] = 0;
+						light_data.projector_rect[3] = 0;
 					}
 
 					int limit = smode == RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL ? 0 : (smode == RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS ? 1 : 3);

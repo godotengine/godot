@@ -181,18 +181,30 @@ void LightStorage::light_set_projector(RID p_light, RID p_texture) {
 		return;
 	}
 
-	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
+	if (light->projector.is_valid()) {
 		texture_storage->texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 	}
 
 	light->projector = p_texture;
 
-	if (light->type != RS::LIGHT_DIRECTIONAL) {
-		if (light->projector.is_valid()) {
-			texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
-		}
-		light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+	if (light->projector.is_valid()) {
+		texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 	}
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+}
+
+void LightStorage::light_set_projector_scale(RID p_light, const Vector2 &p_scale) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->projector_scale = p_scale;
+}
+
+void LightStorage::light_set_projector_offset(RID p_light, const Vector2 &p_offset) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->projector_offset = p_offset;
 }
 
 void LightStorage::light_set_negative(RID p_light, bool p_enable) {

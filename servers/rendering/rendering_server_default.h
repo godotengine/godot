@@ -442,6 +442,8 @@ public:
 	FUNC3(light_set_param, RID, LightParam, float)
 	FUNC2(light_set_shadow, RID, bool)
 	FUNC2(light_set_projector, RID, RID)
+	FUNC2(light_set_projector_scale, RID, const Vector2 &)
+	FUNC2(light_set_projector_offset, RID, const Vector2 &)
 	FUNC2(light_set_negative, RID, bool)
 	FUNC2(light_set_cull_mask, RID, uint32_t)
 	FUNC5(light_set_distance_fade, RID, bool, float, float, float)

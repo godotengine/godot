@@ -84,6 +84,8 @@ private:
 	void _update_visibility();
 	BakeMode bake_mode = BAKE_DYNAMIC;
 	Ref<Texture2D> projector;
+	Vector2 projector_scale;
+	Vector2 projector_offset;
 	Color correlated_color = Color(1.0, 1.0, 1.0);
 	float temperature = 6500.0;
 
@@ -144,6 +146,12 @@ public:
 
 	void set_projector(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_projector() const;
+
+	void set_projector_scale(const Vector2 &p_scale);
+	Vector2 get_projector_scale() const;
+
+	void set_projector_offset(const Vector2 &p_offset);
+	Vector2 get_projector_offset() const;
 
 	void set_temperature(const float p_temperature);
 	float get_temperature() const;
@@ -219,8 +227,6 @@ protected:
 public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
-
-	PackedStringArray get_configuration_warnings() const override;
 
 	OmniLight3D();
 };
