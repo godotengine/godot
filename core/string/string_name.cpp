@@ -30,6 +30,7 @@
 
 #include "string_name.h"
 
+#include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
@@ -174,14 +175,6 @@ int StringName::length() const {
 	}
 
 	return 0;
-}
-
-bool StringName::is_empty() const {
-	if (_data) {
-		return _data->name.is_empty();
-	}
-
-	return true;
 }
 
 StringName &StringName::operator=(const StringName &p_name) {

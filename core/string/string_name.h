@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/os/mutex.h"
 #include "core/string/ustring.h"
 #include "core/templates/safe_refcount.h"
 
@@ -78,7 +77,7 @@ class StringName {
 	StringName(_Data *p_data) { _data = p_data; }
 
 public:
-	explicit operator bool() const { return _data && !_data->name.is_empty(); }
+	_FORCE_INLINE_ explicit operator bool() const { return _data; }
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
@@ -88,7 +87,7 @@ public:
 	const char32_t *get_data() const { return _data ? _data->name.ptr() : U""; }
 	char32_t operator[](int p_index) const;
 	int length() const;
-	bool is_empty() const;
+	_FORCE_INLINE_ bool is_empty() const { return !_data; }
 
 	_FORCE_INLINE_ bool is_node_unique_name() const {
 		if (!_data) {
