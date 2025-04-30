@@ -41,7 +41,7 @@ class GDExtensionManager : public Object {
 
 	static void _bind_methods();
 
-	static GDExtensionManager *singleton;
+	static inline GDExtensionManager *singleton = nullptr;
 
 public:
 	enum LoadStatus {

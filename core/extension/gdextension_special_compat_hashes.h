@@ -47,7 +47,7 @@ class GDExtensionSpecialCompatHashes {
 		uint32_t current_hash;
 	};
 
-	static HashMap<StringName, LocalVector<Mapping>> mappings;
+	static inline HashMap<StringName, LocalVector<Mapping>> mappings;
 
 public:
 	static void initialize();

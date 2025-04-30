@@ -32,9 +32,6 @@
 
 #include "core/debugger/engine_debugger.h"
 
-thread_local int ScriptDebugger::lines_left = -1;
-thread_local int ScriptDebugger::depth = -1;
-thread_local ScriptLanguage *ScriptDebugger::break_lang = nullptr;
 thread_local Vector<ScriptDebugger::StackInfo> ScriptDebugger::error_stack_info;
 
 void ScriptDebugger::set_lines_left(int p_left) {

@@ -72,10 +72,10 @@ public:
 	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
 	typedef void (*RegisterFunc)(EditorFileDialog *);
 
-	static GetIconFunc get_icon_func;
-	static GetIconFunc get_thumbnail_func;
-	static RegisterFunc register_func;
-	static RegisterFunc unregister_func;
+	static inline GetIconFunc get_icon_func = nullptr;
+	static inline GetIconFunc get_thumbnail_func = nullptr;
+	static inline RegisterFunc register_func = nullptr;
+	static inline RegisterFunc unregister_func = nullptr;
 
 private:
 	enum ItemMenu {
@@ -159,8 +159,8 @@ private:
 	int preview_wheel_index = 0;
 	float preview_wheel_timeout = 0.0f;
 
-	static bool default_show_hidden_files;
-	static DisplayMode default_display_mode;
+	static inline bool default_show_hidden_files = false;
+	static inline DisplayMode default_display_mode = DISPLAY_THUMBNAILS;
 	bool show_hidden_files;
 	DisplayMode display_mode;
 

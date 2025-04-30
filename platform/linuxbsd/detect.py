@@ -30,7 +30,7 @@ def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
     return [
-        EnumVariable("linker", "Linker program", "default", ("default", "bfd", "gold", "lld", "mold")),
+        EnumVariable("linker", "Linker program", "default", ["default", "bfd", "gold", "lld", "mold"], ignorecase=2),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
         BoolVariable("use_coverage", "Test Godot coverage", False),

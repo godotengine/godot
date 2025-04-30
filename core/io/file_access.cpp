@@ -40,13 +40,6 @@
 #include "core/os/os.h"
 #include "core/os/time.h"
 
-FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = {};
-
-FileAccess::FileCloseFailNotify FileAccess::close_fail_notify = nullptr;
-
-bool FileAccess::backup_save = false;
-thread_local Error FileAccess::last_file_open_error = OK;
-
 Ref<FileAccess> FileAccess::create(AccessType p_access) {
 	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, nullptr);
 	ERR_FAIL_NULL_V(create_func[p_access], nullptr);

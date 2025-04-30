@@ -80,32 +80,6 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"ASTC_8x8_HDR",
 };
 
-// External saver function pointers.
-
-SavePNGFunc Image::save_png_func = nullptr;
-SaveJPGFunc Image::save_jpg_func = nullptr;
-SaveEXRFunc Image::save_exr_func = nullptr;
-SaveWebPFunc Image::save_webp_func = nullptr;
-SaveDDSFunc Image::save_dds_func = nullptr;
-
-SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
-SaveJPGBufferFunc Image::save_jpg_buffer_func = nullptr;
-SaveEXRBufferFunc Image::save_exr_buffer_func = nullptr;
-SaveWebPBufferFunc Image::save_webp_buffer_func = nullptr;
-SaveDDSBufferFunc Image::save_dds_buffer_func = nullptr;
-
-// External loader function pointers.
-
-ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_png_mem_unpacker_func = nullptr;
-ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
-ScalableImageMemLoadFunc Image::_svg_scalable_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_ktx_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_dds_mem_loader_func = nullptr;
-
 // External VRAM compression function pointers.
 
 void (*Image::_image_compress_bc_func)(Image *, Image::UsedChannels) = nullptr;

@@ -44,7 +44,7 @@ class ProjectSettings : public Object {
 
 public:
 	typedef HashMap<String, Variant> CustomMap;
-	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
+	static inline const String PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
 
 	// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
 	constexpr static const int32_t NO_BUILTIN_ORDER_BASE = 1 << 16;
@@ -116,7 +116,7 @@ protected:
 	void _queue_changed();
 	void _emit_changed();
 
-	static ProjectSettings *singleton;
+	static inline ProjectSettings *singleton = nullptr;
 
 	Error _load_settings_text(const String &p_path);
 	Error _load_settings_binary(const String &p_path);

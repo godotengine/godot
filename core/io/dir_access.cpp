@@ -36,8 +36,6 @@
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"
 
-thread_local Error DirAccess::last_dir_open_error = OK;
-
 String DirAccess::_get_root_path() const {
 	switch (_access_type) {
 		case ACCESS_RESOURCES:

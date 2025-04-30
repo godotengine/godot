@@ -41,6 +41,7 @@ import androidx.core.view.isVisible
 import org.godotengine.editor.embed.GameMenuFragment
 import org.godotengine.godot.utils.GameMenuUtils
 import org.godotengine.godot.utils.ProcessPhoenix
+import org.godotengine.godot.utils.isHorizonOSDevice
 import org.godotengine.godot.utils.isNativeXRDevice
 
 /**
@@ -228,7 +229,7 @@ open class GodotGame : BaseGodotGame() {
 
 	override fun isMinimizedButtonEnabled() = isTaskRoot && !isNativeXRDevice(applicationContext)
 
-	override fun isCloseButtonEnabled() = !isNativeXRDevice(applicationContext)
+	override fun isCloseButtonEnabled() = !isHorizonOSDevice(applicationContext)
 
 	override fun isPiPButtonEnabled() = hasPiPSystemFeature()
 

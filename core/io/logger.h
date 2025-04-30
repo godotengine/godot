@@ -43,7 +43,7 @@ class Logger {
 protected:
 	bool should_log(bool p_err);
 
-	static bool _flush_stdout_on_print;
+	static inline bool _flush_stdout_on_print = true;
 
 public:
 	enum ErrorType {

@@ -36,8 +36,6 @@
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 
-ResourceFormatImporterLoadOnStartup ResourceImporter::load_on_startup = nullptr;
-
 bool ResourceFormatImporter::SortImporterByName::operator()(const Ref<ResourceImporter> &p_a, const Ref<ResourceImporter> &p_b) const {
 	return p_a->get_importer_name() < p_b->get_importer_name();
 }
@@ -544,8 +542,6 @@ String ResourceFormatImporter::get_import_settings_hash() const {
 	}
 	return hash.md5_text();
 }
-
-ResourceFormatImporter *ResourceFormatImporter::singleton = nullptr;
 
 ResourceFormatImporter::ResourceFormatImporter() {
 	singleton = this;

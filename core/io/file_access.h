@@ -112,7 +112,7 @@ protected:
 	virtual int64_t _get_size(const String &p_file) = 0;
 	virtual void _set_access_type(AccessType p_access);
 
-	static FileCloseFailNotify close_fail_notify;
+	static inline FileCloseFailNotify close_fail_notify = nullptr;
 
 #ifndef DISABLE_DEPRECATED
 	static Ref<FileAccess> _open_encrypted_bind_compat_98918(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
@@ -136,11 +136,11 @@ protected:
 #endif
 
 private:
-	static bool backup_save;
-	thread_local static Error last_file_open_error;
+	static inline bool backup_save = false;
+	static inline thread_local Error last_file_open_error = OK;
 
 	AccessType _access_type = ACCESS_FILESYSTEM;
-	static CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
+	static inline CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
 	template <typename T>
 	static Ref<FileAccess> _create_builtin() {
 		return memnew(T);
