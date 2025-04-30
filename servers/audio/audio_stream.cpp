@@ -729,7 +729,11 @@ String AudioStreamRandomizer::get_stream_name() const {
 }
 
 double AudioStreamRandomizer::get_length() const {
-	return 0;
+	if (last_playback.is_valid()) {
+		return last_playback->get_length();
+	} else {
+		return 0;
+	}
 }
 
 bool AudioStreamRandomizer::is_monophonic() const {
