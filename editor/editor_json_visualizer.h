@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_JSON_VISUALIZER_H
-#define EDITOR_JSON_VISUALIZER_H
+#pragma once
 
 #include "scene/gui/code_edit.h"
 #include "scene/resources/syntax_highlighter.h"
@@ -50,5 +49,3 @@ protected:
 public:
 	void load_theme(Ref<EditorJsonVisualizerSyntaxHighlighter> p_syntax_highlighter);
 };
-
-#endif // EDITOR_JSON_VISUALIZER_H

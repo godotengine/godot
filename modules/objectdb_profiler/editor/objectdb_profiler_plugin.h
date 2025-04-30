@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OBJECTDB_PROFILER_PLUGIN_H
-#define OBJECTDB_PROFILER_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_plugin.h"
@@ -65,4 +64,3 @@ public:
 	virtual void setup_session(int p_session_id) override;
 };
 
-#endif // OBJECTDB_PROFILER_PLUGIN_H

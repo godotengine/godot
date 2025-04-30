@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JSON_VIEW_H
-#define JSON_VIEW_H
+#pragma once
 
 #include "../snapshot_data.h"
 #include "editor/editor_json_visualizer.h"
@@ -56,5 +55,3 @@ public:
 	SnapshotJsonView();
 	virtual void show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) override;
 };
-
-#endif // JSON_VIEW_H

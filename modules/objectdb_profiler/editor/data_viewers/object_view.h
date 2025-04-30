@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OBJECT_VIEW_H
-#define OBJECT_VIEW_H
+#pragma once
 
 #include "../snapshot_data.h"
 #include "shared_controls.h"
@@ -62,5 +61,3 @@ public:
 	SnapshotObjectView();
 	virtual void show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) override;
 };
-
-#endif // OBJECT_VIEW_H

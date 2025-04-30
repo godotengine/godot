@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OBJECTDB_PROFILER_PANEL_H
-#define OBJECTDB_PROFILER_PANEL_H
+#pragma once
 
 #include "core/io/dir_access.h"
 #include "core/templates/lru.h"
@@ -101,5 +100,3 @@ public:
 
 	bool handle_debug_message(const String &p_message, const Array &p_data, int p_index);
 };
-
-#endif // OBJECTDB_PROFILER_PANEL_H

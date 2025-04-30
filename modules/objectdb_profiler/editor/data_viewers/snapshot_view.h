@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SNAPSHOT_VIEW_H
-#define SNAPSHOT_VIEW_H
+#pragma once
 
 #include "../snapshot_data.h"
 #include "scene/gui/control.h"
@@ -53,5 +52,3 @@ public:
 	virtual void clear_snapshot();
 	bool is_showing_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data);
 };
-
-#endif // SNAPSHOT_VIEW_H

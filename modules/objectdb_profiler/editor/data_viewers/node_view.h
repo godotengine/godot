@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_VIEW_H
-#define NODE_VIEW_H
+#pragma once
 
 #include "../snapshot_data.h"
 #include "shared_controls.h"
@@ -84,5 +83,3 @@ public:
 	virtual void show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) override;
 	virtual void clear_snapshot() override;
 };
-
-#endif // NODE_VIEW_H

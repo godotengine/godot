@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SNAPSHOT_COLLECTOR_H
-#define SNAPSHOT_COLLECTOR_H
+#pragma once
 
 #include "scene/debugger/scene_debugger.h"
 
@@ -51,5 +50,3 @@ public:
 	static void deinitialize();
 	static String get_godot_version_string();
 };
-
-#endif // SNAPSHOT_COLLECTOR_H

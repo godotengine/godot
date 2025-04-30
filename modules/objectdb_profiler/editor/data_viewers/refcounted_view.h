@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef REFCOUNTED_VIEW_H
-#define REFCOUNTED_VIEW_H
+#pragma once
 
 #include "../snapshot_data.h"
 #include "shared_controls.h"
@@ -60,5 +59,3 @@ public:
 	SnapshotRefCountedView();
 	virtual void show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) override;
 };
-
-#endif // REFCOUNTED_VIEW_H

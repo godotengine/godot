@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHARED_CONTROLS_H
-#define SHARED_CONTROLS_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/line_edit.h"
@@ -126,5 +125,3 @@ public:
 	void select_sort(int p_item_id);
 	void apply();
 };
-
-#endif // SHARED_CONTROLS_H

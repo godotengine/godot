@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CLASS_VIEW_H
-#define CLASS_VIEW_H
+#pragma once
 
 #include "../snapshot_data.h"
 #include "snapshot_view.h"
@@ -72,5 +71,3 @@ public:
 	SnapshotClassView();
 	virtual void show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) override;
 };
-
-#endif // CLASS_VIEW_H
