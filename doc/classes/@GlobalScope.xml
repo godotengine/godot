@@ -3271,7 +3271,7 @@
 			Logical OR operator ([code]or[/code] or [code]||[/code]).
 		</constant>
 		<constant name="OP_XOR" value="22" enum="Variant.Operator">
-			Logical XOR operator (not implemented in GDScript).
+			Logical XOR operator ([code]xor[/code] or [code]^^[/code]).
 		</constant>
 		<constant name="OP_NOT" value="23" enum="Variant.Operator">
 			Logical NOT operator ([code]not[/code] or [code]![/code]).
