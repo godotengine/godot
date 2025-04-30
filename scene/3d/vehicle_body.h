@@ -40,6 +40,43 @@ class VehicleWheel : public Spatial {
 
 	friend class VehicleBody;
 
+	struct WheelXform {
+		Vector3 up;
+		Vector3 right;
+		Vector3 origin;
+		real_t steering = 0;
+	};
+
+	class FTIData {
+		real_t curr_rotation = 0;
+		real_t curr_rotation_delta = 0;
+
+	public:
+		WheelXform curr;
+		WheelXform prev;
+
+		// If a wheel is added on a frame, the xform will not be set until it has been physics updated at least once.
+		bool unset = true;
+		bool reset_queued = false;
+
+		void rotate(real_t p_delta) {
+			curr_rotation += p_delta;
+			curr_rotation_delta = p_delta;
+
+			// Wrap rotation to prevent float error.
+			double wrapped = Math::fmod(curr_rotation + Math_PI, Math_TAU);
+			if (wrapped < 0)
+				wrapped += Math_TAU;
+			curr_rotation = wrapped - Math_PI;
+		}
+
+		void pump() {
+			prev = curr;
+			curr_rotation_delta = 0;
+		}
+		void update_world_xform(Transform &r_xform, real_t p_interpolation_fraction);
+	} fti_data;
+
 	Transform m_worldTransform;
 	Transform local_xform;
 	bool engine_traction;
@@ -189,12 +226,20 @@ class VehicleBody : public RigidBody {
 	void _update_wheel_transform(VehicleWheel &wheel, PhysicsDirectBodyState *s);
 	void _update_wheel(int p_idx, PhysicsDirectBodyState *s);
 
+	void _update_process_mode();
+
 	friend class VehicleWheel;
 	Vector<VehicleWheel *> wheels;
 
 	static void _bind_methods();
 
 	void _direct_state_changed(Object *p_state);
+
+protected:
+	void _notification(int p_what);
+
+	virtual void _physics_interpolated_changed();
+	virtual void fti_pump_xform();
 
 public:
 	void set_engine_force(float p_engine_force);
