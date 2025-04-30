@@ -46,6 +46,9 @@
 #include <initializer_list>
 
 template <typename T>
+class Vector;
+
+template <typename T>
 class VectorWriteProxy {
 public:
 	_FORCE_INLINE_ T &operator[](typename CowData<T>::Size p_index) {
@@ -167,7 +170,7 @@ public:
 		insert(i, p_val);
 	}
 
-	void operator=(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+	void operator=(const Vector &p_from) { _cowdata = p_from._cowdata; }
 	void operator=(Vector &&p_from) { _cowdata = std::move(p_from._cowdata); }
 
 	Vector<uint8_t> to_byte_array() const {
@@ -304,9 +307,8 @@ public:
 	_FORCE_INLINE_ Vector() {}
 	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) :
 			_cowdata(p_init) {}
-	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
-	_FORCE_INLINE_ Vector(Vector &&p_from) :
-			_cowdata(std::move(p_from._cowdata)) {}
+	_FORCE_INLINE_ Vector(const Vector &p_from) = default;
+	_FORCE_INLINE_ Vector(Vector &&p_from) = default;
 
 	_FORCE_INLINE_ ~Vector() {}
 };

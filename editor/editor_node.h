@@ -99,6 +99,11 @@ class ProjectSettingsEditor;
 class SceneImportSettingsDialog;
 class ProjectUpgradeTool;
 
+#ifdef ANDROID_ENABLED
+class HBoxContainer;
+class TouchActionsPanel;
+#endif
+
 struct EditorProgress {
 	String task;
 	bool force_background = false;
@@ -117,6 +122,7 @@ public:
 		SCENE_NAME_CASING_PASCAL_CASE,
 		SCENE_NAME_CASING_SNAKE_CASE,
 		SCENE_NAME_CASING_KEBAB_CASE,
+		SCENE_NAME_CASING_CAMEL_CASE,
 	};
 
 	enum ActionOnPlay {
@@ -132,23 +138,23 @@ public:
 
 	enum MenuOptions {
 		// Scene menu.
-		FILE_NEW_SCENE,
-		FILE_NEW_INHERITED_SCENE,
-		FILE_OPEN_SCENE,
-		FILE_OPEN_PREV,
-		FILE_OPEN_RECENT,
-		FILE_SAVE_SCENE,
-		FILE_SAVE_AS_SCENE,
-		FILE_SAVE_ALL_SCENES,
-		FILE_MULTI_SAVE_AS_SCENE,
-		FILE_QUICK_OPEN,
-		FILE_QUICK_OPEN_SCENE,
-		FILE_QUICK_OPEN_SCRIPT,
-		FILE_UNDO,
-		FILE_REDO,
-		FILE_RELOAD_SAVED_SCENE,
-		FILE_CLOSE,
-		FILE_QUIT,
+		SCENE_NEW_SCENE,
+		SCENE_NEW_INHERITED_SCENE,
+		SCENE_OPEN_SCENE,
+		SCENE_OPEN_PREV,
+		SCENE_OPEN_RECENT,
+		SCENE_SAVE_SCENE,
+		SCENE_SAVE_AS_SCENE,
+		SCENE_SAVE_ALL_SCENES,
+		SCENE_MULTI_SAVE_AS_SCENE,
+		SCENE_QUICK_OPEN,
+		SCENE_QUICK_OPEN_SCENE,
+		SCENE_QUICK_OPEN_SCRIPT,
+		SCENE_UNDO,
+		SCENE_REDO,
+		SCENE_RELOAD_SAVED_SCENE,
+		SCENE_CLOSE,
+		SCENE_QUIT,
 
 		FILE_EXPORT_MESH_LIBRARY,
 
@@ -204,8 +210,8 @@ public:
 
 		// Non-menu options.
 		SCENE_TAB_CLOSE,
-		FILE_SAVE_AND_RUN,
-		FILE_SAVE_AND_RUN_MAIN_SCENE,
+		SAVE_AND_RUN,
+		SAVE_AND_RUN_MAIN_SCENE,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
 		SETTINGS_PICK_MAIN_SCENE,
@@ -274,6 +280,12 @@ private:
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *renderer = nullptr;
+
+#ifdef ANDROID_ENABLED
+	HBoxContainer *main_hbox = nullptr; // Only created on Android for TouchActionsPanel.
+	TouchActionsPanel *touch_actions_panel = nullptr;
+	void _touch_actions_panel_mode_changed();
+#endif
 
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
@@ -356,6 +368,7 @@ private:
 	ConfirmationDialog *save_confirmation = nullptr;
 	ConfirmationDialog *import_confirmation = nullptr;
 	ConfirmationDialog *pick_main_scene = nullptr;
+	ConfirmationDialog *open_project_settings = nullptr;
 	Button *select_current_scene_button = nullptr;
 	AcceptDialog *accept = nullptr;
 	AcceptDialog *save_accept = nullptr;
@@ -384,6 +397,7 @@ private:
 	EditorFileDialog *file_export_lib = nullptr;
 	EditorFileDialog *file_script = nullptr;
 	EditorFileDialog *file_android_build_source = nullptr;
+	EditorFileDialog *file_pack_zip = nullptr;
 	String current_path;
 	MenuButton *update_spinner = nullptr;
 
@@ -742,7 +756,7 @@ public:
 	void trigger_menu_option(int p_option, bool p_confirmed);
 	bool has_previous_closed_scenes() const;
 
-	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
+	void new_inherited_scene() { _menu_option_confirm(SCENE_NEW_INHERITED_SCENE, false); }
 
 	void update_distraction_free_mode();
 	void set_distraction_free_mode(bool p_enter);
@@ -962,6 +976,7 @@ public:
 	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin_for_type_name(const String &p_type);
 
 	bool ensure_main_scene(bool p_from_native);
+	bool validate_custom_directory();
 };
 
 class EditorPluginList : public Object {

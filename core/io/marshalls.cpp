@@ -1345,7 +1345,7 @@ static Error _encode_container_type(const ContainerType &p_type, uint8_t *&buf, 
 				_encode_string(EncodedObjectAsID::get_class_static(), buf, r_len);
 			}
 		} else if (p_type.class_name != StringName()) {
-			_encode_string(p_full_objects ? p_type.class_name.operator String() : EncodedObjectAsID::get_class_static(), buf, r_len);
+			_encode_string(p_full_objects ? p_type.class_name : EncodedObjectAsID::get_class_static(), buf, r_len);
 		} else {
 			// No need to check `p_full_objects` since `class_name` should be non-empty for `builtin_type == Variant::OBJECT`.
 			if (buf) {

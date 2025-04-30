@@ -9,6 +9,49 @@ import uuid
 import methods
 
 
+def doc_data_class_path_builder(target, source, env):
+    paths = dict(sorted(source[0].read().items()))
+    data = "\n".join([f'\t{{"{key}", "{value}"}},' for key, value in paths.items()])
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(
+            f"""\
+struct _DocDataClassPath {{
+	const char *name;
+	const char *path;
+}};
+
+inline constexpr int _doc_data_class_path_count = {len(paths)};
+inline constexpr _DocDataClassPath _doc_data_class_paths[{len(paths) + 1}] = {{
+	{data}
+	{{nullptr, nullptr}},
+}};
+"""
+        )
+
+
+def register_exporters_builder(target, source, env):
+    platforms = source[0].read()
+    exp_inc = "\n".join([f'#include "platform/{p}/export/export.h"' for p in platforms])
+    exp_reg = "\n\t".join([f"register_{p}_exporter();" for p in platforms])
+    exp_type = "\n\t".join([f"register_{p}_exporter_types();" for p in platforms])
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(
+            f"""\
+#include "register_exporters.h"
+
+{exp_inc}
+
+void register_exporters() {{
+	{exp_reg}
+}}
+
+void register_exporter_types() {{
+	{exp_type}
+}}
+"""
+        )
+
+
 def make_doc_header(target, source, env):
     buffer = b"".join([methods.get_buffer(src) for src in map(str, source)])
     decomp_size = len(buffer)

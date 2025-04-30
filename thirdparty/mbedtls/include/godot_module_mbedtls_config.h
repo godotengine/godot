@@ -56,6 +56,14 @@
 #undef MBEDTLS_AESCE_C
 #endif
 
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer)
+// MemorySanitizer is incompatible with ASM.
+#undef MBEDTLS_HAVE_ASM
+#undef MBEDTLS_AESNI_C
+#endif
+#endif
+
 // Disable deprecated
 #define MBEDTLS_DEPRECATED_REMOVED
 

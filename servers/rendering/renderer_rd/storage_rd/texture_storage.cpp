@@ -1640,10 +1640,7 @@ void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, RS::Te
 }
 
 void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
-	List<RID> textures;
-	texture_owner.get_owned_list(&textures);
-
-	for (const RID &rid : textures) {
+	for (const RID &rid : texture_owner.get_owned_list()) {
 		Texture *t = texture_owner.get_or_null(rid);
 		if (!t) {
 			continue;
@@ -1654,6 +1651,7 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.width = t->width;
 		tinfo.height = t->height;
 		tinfo.bytes = Image::get_image_data_size(t->width, t->height, t->format, t->mipmaps > 1);
+		tinfo.type = static_cast<RenderingServer::TextureType>(t->type);
 
 		switch (t->type) {
 			case TextureType::TYPE_3D:
@@ -1782,6 +1780,7 @@ uint64_t TextureStorage::texture_get_native_handle(RID p_texture, bool p_srgb) c
 }
 
 Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
+	Image::Format original_format = p_image->get_format();
 	Ref<Image> image = p_image->duplicate();
 
 	switch (p_image->get_format()) {
@@ -2268,6 +2267,12 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 
 		default: {
 		}
+	}
+
+	// RGB formats are often not supported, only print warnings about them when launched with the --verbose flag.
+	const bool is_rgb_format = original_format == Image::FORMAT_RGB8 || original_format == Image::FORMAT_RGBH || original_format == Image::FORMAT_RGBF;
+	if ((is_print_verbose_enabled() || !is_rgb_format) && original_format != image->get_format()) {
+		WARN_PRINT(vformat("Image format %s not supported by hardware, converting to %s.", Image::get_format_name(original_format), Image::get_format_name(image->get_format())));
 	}
 
 	return image;
@@ -3717,7 +3722,7 @@ RID TextureStorage::render_target_get_rd_texture_slice(RID p_render_target, uint
 		return rt->color;
 	} else {
 		ERR_FAIL_UNSIGNED_INDEX_V(p_layer, rt->view_count, RID());
-		if (rt->color_slices.size() == 0) {
+		if (rt->color_slices.is_empty()) {
 			for (uint32_t v = 0; v < rt->view_count; v++) {
 				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->color, v, 0);
 				rt->color_slices.push_back(slice);

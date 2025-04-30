@@ -628,7 +628,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					// Don't skip parametric setters and getters, i.e. method which require
 					// one or more parameters to define what property should be set or retrieved.
 					// E.g. CPUParticles3D::set_param(Parameter param, float value).
-					if (E.arguments.size() == 0 /* getter */ || (E.arguments.size() == 1 && E.return_val.type == Variant::NIL /* setter */)) {
+					if (E.arguments.is_empty() /* getter */ || (E.arguments.size() == 1 && E.return_val.type == Variant::NIL /* setter */)) {
 						continue;
 					}
 				}
@@ -940,7 +940,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			DocData::ConstantDoc constant;
 			constant.name = E;
 			Variant value = Variant::get_constant_value(Variant::Type(i), E);
-			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string().replace("\n", " ");
+			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string().replace_char('\n', ' ');
 			constant.is_value_valid = true;
 			constant.type = Variant::get_type_name(value.get_type());
 			c.constants.push_back(constant);

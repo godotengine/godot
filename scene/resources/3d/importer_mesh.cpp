@@ -39,12 +39,7 @@
 #endif // PHYSICS_3D_DISABLED
 
 String ImporterMesh::validate_blend_shape_name(const String &p_name) {
-	String name = p_name;
-	const char *characters = ":";
-	for (const char *p = characters; *p; p++) {
-		name = name.replace(String::chr(*p), "_");
-	}
-	return name;
+	return p_name.replace_char(':', '_');
 }
 
 void ImporterMesh::add_blend_shape(const String &p_name) {
@@ -874,7 +869,7 @@ Ref<ConvexPolygonShape3D> ImporterMesh::create_convex_shape(bool p_clean, bool p
 
 Ref<ConcavePolygonShape3D> ImporterMesh::create_trimesh_shape() const {
 	Vector<Face3> faces = get_faces();
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return Ref<ConcavePolygonShape3D>();
 	}
 
@@ -896,7 +891,7 @@ Ref<ConcavePolygonShape3D> ImporterMesh::create_trimesh_shape() const {
 
 Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 	Vector<Face3> faces = get_faces();
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return Ref<NavigationMesh>();
 	}
 

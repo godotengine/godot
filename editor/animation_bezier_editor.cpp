@@ -245,6 +245,15 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			selected_icon = get_editor_theme_icon(SNAME("KeyBezierSelected"));
 		} break;
 
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			//TODO
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
+			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Animation bezier track editor")));
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (animation.is_null()) {
 				return;
@@ -815,8 +824,8 @@ void AnimationBezierTrackEdit::set_filtered(bool p_filtered) {
 
 void AnimationBezierTrackEdit::auto_fit_vertically() {
 	int track_count = animation->get_track_count();
-	real_t minimum_value = INFINITY;
-	real_t maximum_value = -INFINITY;
+	real_t minimum_value = Math::INF;
+	real_t maximum_value = -Math::INF;
 
 	int nb_track_visible = 0;
 	for (int i = 0; i < track_count; ++i) {
@@ -1027,10 +1036,10 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 
-			real_t minimum_time = INFINITY;
-			real_t maximum_time = -INFINITY;
-			real_t minimum_value = INFINITY;
-			real_t maximum_value = -INFINITY;
+			real_t minimum_time = Math::INF;
+			real_t maximum_time = -Math::INF;
+			real_t minimum_value = Math::INF;
+			real_t maximum_value = -Math::INF;
 
 			for (const IntPair &E : focused_keys) {
 				IntPair key_pair = E;
@@ -1423,7 +1432,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				float track_h = animation->bezier_track_interpolate(i, time);
 				float track_height = _bezier_h_to_pixel(track_h);
 
-				if (abs(mb->get_position().y - track_height) < 10) {
+				if (std::abs(mb->get_position().y - track_height) < 10) {
 					set_animation_and_track(animation, i, read_only);
 					break;
 				}
@@ -1439,7 +1448,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (moving_selection_attempt && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (!read_only) {
-			if (moving_selection && (abs(moving_selection_offset.x) > CMP_EPSILON || abs(moving_selection_offset.y) > CMP_EPSILON)) {
+			if (moving_selection && (std::abs(moving_selection_offset.x) > CMP_EPSILON || std::abs(moving_selection_offset.y) > CMP_EPSILON)) {
 				// Commit it.
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Move Bezier Points"));
@@ -1714,7 +1723,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 			float snapped_time = editor->snap_time(moving_selection_pivot + time_delta);
 			float time_offset = 0.0;
-			if (abs(moving_selection_offset.x) > CMP_EPSILON || (snapped_time > moving_selection_pivot && time_delta > CMP_EPSILON) || (snapped_time < moving_selection_pivot && time_delta < -CMP_EPSILON)) {
+			if (std::abs(moving_selection_offset.x) > CMP_EPSILON || (snapped_time > moving_selection_pivot && time_delta > CMP_EPSILON) || (snapped_time < moving_selection_pivot && time_delta < -CMP_EPSILON)) {
 				time_offset = snapped_time - moving_selection_pivot;
 			}
 
@@ -2042,7 +2051,7 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 }
 
 void AnimationBezierTrackEdit::duplicate_selected_keys(real_t p_ofs, bool p_ofs_valid) {
-	if (selection.size() == 0) {
+	if (selection.is_empty()) {
 		return;
 	}
 

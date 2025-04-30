@@ -90,8 +90,8 @@ Vector2 NavMeshQueries2D::polygons_get_random_point(const LocalVector<Polygon> &
 		real_t accumulated_polygon_area = 0;
 		RBMap<real_t, uint32_t> polygon_area_map;
 
-		for (uint32_t rpp_index = 2; rpp_index < rr_polygon.points.size(); rpp_index++) {
-			real_t triangle_area = Triangle2(rr_polygon.points[0].pos, rr_polygon.points[rpp_index - 1].pos, rr_polygon.points[rpp_index].pos).get_area();
+		for (uint32_t rpp_index = 2; rpp_index < rr_polygon.vertices.size(); rpp_index++) {
+			real_t triangle_area = Triangle2(rr_polygon.vertices[0], rr_polygon.vertices[rpp_index - 1], rr_polygon.vertices[rpp_index]).get_area();
 
 			if (triangle_area == 0.0) {
 				continue;
@@ -109,9 +109,9 @@ Vector2 NavMeshQueries2D::polygons_get_random_point(const LocalVector<Polygon> &
 		RBMap<real_t, uint32_t>::Iterator polygon_E = polygon_area_map.find_closest(polygon_area_map_pos);
 		ERR_FAIL_COND_V(!polygon_E, Vector2());
 		uint32_t rrp_face_index = polygon_E->value;
-		ERR_FAIL_UNSIGNED_INDEX_V(rrp_face_index, rr_polygon.points.size(), Vector2());
+		ERR_FAIL_UNSIGNED_INDEX_V(rrp_face_index, rr_polygon.vertices.size(), Vector2());
 
-		const Triangle2 triangle(rr_polygon.points[0].pos, rr_polygon.points[rrp_face_index - 1].pos, rr_polygon.points[rrp_face_index].pos);
+		const Triangle2 triangle(rr_polygon.vertices[0], rr_polygon.vertices[rrp_face_index - 1], rr_polygon.vertices[rrp_face_index]);
 
 		Vector2 triangle_random_position = triangle.get_random_point_inside();
 		return triangle_random_position;
@@ -121,9 +121,9 @@ Vector2 NavMeshQueries2D::polygons_get_random_point(const LocalVector<Polygon> &
 
 		const Polygon &rr_polygon = region_polygons[rrp_polygon_index];
 
-		uint32_t rrp_face_index = Math::random(int(2), rr_polygon.points.size() - 1);
+		uint32_t rrp_face_index = Math::random(int(2), rr_polygon.vertices.size() - 1);
 
-		const Triangle2 triangle(rr_polygon.points[0].pos, rr_polygon.points[rrp_face_index - 1].pos, rr_polygon.points[rrp_face_index].pos);
+		const Triangle2 triangle(rr_polygon.vertices[0], rr_polygon.vertices[rrp_face_index - 1], rr_polygon.vertices[rrp_face_index]);
 
 		Vector2 triangle_random_position = triangle.get_random_point_inside();
 		return triangle_random_position;
@@ -256,8 +256,8 @@ void NavMeshQueries2D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 			}
 
 			// For each triangle check the distance between the origin/destination.
-			for (size_t point_id = 2; point_id < p.points.size(); point_id++) {
-				const Triangle2 triangle(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
+			for (uint32_t point_id = 2; point_id < p.vertices.size(); point_id++) {
+				const Triangle2 triangle(p.vertices[0], p.vertices[point_id - 1], p.vertices[point_id]);
 
 				Vector2 point = triangle.get_closest_point_to(p_query_task.start_position);
 				real_t distance_to_point = point.distance_to(p_query_task.start_position);
@@ -329,8 +329,7 @@ void NavMeshQueries2D::_query_task_build_path_corridor(NavMeshPathQueryTask2D &p
 					continue;
 				}
 
-				Vector2 pathway[2] = { connection.pathway_start, connection.pathway_end };
-				const Vector2 new_entry = Geometry2D::get_closest_point_to_segment(least_cost_poly.entry, pathway);
+				const Vector2 new_entry = Geometry2D::get_closest_point_to_segment(least_cost_poly.entry, connection.pathway_start, connection.pathway_end);
 				const real_t new_traveled_distance = least_cost_poly.entry.distance_to(new_entry) * poly_travel_cost + poly_enter_cost + least_cost_poly.traveled_distance;
 
 				// Check if the neighbor polygon has already been processed.
@@ -372,8 +371,8 @@ void NavMeshQueries2D::_query_task_build_path_corridor(NavMeshPathQueryTask2D &p
 			// Set as end point the furthest reachable point.
 			end_poly = reachable_end;
 			real_t end_d = FLT_MAX;
-			for (size_t point_id = 2; point_id < end_poly->points.size(); point_id++) {
-				Triangle2 t(end_poly->points[0].pos, end_poly->points[point_id - 1].pos, end_poly->points[point_id].pos);
+			for (uint32_t point_id = 2; point_id < end_poly->vertices.size(); point_id++) {
+				Triangle2 t(end_poly->vertices[0], end_poly->vertices[point_id - 1], end_poly->vertices[point_id]);
 				Vector2 spoint = t.get_closest_point_to(p_target_position);
 				real_t dpoint = spoint.distance_squared_to(p_target_position);
 				if (dpoint < end_d) {
@@ -384,8 +383,8 @@ void NavMeshQueries2D::_query_task_build_path_corridor(NavMeshPathQueryTask2D &p
 
 			// Search all faces of start polygon as well.
 			bool closest_point_on_start_poly = false;
-			for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
-				Triangle2 t(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
+			for (uint32_t point_id = 2; point_id < begin_poly->vertices.size(); point_id++) {
+				Triangle2 t(begin_poly->vertices[0], begin_poly->vertices[point_id - 1], begin_poly->vertices[point_id]);
 				Vector2 spoint = t.get_closest_point_to(p_target_position);
 				real_t dpoint = spoint.distance_squared_to(p_target_position);
 				if (dpoint < end_d) {
@@ -443,8 +442,8 @@ void NavMeshQueries2D::_query_task_build_path_corridor(NavMeshPathQueryTask2D &p
 	if (!found_route) {
 		real_t end_d = FLT_MAX;
 		// Search all faces of the start polygon for the closest point to our target position.
-		for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
-			Triangle2 t(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
+		for (uint32_t point_id = 2; point_id < begin_poly->vertices.size(); point_id++) {
+			Triangle2 t(begin_poly->vertices[0], begin_poly->vertices[point_id - 1], begin_poly->vertices[point_id]);
 			Vector2 spoint = t.get_closest_point_to(p_target_position);
 			real_t dpoint = spoint.distance_squared_to(p_target_position);
 			if (dpoint < end_d) {
@@ -585,8 +584,7 @@ void NavMeshQueries2D::_query_task_post_process_corridorfunnel(NavMeshPathQueryT
 	// Set the apex poly/point to the end point.
 	NavigationPoly *apex_poly = &navigation_polys[least_cost_id];
 
-	Vector2 back_pathway[2] = { apex_poly->back_navigation_edge_pathway_start, apex_poly->back_navigation_edge_pathway_end };
-	const Vector2 back_edge_closest_point = Geometry2D::get_closest_point_to_segment(end_point, back_pathway);
+	const Vector2 back_edge_closest_point = Geometry2D::get_closest_point_to_segment(end_point, apex_poly->back_navigation_edge_pathway_start, apex_poly->back_navigation_edge_pathway_end);
 	if (end_point.is_equal_approx(back_edge_closest_point)) {
 		// The end point is basically on top of the last crossed edge, funneling around the corners would at best do nothing.
 		// At worst it would add an unwanted path point before the last point due to precision issues so skip to the next polygon.
@@ -684,8 +682,8 @@ void NavMeshQueries2D::_query_task_post_process_edgecentered(NavMeshPathQueryTas
 	while (np_id != -1 && navigation_polys[np_id].back_navigation_poly_id != -1) {
 		if (navigation_polys[np_id].back_navigation_edge != -1) {
 			int prev = navigation_polys[np_id].back_navigation_edge;
-			int prev_n = (navigation_polys[np_id].back_navigation_edge + 1) % navigation_polys[np_id].poly->points.size();
-			Vector2 point = (navigation_polys[np_id].poly->points[prev].pos + navigation_polys[np_id].poly->points[prev_n].pos) * 0.5;
+			int prev_n = (navigation_polys[np_id].back_navigation_edge + 1) % navigation_polys[np_id].poly->vertices.size();
+			Vector2 point = (navigation_polys[np_id].poly->vertices[prev] + navigation_polys[np_id].poly->vertices[prev_n]) * 0.5;
 
 			_query_task_push_back_point_with_metadata(p_query_task, point, navigation_polys[np_id].poly);
 		} else {
@@ -738,13 +736,13 @@ ClosestPointQueryResult NavMeshQueries2D::map_iteration_get_closest_point_info(c
 	const LocalVector<NavRegionIteration2D> &regions = p_map_iteration.region_iterations;
 	for (const NavRegionIteration2D &region : regions) {
 		for (const Polygon &polygon : region.get_navmesh_polygons()) {
-			real_t cross = (polygon.points[1].pos - polygon.points[0].pos).cross(polygon.points[2].pos - polygon.points[0].pos);
+			real_t cross = (polygon.vertices[1] - polygon.vertices[0]).cross(polygon.vertices[2] - polygon.vertices[0]);
 			Vector2 closest_on_polygon;
 			real_t closest = FLT_MAX;
 			bool inside = true;
-			Vector2 previous = polygon.points[polygon.points.size() - 1].pos;
-			for (size_t point_id = 0; point_id < polygon.points.size(); ++point_id) {
-				Vector2 edge = polygon.points[point_id].pos - previous;
+			Vector2 previous = polygon.vertices[polygon.vertices.size() - 1];
+			for (uint32_t point_id = 0; point_id < polygon.vertices.size(); ++point_id) {
+				Vector2 edge = polygon.vertices[point_id] - previous;
 				Vector2 to_point = p_point - previous;
 				real_t edge_to_point_cross = edge.cross(to_point);
 				bool clockwise = (edge_to_point_cross * cross) > 0;
@@ -755,9 +753,9 @@ ClosestPointQueryResult NavMeshQueries2D::map_iteration_get_closest_point_info(c
 					real_t edge_square = edge.length_squared();
 
 					if (point_projected_on_edge > edge_square) {
-						real_t distance = polygon.points[point_id].pos.distance_squared_to(p_point);
+						real_t distance = polygon.vertices[point_id].distance_squared_to(p_point);
 						if (distance < closest) {
-							closest_on_polygon = polygon.points[point_id].pos;
+							closest_on_polygon = polygon.vertices[point_id];
 							closest = distance;
 						}
 					} else if (point_projected_on_edge < 0.0) {
@@ -773,7 +771,7 @@ ClosestPointQueryResult NavMeshQueries2D::map_iteration_get_closest_point_info(c
 						break;
 					}
 				}
-				previous = polygon.points[point_id].pos;
+				previous = polygon.vertices[point_id];
 			}
 
 			if (inside) {
@@ -870,13 +868,13 @@ ClosestPointQueryResult NavMeshQueries2D::polygons_get_closest_point_info(const 
 	// TODO: Check for further 2D improvements.
 
 	for (const Polygon &polygon : p_polygons) {
-		real_t cross = (polygon.points[1].pos - polygon.points[0].pos).cross(polygon.points[2].pos - polygon.points[0].pos);
+		real_t cross = (polygon.vertices[1] - polygon.vertices[0]).cross(polygon.vertices[2] - polygon.vertices[0]);
 		Vector2 closest_on_polygon;
 		real_t closest = FLT_MAX;
 		bool inside = true;
-		Vector2 previous = polygon.points[polygon.points.size() - 1].pos;
-		for (size_t point_id = 0; point_id < polygon.points.size(); ++point_id) {
-			Vector2 edge = polygon.points[point_id].pos - previous;
+		Vector2 previous = polygon.vertices[polygon.vertices.size() - 1];
+		for (uint32_t point_id = 0; point_id < polygon.vertices.size(); ++point_id) {
+			Vector2 edge = polygon.vertices[point_id] - previous;
 			Vector2 to_point = p_point - previous;
 			real_t edge_to_point_cross = edge.cross(to_point);
 			bool clockwise = (edge_to_point_cross * cross) > 0;
@@ -887,9 +885,9 @@ ClosestPointQueryResult NavMeshQueries2D::polygons_get_closest_point_info(const 
 				real_t edge_square = edge.length_squared();
 
 				if (point_projected_on_edge > edge_square) {
-					real_t distance = polygon.points[point_id].pos.distance_squared_to(p_point);
+					real_t distance = polygon.vertices[point_id].distance_squared_to(p_point);
 					if (distance < closest) {
-						closest_on_polygon = polygon.points[point_id].pos;
+						closest_on_polygon = polygon.vertices[point_id];
 						closest = distance;
 					}
 				} else if (point_projected_on_edge < 0.0) {
@@ -905,7 +903,7 @@ ClosestPointQueryResult NavMeshQueries2D::polygons_get_closest_point_info(const 
 					break;
 				}
 			}
-			previous = polygon.points[point_id].pos;
+			previous = polygon.vertices[point_id];
 		}
 
 		if (inside) {
@@ -1037,15 +1035,13 @@ LocalVector<uint32_t> NavMeshQueries2D::get_simplified_path_indices(const LocalV
 }
 
 void NavMeshQueries2D::simplify_path_segment(int p_start_inx, int p_end_inx, const LocalVector<Vector2> &p_points, real_t p_epsilon, LocalVector<uint32_t> &r_simplified_path_indices) {
-	Vector2 path_segment[2] = { p_points[p_start_inx], p_points[p_end_inx] };
-
 	real_t point_max_distance = 0.0;
 	int point_max_index = 0;
 
 	for (int i = p_start_inx; i < p_end_inx; i++) {
 		const Vector2 &checked_point = p_points[i];
 
-		const Vector2 closest_point = Geometry2D::get_closest_point_to_segment(checked_point, path_segment);
+		const Vector2 closest_point = Geometry2D::get_closest_point_to_segment(checked_point, p_points[p_start_inx], p_points[p_end_inx]);
 		real_t distance_squared = closest_point.distance_squared_to(checked_point);
 
 		if (distance_squared > point_max_distance) {

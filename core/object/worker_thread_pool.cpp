@@ -182,6 +182,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 
 void WorkerThreadPool::_thread_function(void *p_user) {
 	ThreadData *thread_data = (ThreadData *)p_user;
+	Thread::set_name(vformat("WorkerThread %d", thread_data->index));
 
 	while (true) {
 		Task *task_to_process = nullptr;
@@ -221,7 +222,7 @@ void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high
 	// Fall back to processing on the calling thread if there are no worker threads.
 	// Separated into its own variable to make it easier to extend this logic
 	// in custom builds.
-	bool process_on_calling_thread = threads.size() == 0;
+	bool process_on_calling_thread = threads.is_empty();
 	if (process_on_calling_thread) {
 		p_lock.temp_unlock();
 		for (uint32_t i = 0; i < p_count; i++) {
@@ -780,16 +781,29 @@ void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio)
 
 	threads.resize(p_thread_count);
 
+	Thread::Settings settings;
+#ifdef __APPLE__
+	// The default stack size for new threads on Apple platforms is 512KiB.
+	// This is insufficient when using a library like SPIRV-Cross,
+	// which can generate deep stacks and result in a stack overflow.
+#ifdef DEV_ENABLED
+	// Debug builds need an even larger stack size.
+	settings.stack_size = 2 * 1024 * 1024; // 2 MiB
+#else
+	settings.stack_size = 1 * 1024 * 1024; // 1 MiB
+#endif
+#endif
+
 	for (uint32_t i = 0; i < threads.size(); i++) {
 		threads[i].index = i;
 		threads[i].pool = this;
-		threads[i].thread.start(&WorkerThreadPool::_thread_function, &threads[i]);
+		threads[i].thread.start(&WorkerThreadPool::_thread_function, &threads[i], settings);
 		thread_ids.insert(threads[i].thread.get_id(), i);
 	}
 }
 
 void WorkerThreadPool::exit_languages_threads() {
-	if (threads.size() == 0) {
+	if (threads.is_empty()) {
 		return;
 	}
 
@@ -809,7 +823,7 @@ void WorkerThreadPool::exit_languages_threads() {
 }
 
 void WorkerThreadPool::finish() {
-	if (threads.size() == 0) {
+	if (threads.is_empty()) {
 		return;
 	}
 

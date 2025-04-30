@@ -159,27 +159,38 @@ opts = Variables(customs, ARGUMENTS)
 
 # Target build options
 opts.Add((["platform", "p"], "Target platform (%s)" % "|".join(platform_list), ""))
-opts.Add(EnumVariable("target", "Compilation target", "editor", ("editor", "template_release", "template_debug")))
-opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
+opts.Add(
+    EnumVariable(
+        "target", "Compilation target", "editor", ["editor", "template_release", "template_debug"], ignorecase=2
+    )
+)
+opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases, ignorecase=2))
 opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
 opts.Add(
     EnumVariable(
         "optimize",
         "Optimization level (by default inferred from 'target' and 'dev_build')",
         "auto",
-        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size", "size_extra"),
+        ["auto", "none", "custom", "debug", "speed", "speed_trace", "size", "size_extra"],
+        ignorecase=2,
     )
 )
 opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
 opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
 opts.Add(BoolVariable("debug_paths_relative", "Make file paths in debug symbols relative (if supported)", False))
-opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
+opts.Add(
+    EnumVariable(
+        "lto", "Link-time optimization (production builds)", "none", ["none", "auto", "thin", "full"], ignorecase=2
+    )
+)
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("threads", "Enable threading support", True))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
-opts.Add(EnumVariable("precision", "Set the floating-point precision level", "single", ("single", "double")))
+opts.Add(
+    EnumVariable("precision", "Set the floating-point precision level", "single", ["single", "double"], ignorecase=2)
+)
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("brotli", "Enable Brotli for decompression and WOFF2 fonts support", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver on supported platforms", False))
@@ -191,6 +202,8 @@ opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loade
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
+opts.Add(BoolVariable("accesskit", "Use AccessKit C SDK", True))
+opts.Add(("accesskit_sdk_path", "Path to the AccessKit C SDK", ""))
 
 # Advanced options
 opts.Add(
@@ -211,7 +224,9 @@ opts.Add(
 )
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
 opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
-opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
+opts.Add(
+    EnumVariable("warnings", "Level of compilation warnings", "all", ["extra", "all", "moderate", "no"], ignorecase=2)
+)
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
@@ -222,6 +237,8 @@ opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable",
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("disable_physics_2d", "Disable 2D physics nodes and server", False))
 opts.Add(BoolVariable("disable_physics_3d", "Disable 3D physics nodes and server", False))
+opts.Add(BoolVariable("disable_navigation_2d", "Disable 2D navigation features", False))
+opts.Add(BoolVariable("disable_navigation_3d", "Disable 3D navigation features", False))
 opts.Add(BoolVariable("disable_xr", "Disable XR nodes and server", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
@@ -291,6 +308,9 @@ opts.Add("linkflags", "Custom flags for the linker")
 opts.Add("asflags", "Custom flags for the assembler")
 opts.Add("arflags", "Custom flags for the archive tool")
 opts.Add("rcflags", "Custom flags for Windows resource compiler")
+
+opts.Add("c_compiler_launcher", "C compiler launcher (e.g. `ccache`)")
+opts.Add("cpp_compiler_launcher", "C++ compiler launcher (e.g. `ccache`)")
 
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
@@ -443,9 +463,18 @@ for tool in custom_tools:
     env.Tool(tool)
 
 
-# add default include paths
-
+# Add default include paths.
 env.Prepend(CPPPATH=["#"])
+
+# Allow marking includes as external/system to avoid raising warnings.
+env["_CCCOMCOM"] += " $_CPPEXTINCFLAGS"
+env["CPPEXTPATH"] = []
+if env.scons_version < (4, 2):
+    env["_CPPEXTINCFLAGS"] = "${_concat(EXTINCPREFIX, CPPEXTPATH, EXTINCSUFFIX, __env__, RDirs, TARGET, SOURCE)}"
+else:
+    env["_CPPEXTINCFLAGS"] = (
+        "${_concat(EXTINCPREFIX, CPPEXTPATH, EXTINCSUFFIX, __env__, RDirs, TARGET, SOURCE, affect_signature=False)}"
+    )
 
 # configure ENV for platform
 env.platform_exporters = platform_exporters
@@ -702,7 +731,7 @@ if env["arch"] == "x86_32":
     if env.msvc:
         env.Append(CCFLAGS=["/arch:SSE2"])
     else:
-        env.Append(CCFLAGS=["-msse2"])
+        env.Append(CCFLAGS=["-msse2", "-mfpmath=sse", "-mstackrealign"])
 
 # Explicitly specify colored output.
 if methods.using_gcc(env):
@@ -715,78 +744,75 @@ elif methods.using_clang(env) or methods.using_emcc(env):
 # Set optimize and debug_symbols flags.
 # "custom" means do nothing and let users set their own optimization flags.
 # Needs to happen after configure to have `env.msvc` defined.
+env.AppendUnique(CCFLAGS=["$OPTIMIZELEVEL"])
 if env.msvc:
     if env["debug_symbols"]:
-        env.Append(CCFLAGS=["/Zi", "/FS"])
-        env.Append(LINKFLAGS=["/DEBUG:FULL"])
+        env.AppendUnique(CCFLAGS=["/Zi", "/FS"])
+        env.AppendUnique(LINKFLAGS=["/DEBUG:FULL"])
     else:
-        env.Append(LINKFLAGS=["/DEBUG:NONE"])
+        env.AppendUnique(LINKFLAGS=["/DEBUG:NONE"])
 
     if env["optimize"].startswith("speed"):
-        env.Append(CCFLAGS=["/O2"])
-        env.Append(LINKFLAGS=["/OPT:REF"])
+        env["OPTIMIZELEVEL"] = "/O2"
+        env.AppendUnique(LINKFLAGS=["/OPT:REF"])
         if env["optimize"] == "speed_trace":
-            env.Append(LINKFLAGS=["/OPT:NOICF"])
+            env.AppendUnique(LINKFLAGS=["/OPT:NOICF"])
     elif env["optimize"].startswith("size"):
-        env.Append(CCFLAGS=["/O1"])
-        env.Append(LINKFLAGS=["/OPT:REF"])
+        env["OPTIMIZELEVEL"] = "/O1"
+        env.AppendUnique(LINKFLAGS=["/OPT:REF"])
         if env["optimize"] == "size_extra":
-            env.Append(CPPDEFINES=["SIZE_EXTRA"])
+            env.AppendUnique(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug" or env["optimize"] == "none":
-        env.Append(CCFLAGS=["/Od"])
+        env["OPTIMIZELEVEL"] = "/Od"
 else:
     if env["debug_symbols"]:
         if env["platform"] == "windows":
             if methods.using_clang(env):
-                env.Append(CCFLAGS=["-gdwarf-4"])  # clang dwarf-5 symbols are broken on Windows.
+                env.AppendUnique(CCFLAGS=["-gdwarf-4"])  # clang dwarf-5 symbols are broken on Windows.
             else:
-                env.Append(CCFLAGS=["-gdwarf-5"])  # For gcc, only dwarf-5 symbols seem usable by libbacktrace.
+                env.AppendUnique(CCFLAGS=["-gdwarf-5"])  # For gcc, only dwarf-5 symbols seem usable by libbacktrace.
         else:
             # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
             # otherwise addr2line doesn't understand them
-            env.Append(CCFLAGS=["-gdwarf-4"])
+            env.AppendUnique(CCFLAGS=["-gdwarf-4"])
         if methods.using_emcc(env):
             # Emscripten only produces dwarf symbols when using "-g3".
-            env.Append(CCFLAGS=["-g3"])
+            env.AppendUnique(CCFLAGS=["-g3"])
             # Emscripten linker needs debug symbols options too.
-            env.Append(LINKFLAGS=["-gdwarf-4"])
-            env.Append(LINKFLAGS=["-g3"])
+            env.AppendUnique(LINKFLAGS=["-gdwarf-4"])
+            env.AppendUnique(LINKFLAGS=["-g3"])
         elif env.dev_build:
-            env.Append(CCFLAGS=["-g3"])
+            env.AppendUnique(CCFLAGS=["-g3"])
         else:
-            env.Append(CCFLAGS=["-g2"])
+            env.AppendUnique(CCFLAGS=["-g2"])
         if env["debug_paths_relative"]:
             # Remap absolute paths to relative paths for debug symbols.
             project_path = Dir("#").abspath
-            env.Append(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
+            env.AppendUnique(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
     else:
         if methods.is_apple_clang(env):
             # Apple Clang, its linker doesn't like -s.
-            env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
+            env.AppendUnique(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
         else:
-            env.Append(LINKFLAGS=["-s"])
+            env.AppendUnique(LINKFLAGS=["-s"])
 
     # Linker needs optimization flags too, at least for Emscripten.
     # For other toolchains, this _may_ be useful for LTO too to disambiguate.
+    env.AppendUnique(LINKFLAGS=["$OPTIMIZELEVEL"])
 
     if env["optimize"] == "speed":
-        env.Append(CCFLAGS=["-O3"])
-        env.Append(LINKFLAGS=["-O3"])
+        env["OPTIMIZELEVEL"] = "-O3"
     # `-O2` is friendlier to debuggers than `-O3`, leading to better crash backtraces.
     elif env["optimize"] == "speed_trace":
-        env.Append(CCFLAGS=["-O2"])
-        env.Append(LINKFLAGS=["-O2"])
+        env["OPTIMIZELEVEL"] = "-O2"
     elif env["optimize"].startswith("size"):
-        env.Append(CCFLAGS=["-Os"])
-        env.Append(LINKFLAGS=["-Os"])
+        env["OPTIMIZELEVEL"] = "-Os"
         if env["optimize"] == "size_extra":
-            env.Append(CPPDEFINES=["SIZE_EXTRA"])
+            env.AppendUnique(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug":
-        env.Append(CCFLAGS=["-Og"])
-        env.Append(LINKFLAGS=["-Og"])
+        env["OPTIMIZELEVEL"] = "-Og"
     elif env["optimize"] == "none":
-        env.Append(CCFLAGS=["-O0"])
-        env.Append(LINKFLAGS=["-O0"])
+        env["OPTIMIZELEVEL"] = "-O0"
 
 # Needs to happen after configure to handle "auto".
 if env["lto"] != "none":
@@ -827,6 +853,7 @@ elif env.msvc:
     env.Append(CXXFLAGS=["/EHsc"])
 
 # Configure compiler warnings
+env.AppendUnique(CCFLAGS=["$WARNLEVEL"])
 if env.msvc and not methods.using_clang(env):  # MSVC
     # Disable warnings which we don't plan to fix.
     disabled_warnings = [
@@ -844,30 +871,29 @@ if env.msvc and not methods.using_clang(env):  # MSVC
     ]
 
     if env["warnings"] == "extra":
-        env.Append(CCFLAGS=["/W4"] + disabled_warnings)
+        env["WARNLEVEL"] = "/W4"
+        env.AppendUnique(CCFLAGS=disabled_warnings)
     elif env["warnings"] == "all":
+        env["WARNLEVEL"] = "/W3"
         # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
-        env.Append(CCFLAGS=["/W3", "/w34458"] + disabled_warnings)
+        env.AppendUnique(CCFLAGS=["/w34458"] + disabled_warnings)
     elif env["warnings"] == "moderate":
-        env.Append(CCFLAGS=["/W2"] + disabled_warnings)
+        env["WARNLEVEL"] = "/W2"
+        env.AppendUnique(CCFLAGS=disabled_warnings)
     else:  # 'no'
+        env["WARNLEVEL"] = "/w"
         # C4267 is particularly finicky & needs to be explicitly disabled.
-        env.Append(CCFLAGS=["/w", "/wd4267"])
+        env.AppendUnique(CCFLAGS=["/wd4267"])
 
     if env["werror"]:
-        env.Append(CCFLAGS=["/WX"])
-        env.Append(LINKFLAGS=["/WX"])
+        env.AppendUnique(CCFLAGS=["/WX"])
+        env.AppendUnique(LINKFLAGS=["/WX"])
 
 else:  # GCC, Clang
-    common_warnings = []
+    common_warnings = ["-Wenum-conversion"]
 
     if methods.using_gcc(env):
-        common_warnings += [
-            "-Wshadow",
-            "-Wno-misleading-indentation",
-            # For optimized Object::cast_to / object.inherits_from()
-            "-Wvirtual-inheritance",
-        ]
+        common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
         if cc_version_major < 11:
             # Regression in GCC 9/10, spams so much in our variadic templates
             # that we need to outright disable it.
@@ -880,14 +906,14 @@ else:  # GCC, Clang
         # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
         common_warnings += ["-Wno-ordered-compare-function-pointers"]
 
-    # clang-cl will interpret `-Wall` as `-Weverything`, workaround with compatibility cast
-    W_ALL = "-Wall" if not env.msvc else "-W3"
+    # clang-cl will interpret `-Wall` as `-Weverything`, workaround with compatibility cast.
+    env["WARNLEVEL"] = "-Wall" if not env.msvc else "-W3"
 
     if env["warnings"] == "extra":
-        env.Append(CCFLAGS=[W_ALL, "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
-        env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
+        env.AppendUnique(CCFLAGS=["-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
+        env.AppendUnique(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
         if methods.using_gcc(env):
-            env.Append(
+            env.AppendUnique(
                 CCFLAGS=[
                     "-Walloc-zero",
                     "-Wduplicated-branches",
@@ -895,25 +921,38 @@ else:  # GCC, Clang
                     "-Wstringop-overflow=4",
                 ]
             )
-            env.Append(CXXFLAGS=["-Wplacement-new=1"])
+            env.AppendUnique(CXXFLAGS=["-Wplacement-new=1", "-Wvirtual-inheritance"])
             # Need to fix a warning with AudioServer lambdas before enabling.
             # if cc_version_major != 9:  # GCC 9 had a regression (GH-36325).
             #    env.Append(CXXFLAGS=["-Wnoexcept"])
             if cc_version_major >= 9:
-                env.Append(CCFLAGS=["-Wattribute-alias=2"])
+                env.AppendUnique(CCFLAGS=["-Wattribute-alias=2"])
             if cc_version_major >= 11:  # Broke on MethodBind templates before GCC 11.
-                env.Append(CCFLAGS=["-Wlogical-op"])
+                env.AppendUnique(CCFLAGS=["-Wlogical-op"])
         elif methods.using_clang(env) or methods.using_emcc(env):
-            env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
+            env.AppendUnique(CCFLAGS=["-Wimplicit-fallthrough"])
     elif env["warnings"] == "all":
-        env.Append(CCFLAGS=[W_ALL] + common_warnings)
+        env.AppendUnique(CCFLAGS=common_warnings)
     elif env["warnings"] == "moderate":
-        env.Append(CCFLAGS=[W_ALL, "-Wno-unused"] + common_warnings)
+        env.AppendUnique(CCFLAGS=["-Wno-unused"] + common_warnings)
     else:  # 'no'
-        env.Append(CCFLAGS=["-w"])
+        env["WARNLEVEL"] = "-w"
 
     if env["werror"]:
-        env.Append(CCFLAGS=["-Werror"])
+        env.AppendUnique(CCFLAGS=["-Werror"])
+
+# Configure external includes.
+if env.msvc:
+    if not methods.using_clang(env):
+        if cc_version_major < 16 or (cc_version_major == 16 and cc_version_minor < 10):
+            env.AppendUnique(CCFLAGS=["/experimental:external"])
+        env.AppendUnique(CCFLAGS=["/external:anglebrackets"])
+    env.AppendUnique(CCFLAGS=["/external:W0"])
+    env["EXTINCPREFIX"] = "/external:I"
+    env["EXTINCSUFFIX"] = ""
+else:
+    env["EXTINCPREFIX"] = "-isystem "
+    env["EXTINCSUFFIX"] = ""
 
 if hasattr(detect, "get_program_suffix"):
     suffix = "." + detect.get_program_suffix()
@@ -939,7 +978,14 @@ sys.modules.pop("detect")
 
 if env.editor_build:
     unsupported_opts = []
-    for disable_opt in ["disable_3d", "disable_advanced_gui", "disable_physics_2d", "disable_physics_3d"]:
+    for disable_opt in [
+        "disable_3d",
+        "disable_advanced_gui",
+        "disable_physics_2d",
+        "disable_physics_3d",
+        "disable_navigation_2d",
+        "disable_navigation_3d",
+    ]:
         if env[disable_opt]:
             unsupported_opts.append(disable_opt)
     if unsupported_opts != []:
@@ -952,6 +998,7 @@ if env.editor_build:
 
 if env["disable_3d"]:
     env.Append(CPPDEFINES=["_3D_DISABLED"])
+    env["disable_navigation_3d"] = True
     env["disable_physics_3d"] = True
     env["disable_xr"] = True
 if env["disable_advanced_gui"]:
@@ -960,6 +1007,10 @@ if env["disable_physics_2d"]:
     env.Append(CPPDEFINES=["PHYSICS_2D_DISABLED"])
 if env["disable_physics_3d"]:
     env.Append(CPPDEFINES=["PHYSICS_3D_DISABLED"])
+if env["disable_navigation_2d"]:
+    env.Append(CPPDEFINES=["NAVIGATION_2D_DISABLED"])
+if env["disable_navigation_3d"]:
+    env.Append(CPPDEFINES=["NAVIGATION_3D_DISABLED"])
 if env["disable_xr"]:
     env.Append(CPPDEFINES=["XR_DISABLED"])
 if env["minizip"]:
@@ -1087,6 +1138,13 @@ for key in (emitters := env.StaticObject.builder.emitter):
 for key in (emitters := env.SharedObject.builder.emitter):
     emitters[key] = ListEmitter([methods.redirect_emitter] + env.Flatten(emitters[key]))
 
+# Prepend compiler launchers
+if "c_compiler_launcher" in env:
+    env["CC"] = " ".join([env["c_compiler_launcher"], env["CC"]])
+
+if "cpp_compiler_launcher" in env:
+    env["CXX"] = " ".join([env["cpp_compiler_launcher"], env["CXX"]])
+
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
@@ -1110,15 +1168,6 @@ if env["vsproj"]:
     methods.generate_cpp_hint_file("cpp.hint")
     env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
     methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
-
-# Check for the existence of headers
-conf = Configure(env)
-if "check_c_headers" in env:
-    headers = env["check_c_headers"]
-    for header in headers:
-        if conf.CheckCHeader(header):
-            env.AppendUnique(CPPDEFINES=[headers[header]])
-conf.Finish()
 
 # Miscellaneous & post-build methods.
 if not env.GetOption("clean") and not env.GetOption("help"):

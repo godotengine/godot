@@ -72,7 +72,7 @@ void ParticlesEditorPlugin::_notification(int p_what) {
 
 bool ParticlesEditorPlugin::need_show_lifetime_dialog(SpinBox *p_seconds) {
 	// Add one second to the default generation lifetime, since the progress is updated every second.
-	p_seconds->set_value(MAX(1.0, trunc(edited_node->get("lifetime").operator double()) + 1.0));
+	p_seconds->set_value(MAX(1.0, std::trunc(edited_node->get("lifetime").operator double()) + 1.0));
 
 	if (p_seconds->get_value() >= 11.0 + CMP_EPSILON) {
 		// Only pop up the time dialog if the particle's lifetime is long enough to warrant shortening it.
@@ -118,6 +118,8 @@ ParticlesEditorPlugin::ParticlesEditorPlugin() {
 
 	menu = memnew(MenuButton);
 	menu->set_switch_on_hover(true);
+	menu->set_flat(false);
+	menu->set_theme_type_variation("FlatMenuButton");
 	toolbar->add_child(menu);
 	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ParticlesEditorPlugin::_menu_callback));
 }
@@ -656,7 +658,7 @@ void Particles3DEditorPlugin::_node_selected(const NodePath &p_path) {
 	}
 
 	geometry = mi->get_mesh()->get_faces();
-	if (geometry.size() == 0) {
+	if (geometry.is_empty()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain face geometry."), sel->get_name()));
 		return;
 	}
@@ -826,6 +828,7 @@ Particles3DEditorPlugin::Particles3DEditorPlugin() {
 	generate_aabb->add_child(genvb);
 
 	generate_seconds = memnew(SpinBox);
+	generate_seconds->set_accessibility_name(TTRC("Generation Time"));
 	generate_seconds->set_min(0.1);
 	generate_seconds->set_max(25);
 	generate_seconds->set_value(2);
@@ -850,12 +853,14 @@ Particles3DEditorPlugin::Particles3DEditorPlugin() {
 	emission_dialog->add_child(emd_vb);
 
 	emission_amount = memnew(SpinBox);
+	emission_amount->set_accessibility_name(TTRC("Emission Points"));
 	emission_amount->set_min(1);
 	emission_amount->set_max(100000);
 	emission_amount->set_value(512);
 	emd_vb->add_margin_child(TTR("Emission Points:"), emission_amount);
 
 	emission_fill = memnew(OptionButton);
+	emission_fill->set_accessibility_name(TTRC("Emission Source"));
 	emission_fill->add_item(TTR("Surface Points"));
 	emission_fill->add_item(TTR("Surface Points+Normal (Directed)"));
 	emission_fill->add_item(TTR("Volume"));

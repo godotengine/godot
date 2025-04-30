@@ -573,7 +573,7 @@ namespace basisu
 
 		/* Don't deallocate a contibutor list
 		* if the user passed us one of their own.
-	*/
+		*/
 
 		if ((m_Pclist_x) && (!m_clist_x_forced))
 		{

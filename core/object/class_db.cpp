@@ -39,10 +39,10 @@
 
 MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint32_t p_argcount) {
 	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
+	md.name = StringName(p_name);
 	md.args.resize(p_argcount);
 	for (uint32_t i = 0; i < p_argcount; i++) {
-		md.args.write[i] = StaticCString::create(*p_args[i]);
+		md.args.write[i] = StringName(*p_args[i]);
 	}
 	return md;
 }
@@ -281,12 +281,12 @@ void ClassDB::get_extension_class_list(const Ref<GDExtension> &p_extension, List
 }
 #endif
 
-void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
+void ClassDB::get_inheriters_from_class(const StringName &p_class, LocalVector<StringName> &p_classes) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	for (const KeyValue<StringName, ClassInfo> &E : classes) {
 		if (E.key != p_class && _is_parent_class(E.key, p_class)) {
-			p_classes->push_back(E.key);
+			p_classes.push_back(E.key);
 		}
 	}
 }
@@ -533,19 +533,21 @@ StringName ClassDB::get_compatibility_class(const StringName &p_class) {
 	return StringName();
 }
 
-Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class, bool p_notify_postinitialize) {
+Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class, bool p_notify_postinitialize, bool p_exposed_only) {
 	ClassInfo *ti;
 	{
 		Locker::Lock lock(Locker::STATE_READ);
 		ti = classes.getptr(p_class);
-		if (!_can_instantiate(ti)) {
+		if (!_can_instantiate(ti, p_exposed_only)) {
 			if (compat_classes.has(p_class)) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
 		}
 		ERR_FAIL_NULL_V_MSG(ti, nullptr, vformat("Cannot get class '%s'.", String(p_class)));
 		ERR_FAIL_COND_V_MSG(ti->disabled, nullptr, vformat("Class '%s' is disabled.", String(p_class)));
-		ERR_FAIL_COND_V_MSG(!ti->exposed, nullptr, vformat("Class '%s' isn't exposed.", String(p_class)));
+		if (p_exposed_only) {
+			ERR_FAIL_COND_V_MSG(!ti->exposed, nullptr, vformat("Class '%s' isn't exposed.", String(p_class)));
+		}
 		ERR_FAIL_NULL_V_MSG(ti->creation_func, nullptr, vformat("Class '%s' or its base class cannot be instantiated.", String(p_class)));
 	}
 
@@ -597,12 +599,16 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 	}
 }
 
-bool ClassDB::_can_instantiate(ClassInfo *p_class_info) {
+bool ClassDB::_can_instantiate(ClassInfo *p_class_info, bool p_exposed_only) {
 	if (!p_class_info) {
 		return false;
 	}
 
-	if (p_class_info->disabled || !p_class_info->exposed || !p_class_info->creation_func) {
+	if (p_exposed_only && !p_class_info->exposed) {
+		return false;
+	}
+
+	if (p_class_info->disabled || !p_class_info->creation_func) {
 		return false;
 	}
 
@@ -834,7 +840,7 @@ use_script:
 	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
 }
 
-void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherits) {
+void ClassDB::_add_class(const StringName &p_class, const StringName &p_inherits) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	const StringName &name = p_class;
@@ -1926,7 +1932,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 	StringName mdname = method_name.name;
 #else
 MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount) {
-	StringName mdname = StaticCString::create(method_name);
+	StringName mdname = StringName(method_name);
 #endif
 
 	Locker::Lock lock(Locker::STATE_WRITE);
@@ -2335,6 +2341,10 @@ String ClassDB::get_native_struct_code(const StringName &p_name) {
 uint64_t ClassDB::get_native_struct_size(const StringName &p_name) {
 	ERR_FAIL_COND_V(!native_structs.has(p_name), 0);
 	return native_structs[p_name].struct_size;
+}
+
+Object *ClassDB::_instantiate_allow_unexposed(const StringName &p_class) {
+	return _instantiate_internal(p_class, false, true, false);
 }
 
 void ClassDB::cleanup_defaults() {

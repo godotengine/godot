@@ -303,7 +303,7 @@ void SphereShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3
 void SphereShape::GetTrianglesStart(GetTrianglesContext &ioContext, const AABox &inBox, Vec3Arg inPositionCOM, QuatArg inRotation, Vec3Arg inScale) const
 {
 	float scaled_radius = GetScaledRadius(inScale);
-	new (&ioContext) GetTrianglesContextVertexList(inPositionCOM, inRotation, Vec3::sReplicate(1.0f), Mat44::sScale(scaled_radius), sUnitSphereTriangles.data(), sUnitSphereTriangles.size(), GetMaterial());
+	new (&ioContext) GetTrianglesContextVertexList(inPositionCOM, inRotation, Vec3::sOne(), Mat44::sScale(scaled_radius), sUnitSphereTriangles.data(), sUnitSphereTriangles.size(), GetMaterial());
 }
 
 int SphereShape::GetTrianglesNext(GetTrianglesContext &ioContext, int inMaxTrianglesRequested, Float3 *outTriangleVertices, const PhysicsMaterial **outMaterials) const

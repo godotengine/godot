@@ -209,6 +209,104 @@ void SceneTree::flush_transform_notifications() {
 	}
 }
 
+bool SceneTree::is_accessibility_enabled() const {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ACCESSIBILITY_SCREEN_READER)) {
+		return false;
+	}
+
+	DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::accessibility_get_mode();
+	int screen_reader_acvite = DisplayServer::get_singleton()->accessibility_screen_reader_active();
+	if ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) || ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO) && (screen_reader_acvite == 0))) {
+		return false;
+	}
+	return true;
+}
+
+bool SceneTree::is_accessibility_supported() const {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ACCESSIBILITY_SCREEN_READER)) {
+		return false;
+	}
+
+	DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::accessibility_get_mode();
+	if (accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		return false;
+	}
+	return true;
+}
+
+void SceneTree::_accessibility_force_update() {
+	accessibility_force_update = true;
+}
+
+void SceneTree::_accessibility_notify_change(const Node *p_node, bool p_remove) {
+	if (p_node) {
+		if (p_remove) {
+			accessibility_change_queue.erase(p_node->get_instance_id());
+		} else {
+			accessibility_change_queue.insert(p_node->get_instance_id());
+		}
+	}
+}
+
+void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_id) {
+	// Process NOTIFICATION_ACCESSIBILITY_UPDATE.
+	Vector<ObjectID> processed;
+	for (const ObjectID &id : accessibility_change_queue) {
+		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+		if (!node || !node->get_window()) {
+			processed.push_back(id);
+			continue; // Invalid node, remove from list and skip.
+		} else if (node->get_window()->get_window_id() != p_window_id) {
+			continue; // Another window, skip.
+		}
+		node->notification(Node::NOTIFICATION_ACCESSIBILITY_UPDATE);
+		processed.push_back(id);
+	}
+
+	// Track focus change.
+	// Note: Do not use `Window::get_focused_window()`, it returns both native and embedded windows, and we only care about focused element in the currently processed native window.
+	// Native window focus is handled in the DisplayServer, or AccessKit subclassing adapter.
+	ObjectID oid = DisplayServer::get_singleton()->window_get_attached_instance_id(p_window_id);
+	Window *w_this = (Window *)ObjectDB::get_instance(oid);
+	if (w_this) {
+		Window *w_focus = w_this->get_focused_subwindow();
+		if (w_focus && !w_focus->is_part_of_edited_scene()) {
+			w_this = w_focus;
+		}
+
+		RID new_focus_element;
+		Control *n_focus = w_this->gui_get_focus_owner();
+		if (n_focus && !n_focus->is_part_of_edited_scene()) {
+			new_focus_element = n_focus->get_focused_accessibility_element();
+		} else {
+			new_focus_element = w_this->get_focused_accessibility_element();
+		}
+
+		DisplayServer::get_singleton()->accessibility_update_set_focus(new_focus_element);
+	}
+
+	// Cleanup.
+	for (const ObjectID &id : processed) {
+		accessibility_change_queue.erase(id);
+	}
+}
+
+void SceneTree::_flush_accessibility_changes() {
+	if (is_accessibility_enabled()) {
+		uint64_t time = OS::get_singleton()->get_ticks_msec();
+		if (!accessibility_force_update) {
+			if (time - accessibility_last_update < 1000 / accessibility_upd_per_sec) {
+				return;
+			}
+		}
+		accessibility_force_update = false;
+		accessibility_last_update = time;
+
+		// Push update to the accessibility driver.
+		DisplayServer::get_singleton()->accessibility_update_if_active(callable_mp(this, &SceneTree::_process_accessibility_changes));
+	}
+}
+
 void SceneTree::_flush_ugc() {
 	ugc_locked = true;
 
@@ -490,6 +588,8 @@ void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
 	_physics_interpolation_enabled = p_enabled;
 	RenderingServer::get_singleton()->set_physics_interpolation_enabled(p_enabled);
 
+	get_scene_tree_fti().set_enabled(get_root(), p_enabled);
+
 	// Perform an auto reset on the root node for convenience for the user.
 	if (root) {
 		root->reset_physics_interpolation();
@@ -517,6 +617,7 @@ void SceneTree::iteration_prepare() {
 		// Make sure any pending transforms from the last tick / frame
 		// are flushed before pumping the interpolation prev and currents.
 		flush_transform_notifications();
+		get_scene_tree_fti().tick_update();
 		RenderingServer::get_singleton()->tick();
 	}
 }
@@ -549,6 +650,7 @@ bool SceneTree::physics_process(double p_time) {
 
 	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
 	_flush_delete_queue();
+
 	_call_idle_callbacks();
 
 	return _quit;
@@ -570,6 +672,17 @@ void SceneTree::iteration_end() {
 }
 
 bool SceneTree::process(double p_time) {
+	// First pass of scene tree fixed timestep interpolation.
+	if (get_scene_tree_fti().is_enabled()) {
+		// Special, we need to ensure RenderingServer is up to date
+		// with *all* the pending xforms *before* updating it during
+		// the FTI update.
+		// If this is not done, we can end up with a deferred `set_transform()`
+		// overwriting the interpolated xform in the server.
+		flush_transform_notifications();
+		get_scene_tree_fti().frame_update(get_root(), true);
+	}
+
 	if (MainLoop::process(p_time)) {
 		_quit = true;
 	}
@@ -607,12 +720,14 @@ bool SceneTree::process(double p_time) {
 	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
 	_flush_delete_queue();
 
+	_flush_accessibility_changes();
+
 	_call_idle_callbacks();
 
 #ifdef TOOLS_ENABLED
 #ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		String env_path = GLOBAL_GET(SNAME("rendering/environment/defaults/default_environment"));
+		String env_path = GLOBAL_GET("rendering/environment/defaults/default_environment");
 		env_path = env_path.strip_edges(); // User may have added a space or two.
 
 		bool can_load = true;
@@ -648,6 +763,11 @@ bool SceneTree::process(double p_time) {
 	}
 #endif // _3D_DISABLED
 #endif // TOOLS_ENABLED
+
+	// Second pass of scene tree fixed timestep interpolation.
+	// ToDo: Possibly needs another flush_transform_notifications here
+	// depending on whether there are side effects to _call_idle_callbacks().
+	get_scene_tree_fti().frame_update(get_root(), false);
 
 	if (_physics_interpolation_enabled) {
 		RenderingServer::get_singleton()->pre_draw(true);
@@ -1351,7 +1471,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 		if (p_viewport->is_input_handled()) {
 			break;
 		}
-		Node *n = Object::cast_to<Node>(ObjectDB::get_instance(id));
+		Node *n = ObjectDB::get_instance<Node>(id);
 		if (n) {
 			n->_call_shortcut_input(p_input);
 		}
@@ -1521,7 +1641,7 @@ Node *SceneTree::get_current_scene() const {
 void SceneTree::_flush_scene_change() {
 	if (prev_scene_id.is_valid()) {
 		// Might have already been freed externally.
-		Node *prev_scene = Object::cast_to<Node>(ObjectDB::get_instance(prev_scene_id));
+		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
 		if (prev_scene) {
 			memdelete(prev_scene);
 		}
@@ -1529,7 +1649,7 @@ void SceneTree::_flush_scene_change() {
 	}
 
 	DEV_ASSERT(pending_new_scene_id.is_valid());
-	Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+	Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
 	if (pending_new_scene) {
 		// Ensure correct state before `add_child` (might enqueue subsequent scene change).
 		current_scene = pending_new_scene;
@@ -1566,7 +1686,7 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 
 	// If called again while a change is pending.
 	if (pending_new_scene_id.is_valid()) {
-		Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+		Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
 		if (pending_new_scene) {
 			queue_delete(pending_new_scene);
 		}
@@ -1732,6 +1852,9 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
 
+	ClassDB::bind_method(D_METHOD("is_accessibility_enabled"), &SceneTree::is_accessibility_enabled);
+	ClassDB::bind_method(D_METHOD("is_accessibility_supported"), &SceneTree::is_accessibility_supported);
+
 	ClassDB::bind_method(D_METHOD("is_auto_accept_quit"), &SceneTree::is_auto_accept_quit);
 	ClassDB::bind_method(D_METHOD("set_auto_accept_quit", "enabled"), &SceneTree::set_auto_accept_quit);
 	ClassDB::bind_method(D_METHOD("is_quit_on_go_back"), &SceneTree::is_quit_on_go_back);
@@ -1849,12 +1972,26 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 
 #ifdef TOOLS_ENABLED
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	const String pf = p_function;
 	bool add_options = false;
 	if (p_idx == 0) {
-		add_options = pf == "get_nodes_in_group" || pf == "has_group" || pf == "get_first_node_in_group" || pf == "set_group" || pf == "notify_group" || pf == "call_group" || pf == "add_to_group";
+		static const Vector<StringName> names = {
+			StringName("add_to_group", true),
+			StringName("call_group", true),
+			StringName("get_first_node_in_group", true),
+			StringName("get_node_count_in_group", true),
+			StringName("get_nodes_in_group", true),
+			StringName("has_group", true),
+			StringName("notify_group", true),
+			StringName("set_group", true),
+		};
+		add_options = names.has(p_function);
 	} else if (p_idx == 1) {
-		add_options = pf == "set_group_flags" || pf == "call_group_flags" || pf == "notify_group_flags";
+		static const Vector<StringName> names = {
+			StringName("call_group_flags", true),
+			StringName("notify_group_flags", true),
+			StringName("set_group_flags", true),
+		};
+		add_options = names.has(p_function);
 	}
 	if (add_options) {
 		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
@@ -1879,6 +2016,7 @@ SceneTree::SceneTree() {
 	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
 	debug_paths_width = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/paths/geometry_width", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 2.0);
 	collision_debug_contacts = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1"), 10000);
+	accessibility_upd_per_sec = GLOBAL_GET(SNAME("accessibility/general/updates_per_second"));
 
 	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
 
@@ -2041,14 +2179,14 @@ SceneTree::SceneTree() {
 
 SceneTree::~SceneTree() {
 	if (prev_scene_id.is_valid()) {
-		Node *prev_scene = Object::cast_to<Node>(ObjectDB::get_instance(prev_scene_id));
+		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
 		if (prev_scene) {
 			memdelete(prev_scene);
 		}
 		prev_scene_id = ObjectID();
 	}
 	if (pending_new_scene_id.is_valid()) {
-		Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+		Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
 		if (pending_new_scene) {
 			memdelete(pending_new_scene);
 		}

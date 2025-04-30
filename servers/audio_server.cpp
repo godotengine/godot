@@ -1862,7 +1862,7 @@ void AudioServer::get_argument_options(const StringName &p_function, int p_idx, 
 #endif
 
 AudioServer::PlaybackType AudioServer::get_default_playback_type() const {
-	int playback_type = GLOBAL_GET("audio/general/default_playback_type");
+	int playback_type = GLOBAL_GET_CACHED(int, "audio/general/default_playback_type");
 	ERR_FAIL_COND_V_MSG(
 			playback_type < 0 || playback_type >= PlaybackType::PLAYBACK_TYPE_MAX,
 			PlaybackType::PLAYBACK_TYPE_STREAM,

@@ -129,6 +129,7 @@ public:
 
 	/// Creates a new region.
 	virtual RID region_create() = 0;
+	virtual uint32_t region_get_iteration_id(RID p_region) const = 0;
 
 	virtual void region_set_enabled(RID p_region, bool p_enabled) = 0;
 	virtual bool region_get_enabled(RID p_region) const = 0;
@@ -346,7 +347,8 @@ public:
 	/// The result of this process is needed by the physics server,
 	/// so this must be called in the main thread.
 	/// Note: This function is not thread safe.
-	virtual void process(real_t delta_time) = 0;
+	virtual void process(double p_delta_time) = 0;
+	virtual void physics_process(double p_delta_time) = 0;
 	virtual void init() = 0;
 	virtual void sync() = 0;
 	virtual void finish() = 0;

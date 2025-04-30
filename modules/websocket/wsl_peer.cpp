@@ -451,7 +451,7 @@ bool WSLPeer::_verify_server_response() {
 	WSL_CHECK_NC("sec-websocket-accept", _compute_key_response(session_key));
 #undef WSL_CHECK_NC
 #undef WSL_CHECK
-	if (supported_protocols.size() == 0) {
+	if (supported_protocols.is_empty()) {
 		// We didn't request a custom protocol
 		ERR_FAIL_COND_V_MSG(headers.has("sec-websocket-protocol"), false, "Received unrequested sub-protocol -> " + headers["sec-websocket-protocol"]);
 	} else {

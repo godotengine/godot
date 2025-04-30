@@ -446,7 +446,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 AudioStreamPlayer2D::AudioStreamPlayer2D() {
 	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer2D::play), callable_mp(this, &AudioStreamPlayer2D::stop), true));
-	cached_global_panning_strength = GLOBAL_GET("audio/general/2d_panning_strength");
+	cached_global_panning_strength = GLOBAL_GET_CACHED(float, "audio/general/2d_panning_strength");
 	set_hide_clip_children(true);
 }
 

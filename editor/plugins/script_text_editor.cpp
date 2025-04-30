@@ -99,6 +99,7 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	add_child(vbc);
 
 	method = memnew(Label);
+	method->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	method->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	vbc->add_child(method);
 
@@ -760,7 +761,7 @@ void ScriptTextEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
 	PackedInt32Array bookmark_list = code_editor->get_text_editor()->get_bookmarked_lines();
-	if (bookmark_list.size() == 0) {
+	if (bookmark_list.is_empty()) {
 		return;
 	}
 
@@ -915,7 +916,7 @@ void ScriptTextEditor::_update_breakpoint_list() {
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
 
 	PackedInt32Array breakpoint_list = code_editor->get_text_editor()->get_breakpointed_lines();
-	if (breakpoint_list.size() == 0) {
+	if (breakpoint_list.is_empty()) {
 		return;
 	}
 
@@ -1227,8 +1228,8 @@ String ScriptTextEditor::_get_absolute_path(const String &rel_path) {
 	return path.replace("///", "//").simplify_path();
 }
 
-void ScriptTextEditor::update_toggle_scripts_button() {
-	code_editor->update_toggle_scripts_button();
+void ScriptTextEditor::update_toggle_files_button() {
+	code_editor->update_toggle_files_button();
 }
 
 void ScriptTextEditor::_update_connected_methods() {
@@ -1696,7 +1697,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case DEBUG_GOTO_NEXT_BREAKPOINT: {
 			PackedInt32Array bpoints = tx->get_breakpointed_lines();
-			if (bpoints.size() <= 0) {
+			if (bpoints.is_empty()) {
 				return;
 			}
 
@@ -1711,7 +1712,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case DEBUG_GOTO_PREV_BREAKPOINT: {
 			PackedInt32Array bpoints = tx->get_breakpointed_lines();
-			if (bpoints.size() <= 0) {
+			if (bpoints.is_empty()) {
 				return;
 			}
 
@@ -1958,7 +1959,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	Dictionary d = p_data;
 
 	CodeEdit *te = code_editor->get_text_editor();
-	Point2i pos = te->get_line_column_at_pos(p_point);
+	Point2i pos = (p_point == Vector2(Math::INF, Math::INF)) ? Point2i(te->get_caret_line(0), te->get_caret_column(0)) : te->get_line_column_at_pos(p_point);
 	int drop_at_line = pos.y;
 	int drop_at_column = pos.x;
 	int selection_index = te->get_selection_at_line_column(drop_at_line, drop_at_column);
@@ -2382,7 +2383,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_clicked", callable_mp(this, &ScriptTextEditor::_gutter_clicked));
 	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &ScriptTextEditor::_text_edit_gui_input));
-	code_editor->show_toggle_scripts_button();
+	code_editor->show_toggle_files_button();
 	_update_gutter_indexes();
 
 	editor_box->add_child(warnings_panel);

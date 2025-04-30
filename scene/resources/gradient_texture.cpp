@@ -292,10 +292,7 @@ float GradientTexture2D::_get_gradient_offset_at(int x, int y) const {
 		pos.y = static_cast<float>(y) / (height - 1);
 	}
 	if (fill == Fill::FILL_LINEAR) {
-		Vector2 segment[2];
-		segment[0] = fill_from;
-		segment[1] = fill_to;
-		Vector2 closest = Geometry2D::get_closest_point_to_segment_uncapped(pos, &segment[0]);
+		const Vector2 closest = Geometry2D::get_closest_point_to_segment_uncapped(pos, fill_from, fill_to);
 		ofs = (closest - fill_from).length() / (fill_to - fill_from).length();
 		if ((closest - fill_from).dot(fill_to - fill_from) < 0) {
 			ofs *= -1;

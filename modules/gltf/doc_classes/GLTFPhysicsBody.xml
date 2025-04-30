@@ -43,7 +43,9 @@
 			The angular velocity of the physics body, in radians per second. This is only used when the body type is "rigid" or "vehicle".
 		</member>
 		<member name="body_type" type="String" setter="set_body_type" getter="get_body_type" default="&quot;rigid&quot;">
-			The type of the body. When importing, this controls what type of [CollisionObject3D] node Godot should generate. Valid values are "static", "animatable", "character", "rigid", "vehicle", and "trigger". When exporting, this will be squashed down to one of "static", "kinematic", or "dynamic" motion types, or the "trigger" property.
+			The type of the body.
+			When importing, this controls what type of [CollisionObject3D] node Godot should generate. Valid values are [code]"static"[/code], [code]"animatable"[/code], [code]"character"[/code], [code]"rigid"[/code], [code]"vehicle"[/code], and [code]"trigger"[/code].
+			When exporting, this will be squashed down to one of [code]"static"[/code], [code]"kinematic"[/code], or [code]"dynamic"[/code] motion types, or the [code]"trigger"[/code] property.
 		</member>
 		<member name="center_of_mass" type="Vector3" setter="set_center_of_mass" getter="get_center_of_mass" default="Vector3(0, 0, 0)">
 			The center of mass of the body, in meters. This is in local space relative to the body. By default, the center of the mass is the body's origin.

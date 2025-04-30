@@ -38,8 +38,6 @@
 #include "core/templates/hash_map.h"
 #include "core/variant/dictionary.h"
 
-#include <cmath>
-
 const char *Image::format_names[Image::FORMAT_MAX] = {
 	"Lum8",
 	"LumAlpha8",
@@ -81,32 +79,6 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"ASTC_8x8",
 	"ASTC_8x8_HDR",
 };
-
-// External saver function pointers.
-
-SavePNGFunc Image::save_png_func = nullptr;
-SaveJPGFunc Image::save_jpg_func = nullptr;
-SaveEXRFunc Image::save_exr_func = nullptr;
-SaveWebPFunc Image::save_webp_func = nullptr;
-SaveDDSFunc Image::save_dds_func = nullptr;
-
-SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
-SaveJPGBufferFunc Image::save_jpg_buffer_func = nullptr;
-SaveEXRBufferFunc Image::save_exr_buffer_func = nullptr;
-SaveWebPBufferFunc Image::save_webp_buffer_func = nullptr;
-SaveDDSBufferFunc Image::save_dds_buffer_func = nullptr;
-
-// External loader function pointers.
-
-ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_png_mem_unpacker_func = nullptr;
-ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
-ScalableImageMemLoadFunc Image::_svg_scalable_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_ktx_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_dds_mem_loader_func = nullptr;
 
 // External VRAM compression function pointers.
 
@@ -573,7 +545,7 @@ static bool _are_formats_compatible(Image::Format p_format0, Image::Format p_for
 void Image::convert(Format p_new_format) {
 	ERR_FAIL_INDEX_MSG(p_new_format, FORMAT_MAX, vformat("The Image format specified (%d) is out of range. See Image's Format enum.", p_new_format));
 
-	if (data.size() == 0 || p_new_format == format) {
+	if (data.is_empty() || p_new_format == format) {
 		return;
 	}
 
@@ -2177,7 +2149,7 @@ void Image::clear_mipmaps() {
 }
 
 bool Image::is_empty() const {
-	return (data.size() == 0);
+	return (data.is_empty());
 }
 
 Vector<uint8_t> Image::get_data() const {
@@ -2294,7 +2266,7 @@ void Image::initialize_data(const char **p_xpm) {
 		switch (status) {
 			case READING_HEADER: {
 				String line_str = line_ptr;
-				line_str.replace("\t", " ");
+				line_str.replace_char('\t', ' ');
 
 				size_width = line_str.get_slicec(' ', 0).to_int();
 				size_height = line_str.get_slicec(' ', 1).to_int();
@@ -3096,7 +3068,7 @@ void Image::_repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_s
 }
 
 void Image::fill(const Color &p_color) {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot fill in compressed image formats.");
@@ -3112,7 +3084,7 @@ void Image::fill(const Color &p_color) {
 }
 
 void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot fill rect in compressed image formats.");
@@ -3734,7 +3706,7 @@ void Image::normal_map_to_xy() {
 }
 
 Ref<Image> Image::rgbe_to_srgb() {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return Ref<Image>();
 	}
 
@@ -3856,7 +3828,7 @@ bool Image::detect_signed(bool p_include_mips) const {
 }
 
 void Image::srgb_to_linear() {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 
@@ -3887,7 +3859,7 @@ void Image::srgb_to_linear() {
 }
 
 void Image::linear_to_srgb() {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 
@@ -3918,7 +3890,7 @@ void Image::linear_to_srgb() {
 }
 
 void Image::premultiply_alpha() {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 
@@ -3940,7 +3912,7 @@ void Image::premultiply_alpha() {
 }
 
 void Image::fix_alpha_edges() {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 
@@ -4331,10 +4303,10 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 	Dictionary result;
-	result["max"] = INFINITY;
-	result["mean"] = INFINITY;
-	result["mean_squared"] = INFINITY;
-	result["root_mean_squared"] = INFINITY;
+	result["max"] = Math::INF;
+	result["mean"] = Math::INF;
+	result["mean_squared"] = Math::INF;
+	result["root_mean_squared"] = Math::INF;
 	result["peak_snr"] = 0.0f;
 
 	ERR_FAIL_COND_V(p_compared_image.is_null(), result);
@@ -4418,12 +4390,12 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	image_metric_mean = CLAMP(sum / total_values, 0.0f, 255.0f);
 	image_metric_mean_squared = CLAMP(sum2 / total_values, 0.0f, 255.0f * 255.0f);
 
-	image_metric_root_mean_squared = sqrt(image_metric_mean_squared);
+	image_metric_root_mean_squared = std::sqrt(image_metric_mean_squared);
 
 	if (!image_metric_root_mean_squared) {
 		image_metric_peak_snr = 1e+10f;
 	} else {
-		image_metric_peak_snr = CLAMP(log10(255.0f / image_metric_root_mean_squared) * 20.0f, 0.0f, 500.0f);
+		image_metric_peak_snr = CLAMP(std::log10(255.0f / image_metric_root_mean_squared) * 20.0f, 0.0f, 500.0f);
 	}
 	result["max"] = image_metric_max;
 	result["mean"] = image_metric_mean;

@@ -488,7 +488,7 @@
 			<param index="0" name="position" type="int" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Inserts a new element ([param value]) at a given index ([param position]) in the array. [param position] should be between [code]0[/code] and the array's [method size].
+				Inserts a new element ([param value]) at a given index ([param position]) in the array. [param position] should be between [code]0[/code] and the array's [method size]. If negative, [param position] is considered relative to the end of the array.
 				Returns [constant OK] on success, or one of the other [enum Error] constants if this method fails.
 				[b]Note:[/b] Every element's index after [param position] needs to be shifted forward, which may have a noticeable performance cost, especially on larger arrays.
 			</description>
@@ -663,7 +663,7 @@
 			<return type="void" />
 			<param index="0" name="position" type="int" />
 			<description>
-				Removes the element from the array at the given index ([param position]). If the index is out of bounds, this method fails.
+				Removes the element from the array at the given index ([param position]). If the index is out of bounds, this method fails. If the index is negative, [param position] is considered relative to the end of the array.
 				If you need to return the removed element, use [method pop_at]. To remove an element by value, use [method erase] instead.
 				[b]Note:[/b] This method shifts every element's index after [param position] back, which may have a noticeable performance cost, especially on larger arrays.
 				[b]Note:[/b] The [param position] cannot be negative. To remove an element relative to the end of the array, use [code]arr.remove_at(arr.size() - (i + 1))[/code]. To remove the last element from the array, use [code]arr.resize(arr.size() - 1)[/code].

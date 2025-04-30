@@ -37,7 +37,7 @@
 
 bool EngineUpdateLabel::_can_check_updates() const {
 	return int(EDITOR_GET("network/connection/network_mode")) == EditorSettings::NETWORK_ONLINE &&
-			UpdateMode(int(EDITOR_GET("network/connection/engine_version_update_mode"))) != UpdateMode::DISABLED;
+			UpdateMode(int(EDITOR_GET("network/connection/check_for_updates"))) != UpdateMode::DISABLED;
 }
 
 void EngineUpdateLabel::_check_update() {
@@ -61,9 +61,8 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 
 	Array version_array;
 	{
-		String s;
 		const uint8_t *r = p_body.ptr();
-		s.append_utf8((const char *)r, p_body.size());
+		String s = String::utf8((const char *)r, p_body.size());
 
 		Variant result = JSON::parse_string(s);
 		if (result == Variant()) {
@@ -79,7 +78,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		version_array = result;
 	}
 
-	UpdateMode update_mode = UpdateMode(int(EDITOR_GET("network/connection/engine_version_update_mode")));
+	UpdateMode update_mode = UpdateMode(int(EDITOR_GET("network/connection/check_for_updates")));
 	bool stable_only = update_mode == UpdateMode::NEWEST_STABLE || update_mode == UpdateMode::NEWEST_PATCH;
 
 	const Dictionary current_version_info = Engine::get_singleton()->get_version_info();
@@ -185,17 +184,20 @@ void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 			} else {
 				_set_message(TTR("Update checks disabled."), theme_cache.disabled_color);
 			}
+			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_OFF);
 			set_tooltip_text("");
 			break;
 		}
 
 		case UpdateStatus::ERROR: {
 			set_disabled(false);
+			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_POLITE);
 			set_tooltip_text(TTR("An error has occurred. Click to try again."));
 		} break;
 
 		case UpdateStatus::UPDATE_AVAILABLE: {
 			set_disabled(false);
+			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_POLITE);
 			set_tooltip_text(TTR("Click to open download page."));
 		} break;
 
@@ -248,12 +250,7 @@ void EngineUpdateLabel::_notification(int p_what) {
 			}
 
 			if (_can_check_updates()) {
-				if (!checked_update) {
-					_check_update();
-				} else {
-					// This will be wrong when user toggles online mode twice when update is available, but it's not worth handling.
-					_set_status(UpdateStatus::UP_TO_DATE);
-				}
+				_check_update();
 			} else {
 				_set_status(UpdateStatus::OFFLINE);
 			}

@@ -32,7 +32,7 @@
 
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/navigation_link_3d.h"
+#include "scene/3d/navigation/navigation_link_3d.h"
 #include "servers/navigation_server_3d.h"
 
 NavigationLink3DGizmoPlugin::NavigationLink3DGizmoPlugin() {
@@ -73,7 +73,7 @@ void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	// Number of points in an octant. So there will be 8 * points_in_octant points in total.
 	// Correspond to the smoothness of the circle.
 	const uint32_t points_in_octant = 8;
-	real_t inc = (Math_PI / (4 * points_in_octant));
+	real_t inc = (Math::PI / (4 * points_in_octant));
 
 	Vector<Vector3> lines;
 	// points_in_octant * 8 * 2 per circle * 2 circles. 2 for the start-end. 4 for the arrow, and another 4 if bidirectionnal.

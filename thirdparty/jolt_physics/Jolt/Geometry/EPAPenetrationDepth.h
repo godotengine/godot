@@ -540,9 +540,9 @@ public:
 				|| contact_normal_invalid))
 		{
 			// If we're initially intersecting, we need to run the EPA algorithm in order to find the deepest contact point
-			AddConvexRadius<A> add_convex_a(inA, inConvexRadiusA);
-			AddConvexRadius<B> add_convex_b(inB, inConvexRadiusB);
-			TransformedConvexObject<AddConvexRadius<A>> transformed_a(inStart, add_convex_a);
+			AddConvexRadius add_convex_a(inA, inConvexRadiusA);
+			AddConvexRadius add_convex_b(inB, inConvexRadiusB);
+			TransformedConvexObject transformed_a(inStart, add_convex_a);
 			if (!GetPenetrationDepthStepEPA(transformed_a, add_convex_b, inPenetrationTolerance, outContactNormal, outPointA, outPointB))
 				return false;
 		}

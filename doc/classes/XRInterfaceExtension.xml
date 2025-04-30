@@ -136,6 +136,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_vrs_texture_format" qualifiers="virtual">
+			<return type="int" enum="XRInterface.VRSTextureFormat" />
+			<description>
+				Returns the format of the texture returned by [method _get_vrs_texture].
+			</description>
+		</method>
 		<method name="_initialize" qualifiers="virtual">
 			<return type="bool" />
 			<description>

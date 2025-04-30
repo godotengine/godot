@@ -15,9 +15,10 @@ public:
 	JPH_OVERRIDE_NEW_DELETE
 
 	static constexpr uint32	cInvalidBodyID = 0xffffffff;	///< The value for an invalid body ID
-	static constexpr uint32	cBroadPhaseBit = 0x00800000;	///< This bit is used by the broadphase
+	static constexpr uint32	cBroadPhaseBit = 0x80000000;	///< This bit is used by the broadphase
 	static constexpr uint32	cMaxBodyIndex = 0x7fffff;		///< Maximum value for body index (also the maximum amount of bodies supported - 1)
 	static constexpr uint8	cMaxSequenceNumber = 0xff;		///< Maximum value for the sequence number
+	static constexpr uint	cSequenceNumberShift = 23;		///< Number of bits to shift to get the sequence number
 
 	/// Construct invalid body ID
 							BodyID() :
@@ -34,9 +35,9 @@ public:
 
 	/// Construct from index and sequence number
 	explicit				BodyID(uint32 inID, uint8 inSequenceNumber) :
-		mID((uint32(inSequenceNumber) << 24) | inID)
+		mID((uint32(inSequenceNumber) << cSequenceNumberShift) | inID)
 	{
-		JPH_ASSERT(inID < cMaxBodyIndex); // Should not use bit pattern for invalid ID and should not use the broadphase bit
+		JPH_ASSERT(inID <= cMaxBodyIndex); // Should not overlap with broadphase bit or sequence number
 	}
 
 	/// Get index in body array
@@ -51,7 +52,7 @@ public:
 	/// Functions querying the broadphase can (after acquiring a body lock) detect that the body has been removed (we assume that this won't happen more than 128 times in a row).
 	inline uint8			GetSequenceNumber() const
 	{
-		return uint8(mID >> 24);
+		return uint8(mID >> cSequenceNumberShift);
 	}
 
 	/// Returns the index and sequence number combined in an uint32

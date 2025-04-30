@@ -1052,16 +1052,12 @@ static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializ
 }
 
 static void gdextension_string_name_new_with_utf8_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents) {
-	String tmp;
-	tmp.append_utf8(p_contents);
-
+	String tmp = String::utf8(p_contents);
 	memnew_placement(r_dest, StringName(tmp));
 }
 
 static void gdextension_string_name_new_with_utf8_chars_and_len(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionInt p_size) {
-	String tmp;
-	tmp.append_utf8(p_contents, p_size);
-
+	String tmp = String::utf8(p_contents, p_size);
 	memnew_placement(r_dest, StringName(tmp));
 }
 

@@ -265,24 +265,40 @@ void TaperedCylinderShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec
 		outVertices.push_back(inCenterOfMassTransform * (normal_xz * top_radius + Vec3(0, top, 0)));
 		outVertices.push_back(inCenterOfMassTransform * (normal_xz * bottom_radius + Vec3(0, bottom, 0)));
 	}
-	else if (inDirection.GetY() < 0.0f)
-	{
-		// Top of the cylinder
-		if (top_radius > cMinRadius)
-		{
-			Vec3 top_3d(0, top, 0);
-			for (Vec3 v : cTaperedCylinderFace)
-				outVertices.push_back(inCenterOfMassTransform * (top_radius * v + top_3d));
-		}
-	}
 	else
 	{
-		// Bottom of the cylinder
-		if (bottom_radius > cMinRadius)
+		// When the inDirection is more than 5 degrees from vertical, align the vertices so that 1 of the vertices
+		// points towards inDirection in the XZ plane. This ensures that we always have a vertex towards max penetration depth.
+		Mat44 transform = inCenterOfMassTransform;
+		Vec4 base_x = Vec4(inDirection.GetX(), 0, inDirection.GetZ(), 0);
+		float xz_sq = base_x.LengthSq();
+		float y_sq = Square(inDirection.GetY());
+		if (xz_sq > 0.00765427f * y_sq)
 		{
-			Vec3 bottom_3d(0, bottom, 0);
-			for (const Vec3 *v = cTaperedCylinderFace + std::size(cTaperedCylinderFace) - 1; v >= cTaperedCylinderFace; --v)
-				outVertices.push_back(inCenterOfMassTransform * (bottom_radius * *v + bottom_3d));
+			base_x /= sqrt(xz_sq);
+			Vec4 base_z = base_x.Swizzle<SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W>() * Vec4(-1, 0, 1, 0);
+			transform = transform * Mat44(base_x, Vec4(0, 1, 0, 0), base_z, Vec4(0, 0, 0, 1));
+		}
+
+		if (inDirection.GetY() < 0.0f)
+		{
+			// Top of the cylinder
+			if (top_radius > cMinRadius)
+			{
+				Vec3 top_3d(0, top, 0);
+				for (Vec3 v : cTaperedCylinderFace)
+					outVertices.push_back(transform * (top_radius * v + top_3d));
+			}
+		}
+		else
+		{
+			// Bottom of the cylinder
+			if (bottom_radius > cMinRadius)
+			{
+				Vec3 bottom_3d(0, bottom, 0);
+				for (const Vec3 *v = cTaperedCylinderFace + std::size(cTaperedCylinderFace) - 1; v >= cTaperedCylinderFace; --v)
+					outVertices.push_back(transform * (bottom_radius * *v + bottom_3d));
+			}
 		}
 	}
 }

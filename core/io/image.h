@@ -184,28 +184,28 @@ public:
 
 	// External saver function pointers.
 
-	static SavePNGFunc save_png_func;
-	static SaveJPGFunc save_jpg_func;
-	static SaveEXRFunc save_exr_func;
-	static SaveWebPFunc save_webp_func;
-	static SaveDDSFunc save_dds_func;
-	static SavePNGBufferFunc save_png_buffer_func;
-	static SaveEXRBufferFunc save_exr_buffer_func;
-	static SaveJPGBufferFunc save_jpg_buffer_func;
-	static SaveWebPBufferFunc save_webp_buffer_func;
-	static SaveDDSBufferFunc save_dds_buffer_func;
+	static inline SavePNGFunc save_png_func = nullptr;
+	static inline SaveJPGFunc save_jpg_func = nullptr;
+	static inline SaveEXRFunc save_exr_func = nullptr;
+	static inline SaveWebPFunc save_webp_func = nullptr;
+	static inline SaveDDSFunc save_dds_func = nullptr;
+	static inline SavePNGBufferFunc save_png_buffer_func = nullptr;
+	static inline SaveEXRBufferFunc save_exr_buffer_func = nullptr;
+	static inline SaveJPGBufferFunc save_jpg_buffer_func = nullptr;
+	static inline SaveWebPBufferFunc save_webp_buffer_func = nullptr;
+	static inline SaveDDSBufferFunc save_dds_buffer_func = nullptr;
 
 	// External loader function pointers.
 
-	static ImageMemLoadFunc _png_mem_loader_func;
-	static ImageMemLoadFunc _png_mem_unpacker_func;
-	static ImageMemLoadFunc _jpg_mem_loader_func;
-	static ImageMemLoadFunc _webp_mem_loader_func;
-	static ImageMemLoadFunc _tga_mem_loader_func;
-	static ImageMemLoadFunc _bmp_mem_loader_func;
-	static ScalableImageMemLoadFunc _svg_scalable_mem_loader_func;
-	static ImageMemLoadFunc _ktx_mem_loader_func;
-	static ImageMemLoadFunc _dds_mem_loader_func;
+	static inline ImageMemLoadFunc _png_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _png_mem_unpacker_func = nullptr;
+	static inline ImageMemLoadFunc _jpg_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _webp_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _tga_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _bmp_mem_loader_func = nullptr;
+	static inline ScalableImageMemLoadFunc _svg_scalable_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _ktx_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _dds_mem_loader_func = nullptr;
 
 	// External VRAM compression function pointers.
 

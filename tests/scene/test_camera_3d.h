@@ -36,9 +36,6 @@
 
 #include "tests/test_macros.h"
 
-// Constants.
-#define SQRT3 (1.7320508f)
-
 TEST_CASE("[SceneTree][Camera3D] Getters and setters") {
 	Camera3D *test_camera = memnew(Camera3D);
 
@@ -246,13 +243,13 @@ TEST_CASE("[SceneTree][Camera3D] Project/Unproject position") {
 			CHECK(test_camera->project_position(Vector2(200, 100), 100.0f).is_equal_approx(Vector3(0, 0, -100.0f)));
 			CHECK(test_camera->project_position(Vector2(200, 100), test_camera->get_far()).is_equal_approx(Vector3(0, 0, -1.0f) * test_camera->get_far()));
 			// 3/4th way to Top left.
-			CHECK(test_camera->project_position(Vector2(100, 50), 0.5f).is_equal_approx(Vector3(-SQRT3 * 0.5f, SQRT3 * 0.25f, -0.5f)));
-			CHECK(test_camera->project_position(Vector2(100, 50), 1.0f).is_equal_approx(Vector3(-SQRT3, SQRT3 * 0.5f, -1.0f)));
-			CHECK(test_camera->project_position(Vector2(100, 50), test_camera->get_near()).is_equal_approx(Vector3(-SQRT3, SQRT3 * 0.5f, -1.0f) * test_camera->get_near()));
+			CHECK(test_camera->project_position(Vector2(100, 50), 0.5f).is_equal_approx(Vector3(-Math::SQRT3 * 0.5f, Math::SQRT3 * 0.25f, -0.5f)));
+			CHECK(test_camera->project_position(Vector2(100, 50), 1.0f).is_equal_approx(Vector3(-Math::SQRT3, Math::SQRT3 * 0.5f, -1.0f)));
+			CHECK(test_camera->project_position(Vector2(100, 50), test_camera->get_near()).is_equal_approx(Vector3(-Math::SQRT3, Math::SQRT3 * 0.5f, -1.0f) * test_camera->get_near()));
 			// 3/4th way to Bottom right.
-			CHECK(test_camera->project_position(Vector2(300, 150), 0.5f).is_equal_approx(Vector3(SQRT3 * 0.5f, -SQRT3 * 0.25f, -0.5f)));
-			CHECK(test_camera->project_position(Vector2(300, 150), 1.0f).is_equal_approx(Vector3(SQRT3, -SQRT3 * 0.5f, -1.0f)));
-			CHECK(test_camera->project_position(Vector2(300, 150), test_camera->get_far()).is_equal_approx(Vector3(SQRT3, -SQRT3 * 0.5f, -1.0f) * test_camera->get_far()));
+			CHECK(test_camera->project_position(Vector2(300, 150), 0.5f).is_equal_approx(Vector3(Math::SQRT3 * 0.5f, -Math::SQRT3 * 0.25f, -0.5f)));
+			CHECK(test_camera->project_position(Vector2(300, 150), 1.0f).is_equal_approx(Vector3(Math::SQRT3, -Math::SQRT3 * 0.5f, -1.0f)));
+			CHECK(test_camera->project_position(Vector2(300, 150), test_camera->get_far()).is_equal_approx(Vector3(Math::SQRT3, -Math::SQRT3 * 0.5f, -1.0f) * test_camera->get_far()));
 		}
 	}
 
@@ -274,11 +271,11 @@ TEST_CASE("[SceneTree][Camera3D] Project/Unproject position") {
 			CHECK(test_camera->unproject_position(Vector3(0, 0, -0.5f)).is_equal_approx(Vector2(200, 100)));
 			CHECK(test_camera->unproject_position(Vector3(0, 0, -100.0f)).is_equal_approx(Vector2(200, 100)));
 			// 3/4th way to Top left.
-			WARN(test_camera->unproject_position(Vector3(-SQRT3 * 0.5f, SQRT3 * 0.25f, -0.5f)).is_equal_approx(Vector2(100, 50)));
-			WARN(test_camera->unproject_position(Vector3(-SQRT3, SQRT3 * 0.5f, -1.0f)).is_equal_approx(Vector2(100, 50)));
+			WARN(test_camera->unproject_position(Vector3(-Math::SQRT3 * 0.5f, Math::SQRT3 * 0.25f, -0.5f)).is_equal_approx(Vector2(100, 50)));
+			WARN(test_camera->unproject_position(Vector3(-Math::SQRT3, Math::SQRT3 * 0.5f, -1.0f)).is_equal_approx(Vector2(100, 50)));
 			// 3/4th way to Bottom right.
-			CHECK(test_camera->unproject_position(Vector3(SQRT3 * 0.5f, -SQRT3 * 0.25f, -0.5f)).is_equal_approx(Vector2(300, 150)));
-			CHECK(test_camera->unproject_position(Vector3(SQRT3, -SQRT3 * 0.5f, -1.0f)).is_equal_approx(Vector2(300, 150)));
+			CHECK(test_camera->unproject_position(Vector3(Math::SQRT3 * 0.5f, -Math::SQRT3 * 0.25f, -0.5f)).is_equal_approx(Vector2(300, 150)));
+			CHECK(test_camera->unproject_position(Vector3(Math::SQRT3, -Math::SQRT3 * 0.5f, -1.0f)).is_equal_approx(Vector2(300, 150)));
 		}
 	}
 
@@ -336,9 +333,9 @@ TEST_CASE("[SceneTree][Camera3D] Project ray") {
 			// Center.
 			CHECK(test_camera->project_ray_normal(Vector2(200, 100)).is_equal_approx(Vector3(0, 0, -1)));
 			// Top left.
-			CHECK(test_camera->project_ray_normal(Vector2(0, 0)).is_equal_approx(Vector3(-SQRT3, SQRT3 / 2, -0.5f).normalized()));
+			CHECK(test_camera->project_ray_normal(Vector2(0, 0)).is_equal_approx(Vector3(-Math::SQRT3, Math::SQRT3 / 2, -0.5f).normalized()));
 			// Bottom right.
-			CHECK(test_camera->project_ray_normal(Vector2(400, 200)).is_equal_approx(Vector3(SQRT3, -SQRT3 / 2, -0.5f).normalized()));
+			CHECK(test_camera->project_ray_normal(Vector2(400, 200)).is_equal_approx(Vector3(Math::SQRT3, -Math::SQRT3 / 2, -0.5f).normalized()));
 		}
 	}
 
@@ -360,14 +357,12 @@ TEST_CASE("[SceneTree][Camera3D] Project ray") {
 			// Center.
 			CHECK(test_camera->project_local_ray_normal(Vector2(200, 100)).is_equal_approx(Vector3(0, 0, -1)));
 			// Top left.
-			CHECK(test_camera->project_local_ray_normal(Vector2(0, 0)).is_equal_approx(Vector3(-SQRT3, SQRT3 / 2, -0.5f).normalized()));
+			CHECK(test_camera->project_local_ray_normal(Vector2(0, 0)).is_equal_approx(Vector3(-Math::SQRT3, Math::SQRT3 / 2, -0.5f).normalized()));
 			// Bottom right.
-			CHECK(test_camera->project_local_ray_normal(Vector2(400, 200)).is_equal_approx(Vector3(SQRT3, -SQRT3 / 2, -0.5f).normalized()));
+			CHECK(test_camera->project_local_ray_normal(Vector2(400, 200)).is_equal_approx(Vector3(Math::SQRT3, -Math::SQRT3 / 2, -0.5f).normalized()));
 		}
 	}
 
 	memdelete(test_camera);
 	memdelete(mock_viewport);
 }
-
-#undef SQRT3

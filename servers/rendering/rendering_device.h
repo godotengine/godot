@@ -170,7 +170,7 @@ private:
 		int current = 0;
 		uint32_t block_size = 0;
 		uint64_t max_size = 0;
-		BitField<RDD::BufferUsageBits> usage_bits;
+		BitField<RDD::BufferUsageBits> usage_bits = {};
 		bool used = false;
 	};
 
@@ -184,7 +184,7 @@ private:
 	struct Buffer {
 		RDD::BufferID driver_id;
 		uint32_t size = 0;
-		BitField<RDD::BufferUsageBits> usage;
+		BitField<RDD::BufferUsageBits> usage = {};
 		RDG::ResourceTracker *draw_tracker = nullptr;
 		int32_t transfer_worker_index = -1;
 		uint64_t transfer_worker_operation = 0;
@@ -315,13 +315,13 @@ public:
 		bool is_discardable = false;
 		bool has_initial_data = false;
 
-		BitField<RDD::TextureAspectBits> read_aspect_flags;
-		BitField<RDD::TextureAspectBits> barrier_aspect_flags;
+		BitField<RDD::TextureAspectBits> read_aspect_flags = {};
+		BitField<RDD::TextureAspectBits> barrier_aspect_flags = {};
 		bool bound = false; // Bound to framebuffer.
 		RID owner;
 
 		RDG::ResourceTracker *draw_tracker = nullptr;
-		HashMap<Rect2i, RDG::ResourceTracker *> slice_trackers;
+		HashMap<Rect2i, RDG::ResourceTracker *> *slice_trackers = nullptr;
 		SharedFallback *shared_fallback = nullptr;
 		int32_t transfer_worker_index = -1;
 		uint64_t transfer_worker_operation = 0;
@@ -429,7 +429,7 @@ public:
 	void texture_set_discardable(RID p_texture, bool p_discardable);
 	bool texture_is_discardable(RID p_texture);
 
-private:
+public:
 	/*************/
 	/**** VRS ****/
 	/*************/
@@ -440,6 +440,7 @@ private:
 		VRS_METHOD_FRAGMENT_DENSITY_MAP,
 	};
 
+private:
 	VRSMethod vrs_method = VRS_METHOD_NONE;
 	DataFormat vrs_format = DATA_FORMAT_MAX;
 	Size2i vrs_texel_size;
@@ -450,6 +451,7 @@ private:
 	void _vrs_detect_method();
 
 public:
+	VRSMethod vrs_get_method() const;
 	DataFormat vrs_get_format() const;
 	Size2i vrs_get_texel_size() const;
 
@@ -872,7 +874,7 @@ private:
 		String name; // Used for debug.
 		RDD::ShaderID driver_id;
 		uint32_t layout_hash = 0;
-		BitField<RDD::PipelineStageBits> stage_bits;
+		BitField<RDD::PipelineStageBits> stage_bits = {};
 		Vector<uint32_t> set_formats;
 	};
 
@@ -1149,7 +1151,7 @@ private:
 		uint32_t shader_layout_hash = 0;
 		Vector<uint32_t> set_formats;
 		RDD::PipelineID driver_id;
-		BitField<RDD::PipelineStageBits> stage_bits;
+		BitField<RDD::PipelineStageBits> stage_bits = {};
 		uint32_t push_constant_size = 0;
 	};
 

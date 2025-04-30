@@ -309,8 +309,7 @@ void test(TestType p_type) {
 	fa->get_buffer(buf.ptrw(), flen);
 	buf.write[flen] = 0;
 
-	String code;
-	code.append_utf8((const char *)&buf[0]);
+	String code = String::utf8((const char *)&buf[0]);
 
 	Vector<String> lines;
 	int last = 0;

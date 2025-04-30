@@ -698,7 +698,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 	BSPNode node;
 	node.plane = best_plane;
 
-	if (indices_under.size() == 0) {
+	if (indices_under.is_empty()) {
 		//nothing to do here
 		node.under = BSPNode::EMPTY_LEAF;
 	} else if (indices_under.size() == 1) {
@@ -707,7 +707,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 		node.under = _compute_bsp_tree(p_points, p_planes, planes_tested, p_simplices, indices_under, bsp_nodes);
 	}
 
-	if (indices_over.size() == 0) {
+	if (indices_over.is_empty()) {
 		//nothing to do here
 		node.over = BSPNode::EMPTY_LEAF;
 	} else if (indices_over.size() == 1) {
@@ -916,7 +916,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		Vector<MeshesFound> meshes_found;
 		_find_meshes_and_lights(p_from_node ? p_from_node : get_parent(), meshes_found, lights_found, probes_found);
 
-		if (meshes_found.size() == 0) {
+		if (meshes_found.is_empty()) {
 			return BAKE_ERROR_NO_MESHES;
 		}
 		// create mesh data for insert
@@ -1023,8 +1023,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				const Vector3 *nr = nullptr;
 				Vector<int> index = a[Mesh::ARRAY_INDEX];
 
-				ERR_CONTINUE(uv.size() == 0);
-				ERR_CONTINUE(normals.size() == 0);
+				ERR_CONTINUE(uv.is_empty());
+				ERR_CONTINUE(normals.is_empty());
 
 				uvr = uv.ptr();
 				nr = normals.ptr();
@@ -1193,13 +1193,13 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			} else if (Object::cast_to<OmniLight3D>(light)) {
 				OmniLight3D *l = Object::cast_to<OmniLight3D>(light);
 				if (use_physical_light_units) {
-					energy *= (1.0 / (Math_PI * 4.0));
+					energy *= (1.0 / (Math::PI * 4.0));
 				}
 				lightmapper->add_omni_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
 			} else if (Object::cast_to<SpotLight3D>(light)) {
 				SpotLight3D *l = Object::cast_to<SpotLight3D>(light);
 				if (use_physical_light_units) {
-					energy *= (1.0 / Math_PI);
+					energy *= (1.0 / Math::PI);
 				}
 				lightmapper->add_spot_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SPOT_ANGLE), l->get_param(Light3D::PARAM_SPOT_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
 			}

@@ -1787,8 +1787,8 @@ void ParticleProcessMaterial::set_turbulence_noise_scale(float p_turbulence_nois
 	const float noise_frequency_when_slider_is_zero = 4.0;
 	const float max_slider_value = 10.0;
 	const float curve_exponent = 0.25;
-	const float curve_rescale = noise_frequency_when_slider_is_zero / pow(max_slider_value, curve_exponent);
-	float shader_turbulence_noise_scale = pow(p_turbulence_noise_scale, curve_exponent) * curve_rescale - noise_frequency_when_slider_is_zero;
+	const float curve_rescale = noise_frequency_when_slider_is_zero / std::pow(max_slider_value, curve_exponent);
+	float shader_turbulence_noise_scale = std::pow(p_turbulence_noise_scale, curve_exponent) * curve_rescale - noise_frequency_when_slider_is_zero;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_scale, shader_turbulence_noise_scale);
 }
 
@@ -2263,7 +2263,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_offset_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_ANIM_OFFSET);
 
 	ADD_GROUP("Turbulence", "turbulence_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_enabled"), "set_turbulence_enabled", "get_turbulence_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_turbulence_enabled", "get_turbulence_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_strength", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_turbulence_noise_strength", "get_turbulence_noise_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_scale", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater"), "set_turbulence_noise_scale", "get_turbulence_noise_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "turbulence_noise_speed"), "set_turbulence_noise_speed", "get_turbulence_noise_speed");

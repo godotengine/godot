@@ -209,7 +209,7 @@ public:
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
 	virtual bool can_lose_focus_on_node_selection() { return true; }
-	virtual void update_toggle_scripts_button() {}
+	virtual void update_toggle_files_button() {}
 
 	virtual bool show_members_overview() = 0;
 
@@ -230,59 +230,68 @@ class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
 class FindInFilesPanel;
 
-#ifdef MINGW_ENABLED
-#undef FILE_OPEN
-#endif
-
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
 
-	enum {
-		FILE_NEW,
-		FILE_NEW_TEXTFILE,
-		FILE_OPEN,
-		FILE_REOPEN_CLOSED,
-		FILE_OPEN_RECENT,
-		FILE_SAVE,
-		FILE_SAVE_AS,
-		FILE_SAVE_ALL,
-		FILE_THEME,
-		FILE_RUN,
-		FILE_CLOSE,
-		CLOSE_DOCS,
-		CLOSE_ALL,
-		CLOSE_OTHER_TABS,
-		TOGGLE_SCRIPTS_PANEL,
-		SHOW_IN_FILE_SYSTEM,
-		FILE_COPY_PATH,
-		FILE_COPY_UID,
-		FILE_TOOL_RELOAD_SOFT,
-		SEARCH_IN_FILES,
-		REPLACE_IN_FILES,
-		SEARCH_HELP,
-		SEARCH_WEBSITE,
+	enum MenuOptions {
+		// File.
+		FILE_MENU_NEW,
+		FILE_MENU_NEW_TEXTFILE,
+		FILE_MENU_OPEN,
+		FILE_MENU_REOPEN_CLOSED,
+		FILE_MENU_OPEN_RECENT,
+
+		FILE_MENU_SAVE,
+		FILE_MENU_SAVE_AS,
+		FILE_MENU_SAVE_ALL,
+
+		FILE_MENU_SOFT_RELOAD_TOOL,
+		FILE_MENU_COPY_PATH,
+		FILE_MENU_COPY_UID,
+		FILE_MENU_SHOW_IN_FILE_SYSTEM,
+
+		FILE_MENU_HISTORY_PREV,
+		FILE_MENU_HISTORY_NEXT,
+
+		FILE_MENU_THEME_SUBMENU,
+
+		FILE_MENU_CLOSE,
+		FILE_MENU_CLOSE_ALL,
+		FILE_MENU_CLOSE_OTHER_TABS,
+		FILE_MENU_CLOSE_TABS_BELOW,
+		FILE_MENU_CLOSE_DOCS,
+
+		FILE_MENU_RUN,
+
+		FILE_MENU_TOGGLE_FILES_PANEL,
+
+		FILE_MENU_MOVE_UP,
+		FILE_MENU_MOVE_DOWN,
+		FILE_MENU_SORT,
+
+		// Search.
 		HELP_SEARCH_FIND,
 		HELP_SEARCH_FIND_NEXT,
 		HELP_SEARCH_FIND_PREVIOUS,
-		WINDOW_MOVE_UP,
-		WINDOW_MOVE_DOWN,
-		WINDOW_NEXT,
-		WINDOW_PREV,
-		WINDOW_SORT,
-		WINDOW_SELECT_BASE = 100,
+
+		SEARCH_IN_FILES,
+		REPLACE_IN_FILES,
+
+		SEARCH_HELP,
+		SEARCH_WEBSITE,
 	};
 
-	enum {
+	enum ThemeMenu {
 		THEME_IMPORT,
 		THEME_RELOAD,
 		THEME_SAVE,
-		THEME_SAVE_AS
+		THEME_SAVE_AS,
 	};
 
 	enum ScriptSortBy {
 		SORT_BY_NAME,
 		SORT_BY_PATH,
-		SORT_BY_NONE
+		SORT_BY_NONE,
 	};
 
 	enum ScriptListName {
@@ -398,6 +407,7 @@ class ScriptEditor : public PanelContainer {
 	void _close_discard_current_tab(const String &p_str);
 	void _close_docs_tab();
 	void _close_other_tabs();
+	void _close_tabs_below();
 	void _close_all_tabs();
 	void _queue_close_tabs();
 
@@ -415,8 +425,6 @@ class ScriptEditor : public PanelContainer {
 	void _live_auto_reload_running_scripts();
 
 	void _update_selected_editor_menu();
-
-	EditorScriptCodeCompletionCache *completion_cache = nullptr;
 
 	void _editor_stop();
 
@@ -545,8 +553,8 @@ protected:
 public:
 	static ScriptEditor *get_singleton() { return script_editor; }
 
-	bool toggle_scripts_panel();
-	bool is_scripts_panel_toggled();
+	bool toggle_files_panel();
+	bool is_files_panel_toggled();
 	void apply_scripts() const;
 	void reload_scripts(bool p_refresh_only = false);
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
@@ -601,7 +609,6 @@ public:
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
 	ScriptEditor(WindowWrapper *p_wrapper);
-	~ScriptEditor();
 };
 
 class ScriptEditorPlugin : public EditorPlugin {

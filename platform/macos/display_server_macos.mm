@@ -30,6 +30,7 @@
 
 #import "display_server_macos.h"
 
+#import "godot_application_delegate.h"
 #import "godot_button_view.h"
 #import "godot_content_view.h"
 #import "godot_menu_delegate.h"
@@ -52,12 +53,18 @@
 
 #include <AppKit/AppKit.h>
 
+#include "servers/rendering/dummy/rasterizer_dummy.h"
+
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#endif
+
+#if defined(ACCESSKIT_ENABLED)
+#include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
 #import <Carbon/Carbon.h>
@@ -68,14 +75,15 @@
 #import <IOKit/hid/IOHIDLib.h>
 
 DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect) {
-	WindowID id;
 	const float scale = screen_get_max_scale();
+
+	WindowID id = window_id_counter;
 	{
-		WindowData wd;
+		WindowData &wd = windows[id];
 
 		wd.window_delegate = [[GodotWindowDelegate alloc] init];
 		ERR_FAIL_NULL_V_MSG(wd.window_delegate, INVALID_WINDOW_ID, "Can't create a window delegate");
-		[wd.window_delegate setWindowID:window_id_counter];
+		[wd.window_delegate setWindowID:id];
 
 		int rq_screen = get_screen_from_rect(p_rect);
 		if (rq_screen < 0) {
@@ -100,12 +108,15 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 							backing:NSBackingStoreBuffered
 							  defer:NO];
 		ERR_FAIL_NULL_V_MSG(wd.window_object, INVALID_WINDOW_ID, "Can't create a window");
-		[wd.window_object setWindowID:window_id_counter];
+		[wd.window_object setWindowID:id];
 		[wd.window_object setReleasedWhenClosed:NO];
 
 		wd.window_view = [[GodotContentView alloc] init];
-		ERR_FAIL_NULL_V_MSG(wd.window_view, INVALID_WINDOW_ID, "Can't create a window view");
-		[wd.window_view setWindowID:window_id_counter];
+		if (wd.window_view == nil) {
+			windows.erase(id);
+			ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Can't create a window view");
+		}
+		[wd.window_view setWindowID:id];
 		[wd.window_view setWantsLayer:TRUE];
 
 		[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
@@ -114,6 +125,16 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		[wd.window_object setAcceptsMouseMovedEvents:YES];
 		[wd.window_object setRestorable:NO];
 		[wd.window_object setColorSpace:[NSColorSpace sRGBColorSpace]];
+
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver && !accessibility_driver->window_create(id, (__bridge void *)wd.window_object)) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+			}
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+#endif
 
 		if ([wd.window_object respondsToSelector:@selector(setTabbingMode:)]) {
 			[wd.window_object setTabbingMode:NSWindowTabbingModeDisallowed];
@@ -156,23 +177,43 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			}
 #endif
 			Error err = rendering_context->window_create(window_id_counter, &wpd);
+#ifdef ACCESSKIT_ENABLED
+			if (err != OK && accessibility_driver) {
+				accessibility_driver->window_destroy(id);
+			}
+#endif
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s context", rendering_driver));
 
 			rendering_context->window_set_size(window_id_counter, p_rect.size.width, p_rect.size.height);
 			rendering_context->window_set_vsync_mode(window_id_counter, p_vsync_mode);
 		}
 #endif
+
 #if defined(GLES3_ENABLED)
+		bool gl_failed = false;
 		if (gl_manager_legacy) {
 			Error err = gl_manager_legacy->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context.");
+			if (err != OK) {
+				gl_failed = true;
+			}
 		}
 		if (gl_manager_angle) {
 			CALayer *layer = [(NSView *)wd.window_view layer];
 			Error err = gl_manager_angle->window_create(window_id_counter, nullptr, (__bridge void *)layer, p_rect.size.width, p_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context.");
+			if (err != OK) {
+				gl_failed = true;
+			}
 		}
-		window_set_vsync_mode(p_vsync_mode, window_id_counter);
+		if (gl_failed) {
+#ifdef ACCESSKIT_ENABLED
+			if (accessibility_driver) {
+				accessibility_driver->window_destroy(id);
+			}
+#endif
+			windows.erase(id);
+			ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Can't create an OpenGL context.");
+		}
+		window_set_vsync_mode(p_vsync_mode, id);
 #endif
 		[wd.window_view updateLayerDelegate];
 
@@ -184,10 +225,8 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		offset.y = (nsrect.origin.y + nsrect.size.height);
 		offset.y -= (windowRect.origin.y + windowRect.size.height);
 		[wd.window_object setFrameTopLeftPoint:NSMakePoint(wpos.x - offset.x, wpos.y - offset.y)];
-
-		id = window_id_counter++;
-		windows[id] = wd;
 	}
+	window_id_counter++;
 
 	WindowData &wd = windows[id];
 	window_set_mode(p_mode, id);
@@ -762,6 +801,8 @@ bool DisplayServerMacOS::get_is_resizing() const {
 }
 
 void DisplayServerMacOS::window_destroy(WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+
 #if defined(GLES3_ENABLED)
 	if (gl_manager_legacy) {
 		gl_manager_legacy->window_destroy(p_window);
@@ -774,6 +815,11 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 
 	if (rendering_context) {
 		rendering_context->window_destroy(p_window);
+	}
+#endif
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		accessibility_driver->window_destroy(p_window);
 	}
 #endif
 	windows.erase(p_window);
@@ -835,6 +881,11 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 			return true;
+#ifdef ACCESSKIT_ENABLED
+		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return (accessibility_driver != nullptr);
+		} break;
+#endif
 		default: {
 		}
 	}
@@ -858,38 +909,63 @@ Callable DisplayServerMacOS::_help_get_action_callback() const {
 	return help_action_callback;
 }
 
+void DisplayServerMacOS::initialize_tts() const {
+	const_cast<DisplayServerMacOS *>(this)->tts = [[TTS_MacOS alloc] init];
+}
+
 bool DisplayServerMacOS::tts_is_speaking() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return [tts isSpeaking];
 }
 
 bool DisplayServerMacOS::tts_is_paused() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return [tts isPaused];
 }
 
 TypedArray<Dictionary> DisplayServerMacOS::tts_get_voices() const {
-	ERR_FAIL_NULL_V_MSG(tts, Array(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, TypedArray<Dictionary>());
 	return [tts getVoices];
 }
 
 void DisplayServerMacOS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
 }
 
 void DisplayServerMacOS::tts_pause() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts pauseSpeaking];
 }
 
 void DisplayServerMacOS::tts_resume() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts resumeSpeaking];
 }
 
 void DisplayServerMacOS::tts_stop() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts stopSpeaking];
 }
 
@@ -1538,7 +1614,7 @@ Point2i DisplayServerMacOS::mouse_get_position() const {
 }
 
 BitField<MouseButtonMask> DisplayServerMacOS::mouse_get_button_state() const {
-	BitField<MouseButtonMask> last_button_state = 0;
+	BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 
 	NSUInteger buttons = [NSEvent pressedMouseButtons];
 	if (buttons & (1 << 0)) {
@@ -1677,7 +1753,7 @@ int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 
 		float den2 = (displayPhysicalSize.width / 25.4f) * (displayPhysicalSize.width / 25.4f) + (displayPhysicalSize.height / 25.4f) * (displayPhysicalSize.height / 25.4f);
 		if (den2 > 0.0f) {
-			return ceil(sqrt(displayPixelSize.width * displayPixelSize.width + displayPixelSize.height * displayPixelSize.height) / sqrt(den2) * scale);
+			return std::ceil(std::sqrt(displayPixelSize.width * displayPixelSize.width + displayPixelSize.height * displayPixelSize.height) / std::sqrt(den2) * scale);
 		}
 	}
 
@@ -1692,7 +1768,7 @@ float DisplayServerMacOS::screen_get_scale(int p_screen) const {
 		NSArray *screenArray = [NSScreen screens];
 		if ((NSUInteger)p_screen < [screenArray count]) {
 			if ([[screenArray objectAtIndex:p_screen] respondsToSelector:@selector(backingScaleFactor)]) {
-				return fmax(1.0, [[screenArray objectAtIndex:p_screen] backingScaleFactor]);
+				return std::fmax(1.0, [[screenArray objectAtIndex:p_screen] backingScaleFactor]);
 			}
 		}
 	}
@@ -1753,7 +1829,7 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
 		if (color_space) {
 			uint8_t img_data[4];
-			CGContextRef context = CGBitmapContextCreate(img_data, 1, 1, 8, 4, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			CGContextRef context = CGBitmapContextCreate(img_data, 1, 1, 8, 4, color_space, (uint32_t)kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
 			if (context) {
 				CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), image);
 				color = Color(img_data[0] / 255.0f, img_data[1] / 255.0f, img_data[2] / 255.0f, img_data[3] / 255.0f);
@@ -1802,7 +1878,7 @@ Ref<Image> DisplayServerMacOS::screen_get_image(int p_screen) const {
 
 			Vector<uint8_t> img_data;
 			img_data.resize(height * width * 4);
-			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, (uint32_t)kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
 			if (context) {
 				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
 				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
@@ -1850,7 +1926,7 @@ Ref<Image> DisplayServerMacOS::screen_get_image_rect(const Rect2i &p_rect) const
 
 			Vector<uint8_t> img_data;
 			img_data.resize_zeroed(height * width * 4);
-			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, (uint32_t)kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
 			if (context) {
 				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
 				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
@@ -2429,6 +2505,10 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			if (wd.resize_disabled) { // Restore resize disabled.
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
 			}
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!wd.no_max_btn];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
 			if (wd.min_size != Size2i()) {
 				Size2i size = wd.min_size / screen_get_max_scale();
 				[wd.window_object setContentMinSize:NSMakeSize(size.x, size.y)];
@@ -2514,7 +2594,10 @@ DisplayServer::WindowMode DisplayServerMacOS::window_get_mode(WindowID p_window)
 }
 
 bool DisplayServerMacOS::window_is_maximize_allowed(WindowID p_window) const {
-	return true;
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
+
+	return [wd.window_object standardWindowButton:NSWindowZoomButton].enabled;
 }
 
 bool DisplayServerMacOS::window_maximize_on_title_dbl_click() const {
@@ -2607,11 +2690,14 @@ void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool
 		p_wd.window_button_view = [[GodotButtonView alloc] initWithFrame:NSZeroRect];
 		[p_wd.window_button_view initButtons:window_buttons_spacing offset:NSMakePoint(p_wd.wb_offset.x, p_wd.wb_offset.y) rtl:is_rtl];
 		[p_wd.window_view addSubview:p_wd.window_button_view];
+
+		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
+		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
 	} else {
 		[p_wd.window_object setTitleVisibility:NSWindowTitleVisible];
 		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:NO];
-		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:NO];
-		[[p_wd.window_object standardWindowButton:NSWindowCloseButton] setHidden:NO];
+		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
+		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
 	}
 }
 
@@ -2622,6 +2708,18 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 	WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			wd.no_min_btn = p_enabled;
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!p_enabled];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+		} break;
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			wd.no_max_btn = p_enabled;
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!p_enabled];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			wd.resize_disabled = p_enabled;
 			if (wd.fullscreen) { // Fullscreen window should be resizable, style will be applied on exiting fullscreen.
@@ -2629,11 +2727,13 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			}
 			if (p_enabled) {
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
-				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:NO];
 			} else {
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskResizable];
-				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:YES];
 			}
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!wd.no_max_btn];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
 		} break;
 		case WINDOW_FLAG_EXTEND_TO_TITLE: {
 			NSRect rect = [wd.window_object frame];
@@ -2675,6 +2775,8 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				}
 			} else {
 				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+				[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
+				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!wd.no_max_btn];
 				[wd.window_object setHasShadow:YES];
 				if (wd.layered_window) {
 					// Note: transparent and not borderless - set alpha to non-zero value to ensure window shadow is rendered correctly.
@@ -2755,6 +2857,12 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 	const WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			return wd.no_max_btn;
+		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			return wd.no_min_btn;
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			return wd.resize_disabled;
 		} break;
@@ -2974,6 +3082,22 @@ DisplayServer::VSyncMode DisplayServerMacOS::window_get_vsync_mode(WindowID p_wi
 	return DisplayServer::VSYNC_ENABLED;
 }
 
+int DisplayServerMacOS::accessibility_should_increase_contrast() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getHighContrast];
+}
+
+int DisplayServerMacOS::accessibility_should_reduce_animation() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getReduceMotion];
+}
+
+int DisplayServerMacOS::accessibility_should_reduce_transparency() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getReduceTransparency];
+}
+
+int DisplayServerMacOS::accessibility_screen_reader_active() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getVoiceOver];
+}
+
 Point2i DisplayServerMacOS::ime_get_selection() const {
 	return im_selection;
 }
@@ -3106,7 +3230,7 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 		int len = int(texture_size.width * texture_size.height);
 
 		for (int i = 0; i < len; i++) {
-			int row_index = floor(i / texture_size.width);
+			int row_index = std::floor(i / texture_size.width);
 			int column_index = i % int(texture_size.width);
 
 			uint32_t color = image->get_pixel(column_index, row_index).to_argb32();
@@ -3567,6 +3691,7 @@ Vector<String> DisplayServerMacOS::get_rendering_drivers_func() {
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_angle");
 #endif
+	drivers.push_back("dummy");
 
 	return drivers;
 }
@@ -3738,7 +3863,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 	int screen_count = get_screen_count();
 	for (int i = 0; i < screen_count; i++) {
-		display_max_scale = fmax(display_max_scale, screen_get_scale(i));
+		display_max_scale = std::fmax(display_max_scale, screen_get_scale(i));
 	}
 
 	// Register to be notified on keyboard layout changes.
@@ -3753,10 +3878,20 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	// Init TTS
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
-		tts = [[TTS_MacOS alloc] init];
+		initialize_tts();
 	}
 
 	native_menu = memnew(NativeMenuMacOS);
+
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		accessibility_driver = memnew(AccessibilityDriverAccessKit);
+		if (accessibility_driver->init() != OK) {
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+	}
+#endif
 
 	NSMenuItem *menu_item;
 	NSString *title;
@@ -3949,6 +4084,10 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	}
 	force_process_and_drop_events();
 
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
+	}
+
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
 		RasterizerGLES3::make_current(true);
@@ -4017,7 +4156,11 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 		rendering_context = nullptr;
 	}
 #endif
-
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		memdelete(accessibility_driver);
+	}
+#endif
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), nullptr, kTISNotifySelectedKeyboardInputSourceChanged, nullptr);
 	CGDisplayRemoveReconfigurationCallback(_displays_arrangement_changed, nullptr);
 

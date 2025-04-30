@@ -74,14 +74,14 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 #endif
 }
 
-void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!should_log(true)) {
 		return;
 	}
 
 	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (OS::get_singleton()->get_stdout_type() != OS::STD_HANDLE_CONSOLE || !hCon || hCon == INVALID_HANDLE_VALUE) {
-		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type, p_script_backtraces);
 	} else {
 		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
 		GetConsoleScreenBufferInfo(hCon, &sbi);
@@ -107,17 +107,22 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 		basecol |= current_bg;
 
 		SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
+		const char *indent = "";
 		switch (p_type) {
 			case ERR_ERROR:
+				indent = "   ";
 				logf_error("ERROR:");
 				break;
 			case ERR_WARNING:
+				indent = "     ";
 				logf_error("WARNING:");
 				break;
 			case ERR_SCRIPT:
+				indent = "          ";
 				logf_error("SCRIPT ERROR:");
 				break;
 			case ERR_SHADER:
+				indent = "          ";
 				logf_error("SHADER ERROR:");
 				break;
 		}
@@ -131,25 +136,14 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 
 		// `FOREGROUND_INTENSITY` alone results in gray text.
 		SetConsoleTextAttribute(hCon, FOREGROUND_INTENSITY);
-		switch (p_type) {
-			case ERR_ERROR:
-				logf_error("   at: ");
-				break;
-			case ERR_WARNING:
-				logf_error("     at: ");
-				break;
-			case ERR_SCRIPT:
-				logf_error("          at: ");
-				break;
-			case ERR_SHADER:
-				logf_error("          at: ");
-				break;
+		if (p_rationale && p_rationale[0]) {
+			logf_error("%sat: (%s:%i)\n", indent, p_file, p_line);
+		} else {
+			logf_error("%sat: %s (%s:%i)\n", indent, p_function, p_file, p_line);
 		}
 
-		if (p_rationale && p_rationale[0]) {
-			logf_error("(%s:%i)\n", p_file, p_line);
-		} else {
-			logf_error("%s (%s:%i)\n", p_function, p_file, p_line);
+		for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
+			logf_error("%s\n", backtrace->format(strlen(indent)).utf8().get_data());
 		}
 
 		SetConsoleTextAttribute(hCon, sbi.wAttributes);

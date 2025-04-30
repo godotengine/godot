@@ -30,8 +30,7 @@
 
 #pragma once
 
-#include "core/io/json.h"
-#include "core/variant/dictionary.h"
+#include "core/io/file_access.h"
 
 namespace DAP {
 
@@ -68,6 +67,8 @@ public:
 	void compute_checksums() {
 		ERR_FAIL_COND(path.is_empty());
 
+		_checksums.clear();
+
 		// MD5
 		Checksum md5;
 		md5.algorithm = "MD5";
@@ -101,18 +102,24 @@ public:
 struct Breakpoint {
 	int id = 0;
 	bool verified = false;
-	Source source;
+	const Source *source = nullptr;
 	int line = 0;
 
+	Breakpoint() = default; // Empty constructor is invalid, but is necessary because Godot's collections don't support rvalues.
+	Breakpoint(const Source &p_source) :
+			source(&p_source) {}
+
 	bool operator==(const Breakpoint &p_other) const {
-		return source.path == p_other.source.path && line == p_other.line;
+		return source == p_other.source && line == p_other.line;
 	}
 
 	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 		dict["id"] = id;
 		dict["verified"] = verified;
-		dict["source"] = source.to_json();
+		if (source) {
+			dict["source"] = source->to_json();
+		}
 		dict["line"] = line;
 
 		return dict;
@@ -212,30 +219,25 @@ struct SourceBreakpoint {
 struct StackFrame {
 	int id = 0;
 	String name;
-	Source source;
+	const Source *source = nullptr;
 	int line = 0;
 	int column = 0;
 
+	StackFrame() = default; // Empty constructor is invalid, but is necessary because Godot's collections don't support rvalues.
+	StackFrame(const Source &p_source) :
+			source(&p_source) {}
+
 	static uint32_t hash(const StackFrame &p_frame) {
 		return hash_murmur3_one_32(p_frame.id);
-	}
-	bool operator==(const StackFrame &p_other) const {
-		return id == p_other.id;
-	}
-
-	_FORCE_INLINE_ void from_json(const Dictionary &p_params) {
-		id = p_params["id"];
-		name = p_params["name"];
-		source.from_json(p_params["source"]);
-		line = p_params["line"];
-		column = p_params["column"];
 	}
 
 	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 		dict["id"] = id;
 		dict["name"] = name;
-		dict["source"] = source.to_json();
+		if (source) {
+			dict["source"] = source->to_json();
+		}
 		dict["line"] = line;
 		dict["column"] = column;
 

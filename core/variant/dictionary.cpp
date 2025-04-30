@@ -57,14 +57,14 @@ Dictionary::ConstIterator Dictionary::end() const {
 	return _p->variant_map.end();
 }
 
-void Dictionary::get_key_list(List<Variant> *p_keys) const {
-	if (_p->variant_map.is_empty()) {
-		return;
-	}
+LocalVector<Variant> Dictionary::get_key_list() const {
+	LocalVector<Variant> keys;
 
+	keys.reserve(_p->variant_map.size());
 	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
-		p_keys->push_back(E.key);
+		keys.push_back(E.key);
 	}
+	return keys;
 }
 
 Variant Dictionary::get_key_at_index(int p_index) const {
@@ -218,14 +218,14 @@ bool Dictionary::is_empty() const {
 bool Dictionary::has(const Variant &p_key) const {
 	Variant key = p_key;
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "use 'has'"), false);
-	return _p->variant_map.has(p_key);
+	return _p->variant_map.has(key);
 }
 
 bool Dictionary::has_all(const Array &p_keys) const {
 	for (int i = 0; i < p_keys.size(); i++) {
 		Variant key = p_keys[i];
 		ERR_FAIL_COND_V(!_p->typed_key.validate(key, "use 'has_all'"), false);
-		if (!has(key)) {
+		if (!_p->variant_map.has(key)) {
 			return false;
 		}
 	}

@@ -30,6 +30,8 @@
 
 #include "rendering_device_driver_d3d12.h"
 
+#include "d3d12_hooks.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "servers/rendering/rendering_device.h"
@@ -39,43 +41,12 @@
 #include "dxil_hash.h"
 #include "rendering_context_driver_d3d12.h"
 
-// No point in fighting warnings in Mesa.
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4200) // "nonstandard extension used: zero-sized array in struct/union".
-#pragma warning(disable : 4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
-#endif
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wswitch"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#elif defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-#pragma clang diagnostic ignored "-Wstring-plus-int"
-#pragma clang diagnostic ignored "-Wswitch"
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-#endif
-
-#include "nir_spirv.h"
-#include "nir_to_dxil.h"
-#include "spirv_to_dxil.h"
+#include <nir_spirv.h>
+#include <nir_to_dxil.h>
+#include <spirv_to_dxil.h>
 extern "C" {
-#include "dxil_spirv_nir.h"
+#include <dxil_spirv_nir.h>
 }
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#elif defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 
 #if !defined(_MSC_VER)
 #include <guiddef.h>
@@ -1367,14 +1338,9 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 	}
 	tex_info->states_ptr = &tex_info->owner_info.states;
 	tex_info->format = p_format.format;
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wstrict-aliasing")
 	tex_info->desc = *(CD3DX12_RESOURCE_DESC *)&resource_desc;
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+	GODOT_GCC_WARNING_POP
 	tex_info->base_layer = 0;
 	tex_info->layers = resource_desc.ArraySize();
 	tex_info->base_mip = 0;
@@ -1392,7 +1358,105 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 }
 
 RDD::TextureID RenderingDeviceDriverD3D12::texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) {
-	ERR_FAIL_V_MSG(TextureID(), "Unimplemented!");
+	ID3D12Resource *texture = (ID3D12Resource *)p_native_texture;
+
+#if defined(_MSC_VER) || !defined(_WIN32)
+	const D3D12_RESOURCE_DESC base_resource_desc = texture->GetDesc();
+#else
+	D3D12_RESOURCE_DESC base_resource_desc;
+	texture->GetDesc(&base_resource_desc);
+#endif
+	CD3DX12_RESOURCE_DESC resource_desc(base_resource_desc);
+	D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+	{
+		srv_desc.Format = RD_TO_D3D12_FORMAT[p_format].general_format;
+		srv_desc.ViewDimension = resource_desc.SampleDesc.Count == 1 ? RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV[p_type] : RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV_MS[p_type];
+		srv_desc.Shader4ComponentMapping = _compute_component_mapping(TextureView{ p_format });
+
+		switch (srv_desc.ViewDimension) {
+			case D3D12_SRV_DIMENSION_TEXTURE1D: {
+				srv_desc.Texture1D.MipLevels = resource_desc.MipLevels;
+			} break;
+			case D3D12_SRV_DIMENSION_TEXTURE1DARRAY: {
+				srv_desc.Texture1DArray.MipLevels = resource_desc.MipLevels;
+				srv_desc.Texture1DArray.ArraySize = p_array_layers;
+			} break;
+			case D3D12_SRV_DIMENSION_TEXTURE2D: {
+				srv_desc.Texture2D.MipLevels = resource_desc.MipLevels;
+			} break;
+			case D3D12_SRV_DIMENSION_TEXTURE2DMS: {
+			} break;
+			case D3D12_SRV_DIMENSION_TEXTURE2DARRAY: {
+				srv_desc.Texture2DArray.MipLevels = resource_desc.MipLevels;
+				srv_desc.Texture2DArray.ArraySize = p_array_layers;
+			} break;
+			case D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY: {
+				srv_desc.Texture2DMSArray.ArraySize = p_array_layers;
+			} break;
+			case D3D12_SRV_DIMENSION_TEXTURECUBEARRAY: {
+				srv_desc.TextureCubeArray.MipLevels = resource_desc.MipLevels;
+				srv_desc.TextureCubeArray.NumCubes = p_array_layers / 6;
+			} break;
+			case D3D12_SRV_DIMENSION_TEXTURE3D: {
+				srv_desc.Texture3D.MipLevels = resource_desc.MipLevels;
+			} break;
+			case D3D12_SRV_DIMENSION_TEXTURECUBE: {
+				srv_desc.TextureCube.MipLevels = resource_desc.MipLevels;
+			} break;
+			default: {
+			}
+		}
+	}
+
+	D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
+	{
+		uav_desc.Format = RD_TO_D3D12_FORMAT[p_format].general_format;
+		uav_desc.ViewDimension = resource_desc.SampleDesc.Count == 1 ? RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_UAV[p_type] : D3D12_UAV_DIMENSION_UNKNOWN;
+
+		switch (uav_desc.ViewDimension) {
+			case D3D12_UAV_DIMENSION_TEXTURE1DARRAY: {
+				uav_desc.Texture1DArray.ArraySize = p_array_layers;
+			} break;
+			case D3D12_UAV_DIMENSION_TEXTURE2DARRAY: {
+				// Either for an actual 2D texture array, cubemap or cubemap array.
+				uav_desc.Texture2DArray.ArraySize = p_array_layers;
+			} break;
+			case D3D12_UAV_DIMENSION_TEXTURE3D: {
+				uav_desc.Texture3D.WSize = resource_desc.Depth();
+			} break;
+			default: {
+			}
+		}
+	}
+
+	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
+	tex_info->resource = texture;
+	tex_info->owner_info.resource = nullptr; // Not allocated by us.
+	tex_info->owner_info.allocation = nullptr; // Not allocated by us.
+	tex_info->owner_info.states.subresource_states.resize(resource_desc.MipLevels * p_array_layers);
+	for (uint32_t i = 0; i < tex_info->owner_info.states.subresource_states.size(); i++) {
+		tex_info->owner_info.states.subresource_states[i] = !p_depth_stencil ? D3D12_RESOURCE_STATE_RENDER_TARGET : D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	}
+	tex_info->states_ptr = &tex_info->owner_info.states;
+	tex_info->format = p_format;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+	tex_info->desc = *(CD3DX12_RESOURCE_DESC *)&resource_desc;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+	tex_info->base_layer = 0;
+	tex_info->layers = p_array_layers;
+	tex_info->base_mip = 0;
+	tex_info->mipmaps = resource_desc.MipLevels;
+	tex_info->view_descs.srv = srv_desc;
+	tex_info->view_descs.uav = uav_desc;
+#ifdef DEBUG_ENABLED
+	tex_info->created_from_extension = true;
+#endif
+	return TextureID(tex_info);
 }
 
 RDD::TextureID RenderingDeviceDriverD3D12::texture_create_shared(TextureID p_original_texture, const TextureView &p_view) {
@@ -2113,6 +2177,10 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 		if (texture_info->main_texture) {
 			texture_info = texture_info->main_texture;
 		}
+		// Textures created for simultaneous access do not need explicit transitions.
+		if (texture_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS) {
+			continue;
+		}
 		_rd_stages_and_access_to_d3d12(p_src_stages, texture_barrier_rd.prev_layout, texture_barrier_rd.src_access, texture_barrier_d3d12.SyncBefore, texture_barrier_d3d12.AccessBefore);
 		_rd_stages_and_access_to_d3d12(p_dst_stages, texture_barrier_rd.next_layout, texture_barrier_rd.dst_access, texture_barrier_d3d12.SyncAfter, texture_barrier_d3d12.AccessAfter);
 		texture_barrier_d3d12.LayoutBefore = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.prev_layout);
@@ -2162,7 +2230,9 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 		barrier_group.pTextureBarriers = texture_barriers.ptr();
 	}
 
-	cmd_list_7->Barrier(barrier_groups_count, barrier_groups);
+	if (barrier_groups_count) {
+		cmd_list_7->Barrier(barrier_groups_count, barrier_groups);
+	}
 }
 
 /****************/
@@ -2247,6 +2317,10 @@ RDD::CommandQueueID RenderingDeviceDriverD3D12::command_queue_create(CommandQueu
 	queue_desc.Type = (D3D12_COMMAND_LIST_TYPE)(p_cmd_queue_family.id - 1);
 	HRESULT res = device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(d3d_queue.GetAddressOf()));
 	ERR_FAIL_COND_V(!SUCCEEDED(res), CommandQueueID());
+
+	if (p_identify_as_main_queue && D3D12Hooks::get_singleton() != nullptr) {
+		D3D12Hooks::get_singleton()->set_command_queue(d3d_queue.Get());
+	}
 
 	CommandQueueInfo *command_queue = memnew(CommandQueueInfo);
 	command_queue->d3d_queue = d3d_queue;
@@ -3094,7 +3168,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 
 	// Translate SPIR-V shaders to DXIL, and collect shader info from the new representation.
 	HashMap<ShaderStage, Vector<uint8_t>> dxil_blobs;
-	BitField<ShaderStage> stages_processed;
+	BitField<ShaderStage> stages_processed = {};
 	{
 		HashMap<int, nir_shader *> stages_nir_shaders;
 
@@ -3177,6 +3251,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 		}
 
 		// - Link NIR shaders.
+		bool can_use_multiview = D3D12Hooks::get_singleton() != nullptr;
 		for (int i = SHADER_STAGE_MAX - 1; i >= 0; i--) {
 			if (!stages_nir_shaders.has(i)) {
 				continue;
@@ -3187,6 +3262,26 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 				if (stages_nir_shaders.has(j)) {
 					prev_shader = stages_nir_shaders[j];
 					break;
+				}
+			}
+			// There is a bug in the Direct3D runtime during creation of a PSO with view instancing. If a fragment
+			// shader uses front/back face detection (SV_IsFrontFace), its signature must include the pixel position
+			// builtin variable (SV_Position), otherwise an Internal Runtime error will occur.
+			if (i == SHADER_STAGE_FRAGMENT && can_use_multiview) {
+				const bool use_front_face =
+						nir_find_variable_with_location(shader, nir_var_shader_in, VARYING_SLOT_FACE) ||
+						(shader->info.inputs_read & VARYING_BIT_FACE) ||
+						nir_find_variable_with_location(shader, nir_var_system_value, SYSTEM_VALUE_FRONT_FACE) ||
+						BITSET_TEST(shader->info.system_values_read, SYSTEM_VALUE_FRONT_FACE);
+				const bool use_position =
+						nir_find_variable_with_location(shader, nir_var_shader_in, VARYING_SLOT_POS) ||
+						(shader->info.inputs_read & VARYING_BIT_POS) ||
+						nir_find_variable_with_location(shader, nir_var_system_value, SYSTEM_VALUE_FRAG_COORD) ||
+						BITSET_TEST(shader->info.system_values_read, SYSTEM_VALUE_FRAG_COORD);
+				if (use_front_face && !use_position) {
+					nir_variable *const pos = nir_variable_create(shader, nir_var_shader_in, glsl_vec4_type(), "gl_FragCoord");
+					pos->data.location = VARYING_SLOT_POS;
+					shader->info.inputs_read |= VARYING_BIT_POS;
 				}
 			}
 			if (prev_shader) {
@@ -4374,10 +4469,10 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 	}
 #endif
 
-	last_bind->root_tables.resources.reserve(shader_set.num_root_params.resources);
 	last_bind->root_tables.resources.clear();
-	last_bind->root_tables.samplers.reserve(shader_set.num_root_params.samplers);
 	last_bind->root_tables.samplers.clear();
+	last_bind->root_tables.resources.reserve(shader_set.num_root_params.resources);
+	last_bind->root_tables.samplers.reserve(shader_set.num_root_params.samplers);
 	last_bind->uses++;
 
 	struct {
@@ -5651,7 +5746,7 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		VectorView<PipelineSpecializationConstant> p_specialization_constants) {
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 
-	CD3DX12_PIPELINE_STATE_STREAM pipeline_desc = {};
+	CD3DX12_PIPELINE_STATE_STREAM1 pipeline_desc = {};
 
 	const RenderPassInfo *pass_info = (const RenderPassInfo *)p_render_pass.id;
 	RenderPipelineInfo render_info;
@@ -5843,6 +5938,15 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 	}
 
 	render_info.dyn_params.blend_constant = p_blend_state.blend_constant;
+
+	// Multiview
+	// We are using render target slices for each view.
+	const D3D12_VIEW_INSTANCE_LOCATION viewInstanceLocations[D3D12_MAX_VIEW_INSTANCE_COUNT] = { { 0, 0 }, { 0, 1 }, { 0, 2 }, { 0, 3 } };
+	if (pass_info->view_count > 1) {
+		(&pipeline_desc.ViewInstancingDesc)->ViewInstanceCount = pass_info->view_count;
+		(&pipeline_desc.ViewInstancingDesc)->Flags = D3D12_VIEW_INSTANCING_FLAG_NONE;
+		(&pipeline_desc.ViewInstancingDesc)->pViewInstanceLocations = viewInstanceLocations;
+	}
 
 	// Stages bytecodes + specialization constants.
 
@@ -6344,6 +6448,9 @@ RenderingDeviceDriverD3D12::RenderingDeviceDriverD3D12(RenderingContextDriverD3D
 }
 
 RenderingDeviceDriverD3D12::~RenderingDeviceDriverD3D12() {
+	if (D3D12Hooks::get_singleton() != nullptr) {
+		D3D12Hooks::get_singleton()->cleanup_device();
+	}
 	glsl_type_singleton_decref();
 }
 
@@ -6378,16 +6485,42 @@ Error RenderingDeviceDriverD3D12::_initialize_device() {
 		d3d_D3D12EnableExperimentalFeatures(1, experimental_features, nullptr, nullptr);
 	}
 
+	D3D_FEATURE_LEVEL requested_feature_level = D3D_FEATURE_LEVEL_11_0;
+	// Override the adapter and feature level if needed by the XR backend.
+	if (D3D12Hooks::get_singleton() != nullptr) {
+		const LUID adapter_luid = D3D12Hooks::get_singleton()->get_adapter_luid();
+		requested_feature_level = D3D12Hooks::get_singleton()->get_feature_level();
+		ComPtr<IDXGIAdapter1> desired_adapter;
+		for (UINT adapter_index = 0;; adapter_index++) {
+			// EnumAdapters1 will fail with DXGI_ERROR_NOT_FOUND when there are no more adapters to
+			// enumerate.
+			if (context_driver->dxgi_factory_get()->EnumAdapters1(adapter_index, desired_adapter.ReleaseAndGetAddressOf()) == DXGI_ERROR_NOT_FOUND) {
+				break;
+			}
+			DXGI_ADAPTER_DESC1 desc;
+			desired_adapter->GetDesc1(&desc);
+			if (!memcmp(&desc.AdapterLuid, &adapter_luid, sizeof(LUID))) {
+				break;
+			}
+		}
+		ERR_FAIL_NULL_V(desired_adapter, ERR_CANT_CREATE);
+		adapter = desired_adapter;
+	}
+
 	ID3D12DeviceFactory *device_factory = context_driver->device_factory_get();
 	if (device_factory != nullptr) {
-		res = device_factory->CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(device.GetAddressOf()));
+		res = device_factory->CreateDevice(adapter.Get(), requested_feature_level, IID_PPV_ARGS(device.GetAddressOf()));
 	} else {
 		PFN_D3D12_CREATE_DEVICE d3d_D3D12CreateDevice = (PFN_D3D12_CREATE_DEVICE)(void *)GetProcAddress(context_driver->lib_d3d12, "D3D12CreateDevice");
 		ERR_FAIL_NULL_V(d3d_D3D12CreateDevice, ERR_CANT_CREATE);
 
-		res = d3d_D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(device.GetAddressOf()));
+		res = d3d_D3D12CreateDevice(adapter.Get(), requested_feature_level, IID_PPV_ARGS(device.GetAddressOf()));
 	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12CreateDevice failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+
+	if (D3D12Hooks::get_singleton() != nullptr) {
+		D3D12Hooks::get_singleton()->set_device(device.Get());
+	}
 
 	if (context_driver->use_validation_layers()) {
 		ComPtr<ID3D12InfoQueue> info_queue;

@@ -252,7 +252,7 @@ private:
 	bool key_scale = false;
 
 	bool pan_pressed = false;
-	Vector2 temp_pivot = Vector2(INFINITY, INFINITY);
+	Vector2 temp_pivot = Vector2(Math::INF, Math::INF);
 
 	bool ruler_tool_active = false;
 	Point2 ruler_tool_origin;

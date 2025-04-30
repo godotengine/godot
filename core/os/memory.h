@@ -43,8 +43,6 @@ class Memory {
 	static SafeNumeric<uint64_t> max_usage;
 #endif
 
-	static SafeNumeric<uint64_t> alloc_count;
-
 public:
 	// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
 	//             ┌─────────────────┬──┬────────────────┬──┬───────────...
@@ -200,6 +198,8 @@ template <bool p_ensure_zero = false, typename T>
 _FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
 	if constexpr (std::is_trivially_constructible_v<T> && !p_ensure_zero) {
 		// Don't need to do anything :)
+		(void)p_start;
+		(void)p_num;
 	} else if constexpr (is_zero_constructible_v<T>) {
 		// Can optimize with memset.
 		memset(static_cast<void *>(p_start), 0, p_num * sizeof(T));

@@ -1674,7 +1674,7 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 	push_constant.band_power = 4;
 	push_constant.sections_in_band = ((band_points / 2) - 1);
 	push_constant.band_mask = band_points - 2;
-	push_constant.section_arc = Math_TAU / float(push_constant.sections_in_band);
+	push_constant.section_arc = Math::TAU / float(push_constant.sections_in_band);
 	push_constant.y_mult = y_mult;
 
 	uint32_t total_points = push_constant.sections_in_band * band_points;
@@ -1977,11 +1977,11 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 
 				// Convert from Luminous Power to Luminous Intensity
 				if (lights[idx].type == RS::LIGHT_OMNI) {
-					lights[idx].energy *= 1.0 / (Math_PI * 4.0);
+					lights[idx].energy *= 1.0 / (Math::PI * 4.0);
 				} else if (lights[idx].type == RS::LIGHT_SPOT) {
 					// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 					// We make this assumption to keep them easy to control.
-					lights[idx].energy *= 1.0 / Math_PI;
+					lights[idx].energy *= 1.0 / Math::PI;
 				}
 			}
 
@@ -2440,11 +2440,11 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 
 					// Convert from Luminous Power to Luminous Intensity
 					if (lights[idx].type == RS::LIGHT_OMNI) {
-						lights[idx].energy *= 1.0 / (Math_PI * 4.0);
+						lights[idx].energy *= 1.0 / (Math::PI * 4.0);
 					} else if (lights[idx].type == RS::LIGHT_SPOT) {
 						// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 						// We make this assumption to keep them easy to control.
-						lights[idx].energy *= 1.0 / Math_PI;
+						lights[idx].energy *= 1.0 / Math::PI;
 					}
 				}
 
@@ -2676,13 +2676,13 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					dtf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 					dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						dtf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 					}
 					dmap.texture = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					RD::get_singleton()->set_resource_name(dmap.texture, "VoxelGI Instance DMap Texture");
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						// Render depth for first one.
 						// Use 16-bit depth when supported to improve performance.
 						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D16_UNORM, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
@@ -2698,7 +2698,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					dmap.depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					RD::get_singleton()->set_resource_name(dmap.depth, "VoxelGI Instance DMap Depth");
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						dtf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 						dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 						dmap.albedo = RD::get_singleton()->texture_create(dtf, RD::TextureView());
@@ -2906,11 +2906,11 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 					// Convert from Luminous Power to Luminous Intensity
 					if (l.type == RS::LIGHT_OMNI) {
-						l.energy *= 1.0 / (Math_PI * 4.0);
+						l.energy *= 1.0 / (Math::PI * 4.0);
 					} else if (l.type == RS::LIGHT_SPOT) {
 						// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 						// We make this assumption to keep them easy to control.
-						l.energy *= 1.0 / Math_PI;
+						l.energy *= 1.0 / Math::PI;
 					}
 				}
 
@@ -3279,7 +3279,7 @@ void GI::VoxelGIInstance::free_resources() {
 void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
-	if (mipmaps.size() == 0) {
+	if (mipmaps.is_empty()) {
 		return;
 	}
 

@@ -82,6 +82,11 @@ Vec4 Vec4::sReplicate(float inV)
 #endif
 }
 
+Vec4 Vec4::sOne()
+{
+	return sReplicate(1.0f);
+}
+
 Vec4 Vec4::sNaN()
 {
 	return sReplicate(numeric_limits<float>::quiet_NaN());
@@ -614,7 +619,7 @@ Vec4 Vec4::Abs() const
 
 Vec4 Vec4::Reciprocal() const
 {
-	return sReplicate(1.0f) / mValue;
+	return sOne() / mValue;
 }
 
 Vec4 Vec4::DotV(Vec4Arg inV2) const
@@ -805,7 +810,7 @@ void Vec4::SinCos(Vec4 &outSin, Vec4 &outCos) const
 
 	// Taylor expansion:
 	// Cos(x) = 1 - x^2/2! + x^4/4! - x^6/6! + x^8/8! + ... = (((x2/8!- 1/6!) * x2 + 1/4!) * x2 - 1/2!) * x2 + 1
-	Vec4 taylor_cos = ((2.443315711809948e-5f * x2 - Vec4::sReplicate(1.388731625493765e-3f)) * x2 + Vec4::sReplicate(4.166664568298827e-2f)) * x2 * x2 - 0.5f * x2 + Vec4::sReplicate(1.0f);
+	Vec4 taylor_cos = ((2.443315711809948e-5f * x2 - Vec4::sReplicate(1.388731625493765e-3f)) * x2 + Vec4::sReplicate(4.166664568298827e-2f)) * x2 * x2 - 0.5f * x2 + Vec4::sOne();
 	// Sin(x) = x - x^3/3! + x^5/5! - x^7/7! + ... = ((-x2/7! + 1/5!) * x2 - 1/3!) * x2 * x + x
 	Vec4 taylor_sin = ((-1.9515295891e-4f * x2 + Vec4::sReplicate(8.3321608736e-3f)) * x2 - Vec4::sReplicate(1.6666654611e-1f)) * x2 * x + x;
 
@@ -880,14 +885,14 @@ Vec4 Vec4::ASin() const
 	Vec4 a = Vec4::sXor(*this, asin_sign.ReinterpretAsFloat());
 
 	// ASin is not defined outside the range [-1, 1] but it often happens that a value is slightly above 1 so we just clamp here
-	a = Vec4::sMin(a, Vec4::sReplicate(1.0f));
+	a = Vec4::sMin(a, Vec4::sOne());
 
 	// When |x| <= 0.5 we use the asin approximation as is
 	Vec4 z1 = a * a;
 	Vec4 x1 = a;
 
 	// When |x| > 0.5 we use the identity asin(x) = PI / 2 - 2 * asin(sqrt((1 - x) / 2))
-	Vec4 z2 = 0.5f * (Vec4::sReplicate(1.0f) - a);
+	Vec4 z2 = 0.5f * (Vec4::sOne() - a);
 	Vec4 x2 = z2.Sqrt();
 
 	// Select which of the two situations we have
@@ -923,7 +928,7 @@ Vec4 Vec4::ATan() const
 
 	// If x > Tan(PI / 8)
 	UVec4 greater1 = Vec4::sGreater(x, Vec4::sReplicate(0.4142135623730950f));
-	Vec4 x1 = (x - Vec4::sReplicate(1.0f)) / (x + Vec4::sReplicate(1.0f));
+	Vec4 x1 = (x - Vec4::sOne()) / (x + Vec4::sOne());
 
 	// If x > Tan(3 * PI / 8)
 	UVec4 greater2 = Vec4::sGreater(x, Vec4::sReplicate(2.414213562373095f));
