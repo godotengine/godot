@@ -931,7 +931,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		bool scenes_only = p_preset->get_export_filter() == EditorExportPreset::EXPORT_SELECTED_SCENES;
 		bool without_dependencies = p_preset->get_export_filter() == EditorExportPreset::EXPORT_SELECTED_RESOURCES_INDEPENDENTLY;
 
-		//find stuff
+		// Find files to export.
 
 		Vector<String> files = p_preset->get_files_to_export();
 		for (int i = 0; i < files.size(); i++) {
