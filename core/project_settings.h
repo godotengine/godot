@@ -32,6 +32,7 @@
 #define PROJECT_SETTINGS_H
 
 #include "core/object.h"
+#include "core/os/spin_lock.h"
 #include "core/os/thread_safe.h"
 #include "core/set.h"
 
@@ -229,19 +230,24 @@ Variant _GLOBAL_DEF_ALIAS(const String &p_var, const String &p_old_name, const V
 /////////////////////////////////////////////////////////////////////////////////////////
 // Cached versions of GLOBAL_GET.
 // Cached but uses a typed variable for storage, this can be more efficient.
+// Variables prefixed with _ggc_ to avoid shadowing warnings.
 #define GLOBAL_GET_CACHED(m_type, m_setting_name) ([](const char *p_name) -> m_type {\
 static_assert(std::is_trivially_destructible<m_type>::value, "GLOBAL_GET_CACHED must use a trivial type that allows static lifetime.");\
-static m_type local_var;\
-static uint32_t local_version = 0;\
-static Mutex local_mutex;\
-uint32_t new_version = ProjectSettings::get_singleton()->get_version();\
-if (local_version != new_version) {\
-	MutexLock lock(local_mutex);\
-	local_version = new_version;\
-	local_var = ProjectSettings::get_singleton()->get(p_name);\
-	return local_var;\
+static m_type _ggc_local_var;\
+static uint32_t _ggc_local_version = 0;\
+static SpinLock _ggc_spin;\
+uint32_t _ggc_new_version = ProjectSettings::get_singleton()->get_version();\
+if (_ggc_local_version != _ggc_new_version) {\
+	_ggc_spin.lock();\
+	_ggc_local_version = _ggc_new_version;\
+	_ggc_local_var = ProjectSettings::get_singleton()->get(p_name);\
+	m_type _ggc_temp = _ggc_local_var;\
+	_ggc_spin.unlock();\
+	return _ggc_temp;\
 }\
-MutexLock lock(local_mutex);\
-return local_var; })(m_setting_name)
+_ggc_spin.lock();\
+m_type _ggc_temp2 = _ggc_local_var;\
+_ggc_spin.unlock();\
+return _ggc_temp2; })(m_setting_name)
 
 #endif // PROJECT_SETTINGS_H
