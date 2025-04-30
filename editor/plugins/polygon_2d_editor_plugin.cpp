@@ -1302,7 +1302,7 @@ Polygon2DEditor::Polygon2DEditor() {
 		action_buttons[i]->set_toggle_mode(true);
 		toolbar->add_child(action_buttons[i]);
 		action_buttons[i]->connect(SceneStringName(pressed), callable_mp(this, &Polygon2DEditor::_set_action).bind(i));
-		action_buttons[i]->set_focus_mode(FOCUS_NONE);
+		action_buttons[i]->set_focus_mode(FOCUS_ACCESSIBILITY);
 	}
 
 	action_buttons[ACTION_CREATE]->set_tooltip_text(TTR("Create Polygon"));
@@ -1392,7 +1392,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	b_snap_enable->set_theme_type_variation(SceneStringName(FlatButton));
 	toolbar->add_child(b_snap_enable);
 	b_snap_enable->set_text(TTR("Snap"));
-	b_snap_enable->set_focus_mode(FOCUS_NONE);
+	b_snap_enable->set_focus_mode(FOCUS_ACCESSIBILITY);
 	b_snap_enable->set_toggle_mode(true);
 	b_snap_enable->set_pressed(use_snap);
 	b_snap_enable->set_tooltip_text(TTR("Enable Snap"));
@@ -1402,7 +1402,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	b_snap_grid->set_theme_type_variation(SceneStringName(FlatButton));
 	toolbar->add_child(b_snap_grid);
 	b_snap_grid->set_text(TTR("Grid"));
-	b_snap_grid->set_focus_mode(FOCUS_NONE);
+	b_snap_grid->set_focus_mode(FOCUS_ACCESSIBILITY);
 	b_snap_grid->set_toggle_mode(true);
 	b_snap_grid->set_pressed(snap_show_grid);
 	b_snap_grid->set_tooltip_text(TTR("Show Grid"));

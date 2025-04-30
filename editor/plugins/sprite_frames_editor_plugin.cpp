@@ -2371,7 +2371,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	split_sheet_zoom_out = memnew(Button);
 	split_sheet_zoom_out->set_theme_type_variation(SceneStringName(FlatButton));
-	split_sheet_zoom_out->set_focus_mode(FOCUS_NONE);
+	split_sheet_zoom_out->set_focus_mode(FOCUS_ACCESSIBILITY);
 	split_sheet_zoom_out->set_tooltip_text(TTR("Zoom Out"));
 	split_sheet_zoom_out->set_accessibility_name(TTRC("Zoom Out"));
 	split_sheet_zoom_out->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_out));
@@ -2379,7 +2379,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	split_sheet_zoom_reset = memnew(Button);
 	split_sheet_zoom_reset->set_theme_type_variation(SceneStringName(FlatButton));
-	split_sheet_zoom_reset->set_focus_mode(FOCUS_NONE);
+	split_sheet_zoom_reset->set_focus_mode(FOCUS_ACCESSIBILITY);
 	split_sheet_zoom_reset->set_tooltip_text(TTR("Zoom Reset"));
 	split_sheet_zoom_reset->set_accessibility_name(TTRC("Reset Zoom"));
 	split_sheet_zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
@@ -2387,7 +2387,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	split_sheet_zoom_in = memnew(Button);
 	split_sheet_zoom_in->set_theme_type_variation(SceneStringName(FlatButton));
-	split_sheet_zoom_in->set_focus_mode(FOCUS_NONE);
+	split_sheet_zoom_in->set_focus_mode(FOCUS_ACCESSIBILITY);
 	split_sheet_zoom_in->set_tooltip_text(TTR("Zoom In"));
 	split_sheet_zoom_in->set_accessibility_name(TTRC("Zoom In"));
 	split_sheet_zoom_in->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_in));
