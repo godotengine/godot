@@ -474,7 +474,7 @@
 		<method name="is_valid_filename" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this string does not contain characters that are not allowed in file names ([code]:[/code] [code]/[/code] [code]\[/code] [code]?[/code] [code]*[/code] [code]"[/code] [code]|[/code] [code]%[/code] [code]&lt;[/code] [code]&gt;[/code]).
+				Returns [code]true[/code] if this string is a valid file name. A valid file name cannot be empty, begin or end with space characters, or contain characters that are not allowed ([code]:[/code] [code]/[/code] [code]\[/code] [code]?[/code] [code]*[/code] [code]"[/code] [code]|[/code] [code]%[/code] [code]&lt;[/code] [code]&gt;[/code]).
 			</description>
 		</method>
 		<method name="is_valid_float" qualifiers="const">
