@@ -8,6 +8,12 @@
 
 ## 2D and 3D cross-platform game engine
 
+
+## fork
+
+the fork is joke where gd-scricp is finnis
+elikkä jos tiedä mitä kirjoitin tähän niin se on sama asia kun vaan käytät normi godotia
+
 **[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
 game engine to create 2D and 3D games from a unified interface.** It provides a
 comprehensive set of [common tools](https://godotengine.org/features), so that
