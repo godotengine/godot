@@ -256,7 +256,7 @@ void EditorExport::load_config() {
 			preset->set_export_filter(EditorExportPreset::EXPORT_CUSTOMIZED);
 			preset->set_customized_files(config->get_value(section, "customized_files", Dictionary()));
 			get_files = false;
-		} else if (export_filter == "resources_independency") {
+		} else if (export_filter == "resources_independently") {
 			preset->set_export_filter(EditorExportPreset::EXPORT_SELECTED_RESOURCES_INDEPENDENTLY);
 			get_files = true;
 		}
