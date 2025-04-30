@@ -76,6 +76,7 @@ class FuzzySearchResult {
 public:
 	String target;
 	int score = 0;
+	int original_index = -1;
 	int dir_index = -1;
 	Vector<FuzzyTokenMatch> token_matches;
 };
