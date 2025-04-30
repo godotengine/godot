@@ -652,6 +652,13 @@ Variant Object::property_get_revert(const StringName &p_name) const {
 	return Variant();
 }
 
+bool Object::property_is_immutable(const StringName &p_name) const {
+	if (script_instance) {
+		return script_instance->property_is_immutable(p_name);
+	}
+	return false;
+}
+
 void Object::get_method_list(List<MethodInfo> *p_list) const {
 	ClassDB::get_method_list(get_class_name(), p_list);
 	if (script_instance) {
@@ -1627,6 +1634,8 @@ bool Object::_uses_signal_mutex() const {
 }
 
 void Object::_set_bind(const StringName &p_set, const Variant &p_value) {
+	// TODO: Currently this bypasses immutability of a variable. So you can modify an immutable variable with a .set() call.
+	// We could check for immutability here, but there's not currently a good way to propagate the error to the user.
 	set(p_set, p_value);
 }
 
