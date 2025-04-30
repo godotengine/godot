@@ -56,7 +56,7 @@ float CameraAttributes::get_exposure_sensitivity() const {
 void CameraAttributes::_update_exposure() {
 	float exposure_normalization = 1.0;
 	// Ignore physical properties if not using physical light units.
-	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		exposure_normalization = calculate_exposure_normalization();
 	}
 
@@ -96,7 +96,7 @@ RID CameraAttributes::get_rid() const {
 }
 
 void CameraAttributes::_validate_property(PropertyInfo &p_property) const {
-	if (!GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units") && p_property.name == "exposure_sensitivity") {
+	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && p_property.name == "exposure_sensitivity") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		return;
 	}
@@ -447,7 +447,7 @@ void CameraAttributesPhysical::_update_auto_exposure() {
 }
 
 void CameraAttributesPhysical::_validate_property(PropertyInfo &property) const {
-	if (!GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units") && (property.name == "exposure_aperture" || property.name == "exposure_shutter_speed")) {
+	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && (property.name == "exposure_aperture" || property.name == "exposure_shutter_speed")) {
 		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		return;
 	}

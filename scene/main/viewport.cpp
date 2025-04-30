@@ -1661,7 +1661,7 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 	}
 	Size2 scale = get_popup_base_transform().get_scale();
 	real_t popup_scale = MIN(scale.x, scale.y);
-	Point2 tooltip_offset = GLOBAL_GET("display/mouse_cursor/tooltip_position_offset");
+	Point2 tooltip_offset = GLOBAL_GET_CACHED(Point2, "display/mouse_cursor/tooltip_position_offset");
 	tooltip_offset *= popup_scale;
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_contents_minimum_size());
 	Rect2i vr;

@@ -236,7 +236,7 @@ Popup::~Popup() {
 PackedStringArray PopupPanel::get_configuration_warnings() const {
 	PackedStringArray warnings = Popup::get_configuration_warnings();
 
-	if (!DisplayServer::get_singleton()->is_window_transparency_available() && !GLOBAL_GET("display/window/subwindows/embed_subwindows")) {
+	if (!DisplayServer::get_singleton()->is_window_transparency_available() && !GLOBAL_GET_CACHED(bool, "display/window/subwindows/embed_subwindows")) {
 		Ref<StyleBoxFlat> sb = theme_cache.panel_style;
 		if (sb.is_valid() && (sb->get_shadow_size() > 0 || sb->get_corner_radius(CORNER_TOP_LEFT) > 0 || sb->get_corner_radius(CORNER_TOP_RIGHT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_LEFT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_RIGHT) > 0)) {
 			warnings.push_back(RTR("The current theme style has shadows and/or rounded corners for popups, but those won't display correctly if \"display/window/per_pixel_transparency/allowed\" isn't enabled in the Project Settings, nor if it isn't supported."));

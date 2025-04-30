@@ -42,6 +42,10 @@ class ProjectSettings : public Object {
 
 	bool is_changed = false;
 
+	// Starting version from 1 ensures that all callers can reset their tested version to 0,
+	// and will always detect the initial project settings as a "change".
+	uint32_t _version = 1;
+
 public:
 	typedef HashMap<String, Variant> CustomMap;
 	static inline const String PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
@@ -218,6 +222,9 @@ public:
 	String get_scene_groups_cache_path() const;
 	void load_scene_groups_cache();
 
+	// Testing a version allows fast cached GET_GLOBAL macros.
+	uint32_t get_version() const { return _version; }
+
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
@@ -243,3 +250,26 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 #define GLOBAL_DEF_RST_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true, true)
 
 #define GLOBAL_DEF_INTERNAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, false, true)
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Cached versions of GLOBAL_GET.
+// Cached but uses a typed variable for storage, this can be more efficient.
+// Variables prefixed with _ggc_ to avoid shadowing warnings.
+#define GLOBAL_GET_CACHED(m_type, m_setting_name) ([](const char *p_name) -> m_type {\
+static_assert(std::is_trivially_destructible<m_type>::value, "GLOBAL_GET_CACHED must use a trivial type that allows static lifetime.");\
+static m_type _ggc_local_var;\
+static uint32_t _ggc_local_version = 0;\
+static SpinLock _ggc_spin;\
+uint32_t _ggc_new_version = ProjectSettings::get_singleton()->get_version();\
+if (_ggc_local_version != _ggc_new_version) {\
+	_ggc_spin.lock();\
+	_ggc_local_version = _ggc_new_version;\
+	_ggc_local_var = ProjectSettings::get_singleton()->get_setting_with_override(p_name);\
+	m_type _ggc_temp = _ggc_local_var;\
+	_ggc_spin.unlock();\
+	return _ggc_temp;\
+}\
+_ggc_spin.lock();\
+m_type _ggc_temp2 = _ggc_local_var;\
+_ggc_spin.unlock();\
+return _ggc_temp2; })(m_setting_name)

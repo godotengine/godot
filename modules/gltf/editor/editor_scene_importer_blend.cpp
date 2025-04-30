@@ -374,7 +374,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::is_active() const {
-	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
+	bool blend_enabled = GLOBAL_GET_CACHED(bool, "filesystem/import/blender/enabled");
 
 	if (blend_enabled && !_test_blender_path(EDITOR_GET("filesystem/import/blender/blender_path").operator String())) {
 		// Intending to import Blender, but blend not configured.

@@ -4210,7 +4210,7 @@ bool RenderingDevice::compute_pipeline_is_valid(RID p_pipeline) {
 /****************/
 
 uint32_t RenderingDevice::_get_swap_chain_desired_count() const {
-	return MAX(2U, uint32_t(GLOBAL_GET("rendering/rendering_device/vsync/swapchain_image_count")));
+	return MAX(2U, uint32_t(GLOBAL_GET_CACHED(uint32_t, "rendering/rendering_device/vsync/swapchain_image_count")));
 }
 
 Error RenderingDevice::screen_create(DisplayServer::WindowID p_screen) {

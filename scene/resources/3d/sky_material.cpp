@@ -209,7 +209,7 @@ RID ProceduralSkyMaterial::get_shader_rid() const {
 }
 
 void ProceduralSkyMaterial::_validate_property(PropertyInfo &p_property) const {
-	if ((p_property.name == "sky_luminance" || p_property.name == "ground_luminance") && !GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if ((p_property.name == "sky_luminance" || p_property.name == "ground_luminance") && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
@@ -652,7 +652,7 @@ RID PhysicalSkyMaterial::get_shader_rid() const {
 }
 
 void PhysicalSkyMaterial::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "exposure_value" && !GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if (p_property.name == "exposure_value" && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

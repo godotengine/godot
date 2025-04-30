@@ -921,7 +921,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
-				if (diff < uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec")) * 2) {
+				if (diff < uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current - 1; i >= 0; i--) {
 						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
@@ -968,7 +968,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
-				if (diff < uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec")) * 2) {
+				if (diff < uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current + 1; i < items.size(); i++) {
 						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
@@ -1113,7 +1113,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			if (allow_search && k.is_valid() && k->get_unicode()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
-				uint64_t max_interval = uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec"));
+				uint64_t max_interval = uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec"));
 				search_time_msec = now;
 
 				if (diff > max_interval) {
