@@ -322,6 +322,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 	load_nesting--;
 
 	if (res.is_valid()) {
+		res->exported_variables_initialized();
 		return res;
 	} else {
 		print_verbose(vformat("Failed loading resource: %s", p_path));

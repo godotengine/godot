@@ -83,6 +83,8 @@ private:
 
 	SelfList<Resource> remapped_list;
 
+	bool _exported_variables_initialized = false;
+
 	void _dupe_sub_resources(Variant &r_variant, Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache);
 	void _find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found);
 
@@ -104,7 +106,13 @@ protected:
 	GDVIRTUAL1C(_set_path_cache, String);
 	GDVIRTUAL0(_reset_state);
 
+	GDVIRTUAL0(_exported_variables_initialized);
+
 public:
+	enum {
+		NOTIFICATION_EXPORT_VARIABLES_INITIALIZED = 2100,
+	};
+
 	static Node *(*_get_local_scene_func)(); //used by editor
 	static void (*_update_configuration_warning)(); //used by editor
 
@@ -163,6 +171,8 @@ public:
 	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 	void set_id_for_path(const String &p_path, const String &p_id);
 	String get_id_for_path(const String &p_path) const;
+
+	void exported_variables_initialized();
 
 	Resource();
 	~Resource();
