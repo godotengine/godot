@@ -1196,7 +1196,7 @@ void ScriptEditor::_file_dialog_action(const String &p_file) {
 			}
 			[[fallthrough]];
 		}
-		case FILE_OPEN: {
+		case FILE_OPEN_: {
 			open_file(p_file);
 			file_dialog_option = -1;
 		} break;
@@ -1281,10 +1281,10 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog->popup_file_dialog();
 			open_textfile_after_create = true;
 		} break;
-		case FILE_OPEN: {
+		case FILE_OPEN_: {
 			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-			file_dialog_option = FILE_OPEN;
+			file_dialog_option = FILE_OPEN_;
 
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
@@ -4258,7 +4258,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTRC("New Script..."), KeyModifierMask::CMD_OR_CTRL | Key::N), FILE_NEW);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTRC("New Text File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N), FILE_NEW_TEXTFILE);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTRC("Open...")), FILE_OPEN);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTRC("Open...")), FILE_OPEN_);
 	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/reopen_closed_script"), FILE_REOPEN_CLOSED);
 
 	recent_scripts = memnew(PopupMenu);

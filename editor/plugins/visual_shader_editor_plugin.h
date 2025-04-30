@@ -328,17 +328,13 @@ class VisualShaderEditor : public ShaderEditor {
 		PASTE_PARAMS_TO_MATERIAL,
 	};
 
-#ifdef MINGW_ENABLED
-#undef DELETE
-#endif
-
 	enum NodeMenuOptions {
 		ADD,
 		SEPARATOR, // ignore
 		CUT,
 		COPY,
 		PASTE,
-		DELETE,
+		DELETE_, // Conflict with WinAPI.
 		DUPLICATE,
 		CLEAR_COPY_BUFFER,
 		SEPARATOR2, // ignore

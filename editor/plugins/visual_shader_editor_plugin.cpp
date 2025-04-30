@@ -4900,7 +4900,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			popup_menu->set_item_disabled(NodeMenuOptions::CUT, selected_deletable_graph_elements.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::COPY, selected_deletable_graph_elements.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_buffer_empty);
-			popup_menu->set_item_disabled(NodeMenuOptions::DELETE, selected_deletable_graph_elements.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::DELETE_, selected_deletable_graph_elements.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, selected_deletable_graph_elements.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::CLEAR_COPY_BUFFER, copy_buffer_empty);
 
@@ -6042,7 +6042,7 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 		case NodeMenuOptions::PASTE:
 			_paste_nodes(true, menu_point);
 			break;
-		case NodeMenuOptions::DELETE:
+		case NodeMenuOptions::DELETE_:
 			_delete_nodes_request(TypedArray<StringName>());
 			break;
 		case NodeMenuOptions::DUPLICATE:
@@ -6713,7 +6713,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	popup_menu->add_item(TTR("Cut"), NodeMenuOptions::CUT);
 	popup_menu->add_item(TTR("Copy"), NodeMenuOptions::COPY);
 	popup_menu->add_item(TTR("Paste"), NodeMenuOptions::PASTE);
-	popup_menu->add_item(TTR("Delete"), NodeMenuOptions::DELETE);
+	popup_menu->add_item(TTR("Delete"), NodeMenuOptions::DELETE_);
 	popup_menu->add_item(TTR("Duplicate"), NodeMenuOptions::DUPLICATE);
 	popup_menu->add_item(TTR("Clear Copy Buffer"), NodeMenuOptions::CLEAR_COPY_BUFFER);
 	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_node_menu_id_pressed));
