@@ -1024,10 +1024,12 @@ String EditorData::script_class_get_icon_path(const String &p_class, bool *r_val
 		}
 		HashMap<StringName, String>::ConstIterator E = _script_class_icon_paths.find(current);
 		if ((bool)E) {
-			if (r_valid && !E->value.is_empty()) {
-				*r_valid = true;
+			if (r_valid) {
+				*r_valid = !E->value.is_empty();
+				return E->value;
+			} else if (!E->value.is_empty()) {
+				return E->value;
 			}
-			return E->value;
 		}
 		current = ScriptServer::get_global_class_base(current);
 	}
