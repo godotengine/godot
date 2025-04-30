@@ -729,7 +729,13 @@ String AudioStreamRandomizer::get_stream_name() const {
 }
 
 double AudioStreamRandomizer::get_length() const {
-	return 0;
+	double greatest_length = 0.0;
+	for (const PoolEntry &entry : audio_stream_pool) {
+		if (entry.stream.is_valid()) {
+			greatest_length = MAX(greatest_length, entry.stream->get_length());
+		}
+	}
+	return greatest_length;
 }
 
 bool AudioStreamRandomizer::is_monophonic() const {
