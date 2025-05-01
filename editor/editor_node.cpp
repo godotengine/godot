@@ -7426,21 +7426,27 @@ EditorNode::EditorNode() {
 	main_vbox = memnew(VBoxContainer);
 
 #ifdef ANDROID_ENABLED
-	main_hbox = memnew(HBoxContainer);
-	main_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	base_vbox = memnew(VBoxContainer);
+	base_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, theme->get_constant(SNAME("window_border_margin"), EditorStringName(Editor)));
 
+	title_bar = memnew(EditorTitleBar);
+	base_vbox->add_child(title_bar);
+
+	main_hbox = memnew(HBoxContainer);
 	main_hbox->add_child(main_vbox);
 	main_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	base_vbox->add_child(main_hbox);
 
 	_touch_actions_panel_mode_changed();
 
-	gui_base->add_child(main_hbox);
+	gui_base->add_child(base_vbox);
 #else
 	gui_base->add_child(main_vbox);
-#endif
 
 	title_bar = memnew(EditorTitleBar);
 	main_vbox->add_child(title_bar);
+#endif
 
 	left_l_hsplit = memnew(DockSplitContainer);
 	left_l_hsplit->set_name("DockHSplitLeftL");
