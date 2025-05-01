@@ -1848,7 +1848,15 @@ void RichTextLabel::push_font(const Ref<Font> &p_font) {
 	ItemFont *item = memnew(ItemFont);
 
 	item->font = p_font;
+	item->owner = get_instance_id();
+	item->font->connect("changed", this, "_invalidate_fonts", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+
 	_add_item(item, true);
+}
+
+void RichTextLabel::_invalidate_fonts() {
+	main->first_invalid_line = 0; //invalidate ALL
+	update();
 }
 
 void RichTextLabel::push_normal() {
@@ -2926,6 +2934,8 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_effects", "effects"), &RichTextLabel::set_effects);
 	ClassDB::bind_method(D_METHOD("get_effects"), &RichTextLabel::get_effects);
 	ClassDB::bind_method(D_METHOD("install_effect", "effect"), &RichTextLabel::install_effect);
+
+	ClassDB::bind_method(D_METHOD("_invalidate_fonts"), &RichTextLabel::_invalidate_fonts);
 
 	ADD_GROUP("BBCode", "bbcode_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
