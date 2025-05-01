@@ -529,6 +529,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/vsync_mode", 1, "Disabled,Enabled,Adaptive,Mailbox")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/update_continuously", false, "")
 
+	bool is_android_editor = false;
+#ifdef ANDROID_ENABLED
+	if (!OS::get_singleton()->has_feature("xr_editor")) {
+		is_android_editor = true;
+	}
+#endif
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/collapse_main_menu", is_android_editor, "")
+
 	_initial_set("interface/editors/show_scene_tree_root_selection", true);
 	_initial_set("interface/editors/derive_script_globals_by_name", true);
 	_initial_set("docks/scene_tree/ask_before_revoking_unique_name", true);
