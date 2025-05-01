@@ -230,6 +230,17 @@ Object::Connection::operator Variant() const {
 	return d;
 }
 
+GDType::GDType(const GDType *p_super_type, StringName p_name) :
+		super_type(p_super_type), name(std::move(p_name)) {
+	name_hierarchy.push_back(StringName(name, true));
+
+	if (super_type) {
+		for (const StringName &ancestor_name : super_type->name_hierarchy) {
+			name_hierarchy.push_back(StringName(ancestor_name, true));
+		}
+	}
+}
+
 bool Object::Connection::operator<(const Connection &p_conn) const {
 	if (signal == p_conn.signal) {
 		return callable < p_conn.callable;
@@ -255,7 +266,7 @@ bool Object::_predelete() {
 	_predelete_ok = 1;
 	notification(NOTIFICATION_PREDELETE, true);
 	if (_predelete_ok) {
-		_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
+		_gdtype_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
 		notification(NOTIFICATION_PREDELETE_CLEANUP, true);
 	}
 	return _predelete_ok;
@@ -267,7 +278,7 @@ void Object::cancel_free() {
 
 void Object::_initialize() {
 	// Cache the class name in the object for quick reference.
-	_class_name_ptr = _get_class_namev();
+	_gdtype_ptr = &_get_typev();
 	_initialize_classv();
 }
 
@@ -2026,18 +2037,34 @@ uint32_t Object::get_edited_version() const {
 }
 #endif
 
+const GDType &Object::get_gdtype() const {
+	if (unlikely(!_gdtype_ptr)) {
+		// While class is initializing / deinitializing, constructors and destructors
+		// need access to the proper type at the proper stage.
+		return _get_typev();
+	}
+	return *_gdtype_ptr;
+}
+
+bool Object::is_class(const String &p_class) const {
+	if (_extension && _extension->is_class(p_class)) {
+		return true;
+	}
+	for (const StringName &name : get_gdtype().get_name_hierarchy()) {
+		if (name == p_class) {
+			return true;
+		}
+	}
+	return false;
+}
+
 const StringName &Object::get_class_name() const {
 	if (_extension) {
 		// Can't put inside the unlikely as constructor can run it.
 		return _extension->class_name;
 	}
 
-	if (unlikely(!_class_name_ptr)) {
-		// While class is initializing / deinitializing, constructors and destructors
-		// need access to the proper class at the proper stage.
-		return *_get_class_namev();
-	}
-	return *_class_name_ptr;
+	return get_gdtype().get_name();
 }
 
 StringName Object::get_class_name_for_extension(const GDExtension *p_library) const {
@@ -2046,8 +2073,7 @@ StringName Object::get_class_name_for_extension(const GDExtension *p_library) co
 	// have to return the closest native parent's class name, so that it doesn't try to
 	// use this like the real object.
 	if (unlikely(_extension && _extension->library == p_library && _extension->is_placeholder)) {
-		const StringName *class_name = _get_class_namev();
-		return *class_name;
+		return get_class_name();
 	}
 #endif
 
@@ -2057,13 +2083,13 @@ StringName Object::get_class_name_for_extension(const GDExtension *p_library) co
 	}
 
 	// Extensions only have wrapper classes for classes exposed in ClassDB.
-	const StringName *class_name = _get_class_namev();
-	if (ClassDB::is_class_exposed(*class_name)) {
-		return *class_name;
+	const StringName &class_name = get_class_name();
+	if (ClassDB::is_class_exposed(class_name)) {
+		return class_name;
 	}
 
 	// Find the nearest parent class that's exposed.
-	StringName parent_class = ClassDB::get_parent_class(*class_name);
+	StringName parent_class = ClassDB::get_parent_class(class_name);
 	while (parent_class != StringName()) {
 		if (ClassDB::is_class_exposed(parent_class)) {
 			return parent_class;
@@ -2226,14 +2252,16 @@ void Object::detach_from_objectdb() {
 	}
 }
 
-void Object::assign_class_name_static(const Span<char> &p_name, StringName &r_target) {
+void Object::assign_type_static(GDType **type_ptr, const char *p_name, const GDType *super_type) {
 	static BinaryMutex _mutex;
 	MutexLock lock(_mutex);
-	if (r_target) {
-		// Already assigned while we were waiting for the mutex.
+	GDType *type = *type_ptr;
+	if (type) {
+		// Assigned while we were waiting.
 		return;
 	}
-	r_target = StringName(p_name.ptr(), true);
+	type = memnew(GDType(super_type, StringName(p_name, true)));
+	*type_ptr = type;
 }
 
 Object::~Object() {
