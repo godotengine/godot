@@ -797,6 +797,7 @@ FindReplaceBar::FindReplaceBar() {
 
 	find_prev = memnew(Button);
 	find_prev->set_flat(true);
+	find_prev->set_disabled(results_count < 1);
 	find_prev->set_tooltip_text(TTR("Previous Match"));
 	find_prev->set_accessibility_name(TTRC("Previous Match"));
 	hbc_button_search->add_child(find_prev);
@@ -805,6 +806,7 @@ FindReplaceBar::FindReplaceBar() {
 
 	find_next = memnew(Button);
 	find_next->set_flat(true);
+	find_next->set_disabled(results_count < 1);
 	find_next->set_tooltip_text(TTR("Next Match"));
 	find_next->set_accessibility_name(TTRC("Next Match"));
 	hbc_button_search->add_child(find_next);

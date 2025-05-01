@@ -47,12 +47,13 @@ class FindBar : public HBoxContainer {
 	Button *find_prev = nullptr;
 	Button *find_next = nullptr;
 	Label *matches_label = nullptr;
-	TextureButton *hide_button = nullptr;
-	String prev_search;
+	Button *hide_button = nullptr;
 
 	RichTextLabel *rich_text_label = nullptr;
 
+	String prev_search;
 	int results_count = 0;
+	int results_count_to_current = 0;
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 
@@ -61,7 +62,7 @@ class FindBar : public HBoxContainer {
 	void _search_text_changed(const String &p_text);
 	void _search_text_submitted(const String &p_text);
 
-	void _update_results_count();
+	void _update_results_count(bool p_search_previous);
 	void _update_matches_label();
 
 protected:

@@ -4758,44 +4758,47 @@ EditorHelpHighlighter::~EditorHelpHighlighter() {
 
 FindBar::FindBar() {
 	search_text = memnew(LineEdit);
-	search_text->set_accessibility_name(TTRC("Search help"));
-	add_child(search_text);
 	search_text->set_keep_editing_on_text_submit(true);
+	add_child(search_text);
+	search_text->set_placeholder(TTR("Search"));
+	search_text->set_tooltip_text(TTR("Search"));
+	search_text->set_accessibility_name(TTRC("Search Documentation"));
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_text->connect(SceneStringName(text_changed), callable_mp(this, &FindBar::_search_text_changed));
 	search_text->connect(SceneStringName(text_submitted), callable_mp(this, &FindBar::_search_text_submitted));
 
 	matches_label = memnew(Label);
-	matches_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	add_child(matches_label);
+	matches_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	matches_label->hide();
 
 	find_prev = memnew(Button);
-	find_prev->set_accessibility_name(TTRC("Find Previous"));
 	find_prev->set_flat(true);
+	find_prev->set_disabled(results_count < 1);
+	find_prev->set_tooltip_text(TTR("Previous Match"));
+	find_prev->set_accessibility_name(TTRC("Previous Match"));
 	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_prev));
 
 	find_next = memnew(Button);
-	find_next->set_accessibility_name(TTRC("Find Next"));
 	find_next->set_flat(true);
+	find_next->set_disabled(results_count < 1);
+	find_next->set_tooltip_text(TTR("Next Match"));
+	find_next->set_accessibility_name(TTRC("Next Match"));
 	add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
 	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_next));
 
-	Control *space = memnew(Control);
-	add_child(space);
-	space->set_custom_minimum_size(Size2(4, 0) * EDSCALE);
-
-	hide_button = memnew(TextureButton);
-	add_child(hide_button);
+	hide_button = memnew(Button);
+	hide_button->set_flat(true);
+	hide_button->set_tooltip_text(TTR("Hide"));
 	hide_button->set_accessibility_name(TTRC("Hide"));
 	hide_button->set_focus_mode(FOCUS_NONE);
-	hide_button->set_ignore_texture_size(true);
-	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindBar::_hide_bar));
+	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
+	add_child(hide_button);
 }
 
 void FindBar::popup_search() {
@@ -4820,10 +4823,7 @@ void FindBar::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			find_prev->set_button_icon(get_editor_theme_icon(SNAME("MoveUp")));
 			find_next->set_button_icon(get_editor_theme_icon(SNAME("MoveDown")));
-			hide_button->set_texture_normal(get_editor_theme_icon(SNAME("Close")));
-			hide_button->set_texture_hover(get_editor_theme_icon(SNAME("Close")));
-			hide_button->set_texture_pressed(get_editor_theme_icon(SNAME("Close")));
-			hide_button->set_custom_minimum_size(hide_button->get_texture_normal()->get_size());
+			hide_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 			matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
@@ -4848,22 +4848,25 @@ bool FindBar::search_prev() {
 bool FindBar::_search(bool p_search_previous) {
 	String stext = search_text->get_text();
 	bool keep = prev_search == stext;
-
 	bool ret = rich_text_label->search(stext, keep, p_search_previous);
 
 	prev_search = stext;
+	if (!keep) {
+		results_count_to_current = 0;
+	}
 
 	if (ret) {
-		_update_results_count();
+		_update_results_count(p_search_previous);
 	} else {
 		results_count = 0;
+		results_count_to_current = 0;
 	}
 	_update_matches_label();
 
 	return ret;
 }
 
-void FindBar::_update_results_count() {
+void FindBar::_update_results_count(bool p_search_previous) {
 	results_count = 0;
 
 	String searched = search_text->get_text();
@@ -4884,6 +4887,13 @@ void FindBar::_update_results_count() {
 		results_count++;
 		from_pos = pos + searched.length();
 	}
+
+	results_count_to_current += (p_search_previous) ? -1 : 1;
+	if (results_count_to_current > results_count) {
+		results_count_to_current = results_count_to_current - results_count;
+	} else if (results_count_to_current <= 0) {
+		results_count_to_current = results_count;
+	}
 }
 
 void FindBar::_update_matches_label() {
@@ -4893,8 +4903,16 @@ void FindBar::_update_matches_label() {
 		matches_label->show();
 
 		matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
+		if (results_count == 0) {
+			matches_label->set_text(TTR("No match"));
+		} else if (results_count_to_current == 0) {
+			matches_label->set_text(vformat(TTRN("%d match", "%d matches", results_count), results_count));
+		} else {
+			matches_label->set_text(vformat(TTRN("%d of %d match", "%d of %d matches", results_count), results_count_to_current, results_count));
+		}
 	}
+	find_prev->set_disabled(results_count < 1);
+	find_next->set_disabled(results_count < 1);
 }
 
 void FindBar::_hide_bar() {
