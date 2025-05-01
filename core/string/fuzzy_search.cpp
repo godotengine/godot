@@ -265,12 +265,19 @@ void FuzzySearch::sort_and_filter(Vector<FuzzySearchResult> &p_results) const {
 }
 
 void FuzzySearch::set_query(const String &p_query) {
-	tokens.clear();
-	for (const String &string : p_query.split(" ", false)) {
-		tokens.append({ static_cast<int>(tokens.size()), string });
-	}
+	set_query(p_query, !p_query.is_lowercase());
+}
 
-	case_sensitive = !p_query.is_lowercase();
+void FuzzySearch::set_query(const String &p_query, bool p_case_sensitive) {
+	tokens.clear();
+	case_sensitive = p_case_sensitive;
+
+	for (const String &string : p_query.split(" ", false)) {
+		tokens.append({
+				static_cast<int>(tokens.size()),
+				p_case_sensitive ? string : string.to_lower(),
+		});
+	}
 
 	struct TokenComparator {
 		bool operator()(const FuzzySearchToken &A, const FuzzySearchToken &B) const {
