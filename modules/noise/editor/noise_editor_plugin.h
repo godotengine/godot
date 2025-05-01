@@ -28,22 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NOISE_EDITOR_PLUGIN_H
-#define NOISE_EDITOR_PLUGIN_H
+#pragma once
 
-#ifdef TOOLS_ENABLED
-
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class NoiseEditorPlugin : public EditorPlugin {
 	GDCLASS(NoiseEditorPlugin, EditorPlugin)
 
 public:
-	String get_name() const override;
+	String get_plugin_name() const override;
 
 	NoiseEditorPlugin();
 };
-
-#endif // TOOLS_ENABLED
-
-#endif // NOISE_EDITOR_PLUGIN_H

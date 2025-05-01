@@ -4,7 +4,7 @@
 		Tile library for tilemaps.
 	</brief_description>
 	<description>
-		A TileSet is a library of tiles for a [TileMap]. A TileSet handles a list of [TileSetSource], each of them storing a set of tiles.
+		A TileSet is a library of tiles for a [TileMapLayer]. A TileSet handles a list of [TileSetSource], each of them storing a set of tiles.
 		Tiles can either be from a [TileSetAtlasSource], which renders tiles out of a texture with support for physics, navigation, etc., or from a [TileSetScenesCollectionSource], which exposes scene-based tiles.
 		Tiles are referenced by using three IDs: their source ID, their atlas coordinates ID, and their alternative tile ID.
 		A TileSet can be configured so that its tiles expose more or fewer properties. To do so, the TileSet resources use property layers, which you can add or remove depending on your needs.
@@ -13,12 +13,12 @@
 	</description>
 	<tutorials>
 		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
-		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
-		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
-		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
-		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
-		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
-		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
+		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/2718</link>
+		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/2717</link>
+		<link title="2D Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
 	</tutorials>
 	<methods>
 		<method name="add_custom_data_layer">
@@ -218,6 +218,13 @@
 				Returns the collision mask of bodies on the given TileSet's physics layer.
 			</description>
 		</method>
+		<method name="get_physics_layer_collision_priority" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="layer_index" type="int" />
+			<description>
+				Returns the collision priority of bodies on the given TileSet's physics layer.
+			</description>
+		</method>
 		<method name="get_physics_layer_physics_material" qualifiers="const">
 			<return type="PhysicsMaterial" />
 			<param index="0" name="layer_index" type="int" />
@@ -310,6 +317,13 @@
 			<param index="1" name="coords_from" type="Vector2i" />
 			<description>
 				Returns if there is a coodinates-level proxy for the given identifiers.
+			</description>
+		</method>
+		<method name="has_custom_data_layer_by_name" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_name" type="String" />
+			<description>
+				Returns if there is a custom data layer named [param layer_name].
 			</description>
 		</method>
 		<method name="has_source" qualifiers="const">
@@ -477,8 +491,7 @@
 			<param index="5" name="alternative_to" type="int" />
 			<description>
 				Create an alternative-level proxy for the given identifiers. A proxy will map set of tile identifiers to another set of identifiers.
-				This can be used to replace a tile in all TileMaps using this TileSet, as TileMap nodes will find and use the proxy's target tile when one is available.
-				Proxied tiles can be automatically replaced in TileMap nodes using the editor.
+				Proxied tiles can be automatically replaced in TileMapLayer nodes using the editor.
 			</description>
 		</method>
 		<method name="set_coords_level_tile_proxy">
@@ -489,8 +502,7 @@
 			<param index="3" name="coords_to" type="Vector2i" />
 			<description>
 				Creates a coordinates-level proxy for the given identifiers. A proxy will map set of tile identifiers to another set of identifiers. The alternative tile ID is kept the same when using coordinates-level proxies.
-				This can be used to replace a tile in all TileMaps using this TileSet, as TileMap nodes will find and use the proxy's target tile when one is available.
-				Proxied tiles can be automatically replaced in TileMap nodes using the editor.
+				Proxied tiles can be automatically replaced in TileMapLayer nodes using the editor.
 			</description>
 		</method>
 		<method name="set_custom_data_layer_name">
@@ -547,7 +559,7 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="layer" type="int" />
 			<description>
-				Sets the physics layer (as in the physics server) for bodies in the given TileSet physics layer.
+				Sets the collision layer (as in the physics server) for bodies in the given TileSet physics layer.
 			</description>
 		</method>
 		<method name="set_physics_layer_collision_mask">
@@ -555,7 +567,15 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="mask" type="int" />
 			<description>
-				Sets the physics layer (as in the physics server) for bodies in the given TileSet physics layer.
+				Sets the collision mask for bodies in the given TileSet physics layer.
+			</description>
+		</method>
+		<method name="set_physics_layer_collision_priority">
+			<return type="void" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="priority" type="float" />
+			<description>
+				Sets the collision priority for bodies in the given TileSet physics layer.
 			</description>
 		</method>
 		<method name="set_physics_layer_physics_material">
@@ -580,8 +600,7 @@
 			<param index="1" name="source_to" type="int" />
 			<description>
 				Creates a source-level proxy for the given source ID. A proxy will map set of tile identifiers to another set of identifiers. Both the atlas coordinates ID and the alternative tile ID are kept the same when using source-level proxies.
-				This can be used to replace a source in all TileMaps using this TileSet, as TileMap nodes will find and use the proxy's target source when one is available.
-				Proxied tiles can be automatically replaced in TileMap nodes using the editor.
+				Proxied tiles can be automatically replaced in TileMapLayer nodes using the editor.
 			</description>
 		</method>
 		<method name="set_terrain_color">
@@ -613,7 +632,7 @@
 	</methods>
 	<members>
 		<member name="tile_layout" type="int" setter="set_tile_layout" getter="get_tile_layout" enum="TileSet.TileLayout" default="0">
-			For all half-offset shapes (Isometric, Hexagonal and Half-Offset square), changes the way tiles are indexed in the TileMap grid.
+			For all half-offset shapes (Isometric, Hexagonal and Half-Offset square), changes the way tiles are indexed in the [TileMapLayer] grid.
 		</member>
 		<member name="tile_offset_axis" type="int" setter="set_tile_offset_axis" getter="get_tile_offset_axis" enum="TileSet.TileOffsetAxis" default="0">
 			For all half-offset shapes (Isometric, Hexagonal and Half-Offset square), determines the offset axis.
@@ -634,7 +653,7 @@
 		</constant>
 		<constant name="TILE_SHAPE_ISOMETRIC" value="1" enum="TileShape">
 			Diamond tile shape (for isometric look).
-			[b]Note:[/b] Isometric [TileSet] works best if [TileMap] and all its layers have Y-sort enabled.
+			[b]Note:[/b] Isometric [TileSet] works best if all sibling [TileMapLayer]s and their parent inheriting from [Node2D] have Y-sort enabled.
 		</constant>
 		<constant name="TILE_SHAPE_HALF_OFFSET_SQUARE" value="2" enum="TileShape">
 			Rectangular tile shape with one row/column out of two offset by half a tile.

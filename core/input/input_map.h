@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_MAP_H
-#define INPUT_MAP_H
+#pragma once
 
 #include "core/input/input_event.h"
 #include "core/object/class_db.h"
@@ -46,7 +45,7 @@ public:
 	/**
 	 * A special value used to signify that a given Action can be triggered by any device
 	 */
-	static int ALL_DEVICES;
+	static constexpr int ALL_DEVICES = -1;
 
 	struct Action {
 		int id;
@@ -54,8 +53,12 @@ public:
 		List<Ref<InputEvent>> inputs;
 	};
 
+	static constexpr float DEFAULT_DEADZONE = 0.2f;
+	// Keep bigger deadzone for toggle actions (default `ui_*` actions, axis `pressed`) (GH-103360).
+	static constexpr float DEFAULT_TOGGLE_DEADZONE = 0.5f;
+
 private:
-	static InputMap *singleton;
+	static inline InputMap *singleton = nullptr;
 
 	mutable HashMap<StringName, Action> input_map;
 	HashMap<String, List<Ref<InputEvent>>> default_builtin_cache;
@@ -69,13 +72,20 @@ private:
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _add_action_bind_compat_97281(const StringName &p_action, float p_deadzone = 0.5);
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
 	static _FORCE_INLINE_ InputMap *get_singleton() { return singleton; }
 
 	bool has_action(const StringName &p_action) const;
 	List<StringName> get_actions() const;
-	void add_action(const StringName &p_action, float p_deadzone = 0.5);
+	void add_action(const StringName &p_action, float p_deadzone = DEFAULT_DEADZONE);
 	void erase_action(const StringName &p_action);
+
+	String get_action_description(const StringName &p_action) const;
 
 	float action_get_deadzone(const StringName &p_action);
 	void action_set_deadzone(const StringName &p_action, float p_deadzone);
@@ -95,6 +105,10 @@ public:
 
 	String suggest_actions(const StringName &p_action) const;
 
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
+
 	String get_builtin_display_name(const String &p_name) const;
 	// Use an Ordered Map so insertion order is preserved. We want the elements to be 'grouped' somewhat.
 	const HashMap<String, List<Ref<InputEvent>>> &get_builtins();
@@ -103,5 +117,3 @@ public:
 	InputMap();
 	~InputMap();
 };
-
-#endif // INPUT_MAP_H

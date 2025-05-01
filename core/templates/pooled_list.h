@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef POOLED_LIST_H
-#define POOLED_LIST_H
+#pragma once
 
 // Simple template to provide a pool with O(1) allocate and free.
 // The freelist could alternatively be a linked list placed within the unused elements
@@ -55,7 +54,7 @@
 
 #include "core/templates/local_vector.h"
 
-template <class T, class U = uint32_t, bool force_trivial = false, bool zero_on_first_request = false>
+template <typename T, typename U = uint32_t, bool force_trivial = false, bool zero_on_first_request = false>
 class PooledList {
 	LocalVector<T, U, force_trivial> list;
 	LocalVector<U, U, true> freelist;
@@ -128,7 +127,7 @@ public:
 };
 
 // a pooled list which automatically keeps a list of the active members
-template <class T, class U = uint32_t, bool force_trivial = false, bool zero_on_first_request = false>
+template <typename T, typename U = uint32_t, bool force_trivial = false, bool zero_on_first_request = false>
 class TrackedPooledList {
 public:
 	U pool_used_size() const { return _pool.used_size(); }
@@ -207,5 +206,3 @@ private:
 	LocalVector<U, U> _active_map;
 	LocalVector<U, U> _active_list;
 };
-
-#endif // POOLED_LIST_H

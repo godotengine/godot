@@ -39,10 +39,22 @@ Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
 			CLAMP(y, p_min.y, p_max.y));
 }
 
+Vector2i Vector2i::clampi(int32_t p_min, int32_t p_max) const {
+	return Vector2i(
+			CLAMP(x, p_min, p_max),
+			CLAMP(y, p_min, p_max));
+}
+
 Vector2i Vector2i::snapped(const Vector2i &p_step) const {
 	return Vector2i(
 			Math::snapped(x, p_step.x),
 			Math::snapped(y, p_step.y));
+}
+
+Vector2i Vector2i::snappedi(int32_t p_step) const {
+	return Vector2i(
+			Math::snapped(x, p_step),
+			Math::snapped(y, p_step));
 }
 
 int64_t Vector2i::length_squared() const {
@@ -51,75 +63,6 @@ int64_t Vector2i::length_squared() const {
 
 double Vector2i::length() const {
 	return Math::sqrt((double)length_squared());
-}
-
-Vector2i Vector2i::operator+(const Vector2i &p_v) const {
-	return Vector2i(x + p_v.x, y + p_v.y);
-}
-
-void Vector2i::operator+=(const Vector2i &p_v) {
-	x += p_v.x;
-	y += p_v.y;
-}
-
-Vector2i Vector2i::operator-(const Vector2i &p_v) const {
-	return Vector2i(x - p_v.x, y - p_v.y);
-}
-
-void Vector2i::operator-=(const Vector2i &p_v) {
-	x -= p_v.x;
-	y -= p_v.y;
-}
-
-Vector2i Vector2i::operator*(const Vector2i &p_v1) const {
-	return Vector2i(x * p_v1.x, y * p_v1.y);
-}
-
-Vector2i Vector2i::operator*(const int32_t &rvalue) const {
-	return Vector2i(x * rvalue, y * rvalue);
-}
-
-void Vector2i::operator*=(const int32_t &rvalue) {
-	x *= rvalue;
-	y *= rvalue;
-}
-
-Vector2i Vector2i::operator/(const Vector2i &p_v1) const {
-	return Vector2i(x / p_v1.x, y / p_v1.y);
-}
-
-Vector2i Vector2i::operator/(const int32_t &rvalue) const {
-	return Vector2i(x / rvalue, y / rvalue);
-}
-
-void Vector2i::operator/=(const int32_t &rvalue) {
-	x /= rvalue;
-	y /= rvalue;
-}
-
-Vector2i Vector2i::operator%(const Vector2i &p_v1) const {
-	return Vector2i(x % p_v1.x, y % p_v1.y);
-}
-
-Vector2i Vector2i::operator%(const int32_t &rvalue) const {
-	return Vector2i(x % rvalue, y % rvalue);
-}
-
-void Vector2i::operator%=(const int32_t &rvalue) {
-	x %= rvalue;
-	y %= rvalue;
-}
-
-Vector2i Vector2i::operator-() const {
-	return Vector2i(-x, -y);
-}
-
-bool Vector2i::operator==(const Vector2i &p_vec2) const {
-	return x == p_vec2.x && y == p_vec2.y;
-}
-
-bool Vector2i::operator!=(const Vector2i &p_vec2) const {
-	return x != p_vec2.x || y != p_vec2.y;
 }
 
 Vector2i::operator String() const {

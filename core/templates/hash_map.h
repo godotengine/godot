@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef HASH_MAP_H
-#define HASH_MAP_H
+#pragma once
 
-#include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/templates/hashfuncs.h"
-#include "core/templates/paged_allocator.h"
 #include "core/templates/pair.h"
+
+#include <initializer_list>
 
 /**
  * A HashMap implementation that uses open addressing with Robin Hood hashing.
@@ -51,7 +50,7 @@
  * The assignment operator copy the pairs from one map to the other.
  */
 
-template <class TKey, class TValue>
+template <typename TKey, typename TValue>
 struct HashMapElement {
 	HashMapElement *next = nullptr;
 	HashMapElement *prev = nullptr;
@@ -61,10 +60,12 @@ struct HashMapElement {
 			data(p_key, p_value) {}
 };
 
-template <class TKey, class TValue,
-		class Hasher = HashMapHasherDefault,
-		class Comparator = HashMapComparatorDefault<TKey>,
-		class Allocator = DefaultTypedAllocator<HashMapElement<TKey, TValue>>>
+bool _hashmap_variant_less_than(const Variant &p_left, const Variant &p_right);
+
+template <typename TKey, typename TValue,
+		typename Hasher = HashMapHasherDefault,
+		typename Comparator = HashMapComparatorDefault<TKey>,
+		typename Allocator = DefaultTypedAllocator<HashMapElement<TKey, TValue>>>
 class HashMap {
 public:
 	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
@@ -271,6 +272,47 @@ public:
 		num_elements = 0;
 	}
 
+	void sort() {
+		if (elements == nullptr || num_elements < 2) {
+			return; // An empty or single element HashMap is already sorted.
+		}
+		// Use insertion sort because we want this operation to be fast for the
+		// common case where the input is already sorted or nearly sorted.
+		HashMapElement<TKey, TValue> *inserting = head_element->next;
+		while (inserting != nullptr) {
+			HashMapElement<TKey, TValue> *after = nullptr;
+			for (HashMapElement<TKey, TValue> *current = inserting->prev; current != nullptr; current = current->prev) {
+				if (_hashmap_variant_less_than(inserting->data.key, current->data.key)) {
+					after = current;
+				} else {
+					break;
+				}
+			}
+			HashMapElement<TKey, TValue> *next = inserting->next;
+			if (after != nullptr) {
+				// Modify the elements around `inserting` to remove it from its current position.
+				inserting->prev->next = next;
+				if (next == nullptr) {
+					tail_element = inserting->prev;
+				} else {
+					next->prev = inserting->prev;
+				}
+				// Modify `before` and `after` to insert `inserting` between them.
+				HashMapElement<TKey, TValue> *before = after->prev;
+				if (before == nullptr) {
+					head_element = inserting;
+				} else {
+					before->next = inserting;
+				}
+				after->prev = inserting;
+				// Point `inserting` to its new surroundings.
+				inserting->prev = before;
+				inserting->next = after;
+			}
+			inserting = next;
+		}
+	}
+
 	TValue &get(const TKey &p_key) {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
@@ -390,6 +432,7 @@ public:
 	// Reserves space for a number of elements, useful to avoid many resizes and rehashes.
 	// If adding a known (possibly large) number of elements at once, must be larger than old capacity.
 	void reserve(uint32_t p_new_capacity) {
+		ERR_FAIL_COND_MSG(p_new_capacity < size(), "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 		uint32_t new_index = capacity_index;
 
 		while (hash_table_size_primes[new_index] < p_new_capacity) {
@@ -597,6 +640,13 @@ public:
 		capacity_index = MIN_CAPACITY_INDEX;
 	}
 
+	HashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+		reserve(p_init.size());
+		for (const KeyValue<TKey, TValue> &E : p_init) {
+			insert(E.key, E.value);
+		}
+	}
+
 	uint32_t debug_get_hash(uint32_t p_index) {
 		if (num_elements == 0) {
 			return 0;
@@ -621,5 +671,3 @@ public:
 		}
 	}
 };
-
-#endif // HASH_MAP_H

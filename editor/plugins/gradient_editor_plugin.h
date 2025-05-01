@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GRADIENT_EDITOR_PLUGIN_H
-#define GRADIENT_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class EditorSpinSlider;
 class ColorPicker;
@@ -138,9 +137,7 @@ class GradientEditorPlugin : public EditorPlugin {
 	GDCLASS(GradientEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "Gradient"; }
+	virtual String get_plugin_name() const override { return "Gradient"; }
 
 	GradientEditorPlugin();
 };
-
-#endif // GRADIENT_EDITOR_PLUGIN_H

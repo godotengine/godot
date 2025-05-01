@@ -325,7 +325,7 @@ retry:
   hb_user_data_array_t *user_data = obj->header.user_data.get_acquire ();
   if (unlikely (!user_data))
   {
-    user_data = (hb_user_data_array_t *) hb_calloc (sizeof (hb_user_data_array_t), 1);
+    user_data = (hb_user_data_array_t *) hb_calloc (1, sizeof (hb_user_data_array_t));
     if (unlikely (!user_data))
       return false;
     user_data->init ();

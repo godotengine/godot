@@ -85,7 +85,7 @@ struct maxp
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
-
+    hb_barrier ();
     if (version.major == 1)
     {
       const maxpV1Tail &v1 = StructAfter<maxpV1Tail> (*this);
@@ -103,6 +103,7 @@ struct maxp
     maxp_prime->numGlyphs = hb_min (c->plan->num_output_glyphs (), 0xFFFFu);
     if (maxp_prime->version.major == 1)
     {
+      hb_barrier ();
       const maxpV1Tail *src_v1 = &StructAfter<maxpV1Tail> (*this);
       maxpV1Tail *dest_v1 = c->serializer->embed<maxpV1Tail> (src_v1);
       if (unlikely (!dest_v1)) return_trace (false);

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RING_BUFFER_H
-#define RING_BUFFER_H
+#pragma once
 
 #include "core/templates/vector.h"
 
@@ -197,7 +196,7 @@ public:
 		int old_size = size();
 		int new_size = 1 << p_power;
 		int mask = new_size - 1;
-		data.resize(1 << p_power);
+		data.resize(int64_t(1) << int64_t(p_power));
 		if (old_size < new_size && read_pos > write_pos) {
 			for (int i = 0; i < write_pos; i++) {
 				data.write[(old_size + i) & mask] = data[i];
@@ -211,10 +210,8 @@ public:
 		size_mask = mask;
 	}
 
-	RingBuffer<T>(int p_power = 0) {
+	RingBuffer(int p_power = 0) {
 		resize(p_power);
 	}
-	~RingBuffer<T>() {}
+	~RingBuffer() {}
 };
-
-#endif // RING_BUFFER_H

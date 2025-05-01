@@ -1,30 +1,30 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+from glob import glob
+
+import platform_builders
 
 Import("env")
 
 env.platform_sources = []
 
+
+# Generate export icons
+for platform in env.platform_exporters:
+    for path in glob(f"{platform}/export/*.svg"):
+        env.CommandNoCache(path.replace(".svg", "_svg.gen.h"), path, env.Run(platform_builders.export_icon_builder))
+
+
 # Register platform-exclusive APIs
-reg_apis_inc = '#include "register_platform_apis.h"\n'
-reg_apis = "void register_platform_apis() {\n"
-unreg_apis = "void unregister_platform_apis() {\n"
+register_platform_apis = env.CommandNoCache(
+    "register_platform_apis.gen.cpp",
+    env.Value(env.platform_apis),
+    env.Run(platform_builders.register_platform_apis_builder),
+)
+env.add_source_files(env.platform_sources, register_platform_apis)
 for platform in env.platform_apis:
-    platform_dir = env.Dir(platform)
-    env.add_source_files(env.platform_sources, platform + "/api/api.cpp")
-    reg_apis += "\tregister_" + platform + "_api();\n"
-    unreg_apis += "\tunregister_" + platform + "_api();\n"
-    reg_apis_inc += '#include "' + platform + '/api/api.h"\n'
-reg_apis_inc += "\n"
-reg_apis += "}\n\n"
-unreg_apis += "}\n"
-
-# NOTE: It is safe to generate this file here, since this is still execute serially
-with open("register_platform_apis.gen.cpp", "w", encoding="utf-8") as f:
-    f.write(reg_apis_inc)
-    f.write(reg_apis)
-    f.write(unreg_apis)
-
-env.add_source_files(env.platform_sources, "register_platform_apis.gen.cpp")
+    env.add_source_files(env.platform_sources, f"{platform}/api/*.cpp")
 
 lib = env.add_library("platform", env.platform_sources)
 env.Prepend(LIBS=[lib])

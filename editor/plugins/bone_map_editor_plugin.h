@@ -28,17 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BONE_MAP_EDITOR_PLUGIN_H
-#define BONE_MAP_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
-
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif
+#include "editor/plugins/editor_plugin.h"
 
 #include "scene/3d/skeleton_3d.h"
 #include "scene/gui/box_container.h"
@@ -78,8 +72,7 @@ public:
 
 	bool is_require() const;
 
-	BoneMapperButton(const StringName p_profile_bone_name, bool p_require, bool p_selected);
-	~BoneMapperButton();
+	BoneMapperButton(const StringName &p_profile_bone_name, bool p_require, bool p_selected);
 };
 
 class BoneMapperItem : public VBoxContainer {
@@ -99,14 +92,13 @@ class BoneMapperItem : public VBoxContainer {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual void _value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
+	virtual void _value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing);
 	virtual void create_editor();
 
 public:
 	void assign_button_id(int p_button_id);
 
 	BoneMapperItem(Ref<BoneMap> &p_bone_map, const StringName &p_profile_bone_name = StringName());
-	~BoneMapperItem();
 };
 
 class BonePicker : public AcceptDialog {
@@ -122,8 +114,6 @@ public:
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
-
 	void _confirm();
 
 private:
@@ -132,7 +122,6 @@ private:
 
 public:
 	BonePicker(Skeleton3D *p_skeleton);
-	~BonePicker();
 };
 
 class BoneMapper : public VBoxContainer {
@@ -172,25 +161,23 @@ class BoneMapper : public VBoxContainer {
 	void _apply_picker_selection();
 	void _clear_mapping_current_group();
 
-#ifdef MODULE_REGEX_ENABLED
 	/* For auto mapping */
 	enum BoneSegregation {
 		BONE_SEGREGATION_NONE,
 		BONE_SEGREGATION_LEFT,
 		BONE_SEGREGATION_RIGHT
 	};
-	bool is_match_with_bone_name(String p_bone_name, String p_word);
-	int search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_picklist, BoneSegregation p_segregation = BONE_SEGREGATION_NONE, int p_parent = -1, int p_child = -1, int p_children_count = -1);
-	BoneSegregation guess_bone_segregation(String p_bone_name);
+	bool is_match_with_bone_name(const String &p_bone_name, const String &p_word);
+	int search_bone_by_name(Skeleton3D *p_skeleton, const Vector<String> &p_picklist, BoneSegregation p_segregation = BONE_SEGREGATION_NONE, int p_parent = -1, int p_child = -1, int p_children_count = -1);
+	BoneSegregation guess_bone_segregation(const String &p_bone_name);
 	void auto_mapping_process(Ref<BoneMap> &p_bone_map);
 	void _run_auto_mapping();
-#endif // MODULE_REGEX_ENABLED
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual void _value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
-	virtual void _profile_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
+	virtual void _value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing);
+	virtual void _profile_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing);
 
 public:
 	void set_current_group_idx(int p_group_idx);
@@ -199,7 +186,6 @@ public:
 	int get_current_bone_idx() const;
 
 	BoneMapper(Skeleton3D *p_skeleton, Ref<BoneMap> &p_bone_map);
-	~BoneMapper();
 };
 
 class BoneMapEditor : public VBoxContainer {
@@ -217,7 +203,6 @@ protected:
 
 public:
 	BoneMapEditor(Ref<BoneMap> &p_bone_map);
-	~BoneMapEditor();
 };
 
 class EditorInspectorPluginBoneMap : public EditorInspectorPlugin {
@@ -233,8 +218,6 @@ class BoneMapEditorPlugin : public EditorPlugin {
 	GDCLASS(BoneMapEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "BoneMap"; }
+	virtual String get_plugin_name() const override { return "BoneMap"; }
 	BoneMapEditorPlugin();
 };
-
-#endif // BONE_MAP_EDITOR_PLUGIN_H

@@ -1,5 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -146,6 +150,48 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a new vector with all components clamped between
+        /// <paramref name="min"/> and <paramref name="max"/> using
+        /// <see cref="Mathf.Clamp(int, int, int)"/>.
+        /// </summary>
+        /// <param name="min">The minimum allowed value.</param>
+        /// <param name="max">The maximum allowed value.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public readonly Vector4I Clamp(int min, int max)
+        {
+            return new Vector4I
+            (
+                Mathf.Clamp(X, min, max),
+                Mathf.Clamp(Y, min, max),
+                Mathf.Clamp(Z, min, max),
+                Mathf.Clamp(W, min, max)
+            );
+        }
+
+        /// <summary>
+        /// Returns the squared distance between this vector and <paramref name="to"/>.
+        /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
+        /// you need to compare vectors or need the squared distance for some formula.
+        /// </summary>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The squared distance between the two vectors.</returns>
+        public readonly int DistanceSquaredTo(Vector4I to)
+        {
+            return (to - this).LengthSquared();
+        }
+
+        /// <summary>
+        /// Returns the distance between this vector and <paramref name="to"/>.
+        /// </summary>
+        /// <seealso cref="DistanceSquaredTo(Vector4I)"/>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The distance between the two vectors.</returns>
+        public readonly real_t DistanceTo(Vector4I to)
+        {
+            return (to - this).Length();
+        }
+
+        /// <summary>
         /// Returns the length (magnitude) of this vector.
         /// </summary>
         /// <seealso cref="LengthSquared"/>
@@ -174,6 +220,78 @@ namespace Godot
             int w2 = W * W;
 
             return x2 + y2 + z2 + w2;
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4I(Mathf.Max(X, with.X), Mathf.Max(Y, with.Y), Mathf.Max(Z, with.Z), Mathf.Max(W, with.W))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector4I Max(Vector4I with)
+        {
+            return new Vector4I
+            (
+                Mathf.Max(X, with.X),
+                Mathf.Max(Y, with.Y),
+                Mathf.Max(Z, with.Z),
+                Mathf.Max(W, with.W)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4I(Mathf.Max(X, with), Mathf.Max(Y, with), Mathf.Max(Z, with), Mathf.Max(W, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector4I Max(int with)
+        {
+            return new Vector4I
+            (
+                Mathf.Max(X, with),
+                Mathf.Max(Y, with),
+                Mathf.Max(Z, with),
+                Mathf.Max(W, with)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4I(Mathf.Min(X, with.X), Mathf.Min(Y, with.Y), Mathf.Min(Z, with.Z), Mathf.Min(W, with.W))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector4I Min(Vector4I with)
+        {
+            return new Vector4I
+            (
+                Mathf.Min(X, with.X),
+                Mathf.Min(Y, with.Y),
+                Mathf.Min(Z, with.Z),
+                Mathf.Min(W, with.W)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4I(Mathf.Min(X, with), Mathf.Min(Y, with), Mathf.Min(Z, with), Mathf.Min(W, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector4I Min(int with)
+        {
+            return new Vector4I
+            (
+                Mathf.Min(X, with),
+                Mathf.Min(Y, with),
+                Mathf.Min(Z, with),
+                Mathf.Min(W, with)
+            );
         }
 
         /// <summary>
@@ -225,6 +343,36 @@ namespace Godot
         public readonly Vector4I Sign()
         {
             return new Vector4I(Mathf.Sign(X), Mathf.Sign(Y), Mathf.Sign(Z), Mathf.Sign(W));
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the closest multiple of the corresponding component in <paramref name="step"/>.
+        /// </summary>
+        /// <param name="step">A vector value representing the step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector4I Snapped(Vector4I step)
+        {
+            return new Vector4I(
+                (int)Mathf.Snapped((double)X, (double)step.X),
+                (int)Mathf.Snapped((double)Y, (double)step.Y),
+                (int)Mathf.Snapped((double)Z, (double)step.Z),
+                (int)Mathf.Snapped((double)W, (double)step.W)
+            );
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the closest multiple of <paramref name="step"/>.
+        /// </summary>
+        /// <param name="step">The step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector4I Snapped(int step)
+        {
+            return new Vector4I(
+                (int)Mathf.Snapped((double)X, (double)step),
+                (int)Mathf.Snapped((double)Y, (double)step),
+                (int)Mathf.Snapped((double)Z, (double)step),
+                (int)Mathf.Snapped((double)W, (double)step)
+            );
         }
 
         // Constants
@@ -611,7 +759,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Vector4I other && Equals(other);
         }
@@ -639,18 +787,15 @@ namespace Godot
         /// Converts this <see cref="Vector4I"/> to a string.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public override readonly string ToString()
-        {
-            return $"({X}, {Y}, {Z}, {W})";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Vector4I"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
-            return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)}), {W.ToString(format)})";
+            return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)}, {Z.ToString(format, CultureInfo.InvariantCulture)}, {W.ToString(format, CultureInfo.InvariantCulture)})";
         }
     }
 }

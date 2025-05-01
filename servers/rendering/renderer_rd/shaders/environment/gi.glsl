@@ -174,9 +174,9 @@ vec3 reconstruct_position(ivec2 screen_pos) {
 
 		pos.z = pos.z * 2.0 - 1.0;
 		if (params.orthogonal) {
-			pos.z = ((pos.z + (params.z_far + params.z_near) / (params.z_far - params.z_near)) * (params.z_far - params.z_near)) / 2.0;
+			pos.z = -(pos.z * (params.z_far - params.z_near) - (params.z_far + params.z_near)) / 2.0;
 		} else {
-			pos.z = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - pos.z * (params.z_far - params.z_near));
+			pos.z = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near + pos.z * (params.z_far - params.z_near));
 		}
 		pos.z = -pos.z;
 
@@ -618,6 +618,11 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 	if (normal.length() > 0.5) {
 		//valid normal, can do GI
 		float roughness = normal_roughness.w;
+		bool dynamic_object = roughness > 0.5;
+		if (dynamic_object) {
+			roughness = 1.0 - roughness;
+		}
+		roughness /= (127.0 / 255.0);
 		vec3 view = -normalize(mat3(scene_data.cam_transform) * (vertex - scene_data.eye_offset[gl_GlobalInvocationID.z].xyz));
 		vertex = mat3(scene_data.cam_transform) * vertex;
 		normal = normalize(mat3(scene_data.cam_transform) * normal);

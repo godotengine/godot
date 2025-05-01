@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_PATHS_H
-#define EDITOR_PATHS_H
+#pragma once
 
 #include "core/object/class_db.h"
 #include "core/object/object.h"
@@ -42,6 +41,7 @@ class EditorPaths : public Object {
 	String data_dir; // Editor data (templates, shader cache, etc.).
 	String config_dir; // Editor config (settings, profiles, themes, etc.).
 	String cache_dir; // Editor cache (thumbnails, tmp generated files).
+	String temp_dir; // Editor temporary directory.
 	String project_data_dir; // Project-specific data (metadata, shader cache, etc.).
 	bool self_contained = false; // Self-contained means everything goes to `editor_data` dir.
 	String self_contained_file; // Self-contained file with configuration.
@@ -61,8 +61,10 @@ public:
 	String get_data_dir() const;
 	String get_config_dir() const;
 	String get_cache_dir() const;
+	String get_temp_dir() const;
 	String get_project_data_dir() const;
 	String get_export_templates_dir() const;
+	String get_debug_keystore_path() const;
 	String get_project_settings_dir() const;
 	String get_text_editor_themes_dir() const;
 	String get_script_templates_dir() const;
@@ -81,5 +83,3 @@ public:
 
 	EditorPaths();
 };
-
-#endif // EDITOR_PATHS_H

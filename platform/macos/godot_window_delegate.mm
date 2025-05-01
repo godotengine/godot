@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_window_delegate.h"
+#import "godot_window_delegate.h"
 
-#include "display_server_macos.h"
-#include "godot_button_view.h"
-#include "godot_window.h"
+#import "display_server_macos.h"
+#import "godot_button_view.h"
+#import "godot_window.h"
 
 @implementation GodotWindowDelegate
 
@@ -184,17 +184,19 @@
 	}
 
 	// Restore borderless, transparent and resizability state.
-	if (wd.borderless || wd.layered_window) {
+	if (wd.borderless) {
 		[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
+		[wd.window_object setHasShadow:NO];
 	} else {
 		[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+		[wd.window_object setHasShadow:YES];
 	}
 	if (wd.layered_window) {
 		ds->set_window_per_pixel_transparency_enabled(true, window_id);
 	}
 
 	// Restore on-top state.
-	if (wd.on_top) {
+	if (ds->is_always_on_top_recursive(window_id)) {
 		[wd.window_object setLevel:NSFloatingWindowLevel];
 	}
 
@@ -268,7 +270,7 @@
 
 	ds->window_resize(window_id, wd.size.width, wd.size.height);
 
-	if (!wd.rect_changed_callback.is_null()) {
+	if (wd.rect_changed_callback.is_valid()) {
 		wd.rect_changed_callback.call(Rect2i(ds->window_get_position(window_id), ds->window_get_size(window_id)));
 	}
 }
@@ -291,7 +293,7 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	ds->release_pressed_events();
 
-	if (!wd.rect_changed_callback.is_null()) {
+	if (wd.rect_changed_callback.is_valid()) {
 		wd.rect_changed_callback.call(Rect2i(ds->window_get_position(window_id), ds->window_get_size(window_id)));
 	}
 }
@@ -322,6 +324,9 @@
 
 	wd.focused = true;
 	ds->set_last_focused_window(window_id);
+#ifdef ACCESSKIT_ENABLED
+	ds->accessibility_set_window_focused(window_id, true);
+#endif
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);
 }
 
@@ -339,6 +344,9 @@
 
 	wd.focused = false;
 	ds->release_pressed_events();
+#ifdef ACCESSKIT_ENABLED
+	ds->accessibility_set_window_focused(window_id, false);
+#endif
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);
 }
 
@@ -352,6 +360,9 @@
 
 	wd.focused = false;
 	ds->release_pressed_events();
+#ifdef ACCESSKIT_ENABLED
+	ds->accessibility_set_window_focused(window_id, false);
+#endif
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);
 }
 
@@ -362,9 +373,13 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	wd.is_visible = ([wd.window_object occlusionState] & NSWindowOcclusionStateVisible) && [wd.window_object isVisible];
 	if ([wd.window_object isKeyWindow]) {
 		wd.focused = true;
 		ds->set_last_focused_window(window_id);
+#ifdef ACCESSKIT_ENABLED
+		ds->accessibility_set_window_focused(window_id, true);
+#endif
 		ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);
 	}
 }

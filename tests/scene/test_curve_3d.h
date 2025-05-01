@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_CURVE_3D_H
-#define TEST_CURVE_3D_H
+#pragma once
 
 #include "core/math/math_funcs.h"
 #include "scene/resources/curve.h"
@@ -177,10 +176,28 @@ TEST_CASE("[Curve3D] Sampling") {
 		CHECK(curve->sample_baked(curve->get_closest_offset(Vector3(0, 50, 0)), true) == Vector3(0, 50, 0));
 	}
 
-	SUBCASE("sample_baked_with_rotation") {
+	SUBCASE("sample_baked_with_rotation, cubic = false, p_apply_tilt = false") {
 		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 0, 0))) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 0, 0)));
 		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 25, 0))) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 25, 0)));
 		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 50, 0))) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 50, 0)));
+	}
+
+	SUBCASE("sample_baked_with_rotation, cubic = false, p_apply_tilt = true") {
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 0, 0)), false, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 0, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 25, 0)), false, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 25, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 50, 0)), false, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 50, 0)));
+	}
+
+	SUBCASE("sample_baked_with_rotation, cubic = true, p_apply_tilt = false") {
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 0, 0)), true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 0, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 25, 0)), true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 25, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 50, 0)), true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 50, 0)));
+	}
+
+	SUBCASE("sample_baked_with_rotation, cubic = true, p_apply_tilt = true") {
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 0, 0)), true, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 0, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 25, 0)), true, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 25, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 50, 0)), true, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 50, 0)));
 	}
 
 	SUBCASE("sample_baked_tilt") {
@@ -265,5 +282,3 @@ TEST_CASE("[Curve3D] Even length tessellation") {
 }
 
 } // namespace TestCurve3D
-
-#endif // TEST_CURVE_3D_H

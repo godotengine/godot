@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GPU_PARTICLES_2D_H
-#define GPU_PARTICLES_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -64,9 +63,12 @@ private:
 	bool fractional_delta = false;
 	bool interpolate = true;
 	float interp_to_end_factor = 0;
+	Vector3 previous_velocity;
 	Vector2 previous_position;
+	uint32_t seed = 0;
+	bool use_fixed_seed = false;
 #ifdef TOOLS_ENABLED
-	bool show_visibility_rect = false;
+	bool show_gizmos = false;
 #endif
 	Ref<Material> process_material;
 
@@ -98,7 +100,15 @@ protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
+#ifdef TOOLS_ENABLED
+	void _draw_emission_gizmo();
+#endif
 	void _update_collision_size();
+
+#ifndef DISABLE_DEPRECATED
+	void _restart_bind_compat_92089();
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	void set_emitting(bool p_emitting);
@@ -118,9 +128,10 @@ public:
 	void set_trail_sections(int p_sections);
 	void set_trail_section_subdivisions(int p_subdivisions);
 	void set_interp_to_end(float p_interp);
+	void request_particles_process(real_t p_requested_process_time);
 
 #ifdef TOOLS_ENABLED
-	void set_show_visibility_rect(bool p_show_visibility_rect);
+	void set_show_gizmos(bool p_show_gizmos);
 #endif
 
 	bool is_emitting() const;
@@ -165,6 +176,12 @@ public:
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;
 
+	void set_use_fixed_seed(bool p_use_fixed_seed);
+	bool get_use_fixed_seed() const;
+
+	void set_seed(uint32_t p_seed);
+	uint32_t get_seed() const;
+
 	enum EmitFlags {
 		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,
 		EMIT_FLAG_ROTATION_SCALE = RS::PARTICLES_EMIT_FLAG_ROTATION_SCALE,
@@ -175,7 +192,7 @@ public:
 
 	void emit_particle(const Transform2D &p_transform, const Vector2 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
 
-	void restart();
+	void restart(bool p_keep_seed = false);
 	Rect2 capture_rect() const;
 	void convert_from_particles(Node *p_particles);
 
@@ -185,5 +202,3 @@ public:
 
 VARIANT_ENUM_CAST(GPUParticles2D::DrawOrder)
 VARIANT_ENUM_CAST(GPUParticles2D::EmitFlags)
-
-#endif // GPU_PARTICLES_2D_H

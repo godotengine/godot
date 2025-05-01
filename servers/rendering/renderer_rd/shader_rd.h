@@ -28,16 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_RD_H
-#define SHADER_RD_H
+#pragma once
 
 #include "core/os/mutex.h"
 #include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
-#include "core/variant/variant.h"
 #include "servers/rendering_server.h"
 
 class ShaderRD {
@@ -46,7 +43,7 @@ public:
 		int group = 0;
 		CharString text;
 		bool default_enabled = true;
-		VariantDefine(){};
+		VariantDefine() {}
 		VariantDefine(int p_group, const String &p_text, bool p_default_enabled) {
 			group = p_group;
 			default_enabled = p_default_enabled;
@@ -59,40 +56,47 @@ private:
 	CharString general_defines;
 	Vector<VariantDefine> variant_defines;
 	Vector<bool> variants_enabled;
+	Vector<uint32_t> variant_to_group;
 	HashMap<int, LocalVector<int>> group_to_variant_map;
 	Vector<bool> group_enabled;
 
+	Vector<RD::PipelineImmutableSampler> immutable_samplers;
+
 	struct Version {
+		Mutex *mutex = nullptr;
 		CharString uniforms;
 		CharString vertex_globals;
 		CharString compute_globals;
 		CharString fragment_globals;
 		HashMap<StringName, CharString> code_sections;
 		Vector<CharString> custom_defines;
+		Vector<WorkerThreadPool::GroupID> group_compilation_tasks;
 
-		Vector<uint8_t> *variant_data = nullptr;
-		RID *variants = nullptr; // Same size as variant defines.
+		Vector<Vector<uint8_t>> variant_data;
+		Vector<RID> variants;
 
 		bool valid;
 		bool dirty;
 		bool initialize_needed;
 	};
 
-	Mutex variant_set_mutex;
-
 	struct CompileData {
 		Version *version;
 		int group = 0;
 	};
 
-	void _compile_variant(uint32_t p_variant, const CompileData *p_data);
+	void _compile_variant(uint32_t p_variant, CompileData p_data);
 
 	void _initialize_version(Version *p_version);
 	void _clear_version(Version *p_version);
-	void _compile_version(Version *p_version, int p_group);
+	void _compile_version_start(Version *p_version, int p_group);
+	void _compile_version_end(Version *p_version, int p_group);
+	void _compile_ensure_finished(Version *p_version);
 	void _allocate_placeholders(Version *p_version, int p_group);
 
-	RID_Owner<Version> version_owner;
+	RID_Owner<Version, true> version_owner;
+	Mutex versions_mutex;
+	HashMap<RID, Mutex *> version_mutexes;
 
 	struct StageTemplate {
 		struct Chunk {
@@ -143,6 +147,7 @@ private:
 	void _add_stage(const char *p_code, StageType p_stage_type);
 
 	String _version_get_sha1(Version *p_version) const;
+	String _get_cache_file_path(Version *p_version, int p_group);
 	bool _load_from_cache(Version *p_version, int p_group);
 	void _save_to_cache(Version *p_version, int p_group);
 	void _initialize_cache();
@@ -164,6 +169,8 @@ public:
 		Version *version = version_owner.get_or_null(p_version);
 		ERR_FAIL_NULL_V(version, RID());
 
+		MutexLock lock(*version->mutex);
+
 		if (version->dirty) {
 			_initialize_version(version);
 			for (int i = 0; i < group_enabled.size(); i++) {
@@ -171,8 +178,13 @@ public:
 					_allocate_placeholders(version, i);
 					continue;
 				}
-				_compile_version(version, i);
+				_compile_version_start(version, i);
 			}
+		}
+
+		uint32_t group = variant_to_group[p_variant];
+		if (version->group_compilation_tasks[group] != 0) {
+			_compile_version_end(version, group);
 		}
 
 		if (!version->valid) {
@@ -201,10 +213,8 @@ public:
 
 	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 
-	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "");
+	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "", const Vector<RD::PipelineImmutableSampler> &r_immutable_samplers = Vector<RD::PipelineImmutableSampler>());
 	void initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines = "");
 
 	virtual ~ShaderRD();
 };
-
-#endif // SHADER_RD_H

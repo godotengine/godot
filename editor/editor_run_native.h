@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_RUN_NATIVE_H
-#define EDITOR_RUN_NATIVE_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
@@ -41,11 +40,15 @@ class EditorRunNative : public HBoxContainer {
 
 	RichTextLabel *result_dialog_log = nullptr;
 	AcceptDialog *result_dialog = nullptr;
+	ConfirmationDialog *run_native_confirm = nullptr;
+	bool run_confirmed = false;
 
 	MenuButton *remote_debug = nullptr;
 	bool first = true;
 
 	int resume_id = -1;
+
+	void _confirm_run_native();
 
 protected:
 	static void _bind_methods();
@@ -59,5 +62,3 @@ public:
 
 	EditorRunNative();
 };
-
-#endif // EDITOR_RUN_NATIVE_H

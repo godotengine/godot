@@ -99,7 +99,7 @@ open internal class VkSurfaceView(context: Context) : SurfaceView(context), Surf
 	 *
 	 * Must not be called before a [VkRenderer] has been set.
 	 */
-	open fun onResume() {
+	protected fun resumeRenderThread() {
 		vkThread.onResume()
 	}
 
@@ -108,17 +108,15 @@ open internal class VkSurfaceView(context: Context) : SurfaceView(context), Surf
 	 *
 	 * Must not be called before a [VkRenderer] has been set.
 	 */
-	open fun onPause() {
+	protected fun pauseRenderThread() {
 		vkThread.onPause()
 	}
 
 	/**
-	 * Tear down the rendering thread.
-	 *
-	 * Must not be called before a [VkRenderer] has been set.
+	 * Requests the render thread to exit and block until it does.
 	 */
-	fun onDestroy() {
-		vkThread.blockingExit()
+	fun requestRenderThreadExitAndWait() {
+		vkThread.requestExitAndWait()
 	}
 
 	override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {

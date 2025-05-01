@@ -28,17 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RB_MAP_H
-#define RB_MAP_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/pair.h"
 
+#include <initializer_list>
+
 // based on the very nice implementation of rb-trees by:
 // https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
 
-template <class K, class V, class C = Comparator<K>, class A = DefaultAllocator>
+template <typename K, typename V, typename C = Comparator<K>, typename A = DefaultAllocator>
 class RBMap {
 	enum Color {
 		RED,
@@ -111,10 +112,15 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const Iterator &p_it) const { return E == p_it.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &p_it) const { return E != p_it.E; }
 		explicit operator bool() const {
 			return E != nullptr;
+		}
+
+		Iterator &operator=(const Iterator &p_it) {
+			E = p_it.E;
+			return *this;
 		}
 		Iterator(Element *p_E) { E = p_E; }
 		Iterator() {}
@@ -138,10 +144,15 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &p_it) const { return E == p_it.E; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_it) const { return E != p_it.E; }
 		explicit operator bool() const {
 			return E != nullptr;
+		}
+
+		ConstIterator &operator=(const ConstIterator &p_it) {
+			E = p_it.E;
+			return *this;
 		}
 		ConstIterator(const Element *p_E) { E = p_E; }
 		ConstIterator() {}
@@ -753,11 +764,15 @@ public:
 		_copy_from(p_map);
 	}
 
+	RBMap(std::initializer_list<KeyValue<K, V>> p_init) {
+		for (const KeyValue<K, V> &E : p_init) {
+			insert(E.key, E.value);
+		}
+	}
+
 	_FORCE_INLINE_ RBMap() {}
 
 	~RBMap() {
 		clear();
 	}
 };
-
-#endif // RB_MAP_H

@@ -122,7 +122,7 @@ namespace embree
 
       __forceinline QuadMIntersector1MoellerTrumbore(const Ray& ray, const void* ptr) {}
 
-      __forceinline void intersect(RayHit& ray, IntersectContext* context,
+      __forceinline void intersect(RayHit& ray, RayQueryContext* context,
                                    const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3,
                                    const vuint<M>& geomID, const vuint<M>& primID) const
       {
@@ -144,7 +144,7 @@ namespace embree
         }
       }
       
-      __forceinline bool occluded(Ray& ray, IntersectContext* context,
+      __forceinline bool occluded(Ray& ray, RayQueryContext* context,
                                   const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3,
                                   const vuint<M>& geomID, const vuint<M>& primID) const
       {
@@ -215,14 +215,14 @@ namespace embree
         return false;
       }
       
-      __forceinline bool intersect(RayHit& ray, IntersectContext* context,
+      __forceinline bool intersect(RayHit& ray, RayQueryContext* context,
                                    const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, 
                                    const vuint4& geomID, const vuint4& primID) const
       {
         return intersect(ray,v0,v1,v2,v3,Intersect1EpilogM<8,filter>(ray,context,vuint8(geomID),vuint8(primID)));
       }
       
-      __forceinline bool occluded(Ray& ray, IntersectContext* context,
+      __forceinline bool occluded(Ray& ray, RayQueryContext* context,
                                   const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, 
                                   const vuint4& geomID, const vuint4& primID) const
       {
@@ -394,7 +394,7 @@ namespace embree
       __forceinline QuadMIntersectorKMoellerTrumbore(const vbool<K>& valid, const RayK<K>& ray)
         : QuadMIntersectorKMoellerTrumboreBase<M,K,filter>(valid,ray) {}
 
-      __forceinline void intersect1(RayHitK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline void intersect1(RayHitK<K>& ray, size_t k, RayQueryContext* context,
                                     const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3,
                                     const vuint<M>& geomID, const vuint<M>& primID) const
       {
@@ -403,7 +403,7 @@ namespace embree
         MoellerTrumboreIntersector1KTriangleM::intersect1<M,K>(ray,k,v2,v3,v1,vbool<M>(true ),epilog);
       }
       
-      __forceinline bool occluded1(RayK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline bool occluded1(RayK<K>& ray, size_t k, RayQueryContext* context,
                                    const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3,
                                    const vuint<M>& geomID, const vuint<M>& primID) const
       {
@@ -440,14 +440,14 @@ namespace embree
         return MoellerTrumboreIntersector1KTriangleM::intersect1<8,K>(ray,k,vtx0,vtx1,vtx2,flags,epilog); 
       }
       
-      __forceinline bool intersect1(RayHitK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline bool intersect1(RayHitK<K>& ray, size_t k, RayQueryContext* context,
                                     const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, 
                                     const vuint4& geomID, const vuint4& primID) const
       {
         return intersect1(ray,k,v0,v1,v2,v3,Intersect1KEpilogM<8,K,filter>(ray,k,context,vuint8(geomID),vuint8(primID)));
       }
       
-      __forceinline bool occluded1(RayK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline bool occluded1(RayK<K>& ray, size_t k, RayQueryContext* context,
                                    const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, 
                                    const vuint4& geomID, const vuint4& primID) const
       {

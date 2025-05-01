@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VSET_H
-#define VSET_H
+#pragma once
 
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
 
-template <class T>
+template <typename T>
 class VSet {
 	Vector<T> _data;
 
@@ -137,6 +136,8 @@ public:
 	inline const T &operator[](int p_index) const {
 		return _data[p_index];
 	}
-};
 
-#endif // VSET_H
+	_FORCE_INLINE_ VSet() {}
+	_FORCE_INLINE_ VSet(std::initializer_list<T> p_init) :
+			_data(p_init) {}
+};

@@ -31,7 +31,7 @@
 #include "world_environment.h"
 
 #include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
+#include "scene/main/viewport.h"
 
 void WorldEnvironment::_notification(int p_what) {
 	switch (p_what) {
@@ -46,6 +46,11 @@ void WorldEnvironment::_notification(int p_what) {
 				add_to_group("_world_camera_attributes_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
 				_update_current_camera_attributes();
 			}
+
+			if (compositor.is_valid()) {
+				add_to_group("_world_compositor_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+				_update_current_compositor();
+			}
 		} break;
 
 		case Node3D::NOTIFICATION_EXIT_WORLD:
@@ -58,6 +63,11 @@ void WorldEnvironment::_notification(int p_what) {
 			if (camera_attributes.is_valid()) {
 				remove_from_group("_world_camera_attributes_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
 				_update_current_camera_attributes();
+			}
+
+			if (compositor.is_valid()) {
+				remove_from_group("_world_compositor_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+				_update_current_compositor();
 			}
 		} break;
 	}
@@ -83,6 +93,17 @@ void WorldEnvironment::_update_current_camera_attributes() {
 	}
 
 	get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_world_camera_attributes_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
+}
+
+void WorldEnvironment::_update_current_compositor() {
+	WorldEnvironment *first = Object::cast_to<WorldEnvironment>(get_tree()->get_first_node_in_group("_world_compositor_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id())));
+	if (first) {
+		get_viewport()->find_world_3d()->set_compositor(first->compositor);
+	} else {
+		get_viewport()->find_world_3d()->set_compositor(Ref<Compositor>());
+	}
+
+	get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_world_compositor_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
 }
 
 void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
@@ -135,10 +156,35 @@ Ref<CameraAttributes> WorldEnvironment::get_camera_attributes() const {
 	return camera_attributes;
 }
 
+void WorldEnvironment::set_compositor(const Ref<Compositor> &p_compositor) {
+	if (compositor == p_compositor) {
+		return;
+	}
+	if (is_inside_tree() && compositor.is_valid()) {
+		remove_from_group("_world_compositor_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+	}
+
+	compositor = p_compositor;
+
+	if (is_inside_tree() && compositor.is_valid()) {
+		add_to_group("_world_compositor_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+	}
+
+	if (is_inside_tree()) {
+		_update_current_compositor();
+	} else {
+		update_configuration_warnings();
+	}
+}
+
+Ref<Compositor> WorldEnvironment::get_compositor() const {
+	return compositor;
+}
+
 PackedStringArray WorldEnvironment::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
-	if (!environment.is_valid() && !camera_attributes.is_valid()) {
+	if (environment.is_null() && camera_attributes.is_null()) {
 		warnings.push_back(RTR("To have any visible effect, WorldEnvironment requires its \"Environment\" property to contain an Environment, its \"Camera Attributes\" property to contain a CameraAttributes resource, or both."));
 	}
 
@@ -154,6 +200,10 @@ PackedStringArray WorldEnvironment::get_configuration_warnings() const {
 		warnings.push_back(RTR("Only one WorldEnvironment is allowed per scene (or set of instantiated scenes)."));
 	}
 
+	if (compositor.is_valid() && get_viewport()->find_world_3d()->get_compositor() != compositor) {
+		warnings.push_back(("Only the first Compositor has an effect in a scene (or set of instantiated scenes)."));
+	}
+
 	return warnings;
 }
 
@@ -165,6 +215,10 @@ void WorldEnvironment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_attributes", "camera_attributes"), &WorldEnvironment::set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &WorldEnvironment::get_camera_attributes);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
+
+	ClassDB::bind_method(D_METHOD("set_compositor", "compositor"), &WorldEnvironment::set_compositor);
+	ClassDB::bind_method(D_METHOD("get_compositor"), &WorldEnvironment::get_compositor);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "compositor", PROPERTY_HINT_RESOURCE_TYPE, "Compositor"), "set_compositor", "get_compositor");
 }
 
 WorldEnvironment::WorldEnvironment() {

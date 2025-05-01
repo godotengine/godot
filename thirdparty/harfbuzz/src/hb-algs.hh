@@ -202,8 +202,12 @@ struct BEInt<Type, 4>
 /* Floats. */
 
 /* We want our rounding towards +infinity. */
+static inline double
+_hb_roundf (double x) { return floor (x + .5); }
+
 static inline float
 _hb_roundf (float x) { return floorf (x + .5f); }
+
 #define roundf(x) _hb_roundf(x)
 
 
@@ -282,7 +286,7 @@ HB_FUNCOBJ (hb_bool);
 
 // Compression function for Merkle-Damgard construction.
 // This function is generated using the framework provided.
-#define mix(h) (					\
+#define fasthash_mix(h) (					\
 			(void) ((h) ^= (h) >> 23),		\
 			(void) ((h) *= 0x2127599bf4325c37ULL),	\
 			(h) ^= (h) >> 47)
@@ -306,7 +310,7 @@ static inline uint64_t fasthash64(const void *buf, size_t len, uint64_t seed)
 #pragma GCC diagnostic ignored "-Wcast-align"
 	    v  = * (const uint64_t *) (pos++);
 #pragma GCC diagnostic pop
-	    h ^= mix(v);
+	    h ^= fasthash_mix(v);
 	    h *= m;
 	  }
 	}
@@ -316,7 +320,7 @@ static inline uint64_t fasthash64(const void *buf, size_t len, uint64_t seed)
 	  while (pos != end)
 	  {
 	    v  = pos++->v;
-	    h ^= mix(v);
+	    h ^= fasthash_mix(v);
 	    h *= m;
 	  }
 	}
@@ -332,11 +336,11 @@ static inline uint64_t fasthash64(const void *buf, size_t len, uint64_t seed)
 	case 3: v ^= (uint64_t)pos2[2] << 16; HB_FALLTHROUGH;
 	case 2: v ^= (uint64_t)pos2[1] <<  8; HB_FALLTHROUGH;
 	case 1: v ^= (uint64_t)pos2[0];
-		h ^= mix(v);
+		h ^= fasthash_mix(v);
 		h *= m;
 	}
 
-	return mix(h);
+	return fasthash_mix(h);
 }
 
 static inline uint32_t fasthash32(const void *buf, size_t len, uint32_t seed)
@@ -671,7 +675,7 @@ struct hb_pair_t
     return 0;
   }
 
-  friend void swap (hb_pair_t& a, hb_pair_t& b)
+  friend void swap (hb_pair_t& a, hb_pair_t& b) noexcept
   {
     hb_swap (a.first, b.first);
     hb_swap (a.second, b.second);
@@ -1051,6 +1055,18 @@ _hb_cmp_method (const void *pkey, const void *pval, Ts... ds)
   const V& val = * (const V*) pval;
 
   return val.cmp (key, ds...);
+}
+
+template <typename K, typename V>
+static int
+_hb_cmp_operator (const void *pkey, const void *pval)
+{
+  const K& key = * (const K*) pkey;
+  const V& val = * (const V*) pval;
+
+  if (key < val) return -1;
+  if (key > val) return  1;
+  return 0;
 }
 
 template <typename V, typename K, typename ...Ts>

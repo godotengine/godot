@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SLIDER_H
-#define SLIDER_H
+#pragma once
 
 #include "scene/gui/range.h"
 
@@ -38,7 +37,8 @@ class Slider : public Range {
 
 	struct Grab {
 		int pos = 0;
-		double uvalue = 0.0;
+		double uvalue = 0.0; // Value at `pos`.
+		double value_before_dragging = 0.0;
 		bool active = false;
 	} grab;
 
@@ -110,5 +110,3 @@ public:
 	VSlider() :
 			Slider(VERTICAL) { set_h_size_flags(0); }
 };
-
-#endif // SLIDER_H

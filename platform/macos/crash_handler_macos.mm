@@ -28,9 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "crash_handler_macos.h"
+#import "crash_handler_macos.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
@@ -50,8 +51,8 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#include <mach-o/dyld.h>
-#include <mach-o/getsect.h>
+#import <mach-o/dyld.h>
+#import <mach-o/getsect.h>
 
 static uint64_t load_address() {
 	const struct segment_command_64 *cmd = getsegbyname("__TEXT");
@@ -75,9 +76,14 @@ static void handle_crash(int sig) {
 	signal(SIGSEGV, SIG_DFL);
 	signal(SIGFPE, SIG_DFL);
 	signal(SIGILL, SIG_DFL);
+	signal(SIGTRAP, SIG_DFL);
 
 	if (OS::get_singleton() == nullptr) {
 		abort();
+	}
+
+	if (OS::get_singleton()->is_crash_handler_silent()) {
+		std::_Exit(0);
 	}
 
 	void *bt_buffer[256];
@@ -100,10 +106,10 @@ static void handle_crash(int sig) {
 	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, sig));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).is_empty()) {
-		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
+	if (String(GODOT_VERSION_HASH).is_empty()) {
+		print_error(vformat("Engine version: %s", GODOT_VERSION_FULL_NAME));
 	} else {
-		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
+		print_error(vformat("Engine version: %s (%s)", GODOT_VERSION_FULL_NAME, GODOT_VERSION_HASH));
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 	char **strings = backtrace_symbols(bt_buffer, size);
@@ -148,6 +154,7 @@ static void handle_crash(int sig) {
 				args.push_back("-arch");
 				args.push_back("arm64");
 #endif
+				args.push_back("--fullPath");
 				args.push_back("-l");
 				snprintf(str, 1024, "%p", load_addr);
 				args.push_back(str);
@@ -171,6 +178,18 @@ static void handle_crash(int sig) {
 	print_error("-- END OF BACKTRACE --");
 	print_error("================================================================");
 
+	Vector<Ref<ScriptBacktrace>> script_backtraces;
+	if (ScriptServer::are_languages_initialized()) {
+		script_backtraces = ScriptServer::capture_script_backtraces(false);
+	}
+	if (!script_backtraces.is_empty()) {
+		for (const Ref<ScriptBacktrace> &backtrace : script_backtraces) {
+			print_error(backtrace->format());
+		}
+		print_error("-- END OF SCRIPT BACKTRACE --");
+		print_error("================================================================");
+	}
+
 	// Abort to pass the error to the OS
 	abort();
 }
@@ -193,6 +212,7 @@ void CrashHandler::disable() {
 	signal(SIGSEGV, SIG_DFL);
 	signal(SIGFPE, SIG_DFL);
 	signal(SIGILL, SIG_DFL);
+	signal(SIGTRAP, SIG_DFL);
 #endif
 
 	disabled = true;
@@ -203,5 +223,6 @@ void CrashHandler::initialize() {
 	signal(SIGSEGV, handle_crash);
 	signal(SIGFPE, handle_crash);
 	signal(SIGILL, handle_crash);
+	signal(SIGTRAP, handle_crash);
 #endif
 }

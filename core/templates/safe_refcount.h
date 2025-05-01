@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SAFE_REFCOUNT_H
-#define SAFE_REFCOUNT_H
+#pragma once
 
 #include "core/typedefs.h"
 
@@ -38,7 +37,7 @@
 #endif
 
 #include <atomic>
-#include <type_traits>
+#include <type_traits> // IWYU pragma: keep // Used in macro.
 
 // Design goals for these classes:
 // - No automatic conversions or arithmetic operators,
@@ -54,12 +53,12 @@
 #define SAFE_NUMERIC_TYPE_PUN_GUARANTEES(m_type)                    \
 	static_assert(sizeof(SafeNumeric<m_type>) == sizeof(m_type));   \
 	static_assert(alignof(SafeNumeric<m_type>) == alignof(m_type)); \
-	static_assert(std::is_trivially_destructible<std::atomic<m_type>>::value);
+	static_assert(std::is_trivially_destructible_v<std::atomic<m_type>>);
 #define SAFE_FLAG_TYPE_PUN_GUARANTEES                \
 	static_assert(sizeof(SafeFlag) == sizeof(bool)); \
 	static_assert(alignof(SafeFlag) == alignof(bool));
 
-template <class T>
+template <typename T>
 class SafeNumeric {
 	std::atomic<T> value;
 
@@ -146,7 +145,7 @@ public:
 		}
 	}
 
-	_ALWAYS_INLINE_ explicit SafeNumeric<T>(T p_value = static_cast<T>(0)) {
+	_ALWAYS_INLINE_ explicit SafeNumeric(T p_value = static_cast<T>(0)) {
 		set(p_value);
 	}
 };
@@ -222,5 +221,3 @@ public:
 		count.set(p_value);
 	}
 };
-
-#endif // SAFE_REFCOUNT_H

@@ -9,7 +9,7 @@ namespace Godot
     public static class Colors
     {
         // Color names and values are derived from core/math/color_names.inc
-        internal static readonly Dictionary<string, Color> namedColors = new Dictionary<string, Color> {
+        internal static readonly Dictionary<string, Color> NamedColors = new Dictionary<string, Color> {
             { "ALICEBLUE", Colors.AliceBlue },
             { "ANTIQUEWHITE", Colors.AntiqueWhite },
             { "AQUA", Colors.Aqua },

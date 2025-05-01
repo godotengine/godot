@@ -37,6 +37,7 @@ bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) 
 	EditorExport::singleton->save_presets();
 	if (update_visibility.has(p_name)) {
 		if (update_visibility[p_name]) {
+			update_value_overrides();
 			notify_property_list_changed();
 		}
 		return true;
@@ -46,6 +47,11 @@ bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) 
 }
 
 bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
+	if (value_overrides.has(p_name)) {
+		r_ret = value_overrides[p_name];
+		return true;
+	}
+
 	if (values.has(p_name)) {
 		r_ret = values[p_name];
 		return true;
@@ -54,11 +60,82 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
+Variant EditorExportPreset::get_project_setting(const StringName &p_name) {
+	List<String> ftr_list;
+	platform->get_platform_features(&ftr_list);
+	platform->get_preset_features(this, &ftr_list);
+
+	Vector<String> features;
+	for (const String &E : ftr_list) {
+		features.push_back(E);
+	}
+
+	if (!get_custom_features().is_empty()) {
+		Vector<String> tmp_custom_list = get_custom_features().split(",");
+
+		for (int i = 0; i < tmp_custom_list.size(); i++) {
+			String f = tmp_custom_list[i].strip_edges();
+			if (!f.is_empty()) {
+				features.push_back(f);
+			}
+		}
+	}
+	return ProjectSettings::get_singleton()->get_setting_with_override_and_custom_features(p_name, features);
+}
+
 void EditorExportPreset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &EditorExportPreset::_get_property_warning);
+
+	ClassDB::bind_method(D_METHOD("has", "property"), &EditorExportPreset::has);
+
+	ClassDB::bind_method(D_METHOD("get_files_to_export"), &EditorExportPreset::get_files_to_export);
+	ClassDB::bind_method(D_METHOD("get_customized_files"), &EditorExportPreset::get_customized_files);
+	ClassDB::bind_method(D_METHOD("get_customized_files_count"), &EditorExportPreset::get_customized_files_count);
+	ClassDB::bind_method(D_METHOD("has_export_file", "path"), &EditorExportPreset::has_export_file);
+	ClassDB::bind_method(D_METHOD("get_file_export_mode", "path", "default"), &EditorExportPreset::get_file_export_mode, DEFVAL(MODE_FILE_NOT_CUSTOMIZED));
+	ClassDB::bind_method(D_METHOD("get_project_setting", "name"), &EditorExportPreset::get_project_setting);
+
+	ClassDB::bind_method(D_METHOD("get_preset_name"), &EditorExportPreset::get_name);
+	ClassDB::bind_method(D_METHOD("is_runnable"), &EditorExportPreset::is_runnable);
+	ClassDB::bind_method(D_METHOD("are_advanced_options_enabled"), &EditorExportPreset::are_advanced_options_enabled);
+	ClassDB::bind_method(D_METHOD("is_dedicated_server"), &EditorExportPreset::is_dedicated_server);
+	ClassDB::bind_method(D_METHOD("get_export_filter"), &EditorExportPreset::get_export_filter);
+	ClassDB::bind_method(D_METHOD("get_include_filter"), &EditorExportPreset::get_include_filter);
+	ClassDB::bind_method(D_METHOD("get_exclude_filter"), &EditorExportPreset::get_exclude_filter);
+	ClassDB::bind_method(D_METHOD("get_custom_features"), &EditorExportPreset::get_custom_features);
+	ClassDB::bind_method(D_METHOD("get_patches"), &EditorExportPreset::get_patches);
+	ClassDB::bind_method(D_METHOD("get_export_path"), &EditorExportPreset::get_export_path);
+	ClassDB::bind_method(D_METHOD("get_encryption_in_filter"), &EditorExportPreset::get_enc_in_filter);
+	ClassDB::bind_method(D_METHOD("get_encryption_ex_filter"), &EditorExportPreset::get_enc_ex_filter);
+	ClassDB::bind_method(D_METHOD("get_encrypt_pck"), &EditorExportPreset::get_enc_pck);
+	ClassDB::bind_method(D_METHOD("get_encrypt_directory"), &EditorExportPreset::get_enc_directory);
+	ClassDB::bind_method(D_METHOD("get_encryption_key"), &EditorExportPreset::get_script_encryption_key);
+	ClassDB::bind_method(D_METHOD("get_script_export_mode"), &EditorExportPreset::get_script_export_mode);
+
+	ClassDB::bind_method(D_METHOD("get_or_env", "name", "env_var"), &EditorExportPreset::_get_or_env);
+	ClassDB::bind_method(D_METHOD("get_version", "name", "windows_version"), &EditorExportPreset::get_version);
+
+	BIND_ENUM_CONSTANT(EXPORT_ALL_RESOURCES);
+	BIND_ENUM_CONSTANT(EXPORT_SELECTED_SCENES);
+	BIND_ENUM_CONSTANT(EXPORT_SELECTED_RESOURCES);
+	BIND_ENUM_CONSTANT(EXCLUDE_SELECTED_RESOURCES);
+	BIND_ENUM_CONSTANT(EXPORT_CUSTOMIZED);
+
+	BIND_ENUM_CONSTANT(MODE_FILE_NOT_CUSTOMIZED);
+	BIND_ENUM_CONSTANT(MODE_FILE_STRIP);
+	BIND_ENUM_CONSTANT(MODE_FILE_KEEP);
+	BIND_ENUM_CONSTANT(MODE_FILE_REMOVE);
+
+	BIND_ENUM_CONSTANT(MODE_SCRIPT_TEXT);
+	BIND_ENUM_CONSTANT(MODE_SCRIPT_BINARY_TOKENS);
+	BIND_ENUM_CONSTANT(MODE_SCRIPT_BINARY_TOKENS_COMPRESSED);
 }
 
 String EditorExportPreset::_get_property_warning(const StringName &p_name) const {
+	if (value_overrides.has(p_name)) {
+		return String();
+	}
+
 	String warning = platform->get_export_option_warning(this, p_name);
 	if (!warning.is_empty()) {
 		warning += "\n";
@@ -83,8 +160,29 @@ String EditorExportPreset::_get_property_warning(const StringName &p_name) const
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<StringName, PropertyInfo> &E : properties) {
-		if (platform->get_export_option_visibility(this, E.key)) {
-			p_list->push_back(E.value);
+		if (!value_overrides.has(E.key)) {
+			bool property_visible = platform->get_export_option_visibility(this, E.key);
+			if (!property_visible) {
+				continue;
+			}
+
+			// Get option visibility from editor export plugins.
+			Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+			for (int i = 0; i < export_plugins.size(); i++) {
+				if (!export_plugins[i]->supports_platform(platform)) {
+					continue;
+				}
+
+				export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>(this));
+				property_visible = export_plugins[i]->_get_export_option_visibility(platform, E.key);
+				if (!property_visible) {
+					break;
+				}
+			}
+
+			if (property_visible) {
+				p_list->push_back(E.value);
+			}
 		}
 	}
 }
@@ -117,6 +215,36 @@ void EditorExportPreset::update_files() {
 			customized_files.erase(to_remove[i]);
 		}
 	}
+}
+
+void EditorExportPreset::update_value_overrides() {
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	HashMap<StringName, Variant> new_value_overrides;
+
+	value_overrides.clear();
+
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (!export_plugins[i]->supports_platform(platform)) {
+			continue;
+		}
+
+		export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>(this));
+
+		Dictionary plugin_overrides = export_plugins[i]->_get_export_options_overrides(platform);
+		if (!plugin_overrides.is_empty()) {
+			for (const KeyValue<Variant, Variant> &kv : plugin_overrides) {
+				const StringName &key = kv.key;
+				const Variant &value = kv.value;
+				if (new_value_overrides.has(key) && new_value_overrides[key] != value) {
+					WARN_PRINT_ED(vformat("Editor export plugin '%s' overrides pre-existing export option override '%s' with new value.", export_plugins[i]->get_name(), key));
+				}
+				new_value_overrides[key] = value;
+			}
+		}
+	}
+
+	value_overrides = new_value_overrides;
+	notify_property_list_changed();
 }
 
 Vector<String> EditorExportPreset::get_files_to_export() const {
@@ -180,11 +308,25 @@ String EditorExportPreset::get_name() const {
 
 void EditorExportPreset::set_runnable(bool p_enable) {
 	runnable = p_enable;
+	EditorExport::singleton->emit_presets_runnable_changed();
 	EditorExport::singleton->save_presets();
 }
 
 bool EditorExportPreset::is_runnable() const {
 	return runnable;
+}
+
+void EditorExportPreset::set_advanced_options_enabled(bool p_enabled) {
+	if (advanced_options_enabled == p_enabled) {
+		return;
+	}
+	advanced_options_enabled = p_enabled;
+	EditorExport::singleton->save_presets();
+	notify_property_list_changed();
+}
+
+bool EditorExportPreset::are_advanced_options_enabled() const {
+	return advanced_options_enabled;
 }
 
 void EditorExportPreset::set_dedicated_server(bool p_enable) {
@@ -269,6 +411,42 @@ EditorExportPreset::FileExportMode EditorExportPreset::get_file_export_mode(cons
 	return p_default;
 }
 
+void EditorExportPreset::add_patch(const String &p_path, int p_at_pos) {
+	ERR_FAIL_COND_EDMSG(patches.has(p_path), vformat("Failed to add patch \"%s\". Patches must be unique.", p_path));
+
+	if (p_at_pos < 0) {
+		patches.push_back(p_path);
+	} else {
+		patches.insert(p_at_pos, p_path);
+	}
+
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::set_patch(int p_index, const String &p_path) {
+	remove_patch(p_index);
+	add_patch(p_path, p_index);
+}
+
+String EditorExportPreset::get_patch(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, patches.size(), String());
+	return patches[p_index];
+}
+
+void EditorExportPreset::remove_patch(int p_index) {
+	ERR_FAIL_INDEX(p_index, patches.size());
+	patches.remove_at(p_index);
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::set_patches(const Vector<String> &p_patches) {
+	patches = p_patches;
+}
+
+Vector<String> EditorExportPreset::get_patches() const {
+	return patches;
+}
+
 void EditorExportPreset::set_custom_features(const String &p_custom_features) {
 	custom_features = p_custom_features;
 	EditorExport::singleton->save_presets();
@@ -296,6 +474,15 @@ String EditorExportPreset::get_enc_ex_filter() const {
 	return enc_ex_filters;
 }
 
+void EditorExportPreset::set_seed(uint64_t p_seed) {
+	seed = p_seed;
+	EditorExport::singleton->save_presets();
+}
+
+uint64_t EditorExportPreset::get_seed() const {
+	return seed;
+}
+
 void EditorExportPreset::set_enc_pck(bool p_enabled) {
 	enc_pck = p_enabled;
 	EditorExport::singleton->save_presets();
@@ -321,6 +508,15 @@ void EditorExportPreset::set_script_encryption_key(const String &p_key) {
 
 String EditorExportPreset::get_script_encryption_key() const {
 	return script_key;
+}
+
+void EditorExportPreset::set_script_export_mode(int p_mode) {
+	script_mode = p_mode;
+	EditorExport::singleton->save_presets();
+}
+
+int EditorExportPreset::get_script_export_mode() const {
+	return script_mode;
 }
 
 Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid) const {
@@ -388,5 +584,3 @@ String EditorExportPreset::get_version(const StringName &p_preset_string, bool p
 
 	return result;
 }
-
-EditorExportPreset::EditorExportPreset() {}

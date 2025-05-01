@@ -180,6 +180,7 @@ public:
     // Basic parsing state, easily accessible to the grammar
 
     TSymbolTable& symbolTable;        // symbol table that goes with the current language, version, and profile
+    TVector<TString> relaxedSymbols;
     int statementNestingLevel;        // 0 if outside all flow control or compound statements
     int loopNestingLevel;             // 0 if outside all loops
     int structNestingLevel;           // 0 if outside structures
@@ -196,6 +197,7 @@ public:
     struct TPragma contextPragma;
     int beginInvocationInterlockCount;
     int endInvocationInterlockCount;
+    bool compileOnly = false;
 
 protected:
     TParseContextBase(TParseContextBase&);
@@ -366,6 +368,10 @@ public:
     TIntermTyped* vkRelaxedRemapFunctionCall(const TSourceLoc&, TFunction*, TIntermNode*);
     // returns true if the variable was remapped to something else
     bool vkRelaxedRemapUniformVariable(const TSourceLoc&, TString&, const TPublicType&, TArraySizes*, TIntermTyped*, TType&);
+    void vkRelaxedRemapUniformMembers(const TSourceLoc&, const TPublicType&, const TType&, const TString&);
+    void vkRelaxedRemapFunctionParameter(TFunction*, TParameter&, std::vector<int>* newParams = nullptr);
+    TIntermNode* vkRelaxedRemapFunctionArgument(const TSourceLoc&, TFunction*, TIntermTyped*);
+    TIntermTyped* vkRelaxedRemapDotDereference(const TSourceLoc&, TIntermTyped&, const TType&, const TString&);
 
     void assignError(const TSourceLoc&, const char* op, TString left, TString right);
     void unaryOpError(const TSourceLoc&, const char* op, TString operand);

@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_POLYGON_EDITOR_PLUGIN_H
-#define NAVIGATION_POLYGON_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class AcceptDialog;
 class HBoxContainer;
@@ -55,6 +54,10 @@ class NavigationPolygonEditor : public AbstractPolygon2DEditor {
 	Button *button_bake = nullptr;
 	Button *button_reset = nullptr;
 	Label *bake_info = nullptr;
+
+	Timer *rebake_timer = nullptr;
+	float _rebake_timer_delay = 1.5;
+	void _rebake_timer_timeout();
 
 	void _bake_pressed();
 	void _clear_pressed();
@@ -90,5 +93,3 @@ class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
 public:
 	NavigationPolygonEditorPlugin();
 };
-
-#endif // NAVIGATION_POLYGON_EDITOR_PLUGIN_H

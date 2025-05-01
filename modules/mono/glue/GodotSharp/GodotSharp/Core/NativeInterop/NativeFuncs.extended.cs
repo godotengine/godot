@@ -1,10 +1,12 @@
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming rule violation
 // ReSharper disable InconsistentNaming
 
 namespace Godot.NativeInterop
 {
     public static partial class NativeFuncs
     {
-        public static godot_variant godotsharp_variant_new_copy(in godot_variant src)
+        public static godot_variant godotsharp_variant_new_copy(scoped in godot_variant src)
         {
             switch (src.Type)
             {
@@ -46,7 +48,7 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        public static godot_string_name godotsharp_string_name_new_copy(in godot_string_name src)
+        public static godot_string_name godotsharp_string_name_new_copy(scoped in godot_string_name src)
         {
             if (src.IsEmpty)
                 return default;
@@ -54,7 +56,7 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        public static godot_node_path godotsharp_node_path_new_copy(in godot_node_path src)
+        public static godot_node_path godotsharp_node_path_new_copy(scoped in godot_node_path src)
         {
             if (src.IsEmpty)
                 return default;
@@ -68,7 +70,7 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        public static godot_array godotsharp_array_new_copy(in godot_array src)
+        public static godot_array godotsharp_array_new_copy(scoped in godot_array src)
         {
             godotsharp_array_new_copy(out godot_array ret, src);
             return ret;
@@ -80,7 +82,7 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        public static godot_dictionary godotsharp_dictionary_new_copy(in godot_dictionary src)
+        public static godot_dictionary godotsharp_dictionary_new_copy(scoped in godot_dictionary src)
         {
             godotsharp_dictionary_new_copy(out godot_dictionary ret, src);
             return ret;

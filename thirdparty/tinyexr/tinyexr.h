@@ -386,7 +386,7 @@ extern int IsEXRFromMemory(const unsigned char *memory, size_t size);
 // error
 extern int SaveEXRToMemory(const float *data, const int width, const int height,
                    const int components, const int save_as_fp16,
-                   const unsigned char **buffer, const char **err);
+                   unsigned char **buffer, const char **err);
 
 // @deprecated { Not recommended, but handy to use. }
 // Saves single-frame OpenEXR image to a buffer. Assume EXR image contains RGB(A) channels.
@@ -780,7 +780,7 @@ static void cpy2(unsigned short *dst_val, const unsigned short *src_val) {
 }
 
 static void swap2(unsigned short *val) {
-#ifdef TINYEXR_LITTLE_ENDIAN
+#if TINYEXR_LITTLE_ENDIAN
   (void)val;
 #else
   unsigned short tmp = *val;
@@ -839,7 +839,7 @@ static void cpy4(float *dst_val, const float *src_val) {
 #endif
 
 static void swap4(unsigned int *val) {
-#ifdef TINYEXR_LITTLE_ENDIAN
+#if TINYEXR_LITTLE_ENDIAN
   (void)val;
 #else
   unsigned int tmp = *val;
@@ -854,7 +854,7 @@ static void swap4(unsigned int *val) {
 }
 
 static void swap4(int *val) {
-#ifdef TINYEXR_LITTLE_ENDIAN
+#if TINYEXR_LITTLE_ENDIAN
   (void)val;
 #else
   int tmp = *val;
@@ -869,7 +869,7 @@ static void swap4(int *val) {
 }
 
 static void swap4(float *val) {
-#ifdef TINYEXR_LITTLE_ENDIAN
+#if TINYEXR_LITTLE_ENDIAN
   (void)val;
 #else
   float tmp = *val;
@@ -900,7 +900,7 @@ static void cpy8(tinyexr::tinyexr_uint64 *dst_val, const tinyexr::tinyexr_uint64
 #endif
 
 static void swap8(tinyexr::tinyexr_uint64 *val) {
-#ifdef TINYEXR_LITTLE_ENDIAN
+#if TINYEXR_LITTLE_ENDIAN
   (void)val;
 #else
   tinyexr::tinyexr_uint64 tmp = (*val);
@@ -4923,7 +4923,7 @@ static int DecodeTiledLevel(EXRImage* exr_image, const EXRHeader* exr_header,
   }
 #endif
   exr_image->tiles = static_cast<EXRTile*>(
-    calloc(sizeof(EXRTile), static_cast<size_t>(num_tiles)));
+    calloc(static_cast<size_t>(num_tiles), sizeof(EXRTile)));
 
 #if TINYEXR_HAS_CXX11 && (TINYEXR_USE_THREAD > 0)
   std::vector<std::thread> workers;
@@ -9008,7 +9008,7 @@ int LoadEXRMultipartImageFromFile(EXRImage *exr_images,
 }
 
 int SaveEXRToMemory(const float *data, int width, int height, int components,
-            const int save_as_fp16, const unsigned char **outbuf, const char **err) {
+            const int save_as_fp16, unsigned char **outbuf, const char **err) {
 
   if ((components == 1) || components == 3 || components == 4) {
     // OK
@@ -9287,9 +9287,6 @@ int SaveEXR(const float *data, int width, int height, int components,
   }
 
   int ret = SaveEXRImageToFile(&image, &header, outfilename, err);
-  if (ret != TINYEXR_SUCCESS) {
-    return ret;
-  }
 
   free(header.channels);
   free(header.pixel_types);

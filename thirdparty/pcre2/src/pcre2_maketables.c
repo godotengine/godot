@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2020 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -51,8 +51,6 @@ PCRE2_DFTABLES is defined. */
 #  endif
 #  include "pcre2_internal.h"
 #endif
-
-
 
 /*************************************************
 *           Create PCRE2 character tables        *
@@ -98,7 +96,11 @@ for (i = 0; i < 256; i++) *p++ = tolower(i);
 
 /* Next the case-flipping table */
 
-for (i = 0; i < 256; i++) *p++ = islower(i)? toupper(i) : tolower(i);
+for (i = 0; i < 256; i++)
+  {
+  int c = islower(i)? toupper(i) : tolower(i);
+  *p++ = (c < 256)? c : i;
+  }
 
 /* Then the character class tables. Don't try to be clever and save effort on
 exclusive ones - in some locales things may be different.
@@ -153,10 +155,10 @@ return yield;
 PCRE2_EXP_DEFN void PCRE2_CALL_CONVENTION
 pcre2_maketables_free(pcre2_general_context *gcontext, const uint8_t *tables)
 {
-  if (gcontext)
-    gcontext->memctl.free((void *)tables, gcontext->memctl.memory_data);
-  else
-    free((void *)tables);
+if (gcontext != NULL)
+  gcontext->memctl.free((void *)tables, gcontext->memctl.memory_data);
+else
+  free((void *)tables);
 }
 #endif
 

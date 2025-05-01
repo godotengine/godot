@@ -598,6 +598,11 @@ _open_resource_fork (const char *file_name, hb_mapped_file_t *file)
  * Creates a new blob containing the data from the
  * specified binary font file.
  *
+ * The filename is passed directly to the system on all platforms,
+ * except on Windows, where the filename is interpreted as UTF-8.
+ * Only if the filename is not valid UTF-8, it will be interpreted
+ * according to the system codepage.
+ *
  * Returns: An #hb_blob_t pointer with the content of the file,
  * or hb_blob_get_empty() if failed.
  *
@@ -612,10 +617,14 @@ hb_blob_create_from_file (const char *file_name)
 
 /**
  * hb_blob_create_from_file_or_fail:
- * @file_name: A font filename
+ * @file_name: A filename
  *
- * Creates a new blob containing the data from the
- * specified binary font file.
+ * Creates a new blob containing the data from the specified file.
+ *
+ * The filename is passed directly to the system on all platforms,
+ * except on Windows, where the filename is interpreted as UTF-8.
+ * Only if the filename is not valid UTF-8, it will be interpreted
+ * according to the system codepage.
  *
  * Returns: An #hb_blob_t pointer with the content of the file,
  * or `NULL` if failed.
@@ -672,10 +681,19 @@ fail_without_close:
   if (unlikely (!file)) return nullptr;
 
   HANDLE fd;
+  int conversion;
   unsigned int size = strlen (file_name) + 1;
   wchar_t * wchar_file_name = (wchar_t *) hb_malloc (sizeof (wchar_t) * size);
   if (unlikely (!wchar_file_name)) goto fail_without_close;
-  mbstowcs (wchar_file_name, file_name, size);
+
+  /* Assume file name is given in UTF-8 encoding */
+  conversion = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, file_name, -1, wchar_file_name, size);
+  if (conversion <= 0)
+  {
+    /* Conversion failed due to invalid UTF-8 characters,
+       Repeat conversion based on system code page */
+    mbstowcs(wchar_file_name, file_name, size);
+  }
 #if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
   {
     CREATEFILE2_EXTENDED_PARAMETERS ceparams = { 0 };

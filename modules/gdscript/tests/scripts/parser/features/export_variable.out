@@ -1,10 +1,61 @@
 GDTEST_OK
-99
-100
-101
-102
-(0, 0, 0, 1)
-(0, 0, 0, 1)
-hello
-<null>
-Array[Node]([])
+var test_weak_int: int = 1
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_hard_int: int = 2
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_range: int = 100
+  hint=RANGE hint_string="0.0,100.0" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_range_step: int = 101
+  hint=RANGE hint_string="0.0,100.0,1.0" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_range_step_or_greater: int = 102
+  hint=RANGE hint_string="0.0,100.0,1.0,or_greater" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_color: Color = Color(0, 0, 0, 1)
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_color_no_alpha: Color = Color(0, 0, 0, 1)
+  hint=COLOR_NO_ALPHA hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_node_path: NodePath = NodePath("hello")
+  hint=NODE_PATH_VALID_TYPES hint_string="Sprite2D,Sprite3D,Control,Node" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_side: Side = 0
+  hint=ENUM hint_string="Side Left:0,Side Top:1,Side Right:2,Side Bottom:3" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Side"
+var test_atm: Node.AutoTranslateMode = 0
+  hint=ENUM hint_string="Auto Translate Mode Inherit:0,Auto Translate Mode Always:1,Auto Translate Mode Disabled:2" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Node.AutoTranslateMode"
+var test_image: Image = null
+  hint=RESOURCE_TYPE hint_string="Image" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"Image"
+var test_timer: Timer = null
+  hint=NODE_TYPE hint_string="Timer" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"Timer"
+var test_global_class: ExportVariableTest = null
+  hint=NODE_TYPE hint_string="ExportVariableTest" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"ExportVariableTest"
+var test_preloaded_global_class: ExportVariableTestGlobalClass = null
+  hint=NODE_TYPE hint_string="ExportVariableTestGlobalClass" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"ExportVariableTestGlobalClass"
+var test_preloaded_unnamed_class: Node2D = null
+  hint=NODE_TYPE hint_string="Node2D" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"Node2D"
+var test_array: Array = []
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_array_bool: Array = Array[bool]([])
+  hint=TYPE_STRING hint_string="<bool>:" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_array_array: Array = Array[Array]([])
+  hint=TYPE_STRING hint_string="<Array>:" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_array_side: Array = Array[int]([])
+  hint=TYPE_STRING hint_string="<int>/<ENUM>:Side Left:0,Side Top:1,Side Right:2,Side Bottom:3" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_array_atm: Array = Array[int]([])
+  hint=TYPE_STRING hint_string="<int>/<ENUM>:Auto Translate Mode Inherit:0,Auto Translate Mode Always:1,Auto Translate Mode Disabled:2" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_array_image: Array = Array[Image]([])
+  hint=TYPE_STRING hint_string="<Object>/<RESOURCE_TYPE>:Image" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_array_timer: Array = Array[Timer]([])
+  hint=TYPE_STRING hint_string="<Object>/<NODE_TYPE>:Timer" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_storage_untyped: Variant = null
+  hint=NONE hint_string="" usage=STORAGE|SCRIPT_VARIABLE|NIL_IS_VARIANT class_name=&""
+var test_storage_weak_int: Variant = 3
+  hint=NONE hint_string="" usage=STORAGE|SCRIPT_VARIABLE|NIL_IS_VARIANT class_name=&""
+var test_storage_hard_int: int = 4
+  hint=NONE hint_string="" usage=STORAGE|SCRIPT_VARIABLE class_name=&""
+var test_export_custom_untyped: null = null
+  hint=ENUM hint_string="A,B,C" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_export_custom_weak_int: int = 5
+  hint=ENUM hint_string="A,B,C" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_export_custom_hard_int: int = 6
+  hint=ENUM hint_string="A,B,C" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_tool_button_1: Callable = Callable()
+  hint=TOOL_BUTTON hint_string="Click me!" usage=EDITOR|SCRIPT_VARIABLE class_name=&""
+var test_tool_button_2: Callable = Callable()
+  hint=TOOL_BUTTON hint_string="Click me!,ColorRect" usage=EDITOR|SCRIPT_VARIABLE class_name=&""

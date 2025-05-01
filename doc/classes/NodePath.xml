@@ -4,29 +4,38 @@
 		A pre-parsed scene tree path.
 	</brief_description>
 	<description>
-		A pre-parsed relative or absolute path in a scene tree, for use with [method Node.get_node] and similar functions. It can reference a node, a resource within a node, or a property of a node or resource. For example, [code]"Path2D/PathFollow2D/Sprite2D:texture:size"[/code] would refer to the [code]size[/code] property of the [code]texture[/code] resource on the node named [code]"Sprite2D"[/code], which is a child of the other named nodes in the path.
-		You will usually just pass a string to [method Node.get_node] and it will be automatically converted, but you may occasionally want to parse a path ahead of time with [NodePath] or the literal syntax [code]^"path"[/code]. Exporting a [NodePath] variable will give you a node selection widget in the properties panel of the editor, which can often be useful.
-		A [NodePath] is composed of a list of slash-separated node names (like a filesystem path) and an optional colon-separated list of "subnames" which can be resources or properties.
-		Some examples of NodePaths include the following:
+		The [NodePath] built-in [Variant] type represents a path to a node or property in a hierarchy of nodes. It is designed to be efficiently passed into many built-in methods (such as [method Node.get_node], [method Object.set_indexed], [method Tween.tween_property], etc.) without a hard dependence on the node or property they point to.
+		A node path is represented as a [String] composed of slash-separated ([code]/[/code]) node names and colon-separated ([code]:[/code]) property names (also called "subnames"). Similar to a filesystem path, [code]".."[/code] and [code]"."[/code] are special node names. They refer to the parent node and the current node, respectively.
+		The following examples are paths relative to the current node:
 		[codeblock]
-		# No leading slash means it is relative to the current node.
-		^"A" # Immediate child A
-		^"A/B" # A's child B
-		^"." # The current node.
-		^".." # The parent node.
-		^"../C" # A sibling node C.
-		^"../.." # The grandparent node.
-		# A leading slash means it is absolute from the SceneTree.
-		^"/root" # Equivalent to get_tree().get_root().
-		^"/root/Main" # If your main scene's root node were named "Main".
-		^"/root/MyAutoload" # If you have an autoloaded node or scene.
+		^"A"     # Points to the direct child A.
+		^"A/B"   # Points to A's child B.
+		^"."     # Points to the current node.
+		^".."    # Points to the parent node.
+		^"../C"  # Points to the sibling node C.
+		^"../.." # Points to the grandparent node.
 		[/codeblock]
-		See also [StringName], which is a similar concept for general-purpose string interning.
-		[b]Note:[/b] In the editor, [NodePath] properties are automatically updated when moving, renaming or deleting a node in the scene tree, but they are never updated at runtime.
+		A leading slash means the path is absolute, and begins from the [SceneTree]:
+		[codeblock]
+		^"/root"            # Points to the SceneTree's root Window.
+		^"/root/Title"      # May point to the main scene's root node named "Title".
+		^"/root/Global"     # May point to an autoloaded node or scene named "Global".
+		[/codeblock]
+		Despite their name, node paths may also point to a property:
+		[codeblock]
+		^":position"           # Points to this object's position.
+		^":position:x"         # Points to this object's position in the x axis.
+		^"Camera3D:rotation:y" # Points to the child Camera3D and its y rotation.
+		^"/root:size:x"        # Points to the root Window and its width.
+		[/codeblock]
+		In some situations, it's possible to omit the leading [code]:[/code] when pointing to an object's property. As an example, this is the case with [method Object.set_indexed] and [method Tween.tween_property], as those methods call [method NodePath.get_as_property_path] under the hood. However, it's generally recommended to keep the [code]:[/code] prefix.
+		Node paths cannot check whether they are valid and may point to nodes or properties that do not exist. Their meaning depends entirely on the context in which they're used.
+		You usually do not have to worry about the [NodePath] type, as strings are automatically converted to the type when necessary. There are still times when defining node paths is useful. For example, exported [NodePath] properties allow you to easily select any node within the currently edited scene. They are also automatically updated when moving, renaming or deleting nodes in the scene tree editor. See also [annotation @GDScript.@export_node_path].
+		See also [StringName], which is a similar type designed for optimized strings.
 		[b]Note:[/b] In a boolean context, a [NodePath] will evaluate to [code]false[/code] if it is empty ([code]NodePath("")[/code]). Otherwise, a [NodePath] will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
-		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
 	</tutorials>
 	<constructors>
 		<constructor name="NodePath">
@@ -39,30 +48,35 @@
 			<return type="NodePath" />
 			<param index="0" name="from" type="NodePath" />
 			<description>
-				Constructs a [NodePath] as a copy of the given [NodePath]. [code]NodePath("example")[/code] is equivalent to [code]^"example"[/code].
+				Constructs a [NodePath] as a copy of the given [NodePath].
 			</description>
 		</constructor>
 		<constructor name="NodePath">
 			<return type="NodePath" />
 			<param index="0" name="from" type="String" />
 			<description>
-				Creates a NodePath from a string, e.g. [code]"Path2D/PathFollow2D/Sprite2D:texture:size"[/code]. A path is absolute if it starts with a slash. Absolute paths are only valid in the global scene tree, not within individual scenes. In a relative path, [code]"."[/code] and [code]".."[/code] indicate the current node and its parent.
-				The "subnames" optionally included after the path to the target node can point to resources or properties, and can also be nested.
-				Examples of valid NodePaths (assuming that those nodes exist and have the referenced resources or properties):
+				Constructs a [NodePath] from a [String]. The created path is absolute if prefixed with a slash (see [method is_absolute]).
+				The "subnames" optionally included after the path to the target node can point to properties, and can also be nested.
+				The following strings can be valid node paths:
 				[codeblock]
 				# Points to the Sprite2D node.
-				"Path2D/PathFollow2D/Sprite2D"
+				"Level/RigidBody2D/Sprite2D"
+
 				# Points to the Sprite2D node and its "texture" resource.
-				# get_node() would retrieve "Sprite2D", while get_node_and_resource()
+				# get_node() would retrieve the Sprite2D, while get_node_and_resource()
 				# would retrieve both the Sprite2D node and the "texture" resource.
-				"Path2D/PathFollow2D/Sprite2D:texture"
+				"Level/RigidBody2D/Sprite2D:texture"
+
 				# Points to the Sprite2D node and its "position" property.
-				"Path2D/PathFollow2D/Sprite2D:position"
+				"Level/RigidBody2D/Sprite2D:position"
+
 				# Points to the Sprite2D node and the "x" component of its "position" property.
-				"Path2D/PathFollow2D/Sprite2D:position:x"
-				# Absolute path (from "root")
-				"/root/Level/Path2D"
+				"Level/RigidBody2D/Sprite2D:position:x"
+
+				# Points to the RigidBody2D node as an absolute path beginning from the SceneTree.
+				"/root/Level/RigidBody2D"
 				[/codeblock]
+				[b]Note:[/b] In GDScript, it's also possible to convert a constant string into a node path by prefixing it with [code]^[/code]. [code]^"path/to/node"[/code] is equivalent to [code]NodePath("path/to/node")[/code].
 			</description>
 		</constructor>
 	</constructors>
@@ -70,21 +84,23 @@
 		<method name="get_as_property_path" qualifiers="const">
 			<return type="NodePath" />
 			<description>
-				Returns a node path with a colon character ([code]:[/code]) prepended, transforming it to a pure property path with no node name (defaults to resolving from the current node).
+				Returns a copy of this node path with a colon character ([code]:[/code]) prefixed, transforming it to a pure property path with no node names (relative to the current node).
 				[codeblocks]
 				[gdscript]
-				# This will be parsed as a node path to the "x" property in the "position" node.
-				var node_path = NodePath("position:x")
-				# This will be parsed as a node path to the "x" component of the "position" property in the current node.
+				# node_path points to the "x" property of the child node named "position".
+				var node_path = ^"position:x"
+
+				# property_path points to the "position" in the "x" axis of this node.
 				var property_path = node_path.get_as_property_path()
-				print(property_path) # :position:x
+				print(property_path) # Prints ":position:x"
 				[/gdscript]
 				[csharp]
-				// This will be parsed as a node path to the "x" property in the "position" node.
+				// nodePath points to the "x" property of the child node named "position".
 				var nodePath = new NodePath("position:x");
-				// This will be parsed as a node path to the "x" component of the "position" property in the current node.
+
+				// propertyPath points to the "position" in the "x" axis of this node.
 				NodePath propertyPath = nodePath.GetAsPropertyPath();
-				GD.Print(propertyPath); // :position:x
+				GD.Print(propertyPath); // Prints ":position:x"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -92,21 +108,21 @@
 		<method name="get_concatenated_names" qualifiers="const">
 			<return type="StringName" />
 			<description>
-				Returns all paths concatenated with a slash character ([code]/[/code]) as separator without subnames.
+				Returns all node names concatenated with a slash character ([code]/[/code]) as a single [StringName].
 			</description>
 		</method>
 		<method name="get_concatenated_subnames" qualifiers="const">
 			<return type="StringName" />
 			<description>
-				Returns all subnames concatenated with a colon character ([code]:[/code]) as separator, i.e. the right side of the first colon in a node path.
+				Returns all property subnames concatenated with a colon character ([code]:[/code]) as a single [StringName].
 				[codeblocks]
 				[gdscript]
-				var node_path = NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path")
-				print(node_path.get_concatenated_subnames()) # texture:load_path
+				var node_path = ^"Sprite2D:texture:resource_name"
+				print(node_path.get_concatenated_subnames()) # Prints "texture:resource_name"
 				[/gdscript]
 				[csharp]
-				var nodePath = new NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path");
-				GD.Print(nodePath.GetConcatenatedSubnames()); // texture:load_path
+				var nodePath = new NodePath("Sprite2D:texture:resource_name");
+				GD.Print(nodePath.GetConcatenatedSubnames()); // Prints "texture:resource_name"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -115,19 +131,19 @@
 			<return type="StringName" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Gets the node name indicated by [param idx] (0 to [method get_name_count] - 1).
+				Returns the node name indicated by [param idx], starting from 0. If [param idx] is out of bounds, an error is generated. See also [method get_subname_count] and [method get_name_count].
 				[codeblocks]
 				[gdscript]
-				var node_path = NodePath("Path2D/PathFollow2D/Sprite2D")
-				print(node_path.get_name(0)) # Path2D
-				print(node_path.get_name(1)) # PathFollow2D
-				print(node_path.get_name(2)) # Sprite
+				var sprite_path = NodePath("../RigidBody2D/Sprite2D")
+				print(sprite_path.get_name(0)) # Prints ".."
+				print(sprite_path.get_name(1)) # Prints "RigidBody2D"
+				print(sprite_path.get_name(2)) # Prints "Sprite"
 				[/gdscript]
 				[csharp]
-				var nodePath = new NodePath("Path2D/PathFollow2D/Sprite2D");
-				GD.Print(nodePath.GetName(0)); // Path2D
-				GD.Print(nodePath.GetName(1)); // PathFollow2D
-				GD.Print(nodePath.GetName(2)); // Sprite
+				var spritePath = new NodePath("../RigidBody2D/Sprite2D");
+				GD.Print(spritePath.GetName(0)); // Prints ".."
+				GD.Print(spritePath.GetName(1)); // Prints "PathFollow2D"
+				GD.Print(spritePath.GetName(2)); // Prints "Sprite"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -135,25 +151,25 @@
 		<method name="get_name_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Gets the number of node names which make up the path. Subnames (see [method get_subname_count]) are not included.
-				For example, [code]"Path2D/PathFollow2D/Sprite2D"[/code] has 3 names.
+				Returns the number of node names in the path. Property subnames are not included.
+				For example, [code]"../RigidBody2D/Sprite2D:texture"[/code] contains 3 node names.
 			</description>
 		</method>
 		<method name="get_subname" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Gets the resource or property name indicated by [param idx] (0 to [method get_subname_count] - 1).
+				Returns the property name indicated by [param idx], starting from 0. If [param idx] is out of bounds, an error is generated. See also [method get_subname_count].
 				[codeblocks]
 				[gdscript]
-				var node_path = NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path")
-				print(node_path.get_subname(0)) # texture
-				print(node_path.get_subname(1)) # load_path
+				var path_to_name = NodePath("Sprite2D:texture:resource_name")
+				print(path_to_name.get_subname(0)) # Prints "texture"
+				print(path_to_name.get_subname(1)) # Prints "resource_name"
 				[/gdscript]
 				[csharp]
-				var nodePath = new NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path");
-				GD.Print(nodePath.GetSubname(0)); // texture
-				GD.Print(nodePath.GetSubname(1)); // load_path
+				var pathToName = new NodePath("Sprite2D:texture:resource_name");
+				GD.Print(pathToName.GetSubname(0)); // Prints "texture"
+				GD.Print(pathToName.GetSubname(1)); // Prints "resource_name"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -161,26 +177,37 @@
 		<method name="get_subname_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Gets the number of resource or property names ("subnames") in the path. Each subname is listed after a colon character ([code]:[/code]) in the node path.
-				For example, [code]"Path2D/PathFollow2D/Sprite2D:texture:load_path"[/code] has 2 subnames.
+				Returns the number of property names ("subnames") in the path. Each subname in the node path is listed after a colon character ([code]:[/code]).
+				For example, [code]"Level/RigidBody2D/Sprite2D:texture:resource_name"[/code] contains 2 subnames.
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the 32-bit hash value representing the [NodePath]'s contents.
+				Returns the 32-bit hash value representing the node path's contents.
+				[b]Note:[/b] Node paths with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. Node paths with different hash values are guaranteed to be different.
 			</description>
 		</method>
 		<method name="is_absolute" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node path is absolute (as opposed to relative), which means that it starts with a slash character ([code]/[/code]). Absolute node paths can be used to access the root node ([code]"/root"[/code]) or autoloads (e.g. [code]"/global"[/code] if a "global" autoload was registered).
+				Returns [code]true[/code] if the node path is absolute. Unlike a relative path, an absolute path is represented by a leading slash character ([code]/[/code]) and always begins from the [SceneTree]. It can be used to reliably access nodes from the root node (e.g. [code]"/root/Global"[/code] if an autoload named "Global" exists).
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node path is empty.
+				Returns [code]true[/code] if the node path has been constructed from an empty [String] ([code]""[/code]).
+			</description>
+		</method>
+		<method name="slice" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="begin" type="int" />
+			<param index="1" name="end" type="int" default="2147483647" />
+			<description>
+				Returns the slice of the [NodePath], from [param begin] (inclusive) to [param end] (exclusive), as a new [NodePath].
+				The absolute value of [param begin] and [param end] will be clamped to the sum of [method get_name_count] and [method get_subname_count], so the default value for [param end] makes it slice to the end of the [NodePath] by default (i.e. [code]path.slice(1)[/code] is a shorthand for [code]path.slice(1, path.get_name_count() + path.get_subname_count())[/code]).
+				If either [param begin] or [param end] are negative, they will be relative to the end of the [NodePath] (i.e. [code]path.slice(0, -2)[/code] is a shorthand for [code]path.slice(0, path.get_name_count() + path.get_subname_count() - 2)[/code]).
 			</description>
 		</method>
 	</methods>
@@ -196,7 +223,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="NodePath" />
 			<description>
-				Returns [code]true[/code] if two node paths are equal, i.e. all node names in the path are the same and in the same order.
+				Returns [code]true[/code] if two node paths are equal, that is, they are composed of the same node names and subnames in the same order.
 			</description>
 		</operator>
 	</operators>

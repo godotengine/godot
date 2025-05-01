@@ -42,7 +42,7 @@ namespace GodotTools.IdeMessaging
                 [OpenFileRequest.Id] = async (peer, content) =>
                 {
                     var request = JsonConvert.DeserializeObject<OpenFileRequest>(content.Body);
-                    return await HandleOpenFile(request);
+                    return await HandleOpenFile(request!);
                 }
             };
         }

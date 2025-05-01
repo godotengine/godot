@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
+#include "scene/main/viewport.h"
 
 bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) {
 	Ref<InputEventMouseButton> mb = p_event;
@@ -43,12 +44,14 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 		if (scroll_vec != Vector2() && mb->is_pressed()) {
 			if (control_scheme == SCROLL_PANS) {
 				if (mb->is_ctrl_pressed()) {
-					// Compute the zoom factor.
-					float zoom_factor = mb->get_factor() <= 0 ? 1.0 : mb->get_factor();
-					zoom_factor = ((scroll_zoom_factor - 1.0) * zoom_factor) + 1.0;
-					float zoom = (scroll_vec.x + scroll_vec.y) > 0 ? 1.0 / scroll_zoom_factor : scroll_zoom_factor;
-					zoom_callback.call(zoom, mb->get_position(), p_event);
-					return true;
+					if (scroll_vec.y != 0) {
+						// Compute the zoom factor.
+						float zoom_factor = mb->get_factor() <= 0 ? 1.0 : mb->get_factor();
+						zoom_factor = ((scroll_zoom_factor - 1.0) * zoom_factor) + 1.0;
+						float zoom = scroll_vec.y > 0 ? 1.0 / scroll_zoom_factor : scroll_zoom_factor;
+						zoom_callback.call(zoom, mb->get_position(), p_event);
+						return true;
+					}
 				} else {
 					Vector2 panning = scroll_vec * mb->get_factor();
 					if (pan_axis == PAN_AXIS_HORIZONTAL) {
@@ -73,11 +76,11 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 					}
 					pan_callback.call(-panning * scroll_speed, p_event);
 					return true;
-				} else if (!mb->is_shift_pressed()) {
+				} else if (!mb->is_shift_pressed() && scroll_vec.y != 0) {
 					// Compute the zoom factor.
 					float zoom_factor = mb->get_factor() <= 0 ? 1.0 : mb->get_factor();
 					zoom_factor = ((scroll_zoom_factor - 1.0) * zoom_factor) + 1.0;
-					float zoom = (scroll_vec.x + scroll_vec.y) > 0 ? 1.0 / scroll_zoom_factor : scroll_zoom_factor;
+					float zoom = scroll_vec.y > 0 ? 1.0 / scroll_zoom_factor : scroll_zoom_factor;
 					zoom_callback.call(zoom, mb->get_position(), p_event);
 					return true;
 				}
@@ -107,8 +110,8 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		if (is_dragging) {
-			if (p_canvas_rect != Rect2()) {
-				pan_callback.call(Input::get_singleton()->warp_mouse_motion(mm, p_canvas_rect), p_event);
+			if (warped_panning_viewport && p_canvas_rect.has_area()) {
+				pan_callback.call(warped_panning_viewport->wrap_mouse_in_rect(mm->get_relative(), p_canvas_rect), p_event);
 			} else {
 				pan_callback.call(mm->get_relative(), p_event);
 			}
@@ -210,6 +213,10 @@ void ViewPanner::setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_
 	set_simple_panning_enabled(p_simple_panning);
 }
 
+void ViewPanner::setup_warped_panning(Viewport *p_viewport, bool p_allowed) {
+	warped_panning_viewport = p_allowed ? p_viewport : nullptr;
+}
+
 bool ViewPanner::is_panning() const {
 	return is_dragging || pan_key_pressed;
 }
@@ -219,9 +226,7 @@ void ViewPanner::set_force_drag(bool p_force) {
 }
 
 ViewPanner::ViewPanner() {
-	Array inputs;
-	inputs.append(InputEventKey::create_reference(Key::SPACE));
-
+	Array inputs = { InputEventKey::create_reference(Key::SPACE) };
 	pan_view_shortcut.instantiate();
 	pan_view_shortcut->set_events(inputs);
 }

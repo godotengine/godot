@@ -116,14 +116,13 @@
 
 - (void)deleteText:(NSInteger)charactersToDelete {
 	for (int i = 0; i < charactersToDelete; i++) {
-		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, Key::BACKSPACE, Key::NONE, 0, true);
-		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, Key::BACKSPACE, Key::NONE, 0, false);
+		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, Key::BACKSPACE, Key::NONE, 0, true, KeyLocation::UNSPECIFIED);
+		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, Key::BACKSPACE, Key::NONE, 0, false, KeyLocation::UNSPECIFIED);
 	}
 }
 
 - (void)enterText:(NSString *)substring {
-	String characters;
-	characters.parse_utf8([substring UTF8String]);
+	String characters = String::utf8([substring UTF8String]);
 
 	for (int i = 0; i < characters.size(); i++) {
 		int character = characters[i];
@@ -137,8 +136,8 @@
 			key = Key::SPACE;
 		}
 
-		DisplayServerIOS::get_singleton()->key(key, character, key, Key::NONE, 0, true);
-		DisplayServerIOS::get_singleton()->key(key, character, key, Key::NONE, 0, false);
+		DisplayServerIOS::get_singleton()->key(key, character, key, Key::NONE, 0, true, KeyLocation::UNSPECIFIED);
+		DisplayServerIOS::get_singleton()->key(key, character, key, Key::NONE, 0, false, KeyLocation::UNSPECIFIED);
 	}
 }
 
@@ -149,23 +148,18 @@
 		return;
 	}
 
+	NSString *substringToDelete = nil;
 	if (self.previousSelectedRange.length == 0) {
-		// We are deleting all text before cursor if no range was selected.
-		// This way any inserted or changed text will be updated.
-		NSString *substringToDelete = [self.previousText substringToIndex:self.previousSelectedRange.location];
-		[self deleteText:substringToDelete.length];
+		// Get previous text to delete.
+		substringToDelete = [self.previousText substringToIndex:self.previousSelectedRange.location];
 	} else {
-		// If text was previously selected
-		// we are sending only one `backspace`.
-		// It will remove all text from text input.
+		// If text was previously selected we are sending only one `backspace`. It will remove all text from text input.
 		[self deleteText:1];
 	}
 
-	NSString *substringToEnter;
-
+	NSString *substringToEnter = nil;
 	if (self.selectedRange.length == 0) {
-		// If previous cursor had a selection
-		// we have to calculate an inserted text.
+		// If previous cursor had a selection we have to calculate an inserted text.
 		if (self.previousSelectedRange.length != 0) {
 			NSInteger rangeEnd = self.selectedRange.location + self.selectedRange.length;
 			NSInteger rangeStart = MIN(self.previousSelectedRange.location, self.selectedRange.location);
@@ -187,7 +181,18 @@
 		substringToEnter = [self.text substringWithRange:self.selectedRange];
 	}
 
-	[self enterText:substringToEnter];
+	NSInteger skip = 0;
+	if (substringToDelete != nil) {
+		for (NSUInteger i = 0; i < MIN([substringToDelete length], [substringToEnter length]); i++) {
+			if ([substringToDelete characterAtIndex:i] == [substringToEnter characterAtIndex:i]) {
+				skip++;
+			} else {
+				break;
+			}
+		}
+		[self deleteText:[substringToDelete length] - skip]; // Delete changed part of previous text.
+	}
+	[self enterText:[substringToEnter substringFromIndex:skip]]; // Enter changed part of new text.
 
 	self.previousText = self.text;
 	self.previousSelectedRange = self.selectedRange;

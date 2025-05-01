@@ -30,7 +30,6 @@
 
 #include "slider.h"
 
-#include "core/os/keyboard.h"
 #include "scene/theme/theme_db.h"
 
 Size2 Slider::get_minimum_size() const {
@@ -64,34 +63,40 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
+				grab.value_before_dragging = get_as_ratio();
+				emit_signal(SNAME("drag_started"));
 
-				double grab_width = (double)grabber->get_width();
-				double grab_height = (double)grabber->get_height();
+				double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
+				double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
 				set_block_signals(true);
 				if (orientation == VERTICAL) {
 					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
 				} else {
-					set_as_ratio(((double)grab.pos - (grab_width / 2.0)) / max);
+					double v = ((double)grab.pos - (grab_width / 2.0)) / max;
+					set_as_ratio(is_layout_rtl() ? 1 - v : v);
 				}
 				set_block_signals(false);
 				grab.active = true;
 				grab.uvalue = get_as_ratio();
 
-				emit_signal(SNAME("drag_started"));
 				_notify_shared_value_changed();
 			} else {
 				grab.active = false;
 
-				const bool value_changed = !Math::is_equal_approx((double)grab.uvalue, get_as_ratio());
+				const bool value_changed = !Math::is_equal_approx((double)grab.value_before_dragging, get_as_ratio());
 				emit_signal(SNAME("drag_ended"), value_changed);
 			}
 		} else if (scrollable) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-				grab_focus();
+				if (get_focus_mode_with_override() != FOCUS_NONE) {
+					grab_focus();
+				}
 				set_value(get_value() + get_step());
 			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				grab_focus();
+				if (get_focus_mode_with_override() != FOCUS_NONE) {
+					grab_focus();
+				}
 				set_value(get_value() - get_step());
 			}
 		}
@@ -102,12 +107,16 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 		if (grab.active) {
 			Size2i size = get_size();
-			Ref<Texture2D> grabber = theme_cache.grabber_icon;
+			Ref<Texture2D> grabber = theme_cache.grabber_hl_icon;
+			double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
+			double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL) {
 				motion = -motion;
+			} else if (is_layout_rtl()) {
+				motion = -motion;
 			}
-			double areasize = orientation == VERTICAL ? size.height - grabber->get_height() : size.width - grabber->get_width();
+			double areasize = orientation == VERTICAL ? size.height - grab_height : size.width - grab_width;
 			if (areasize <= 0) {
 				return;
 			}
@@ -121,7 +130,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventJoypadButton> joypadbutton_event = p_event;
 	bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
 
-	if (!mm.is_valid() && !mb.is_valid()) {
+	if (mm.is_null() && mb.is_null()) {
 		if (p_event->is_action_pressed("ui_left", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
@@ -132,7 +141,11 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				set_process_internal(true);
 			}
-			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			if (is_layout_rtl()) {
+				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			} else {
+				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			}
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_right", true)) {
 			if (orientation != HORIZONTAL) {
@@ -144,7 +157,11 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				set_process_internal(true);
 			}
-			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			if (is_layout_rtl()) {
+				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			} else {
+				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			}
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_up", true)) {
 			if (orientation != VERTICAL) {
@@ -196,11 +213,19 @@ void Slider::_notification(int p_what) {
 				gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
 				if (orientation == HORIZONTAL) {
 					if (input->is_action_pressed("ui_left")) {
-						set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						if (is_layout_rtl()) {
+							set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						} else {
+							set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						}
 					}
 
 					if (input->is_action_pressed("ui_right")) {
-						set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						if (is_layout_rtl()) {
+							set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						} else {
+							set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						}
 					}
 				} else if (orientation == VERTICAL) {
 					if (input->is_action_pressed("ui_down")) {
@@ -212,7 +237,13 @@ void Slider::_notification(int p_what) {
 					}
 				}
 			}
+		} break;
 
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SLIDER);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -268,7 +299,7 @@ void Slider::_notification(int p_what) {
 				double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber->get_height());
 				int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
-				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift), Size2i(widget_width, areasize * ratio + grabber->get_height() / 2 - grabber_shift)));
+				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, Math::round(size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift)), Size2i(widget_width, Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift))));
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_height() / 2 - tick->get_height() / 2);
@@ -285,9 +316,15 @@ void Slider::_notification(int p_what) {
 				int widget_height = style->get_minimum_size().height;
 				double areasize = size.width - (theme_cache.center_grabber ? 0 : grabber->get_size().width);
 				int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
+				bool rtl = is_layout_rtl();
 
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
-				grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(areasize * ratio + grabber->get_width() / 2 + grabber_shift, widget_height)));
+				int p = areasize * (rtl ? 1 - ratio : ratio) + grabber->get_width() / 2 + grabber_shift;
+				if (rtl) {
+					grabber_area->draw(ci, Rect2i(Point2i(p, (size.height - widget_height) / 2), Size2i(size.width - p, widget_height)));
+				} else {
+					grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(p, widget_height)));
+				}
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_width() / 2 - tick->get_width() / 2);
@@ -299,7 +336,7 @@ void Slider::_notification(int p_what) {
 						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
 					}
 				}
-				grabber->draw(ci, Point2i(ratio * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
+				grabber->draw(ci, Point2i((rtl ? 1 - ratio : ratio) * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
 			}
 		} break;
 	}

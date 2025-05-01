@@ -9,9 +9,9 @@
 		[b]Performance:[/b] [CylinderShape3D] is fast to check collisions against, but it is slower than [CapsuleShape3D], [BoxShape3D], and [SphereShape3D].
 	</description>
 	<tutorials>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
-		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<members>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">

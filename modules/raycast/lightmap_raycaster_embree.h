@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHTMAP_RAYCASTER_EMBREE_H
-#define LIGHTMAP_RAYCASTER_EMBREE_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
 
@@ -37,7 +36,7 @@
 #include "core/object/object.h"
 #include "scene/3d/lightmapper.h"
 
-#include <embree3/rtcore.h>
+#include <embree4/rtcore.h>
 
 class LightmapRaycasterEmbree : public LightmapRaycaster {
 	GDCLASS(LightmapRaycasterEmbree, LightmapRaycaster);
@@ -78,5 +77,3 @@ public:
 };
 
 #endif // TOOLS_ENABLED
-
-#endif // LIGHTMAP_RAYCASTER_EMBREE_H

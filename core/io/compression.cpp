@@ -35,12 +35,17 @@
 
 #include "thirdparty/misc/fastlz.h"
 
-#include <zlib.h>
 #include <zstd.h>
 
 #ifdef BROTLI_ENABLED
 #include <brotli/decode.h>
 #endif
+
+// Caches for zstd.
+static BinaryMutex mutex;
+static ZSTD_DCtx *current_zstd_d_ctx = nullptr;
+static bool current_zstd_long_distance_matching;
+static int current_zstd_window_log_size;
 
 int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode) {
 	switch (p_mode) {
@@ -187,12 +192,22 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 			return total;
 		} break;
 		case MODE_ZSTD: {
-			ZSTD_DCtx *dctx = ZSTD_createDCtx();
-			if (zstd_long_distance_matching) {
-				ZSTD_DCtx_setParameter(dctx, ZSTD_d_windowLogMax, zstd_window_log_size);
+			MutexLock lock(mutex);
+
+			if (!current_zstd_d_ctx || current_zstd_long_distance_matching != zstd_long_distance_matching || current_zstd_window_log_size != zstd_window_log_size) {
+				if (current_zstd_d_ctx) {
+					ZSTD_freeDCtx(current_zstd_d_ctx);
+				}
+
+				current_zstd_d_ctx = ZSTD_createDCtx();
+				if (zstd_long_distance_matching) {
+					ZSTD_DCtx_setParameter(current_zstd_d_ctx, ZSTD_d_windowLogMax, zstd_window_log_size);
+				}
+				current_zstd_long_distance_matching = zstd_long_distance_matching;
+				current_zstd_window_log_size = zstd_window_log_size;
 			}
-			int ret = ZSTD_decompressDCtx(dctx, p_dst, p_dst_max_size, p_src, p_src_size);
-			ZSTD_freeDCtx(dctx);
+
+			int ret = ZSTD_decompressDCtx(current_zstd_d_ctx, p_dst, p_dst_max_size, p_src, p_src_size);
 			return ret;
 		} break;
 	}
@@ -348,10 +363,3 @@ int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int p_max_dst_s
 		return Z_OK;
 	}
 }
-
-int Compression::zlib_level = Z_DEFAULT_COMPRESSION;
-int Compression::gzip_level = Z_DEFAULT_COMPRESSION;
-int Compression::zstd_level = 3;
-bool Compression::zstd_long_distance_matching = false;
-int Compression::zstd_window_log_size = 27; // ZSTD_WINDOWLOG_LIMIT_DEFAULT
-int Compression::gzip_chunk = 16384;

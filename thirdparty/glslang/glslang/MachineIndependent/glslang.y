@@ -110,13 +110,6 @@ using namespace glslang;
 
 %{
 
-/* windows only pragma */
-#ifdef _MSC_VER
-    #pragma warning(disable : 4065)
-    #pragma warning(disable : 4127)
-    #pragma warning(disable : 4244)
-#endif
-
 #define parseContext (*pParseContext)
 #define yyerror(context, msg) context->parserError(msg)
 
@@ -492,18 +485,44 @@ function_call_header_no_parameters
 
 function_call_header_with_parameters
     : function_call_header assignment_expression {
-        TParameter param = { 0, new TType };
-        param.type->shallowCopy($2->getType());
-        $1.function->addParameter(param);
-        $$.function = $1.function;
-        $$.intermNode = $2;
+        if (parseContext.spvVersion.vulkan > 0
+            && parseContext.spvVersion.vulkanRelaxed
+            && $2->getType().containsOpaque())
+        {
+            $$.intermNode = parseContext.vkRelaxedRemapFunctionArgument($$.loc, $1.function, $2);
+            $$.function = $1.function;
+        }
+        else
+        {
+            TParameter param = { 0, new TType, {} };
+            param.type->shallowCopy($2->getType());
+
+            $1.function->addParameter(param);
+            $$.function = $1.function;
+            $$.intermNode = $2;
+        }
     }
     | function_call_header_with_parameters COMMA assignment_expression {
-        TParameter param = { 0, new TType };
-        param.type->shallowCopy($3->getType());
-        $1.function->addParameter(param);
-        $$.function = $1.function;
-        $$.intermNode = parseContext.intermediate.growAggregate($1.intermNode, $3, $2.loc);
+        if (parseContext.spvVersion.vulkan > 0
+            && parseContext.spvVersion.vulkanRelaxed
+            && $3->getType().containsOpaque())
+        {
+            TIntermNode* remappedNode = parseContext.vkRelaxedRemapFunctionArgument($2.loc, $1.function, $3);
+            if (remappedNode == $3)
+                $$.intermNode = parseContext.intermediate.growAggregate($1.intermNode, $3, $2.loc);
+            else
+                $$.intermNode = parseContext.intermediate.mergeAggregate($1.intermNode, remappedNode, $2.loc);
+            $$.function = $1.function;
+        }
+        else
+        {
+            TParameter param = { 0, new TType, {} };
+            param.type->shallowCopy($3->getType());
+
+            $1.function->addParameter(param);
+            $$.function = $1.function;
+            $$.intermNode = parseContext.intermediate.growAggregate($1.intermNode, $3, $2.loc);
+        }
     }
     ;
 
@@ -941,24 +960,31 @@ identifier_list
 function_prototype
     : function_declarator RIGHT_PAREN  {
         $$.function = $1;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $2.loc;
     }
     | function_declarator RIGHT_PAREN attribute {
         $$.function = $1;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $2.loc;
-        parseContext.requireExtensions($2.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
+        const char * extensions[2] = { E_GL_EXT_subgroup_uniform_control_flow, E_GL_EXT_maximal_reconvergence };
+        parseContext.requireExtensions($2.loc, 2, extensions, "attribute");
         parseContext.handleFunctionAttributes($2.loc, *$3);
     }
     | attribute function_declarator RIGHT_PAREN {
         $$.function = $2;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $3.loc;
-        parseContext.requireExtensions($3.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
+        const char * extensions[2] = { E_GL_EXT_subgroup_uniform_control_flow, E_GL_EXT_maximal_reconvergence };
+        parseContext.requireExtensions($3.loc, 2, extensions, "attribute");
         parseContext.handleFunctionAttributes($3.loc, *$1);
     }
     | attribute function_declarator RIGHT_PAREN attribute {
         $$.function = $2;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $3.loc;
-        parseContext.requireExtensions($3.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
+        const char * extensions[2] = { E_GL_EXT_subgroup_uniform_control_flow, E_GL_EXT_maximal_reconvergence };
+        parseContext.requireExtensions($3.loc, 2, extensions, "attribute");
         parseContext.handleFunctionAttributes($3.loc, *$1);
         parseContext.handleFunctionAttributes($3.loc, *$4);
     }
@@ -979,7 +1005,12 @@ function_header_with_parameters
         // Add the parameter
         $$ = $1;
         if ($2.param.type->getBasicType() != EbtVoid)
-            $1->addParameter($2.param);
+        {
+            if (!(parseContext.spvVersion.vulkan > 0 && parseContext.spvVersion.vulkanRelaxed))
+                $1->addParameter($2.param);
+            else
+                parseContext.vkRelaxedRemapFunctionParameter($1, $2.param);
+        }
         else
             delete $2.param.type;
     }
@@ -997,7 +1028,10 @@ function_header_with_parameters
         } else {
             // Add the parameter
             $$ = $1;
-            $1->addParameter($3.param);
+            if (!(parseContext.spvVersion.vulkan > 0 && parseContext.spvVersion.vulkanRelaxed))
+                $1->addParameter($3.param);
+            else
+                parseContext.vkRelaxedRemapFunctionParameter($1, $3.param);
         }
     }
     ;
@@ -1037,7 +1071,7 @@ parameter_declarator
         }
         parseContext.reservedErrorCheck($2.loc, *$2.string);
 
-        TParameter param = {$2.string, new TType($1)};
+        TParameter param = {$2.string, new TType($1), {}};
         $$.loc = $2.loc;
         $$.param = param;
     }
@@ -1055,7 +1089,7 @@ parameter_declarator
         parseContext.arraySizeRequiredCheck($3.loc, *$3.arraySizes);
         parseContext.reservedErrorCheck($2.loc, *$2.string);
 
-        TParameter param = { $2.string, type };
+        TParameter param = { $2.string, type, {} };
 
         $$.loc = $2.loc;
         $$.param = param;
@@ -1108,7 +1142,7 @@ parameter_declaration
 
 parameter_type_specifier
     : type_specifier {
-        TParameter param = { 0, new TType($1) };
+        TParameter param = { 0, new TType($1), {} };
         $$.param = param;
         if ($1.arraySizes)
             parseContext.arraySizeRequiredCheck($1.loc, *$1.arraySizes);
@@ -1725,6 +1759,7 @@ type_parameter_specifier_list
     : type_specifier {
         $$ = new TTypeParameters;
         $$->arraySizes = new TArraySizes;
+        $$->spirvType = $1.spirvType;
         $$->basicType = $1.basicType;
     }
     | unary_expression {
@@ -3548,11 +3583,17 @@ precision_qualifier
 
 struct_specifier
     : STRUCT IDENTIFIER LEFT_BRACE { parseContext.nestedStructCheck($1.loc); } struct_declaration_list RIGHT_BRACE {
+
         TType* structure = new TType($5, *$2.string);
         parseContext.structArrayCheck($2.loc, *structure);
+
         TVariable* userTypeDef = new TVariable($2.string, *structure, true);
         if (! parseContext.symbolTable.insert(*userTypeDef))
             parseContext.error($2.loc, "redefinition", $2.string->c_str(), "struct");
+        else if (parseContext.spvVersion.vulkanRelaxed
+                 && structure->containsOpaque())
+            parseContext.relaxedSymbols.push_back(structure->getTypeName());
+
         $$.init($1.loc);
         $$.basicType = EbtStruct;
         $$.userDef = structure;
@@ -3913,7 +3954,8 @@ iteration_statement
         $$ = $1;
     }
     | attribute iteration_statement_nonattributed {
-        parseContext.requireExtensions($2->getLoc(), 1, &E_GL_EXT_control_flow_attributes, "attribute");
+        const char * extensions[2] = { E_GL_EXT_control_flow_attributes, E_GL_EXT_control_flow_attributes2 };
+        parseContext.requireExtensions($2->getLoc(), 2, extensions, "attribute");
         parseContext.handleLoopAttributes(*$1, $2);
         $$ = $2;
     }
@@ -4088,6 +4130,7 @@ function_definition
             parseContext.error($1.loc, "function does not return a value:", "", $1.function->getName().c_str());
         parseContext.symbolTable.pop(&parseContext.defaultPrecision[0]);
         $$ = parseContext.intermediate.growAggregate($1.intermNode, $3);
+        $$->getAsAggregate()->setLinkType($1.function->getLinkType());
         parseContext.intermediate.setAggregateOperator($$, EOpFunction, $1.function->getType(), $1.loc);
         $$->getAsAggregate()->setName($1.function->getMangledName().c_str());
 

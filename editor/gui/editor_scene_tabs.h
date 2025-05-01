@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_SCENE_TABS_H
-#define EDITOR_SCENE_TABS_H
+#pragma once
 
 #include "scene/gui/margin_container.h"
 
@@ -44,8 +43,18 @@ class TextureRect;
 class EditorSceneTabs : public MarginContainer {
 	GDCLASS(EditorSceneTabs, MarginContainer);
 
-	static EditorSceneTabs *singleton;
+	inline static EditorSceneTabs *singleton = nullptr;
 
+public:
+	enum {
+		SCENE_SHOW_IN_FILESYSTEM = 3000, // Prevents conflicts with EditorNode options.
+		SCENE_RUN,
+		SCENE_CLOSE_OTHERS,
+		SCENE_CLOSE_RIGHT,
+		SCENE_CLOSE_ALL,
+	};
+
+private:
 	PanelContainer *tabbar_panel = nullptr;
 	HBoxContainer *tabbar_container = nullptr;
 
@@ -57,16 +66,20 @@ class EditorSceneTabs : public MarginContainer {
 	Panel *tab_preview_panel = nullptr;
 	TextureRect *tab_preview = nullptr;
 
+	int last_hovered_tab = -1;
+
 	void _scene_tab_changed(int p_tab);
 	void _scene_tab_script_edited(int p_tab);
 	void _scene_tab_closed(int p_tab);
 	void _scene_tab_hovered(int p_tab);
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
+	void _scene_tabs_resized();
 
+	void _update_tab_titles();
 	void _reposition_active_tab(int p_to_index);
 	void _update_context_menu();
-	void _disable_menu_option_if(int p_option, bool p_condition);
+	void _custom_menu_option(int p_option);
 
 	void _tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 
@@ -77,6 +90,7 @@ class EditorSceneTabs : public MarginContainer {
 
 protected:
 	void _notification(int p_what);
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 
 public:
@@ -91,5 +105,3 @@ public:
 
 	EditorSceneTabs();
 };
-
-#endif // EDITOR_SCENE_TABS_H

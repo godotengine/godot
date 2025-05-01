@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STATIC_RAYCASTER_EMBREE_H
-#define STATIC_RAYCASTER_EMBREE_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
 
 #include "core/math/static_raycaster.h"
 
-#include <embree3/rtcore.h>
+#include <embree4/rtcore.h>
 
 class StaticRaycasterEmbree : public StaticRaycaster {
 	GDCLASS(StaticRaycasterEmbree, StaticRaycaster);
@@ -65,5 +64,3 @@ public:
 };
 
 #endif // TOOLS_ENABLED
-
-#endif // STATIC_RAYCASTER_EMBREE_H

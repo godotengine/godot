@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ACTION_MAP_EDITOR_H
-#define ACTION_MAP_EDITOR_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -52,7 +51,7 @@ public:
 		bool has_initial = false;
 		Dictionary action_initial;
 
-		Ref<Texture2D> icon = Ref<Texture2D>();
+		Ref<Texture2D> icon;
 		bool editable = true;
 	};
 
@@ -85,6 +84,7 @@ private:
 	CheckButton *show_builtin_actions_checkbutton = nullptr;
 	LineEdit *action_list_search = nullptr;
 	EventListenerLineEdit *action_list_search_by_event = nullptr;
+	Button *clear_all_search = nullptr;
 
 	HBoxContainer *add_hbox = nullptr;
 	LineEdit *add_edit = nullptr;
@@ -118,6 +118,7 @@ protected:
 
 public:
 	LineEdit *get_search_box() const;
+	LineEdit *get_path_box() const;
 	InputEventConfigurationDialog *get_configuration_dialog();
 
 	// Dictionary represents an Action with "events" (Array) and "deadzone" (float) items. Pass with no param to update list from cached action map.
@@ -130,5 +131,3 @@ public:
 
 	ActionMapEditor();
 };
-
-#endif // ACTION_MAP_EDITOR_H

@@ -28,29 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_EDITOR_PLUGIN_H
-#define TEXTURE_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/margin_container.h"
 #include "scene/resources/texture.h"
 
+class AspectRatioContainer;
+class ColorRect;
 class TextureRect;
+class ShaderMaterial;
+class ColorChannelSelector;
 
 class TexturePreview : public MarginContainer {
 	GDCLASS(TexturePreview, MarginContainer);
 
 private:
+	struct ThemeCache {
+		Color outline_color;
+	} theme_cache;
+
 	TextureRect *texture_display = nullptr;
 
+	MarginContainer *margin_container = nullptr;
+	Control *outline_overlay = nullptr;
+	AspectRatioContainer *centering_container = nullptr;
+	ColorRect *bg_rect = nullptr;
 	TextureRect *checkerboard = nullptr;
 	Label *metadata_label = nullptr;
+	Ref<ShaderMaterial> material;
 
+	ColorChannelSelector *channel_selector = nullptr;
+
+	void _draw_outline();
 	void _update_metadata_label_text();
 
 protected:
 	void _notification(int p_what);
+	void _update_texture_display_ratio();
+
+	void on_selected_channels_changed();
 
 public:
 	TextureRect *get_texture_display();
@@ -69,9 +87,7 @@ class TextureEditorPlugin : public EditorPlugin {
 	GDCLASS(TextureEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "Texture2D"; }
+	virtual String get_plugin_name() const override { return "Texture2D"; }
 
 	TextureEditorPlugin();
 };
-
-#endif // TEXTURE_EDITOR_PLUGIN_H

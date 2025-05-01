@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_STATE_H
-#define GLTF_STATE_H
+#pragma once
 
 #include "extensions/gltf_light.h"
 #include "structures/gltf_accessor.h"
@@ -38,22 +37,31 @@
 #include "structures/gltf_camera.h"
 #include "structures/gltf_mesh.h"
 #include "structures/gltf_node.h"
+#include "structures/gltf_object_model_property.h"
 #include "structures/gltf_skeleton.h"
 #include "structures/gltf_skin.h"
 #include "structures/gltf_texture.h"
 #include "structures/gltf_texture_sampler.h"
 
+#include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/animation/animation_player.h"
+
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
+	friend class GLTFNode;
 
+protected:
 	String base_path;
+	String extract_path;
+	String extract_prefix;
 	String filename;
 	Dictionary json;
 	int major_version = 0;
 	int minor_version = 0;
 	String copyright;
 	Vector<uint8_t> glb_data;
+	double bake_fps = 30.0;
 
 	bool use_named_skin_binds = false;
 	bool use_khr_texture_transform = false;
@@ -61,6 +69,7 @@ class GLTFState : public Resource {
 	bool force_generate_tangents = false;
 	bool create_animations = true;
 	bool force_disable_compression = false;
+	bool import_as_skeleton_bones = false;
 
 	int handle_binary_image = HANDLE_BINARY_EXTRACT_TEXTURES;
 
@@ -69,7 +78,7 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFBufferView>> buffer_views;
 	Vector<Ref<GLTFAccessor>> accessors;
 
-	Vector<Ref<GLTFMesh>> meshes; // meshes are loaded directly, no reason not to.
+	Vector<Ref<GLTFMesh>> meshes; // Meshes are loaded directly, no reason not to.
 
 	Vector<AnimationPlayer *> animation_players;
 	HashMap<Ref<Material>, GLTFMaterialIndex> material_cache;
@@ -95,6 +104,7 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFAnimation>> animations;
 	HashMap<GLTFNodeIndex, Node *> scene_nodes;
 	HashMap<GLTFNodeIndex, ImporterMeshInstance3D *> scene_mesh_instances;
+	HashMap<String, Ref<GLTFObjectModelProperty>> object_model_properties;
 
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
@@ -104,13 +114,23 @@ protected:
 	static void _bind_methods();
 
 public:
+	double get_bake_fps() const {
+		return bake_fps;
+	}
+
+	void set_bake_fps(double value) {
+		bake_fps = value;
+	}
+
 	void add_used_extension(const String &p_extension, bool p_required = false);
+	GLTFBufferViewIndex append_data_to_buffers(const Vector<uint8_t> &p_data, const bool p_deduplication);
+	GLTFNodeIndex append_gltf_node(Ref<GLTFNode> p_gltf_node, Node *p_godot_scene_node, GLTFNodeIndex p_parent_node_index);
 
 	enum GLTFHandleBinary {
 		HANDLE_BINARY_DISCARD_TEXTURES = 0,
 		HANDLE_BINARY_EXTRACT_TEXTURES,
 		HANDLE_BINARY_EMBED_AS_BASISU,
-		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // if this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
+		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // If this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
 	};
 	int32_t get_handle_binary_image() {
 		return handle_binary_image;
@@ -171,7 +191,13 @@ public:
 	void set_scene_name(String p_scene_name);
 
 	String get_base_path();
-	void set_base_path(String p_base_path);
+	void set_base_path(const String &p_base_path);
+
+	String get_extract_path();
+	void set_extract_path(const String &p_extract_path);
+
+	String get_extract_prefix();
+	void set_extract_prefix(const String &p_extract_prefix);
 
 	String get_filename() const;
 	void set_filename(const String &p_filename);
@@ -209,6 +235,9 @@ public:
 	bool get_create_animations();
 	void set_create_animations(bool p_create_animations);
 
+	bool get_import_as_skeleton_bones();
+	void set_import_as_skeleton_bones(bool p_import_as_skeleton_bones);
+
 	TypedArray<GLTFAnimation> get_animations();
 	void set_animations(TypedArray<GLTFAnimation> p_animations);
 
@@ -222,5 +251,3 @@ public:
 	Variant get_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };
-
-#endif // GLTF_STATE_H

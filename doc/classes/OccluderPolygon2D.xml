@@ -17,7 +17,6 @@
 		</member>
 		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array()">
 			A [Vector2] array with the index for polygon's vertices positions.
-			[b]Note:[/b] The returned value is a copy of the underlying array, rather than a reference.
 		</member>
 	</members>
 	<constants>

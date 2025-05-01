@@ -52,7 +52,7 @@ void CanvasLayer::set_visible(bool p_visible) {
 	}
 
 	visible = p_visible;
-	emit_signal(SNAME("visibility_changed"));
+	emit_signal(SceneStringName(visibility_changed));
 
 	for (int i = 0; i < get_child_count(); i++) {
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
@@ -108,7 +108,7 @@ void CanvasLayer::_update_xform() {
 	}
 }
 
-void CanvasLayer::_update_locrotscale() {
+void CanvasLayer::_update_locrotscale() const {
 	ofs = transform.columns[2];
 	rot = transform.get_rotation();
 	scale = transform.get_scale();
@@ -126,7 +126,7 @@ void CanvasLayer::set_offset(const Vector2 &p_offset) {
 
 Vector2 CanvasLayer::get_offset() const {
 	if (locrotscale_dirty) {
-		const_cast<CanvasLayer *>(this)->_update_locrotscale();
+		_update_locrotscale();
 	}
 
 	return ofs;
@@ -143,7 +143,7 @@ void CanvasLayer::set_rotation(real_t p_radians) {
 
 real_t CanvasLayer::get_rotation() const {
 	if (locrotscale_dirty) {
-		const_cast<CanvasLayer *>(this)->_update_locrotscale();
+		_update_locrotscale();
 	}
 
 	return rot;
@@ -160,7 +160,7 @@ void CanvasLayer::set_scale(const Vector2 &p_scale) {
 
 Vector2 CanvasLayer::get_scale() const {
 	if (locrotscale_dirty) {
-		const_cast<CanvasLayer *>(this)->_update_locrotscale();
+		_update_locrotscale();
 	}
 
 	return scale;
@@ -354,7 +354,7 @@ void CanvasLayer::_bind_methods() {
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_GROUP("Follow Viewport", "follow_viewport");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enabled"), "set_follow_viewport", "is_following_viewport");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_follow_viewport", "is_following_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "follow_viewport_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,or_less"), "set_follow_viewport_scale", "get_follow_viewport_scale");
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));

@@ -33,18 +33,30 @@ package org.godotengine.godot.io.directory
 import android.content.Context
 import android.util.Log
 import android.util.SparseArray
+import org.godotengine.godot.io.StorageScope
 import org.godotengine.godot.io.directory.DirectoryAccessHandler.Companion.INVALID_DIR_ID
 import org.godotengine.godot.io.directory.DirectoryAccessHandler.Companion.STARTING_DIR_ID
+import org.godotengine.godot.io.file.AssetData
 import java.io.File
 import java.io.IOException
 
 /**
  * Handles directories access within the Android assets directory.
  */
-internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.DirectoryAccess {
+internal class AssetsDirectoryAccess(private val context: Context) : DirectoryAccessHandler.DirectoryAccess {
 
 	companion object {
 		private val TAG = AssetsDirectoryAccess::class.java.simpleName
+
+		internal fun getAssetsPath(originalPath: String): String {
+			if (originalPath.startsWith(File.separator)) {
+				return originalPath.substring(File.separator.length)
+			}
+			if (originalPath.startsWith(StorageScope.Identifier.ASSETS_PREFIX)) {
+				return originalPath.substring(StorageScope.Identifier.ASSETS_PREFIX.length)
+			}
+			return originalPath
+		}
 	}
 
 	private data class AssetDir(val path: String, val files: Array<String>, var current: Int = 0)
@@ -54,13 +66,6 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 	private var lastDirId = STARTING_DIR_ID
 	private val dirs = SparseArray<AssetDir>()
 
-	private fun getAssetsPath(originalPath: String): String {
-		if (originalPath.startsWith(File.separatorChar)) {
-			return originalPath.substring(1)
-		}
-		return originalPath
-	}
-
 	override fun hasDirId(dirId: Int) = dirs.indexOfKey(dirId) >= 0
 
 	override fun dirOpen(path: String): Int {
@@ -68,8 +73,8 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 		try {
 			val files = assetManager.list(assetsPath) ?: return INVALID_DIR_ID
 			// Empty directories don't get added to the 'assets' directory, so
-			// if ad.files.length > 0 ==> path is directory
-			// if ad.files.length == 0 ==> path is file
+			// if files.length > 0 ==> path is directory
+			// if files.length == 0 ==> path is file
 			if (files.isEmpty()) {
 				return INVALID_DIR_ID
 			}
@@ -89,8 +94,8 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 		try {
 			val files = assetManager.list(assetsPath) ?: return false
 			// Empty directories don't get added to the 'assets' directory, so
-			// if ad.files.length > 0 ==> path is directory
-			// if ad.files.length == 0 ==> path is file
+			// if files.length > 0 ==> path is directory
+			// if files.length == 0 ==> path is file
 			return files.isNotEmpty()
 		} catch (e: IOException) {
 			Log.e(TAG, "Exception on dirExists", e)
@@ -98,19 +103,7 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 		}
 	}
 
-	override fun fileExists(path: String): Boolean {
-		val assetsPath = getAssetsPath(path)
-		try {
-			val files = assetManager.list(assetsPath) ?: return false
-			// Empty directories don't get added to the 'assets' directory, so
-			// if ad.files.length > 0 ==> path is directory
-			// if ad.files.length == 0 ==> path is file
-			return files.isEmpty()
-		} catch (e: IOException) {
-			Log.e(TAG, "Exception on fileExists", e)
-			return false
-		}
-	}
+	override fun fileExists(path: String) = AssetData.fileExists(context, path)
 
 	override fun dirIsDir(dirId: Int): Boolean {
 		val ad: AssetDir = dirs[dirId]
@@ -171,7 +164,7 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 
 	override fun getSpaceLeft() = 0L
 
-	override fun rename(from: String, to: String) = false
+	override fun rename(from: String, to: String) = AssetData.rename(from, to)
 
-	override fun remove(filename: String) = false
+	override fun remove(filename: String) = AssetData.delete(filename)
 }

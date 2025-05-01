@@ -167,7 +167,7 @@ private:
 #else // TOOLS_ENABLED
 		String platform = _get_platform_name();
 		String arch = Engine::get_singleton()->get_architecture_name();
-		String appname_safe = path::get_csharp_project_name();
+		String appname_safe = Path::get_csharp_project_name();
 		String packed_path = "res://.godot/mono/publish/" + arch;
 		if (DirAccess::exists(packed_path)) {
 			// The dotnet publish data is packed in the pck/zip.
@@ -192,9 +192,15 @@ private:
 				}
 			}
 			if (!has_data) {
-				// 3. Extract the data to a temporary location to load from there.
-				Ref<DirAccess> da = DirAccess::create_for_path(packed_path);
-				ERR_FAIL_NULL(da);
+				// 3. Extract the data to a temporary location to load from there, delete old data if it exists but is not up-to-date.
+				Ref<DirAccess> da;
+				if (DirAccess::exists(data_dir_root)) {
+					da = DirAccess::open(data_dir_root);
+					ERR_FAIL_COND(da.is_null());
+					ERR_FAIL_COND(da->erase_contents_recursive() != OK);
+				}
+				da = DirAccess::create_for_path(packed_path);
+				ERR_FAIL_COND(da.is_null());
 				ERR_FAIL_COND(da->copy_dir(packed_path, data_dir_root) != OK);
 			}
 			api_assemblies_dir = data_dir_root;

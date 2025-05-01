@@ -34,8 +34,6 @@
 
 #include "audio_stream_mp3.h"
 
-#include "core/io/file_access.h"
-
 int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	if (!active) {
 		return 0;
@@ -46,7 +44,9 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int frames_mixed_this_step = p_frames;
 
 	int beat_length_frames = -1;
-	bool beat_loop = mp3_stream->has_loop() && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
+	bool use_loop = looping_override ? looping : mp3_stream->loop;
+
+	bool beat_loop = use_loop && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
 	if (beat_loop) {
 		beat_length_frames = mp3_stream->get_beat_count() * mp3_stream->sample_rate * 60 / mp3_stream->get_bpm();
 	}
@@ -55,7 +55,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 		mp3dec_frame_info_t frame_info;
 		mp3d_sample_t *buf_frame = nullptr;
 
-		int samples_mixed = mp3dec_ex_read_frame(mp3d, &buf_frame, &frame_info, mp3_stream->channels);
+		int samples_mixed = mp3dec_ex_read_frame(&mp3d, &buf_frame, &frame_info, mp3_stream->channels);
 
 		if (samples_mixed) {
 			p_buffer[p_frames - todo] = AudioFrame(buf_frame[0], buf_frame[samples_mixed - 1]);
@@ -68,7 +68,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 			if (beat_loop && (int)frames_mixed >= beat_length_frames) {
 				for (int i = 0; i < FADE_SIZE; i++) {
-					samples_mixed = mp3dec_ex_read_frame(mp3d, &buf_frame, &frame_info, mp3_stream->channels);
+					samples_mixed = mp3dec_ex_read_frame(&mp3d, &buf_frame, &frame_info, mp3_stream->channels);
 					loop_fade[i] = AudioFrame(buf_frame[0], buf_frame[samples_mixed - 1]);
 					if (!samples_mixed) {
 						break;
@@ -82,7 +82,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 		else {
 			//EOF
-			if (mp3_stream->loop) {
+			if (use_loop) {
 				seek(mp3_stream->loop_offset);
 				loops++;
 			} else {
@@ -136,18 +136,53 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 	}
 
 	frames_mixed = uint32_t(mp3_stream->sample_rate * p_time);
-	mp3dec_ex_seek(mp3d, (uint64_t)frames_mixed * mp3_stream->channels);
+	mp3dec_ex_seek(&mp3d, (uint64_t)frames_mixed * mp3_stream->channels);
 }
 
 void AudioStreamPlaybackMP3::tag_used_streams() {
 	mp3_stream->tag_used(get_playback_position());
 }
 
-AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
-	if (mp3d) {
-		mp3dec_ex_close(mp3d);
-		memfree(mp3d);
+void AudioStreamPlaybackMP3::set_is_sample(bool p_is_sample) {
+	_is_sample = p_is_sample;
+}
+
+bool AudioStreamPlaybackMP3::get_is_sample() const {
+	return _is_sample;
+}
+
+Ref<AudioSamplePlayback> AudioStreamPlaybackMP3::get_sample_playback() const {
+	return sample_playback;
+}
+
+void AudioStreamPlaybackMP3::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+	sample_playback = p_playback;
+	if (sample_playback.is_valid()) {
+		sample_playback->stream_playback = Ref<AudioStreamPlayback>(this);
 	}
+}
+
+void AudioStreamPlaybackMP3::set_parameter(const StringName &p_name, const Variant &p_value) {
+	if (p_name == SNAME("looping")) {
+		if (p_value == Variant()) {
+			looping_override = false;
+			looping = false;
+		} else {
+			looping_override = true;
+			looping = p_value;
+		}
+	}
+}
+
+Variant AudioStreamPlaybackMP3::get_parameter(const StringName &p_name) const {
+	if (looping_override && p_name == SNAME("looping")) {
+		return looping;
+	}
+	return Variant();
+}
+
+AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
+	mp3dec_ex_close(&mp3d);
 }
 
 Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
@@ -160,9 +195,8 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 
 	mp3s.instantiate();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
-	mp3s->mp3d = (mp3dec_ex_t *)memalloc(sizeof(mp3dec_ex_t));
 
-	int errorcode = mp3dec_ex_open_buf(mp3s->mp3d, data.ptr(), data_len, MP3D_SEEK_TO_SAMPLE);
+	int errorcode = mp3dec_ex_open_buf(&mp3s->mp3d, data.ptr(), data_len, MP3D_SEEK_TO_SAMPLE);
 
 	mp3s->frames_mixed = 0;
 	mp3s->active = false;
@@ -185,22 +219,22 @@ void AudioStreamMP3::clear_data() {
 
 void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	int src_data_len = p_data.size();
-	const uint8_t *src_datar = p_data.ptr();
 
-	mp3dec_ex_t mp3d;
-	int err = mp3dec_ex_open_buf(&mp3d, src_datar, src_data_len, MP3D_SEEK_TO_SAMPLE);
-	ERR_FAIL_COND_MSG(err || mp3d.info.hz == 0, "Failed to decode mp3 file. Make sure it is a valid mp3 audio file.");
+	mp3dec_ex_t *mp3d = memnew(mp3dec_ex_t);
+	int err = mp3dec_ex_open_buf(mp3d, p_data.ptr(), src_data_len, MP3D_SEEK_TO_SAMPLE);
+	if (err || mp3d->info.hz == 0) {
+		memdelete(mp3d);
+		ERR_FAIL_MSG("Failed to decode mp3 file. Make sure it is a valid mp3 audio file.");
+	}
 
-	channels = mp3d.info.channels;
-	sample_rate = mp3d.info.hz;
-	length = float(mp3d.samples) / (sample_rate * float(channels));
+	channels = mp3d->info.channels;
+	sample_rate = mp3d->info.hz;
+	length = float(mp3d->samples) / (sample_rate * float(channels));
 
-	mp3dec_ex_close(&mp3d);
+	mp3dec_ex_close(mp3d);
+	memdelete(mp3d);
 
-	clear_data();
-
-	data.resize(src_data_len);
-	memcpy(data.ptrw(), src_datar, src_data_len);
+	data = p_data;
 	data_len = src_data_len;
 }
 
@@ -230,6 +264,10 @@ double AudioStreamMP3::get_length() const {
 
 bool AudioStreamMP3::is_monophonic() const {
 	return false;
+}
+
+void AudioStreamMP3::get_parameter_list(List<Parameter> *r_parameters) {
+	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
 }
 
 void AudioStreamMP3::set_bpm(double p_bpm) {
@@ -262,7 +300,36 @@ int AudioStreamMP3::get_bar_beats() const {
 	return bar_beats;
 }
 
+Ref<AudioSample> AudioStreamMP3::generate_sample() const {
+	Ref<AudioSample> sample;
+	sample.instantiate();
+	sample->stream = this;
+	sample->loop_mode = loop
+			? AudioSample::LoopMode::LOOP_FORWARD
+			: AudioSample::LoopMode::LOOP_DISABLED;
+	sample->loop_begin = loop_offset;
+	sample->loop_end = 0;
+	return sample;
+}
+
+Ref<AudioStreamMP3> AudioStreamMP3::load_from_buffer(const Vector<uint8_t> &p_stream_data) {
+	Ref<AudioStreamMP3> mp3_stream;
+	mp3_stream.instantiate();
+	mp3_stream->set_data(p_stream_data);
+	ERR_FAIL_COND_V_MSG(mp3_stream->get_data().is_empty(), Ref<AudioStreamMP3>(), "MP3 decoding failed. Check that your data is a valid MP3 audio stream.");
+	return mp3_stream;
+}
+
+Ref<AudioStreamMP3> AudioStreamMP3::load_from_file(const String &p_path) {
+	const Vector<uint8_t> stream_data = FileAccess::get_file_as_bytes(p_path);
+	ERR_FAIL_COND_V_MSG(stream_data.is_empty(), Ref<AudioStreamMP3>(), vformat("Cannot open file '%s'.", p_path));
+	return load_from_buffer(stream_data);
+}
+
 void AudioStreamMP3::_bind_methods() {
+	ClassDB::bind_static_method("AudioStreamMP3", D_METHOD("load_from_buffer", "stream_data"), &AudioStreamMP3::load_from_buffer);
+	ClassDB::bind_static_method("AudioStreamMP3", D_METHOD("load_from_file", "path"), &AudioStreamMP3::load_from_file);
+
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamMP3::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamMP3::get_data);
 

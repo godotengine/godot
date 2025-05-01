@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_CREATE_DIALOG_H
-#define SCRIPT_CREATE_DIALOG_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "scene/gui/check_box.h"
@@ -71,7 +70,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_browsing_parent = false;
 	String path_error;
 	String template_inactive_message;
-	String initial_bp;
 	bool is_new_script_created = true;
 	bool is_path_valid = false;
 	bool supports_built_in = false;
@@ -82,7 +80,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_using_templates = true;
 	bool built_in_enabled = true;
 	bool load_enabled = true;
-	int current_language;
 	int default_language;
 	bool re_check_path = false;
 
@@ -101,7 +98,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _built_in_pressed();
 	void _use_template_pressed();
 	bool _validate_parent(const String &p_string);
-	String _validate_path(const String &p_path, bool p_file_must_exist);
+	String _validate_path(const String &p_path, bool p_file_must_exist, bool *r_path_valid = nullptr);
 	void _parent_name_changed(const String &p_parent);
 	void _template_changed(int p_template = 0);
 	void _browse_path(bool browse_parent, bool p_save);
@@ -117,6 +114,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Vector<ScriptLanguage::ScriptTemplate> _get_user_templates(const ScriptLanguage *p_language, const StringName &p_object, const String &p_dir, const ScriptLanguage::TemplateLocation &p_origin) const;
 	ScriptLanguage::ScriptTemplate _parse_template(const ScriptLanguage *p_language, const String &p_path, const String &p_filename, const ScriptLanguage::TemplateLocation &p_origin, const String &p_inherits) const;
 	String _get_script_origin_label(const ScriptLanguage::TemplateLocation &p_origin) const;
+	String _adjust_file_path(const String &p_base_path) const;
 
 protected:
 	void _notification(int p_what);
@@ -127,5 +125,3 @@ public:
 	void set_inheritance_base_type(const String &p_base);
 	ScriptCreateDialog();
 };
-
-#endif // SCRIPT_CREATE_DIALOG_H

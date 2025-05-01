@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_DRIVER_PULSEAUDIO_H
-#define AUDIO_DRIVER_PULSEAUDIO_H
+#pragma once
 
 #ifdef PULSEAUDIO_ENABLED
 
@@ -100,7 +99,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 public:
 	virtual const char *get_name() const override {
 		return "PulseAudio";
-	};
+	}
 
 	virtual Error init() override;
 	virtual void start() override;
@@ -128,5 +127,3 @@ public:
 };
 
 #endif // PULSEAUDIO_ENABLED
-
-#endif // AUDIO_DRIVER_PULSEAUDIO_H

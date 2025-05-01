@@ -6,11 +6,14 @@
 	<description>
 		[ProceduralSkyMaterial] provides a way to create an effective background quickly by defining procedural parameters for the sun, the sky and the ground. The sky and ground are defined by a main color, a color at the horizon, and an easing curve to interpolate between them. Suns are described by a position in the sky, a color, and a max angle from the sun at which the easing curve ends. The max angle therefore defines the size of the sun in the sky.
 		[ProceduralSkyMaterial] supports up to 4 suns, using the color, and energy, direction, and angular distance of the first four [DirectionalLight3D] nodes in the scene. This means that the suns are defined individually by the properties of their corresponding [DirectionalLight3D]s and globally by [member sun_angle_max] and [member sun_curve].
-		[ProceduralSkyMaterial] uses a lightweight shader to draw the sky and is therefore suited for real time updates. This makes it a great option for a sky that is simple and computationally cheap, but unrealistic. If you need a more realistic procedural option, use [PhysicalSkyMaterial].
+		[ProceduralSkyMaterial] uses a lightweight shader to draw the sky and is therefore suited for real-time updates. This makes it a great option for a sky that is simple and computationally cheap, but unrealistic. If you need a more realistic procedural option, use [PhysicalSkyMaterial].
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="energy_multiplier" type="float" setter="set_energy_multiplier" getter="get_energy_multiplier" default="1.0">
+			The sky's overall brightness multiplier. Higher values result in a brighter sky.
+		</member>
 		<member name="ground_bottom_color" type="Color" setter="set_ground_bottom_color" getter="get_ground_bottom_color" default="Color(0.2, 0.169, 0.133, 1)">
 			Color of the ground at the bottom. Blends with [member ground_horizon_color].
 		</member>

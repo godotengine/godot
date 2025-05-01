@@ -372,6 +372,12 @@ ktxTexture2_transcodeUastc(ktxTexture2* This,
         This->dataSize = prototype->dataSize;
         prototype->pData = 0;
         prototype->dataSize = 0;
+        // Free SGD data
+        This->_private->_sgdByteLength = 0;
+        if (This->_private->_supercompressionGlobalData) {
+            free(This->_private->_supercompressionGlobalData);
+            This->_private->_supercompressionGlobalData = NULL;
+        }
     }
     ktxTexture2_Destroy(prototype);
     return result;
@@ -652,7 +658,7 @@ ktxTexture2_transcodeUastc(ktxTexture2* This,
     ktxLevelIndexEntry* protoLevelIndex = protoPriv._levelIndex;
     ktx_size_t levelOffsetWrite = 0;
 
-    basisu_lowlevel_uastc_transcoder uit;
+    basisu_lowlevel_uastc_ldr_4x4_transcoder uit;
     // See comment on same declaration in transcodeEtc1s.
     std::vector<basisu_transcoder_state> xcoderStates;
     xcoderStates.resize(This->isVideo ? This->numFaces : 1);

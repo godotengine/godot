@@ -6,11 +6,9 @@
 #include "default.h"
 #include "device.h"
 #include "scene.h"
-#include "primref.h"
+#include "../builders/primref.h"
 
-#if defined(APPLE) && defined(__aarch64__)
-#include <mutex>
-#endif
+#include "../../common/tasking/taskscheduler.h"
 
 namespace embree
 {
@@ -18,7 +16,7 @@ namespace embree
   {
     /*! maximum supported alignment */
     static const size_t maxAlignment = 64;
-
+    
     /*! maximum allocation size */
 
     /* default settings */
@@ -39,14 +37,14 @@ namespace embree
     public:
 
       /*! Constructor for usage with ThreadLocalData */
-      __forceinline ThreadLocal (ThreadLocal2* parent) 
-	: parent(parent), ptr(nullptr), cur(0), end(0), allocBlockSize(0), bytesUsed(0), bytesWasted(0) {}
+      __forceinline ThreadLocal (ThreadLocal2* parent)
+        : parent(parent), ptr(nullptr), cur(0), end(0), allocBlockSize(0), bytesUsed(0), bytesWasted(0) {}
 
       /*! initialize allocator */
-      void init(FastAllocator* alloc) 
+      void init(FastAllocator* alloc)
       {
         ptr = nullptr;
-	cur = end = 0;
+        cur = end = 0;
         bytesUsed = 0;
         bytesWasted = 0;
         allocBlockSize = 0;
@@ -54,64 +52,62 @@ namespace embree
       }
 
       /* Allocate aligned memory from the threads memory block. */
-      __forceinline void* malloc(FastAllocator* alloc, size_t bytes, size_t align = 16) 
+      __forceinline void* malloc(FastAllocator* alloc, size_t bytes, size_t align = 16)
       {
         /* bind the thread local allocator to the proper FastAllocator*/
         parent->bind(alloc);
 
         assert(align <= maxAlignment);
-	bytesUsed += bytes;
+        bytesUsed += bytes;
 
         /* try to allocate in local block */
-	size_t ofs = (align - cur) & (align-1);
+        size_t ofs = (align - cur) & (align-1);
         cur += bytes + ofs;
         if (likely(cur <= end)) { bytesWasted += ofs; return &ptr[cur - bytes]; }
-	cur -= bytes + ofs;
-        
+        cur -= bytes + ofs;
+
         /* if allocation is too large allocate with parent allocator */
         if (4*bytes > allocBlockSize) {
           return alloc->malloc(bytes,maxAlignment,false);
-	}
+        }
 
         /* get new partial block if allocation failed */
         size_t blockSize = allocBlockSize;
         ptr = (char*) alloc->malloc(blockSize,maxAlignment,true);
- 	bytesWasted += end-cur;
-	cur = 0; end = blockSize;
+        bytesWasted += end-cur;
+        cur = 0; end = blockSize;
 
         /* retry allocation */
-	ofs = (align - cur) & (align-1);
+        ofs = (align - cur) & (align-1);
         cur += bytes + ofs;
         if (likely(cur <= end)) { bytesWasted += ofs; return &ptr[cur - bytes]; }
-	cur -= bytes + ofs;
+        cur -= bytes + ofs;
 
         /* get new full block if allocation failed */
         blockSize = allocBlockSize;
         ptr = (char*) alloc->malloc(blockSize,maxAlignment,false);
-	bytesWasted += end-cur;
-	cur = 0; end = blockSize;
+        bytesWasted += end-cur;
+        cur = 0; end = blockSize;
 
         /* retry allocation */
-	ofs = (align - cur) & (align-1);
+        ofs = (align - cur) & (align-1);
         cur += bytes + ofs;
         if (likely(cur <= end)) { bytesWasted += ofs; return &ptr[cur - bytes]; }
-	cur -= bytes + ofs;
+        cur -= bytes + ofs;
 
         /* should never happen as large allocations get handled specially above */
         assert(false);
         return nullptr;
       }
 
-      
-      /*! returns amount of used bytes */
       __forceinline size_t getUsedBytes() const { return bytesUsed; }
-  
+
       /*! returns amount of free bytes */
       __forceinline size_t getFreeBytes() const { return end-cur; }
-      
+
       /*! returns amount of wasted bytes */
       __forceinline size_t getWastedBytes() const { return bytesWasted; }
-  
+
     private:
       ThreadLocal2* parent;
       char*  ptr;            //!< pointer to memory block
@@ -136,11 +132,7 @@ namespace embree
       {
         assert(alloc_i);
         if (alloc.load() == alloc_i) return;
-#if defined(APPLE) && defined(__aarch64__)
-        std::scoped_lock lock(mutex);
-#else
-        Lock<SpinLock> lock(mutex);
-#endif
+        Lock<MutexSys> lock(mutex);
         //if (alloc.load() == alloc_i) return; // not required as only one thread calls bind
         if (alloc.load()) {
           alloc.load()->bytesUsed   += alloc0.getUsedBytes()   + alloc1.getUsedBytes();
@@ -158,11 +150,7 @@ namespace embree
       {
         assert(alloc_i);
         if (alloc.load() != alloc_i) return;
-#if defined(APPLE) && defined(__aarch64__)
-        std::scoped_lock lock(mutex);
-#else
-        Lock<SpinLock> lock(mutex);
-#endif
+        Lock<MutexSys> lock(mutex);
         if (alloc.load() != alloc_i) return; // required as a different thread calls unbind
         alloc.load()->bytesUsed   += alloc0.getUsedBytes()   + alloc1.getUsedBytes();
         alloc.load()->bytesFree   += alloc0.getFreeBytes()   + alloc1.getFreeBytes();
@@ -173,26 +161,42 @@ namespace embree
       }
 
     public:
-#if defined(APPLE) && defined(__aarch64__)
-      std::mutex mutex;
-#else
-      SpinLock mutex;        //!< required as unbind is called from other threads
-#endif
+      MutexSys mutex;
       std::atomic<FastAllocator*> alloc;  //!< parent allocator
       ThreadLocal alloc0;
       ThreadLocal alloc1;
     };
 
-    FastAllocator (Device* device, bool osAllocation) 
-      : device(device), slotMask(0), usedBlocks(nullptr), freeBlocks(nullptr), use_single_mode(false), defaultBlockSize(PAGE_SIZE), estimatedSize(0),
-        growSize(PAGE_SIZE), maxGrowSize(maxAllocationSize), log2_grow_size_scale(0), bytesUsed(0), bytesFree(0), bytesWasted(0), atype(osAllocation ? EMBREE_OS_MALLOC : ALIGNED_MALLOC),
-        primrefarray(device,0)
+    FastAllocator (Device* device,
+                   bool osAllocation,
+                   bool useUSM = false,
+                   bool blockAllocation = true)
+      : device(device)
+      , slotMask(0)
+      , defaultBlockSize(PAGE_SIZE)
+      , estimatedSize(0)
+      , growSize(PAGE_SIZE)
+      , maxGrowSize(maxAllocationSize)
+      , usedBlocks(nullptr)
+      , freeBlocks(nullptr)
+      , useUSM(useUSM)
+      , blockAllocation(blockAllocation)
+      , use_single_mode(false)
+      , log2_grow_size_scale(0)
+      , bytesUsed(0)
+      , bytesFree(0)
+      , bytesWasted(0)
+      , atype(osAllocation ? EMBREE_OS_MALLOC : ALIGNED_MALLOC)
+      , primrefarray(device,0)
     {
+      if (osAllocation && useUSM)
+        abort(); //throw std::runtime_error("USM allocation cannot be combined with OS allocation.");
+
       for (size_t i=0; i<MAX_THREAD_USED_BLOCK_SLOTS; i++)
       {
         threadUsedBlocks[i] = nullptr;
         threadBlocks[i] = nullptr;
-        assert(!slotMutex[i].isLocked());
+        //assert(!slotMutex[i].isLocked());
       }
     }
 
@@ -233,11 +237,7 @@ namespace embree
       ThreadLocal2* alloc = thread_local_allocator2;
       if (alloc == nullptr) {
         thread_local_allocator2 = alloc = new ThreadLocal2;
-#if defined(APPLE) && defined(__aarch64__)
-        std::scoped_lock lock(s_thread_local_allocators_lock);
-#else
-        Lock<SpinLock> lock(s_thread_local_allocators_lock);
-#endif
+        Lock<MutexSys> lock(s_thread_local_allocators_lock);
         s_thread_local_allocators.push_back(make_unique(alloc));
       }
       return alloc;
@@ -247,11 +247,7 @@ namespace embree
 
     __forceinline void join(ThreadLocal2* alloc)
     {
-#if defined(APPLE) && defined(__aarch64__)
-      std::scoped_lock lock(s_thread_local_allocators_lock);
-#else
-      Lock<SpinLock> lock(thread_local_allocators_lock);
-#endif
+      Lock<MutexSys> lock(s_thread_local_allocators_lock);
       thread_local_allocators.push_back(alloc);
     }
 
@@ -412,7 +408,7 @@ namespace embree
       slotMask = MAX_THREAD_USED_BLOCK_SLOTS-1; // FIXME: remove
       if (usedBlocks.load() || freeBlocks.load()) { reset(); return; }
       if (bytesReserve == 0) bytesReserve = bytesAllocate;
-      freeBlocks = Block::create(device,bytesAllocate,bytesReserve,nullptr,atype);
+      freeBlocks = Block::create(device,useUSM,bytesAllocate,bytesReserve,nullptr,atype);
       estimatedSize = bytesEstimate;
       initGrowSizeAndNumSlots(bytesEstimate,true);
     }
@@ -478,8 +474,8 @@ namespace embree
       bytesUsed.store(0);
       bytesFree.store(0);
       bytesWasted.store(0);
-      if (usedBlocks.load() != nullptr) usedBlocks.load()->clear_list(device); usedBlocks = nullptr;
-      if (freeBlocks.load() != nullptr) freeBlocks.load()->clear_list(device); freeBlocks = nullptr;
+      if (usedBlocks.load() != nullptr) usedBlocks.load()->clear_list(device,useUSM); usedBlocks = nullptr;
+      if (freeBlocks.load() != nullptr) freeBlocks.load()->clear_list(device,useUSM); freeBlocks = nullptr;
       for (size_t i=0; i<MAX_THREAD_USED_BLOCK_SLOTS; i++) {
         threadUsedBlocks[i] = nullptr;
         threadBlocks[i] = nullptr;
@@ -503,9 +499,11 @@ namespace embree
         /* allocate using current block */
         size_t threadID = TaskScheduler::threadID();
         size_t slot = threadID & slotMask;
-	Block* myUsedBlocks = threadUsedBlocks[slot];
+        Block* myUsedBlocks = threadUsedBlocks[slot];
         if (myUsedBlocks) {
           void* ptr = myUsedBlocks->malloc(device,bytes,align,partial);
+          if (ptr == nullptr && !blockAllocation)
+            abort(); //throw std::bad_alloc();
           if (ptr) return ptr;
         }
 
@@ -516,16 +514,12 @@ namespace embree
         /* parallel block creation in case of no freeBlocks, avoids single global mutex */
         if (likely(freeBlocks.load() == nullptr))
         {
-#if defined(APPLE) && defined(__aarch64__)
-          std::scoped_lock lock(slotMutex[slot]);
-#else
-          Lock<SpinLock> lock(slotMutex[slot]);
-#endif
+          Lock<MutexSys> lock(slotMutex[slot]);
           if (myUsedBlocks == threadUsedBlocks[slot]) {
             const size_t alignedBytes = (bytes+(align-1)) & ~(align-1);
             const size_t allocSize = max(min(growSize,maxGrowSize),alignedBytes);
             assert(allocSize >= bytes);
-            threadBlocks[slot] = threadUsedBlocks[slot] = Block::create(device,allocSize,allocSize,threadBlocks[slot],atype); // FIXME: a large allocation might throw away a block here!
+            threadBlocks[slot] = threadUsedBlocks[slot] = Block::create(device,useUSM,allocSize,allocSize,threadBlocks[slot],atype); // FIXME: a large allocation might throw away a block here!
             // FIXME: a direct allocation should allocate inside the block here, and not in the next loop! a different thread could do some allocation and make the large allocation fail.
           }
           continue;
@@ -533,24 +527,20 @@ namespace embree
 
         /* if this fails allocate new block */
         {
-#if defined(APPLE) && defined(__aarch64__)
-            std::scoped_lock lock(mutex);
-#else
-            Lock<SpinLock> lock(mutex);
-#endif
-	  if (myUsedBlocks == threadUsedBlocks[slot])
-	  {
+          Lock<MutexSys> lock(mutex);
+          if (myUsedBlocks == threadUsedBlocks[slot])
+          {
             if (freeBlocks.load() != nullptr) {
-	      Block* nextFreeBlock = freeBlocks.load()->next;
-	      freeBlocks.load()->next = usedBlocks;
-	      __memory_barrier();
-	      usedBlocks = freeBlocks.load();
+              Block* nextFreeBlock = freeBlocks.load()->next;
+              freeBlocks.load()->next = usedBlocks;
+              __memory_barrier();
+              usedBlocks = freeBlocks.load();
               threadUsedBlocks[slot] = freeBlocks.load();
-	      freeBlocks = nextFreeBlock;
-	    } else {
+              freeBlocks = nextFreeBlock;
+            } else {
               const size_t allocSize = min(growSize*incGrowSizeScale(),maxGrowSize);
-	      usedBlocks = threadUsedBlocks[slot] = Block::create(device,allocSize,allocSize,usedBlocks,atype); // FIXME: a large allocation should get delivered directly, like above!
-	    }
+              usedBlocks = threadUsedBlocks[slot] = Block::create(device,useUSM,allocSize,allocSize,usedBlocks,atype); // FIXME: a large allocation should get delivered directly, like above!
+            }
           }
         }
       }
@@ -559,11 +549,7 @@ namespace embree
     /*! add new block */
     void addBlock(void* ptr, ssize_t bytes)
     {
-#if defined(APPLE) && defined(__aarch64__)
-      std::scoped_lock lock(mutex);
-#else
-      Lock<SpinLock> lock(mutex);
-#endif
+      Lock<MutexSys> lock(mutex);
       const size_t sizeof_Header = offsetof(Block,data[0]);
       void* aptr = (void*) ((((size_t)ptr)+maxAlignment-1) & ~(maxAlignment-1));
       size_t ofs = (size_t) aptr - (size_t) ptr;
@@ -723,7 +709,12 @@ namespace embree
 
     void print_blocks()
     {
-      std::cout << "  estimatedSize = " << estimatedSize << ", slotMask = " << slotMask << ", use_single_mode = " << use_single_mode << ", maxGrowSize = " << maxGrowSize << ", defaultBlockSize = " << defaultBlockSize << std::endl;
+      std::cout << "  estimatedSize = " << estimatedSize
+                << ", slotMask = " << slotMask
+                << ", use_single_mode = " << use_single_mode
+                << ", maxGrowSize = " << maxGrowSize
+                << ", defaultBlockSize = " << defaultBlockSize
+                << std::endl;
 
       std::cout << "  used blocks = ";
       if (usedBlocks.load() != nullptr) usedBlocks.load()->print_list();
@@ -738,7 +729,19 @@ namespace embree
 
     struct Block
     {
-      static Block* create(MemoryMonitorInterface* device, size_t bytesAllocate, size_t bytesReserve, Block* next, AllocationType atype)
+      __forceinline static void* blockAlignedMalloc(Device* device, bool useUSM, size_t bytesAllocate, size_t bytesAlignment)
+      {
+        if (useUSM) return device->malloc(bytesAllocate, bytesAlignment);
+	else        return alignedMalloc (bytesAllocate, bytesAlignment);
+      }
+
+      __forceinline static void blockAlignedFree(Device* device, bool useUSM, void* ptr)
+      {
+        if (useUSM) return device->free(ptr);
+	else        return alignedFree(ptr);
+      }
+
+      static Block* create(Device* device, bool useUSM, size_t bytesAllocate, size_t bytesReserve, Block* next, AllocationType atype)
       {
         /* We avoid using os_malloc for small blocks as this could
          * cause a risk of fragmenting the virtual address space and
@@ -766,7 +769,7 @@ namespace embree
           {
             const size_t alignment = maxAlignment;
             if (device) device->memoryMonitor(bytesAllocate+alignment,false);
-            ptr = alignedMalloc(bytesAllocate,alignment);
+            ptr = blockAlignedMalloc(device,useUSM,bytesAllocate,alignment);
 
             /* give hint to transparently convert these pages to 2MB pages */
             const size_t ptr_aligned_begin = ((size_t)ptr) & ~size_t(PAGE_SIZE_2M-1);
@@ -780,7 +783,7 @@ namespace embree
           {
             const size_t alignment = maxAlignment;
             if (device) device->memoryMonitor(bytesAllocate+alignment,false);
-            ptr = alignedMalloc(bytesAllocate,alignment);
+            ptr = blockAlignedMalloc(device,useUSM,bytesAllocate,alignment);
             return new (ptr) Block(ALIGNED_MALLOC,bytesAllocate-sizeof_Header,bytesAllocate-sizeof_Header,next,alignment);
           }
         }
@@ -812,23 +815,23 @@ namespace embree
         return head;
       }
 
-      void clear_list(MemoryMonitorInterface* device)
+      void clear_list(Device* device, bool useUSM)
       {
         Block* block = this;
         while (block) {
           Block* next = block->next;
-          block->clear_block(device);
+          block->clear_block(device, useUSM);
           block = next;
         }
       }
 
-      void clear_block (MemoryMonitorInterface* device)
+      void clear_block (Device* device, bool useUSM)
       {
         const size_t sizeof_Header = offsetof(Block,data[0]);
         const ssize_t sizeof_Alloced = wasted+sizeof_Header+getBlockAllocatedBytes();
 
         if (atype == ALIGNED_MALLOC) {
-          alignedFree(this);
+          blockAlignedFree(device, useUSM, this);
           if (device) device->memoryMonitor(-sizeof_Alloced,true);
         }
 
@@ -847,16 +850,16 @@ namespace embree
         size_t bytes = bytes_in;
         assert(align <= maxAlignment);
         bytes = (bytes+(align-1)) & ~(align-1);
-	if (unlikely(cur+bytes > reserveEnd && !partial)) return nullptr;
-	const size_t i = cur.fetch_add(bytes);
+        if (unlikely(cur+bytes > reserveEnd && !partial)) return nullptr;
+        const size_t i = cur.fetch_add(bytes);
         if (unlikely(i+bytes > reserveEnd && !partial)) return nullptr;
         if (unlikely(i > reserveEnd)) return nullptr;
         bytes_in = bytes = min(bytes,reserveEnd-i);
-        
-	if (i+bytes > allocEnd) {
+
+        if (i+bytes > allocEnd) {
           if (device) device->memoryMonitor(i+bytes-max(i,allocEnd),true);
         }
-	return &data[i];
+        return &data[i];
       }
 
       void* ptr() {
@@ -874,7 +877,7 @@ namespace embree
       }
 
       size_t getBlockFreeBytes() const {
-	return getBlockAllocatedBytes() - getBlockUsedBytes();
+        return getBlockAllocatedBytes() - getBlockUsedBytes();
       }
 
       size_t getBlockAllocatedBytes() const {
@@ -963,40 +966,40 @@ namespace embree
       char data[1];              //!< here starts memory to use for allocations
     };
 
+  public:
+    static const size_t blockHeaderSize = offsetof(Block,data[0]);
+
   private:
     Device* device;
-    SpinLock mutex;
     size_t slotMask;
-    std::atomic<Block*> threadUsedBlocks[MAX_THREAD_USED_BLOCK_SLOTS];
-    std::atomic<Block*> usedBlocks;
-    std::atomic<Block*> freeBlocks;
-
-    std::atomic<Block*> threadBlocks[MAX_THREAD_USED_BLOCK_SLOTS];
-#if defined(APPLE) && defined(__aarch64__)
-    std::mutex slotMutex[MAX_THREAD_USED_BLOCK_SLOTS];
-#else
-    PaddedSpinLock slotMutex[MAX_THREAD_USED_BLOCK_SLOTS];
-#endif
-
-    bool use_single_mode;
     size_t defaultBlockSize;
     size_t estimatedSize;
     size_t growSize;
     size_t maxGrowSize;
+
+    MutexSys mutex;
+    MutexSys slotMutex[MAX_THREAD_USED_BLOCK_SLOTS];
+    std::atomic<Block*> threadUsedBlocks[MAX_THREAD_USED_BLOCK_SLOTS];
+    std::atomic<Block*> threadBlocks[MAX_THREAD_USED_BLOCK_SLOTS];
+    std::atomic<Block*> usedBlocks;
+    std::atomic<Block*> freeBlocks;
+
+    bool useUSM;
+    bool blockAllocation = true;
+    bool use_single_mode;
+
     std::atomic<size_t> log2_grow_size_scale; //!< log2 of scaling factor for grow size // FIXME: remove
     std::atomic<size_t> bytesUsed;
     std::atomic<size_t> bytesFree;
     std::atomic<size_t> bytesWasted;
+
     static __thread ThreadLocal2* thread_local_allocator2;
-    static SpinLock s_thread_local_allocators_lock;
+    static MutexSys s_thread_local_allocators_lock;
     static std::vector<std::unique_ptr<ThreadLocal2>> s_thread_local_allocators;
-#if defined(APPLE) && defined(__aarch64__)
-    std::mutex thread_local_allocators_lock;
-#else
-    SpinLock thread_local_allocators_lock;
-#endif
+
     std::vector<ThreadLocal2*> thread_local_allocators;
     AllocationType atype;
+
     mvector<PrimRef> primrefarray;     //!< primrefarray used to allocate nodes
   };
 }

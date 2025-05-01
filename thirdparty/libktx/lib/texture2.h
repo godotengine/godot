@@ -51,6 +51,8 @@ ktxTexture2_LoadImageData(ktxTexture2* This,
                           ktx_uint8_t* pBuffer, ktx_size_t bufSize);
 
 KTX_error_code
+ktxTexture2_constructCopy(ktxTexture2* This, ktxTexture2* orig);
+KTX_error_code
 ktxTexture2_constructFromStreamAndHeader(ktxTexture2* This, ktxStream* pStream,
                                          KTX_header2* pHeader,
                                          ktxTextureCreateFlags createFlags);

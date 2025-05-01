@@ -37,7 +37,7 @@ real_t Vector2::angle() const {
 	return Math::atan2(y, x);
 }
 
-Vector2 Vector2::from_angle(const real_t p_angle) {
+Vector2 Vector2::from_angle(real_t p_angle) {
 	return Vector2(Math::cos(p_angle), Math::sin(p_angle));
 }
 
@@ -109,7 +109,7 @@ Vector2 Vector2::round() const {
 	return Vector2(Math::round(x), Math::round(y));
 }
 
-Vector2 Vector2::rotated(const real_t p_by) const {
+Vector2 Vector2::rotated(real_t p_by) const {
 	real_t sine = Math::sin(p_by);
 	real_t cosi = Math::cos(p_by);
 	return Vector2(
@@ -117,7 +117,7 @@ Vector2 Vector2::rotated(const real_t p_by) const {
 			x * sine + y * cosi);
 }
 
-Vector2 Vector2::posmod(const real_t p_mod) const {
+Vector2 Vector2::posmod(real_t p_mod) const {
 	return Vector2(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod));
 }
 
@@ -135,13 +135,25 @@ Vector2 Vector2::clamp(const Vector2 &p_min, const Vector2 &p_max) const {
 			CLAMP(y, p_min.y, p_max.y));
 }
 
+Vector2 Vector2::clampf(real_t p_min, real_t p_max) const {
+	return Vector2(
+			CLAMP(x, p_min, p_max),
+			CLAMP(y, p_min, p_max));
+}
+
 Vector2 Vector2::snapped(const Vector2 &p_step) const {
 	return Vector2(
 			Math::snapped(x, p_step.x),
 			Math::snapped(y, p_step.y));
 }
 
-Vector2 Vector2::limit_length(const real_t p_len) const {
+Vector2 Vector2::snappedf(real_t p_step) const {
+	return Vector2(
+			Math::snapped(x, p_step),
+			Math::snapped(y, p_step));
+}
+
+Vector2 Vector2::limit_length(real_t p_len) const {
 	const real_t l = length();
 	Vector2 v = *this;
 	if (l > 0 && p_len < l) {
@@ -152,7 +164,7 @@ Vector2 Vector2::limit_length(const real_t p_len) const {
 	return v;
 }
 
-Vector2 Vector2::move_toward(const Vector2 &p_to, const real_t p_delta) const {
+Vector2 Vector2::move_toward(const Vector2 &p_to, real_t p_delta) const {
 	Vector2 v = *this;
 	Vector2 vd = p_to - v;
 	real_t len = vd.length();
@@ -162,9 +174,9 @@ Vector2 Vector2::move_toward(const Vector2 &p_to, const real_t p_delta) const {
 // slide returns the component of the vector along the given plane, specified by its normal vector.
 Vector2 Vector2::slide(const Vector2 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 " + p_normal.operator String() + "must be normalized.");
 #endif
-	return *this - p_normal * this->dot(p_normal);
+	return *this - p_normal * dot(p_normal);
 }
 
 Vector2 Vector2::bounce(const Vector2 &p_normal) const {
@@ -173,13 +185,17 @@ Vector2 Vector2::bounce(const Vector2 &p_normal) const {
 
 Vector2 Vector2::reflect(const Vector2 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 " + p_normal.operator String() + "must be normalized.");
 #endif
-	return 2.0f * p_normal * this->dot(p_normal) - *this;
+	return 2.0f * p_normal * dot(p_normal) - *this;
 }
 
 bool Vector2::is_equal_approx(const Vector2 &p_v) const {
 	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y);
+}
+
+bool Vector2::is_same(const Vector2 &p_v) const {
+	return Math::is_same(x, p_v.x) && Math::is_same(y, p_v.y);
 }
 
 bool Vector2::is_zero_approx() const {
@@ -191,7 +207,7 @@ bool Vector2::is_finite() const {
 }
 
 Vector2::operator String() const {
-	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ")";
+	return "(" + String::num_real(x, true) + ", " + String::num_real(y, true) + ")";
 }
 
 Vector2::operator Vector2i() const {

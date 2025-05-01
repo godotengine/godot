@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PACKED_SCENE_EDITOR_PLUGIN_H
-#define PACKED_SCENE_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
 class PackedSceneEditor : public VBoxContainer {
@@ -64,5 +63,3 @@ class PackedSceneEditorPlugin : public EditorPlugin {
 public:
 	PackedSceneEditorPlugin();
 };
-
-#endif // PACKED_SCENE_EDITOR_PLUGIN_H

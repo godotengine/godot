@@ -4,7 +4,7 @@
  *
  *   CFF token definitions (specification only).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -80,26 +80,26 @@
 #undef  CFFCODE
 #define CFFCODE       CFF_CODE_PRIVATE
 
-  CFF_FIELD_DELTA     ( 6,     blue_values, 14,        "BlueValues" )
-  CFF_FIELD_DELTA     ( 7,     other_blues, 10,        "OtherBlues" )
-  CFF_FIELD_DELTA     ( 8,     family_blues, 14,       "FamilyBlues" )
-  CFF_FIELD_DELTA     ( 9,     family_other_blues, 10, "FamilyOtherBlues" )
-  CFF_FIELD_FIXED_1000( 0x109, blue_scale,             "BlueScale" )
-  CFF_FIELD_NUM       ( 0x10A, blue_shift,             "BlueShift" )
-  CFF_FIELD_NUM       ( 0x10B, blue_fuzz,              "BlueFuzz" )
-  CFF_FIELD_NUM       ( 10,    standard_width,         "StdHW" )
-  CFF_FIELD_NUM       ( 11,    standard_height,        "StdVW" )
-  CFF_FIELD_DELTA     ( 0x10C, snap_widths, 13,        "StemSnapH" )
-  CFF_FIELD_DELTA     ( 0x10D, snap_heights, 13,       "StemSnapV" )
-  CFF_FIELD_BOOL      ( 0x10E, force_bold,             "ForceBold" )
-  CFF_FIELD_FIXED     ( 0x10F, force_bold_threshold,   "ForceBoldThreshold" )
-  CFF_FIELD_NUM       ( 0x110, lenIV,                  "lenIV" )
-  CFF_FIELD_NUM       ( 0x111, language_group,         "LanguageGroup" )
-  CFF_FIELD_FIXED     ( 0x112, expansion_factor,       "ExpansionFactor" )
-  CFF_FIELD_NUM       ( 0x113, initial_random_seed,    "initialRandomSeed" )
-  CFF_FIELD_NUM       ( 19,    local_subrs_offset,     "Subrs" )
-  CFF_FIELD_NUM       ( 20,    default_width,          "defaultWidthX" )
-  CFF_FIELD_NUM       ( 21,    nominal_width,          "nominalWidthX" )
+  CFF_FIELD_DELTA_FIXED( 6,     blue_values, 14,        "BlueValues" )
+  CFF_FIELD_DELTA_FIXED( 7,     other_blues, 10,        "OtherBlues" )
+  CFF_FIELD_DELTA_FIXED( 8,     family_blues, 14,       "FamilyBlues" )
+  CFF_FIELD_DELTA_FIXED( 9,     family_other_blues, 10, "FamilyOtherBlues" )
+  CFF_FIELD_FIXED_1000 ( 0x109, blue_scale,             "BlueScale" )
+  CFF_FIELD_NUM        ( 0x10A, blue_shift,             "BlueShift" )
+  CFF_FIELD_NUM        ( 0x10B, blue_fuzz,              "BlueFuzz" )
+  CFF_FIELD_NUM        ( 10,    standard_width,         "StdHW" )
+  CFF_FIELD_NUM        ( 11,    standard_height,        "StdVW" )
+  CFF_FIELD_DELTA      ( 0x10C, snap_widths, 13,        "StemSnapH" )
+  CFF_FIELD_DELTA      ( 0x10D, snap_heights, 13,       "StemSnapV" )
+  CFF_FIELD_BOOL       ( 0x10E, force_bold,             "ForceBold" )
+  CFF_FIELD_FIXED      ( 0x10F, force_bold_threshold,   "ForceBoldThreshold" )
+  CFF_FIELD_NUM        ( 0x110, lenIV,                  "lenIV" )
+  CFF_FIELD_NUM        ( 0x111, language_group,         "LanguageGroup" )
+  CFF_FIELD_FIXED      ( 0x112, expansion_factor,       "ExpansionFactor" )
+  CFF_FIELD_NUM        ( 0x113, initial_random_seed,    "initialRandomSeed" )
+  CFF_FIELD_NUM        ( 19,    local_subrs_offset,     "Subrs" )
+  CFF_FIELD_NUM        ( 20,    default_width,          "defaultWidthX" )
+  CFF_FIELD_NUM        ( 21,    nominal_width,          "nominalWidthX" )
 
 
 #undef  FT_STRUCTURE
@@ -129,22 +129,22 @@
 #undef  CFFCODE
 #define CFFCODE       CFF2_CODE_PRIVATE
 
-  CFF_FIELD_DELTA     ( 6,     blue_values, 14,        "BlueValues" )
-  CFF_FIELD_DELTA     ( 7,     other_blues, 10,        "OtherBlues" )
-  CFF_FIELD_DELTA     ( 8,     family_blues, 14,       "FamilyBlues" )
-  CFF_FIELD_DELTA     ( 9,     family_other_blues, 10, "FamilyOtherBlues" )
-  CFF_FIELD_FIXED_1000( 0x109, blue_scale,             "BlueScale" )
-  CFF_FIELD_NUM       ( 0x10A, blue_shift,             "BlueShift" )
-  CFF_FIELD_NUM       ( 0x10B, blue_fuzz,              "BlueFuzz" )
-  CFF_FIELD_NUM       ( 10,    standard_width,         "StdHW" )
-  CFF_FIELD_NUM       ( 11,    standard_height,        "StdVW" )
-  CFF_FIELD_DELTA     ( 0x10C, snap_widths, 13,        "StemSnapH" )
-  CFF_FIELD_DELTA     ( 0x10D, snap_heights, 13,       "StemSnapV" )
-  CFF_FIELD_NUM       ( 0x111, language_group,         "LanguageGroup" )
-  CFF_FIELD_FIXED     ( 0x112, expansion_factor,       "ExpansionFactor" )
-  CFF_FIELD_CALLBACK  ( 22,    vsindex,                "vsindex" )
-  CFF_FIELD_BLEND     ( 23,                            "blend" )
-  CFF_FIELD_NUM       ( 19,    local_subrs_offset,     "Subrs" )
+  CFF_FIELD_DELTA_FIXED( 6,     blue_values, 14,        "BlueValues" )
+  CFF_FIELD_DELTA_FIXED( 7,     other_blues, 10,        "OtherBlues" )
+  CFF_FIELD_DELTA_FIXED( 8,     family_blues, 14,       "FamilyBlues" )
+  CFF_FIELD_DELTA_FIXED( 9,     family_other_blues, 10, "FamilyOtherBlues" )
+  CFF_FIELD_FIXED_1000 ( 0x109, blue_scale,             "BlueScale" )
+  CFF_FIELD_NUM        ( 0x10A, blue_shift,             "BlueShift" )
+  CFF_FIELD_NUM        ( 0x10B, blue_fuzz,              "BlueFuzz" )
+  CFF_FIELD_NUM        ( 10,    standard_width,         "StdHW" )
+  CFF_FIELD_NUM        ( 11,    standard_height,        "StdVW" )
+  CFF_FIELD_DELTA      ( 0x10C, snap_widths, 13,        "StemSnapH" )
+  CFF_FIELD_DELTA      ( 0x10D, snap_heights, 13,       "StemSnapV" )
+  CFF_FIELD_NUM        ( 0x111, language_group,         "LanguageGroup" )
+  CFF_FIELD_FIXED      ( 0x112, expansion_factor,       "ExpansionFactor" )
+  CFF_FIELD_CALLBACK   ( 22,    vsindex,                "vsindex" )
+  CFF_FIELD_BLEND      ( 23,                            "blend" )
+  CFF_FIELD_NUM        ( 19,    local_subrs_offset,     "Subrs" )
 
 
 /* END */

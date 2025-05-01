@@ -46,6 +46,8 @@
 #include "hb-set.hh"
 
 #include "hb-aat-layout.hh"
+#include "hb-ot-stat-table.hh"
+
 
 static inline bool
 _hb_codepoint_is_regional_indicator (hb_codepoint_t u)
@@ -85,7 +87,7 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *fac
 						, apply_morx (_hb_apply_morx (face, props))
 #endif
 {
-  shaper = hb_ot_shaper_categorize (this);
+  shaper = hb_ot_shaper_categorize (props.script, props.direction, map.chosen_script[0]);
 
   script_zero_marks = shaper->zero_width_marks != HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE;
   script_fallback_mark_positioning = shaper->fallback_position;
@@ -121,10 +123,6 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
   plan.kern_mask = plan.map.get_mask (kern_tag);
   plan.requested_kerning = !!plan.kern_mask;
 #endif
-#ifndef HB_NO_AAT_SHAPE
-  plan.trak_mask = plan.map.get_mask (HB_TAG ('t','r','a','k'));
-  plan.requested_tracking = !!plan.trak_mask;
-#endif
 
   bool has_gpos_kern = plan.map.get_feature_index (1, kern_tag) != HB_OT_LAYOUT_NO_FEATURE_INDEX;
   bool disable_gpos = plan.shaper->gpos_tag &&
@@ -155,7 +153,7 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 #endif
   bool has_gpos = !disable_gpos && hb_ot_layout_has_positioning (face);
   if (false)
-    ;
+    {}
 #ifndef HB_NO_AAT_SHAPE
   /* Prefer GPOS over kerx if GSUB is present;
    * https://github.com/harfbuzz/harfbuzz/issues/3008 */
@@ -167,15 +165,16 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 
   if (!plan.apply_kerx && (!has_gpos_kern || !plan.apply_gpos))
   {
+    if (false) {}
 #ifndef HB_NO_AAT_SHAPE
-    if (has_kerx)
+    else if (has_kerx)
       plan.apply_kerx = true;
-    else
 #endif
 #ifndef HB_NO_OT_KERN
-    if (hb_ot_layout_has_kerning (face))
+    else if (hb_ot_layout_has_kerning (face))
       plan.apply_kern = true;
 #endif
+    else {}
   }
 
   plan.apply_fallback_kern = !(plan.apply_gpos || plan.apply_kerx || plan.apply_kern);
@@ -206,9 +205,6 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
      https://github.com/harfbuzz/harfbuzz/issues/2967. */
   if (plan.apply_morx)
     plan.adjust_mark_positioning_when_zeroing = false;
-
-  /* Currently we always apply trak. */
-  plan.apply_trak = plan.requested_tracking && hb_aat_layout_has_tracking (face);
 #endif
 }
 
@@ -273,11 +269,6 @@ hb_ot_shape_plan_t::position (hb_font_t   *font,
 #endif
   else if (this->apply_fallback_kern)
     _hb_ot_shape_fallback_kern (this, font, buffer);
-
-#ifndef HB_NO_AAT_SHAPE
-  if (this->apply_trak)
-    hb_aat_layout_track (this, font, buffer);
-#endif
 }
 
 
@@ -344,13 +335,6 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t *planner,
 
   /* Random! */
   map->enable_feature (HB_TAG ('r','a','n','d'), F_RANDOM, HB_OT_MAP_MAX_VALUE);
-
-#ifndef HB_NO_AAT_SHAPE
-  /* Tracking.  We enable dummy feature here just to allow disabling
-   * AAT 'trak' table using features.
-   * https://github.com/harfbuzz/harfbuzz/issues/1303 */
-  map->enable_feature (HB_TAG ('t','r','a','k'), F_HAS_FALLBACK);
-#endif
 
   map->enable_feature (HB_TAG ('H','a','r','f')); /* Considered required. */
   map->enable_feature (HB_TAG ('H','A','R','F')); /* Considered discretionary. */
@@ -837,6 +821,28 @@ hb_ot_zero_width_default_ignorables (const hb_buffer_t *buffer)
 }
 
 static void
+hb_ot_deal_with_variation_selectors (hb_buffer_t *buffer)
+{
+  if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_VARIATION_SELECTOR_FALLBACK) ||
+	buffer->not_found_variation_selector == HB_CODEPOINT_INVALID)
+    return;
+
+  unsigned int count = buffer->len;
+  hb_glyph_info_t *info = buffer->info;
+  hb_glyph_position_t *pos = buffer->pos;
+
+  for (unsigned int i = 0; i < count; i++)
+  {
+    if (_hb_glyph_info_is_variation_selector (&info[i]))
+    {
+      info[i].codepoint = buffer->not_found_variation_selector;
+      pos[i].x_advance = pos[i].y_advance = pos[i].x_offset = pos[i].y_offset = 0;
+      _hb_glyph_info_set_variation_selector (&info[i], false);
+    }
+  }
+}
+
+static void
 hb_ot_hide_default_ignorables (hb_buffer_t *buffer,
 			       hb_font_t   *font)
 {
@@ -965,6 +971,7 @@ hb_ot_substitute_post (const hb_ot_shape_context_t *c)
     hb_aat_layout_remove_deleted_glyphs (c->buffer);
 #endif
 
+  hb_ot_deal_with_variation_selectors (c->buffer);
   hb_ot_hide_default_ignorables (c->buffer, c->font);
 
   if (c->plan->shaper->postprocess_glyphs &&
@@ -1250,6 +1257,36 @@ hb_ot_shape_plan_collect_lookups (hb_shape_plan_t *shape_plan,
 				  hb_set_t        *lookup_indexes /* OUT */)
 {
   shape_plan->ot.collect_lookups (table_tag, lookup_indexes);
+}
+
+
+/**
+ * hb_ot_shape_plan_get_feature_tags:
+ * @shape_plan: A shaping plan
+ * @start_offset: The index of first feature to retrieve
+ * @tag_count: (inout): Input = the maximum number of features to return;
+ *                      Output = the actual number of features returned (may be zero)
+ * @tags: (out) (array length=tag_count): The array of enabled feature
+ *
+ * Fetches the list of OpenType feature tags enabled for a shaping plan, if possible.
+ *
+ * Return value: Total number of feature tagss.
+ *
+ * Since: 10.3.0
+ */
+unsigned int
+hb_ot_shape_plan_get_feature_tags (hb_shape_plan_t *shape_plan,
+				   unsigned int     start_offset,
+				   unsigned int    *tag_count, /* IN/OUT */
+				   hb_tag_t        *tags /* OUT */)
+{
+#ifndef HB_NO_OT_SHAPE
+  return shape_plan->ot.map.get_feature_tags (start_offset, tag_count, tags);
+#else
+  if (tag_count)
+	*tag_count = 0;
+  return 0;
+#endif
 }
 
 

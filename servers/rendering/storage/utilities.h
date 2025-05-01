@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_UTILITIES_H
-#define RENDERER_UTILITIES_H
+#pragma once
 
 #include "servers/rendering_server.h"
 
@@ -184,6 +183,6 @@ public:
 	virtual String get_video_adapter_api_version() const = 0;
 
 	virtual Size2i get_maximum_viewport_size() const = 0;
+	virtual uint32_t get_maximum_shader_varyings() const = 0;
+	virtual uint64_t get_maximum_uniform_buffer_size() const = 0;
 };
-
-#endif // RENDERER_UTILITIES_H

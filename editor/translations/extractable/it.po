@@ -1,0 +1,177 @@
+# Italian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-26 06:01+0000\n"
+"Last-Translator: EricManara0 <ericmanara@gmail.com>\n"
+"Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/it/>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "All Recognized"
+msgstr "Tutti i formati riconosciuti"
+
+msgid "Pick a color from the application window."
+msgstr "Seleziona un colore dalla finestra applicativa."
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+"Colore: #%s\n"
+"LMB: Imposta il colore\n"
+"RMB: Rimuovi la preimpostazione"
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color"
+msgstr ""
+"Colore: #%s\n"
+"LMB: Imposta il colore"
+
+msgid "Add current color as a preset."
+msgstr "Aggiungi il colore corrente come preset."
+
+msgid "Network"
+msgstr "Reti"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Il file \"%s\" esiste già.\n"
+"Si desidera sovrascriverlo?"
+
+msgid "Open"
+msgstr "Apri"
+
+msgid "Select Current Folder"
+msgstr "Seleziona la cartella attuale"
+
+msgid "Save"
+msgstr "Salva"
+
+msgid "Select This Folder"
+msgstr "Seleziona questa cartella"
+
+msgid "All Files"
+msgstr "Tutti i file"
+
+msgid "Open a File"
+msgstr "Apri un file"
+
+msgid "Open File(s)"
+msgstr "Apri i file"
+
+msgid "Open a Directory"
+msgstr "Apri una cartella"
+
+msgid "Open a File or Directory"
+msgstr "Apri un file o una cartella"
+
+msgid "Save a File"
+msgstr "Salva un file"
+
+msgid "Go to previous folder."
+msgstr "Vai alla cartella precedente."
+
+msgid "Go to next folder."
+msgstr "Vai alla cartella successiva."
+
+msgid "Go to parent folder."
+msgstr "Vai alla cartella superiore."
+
+msgid "Path:"
+msgstr "Percorso:"
+
+msgid "Refresh files."
+msgstr "Ricarica i file."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Commuta la visibilità dei file nascosti."
+
+msgid "Directories & Files:"
+msgstr "File e cartelle:"
+
+msgid "File:"
+msgstr "File:"
+
+msgid "Create Folder"
+msgstr "Crea una cartella"
+
+msgid "Name:"
+msgstr "Nome:"
+
+msgid "Could not create folder."
+msgstr "Impossibile creare la cartella."
+
+msgid "Invalid extension, or empty filename."
+msgstr "Estensione non valida o nome del file vuoto."
+
+msgid "Zoom Out"
+msgstr "Rimpicciolisci"
+
+msgid "Zoom Reset"
+msgstr "Ripristina Zoom"
+
+msgid "Zoom In"
+msgstr "Ingrandisci"
+
+msgid "Auto-Detect Direction"
+msgstr "Auto-rileva la direzione"
+
+msgid "Left-to-Right"
+msgstr "Sinistra a destra"
+
+msgid "Right-to-Left"
+msgstr "Destra a sinistra"
+
+msgid "Left-to-Right Mark (LRM)"
+msgstr "Segna da Sinistra-a-Destra (LRM)"
+
+msgid "Left-to-Right Isolate (LRI)"
+msgstr "Isola da Sinistra-a-Destra (LRI)"
+
+msgid "Cut"
+msgstr "Taglia"
+
+msgid "Copy"
+msgstr "Copia"
+
+msgid "Paste"
+msgstr "Incolla"
+
+msgid "Select All"
+msgstr "Seleziona tutto"
+
+msgid "Clear"
+msgstr "Rimuovi tutto"
+
+msgid "Undo"
+msgstr "Annulla"
+
+msgid "Redo"
+msgstr "Rifai"
+
+msgid "Text Writing Direction"
+msgstr "Direzione di scrittura del testo"
+
+msgid "Display Control Characters"
+msgstr "Mostra i caratteri di controllo"
+
+msgid "Insert Control Character"
+msgstr "Inserisci un carattere di controllo"
+
+msgid "(Other)"
+msgstr "(Altro)"

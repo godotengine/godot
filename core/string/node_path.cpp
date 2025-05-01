@@ -30,7 +30,7 @@
 
 #include "node_path.h"
 
-#include "core/string/print_string.h"
+#include "core/variant/variant.h"
 
 void NodePath::_update_hash_cache() const {
 	uint32_t h = data->absolute ? 1 : 0;
@@ -90,6 +90,14 @@ StringName NodePath::get_subname(int p_idx) const {
 	ERR_FAIL_NULL_V(data, StringName());
 	ERR_FAIL_INDEX_V(p_idx, data->subpath.size(), StringName());
 	return data->subpath[p_idx];
+}
+
+int NodePath::get_total_name_count() const {
+	if (!data) {
+		return 0;
+	}
+
+	return data->path.size() + data->subpath.size();
 }
 
 void NodePath::unref() {
@@ -207,7 +215,10 @@ StringName NodePath::get_concatenated_names() const {
 		String concatenated;
 		const StringName *sn = data->path.ptr();
 		for (int i = 0; i < pc; i++) {
-			concatenated += i == 0 ? sn[i].operator String() : "/" + sn[i];
+			if (i > 0) {
+				concatenated += "/";
+			}
+			concatenated += sn[i].operator String();
 		}
 		data->concatenated_path = concatenated;
 	}
@@ -222,11 +233,35 @@ StringName NodePath::get_concatenated_subnames() const {
 		String concatenated;
 		const StringName *ssn = data->subpath.ptr();
 		for (int i = 0; i < spc; i++) {
-			concatenated += i == 0 ? ssn[i].operator String() : ":" + ssn[i];
+			if (i > 0) {
+				concatenated += ":";
+			}
+			concatenated += ssn[i].operator String();
 		}
 		data->concatenated_subpath = concatenated;
 	}
 	return data->concatenated_subpath;
+}
+
+NodePath NodePath::slice(int p_begin, int p_end) const {
+	const int name_count = get_name_count();
+	const int total_count = get_total_name_count();
+
+	int begin = CLAMP(p_begin, -total_count, total_count);
+	if (begin < 0) {
+		begin += total_count;
+	}
+	int end = CLAMP(p_end, -total_count, total_count);
+	if (end < 0) {
+		end += total_count;
+	}
+	const int sub_begin = MAX(begin - name_count, 0);
+	const int sub_end = MAX(end - name_count, 0);
+
+	const Vector<StringName> names = get_names().slice(begin, end);
+	const Vector<StringName> sub_names = get_subnames().slice(sub_begin, sub_end);
+	const bool absolute = is_absolute() && (begin == 0);
+	return NodePath(names, sub_names, absolute);
 }
 
 NodePath NodePath::rel_path_to(const NodePath &p_np) const {
@@ -315,7 +350,7 @@ void NodePath::simplify() {
 			data->path.remove_at(i - 1);
 			data->path.remove_at(i - 1);
 			i -= 2;
-			if (data->path.size() == 0) {
+			if (data->path.is_empty()) {
 				data->path.push_back(".");
 				break;
 			}
@@ -331,7 +366,7 @@ NodePath NodePath::simplified() const {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
-	if (p_path.size() == 0) {
+	if (p_path.is_empty() && !p_absolute) {
 		return;
 	}
 
@@ -343,7 +378,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute) {
-	if (p_path.size() == 0 && p_subpath.size() == 0) {
+	if (p_path.is_empty() && p_subpath.is_empty() && !p_absolute) {
 		return;
 	}
 
@@ -372,7 +407,7 @@ NodePath::NodePath(const String &p_path) {
 	bool absolute = (path[0] == '/');
 	bool last_is_slash = true;
 	int slices = 0;
-	int subpath_pos = path.find(":");
+	int subpath_pos = path.find_char(':');
 
 	if (subpath_pos != -1) {
 		int from = subpath_pos + 1;
@@ -385,7 +420,7 @@ NodePath::NodePath(const String &p_path) {
 						continue; // Allow end-of-path :
 					}
 
-					ERR_FAIL_MSG("Invalid NodePath '" + p_path + "'.");
+					ERR_FAIL_MSG(vformat("Invalid NodePath '%s'.", p_path));
 				}
 				subpath.push_back(str);
 

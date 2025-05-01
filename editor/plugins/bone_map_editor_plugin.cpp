@@ -30,15 +30,18 @@
 
 #include "bone_map_editor_plugin.h"
 
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "editor/import/post_import_plugin_skeleton_renamer.h"
-#include "editor/import/post_import_plugin_skeleton_rest_fixer.h"
-#include "editor/import/post_import_plugin_skeleton_track_organizer.h"
-#include "editor/import/scene_import_settings.h"
+#include "editor/import/3d/post_import_plugin_skeleton_renamer.h"
+#include "editor/import/3d/post_import_plugin_skeleton_rest_fixer.h"
+#include "editor/import/3d/post_import_plugin_skeleton_track_organizer.h"
+#include "editor/import/3d/scene_import_settings.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+
+#include "modules/regex/regex.h"
 
 void BoneMapperButton::fetch_textures() {
 	if (selected) {
@@ -52,7 +55,7 @@ void BoneMapperButton::fetch_textures() {
 	set_offset(SIDE_BOTTOM, 0);
 
 	// Hack to avoid handle color darkening...
-	set_modulate(EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25));
+	set_modulate(EditorThemeManager::is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25));
 
 	circle = memnew(TextureRect);
 	circle->set_texture(get_editor_theme_icon(SNAME("BoneMapperHandleCircle")));
@@ -95,13 +98,10 @@ void BoneMapperButton::_notification(int p_what) {
 	}
 }
 
-BoneMapperButton::BoneMapperButton(const StringName p_profile_bone_name, bool p_require, bool p_selected) {
+BoneMapperButton::BoneMapperButton(const StringName &p_profile_bone_name, bool p_require, bool p_selected) {
 	profile_bone_name = p_profile_bone_name;
 	require = p_require;
 	selected = p_selected;
-}
-
-BoneMapperButton::~BoneMapperButton() {
 }
 
 void BoneMapperItem::create_editor() {
@@ -118,8 +118,8 @@ void BoneMapperItem::create_editor() {
 	hbox->add_child(skeleton_bone_selector);
 
 	picker_button = memnew(Button);
-	picker_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
-	picker_button->connect("pressed", callable_mp(this, &BoneMapperItem::_open_picker));
+	picker_button->set_button_icon(get_editor_theme_icon(SNAME("ClassList")));
+	picker_button->connect(SceneStringName(pressed), callable_mp(this, &BoneMapperItem::_open_picker));
 	hbox->add_child(picker_button);
 
 	add_child(memnew(HSeparator));
@@ -135,7 +135,7 @@ void BoneMapperItem::_open_picker() {
 	emit_signal(SNAME("pick"), profile_bone_name);
 }
 
-void BoneMapperItem::_value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void BoneMapperItem::_value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	bone_map->set(p_property, p_value);
 }
 
@@ -146,7 +146,7 @@ void BoneMapperItem::_notification(int p_what) {
 			bone_map->connect("bone_map_updated", callable_mp(this, &BoneMapperItem::_update_property));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (!bone_map.is_null() && bone_map->is_connected("bone_map_updated", callable_mp(this, &BoneMapperItem::_update_property))) {
+			if (bone_map.is_valid() && bone_map->is_connected("bone_map_updated", callable_mp(this, &BoneMapperItem::_update_property))) {
 				bone_map->disconnect("bone_map_updated", callable_mp(this, &BoneMapperItem::_update_property));
 			}
 		} break;
@@ -162,9 +162,6 @@ BoneMapperItem::BoneMapperItem(Ref<BoneMap> &p_bone_map, const StringName &p_pro
 	profile_bone_name = p_profile_bone_name;
 }
 
-BoneMapperItem::~BoneMapperItem() {
-}
-
 void BonePicker::create_editors() {
 	set_title(TTR("Bone Picker:"));
 
@@ -172,6 +169,7 @@ void BonePicker::create_editors() {
 	add_child(vbox);
 
 	bones = memnew(Tree);
+	bones->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	bones->set_select_mode(Tree::SELECT_SINGLE);
 	bones->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	bones->set_hide_root(true);
@@ -194,7 +192,7 @@ void BonePicker::create_bones_tree(Skeleton3D *p_skeleton) {
 
 	items.insert(-1, root);
 
-	Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("BoneAttachment3D"));
+	Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("Bone"));
 
 	Vector<int> bones_to_process = p_skeleton->get_parentless_bones();
 	bool is_first = true;
@@ -250,9 +248,6 @@ StringName BonePicker::get_selected_bone() {
 	return selected->get_text(0);
 }
 
-void BonePicker::_bind_methods() {
-}
-
 void BonePicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -265,13 +260,10 @@ BonePicker::BonePicker(Skeleton3D *p_skeleton) {
 	skeleton = p_skeleton;
 }
 
-BonePicker::~BonePicker() {
-}
-
 void BoneMapper::create_editor() {
 	// Create Bone picker.
 	picker = memnew(BonePicker(skeleton));
-	picker->connect("confirmed", callable_mp(this, &BoneMapper::_apply_picker_selection));
+	picker->connect(SceneStringName(confirmed), callable_mp(this, &BoneMapper::_apply_picker_selection));
 	add_child(picker, false, INTERNAL_MODE_FRONT);
 
 	profile_selector = memnew(EditorPropertyResource);
@@ -297,9 +289,10 @@ void BoneMapper::create_editor() {
 	group_hbox->add_child(profile_group_selector);
 
 	clear_mapping_button = memnew(Button);
-	clear_mapping_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+	clear_mapping_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 	clear_mapping_button->set_tooltip_text(TTR("Clear mappings in current group."));
-	clear_mapping_button->connect("pressed", callable_mp(this, &BoneMapper::_clear_mapping_current_group));
+	clear_mapping_button->set_accessibility_name(TTRC("Clear Mappings"));
+	clear_mapping_button->connect(SceneStringName(pressed), callable_mp(this, &BoneMapper::_clear_mapping_current_group));
 	group_hbox->add_child(clear_mapping_button);
 
 	bone_mapper_field = memnew(AspectRatioContainer);
@@ -328,7 +321,7 @@ void BoneMapper::create_editor() {
 }
 
 void BoneMapper::update_group_idx() {
-	if (!bone_map->get_profile().is_valid()) {
+	if (bone_map->get_profile().is_null()) {
 		return;
 	}
 
@@ -413,14 +406,14 @@ void BoneMapper::recreate_editor() {
 		profile_texture->set_texture(Ref<Texture2D>());
 	}
 
-	if (!profile.is_valid()) {
+	if (profile.is_null()) {
 		return;
 	}
 
 	for (int i = 0; i < len; i++) {
 		if (profile->get_group(i) == profile->get_group_name(current_group_idx)) {
-			BoneMapperButton *mb = memnew(BoneMapperButton(profile->get_bone_name(i), profile->is_require(i), current_bone_idx == i));
-			mb->connect("pressed", callable_mp(this, &BoneMapper::set_current_bone_idx).bind(i), CONNECT_DEFERRED);
+			BoneMapperButton *mb = memnew(BoneMapperButton(profile->get_bone_name(i), profile->is_required(i), current_bone_idx == i));
+			mb->connect(SceneStringName(pressed), callable_mp(this, &BoneMapper::set_current_bone_idx).bind(i), CONNECT_DEFERRED);
 			mb->set_h_grow_direction(GROW_DIRECTION_BOTH);
 			mb->set_v_grow_direction(GROW_DIRECTION_BOTH);
 			Vector2 vc = profile->get_handle_offset(i);
@@ -532,13 +525,12 @@ void BoneMapper::_clear_mapping_current_group() {
 	}
 }
 
-#ifdef MODULE_REGEX_ENABLED
-bool BoneMapper::is_match_with_bone_name(String p_bone_name, String p_word) {
+bool BoneMapper::is_match_with_bone_name(const String &p_bone_name, const String &p_word) {
 	RegEx re = RegEx(p_word);
-	return !re.search(p_bone_name.to_lower()).is_null();
+	return re.search(p_bone_name.to_lower()).is_valid();
 }
 
-int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_picklist, BoneSegregation p_segregation, int p_parent, int p_child, int p_children_count) {
+int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, const Vector<String> &p_picklist, BoneSegregation p_segregation, int p_parent, int p_child, int p_children_count) {
 	// There may be multiple candidates hit by existing the subsidiary bone.
 	// The one with the shortest name is probably the original.
 	LocalVector<String> hit_list;
@@ -616,7 +608,7 @@ int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_pic
 	return skeleton->find_bone(shortest);
 }
 
-BoneMapper::BoneSegregation BoneMapper::guess_bone_segregation(String p_bone_name) {
+BoneMapper::BoneSegregation BoneMapper::guess_bone_segregation(const String &p_bone_name) {
 	String fixed_bn = p_bone_name.to_snake_case();
 
 	LocalVector<String> left_words;
@@ -629,11 +621,11 @@ BoneMapper::BoneSegregation BoneMapper::guess_bone_segregation(String p_bone_nam
 
 	for (uint32_t i = 0; i < left_words.size(); i++) {
 		RegEx re_l = RegEx(left_words[i]);
-		if (!re_l.search(fixed_bn).is_null()) {
+		if (re_l.search(fixed_bn).is_valid()) {
 			return BONE_SEGREGATION_LEFT;
 		}
 		RegEx re_r = RegEx(right_words[i]);
-		if (!re_r.search(fixed_bn).is_null()) {
+		if (re_r.search(fixed_bn).is_valid()) {
 			return BONE_SEGREGATION_RIGHT;
 		}
 	}
@@ -674,7 +666,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		search_path.push_back(bone_idx);
 		bone_idx = skeleton->get_bone_parent(bone_idx);
 	}
-	if (search_path.size() == 0) {
+	if (search_path.is_empty()) {
 		bone_idx = -1;
 	} else if (search_path.size() == 1) {
 		bone_idx = search_path[0]; // It is only one bone which can be root.
@@ -682,7 +674,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		bool found = false;
 		for (int i = 0; i < search_path.size(); i++) {
 			RegEx re = RegEx("root");
-			if (!re.search(skeleton->get_bone_name(search_path[i]).to_lower()).is_null()) {
+			if (re.search(skeleton->get_bone_name(search_path[i]).to_lower()).is_valid()) {
 				bone_idx = search_path[i]; // Name match is preferred.
 				found = true;
 				break;
@@ -859,6 +851,8 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	picklist.clear();
 
 	// 4-1. Guess Finger
+	int tips_index = -1;
+	bool thumb_tips_size = false;
 	bool named_finger_is_found = false;
 	LocalVector<String> fingers;
 	fingers.push_back("thumb|pollex");
@@ -892,6 +886,33 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 					search_path.push_back(finger);
 					finger = skeleton->get_bone_parent(finger);
 				}
+				// Tips detection by name matching with "distal" from root.
+				for (int j = search_path.size() - 1; j >= 0; j--) {
+					if (RegEx("distal").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+						tips_index = j - 1;
+						break;
+					}
+				}
+				// Tips detection by name matching with "tip|leaf" from end.
+				if (tips_index < 0) {
+					for (int j = 0; j < search_path.size(); j++) {
+						if (RegEx("tip|leaf").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+							tips_index = j;
+							break;
+						}
+					}
+				}
+				// Tips detection by thumb children size.
+				if (tips_index < 0) {
+					if (i == 0) {
+						thumb_tips_size = MAX(0, search_path.size() - 3);
+					}
+					tips_index = thumb_tips_size - 1;
+				}
+				// Remove tips.
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
+				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
 					p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
@@ -920,7 +941,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			Vector<String> finger_names;
 			for (int i = 0; i < search_path.size(); i++) {
 				String bn = skeleton->get_bone_name(search_path[i]);
-				if (!finger_re.search(bn.to_lower()).is_null()) {
+				if (finger_re.search(bn.to_lower()).is_valid()) {
 					finger_names.push_back(bn);
 				}
 			}
@@ -939,6 +960,14 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 					}
 				}
 				search_path.push_back(finger_root);
+				// Tips detection by thumb children size.
+				if (i == 0) {
+					thumb_tips_size = MAX(0, search_path.size() - 3);
+				}
+				tips_index = thumb_tips_size - 1;
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
+				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
 					p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
@@ -956,6 +985,9 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			picklist.clear();
 		}
 	}
+
+	tips_index = -1;
+	thumb_tips_size = false;
 	named_finger_is_found = false;
 	if (right_hand_or_palm != -1) {
 		LocalVector<LocalVector<String>> right_fingers_map;
@@ -982,6 +1014,33 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 				while (finger != right_hand_or_palm && finger >= 0) {
 					search_path.push_back(finger);
 					finger = skeleton->get_bone_parent(finger);
+				}
+				// Tips detection by name matching with "distal" from root.
+				for (int j = search_path.size() - 1; j >= 0; j--) {
+					if (RegEx("distal").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+						tips_index = j - 1;
+						break;
+					}
+				}
+				// Tips detection by name matching with "tip|leaf" from end.
+				if (tips_index < 0) {
+					for (int j = 0; j < search_path.size(); j++) {
+						if (RegEx("tip|leaf").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+							tips_index = j;
+							break;
+						}
+					}
+				}
+				// Tips detection by thumb children size.
+				if (tips_index < 0) {
+					if (i == 0) {
+						thumb_tips_size = MAX(0, search_path.size() - 3);
+					}
+					tips_index = thumb_tips_size - 1;
+				}
+				// Remove tips.
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
 				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
@@ -1011,7 +1070,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			Vector<String> finger_names;
 			for (int i = 0; i < search_path.size(); i++) {
 				String bn = skeleton->get_bone_name(search_path[i]);
-				if (!finger_re.search(bn.to_lower()).is_null()) {
+				if (finger_re.search(bn.to_lower()).is_valid()) {
 					finger_names.push_back(bn);
 				}
 			}
@@ -1030,6 +1089,14 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 					}
 				}
 				search_path.push_back(finger_root);
+				// Tips detection by thumb children size.
+				if (i == 0) {
+					thumb_tips_size = MAX(0, search_path.size() - 3);
+				}
+				tips_index = thumb_tips_size - 1;
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
+				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
 					p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
@@ -1138,7 +1205,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 				children.erase(ls_idx);
 				children.erase(rs_idx);
 				String word = "spine"; // It would be better to limit the search with "spine" because it could be mistaken with breast, wing and etc...
-				for (int i = 0; children.size(); i++) {
+				for (int i = 0; i < children.size(); i++) {
 					bone_idx = children[i];
 					if (is_match_with_bone_name(skeleton->get_bone_name(bone_idx), word)) {
 						neck = bone_idx;
@@ -1155,9 +1222,11 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	picklist.push_back("face");
 	int head = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, neck);
 	if (head == -1) {
-		search_path = skeleton->get_bone_children(neck);
-		if (search_path.size() == 1) {
-			head = search_path[0]; // Maybe only one child of the Neck is Head.
+		if (neck != -1) {
+			search_path = skeleton->get_bone_children(neck);
+			if (search_path.size() == 1) {
+				head = search_path[0]; // Maybe only one child of the Neck is Head.
+			}
 		}
 	}
 	if (head == -1) {
@@ -1261,7 +1330,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		bone_idx = skeleton->get_bone_parent(bone_idx);
 	}
 	search_path.reverse();
-	if (search_path.size() == 0) {
+	if (search_path.is_empty()) {
 		p_bone_map->_set_skeleton_bone_name("Spine", skeleton->get_bone_name(chest_or_upper_chest)); // Maybe chibi model...?
 	} else if (search_path.size() == 1) {
 		p_bone_map->_set_skeleton_bone_name("Spine", skeleton->get_bone_name(search_path[0]));
@@ -1276,14 +1345,13 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 
 	WARN_PRINT("Finish auto mapping.");
 }
-#endif // MODULE_REGEX_ENABLED
 
-void BoneMapper::_value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void BoneMapper::_value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	set(p_property, p_value);
 	recreate_editor();
 }
 
-void BoneMapper::_profile_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void BoneMapper::_profile_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	bone_map->set(p_property, p_value);
 
 	// Run auto mapping when setting SkeletonProfileHumanoid by GUI Editor.
@@ -1291,9 +1359,7 @@ void BoneMapper::_profile_changed(const String &p_property, Variant p_value, con
 	if (profile.is_valid()) {
 		SkeletonProfileHumanoid *hmn = Object::cast_to<SkeletonProfileHumanoid>(profile.ptr());
 		if (hmn) {
-#ifdef MODULE_REGEX_ENABLED
 			_run_auto_mapping();
-#endif // MODULE_REGEX_ENABLED
 		}
 	}
 }
@@ -1316,7 +1382,7 @@ void BoneMapper::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			clear_items();
-			if (!bone_map.is_null()) {
+			if (bone_map.is_valid()) {
 				if (bone_map->is_connected("bone_map_updated", callable_mp(this, &BoneMapper::_update_state))) {
 					bone_map->disconnect("bone_map_updated", callable_mp(this, &BoneMapper::_update_state));
 				}
@@ -1333,9 +1399,6 @@ BoneMapper::BoneMapper(Skeleton3D *p_skeleton, Ref<BoneMap> &p_bone_map) {
 	bone_map = p_bone_map;
 }
 
-BoneMapper::~BoneMapper() {
-}
-
 void BoneMapEditor::create_editors() {
 	if (!skeleton) {
 		return;
@@ -1347,7 +1410,7 @@ void BoneMapEditor::create_editors() {
 void BoneMapEditor::fetch_objects() {
 	skeleton = nullptr;
 	// Hackey... but it may be the easiest way to get a selected object from "ImporterScene".
-	SceneImportSettings *si = SceneImportSettings::get_singleton();
+	SceneImportSettingsDialog *si = SceneImportSettingsDialog::get_singleton();
 	if (!si) {
 		return;
 	}
@@ -1383,9 +1446,6 @@ BoneMapEditor::BoneMapEditor(Ref<BoneMap> &p_bone_map) {
 	bone_map = p_bone_map;
 }
 
-BoneMapEditor::~BoneMapEditor() {
-}
-
 bool EditorInspectorPluginBoneMap::can_handle(Object *p_object) {
 	return Object::cast_to<BoneMap>(p_object) != nullptr;
 }
@@ -1401,12 +1461,6 @@ void EditorInspectorPluginBoneMap::parse_begin(Object *p_object) {
 }
 
 BoneMapEditorPlugin::BoneMapEditorPlugin() {
-	// Register properties in editor settings.
-	EDITOR_DEF("editors/bone_mapper/handle_colors/unset", Color(0.3, 0.3, 0.3));
-	EDITOR_DEF("editors/bone_mapper/handle_colors/set", Color(0.1, 0.6, 0.25));
-	EDITOR_DEF("editors/bone_mapper/handle_colors/missing", Color(0.8, 0.2, 0.8));
-	EDITOR_DEF("editors/bone_mapper/handle_colors/error", Color(0.8, 0.2, 0.2));
-
 	Ref<EditorInspectorPluginBoneMap> inspector_plugin;
 	inspector_plugin.instantiate();
 	add_inspector_plugin(inspector_plugin);

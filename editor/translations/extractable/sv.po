@@ -1,0 +1,131 @@
+# Swedish translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-24 22:50+0000\n"
+"Last-Translator: Henrik Nilsson <nsmoooose@gmail.com>\n"
+"Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
+"godot/sv/>\n"
+"Language: sv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "All Recognized"
+msgstr "Alla Erkända"
+
+msgid "Add current color as a preset."
+msgstr "Lägg till nuvarande färg som en förinställning."
+
+msgid "Network"
+msgstr "Nätverk"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Filen \"%s\" finns redan.\n"
+"Vill du skriva över den?"
+
+msgid "Open"
+msgstr "Öppna"
+
+msgid "Select Current Folder"
+msgstr "Välj Nuvarande Mapp"
+
+msgid "Save"
+msgstr "Spara"
+
+msgid "Select This Folder"
+msgstr "Välj denna mapp"
+
+msgid "Open a File"
+msgstr "Öppna en Fil"
+
+msgid "Open File(s)"
+msgstr "Öppna Fil(er)"
+
+msgid "Open a Directory"
+msgstr "Öppna en Katalog"
+
+msgid "Open a File or Directory"
+msgstr "Öppna en Fil eller Katalog"
+
+msgid "Save a File"
+msgstr "Spara en Fil"
+
+msgid "Go to previous folder."
+msgstr "Gå till föregående mapp."
+
+msgid "Go to next folder."
+msgstr "Gå till nästa mapp."
+
+msgid "Go to parent folder."
+msgstr "Gå till överordnad mapp."
+
+msgid "Path:"
+msgstr "Sökväg:"
+
+msgid "Refresh files."
+msgstr "Uppdatera filer."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Växla synligheten av dolda filer."
+
+msgid "Directories & Files:"
+msgstr "Kataloger & Filer:"
+
+msgid "File:"
+msgstr "Fil:"
+
+msgid "Create Folder"
+msgstr "Skapa Mapp"
+
+msgid "Name:"
+msgstr "Namn:"
+
+msgid "Could not create folder."
+msgstr "Kunde inte skapa mapp."
+
+msgid "Zoom Out"
+msgstr "Zooma Ut"
+
+msgid "Zoom Reset"
+msgstr "Återställ zoom"
+
+msgid "Zoom In"
+msgstr "Zooma In"
+
+msgid "Cut"
+msgstr "Klipp"
+
+msgid "Copy"
+msgstr "Kopiera"
+
+msgid "Paste"
+msgstr "Klistra in"
+
+msgid "Select All"
+msgstr "Välj Alla"
+
+msgid "Clear"
+msgstr "Rensa"
+
+msgid "Undo"
+msgstr "Ångra"
+
+msgid "Redo"
+msgstr "Återställ"
+
+msgid "Insert Control Character"
+msgstr "Infoga kontroltecken"
+
+msgid "(Other)"
+msgstr "(Annat)"

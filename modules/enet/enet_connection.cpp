@@ -72,8 +72,8 @@ Error ENetConnection::create_host(int p_max_peers, int p_max_channels, int p_in_
 
 void ENetConnection::destroy() {
 	ERR_FAIL_NULL_MSG(host, "Host already destroyed.");
-	for (List<Ref<ENetPacketPeer>>::Element *E = peers.front(); E; E = E->next()) {
-		E->get()->_on_disconnect();
+	for (const Ref<ENetPacketPeer> &peer : peers) {
+		peer->_on_disconnect();
 	}
 	peers.clear();
 	enet_host_destroy(host);
@@ -113,7 +113,7 @@ Ref<ENetPacketPeer> ENetConnection::connect_to_host(const String &p_address, int
 	if (peer == nullptr) {
 		return nullptr;
 	}
-	out = Ref<ENetPacketPeer>(memnew(ENetPacketPeer(peer)));
+	out.instantiate(peer);
 	peers.push_back(out);
 	return out;
 }
@@ -277,7 +277,7 @@ Error ENetConnection::dtls_server_setup(const Ref<TLSOptions> &p_options) {
 #ifdef GODOT_ENET
 	ERR_FAIL_NULL_V_MSG(host, ERR_UNCONFIGURED, "The ENetConnection instance isn't currently active.");
 	ERR_FAIL_COND_V(p_options.is_null() || !p_options->is_server(), ERR_INVALID_PARAMETER);
-	return enet_host_dtls_server_setup(host, const_cast<TLSOptions *>(p_options.ptr())) ? FAILED : OK;
+	return enet_host_dtls_server_setup(host, p_options.ptr()) ? FAILED : OK;
 #else
 	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "ENet DTLS support not available in this build.");
 #endif
@@ -296,7 +296,7 @@ Error ENetConnection::dtls_client_setup(const String &p_hostname, const Ref<TLSO
 #ifdef GODOT_ENET
 	ERR_FAIL_NULL_V_MSG(host, ERR_UNCONFIGURED, "The ENetConnection instance isn't currently active.");
 	ERR_FAIL_COND_V(p_options.is_null() || p_options->is_server(), ERR_INVALID_PARAMETER);
-	return enet_host_dtls_client_setup(host, p_hostname.utf8().get_data(), const_cast<TLSOptions *>(p_options.ptr())) ? FAILED : OK;
+	return enet_host_dtls_client_setup(host, p_hostname.utf8().get_data(), p_options.ptr()) ? FAILED : OK;
 #else
 	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "ENet DTLS support not available in this build.");
 #endif
@@ -320,14 +320,10 @@ Error ENetConnection::_create(ENetAddress *p_address, int p_max_peers, int p_max
 }
 
 Array ENetConnection::_service(int p_timeout) {
-	Array out;
 	Event event;
 	Ref<ENetPacketPeer> peer;
 	EventType ret = service(p_timeout, event);
-	out.push_back(ret);
-	out.push_back(event.peer);
-	out.push_back(event.data);
-	out.push_back(event.channel_id);
+	Array out = { ret, event.peer, event.data, event.channel_id };
 	if (event.packet && event.peer.is_valid()) {
 		event.peer->_queue_packet(event.packet);
 	}

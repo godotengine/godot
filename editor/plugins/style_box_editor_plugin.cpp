@@ -30,7 +30,7 @@
 
 #include "style_box_editor_plugin.h"
 
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/resources/style_box_texture.h"
 
@@ -58,7 +58,7 @@ void StyleBoxPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
-			grid_preview->set_icon(get_editor_theme_icon(SNAME("StyleBoxGrid")));
+			grid_preview->set_button_icon(get_editor_theme_icon(SNAME("StyleBoxGrid")));
 		} break;
 		case NOTIFICATION_DRAW: {
 			_redraw();
@@ -112,8 +112,10 @@ StyleBoxPreview::StyleBoxPreview() {
 	grid_preview = memnew(Button);
 	// This theme variation works better than the normal theme because there's no focus highlight.
 	grid_preview->set_theme_type_variation("PreviewLightButton");
+	grid_preview->set_tooltip_text(TTRC("Toggle margins preview grid."));
+	grid_preview->set_accessibility_name(TTRC("Margins Preview Grid"));
 	grid_preview->set_toggle_mode(true);
-	grid_preview->connect("toggled", callable_mp(this, &StyleBoxPreview::_grid_preview_toggled));
+	grid_preview->connect(SceneStringName(toggled), callable_mp(this, &StyleBoxPreview::_grid_preview_toggled));
 	grid_preview->set_pressed(grid_preview_enabled);
 	add_child(grid_preview);
 }

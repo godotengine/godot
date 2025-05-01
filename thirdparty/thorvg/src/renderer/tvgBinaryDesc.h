@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ using TvgBinFlag = TvgBinByte;
 #define TVG_HEADER_SIZE 33                //TVG_HEADER_SIGNATURE_LENGTH + TVG_HEADER_VERSION_LENGTH + 2*SIZE(float) + TVG_HEADER_RESERVED_LENGTH + TVG_HEADER_COMPRESS_SIZE
 #define TVG_HEADER_SIGNATURE "ThorVG"
 #define TVG_HEADER_SIGNATURE_LENGTH 6
-#define TVG_HEADER_VERSION "001100"       //Major 00, Minor 11, Micro 00
+#define TVG_HEADER_VERSION "001500"       //Major 00, Minor 15, Micro 00
 #define TVG_HEADER_VERSION_LENGTH 6
 #define TVG_HEADER_RESERVED_LENGTH 1      //Storing flags for extensions
 #define TVG_HEADER_COMPRESS_SIZE 12       //TVG_HEADER_UNCOMPRESSED_SIZE + TVG_HEADER_COMPRESSED_SIZE + TVG_HEADER_COMPRESSED_SIZE_BITS

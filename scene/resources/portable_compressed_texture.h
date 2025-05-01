@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PORTABLE_COMPRESSED_TEXTURE_H
-#define PORTABLE_COMPRESSED_TEXTURE_H
+#pragma once
 
 #include "scene/resources/texture.h"
 
@@ -39,6 +38,14 @@ class PortableCompressedTexture2D : public Texture2D {
 	GDCLASS(PortableCompressedTexture2D, Texture2D);
 
 public:
+	enum DataFormat {
+		DATA_FORMAT_UNDEFINED,
+		DATA_FORMAT_IMAGE,
+		DATA_FORMAT_PNG,
+		DATA_FORMAT_WEBP,
+		DATA_FORMAT_BASIS_UNIVERSAL,
+	};
+
 	enum CompressionMode {
 		COMPRESSION_MODE_LOSSLESS,
 		COMPRESSION_MODE_LOSSY,
@@ -46,6 +53,7 @@ public:
 		COMPRESSION_MODE_S3TC,
 		COMPRESSION_MODE_ETC2,
 		COMPRESSION_MODE_BPTC,
+		COMPRESSION_MODE_ASTC,
 	};
 
 private:
@@ -106,5 +114,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(PortableCompressedTexture2D::CompressionMode)
-
-#endif // PORTABLE_COMPRESSED_TEXTURE_H

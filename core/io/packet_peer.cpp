@@ -299,7 +299,7 @@ Ref<StreamPeer> PacketPeerStream::get_stream_peer() const {
 
 void PacketPeerStream::set_input_buffer_max_size(int p_max_size) {
 	ERR_FAIL_COND_MSG(p_max_size < 0, "Max size of input buffer size cannot be smaller than 0.");
-	//warning may lose packets
+	// WARNING: May lose packets.
 	ERR_FAIL_COND_MSG(ring_buffer.data_left(), "Buffer in use, resizing would cause loss of data.");
 	ring_buffer.resize(nearest_shift(next_power_of_2(p_max_size + 4)) - 1);
 	input_buffer.resize(next_power_of_2(p_max_size + 4));
@@ -318,9 +318,9 @@ int PacketPeerStream::get_output_buffer_max_size() const {
 }
 
 PacketPeerStream::PacketPeerStream() {
-	int rbsize = GLOBAL_GET("network/limits/packet_peer_stream/max_buffer_po2");
+	int64_t rbsize = GLOBAL_GET("network/limits/packet_peer_stream/max_buffer_po2");
 
 	ring_buffer.resize(rbsize);
-	input_buffer.resize(1 << rbsize);
-	output_buffer.resize(1 << rbsize);
+	input_buffer.resize(int64_t(1) << rbsize);
+	output_buffer.resize(int64_t(1) << rbsize);
 }

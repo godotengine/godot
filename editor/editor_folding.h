@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_FOLDING_H
-#define EDITOR_FOLDING_H
+#pragma once
 
 #include "scene/main/node.h"
 
@@ -52,8 +51,4 @@ public:
 	void unfold_scene(Node *p_scene);
 
 	bool has_folding_data(const String &p_path);
-
-	EditorFolding();
 };
-
-#endif // EDITOR_FOLDING_H

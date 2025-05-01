@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_ANIMATION_H
-#define TEST_ANIMATION_H
+#pragma once
 
 #include "scene/resources/animation.h"
 
@@ -41,7 +40,7 @@ TEST_CASE("[Animation] Empty animation getters") {
 	const Ref<Animation> animation = memnew(Animation);
 
 	CHECK(animation->get_length() == doctest::Approx(real_t(1.0)));
-	CHECK(animation->get_step() == doctest::Approx(real_t(0.1)));
+	CHECK(animation->get_step() == doctest::Approx(real_t(1.0 / 30)));
 }
 
 TEST_CASE("[Animation] Create value track") {
@@ -310,5 +309,3 @@ TEST_CASE("[Animation] Create Bezier track") {
 }
 
 } // namespace TestAnimation
-
-#endif // TEST_ANIMATION_H

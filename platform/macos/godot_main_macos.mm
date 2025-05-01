@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "os_macos.h"
+#import "os_macos.h"
 
 #include "main/main.h"
 
@@ -41,8 +41,8 @@
 
 int main(int argc, char **argv) {
 #if defined(VULKAN_ENABLED)
-	// MoltenVK - enable full component swizzling support.
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
+	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1); // MoltenVK - enable full component swizzling support.
+	setenv("MVK_CONFIG_SWAPCHAIN_MIN_MAG_FILTER_USE_NEAREST", "0", 1); // MoltenVK - use linear surface scaling. TODO: remove when full DPI scaling is implemented.
 #endif
 
 #if defined(SANITIZERS_ENABLED)
@@ -59,25 +59,12 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	OS_MacOS os;
-	Error err;
+	OS_MacOS os(argv[0], argc - first_arg, &argv[first_arg]);
 
 	// We must override main when testing is enabled.
 	TEST_MAIN_OVERRIDE
 
-	err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
-
-	if (err == ERR_HELP) { // Returned by --help and --version, so success.
-		return 0;
-	} else if (err != OK) {
-		return 255;
-	}
-
-	if (Main::start()) {
-		os.run(); // It is actually the OS that decides how to run.
-	}
-
-	Main::cleanup();
+	os.run(); // Note: This function will never return.
 
 	return os.get_exit_code();
 }

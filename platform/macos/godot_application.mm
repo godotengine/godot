@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_application.h"
+#import "godot_application.h"
 
-#include "display_server_macos.h"
+#import "display_server_macos.h"
 
 @implementation GodotApplication
 
@@ -81,7 +81,7 @@
 		} break;
 	}
 
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds && keycode != Key::NONE) {
 		DisplayServerMacOS::KeyEvent ke;
 
@@ -100,7 +100,7 @@
 }
 
 - (void)sendEvent:(NSEvent *)event {
-	if ([event type] == NSSystemDefined && [event subtype] == 8) {
+	if ([event type] == NSEventTypeSystemDefined && [event subtype] == 8) {
 		int keyCode = (([event data1] & 0xFFFF0000) >> 16);
 		int keyFlags = ([event data1] & 0x0000FFFF);
 		int keyState = (((keyFlags & 0xFF00) >> 8)) == 0xA;
@@ -109,7 +109,7 @@
 		[self mediaKeyEvent:keyCode state:keyState repeat:keyRepeat];
 	}
 
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds) {
 		if ([event type] == NSEventTypeLeftMouseDown || [event type] == NSEventTypeRightMouseDown || [event type] == NSEventTypeOtherMouseDown) {
 			if (ds->mouse_process_popups()) {

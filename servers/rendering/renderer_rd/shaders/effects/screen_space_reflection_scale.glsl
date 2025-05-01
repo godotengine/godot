@@ -59,8 +59,13 @@ void main() {
 			color += texelFetch(source_ssr, ofs, 0);
 			float d = texelFetch(source_depth, ofs, 0).r;
 			vec4 nr = texelFetch(source_normal, ofs, 0);
-			normal.xyz += nr.xyz * 2.0 - 1.0;
-			normal.w += nr.w;
+			normal.xyz += normalize(nr.xyz * 2.0 - 1.0);
+			float roughness = normal.w;
+			if (roughness > 0.5) {
+				roughness = 1.0 - roughness;
+			}
+			roughness /= (127.0 / 255.0);
+			normal.w += roughness;
 
 			if (sc_multiview) {
 				// we're doing a full unproject so we need the value as is.
@@ -81,6 +86,7 @@ void main() {
 		depth /= 4.0;
 		normal.xyz = normalize(normal.xyz / 4.0) * 0.5 + 0.5;
 		normal.w /= 4.0;
+		normal.w = normal.w * (127.0 / 255.0);
 	} else {
 		ivec2 ofs = ssC << 1;
 
@@ -92,9 +98,9 @@ void main() {
 			// unproject our Z value so we can use it directly.
 			depth = depth * 2.0 - 1.0;
 			if (params.orthogonal) {
-				depth = ((depth + (params.camera_z_far + params.camera_z_near) / (params.camera_z_far - params.camera_z_near)) * (params.camera_z_far - params.camera_z_near)) / 2.0;
+				depth = -(depth * (params.camera_z_far - params.camera_z_near) - (params.camera_z_far + params.camera_z_near)) / 2.0;
 			} else {
-				depth = 2.0 * params.camera_z_near * params.camera_z_far / (params.camera_z_far + params.camera_z_near - depth * (params.camera_z_far - params.camera_z_near));
+				depth = 2.0 * params.camera_z_near * params.camera_z_far / (params.camera_z_far + params.camera_z_near + depth * (params.camera_z_far - params.camera_z_near));
 			}
 			depth = -depth;
 		}

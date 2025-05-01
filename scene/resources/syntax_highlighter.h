@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SYNTAX_HIGHLIGHTER_H
-#define SYNTAX_HIGHLIGHTER_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
@@ -93,6 +92,8 @@ private:
 	Color symbol_color;
 	Color number_color;
 
+	bool uint_suffix_enabled = false;
+
 protected:
 	static void _bind_methods();
 
@@ -139,6 +140,6 @@ public:
 
 	void set_member_variable_color(Color p_color);
 	Color get_member_variable_color() const;
-};
 
-#endif // SYNTAX_HIGHLIGHTER_H
+	void set_uint_suffix_enabled(bool p_enabled);
+};

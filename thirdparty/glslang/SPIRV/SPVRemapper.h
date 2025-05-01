@@ -77,9 +77,9 @@ public:
 #include <cassert>
 
 #include "spirv.hpp"
-#include "spvIR.h"
 
 namespace spv {
+const Id NoResult = 0;
 
 // class to hold SPIR-V binary data for remapping, DCE, and debug stripping
 class spirvbin_t : public spirvbin_base_t
