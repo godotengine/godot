@@ -342,11 +342,15 @@ void register_server_types() {
 	GDREGISTER_ABSTRACT_CLASS(XRTracker);
 #endif // XR_DISABLED
 
-	writer_mjpeg = memnew(MovieWriterMJPEG);
-	MovieWriter::add_writer(writer_mjpeg);
+	if (GD_IS_CLASS_ENABLED(MovieWriterMJPEG)) {
+		writer_mjpeg = memnew(MovieWriterMJPEG);
+		MovieWriter::add_writer(writer_mjpeg);
+	}
 
-	writer_pngwav = memnew(MovieWriterPNGWAV);
-	MovieWriter::add_writer(writer_pngwav);
+	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
+		writer_pngwav = memnew(MovieWriterPNGWAV);
+		MovieWriter::add_writer(writer_pngwav);
+	}
 
 	OS::get_singleton()->benchmark_end_measure("Servers", "Register Extensions");
 }
@@ -356,9 +360,12 @@ void unregister_server_types() {
 
 	ServersDebugger::deinitialize();
 	memdelete(shader_types);
-	memdelete(writer_mjpeg);
-	memdelete(writer_pngwav);
-
+	if (GD_IS_CLASS_ENABLED(MovieWriterMJPEG)) {
+		memdelete(writer_mjpeg);
+	}
+	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
+		memdelete(writer_pngwav);
+	}
 	OS::get_singleton()->benchmark_end_measure("Servers", "Unregister Extensions");
 }
 
