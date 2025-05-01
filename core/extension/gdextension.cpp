@@ -694,6 +694,13 @@ void GDExtension::_register_get_classes_used_callback(GDExtensionClassLibraryPtr
 #endif
 }
 
+void GDExtension::_register_main_loop_callbacks(GDExtensionClassLibraryPtr p_library, const GDExtensionMainLoopCallbacks *p_callbacks) {
+	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
+	self->startup_callback = p_callbacks->startup_func;
+	self->shutdown_callback = p_callbacks->shutdown_func;
+	self->frame_callback = p_callbacks->frame_func;
+}
+
 void GDExtension::register_interface_function(const StringName &p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer) {
 	ERR_FAIL_COND_MSG(gdextension_interface_functions.has(p_function_name), vformat("Attempt to register interface function '%s', which appears to be already registered.", p_function_name));
 	gdextension_interface_functions.insert(p_function_name, p_function_pointer);
@@ -813,6 +820,7 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("classdb_unregister_extension_class", (GDExtensionInterfaceFunctionPtr)&GDExtension::_unregister_extension_class);
 	register_interface_function("get_library_path", (GDExtensionInterfaceFunctionPtr)&GDExtension::_get_library_path);
 	register_interface_function("editor_register_get_classes_used_callback", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_get_classes_used_callback);
+	register_interface_function("register_main_loop_callbacks", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_main_loop_callbacks);
 }
 
 void GDExtension::finalize_gdextensions() {
