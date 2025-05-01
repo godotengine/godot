@@ -41,16 +41,20 @@
 // checks to ensure there aren't more than one object added to the lists.
 // #define GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
 
+void SceneTreeFTI::_reset_node3d_flags(Node3D &r_node) {
+	r_node.data.fti_on_tick_xform_list = false;
+	r_node.data.fti_on_tick_property_list = false;
+	r_node.data.fti_on_frame_xform_list = false;
+	r_node.data.fti_on_frame_property_list = false;
+	r_node.data.fti_global_xform_interp_set = false;
+	r_node.data.fti_frame_xform_force_update = false;
+}
+
 void SceneTreeFTI::_reset_flags(Node *p_node) {
 	Node3D *s = Object::cast_to<Node3D>(p_node);
 
 	if (s) {
-		s->data.fti_on_tick_xform_list = false;
-		s->data.fti_on_tick_property_list = false;
-		s->data.fti_on_frame_xform_list = false;
-		s->data.fti_on_frame_property_list = false;
-		s->data.fti_global_xform_interp_set = false;
-		s->data.fti_frame_xform_force_update = false;
+		_reset_node3d_flags(*s);
 
 		// In most cases the later  NOTIFICATION_RESET_PHYSICS_INTERPOLATION
 		// will reset this, but this should help cover hidden nodes.
@@ -270,12 +274,14 @@ void SceneTreeFTI::node_3d_notify_delete(Node3D *p_node) {
 
 	MutexLock(data.mutex);
 
-	p_node->data.fti_on_frame_xform_list = false;
-
 	// Ensure this is kept in sync with the lists, in case a node
 	// is removed and re-added to the scene tree multiple times
 	// on the same frame / tick.
 	p_node->_set_physics_interpolation_reset_requested(false);
+
+	// Keep flags consistent for the same as a new node,
+	// because this node may re-enter the scene tree.
+	_reset_node3d_flags(*p_node);
 
 	// This can potentially be optimized for large scenes with large churn,
 	// as it will be doing a linear search through the lists.

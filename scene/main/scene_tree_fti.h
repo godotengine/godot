@@ -92,6 +92,7 @@ class SceneTreeFTI {
 	void _update_request_resets();
 
 	void _reset_flags(Node *p_node);
+	void _reset_node3d_flags(Node3D &r_node);
 	void _node_3d_notify_set_xform(Node3D &r_node);
 	void _node_3d_notify_set_property(Node3D &r_node);
 
