@@ -36,7 +36,12 @@
 void AndroidInputHandler::process_joy_event(AndroidInputHandler::JoypadEvent p_event) {
 	switch (p_event.type) {
 		case JOY_EVENT_BUTTON:
-			Input::get_singleton()->joy_button(p_event.device, (JoyButton)p_event.index, p_event.pressed);
+			if ((int)p_event.index < 0) {
+				// Handle PS4/PS5-specific button remapping
+				process_ps4_ps5_button_event(p_event.device, (JoyButton)p_event.index, p_event.pressed);
+			} else {
+				Input::get_singleton()->joy_button(p_event.device, (JoyButton)p_event.index, p_event.pressed);
+			}
 			break;
 		case JOY_EVENT_AXIS:
 			Input::get_singleton()->joy_axis(p_event.device, (JoyAxis)p_event.index, p_event.value);
@@ -47,6 +52,27 @@ void AndroidInputHandler::process_joy_event(AndroidInputHandler::JoypadEvent p_e
 		default:
 			return;
 	}
+}
+
+void AndroidInputHandler::process_ps4_ps5_button_event(int p_device, JoyButton p_button, bool p_pressed) {
+	// Handle negative button indices (PS4/PS5 controller on Android)
+	if ((int)p_button < 0) {
+		// Map known negative button indices
+		if ((int)p_button == -86) {
+			// Map to correct joypad button 6
+			p_button = (JoyButton)6;
+		} else if ((int)p_button == -164) {
+			// Map to correct joypad button 4
+			p_button = (JoyButton)4;
+		} else {
+			// If we can't map it, log the error but don't fail
+			WARN_PRINT("process_ps4_ps5_button_event: Unmapped negative button index: " + itos((int)p_button));
+			return; // Skip processing this button
+		}
+	}
+
+	// Forward the event to the Input singleton
+	Input::get_singleton()->joy_button(p_device, p_button, p_pressed);
 }
 
 void AndroidInputHandler::_set_key_modifier_state(Ref<InputEventWithModifiers> ev, Key p_keycode) {
