@@ -220,6 +220,28 @@ _FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
 	}
 }
 
+// Convenient alternative to a loop copy pattern.
+template <typename T>
+_FORCE_INLINE_ void copy_arr_placement(T *p_dst, const T *p_src, size_t p_num) {
+	if constexpr (std::is_trivially_copyable_v<T>) {
+		memcpy((uint8_t *)p_dst, (uint8_t *)p_src, p_num * sizeof(T));
+	} else {
+		for (size_t i = 0; i < p_num; i++) {
+			memnew_placement(p_dst + i, T(p_src[i]));
+		}
+	}
+}
+
+// Convenient alternative to a loop destructor pattern.
+template <typename T>
+_FORCE_INLINE_ void destruct_arr_placement(T *p_dst, size_t p_num) {
+	if constexpr (!std::is_trivially_destructible_v<T>) {
+		for (size_t i = 0; i < p_num; i++) {
+			p_dst[i].~T();
+		}
+	}
+}
+
 /**
  * Wonders of having own array functions, you can actually check the length of
  * an allocated-with memnew_arr() array
