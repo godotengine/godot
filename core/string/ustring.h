@@ -177,10 +177,10 @@ class [[nodiscard]] CharStringT {
 public:
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const T *get_data() const { return ptr() ? ptr() : &_null; }
+	_FORCE_INLINE_ const T *get_data() const { return size() ? ptr() : &_null; }
 
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
@@ -309,10 +309,10 @@ public:
 
 	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const char32_t *get_data() const { return ptr() ? ptr() : &_null; }
+	_FORCE_INLINE_ const char32_t *get_data() const { return size() ? ptr() : &_null; }
 
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<char32_t>() const { return Span(ptr(), length()); }
