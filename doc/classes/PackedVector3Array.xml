@@ -148,6 +148,14 @@
 				Removes an element from the array by index.
 			</description>
 		</method>
+		<method name="reserve">
+			<return type="int" />
+			<param index="0" name="min_capacity" type="int" />
+			<description>
+				Reserve space for at least [param min_capacity] total elements.
+				Returns [constant OK] on success, or one of the following [enum Error] constants if this method fails: [constant ERR_INVALID_PARAMETER] if [param min_capacity] &lt; [method size], or [constant ERR_OUT_OF_MEMORY] if allocations fail.
+			</description>
+		</method>
 		<method name="resize">
 			<return type="int" />
 			<param index="0" name="new_size" type="int" />
