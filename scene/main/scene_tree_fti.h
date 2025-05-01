@@ -93,6 +93,7 @@ class SceneTreeFTI {
 	void _update_request_resets();
 
 	void _reset_flags(Node *p_node);
+	void _reset_spatial_flags(Spatial &r_spatial);
 	void _spatial_notify_set_xform(Spatial &r_spatial);
 	void _spatial_notify_set_property(Spatial &r_spatial);
 
