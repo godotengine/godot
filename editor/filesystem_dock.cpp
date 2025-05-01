@@ -3729,14 +3729,20 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			_file_list_rmb_option(FILE_MENU_COPY_PATH);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_absolute_path", p_event)) {
 			_file_list_rmb_option(FILE_MENU_COPY_ABSOLUTE_PATH);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_uid", p_event)) {
+			_file_list_rmb_option(FILE_MENU_COPY_UID);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
 			_file_list_rmb_option(FILE_MENU_REMOVE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
 			_file_list_rmb_option(FILE_MENU_RENAME);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_event)) {
 			_file_list_rmb_option(FILE_MENU_SHOW_IN_EXPLORER);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_program", p_event)) {
+			_file_list_rmb_option(FILE_MENU_OPEN_EXTERNAL);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_event)) {
 			_file_list_rmb_option(FILE_MENU_OPEN_IN_TERMINAL);
+		} else if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
+			focus_on_path();
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
 		} else {
