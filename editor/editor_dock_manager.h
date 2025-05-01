@@ -38,6 +38,7 @@ class ConfigFile;
 class Control;
 class PopupMenu;
 class TabContainer;
+class TextureRect;
 class VBoxContainer;
 class WindowWrapper;
 
@@ -46,8 +47,10 @@ class DockSplitContainer : public SplitContainer {
 
 private:
 	bool is_updating = false;
+	TextureRect *touch_dragger = nullptr;
 
 protected:
+	void _notification(int p_what);
 	void _update_visibility();
 
 	virtual void add_child_notify(Node *p_child) override;
