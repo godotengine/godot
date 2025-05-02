@@ -61,6 +61,7 @@ public:
 	const Vector2 &get_last_motion() const;
 	Vector2 get_position_delta() const;
 	const Vector2 &get_floor_normal() const;
+	const Vector2 &get_ceiling_normal() const;
 	const Vector2 &get_wall_normal() const;
 	const Vector2 &get_real_velocity() const;
 
@@ -131,8 +132,9 @@ private:
 	Vector2 velocity;
 
 	Vector2 floor_normal;
-	Vector2 platform_velocity;
 	Vector2 wall_normal;
+	Vector2 ceiling_normal;
+	Vector2 platform_velocity;
 	Vector2 last_motion;
 	Vector2 previous_position;
 	Vector2 real_velocity;
