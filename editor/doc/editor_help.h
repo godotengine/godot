@@ -182,6 +182,7 @@ class EditorHelp : public VBoxContainer {
 	//void _update_history_buttons();
 	void _update_method_list(MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
 	void _update_method_descriptions(const DocData::ClassDoc &p_classdoc, MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
+	void _update_constant_description(const DocData::ClassDoc &p_classdoc, const DocData::ConstantDoc &p_constant);
 	void _update_doc();
 
 	void _request_help(const String &p_string);

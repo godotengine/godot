@@ -612,8 +612,8 @@ bool EditorHelpSearch::Runner::_phase_fill_member_items() {
 			if (search_all) {
 				parent_item = _create_category_item(parent_item, class_doc->name, SNAME("MemberConstant"), TTRC("Constants"), "constants");
 			}
-			for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
-				_create_constant_item(parent_item, class_doc, &constant_doc);
+			for (const DocData::ConstantDoc *constant_doc : class_doc->get_all_constants()) {
+				_create_constant_item(parent_item, class_doc, constant_doc);
 			}
 		}
 		if ((search_flags & SEARCH_PROPERTIES) && !class_doc->properties.is_empty()) {
@@ -754,12 +754,12 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 			}
 		}
 		if (search_flags & SEARCH_CONSTANTS) {
-			for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
+			for (const DocData::ConstantDoc *constant_doc : class_doc->get_all_constants()) {
 				MemberMatch<DocData::ConstantDoc> constant;
-				constant.name = _all_terms_in_name(constant_doc.name);
-				constant.keyword = _match_keywords_in_all_terms(constant_doc.keywords);
+				constant.name = _all_terms_in_name(constant_doc->name);
+				constant.keyword = _match_keywords_in_all_terms(constant_doc->keywords);
 				if (constant.name || !constant.keyword.is_empty()) {
-					constant.doc = &constant_doc;
+					constant.doc = constant_doc;
 					match.constants.push_back(constant);
 				}
 			}
