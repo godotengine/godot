@@ -550,7 +550,6 @@ void Camera2D::set_limit_enabled(bool p_limit_enabled) {
 #ifdef TOOLS_ENABLED
 	emit_signal("_camera_limit_enabled_updated"); // Used for Camera2DEditorPlugin.
 #endif
-	notify_property_list_changed();
 }
 
 bool Camera2D::is_limit_enabled() const {
@@ -772,7 +771,6 @@ void Camera2D::set_rotation_smoothing_enabled(bool p_enabled) {
 		return;
 	}
 	rotation_smoothing_enabled = p_enabled;
-	notify_property_list_changed();
 }
 
 bool Camera2D::is_rotation_smoothing_enabled() const {
@@ -841,7 +839,6 @@ void Camera2D::set_position_smoothing_enabled(bool p_enabled) {
 		return;
 	}
 	position_smoothing_enabled = p_enabled;
-	notify_property_list_changed();
 }
 
 bool Camera2D::is_position_smoothing_enabled() const {

@@ -161,7 +161,6 @@ int Light2D::get_item_shadow_cull_mask() const {
 void Light2D::set_shadow_enabled(bool p_enabled) {
 	shadow = p_enabled;
 	RS::get_singleton()->canvas_light_set_shadow_enabled(canvas_light, shadow);
-	notify_property_list_changed();
 }
 
 bool Light2D::is_shadow_enabled() const {

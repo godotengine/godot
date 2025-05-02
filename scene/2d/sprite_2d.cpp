@@ -227,7 +227,6 @@ void Sprite2D::set_region_enabled(bool p_region_enabled) {
 
 	region_enabled = p_region_enabled;
 	queue_redraw();
-	notify_property_list_changed();
 }
 
 bool Sprite2D::is_region_enabled() const {

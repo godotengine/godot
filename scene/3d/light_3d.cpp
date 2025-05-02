@@ -56,7 +56,6 @@ void Light3D::set_shadow(bool p_enable) {
 	shadow = p_enable;
 	RS::get_singleton()->light_set_shadow(light, p_enable);
 
-	notify_property_list_changed();
 	update_configuration_warnings();
 }
 

@@ -333,6 +333,8 @@ public:
 class EditorInspectorSection : public Container {
 	GDCLASS(EditorInspectorSection, Container);
 
+	friend class EditorInspector;
+
 	String label;
 	String section;
 	Color bg_color;
@@ -389,6 +391,7 @@ public:
 
 	bool has_revertable_properties() const;
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
+	void _property_edited(const String &p_property);
 
 	EditorInspectorSection();
 	~EditorInspectorSection();

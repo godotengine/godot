@@ -277,7 +277,6 @@ void CanvasLayer::set_follow_viewport(bool p_enable) {
 
 	follow_viewport = p_enable;
 	_update_follow_viewport();
-	notify_property_list_changed();
 }
 
 bool CanvasLayer::is_following_viewport() const {

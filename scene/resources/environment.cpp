@@ -240,7 +240,6 @@ void Environment::_update_tonemap() {
 void Environment::set_ssr_enabled(bool p_enabled) {
 	ssr_enabled = p_enabled;
 	_update_ssr();
-	notify_property_list_changed();
 }
 
 bool Environment::is_ssr_enabled() const {
@@ -298,7 +297,6 @@ void Environment::_update_ssr() {
 void Environment::set_ssao_enabled(bool p_enabled) {
 	ssao_enabled = p_enabled;
 	_update_ssao();
-	notify_property_list_changed();
 }
 
 bool Environment::is_ssao_enabled() const {
@@ -396,7 +394,6 @@ void Environment::_update_ssao() {
 void Environment::set_ssil_enabled(bool p_enabled) {
 	ssil_enabled = p_enabled;
 	_update_ssil();
-	notify_property_list_changed();
 }
 
 bool Environment::is_ssil_enabled() const {
@@ -454,7 +451,6 @@ void Environment::_update_ssil() {
 void Environment::set_sdfgi_enabled(bool p_enabled) {
 	sdfgi_enabled = p_enabled;
 	_update_sdfgi();
-	notify_property_list_changed();
 }
 
 bool Environment::is_sdfgi_enabled() const {
@@ -589,7 +585,6 @@ void Environment::_update_sdfgi() {
 void Environment::set_glow_enabled(bool p_enabled) {
 	glow_enabled = p_enabled;
 	_update_glow();
-	notify_property_list_changed();
 }
 
 bool Environment::is_glow_enabled() const {
@@ -756,7 +751,6 @@ void Environment::_update_glow() {
 void Environment::set_fog_enabled(bool p_enabled) {
 	fog_enabled = p_enabled;
 	_update_fog();
-	notify_property_list_changed();
 }
 
 bool Environment::is_fog_enabled() const {
@@ -919,7 +913,6 @@ void Environment::_update_volumetric_fog() {
 void Environment::set_volumetric_fog_enabled(bool p_enable) {
 	volumetric_fog_enabled = p_enable;
 	_update_volumetric_fog();
-	notify_property_list_changed();
 }
 
 bool Environment::is_volumetric_fog_enabled() const {
@@ -1021,7 +1014,6 @@ float Environment::get_volumetric_fog_temporal_reprojection_amount() const {
 void Environment::set_adjustment_enabled(bool p_enabled) {
 	adjustment_enabled = p_enabled;
 	_update_adjustment();
-	notify_property_list_changed();
 }
 
 bool Environment::is_adjustment_enabled() const {

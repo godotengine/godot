@@ -2382,7 +2382,6 @@ void BaseMaterial3D::set_feature(Feature p_feature, bool p_enabled) {
 	}
 
 	features[p_feature] = p_enabled;
-	notify_property_list_changed();
 	_queue_shader_change();
 }
 

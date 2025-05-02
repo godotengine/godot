@@ -499,7 +499,6 @@ Size2 Polygon2D::get_texture_scale() const {
 void Polygon2D::set_invert(bool p_invert) {
 	invert = p_invert;
 	queue_redraw();
-	notify_property_list_changed();
 }
 
 bool Polygon2D::get_invert() const {
