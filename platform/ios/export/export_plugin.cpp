@@ -2103,9 +2103,11 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	if (ep.step("Making .pck", 0)) {
 		return ERR_SKIP;
 	}
-	String pack_path = binary_dir + ".pck";
+	bool sparse = p_preset->has("binary_format/sparse_pck") && p_preset->get("binary_format/sparse_pck");
+
+	String pack_path = binary_dir + (sparse ? ".sparsepck" : ".pck");
 	Vector<SharedObject> libraries;
-	Error err = save_pack(p_preset, p_debug, pack_path, &libraries);
+	Error err = save_pack(p_preset, p_debug, pack_path, &libraries, nullptr, nullptr, false, nullptr, nullptr, sparse);
 	if (err) {
 		// Message is supplied by the subroutine method.
 		return err;

@@ -55,6 +55,7 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) c
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/sparse_pck"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc_bptc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2_astc"), false));
@@ -103,6 +104,11 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 	if (!uses_s3tc_bptc && !uses_etc2_astc) {
 		valid = false;
 		err += TTR("A texture format must be selected to export the project. Please select at least one texture format.");
+	}
+
+	if (p_preset->get("binary_format/embed_pck") && p_preset->get("binary_format/sparse_pck")) {
+		valid = false;
+		err += TTR("Embedded PCK can't be sparse.");
 	}
 
 	if (!err.is_empty()) {
@@ -183,18 +189,20 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 }
 
 Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	bool sparse = p_preset->has("binary_format/sparse_pck") && p_preset->get("binary_format/sparse_pck");
+
 	String pck_path;
 	if (p_preset->get("binary_format/embed_pck")) {
 		pck_path = p_path;
 	} else {
-		pck_path = p_path.get_basename() + ".pck";
+		pck_path = p_path.get_basename() + (sparse ? ".sparsepck" : ".pck");
 	}
 
 	Vector<SharedObject> so_files;
 
 	int64_t embedded_pos;
 	int64_t embedded_size;
-	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, nullptr, nullptr, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
+	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, nullptr, nullptr, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size, sparse);
 	if (err == OK && p_preset->get("binary_format/embed_pck")) {
 		if (embedded_size >= 0x100000000 && String(p_preset->get("binary_format/architecture")).contains("32")) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
