@@ -689,10 +689,8 @@ TextureStorage::CanvasTextureInfo TextureStorage::canvas_texture_get_info(RID p_
 			t = get_texture(ct->diffuse);
 			if (!t) {
 				ctc.diffuse = texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
-				ct->size_cache = Size2i(1, 1);
 			} else {
 				ctc.diffuse = t->rd_texture_srgb.is_valid() && p_use_srgb && !p_texture_is_data ? t->rd_texture_srgb : t->rd_texture;
-				ct->size_cache = Size2i(t->width_2d, t->height_2d);
 				if (t->render_target) {
 					t->render_target->was_used = true;
 				}
@@ -724,6 +722,10 @@ TextureStorage::CanvasTextureInfo TextureStorage::canvas_texture_get_info(RID p_
 				}
 			}
 		}
+	}
+	{
+		t = get_texture(ct->diffuse);
+		ct->size_cache = ctc.diffuse == texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE) ? Size2i(1, 1) : Size2i(t->width_2d, t->height_2d);
 	}
 
 	CanvasTextureInfo res;
@@ -1317,9 +1319,6 @@ void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image
 		ERR_FAIL_INDEX(p_layer, tex->layers);
 	}
 
-#ifdef TOOLS_ENABLED
-	tex->image_cache_2d.unref();
-#endif
 	TextureToRDFormat f;
 	Ref<Image> validated = _validate_texture_format(p_image, f);
 
@@ -1435,11 +1434,6 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL_V(tex, Ref<Image>());
 
-#ifdef TOOLS_ENABLED
-	if (tex->image_cache_2d.is_valid() && !tex->is_render_target) {
-		return tex->image_cache_2d;
-	}
-#endif
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
 	ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 	Ref<Image> image;
@@ -1479,12 +1473,6 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	if (tex->format != tex->validated_format) {
 		image->convert(tex->format);
 	}
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && !tex->is_render_target) {
-		tex->image_cache_2d = image;
-	}
-#endif
 
 	return image;
 }
