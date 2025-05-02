@@ -173,6 +173,7 @@ class ResourceImporterScene : public ResourceImporter {
 		MESH_PHYSICS_RIGID_BODY_AND_MESH,
 		MESH_PHYSICS_STATIC_COLLIDER_ONLY,
 		MESH_PHYSICS_AREA_ONLY,
+		MESH_PHYSICS_COLLIDERS_ONLY
 	};
 
 	enum NavMeshMode {
@@ -196,7 +197,8 @@ class ResourceImporterScene : public ResourceImporter {
 	enum BodyType {
 		BODY_TYPE_STATIC,
 		BODY_TYPE_DYNAMIC,
-		BODY_TYPE_AREA
+		BODY_TYPE_AREA,
+		BODY_TYPE_COLLISION_ONLY
 	};
 
 	enum ShapeType {
