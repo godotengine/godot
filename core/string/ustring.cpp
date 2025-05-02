@@ -3843,34 +3843,28 @@ bool String::matchn(const String &p_wildcard) const {
 }
 
 String String::format(const Variant &values, const String &placeholder) const {
-	String new_string = String(ptr());
+	String new_string = *this;
 
 	if (values.get_type() == Variant::ARRAY) {
 		Array values_arr = values;
 
 		for (int i = 0; i < values_arr.size(); i++) {
-			String i_as_str = String::num_int64(i);
-
 			if (values_arr[i].get_type() == Variant::ARRAY) { //Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
 				Array value_arr = values_arr[i];
 
 				if (value_arr.size() == 2) {
-					Variant v_key = value_arr[0];
-					String key = v_key;
-
-					Variant v_val = value_arr[1];
-					String val = v_val;
+					String key = value_arr[0];
+					String val = value_arr[1];
 
 					new_string = new_string.replace(placeholder.replace("_", key), val);
 				} else {
 					ERR_PRINT(vformat("Invalid format: the inner Array at index %d needs to contain only 2 elements, as a key-value pair.", i).ascii().get_data());
 				}
 			} else { //Array structure ["RobotGuy","Logis","rookie"]
-				Variant v_val = values_arr[i];
-				String val = v_val;
+				String val = values_arr[i];
 
 				if (placeholder.contains_char('_')) {
-					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
+					new_string = new_string.replace(placeholder.replace("_", String::num_int64(i)), val);
 				} else {
 					new_string = new_string.replace_first(placeholder, val);
 				}
