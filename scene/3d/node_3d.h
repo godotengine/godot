@@ -41,7 +41,7 @@ public:
 	virtual void transform() = 0;
 	virtual void clear() = 0;
 	virtual void redraw() = 0;
-	virtual void free() = 0;
+	virtual void free_gizmo() = 0;
 
 	Node3DGizmo();
 	virtual ~Node3DGizmo() {}
