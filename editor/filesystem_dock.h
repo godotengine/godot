@@ -129,6 +129,11 @@ private:
 		FILE_MENU_NEW_FOLDER,
 		FILE_MENU_NEW_SCRIPT,
 		FILE_MENU_NEW_SCENE,
+		FILE_MENU_MAX,
+		// Extra shortcuts that don't exist in the menu.
+		EXTRA_FOCUS_PATH,
+		EXTRA_FOCUS_FILTER,
+
 		CONVERT_BASE_ID = 1000,
 	};
 
@@ -301,6 +306,7 @@ private:
 	void _file_list_rmb_option(int p_option);
 	void _generic_rmb_option_selected(int p_option);
 	void _file_option(int p_option, const Vector<String> &p_selected);
+	int _get_menu_option_from_key(const Ref<InputEventKey> &p_key);
 
 	void _fw_history();
 	void _bw_history();
