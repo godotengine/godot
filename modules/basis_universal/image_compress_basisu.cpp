@@ -30,6 +30,7 @@
 
 #include "image_compress_basisu.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -78,7 +79,7 @@ inline void _basisu_pad_mipmap(const uint8_t *p_image_mip_data, Vector<uint8_t> 
 	}
 }
 
-Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels) {
+Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels, const Image::BasisUniversalPackerParams &p_basisu_params) {
 	init_mutex.lock();
 	if (!initialized) {
 		basisu::basisu_encoder_init();
@@ -98,16 +99,23 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 		is_hdr = true;
 	}
 
+	int rdo_dict_size = GLOBAL_GET_CACHED(int, "rendering/textures/basis_universal/rdo_dict_size");
+	bool zstd_supercompression = GLOBAL_GET_CACHED(bool, "rendering/textures/basis_universal/zstd_supercompression");
+	int zstd_supercompression_level = GLOBAL_GET_CACHED(int, "rendering/textures/basis_universal/zstd_supercompression_level");
+
 	basisu::basis_compressor_params params;
 
 	params.m_uastc = true;
-	params.m_etc1s_quality_level = basisu::BASISU_QUALITY_MIN;
 	params.m_pack_uastc_ldr_4x4_flags &= ~basisu::cPackUASTCLevelMask;
-	params.m_pack_uastc_ldr_4x4_flags |= basisu::cPackUASTCLevelFastest;
+	params.m_pack_uastc_ldr_4x4_flags |= p_basisu_params.uastc_level;
 
-	params.m_rdo_uastc_ldr_4x4 = 0.0f;
-	params.m_rdo_uastc_ldr_4x4_quality_scalar = 0.0f;
-	params.m_rdo_uastc_ldr_4x4_dict_size = 1024;
+	params.m_rdo_uastc_ldr_4x4 = p_basisu_params.rdo_quality_loss >= 0.01;
+	params.m_rdo_uastc_ldr_4x4_quality_scalar = p_basisu_params.rdo_quality_loss;
+	params.m_rdo_uastc_ldr_4x4_dict_size = rdo_dict_size;
+
+	params.m_create_ktx2_file = true;
+	params.m_ktx2_uastc_supercompression = zstd_supercompression ? basist::KTX2_SS_ZSTANDARD : basist::KTX2_SS_NONE;
+	params.m_ktx2_zstd_supercompression_level = zstd_supercompression_level;
 
 	params.m_mip_fast = true;
 	params.m_multithreading = true;
@@ -241,14 +249,14 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 	int basisu_err = compressor.process();
 	ERR_FAIL_COND_V(basisu_err != basisu::basis_compressor::cECSuccess, Vector<uint8_t>());
 
-	const basisu::uint8_vec &basisu_encoded = compressor.get_output_basis_file();
+	const basisu::uint8_vec &basisu_encoded = compressor.get_output_ktx2_file();
 
 	Vector<uint8_t> basisu_data;
 	basisu_data.resize(basisu_encoded.size() + 4);
 	uint8_t *basisu_data_ptr = basisu_data.ptrw();
 
 	// Copy the encoded BasisU data into the output buffer.
-	*(uint32_t *)basisu_data_ptr = decompress_format;
+	*(uint32_t *)basisu_data_ptr = decompress_format | BASIS_DECOMPRESS_FLAG_KTX2;
 	memcpy(basisu_data_ptr + 4, basisu_encoded.get_ptr(), basisu_encoded.size());
 
 	print_verbose(vformat("BasisU: Encoding a %dx%d image with %d mipmaps took %d ms.", p_image->get_width(), p_image->get_height(), p_image->get_mipmap_count(), OS::get_singleton()->get_ticks_msec() - start_time));
@@ -280,7 +288,9 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 	bool needs_ra_rg_swap = false;
 	bool needs_rg_trim = false;
 
-	BasisDecompressFormat decompress_format = (BasisDecompressFormat)(*(uint32_t *)(src_ptr));
+	uint32_t decompress_format = *(uint32_t *)(src_ptr);
+	bool is_ktx2 = decompress_format & BASIS_DECOMPRESS_FLAG_KTX2;
+	decompress_format &= ~BASIS_DECOMPRESS_FLAG_KTX2;
 
 	switch (decompress_format) {
 		case BASIS_DECOMPRESS_R: {
@@ -398,37 +408,68 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 	src_ptr += 4;
 	src_size -= 4;
 
-	basist::basisu_transcoder transcoder;
-	ERR_FAIL_COND_V(!transcoder.validate_header(src_ptr, src_size), image);
+	if (is_ktx2) {
+		basist::ktx2_transcoder transcoder;
+		ERR_FAIL_COND_V(!transcoder.init(src_ptr, src_size), image);
 
-	transcoder.start_transcoding(src_ptr, src_size);
+		transcoder.start_transcoding();
 
-	basist::basisu_image_info basisu_info;
-	transcoder.get_image_info(src_ptr, src_size, basisu_info, 0);
+		// Create the buffer for transcoded/decompressed data.
+		Vector<uint8_t> out_data;
+		out_data.resize(Image::get_image_data_size(transcoder.get_width(), transcoder.get_height(), image_format, transcoder.get_levels() > 1));
 
-	// Create the buffer for transcoded/decompressed data.
-	Vector<uint8_t> out_data;
-	out_data.resize(Image::get_image_data_size(basisu_info.m_width, basisu_info.m_height, image_format, basisu_info.m_total_levels > 1));
+		uint8_t *dst = out_data.ptrw();
+		memset(dst, 0, out_data.size());
 
-	uint8_t *dst = out_data.ptrw();
-	memset(dst, 0, out_data.size());
+		for (uint32_t i = 0; i < transcoder.get_levels(); i++) {
+			basist::ktx2_image_level_info basisu_level;
+			transcoder.get_image_level_info(basisu_level, i, 0, 0);
 
-	for (uint32_t i = 0; i < basisu_info.m_total_levels; i++) {
-		basist::basisu_image_level_info basisu_level;
-		transcoder.get_image_level_info(src_ptr, src_size, basisu_level, 0, i);
+			uint32_t mip_block_or_pixel_count = Image::is_format_compressed(image_format) ? basisu_level.m_total_blocks : basisu_level.m_orig_width * basisu_level.m_orig_height;
+			int64_t ofs = Image::get_image_mipmap_offset(transcoder.get_width(), transcoder.get_height(), image_format, i);
 
-		uint32_t mip_block_or_pixel_count = Image::is_format_compressed(image_format) ? basisu_level.m_total_blocks : basisu_level.m_orig_width * basisu_level.m_orig_height;
-		int64_t ofs = Image::get_image_mipmap_offset(basisu_info.m_width, basisu_info.m_height, image_format, i);
+			bool result = transcoder.transcode_image_level(i, 0, 0, dst + ofs, mip_block_or_pixel_count, basisu_format);
 
-		bool result = transcoder.transcode_image_level(src_ptr, src_size, 0, i, dst + ofs, mip_block_or_pixel_count, basisu_format);
-
-		if (!result) {
-			print_line(vformat("BasisUniversal cannot unpack level %d.", i));
-			break;
+			if (!result) {
+				print_line(vformat("BasisUniversal cannot unpack level %d.", i));
+				break;
+			}
 		}
-	}
 
-	image = Image::create_from_data(basisu_info.m_width, basisu_info.m_height, basisu_info.m_total_levels > 1, image_format, out_data);
+		image = Image::create_from_data(transcoder.get_width(), transcoder.get_height(), transcoder.get_levels() > 1, image_format, out_data);
+	} else {
+		basist::basisu_transcoder transcoder;
+		ERR_FAIL_COND_V(!transcoder.validate_header(src_ptr, src_size), image);
+
+		transcoder.start_transcoding(src_ptr, src_size);
+
+		basist::basisu_image_info basisu_info;
+		transcoder.get_image_info(src_ptr, src_size, basisu_info, 0);
+
+		// Create the buffer for transcoded/decompressed data.
+		Vector<uint8_t> out_data;
+		out_data.resize(Image::get_image_data_size(basisu_info.m_width, basisu_info.m_height, image_format, basisu_info.m_total_levels > 1));
+
+		uint8_t *dst = out_data.ptrw();
+		memset(dst, 0, out_data.size());
+
+		for (uint32_t i = 0; i < basisu_info.m_total_levels; i++) {
+			basist::basisu_image_level_info basisu_level;
+			transcoder.get_image_level_info(src_ptr, src_size, basisu_level, 0, i);
+
+			uint32_t mip_block_or_pixel_count = Image::is_format_compressed(image_format) ? basisu_level.m_total_blocks : basisu_level.m_orig_width * basisu_level.m_orig_height;
+			int64_t ofs = Image::get_image_mipmap_offset(basisu_info.m_width, basisu_info.m_height, image_format, i);
+
+			bool result = transcoder.transcode_image_level(src_ptr, src_size, 0, i, dst + ofs, mip_block_or_pixel_count, basisu_format);
+
+			if (!result) {
+				print_line(vformat("BasisUniversal cannot unpack level %d.", i));
+				break;
+			}
+		}
+
+		image = Image::create_from_data(basisu_info.m_width, basisu_info.m_height, basisu_info.m_total_levels > 1, image_format, out_data);
+	}
 
 	if (needs_ra_rg_swap) {
 		// Swap uncompressed RA-as-RG texture's color channels.

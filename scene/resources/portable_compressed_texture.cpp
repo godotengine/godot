@@ -193,7 +193,7 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 			ERR_FAIL_COND(p_image->is_compressed());
 			encode_uint16(DATA_FORMAT_BASIS_UNIVERSAL, buffer.ptrw() + 2);
 			Image::UsedChannels uc = p_image->detect_used_channels(p_normal_map ? Image::COMPRESS_SOURCE_NORMAL : Image::COMPRESS_SOURCE_GENERIC);
-			Vector<uint8_t> budata = Image::basis_universal_packer(p_image, uc);
+			Vector<uint8_t> budata = Image::basis_universal_packer(p_image, uc, basisu_params);
 			buffer.append_array(budata);
 #else
 			ERR_FAIL_MSG("Basis Universal compression can only run in editor build.");
@@ -360,6 +360,11 @@ bool PortableCompressedTexture2D::is_keeping_compressed_buffer() const {
 	return keep_compressed_buffer;
 }
 
+void PortableCompressedTexture2D::set_basisu_compressor_params(int p_uastc_level, float p_rdo_quality_loss) {
+	basisu_params.uastc_level = p_uastc_level;
+	basisu_params.rdo_quality_loss = p_rdo_quality_loss;
+}
+
 void PortableCompressedTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_from_image", "image", "compression_mode", "normal_map", "lossy_quality"), &PortableCompressedTexture2D::create_from_image, DEFVAL(false), DEFVAL(0.8));
 	ClassDB::bind_method(D_METHOD("get_format"), &PortableCompressedTexture2D::get_format);
@@ -370,6 +375,8 @@ void PortableCompressedTexture2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_keep_compressed_buffer", "keep"), &PortableCompressedTexture2D::set_keep_compressed_buffer);
 	ClassDB::bind_method(D_METHOD("is_keeping_compressed_buffer"), &PortableCompressedTexture2D::is_keeping_compressed_buffer);
+
+	ClassDB::bind_method(D_METHOD("set_basisu_compressor_params", "uastc_level", "rdo_quality_loss"), &PortableCompressedTexture2D::set_basisu_compressor_params);
 
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &PortableCompressedTexture2D::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &PortableCompressedTexture2D::_get_data);
