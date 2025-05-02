@@ -140,12 +140,11 @@ void TreeSortAndFilterBar::_apply_sort() {
 			items.reverse();
 		}
 
-		TreeItem* previous = nullptr;
+		TreeItem *previous = nullptr;
 		for (const TreeItemColumn &item : items) {
 			if (previous != nullptr) {
 				item.item->move_after(previous);
-			}
-			else {
+			} else {
 				item.item->move_before(to_sort->get_first_child());
 			}
 			previous = item.item;
@@ -239,7 +238,6 @@ void TreeSortAndFilterBar::apply() {
 	if (!managed_tree || !managed_tree->get_root()) {
 		return;
 	}
-	
 
 	OS::get_singleton()->benchmark_begin_measure("odb profiler", "TreeSortAndFilterBar::apply _apply_sort");
 	_apply_sort();
