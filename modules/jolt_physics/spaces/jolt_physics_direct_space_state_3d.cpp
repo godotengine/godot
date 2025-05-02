@@ -587,6 +587,8 @@ int JoltPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_para
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	const Transform3D transform_com = transform.translated_local(com_scaled);
 
+	const Vector3 &base_offset = transform_com.origin;
+
 	JPH::CollideShapeSettings settings;
 	settings.mMaxSeparationDistance = (float)p_parameters.margin;
 
@@ -614,6 +616,11 @@ int JoltPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_para
 		result.rid = object->get_rid();
 		result.collider_id = object->get_instance_id();
 		result.collider = object->get_instance();
+
+		if (p_parameters.result_with_points) {
+			result.point_a = base_offset + to_godot(hit.mContactPointOn1);
+			result.point_b = base_offset + to_godot(hit.mContactPointOn2);
+		}
 	}
 
 	return hit_count;

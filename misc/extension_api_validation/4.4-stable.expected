@@ -104,3 +104,11 @@ GH-105570
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_create_from_extension/arguments': size changed value in new API, from 9 to 10.
 
 Argument added; p_mipmaps. Compatibility method registered.
+
+
+GH-106037
+---------
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/intersect_shape/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_shape/arguments': size changed value in new API, from 2 to 3.
+
+Optional "with_points" argument added. Compatibility methods registered.
