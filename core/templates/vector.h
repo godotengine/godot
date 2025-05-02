@@ -108,6 +108,10 @@ public:
 		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 		return _cowdata.reserve(p_size);
 	}
+	[[nodiscard]] Error reserve_exact(Size p_size) {
+		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
+		return _cowdata.reserve_exact(p_size);
+	}
 	_FORCE_INLINE_ const T &operator[](Size p_index) const { return _cowdata.get(p_index); }
 	// Must take a copy instead of a reference (see GH-31736).
 	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
