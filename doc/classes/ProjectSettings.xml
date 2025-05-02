@@ -3283,6 +3283,10 @@
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
+		<member name="rendering/textures/import/store_compressed" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], makes use of lossless [i]storage[/i] compression to further compress textures on import. This can save disk space and reduce the exported PCK file size at the cost of slightly longer import times.
+			[b]Note:[/b] Only textures with the [b]VRAM Compressed[/b], [b]VRAM Uncompressed[/b] and [b]Basis Universal[/b] are affected by this setting. [b]Lossless[/b] and [b]Lossy[/b] don't make use of storage compression, as the formats employed are already effectively compressed for small storage sizes.
+		</member>
 		<member name="rendering/textures/light_projectors/filter" type="int" setter="" getter="" default="3">
 			The filtering quality to use for [OmniLight3D] and [SpotLight3D] projectors. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].
 		</member>
