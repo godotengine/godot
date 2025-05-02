@@ -158,4 +158,14 @@
 			Maps a color channel to the value of one.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="Filter">
+		</enum>
+		<enum name="MipmapMode">
+		</enum>
+		<enum name="Swizzle">
+		</enum>
+		<enum name="Wrap">
+		</enum>
+	</enums>
 </class>

@@ -157,4 +157,10 @@
 			If the scene contains any non-visible nodes, do not include them in the export. This is the same as the behavior in Godot 4.4 and earlier. Downside: Invisible nodes will not exist in the exported file.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="RootNodeMode">
+		</enum>
+		<enum name="VisibilityMode">
+		</enum>
+	</enums>
 </class>

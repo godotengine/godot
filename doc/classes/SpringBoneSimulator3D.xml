@@ -648,4 +648,12 @@
 			Enumerated value for the unconstrained rotation.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="BoneDirection">
+		</enum>
+		<enum name="CenterFrom">
+		</enum>
+		<enum name="RotationAxis">
+		</enum>
+	</enums>
 </class>

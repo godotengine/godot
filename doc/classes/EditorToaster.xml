@@ -31,4 +31,8 @@
 			Toast will display with an ERROR severity and have a corresponding color.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="Severity">
+		</enum>
+	</enums>
 </class>

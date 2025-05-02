@@ -47,4 +47,8 @@
 			The asynchronous function has been cancelled.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="ResultStatus">
+		</enum>
+	</enums>
 </class>

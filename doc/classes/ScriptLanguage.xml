@@ -18,4 +18,8 @@
 		<constant name="SCRIPT_NAME_CASING_CAMEL_CASE" value="4" enum="ScriptNameCasing">
 		</constant>
 	</constants>
+	<enums>
+		<enum name="ScriptNameCasing">
+		</enum>
+	</enums>
 </class>
