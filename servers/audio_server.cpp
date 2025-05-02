@@ -720,10 +720,10 @@ void AudioServer::_delete_stream_playback(Ref<AudioStreamPlayback> p_playback) {
 void AudioServer::_delete_stream_playback_list_node(AudioStreamPlaybackListNode *p_playback_node) {
 	// Remove the playback from the list, registering a destructor to be run on the main thread.
 	playback_list.erase(p_playback_node, [](AudioStreamPlaybackListNode *p) {
-		delete p->prev_bus_details;
-		delete p->bus_details.load();
+		memdelete(p->prev_bus_details);
+		memdelete(p->bus_details.load());
 		p->stream_playback.unref();
-		delete p;
+		memdelete(p);
 	});
 }
 
@@ -1234,16 +1234,16 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz) {
 	ERR_FAIL_COND(p_playback.is_null());
 
-	AudioStreamPlaybackListNode *playback_node = new AudioStreamPlaybackListNode();
+	AudioStreamPlaybackListNode *playback_node = memnew(AudioStreamPlaybackListNode);
 	playback_node->stream_playback = p_playback;
 	playback_node->stream_playback->start(p_start_time);
 
-	AudioStreamPlaybackBusDetails *new_bus_details = new AudioStreamPlaybackBusDetails();
+	AudioStreamPlaybackBusDetails *new_bus_details = memnew(AudioStreamPlaybackBusDetails);
 	int idx = 0;
 	for (KeyValue<StringName, Vector<AudioFrame>> pair : p_bus_volumes) {
 		if (pair.value.size() < channel_count || pair.value.size() != MAX_CHANNELS_PER_BUS) {
-			delete playback_node;
-			delete new_bus_details;
+			memdelete(playback_node);
+			memdelete(new_bus_details);
 			ERR_FAIL();
 		}
 
@@ -1255,7 +1255,7 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 		idx++;
 	}
 	playback_node->bus_details.store(new_bus_details);
-	playback_node->prev_bus_details = new AudioStreamPlaybackBusDetails();
+	playback_node->prev_bus_details = memnew(AudioStreamPlaybackBusDetails);
 
 	playback_node->pitch_scale.set(p_pitch_scale);
 	playback_node->highshelf_gain.set(p_highshelf_gain);
@@ -1328,7 +1328,7 @@ void AudioServer::set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_pla
 	if (!playback_node) {
 		return;
 	}
-	AudioStreamPlaybackBusDetails *old_bus_details, *new_bus_details = new AudioStreamPlaybackBusDetails();
+	AudioStreamPlaybackBusDetails *old_bus_details, *new_bus_details = memnew(AudioStreamPlaybackBusDetails);
 
 	int idx = 0;
 	for (KeyValue<StringName, Vector<AudioFrame>> pair : p_bus_volumes) {
@@ -1336,7 +1336,7 @@ void AudioServer::set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_pla
 			break;
 		}
 		if (pair.value.size() < channel_count || pair.value.size() != MAX_CHANNELS_PER_BUS) {
-			delete new_bus_details;
+			memdelete(new_bus_details);
 			ERR_FAIL();
 		}
 
@@ -1610,7 +1610,7 @@ void AudioServer::update() {
 	listener_changed_callback_list.maybe_cleanup();
 	playback_list.maybe_cleanup();
 	for (AudioStreamPlaybackBusDetails *bus_details : bus_details_graveyard_frame_old) {
-		bus_details_graveyard_frame_old.erase(bus_details, [](AudioStreamPlaybackBusDetails *d) { delete d; });
+		bus_details_graveyard_frame_old.erase(bus_details, [](AudioStreamPlaybackBusDetails *d) { memdelete(d); });
 	}
 	for (AudioStreamPlaybackBusDetails *bus_details : bus_details_graveyard) {
 		bus_details_graveyard_frame_old.insert(bus_details);
@@ -1688,7 +1688,7 @@ double AudioServer::get_time_since_last_mix() const {
 AudioServer *AudioServer::singleton = nullptr;
 
 void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata) {
-	CallbackItem *ci = new CallbackItem();
+	CallbackItem *ci = memnew(CallbackItem);
 	ci->callback = p_callback;
 	ci->userdata = p_userdata;
 	update_callback_list.insert(ci);
@@ -1697,13 +1697,13 @@ void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata
 void AudioServer::remove_update_callback(AudioCallback p_callback, void *p_userdata) {
 	for (CallbackItem *ci : update_callback_list) {
 		if (ci->callback == p_callback && ci->userdata == p_userdata) {
-			update_callback_list.erase(ci, [](CallbackItem *c) { delete c; });
+			update_callback_list.erase(ci, [](CallbackItem *c) { memdelete(c); });
 		}
 	}
 }
 
 void AudioServer::add_mix_callback(AudioCallback p_callback, void *p_userdata) {
-	CallbackItem *ci = new CallbackItem();
+	CallbackItem *ci = memnew(CallbackItem);
 	ci->callback = p_callback;
 	ci->userdata = p_userdata;
 	mix_callback_list.insert(ci);
@@ -1712,13 +1712,13 @@ void AudioServer::add_mix_callback(AudioCallback p_callback, void *p_userdata) {
 void AudioServer::remove_mix_callback(AudioCallback p_callback, void *p_userdata) {
 	for (CallbackItem *ci : mix_callback_list) {
 		if (ci->callback == p_callback && ci->userdata == p_userdata) {
-			mix_callback_list.erase(ci, [](CallbackItem *c) { delete c; });
+			mix_callback_list.erase(ci, [](CallbackItem *c) { memdelete(c); });
 		}
 	}
 }
 
 void AudioServer::add_listener_changed_callback(AudioCallback p_callback, void *p_userdata) {
-	CallbackItem *ci = new CallbackItem();
+	CallbackItem *ci = memnew(CallbackItem);
 	ci->callback = p_callback;
 	ci->userdata = p_userdata;
 	listener_changed_callback_list.insert(ci);
@@ -1727,7 +1727,7 @@ void AudioServer::add_listener_changed_callback(AudioCallback p_callback, void *
 void AudioServer::remove_listener_changed_callback(AudioCallback p_callback, void *p_userdata) {
 	for (CallbackItem *ci : listener_changed_callback_list) {
 		if (ci->callback == p_callback && ci->userdata == p_userdata) {
-			listener_changed_callback_list.erase(ci, [](CallbackItem *c) { delete c; });
+			listener_changed_callback_list.erase(ci, [](CallbackItem *c) { memdelete(c); });
 		}
 	}
 }

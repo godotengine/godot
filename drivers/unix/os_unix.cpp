@@ -1161,14 +1161,14 @@ String OS_Unix::get_executable_path() const {
 	uint32_t buff_size = 1;
 	_NSGetExecutablePath(temp_path, &buff_size);
 
-	char *resolved_path = new char[buff_size + 1];
+	char *resolved_path = (char *)memalloc(buff_size + 1);
 
 	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1) {
 		WARN_PRINT("MAXPATHLEN is too small");
 	}
 
 	String path = String::utf8(resolved_path);
-	delete[] resolved_path;
+	memfree(resolved_path);
 
 	return path;
 #else

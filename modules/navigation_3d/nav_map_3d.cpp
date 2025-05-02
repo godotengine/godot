@@ -539,7 +539,7 @@ void NavMap3D::_update_rvo_obstacles_tree_2d() {
 		const size_t obstacleNo = raw_obstacles.size();
 
 		for (size_t i = 0; i < rvo_2d_vertices.size(); i++) {
-			RVO2D::Obstacle2D *rvo_2d_obstacle = new RVO2D::Obstacle2D();
+			RVO2D::Obstacle2D *rvo_2d_obstacle = new RVO2D::Obstacle2D(); // Note: deleted by RVO2D::RVOSimulator2D, use generic C++ allocator.
 			rvo_2d_obstacle->point_ = rvo_2d_vertices[i];
 			rvo_2d_obstacle->height_ = _obstacle_height;
 			rvo_2d_obstacle->elevation_ = _obstacle_position.y;

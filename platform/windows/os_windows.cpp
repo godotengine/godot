@@ -1690,7 +1690,7 @@ public:
 	ULONG STDMETHODCALLTYPE Release() override {
 		ULONG ulRef = InterlockedDecrement(&_cRef);
 		if (0 == ulRef) {
-			delete this;
+			memdelete(this);
 		}
 		return ulRef;
 	}
@@ -2457,7 +2457,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	SHFILEOPSTRUCTW sf;
 
 	Char16String utf16 = p_path.utf16();
-	WCHAR *from = new WCHAR[utf16.length() + 2];
+	WCHAR *from = (WCHAR *)memalloc(sizeof(WCHAR) * (utf16.length() + 2));
 	wcscpy_s(from, utf16.length() + 1, (LPCWSTR)(utf16.get_data()));
 	from[utf16.length() + 1] = 0;
 
@@ -2471,7 +2471,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	sf.lpszProgressTitle = nullptr;
 
 	int ret = SHFileOperationW(&sf);
-	delete[] from;
+	memfree(from);
 
 	if (ret) {
 		ERR_PRINT("SHFileOperation error: " + itos(ret));

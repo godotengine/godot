@@ -86,7 +86,7 @@ int ios_main(int argc, char **argv) {
 		chdir(path);
 	}
 
-	os = new OS_IOS();
+	os = memnew(OS_IOS);
 
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
@@ -115,5 +115,5 @@ int ios_main(int argc, char **argv) {
 
 void ios_finish() {
 	Main::cleanup();
-	delete os;
+	memdelete(os);
 }

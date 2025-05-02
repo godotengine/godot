@@ -59,7 +59,7 @@ static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
 
 char *wc_to_utf8(const wchar_t *wc) {
 	int ulen = WideCharToMultiByte(CP_UTF8, 0, wc, -1, nullptr, 0, nullptr, nullptr);
-	char *ubuf = new char[ulen + 1];
+	char *ubuf = (char *)memalloc(ulen + 1);
 	WideCharToMultiByte(CP_UTF8, 0, wc, -1, ubuf, ulen, nullptr, nullptr);
 	ubuf[ulen] = 0;
 	return ubuf;
@@ -70,7 +70,7 @@ int widechar_main(int argc, wchar_t **argv) {
 
 	setlocale(LC_CTYPE, "");
 
-	char **argv_utf8 = new char *[argc];
+	char **argv_utf8 = (char **)memalloc(sizeof(char *) * argc);
 
 	for (int i = 0; i < argc; ++i) {
 		argv_utf8[i] = wc_to_utf8(argv[i]);
@@ -82,9 +82,9 @@ int widechar_main(int argc, wchar_t **argv) {
 
 	if (err != OK) {
 		for (int i = 0; i < argc; ++i) {
-			delete[] argv_utf8[i];
+			memfree(argv_utf8[i]);
 		}
-		delete[] argv_utf8;
+		memfree(argv_utf8);
 
 		if (err == ERR_HELP) { // Returned by --help and --version, so success.
 			return EXIT_SUCCESS;
@@ -100,9 +100,9 @@ int widechar_main(int argc, wchar_t **argv) {
 	Main::cleanup();
 
 	for (int i = 0; i < argc; ++i) {
-		delete[] argv_utf8[i];
+		memfree(argv_utf8[i]);
 	}
-	delete[] argv_utf8;
+	memfree(argv_utf8);
 
 	return os.get_exit_code();
 }
