@@ -77,8 +77,8 @@
 #define GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS 32
 #define GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION 64
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 constexpr int COMPONENT_COUNT_FOR_ACCESSOR_TYPE[7] = {
 	1, 2, 3, 4, 4, 9, 16

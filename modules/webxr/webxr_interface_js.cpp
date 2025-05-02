@@ -45,7 +45,7 @@
 #include "servers/xr/xr_hand_tracker.h"
 
 #include <emscripten.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {
 	XRServer *xr_server = XRServer::get_singleton();

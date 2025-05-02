@@ -32,7 +32,6 @@
 
 #include "main/main.h"
 
-#include <string.h>
 #include <unistd.h>
 
 #if defined(SANITIZERS_ENABLED)

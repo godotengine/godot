@@ -34,7 +34,7 @@
 
 #ifdef WINDOWS_ENABLED
 
-#include <stdio.h>
+#include <cstdio>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
