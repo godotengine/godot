@@ -1,13 +1,12 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
 using Godot;
 using Godot.NativeInterop;
-using GodotTools.Core;
-using static GodotTools.Internals.Globals;
-using Microsoft.Build.Construction;
-using System.Collections.Generic;
-using System.Linq;
-using System;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace GodotTools.Internals
 {
@@ -77,85 +76,79 @@ namespace GodotTools.Internals
             string? slnParentDir = (string?)ProjectSettings.GetSetting("dotnet/project/solution_directory");
             if (string.IsNullOrEmpty(slnParentDir))
                 slnParentDir = "res://";
-            else if (!slnParentDir.StartsWith("res://", System.StringComparison.Ordinal))
+            else if (!slnParentDir.StartsWith("res://", StringComparison.Ordinal))
                 slnParentDir = "res://" + slnParentDir;
 
             // The csproj should be in the same folder as project.godot.
             string csprojParentDir = "res://";
 
-            _projectSlnPath = FindSolutionFileWithAssemblyName(slnParentDir, _projectAssemblyName);
-
+            // Set csproj path first and use it to find the sln/slnx file with the assembly
             _projectCsProjPath = Path.Combine(ProjectSettings.GlobalizePath(csprojParentDir),
                 string.Concat(_projectAssemblyName, ".csproj"));
+
+            _projectSlnPath = FindSolutionFileWithAssemblyName(slnParentDir, _projectAssemblyName);
         }
 
         private static string FindSolutionFileWithAssemblyName(string directory, string assemblyName)
         {
-            string globalizedPath = ProjectSettings.GlobalizePath(directory);
-            string[] solutionFiles = Directory.GetFiles(globalizedPath, "*.sln");
+            // Will convert ".." to load solutions from parent directory when appropriate
+            string slnAbsolutePath = Path.GetFullPath(ProjectSettings.GlobalizePath(directory));
 
-            if (solutionFiles.Length == 0)
+            List<string> solutionFilePaths = new();
+            solutionFilePaths.AddRange(Directory.GetFiles(slnAbsolutePath, "*.sln"));
+            solutionFilePaths.AddRange(Directory.GetFiles(slnAbsolutePath, "*.slnx"));
+
+            if (solutionFilePaths.Count == 0)
             {
-                return Path.Combine(globalizedPath, $"{assemblyName}.sln");
+                return Path.Combine(slnAbsolutePath, $"{assemblyName}.sln");
             }
 
-            List<string> matchingSolutions = new List<string>();
+            List<string> matchingSolutions = new();
 
-            foreach (string solutionPath in solutionFiles)
+            foreach (string solutionFilePath in solutionFilePaths)
             {
                 try
                 {
-                    var solution = SolutionFile.Parse(solutionPath);
+                    ISolutionSerializer? serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+                    if (serializer is null)
+                        continue;
 
-                    foreach (var project in solution.ProjectsInOrder)
+                    string? solutionDirectory = Path.GetDirectoryName(solutionFilePath);
+                    if (solutionDirectory is null)
+                        continue;
+
+                    var solution = serializer.OpenAsync(solutionFilePath, CancellationToken.None).Result;
+
+                    foreach (var project in solution.SolutionProjects)
                     {
-                        if (project.ProjectType == SolutionProjectType.SolutionFolder)
-                            continue;
+                        // project.FilePath can have \ as the path separator which, if present will prevent the string
+                        // comparison from working
+                        var projectFilePath = project.FilePath.Replace('\\', Path.DirectorySeparatorChar);
+                        var absoluteProjectFilePath = Path.GetFullPath(projectFilePath, solutionDirectory);
 
-                        if (File.Exists(project.AbsolutePath))
+                        if (string.Equals(absoluteProjectFilePath, _projectCsProjPath, StringComparison.Ordinal))
                         {
-                            var projectRoot = ProjectRootElement.Open(project.AbsolutePath);
-                            var assemblyNameProperty = projectRoot.Properties
-                                .FirstOrDefault(p => p.Name.Equals("AssemblyName", StringComparison.OrdinalIgnoreCase));
-
-                            if (assemblyNameProperty != null &&
-                                assemblyNameProperty.Value.Equals(assemblyName, StringComparison.OrdinalIgnoreCase))
-                            {
-                                matchingSolutions.Add(solutionPath);
-                                break;
-                            }
-
-                            if (assemblyNameProperty == null)
-                            {
-                                string projectNameWithoutExtension = Path.GetFileNameWithoutExtension(project.AbsolutePath);
-                                if (projectNameWithoutExtension.Equals(assemblyName, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    matchingSolutions.Add(solutionPath);
-                                    break;
-                                }
-                            }
+                            matchingSolutions.Add(solutionFilePath);
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
                     continue;
                 }
             }
 
-            if (matchingSolutions.Count == 1)
+            switch (matchingSolutions.Count)
             {
-                return matchingSolutions.Single();
+                case 1:
+                    return matchingSolutions[0];
+
+                case > 1:
+                    GD.PrintErr($"Multiple solutions containing a project with assembly name '{assemblyName}' were found in {slnAbsolutePath}. Please ensure only one solution contains the assembly.");
+                    break;
             }
-            else if (matchingSolutions.Count > 1)
-            {
-                GD.PrintErr($"Multiple solutions containing a project with assembly name '{assemblyName}' were found in {globalizedPath}. Please ensure only one solution contains the assembly.");
-                return Path.Combine(globalizedPath, $"{assemblyName}.sln");
-            }
-            else
-            {
-                return Path.Combine(globalizedPath, $"{assemblyName}.sln");
-            }
+
+            return Path.Combine(slnAbsolutePath, $"{assemblyName}.sln");
         }
 
         private static string? _projectAssemblyName;
