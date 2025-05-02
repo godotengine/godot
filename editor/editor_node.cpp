@@ -180,7 +180,7 @@
 #include "editor/gui/touch_actions_panel.h"
 #endif // ANDROID_ENABLED
 
-#include <stdlib.h>
+#include <cstdlib>
 
 EditorNode *EditorNode::singleton = nullptr;
 

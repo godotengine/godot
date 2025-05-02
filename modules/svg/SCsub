@@ -26,8 +26,6 @@ thirdparty_sources = [
     "src/loaders/raw/tvgRawLoader.cpp",
     # image loaders
     "src/loaders/external_png/tvgPngLoader.cpp",
-    "src/loaders/jpg/tvgJpgd.cpp",
-    "src/loaders/jpg/tvgJpgLoader.cpp",
     # renderer common
     "src/renderer/tvgAccessor.cpp",
     # "src/renderer/tvgAnimation.cpp",
@@ -62,6 +60,9 @@ thirdparty_sources = [
 if env["module_webp_enabled"]:
     thirdparty_sources += ["src/loaders/external_webp/tvgWebpLoader.cpp"]
     env_svg.Append(CPPDEFINES=["THORVG_WEBP_LOADER_SUPPORT"])
+if env["module_jpg_enabled"]:
+    thirdparty_sources += ["src/loaders/external_jpg/tvgJpgLoader.cpp"]
+    env_svg.Append(CPPDEFINES=["THORVG_JPG_LOADER_SUPPORT"])
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
@@ -82,7 +83,6 @@ env_thirdparty.Prepend(
         thirdparty_dir + "src/renderer/sw_engine",
         thirdparty_dir + "src/loaders/raw",
         thirdparty_dir + "src/loaders/external_png",
-        thirdparty_dir + "src/loaders/jpg",
     ]
 )
 if env["builtin_libpng"]:
@@ -91,6 +91,10 @@ if env["module_webp_enabled"]:
     env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_dir + "src/loaders/external_webp"])
     if env["builtin_libwebp"]:
         env_thirdparty.Prepend(CPPEXTPATH=["#thirdparty/libwebp/src"])
+if env["module_jpg_enabled"]:
+    env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_dir + "src/loaders/external_jpg"])
+    if env["builtin_libjpeg_turbo"]:
+        env_thirdparty.Prepend(CPPEXTPATH=["#thirdparty/libjpeg-turbo/src"])
 
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 env.modules_sources += thirdparty_obj
