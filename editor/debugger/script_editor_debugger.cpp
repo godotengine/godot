@@ -981,6 +981,34 @@ void ScriptEditorDebugger::_msg_embed_next_frame(uint64_t p_thread_id, const Arr
 	emit_signal(SNAME("embed_shortcut_requested"), EMBED_NEXT_FRAME);
 }
 
+void ScriptEditorDebugger::_msg_embed_input_override(uint64_t p_thread_id, const Array &p_data) {
+	emit_signal(SNAME("embed_shortcut_requested"), EMBED_INPUT_OVERRIDE);
+}
+
+void ScriptEditorDebugger::_msg_embed_2d_selection_override(uint64_t p_thread_id, const Array &p_data) {
+	emit_signal(SNAME("embed_shortcut_requested"), EMBED_2D_SELECTION_OVERRIDE);
+}
+
+void ScriptEditorDebugger::_msg_embed_3d_selection_override(uint64_t p_thread_id, const Array &p_data) {
+	emit_signal(SNAME("embed_shortcut_requested"), EMBED_3D_SELECTION_OVERRIDE);
+}
+
+void ScriptEditorDebugger::_msg_embed_toggle_camera_override(uint64_t p_thread_id, const Array &p_data) {
+	emit_signal(SNAME("embed_shortcut_requested"), EMBED_TOGGLE_CAMERA_OVERRIDE);
+}
+
+void ScriptEditorDebugger::_msg_embed_increase_speed(uint64_t p_thread_id, const Array &p_data) {
+	emit_signal(SNAME("embed_shortcut_requested"), EMBED_INCREASE_SPEED);
+}
+
+void ScriptEditorDebugger::_msg_embed_decrease_speed(uint64_t p_thread_id, const Array &p_data) {
+	emit_signal(SNAME("embed_shortcut_requested"), EMBED_DECREASE_SPEED);
+}
+
+void ScriptEditorDebugger::_msg_embed_reset_speed(uint64_t p_thread_id, const Array &p_data) {
+	emit_signal(SNAME("embed_shortcut_requested"), EMBED_RESET_SPEED);
+}
+
 void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread_id, const Array &p_data) {
 	emit_signal(SNAME("debug_data"), p_msg, p_data);
 
@@ -1035,6 +1063,13 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["window:title"] = &ScriptEditorDebugger::_msg_window_title;
 	parse_message_handlers["request_embed_suspend_toggle"] = &ScriptEditorDebugger::_msg_embed_suspend_toggle;
 	parse_message_handlers["request_embed_next_frame"] = &ScriptEditorDebugger::_msg_embed_next_frame;
+	parse_message_handlers["game_view_input_override"] = &ScriptEditorDebugger::_msg_embed_input_override;
+	parse_message_handlers["game_view_2d_selection_override"] = &ScriptEditorDebugger::_msg_embed_2d_selection_override;
+	parse_message_handlers["game_view_3d_selection_override"] = &ScriptEditorDebugger::_msg_embed_3d_selection_override;
+	parse_message_handlers["game_view_toggle_camera_override"] = &ScriptEditorDebugger::_msg_embed_toggle_camera_override;
+	parse_message_handlers["game_view_increase_speed"] = &ScriptEditorDebugger::_msg_embed_increase_speed;
+	parse_message_handlers["game_view_decrease_speed"] = &ScriptEditorDebugger::_msg_embed_decrease_speed;
+	parse_message_handlers["game_view_reset_speed"] = &ScriptEditorDebugger::_msg_embed_reset_speed;
 }
 
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
