@@ -429,6 +429,14 @@ void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importe
 	}
 }
 
+void EditorPlugin::add_texture_post_import_plugin(const Ref<EditorTexturePostImportPlugin> &p_importer, bool p_first_priority) {
+	ResourceImporterTexture::get_singleton()->add_post_import_plugin(p_importer, p_first_priority);
+}
+
+void EditorPlugin::remove_texture_post_import_plugin(const Ref<EditorTexturePostImportPlugin> &p_importer) {
+	ResourceImporterTexture::get_singleton()->remove_post_import_plugin(p_importer);
+}
+
 void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
 	ERR_FAIL_COND(p_exporter.is_null());
 	EditorExport::get_singleton()->add_export_plugin(p_exporter);
@@ -618,6 +626,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_translation_parser_plugin", "parser"), &EditorPlugin::remove_translation_parser_plugin);
 	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer", "first_priority"), &EditorPlugin::add_import_plugin, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer"), &EditorPlugin::remove_import_plugin);
+	ClassDB::bind_method(D_METHOD("add_texture_post_import_plugin", "importer", "first_priority"), &EditorPlugin::add_texture_post_import_plugin, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_texture_post_import_plugin", "importer"), &EditorPlugin::remove_texture_post_import_plugin);
 	ClassDB::bind_method(D_METHOD("add_scene_format_importer_plugin", "scene_format_importer", "first_priority"), &EditorPlugin::add_scene_format_importer_plugin, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_scene_format_importer_plugin", "scene_format_importer"), &EditorPlugin::remove_scene_format_importer_plugin);
 	ClassDB::bind_method(D_METHOD("add_scene_post_import_plugin", "scene_import_plugin", "first_priority"), &EditorPlugin::add_scene_post_import_plugin, DEFVAL(false));
