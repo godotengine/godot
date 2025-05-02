@@ -66,8 +66,61 @@ void remove_print_handler(const PrintHandlerList *p_handler) {
 	ERR_FAIL_NULL(l);
 }
 
+// Add a helper function to detect when print_rich should be used instead of print
+bool _should_use_rich_print(const String &p_string) {
+	// Add detection logic here - this is where we'd detect the device ID case
+	// This implementation looks for specific patterns that might indicate device IDs
+	// or other content that needs rich print processing
+
+	// Check for special characters or formats commonly found in device IDs
+	// 1. Detecting hexadecimal patterns that might be device IDs (common in Windows)
+	if (p_string.contains("device") && p_string.contains(":")) {
+		return true;
+	}
+	
+	// 2. Check for strings with both numbers and special characters in specific patterns
+	static const char *device_id_patterns[] = {
+		"vid_", "pid_", "uid", "uuid", "hwid", "serialnumber"
+	};
+	
+	for (int i = 0; i < sizeof(device_id_patterns) / sizeof(device_id_patterns[0]); i++) {
+		if (p_string.to_lower().contains(device_id_patterns[i])) {
+			return true;
+		}
+	}
+	
+	// 3. If the string has an unusual byte pattern (common in binary device IDs)
+	bool has_numbers = false;
+	bool has_letters = false;
+	bool has_special = false;
+	
+	for (int i = 0; i < p_string.length(); i++) {
+		char32_t c = p_string[i];
+		if (c >= '0' && c <= '9') {
+			has_numbers = true;
+		} else if ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+			has_letters = true;
+		} else if (c == ':' || c == '-' || c == '_' || c == '\\') {
+			has_special = true;
+		}
+		
+		// If we have a typical device ID pattern (hex digits with separators)
+		if (has_numbers && has_letters && has_special) {
+			return true;
+		}
+	}
+	
+	return false;
+}
+
 void __print_line(const String &p_string) {
 	if (!CoreGlobals::print_line_enabled) {
+		return;
+	}
+
+	// Check if this should use rich print instead
+	if (_should_use_rich_print(p_string)) {
+		__print_line_rich(p_string);
 		return;
 	}
 
