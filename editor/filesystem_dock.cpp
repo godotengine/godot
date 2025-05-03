@@ -714,7 +714,7 @@ void FileSystemDock::_set_current_path_line_edit_text(const String &p_path) {
 	}
 }
 
-void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites) {
+void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites, bool p_grab_focus) {
 	String target_path = p_path;
 	bool is_directory = false;
 
@@ -767,9 +767,15 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 			}
 			item = item->get_next();
 		}
+		if (p_grab_focus) {
+			tree->grab_focus();
+		}
 	} else {
 		(*directory_ptr)->select(0);
 		_update_file_list(false);
+		if (p_grab_focus) {
+			files->grab_focus();
+		}
 	}
 	tree->ensure_cursor_is_visible();
 }
@@ -806,10 +812,10 @@ bool FileSystemDock::_update_filtered_items(TreeItem *p_tree_item) {
 
 void FileSystemDock::navigate_to_path(const String &p_path) {
 	file_list_search_box->clear();
-	_navigate_to_path(p_path);
-
-	// Ensure that the FileSystem dock is visible.
+	// Try to set the FileSystem dock visible.
 	EditorDockManager::get_singleton()->focus_dock(this);
+	_navigate_to_path(p_path, false, is_visible_in_tree());
+
 	import_dock_needs_update = true;
 	_update_import_dock();
 }
