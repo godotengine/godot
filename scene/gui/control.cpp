@@ -33,6 +33,7 @@
 #include "container.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "core/string/translation_server.h"
@@ -295,6 +296,34 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 	ERR_MAIN_THREAD_GUARD_V(false);
 	String name = p_name;
 
+	Ref<Script> scr = get_script();
+	if (scr.is_valid() && scr->is_valid() && scr->has_themed_property(p_name)) {
+		Script::ThemedPropertyInfo t_info = scr->get_themed_property(p_name);
+		switch (t_info.theme_item_type) {
+			case Script::ThemedPropertyInfo::DATA_TYPE_COLOR:
+				add_theme_color_override(p_name, p_value);
+				break;
+			case Script::ThemedPropertyInfo::DATA_TYPE_CONSTANT:
+				add_theme_constant_override(p_name, p_value);
+				break;
+			case Script::ThemedPropertyInfo::DATA_TYPE_FONT:
+				add_theme_constant_override(p_name, p_value);
+				break;
+			case Script::ThemedPropertyInfo::DATA_TYPE_FONT_SIZE:
+				add_theme_font_size_override(p_name, p_value);
+				break;
+			case Script::ThemedPropertyInfo::DATA_TYPE_ICON:
+				add_theme_icon_override(p_name, p_value);
+				break;
+			case Script::ThemedPropertyInfo::DATA_TYPE_STYLEBOX:
+				add_theme_style_override(p_name, p_value);
+				break;
+			default:
+				break;
+		}
+		return true;
+	}
+
 	if (!name.begins_with("theme_override")) {
 		return false;
 	}
@@ -400,6 +429,11 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	ERR_MAIN_THREAD_GUARD;
 	List<ThemeDB::ThemeItemBind> theme_items;
 	ThemeDB::get_singleton()->get_class_items(get_class_name(), &theme_items, true);
+
+	Ref<Script> scr = get_script();
+	if (scr.is_valid() && scr->is_valid()) {
+		ThemeDB::get_singleton()->get_script_items(scr, &theme_items, true);
+	}
 
 	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Theme Overrides", "theme_override_"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
