@@ -2260,6 +2260,26 @@ String OS_Windows::get_processor_name() const {
 	}
 }
 
+String OS_Windows::get_unique_id() const {
+	HW_PROFILE_INFOA HwProfInfo;
+	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
+	
+	// Create a string from the raw GUID data first
+	String guid_str = String(HwProfInfo.szHwProfileGuid);
+	
+	// Remove any potential null characters within the string
+	int actual_len = 0;
+	for (int i = 0; i < guid_str.length(); i++) {
+		if (guid_str[i] == 0) {
+			break;
+		}
+		actual_len++;
+	}
+	//IMPORTANT SAFETY: WINDOWS API WAS RETURNING A GUID WITH NULL TERMINATION
+	// Return the properly trimmed string
+	return guid_str.substr(0, actual_len);
+}
+
 void OS_Windows::run() {
 	if (!main_loop) {
 		return;
@@ -2428,11 +2448,6 @@ String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
 	return get_data_path().path_join(p_user_dir).replace_char('\\', '/');
 }
 
-String OS_Windows::get_unique_id() const {
-	HW_PROFILE_INFOA HwProfInfo;
-	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
-	return String::ascii(Span((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN));
-}
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "system_fonts") {
