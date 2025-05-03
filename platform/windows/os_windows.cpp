@@ -2263,12 +2263,9 @@ String OS_Windows::get_processor_name() const {
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
-
-	// Windows API returns a null-terminated GUID string
-	String guid_str = String(HwProfInfo.szHwProfileGuid);
-
+	
 	// IMPORTANT SAFETY: WINDOWS API WAS RETURNING A GUID WITH NULL TERMINATION
-	return guid_str;
+	return String(HwProfInfo.szHwProfileGuid);
 }
 
 void OS_Windows::run() {
@@ -2438,8 +2435,6 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
 	return get_data_path().path_join(p_user_dir).replace_char('\\', '/');
 }
-
-
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "system_fonts") {
 		return dwrite_init;
