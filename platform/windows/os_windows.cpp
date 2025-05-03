@@ -2263,11 +2263,11 @@ String OS_Windows::get_processor_name() const {
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
-	
+
 	// Windows API returns a null-terminated GUID string
 	String guid_str = String(HwProfInfo.szHwProfileGuid);
-	
-	//IMPORTANT SAFETY: WINDOWS API WAS RETURNING A GUID WITH NULL TERMINATION
+
+	// IMPORTANT SAFETY: WINDOWS API WAS RETURNING A GUID WITH NULL TERMINATION
 	return guid_str;
 }
 
