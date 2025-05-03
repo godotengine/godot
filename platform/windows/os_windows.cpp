@@ -2264,20 +2264,11 @@ String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
 	
-	// Create a string from the raw GUID data first
+	// Windows API returns a null-terminated GUID string
 	String guid_str = String(HwProfInfo.szHwProfileGuid);
 	
-	// Remove any potential null characters within the string
-	int actual_len = 0;
-	for (int i = 0; i < guid_str.length(); i++) {
-		if (guid_str[i] == 0) {
-			break;
-		}
-		actual_len++;
-	}
 	//IMPORTANT SAFETY: WINDOWS API WAS RETURNING A GUID WITH NULL TERMINATION
-	// Return the properly trimmed string
-	return guid_str.substr(0, actual_len);
+	return guid_str;
 }
 
 void OS_Windows::run() {
