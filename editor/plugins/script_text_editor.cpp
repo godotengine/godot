@@ -1975,6 +1975,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	String text_to_drop;
 
 	const bool drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	const bool drop_export_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::ALT);
 	const bool allow_uid = Input::get_singleton()->is_key_pressed(Key::SHIFT) != bool(EDITOR_GET("text_editor/behavior/files/drop_preload_resources_as_uid"));
 	const String &line = te->get_line(drop_at_line);
 	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
@@ -2044,7 +2045,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		Array nodes = d["nodes"];
 
-		if (drop_modifier_pressed) {
+		if (drop_modifier_pressed || drop_export_modifier_pressed) {
 			const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
 
 			for (int i = 0; i < nodes.size(); i++) {
@@ -2070,8 +2071,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				}
 
 				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
-				if (use_type) {
-					StringName class_name = node->get_class_name();
+				StringName class_name;
+				if (use_type || drop_export_modifier_pressed) {
+					class_name = node->get_class_name();
 					Ref<Script> node_script = node->get_script();
 					if (node_script.is_valid()) {
 						StringName global_node_script_name = node_script->get_global_name();
@@ -2079,9 +2081,16 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 							class_name = global_node_script_name;
 						}
 					}
-					text_to_drop += vformat("@onready var %s: %s = %c%s\n", variable_name, class_name, is_unique ? '%' : '$', path);
-				} else {
-					text_to_drop += vformat("@onready var %s = %c%s\n", variable_name, is_unique ? '%' : '$', path);
+				}
+
+				if (drop_modifier_pressed) {
+					if (use_type) {
+						text_to_drop += vformat("@onready var %s: %s = %c%s\n", variable_name, class_name, is_unique ? '%' : '$', path);
+					} else {
+						text_to_drop += vformat("@onready var %s = %c%s\n", variable_name, is_unique ? '%' : '$', path);
+					}
+				} else if (drop_export_modifier_pressed) {
+					text_to_drop += vformat("@export var %s: %s\n", variable_name, class_name);
 				}
 			}
 		} else {
