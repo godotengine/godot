@@ -296,24 +296,15 @@ String &String::operator+=(char32_t p_char) {
 	return *this;
 }
 
-bool String::operator==(const char *p_str) const {
+bool String::operator==(Span<char> p_str) const {
 	// compare Latin-1 encoded c-string
-	int len = strlen(p_str);
-
-	if (length() != len) {
+	if ((uint64_t)length() != p_str.size()) {
 		return false;
 	}
-	if (is_empty()) {
-		return true;
-	}
-
-	int l = length();
-
-	const char32_t *dst = get_data();
 
 	// Compare char by char
-	for (int i = 0; i < l; i++) {
-		if ((char32_t)p_str[i] != dst[i]) {
+	for (uint64_t i = 0; i < p_str.size(); i++) {
+		if ((char32_t)p_str.ptr()[i] != ptr()[i]) {
 			return false;
 		}
 	}

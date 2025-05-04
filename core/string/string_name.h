@@ -164,7 +164,9 @@ public:
 		p_name._data = nullptr;
 		return *this;
 	}
-	StringName(const char *p_name, bool p_static = false);
+	StringName(Span<char> p_name, bool p_static = false);
+	_FORCE_INLINE_ StringName(const char *p_name, bool p_static = false) :
+			StringName(Span(p_name, strlen(p_name)), p_static) {}
 	StringName(const StringName &p_name);
 	StringName(StringName &&p_name) {
 		_data = p_name._data;
