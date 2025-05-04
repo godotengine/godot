@@ -891,8 +891,7 @@ if env.msvc and not methods.using_clang(env):  # MSVC
         env.AppendUnique(LINKFLAGS=["/WX"])
 
 else:  # GCC, Clang
-    common_warnings = ["-Wenum-conversion"]
-
+    common_warnings = []
     if methods.using_gcc(env):
         common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
         if cc_version_major < 11:
@@ -906,6 +905,7 @@ else:  # GCC, Clang
         # We often implement `operator<` for structs of pointers as a requirement
         # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
         common_warnings += ["-Wno-ordered-compare-function-pointers"]
+        common_warnings += ["-Wenum-conversion"]
 
     # clang-cl will interpret `-Wall` as `-Weverything`, workaround with compatibility cast.
     env["WARNLEVEL"] = "-Wall" if not env.msvc else "-W3"
