@@ -1903,11 +1903,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	// Ensure this is allocated so we don't get a stutter the first time an object with SSS appears on screen.
-	if (global_surface_data.sss_used) {
+	if (global_surface_data.sss_used && !is_reflection_probe) {
 		rb_data->ensure_specular();
 	}
 
-	if (global_surface_data.normal_texture_used) {
+	if (global_surface_data.normal_texture_used && !is_reflection_probe) {
 		rb_data->ensure_normal_roughness_texture();
 	}
 
