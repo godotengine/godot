@@ -256,17 +256,17 @@ TEST_CASE("[TestStyleBoxFlat] set_anti_aliased, is_anti_aliased") {
 TEST_CASE("[TestStyleBoxFlat] set_aa_size, get_aa_size") {
 	Ref<StyleBoxFlat> style_box_flat = memnew(StyleBoxFlat);
 
-	style_box_flat->set_aa_size(5.0f);
-	CHECK(style_box_flat->get_aa_size() == 5.0f);
+	style_box_flat->set_aa_size(5.0);
+	CHECK(style_box_flat->get_aa_size() == doctest::Approx(5.0));
 
-	style_box_flat->set_aa_size(0.005f);
-	CHECK(style_box_flat->get_aa_size() == 0.01f);
+	style_box_flat->set_aa_size(0.005);
+	CHECK(style_box_flat->get_aa_size() == doctest::Approx(0.01));
 
-	style_box_flat->set_aa_size(-1.0f);
-	CHECK(style_box_flat->get_aa_size() == 0.01f);
+	style_box_flat->set_aa_size(-1.0);
+	CHECK(style_box_flat->get_aa_size() == doctest::Approx(0.01));
 
-	style_box_flat->set_aa_size(50.0f);
-	CHECK(style_box_flat->get_aa_size() == 10.0f);
+	style_box_flat->set_aa_size(50.0);
+	CHECK(style_box_flat->get_aa_size() == doctest::Approx(10.0));
 }
 
 TEST_CASE("[TestStyleBoxFlat] get_draw_rect") {
