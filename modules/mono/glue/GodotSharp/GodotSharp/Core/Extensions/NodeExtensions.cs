@@ -48,7 +48,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Similar to <see cref="GetNode"/>, but does not log an error if <paramref name="path"/>
+        /// Similar to <see cref="GetNode(NodePath)"/>, but does not log an error if <paramref name="path"/>
         /// does not point to a valid <see cref="Node"/>.
         /// </summary>
         /// <example>
@@ -86,7 +86,7 @@ namespace Godot
         /// Returns a child node by its index (see <see cref="GetChildCount"/>).
         /// This method is often used for iterating all children of a node.
         /// Negative indices access the children from the last one.
-        /// To access a child node via its name, use <see cref="GetNode"/>.
+        /// To access a child node via its name, use <see cref="GetNode(NodePath)"/>.
         /// </summary>
         /// <seealso cref="GetChildOrNull{T}(int, bool)"/>
         /// <param name="idx">Child index.</param>
@@ -110,7 +110,7 @@ namespace Godot
         /// Returns a child node by its index (see <see cref="GetChildCount"/>).
         /// This method is often used for iterating all children of a node.
         /// Negative indices access the children from the last one.
-        /// To access a child node via its name, use <see cref="GetNode"/>.
+        /// To access a child node via its name, use <see cref="GetNode(NodePath)"/>.
         /// </summary>
         /// <seealso cref="GetChild{T}(int, bool)"/>
         /// <param name="idx">Child index.</param>

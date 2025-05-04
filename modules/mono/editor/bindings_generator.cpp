@@ -2400,7 +2400,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	int method_bind_count = 0;
 	for (const MethodInterface &imethod : itype.methods) {
-		Error method_err = _generate_cs_method(itype, imethod, method_bind_count, output, false);
+		Error method_err = _generate_cs_method(itype, imethod, method_bind_count, output, false, false);
 		ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
 				"Failed to generate method '" + imethod.name + "' for class '" + itype.name + "'.");
 		if (imethod.is_internal) {
@@ -2408,9 +2408,17 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			continue;
 		}
 
-		method_err = _generate_cs_method(itype, imethod, method_bind_count, output, true);
+		method_err = _generate_cs_method(itype, imethod, method_bind_count, output, true, false);
 		ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
 				"Failed to generate span overload method '" + imethod.name + "' for class '" + itype.name + "'.");
+
+		method_err = _generate_cs_method(itype, imethod, method_bind_count, output, false, true);
+		ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
+				"Failed to generate string overload method '" + imethod.name + "' for class '" + itype.name + "'.");
+
+		method_err = _generate_cs_method(itype, imethod, method_bind_count, output, true, true);
+		ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
+				"Failed to generate span and string overload method '" + imethod.name + "' for class '" + itype.name + "'.");
 	}
 
 	// Signals
@@ -2838,7 +2846,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	return OK;
 }
 
-Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output, bool p_use_span) {
+Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output, bool p_use_span, bool p_use_string) {
 	const TypeInterface *return_type = _get_type_or_singleton_or_null(p_imethod.return_type);
 	ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + p_imethod.return_type.cname + "' was not found.");
 
@@ -2851,11 +2859,13 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 						"' from the editor API. Core API cannot have dependencies on the editor API.");
 	}
 
-	if (p_imethod.is_virtual && p_use_span) {
+	if (p_imethod.is_virtual && (p_use_span || p_use_string)) {
 		return OK;
 	}
 
+	bool decrease_method_bind_count = false;
 	bool has_span_argument = false;
+	bool has_string_argument = false;
 
 	if (p_use_span) {
 		if (p_imethod.is_vararg) {
@@ -2876,8 +2886,39 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			// Span overloads use the same method bind as the array overloads.
 			// Since both overloads are generated one after the other, we can decrease the count here
 			// to ensure the span overload uses the same method bind.
-			p_method_bind_count--;
+			decrease_method_bind_count = true;
 		}
+	}
+
+	if (p_use_string) {
+		for (const ArgumentInterface &iarg : p_imethod.arguments) {
+			const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
+			ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
+
+			if (arg_type->cname == name_cache.type_StringName || arg_type->cname == name_cache.type_NodePath) {
+				has_string_argument = true;
+				break;
+			}
+		}
+
+		if (has_string_argument) {
+			// string overloads use the same method bind as the array overloads.
+			// Since both overloads are generated one after the other, we can decrease the count here
+			// to ensure the string overload uses the same method bind.
+			decrease_method_bind_count = true;
+		}
+	}
+
+	if (p_use_span && !has_span_argument) {
+		return OK;
+	}
+
+	if (p_use_string && !has_string_argument) {
+		return OK;
+	}
+
+	if (decrease_method_bind_count) {
+		p_method_bind_count--;
 	}
 
 	String method_bind_field = CS_STATIC_FIELD_METHOD_BIND_PREFIX + itos(p_method_bind_count);
@@ -2927,6 +2968,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
 
 		bool use_span_for_arg = p_use_span && arg_type->is_span_compatible;
+		bool use_string_for_arg = p_use_string && (arg_type->cname == name_cache.type_StringName || arg_type->cname == name_cache.type_NodePath);
 
 		// Add the current arguments to the signature
 		// If the argument has a default value which is not a constant, we will make it Nullable
@@ -2941,6 +2983,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			if (use_span_for_arg) {
 				arguments_sig += arg_type->c_type_in;
+			} else if (use_string_for_arg) {
+				arguments_sig += "string";
 			} else {
 				arguments_sig += arg_cs_type;
 			}
@@ -2953,7 +2997,9 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			arguments_sig += iarg.name;
 
-			if (!p_use_span && !p_imethod.is_compat && iarg.default_argument.size()) {
+			if (use_string_for_arg && !p_imethod.is_compat && iarg.default_argument.size()) {
+				arguments_sig += " = \"\"";
+			} else if (!p_use_span && !p_imethod.is_compat && iarg.default_argument.size()) {
 				if (iarg.def_param_mode != ArgumentInterface::CONSTANT) {
 					arguments_sig += " = null";
 				} else {
@@ -2964,7 +3010,18 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		icall_params += ", ";
 
-		if (iarg.default_argument.size() && iarg.def_param_mode != ArgumentInterface::CONSTANT && !use_span_for_arg) {
+		if (use_string_for_arg) {
+			String arg_string_native_local = iarg.name + "NativeValue";
+
+			cs_in_statements << INDENT2 << "using " << arg_type->c_type << " " << arg_string_native_local << " = ";
+			if (arg_type->cname == name_cache.type_StringName) {
+				cs_in_statements << C_CLASS_NATIVE_FUNCS << ".godotsharp_string_name_new_from_string(" << iarg.name << ");\n";
+			} else if (arg_type->cname == name_cache.type_NodePath) {
+				cs_in_statements << C_CLASS_NATIVE_FUNCS << ".godotsharp_node_path_new_from_string(" << iarg.name << ");\n";
+			}
+
+			icall_params += arg_string_native_local;
+		} else if (iarg.default_argument.size() && iarg.def_param_mode != ArgumentInterface::CONSTANT && !use_span_for_arg) {
 			// The default value of an argument must be constant. Otherwise we make it Nullable and do the following:
 			// Type arg_in = arg.HasValue ? arg.Value : <non-const default value>;
 			String arg_or_defval_local = iarg.name;
@@ -3024,10 +3081,6 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		cs_in_expr_is_unsafe |= arg_type->cs_in_expr_is_unsafe;
 	}
 
-	if (p_use_span && !has_span_argument) {
-		return OK;
-	}
-
 	// Collect caller name for MethodBind
 	if (p_imethod.is_vararg) {
 		icall_params += ", (godot_string_name)MethodName." + p_imethod.proxy_name + ".NativeValue";
@@ -3035,7 +3088,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 	// Generate method
 	{
-		if (!p_imethod.is_virtual && !p_imethod.requires_object_call && !p_use_span) {
+		if (!p_imethod.is_virtual && !p_imethod.requires_object_call && !p_use_span && !p_use_string) {
 			p_output << MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
 					 << INDENT1 "private static readonly IntPtr " << method_bind_field << " = ";
 
@@ -5173,6 +5226,14 @@ bool BindingsGenerator::_method_has_conflicting_signature(const MethodInterface 
 		const ArgumentInterface &iarg_left = *left_itr;
 		const ArgumentInterface &iarg_right = *right_itr;
 
+		if (iarg_right.type.cname == name_cache.type_String && (iarg_left.type.cname == name_cache.type_StringName || iarg_left.type.cname == name_cache.type_NodePath)) {
+			// Conflicts with string overload method.
+			return true;
+		}
+		if (iarg_left.type.cname == name_cache.type_String && (iarg_right.type.cname == name_cache.type_StringName || iarg_right.type.cname == name_cache.type_NodePath)) {
+			// Conflicts with string overload method.
+			return true;
+		}
 		if (iarg_left.type.cname != iarg_right.type.cname) {
 			// Different types for arguments in the same position, so no conflict.
 			return false;

@@ -16,7 +16,7 @@ namespace Godot
         public string Text { get; }
 
         /// <summary>
-        /// If defined, used to fetch an icon for the button via <see cref="Control.GetThemeIcon"/>,
+        /// If defined, used to fetch an icon for the button via <see cref="Control.GetThemeIcon(StringName,StringName)"/>,
         /// from the <code>EditorIcons</code> theme type.
         /// </summary>
         public string? Icon { get; init; }
