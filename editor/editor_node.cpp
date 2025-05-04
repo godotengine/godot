@@ -4807,14 +4807,19 @@ void EditorNode::_update_recent_scenes() {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 	recent_scenes->clear();
 
-	String path;
-	for (int i = 0; i < rc.size(); i++) {
-		path = rc[i];
-		recent_scenes->add_item(path.replace("res://", ""), i);
-	}
+	if (rc.size() == 0) {
+		recent_scenes->add_item(TTR("No Recent Scenes"), -1);
+		recent_scenes->set_item_disabled(-1, true);
+	} else {
+		String path;
+		for (int i = 0; i < rc.size(); i++) {
+			path = rc[i];
+			recent_scenes->add_item(path.replace("res://", ""), i);
+		}
 
-	recent_scenes->add_separator();
-	recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTRC("Clear Recent Scenes")));
+		recent_scenes->add_separator();
+		recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTRC("Clear Recent Scenes")));
+	}
 	recent_scenes->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 	recent_scenes->reset_size();
 }
