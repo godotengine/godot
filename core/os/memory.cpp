@@ -32,8 +32,7 @@
 
 #include "core/templates/safe_refcount.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
 
 void *operator new(size_t p_size, const char *p_description) {
 	return Memory::alloc_static(p_size, false);

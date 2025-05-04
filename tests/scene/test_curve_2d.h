@@ -236,6 +236,19 @@ TEST_CASE("[Curve2D] Sampling") {
 		CHECK(curve->get_closest_point(Vector2(50, 50)) == Vector2(0, 50));
 		CHECK(curve->get_closest_point(Vector2(0, 100)) == Vector2(0, 50));
 	}
+
+	SUBCASE("sample_baked_with_rotation, linear curve with control1 = end and control2 = begin") {
+		// Regression test for issue #88923
+		// The Vector2s that aren't relevant to the issue have x = 2 or x = -2.
+		// They're just set to make collisions with corner cases less likely
+		// that involve zero-vector control points.
+		Ref<Curve2D> cross_linear_curve = memnew(Curve2D);
+		cross_linear_curve->set_bake_interval(0.5);
+		cross_linear_curve->add_point(Vector2(), Vector2(-2, 0), Vector2(1, 0));
+		cross_linear_curve->add_point(Vector2(1, 0), Vector2(-1, 0), Vector2(2, 0));
+		CHECK(cross_linear_curve->get_baked_points().size() >= 3);
+		CHECK(cross_linear_curve->sample_baked_with_rotation(cross_linear_curve->get_closest_offset(Vector2(0.5, 0))).is_equal_approx(Transform2D(Vector2(1, 0), Vector2(0, 1), Vector2(0.5, 0))));
+	}
 }
 
 TEST_CASE("[Curve2D] Tessellation") {
