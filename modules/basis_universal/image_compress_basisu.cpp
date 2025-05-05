@@ -135,7 +135,7 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 	if (is_hdr) {
 		decompress_format = BASIS_DECOMPRESS_HDR_RGB;
 		params.m_hdr = true;
-		params.m_uastc_hdr_4x4_options.set_quality_level(0);
+		params.m_uastc_hdr_4x4_options.set_quality_level(p_basisu_params.uastc_level);
 
 	} else {
 		switch (p_channels) {
