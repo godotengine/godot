@@ -293,8 +293,6 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 		motion_B = B->get_motion();
 	}
 
-	bool prev_collided = collided;
-
 	collided = GodotCollisionSolver2D::solve(shape_A_ptr, xform_A, motion_A, shape_B_ptr, xform_B, motion_B, _add_contact, this, &sep_axis);
 	if (!collided) {
 		oneway_disabled = false;
@@ -316,41 +314,39 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 		return false;
 	}
 
-	if (!prev_collided) {
-		if (shape_B_ptr->allows_one_way_collision() && A->is_shape_set_as_one_way_collision(shape_A)) {
-			Vector2 direction = xform_A.columns[1].normalized();
-			bool valid = false;
-			for (int i = 0; i < contact_count; i++) {
-				Contact &c = contacts[i];
-				if (c.normal.dot(direction) > -CMP_EPSILON) { // Greater (normal inverted).
-					continue;
-				}
-				valid = true;
-				break;
+	if (shape_B_ptr->allows_one_way_collision() && A->is_shape_set_as_one_way_collision(shape_A)) {
+		Vector2 direction = xform_A.columns[1].normalized();
+		bool valid = false;
+		for (int i = 0; i < contact_count; i++) {
+			Contact &c = contacts[i];
+			if (c.normal.dot(direction) > -CMP_EPSILON) { // Greater (normal inverted).
+				continue;
 			}
-			if (!valid) {
-				collided = false;
-				oneway_disabled = true;
-				return false;
-			}
+			valid = true;
+			break;
 		}
+		if (!valid) {
+			collided = false;
+			oneway_disabled = true;
+			return false;
+		}
+	}
 
-		if (shape_A_ptr->allows_one_way_collision() && B->is_shape_set_as_one_way_collision(shape_B)) {
-			Vector2 direction = xform_B.columns[1].normalized();
-			bool valid = false;
-			for (int i = 0; i < contact_count; i++) {
-				Contact &c = contacts[i];
-				if (c.normal.dot(direction) < CMP_EPSILON) { // Less (normal ok).
-					continue;
-				}
-				valid = true;
-				break;
+	if (shape_A_ptr->allows_one_way_collision() && B->is_shape_set_as_one_way_collision(shape_B)) {
+		Vector2 direction = xform_B.columns[1].normalized();
+		bool valid = false;
+		for (int i = 0; i < contact_count; i++) {
+			Contact &c = contacts[i];
+			if (c.normal.dot(direction) < CMP_EPSILON) { // Less (normal ok).
+				continue;
 			}
-			if (!valid) {
-				collided = false;
-				oneway_disabled = true;
-				return false;
-			}
+			valid = true;
+			break;
+		}
+		if (!valid) {
+			collided = false;
+			oneway_disabled = true;
+			return false;
 		}
 	}
 
