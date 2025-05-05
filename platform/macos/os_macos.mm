@@ -37,6 +37,7 @@
 #import "macos_terminal_logger.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/profiling.h"
 #include "core/version_generated.gen.h"
 #include "main/main.h"
 
@@ -51,6 +52,9 @@ void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopAc
 
 	@autoreleasepool {
 		@try {
+			GodotProfileFrameMark;
+			GodotProfileZone("OS_MacOS::pre_wait_observer_cb");
+
 			// Get rid of pending events.
 			DisplayServer *ds = DisplayServer::get_singleton();
 			DisplayServerMacOS *ds_mac = Object::cast_to<DisplayServerMacOS>(ds);
@@ -859,6 +863,8 @@ void OS_MacOS::run() {
 }
 
 void OS_MacOS::start_main() {
+	godot_init_profiler();
+
 	Error err;
 	@autoreleasepool {
 		err = Main::setup(execpath, argc, argv);

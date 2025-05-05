@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_ios.mm                                                          */
+/*  profiling.cpp                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,95 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "os_ios.h"
+#include "profiling.h"
 
-#include "core/profiling.h"
-#include "core/string/ustring.h"
-#include "main/main.h"
-
-#include <unistd.h>
-#include <cstdio>
-
-static OS_IOS *os = nullptr;
-
-int add_path(int p_argc, char **p_args) {
-	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
-	if (!str) {
-		return p_argc;
-	}
-
-	p_args[p_argc++] = (char *)"--path";
-	p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
-	p_args[p_argc] = nullptr;
-
-	return p_argc;
+#if defined(GODOT_USE_TRACY)
+void godot_init_profiler() {
+	// Send our first event to tracy; otherwise it doesn't start collecting data.
+	// FrameMark is kind of fitting because it communicates "this is where we started tracing".
+	FrameMark;
 }
+#elif defined(GODOT_USE_PERFETTO)
+PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
-int add_cmdline(int p_argc, char **p_args) {
-	NSArray *arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_cmdline"];
-	if (!arr) {
-		return p_argc;
-	}
+void godot_init_profiler() {
+	perfetto::TracingInitArgs args;
 
-	for (NSUInteger i = 0; i < [arr count]; i++) {
-		NSString *str = [arr objectAtIndex:i];
-		if (!str) {
-			continue;
-		}
-		p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
-	}
+	args.backends |= perfetto::kSystemBackend;
 
-	p_args[p_argc] = nullptr;
-
-	return p_argc;
+	perfetto::Tracing::Initialize(args);
+	perfetto::TrackEvent::Register();
 }
-
-int ios_main(int argc, char **argv) {
-	godot_init_profiler();
-
-	size_t len = strlen(argv[0]);
-
-	while (len--) {
-		if (argv[0][len] == '/') {
-			break;
-		}
-	}
-
-	if (len >= 0) {
-		char path[512];
-		memcpy(path, argv[0], len > sizeof(path) ? sizeof(path) : len);
-		path[len] = 0;
-		chdir(path);
-	}
-
-	os = new OS_IOS();
-
-	// We must override main when testing is enabled
-	TEST_MAIN_OVERRIDE
-
-	char *fargv[64];
-	for (int i = 0; i < argc; i++) {
-		fargv[i] = argv[i];
-	}
-	fargv[argc] = nullptr;
-	argc = add_path(argc, fargv);
-	argc = add_cmdline(argc, fargv);
-
-	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
-
-	if (err != OK) {
-		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return EXIT_SUCCESS;
-		}
-		return EXIT_FAILURE;
-	}
-
-	os->initialize_modules();
-
-	return os->get_exit_code();
+#else
+void godot_init_profiler() {
+	// Stub
 }
-
-void ios_finish() {
-	Main::cleanup();
-	delete os;
-}
+#endif
