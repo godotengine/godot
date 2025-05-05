@@ -38,7 +38,7 @@
 			<return type="Array" />
 			<description>
 				Receive the next queued event from the host since the last call to [method service]. The returned [Array] will have 4 elements. An [enum EventType], the [ENetPacketPeer] which generated the event, the event associated data (if any), the event associated channel (if any). If the generated event is [constant EVENT_RECEIVE], the received packet will be queued to the associated [ENetPacketPeer].
-				For each call to [method service], call this method until events have been exhausted. This is typically used by the caller to process multiple events per frame/tick without calling [method service], which would otherwise allow additional messages to be processed that same frame/tick with each call to [method service].
+				For each call to [method service] within a frame/tick, call this method until queued events have been exhausted. This is typically used by the caller to handle all queued events without needing to repeatedly call [method service] within a frame/tick (which would potentially cause more events to be enqueued).
 				[b]Note:[/b] This method may be called on either end involved in the event (sending and receiving hosts).
 			</description>
 		</method>
