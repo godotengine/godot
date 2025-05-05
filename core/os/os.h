@@ -41,6 +41,14 @@
 #include <cstdlib>
 
 class OS {
+public:
+	enum HidpiAwareness {
+		NO_AWARENESS,
+		SYSTEM_WIDE_AWARENESS,
+		PER_MONITOR_AWARENESS
+	};
+
+private:
 	static OS *singleton;
 	static uint64_t target_ticks;
 	String _execpath;
@@ -55,7 +63,7 @@ class OS {
 	String _local_clipboard;
 	// Assume success by default, all failure cases need to set EXIT_FAILURE explicitly.
 	int _exit_code = EXIT_SUCCESS;
-	bool _allow_hidpi = false;
+	HidpiAwareness _hidpi_awareness = HidpiAwareness::NO_AWARENESS;
 	bool _allow_layered = false;
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
@@ -217,7 +225,7 @@ public:
 	virtual String get_model_name() const;
 
 	bool is_layered_allowed() const { return _allow_layered; }
-	bool is_hidpi_allowed() const { return _allow_hidpi; }
+	HidpiAwareness get_hidpi_awareness() const { return _hidpi_awareness; }
 
 	void ensure_user_data_dir();
 

@@ -577,6 +577,20 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 			}
 		}
 	}
+
+	if (p_from_version == 5) {
+		const RBMap<StringName, ProjectSettings::VariantContainer>::Element *old_hidpi = props.find("display/window/dpi/allow_hidpi");
+		if (old_hidpi) {
+			OS::HidpiAwareness new_hidpi;
+			if (old_hidpi->value().variant.booleanize()) {
+				new_hidpi = OS::HidpiAwareness::SYSTEM_WIDE_AWARENESS;
+			} else {
+				new_hidpi = OS::HidpiAwareness::NO_AWARENESS;
+			}
+			set_setting("display/window/dpi/hidpi_awareness", int(new_hidpi));
+			props.erase("display/window/dpi/allow_hidpi");
+		}
+	}
 #endif // DISABLE_DEPRECATED
 }
 
