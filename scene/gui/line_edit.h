@@ -72,17 +72,6 @@ public:
 		MENU_MAX
 	};
 
-	enum VirtualKeyboardType {
-		KEYBOARD_TYPE_DEFAULT,
-		KEYBOARD_TYPE_MULTILINE,
-		KEYBOARD_TYPE_NUMBER,
-		KEYBOARD_TYPE_NUMBER_DECIMAL,
-		KEYBOARD_TYPE_PHONE,
-		KEYBOARD_TYPE_EMAIL_ADDRESS,
-		KEYBOARD_TYPE_PASSWORD,
-		KEYBOARD_TYPE_URL
-	};
-
 private:
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
@@ -148,7 +137,7 @@ private:
 	bool shortcut_keys_enabled = true;
 
 	bool virtual_keyboard_enabled = true;
-	VirtualKeyboardType virtual_keyboard_type = KEYBOARD_TYPE_DEFAULT;
+	DisplayServer::VirtualKeyboardType virtual_keyboard_type = DisplayServer::KEYBOARD_TYPE_DEFAULT;
 
 	bool middle_mouse_paste_enabled = true;
 
@@ -401,8 +390,8 @@ public:
 	void set_virtual_keyboard_enabled(bool p_enable);
 	bool is_virtual_keyboard_enabled() const;
 
-	void set_virtual_keyboard_type(VirtualKeyboardType p_type);
-	VirtualKeyboardType get_virtual_keyboard_type() const;
+	void set_virtual_keyboard_type(DisplayServer::VirtualKeyboardType p_type);
+	DisplayServer::VirtualKeyboardType get_virtual_keyboard_type() const;
 
 	void set_middle_mouse_paste_enabled(bool p_enabled);
 	bool is_middle_mouse_paste_enabled() const;
@@ -437,4 +426,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
-VARIANT_ENUM_CAST(LineEdit::VirtualKeyboardType);

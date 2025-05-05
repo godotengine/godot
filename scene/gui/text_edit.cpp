@@ -3360,7 +3360,7 @@ void TextEdit::_show_virtual_keyboard() {
 			caret_end = caret_start + post_text.length();
 		}
 
-		DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_global_rect(), DisplayServer::KEYBOARD_TYPE_MULTILINE, -1, caret_start, caret_end);
+		DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_global_rect(), DisplayServer::VirtualKeyboardType(virtual_keyboard_type), -1, caret_start, caret_end);
 	}
 }
 
@@ -3755,6 +3755,14 @@ void TextEdit::set_virtual_keyboard_enabled(bool p_enabled) {
 
 bool TextEdit::is_virtual_keyboard_enabled() const {
 	return virtual_keyboard_enabled;
+}
+
+void TextEdit::set_virtual_keyboard_type(DisplayServer::VirtualKeyboardType p_type) {
+	virtual_keyboard_type = p_type;
+}
+
+DisplayServer::VirtualKeyboardType TextEdit::get_virtual_keyboard_type() const {
+	return virtual_keyboard_type;
 }
 
 void TextEdit::set_middle_mouse_paste_enabled(bool p_enabled) {
@@ -7004,6 +7012,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_enabled", "enabled"), &TextEdit::set_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("is_virtual_keyboard_enabled"), &TextEdit::is_virtual_keyboard_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_type", "type"), &TextEdit::set_virtual_keyboard_type);
+	ClassDB::bind_method(D_METHOD("get_virtual_keyboard_type"), &TextEdit::get_virtual_keyboard_type);
+
 	ClassDB::bind_method(D_METHOD("set_middle_mouse_paste_enabled", "enabled"), &TextEdit::set_middle_mouse_paste_enabled);
 	ClassDB::bind_method(D_METHOD("is_middle_mouse_paste_enabled"), &TextEdit::is_middle_mouse_paste_enabled);
 
@@ -7408,6 +7419,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "virtual_keyboard_type", PROPERTY_HINT_ENUM, "Default,Multiline,Number,Decimal,Phone,Email,Password,URL"), "set_virtual_keyboard_type", "get_virtual_keyboard_type");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "empty_selection_clipboard_enabled"), "set_empty_selection_clipboard_enabled", "is_empty_selection_clipboard_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
