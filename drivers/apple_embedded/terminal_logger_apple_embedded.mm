@@ -46,29 +46,9 @@ void TerminalLoggerAppleEmbedded::log_error(const char *p_function, const char *
 		err_details = p_code;
 	}
 
-	switch (p_type) {
-		case ERR_WARNING:
-			os_log_error(OS_LOG_DEFAULT,
-					"WARNING: %{public}s\nat: %{public}s (%{public}s:%i)",
-					err_details, p_function, p_file, p_line);
-			break;
-		case ERR_SCRIPT:
-			os_log_error(OS_LOG_DEFAULT,
-					"SCRIPT ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-					err_details, p_function, p_file, p_line);
-			break;
-		case ERR_SHADER:
-			os_log_error(OS_LOG_DEFAULT,
-					"SHADER ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-					err_details, p_function, p_file, p_line);
-			break;
-		case ERR_ERROR:
-		default:
-			os_log_error(OS_LOG_DEFAULT,
-					"ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-					err_details, p_function, p_file, p_line);
-			break;
-	}
+	os_log_error(OS_LOG_DEFAULT,
+			"%{public}s: %{public}s\nat: %{public}s (%{public}s:%i)",
+			error_type_string(p_type), err_details, p_function, p_file, p_line);
 
 	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
 		if (!backtrace->is_empty()) {
