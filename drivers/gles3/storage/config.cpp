@@ -77,7 +77,7 @@ Config::Config() {
 	}
 #endif
 
-	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("EXT_texture_compression_bptc");
+	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("GL_EXT_texture_compression_bptc");
 	astc_hdr_supported = extensions.has("GL_KHR_texture_compression_astc_hdr");
 	astc_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc") || extensions.has("GL_OES_texture_compression_astc") || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
 	astc_layered_supported = extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
@@ -101,7 +101,7 @@ Config::Config() {
 #else
 		s3tc_supported = extensions.has("GL_EXT_texture_compression_dxt1") || extensions.has("GL_EXT_texture_compression_s3tc") || extensions.has("WEBGL_compressed_texture_s3tc");
 #endif
-		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc") || extensions.has("EXT_texture_compression_rgtc");
+		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc");
 		srgb_framebuffer_supported = extensions.has("GL_EXT_sRGB_write_control");
 	}
 
