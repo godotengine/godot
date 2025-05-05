@@ -1279,6 +1279,9 @@
 		<member name="text_editor/behavior/files/convert_indent_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], converts indentation to match the script editor's indentation settings when saving a script. See also [member text_editor/behavior/indent/type].
 		</member>
+		<member name="text_editor/behavior/files/convert_indent_on_save_filter" type="String" setter="" getter="">
+			The comma-separated files to convert indentation when saving the file (e.g: *.gd, *.cs). If left empty, any file will have its indentation converted when it is saved.
+		</member>
 		<member name="text_editor/behavior/files/drop_preload_resources_as_uid" type="bool" setter="" getter="">
 			If [code]true[/code], when dropping a [Resource] file to script editor while [kbd]Ctrl[/kbd] is held, the resource will be preloaded with a UID. If [code]false[/code], the resource will be preloaded with a path.
 			When you hold [kbd]Ctrl+Shift[/kbd], the behavior is reversed.

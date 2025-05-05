@@ -439,6 +439,7 @@ class ScriptEditor : public PanelContainer {
 	bool trim_trailing_whitespace_on_save;
 	bool trim_final_newlines_on_save;
 	bool convert_indent_on_save;
+	Vector<String> convert_indent_on_save_filter;
 	bool external_editor_active;
 
 	void _goto_script_line2(int p_line);
@@ -543,6 +544,9 @@ class ScriptEditor : public PanelContainer {
 
 	static void _open_script_request(const String &p_path);
 	void _close_builtin_scripts_from_scene(const String &p_scene);
+
+	Vector<String> _parse_convert_indent_on_save_filter(const String &filter_str);
+	bool _should_convert_indent_on_save(ScriptEditorBase *const se);
 
 	static ScriptEditor *script_editor;
 
