@@ -1228,7 +1228,9 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	logf_error("%s%sat: %s (%s:%i)%s\n", gray, indent, p_function, p_file, p_line, reset);
 
 	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
-		logf_error("%s%s%s\n", gray, backtrace->format(strlen(indent)).utf8().get_data(), reset);
+		if (!backtrace->is_empty()) {
+			logf_error("%s%s%s\n", gray, backtrace->format(strlen(indent)).utf8().get_data(), reset);
+		}
 	}
 }
 

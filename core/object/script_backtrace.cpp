@@ -52,6 +52,7 @@ void ScriptBacktrace::_store_variables(const List<String> &p_names, const List<V
 void ScriptBacktrace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_language_name"), &ScriptBacktrace::get_language_name);
 
+	ClassDB::bind_method(D_METHOD("is_empty"), &ScriptBacktrace::is_empty);
 	ClassDB::bind_method(D_METHOD("get_frame_count"), &ScriptBacktrace::get_frame_count);
 	ClassDB::bind_method(D_METHOD("get_frame_function", "index"), &ScriptBacktrace::get_frame_function);
 	ClassDB::bind_method(D_METHOD("get_frame_file", "index"), &ScriptBacktrace::get_frame_file);
@@ -173,7 +174,7 @@ Variant ScriptBacktrace::get_member_variable_value(int p_frame_index, int p_vari
 }
 
 String ScriptBacktrace::format(int p_indent_all, int p_indent_frames) const {
-	if (stack_frames.is_empty()) {
+	if (is_empty()) {
 		return String();
 	}
 
