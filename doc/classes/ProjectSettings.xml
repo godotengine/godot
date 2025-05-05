@@ -3257,6 +3257,16 @@
 		<member name="rendering/shading/overrides/force_vertex_shading" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can be used to optimize performance on low-end mobile devices.
 		</member>
+		<member name="rendering/textures/basis_universal/rdo_dict_size" type="int" setter="" getter="" default="1024">
+			The dictionary size for Rate-Distortion Optimization (RDO) when importing textures as Basis Universal and when RDO is enabled, ranging from [code]64[/code] to [code]65536[/code]. Higher values reduce the file sizes further, but make encoding times significantly longer.
+		</member>
+		<member name="rendering/textures/basis_universal/zstd_supercompression" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables Zstandard supercompression to reduce file size when importing textures as Basis Universal.
+			[b]Note:[/b] Basis Universal textures need to be compressed to gain the benefit of smaller file sizes, otherwise they are as large as VRAM-compressed textures.
+		</member>
+		<member name="rendering/textures/basis_universal/zstd_supercompression_level" type="int" setter="" getter="" default="6">
+			Specify the compression level for Basis Universal Zstandard supercompression, ranging from [code]1[/code] to [code]22[/code].
+		</member>
 		<member name="rendering/textures/canvas_textures/default_texture_filter" type="int" setter="" getter="" default="1">
 			The default texture filtering mode to use for [CanvasItem]s built-in texture. In shaders, this texture is accessed as [code]TEXTURE[/code].
 			[b]Note:[/b] For pixel art aesthetics, see also [member rendering/2d/snap/snap_2d_vertices_to_pixel] and [member rendering/2d/snap/snap_2d_transforms_to_pixel].

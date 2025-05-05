@@ -71,6 +71,8 @@ private:
 
 	bool image_stored = false;
 
+	Image::BasisUniversalPackerParams basisu_params;
+
 protected:
 	Vector<uint8_t> _get_data() const;
 	void _set_data(const Vector<uint8_t> &p_data);
@@ -105,6 +107,8 @@ public:
 
 	void set_keep_compressed_buffer(bool p_keep);
 	bool is_keeping_compressed_buffer() const;
+
+	void set_basisu_compressor_params(int p_uastc_level, float p_rdo_quality_loss);
 
 	static void set_keep_all_compressed_buffers(bool p_keep);
 	static bool is_keeping_all_compressed_buffers();
