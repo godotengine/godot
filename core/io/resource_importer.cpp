@@ -121,6 +121,12 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		}
 	}
 
+	if (p_load && !path_found && decomp_path_found) {
+		print_verbose(vformat("No natively supported texture format found for %s, using decompressable format %s.", p_path, decomp_path));
+		r_path_and_type.path = decomp_path;
+		return OK;
+	}
+
 #ifdef TOOLS_ENABLED
 	if (r_path_and_type.metadata && !r_path_and_type.path.is_empty()) {
 		Dictionary meta = r_path_and_type.metadata;
