@@ -30,12 +30,140 @@
 
 #include "path_2d.h"
 
+#include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "scene/main/timer.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/themes/editor_scale.h"
 #endif
+
+bool PathDebug2D::debug_enabled = false;
+Color PathDebug2D::debug_paths_color = Color(0.1, 1.0, 0.7, 0.4);
+float PathDebug2D::debug_paths_width = 2.0;
+float PathDebug2D::debug_paths_sample_interval = 5.0;
+bool PathDebug2D::debug_paths_fish_bones_enabled = true;
+int PathDebug2D::debug_paths_fish_bones_interval = 4;
+
+Mutex PathDebug2D::update_callbacks_mutex;
+HashMap<Path2D *, Callable> PathDebug2D::update_callbacks;
+
+void PathDebug2D::add_update_callback(Path2D *p_path, Callable p_callback) {
+	MutexLock lock(update_callbacks_mutex);
+	update_callbacks.insert(p_path, p_callback);
+}
+
+void PathDebug2D::remove_update_callback(Path2D *p_path) {
+	MutexLock lock(update_callbacks_mutex);
+	update_callbacks.erase(p_path);
+}
+
+void PathDebug2D::emit_update_callbacks() {
+	MutexLock lock(update_callbacks_mutex);
+	for (KeyValue<Path2D *, Callable> &kv : update_callbacks) {
+		ERR_CONTINUE(!kv.value.is_valid());
+		kv.value.call();
+	}
+}
+
+void PathDebug2D::init_settings() {
+#ifndef DISABLE_DEPRECATED
+	if (!ProjectSettings::get_singleton()->has_setting("debug/shapes/paths/2d/geometry_color") && ProjectSettings::get_singleton()->has_setting("debug/shapes/paths/geometry_color")) {
+		Color legacy_geometry_color = GLOBAL_GET("debug/shapes/paths/geometry_color");
+
+		ProjectSettings::get_singleton()->set_setting("debug/shapes/paths/2d/geometry_color", legacy_geometry_color);
+		ProjectSettings::get_singleton()->clear("debug/shapes/paths/geometry_color");
+	}
+
+	if (ProjectSettings::get_singleton()->has_setting("debug/shapes/paths/geometry_width")) {
+		debug_paths_width = GLOBAL_GET("debug/shapes/paths/geometry_width");
+	}
+#endif // DISABLE_DEPRECATED
+
+	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/2d/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
+	debug_paths_sample_interval = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/paths/2d/sample_interval", PROPERTY_HINT_RANGE, "0.1,10,0.001,or_greater"), 5.0);
+	debug_paths_fish_bones_enabled = GLOBAL_DEF(PropertyInfo(Variant::BOOL, "debug/shapes/paths/2d/fish_bones_enabled"), true);
+	debug_paths_fish_bones_interval = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/shapes/paths/2d/fish_bones_interval", PROPERTY_HINT_RANGE, "1,10,1,or_greater"), 4);
+
+	if (!debug_enabled && Engine::get_singleton()->is_editor_hint()) {
+		debug_enabled = true;
+	}
+}
+
+void PathDebug2D::set_debug_enabled(bool p_enabled) {
+	if (debug_enabled == p_enabled) {
+		return;
+	}
+	debug_enabled = p_enabled;
+	emit_update_callbacks();
+}
+
+bool PathDebug2D::is_debug_enabled() {
+	return debug_enabled;
+}
+
+void PathDebug2D::set_debug_paths_color(const Color &p_color) {
+	if (debug_paths_color == p_color) {
+		return;
+	}
+	debug_paths_color = p_color;
+	emit_update_callbacks();
+}
+
+Color PathDebug2D::get_debug_paths_color() {
+	return debug_paths_color;
+}
+
+void PathDebug2D::set_debug_paths_width(float p_width) {
+	float _width = MAX(0.1, p_width);
+	if (debug_paths_width == _width) {
+		return;
+	}
+	debug_paths_width = _width;
+	emit_update_callbacks();
+}
+
+float PathDebug2D::get_debug_paths_width() {
+	return debug_paths_width;
+}
+
+void PathDebug2D::set_debug_paths_sample_interval(float p_interval) {
+	float _interval = MAX(0.1, p_interval);
+	if (debug_paths_sample_interval == _interval) {
+		return;
+	}
+	debug_paths_sample_interval = _interval;
+	emit_update_callbacks();
+}
+
+float PathDebug2D::get_debug_paths_sample_interval() {
+	return debug_paths_sample_interval;
+}
+
+void PathDebug2D::set_debug_paths_fish_bones_enabled(bool p_enabled) {
+	if (debug_paths_fish_bones_enabled == p_enabled) {
+		return;
+	}
+	debug_paths_fish_bones_enabled = p_enabled;
+	emit_update_callbacks();
+}
+
+bool PathDebug2D::get_debug_paths_fish_bones_enabled() {
+	return debug_paths_fish_bones_enabled;
+}
+
+void PathDebug2D::set_debug_paths_fish_bones_interval(int p_interval) {
+	int _interval = MAX(1, p_interval);
+	if (debug_paths_fish_bones_interval == _interval) {
+		return;
+	}
+	debug_paths_fish_bones_interval = _interval;
+	emit_update_callbacks();
+}
+
+int PathDebug2D::get_debug_paths_fish_bones_interval() {
+	return debug_paths_fish_bones_interval;
+}
 
 #ifdef DEBUG_ENABLED
 Rect2 Path2D::_edit_get_rect() const {
@@ -87,79 +215,229 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 void Path2D::_notification(int p_what) {
 	switch (p_what) {
-		// Draw the curve if path debugging is enabled.
+		case NOTIFICATION_ENTER_TREE: {
+			PathDebug2D::add_update_callback(this, callable_mp(this, &Path2D::_on_debug_global_changed));
+			_debug_create();
+			queue_redraw();
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			PathDebug2D::remove_update_callback(this);
+			_debug_free();
+		} break;
+
 		case NOTIFICATION_DRAW: {
-			if (curve.is_null()) {
-				break;
-			}
-
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_paths_hint()) {
-				return;
-			}
-
-			if (curve->get_point_count() < 2) {
-				return;
-			}
-
-#ifdef TOOLS_ENABLED
-			const real_t line_width = get_tree()->get_debug_paths_width() * EDSCALE;
-#else
-			const real_t line_width = get_tree()->get_debug_paths_width();
-#endif
-			real_t interval = 10;
-			const real_t length = curve->get_baked_length();
-
-			if (length > CMP_EPSILON) {
-				const int sample_count = int(length / interval) + 2;
-				interval = length / (sample_count - 1); // Recalculate real interval length.
-
-				Vector<Transform2D> frames;
-				frames.resize(sample_count);
-
-				{
-					Transform2D *w = frames.ptrw();
-
-					for (int i = 0; i < sample_count; i++) {
-						w[i] = curve->sample_baked_with_rotation(i * interval, false);
-					}
-				}
-
-				const Transform2D *r = frames.ptr();
-				// Draw curve segments
-				{
-					PackedVector2Array v2p;
-					v2p.resize(sample_count);
-					Vector2 *w = v2p.ptrw();
-
-					for (int i = 0; i < sample_count; i++) {
-						w[i] = r[i].get_origin();
-					}
-					draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width, false);
-				}
-
-				// Draw fish bone every 4 points to reduce visual noise and performance impact
-				// (compared to drawing it for every point).
-				{
-					PackedVector2Array v2p;
-					v2p.resize(3);
-					Vector2 *w = v2p.ptrw();
-
-					for (int i = 0; i < sample_count; i += 4) {
-						const Vector2 p = r[i].get_origin();
-						const Vector2 side = r[i].columns[1];
-						const Vector2 forward = r[i].columns[0];
-
-						// Fish Bone.
-						w[0] = p + (side - forward) * 5;
-						w[1] = p;
-						w[2] = p + (-side - forward) * 5;
-
-						draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width * 0.5, false);
-					}
-				}
-			}
+			_debug_update();
 		} break;
 	}
+}
+
+void Path2D::_on_debug_global_changed() {
+	if (_emitting_debug_changed) {
+		return;
+	}
+	_emitting_debug_changed = true;
+	callable_mp(this, &Path2D::_emit_debug_changed_deferred).call_deferred();
+}
+
+void Path2D::_emit_debug_changed_deferred() {
+	_emitting_debug_changed = false;
+
+	if (is_inside_tree()) {
+		queue_redraw();
+	}
+}
+
+void Path2D::_debug_create() {
+	ERR_FAIL_NULL(RS::get_singleton());
+
+	if (debug_mesh_rid.is_null()) {
+		debug_mesh_rid = RS::get_singleton()->mesh_create();
+	}
+
+	if (debug_instance.is_null()) {
+		debug_instance = RS::get_singleton()->instance_create();
+	}
+
+	RS::get_singleton()->instance_set_base(debug_instance, debug_mesh_rid);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(debug_instance, RS::SHADOW_CASTING_SETTING_OFF);
+}
+
+void Path2D::_debug_free() {
+	ERR_FAIL_NULL(RS::get_singleton());
+
+	if (debug_instance.is_valid()) {
+		RS::get_singleton()->free(debug_instance);
+		debug_instance = RID();
+	}
+	if (debug_mesh_rid.is_valid()) {
+		RS::get_singleton()->free(debug_mesh_rid);
+		debug_mesh_rid = RID();
+	}
+}
+
+void Path2D::_debug_update() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	ERR_FAIL_NULL(RS::get_singleton());
+
+	RenderingServer *rs = RS::get_singleton();
+
+	ERR_FAIL_NULL(SceneTree::get_singleton());
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
+	const bool path_debug_enabled = Engine::get_singleton()->is_editor_hint() || (PathDebug2D::is_debug_enabled() && debug_enabled);
+
+	if (!path_debug_enabled) {
+		_debug_free();
+		return;
+	}
+
+	if (debug_mesh_rid.is_null() || debug_instance.is_null()) {
+		_debug_create();
+	}
+
+	rs->mesh_clear(debug_mesh_rid);
+
+	if (curve.is_null()) {
+		return;
+	}
+	if (curve->get_point_count() < 2) {
+		return;
+	}
+
+	const real_t baked_length = curve->get_baked_length();
+
+	if (baked_length <= CMP_EPSILON) {
+		return;
+	}
+
+	const Color debug_default_color = PathDebug2D::get_debug_paths_color();
+
+	Color debug_color = debug_default_color;
+	if (debug_custom_enabled) {
+		debug_color = debug_custom_color;
+	}
+
+	bool debug_paths_show_fish_bones = PathDebug2D::get_debug_paths_fish_bones_enabled();
+
+	real_t sample_interval = PathDebug2D::get_debug_paths_sample_interval();
+
+	const int sample_count = int(baked_length / sample_interval) + 2;
+	sample_interval = baked_length / (sample_count - 1); // Recalculate real interval length.
+
+	Vector<Transform2D> samples;
+	samples.resize(sample_count);
+	Transform2D *samples_ptrw = samples.ptrw();
+
+	for (int i = 0; i < sample_count; i++) {
+		samples_ptrw[i] = curve->sample_baked_with_rotation(i * sample_interval, false);
+	}
+
+	const Transform2D *samples_ptr = samples.ptr();
+
+	// Draw curve segments
+	{
+		Vector<Vector2> ribbon;
+		ribbon.resize(sample_count);
+		Vector2 *ribbon_ptrw = ribbon.ptrw();
+
+		for (int i = 0; i < sample_count; i++) {
+			ribbon_ptrw[i] = samples_ptr[i].get_origin();
+		}
+
+		Array ribbon_array;
+		ribbon_array.resize(Mesh::ARRAY_MAX);
+		ribbon_array[Mesh::ARRAY_VERTEX] = ribbon;
+		Vector<Color> ribbon_color;
+		ribbon_color.resize(ribbon.size());
+		ribbon_color.fill(debug_color);
+		ribbon_array[Mesh::ARRAY_COLOR] = ribbon_color;
+
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINE_STRIP, ribbon_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+	}
+
+	// Render path fish bones.
+	if (debug_paths_show_fish_bones) {
+		int fish_bones_interval = PathDebug2D::get_debug_paths_fish_bones_interval();
+
+		const int vertex_per_bone = 4;
+		Vector<Vector2> bones;
+		bones.resize(sample_count * vertex_per_bone);
+		Vector2 *bones_ptrw = bones.ptrw();
+
+		for (int i = 0; i < sample_count / fish_bones_interval; i++) {
+			const Transform2D &sample_transform = samples_ptr[i * fish_bones_interval];
+
+			const Vector2 point = sample_transform.get_origin();
+			const Vector2 &side = sample_transform.columns[1];
+			const Vector2 &forward = sample_transform.columns[0];
+
+			const int bone_idx = i * vertex_per_bone;
+
+			bones_ptrw[bone_idx] = point;
+			bones_ptrw[bone_idx + 1] = point + (side - forward) * 5;
+			bones_ptrw[bone_idx + 2] = point;
+			bones_ptrw[bone_idx + 3] = point + (-side - forward) * 5;
+		}
+
+		Array bone_array;
+		bone_array.resize(Mesh::ARRAY_MAX);
+		bone_array[Mesh::ARRAY_VERTEX] = bones;
+		Vector<Color> bones_color;
+		bones_color.resize(bones.size());
+		bones_color.fill(debug_color);
+		bone_array[Mesh::ARRAY_COLOR] = bones_color;
+
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, bone_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+	}
+
+	rs->canvas_item_clear(get_canvas_item());
+	rs->canvas_item_add_mesh(get_canvas_item(), debug_mesh_rid, Transform2D());
+}
+
+void Path2D::set_debug_enabled(bool p_enabled) {
+	if (debug_enabled == p_enabled) {
+		return;
+	}
+
+	debug_enabled = p_enabled;
+
+	queue_redraw();
+}
+
+bool Path2D::get_debug_enabled() const {
+	return debug_enabled;
+}
+
+void Path2D::set_debug_custom_color(const Color &p_color) {
+	if (debug_custom_color == p_color) {
+		return;
+	}
+
+	debug_custom_color = p_color;
+
+	queue_redraw();
+}
+
+const Color &Path2D::get_debug_custom_color() const {
+	return debug_custom_color;
+}
+
+void Path2D::set_debug_custom_enabled(bool p_enabled) {
+	if (debug_custom_enabled == p_enabled) {
+		return;
+	}
+
+	debug_custom_enabled = p_enabled;
+
+	queue_redraw();
+}
+
+bool Path2D::get_debug_custom_enabled() const {
+	return debug_custom_enabled;
 }
 
 void Path2D::_curve_changed() {
@@ -201,7 +479,21 @@ void Path2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path2D::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &Path2D::get_curve);
 
+	ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"), &Path2D::set_debug_enabled);
+	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &Path2D::get_debug_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_debug_custom_enabled", "enabled"), &Path2D::set_debug_custom_enabled);
+	ClassDB::bind_method(D_METHOD("get_debug_custom_enabled"), &Path2D::get_debug_custom_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_debug_custom_color", "debug_custom_color"), &Path2D::set_debug_custom_color);
+	ClassDB::bind_method(D_METHOD("get_debug_custom_color"), &Path2D::get_debug_custom_color);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_curve", "get_curve");
+
+	ADD_GROUP("Debug", "debug_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled"), "set_debug_enabled", "get_debug_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_custom_enabled"), "set_debug_custom_enabled", "get_debug_custom_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_custom_color"), "set_debug_custom_color", "get_debug_custom_color");
 }
 
 /////////////////////////////////////////////////////////////////////////////////

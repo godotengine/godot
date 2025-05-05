@@ -30,24 +30,156 @@
 
 #include "path_3d.h"
 
-Path3D::Path3D() {
-	SceneTree *st = SceneTree::get_singleton();
-	if (st && st->is_debugging_paths_hint()) {
-		debug_instance = RS::get_singleton()->instance_create();
-		set_notify_transform(true);
-		_update_debug_mesh();
+#include "core/config/project_settings.h"
+
+bool PathDebug3D::debug_enabled = false;
+Color PathDebug3D::debug_paths_color = Color(0.1, 1.0, 0.7, 0.4);
+float PathDebug3D::debug_paths_sample_interval = 0.1;
+bool PathDebug3D::debug_paths_fish_bones_enabled = true;
+int PathDebug3D::debug_paths_fish_bones_interval = 4;
+Ref<Material> PathDebug3D::debug_default_material;
+
+Mutex PathDebug3D::update_callbacks_mutex;
+HashMap<Path3D *, Callable> PathDebug3D::update_callbacks;
+
+void PathDebug3D::add_update_callback(Path3D *p_path, Callable p_callback) {
+	MutexLock lock(update_callbacks_mutex);
+	update_callbacks.insert(p_path, p_callback);
+}
+
+void PathDebug3D::remove_update_callback(Path3D *p_path) {
+	MutexLock lock(update_callbacks_mutex);
+	update_callbacks.erase(p_path);
+}
+
+void PathDebug3D::emit_update_callbacks() {
+	MutexLock lock(update_callbacks_mutex);
+	for (KeyValue<Path3D *, Callable> &kv : update_callbacks) {
+		ERR_CONTINUE(!kv.value.is_valid());
+		kv.value.call();
 	}
 }
 
+void PathDebug3D::init_settings() {
+#ifndef DISABLE_DEPRECATED
+	if (!ProjectSettings::get_singleton()->has_setting("debug/shapes/paths/3d/geometry_color") && ProjectSettings::get_singleton()->has_setting("debug/shapes/paths/geometry_color")) {
+		Color legacy_geometry_color = GLOBAL_GET("debug/shapes/paths/geometry_color");
+
+		ProjectSettings::get_singleton()->set_setting("debug/shapes/paths/3d/geometry_color", legacy_geometry_color);
+		ProjectSettings::get_singleton()->clear("debug/shapes/paths/geometry_color");
+	}
+#endif // DISABLE_DEPRECATED
+
+	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/3d/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
+	debug_paths_sample_interval = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/paths/3d/sample_interval", PROPERTY_HINT_RANGE, "0.1,10,0.001,or_greater"), 0.1);
+	debug_paths_fish_bones_enabled = GLOBAL_DEF(PropertyInfo(Variant::BOOL, "debug/shapes/paths/3d/fish_bones_enabled"), true);
+	debug_paths_fish_bones_interval = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/shapes/paths/3d/fish_bones_interval", PROPERTY_HINT_RANGE, "1,10,1,or_greater"), 4);
+
+	if (!debug_enabled && Engine::get_singleton()->is_editor_hint()) {
+		debug_enabled = true;
+	}
+}
+
+void PathDebug3D::init_materials() {
+	if (debug_default_material.is_valid()) {
+		return;
+	}
+	Ref<StandardMaterial3D> debug_material;
+	debug_material.instantiate();
+	debug_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	debug_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	debug_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	debug_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	debug_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	debug_material->set_albedo(debug_paths_color);
+
+	debug_default_material = debug_material;
+}
+
+void PathDebug3D::finish_materials() {
+	if (debug_default_material.is_valid()) {
+		debug_default_material.unref();
+	};
+}
+
+void PathDebug3D::set_debug_enabled(bool p_enabled) {
+	if (debug_enabled == p_enabled) {
+		return;
+	}
+	debug_enabled = p_enabled;
+	emit_update_callbacks();
+}
+
+bool PathDebug3D::is_debug_enabled() {
+	return debug_enabled;
+}
+
+void PathDebug3D::set_debug_paths_color(const Color &p_color) {
+	if (debug_paths_color == p_color) {
+		return;
+	}
+	debug_paths_color = p_color;
+	if (debug_default_material.is_valid()) {
+		static_cast<Ref<StandardMaterial3D>>(debug_default_material)->set_albedo(debug_paths_color);
+	}
+	emit_update_callbacks();
+}
+
+Color PathDebug3D::get_debug_paths_color() {
+	return debug_paths_color;
+}
+
+void PathDebug3D::set_debug_paths_sample_interval(float p_interval) {
+	float _interval = MAX(0.1, p_interval);
+	if (debug_paths_sample_interval == _interval) {
+		return;
+	}
+	debug_paths_sample_interval = _interval;
+	emit_update_callbacks();
+}
+
+float PathDebug3D::get_debug_paths_sample_interval() {
+	return debug_paths_sample_interval;
+}
+
+void PathDebug3D::set_debug_paths_fish_bones_enabled(bool p_enabled) {
+	if (debug_paths_fish_bones_enabled == p_enabled) {
+		return;
+	}
+	debug_paths_fish_bones_enabled = p_enabled;
+	emit_update_callbacks();
+}
+
+bool PathDebug3D::get_debug_paths_fish_bones_enabled() {
+	return debug_paths_fish_bones_enabled;
+}
+
+void PathDebug3D::set_debug_paths_fish_bones_interval(int p_interval) {
+	int _interval = MAX(1, p_interval);
+	if (debug_paths_fish_bones_interval == _interval) {
+		return;
+	}
+	debug_paths_fish_bones_interval = _interval;
+	emit_update_callbacks();
+}
+
+int PathDebug3D::get_debug_paths_fish_bones_interval() {
+	return debug_paths_fish_bones_interval;
+}
+
+Ref<Material> PathDebug3D::get_debug_material() {
+	if (debug_default_material.is_null()) {
+		init_materials();
+	}
+	return debug_default_material;
+}
+
+Path3D::Path3D() {
+	set_notify_transform(true);
+}
+
 Path3D::~Path3D() {
-	if (debug_instance.is_valid()) {
-		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(debug_instance);
-	}
-	if (debug_mesh.is_valid()) {
-		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(debug_mesh->get_rid());
-	}
+	_debug_free();
 }
 
 void Path3D::set_update_callback(Callable p_callback) {
@@ -57,16 +189,19 @@ void Path3D::set_update_callback(Callable p_callback) {
 void Path3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			SceneTree *st = SceneTree::get_singleton();
-			if (st && st->is_debugging_paths_hint()) {
-				_update_debug_mesh();
-			}
+			PathDebug3D::add_update_callback(this, callable_mp(this, &Path3D::_on_debug_global_changed));
+			_debug_create();
+			_debug_update();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			SceneTree *st = SceneTree::get_singleton();
-			if (st && st->is_debugging_paths_hint()) {
-				RS::get_singleton()->instance_set_visible(debug_instance, false);
+			PathDebug3D::remove_update_callback(this);
+			_debug_free();
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_inside_tree() && debug_instance.is_valid()) {
+				RS::get_singleton()->instance_set_visible(debug_instance, is_visible_in_tree());
 			}
 		} break;
 
@@ -82,128 +217,229 @@ void Path3D::_notification(int p_what) {
 	}
 }
 
-void Path3D::_update_debug_mesh() {
-	SceneTree *st = SceneTree::get_singleton();
-	if (!(st && st->is_debugging_paths_hint())) {
+void Path3D::_on_debug_global_changed() {
+	if (_emitting_debug_changed) {
+		return;
+	}
+	_emitting_debug_changed = true;
+	callable_mp(this, &Path3D::_emit_debug_changed_deferred).call_deferred();
+}
+
+void Path3D::_emit_debug_changed_deferred() {
+	_emitting_debug_changed = false;
+
+	if (is_inside_tree()) {
+		_debug_update();
+		update_gizmos();
+	}
+}
+
+void Path3D::_debug_create() {
+	ERR_FAIL_NULL(RS::get_singleton());
+
+	if (debug_mesh_rid.is_null()) {
+		debug_mesh_rid = RS::get_singleton()->mesh_create();
+	}
+
+	if (debug_instance.is_null()) {
+		debug_instance = RS::get_singleton()->instance_create();
+	}
+
+	RS::get_singleton()->instance_set_base(debug_instance, debug_mesh_rid);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(debug_instance, RS::SHADOW_CASTING_SETTING_OFF);
+}
+
+void Path3D::_debug_free() {
+	ERR_FAIL_NULL(RS::get_singleton());
+
+	if (debug_instance.is_valid()) {
+		RS::get_singleton()->free(debug_instance);
+		debug_instance = RID();
+	}
+	if (debug_mesh_rid.is_valid()) {
+		RS::get_singleton()->free(debug_mesh_rid);
+		debug_mesh_rid = RID();
+	}
+}
+
+void Path3D::_debug_update() {
+	if (!is_inside_tree()) {
+		return;
+	}
+	ERR_FAIL_NULL(RS::get_singleton());
+
+	RenderingServer *rs = RS::get_singleton();
+
+	ERR_FAIL_NULL(SceneTree::get_singleton());
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
+	const bool path_debug_enabled = Engine::get_singleton()->is_editor_hint() || (PathDebug3D::is_debug_enabled() && debug_enabled);
+
+	if (!path_debug_enabled) {
+		_debug_free();
 		return;
 	}
 
-	if (debug_mesh.is_null()) {
-		debug_mesh.instantiate();
+	if (debug_mesh_rid.is_null() || debug_instance.is_null()) {
+		_debug_create();
 	}
 
+	rs->mesh_clear(debug_mesh_rid);
+
 	if (curve.is_null()) {
-		RS::get_singleton()->instance_set_visible(debug_instance, false);
 		return;
 	}
 	if (curve->get_point_count() < 2) {
-		RS::get_singleton()->instance_set_visible(debug_instance, false);
 		return;
 	}
 
-	real_t interval = 0.1;
-	const real_t length = curve->get_baked_length();
+	const real_t baked_length = curve->get_baked_length();
 
-	if (length <= CMP_EPSILON) {
-		RS::get_singleton()->instance_set_visible(debug_instance, false);
+	if (baked_length <= CMP_EPSILON) {
 		return;
 	}
 
-	const int sample_count = int(length / interval) + 2;
-	interval = length / (sample_count - 1);
+	bool debug_paths_show_fish_bones = PathDebug3D::get_debug_paths_fish_bones_enabled();
 
-	Vector<Vector3> ribbon;
-	ribbon.resize(sample_count);
-	Vector3 *ribbon_ptr = ribbon.ptrw();
+	real_t sample_interval = PathDebug3D::get_debug_paths_sample_interval();
 
-	Vector<Vector3> bones;
-	bones.resize(sample_count * 4);
-	Vector3 *bones_ptr = bones.ptrw();
+	int sample_count = int(baked_length / sample_interval) + 2;
+	sample_interval = baked_length / (sample_count - 1);
+
+	Vector<Transform3D> samples;
+	samples.resize(sample_count);
+	Transform3D *samples_ptrw = samples.ptrw();
 
 	for (int i = 0; i < sample_count; i++) {
-		const Transform3D r = curve->sample_baked_with_rotation(i * interval, true, true);
+		samples_ptrw[i] = curve->sample_baked_with_rotation(i * sample_interval, true, true);
+	}
 
-		const Vector3 p1 = r.origin;
-		const Vector3 side = r.basis.get_column(0);
-		const Vector3 up = r.basis.get_column(1);
-		const Vector3 forward = r.basis.get_column(2);
+	const Transform3D *samples_ptr = samples.ptr();
 
-		// Path3D as a ribbon.
-		ribbon_ptr[i] = p1;
+	// Render path lines.
+	{
+		Vector<Vector3> ribbon;
+		ribbon.resize(sample_count);
+		Vector3 *ribbon_ptrw = ribbon.ptrw();
 
-		if (i % 4 == 0) {
-			// Draw fish bone every 4 points to reduce visual noise and performance impact
-			// (compared to drawing it for every point).
-			const Vector3 p_left = p1 + (side + forward - up * 0.3) * 0.06;
-			const Vector3 p_right = p1 + (-side + forward - up * 0.3) * 0.06;
-
-			const int bone_idx = i * 4;
-
-			bones_ptr[bone_idx] = p1;
-			bones_ptr[bone_idx + 1] = p_left;
-			bones_ptr[bone_idx + 2] = p1;
-			bones_ptr[bone_idx + 3] = p_right;
+		for (int i = 0; i < sample_count; i++) {
+			ribbon_ptrw[i] = samples_ptr[i].origin;
 		}
+
+		Array ribbon_array;
+		ribbon_array.resize(Mesh::ARRAY_MAX);
+		ribbon_array[Mesh::ARRAY_VERTEX] = ribbon;
+
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINE_STRIP, ribbon_array);
 	}
 
-	Array ribbon_array;
-	ribbon_array.resize(Mesh::ARRAY_MAX);
-	ribbon_array[Mesh::ARRAY_VERTEX] = ribbon;
+	// Render path fish bones.
+	if (debug_paths_show_fish_bones) {
+		int fish_bones_interval = PathDebug3D::get_debug_paths_fish_bones_interval();
 
-	Array bone_array;
-	bone_array.resize(Mesh::ARRAY_MAX);
-	bone_array[Mesh::ARRAY_VERTEX] = bones;
+		const int vertex_per_bone = 4;
+		Vector<Vector3> bones;
+		bones.resize(sample_count * vertex_per_bone);
+		Vector3 *bones_ptrw = bones.ptrw();
 
-	_update_debug_path_material();
+		for (int i = 0; i < sample_count / fish_bones_interval; i++) {
+			const Transform3D &sample_transform = samples_ptr[i * fish_bones_interval];
 
-	debug_mesh->clear_surfaces();
-	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINE_STRIP, ribbon_array);
-	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, bone_array);
-	debug_mesh->surface_set_material(0, debug_material);
-	debug_mesh->surface_set_material(1, debug_material);
+			const Vector3 point = sample_transform.origin;
+			const Vector3 &side = sample_transform.basis.get_column(0);
+			const Vector3 &up = sample_transform.basis.get_column(1);
+			const Vector3 &forward = sample_transform.basis.get_column(2);
 
-	RS::get_singleton()->instance_set_base(debug_instance, debug_mesh->get_rid());
+			const Vector3 point_left = point + (side + forward - up * 0.3) * 0.06;
+			const Vector3 point_right = point + (-side + forward - up * 0.3) * 0.06;
+
+			const int bone_idx = i * vertex_per_bone;
+
+			bones_ptrw[bone_idx] = point;
+			bones_ptrw[bone_idx + 1] = point_left;
+			bones_ptrw[bone_idx + 2] = point;
+			bones_ptrw[bone_idx + 3] = point_right;
+		}
+
+		Array bone_array;
+		bone_array.resize(Mesh::ARRAY_MAX);
+		bone_array[Mesh::ARRAY_VERTEX] = bones;
+
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, bone_array);
+	}
+
+	rs->instance_set_base(debug_instance, debug_mesh_rid);
 	if (is_inside_tree()) {
-		RS::get_singleton()->instance_set_scenario(debug_instance, get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
-		RS::get_singleton()->instance_set_visible(debug_instance, is_visible_in_tree());
+		rs->instance_set_scenario(debug_instance, get_world_3d()->get_scenario());
+		rs->instance_set_transform(debug_instance, get_global_transform());
+		rs->instance_set_visible(debug_instance, is_visible_in_tree());
 	}
-}
 
-void Path3D::set_debug_custom_color(const Color &p_color) {
-	debug_custom_color = p_color;
-	_update_debug_path_material();
+	rs->instance_geometry_set_material_override(debug_instance, get_debug_material()->get_rid());
 }
 
 Ref<StandardMaterial3D> Path3D::get_debug_material() {
-	return debug_material;
+	if (debug_custom_enabled) {
+		if (debug_custom_material.is_null()) {
+			debug_custom_material.instantiate();
+			debug_custom_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+			debug_custom_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+			debug_custom_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+			debug_custom_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+			debug_custom_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+		}
+		debug_custom_material->set_albedo(debug_custom_color);
+		return debug_custom_material;
+	}
+	return PathDebug3D::get_debug_material();
+}
+
+void Path3D::set_debug_enabled(bool p_enabled) {
+	if (debug_enabled == p_enabled) {
+		return;
+	}
+
+	debug_enabled = p_enabled;
+
+	_debug_update();
+	update_gizmos();
+}
+
+bool Path3D::get_debug_enabled() const {
+	return debug_enabled;
+}
+
+void Path3D::set_debug_custom_color(const Color &p_color) {
+	if (debug_custom_color == p_color) {
+		return;
+	}
+
+	debug_custom_color = p_color;
+
+	if (debug_custom_material.is_valid()) {
+		debug_custom_material->set_albedo(debug_custom_color);
+	}
+
+	emit_signal(SNAME("debug_color_changed"));
 }
 
 const Color &Path3D::get_debug_custom_color() const {
 	return debug_custom_color;
 }
 
-void Path3D::_update_debug_path_material() {
-	SceneTree *st = SceneTree::get_singleton();
-	if (!debug_material.is_valid()) {
-		Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
-		debug_material = material;
-
-		material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-		material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-		material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-		material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+void Path3D::set_debug_custom_enabled(bool p_enabled) {
+	if (debug_custom_enabled == p_enabled) {
+		return;
 	}
 
-	Color color = debug_custom_color;
-	if (color == Color(0.0, 0.0, 0.0)) {
-		// Use the default debug path color defined in the Project Settings.
-		color = st->get_debug_paths_color();
-	}
+	debug_custom_enabled = p_enabled;
 
-	get_debug_material()->set_albedo(color);
-	emit_signal(SNAME("debug_color_changed"));
+	_debug_update();
+	update_gizmos();
+}
+
+bool Path3D::get_debug_custom_enabled() const {
+	return debug_custom_enabled;
 }
 
 void Path3D::_curve_changed() {
@@ -225,10 +461,8 @@ void Path3D::_curve_changed() {
 			}
 		}
 	}
-	SceneTree *st = SceneTree::get_singleton();
-	if (st && st->is_debugging_paths_hint()) {
-		_update_debug_mesh();
-	}
+
+	_debug_update();
 }
 
 void Path3D::set_curve(const Ref<Curve3D> &p_curve) {
@@ -252,12 +486,20 @@ void Path3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path3D::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &Path3D::get_curve);
 
+	ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"), &Path3D::set_debug_enabled);
+	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &Path3D::get_debug_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_debug_custom_enabled", "enabled"), &Path3D::set_debug_custom_enabled);
+	ClassDB::bind_method(D_METHOD("get_debug_custom_enabled"), &Path3D::get_debug_custom_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_debug_custom_color", "debug_custom_color"), &Path3D::set_debug_custom_color);
 	ClassDB::bind_method(D_METHOD("get_debug_custom_color"), &Path3D::get_debug_custom_color);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_curve", "get_curve");
 
-	ADD_GROUP("Debug Shape", "debug_");
+	ADD_GROUP("Debug", "debug_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled"), "set_debug_enabled", "get_debug_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_custom_enabled"), "set_debug_custom_enabled", "get_debug_custom_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_custom_color"), "set_debug_custom_color", "get_debug_custom_color");
 
 	ADD_SIGNAL(MethodInfo("curve_changed"));

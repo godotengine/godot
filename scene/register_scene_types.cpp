@@ -680,6 +680,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(Curve3D);
 	GDREGISTER_CLASS(Path3D);
+	PathDebug3D::init_settings();
 	GDREGISTER_CLASS(PathFollow3D);
 	GDREGISTER_CLASS(VisibleOnScreenNotifier3D);
 	GDREGISTER_CLASS(VisibleOnScreenEnabler3D);
@@ -1072,6 +1073,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AudioStreamPlayer2D);
 	GDREGISTER_CLASS(Curve2D);
 	GDREGISTER_CLASS(Path2D);
+	PathDebug2D::init_settings();
 	GDREGISTER_CLASS(PathFollow2D);
 
 #ifndef PHYSICS_2D_DISABLED
@@ -1410,6 +1412,7 @@ void unregister_scene_types() {
 	PanoramaSkyMaterial::cleanup_shader();
 	ProceduralSkyMaterial::cleanup_shader();
 	FogMaterial::cleanup_shader();
+	PathDebug3D::finish_materials();
 #endif // _3D_DISABLED
 
 	ParticleProcessMaterial::finish_shaders();

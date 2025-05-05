@@ -878,11 +878,29 @@
 		<member name="debug/shapes/navigation/3d/link_connection_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 1)">
 			Color to use to display disabled navigation link connections, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/paths/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
-			Color of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
+		<member name="debug/shapes/paths/2d/fish_bones_enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [Path2D] curve paths will by default add additional fish bones along the path segments to visualize direction.
 		</member>
-		<member name="debug/shapes/paths/geometry_width" type="float" setter="" getter="" default="2.0">
-			Line width of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
+		<member name="debug/shapes/paths/2d/fish_bones_interval" type="int" setter="" getter="" default="4">
+			The default [Path2D] curve path sample point interval in which fish bones are places along the path. E.g. a value of 4 places a fish bone for every 4-th sampled point along path.
+		</member>
+		<member name="debug/shapes/paths/2d/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
+			Color of the [Path2D] curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/paths/2d/sample_interval" type="float" setter="" getter="" default="5.0">
+			The default [Path2D] curve path sample interval in which points are sampled for debug display.
+		</member>
+		<member name="debug/shapes/paths/3d/fish_bones_enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [Path3D] curve paths will by default add additional fish bones along the path segments to visualize direction.
+		</member>
+		<member name="debug/shapes/paths/3d/fish_bones_interval" type="int" setter="" getter="" default="4">
+			The default [Path3D] curve path sample point interval in which fish bones are places along the path. E.g. a value of 4 places a fish bone for every 4-th sampled point along path.
+		</member>
+		<member name="debug/shapes/paths/3d/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
+			Color of the [Path3D] curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/paths/3d/sample_interval" type="float" setter="" getter="" default="0.1">
+			The default [Path3D] curve path sample interval in which points are sampled for debug display.
 		</member>
 		<member name="display/display_server/driver" type="String" setter="" getter="">
 			Sets the driver to be used by the display server. This property can not be edited directly, instead, set the driver using the platform-specific overrides.

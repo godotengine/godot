@@ -88,6 +88,8 @@
 #include "servers/physics_server_2d_dummy.h"
 #endif // PHYSICS_2D_DISABLED
 
+#include "scene/2d/path_2d.h" // To set path debug hint.
+
 // 3D
 #ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_server_3d.h"
@@ -102,6 +104,10 @@
 #ifndef XR_DISABLED
 #include "servers/xr_server.h"
 #endif // XR_DISABLED
+
+#ifndef _3D_DISABLED
+#include "scene/3d/path_3d.h" // To set path debug hint.
+#endif
 
 #ifdef TESTS_ENABLED
 #include "tests/test_main.h"
@@ -4165,7 +4171,8 @@ int Main::start() {
 			sml->set_debug_collisions_hint(true);
 		}
 		if (debug_paths) {
-			sml->set_debug_paths_hint(true);
+			PathDebug2D::set_debug_enabled(true);
+			PathDebug3D::set_debug_enabled(true);
 		}
 
 		if (debug_navigation) {

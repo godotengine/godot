@@ -51,6 +51,12 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
 
+#ifndef DISABLE_DEPRECATED
+// For legacy path debug settings.
+#include "scene/2d/path_2d.h"
+#include "scene/3d/path_3d.h"
+#endif // DISABLE_DEPRECATED
+
 #ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/world_3d.h"
@@ -941,11 +947,15 @@ bool SceneTree::is_debugging_collisions_hint() const {
 }
 
 void SceneTree::set_debug_paths_hint(bool p_enabled) {
+	WARN_DEPRECATED_MSG(R"(SceneTree::set_debug_paths_hint() is deprecated, use the dedicated PathDebug2D/3D::set_debug_enabled() instead.)");
 	debug_paths_hint = p_enabled;
+	PathDebug2D::set_debug_enabled(debug_paths_hint);
+	PathDebug3D::set_debug_enabled(debug_paths_hint);
 }
 
 bool SceneTree::is_debugging_paths_hint() const {
-	return debug_paths_hint;
+	WARN_DEPRECATED_MSG(R"(SceneTree::is_debugging_paths_hint() is deprecated, use the dedicated PathDebug2D/3D::is_debug_enabled() instead.)");
+	return PathDebug2D::is_debug_enabled() && PathDebug3D::is_debug_enabled();
 }
 
 void SceneTree::set_debug_navigation_hint(bool p_enabled) {
@@ -973,41 +983,32 @@ Color SceneTree::get_debug_collision_contact_color() const {
 	return debug_collision_contact_color;
 }
 
+#ifndef DISABLE_DEPRECATED
 void SceneTree::set_debug_paths_color(const Color &p_color) {
-	debug_paths_color = p_color;
+	WARN_DEPRECATED_MSG(R"(SceneTree::set_debug_paths_color() is deprecated, use the dedicated PathDebug2D/3D::set_debug_paths_color() instead.)");
+	PathDebug3D::set_debug_paths_color(p_color);
 }
 
 Color SceneTree::get_debug_paths_color() const {
-	return debug_paths_color;
+	WARN_DEPRECATED_MSG(R"(SceneTree::get_debug_paths_color() is deprecated, use the dedicated PathDebug2D/3D::get_debug_paths_color() instead.)");
+	return PathDebug3D::get_debug_paths_color();
 }
 
 void SceneTree::set_debug_paths_width(float p_width) {
-	debug_paths_width = p_width;
+	WARN_DEPRECATED_MSG(R"(SceneTree::set_debug_paths_width() is deprecated, use the dedicated PathDebug2D/3D::set_debug_paths_width() instead.)");
+	PathDebug2D::set_debug_paths_width(p_width);
 }
 
 float SceneTree::get_debug_paths_width() const {
-	return debug_paths_width;
+	WARN_DEPRECATED_MSG(R"(SceneTree::get_debug_paths_width() is deprecated, use the dedicated PathDebug2D/3D::get_debug_paths_width() instead.)");
+	return PathDebug2D::get_debug_paths_width();
 }
 
 Ref<Material> SceneTree::get_debug_paths_material() {
-	_THREAD_SAFE_METHOD_
-
-	if (debug_paths_material.is_valid()) {
-		return debug_paths_material;
-	}
-
-	Ref<StandardMaterial3D> _debug_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	_debug_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	_debug_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	_debug_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	_debug_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	_debug_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	_debug_material->set_albedo(get_debug_paths_color());
-
-	debug_paths_material = _debug_material;
-
-	return debug_paths_material;
+	WARN_DEPRECATED_MSG(R"(SceneTree::get_debug_paths_material() is deprecated, use the dedicated PathDebug3D::get_debug_material() instead.)");
+	return PathDebug3D::get_debug_material();
 }
+#endif // DISABLE_DEPRECATED
 
 Ref<Material> SceneTree::get_debug_collision_material() {
 	_THREAD_SAFE_METHOD_
@@ -2013,8 +2014,6 @@ SceneTree::SceneTree() {
 	}
 	debug_collisions_color = GLOBAL_DEF("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.42));
 	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
-	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
-	debug_paths_width = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/paths/geometry_width", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 2.0);
 	collision_debug_contacts = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1"), 10000);
 	accessibility_upd_per_sec = GLOBAL_GET(SNAME("accessibility/general/updates_per_second"));
 

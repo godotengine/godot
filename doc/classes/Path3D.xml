@@ -13,9 +13,14 @@
 		<member name="curve" type="Curve3D" setter="set_curve" getter="get_curve">
 			A [Curve3D] describing the path.
 		</member>
-		<member name="debug_custom_color" type="Color" setter="set_debug_custom_color" getter="get_debug_custom_color" default="Color(0, 0, 0, 1)">
-			The custom color to use to draw the shape in the editor.
-			If set to [code]Color(0.0, 0.0, 0.0)[/code] (by default), the color set in EditorSettings is used.
+		<member name="debug_custom_color" type="Color" setter="set_debug_custom_color" getter="get_debug_custom_color" default="Color(1, 1, 1, 1)">
+			The custom color used to draw the path debug when [member debug_custom_enabled] is enabled.
+		</member>
+		<member name="debug_custom_enabled" type="bool" setter="set_debug_custom_enabled" getter="get_debug_custom_enabled" default="false">
+			If [code]true[/code], the debug custom properties override the global defaults.
+		</member>
+		<member name="debug_enabled" type="bool" setter="set_debug_enabled" getter="get_debug_enabled" default="true">
+			Used at runtime to toggle debug when "Visible Paths" is enabled in the Editor Debug menu. Inside the Editor debug is always enabled.
 		</member>
 	</members>
 	<signals>
