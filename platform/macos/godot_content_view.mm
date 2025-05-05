@@ -532,6 +532,11 @@
 	mm->set_relative_screen_position(relativeMotion);
 	ds->get_key_modifier_state([event modifierFlags], mm);
 
+	const NSRect contentRect = [wd.window_view frame];
+	if (NSPointInRect([event locationInWindow], contentRect)) {
+		ds->mouse_enter_window(window_id);
+	}
+
 	Input::get_singleton()->parse_input_event(mm);
 }
 
