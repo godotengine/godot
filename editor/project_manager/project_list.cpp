@@ -36,7 +36,7 @@
 #include "core/version.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
-#include "editor/project_manager.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/project_manager/project_tag.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
