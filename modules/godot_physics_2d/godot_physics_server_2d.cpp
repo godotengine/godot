@@ -567,7 +567,6 @@ RID GodotPhysicsServer2D::body_get_space(RID p_body) const {
 void GodotPhysicsServer2D::body_set_mode(RID p_body, BodyMode p_mode) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
-	FLUSH_QUERY_CHECK(body);
 
 	body->set_mode(p_mode);
 }
