@@ -380,7 +380,10 @@
 			Base text writing direction.
 		</member>
 		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
-			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
+			If [code]true[/code], the native virtual keyboard is enabled on platforms that support it.
+		</member>
+		<member name="virtual_keyboard_show_on_focus" type="bool" setter="set_virtual_keyboard_show_on_focus" getter="get_virtual_keyboard_show_on_focus" default="true">
+			If [code]true[/code], the native virtual keyboard is shown on focus events on platforms that support it.
 		</member>
 		<member name="virtual_keyboard_type" type="int" setter="set_virtual_keyboard_type" getter="get_virtual_keyboard_type" enum="LineEdit.VirtualKeyboardType" default="0">
 			Specifies the type of virtual keyboard to show.
