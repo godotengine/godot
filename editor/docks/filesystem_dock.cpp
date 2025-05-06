@@ -55,7 +55,7 @@
 #include "editor/scene_create_dialog.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
-#include "editor/shader_create_dialog.h"
+#include "editor/shader/shader_create_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/item_list.h"

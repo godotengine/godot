@@ -39,7 +39,7 @@
 #include "editor/plugins/shader/text_shader_editor.h"
 #include "editor/plugins/shader/visual_shader_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
-#include "editor/shader_create_dialog.h"
+#include "editor/shader/shader_create_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
 #include "scene/gui/item_list.h"

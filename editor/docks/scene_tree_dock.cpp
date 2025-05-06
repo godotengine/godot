@@ -57,7 +57,7 @@
 #include "editor/reparent_dialog.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
-#include "editor/shader_create_dialog.h"
+#include "editor/shader/shader_create_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
 #include "scene/animation/animation_tree.h"
