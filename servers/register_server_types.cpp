@@ -44,7 +44,6 @@
 #include "audio/effects/audio_effect_eq.h"
 #include "audio/effects/audio_effect_filter.h"
 #include "audio/effects/audio_effect_hard_limiter.h"
-#include "audio/effects/audio_effect_limiter.h"
 #include "audio/effects/audio_effect_panner.h"
 #include "audio/effects/audio_effect_phaser.h"
 #include "audio/effects/audio_effect_pitch_shift.h"
@@ -78,6 +77,9 @@
 #include "text/text_server_dummy.h"
 #include "text/text_server_extension.h"
 #include "text_server.h"
+#ifndef DISABLE_DEPRECATED
+#include "audio/effects/audio_effect_limiter.h"
+#endif
 
 // 2D physics and navigation.
 #ifndef NAVIGATION_2D_DISABLED
@@ -205,16 +207,18 @@ void register_server_types() {
 		GDREGISTER_CLASS(AudioEffectChorus);
 		GDREGISTER_CLASS(AudioEffectDelay);
 		GDREGISTER_CLASS(AudioEffectCompressor);
-		GDREGISTER_CLASS(AudioEffectLimiter);
 		GDREGISTER_CLASS(AudioEffectHardLimiter);
 		GDREGISTER_CLASS(AudioEffectPitchShift);
 		GDREGISTER_CLASS(AudioEffectPhaser);
-
 		GDREGISTER_CLASS(AudioEffectRecord);
 		GDREGISTER_CLASS(AudioEffectSpectrumAnalyzer);
 		GDREGISTER_ABSTRACT_CLASS(AudioEffectSpectrumAnalyzerInstance);
 
 		GDREGISTER_CLASS(AudioEffectCapture);
+
+#ifndef DISABLE_DEPRECATED
+		GDREGISTER_CLASS(AudioEffectLimiter);
+#endif
 	}
 
 	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
