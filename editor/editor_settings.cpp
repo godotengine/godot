@@ -676,7 +676,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Text editor */
 
 	// Theme
-	_initial_set("text_editor/theme/line_spacing", 6);
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_ENUM, "text_editor/theme/color_theme", "Default", "Default,Godot 2,Custom")
 
 	// Theme: Highlighting
@@ -1220,6 +1219,7 @@ void EditorSettings::_remove_deprecated_settings() {
 	erase("network/connection/engine_version_update_mode");
 	erase("run/output/always_open_output_on_play");
 	erase("run/output/always_close_output_on_stop");
+	erase("text_editor/theme/line_spacing"); // See GH-106137.
 }
 #endif
 
