@@ -2625,7 +2625,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	CodeTextEditor *cte = se->get_code_editor();
 	if (cte) {
 		cte->set_zoom_factor(zoom_factor);
-		cte->connect("zoomed", callable_mp(this, &ScriptEditor::_set_zoom_factor));
+		cte->connect("zoomed", callable_mp(this, &ScriptEditor::_set_script_zoom_factor));
+		cte->connect(SceneStringName(visibility_changed), callable_mp(this, &ScriptEditor::_update_code_editor_zoom_factor).bind(cte));
 	}
 
 	//test for modification, maybe the script was not edited but was loaded
@@ -3558,7 +3559,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		}
 	}
 
-	_set_zoom_factor(p_layout->get_value("ScriptEditor", "zoom_factor", 1.0f));
+	_set_script_zoom_factor(p_layout->get_value("ScriptEditor", "zoom_factor", 1.0f));
 
 	restoring_layout = false;
 
@@ -4057,21 +4058,17 @@ void ScriptEditor::_on_find_in_files_modified_files(const PackedStringArray &pat
 	_update_modified_scripts_for_external_editor();
 }
 
-void ScriptEditor::_set_zoom_factor(float p_zoom_factor) {
+void ScriptEditor::_set_script_zoom_factor(float p_zoom_factor) {
 	if (zoom_factor == p_zoom_factor) {
 		return;
 	}
+
 	zoom_factor = p_zoom_factor;
-	for (int i = 0; i < tab_container->get_tab_count(); i++) {
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
-		if (se) {
-			CodeTextEditor *cte = se->get_code_editor();
-			if (cte) {
-				if (zoom_factor != cte->get_zoom_factor()) {
-					cte->set_zoom_factor(zoom_factor);
-				}
-			}
-		}
+}
+
+void ScriptEditor::_update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor) {
+	if (p_code_text_editor && p_code_text_editor->is_visible_in_tree() && zoom_factor != p_code_text_editor->get_zoom_factor()) {
+		p_code_text_editor->set_zoom_factor(zoom_factor);
 	}
 }
 
