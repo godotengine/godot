@@ -24,19 +24,19 @@ if command -v jq 2>&1 >/dev/null; then
 	done
 else
 	echo 'Error: Could not find 'jq' command. Is jq installed? Try running "brew install jq" or "port install jq" and rerunning this script.'
-	exit 0
+	exit 1
 fi
 
 # Download and install the Vulkan SDK.
 curl -L "https://sdk.lunarg.com/sdk/download/latest/mac/vulkan-sdk.zip" -o /tmp/vulkan-sdk.zip
 unzip /tmp/vulkan-sdk.zip -d /tmp
 
-if [ -d "/tmp/InstallVulkan-$new_ver_full.app" ]; then
-	/tmp/InstallVulkan-$new_ver_full.app/Contents/MacOS/InstallVulkan-$new_ver_full  --accept-licenses --default-answer --confirm-command install
-	rm -rf /tmp/InstallVulkan-$new_ver_full.app
-elif [ -d "/tmp/InstallVulkan.app" ]; then
-	/tmp/InstallVulkan.app/Contents/MacOS/InstallVulkan --accept-licenses --default-answer --confirm-command install
-	rm -rf /tmp/InstallVulkan.app
+if [ -d "/tmp/vulkansdk-macOS-$new_ver_full.app" ]; then
+	/tmp/vulkansdk-macOS-$new_ver_full.app/Contents/MacOS/vulkansdk-macOS-$new_ver_full --accept-licenses --default-answer --confirm-command install
+	rm -rf /tmp/vulkansdk-macOS-$new_ver_full.app
+else
+	echo "Couldn't install the Vulkan SDK, the unzipped contents may no longer match what this script expects."
+	exit 1
 fi
 
 rm -f /tmp/vulkan-sdk.zip
