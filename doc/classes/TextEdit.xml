@@ -1421,7 +1421,10 @@
 			If [code]false[/code], using [kbd]Ctrl + Left[/kbd] or [kbd]Ctrl + Right[/kbd] ([kbd]Cmd + Left[/kbd] or [kbd]Cmd + Right[/kbd] on macOS) bindings will stop moving caret only if a space or punctuation is detected. If [code]true[/code], it will also stop the caret if a character is part of [code]!"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^`{|}~[/code], the Unicode General Punctuation table, or the Unicode CJK Punctuation table. Useful for subword moving. This behavior also will be applied to the behavior of text selection.
 		</member>
 		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
-			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
+			If [code]true[/code], the native virtual keyboard is enabled on platforms that support it.
+		</member>
+		<member name="virtual_keyboard_show_on_focus" type="bool" setter="set_virtual_keyboard_show_on_focus" getter="get_virtual_keyboard_show_on_focus" default="true">
+			If [code]true[/code], the native virtual keyboard is shown on focus events on platforms that support it.
 		</member>
 		<member name="wrap_mode" type="int" setter="set_line_wrapping_mode" getter="get_line_wrapping_mode" enum="TextEdit.LineWrappingMode" default="0">
 			Sets the line wrapping mode to use.

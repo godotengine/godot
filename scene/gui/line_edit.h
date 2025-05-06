@@ -148,6 +148,7 @@ private:
 	bool shortcut_keys_enabled = true;
 
 	bool virtual_keyboard_enabled = true;
+	bool virtual_keyboard_show_on_focus = true;
 	VirtualKeyboardType virtual_keyboard_type = KEYBOARD_TYPE_DEFAULT;
 
 	bool middle_mouse_paste_enabled = true;
@@ -261,6 +262,8 @@ private:
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _texture_changed();
+
+	void _edit(bool p_show_virtual_keyboard = true);
 
 protected:
 	bool _is_over_clear_button(const Point2 &p_pos) const;
@@ -400,6 +403,9 @@ public:
 
 	void set_virtual_keyboard_enabled(bool p_enable);
 	bool is_virtual_keyboard_enabled() const;
+
+	void set_virtual_keyboard_show_on_focus(bool p_show_on_focus);
+	bool get_virtual_keyboard_show_on_focus() const;
 
 	void set_virtual_keyboard_type(VirtualKeyboardType p_type);
 	VirtualKeyboardType get_virtual_keyboard_type() const;

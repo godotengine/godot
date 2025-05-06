@@ -343,6 +343,7 @@ private:
 	bool backspace_deletes_composite_character_enabled = false;
 	bool shortcut_keys_enabled = true;
 	bool virtual_keyboard_enabled = true;
+	bool virtual_keyboard_show_on_focus = true;
 	bool middle_mouse_paste_enabled = true;
 	bool empty_selection_clipboard_enabled = true;
 
@@ -822,6 +823,9 @@ public:
 
 	void set_virtual_keyboard_enabled(bool p_enabled);
 	bool is_virtual_keyboard_enabled() const;
+
+	void set_virtual_keyboard_show_on_focus(bool p_show_on_focus);
+	bool get_virtual_keyboard_show_on_focus() const;
 
 	void set_middle_mouse_paste_enabled(bool p_enabled);
 	bool is_middle_mouse_paste_enabled() const;
