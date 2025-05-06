@@ -124,5 +124,11 @@
 				[b]Warning:[/b] With GDScript backtraces, the returned [Variant] will be the variable's actual value, including any object references. This means that storing the returned [Variant] will prevent any such object from being deallocated, so it's generally recommended not to do so.
 			</description>
 		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the backtrace has no stack frames.
+			</description>
+		</method>
 	</methods>
 </class>
