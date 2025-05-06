@@ -113,7 +113,6 @@ public:
 	static void set_keep_all_compressed_buffers(bool p_keep);
 	static bool is_keeping_all_compressed_buffers();
 
-	PortableCompressedTexture2D();
 	~PortableCompressedTexture2D();
 };
 

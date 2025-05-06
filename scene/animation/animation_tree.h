@@ -251,9 +251,6 @@ protected:
 	virtual void _tree_changed();
 	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
 	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node);
-
-public:
-	AnimationRootNode() {}
 };
 
 class AnimationNodeStartState : public AnimationRootNode {

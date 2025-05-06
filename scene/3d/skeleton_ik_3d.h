@@ -90,8 +90,6 @@ public:
 		Vector<EndEffector> end_effectors;
 
 		Transform3D goal_global_transform;
-
-		Task() {}
 	};
 
 private:
