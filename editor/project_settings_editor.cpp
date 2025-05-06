@@ -672,6 +672,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	search_box->set_placeholder(TTR("Filter Settings"));
 	search_box->set_accessibility_name(TTRC("Filter Settings"));
 	search_box->set_clear_button_enabled(true);
+	search_box->set_virtual_keyboard_show_on_focus(false);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_bar->add_child(search_box);
 
