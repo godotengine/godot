@@ -1865,6 +1865,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_GDSCRIPT);
 	text_editor->set_draw_bookmarks_gutter(true);
 
+	text_editor->set_virtual_keyboard_show_on_focus(false);
 	text_editor->set_draw_line_numbers(true);
 	text_editor->set_highlight_matching_braces_enabled(true);
 	text_editor->set_auto_indent_enabled(true);

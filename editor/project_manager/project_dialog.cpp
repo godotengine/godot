@@ -945,6 +945,7 @@ ProjectDialog::ProjectDialog() {
 	name_container->add_child(l);
 
 	project_name = memnew(LineEdit);
+	project_name->set_virtual_keyboard_show_on_focus(false);
 	project_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	name_container->add_child(project_name);
 

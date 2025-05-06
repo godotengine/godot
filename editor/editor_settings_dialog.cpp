@@ -902,6 +902,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Filter Settings"));
 	search_box->set_accessibility_name(TTRC("Filter Settings"));
+	search_box->set_virtual_keyboard_show_on_focus(false);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
 
