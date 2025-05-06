@@ -537,7 +537,8 @@ class ScriptEditor : public PanelContainer {
 	void _on_find_in_files_modified_files(const PackedStringArray &paths);
 	void _on_find_in_files_close_button_clicked();
 
-	void _set_zoom_factor(float p_zoom_factor);
+	void _set_script_zoom_factor(float p_zoom_factor);
+	void _update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor);
 
 	void _window_changed(bool p_visible);
 
