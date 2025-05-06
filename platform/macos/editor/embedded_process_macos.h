@@ -95,7 +95,7 @@ public:
 	}
 
 	virtual bool is_process_focused() const override { return layer_host->has_focus(); }
-	virtual void embed_process(OS::ProcessID p_pid) override;
+	virtual void embed_process(OS::ProcessID p_pid, const String &p_embedded_window) override;
 	virtual int get_embedded_pid() const override { return current_process_id; }
 	virtual void reset() override;
 	virtual void request_close() override;
