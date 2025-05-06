@@ -32,7 +32,7 @@
 
 #include "editor/plugins/script/script_editor_plugin.h"
 
-#include "editor/code_editor.h"
+#include "editor/gui/code_editor.h"
 
 class TextEditor : public ScriptEditorBase {
 	GDCLASS(TextEditor, ScriptEditorBase);
