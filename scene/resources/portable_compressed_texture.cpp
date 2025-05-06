@@ -397,8 +397,6 @@ void PortableCompressedTexture2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESSION_MODE_ASTC);
 }
 
-PortableCompressedTexture2D::PortableCompressedTexture2D() {}
-
 PortableCompressedTexture2D::~PortableCompressedTexture2D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());

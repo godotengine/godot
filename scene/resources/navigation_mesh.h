@@ -202,9 +202,6 @@ public:
 #ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> get_debug_mesh();
 #endif // DEBUG_ENABLED
-
-	NavigationMesh() {}
-	~NavigationMesh() {}
 };
 
 VARIANT_ENUM_CAST(NavigationMesh::SamplePartitionType);
