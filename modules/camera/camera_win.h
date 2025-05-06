@@ -28,17 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-
-#ifndef CAMERA_WIN_H
-#define CAMERA_WIN_H
-
+#pragma once
 
 #include "servers/camera/camera_feed.h"
 #include "servers/camera_server.h"
 #include <initguid.h>
 #include <mfapi.h>
-#include <mfidl.h>
 #include <mferror.h>
+#include <mfidl.h>
 #include <mfreadwrite.h>
 #include <windows.h>
 
@@ -50,7 +47,7 @@ private:
 	IMFSourceReader *imf_source_reader = NULL;
 	std::thread *worker;
 	Vector<GUID> format_guids;
-	Vector<IMFMediaType*> format_mediatypes;
+	Vector<IMFMediaType *> format_mediatypes;
 
 	// image_y is used as unique image when format is RGB
 	Ref<Image> image_y;
@@ -82,5 +79,3 @@ public:
 	CameraWindows();
 	~CameraWindows();
 };
-
-#endif // CAMERA_WIN_H
