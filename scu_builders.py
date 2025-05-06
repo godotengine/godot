@@ -310,6 +310,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["editor/plugins/gizmos"])
     process_folder(["editor/plugins/shader"])
     process_folder(["editor/plugins/tiles"])
+    process_folder(["editor/scene"])
     process_folder(["editor/settings"])
     process_folder(["editor/shader"])
     process_folder(["editor/translations"])
