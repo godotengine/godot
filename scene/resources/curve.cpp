@@ -1434,8 +1434,6 @@ void Curve2D::_bind_methods() {
 	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
 }
 
-Curve2D::Curve2D() {}
-
 /***********************************************************************************/
 /***********************************************************************************/
 /***********************************************************************************/
@@ -2514,5 +2512,3 @@ void Curve3D::_bind_methods() {
 	ADD_GROUP("Up Vector", "up_vector_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "up_vector_enabled"), "set_up_vector_enabled", "is_up_vector_enabled");
 }
-
-Curve3D::Curve3D() {}

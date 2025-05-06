@@ -167,9 +167,6 @@ public:
 	void set_data(const Vector<Vector2> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<Vector<Vector2>> &p_outlines);
 	void get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons);
 	void get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<Vector<Vector2>> &r_outlines);
-
-	NavigationPolygon() {}
-	~NavigationPolygon() {}
 };
 
 VARIANT_ENUM_CAST(NavigationPolygon::SamplePartitionType);

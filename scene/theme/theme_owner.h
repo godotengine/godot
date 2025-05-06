@@ -78,5 +78,4 @@ public:
 	int get_theme_default_font_size();
 
 	ThemeOwner(Node *p_holder) { holder = p_holder; }
-	~ThemeOwner() {}
 };

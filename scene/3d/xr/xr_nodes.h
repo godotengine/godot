@@ -153,9 +153,6 @@ public:
 	Vector2 get_vector2(const StringName &p_name) const;
 
 	XRPositionalTracker::TrackerHand get_tracker_hand() const;
-
-	XRController3D() {}
-	~XRController3D() {}
 };
 
 /*
@@ -175,9 +172,6 @@ protected:
 public:
 	Vector3 get_size() const;
 	Plane get_plane() const;
-
-	XRAnchor3D() {}
-	~XRAnchor3D() {}
 };
 
 /*
@@ -211,7 +205,4 @@ public:
 
 	void set_current(bool p_enabled);
 	bool is_current() const;
-
-	XROrigin3D() {}
-	~XROrigin3D() {}
 };
