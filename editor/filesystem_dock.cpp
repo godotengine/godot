@@ -2096,6 +2096,12 @@ Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> select
 }
 
 void FileSystemDock::_tree_rmb_option(int p_option) {
+	if (p_option > FILE_MENU_MAX) {
+		// Extra options don't need paths.
+		_file_option(p_option, {});
+		return;
+	}
+
 	Vector<String> selected_strings = _tree_get_selected(false);
 
 	// Execute the current option.
@@ -2118,8 +2124,14 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 }
 
 void FileSystemDock::_file_list_rmb_option(int p_option) {
-	Vector<int> selected_id = files->get_selected_items();
 	Vector<String> selected;
+	if (p_option > FILE_MENU_MAX) {
+		// Extra options don't need paths.
+		_file_option(p_option, selected);
+		return;
+	}
+
+	Vector<int> selected_id = files->get_selected_items();
 	for (int i = 0; i < selected_id.size(); i++) {
 		selected.push_back(files->get_item_metadata(selected_id[i]));
 	}
@@ -2573,6 +2585,13 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			ScriptEditor::get_singleton()->open_text_file_create_dialog(dir);
 		} break;
 
+		case EXTRA_FOCUS_PATH: {
+			focus_on_filter();
+		} break;
+		case EXTRA_FOCUS_FILTER: {
+			focus_on_filter();
+		} break;
+
 		default: {
 			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
 				if (!EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_option, p_selected)) {
@@ -2600,6 +2619,33 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			break;
 		}
 	}
+}
+
+int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
+	if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_key)) {
+		return FILE_MENU_DUPLICATE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/copy_path", p_key)) {
+		return FILE_MENU_COPY_PATH;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/copy_absolute_path", p_key)) {
+		return FILE_MENU_COPY_ABSOLUTE_PATH;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/copy_uid", p_key)) {
+		return FILE_MENU_COPY_UID;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_key)) {
+		return FILE_MENU_REMOVE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_key)) {
+		return FILE_MENU_RENAME;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_key)) {
+		return FILE_MENU_SHOW_IN_EXPLORER;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_program", p_key)) {
+		return FILE_MENU_OPEN_EXTERNAL;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_key)) {
+		return FILE_MENU_OPEN_IN_TERMINAL;
+	} else if (ED_IS_SHORTCUT("file_dialog/focus_path", p_key)) {
+		return EXTRA_FOCUS_PATH;
+	} else if (ED_IS_SHORTCUT("editor/open_search", p_key)) {
+		return EXTRA_FOCUS_FILTER;
+	}
+	return -1;
 }
 
 void FileSystemDock::_resource_created() {
@@ -3609,8 +3655,6 @@ void FileSystemDock::_reselect_items_selected_on_drag_begin(bool reset) {
 }
 
 void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
-	Ref<InputEventKey> key = p_event;
-
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		TreeItem *item = tree->get_item_at_position(mm->get_position());
@@ -3639,29 +3683,11 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 		}
 	}
 
+	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
-		if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
-			_tree_rmb_option(FILE_MENU_DUPLICATE);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_path", p_event)) {
-			_tree_rmb_option(FILE_MENU_COPY_PATH);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_absolute_path", p_event)) {
-			_tree_rmb_option(FILE_MENU_COPY_ABSOLUTE_PATH);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_uid", p_event)) {
-			_tree_rmb_option(FILE_MENU_COPY_UID);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
-			_tree_rmb_option(FILE_MENU_REMOVE);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
-			_tree_rmb_option(FILE_MENU_RENAME);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_event)) {
-			_tree_rmb_option(FILE_MENU_SHOW_IN_EXPLORER);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_program", p_event)) {
-			_tree_rmb_option(FILE_MENU_OPEN_EXTERNAL);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_event)) {
-			_tree_rmb_option(FILE_MENU_OPEN_IN_TERMINAL);
-		} else if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
-			focus_on_path();
-		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
-			focus_on_filter();
+		int option_id = _get_menu_option_from_key(key);
+		if (option_id > -1) {
+			_tree_rmb_option(option_id);
 		} else {
 			Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_event);
 			if (!custom_callback.is_valid()) {
@@ -3723,28 +3749,9 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
-		if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
-			_file_list_rmb_option(FILE_MENU_DUPLICATE);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_path", p_event)) {
-			_file_list_rmb_option(FILE_MENU_COPY_PATH);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_absolute_path", p_event)) {
-			_file_list_rmb_option(FILE_MENU_COPY_ABSOLUTE_PATH);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_uid", p_event)) {
-			_file_list_rmb_option(FILE_MENU_COPY_UID);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
-			_file_list_rmb_option(FILE_MENU_REMOVE);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
-			_file_list_rmb_option(FILE_MENU_RENAME);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_event)) {
-			_file_list_rmb_option(FILE_MENU_SHOW_IN_EXPLORER);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_program", p_event)) {
-			_file_list_rmb_option(FILE_MENU_OPEN_EXTERNAL);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_event)) {
-			_file_list_rmb_option(FILE_MENU_OPEN_IN_TERMINAL);
-		} else if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
-			focus_on_path();
-		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
-			focus_on_filter();
+		int option_id = _get_menu_option_from_key(key);
+		if (option_id > -1) {
+			_file_list_rmb_option(option_id);
 		} else {
 			Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_event);
 			if (!custom_callback.is_valid()) {
