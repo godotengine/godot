@@ -324,8 +324,8 @@ class TextServerFallback : public TextServerExtension {
 #ifdef MODULE_FREETYPE_ENABLED
 	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeFallback *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const;
 #endif
-	_FORCE_INLINE_ bool _ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling = 0) const;
-	_FORCE_INLINE_ bool _ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size, FontForSizeFallback *&r_cache_for_size, bool p_silent = false, uint32_t p_oversampling = 0) const;
+	bool _ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling = 0) const;
+	bool _ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size, FontForSizeFallback *&r_cache_for_size, bool p_silent = false, uint32_t p_oversampling = 0) const;
 	_FORCE_INLINE_ bool _font_validate(const RID &p_font_rid) const;
 	_FORCE_INLINE_ void _font_clear_cache(FontFallback *p_font_data);
 	static void _generateMTSDF_threaded(void *p_td, uint32_t p_y);
