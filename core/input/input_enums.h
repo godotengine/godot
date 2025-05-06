@@ -32,6 +32,23 @@
 
 #include "core/error/error_macros.h"
 
+enum class InputEventType {
+	INVALID = -1,
+	KEY,
+	MOUSE_BUTTON,
+	MOUSE_MOTION,
+	JOY_MOTION,
+	JOY_BUTTON,
+	SCREEN_TOUCH,
+	SCREEN_DRAG,
+	MAGNIFY_GESTURE,
+	PAN_GESTURE,
+	MIDI,
+	SHORTCUT,
+	ACTION,
+	MAX,
+};
+
 enum class HatDir {
 	UP = 0,
 	RIGHT = 1,

@@ -11,7 +11,10 @@ files = [
     "godot_application_delegate.mm",
     "crash_handler_macos.mm",
     "macos_terminal_logger.mm",
+    "display_server_embedded.mm",
     "display_server_macos.mm",
+    "embedded_debugger.mm",
+    "embedded_gl_manager.mm",
     "godot_button_view.mm",
     "godot_content_view.mm",
     "godot_status_item.mm",
@@ -29,6 +32,12 @@ files = [
     "gl_manager_macos_angle.mm",
     "gl_manager_macos_legacy.mm",
 ]
+
+if env.editor_build:
+    files += [
+        "editor/embedded_game_view_plugin.mm",
+        "editor/embedded_process_macos.mm",
+    ]
 
 prog = env.add_program("#bin/godot", files)
 

@@ -408,6 +408,8 @@ void ScriptEditorDebugger::_msg_debug_exit(uint64_t p_thread_id, const Array &p_
 void ScriptEditorDebugger::_msg_set_pid(uint64_t p_thread_id, const Array &p_data) {
 	ERR_FAIL_COND(p_data.is_empty());
 	remote_pid = p_data[0];
+	// We emit the started signal after we've set the PID.
+	emit_signal(SNAME("started"));
 }
 
 void ScriptEditorDebugger::_msg_scene_click_ctrl(uint64_t p_thread_id, const Array &p_data) {
@@ -1174,7 +1176,6 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
-	emit_signal(SNAME("started"));
 
 	Array quit_keys = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
 	_put_msg("scene:setup_scene", quit_keys);

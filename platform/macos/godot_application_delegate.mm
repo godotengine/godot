@@ -34,7 +34,28 @@
 #import "native_menu_macos.h"
 #import "os_macos.h"
 
-@implementation GodotApplicationDelegate
+#import "main/main.h"
+
+@interface GodotApplicationDelegate ()
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+- (void)accessibilityDisplayOptionsChange:(NSNotification *)notification;
+@end
+
+@implementation GodotApplicationDelegate {
+	bool high_contrast;
+	bool reduce_motion;
+	bool reduce_transparency;
+	bool voice_over;
+	OS_MacOS_NSApp *os_mac;
+}
+
+- (GodotApplicationDelegate *)initWithOS:(OS_MacOS_NSApp *)os {
+	self = [super init];
+	if (self) {
+		os_mac = os;
+	}
+	return self;
+}
 
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app {
 	return YES;
@@ -93,30 +114,6 @@
 	}
 }
 
-- (void)forceUnbundledWindowActivationHackStep1 {
-	// Step 1: Switch focus to macOS SystemUIServer process.
-	// Required to perform step 2, TransformProcessType will fail if app is already the in focus.
-	for (NSRunningApplication *app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.systemuiserver"]) {
-		[app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-		break;
-	}
-	[self performSelector:@selector(forceUnbundledWindowActivationHackStep2)
-			   withObject:nil
-			   afterDelay:0.02];
-}
-
-- (void)forceUnbundledWindowActivationHackStep2 {
-	// Step 2: Register app as foreground process.
-	ProcessSerialNumber psn = { 0, kCurrentProcess };
-	(void)TransformProcessType(&psn, kProcessTransformToForegroundApplication);
-	[self performSelector:@selector(forceUnbundledWindowActivationHackStep3) withObject:nil afterDelay:0.02];
-}
-
-- (void)forceUnbundledWindowActivationHackStep3 {
-	// Step 3: Switch focus back to app window.
-	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-}
-
 - (void)system_theme_changed:(NSNotification *)notification {
 	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds) {
@@ -125,22 +122,7 @@
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
-	static_cast<OS_MacOS *>(OS::get_singleton())->start_main();
-}
-
-- (void)activate {
-	[NSApp activateIgnoringOtherApps:YES];
-
-	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-	const char *bundled_id = getenv("__CFBundleIdentifier");
-	NSString *nsbundleid_env = [NSString stringWithUTF8String:(bundled_id != nullptr) ? bundled_id : ""];
-	NSString *nsbundleid = [[NSBundle mainBundle] bundleIdentifier];
-	if (nsappname == nil || isatty(STDOUT_FILENO) || isatty(STDIN_FILENO) || isatty(STDERR_FILENO) || ![nsbundleid isEqualToString:nsbundleid_env]) {
-		// If the executable is started from terminal or is not bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
-		[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
-	}
-	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
-	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleColorPreferencesChangedNotification" object:nil];
+	os_mac->start_main();
 }
 
 static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
@@ -154,6 +136,9 @@ static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 	reduce_motion = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
 	reduce_transparency = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
 	voice_over = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
+
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleColorPreferencesChangedNotification" object:nil];
 
 	return self;
 }
@@ -195,10 +180,6 @@ static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 }
 
 - (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls {
-	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
-	if (!os) {
-		return;
-	}
 	List<String> args;
 	for (NSURL *url in urls) {
 		if ([url isFileURL]) {
@@ -208,33 +189,29 @@ static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 		}
 	}
 	if (!args.is_empty()) {
-		if (os->get_main_loop()) {
+		if (os_mac->get_main_loop()) {
 			// Application is already running, open a new instance with the URL/files as command line arguments.
-			os->create_instance(args);
-		} else if (os->get_cmd_argc() == 0) {
+			os_mac->create_instance(args);
+		} else if (os_mac->get_cmd_argc() == 0) {
 			// Application is just started, add to the list of command line arguments and continue.
-			os->set_cmdline_platform_args(args);
+			os_mac->set_cmdline_platform_args(args);
 		}
 	}
 }
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames {
-	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
-	if (!os) {
-		return;
-	}
 	List<String> args;
 	for (NSString *filename in filenames) {
 		NSURL *url = [NSURL URLWithString:filename];
 		args.push_back(String::utf8([url.path UTF8String]));
 	}
 	if (!args.is_empty()) {
-		if (os->get_main_loop()) {
+		if (os_mac->get_main_loop()) {
 			// Application is already running, open a new instance with the URL/files as command line arguments.
-			os->create_instance(args);
-		} else if (os->get_cmd_argc() == 0) {
+			os_mac->create_instance(args);
+		} else if (os_mac->get_cmd_argc() == 0) {
 			// Application is just started, add to the list of command line arguments and continue.
-			os->set_cmdline_platform_args(args);
+			os_mac->set_cmdline_platform_args(args);
 		}
 	}
 }
@@ -244,14 +221,14 @@ static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 	if (ds) {
 		ds->mouse_process_popups(true);
 	}
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+	if (os_mac->get_main_loop()) {
+		os_mac->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 	}
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+	if (os_mac->get_main_loop()) {
+		os_mac->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 	}
 }
 
@@ -272,29 +249,26 @@ static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
-	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
-	if (os) {
-		os->cleanup();
-		exit(os->get_exit_code());
-	}
+	os_mac->cleanup();
+	exit(os_mac->get_exit_code());
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+	if (os_mac->os_should_terminate()) {
+		return NSTerminateNow;
+	}
+
 	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds && ds->has_window(DisplayServerMacOS::MAIN_WINDOW_ID)) {
 		ds->send_window_event(ds->get_window(DisplayServerMacOS::MAIN_WINDOW_ID), DisplayServerMacOS::WINDOW_EVENT_CLOSE_REQUEST);
 	}
-	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
-	if (!os || os->os_should_terminate()) {
-		return NSTerminateNow;
-	}
+
 	return NSTerminateCancel;
 }
 
 - (void)showAbout:(id)sender {
-	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
-	if (os && os->get_main_loop()) {
-		os->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
+	if (os_mac->get_main_loop()) {
+		os_mac->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
 	}
 }
 
