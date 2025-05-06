@@ -39,9 +39,13 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
+#include "scene/main/timer.h"
 #include "scene/resources/font.h"
 
 void GotoLinePopup::popup_find_line(CodeTextEditor *p_text_editor) {
@@ -1182,7 +1186,7 @@ void CodeTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
 
 	find_replace_bar = p_bar;
 	find_replace_bar->set_text_edit(this);
-	find_replace_bar->connect("error", callable_mp(error, &Label::set_text));
+	find_replace_bar->connect("error", callable_mp(error, &RichTextLabel::set_text));
 }
 
 void CodeTextEditor::remove_find_replace_bar() {
@@ -1190,7 +1194,7 @@ void CodeTextEditor::remove_find_replace_bar() {
 		return;
 	}
 
-	find_replace_bar->disconnect("error", callable_mp(error, &Label::set_text));
+	find_replace_bar->disconnect("error", callable_mp(error, &RichTextLabel::set_text));
 	find_replace_bar = nullptr;
 }
 
@@ -1554,27 +1558,35 @@ void CodeTextEditor::goto_error() {
 void CodeTextEditor::_update_text_editor_theme() {
 	emit_signal(SNAME("load_theme_settings"));
 
-	error_button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
-	warning_button->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-
-	Ref<Font> status_bar_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
-	int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts));
-
-	int count = status_bar->get_child_count();
-	for (int i = 0; i < count; i++) {
-		Control *n = Object::cast_to<Control>(status_bar->get_child(i));
-		if (n) {
-			n->add_theme_font_override(SceneStringName(font), status_bar_font);
-			n->add_theme_font_size_override(SceneStringName(font_size), status_bar_font_size);
-		}
-	}
-
+	const Ref<Font> status_bar_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
+	const int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts));
 	const Color &error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 	const Color &warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+	const Ref<StyleBox> label_stylebox = get_theme_stylebox(SNAME("normal"), SNAME("Label")); // Empty stylebox.
 
-	error->add_theme_color_override(SceneStringName(font_color), error_color);
+	error->begin_bulk_theme_override();
+	error->add_theme_font_override(SNAME("normal_font"), status_bar_font);
+	error->add_theme_font_size_override(SNAME("normal_font_size"), status_bar_font_size);
+	error->add_theme_color_override(SNAME("default_color"), error_color);
+	error->add_theme_style_override(SNAME("normal"), label_stylebox);
+	error->end_bulk_theme_override();
+
+	error_button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
 	error_button->add_theme_color_override(SceneStringName(font_color), error_color);
+
+	warning_button->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 	warning_button->add_theme_color_override(SceneStringName(font_color), warning_color);
+
+	const int child_count = status_bar->get_child_count();
+	for (int i = 0; i < child_count; i++) {
+		Control *child = Object::cast_to<Control>(status_bar->get_child(i));
+		if (child) {
+			child->begin_bulk_theme_override();
+			child->add_theme_font_override(SceneStringName(font), status_bar_font);
+			child->add_theme_font_size_override(SceneStringName(font_size), status_bar_font_size);
+			child->end_bulk_theme_override();
+		}
+	}
 
 	_update_font_ligatures();
 }
@@ -1896,18 +1908,15 @@ CodeTextEditor::CodeTextEditor() {
 	toggle_files_button->hide();
 
 	// Error
-	ScrollContainer *scroll = memnew(ScrollContainer);
-	scroll->set_h_size_flags(SIZE_EXPAND_FILL);
-	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	status_bar->add_child(scroll);
-
-	error = memnew(Label);
-	error->set_focus_mode(FOCUS_ACCESSIBILITY);
-	scroll->add_child(error);
-	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	error->set_mouse_filter(MOUSE_FILTER_STOP);
+	error = memnew(RichTextLabel);
+	error->set_use_bbcode(true);
+	error->set_selection_enabled(true);
+	error->set_context_menu_enabled(true);
+	error->set_fit_content(true);
+	error->set_h_size_flags(SIZE_EXPAND_FILL);
+	error->set_v_size_flags(SIZE_SHRINK_CENTER);
 	error->connect(SceneStringName(gui_input), callable_mp(this, &CodeTextEditor::_error_pressed));
+	status_bar->add_child(error);
 
 	// Errors
 	error_button = memnew(Button);
