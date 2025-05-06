@@ -32,7 +32,7 @@
 
 #include "script_editor_plugin.h"
 
-#include "editor/code_editor.h"
+#include "editor/gui/code_editor.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
