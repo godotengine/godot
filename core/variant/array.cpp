@@ -575,28 +575,85 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
 }
 
 Array Array::filter(const Callable &p_callable) const {
-	Array new_arr;
-	new_arr.resize(size());
-	new_arr._p->typed = _p->typed;
-	int accepted_count = 0;
+	int index = 0;
 
+	// Variables used for the calls later.
 	const Variant *argptrs[1];
-	for (int i = 0; i < size(); i++) {
-		argptrs[0] = &get(i);
+	Variant result;
+	Callable::CallError ce;
 
-		Variant result;
-		Callable::CallError ce;
+	// This first part is an optimization:
+	// We try to iterate the full array without allocating yet.
+	// If all elements are filtered, we can just return an empty array.
+	// If no elements are filtered, we can just return a CoW copy.
+	bool all_so_far_are_retained = false; // Defaults to true for the empty array.
+	for (; index < size(); index++) {
+		argptrs[0] = &get(index);
+
+		p_callable.callp(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Array(), vformat("Error calling method from 'filter': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
+		}
+
+		if (index == 0) {
+			all_so_far_are_retained = result.operator bool();
+		} else if (all_so_far_are_retained != result.operator bool()) {
+			// At least one value was filtered, and one retained.
+			// We'll need to create a full copy (implemented below).
+			break;
+		}
+		// else we're still consistent with the filter behavior so far.
+	}
+
+	if (index == size()) {
+		// No inconsistencies of return values, we can shortcut with a fast result.
+		return all_so_far_are_retained ? duplicate(false) : Array();
+	}
+
+	// We need to actually create a full copy (slow path).
+	Array new_arr;
+	new_arr._p->typed = _p->typed;
+	int accepted_count;
+
+	if (all_so_far_are_retained) {
+		// We know so far, we've added all but one element.
+		// The rest, we don't know yet.
+		new_arr.resize(size() - 1);
+
+		// Add all elements so far, except the latest.
+		for (int i = 0; i < index; i++) {
+			new_arr[i] = get(i);
+		}
+		accepted_count = index;
+	} else {
+		// We know that so far, we've only added the latest element.
+		// The rest, we don't know yet.
+		new_arr.resize(size() - index);
+
+		// Add just the latest element.
+		new_arr[0] = get(index);
+		accepted_count = 1;
+	}
+
+	// Skip the latest entry.
+	index++;
+
+	// Iterate the rest.
+	for (; index < size(); index++) {
+		argptrs[0] = &get(index);
+
 		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
 			ERR_FAIL_V_MSG(Array(), vformat("Error calling method from 'filter': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
 		if (result.operator bool()) {
-			new_arr[accepted_count] = get(i);
+			new_arr[accepted_count] = get(index);
 			accepted_count++;
 		}
 	}
 
+	// Trim the result to actually needed size.
 	new_arr.resize(accepted_count);
 
 	return new_arr;
