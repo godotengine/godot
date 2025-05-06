@@ -38,7 +38,7 @@
 #include "editor/plugins/editor_plugin_settings.h"
 #include "editor/settings/action_map_editor.h"
 #include "editor/settings/editor_autoload_settings.h"
-#include "editor/shader_globals_editor.h"
+#include "editor/shader/shader_globals_editor.h"
 #include "editor/translations/localization_editor.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/tab_container.h"
