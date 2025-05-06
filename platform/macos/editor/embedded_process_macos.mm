@@ -34,6 +34,8 @@
 
 #include "core/input/input_event_codec.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/editor_main_screen.h"
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
@@ -182,12 +184,18 @@ Rect2i EmbeddedProcessMacOS::get_adjusted_embedded_window_rect(const Rect2i &p_r
 }
 
 void EmbeddedProcessMacOS::mouse_set_mode(DisplayServer::MouseMode p_mode) {
+	mouse_mode = p_mode;
+	// If the mouse is anything other than visible, we must ensure the Game view is active and the layer focused.
+	if (mouse_mode != DisplayServer::MOUSE_MODE_VISIBLE) {
+		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
+		layer_host->grab_focus();
+	}
 	DisplayServer::get_singleton()->mouse_set_mode(p_mode);
 }
 
 EmbeddedProcessMacOS::EmbeddedProcessMacOS() :
 		EmbeddedProcessBase() {
-	layer_host = memnew(LayerHost);
+	layer_host = memnew(LayerHost(this));
 	add_child(layer_host);
 	layer_host->set_focus_mode(FOCUS_ALL);
 	layer_host->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
@@ -207,10 +215,21 @@ void LayerHost::_notification(int p_what) {
 			if (script_debugger) {
 				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_MOUSE_ENTER });
 			}
+			// Temporarily release mouse capture, so we can interact with the editor.
+			DisplayServer *ds = DisplayServer::get_singleton();
+			if (process->get_mouse_mode() != ds->mouse_get_mode()) {
+				// Restore embedded process mouse mode.
+				ds->mouse_set_mode(process->get_mouse_mode());
+			}
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (script_debugger) {
 				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_MOUSE_EXIT });
+			}
+			// Temporarily set mouse state back to visible, so the user can interact with the editor.
+			DisplayServer *ds = DisplayServer::get_singleton();
+			if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_VISIBLE) {
+				ds->mouse_set_mode(DisplayServer::MOUSE_MODE_VISIBLE);
 			}
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
@@ -224,7 +243,7 @@ void LayerHost::_notification(int p_what) {
 }
 
 void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
-	if (!script_debugger) {
+	if (!process->is_embedding_completed()) {
 		return;
 	}
 
@@ -246,3 +265,6 @@ void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
 		accept_event();
 	}
 }
+
+LayerHost::LayerHost(EmbeddedProcessMacOS *p_process) :
+		process(p_process) {}

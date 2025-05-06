@@ -515,11 +515,9 @@ GameView::EmbedAvailability GameView::_get_embed_available() {
 	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
 		return EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED;
 	}
-#ifndef MACOS_ENABLED
 	if (get_tree()->get_root()->is_embedding_subwindows()) {
 		return EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE;
 	}
-#endif
 	String display_driver = GLOBAL_GET("display/display_server/driver");
 	if (display_driver == "headless" || display_driver == "wayland") {
 		return EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER;
@@ -835,11 +833,16 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	// Remove duplicates/unwanted parameters.
 	List<String>::Element *E = r_arguments.front();
 	List<String>::Element *user_args_element = nullptr;
+	HashSet<String> remove_args({ "--position", "--resolution", "--screen" });
+#ifdef MACOS_ENABLED
+	// macOS requires the embedded display driver.
+	remove_args.insert("--display-driver");
+#endif
 	while (E) {
 		List<String>::Element *N = E->next();
 
-		//For these parameters, we need to also renove the value.
-		if (E->get() == "--position" || E->get() == "--resolution" || E->get() == "--screen") {
+		// For these parameters, we need to also remove the value.
+		if (remove_args.has(E->get())) {
 			r_arguments.erase(E);
 			if (N) {
 				List<String>::Element *V = N->next();
@@ -861,8 +864,6 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	N = r_arguments.insert_after(N, itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::WINDOW_HANDLE, get_window()->get_window_id())));
 
 #if MACOS_ENABLED
-	r_arguments.push_back("--display-driver");
-	r_arguments.push_back("embedded");
 	r_arguments.push_back("--embedded");
 #endif
 
