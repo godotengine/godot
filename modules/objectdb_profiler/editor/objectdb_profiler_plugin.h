@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.cpp                            */
+/*  objectdb_profiler_plugin.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,58 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_native_shader_source_visualizer.h"
+#pragma once
 
-#include "editor/editor_string_names.h"
-#include "editor/settings/editor_settings.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/gui/code_edit.h"
-#include "scene/gui/text_edit.h"
-#include "servers/rendering/shader_language.h"
+#include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
-void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
-	if (versions) {
-		memdelete(versions);
-		versions = nullptr;
-	}
+class ObjectDBProfilerPanel;
+class ObjectDBProfilerDebuggerPlugin;
 
-	RS::ShaderNativeSourceCode nsc = RS::get_singleton()->shader_get_native_source_code(p_shader);
+// First, ObjectDBProfilerPlugin is loaded. Then it loads ObjectDBProfilerDebuggerPlugin.
+class ObjectDBProfilerPlugin : public EditorPlugin {
+	GDCLASS(ObjectDBProfilerPlugin, EditorPlugin);
 
-	List<String> keywords;
-	ShaderLanguage::get_keyword_list(&keywords);
-	Ref<EditorJsonVisualizerSyntaxHighlighter> syntax_highlighter;
-	syntax_highlighter.instantiate(keywords);
+protected:
+	Ref<ObjectDBProfilerDebuggerPlugin> debugger;
+	void _notification(int p_what);
 
-	versions = memnew(TabContainer);
-	versions->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-	versions->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	versions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	for (int i = 0; i < nsc.versions.size(); i++) {
-		TabContainer *vtab = memnew(TabContainer);
-		vtab->set_name("Version " + itos(i));
-		vtab->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-		vtab->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		vtab->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		versions->add_child(vtab);
-		for (int j = 0; j < nsc.versions[i].stages.size(); j++) {
-			EditorJsonVisualizer *code_edit = memnew(EditorJsonVisualizer);
-			code_edit->load_theme(syntax_highlighter);
-			code_edit->set_name(nsc.versions[i].stages[j].name);
-			code_edit->set_text(nsc.versions[i].stages[j].code);
-			code_edit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			code_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			vtab->add_child(code_edit);
-		}
-	}
-	add_child(versions);
-	popup_centered_ratio();
-}
+public:
+	ObjectDBProfilerPlugin();
+};
 
-void EditorNativeShaderSourceVisualizer::_bind_methods() {
-	ClassDB::bind_method("_inspect_shader", &EditorNativeShaderSourceVisualizer::_inspect_shader);
-}
+class ObjectDBProfilerDebuggerPlugin : public EditorDebuggerPlugin {
+	GDCLASS(ObjectDBProfilerDebuggerPlugin, EditorDebuggerPlugin);
 
-EditorNativeShaderSourceVisualizer::EditorNativeShaderSourceVisualizer() {
-	add_to_group("_native_shader_source_visualizer");
-	set_title(TTR("Native Shader Source Inspector"));
-}
+protected:
+	ObjectDBProfilerPanel *debugger_panel = nullptr;
+
+	void _request_object_snapshot(int p_request_id);
+
+public:
+	ObjectDBProfilerDebuggerPlugin() {}
+
+	virtual bool has_capture(const String &p_capture) const override;
+	virtual bool capture(const String &p_message, const Array &p_data, int p_index) override;
+	virtual void setup_session(int p_session_id) override;
+};

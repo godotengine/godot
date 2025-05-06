@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.cpp                            */
+/*  snapshot_view.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,58 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_native_shader_source_visualizer.h"
+#include "snapshot_view.h"
 
-#include "editor/editor_string_names.h"
-#include "editor/settings/editor_settings.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/gui/code_edit.h"
-#include "scene/gui/text_edit.h"
-#include "servers/rendering/shader_language.h"
+#include "scene/gui/label.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/gui/tree.h"
 
-void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
-	if (versions) {
-		memdelete(versions);
-		versions = nullptr;
+void SnapshotView::clear_snapshot() {
+	snapshot_data = nullptr;
+	diff_data = nullptr;
+	for (int i = 0; i < get_child_count(); i++) {
+		get_child(i)->queue_free();
 	}
+}
 
-	RS::ShaderNativeSourceCode nsc = RS::get_singleton()->shader_get_native_source_code(p_shader);
+void SnapshotView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) {
+	clear_snapshot();
+	snapshot_data = p_data;
+	diff_data = p_diff_data;
+}
 
-	List<String> keywords;
-	ShaderLanguage::get_keyword_list(&keywords);
-	Ref<EditorJsonVisualizerSyntaxHighlighter> syntax_highlighter;
-	syntax_highlighter.instantiate(keywords);
+bool SnapshotView::is_showing_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) {
+	return p_data == snapshot_data && p_diff_data == diff_data;
+}
 
-	versions = memnew(TabContainer);
-	versions->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-	versions->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	versions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	for (int i = 0; i < nsc.versions.size(); i++) {
-		TabContainer *vtab = memnew(TabContainer);
-		vtab->set_name("Version " + itos(i));
-		vtab->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-		vtab->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		vtab->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		versions->add_child(vtab);
-		for (int j = 0; j < nsc.versions[i].stages.size(); j++) {
-			EditorJsonVisualizer *code_edit = memnew(EditorJsonVisualizer);
-			code_edit->load_theme(syntax_highlighter);
-			code_edit->set_name(nsc.versions[i].stages[j].name);
-			code_edit->set_text(nsc.versions[i].stages[j].code);
-			code_edit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			code_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			vtab->add_child(code_edit);
+List<TreeItem *> SnapshotView::_get_children_recursive(Tree *p_tree) {
+	List<TreeItem *> found_items;
+	List<TreeItem *> items_to_check;
+	if (p_tree && p_tree->get_root()) {
+		items_to_check.push_back(p_tree->get_root());
+	}
+	while (items_to_check.size() > 0) {
+		TreeItem *to_check = items_to_check.front()->get();
+		items_to_check.pop_front();
+		found_items.push_back(to_check);
+		for (int i = 0; i < to_check->get_child_count(); i++) {
+			items_to_check.push_back(to_check->get_child(i));
 		}
 	}
-	add_child(versions);
-	popup_centered_ratio();
-}
-
-void EditorNativeShaderSourceVisualizer::_bind_methods() {
-	ClassDB::bind_method("_inspect_shader", &EditorNativeShaderSourceVisualizer::_inspect_shader);
-}
-
-EditorNativeShaderSourceVisualizer::EditorNativeShaderSourceVisualizer() {
-	add_to_group("_native_shader_source_visualizer");
-	set_title(TTR("Native Shader Source Inspector"));
+	return found_items;
 }

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.cpp                            */
+/*  register_types.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,58 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_native_shader_source_visualizer.h"
+#include "register_types.h"
 
-#include "editor/editor_string_names.h"
-#include "editor/settings/editor_settings.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/gui/code_edit.h"
-#include "scene/gui/text_edit.h"
-#include "servers/rendering/shader_language.h"
+#ifdef TOOLS_ENABLED
+#include "editor/objectdb_profiler_plugin.h"
+#endif // TOOLS_ENABLED
+#include "snapshot_collector.h"
 
-void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
-	if (versions) {
-		memdelete(versions);
-		versions = nullptr;
+void initialize_objectdb_profiler_module(ModuleInitializationLevel p_level) {
+#ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorPlugins::add_by_type<ObjectDBProfilerPlugin>();
 	}
+#endif // TOOLS_ENABLED
 
-	RS::ShaderNativeSourceCode nsc = RS::get_singleton()->shader_get_native_source_code(p_shader);
-
-	List<String> keywords;
-	ShaderLanguage::get_keyword_list(&keywords);
-	Ref<EditorJsonVisualizerSyntaxHighlighter> syntax_highlighter;
-	syntax_highlighter.instantiate(keywords);
-
-	versions = memnew(TabContainer);
-	versions->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-	versions->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	versions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	for (int i = 0; i < nsc.versions.size(); i++) {
-		TabContainer *vtab = memnew(TabContainer);
-		vtab->set_name("Version " + itos(i));
-		vtab->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-		vtab->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		vtab->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		versions->add_child(vtab);
-		for (int j = 0; j < nsc.versions[i].stages.size(); j++) {
-			EditorJsonVisualizer *code_edit = memnew(EditorJsonVisualizer);
-			code_edit->load_theme(syntax_highlighter);
-			code_edit->set_name(nsc.versions[i].stages[j].name);
-			code_edit->set_text(nsc.versions[i].stages[j].code);
-			code_edit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			code_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			vtab->add_child(code_edit);
-		}
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		SnapshotCollector::initialize();
 	}
-	add_child(versions);
-	popup_centered_ratio();
 }
 
-void EditorNativeShaderSourceVisualizer::_bind_methods() {
-	ClassDB::bind_method("_inspect_shader", &EditorNativeShaderSourceVisualizer::_inspect_shader);
-}
-
-EditorNativeShaderSourceVisualizer::EditorNativeShaderSourceVisualizer() {
-	add_to_group("_native_shader_source_visualizer");
-	set_title(TTR("Native Shader Source Inspector"));
+void uninitialize_objectdb_profiler_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		SnapshotCollector::deinitialize();
+	}
 }

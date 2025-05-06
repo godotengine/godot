@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.cpp                            */
+/*  class_view.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,58 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_native_shader_source_visualizer.h"
+#pragma once
 
-#include "editor/editor_string_names.h"
-#include "editor/settings/editor_settings.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/gui/code_edit.h"
-#include "scene/gui/text_edit.h"
-#include "servers/rendering/shader_language.h"
+#include "../snapshot_data.h"
+#include "snapshot_view.h"
 
-void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
-	if (versions) {
-		memdelete(versions);
-		versions = nullptr;
-	}
+class Tree;
+class TreeItem;
 
-	RS::ShaderNativeSourceCode nsc = RS::get_singleton()->shader_get_native_source_code(p_shader);
+struct ClassData {
+	ClassData() {}
+	ClassData(const String &p_name, const String &p_parent) :
+			class_name(p_name), parent_class_name(p_parent) {}
+	String class_name;
+	String parent_class_name;
+	HashSet<String> child_classes;
+	List<SnapshotDataObject *> instances;
+	TreeItem *tree_node = nullptr;
+	HashMap<GameStateSnapshot *, int> recursive_instance_count_cache;
 
-	List<String> keywords;
-	ShaderLanguage::get_keyword_list(&keywords);
-	Ref<EditorJsonVisualizerSyntaxHighlighter> syntax_highlighter;
-	syntax_highlighter.instantiate(keywords);
+	int instance_count(GameStateSnapshot *p_snapshot = nullptr);
+	int get_recursive_instance_count(HashMap<String, ClassData> &p_all_classes, GameStateSnapshot *p_snapshot = nullptr);
+};
 
-	versions = memnew(TabContainer);
-	versions->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-	versions->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	versions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	for (int i = 0; i < nsc.versions.size(); i++) {
-		TabContainer *vtab = memnew(TabContainer);
-		vtab->set_name("Version " + itos(i));
-		vtab->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-		vtab->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		vtab->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		versions->add_child(vtab);
-		for (int j = 0; j < nsc.versions[i].stages.size(); j++) {
-			EditorJsonVisualizer *code_edit = memnew(EditorJsonVisualizer);
-			code_edit->load_theme(syntax_highlighter);
-			code_edit->set_name(nsc.versions[i].stages[j].name);
-			code_edit->set_text(nsc.versions[i].stages[j].code);
-			code_edit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			code_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			vtab->add_child(code_edit);
-		}
-	}
-	add_child(versions);
-	popup_centered_ratio();
-}
+class SnapshotClassView : public SnapshotView {
+	GDCLASS(SnapshotClassView, SnapshotView);
 
-void EditorNativeShaderSourceVisualizer::_bind_methods() {
-	ClassDB::bind_method("_inspect_shader", &EditorNativeShaderSourceVisualizer::_inspect_shader);
-}
+protected:
+	Tree *class_tree = nullptr;
+	Tree *object_list = nullptr;
+	Tree *diff_object_list = nullptr;
 
-EditorNativeShaderSourceVisualizer::EditorNativeShaderSourceVisualizer() {
-	add_to_group("_native_shader_source_visualizer");
-	set_title(TTR("Native Shader Source Inspector"));
-}
+	void _object_selected(Tree *p_tree);
+	void _class_selected();
+	void _add_objects_to_class_map(HashMap<String, ClassData> &p_class_map, GameStateSnapshot *p_objects);
+	void _notification(int p_what);
+
+	Tree *_make_object_list_tree(const String &p_column_name);
+	void _populate_object_list(GameStateSnapshot *p_snapshot, Tree *p_list, const String &p_name_base);
+
+public:
+	SnapshotClassView();
+	virtual void show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) override;
+};
