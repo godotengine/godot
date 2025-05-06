@@ -51,6 +51,7 @@ public:
 		String action_name;
 		UndoRedo::MergeMode merge_mode = UndoRedo::MERGE_DISABLE;
 		bool backward_undo_ops = false;
+		bool ignored_for_unsaved = false;
 	};
 
 	struct History {
@@ -80,8 +81,8 @@ public:
 	History &get_history_for_object(Object *p_object);
 	void force_fixed_history();
 
-	void create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, bool p_backward_undo_ops = false);
-	void create_action(const String &p_name = "", UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, Object *p_custom_context = nullptr, bool p_backward_undo_ops = false);
+	void create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, bool p_backward_undo_ops = false, bool p_ignore_for_unsaved = false);
+	void create_action(const String &p_name = "", UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, Object *p_custom_context = nullptr, bool p_backward_undo_ops = false, bool p_ignore_for_unsaved = false);
 
 	void add_do_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount);
 	void add_undo_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount);
