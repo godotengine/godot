@@ -640,6 +640,9 @@ public:
 	GDVIRTUAL2RC(int64_t, _is_confusable, const String &, const PackedStringArray &);
 	GDVIRTUAL1RC(bool, _spoof_check, const String &);
 
+	virtual int64_t get_process_info(ProcessInfo p_info) const override;
+	GDVIRTUAL1RC(int64_t, _get_process_info, ProcessInfo);
+
 	virtual void cleanup() override;
 	GDVIRTUAL0(_cleanup);
 

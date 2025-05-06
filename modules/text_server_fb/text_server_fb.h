@@ -237,6 +237,7 @@ class TextServerFallback : public TextServerExtension {
 		Vector<ShelfPackTexture> textures;
 		HashMap<int32_t, FontGlyph> glyph_map;
 		HashMap<Vector2i, Vector2> kerning_map;
+		int64_t gl_count = 0;
 
 #ifdef MODULE_FREETYPE_ENABLED
 		FT_Face face = nullptr;
@@ -244,6 +245,18 @@ class TextServerFallback : public TextServerExtension {
 #endif
 
 		~FontForSizeFallback() {
+			int64_t sz = 0;
+			for (const ShelfPackTexture &tex : textures) {
+				if (tex.image.is_valid()) {
+					sz += tex.image->get_data_size() * 2;
+				}
+			}
+			TextServerFallback::pref_data_tx_bytes -= sz;
+			TextServerFallback::pref_data_glyphs -= glyph_map.size();
+			if (viewport_oversampling != 0) {
+				TextServerFallback::pref_data_os_tx_bytes -= sz;
+				TextServerFallback::pref_data_os_glyphs -= glyph_map.size();
+			}
 #ifdef MODULE_FREETYPE_ENABLED
 			if (face != nullptr) {
 				FT_Done_Face(face);
@@ -317,6 +330,7 @@ class TextServerFallback : public TextServerExtension {
 		}
 	};
 
+	_FORCE_INLINE_ void _sync_glyph_count(FontForSizeFallback *p_data) const;
 	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontForSizeFallback *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
 #ifdef MODULE_MSDFGEN_ENABLED
 	_FORCE_INLINE_ FontGlyph rasterize_msdf(FontFallback *p_font_data, FontForSizeFallback *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *p_outline, const Vector2 &p_advance) const;
@@ -484,7 +498,10 @@ class TextServerFallback : public TextServerExtension {
 		bool fit_width_minimum_reached = false;
 
 		Vector<Glyph> glyphs;
-		Vector<Glyph> glyphs_logical;
+
+		~ShapedTextDataFallback() {
+			TextServerFallback::buf_glyphs -= glyphs.size();
+		}
 	};
 
 	// Common data.
@@ -595,6 +612,17 @@ class TextServerFallback : public TextServerExtension {
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
 	Mutex ft_mutex;
+
+public:
+	static int64_t buf_count;
+	static int64_t font_count;
+	static int64_t font_var_count;
+	static int64_t buf_glyphs;
+	static int64_t pref_data_glyphs;
+	static int64_t pref_data_tx_bytes;
+	static int64_t pref_data_os_glyphs;
+	static int64_t pref_data_os_tx_bytes;
+	static int64_t pref_sys_fonts;
 
 protected:
 	static void _bind_methods() {}
@@ -897,6 +925,8 @@ public:
 	MODBIND2RC(String, string_to_upper, const String &, const String &);
 	MODBIND2RC(String, string_to_lower, const String &, const String &);
 	MODBIND2RC(String, string_to_title, const String &, const String &);
+
+	MODBIND1RC(int64_t, get_process_info, ProcessInfo);
 
 	MODBIND0(cleanup);
 

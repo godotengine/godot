@@ -1111,6 +1111,13 @@
 				Returns the name of the server interface.
 			</description>
 		</method>
+		<method name="get_process_info" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="info" type="int" enum="TextServer.ProcessInfo" />
+			<description>
+				Returns information about the current state of the text server. See [enum ProcessInfo] for the list of available states.
+			</description>
+		</method>
 		<method name="get_support_data" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
@@ -2304,6 +2311,36 @@
 		</constant>
 		<constant name="FIXED_SIZE_SCALE_ENABLED" value="2" enum="FixedSizeScaleMode">
 			Bitmap font is scaled to an arbitrary (fractional) size. This is the recommended option for non-pixel art fonts.
+		</constant>
+		<constant name="BUFFER_COUNT" value="0" enum="ProcessInfo">
+			Number of shaped text buffers.
+		</constant>
+		<constant name="FONT_COUNT" value="1" enum="ProcessInfo">
+			Number of fonts.
+		</constant>
+		<constant name="FONT_VARIATION_COUNT" value="2" enum="ProcessInfo">
+			Number of font variations.
+		</constant>
+		<constant name="BUFFER_GLYPH_COUNT" value="3" enum="ProcessInfo">
+			Number of glyphs in the shaped text buffers.
+		</constant>
+		<constant name="FONT_GLYPH_COUNT" value="4" enum="ProcessInfo">
+			Number of rendered glyphs in the cache.
+		</constant>
+		<constant name="FONT_TEXTURE_BYTES" value="5" enum="ProcessInfo">
+			Size of rendered glyph textures in the cache.
+		</constant>
+		<constant name="FONT_OVERSAMPLED_GLYPH_COUNT" value="6" enum="ProcessInfo">
+			Number of rendered glyphs in the oversampling cache.
+		</constant>
+		<constant name="FONT_OVERSAMPLED_TEXTURE_BYTES" value="7" enum="ProcessInfo">
+			Size of rendered glyph textures in the oversampling cache.
+		</constant>
+		<constant name="FONT_OVERSAMPLING_LEVELS" value="8" enum="ProcessInfo">
+			Number of active viewport oversampling levels.
+		</constant>
+		<constant name="FONT_SYSTEM_FONT_DATA" value="9" enum="ProcessInfo">
+			Size of loaded system font data.
 		</constant>
 	</constants>
 </class>

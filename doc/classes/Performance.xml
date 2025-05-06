@@ -299,7 +299,37 @@
 		<constant name="NAVIGATION_3D_OBSTACLE_COUNT" value="58" enum="Monitor">
 			Number of active navigation obstacles in the [NavigationServer3D].
 		</constant>
-		<constant name="MONITOR_MAX" value="59" enum="Monitor">
+		<constant name="TEXTSERVER_BUFFER_COUNT" value="59" enum="Monitor">
+			Number of shaped text buffers.
+		</constant>
+		<constant name="TEXTSERVER_FONT_COUNT" value="60" enum="Monitor">
+			Number of fonts.
+		</constant>
+		<constant name="TEXTSERVER_FONT_VARIATION_COUNT" value="61" enum="Monitor">
+			Number of font variations.
+		</constant>
+		<constant name="TEXTSERVER_BUFFER_GLYPH_COUNT" value="62" enum="Monitor">
+			Number of glyphs in the shaped text buffers.
+		</constant>
+		<constant name="TEXTSERVER_FONT_GLYPH_COUNT" value="63" enum="Monitor">
+			Number of rendered glyphs in the cache.
+		</constant>
+		<constant name="TEXTSERVER_FONT_TEXTURE_BYTES" value="64" enum="Monitor">
+			Size of rendered glyph textures in the cache.
+		</constant>
+		<constant name="TEXTSERVER_FONT_OVERSAMPLED_GLYPH_COUNT" value="65" enum="Monitor">
+			Number of rendered glyphs in the oversampling cache.
+		</constant>
+		<constant name="TEXTSERVER_FONT_OVERSAMPLED_TEXTURE_BYTES" value="66" enum="Monitor">
+			Size of rendered glyph textures in the oversampling cache.
+		</constant>
+		<constant name="TEXTSERVER_FONT_OVERSAMPLING_LEVELS" value="67" enum="Monitor">
+			Number of active viewport oversampling levels.
+		</constant>
+		<constant name="TEXTSERVER_FONT_SYSTEM_FONT_DATA" value="68" enum="Monitor">
+			Size of loaded system font data.
+		</constant>
+		<constant name="MONITOR_MAX" value="69" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
 		</constant>
 	</constants>
