@@ -177,6 +177,7 @@ public:
 	virtual Rect2 region_get_bounds(RID p_region) const override;
 
 	virtual RID link_create() override;
+	virtual uint32_t link_get_iteration_id(RID p_link) const override;
 
 	/// Set the map of this link.
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
