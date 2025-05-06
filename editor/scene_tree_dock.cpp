@@ -1182,6 +1182,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+			if (determine_path_automatically) {
+				new_scene_from_dialog->set_current_dir(editor_data->get_edited_scene_root()->get_scene_file_path().get_base_dir());
+			} else {
+				determine_path_automatically = true;
+			}
 
 			List<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);
@@ -4069,6 +4074,7 @@ void SceneTreeDock::set_filter(const String &p_filter) {
 
 void SceneTreeDock::save_branch_to_file(const String &p_directory) {
 	new_scene_from_dialog->set_current_dir(p_directory);
+	determine_path_automatically = false;
 	_tool_selected(TOOL_NEW_SCENE_FROM);
 }
 
