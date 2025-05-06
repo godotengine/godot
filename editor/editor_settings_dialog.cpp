@@ -915,6 +915,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	inspector = memnew(SectionedInspector);
 	inspector->get_inspector()->set_use_filter(true);
+	inspector->get_inspector()->set_mark_unsaved(false);
 	inspector->register_search_box(search_box);
 	inspector->register_advanced_toggle(advanced_switch);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);

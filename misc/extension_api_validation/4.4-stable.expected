@@ -104,3 +104,10 @@ GH-105570
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_create_from_extension/arguments': size changed value in new API, from 9 to 10.
 
 Argument added; p_mipmaps. Compatibility method registered.
+
+GH-106121
+--------
+Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/create_action/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/create_action/arguments': size changed value in new API, from 3 to 5.
+
+New argument added. Compatibility method registered.
