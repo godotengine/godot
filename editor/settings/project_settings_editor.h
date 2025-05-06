@@ -32,10 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_data.h"
-#include "editor/group_settings_editor.h"
 #include "editor/import/import_defaults_editor.h"
 #include "editor/inspector/editor_sectioned_inspector.h"
 #include "editor/plugins/editor_plugin_settings.h"
+#include "editor/scene/group_settings_editor.h"
 #include "editor/settings/action_map_editor.h"
 #include "editor/settings/editor_autoload_settings.h"
 #include "editor/shader/shader_globals_editor.h"

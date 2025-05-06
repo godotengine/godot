@@ -33,7 +33,7 @@
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_scene_tabs.h"
+#include "editor/scene/editor_scene_tabs.h"
 #include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
 
