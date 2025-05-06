@@ -423,7 +423,9 @@ void JoltBody3D::_destroy_joint_constraints() {
 }
 
 void JoltBody3D::_exit_all_areas() {
-	ERR_FAIL_COND(!in_space());
+	if (!in_space()) {
+		return;
+	}
 
 	for (JoltArea3D *area : areas) {
 		area->body_exited(jolt_body->GetID(), false);
