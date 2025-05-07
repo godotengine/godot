@@ -39,7 +39,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export_preset.h"
-#include "editor/progress_dialog.h"
+#include "editor/gui/progress_dialog.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/file_dialog.h"
