@@ -33,9 +33,9 @@
 #include "tile_data_editors.h"
 #include "tiles_editor_plugin.h"
 
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/settings/editor_settings.h"

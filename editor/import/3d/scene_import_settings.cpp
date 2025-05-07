@@ -31,9 +31,9 @@
 #include "scene_import_settings.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/3d/skeleton_3d_editor_plugin.h"

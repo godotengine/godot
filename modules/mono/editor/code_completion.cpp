@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/script_language.h"
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"

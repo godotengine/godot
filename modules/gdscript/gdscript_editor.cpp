@@ -47,7 +47,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 #endif
 

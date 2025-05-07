@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor/file_info.h"
+#include "file_info.h"
 
 void sort_file_info_list(List<FileInfo> &r_file_list, FileSortOption p_file_sort_option) {
 	// Sort the file list if needed.

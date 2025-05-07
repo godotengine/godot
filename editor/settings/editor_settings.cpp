@@ -46,7 +46,7 @@
 #include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/translations/editor_translation.h"
