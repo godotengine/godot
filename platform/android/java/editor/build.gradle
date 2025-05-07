@@ -125,6 +125,14 @@ android {
             applicationIdSuffix ".dev"
             manifestPlaceholders += [editorBuildSuffix: " (dev)"]
         }
+        benchmark {
+            initWith release
+            applicationIdSuffix ".benchmark"
+            manifestPlaceholders += [editorBuildSuffix: " (benchmark)"]
+            signingConfig signingConfigs.debug
+            matchingFallbacks = ['release']
+            debuggable false
+        }
 
         debug {
             initWith release
@@ -188,6 +196,7 @@ dependencies {
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
     implementation "org.bouncycastle:bcprov-jdk15to18:1.78"
+    implementation "androidx.profileinstaller:profileinstaller:1.4.1"
 
     // Meta dependencies
     horizonosImplementation "org.godotengine:godot-openxr-vendors-meta:$versions.openxrVendorsVersion"
