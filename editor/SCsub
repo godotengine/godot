@@ -19,7 +19,7 @@ if env.editor_build:
 
     # Register exporters
     gen_exporters = env.CommandNoCache(
-        "register_exporters.gen.cpp",
+        "export/register_exporters.gen.cpp",
         env.Value(env.platform_exporters),
         env.Run(editor_builders.register_exporters_builder),
     )
