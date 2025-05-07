@@ -1560,9 +1560,6 @@
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].
 		</member>
-		<member name="text_editor/theme/line_spacing" type="int" setter="" getter="">
-			The vertical line separation used in text editors, in pixels.
-		</member>
 		<member name="version_control/ssh_private_key_path" type="String" setter="" getter="">
 			Path to private SSH key file for the editor's Version Control integration credentials.
 		</member>
