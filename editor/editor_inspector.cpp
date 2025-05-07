@@ -2957,7 +2957,6 @@ void EditorInspectorArray::_notification(int p_what) {
 			DisplayServer::get_singleton()->accessibility_update_set_value(ae, vformat(TTR("Array: %s"), get_label()));
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Color color = get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor));
 			odd_style->set_bg_color(color.darkened(-0.08));
@@ -2987,7 +2986,6 @@ void EditorInspectorArray::_notification(int p_what) {
 			}
 
 			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-			update_minimum_size();
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -3155,7 +3153,6 @@ void EditorPaginator::update(int p_page, int p_max_page) {
 
 void EditorPaginator::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			first_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageFirst")));
 			prev_page_button->set_button_icon(get_editor_theme_icon(SNAME("PagePrevious")));
