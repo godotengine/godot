@@ -227,14 +227,14 @@ namespace Godot.SourceGenerators
                 "The class must not be generic. Make the class non-generic, or remove the '[GlobalClass]' attribute.",
                 helpLinkUri: string.Format(_helpLinkFormat, "GD0402"));
 
-        public static readonly DiagnosticDescriptor ImplicitStringNameShouldNotBeUsedInLoopRule =
+        public static readonly DiagnosticDescriptor ImplicitStringNameShouldNotBeUsedRule =
             new DiagnosticDescriptor(id: "GD0501",
-                title: "Implicit StringName should not be used in a loop",
-                messageFormat: "Implicit StringName should not be used in a loop",
+                title: "Implicit StringName construction should not be used",
+                messageFormat: "Implicit StringName construction should not be used",
                 category: "Usage",
                 DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
-                "Implicit StringName should not be used in a loop. Cache the StringName object instead.",
+                "Implicit StringName construction should not be used because it creates pressure on the GC, especially in loops. Cache the StringName object instead.",
                 helpLinkUri: string.Format(_helpLinkFormat, "GD0501"));
     }
 }

@@ -21,7 +21,7 @@ namespace Godot.SourceGenerators;
 public sealed class StringNameAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
-        ImmutableArray.Create(Common.ImplicitStringNameShouldNotBeUsedInLoopRule);
+        ImmutableArray.Create(Common.ImplicitStringNameShouldNotBeUsedRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -48,24 +48,11 @@ public sealed class StringNameAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        // additionally, only consider implicit conversions from literal strings or literal string operations;
-        // dynamic StringName objects would be a valid use case for construction
-        if (conversionOperation.Operand.ConstantValue is not { HasValue: true, Value: string { } })
-            return;
-
-        // check up the tree for any loop operations
-        for (var parent = conversionOperation.Parent; parent is not null; parent = parent.Parent)
-        {
-            if (parent.Kind is OperationKind.Loop)
-            {
-                context.ReportDiagnostic(Diagnostic.Create(
-                    Common.ImplicitStringNameShouldNotBeUsedInLoopRule,
-                    conversionOperation.Syntax.GetLocation(),
-                    conversionOperation.Conversion.MethodSymbol.ToDisplayString()
-                ));
-                return;
-            }
-        }
+        context.ReportDiagnostic(Diagnostic.Create(
+            Common.ImplicitStringNameShouldNotBeUsedRule,
+            conversionOperation.Syntax.GetLocation(),
+            conversionOperation.Conversion.MethodSymbol.ToDisplayString()
+        ));
     }
 }
 
@@ -73,7 +60,7 @@ public sealed class StringNameAnalyzer : DiagnosticAnalyzer
 public sealed class StringNameCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds { get; } =
-        ImmutableArray.Create(Common.ImplicitStringNameShouldNotBeUsedInLoopRule.Id);
+        ImmutableArray.Create(Common.ImplicitStringNameShouldNotBeUsedRule.Id);
 
     public override FixAllProvider? GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
@@ -125,17 +112,17 @@ public sealed class StringNameCodeFixProvider : CodeFixProvider
             && semanticModel.GetTypeInfo(variableDeclarationSyntax.Type, ct).Type?.FullQualifiedNameOmitGlobal() == GodotClasses.StringName);
         var fieldDeclaration = fieldDeclarationAlreadyExists ? null : FieldDeclaration(VariableDeclaration(ParseTypeName(GodotClasses.StringName))
             .AddVariables(VariableDeclarator(stringNameFieldName)
-                .WithInitializer(EqualsValueClause(
-                    LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(stringNameConstantValue))))))
+                .WithInitializer(EqualsValueClause(ImplicitObjectCreationExpression()
+                    .AddArgumentListArguments(Argument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(stringNameConstantValue))))))))
             .AddModifiers(Token(SyntaxKind.PrivateKeyword), Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.ReadOnlyKeyword));
 
         // replace every instance of the StringName string with our new variable
         Dictionary<SyntaxNode, SyntaxNode> replacements = new();
         foreach (var argumentSyntaxCandidate in typeDeclaration.DescendantNodes().OfType<ArgumentSyntax>())
-            if (argumentSyntaxCandidate.Expression is not null 
+            if (argumentSyntaxCandidate.Expression is not null
                 && semanticModel.GetConstantValue(argumentSyntaxCandidate.Expression, ct) is { HasValue: true, Value: string { } argumentSyntaxCandidateValue }
                 && argumentSyntaxCandidateValue == stringNameConstantValue
-                && semanticModel.GetTypeInfo(argumentSyntaxCandidate.Expression) is { }argumentSyntaxCandidateTypeInfo
+                && semanticModel.GetTypeInfo(argumentSyntaxCandidate.Expression) is { } argumentSyntaxCandidateTypeInfo
                 && argumentSyntaxCandidateTypeInfo.Type?.SpecialType == SpecialType.System_String                                   // from string
                 && argumentSyntaxCandidateTypeInfo.ConvertedType?.FullQualifiedNameOmitGlobal() == GodotClasses.StringName)         // to StringName
             {
@@ -144,7 +131,7 @@ public sealed class StringNameCodeFixProvider : CodeFixProvider
         root = root.ReplaceNodes(replacements.Keys, (originalNode, rewrittenNode) => replacements.TryGetValue(originalNode, out var newNode) ? newNode : rewrittenNode);
 
         // find the equivalent of typeDeclaration in the new root
-        if(root.DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>()
+        if (root.DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>()
             .FirstOrDefault(td => td.Identifier.Text == typeDeclaration.Identifier.Text) is not { } newRootTypeDeclaration)
         {
             return document;
