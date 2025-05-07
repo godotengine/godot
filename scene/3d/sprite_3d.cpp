@@ -32,6 +32,9 @@
 
 #include "scene/resources/atlas_texture.h"
 
+static bool instancing_enabled = false;
+static HashMap<SpriteMeshKey, SpriteBase3D *, SpriteMeshHasher> shared_sprites;
+
 Color SpriteBase3D::_get_color_accum() {
 	if (!color_dirty) {
 		return color_accum;
@@ -61,6 +64,51 @@ void SpriteBase3D::_propagate_color_changed() {
 
 	for (SpriteBase3D *&E : children) {
 		E->_propagate_color_changed();
+	}
+}
+
+void SpriteBase3D::_stop_sharing_sprite() {
+	shared_sprites.erase(last_sprite_mesh_key);
+	sharing_own_mesh = false;
+	if (!users.is_empty()) {
+		// Select a successor and make every other user use that successor's mesh instead.
+		SpriteBase3D *successor = nullptr;
+		int i = 0;
+		for (; i < users.size(); i++) {
+			// There may be sprites that have changed the sprite they're using earlier this frame, so we have to filter them out.
+			if (users[i] && users[i]->using_sprite == this) {
+				successor = users[i];
+				shared_sprites.insert(last_sprite_mesh_key, successor);
+				// Copy mesh data to successor. Need to store data in vertex and attribute buffer and not just update the RenderingServer mesh directly so they can be copied again later.
+				// memcpy is used directly because buffer sizes are guaranteed to be identical across all SpriteBase3Ds.
+				memcpy(successor->vertex_buffer.ptrw(), vertex_buffer.ptr(), vertex_buffer.size());
+				memcpy(successor->attribute_buffer.ptrw(), attribute_buffer.ptr(), attribute_buffer.size());
+				RS::get_singleton()->mesh_surface_update_vertex_region(successor->mesh, 0, 0, successor->vertex_buffer);
+				RS::get_singleton()->mesh_surface_update_attribute_region(successor->mesh, 0, 0, successor->attribute_buffer);
+				RS::get_singleton()->mesh_set_custom_aabb(successor->mesh, aabb);
+				if (last_sprite_mesh_key.alpha_cut_disabled) {
+					RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
+					RS::get_singleton()->mesh_surface_set_material(successor->mesh, 0, get_material());
+				}
+				successor->using_sprite = nullptr;
+				successor->using_sprite_user_index = -1;
+				successor->set_base(successor->mesh);
+				i++; // Skip the successor for the next for-loop.
+				break;
+			}
+		}
+		// Propagate the change to remaining users that haven't changed their using_sprite.
+		// Note: This works even if the same user is registered twice. Very rare but can still happen.
+		for (; i < users.size(); i++) {
+			if (users[i] && users[i]->using_sprite == this) {
+				users[i]->set_base(successor->mesh);
+				users[i]->using_sprite = successor;
+				users[i]->using_sprite_user_index = successor->users.size();
+				successor->users.push_back(users[i]);
+			}
+		}
+		// Now every user has moved on, we can clear the users list.
+		users.clear();
 	}
 }
 
@@ -221,6 +269,44 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		uint8_t(CLAMP(color.a * 255.0, 0.0, 255.0))
 	};
 
+	if (instancing_enabled) {
+		SpriteMeshKey sprite_mesh_key;
+		memcpy(&sprite_mesh_key.vertices, vertices, sizeof(Vector2) * 4);
+		memcpy(&sprite_mesh_key.uvs, uvs, sizeof(Vector2) * 4);
+		sprite_mesh_key.v_color = *(uint32_t *)v_color;
+		sprite_mesh_key.v_normal = v_normal;
+		sprite_mesh_key.alpha_cut_disabled = get_alpha_cut_mode() == ALPHA_CUT_DISABLED;
+		if (sharing_own_mesh) {
+			if (last_sprite_mesh_key != sprite_mesh_key) {
+				// Sprite mesh data changed.
+				_stop_sharing_sprite();
+			} else {
+				// Sprite mesh data unchanged.
+				return;
+			}
+		}
+		// Try to see if there's any sprite whose mesh can be used instead.
+		SpriteBase3D **sprite_ptr = shared_sprites.getptr(sprite_mesh_key);
+		last_sprite_mesh_key = sprite_mesh_key;
+		if (sprite_ptr) {
+			if (*sprite_ptr != using_sprite) {
+				// Found new sprite that can be reused.
+				using_sprite = *sprite_ptr;
+				set_base(using_sprite->mesh);
+				using_sprite_user_index = using_sprite->users.size();
+				using_sprite->users.push_back(this);
+				// We don't need to remove this sprite from the previous shared sprite's users list, as they will be detected and filtered out later.
+				return;
+			} else {
+				// Keep using same sprite.
+				return;
+			}
+		}
+		// Otherwise, setup mesh data and register this sprite's mesh for sharing.
+		shared_sprites.insert(sprite_mesh_key, this);
+		sharing_own_mesh = true;
+	}
+
 	for (int i = 0; i < 4; i++) {
 		Vector3 vtx;
 		vtx[x_axis] = vertices[i][0];
@@ -243,7 +329,8 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_COLOR]], v_color, 4);
 	}
 
-	RID mesh_new = get_mesh();
+	RID mesh_new = mesh;
+	set_base(mesh_new);
 	RS::get_singleton()->mesh_surface_update_vertex_region(mesh_new, 0, 0, vertex_buffer);
 	RS::get_singleton()->mesh_surface_update_attribute_region(mesh_new, 0, 0, attribute_buffer);
 
@@ -676,6 +763,13 @@ void SpriteBase3D::_bind_methods() {
 }
 
 SpriteBase3D::SpriteBase3D() {
+	static bool static_initialized = false;
+	if (!static_initialized) {
+		static_initialized = true;
+		// Auto-instancing isn't supported in the compatibility renderer.
+		instancing_enabled = RS::get_singleton()->get_current_rendering_method() != "gl_compatibility";
+	}
+
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
 	}
@@ -753,6 +847,14 @@ SpriteBase3D::~SpriteBase3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(mesh);
 	RenderingServer::get_singleton()->free(material);
+
+	if (instancing_enabled && sharing_own_mesh) {
+		_stop_sharing_sprite();
+	}
+
+	if (using_sprite) {
+		using_sprite->users.ptrw()[using_sprite_user_index] = nullptr;
+	}
 }
 
 ///////////////////////////////////////////
