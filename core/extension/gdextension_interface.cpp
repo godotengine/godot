@@ -902,8 +902,9 @@ static void gdextension_string_new_with_wide_chars(GDExtensionUninitializedStrin
 }
 
 static void gdextension_string_new_with_latin1_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	const size_t string_length = p_contents ? (p_size < 0 ? strlen(p_contents) : strnlen(p_contents, p_size)) : 0;
 	String *dest = memnew_placement(r_dest, String);
-	dest->append_latin1(Span(p_contents, p_contents ? _strlen_clipped(p_contents, p_size) : 0));
+	dest->append_latin1(Span(p_contents, string_length));
 }
 
 static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
@@ -927,8 +928,9 @@ static GDExtensionInt gdextension_string_new_with_utf16_chars_and_len2(GDExtensi
 }
 
 static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count) {
+	const size_t string_length = p_contents ? (p_char_count < 0 ? strlen(p_contents) : strnlen(p_contents, p_char_count)) : 0;
 	String *string = memnew_placement(r_dest, String);
-	string->append_utf32(Span(p_contents, p_contents ? _strlen_clipped(p_contents, p_char_count) : 0));
+	string->append_utf32(Span(p_contents, string_length));
 }
 
 static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_char_count) {
@@ -938,8 +940,9 @@ static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitiali
 		dest->append_utf16((const char16_t *)p_contents, p_char_count);
 	} else {
 		// wchar_t is 32 bit (UTF-32).
+		const size_t string_length = p_contents ? (p_char_count < 0 ? strlen(p_contents) : strnlen((const char32_t *)p_contents, p_char_count)) : 0;
 		String *string = memnew_placement(r_dest, String);
-		string->append_utf32(Span((const char32_t *)p_contents, p_contents ? _strlen_clipped((const char32_t *)p_contents, p_char_count) : 0));
+		string->append_utf32(Span((const char32_t *)p_contents, string_length));
 	}
 }
 

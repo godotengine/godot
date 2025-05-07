@@ -114,8 +114,6 @@ void SceneTreeTimer::release_connections() {
 	}
 }
 
-SceneTreeTimer::SceneTreeTimer() {}
-
 #ifndef _3D_DISABLED
 // This should be called once per physics tick, to make sure the transform previous and current
 // is kept up to date on the few Node3Ds that are using client side physics interpolation.

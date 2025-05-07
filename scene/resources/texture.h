@@ -39,9 +39,6 @@
 
 class Texture : public Resource {
 	GDCLASS(Texture, Resource);
-
-public:
-	Texture() {}
 };
 
 class Texture2D : public Texture {
@@ -108,8 +105,6 @@ public:
 	virtual int get_layers() const;
 	virtual bool has_mipmaps() const;
 	virtual Ref<Image> get_layer_data(int p_layer) const;
-
-	TextureLayered() {}
 };
 
 VARIANT_ENUM_CAST(TextureLayered::LayeredType)

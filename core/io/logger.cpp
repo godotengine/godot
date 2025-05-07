@@ -88,7 +88,9 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 	logf_error("   at: %s (%s:%i)\n", p_function, p_file, p_line);
 
 	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
-		logf_error("%s\n", backtrace->format(3).utf8().get_data());
+		if (!backtrace->is_empty()) {
+			logf_error("%s\n", backtrace->format(3).utf8().get_data());
+		}
 	}
 }
 

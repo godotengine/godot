@@ -4807,14 +4807,19 @@ void EditorNode::_update_recent_scenes() {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 	recent_scenes->clear();
 
-	String path;
-	for (int i = 0; i < rc.size(); i++) {
-		path = rc[i];
-		recent_scenes->add_item(path.replace("res://", ""), i);
-	}
+	if (rc.size() == 0) {
+		recent_scenes->add_item(TTR("No Recent Scenes"), -1);
+		recent_scenes->set_item_disabled(-1, true);
+	} else {
+		String path;
+		for (int i = 0; i < rc.size(); i++) {
+			path = rc[i];
+			recent_scenes->add_item(path.replace("res://", ""), i);
+		}
 
-	recent_scenes->add_separator();
-	recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTRC("Clear Recent Scenes")));
+		recent_scenes->add_separator();
+		recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTRC("Clear Recent Scenes")));
+	}
 	recent_scenes->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 	recent_scenes->reset_size();
 }
@@ -5134,11 +5139,16 @@ bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringNa
 	return false;
 }
 
+// Used to track the progress of tasks in the CLI output (since we don't have any other frame of reference).
+// All tasks run sequentially, so we can just keep a single counter.
+static int progress_total_steps = 0;
+
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 	if (!singleton) {
 		return;
 	} else if (singleton->cmdline_mode) {
-		print_line(p_task + ": begin: " + p_label + " steps: " + itos(p_steps));
+		print_line_rich(vformat("[   0%% ] [color=gray][b]%s[/b] | Started %s (%d steps)[/color]", p_task, p_label, p_steps));
+		progress_total_steps = p_steps;
 	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->add_task(p_task, p_label, p_steps, p_can_cancel);
 	}
@@ -5148,7 +5158,8 @@ bool EditorNode::progress_task_step(const String &p_task, const String &p_state,
 	if (!singleton) {
 		return false;
 	} else if (singleton->cmdline_mode) {
-		print_line("\t" + p_task + ": step " + itos(p_step) + ": " + p_state);
+		const int percent = (p_step / float(progress_total_steps + 1)) * 100;
+		print_line_rich(vformat("[%4d%% ] [color=gray][b]%s[/b] | %s[/color]", percent, p_task, p_state));
 		return false;
 	} else if (singleton->progress_dialog) {
 		return singleton->progress_dialog->task_step(p_task, p_state, p_step, p_force_refresh);
@@ -5161,7 +5172,7 @@ void EditorNode::progress_end_task(const String &p_task) {
 	if (!singleton) {
 		return;
 	} else if (singleton->cmdline_mode) {
-		print_line(p_task + ": end");
+		print_line_rich(vformat("[color=green][ DONE ][/color] [b]%s[/b]\n", p_task));
 	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->end_task(p_task);
 	}
@@ -7097,6 +7108,14 @@ void EditorNode::_touch_actions_panel_mode_changed() {
 }
 #endif
 
+#ifdef MACOS_ENABLED
+extern "C" GameViewPluginBase *get_game_view_plugin();
+#else
+GameViewPluginBase *get_game_view_plugin() {
+	return memnew(GameViewPlugin);
+}
+#endif
+
 EditorNode::EditorNode() {
 	DEV_ASSERT(!singleton);
 	singleton = this;
@@ -8175,7 +8194,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(ScriptEditorPlugin));
 
 	if (!Engine::get_singleton()->is_recovery_mode_hint()) {
-		add_editor_plugin(memnew(GameViewPlugin));
+		add_editor_plugin(get_game_view_plugin());
 	}
 
 	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();

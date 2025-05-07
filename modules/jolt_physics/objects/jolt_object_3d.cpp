@@ -37,13 +37,12 @@
 #include "jolt_group_filter.h"
 
 void JoltObject3D::_remove_from_space() {
-	if (unlikely(jolt_id.IsInvalid())) {
+	if (!in_space()) {
 		return;
 	}
 
-	space->remove_body(jolt_id);
-
-	jolt_id = JPH::BodyID();
+	space->remove_body(jolt_body->GetID());
+	jolt_body = nullptr;
 }
 
 void JoltObject3D::_reset_space() {
@@ -60,7 +59,7 @@ void JoltObject3D::_update_object_layer() {
 		return;
 	}
 
-	space->get_body_iface().SetObjectLayer(jolt_id, _get_object_layer());
+	space->get_body_iface().SetObjectLayer(jolt_body->GetID(), _get_object_layer());
 }
 
 void JoltObject3D::_collision_layer_changed() {

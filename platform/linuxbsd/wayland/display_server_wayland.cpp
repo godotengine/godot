@@ -453,15 +453,13 @@ Point2i DisplayServerWayland::mouse_get_position() const {
 
 	WindowID pointed_id = wayland_thread.pointer_get_pointed_window_id();
 
-	if (pointed_id != INVALID_WINDOW_ID) {
+	if (pointed_id != INVALID_WINDOW_ID && windows.has(pointed_id)) {
 		return Input::get_singleton()->get_mouse_position() + windows[pointed_id].rect.position;
 	}
 
 	// We can't properly implement this method by design.
 	// This is the best we can do unfortunately.
 	return Input::get_singleton()->get_mouse_position();
-
-	return Point2i();
 }
 
 BitField<MouseButtonMask> DisplayServerWayland::mouse_get_button_state() const {

@@ -77,8 +77,8 @@ public:
 	};
 
 protected:
-	float cell_size = NavigationDefaults3D::navmesh_cell_size;
-	float cell_height = NavigationDefaults3D::navmesh_cell_height;
+	float cell_size = NavigationDefaults3D::NAV_MESH_CELL_SIZE;
+	float cell_height = NavigationDefaults3D::NAV_MESH_CELL_HEIGHT;
 	float border_size = 0.0f;
 	float agent_height = 1.5f;
 	float agent_radius = 0.5f;
@@ -202,9 +202,6 @@ public:
 #ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> get_debug_mesh();
 #endif // DEBUG_ENABLED
-
-	NavigationMesh() {}
-	~NavigationMesh() {}
 };
 
 VARIANT_ENUM_CAST(NavigationMesh::SamplePartitionType);

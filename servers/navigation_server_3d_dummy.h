@@ -102,6 +102,7 @@ public:
 	AABB region_get_bounds(RID p_region) const override { return AABB(); }
 
 	RID link_create() override { return RID(); }
+	uint32_t link_get_iteration_id(RID p_link) const override { return 0; }
 	void link_set_map(RID p_link, RID p_map) override {}
 	RID link_get_map(RID p_link) const override { return RID(); }
 	void link_set_enabled(RID p_link, bool p_enabled) override {}

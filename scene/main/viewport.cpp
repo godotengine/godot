@@ -5564,5 +5564,3 @@ void SubViewport::_validate_property(PropertyInfo &p_property) const {
 SubViewport::SubViewport() {
 	RS::get_singleton()->viewport_set_size(get_viewport_rid(), get_size().width, get_size().height);
 }
-
-SubViewport::~SubViewport() {}

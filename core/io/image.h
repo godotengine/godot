@@ -182,6 +182,11 @@ public:
 		ALPHA_BLEND
 	};
 
+	struct BasisUniversalPackerParams {
+		int uastc_level = 0;
+		float rdo_quality_loss = 0;
+	};
+
 	// External saver function pointers.
 
 	static inline SavePNGFunc save_png_func = nullptr;
@@ -231,7 +236,7 @@ public:
 	static Vector<uint8_t> (*webp_lossy_packer)(const Ref<Image> &p_image, float p_quality);
 	static Vector<uint8_t> (*webp_lossless_packer)(const Ref<Image> &p_image);
 	static Vector<uint8_t> (*png_packer)(const Ref<Image> &p_image);
-	static Vector<uint8_t> (*basis_universal_packer)(const Ref<Image> &p_image, UsedChannels p_channels);
+	static Vector<uint8_t> (*basis_universal_packer)(const Ref<Image> &p_image, UsedChannels p_channels, const BasisUniversalPackerParams &p_basisu_params);
 
 	static Ref<Image> (*webp_unpacker)(const Vector<uint8_t> &p_buffer);
 	static Ref<Image> (*png_unpacker)(const Vector<uint8_t> &p_buffer);

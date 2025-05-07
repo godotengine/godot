@@ -31,6 +31,7 @@
 #import "godot_content_view.h"
 
 #import "display_server_macos.h"
+#import "godot_window.h"
 #import "key_mapping_macos.h"
 
 #include "main/main.h"
@@ -153,7 +154,12 @@
 // MARK: Backing Layer
 
 - (CALayer *)makeBackingLayer {
-	return [[CAMetalLayer class] layer];
+	CAMetalLayer *layer = [CAMetalLayer new];
+	layer.edgeAntialiasingMask = 0;
+	layer.masksToBounds = NO;
+	layer.presentsWithTransaction = NO;
+	[layer removeAllAnimations];
+	return layer;
 }
 
 - (BOOL)wantsUpdateLayer {
@@ -531,6 +537,11 @@
 	mm->set_relative(relativeMotion);
 	mm->set_relative_screen_position(relativeMotion);
 	ds->get_key_modifier_state([event modifierFlags], mm);
+
+	const NSRect contentRect = [wd.window_view frame];
+	if (NSPointInRect([event locationInWindow], contentRect)) {
+		ds->mouse_enter_window(window_id);
+	}
 
 	Input::get_singleton()->parse_input_event(mm);
 }

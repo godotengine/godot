@@ -40,13 +40,8 @@ class SpinBoxLineEdit : public LineEdit {
 protected:
 	void _notification(int p_what);
 
-	static void _bind_methods() {}
-
 	void _accessibility_action_inc(const Variant &p_data);
 	void _accessibility_action_dec(const Variant &p_data);
-
-public:
-	SpinBoxLineEdit() {}
 };
 
 class SpinBox : public Range {

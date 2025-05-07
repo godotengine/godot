@@ -65,6 +65,7 @@ public:
 
 	String get_language_name() const { return language_name; }
 
+	bool is_empty() const { return stack_frames.is_empty(); }
 	int get_frame_count() const { return stack_frames.size(); }
 	String get_frame_function(int p_index) const;
 	String get_frame_file(int p_index) const;
