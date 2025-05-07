@@ -73,7 +73,7 @@ def get_ndk_version():
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_min_target_api():
-    return 21
+    return 24
 
 
 def get_flags():

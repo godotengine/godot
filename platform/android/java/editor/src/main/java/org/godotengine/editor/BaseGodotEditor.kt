@@ -192,13 +192,11 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			Manifest.permission.RECORD_AUDIO,
 		)
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			excludedPermissions.add(
-				// The REQUEST_INSTALL_PACKAGES permission is requested the first time we attempt to
-				// open an apk file.
-				Manifest.permission.REQUEST_INSTALL_PACKAGES,
-			)
-		}
+		excludedPermissions.add(
+			// The REQUEST_INSTALL_PACKAGES permission is requested the first time we attempt to
+			// open an apk file.
+			Manifest.permission.REQUEST_INSTALL_PACKAGES,
+		)
 
 		// XR runtime permissions should only be requested when the "xr/openxr/enabled" project setting
 		// is enabled.
@@ -384,10 +382,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		val launchPolicy = resolveLaunchPolicyIfNeeded(editorWindowInfo.launchPolicy)
 		if (launchPolicy == LaunchPolicy.ADJACENT) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-				Log.v(TAG, "Adding flag for adjacent launch")
-				newInstance.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
-			}
+			Log.v(TAG, "Adding flag for adjacent launch")
+			newInstance.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
 		}
 		return newInstance
 	}
@@ -511,12 +507,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	private fun resolveGameEmbedModeIfNeeded(embedMode: GameEmbedMode): GameEmbedMode {
 		return when (embedMode) {
 			GameEmbedMode.AUTO -> {
-				val inMultiWindowMode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-					isInMultiWindowMode
-				} else {
-					false
-				}
-				if (inMultiWindowMode || isLargeScreen || isNativeXRDevice(applicationContext)) {
+				if (isInMultiWindowMode || isLargeScreen || isNativeXRDevice(applicationContext)) {
 					GameEmbedMode.DISABLED
 				} else {
 					GameEmbedMode.ENABLED
@@ -534,12 +525,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	private fun resolveLaunchPolicyIfNeeded(policy: LaunchPolicy): LaunchPolicy {
 		return when (policy) {
 			LaunchPolicy.AUTO -> {
-				val inMultiWindowMode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-					isInMultiWindowMode
-				} else {
-					false
-				}
-				val defaultLaunchPolicy = if (inMultiWindowMode || isLargeScreen || isNativeXRDevice(applicationContext)) {
+				val defaultLaunchPolicy = if (isInMultiWindowMode || isLargeScreen || isNativeXRDevice(applicationContext)) {
 					LaunchPolicy.ADJACENT
 				} else {
 					LaunchPolicy.SAME
