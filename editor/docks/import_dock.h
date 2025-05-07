@@ -32,7 +32,7 @@
 
 #include "core/io/config_file.h"
 #include "core/io/resource_importer.h"
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/inspector/editor_inspector.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"

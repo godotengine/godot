@@ -34,8 +34,8 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "editor/editor_file_system.h"
-#include "editor/editor_paths.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/file_system/editor_paths.h"
 #include "scene/resources/image_texture.h"
 
 namespace TestGltf {

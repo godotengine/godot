@@ -30,7 +30,7 @@
 
 #include "editor_resource_tooltip_plugins.h"
 
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"

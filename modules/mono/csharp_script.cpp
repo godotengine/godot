@@ -61,8 +61,8 @@
 #include "core/os/keyboard.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/node_dock.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 #endif
 

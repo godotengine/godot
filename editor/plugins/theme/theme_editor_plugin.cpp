@@ -32,10 +32,10 @@
 
 #include "editor/doc/editor_help.h"
 #include "editor/docks/inspector_dock.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/progress_dialog.h"
