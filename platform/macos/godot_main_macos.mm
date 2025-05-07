@@ -74,7 +74,6 @@ int main(int argc, char **argv) {
 
 		if (strcmp("--embedded", argv[i]) == 0) {
 			is_embedded = true;
-			continue;
 		}
 
 		args.ptr()[argsc] = argv[i];
