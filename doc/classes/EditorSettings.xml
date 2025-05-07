@@ -836,6 +836,11 @@
 		<member name="interface/editor/code_font_size" type="int" setter="" getter="">
 			The size of the font in the script editor. This setting does not impact the font size of the Output panel (see [member run/output/font_size]).
 		</member>
+		<member name="interface/editor/collapse_main_menu" type="bool" setter="" getter="">
+			If [code]true[/code], the main menu collapses into a [MenuButton].
+			[b]Note:[/b] This setting is only applicable on macOS when [member interface/editor/use_embedded_menu] is [code]true[/code].
+			[b]Note:[/b] Defaults to [code]true[/code] on the Android editor.
+		</member>
 		<member name="interface/editor/custom_display_scale" type="float" setter="" getter="">
 			The custom editor scale factor to use. This can be used for displays with very high DPI where a scale factor of 200% is not sufficient.
 			[b]Note:[/b] Only effective if [member interface/editor/display_scale] is set to [b]Custom[/b].
