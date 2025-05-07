@@ -36,6 +36,91 @@
 
 namespace TestJSON {
 
+TEST_CASE("[JSON] Stringify single data types") {
+	CHECK(JSON::stringify(Variant()) == "null");
+	CHECK(JSON::stringify(false) == "false");
+	CHECK(JSON::stringify(true) == "true");
+	CHECK(JSON::stringify(0) == "0");
+	CHECK(JSON::stringify(12345) == "12345");
+	CHECK(JSON::stringify(0.75) == "0.75");
+	CHECK(JSON::stringify("test") == "\"test\"");
+	CHECK(JSON::stringify("\\\b\f\n\r\t\v\"") == "\"\\\\\\b\\f\\n\\r\\t\\v\\\"\"");
+}
+
+TEST_CASE("[JSON] Stringify arrays") {
+	CHECK(JSON::stringify(Array()) == "[]");
+
+	Array int_array;
+	for (int i = 0; i < 10; i++) {
+		int_array.push_back(i);
+	}
+	CHECK(JSON::stringify(int_array) == "[0,1,2,3,4,5,6,7,8,9]");
+
+	Array str_array;
+	str_array.push_back("Hello");
+	str_array.push_back("World");
+	str_array.push_back("!");
+	CHECK(JSON::stringify(str_array) == "[\"Hello\",\"World\",\"!\"]");
+
+	Array indented_array;
+	Array nested_array;
+	for (int i = 0; i < 5; i++) {
+		indented_array.push_back(i);
+		nested_array.push_back(i);
+	}
+	indented_array.push_back(nested_array);
+	CHECK(JSON::stringify(indented_array, "\t") == "[\n\t0,\n\t1,\n\t2,\n\t3,\n\t4,\n\t[\n\t\t0,\n\t\t1,\n\t\t2,\n\t\t3,\n\t\t4\n\t]\n]");
+
+	ERR_PRINT_OFF
+	Array self_array;
+	self_array.push_back(self_array);
+	CHECK(JSON::stringify(self_array) == "[\"[...]\"]");
+	self_array.clear();
+
+	Array max_recursion_array;
+	for (int i = 0; i < Variant::MAX_RECURSION_DEPTH + 1; i++) {
+		Array next;
+		next.push_back(max_recursion_array);
+		max_recursion_array = next;
+	}
+	CHECK(JSON::stringify(max_recursion_array).contains("[...]"));
+	ERR_PRINT_ON
+}
+
+TEST_CASE("[JSON] Stringify dictionaries") {
+	CHECK(JSON::stringify(Dictionary()) == "{}");
+
+	Dictionary single_entry;
+	single_entry["key"] = "value";
+	CHECK(JSON::stringify(single_entry) == "{\"key\":\"value\"}");
+
+	Dictionary indented;
+	indented["key1"] = "value1";
+	indented["key2"] = 2;
+	CHECK(JSON::stringify(indented, "\t") == "{\n\t\"key1\": \"value1\",\n\t\"key2\": 2\n}");
+
+	Dictionary outer;
+	Dictionary inner;
+	inner["key"] = "value";
+	outer["inner"] = inner;
+	CHECK(JSON::stringify(outer) == "{\"inner\":{\"key\":\"value\"}}");
+
+	ERR_PRINT_OFF
+	Dictionary self_dictionary;
+	self_dictionary["key"] = self_dictionary;
+	CHECK(JSON::stringify(self_dictionary) == "{\"key\":\"{...}\"}");
+	self_dictionary.clear();
+
+	Dictionary max_recursion_dictionary;
+	for (int i = 0; i < Variant::MAX_RECURSION_DEPTH + 1; i++) {
+		Dictionary next;
+		next["key"] = max_recursion_dictionary;
+		max_recursion_dictionary = next;
+	}
+	CHECK(JSON::stringify(max_recursion_dictionary).contains("{...:...}"));
+	ERR_PRINT_ON
+}
+
 // NOTE: The current JSON parser accepts many non-conformant strings such as
 // single-quoted strings, duplicate commas and trailing commas.
 // This is intentionally not tested as users shouldn't rely on this behavior.
