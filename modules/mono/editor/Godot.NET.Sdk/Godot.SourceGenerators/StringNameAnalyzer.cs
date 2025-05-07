@@ -79,6 +79,12 @@ public sealed class StringNameCodeFixProvider : CodeFixProvider
             return;
         }
 
+        // don't register a code fix for non-constant values
+        if (await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false) is not { } semanticModel)
+            return;
+        if (semanticModel.GetConstantValue(stringNameValueSyntax, context.CancellationToken) is not { HasValue: true, Value: string { } })
+            return;
+
         context.RegisterCodeFix(
             CodeAction.Create(
                 "Cache the StringName instance between calls",
