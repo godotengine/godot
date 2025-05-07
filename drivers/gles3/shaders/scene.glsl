@@ -2030,7 +2030,7 @@ void main() {
 	specular_light = mix(specular_light, custom_radiance.rgb, custom_radiance.a);
 #endif // CUSTOM_RADIANCE_USED
 
-#ifndef USE_LIGHTMAP
+#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
 	//lightmap overrides everything
 	if (scene_data.use_ambient_light) {
 		ambient_light = scene_data.ambient_light_color_energy.rgb;
@@ -2050,7 +2050,7 @@ void main() {
 		}
 #endif // DISABLE_REFLECTION_PROBE
 	}
-#endif // USE_LIGHTMAP
+#endif // !USE_LIGHTMAP && !USE_LIGHTMAP_CAPTURE
 
 #if defined(CUSTOM_IRRADIANCE_USED)
 	ambient_light = mix(ambient_light, custom_irradiance.rgb, custom_irradiance.a);
