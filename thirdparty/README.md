@@ -77,6 +77,7 @@ Patches:
 - `0002-external-jpgd.patch` (GH-88508)
 - `0003-external-tinyexr.patch` (GH-97582)
 - `0004-remove-tinydds-qoi.patch` (GH-97582)
+- `0005-msvc-include-ctype.patch` (GH-106155)
 
 
 ## brotli
