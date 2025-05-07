@@ -117,7 +117,7 @@
 #include "editor/plugins/texture/texture_editor_plugin.h"
 #include "editor/plugins/texture/texture_layered_editor_plugin.h"
 #include "editor/plugins/texture/texture_region_editor_plugin.h"
-#include "editor/plugins/theme_editor_plugin.h"
+#include "editor/plugins/theme/theme_editor_plugin.h"
 #include "editor/plugins/tiles/tiles_editor_plugin.h"
 #include "editor/plugins/tool_button_editor_plugin.h"
 #include "editor/script/editor_script.h"
