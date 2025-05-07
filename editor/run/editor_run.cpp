@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
-#include "editor/run_instances_dialog.h"
+#include "editor/run/run_instances_dialog.h"
 #include "editor/settings/editor_settings.h"
 #include "main/main.h"
 #include "servers/display_server.h"
