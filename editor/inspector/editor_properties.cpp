@@ -31,11 +31,11 @@
 #include "editor_properties.h"
 
 #include "core/config/project_settings.h"
-#include "editor/create_dialog.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/create_dialog.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/inspector/editor_properties_array_dict.h"
