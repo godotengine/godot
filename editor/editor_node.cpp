@@ -150,7 +150,7 @@
 #include "editor/plugins/text_editor.h"
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/progress_dialog.h"
-#include "editor/project_upgrade_tool.h"
+#include "editor/project_upgrade/project_upgrade_tool.h"
 #include "editor/register_exporters.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/scene/editor_scene_tabs.h"
