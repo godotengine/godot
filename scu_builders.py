@@ -300,6 +300,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["editor/inspector"], ["editor_resource_preview"])
     process_folder(["editor/themes"])
     process_folder(["editor/project_manager"])
+    process_folder(["editor/project_upgrade"])
     process_folder(["editor/import"])
     process_folder(["editor/import/3d"])
     process_folder(["editor/plugins"])
