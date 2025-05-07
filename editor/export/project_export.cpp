@@ -32,10 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/version.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/inspector/editor_properties.h"

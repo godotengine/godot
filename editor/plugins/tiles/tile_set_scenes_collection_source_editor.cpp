@@ -30,9 +30,9 @@
 
 #include "tile_set_scenes_collection_source_editor.h"
 
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/plugins/tiles/tile_set_editor.h"

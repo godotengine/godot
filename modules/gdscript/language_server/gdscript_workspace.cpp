@@ -38,8 +38,8 @@
 #include "core/object/script_language.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/resources/packed_scene.h"
 

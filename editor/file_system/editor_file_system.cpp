@@ -40,7 +40,7 @@
 #include "core/variant/variant_parser.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"

@@ -31,8 +31,8 @@
 #include "project_upgrade_tool.h"
 
 #include "core/io/dir_access.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
