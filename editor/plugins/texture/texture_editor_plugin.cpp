@@ -31,7 +31,7 @@
 #include "texture_editor_plugin.h"
 
 #include "editor/editor_string_names.h"
-#include "editor/plugins/color_channel_selector.h"
+#include "editor/plugins/texture/color_channel_selector.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/color_rect.h"
