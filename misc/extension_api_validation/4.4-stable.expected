@@ -97,3 +97,9 @@ GH-76560
 Validate extension JSON: Error: Field 'classes/Node/methods/set_name/arguments/0': type changed value in new API, from "String" to "StringName".
 
 Change Node `set_name` to use StringName to improve performance. Compatibility method registered.
+
+GH-57121
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/duplicate/arguments/0': default_value changed value in new API, from "15" to "31".
+
+The default argument includes a newly added flag. Compat method registered.
