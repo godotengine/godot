@@ -862,6 +862,7 @@ public:
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 		int min_local_doc_line = 0;
+		String signature; // For autocompletion.
 #endif // TOOLS_ENABLED
 
 		bool resolved_signature = false;
@@ -1614,6 +1615,7 @@ public:
 #ifdef TOOLS_ENABLED
 	static HashMap<String, String> theme_color_names;
 
+	String source_code;
 	HashMap<int, GDScriptTokenizer::CommentData> comment_data;
 #endif // TOOLS_ENABLED
 
