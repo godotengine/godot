@@ -3115,6 +3115,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, started_timestamp);
 					confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before reloading the scene?"));
 					confirmation->popup_centered();
+					confirmation_button->show();
 					confirmation_button->grab_focus();
 					break;
 				} else {
@@ -3204,6 +3205,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 					confirmation->reset_size();
 					confirmation->popup_centered();
+					confirmation_button->hide();
 					break;
 				}
 
