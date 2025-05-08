@@ -30,6 +30,7 @@
 
 #include "embedded_process_macos.h"
 
+#include "platform/macos/display_server_embedded.h"
 #include "platform/macos/display_server_macos.h"
 
 #include "core/input/input_event_codec.h"
@@ -122,7 +123,7 @@ void EmbeddedProcessMacOS::reset() {
 
 void EmbeddedProcessMacOS::request_close() {
 	if (current_process_id != 0 && is_embedding_completed()) {
-		ds->request_close_embedded_process(current_process_id);
+		script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_CLOSE_REQUEST });
 	}
 }
 
@@ -133,18 +134,21 @@ void EmbeddedProcessMacOS::_try_embed_process() {
 
 	Error err = ds->embed_process_update(window->get_window_id(), this);
 	if (err == OK) {
+		// Replicate some of the DisplayServer state.
+		{
+			DisplayServerEmbeddedState state;
+			state.screen_max_scale = ds->screen_get_max_scale();
+			state.screen_dpi = ds->screen_get_dpi();
+			PackedByteArray data;
+			state.serialize(data);
+			script_debugger->send_message("embed:ds_state", { data });
+		}
+
 		Rect2i rect = get_screen_embedded_window_rect();
 		script_debugger->send_message("embed:window_size", { rect.size });
 		embedding_state = EmbeddingState::COMPLETED;
 		queue_redraw();
 		emit_signal(SNAME("embedding_completed"));
-
-		// Replicate some of the DisplayServer state.
-		{
-			Dictionary state;
-			state["screen_get_max_scale"] = ds->screen_get_max_scale();
-			// script_debugger->send_message("embed:ds_state", { state });
-		}
 
 		// Send initial joystick state.
 		{
@@ -209,13 +213,21 @@ EmbeddedProcessMacOS::EmbeddedProcessMacOS() :
 	ED_SHORTCUT("game_view/release_mouse", TTRC("Release Mouse"), KeyModifierMask::ALT | Key::ESCAPE);
 }
 
+EmbeddedProcessMacOS::~EmbeddedProcessMacOS() {
+	if (current_process_id != 0) {
+		// Stop embedding the last process.
+		OS::get_singleton()->kill(current_process_id);
+		reset();
+	}
+}
+
 void LayerHost::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_FOCUS_ENTER: {
 			if (script_debugger) {
 				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_MOUSE_ENTER });
 			}
-			// Temporarily release mouse capture, so we can interact with the editor.
+			// Restore mouse capture, if necessary.
 			DisplayServer *ds = DisplayServer::get_singleton();
 			if (process->get_mouse_mode() != ds->mouse_get_mode()) {
 				// Restore embedded process mouse mode.

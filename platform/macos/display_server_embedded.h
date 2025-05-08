@@ -33,33 +33,27 @@
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
-#if defined(GLES3_ENABLED)
-#include "embedded_gl_manager.h"
-#include "platform_gl.h"
-#endif // GLES3_ENABLED
-
-#if defined(RD_ENABLED)
-#include "servers/rendering/rendering_device.h"
-
-#if defined(VULKAN_ENABLED)
-#import "rendering_context_driver_vulkan_macos.h"
-#endif // VULKAN_ENABLED
-#if defined(METAL_ENABLED)
-#import "drivers/metal/rendering_context_driver_metal.h"
-#endif
-#endif // RD_ENABLED
-
 @class CAContext;
+@class CALayer;
+class GLManagerEmbedded;
+class RenderingContextDriver;
+class RenderingDevice;
+
+struct DisplayServerEmbeddedState {
+	/// Default to a scale of 2.0, which is the most common.
+	float screen_max_scale = 2.0f;
+	float screen_dpi = 96.0f;
+
+	void serialize(PackedByteArray &r_data);
+	Error deserialize(const PackedByteArray &p_data);
+};
 
 class DisplayServerEmbedded : public DisplayServer {
 	GDCLASS(DisplayServerEmbedded, DisplayServer)
 
 	_THREAD_SAFE_CLASS_
 
-	struct {
-		float screen_max_scale = 1.0f;
-		float screen_dpi = 96.0f;
-	} state;
+	DisplayServerEmbeddedState state;
 
 	NativeMenu *native_menu = nullptr;
 
@@ -70,13 +64,11 @@ class DisplayServerEmbedded : public DisplayServer {
 	HashMap<WindowID, Callable> input_event_callbacks;
 	HashMap<WindowID, Callable> input_text_callbacks;
 
-	float content_scale = 1.0f;
-
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 
-	CAContext *ca_context = nil;
+	CAContext *ca_context = nullptr;
 	// Either be a CAMetalLayer or a CALayer depending on the rendering driver.
-	CALayer *layer = nil;
+	CALayer *layer = nullptr;
 #ifdef GLES3_ENABLED
 	GLManagerEmbedded *gl_manager = nullptr;
 #endif
@@ -222,8 +214,7 @@ public:
 	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
-	void update_state(const Dictionary &p_state);
-	void set_content_scale(float p_scale);
+	void set_state(const DisplayServerEmbeddedState &p_state);
 	virtual void swap_buffers() override;
 
 	DisplayServerEmbedded(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);

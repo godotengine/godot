@@ -30,19 +30,31 @@
 
 #import "display_server_embedded.h"
 
+#if defined(GLES3_ENABLED)
+#import "embedded_gl_manager.h"
+#import "platform_gl.h"
+
+#import "drivers/gles3/rasterizer_gles3.h"
+#endif
+
+#if defined(RD_ENABLED)
+#import "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#import "servers/rendering/rendering_device.h"
+
+#if defined(VULKAN_ENABLED)
+#import "rendering_context_driver_vulkan_macos.h"
+#endif // VULKAN_ENABLED
+#if defined(METAL_ENABLED)
+#import "drivers/metal/rendering_context_driver_metal.h"
+#endif
+#endif // RD_ENABLED
+
 #import "embedded_debugger.h"
 #import "macos_quartz_core_spi.h"
 
 #import "core/config/project_settings.h"
 #import "core/debugger/engine_debugger.h"
-
-#if defined(GLES3_ENABLED)
-#include "drivers/gles3/rasterizer_gles3.h"
-#endif
-
-#if defined(RD_ENABLED)
-#import "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-#endif
+#import "core/io/marshalls.h"
 
 DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	EmbeddedDebugger::initialize(this);
@@ -176,15 +188,15 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	}
 #endif
 
-	constexpr CGFloat CONTENT_SCALE = 2.0;
-	layer.contentsScale = CONTENT_SCALE;
+	CGFloat scale = screen_get_max_scale();
+	layer.contentsScale = scale;
 	layer.magnificationFilter = kCAFilterNearest;
 	layer.minificationFilter = kCAFilterNearest;
-	layer.opaque = NO; // Never opaque when embedded.
+	layer.opaque = YES; // Always opaque when embedded.
 	layer.actions = @{ @"contents" : [NSNull null] }; // Disable implicit animations for contents.
 	// AppKit frames, bounds and positions are always in points.
 	CGRect bounds = CGRectMake(0, 0, p_resolution.width, p_resolution.height);
-	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformMakeScale(1.0 / CONTENT_SCALE, 1.0 / CONTENT_SCALE));
+	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformInvert(CGAffineTransformMakeScale(scale, scale)));
 	layer.bounds = bounds;
 
 	CGSConnectionID connection_id = CGSMainConnectionID();
@@ -582,11 +594,11 @@ void DisplayServerEmbedded::window_set_size(const Size2i p_size, WindowID p_wind
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
 
-	// TODO(sgc): Pass scale as argument from parent process.
-	constexpr CGFloat CONTENT_SCALE = 2.0;
+	CGFloat scale = screen_get_max_scale();
 	CGRect bounds = CGRectMake(0, 0, p_size.width, p_size.height);
-	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformMakeScale(1.0 / CONTENT_SCALE, 1.0 / CONTENT_SCALE));
+	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformInvert(CGAffineTransformMakeScale(scale, scale)));
 	layer.bounds = bounds;
+	layer.contentsScale = scale;
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
@@ -685,12 +697,8 @@ void DisplayServerEmbedded::window_set_ime_position(const Point2i &p_pos, Window
 	ime_last_position = p_pos;
 }
 
-void DisplayServerEmbedded::update_state(const Dictionary &p_state) {
-	state.screen_max_scale = p_state["screen_get_max_scale"];
-}
-
-void DisplayServerEmbedded::set_content_scale(float p_scale) {
-	content_scale = p_scale;
+void DisplayServerEmbedded::set_state(const DisplayServerEmbeddedState &p_state) {
+	state = p_state;
 }
 
 void DisplayServerEmbedded::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
@@ -741,4 +749,25 @@ void DisplayServerEmbedded::swap_buffers() {
 		gl_manager->swap_buffers();
 	}
 #endif
+}
+
+void DisplayServerEmbeddedState::serialize(PackedByteArray &r_data) {
+	r_data.resize(8);
+
+	uint8_t *data = r_data.ptrw();
+	data += encode_float(screen_max_scale, data);
+	data += encode_float(screen_dpi, data);
+
+	// Assert we had enough space.
+	DEV_ASSERT(data - r_data.ptrw() >= r_data.size());
+}
+
+Error DisplayServerEmbeddedState::deserialize(const PackedByteArray &p_data) {
+	const uint8_t *data = p_data.ptr();
+
+	screen_max_scale = decode_float(data);
+	data += sizeof(float);
+	screen_dpi = decode_float(data);
+
+	return OK;
 }

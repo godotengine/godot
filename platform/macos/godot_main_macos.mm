@@ -116,7 +116,9 @@ int main(int argc, char **argv) {
 
 	os->run();
 
+	int exit_code = os->get_exit_code();
+
 	memdelete(os);
 
-	return os->get_exit_code();
+	return exit_code;
 }

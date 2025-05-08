@@ -864,7 +864,7 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	N = r_arguments.insert_after(N, itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::WINDOW_HANDLE, get_window()->get_window_id())));
 
 #if MACOS_ENABLED
-	r_arguments.push_back("--embedded");
+	N = r_arguments.insert_after(N, "--embedded");
 #endif
 
 	// Be sure to have the correct window size in the embedded_process control.
