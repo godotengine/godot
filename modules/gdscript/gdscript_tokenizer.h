@@ -200,6 +200,12 @@ public:
 
 	static String get_token_name(Token::Type p_token_type);
 
+#ifdef TOOLS_ENABLED
+	// This is a temporary solution, as Tokens are not able to store their position, only lines and columns.
+	virtual int get_current_position() const { return 0; }
+	virtual String get_source_code() const { return ""; }
+#endif // TOOLS_ENABLED
+
 	virtual int get_cursor_line() const = 0;
 	virtual int get_cursor_column() const = 0;
 	virtual void set_cursor_position(int p_line, int p_column) = 0;
@@ -284,6 +290,11 @@ public:
 	void set_source_code(const String &p_source_code);
 
 	const Vector<int> &get_continuation_lines() const { return continuation_lines; }
+
+#ifdef TOOLS_ENABLED
+	virtual int get_current_position() const override { return position; }
+	virtual String get_source_code() const override { return source; }
+#endif // TOOLS_ENABLED
 
 	virtual int get_cursor_line() const override;
 	virtual int get_cursor_column() const override;
