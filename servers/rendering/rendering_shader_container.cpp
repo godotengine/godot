@@ -422,10 +422,10 @@ bool RenderingShaderContainer::compress_code(const uint8_t *p_decompressed_bytes
 	*r_compressed_flags = 0;
 
 	PackedByteArray zstd_bytes;
-	int zstd_max_bytes = Compression::get_max_compressed_buffer_size(p_decompressed_size, Compression::MODE_ZSTD);
+	const int64_t zstd_max_bytes = Compression::get_max_compressed_buffer_size(p_decompressed_size, Compression::MODE_ZSTD);
 	zstd_bytes.resize(zstd_max_bytes);
 
-	int zstd_size = Compression::compress(zstd_bytes.ptrw(), p_decompressed_bytes, p_decompressed_size, Compression::MODE_ZSTD);
+	const int64_t zstd_size = Compression::compress(zstd_bytes.ptrw(), p_decompressed_bytes, p_decompressed_size, Compression::MODE_ZSTD);
 	if (zstd_size > 0 && (uint32_t)(zstd_size) < p_decompressed_size) {
 		// Only choose Zstd if it results in actual compression.
 		memcpy(p_compressed_bytes, zstd_bytes.ptr(), zstd_size);
