@@ -65,12 +65,12 @@ public partial class TestStringNameClass4 : GodotObject
     }
 
     // regular string parameter
-    static void Fn1(string s) { }
+    private static void Fn1(string s) { }
 
     // StringName parameter
-    static void Fn2(StringName s) { }
+    private static void Fn2(StringName s) { }
 
     // overloads for both string and StringName
-    static void Fn3(string s) { }
-    static void Fn3(StringName s) { }
+    private static void Fn3(string s) { }
+    private static void Fn3(StringName s) { }
 }
