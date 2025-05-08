@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/gui/panel_container.h"
+#include "scene/gui/tab_container.h"
 
 class Button;
 class ConfigFile;
@@ -38,20 +38,12 @@ class EditorToaster;
 class HBoxContainer;
 class VBoxContainer;
 class ScrollContainer;
+class PanelContainer;
 
-class EditorBottomPanel : public PanelContainer {
-	GDCLASS(EditorBottomPanel, PanelContainer);
+class EditorBottomPanel : public TabContainer {
+	GDCLASS(EditorBottomPanel, TabContainer);
 
-	struct BottomPanelItem {
-		String name;
-		Control *control = nullptr;
-		Button *button = nullptr;
-	};
-
-	Vector<BottomPanelItem> items;
-	bool lock_panel_switching = false;
-
-	VBoxContainer *item_vbox = nullptr;
+	PanelContainer *back_panel = nullptr;
 	HBoxContainer *bottom_hbox = nullptr;
 	Button *left_button = nullptr;
 	Button *right_button = nullptr;
@@ -60,10 +52,13 @@ class EditorBottomPanel : public PanelContainer {
 	EditorToaster *editor_toaster = nullptr;
 	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
-	Control *last_opened_control = nullptr;
 
-	void _switch_by_control(bool p_visible, Control *p_control, bool p_ignore_lock = false);
-	void _switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock = false);
+	int tab_offset = 0;
+	bool lock_panel_switching = false;
+
+	void _repaint();
+	void _on_tab_changed(int p_idx);
+	void _on_button_visibility_changed(Button *p_button, Control *p_control);
 	void _pin_button_toggled(bool p_pressed);
 	void _expand_button_toggled(bool p_pressed);
 	void _scroll(bool p_right);
@@ -74,6 +69,12 @@ class EditorBottomPanel : public PanelContainer {
 
 protected:
 	void _notification(int p_what);
+
+	int _get_tab_height() const override;
+
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void move_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
 
 public:
 	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
@@ -86,6 +87,9 @@ public:
 	void hide_bottom_panel();
 	void toggle_last_opened_bottom_panel();
 	void set_expanded(bool p_expanded);
+	PanelContainer *get_back_panel() { return back_panel; }
+
+	virtual Size2 get_minimum_size() const override;
 
 	EditorBottomPanel();
 };

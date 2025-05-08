@@ -53,7 +53,6 @@ private:
 	mutable ObjectID popup_obj_id;
 	bool use_hidden_tabs_for_min_size = false;
 	bool theme_changing = false;
-	Vector<Control *> children_removing;
 	bool drag_to_rearrange_enabled = false;
 	// Set the default setup current tab to be an invalid index.
 	int setup_current_tab = -2;
@@ -99,8 +98,6 @@ private:
 
 	HashMap<Node *, RID> tab_panels;
 
-	int _get_tab_height() const;
-	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
 	void _repaint();
 	void _refresh_tab_indices();
@@ -129,6 +126,10 @@ protected:
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 	static void _bind_methods();
+
+	Vector<Control *> children_removing;
+	virtual int _get_tab_height() const;
+	Vector<Control *> _get_tab_controls() const;
 
 public:
 	virtual bool accessibility_override_tree_hierarchy() const override { return true; }
