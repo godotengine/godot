@@ -138,7 +138,7 @@
 			The body's damping coefficient. Higher values will slow down the body more noticeably when forces are applied.
 		</member>
 		<member name="disable_mode" type="int" setter="set_disable_mode" getter="get_disable_mode" enum="SoftBody3D.DisableMode" default="0">
-			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED]. See [enum DisableMode] for more details about the different modes.
+			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED].
 		</member>
 		<member name="drag_coefficient" type="float" setter="set_drag_coefficient" getter="get_drag_coefficient" default="0.0">
 			The body's drag coefficient. Higher values increase this body's air resistance.

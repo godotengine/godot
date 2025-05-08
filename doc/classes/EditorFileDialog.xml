@@ -162,7 +162,7 @@
 			The view format in which the [EditorFileDialog] displays resources to the user.
 		</member>
 		<member name="file_mode" type="int" setter="set_file_mode" getter="get_file_mode" enum="EditorFileDialog.FileMode" default="4">
-			The dialog's open or save mode, which affects the selection behavior. See [enum FileMode].
+			The dialog's open or save mode, which affects the selection behavior.
 		</member>
 		<member name="filters" type="PackedStringArray" setter="set_filters" getter="get_filters" default="PackedStringArray()">
 			The available file type filters. For example, this shows only [code].png[/code] and [code].gd[/code] files: [code]set_filters(PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]))[/code]. Multiple file types can also be specified in a single filter. [code]"*.png, *.jpg, *.jpeg ; Supported Images"[/code] will show both PNG and JPEG files when selected.
