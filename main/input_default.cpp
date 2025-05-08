@@ -285,8 +285,8 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 			int uidlen = MIN(p_name.length(), 16);
 			for (int i = 0; i < uidlen; i++) {
 				uidname = uidname + _hex_str(p_name[i]);
-			};
-		};
+			}
+		}
 		js.uid = uidname;
 		js.connected = true;
 		int mapping = fallback_mapping;
@@ -294,20 +294,23 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 			if (js.uid == map_db[i].uid) {
 				mapping = i;
 				js.name = map_db[i].name;
-			};
-		};
+			}
+		}
 		js.mapping = mapping;
 	} else {
 		js.connected = false;
-		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-			if (i < JOY_AXIS_MAX) {
-				set_joy_axis(p_idx, i, 0.0f);
+		for (int i = JOY_BUTTON_0; i < JOY_BUTTON_MAX; i++) {
+			if (is_joy_button_pressed(p_idx, i)) {
+				_button_event(p_idx, i, 0.0f);
 			}
-
+		}
+		for (int i = JOY_AXIS_0; i < JOY_AXIS_MAX; i++) {
 			int c = _combine_device(i, p_idx);
-			joy_buttons_pressed.erase(c);
-		};
-	};
+			if (_joy_axis.has(c)) {
+				_axis_event(p_idx, i, 0.0f);
+			}
+		}
+	}
 	joy_names[p_idx] = js;
 
 	// Ensure this signal is emitted on the main thread, as some platforms (e.g. Linux) call this from a different thread.
