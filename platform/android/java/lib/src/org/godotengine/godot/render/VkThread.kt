@@ -29,26 +29,36 @@
 /**************************************************************************/
 
 @file:JvmName("VkThread")
-package org.godotengine.godot.vulkan
+package org.godotengine.godot.render
 
 import android.util.Log
+import android.view.SurfaceHolder
+import java.lang.ref.WeakReference
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 /**
- * Thread implementation for the [VkSurfaceView] onto which the vulkan logic is ran.
+ * Implementation of the thread used by the [GodotRenderer] to drive render logic.
  *
- * The implementation is modeled after [android.opengl.GLSurfaceView]'s GLThread.
+ * The implementation is modeled after [android.opengl.GLSurfaceView]'s GLThread
  */
-internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vkRenderer: VkRenderer) : Thread(TAG) {
+internal class VkThread(private val renderer: GodotRenderer) : RenderThread(TAG) {
 	companion object {
 		private val TAG = VkThread::class.java.simpleName
 	}
 
 	/**
+	 * Store [Surface] related data.
+	 */
+	data class SurfaceInfo(var holder: SurfaceHolder, var width: Int, var height: Int, var surfaceChanged: Boolean = true)
+
+	/**
 	 * Used to run events scheduled on the thread.
 	 */
 	private val eventQueue = ArrayList<Runnable>()
+
+	private var renderVkSurfaceInfo: SurfaceInfo? = null
+	private fun hasSurface() = renderVkSurfaceInfo != null
 
 	/**
 	 * Used to synchronize interaction with other threads (e.g: main thread).
@@ -59,44 +69,65 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 	private var shouldExit = false
 	private var exited = false
 	private var rendererInitialized = false
-	private var rendererResumed = false
-	private var resumed = false
-	private var surfaceChanged = false
-	private var hasSurface = false
-	private var width = 0
-	private var height = 0
+	private var threadResumed = false
+
+	private var renderMode = Renderer.RenderMode.CONTINUOUSLY
+	private var requestRender = true
 
 	/**
 	 * Determine when drawing can occur on the thread. This usually occurs after the
 	 * [android.view.Surface] is available, the app is in a resumed state.
 	 */
-	private val readyToDraw
-		get() = hasSurface && resumed
+	private fun readyToDraw(): Boolean  {
+		return threadResumed && (requestRender || (renderMode == Renderer.RenderMode.CONTINUOUSLY)) && hasSurface()
+	}
+
+	private fun threadStarting() {
+		lock.withLock {
+			Log.d(TAG, "Starting render thread")
+			renderer.onRenderThreadStarting()
+			lockCondition.signalAll()
+		}
+	}
 
 	private fun threadExiting() {
 		lock.withLock {
 			Log.d(TAG, "Exiting render thread")
-			vkRenderer.onRenderThreadExiting()
+			renderer.onRenderThreadExiting()
 
 			exited = true
 			lockCondition.signalAll()
 		}
 	}
 
-	/**
-	 * Queue an event on the [VkThread].
-	 */
-	fun queueEvent(event: Runnable) {
+	override fun setRenderMode(renderMode: Renderer.RenderMode) {
+		lock.withLock {
+			this.renderMode = renderMode
+			lockCondition.signalAll()
+		}
+	}
+
+	override fun getRenderMode(): Renderer.RenderMode {
+		return lock.withLock {
+			renderMode
+		}
+	}
+
+	override fun requestRender() {
+		lock.withLock {
+			requestRender = true
+			lockCondition.signalAll()
+		}
+	}
+
+	override fun queueEvent(event: Runnable) {
 		lock.withLock {
 			eventQueue.add(event)
 			lockCondition.signalAll()
 		}
 	}
 
-	/**
-	 * Request the thread to exit and block until it's done.
-	 */
-	fun requestExitAndWait() {
+	override fun requestExitAndWait() {
 		lock.withLock {
 			shouldExit = true
 			lockCondition.signalAll()
@@ -111,54 +142,49 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 		}
 	}
 
-	/**
-	 * Invoked when the app resumes.
-	 */
-	fun onResume() {
+	override fun onResume() {
 		lock.withLock {
-			resumed = true
+			Log.d(TAG, "Resuming render thread")
+
+			threadResumed = true
+			requestRender = true
 			lockCondition.signalAll()
 		}
 	}
 
-	/**
-	 * Invoked when the app pauses.
-	 */
-	fun onPause() {
+	override fun onPause() {
 		lock.withLock {
-			resumed = false
+			Log.d(TAG, "Pausing render thread")
+
+			threadResumed = false
 			lockCondition.signalAll()
 		}
 	}
 
-	/**
-	 * Invoked when the [android.view.Surface] has been created.
-	 */
-	fun onSurfaceCreated() {
+	override fun surfaceCreated(holder: SurfaceHolder, surfaceViewWeakRef: WeakReference<GLSurfaceView>?) {
 		// This is a no op because surface creation will always be followed by surfaceChanged()
 		// which provide all the needed information.
 	}
 
-	/**
-	 * Invoked following structural updates to [android.view.Surface].
-	 */
-	fun onSurfaceChanged(width: Int, height: Int) {
+	override fun surfaceChanged(holder: SurfaceHolder, width: Int, height: Int) {
 		lock.withLock {
-			hasSurface = true
-			surfaceChanged = true
-			this.width = width
-			this.height = height
+			val surfaceInfo = renderVkSurfaceInfo ?: SurfaceInfo(holder, width, height)
+			surfaceInfo.apply {
+				surfaceChanged = true
+				this.width = width
+				this.height = height
+			}
+
+			requestRender = true
+			renderVkSurfaceInfo = surfaceInfo
 
 			lockCondition.signalAll()
 		}
 	}
 
-	/**
-	 * Invoked when the [android.view.Surface] is no longer available.
-	 */
-	fun onSurfaceDestroyed() {
+	override fun surfaceDestroyed(holder: SurfaceHolder) {
 		lock.withLock {
-			hasSurface = false
+			renderVkSurfaceInfo = null
 			lockCondition.signalAll()
 		}
 	}
@@ -168,6 +194,8 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 	 */
 	override fun run() {
 		try {
+			threadStarting()
+
 			while (true) {
 				var event: Runnable? = null
 				lock.withLock {
@@ -184,29 +212,24 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 							break
 						}
 
-						if (readyToDraw) {
-							if (!rendererResumed) {
-								rendererResumed = true
-								vkRenderer.onVkResume()
-
-								if (!rendererInitialized) {
-									rendererInitialized = true
-									vkRenderer.onVkSurfaceCreated(vkSurfaceView.holder.surface)
+						if (readyToDraw()) {
+							if (!rendererInitialized) {
+								rendererInitialized = true
+								renderVkSurfaceInfo?.apply {
+									renderer.onRenderSurfaceCreated(holder.surface)
 								}
 							}
 
-							if (surfaceChanged) {
-								vkRenderer.onVkSurfaceChanged(vkSurfaceView.holder.surface, width, height)
-								surfaceChanged = false
+							renderVkSurfaceInfo?.let {
+								if (it.surfaceChanged) {
+									renderer.onRenderSurfaceChanged(it.holder.surface, it.width, it.height)
+									it.surfaceChanged = false
+								}
 							}
 
 							// Break out of the loop so drawing can occur without holding onto the lock.
+							requestRender = false
 							break
-						} else if (rendererResumed) {
-							// If we aren't ready to draw but are resumed, that means we either lost a surface
-							// or the app was paused.
-							rendererResumed = false
-							vkRenderer.onVkPause()
 						}
 						// We only reach this state if we are not ready to draw and have no queued events, so
 						// we wait.
@@ -219,11 +242,12 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 				// Run queued event.
 				if (event != null) {
 					event?.run()
+					event = null
 					continue
 				}
 
 				// Draw only when there no more queued events.
-				vkRenderer.onVkDrawFrame()
+				renderer.onRenderDrawFrame()
 			}
 		} catch (ex: InterruptedException) {
 			Log.i(TAG, "InterruptedException", ex)
