@@ -682,6 +682,7 @@ protected:
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
 
 	bool lightmap_bicubic_upscale = false;
+	bool material_use_debanding = false;
 
 	/* Sky */
 
@@ -872,6 +873,7 @@ public:
 	void decals_set_filter(RS::DecalFilter p_filter) override;
 	void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) override;
+	virtual void material_set_use_debanding(bool p_enable) override;
 
 	RasterizerSceneGLES3();
 	~RasterizerSceneGLES3();

@@ -141,6 +141,7 @@ private:
 	int soft_shadow_samples = 0;
 	RS::DecalFilter decals_filter = RS::DECAL_FILTER_LINEAR_MIPMAPS;
 	RS::LightProjectorFilter light_projectors_filter = RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS;
+	bool material_use_debanding = false;
 
 	/* RENDER BUFFERS */
 
@@ -265,6 +266,7 @@ public:
 	virtual void decals_set_filter(RS::DecalFilter p_filter) override;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) override;
+	virtual void material_set_use_debanding(bool p_enable) override;
 
 	_FORCE_INLINE_ RS::ShadowQuality shadows_quality_get() const {
 		return shadows_quality;
@@ -315,8 +317,13 @@ public:
 		return decals_filter;
 	}
 
+	_FORCE_INLINE_ bool material_is_using_debanding() const {
+		return material_use_debanding;
+	}
+
 	int get_roughness_layers() const;
 	bool is_using_radiance_cubemap_array() const;
+	bool is_using_material_debanding() const;
 
 	virtual TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) override;
 
