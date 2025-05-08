@@ -336,7 +336,7 @@ def configure(env: "SConsEnvironment"):
         else:
             env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
 
-    if env["dbus"]:
+    if env["dbus"] and env["threads"]:  # D-Bus functionality expects threads.
         if not env["use_sowrap"]:
             if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
                 env.ParseConfig("pkg-config dbus-1 --cflags --libs")
