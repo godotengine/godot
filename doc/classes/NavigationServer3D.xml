@@ -339,7 +339,7 @@
 			<return type="int" />
 			<param index="0" name="process_info" type="int" enum="NavigationServer3D.ProcessInfo" />
 			<description>
-				Returns information about the current state of the NavigationServer. See [enum ProcessInfo] for a list of available states.
+				Returns information about the current state of the NavigationServer.
 			</description>
 		</method>
 		<method name="is_baking_navigation_mesh" qualifiers="const">

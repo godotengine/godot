@@ -64,7 +64,7 @@
 		<method name="get_connection_state" qualifiers="const">
 			<return type="int" enum="WebRTCPeerConnection.ConnectionState" />
 			<description>
-				Returns the connection state. See [enum ConnectionState].
+				Returns the connection state.
 			</description>
 		</method>
 		<method name="get_gathering_state" qualifiers="const">
