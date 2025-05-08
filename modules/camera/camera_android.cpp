@@ -87,7 +87,10 @@ CameraFeedAndroid::CameraFeedAndroid(ACameraManager *manager, ACameraMetadata *m
 CameraFeedAndroid::~CameraFeedAndroid() {
 	if (is_active()) {
 		deactivate_feed();
-	};
+	}
+	if (metadata != nullptr) {
+		ACameraMetadata_free(metadata);
+	}
 }
 
 void CameraFeedAndroid::set_rotation() {
@@ -419,7 +422,11 @@ void CameraAndroid::update_feeds() {
 
 	for (int c = 0; c < cameraIds->numCameras; ++c) {
 		const char *id = cameraIds->cameraIds[c];
+		ACameraMetadata *metadata = nullptr;
 		ACameraManager_getCameraCharacteristics(cameraManager, id, &metadata);
+		if (!metadata) {
+			continue;
+		}
 
 		// Get sensor orientation
 		ACameraMetadata_const_entry orientation;
@@ -429,7 +436,7 @@ void CameraAndroid::update_feeds() {
 			cameraOrientation = orientation.data.i32[0];
 		} else {
 			cameraOrientation = 0;
-			print_error(vformat("Unable to get sensor orientation: %d", id));
+			print_error(vformat("Unable to get sensor orientation: %s", id));
 		}
 
 		// Get position
@@ -438,6 +445,7 @@ void CameraAndroid::update_feeds() {
 		camera_status_t status;
 		status = ACameraMetadata_getConstEntry(metadata, ACAMERA_LENS_FACING, &lensInfo);
 		if (status != ACAMERA_OK) {
+			ACameraMetadata_free(metadata);
 			continue;
 		}
 		uint8_t lens_facing = static_cast<acamera_metadata_enum_android_lens_facing_t>(lensInfo.data.u8[0]);
@@ -446,6 +454,7 @@ void CameraAndroid::update_feeds() {
 		} else if (lens_facing == ACAMERA_LENS_FACING_BACK) {
 			position = CameraFeed::FEED_BACK;
 		} else {
+			ACameraMetadata_free(metadata);
 			continue;
 		}
 
@@ -478,17 +487,15 @@ void CameraAndroid::set_monitoring_feeds(bool p_monitoring_feeds) {
 		if (cameraManager != nullptr) {
 			ACameraManager_delete(cameraManager);
 		}
-		if (metadata != nullptr) {
-			ACameraMetadata_free(metadata);
-		}
 	}
 }
 
 CameraAndroid::~CameraAndroid() {
+	for (int i = feeds.size() - 1; i >= 0; i--) {
+		remove_feed(feeds[i]);
+	}
 	if (cameraManager != nullptr) {
 		ACameraManager_delete(cameraManager);
-	}
-	if (metadata != nullptr) {
-		ACameraMetadata_free(metadata);
+		cameraManager = nullptr;
 	}
 }

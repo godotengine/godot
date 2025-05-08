@@ -85,7 +85,6 @@ class CameraAndroid : public CameraServer {
 
 private:
 	ACameraManager *cameraManager = nullptr;
-	ACameraMetadata *metadata = nullptr;
 
 	void update_feeds();
 
