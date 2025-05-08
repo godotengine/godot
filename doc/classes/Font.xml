@@ -175,7 +175,7 @@
 		<method name="get_font_style" qualifiers="const">
 			<return type="int" enum="TextServer.FontStyle" is_bitfield="true" />
 			<description>
-				Returns font style flags, see [enum TextServer.FontStyle].
+				Returns font style flags.
 			</description>
 		</method>
 		<method name="get_font_style_name" qualifiers="const">
@@ -236,7 +236,7 @@
 			<return type="int" />
 			<param index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<description>
-				Returns the spacing for the given [code]type[/code] (see [enum TextServer.SpacingType]).
+				Returns the amount of spacing for the given [param spacing] type.
 			</description>
 		</method>
 		<method name="get_string_size" qualifiers="const">

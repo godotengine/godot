@@ -261,7 +261,7 @@
 			<return type="Tween" />
 			<param index="0" name="mode" type="int" enum="Tween.TweenPauseMode" />
 			<description>
-				Determines the behavior of the [Tween] when the [SceneTree] is paused. Check [enum TweenPauseMode] for options.
+				Determines the behavior of the [Tween] when the [SceneTree] is paused.
 				Default value is [constant TWEEN_PAUSE_BOUND].
 			</description>
 		</method>

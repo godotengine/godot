@@ -278,7 +278,7 @@
 			<param index="1" name="flag" type="int" enum="DisplayServer.AccessibilityFlags" />
 			<param index="2" name="value" type="bool" />
 			<description>
-				Sets element flag, see [enum DisplayServer.AccessibilityFlags].
+				Sets element flag.
 			</description>
 		</method>
 		<method name="accessibility_update_set_focus">
@@ -2296,7 +2296,7 @@
 			<param index="1" name="enabled" type="bool" />
 			<param index="2" name="window_id" type="int" default="0" />
 			<description>
-				Enables or disables the given window's given [param flag]. See [enum WindowFlags] for possible values and their behavior.
+				Enables or disables the given window's given [param flag].
 			</description>
 		</method>
 		<method name="window_set_ime_active">
@@ -2359,7 +2359,7 @@
 			<param index="0" name="mode" type="int" enum="DisplayServer.WindowMode" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets window mode for the given window to [param mode]. See [enum WindowMode] for possible values and how each mode behaves.
+				Sets window mode for the given window to [param mode].
 				[b]Note:[/b] On Android, setting it to [constant WINDOW_MODE_FULLSCREEN] or [constant WINDOW_MODE_EXCLUSIVE_FULLSCREEN] will enable immersive mode.
 				[b]Note:[/b] Setting the window to full screen forcibly sets the borderless flag to [code]true[/code], so make sure to set it back to [code]false[/code] when not wanted.
 			</description>
@@ -2468,7 +2468,6 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the V-Sync mode of the given window. See also [member ProjectSettings.display/window/vsync/vsync_mode].
-				See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
 				Depending on the platform and used renderer, the engine will fall back to [constant VSYNC_ENABLED] if the desired mode is not supported.
 				[b]Note:[/b] V-Sync modes other than [constant VSYNC_ENABLED] are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 			</description>

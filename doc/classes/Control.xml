@@ -406,7 +406,7 @@
 			<return type="int" enum="Control.CursorShape" />
 			<param index="0" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Returns the mouse cursor shape for this control when hovered over [param position] in local coordinates. For most controls, this is the same as [member mouse_default_cursor_shape], but some built-in controls implement more complex logic. See [enum CursorShape].
+				Returns the mouse cursor shape for this control when hovered over [param position] in local coordinates. For most controls, this is the same as [member mouse_default_cursor_shape], but some built-in controls implement more complex logic.
 			</description>
 		</method>
 		<method name="get_end" qualifiers="const">

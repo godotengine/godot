@@ -13,7 +13,7 @@
 			<return type="float" />
 			<param index="0" name="param" type="int" enum="SliderJoint3D.Param" />
 			<description>
-				Returns the value of the given parameter (see [enum Param] constants).
+				Returns the value of the given parameter.
 			</description>
 		</method>
 		<method name="set_param">
@@ -21,7 +21,7 @@
 			<param index="0" name="param" type="int" enum="SliderJoint3D.Param" />
 			<param index="1" name="value" type="float" />
 			<description>
-				Assigns [param value] to the given parameter (see [enum Param] constants).
+				Assigns [param value] to the given parameter.
 			</description>
 		</method>
 	</methods>

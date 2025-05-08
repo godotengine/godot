@@ -191,17 +191,17 @@
 			Only used when [member parsed_geometry_type] is [constant PARSED_GEOMETRY_STATIC_COLLIDERS] or [constant PARSED_GEOMETRY_BOTH].
 		</member>
 		<member name="parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" enum="NavigationPolygon.ParsedGeometryType" default="2">
-			Determines which type of nodes will be parsed as geometry. See [enum ParsedGeometryType] for possible values.
+			Determines which type of nodes will be parsed as geometry.
 		</member>
 		<member name="sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type" enum="NavigationPolygon.SamplePartitionType" default="0">
-			Partitioning algorithm for creating the navigation mesh polys. See [enum SamplePartitionType] for possible values.
+			Partitioning algorithm for creating the navigation mesh polys.
 		</member>
 		<member name="source_geometry_group_name" type="StringName" setter="set_source_geometry_group_name" getter="get_source_geometry_group_name" default="&amp;&quot;navigation_polygon_source_geometry_group&quot;">
 			The group name of nodes that should be parsed for baking source geometry.
 			Only used when [member source_geometry_mode] is [constant SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN] or [constant SOURCE_GEOMETRY_GROUPS_EXPLICIT].
 		</member>
 		<member name="source_geometry_mode" type="int" setter="set_source_geometry_mode" getter="get_source_geometry_mode" enum="NavigationPolygon.SourceGeometryMode" default="0">
-			The source of the geometry used when baking. See [enum SourceGeometryMode] for possible values.
+			The source of the geometry used when baking.
 		</member>
 	</members>
 	<constants>

@@ -407,7 +407,7 @@
 			<param index="1" name="plugin" type="EditorContextMenuPlugin" />
 			<description>
 				Adds a plugin to the context menu. [param slot] is the context menu where the plugin will be added.
-				See [enum EditorContextMenuPlugin.ContextMenuSlot] for available context menus. A plugin instance can belong only to a single context menu slot.
+				[b]Note:[/b] A plugin instance can belong only to a single context menu slot.
 			</description>
 		</method>
 		<method name="add_control_to_bottom_panel">
@@ -425,7 +425,7 @@
 			<param index="0" name="container" type="int" enum="EditorPlugin.CustomControlContainer" />
 			<param index="1" name="control" type="Control" />
 			<description>
-				Adds a custom control to a container (see [enum CustomControlContainer]). There are many locations where custom controls can be added in the editor UI.
+				Adds a custom control to a container in the editor UI.
 				Please remember that you have to manage the visibility of your custom controls yourself (and likely hide it after adding it).
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_container] and free it with [method Node.queue_free].
 			</description>
@@ -436,7 +436,7 @@
 			<param index="1" name="control" type="Control" />
 			<param index="2" name="shortcut" type="Shortcut" default="null" />
 			<description>
-				Adds the control to a specific dock slot (see [enum DockSlot] for options).
+				Adds the control to a specific dock slot.
 				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_docks] and free it with [method Node.queue_free].
 				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will open and focus the dock.

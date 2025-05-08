@@ -143,7 +143,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<description>
-				Returns spacing for [param spacing] (see [enum TextServer.SpacingType]) in pixels (not relative to the font size).
+				Returns spacing for [param spacing] in pixels (not relative to the font size).
 			</description>
 		</method>
 		<method name="get_face_index" qualifiers="const">
@@ -466,7 +466,7 @@
 			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<param index="2" name="value" type="int" />
 			<description>
-				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+				Sets the spacing for [param spacing] to [param value] in pixels (not relative to the font size).
 			</description>
 		</method>
 		<method name="set_face_index">
@@ -617,7 +617,7 @@
 			Font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
 		</member>
 		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" enum="TextServer.FontStyle" is_bitfield="true" default="0">
-			Font style flags, see [enum TextServer.FontStyle].
+			Font style flags.
 		</member>
 		<member name="font_weight" type="int" setter="set_font_weight" getter="get_font_weight" default="400">
 			Weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].

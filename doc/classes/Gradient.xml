@@ -82,11 +82,11 @@
 			[b]Note:[/b] Setting this property updates all colors at once. To update any color individually use [method set_color].
 		</member>
 		<member name="interpolation_color_space" type="int" setter="set_interpolation_color_space" getter="get_interpolation_color_space" enum="Gradient.ColorSpace" default="0">
-			The color space used to interpolate between points of the gradient. It does not affect the returned colors, which will always be in sRGB space. See [enum ColorSpace] for available modes.
+			The color space used to interpolate between points of the gradient. It does not affect the returned colors, which will always be in sRGB space.
 			[b]Note:[/b] This setting has no effect when [member interpolation_mode] is set to [constant GRADIENT_INTERPOLATE_CONSTANT].
 		</member>
 		<member name="interpolation_mode" type="int" setter="set_interpolation_mode" getter="get_interpolation_mode" enum="Gradient.InterpolationMode" default="0">
-			The algorithm used to interpolate between points of the gradient. See [enum InterpolationMode] for available modes.
+			The algorithm used to interpolate between points of the gradient.
 		</member>
 		<member name="offsets" type="PackedFloat32Array" setter="set_offsets" getter="get_offsets" default="PackedFloat32Array(0, 1)">
 			Gradient's offsets as a [PackedFloat32Array].

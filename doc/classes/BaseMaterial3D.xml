@@ -21,7 +21,7 @@
 			<return type="bool" />
 			<param index="0" name="flag" type="int" enum="BaseMaterial3D.Flags" />
 			<description>
-				Returns [code]true[/code], if the specified flag is enabled. See [enum Flags] enumerator for options.
+				Returns [code]true[/code] if the specified flag is enabled.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
@@ -44,7 +44,7 @@
 			<param index="0" name="flag" type="int" enum="BaseMaterial3D.Flags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables the specified flag. Flags are optional behavior that can be turned on and off. Only one flag can be enabled at a time with this function, the flag enumerators cannot be bit-masked together to enable or disable multiple flags at once. Flags can also be enabled by setting the corresponding member to [code]true[/code]. See [enum Flags] enumerator for options.
+				If [code]true[/code], enables the specified flag. Flags are optional behavior that can be turned on and off. Only one flag can be enabled at a time with this function, the flag enumerators cannot be bit-masked together to enable or disable multiple flags at once. Flags can also be enabled by setting the corresponding member to [code]true[/code].
 			</description>
 		</method>
 		<method name="set_texture">
@@ -52,7 +52,7 @@
 			<param index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam" />
 			<param index="1" name="texture" type="Texture2D" />
 			<description>
-				Sets the texture for the slot specified by [param param]. See [enum TextureParam] for available slots.
+				Sets the texture for the slot specified by [param param].
 			</description>
 		</method>
 	</methods>
@@ -76,7 +76,7 @@
 			Threshold at which antialiasing will be applied on the alpha channel.
 		</member>
 		<member name="alpha_antialiasing_mode" type="int" setter="set_alpha_antialiasing" getter="get_alpha_antialiasing" enum="BaseMaterial3D.AlphaAntiAliasing">
-			The type of alpha antialiasing to apply. See [enum AlphaAntiAliasing].
+			The type of alpha antialiasing to apply.
 		</member>
 		<member name="alpha_hash_scale" type="float" setter="set_alpha_hash_scale" getter="get_alpha_hash_scale">
 			The hashing scale for Alpha Hash. Recommended values between [code]0[/code] and [code]2[/code].
@@ -133,12 +133,12 @@
 			If [code]true[/code], the shader will keep the scale set for the mesh. Otherwise, the scale is lost when billboarding. Only applies when [member billboard_mode] is not [constant BILLBOARD_DISABLED].
 		</member>
 		<member name="billboard_mode" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="BaseMaterial3D.BillboardMode" default="0">
-			Controls how the object faces the camera. See [enum BillboardMode].
+			Controls how the object faces the camera.
 			[b]Note:[/b] Billboard mode is not suitable for VR because the left-right vector of the camera is not horizontal when the screen is attached to your head instead of on the table. See [url=https://github.com/godotengine/godot/issues/41567]GitHub issue #41567[/url] for details.
 		</member>
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="BaseMaterial3D.BlendMode" default="0">
 			The material's blend mode.
-			[b]Note:[/b] Values other than [code]Mix[/code] force the object into the transparent pipeline. See [enum BlendMode].
+			[b]Note:[/b] Values other than [code]Mix[/code] force the object into the transparent pipeline.
 		</member>
 		<member name="clearcoat" type="float" setter="set_clearcoat" getter="get_clearcoat" default="1.0">
 			Sets the strength of the clearcoat effect. Setting to [code]0[/code] looks the same as disabling the clearcoat effect.
@@ -154,17 +154,17 @@
 			Texture that defines the strength of the clearcoat effect and the glossiness of the clearcoat. Strength is specified in the red channel while glossiness is specified in the green channel.
 		</member>
 		<member name="cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" enum="BaseMaterial3D.CullMode" default="0">
-			Determines which side of the triangle to cull depending on whether the triangle faces towards or away from the camera. See [enum CullMode].
+			Determines which side of the triangle to cull depending on whether the triangle faces towards or away from the camera.
 		</member>
 		<member name="depth_draw_mode" type="int" setter="set_depth_draw_mode" getter="get_depth_draw_mode" enum="BaseMaterial3D.DepthDrawMode" default="0">
-			Determines when depth rendering takes place. See [enum DepthDrawMode]. See also [member transparency].
+			Determines when depth rendering takes place. See also [member transparency].
 		</member>
 		<member name="detail_albedo" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture that specifies the color of the detail overlay. [member detail_albedo]'s alpha channel is used as a mask, even when the material is opaque. To use a dedicated texture as a mask, see [member detail_mask].
 			[b]Note:[/b] [member detail_albedo] is [i]not[/i] modulated by [member albedo_color].
 		</member>
 		<member name="detail_blend_mode" type="int" setter="set_detail_blend_mode" getter="get_detail_blend_mode" enum="BaseMaterial3D.BlendMode" default="0">
-			Specifies how the [member detail_albedo] should blend with the current [code]ALBEDO[/code]. See [enum BlendMode] for options.
+			Specifies how the [member detail_albedo] should blend with the current [code]ALBEDO[/code].
 		</member>
 		<member name="detail_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], enables the detail overlay. Detail is a second texture that gets mixed over the surface of the object based on [member detail_mask] and [member detail_albedo]'s alpha channel. This can be used to add variation to objects, or to blend between two different albedo/normal textures.
@@ -177,10 +177,10 @@
 			[b]Note:[/b] Godot expects the normal map to use X+, Y+, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" enum="BaseMaterial3D.DetailUV" default="0">
-			Specifies whether to use [code]UV[/code] or [code]UV2[/code] for the detail layer. See [enum DetailUV] for options.
+			Specifies whether to use [code]UV[/code] or [code]UV2[/code] for the detail layer.
 		</member>
 		<member name="diffuse_mode" type="int" setter="set_diffuse_mode" getter="get_diffuse_mode" enum="BaseMaterial3D.DiffuseMode" default="0">
-			The algorithm used for diffuse light scattering. See [enum DiffuseMode].
+			The algorithm used for diffuse light scattering.
 		</member>
 		<member name="disable_ambient_light" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object receives no ambient light.
@@ -221,7 +221,7 @@
 			Use [code]UV2[/code] to read from the [member emission_texture].
 		</member>
 		<member name="emission_operator" type="int" setter="set_emission_operator" getter="get_emission_operator" enum="BaseMaterial3D.EmissionOperator" default="0">
-			Sets how [member emission] interacts with [member emission_texture]. Can either add or multiply. See [enum EmissionOperator] for options.
+			Sets how [member emission] interacts with [member emission_texture]. Can either add or multiply.
 		</member>
 		<member name="emission_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture that specifies how much surface emits light at a given point.
@@ -371,7 +371,7 @@
 			If [code]true[/code], enables the "shadow to opacity" render mode where lighting modifies the alpha so shadowed areas are opaque and non-shadowed areas are transparent. Useful for overlaying shadows onto a camera feed in AR.
 		</member>
 		<member name="specular_mode" type="int" setter="set_specular_mode" getter="get_specular_mode" enum="BaseMaterial3D.SpecularMode" default="0">
-			The method for rendering the specular blob. See [enum SpecularMode].
+			The method for rendering the specular blob.
 			[b]Note:[/b] [member specular_mode] only applies to the specular blob. It does not affect specular reflections from the sky, screen-space reflections, [VoxelGI], SDFGI or [ReflectionProbe]s. To disable reflections from these sources as well, set [member metallic_specular] to [code]0.0[/code] instead.
 		</member>
 		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
@@ -402,11 +402,11 @@
 			The texture to use for multiplying the intensity of the subsurface scattering transmittance intensity. See also [member subsurf_scatter_texture]. Ignored if [member subsurf_scatter_skin_mode] is [code]true[/code].
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
-			Filter flags for the texture. See [enum TextureFilter] for options.
+			Filter flags for the texture.
 			[b]Note:[/b] [member heightmap_texture] is always sampled with linear filtering, even if nearest-neighbor filtering is selected here. This is to ensure the heightmap effect looks as intended. If you need sharper height transitions between pixels, resize the heightmap texture in an image editor with nearest-neighbor filtering.
 		</member>
 		<member name="texture_repeat" type="bool" setter="set_flag" getter="get_flag" default="true">
-			Repeat flags for the texture. See [enum TextureFilter] for options.
+			If [code]true[/code], the texture repeats when exceeding the texture's size. See [constant FLAG_USE_TEXTURE_REPEAT].
 		</member>
 		<member name="transparency" type="int" setter="set_transparency" getter="get_transparency" enum="BaseMaterial3D.Transparency" default="0">
 			The material's transparency mode. Some transparency modes will disable shadow casting. Any transparency mode other than [constant TRANSPARENCY_DISABLED] has a greater performance impact compared to opaque rendering. See also [member blend_mode].

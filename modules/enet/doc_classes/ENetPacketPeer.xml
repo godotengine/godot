@@ -39,14 +39,14 @@
 		<method name="get_state" qualifiers="const">
 			<return type="int" enum="ENetPacketPeer.PeerState" />
 			<description>
-				Returns the current peer state. See [enum PeerState].
+				Returns the current peer state.
 			</description>
 		</method>
 		<method name="get_statistic">
 			<return type="float" />
 			<param index="0" name="statistic" type="int" enum="ENetPacketPeer.PeerStatistic" />
 			<description>
-				Returns the requested [param statistic] for this peer. See [enum PeerStatistic].
+				Returns the requested [param statistic] for this peer.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
