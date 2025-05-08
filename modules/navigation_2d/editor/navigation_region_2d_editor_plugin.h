@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  navigation_polygon_editor_plugin.h                                    */
+/*  navigation_region_2d_editor_plugin.h                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,7 +31,6 @@
 #pragma once
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
-
 #include "editor/plugins/editor_plugin.h"
 
 class AcceptDialog;
@@ -39,10 +38,10 @@ class HBoxContainer;
 class NavigationPolygon;
 class NavigationRegion2D;
 
-class NavigationPolygonEditor : public AbstractPolygon2DEditor {
-	friend class NavigationPolygonEditorPlugin;
+class NavigationRegion2DEditor : public AbstractPolygon2DEditor {
+	friend class NavigationRegion2DEditorPlugin;
 
-	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);
+	GDCLASS(NavigationRegion2DEditor, AbstractPolygon2DEditor);
 
 	NavigationRegion2D *node = nullptr;
 
@@ -82,14 +81,14 @@ protected:
 	virtual void _create_resource() override;
 
 public:
-	NavigationPolygonEditor();
+	NavigationRegion2DEditor();
 };
 
-class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
-	GDCLASS(NavigationPolygonEditorPlugin, AbstractPolygon2DEditorPlugin);
+class NavigationRegion2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
+	GDCLASS(NavigationRegion2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
-	NavigationPolygonEditor *navigation_polygon_editor = nullptr;
+	NavigationRegion2DEditor *navigation_polygon_editor = nullptr;
 
 public:
-	NavigationPolygonEditorPlugin();
+	NavigationRegion2DEditorPlugin();
 };
