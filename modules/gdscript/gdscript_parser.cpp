@@ -387,6 +387,10 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 		source = source.replace_first(String::chr(0xFFFF), String());
 	}
 
+#ifdef TOOLS_ENABLED
+	source_code = source;
+#endif // TOOLS_ENABLED
+
 	GDScriptTokenizerText *text_tokenizer = memnew(GDScriptTokenizerText);
 	text_tokenizer->set_source_code(source);
 
@@ -1633,6 +1637,12 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 
 	make_completion_context(COMPLETION_OVERRIDE_METHOD, function);
 
+#ifdef TOOLS_ENABLED
+	// The signature is something like `(a: int, b: int = 0) -> void:`.
+	// We start one token earlier, since the parser looks one token ahead.
+	const int signature_start_pos = tokenizer->get_current_position();
+#endif // TOOLS_ENABLED
+
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected function name after "func".)")) {
 		complete_extents(function);
 		return nullptr;
@@ -1657,7 +1667,10 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 
 #ifdef TOOLS_ENABLED
 	function->min_local_doc_line = previous.end_line + 1;
-#endif
+
+	const int signature_end_pos = tokenizer->get_current_position();
+	function->signature = source_code.substr(signature_start_pos, signature_end_pos - signature_start_pos);
+#endif // TOOLS_ENABLED
 
 	function->body = parse_suite("function declaration", body);
 
