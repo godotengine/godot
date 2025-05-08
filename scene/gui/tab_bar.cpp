@@ -208,7 +208,9 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (close_with_middle_mouse && mb->is_pressed() && mb->get_button_index() == MouseButton::MIDDLE) {
-			emit_signal(SNAME("tab_close_pressed"), hover);
+			if (hover != -1) {
+				emit_signal(SNAME("tab_close_pressed"), hover);
+			}
 		}
 
 		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT || (select_with_rmb && mb->get_button_index() == MouseButton::RIGHT))) {
