@@ -595,7 +595,6 @@ public:
 	void update_docs_from_script(const Ref<Script> &p_script);
 
 	void trigger_live_script_reload(const String &p_script_path);
-	void trigger_live_script_reload_all();
 
 	bool can_take_away_focus() const;
 
