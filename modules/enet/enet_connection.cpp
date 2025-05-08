@@ -422,11 +422,11 @@ size_t ENetConnection::Compressor::enet_compress(void *context, const ENetBuffer
 		compressor->src_mem.resize(inLimit);
 	}
 
-	int total = inLimit;
-	int ofs = 0;
+	size_t total = inLimit;
+	size_t ofs = 0;
 	while (total) {
 		for (size_t i = 0; i < inBufferCount; i++) {
-			int to_copy = MIN(total, int(inBuffers[i].dataLength));
+			const size_t to_copy = MIN(total, inBuffers[i].dataLength);
 			memcpy(&compressor->src_mem.write[ofs], inBuffers[i].data, to_copy);
 			ofs += to_copy;
 			total -= to_copy;
@@ -450,28 +450,29 @@ size_t ENetConnection::Compressor::enet_compress(void *context, const ENetBuffer
 		}
 	}
 
-	int req_size = Compression::get_max_compressed_buffer_size(ofs, mode);
+	const int64_t req_size = Compression::get_max_compressed_buffer_size(ofs, mode);
 	if (compressor->dst_mem.size() < req_size) {
 		compressor->dst_mem.resize(req_size);
 	}
-	int ret = Compression::compress(compressor->dst_mem.ptrw(), compressor->src_mem.ptr(), ofs, mode);
+	const int64_t ret = Compression::compress(compressor->dst_mem.ptrw(), compressor->src_mem.ptr(), ofs, mode);
 
 	if (ret < 0) {
 		return 0;
 	}
 
-	if (ret > int(outLimit)) {
+	const size_t ret_size = size_t(ret);
+	if (ret_size > outLimit) {
 		return 0; // Do not bother
 	}
 
-	memcpy(outData, compressor->dst_mem.ptr(), ret);
+	memcpy(outData, compressor->dst_mem.ptr(), ret_size);
 
 	return ret;
 }
 
 size_t ENetConnection::Compressor::enet_decompress(void *context, const enet_uint8 *inData, size_t inLimit, enet_uint8 *outData, size_t outLimit) {
 	Compressor *compressor = (Compressor *)(context);
-	int ret = -1;
+	int64_t ret = -1;
 	switch (compressor->mode) {
 		case COMPRESS_FASTLZ: {
 			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_FASTLZ);
