@@ -923,6 +923,14 @@ void OS_MacOS_NSApp::run() {
 	[NSApp run];
 }
 
+static bool sig_received = false;
+
+static void handle_interrupt(int sig) {
+	if (sig == SIGINT) {
+		sig_received = true;
+	}
+}
+
 void OS_MacOS_NSApp::start_main() {
 	Error err;
 	@autoreleasepool {
@@ -954,7 +962,7 @@ void OS_MacOS_NSApp::start_main() {
 							}
 							joypad_apple->process_joypads();
 
-							if (Main::iteration()) {
+							if (Main::iteration() || sig_received) {
 								terminate();
 							}
 						} @catch (NSException *exception) {
@@ -1020,6 +1028,11 @@ OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
 	[NSApp registerUserInterfaceItemSearchHandler:delegate];
+
+	struct sigaction action;
+	memset(&action, 0, sizeof(action));
+	action.sa_handler = handle_interrupt;
+	sigaction(SIGINT, &action, nullptr);
 }
 
 // MARK: - OS_MacOS_Embedded
