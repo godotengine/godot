@@ -799,7 +799,7 @@ struct _VariantCall {
 		if (p_instance->size() > 0) {
 			Compression::Mode mode = (Compression::Mode)(p_mode);
 			compressed.resize(Compression::get_max_compressed_buffer_size(p_instance->size(), mode));
-			int result = Compression::compress(compressed.ptrw(), p_instance->ptr(), p_instance->size(), mode);
+			int64_t result = Compression::compress(compressed.ptrw(), p_instance->ptr(), p_instance->size(), mode);
 
 			result = result >= 0 ? result : 0;
 			compressed.resize(result);
@@ -822,7 +822,7 @@ struct _VariantCall {
 		}
 
 		decompressed.resize(buffer_size);
-		int result = Compression::decompress(decompressed.ptrw(), buffer_size, p_instance->ptr(), p_instance->size(), mode);
+		int64_t result = Compression::decompress(decompressed.ptrw(), buffer_size, p_instance->ptr(), p_instance->size(), mode);
 
 		result = result >= 0 ? result : 0;
 		decompressed.resize(result);
