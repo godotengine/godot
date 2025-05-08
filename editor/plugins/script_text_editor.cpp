@@ -37,6 +37,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_help.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -141,6 +142,10 @@ void ScriptTextEditor::apply_code() {
 	}
 	script->set_source_code(code_editor->get_text_editor()->get_text());
 	script->update_exports();
+	if (!pending_dragged_exports.is_empty()) {
+		_assign_dragged_export_variables();
+	}
+
 	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
 }
 
@@ -847,6 +852,10 @@ void ScriptTextEditor::_validate_script() {
 	_update_warnings();
 	_update_errors();
 	_update_background_color();
+
+	if (!pending_dragged_exports.is_empty()) {
+		_assign_dragged_export_variables();
+	}
 
 	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
@@ -2168,7 +2177,7 @@ static String _quote_drop_data(const String &str) {
 	return escaped.quote(using_single_quotes ? "'" : "\"");
 }
 
-static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p_create_field, bool p_allow_uid) {
+String ScriptTextEditor::_get_dropped_resource_as_member(const Ref<Resource> &p_resource, bool p_create_field, bool p_allow_uid) {
 	String path = p_resource->get_path();
 	if (p_allow_uid) {
 		ResourceUID::ID id = ResourceLoader::get_resource_uid(path);
@@ -2195,6 +2204,30 @@ static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p
 	return vformat("const %s = preload(%s)", variable_name, _quote_drop_data(path));
 }
 
+String ScriptTextEditor::_get_dropped_resource_as_exported_member(const Ref<Resource> &p_resource, bool assign_export_variable) {
+	String variable_name = p_resource->get_name();
+	if (variable_name.is_empty()) {
+		variable_name = p_resource->get_path().get_file().get_basename();
+	}
+
+	variable_name = variable_name.to_snake_case().validate_unicode_identifier();
+	if (assign_export_variable) {
+		pending_dragged_exports.push_back(DraggedExport{ variable_name, p_resource });
+	}
+
+	StringName class_name = p_resource->get_class();
+	Ref<Script> resource_script = p_resource->get_script();
+
+	if (resource_script.is_valid()) {
+		StringName global_resource_script_name = resource_script->get_global_name();
+		if (global_resource_script_name != StringName()) {
+			class_name = global_resource_script_name;
+		}
+	}
+
+	return vformat("@export var %s: %s", variable_name, class_name);
+}
+
 void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary d = p_data;
 
@@ -2214,7 +2247,11 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	String text_to_drop;
 
-	const bool drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	Node *scene_root = get_tree()->get_edited_scene_root();
+
+	const bool member_drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	const bool export_drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::ALT);
+
 	const bool allow_uid = Input::get_singleton()->is_key_pressed(Key::SHIFT) != bool(EDITOR_GET("text_editor/behavior/files/drop_preload_resources_as_uid"));
 	const String &line = te->get_line(drop_at_line);
 	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
@@ -2233,16 +2270,23 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		if (drop_modifier_pressed) {
+		if (member_drop_modifier_pressed) {
 			if (resource->is_built_in()) {
 				String warning = TTR("Preloading internal resources is not supported.");
 				EditorToaster::get_singleton()->popup_str(warning, EditorToaster::SEVERITY_ERROR);
 			} else {
-				text_to_drop = _get_dropped_resource_line(resource, is_empty_line, allow_uid);
+				text_to_drop = _get_dropped_resource_as_member(resource, is_empty_line, allow_uid);
 			}
+		} else if (export_drop_modifier_pressed) {
+			bool assign_export_variable = scene_root &&
+					ClassDB::is_parent_class(script->get_instance_base_type(), "Node") &&
+					scene_root->get_script() == script;
+			text_to_drop = _get_dropped_resource_as_exported_member(resource, assign_export_variable);
 		} else {
 			text_to_drop = _quote_drop_data(path);
 		}
+
+		text_to_drop += is_empty_line ? "\n" : "";
 	}
 
 	if (type == "files" || type == "files_and_dirs") {
@@ -2250,23 +2294,32 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		PackedStringArray parts;
 
 		for (const String &path : files) {
-			if (drop_modifier_pressed && ResourceLoader::exists(path)) {
+			if ((member_drop_modifier_pressed || export_drop_modifier_pressed) && ResourceLoader::exists(path)) {
 				Ref<Resource> resource = ResourceLoader::load(path);
 				if (resource.is_null()) {
 					// Resource exists, but failed to load. We need only path and name, so we can use a dummy Resource instead.
 					resource.instantiate();
 					resource->set_path_cache(path);
 				}
-				parts.append(_get_dropped_resource_line(resource, is_empty_line, allow_uid));
+
+				if (member_drop_modifier_pressed) {
+					parts.append(_get_dropped_resource_as_member(resource, is_empty_line, allow_uid));
+				} else if (export_drop_modifier_pressed) {
+					bool assign_export_variable = scene_root &&
+							ClassDB::is_parent_class(script->get_instance_base_type(), "Node") &&
+							scene_root->get_script() == script;
+
+					parts.append(_get_dropped_resource_as_exported_member(resource, assign_export_variable));
+				}
 			} else {
 				parts.append(_quote_drop_data(path));
 			}
 		}
 		text_to_drop = String(is_empty_line ? "\n" : ", ").join(parts);
+		text_to_drop += is_empty_line ? "\n" : "";
 	}
 
 	if (type == "nodes") {
-		Node *scene_root = get_tree()->get_edited_scene_root();
 		if (!scene_root) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't drop nodes without an open scene."));
 			return;
@@ -2284,7 +2337,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		Array nodes = d["nodes"];
 
-		if (drop_modifier_pressed) {
+		if (member_drop_modifier_pressed) {
 			const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
 
 			for (int i = 0; i < nodes.size(); i++) {
@@ -2317,6 +2370,27 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				} else {
 					text_to_drop += vformat("@onready var %s = %c%s\n", variable_name, is_unique ? '%' : '$', path);
 				}
+			}
+		} else if (export_drop_modifier_pressed) {
+			for (int i = 0; i < nodes.size(); i++) {
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
+
+				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
+				StringName class_name = node->get_class_name();
+				Ref<Script> node_script = node->get_script();
+				if (node_script.is_valid()) {
+					StringName global_node_script_name = node_script->get_global_name();
+					if (global_node_script_name != StringName()) {
+						class_name = global_node_script_name;
+					}
+				}
+
+				text_to_drop += vformat("@export var %s: %s\n", variable_name, class_name);
+				pending_dragged_exports.push_back(DraggedExport{ variable_name, node });
 			}
 		} else {
 			for (int i = 0; i < nodes.size(); i++) {
@@ -2368,6 +2442,36 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	te->insert_text_at_caret(text_to_drop);
 	te->end_complex_operation();
 	te->grab_focus();
+}
+
+void ScriptTextEditor::_assign_dragged_export_variables() {
+	ERR_FAIL_COND(pending_dragged_exports.is_empty());
+
+	Node *scene_root = get_tree()->get_edited_scene_root();
+
+	// Sanity check, should never be null
+	ERR_FAIL_COND(!scene_root);
+
+	Node *sn = _find_script_node(scene_root, script);
+	if (!sn) {
+		sn = scene_root;
+	}
+
+	ERR_FAIL_COND(sn->get_script_instance() == nullptr);
+
+	bool export_variable_set = false;
+	for (const DraggedExport &dragged_export : pending_dragged_exports) {
+		bool success = sn->get_script_instance()->set(dragged_export.variable_name, dragged_export.value);
+		if (success) {
+			export_variable_set = true;
+		}
+	}
+
+	if (export_variable_set) {
+		EditorInterface::get_singleton()->mark_scene_as_unsaved();
+	}
+
+	pending_dragged_exports.clear();
 }
 
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
