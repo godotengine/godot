@@ -630,7 +630,7 @@
 			<param index="1" name="rid" type="RID" />
 			<param index="2" name="index" type="int" />
 			<description>
-				Returns the unique identifier of the driver [param resource] for the specified [param rid]. Some driver resource types ignore the specified [param rid] (see [enum DriverResource] descriptions). [param index] is always ignored but must be specified anyway.
+				Returns the unique identifier of the driver [param resource] for the specified [param rid]. Some driver resource types ignore the specified [param rid]. [param index] is always ignored but must be specified anyway.
 			</description>
 		</method>
 		<method name="get_driver_total_memory" qualifiers="const">

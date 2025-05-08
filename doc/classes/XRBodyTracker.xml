@@ -15,7 +15,7 @@
 			<return type="int" enum="XRBodyTracker.JointFlags" is_bitfield="true" />
 			<param index="0" name="joint" type="int" enum="XRBodyTracker.Joint" />
 			<description>
-				Returns flags about the validity of the tracking data for the given body joint (see [enum XRBodyTracker.JointFlags]).
+				Returns flags about the validity of the tracking data for the given body joint.
 			</description>
 		</method>
 		<method name="get_joint_transform" qualifiers="const">

@@ -47,7 +47,7 @@
 			If [code]true[/code], the ScrollContainer will automatically scroll to focused children (including indirect children) to make sure they are fully visible.
 		</member>
 		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
-			Controls whether horizontal scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
+			Controls whether horizontal scrollbar can be used and when it should be visible.
 		</member>
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
 			Deadzone for touch scrolling. Lower deadzone makes the scrolling more sensitive.
@@ -75,7 +75,7 @@
 			Overrides the [member ScrollBar.custom_step] used when clicking the internal scroll bar's vertical increment and decrement buttons or when using arrow keys when the [ScrollBar] is focused.
 		</member>
 		<member name="vertical_scroll_mode" type="int" setter="set_vertical_scroll_mode" getter="get_vertical_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
-			Controls whether vertical scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
+			Controls whether vertical scrollbar can be used and when it should be visible.
 		</member>
 	</members>
 	<signals>
