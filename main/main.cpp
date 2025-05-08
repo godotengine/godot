@@ -695,10 +695,10 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("", "If incompatibilities or errors are detected, the exit code will be non-zero.\n");
 	print_help_option("--benchmark", "Benchmark the run time and print it to console.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--benchmark-file <path>", "Benchmark the run time and save it to a given file in JSON format. The path should be absolute.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+#endif // TOOLS_ENABLED
 #ifdef TESTS_ENABLED
-	print_help_option("--test [--help]", "Run unit tests. Use --test --help for more information.\n", CLI_OPTION_AVAILABILITY_EDITOR);
-#endif
-#endif
+	print_help_option("--test [--help]", "Run unit tests. Use --test --help for more information.\n");
+#endif // TESTS_ENABLED
 	OS::get_singleton()->print("\n");
 }
 
