@@ -3628,6 +3628,7 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 }
 
 bool DisplayServerX11::color_picker(const Callable &p_callback) {
+#ifdef DBUS_ENABLED
 	WindowID window_id = last_focused_window;
 
 	if (!windows.has(window_id)) {
@@ -3636,6 +3637,9 @@ bool DisplayServerX11::color_picker(const Callable &p_callback) {
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
 	return portal_desktop->color_picker(xid, p_callback);
+#else
+	return false;
+#endif
 }
 
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
