@@ -1099,6 +1099,17 @@ void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) 
 
 void ScriptEditor::trigger_live_script_reload(const String &p_script_path) {
 	if (!script_paths_to_reload.has(p_script_path)) {
+		Ref<Script> reloaded_script = ResourceCache::get_ref(p_script_path);
+		if (reloaded_script.is_null()) {
+			reloaded_script = ResourceLoader::load(p_script_path);
+		}
+		if (reloaded_script.is_valid()) {
+			if (!reloaded_script->get_language()->validate(reloaded_script->get_source_code(), p_script_path)) {
+				// Script has errors, don't live reload.
+				return;
+			}
+		}
+
 		script_paths_to_reload.append(p_script_path);
 	}
 	if (!pending_auto_reload && auto_reload_running_scripts) {
