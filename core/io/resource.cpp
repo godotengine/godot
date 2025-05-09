@@ -555,6 +555,32 @@ String Resource::get_id_for_path(const String &p_path) const {
 #endif
 }
 
+void Resource::exported_variables_initialized() {
+	if (!_exported_variables_initialized) {
+		_exported_variables_initialized = true;
+
+		List<PropertyInfo> plist;
+		get_property_list(&plist);
+
+		for (const PropertyInfo &E : plist) {
+			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+				continue;
+			}
+			Variant p = get(E.name);
+
+			HashSet<Ref<Resource>> sub_resources;
+			_find_sub_resources(p, sub_resources);
+
+			for (Ref<Resource> sr : sub_resources) {
+				sr->exported_variables_initialized();
+			}
+		}
+
+		notification(NOTIFICATION_EXPORT_VARIABLES_INITIALIZED);
+		GDVIRTUAL_CALL(_exported_variables_initialized);
+	}
+}
+
 void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);
 	ClassDB::bind_method(D_METHOD("take_over_path", "path"), &Resource::_take_over_path);
@@ -594,6 +620,7 @@ void Resource::_bind_methods() {
 	GDVIRTUAL_BIND(_get_rid);
 	GDVIRTUAL_BIND(_reset_state);
 	GDVIRTUAL_BIND(_set_path_cache, "path");
+	GDVIRTUAL_BIND(_exported_variables_initialized);
 }
 
 Resource::Resource() :
