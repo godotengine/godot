@@ -104,3 +104,12 @@ GH-105570
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_create_from_extension/arguments': size changed value in new API, from 9 to 10.
 
 Argument added; p_mipmaps. Compatibility method registered.
+
+
+GH-100414
+---------
+Validate extension JSON: Error: Field 'builtin_classes/Vector2/constants/INF': value changed value in new API, from "Vector2(inf, inf)" to "Vector2(INF, INF)".
+Validate extension JSON: Error: Field 'builtin_classes/Vector3/constants/INF': value changed value in new API, from "Vector3(inf, inf, inf)" to "Vector3(INF, INF, INF)".
+Validate extension JSON: Error: Field 'builtin_classes/Vector4/constants/INF': value changed value in new API, from "Vector4(inf, inf, inf, inf)" to "Vector4(INF, INF, INF, INF)".
+
+Infinity is now serialized as "INF" instead of "inf".
