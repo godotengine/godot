@@ -32,6 +32,7 @@
 		}
 		[/csharp]
 		[/codeblocks]
+		A [FileAccess] instance has its own file cursor, which is the position in bytes in the file where the next read/write operation will occur. Functions such as [method get_8], [method get_16], [method store_8], and [method store_16], and so on will move the file cursor forward by the number of bytes read/written. The file cursor can be moved to a specific position using [method seek], or relative to the end of the file using [method seek_end]. The current file cursor position can be retrieved using [method get_position].
 		A [FileAccess] instance will close its file when the instance is freed. Since it inherits [RefCounted], this happens automatically when it is no longer in use. [method close] can be called to close it earlier. In C#, the reference must be disposed manually, which can be done with the [code]using[/code] statement or by calling the [code]Dispose[/code] method directly.
 		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of [FileAccess], as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package. If using [FileAccess], make sure the file is included in the export by changing its import mode to [b]Keep File (exported as is)[/b] in the Import dock, or, for files where this option is not available, change the non-resource export filter in the Export dialog to include the file's extension (e.g. [code]*.txt[/code]).
 		[b]Note:[/b] Files are automatically closed only if the process exits "normally" (such as by clicking the window manager's close button or pressing [kbd]Alt + F4[/kbd]). If you stop the project execution by pressing [kbd]F8[/kbd] while the project is running, the file won't be closed as the game process will be killed. You can work around this by calling [method flush] at regular intervals.
@@ -101,25 +102,25 @@
 		<method name="get_8" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the next 8 bits from the file as an integer. See [method store_8] for details on what values can be stored and retrieved this way.
+				Returns the next 8 bits from the file as an integer. This advances the file cursor by 1 byte. See [method store_8] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_16" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the next 16 bits from the file as an integer. See [method store_16] for details on what values can be stored and retrieved this way.
+				Returns the next 16 bits from the file as an integer. This advances the file cursor by 2 bytes. See [method store_16] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_32" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the next 32 bits from the file as an integer. See [method store_32] for details on what values can be stored and retrieved this way.
+				Returns the next 32 bits from the file as an integer. This advances the file cursor by 4 bytes. See [method store_32] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_64" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the next 64 bits from the file as an integer. See [method store_64] for details on what values can be stored and retrieved this way.
+				Returns the next 64 bits from the file as an integer. This advances the file cursor by 8 bytes. See [method store_64] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_access_time" qualifiers="static">
@@ -133,7 +134,7 @@
 			<return type="String" />
 			<param index="0" name="skip_cr" type="bool" default="false" />
 			<description>
-				Returns the whole file as a [String]. Text is interpreted as being UTF-8 encoded.
+				Returns the whole file as a [String]. Text is interpreted as being UTF-8 encoded. This ignores the file cursor position, always reading the whole file.
 				If [param skip_cr] is [code]true[/code], carriage return characters ([code]\r[/code], CR) will be ignored when parsing the UTF-8, so that only line feed characters ([code]\n[/code], LF) represent a new line (Unix convention).
 			</description>
 		</method>
@@ -141,7 +142,7 @@
 			<return type="PackedByteArray" />
 			<param index="0" name="length" type="int" />
 			<description>
-				Returns next [param length] bytes of the file as a [PackedByteArray].
+				Returns next [param length] bytes of the file as a [PackedByteArray]. This advances the file cursor by [param length] bytes.
 			</description>
 		</method>
 		<method name="get_csv_line" qualifiers="const">
@@ -149,7 +150,7 @@
 			<param index="0" name="delim" type="String" default="&quot;,&quot;" />
 			<description>
 				Returns the next value of the file in CSV (Comma-Separated Values) format. You can pass a different delimiter [param delim] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long, and cannot be a double quotation mark.
-				Text is interpreted as being UTF-8 encoded. Text values must be enclosed in double quotes if they include the delimiter character. Double quotes within a text value can be escaped by doubling their occurrence.
+				Text is interpreted as being UTF-8 encoded. Text values must be enclosed in double quotes if they include the delimiter character. Double quotes within a text value can be escaped by doubling their occurrence. This advances the file cursor after the newline character at the end of the line.
 				For example, the following CSV lines are valid and will be properly parsed as two strings each:
 				[codeblock lang=text]
 				Alice,"Hello, Bob!"
@@ -162,7 +163,7 @@
 		<method name="get_double" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the next 64 bits from the file as a floating-point number.
+				Returns the next 64 bits from the file as a floating-point number. This advances the file cursor by 8 bytes.
 			</description>
 		</method>
 		<method name="get_error" qualifiers="const">
@@ -190,13 +191,13 @@
 		<method name="get_float" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the next 32 bits from the file as a floating-point number.
+				Returns the next 32 bits from the file as a floating-point number. This advances the file cursor by 4 bytes.
 			</description>
 		</method>
 		<method name="get_half" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the next 16 bits from the file as a half-precision floating-point number.
+				Returns the next 16 bits from the file as a half-precision floating-point number. This advances the file cursor by 2 bytes.
 			</description>
 		</method>
 		<method name="get_hidden_attribute" qualifiers="static">
@@ -216,7 +217,7 @@
 		<method name="get_line" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the next line of the file as a [String]. The returned string doesn't include newline ([code]\n[/code]) or carriage return ([code]\r[/code]) characters, but does include any other leading or trailing whitespace.
+				Returns the next line of the file as a [String]. The returned string doesn't include newline ([code]\n[/code]) or carriage return ([code]\r[/code]) characters, but does include any other leading or trailing whitespace. The file cursor is advanced after the newline character at the end of the line.
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
@@ -243,7 +244,7 @@
 		<method name="get_pascal_string">
 			<return type="String" />
 			<description>
-				Returns a [String] saved in Pascal format from the file.
+				Returns a [String] saved in Pascal format from the file, meaning that the length of the string is explicitly stored at the start. See [method store_pascal_string]. This may include newline characters. The file cursor is advanced after the bytes read.
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
@@ -276,7 +277,7 @@
 		<method name="get_real" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the next bits from the file as a floating-point number.
+				Returns the next bits from the file as a floating-point number. The number of bits read is either 32 or 64, depending on the Godot build used to save the file. If a file was saved by Godot built with [code]precision=single[/code] (default), the number of real bits for that file is 32. Otherwise, if the file was saved by Godot built with [code]precision=double[/code], the number of real bits is 64. This advances the file cursor by either 4 or 8 bytes, respectively.
 			</description>
 		</method>
 		<method name="get_sha256" qualifiers="static">
@@ -305,7 +306,7 @@
 			<return type="Variant" />
 			<param index="0" name="allow_objects" type="bool" default="false" />
 			<description>
-				Returns the next [Variant] value from the file. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
+				Returns the next [Variant] value from the file. If [param allow_objects] is [code]true[/code], decoding objects is allowed. This advances the file cursor by the number of bytes read.
 				Internally, this uses the same decoding mechanism as the [method @GlobalScope.bytes_to_var] method.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
@@ -411,7 +412,7 @@
 			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Stores an integer as 8 bits in the file.
+				Stores an integer as 8 bits in the file. This advances the file cursor by 1 byte.
 				[b]Note:[/b] The [param value] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
@@ -421,7 +422,7 @@
 			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Stores an integer as 16 bits in the file.
+				Stores an integer as 16 bits in the file. This advances the file cursor by 2 bytes.
 				[b]Note:[/b] The [param value] should lie in the interval [code][0, 2^16 - 1][/code]. Any other value will overflow and wrap around.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 				To store a signed integer, use [method store_64] or store a signed integer from the interval [code][-2^15, 2^15 - 1][/code] (i.e. keeping one bit for the signedness) and compute its sign manually when reading. For example:
@@ -463,7 +464,7 @@
 			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Stores an integer as 32 bits in the file.
+				Stores an integer as 32 bits in the file. This advances the file cursor by 4 bytes.
 				[b]Note:[/b] The [param value] should lie in the interval [code][0, 2^32 - 1][/code]. Any other value will overflow and wrap around.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
@@ -473,7 +474,7 @@
 			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Stores an integer as 64 bits in the file.
+				Stores an integer as 64 bits in the file. This advances the file cursor by 8 bytes.
 				[b]Note:[/b] The [param value] must lie in the interval [code][-2^63, 2^63 - 1][/code] (i.e. be a valid [int] value).
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
@@ -482,7 +483,7 @@
 			<return type="bool" />
 			<param index="0" name="buffer" type="PackedByteArray" />
 			<description>
-				Stores the given array of bytes in the file.
+				Stores the given array of bytes in the file. This advances the file cursor by the number of bytes written.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
@@ -500,7 +501,7 @@
 			<return type="bool" />
 			<param index="0" name="value" type="float" />
 			<description>
-				Stores a floating-point number as 64 bits in the file.
+				Stores a floating-point number as 64 bits in the file. This advances the file cursor by 8 bytes.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
@@ -508,7 +509,7 @@
 			<return type="bool" />
 			<param index="0" name="value" type="float" />
 			<description>
-				Stores a floating-point number as 32 bits in the file.
+				Stores a floating-point number as 32 bits in the file. This advances the file cursor by 4 bytes.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
@@ -516,7 +517,7 @@
 			<return type="bool" />
 			<param index="0" name="value" type="float" />
 			<description>
-				Stores a half-precision floating-point number as 16 bits in the file.
+				Stores a half-precision floating-point number as 16 bits in the file. This advances the file cursor by 2 bytes.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
@@ -524,7 +525,7 @@
 			<return type="bool" />
 			<param index="0" name="line" type="String" />
 			<description>
-				Stores [param line] in the file followed by a newline character ([code]\n[/code]), encoding the text as UTF-8.
+				Stores [param line] in the file followed by a newline character ([code]\n[/code]), encoding the text as UTF-8. This advances the file cursor by the length of the line, after the newline character.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
@@ -532,8 +533,7 @@
 			<return type="bool" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Stores the given [String] as a line in the file in Pascal format (i.e. also store the length of the string).
-				Text will be encoded as UTF-8.
+				Stores the given [String] as a line in the file in Pascal format (i.e. also store the length of the string). Text will be encoded as UTF-8. This advances the file cursor by the number of bytes written.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
@@ -541,7 +541,7 @@
 			<return type="bool" />
 			<param index="0" name="value" type="float" />
 			<description>
-				Stores a floating-point number in the file.
+				Stores a floating-point number in the file. The number of bits written is either 32 or 64, depending on the Godot build. If using Godot built with [code]precision=single[/code] (default), this will save a 32-bit float. Otherwise, if using Godot built with [code]precision=double[/code], this will save a 64-bit float. This advances the file cursor by either 4 or 8 bytes, respectively.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
@@ -549,7 +549,7 @@
 			<return type="bool" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Stores [param string] in the file without a newline character ([code]\n[/code]), encoding the text as UTF-8.
+				Stores [param string] in the file without a newline character ([code]\n[/code]), encoding the text as UTF-8. This advances the file cursor by the length of the string.
 				[b]Note:[/b] This method is intended to be used to write text files. The string is stored as a UTF-8 encoded buffer without string length or terminating zero, which means that it can't be loaded back easily. If you want to store a retrievable string in a binary file, consider using [method store_pascal_string] instead. For retrieving strings from a text file, you can use [code]get_buffer(length).get_string_from_utf8()[/code] (if you know the length) or [method get_as_text].
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
@@ -560,7 +560,7 @@
 			<param index="1" name="full_objects" type="bool" default="false" />
 			<description>
 				Stores any Variant value in the file. If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code).
-				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_bytes] method.
+				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_bytes] method. This advances the file cursor by the number of bytes written.
 				[b]Note:[/b] Not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object._get_property_list]. See [enum PropertyUsageFlags] for the possible usage flags.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
