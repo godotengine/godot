@@ -1,3 +1,5 @@
+extends Resource
+
 @export_dir var test_dir: Array[String]
 @export_dir var test_dir_packed: PackedStringArray
 @export_file var test_file: Array[String]

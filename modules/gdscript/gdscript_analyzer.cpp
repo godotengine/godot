@@ -1065,6 +1065,9 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				if (member.variable->exported && member.variable->onready) {
 					parser->push_warning(member.variable, GDScriptWarning::ONREADY_WITH_EXPORT);
 				}
+				if (member.variable->exported && !p_class->can_export()) {
+					parser->push_warning(member.variable, GDScriptWarning::EXPORT_NOT_NODE_OR_RESOURCE, p_class->base_type.to_string());
+				}
 				if (member.variable->initializer) {
 					// Check if it is call to get_node() on self (using shorthand $ or not), so we can check if @onready is needed.
 					// This could be improved by traversing the expression fully and checking the presence of get_node at any level.

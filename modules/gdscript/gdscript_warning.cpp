@@ -162,6 +162,8 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The default value uses "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
+		case EXPORT_NOT_NODE_OR_RESOURCE:
+			return vformat(R"(Properties can only be exported on classes that extend Resource or Node, but the current class inherits "%s".)", symbols[0]);
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
@@ -238,6 +240,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"NATIVE_METHOD_OVERRIDE",
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",
 		"ONREADY_WITH_EXPORT",
+		"EXPORT_NOT_NODE_OR_RESOURCE",
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",

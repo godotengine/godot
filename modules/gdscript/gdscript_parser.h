@@ -795,6 +795,15 @@ public:
 			members_indices[name] = members.size();
 			members.push_back(Member(p_annotation_node));
 		}
+		bool can_export() const {
+			if (ClassDB::is_parent_class(base_type.native_type, SNAME("Resource"))) {
+				return true;
+			}
+			if (ClassDB::is_parent_class(base_type.native_type, SNAME("Node"))) {
+				return true;
+			}
+			return false;
+		}
 
 		ClassNode() {
 			type = CLASS;

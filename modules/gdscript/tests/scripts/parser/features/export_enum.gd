@@ -1,3 +1,5 @@
+extends Resource
+
 @export_enum("Red", "Green", "Blue") var test_untyped
 @export_enum("Red:10", "Green:20", "Blue:30") var test_with_values
 
