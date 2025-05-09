@@ -214,6 +214,11 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	return has_messages;
 }
 
+void EditorExportPlatform::check_disk_space(const String &p_path) const {
+	// Project files can grow quite large, so check for a reasonable amount of available space before exporting.
+	EditorNode::get_singleton()->check_disk_space(p_path, 10.0, TTR("Exporting the project will fail if the disk runs out of space."));
+}
+
 bool EditorExportPlatform::_check_hash(const uint8_t *p_hash, const Vector<uint8_t> &p_data) {
 	if (p_hash == nullptr) {
 		return false;
@@ -2186,11 +2191,13 @@ Error EditorExportPlatform::save_zip_patch(const Ref<EditorExportPreset> &p_pres
 
 Error EditorExportPlatform::export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	check_disk_space(p_path);
 	return save_pack(p_preset, p_debug, p_path);
 }
 
 Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	check_disk_space(p_path);
 	return save_zip(p_preset, p_debug, p_path);
 }
 
@@ -2200,6 +2207,7 @@ Error EditorExportPlatform::export_pack_patch(const Ref<EditorExportPreset> &p_p
 	if (err != OK) {
 		return err;
 	}
+	check_disk_space(p_path);
 	err = save_pack_patch(p_preset, p_debug, p_path);
 	_unload_patches();
 	return err;
@@ -2211,6 +2219,7 @@ Error EditorExportPlatform::export_zip_patch(const Ref<EditorExportPreset> &p_pr
 	if (err != OK) {
 		return err;
 	}
+	check_disk_space(p_path);
 	err = save_zip_patch(p_preset, p_debug, p_path);
 	_unload_patches();
 	return err;
