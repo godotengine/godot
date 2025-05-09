@@ -2037,9 +2037,10 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		PackedStringArray parts;
 
 		for (const String &path : files) {
-			if (ResourceLoader::exists(path) and (member_drop_modifier_pressed || export_drop_modifier_pressed)) {
+			if (ResourceLoader::exists(path) && (member_drop_modifier_pressed || export_drop_modifier_pressed)) {
 				Ref<Resource> resource = ResourceLoader::load(path);
 				if (resource.is_null()) {
+					// Resource exists, but failed to load. We need only path and name, so we can use a dummy Resource instead.
 					resource.instantiate();
 					resource->set_path_cache(path);
 				}
