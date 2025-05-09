@@ -33,6 +33,7 @@
 #include "../effects/copy_effects.h"
 #include "../framebuffer_cache_rd.h"
 #include "material_storage.h"
+
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 
 using namespace RendererRD;
@@ -573,6 +574,86 @@ TextureStorage::~TextureStorage() {
 	singleton = nullptr;
 }
 
+// Has to be a separate call from TextureStorage initialization due to interacting with Material Storage
+void TextureStorage::_tex_blit_shader_initialize() {
+	// TODO: Correct this code for Renderer_RD
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+
+	{
+		Vector<String> tex_blit_modes;
+		tex_blit_modes.push_back("");
+		String global_defines;
+		global_defines += "\n#define SAMPLERS_BINDING_FIRST_INDEX " + itos(SAMPLERS_BINDING_FIRST_INDEX) + "\n";
+		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
+		tex_blit_shader.shader.initialize(tex_blit_modes, global_defines);
+	}
+	material_storage->shader_set_data_request_function(MaterialStorage::SHADER_TYPE_TEXTURE_BLIT, MaterialStorage::_create_tex_blit_shader_funcs);
+	material_storage->material_set_data_request_function(MaterialStorage::SHADER_TYPE_TEXTURE_BLIT, MaterialStorage::_create_tex_blit_material_funcs);
+
+	{
+		// Setup TextureBlit compiler
+		ShaderCompiler::DefaultIdentifierActions actions;
+
+		actions.renames["PI"] = _MKSTR(Math_PI);
+		actions.renames["TAU"] = _MKSTR(Math_TAU);
+		actions.renames["E"] = _MKSTR(Math_E);
+
+		actions.renames["FRAGCOORD"] = "gl_FragCoord";
+
+		actions.renames["UV"] = "uv";
+		actions.renames["MODULATE"] = "modulate";
+
+		actions.renames["COLOR"] = "color";
+		actions.renames["COLOR2"] = "color2";
+		actions.renames["COLOR3"] = "color3";
+		actions.renames["COLOR4"] = "color4";
+
+		tex_blit_shader.compiler.initialize(actions);
+	}
+
+	{
+		// default material and shader for Texture Blit shader
+		tex_blit_shader.default_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(tex_blit_shader.default_shader);
+		material_storage->shader_set_code(tex_blit_shader.default_shader, R"(
+// Default Texture Blit shader.
+
+shader_type texture_blit;
+render_mode blend_mix;
+
+uniform sampler2D source_texture : hint_blit_source;
+uniform sampler2D source_texture2 : hint_blit_source2;
+uniform sampler2D source_texture3 : hint_blit_source3;
+uniform sampler2D source_texture4 : hint_blit_source4;
+
+void blit() {
+	// Copies from each whole source texture to a rect on each output texture.
+	COLOR = texture(source_texture, UV);
+	COLOR2 = texture(source_texture2, UV);
+	COLOR3 = texture(source_texture3, UV);
+	COLOR4 = texture(source_texture4, UV);
+}
+)");
+		tex_blit_shader.default_material = material_storage->material_allocate();
+		material_storage->material_initialize(tex_blit_shader.default_material);
+		material_storage->material_set_shader(tex_blit_shader.default_material, tex_blit_shader.default_shader);
+	}
+
+	tex_blit_shader.initialized = true;
+}
+
+// Has to be a separate call from TextureStorage destruction due to interacting with Material Storage
+void TextureStorage::_tex_blit_shader_free() {
+	// TODO: Correct this code for Renderer_RD
+	if (tex_blit_shader.initialized) {
+		MaterialStorage *material_storage = MaterialStorage::get_singleton();
+
+		print_verbose("Freeing Default Tex_Blit Shader")
+				material_storage->material_free(tex_blit_shader.default_material);
+		material_storage->shader_free(tex_blit_shader.default_shader);
+	}
+}
+
 bool TextureStorage::free(RID p_rid) {
 	if (owns_texture(p_rid)) {
 		texture_free(p_rid);
@@ -1104,6 +1185,97 @@ void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 	tex->proxies.push_back(p_texture);
 }
 
+void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, bool p_with_mipmaps) {
+	// Near identical to  Texture_2D_initialize
+	// Generates an empty white image based on parameters
+
+	Image::Format format;
+	switch (p_format) {
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8:
+			format = Image::FORMAT_RGBA8;
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB:
+			format = Image::FORMAT_RGBA8;
+			// TODO: Figure out if I need to do something else in this case???
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAH:
+			format = Image::FORMAT_RGBAH;
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAF:
+			format = Image::FORMAT_RGBAF;
+			break;
+		default:
+			format = Image::FORMAT_RGBA8;
+	}
+
+	Ref<Image> image = Image::create_empty(p_width, p_height, p_with_mipmaps, format);
+	TextureToRDFormat ret_format;
+
+	Ref<Image> valid_image = _validate_texture_format(image, ret_format);
+	Texture texture;
+
+	texture.type = TextureStorage::TYPE_2D;
+
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.layers = 1;
+	texture.mipmaps = image->get_mipmap_count() + 1;
+	texture.depth = 1;
+	texture.format = image->get_format();
+	texture.validated_format = image->get_format();
+
+	texture.rd_type = RD::TEXTURE_TYPE_2D;
+	texture.rd_format = ret_format.format;
+	texture.rd_format_srgb = ret_format.format_srgb;
+
+	RD::TextureFormat rd_format;
+	RD::TextureView rd_view;
+	{ //attempt register
+		rd_format.format = texture.rd_format;
+		rd_format.width = texture.width;
+		rd_format.height = texture.height;
+		rd_format.depth = 1;
+		rd_format.array_layers = 1;
+		rd_format.mipmaps = texture.mipmaps;
+		rd_format.texture_type = texture.rd_type;
+		rd_format.samples = RD::TEXTURE_SAMPLES_1;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+			rd_format.shareable_formats.push_back(texture.rd_format);
+			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
+		}
+	}
+	{
+		rd_view.swizzle_r = ret_format.swizzle_r;
+		rd_view.swizzle_g = ret_format.swizzle_g;
+		rd_view.swizzle_b = ret_format.swizzle_b;
+		rd_view.swizzle_a = ret_format.swizzle_a;
+	}
+
+	Vector<uint8_t> data = image->get_data(); //use image data
+	Vector<Vector<uint8_t>> data_slices;
+	data_slices.push_back(data);
+	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view, data_slices);
+	ERR_FAIL_COND(texture.rd_texture.is_null());
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		rd_view.format_override = texture.rd_format_srgb;
+		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
+		if (texture.rd_texture_srgb.is_null()) {
+			RD::get_singleton()->free(texture.rd_texture);
+			ERR_FAIL_COND(texture.rd_texture_srgb.is_null());
+		}
+	}
+
+	//used for 2D, overridable
+	texture.width_2d = texture.width;
+	texture.height_2d = texture.height;
+	texture.is_render_target = false;
+	texture.rd_view = rd_view;
+	texture.is_proxy = false;
+
+	texture_owner.initialize_rid(p_texture, texture);
+}
+
 // Note: We make some big assumptions about format and usage. If developers need more control,
 // they should use RD::texture_create_from_extension() instead.
 RID TextureStorage::texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type) {
@@ -1414,6 +1586,11 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	}
 }
 
+// Output textures in p_textures must ALL BE THE SAME SIZE
+void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) {
+	// TODO: Write this code for Renderer_RD
+}
+
 //these two APIs can be used together or in combination with the others.
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 	texture_2d_initialize(p_texture, texture_2d_placeholder);
@@ -1538,6 +1715,15 @@ Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 	}
 
 	return ret;
+}
+
+void TextureStorage::texture_drawable_generate_mipmaps(RID p_texture) {
+	// TODO: Write this code for Renderer_RD
+}
+
+RID TextureStorage::texture_drawable_get_default_material() const {
+	// Return a material with a default Texture_Blit shader for DrawableTexture2D to use
+	// TODO: Write this code for Renderer_RD
 }
 
 void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {

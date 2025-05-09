@@ -212,6 +212,13 @@ void fog() {
 	// a given FogVolume will still be used.
 }
 )";
+						break;
+					case Shader::MODE_TEXTURE_BLIT:
+						code += R"(
+void blit() {
+	// Called once for every pixel inside a rect on up to 4 output textures.
+}
+)";
 				}
 			}
 			text_shader->set_code(code.as_string());
