@@ -396,6 +396,7 @@ void Range::set_exp_ratio(bool p_enable) {
 
 	shared->exp_ratio = p_enable;
 
+	shared->emit_changed("exp_edit");
 	update_configuration_warnings();
 }
 
