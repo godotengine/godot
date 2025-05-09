@@ -934,6 +934,8 @@ public:
 		}
 	}
 
+	void close_scene(String p_file);
+
 	bool is_scene_in_use(const String &p_path);
 
 	void save_editor_layout_delayed();
