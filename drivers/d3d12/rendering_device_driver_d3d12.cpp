@@ -3659,14 +3659,14 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 		Vector<uint8_t> zstd;
 		Vector<uint8_t> &dxil_blob = dxil_blobs[p_spirv[i].shader_stage];
 		zstd.resize(Compression::get_max_compressed_buffer_size(dxil_blob.size(), Compression::MODE_ZSTD));
-		int dst_size = Compression::compress(zstd.ptrw(), dxil_blob.ptr(), dxil_blob.size(), Compression::MODE_ZSTD);
+		const int64_t dst_size = Compression::compress(zstd.ptrw(), dxil_blob.ptr(), dxil_blob.size(), Compression::MODE_ZSTD);
 
 		zstd_size.push_back(dst_size);
 		zstd.resize(dst_size);
 		compressed_stages.push_back(zstd);
 
-		uint32_t s = compressed_stages[i].size();
-		stages_binary_size += STEPIFY(s, 4);
+		uint32_t s = (uint32_t)compressed_stages[i].size();
+		stages_binary_size += STEPIFY(s, (uint32_t)4);
 	}
 
 	CharString shader_name_utf = p_shader_name.utf8();
@@ -3878,8 +3878,8 @@ RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vect
 		// Decompress.
 		Vector<uint8_t> dxil;
 		dxil.resize(dxil_size);
-		int dec_dxil_size = Compression::decompress(dxil.ptrw(), dxil.size(), binptr + read_offset, zstd_size, Compression::MODE_ZSTD);
-		ERR_FAIL_COND_V(dec_dxil_size != (int32_t)dxil_size, ShaderID());
+		int64_t dec_dxil_size = Compression::decompress(dxil.ptrw(), dxil.size(), binptr + read_offset, zstd_size, Compression::MODE_ZSTD);
+		ERR_FAIL_COND_V(dec_dxil_size != (int64_t)dxil_size, ShaderID());
 		shader_info_in.stages_bytecode[ShaderStage(stage)] = dxil;
 
 		zstd_size = STEPIFY(zstd_size, 4);
