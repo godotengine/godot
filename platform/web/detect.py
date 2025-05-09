@@ -10,6 +10,7 @@ from emscripten_helpers import (
     create_template_zip,
     get_template_zip_path,
     run_closure_compiler,
+    run_optimize_wasm,
 )
 from SCons.Util import WhereIs
 
@@ -55,6 +56,11 @@ def get_opts():
         BoolVariable(
             "proxy_to_pthread",
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
+            False,
+        ),
+        BoolVariable(
+            "optimize_wasm",
+            "Use binaryen `wasm-opt` to reduce the output .wasm file sizes",
             False,
         ),
     ]
@@ -303,3 +309,9 @@ def configure(env: "SConsEnvironment"):
     # This workaround creates a closure that prevents the garbage collector from freeing the WebGL context.
     # We also only use WebGL2, and changing context version is not widely supported anyway.
     env.Append(LINKFLAGS=["-sGL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0"])
+
+    # Optimize WASM file
+    if env["optimize_wasm"]:
+        optimize_wasm_action = env.Action(run_optimize_wasm)
+        optimize_wasm_builder = env.Builder(action=optimize_wasm_action, suffix=".opt.wasm", src_suffix=".wasm")
+        env.Append(BUILDERS={"OptimizeWASM": optimize_wasm_builder})
