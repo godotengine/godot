@@ -86,6 +86,8 @@ class SceneTreeFTI {
 		Mutex mutex;
 
 		bool debug = false;
+
+		LocalVector<Node *> temp_child_list;
 	} data;
 
 	void _update_dirty_nodes(Node *p_node, uint32_t p_current_frame, float p_interpolation_fraction, bool p_active, const Transform3D *p_parent_global_xform = nullptr, int p_depth = 0);

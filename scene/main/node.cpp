@@ -1951,6 +1951,28 @@ Node *Node::get_child(int p_index, bool p_include_internal) const {
 	}
 }
 
+void Node::get_children_fast(LocalVector<Node *> &r_children, bool p_include_internal) const {
+	r_children.clear();
+	ERR_THREAD_GUARD
+	_update_children_cache();
+
+	if (p_include_internal) {
+		uint32_t num_children = data.children_cache.size();
+		r_children.resize(num_children);
+		for (uint32_t n = 0; n < num_children; n++) {
+			r_children[n] = data.children_cache[n];
+		}
+	} else {
+		uint32_t num_children = data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
+		r_children.resize(num_children);
+		uint32_t internal_count = data.internal_children_front_count_cache;
+
+		for (uint32_t n = 0; n < num_children; n++) {
+			r_children[n] = data.children_cache[n + internal_count];
+		}
+	}
+}
+
 TypedArray<Node> Node::get_children(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(TypedArray<Node>());
 	TypedArray<Node> arr;
