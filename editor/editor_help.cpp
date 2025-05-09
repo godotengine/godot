@@ -4315,7 +4315,7 @@ void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologu
 			help_data.doc_type.type = ResourceLoader::get_resource_type(path);
 			if (help_data.doc_type.type.is_empty()) {
 				const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
-				symbol_type = textfile_ext.has(path.get_extension()) ? TTR("TextFile") : TTR("File");
+				symbol_type = textfile_ext.has(path.get_extension()) ? TTR("Text File") : TTR("File");
 			} else {
 				symbol_type = TTR("Resource");
 				symbol_hint = SYMBOL_HINT_ASSIGNABLE;
