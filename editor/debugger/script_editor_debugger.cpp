@@ -643,7 +643,41 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	// item with the original error condition.
 	error_title += oe.error_descr.is_empty() ? oe.error : oe.error_descr;
 	error->set_text(1, error_title);
-	tooltip += " " + error_title + "\n";
+
+	// Append the wrapped error title to the tooltip
+	tooltip += " ";
+
+	Ref<TextServer> ts = TextServerManager::get_singleton()->get_primary_interface();
+	if (ts.is_valid()) {
+		// Define the target character width for wrapping lines.
+		const int wrap_at = 100;
+		PackedInt32Array breaks = ts->string_get_word_breaks(error_title, "", wrap_at);
+
+		if (breaks.size() > 0 && (breaks.size() % 2 == 0)) {
+			// Reconstruct the tooltip by appending substrings based on the calculated breaks.
+			for (int i = 0; i < breaks.size(); i += 2) {
+				const int start = breaks[i];
+				const int end = breaks[i + 1];
+				// Append the portion of the string for the current line.
+				tooltip += error_title.substr(start, end - start);
+				// Add a newline to create the visual wrap in the tooltip display.
+				tooltip += "\n";
+			}
+			// Avoid adding an extra trailing newline within the wrapped block itself.
+			if (tooltip.ends_with("\n")) {
+				tooltip.remove_at(tooltip.length() - 1);
+			}
+		} else {
+			// Fallback: Append the original unwrapped title if breaks could not be determined.
+			tooltip += error_title;
+		}
+	} else {
+		// Fallback: Append original title and warn if TextServer is invalid.
+		WARN_PRINT_ONCE("TextServer instance is invalid, cannot wrap debugger tooltip text.");
+		tooltip += error_title;
+	}
+
+	tooltip += "\n";
 
 	// Find the language of the error's source file.
 	String source_language_name = "C++"; // Default value is the old hard-coded one.
