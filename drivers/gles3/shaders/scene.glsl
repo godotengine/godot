@@ -2120,8 +2120,18 @@ void main() {
 #endif // USE_LIGHTMAP_CAPTURE
 #endif // !DISABLE_LIGHTMAP
 
-	ambient_light *= albedo.rgb;
 	ambient_light *= ao;
+#ifndef SPECULAR_OCCLUSION_DISABLED
+	float specular_occlusion = (ambient_light.r * 0.3 + ambient_light.g * 0.59 + ambient_light.b * 0.11) * 2.0; // Luminance of ambient light.
+	specular_occlusion = min(specular_occlusion * 4.0, 1.0); // This multiplication preserves speculars on bright areas.
+
+	float reflective_f = (1.0 - roughness) * metallic;
+	// 10.0 is a magic number, it gives the intended effect in most scenarios.
+	// Low enough for occlusion, high enough for reaction to lights and shadows.
+	specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+	specular_light *= specular_occlusion;
+#endif // !SPECULAR_OCCLUSION_DISABLED
+	ambient_light *= albedo.rgb;
 
 #endif // !AMBIENT_LIGHT_DISABLED
 

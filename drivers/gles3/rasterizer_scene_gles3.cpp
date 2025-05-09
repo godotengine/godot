@@ -4228,6 +4228,9 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		if (config->force_vertex_shading) {
 			global_defines += "\n#define USE_VERTEX_LIGHTING\n";
 		}
+		if (!config->specular_occlusion) {
+			global_defines += "\n#define SPECULAR_OCCLUSION_DISABLED\n";
+		}
 		material_storage->shaders.scene_shader.initialize(global_defines);
 		scene_globals.shader_default_version = material_storage->shaders.scene_shader.version_create();
 		material_storage->shaders.scene_shader.version_bind_shader(scene_globals.shader_default_version, SceneShaderGLES3::MODE_COLOR);

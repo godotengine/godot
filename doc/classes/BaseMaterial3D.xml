@@ -182,6 +182,9 @@
 		<member name="disable_receive_shadows" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object receives no shadow that would otherwise be cast onto it.
 		</member>
+		<member name="disable_specular_occlusion" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], disables specular occlusion even if [member ProjectSettings.rendering/reflections/specular_occlusion/enabled] is [code]false[/code].
+		</member>
 		<member name="distance_fade_max_distance" type="float" setter="set_distance_fade_max_distance" getter="get_distance_fade_max_distance" default="10.0">
 			Distance at which the object appears fully opaque.
 			[b]Note:[/b] If [member distance_fade_max_distance] is less than [member distance_fade_min_distance], the behavior will be reversed. The object will start to fade away at [member distance_fade_max_distance] and will fully disappear once it reaches [member distance_fade_min_distance].
@@ -706,7 +709,10 @@
 		<constant name="FLAG_DISABLE_FOG" value="21" enum="Flags">
 			Disables receiving depth-based or volumetric fog.
 		</constant>
-		<constant name="FLAG_MAX" value="22" enum="Flags">
+		<constant name="FLAG_DISABLE_SPECULAR_OCCLUSION" value="22" enum="Flags">
+			Disables specular occlusion.
+		</constant>
+		<constant name="FLAG_MAX" value="23" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
