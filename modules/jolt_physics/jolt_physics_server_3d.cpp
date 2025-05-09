@@ -749,6 +749,13 @@ void JoltPhysicsServer3D::body_apply_impulse(RID p_body, const Vector3 &p_impuls
 	return body->apply_impulse(p_impulse, p_position);
 }
 
+void JoltPhysicsServer3D::body_apply_impulse_at_position(RID p_body, const Vector3 &p_impulse, const Vector3 &p_world_position) {
+	JoltBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	return body->apply_impulse_at_position(p_impulse, p_world_position);
+}
+
 void JoltPhysicsServer3D::body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) {
 	JoltBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
@@ -768,6 +775,13 @@ void JoltPhysicsServer3D::body_apply_force(RID p_body, const Vector3 &p_force, c
 	ERR_FAIL_NULL(body);
 
 	return body->apply_force(p_force, p_position);
+}
+
+void JoltPhysicsServer3D::body_apply_force_at_position(RID p_body, const Vector3 &p_force, const Vector3 &p_world_position) {
+	JoltBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	return body->apply_force_at_position(p_force, p_world_position);
 }
 
 void JoltPhysicsServer3D::body_apply_torque(RID p_body, const Vector3 &p_torque) {
