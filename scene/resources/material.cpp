@@ -457,8 +457,16 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 			// Never assigned, also update the remap cache.
 			remap_cache["shader_parameter/" + p_param.operator String()] = p_param;
 			param_cache.insert(p_param, p_value);
+			v = param_cache.getptr(p_param);
 		} else {
-			*v = p_value;
+			// Cast p_value between float and int to avoid minor annoyances.
+			if (v->get_type() == Variant::FLOAT && p_value.get_type() == Variant::INT) {
+				*v = float(p_value);
+			} else if (v->get_type() == Variant::INT && p_value.get_type() == Variant::FLOAT) {
+				*v = int32_t(p_value);
+			} else {
+				*v = p_value;
+			}
 		}
 
 		if (p_value.get_type() == Variant::OBJECT) {
@@ -473,7 +481,7 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 				RS::get_singleton()->material_set_param(material_rid, p_param, tex_rid);
 			}
 		} else if (material_rid.is_valid()) {
-			RS::get_singleton()->material_set_param(material_rid, p_param, p_value);
+			RS::get_singleton()->material_set_param(material_rid, p_param, *v);
 		}
 	}
 }
