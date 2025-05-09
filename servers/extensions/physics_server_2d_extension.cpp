@@ -340,6 +340,7 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_end_sync);
 	GDVIRTUAL_BIND(_finish);
 
+	GDVIRTUAL_BIND(_is_active);
 	GDVIRTUAL_BIND(_is_flushing_queries);
 	GDVIRTUAL_BIND(_get_process_info, "process_info");
 }
