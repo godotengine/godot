@@ -2391,9 +2391,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				if (i == 0) {
 					r.position.x = p_draw_ofs.x;
 					r.size.x = item_width + ofs;
-				} else {
-					r.position.x -= theme_cache.h_separation;
-					r.size.x += theme_cache.h_separation;
 				}
 				if (rtl) {
 					r.position.x = get_size().width - r.position.x - r.size.x;
