@@ -1,0 +1,381 @@
+Usage Page (Vendor-Defined 2) 06 01 FF  
+Usage (Undefined) 09 00  
+Collection (Application) A1 01  
+    Usage (Vendor-Defined 1) 09 01  
+    Collection (Logical) A1 02  
+        Report ID (1) 85 01  
+        Usage (Vendor-Defined 3) 09 03  
+        Usage (Vendor-Defined 3) 09 03  
+        Usage (Vendor-Defined 3) 09 03  
+        Usage (Vendor-Defined 3) 09 03  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (15) 25 0F  
+        Report Size (4) 75 04  
+        Report Count (4) 95 04  
+        Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit) 81 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Usage (Vendor-Defined 2) 09 02  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (1) 25 01  
+        Report Size (1) 75 01  
+        Report Count (48) 95 30  
+        Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit) 81 02  
+        Usage (Vendor-Defined 11) 09 0B  
+        Usage (Vendor-Defined 11) 09 0B  
+        Usage (Vendor-Defined 11) 09 0B  
+        Usage (Vendor-Defined 11) 09 0B  
+        Usage (Vendor-Defined 11) 09 0B  
+        Usage (Vendor-Defined 11) 09 0B  
+        Usage (Vendor-Defined 11) 09 0B  
+        Usage (Vendor-Defined 11) 09 0B  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (1) 25 01  
+        Report Size (1) 75 01  
+        Report Count (8) 95 08  
+        Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit) 81 02  
+    End Collection C0  
+    Usage (Vendor-Defined 2) 09 02  
+    Collection (Logical) A1 02  
+        Report ID (2) 85 02  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Usage (Vendor-Defined 4) 09 04  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (4095) 26 FF 0F  
+        Report Size (16) 75 10  
+        Report Count (26) 95 1A  
+        Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit) 81 02  
+    End Collection C0  
+    Usage (Vendor-Defined 128) 09 80  
+    Collection (Logical) A1 02  
+        Report ID (128) 85 80  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (127) 25 7F  
+        Report Count (94) 95 5E  
+        Report Size (8) 75 08  
+        Output (Data,Var,Abs,NWrp,Lin,Pref,NNul,NVol,Bit) 91 02  
+    End Collection C0  
+    Usage (Vendor-Defined 128) 09 80  
+    Collection (Logical) A1 02  
+        Report ID (129) 85 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Usage (Vendor-Defined 129) 09 81  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (127) 25 7F  
+        Report Count (40) 95 28  
+        Report Size (8) 75 08  
+        Output (Data,Var,Abs,NWrp,Lin,Pref,NNul,NVol,Bit) 91 02  
+    End Collection C0  
+    Usage (Vendor-Defined 208) 09 D0  
+    Collection (Logical) A1 02  
+        Report ID (208) 85 D0  
+        Usage (Vendor-Defined 209) 09 D1  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (255) 26 FF 00  
+        Report Size (8) 75 08  
+        Report Count (32) 95 20  
+        Feature (Data,Var,Abs,NWrp,Lin,Pref,NNul,Vol,Bit) B1 82  
+    End Collection C0  
+    Usage (Vendor-Defined 208) 09 D0  
+    Collection (Logical) A1 02  
+        Report ID (209) 85 D1  
+        Usage (Vendor-Defined 209) 09 D1  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (255) 26 FF 00  
+        Report Size (8) 75 08  
+        Report Count (32) 95 20  
+        Feature (Data,Var,Abs,NWrp,Lin,Pref,NNul,Vol,Bit) B1 82  
+    End Collection C0  
+    Usage (Vendor-Defined 208) 09 D0  
+    Collection (Logical) A1 02  
+        Report ID (210) 85 D2  
+        Usage (Vendor-Defined 209) 09 D1  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (255) 26 FF 00  
+        Report Size (8) 75 08  
+        Report Count (32) 95 20  
+        Feature (Data,Var,Abs,NWrp,Lin,Pref,NNul,Vol,Bit) B1 82  
+    End Collection C0  
+    Usage (Vendor-Defined 208) 09 D0  
+    Collection (Logical) A1 02  
+        Report ID (211) 85 D3  
+        Usage (Vendor-Defined 209) 09 D1  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (255) 26 FF 00  
+        Report Size (8) 75 08  
+        Report Count (32) 95 20  
+        Feature (Data,Var,Abs,NWrp,Lin,Pref,NNul,Vol,Bit) B1 82  
+    End Collection C0  
+    Usage (Vendor-Defined 208) 09 D0  
+    Collection (Logical) A1 02  
+        Report ID (212) 85 D4  
+        Usage (Vendor-Defined 209) 09 D1  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (255) 26 FF 00  
+        Report Size (8) 75 08  
+        Report Count (32) 95 20  
+        Feature (Data,Var,Abs,NWrp,Lin,Pref,NNul,Vol,Bit) B1 82  
+    End Collection C0  
+    Usage (Vendor-Defined 208) 09 D0  
+    Collection (Logical) A1 02  
+        Report ID (213) 85 D5  
+        Usage (Vendor-Defined 209) 09 D1  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (255) 26 FF 00  
+        Report Size (8) 75 08  
+        Report Count (32) 95 20  
+        Feature (Data,Var,Abs,NWrp,Lin,Pref,NNul,Vol,Bit) B1 82  
+    End Collection C0  
+    Usage (Vendor-Defined 208) 09 D0  
+    Collection (Logical) A1 02  
+        Report ID (214) 85 D6  
+        Usage (Vendor-Defined 209) 09 D1  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (255) 26 FF 00  
+        Report Size (8) 75 08  
+        Report Count (32) 95 20  
+        Feature (Data,Var,Abs,NWrp,Lin,Pref,NNul,Vol,Bit) B1 82  
+    End Collection C0  
+    Usage (Vendor-Defined 208) 09 D0  
+    Collection (Logical) A1 02  
+        Report ID (216) 85 D8  
+        Usage (Vendor-Defined 209) 09 D1  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (255) 26 FF 00  
+        Report Size (8) 75 08  
+        Report Count (32) 95 20  
+        Feature (Data,Var,Abs,NWrp,Lin,Pref,NNul,Vol,Bit) B1 82  
+    End Collection C0  
+    Usage (Vendor-Defined 208) 09 D0  
+    Collection (Logical) A1 02  
+        Report ID (217) 85 D9  
+        Usage (Vendor-Defined 209) 09 D1  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (255) 26 FF 00  
+        Report Size (8) 75 08  
+        Report Count (32) 95 20  
+        Feature (Data,Var,Abs,NWrp,Lin,Pref,NNul,Vol,Bit) B1 82  
+    End Collection C0  
+    Usage (Vendor-Defined 208) 09 D0  
+    Collection (Logical) A1 02  
+        Report ID (241) 85 F1  
+        Usage (Vendor-Defined 209) 09 D1  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (255) 26 FF 00  
+        Report Size (8) 75 08  
+        Report Count (2) 95 02  
+        Feature (Data,Var,Abs,NWrp,Lin,Pref,NNul,Vol,Bit) B1 82  
+    End Collection C0  
+    Usage (Vendor-Defined 208) 09 D0  
+    Collection (Logical) A1 02  
+        Report ID (243) 85 F3  
+        Usage (Vendor-Defined 209) 09 D1  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (127) 25 7F  
+        Report Size (8) 75 08  
+        Report Count (2) 95 02  
+        Feature (Data,Var,Abs,NWrp,Lin,Pref,NNul,Vol,Bit) B1 82  
+    End Collection C0  
+End Collection C0 

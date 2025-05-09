@@ -1,0 +1,22 @@
+
+05 01 09 80 A1 01 85 04 75 02  95 01 15 01 25 03
+09 82 09 81 09 83 81 60 75 06  81 03 C0
+
+Parser output:
+0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+0x09, 0x80,        // Usage (Sys Control)
+0xA1, 0x01,        // Collection (Application)
+0x85, 0x04,        //   Report ID (4)
+0x75, 0x02,        //   Report Size (2)
+0x95, 0x01,        //   Report Count (1)
+0x15, 0x01,        //   Logical Minimum (1)
+0x25, 0x03,        //   Logical Maximum (3)
+0x09, 0x82,        //   Usage (Sys Sleep)
+0x09, 0x81,        //   Usage (Sys Power Down)
+0x09, 0x83,        //   Usage (Sys Wake Up)
+0x81, 0x60,        //   Input (Data,Array,Abs,No Wrap,Linear,No Preferred State,Null State)
+0x75, 0x06,        //   Report Size (6)
+0x81, 0x03,        //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+0xC0,              // End Collection
+
+// 29 bytes

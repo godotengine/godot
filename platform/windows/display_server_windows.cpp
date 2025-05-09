@@ -43,6 +43,10 @@
 #include "main/main.h"
 #include "scene/resources/texture.h"
 
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
+
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #if defined(VULKAN_ENABLED)
@@ -3775,7 +3779,14 @@ void DisplayServerWindows::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	if (!drop_events) {
-		joypad->process_joypads();
+#ifdef SDL_ENABLED
+		if (joypad_sdl) {
+			joypad_sdl->process_events();
+		}
+#endif
+		if (joypad) {
+			joypad->process_joypads();
+		}
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -5965,7 +5976,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		} break;
 		case WM_DEVICECHANGE: {
-			joypad->probe_joypads();
+			if (joypad) {
+				joypad->probe_joypads();
+			}
 		} break;
 		case WM_DESTROY: {
 #ifdef ACCESSKIT_ENABLED
@@ -7198,7 +7211,18 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		ERR_FAIL_MSG("Failed to create main window.");
 	}
 
-	joypad = new JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd);
+	bool joypad_setup = false;
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL(Input::get_singleton()));
+	joypad_setup = joypad_sdl != nullptr && joypad_sdl->initialize() == OK;
+	if (!joypad_setup) {
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
+#endif
+	if (!joypad_setup) {
+		joypad = new JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd);
+	}
 
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
@@ -7352,7 +7376,14 @@ DisplayServerWindows::~DisplayServerWindows() {
 		E->erase();
 	}
 
-	delete joypad;
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
+	}
+#endif
+	if (joypad) {
+		delete joypad;
+	}
 	touch_state.clear();
 
 	cursors_cache.clear();

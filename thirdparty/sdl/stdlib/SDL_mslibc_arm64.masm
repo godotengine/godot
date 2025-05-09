@@ -1,0 +1,26 @@
+TeStackLimit EQU 0x00010
+PAGE_SIZE equ 0x1000
+
+    AREA CODE, READONLY
+
+    EXPORT __chkstk
+
+__chkstk PROC
+    ldr                          x17,[x18, #TeStackLimit]
+    subs                         x16,sp,x15, LSL  #0x4
+    csel                         x16,xzr,x16,cc
+    cmp                          x16,x17
+    b.cc                         chkstk_start_loop
+    ret
+chkstk_start_loop
+    and                          x16,x16,#-PAGE_SIZE
+chkstk_loop
+    sub                          x17,x17,#0x1, LSL #12
+    ldr                          xzr,[x17]
+    cmp                          x17,x16
+    b.ne                         chkstk_loop
+    ret
+
+    ENDP
+
+    END

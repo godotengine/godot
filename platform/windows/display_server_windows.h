@@ -365,6 +365,8 @@ class DropTargetWindows;
 #define WDA_EXCLUDEFROMCAPTURE 0x00000011
 #endif
 
+class JoypadSDL;
+
 class DisplayServerWindows : public DisplayServer {
 	GDSOFTCLASS(DisplayServerWindows, DisplayServer);
 
@@ -557,6 +559,9 @@ class DisplayServerWindows : public DisplayServer {
 	};
 
 	JoypadWindows *joypad = nullptr;
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 	HHOOK mouse_monitor = nullptr;
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;

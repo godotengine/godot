@@ -1,0 +1,18 @@
+macOS USB prober output for Logitech USB Receiver
+ 05 0C  09 01  A1 01
+ 85 03  75 10  95 02  15 01  26 8C 02  19 01  2A 8C 02  81 00
+ C0
+ 
+ Parser output:
+0x05, 0x0C,        // Usage Page (Consumer)
+0x09, 0x01,        // Usage (Consumer Control)
+0xA1, 0x01,        // Collection (Application)
+0x85, 0x03,        //   Report ID (3)
+0x75, 0x10,        //   Report Size (16)
+0x95, 0x02,        //   Report Count (2)
+0x15, 0x01,        //   Logical Minimum (1)
+0x26, 0x8C, 0x02,  //   Logical Maximum (652)
+0x19, 0x01,        //   Usage Minimum (Consumer Control)
+0x2A, 0x8C, 0x02,  //   Usage Maximum (AC Send)
+0x81, 0x00,        //   Input (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+0xC0,              // End Collection

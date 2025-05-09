@@ -1,0 +1,13 @@
+Usage Page (Vendor-Defined 1) 06 00 FF  
+Usage (Vendor-Defined 1) 09 01  
+Collection (Application) A1 01  
+    Report ID (16) 85 10  
+    Report Size (8) 75 08  
+    Report Count (6) 95 06  
+    Logical Minimum (0) 15 00  
+    Logical Maximum (255) 26 FF 00  
+    Usage (Vendor-Defined 1) 09 01  
+    Input (Data,Ary,Abs) 81 00  
+    Usage (Vendor-Defined 1) 09 01  
+    Output (Data,Ary,Abs,NWrp,Lin,Pref,NNul,NVol,Bit) 91 00  
+End Collection C0 
