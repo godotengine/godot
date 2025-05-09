@@ -1574,6 +1574,9 @@
 		<member name="GDExtensionManager" type="GDExtensionManager" setter="" getter="">
 			The [GDExtensionManager] singleton.
 		</member>
+		<member name="GDScriptLanguageProtocol" type="JSONRPC" setter="" getter="" experimental="">
+			The [GDScriptLanguageProtocol] singleton.
+		</member>
 		<member name="Geometry2D" type="Geometry2D" setter="" getter="">
 			The [Geometry2D] singleton.
 		</member>
