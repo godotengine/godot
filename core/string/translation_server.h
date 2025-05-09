@@ -91,6 +91,7 @@ class TranslationServer : public Object {
 	static HashMap<String, String> country_name_map;
 	static HashMap<String, String> country_rename_map;
 	static HashMap<String, String> variant_map;
+	static HashMap<String, String> plural_rules_map;
 
 	void init_locale_info();
 
@@ -135,6 +136,8 @@ public:
 	String standardize_locale(const String &p_locale, bool p_add_defaults = false) const;
 
 	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
+
+	String get_plural_rules(const String &p_locale) const;
 
 	String get_tool_locale();
 	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
