@@ -122,7 +122,7 @@ void EmbeddedProcessMacOS::reset() {
 
 void EmbeddedProcessMacOS::request_close() {
 	if (current_process_id != 0 && is_embedding_completed()) {
-		ds->request_close_embedded_process(current_process_id);
+		script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_CLOSE_REQUEST });
 	}
 }
 
@@ -209,13 +209,21 @@ EmbeddedProcessMacOS::EmbeddedProcessMacOS() :
 	ED_SHORTCUT("game_view/release_mouse", TTRC("Release Mouse"), KeyModifierMask::ALT | Key::ESCAPE);
 }
 
+EmbeddedProcessMacOS::~EmbeddedProcessMacOS() {
+	if (current_process_id != 0) {
+		// Stop embedding the last process.
+		OS::get_singleton()->kill(current_process_id);
+		reset();
+	}
+}
+
 void LayerHost::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_FOCUS_ENTER: {
 			if (script_debugger) {
 				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_MOUSE_ENTER });
 			}
-			// Temporarily release mouse capture, so we can interact with the editor.
+			// Restore mouse capture, if necessary.
 			DisplayServer *ds = DisplayServer::get_singleton();
 			if (process->get_mouse_mode() != ds->mouse_get_mode()) {
 				// Restore embedded process mouse mode.
