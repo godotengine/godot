@@ -676,6 +676,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_bar->add_child(search_box);
 
+	show_modified = memnew(CheckButton);
+	show_modified->set_text(TTR("Show Modified"));
+	show_modified->set_tooltip_text(TTR("Only display project settings that have been modified from their default value."));
+	search_bar->add_child(show_modified);
+
 	advanced = memnew(CheckButton);
 	advanced->set_text(TTR("Advanced Settings"));
 	search_bar->add_child(advanced);
@@ -717,6 +722,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	general_settings_inspector->register_search_box(search_box);
 	general_settings_inspector->register_advanced_toggle(advanced);
+	general_settings_inspector->register_modified_toggle(show_modified);
 	general_settings_inspector->get_inspector()->set_use_filter(true);
 	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));

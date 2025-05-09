@@ -51,20 +51,24 @@ class SectionedInspector : public HSplitContainer {
 	EditorInspector *inspector = nullptr;
 	LineEdit *search_box = nullptr;
 	CheckButton *advanced_toggle = nullptr;
+	CheckButton *modified_toggle = nullptr;
 
 	String selected_category;
 
 	bool restrict_to_basic = false;
+	bool restrict_to_modified = false;
 
 	static void _bind_methods();
 	void _section_selected();
 
 	void _search_changed(const String &p_what);
 	void _advanced_toggled(bool p_toggled_on);
+	void _modified_toggled(bool p_toggled_on);
 
 public:
 	void register_search_box(LineEdit *p_box);
 	void register_advanced_toggle(CheckButton *p_toggle);
+	void register_modified_toggle(CheckButton *p_toggle);
 
 	EditorInspector *get_inspector();
 	void edit(Object *p_object);
