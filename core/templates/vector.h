@@ -65,13 +65,14 @@ class Vector {
 public:
 	VectorWriteProxy<T> write;
 	typedef typename CowData<T>::Size Size;
+	typedef typename CowData<T>::USize USize;
 
 private:
 	CowData<T> _cowdata;
 
 public:
 	// Must take a copy instead of a reference (see GH-31736).
-	bool push_back(T p_elem);
+	_FORCE_INLINE_ bool push_back(T p_elem) { return _cowdata.push_back(p_elem); }
 	_FORCE_INLINE_ bool append(const T &p_elem) { return push_back(p_elem); } //alias
 	void fill(T p_elem);
 
@@ -90,6 +91,7 @@ public:
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
 	_FORCE_INLINE_ Size size() const { return _cowdata.size(); }
+	_FORCE_INLINE_ USize capacity() const { return _cowdata.capacity(); }
 
 	_FORCE_INLINE_ operator Span<T>() const { return _cowdata.span(); }
 	_FORCE_INLINE_ Span<T> span() const { return _cowdata.span(); }
@@ -102,6 +104,10 @@ public:
 	_FORCE_INLINE_ void set(Size p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
 	Error resize(Size p_size) { return _cowdata.resize(p_size); }
 	Error resize_zeroed(Size p_size) { return _cowdata.template resize<true>(p_size); }
+	[[nodiscard]] Error reserve(Size p_size) {
+		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
+		return _cowdata.reserve(p_size);
+	}
 	_FORCE_INLINE_ const T &operator[](Size p_index) const { return _cowdata.get(p_index); }
 	// Must take a copy instead of a reference (see GH-31736).
 	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
@@ -332,15 +338,6 @@ void Vector<T>::append_array(Vector<T> p_other) {
 	for (Size i = 0; i < ds; ++i) {
 		ptrw()[bs + i] = p_other[i];
 	}
-}
-
-template <typename T>
-bool Vector<T>::push_back(T p_elem) {
-	Error err = resize(size() + 1);
-	ERR_FAIL_COND_V(err, true);
-	set(size() - 1, p_elem);
-
-	return false;
 }
 
 template <typename T>

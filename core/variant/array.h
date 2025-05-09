@@ -134,6 +134,7 @@ public:
 	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility
 	void append_array(const Array &p_array);
 	Error resize(int p_new_size);
+	[[nodiscard]] Error reserve(int64_t p_new_size);
 
 	Error insert(int p_pos, const Variant &p_value);
 	void remove_at(int p_pos);
