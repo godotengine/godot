@@ -40,6 +40,7 @@
 #include "core/string/translation_server.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/import/resource_importer_texture.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 
@@ -464,6 +465,34 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			} else if (name == "ProjectSettings") {
 				ProjectSettings::get_singleton()->get_property_list(&properties);
 				own_properties = properties;
+			} else if (name == "ResourceImporterLottie") {
+				import_option = true;
+
+				List<ResourceImporter::ImportOption> texture_options;
+				ResourceImporter *texture_importer = memnew(ResourceImporterTexture);
+				texture_importer->get_import_options("", &texture_options);
+
+				ResourceImporter *resimp = Object::cast_to<ResourceImporter>(ClassDB::instantiate(name));
+				List<ResourceImporter::ImportOption> options;
+				resimp->get_import_options("", &options);
+				for (const ResourceImporter::ImportOption &option : options) {
+					const PropertyInfo &prop = option.option;
+					bool own_property = true;
+					for (const ResourceImporter::ImportOption &texture_option : texture_options) {
+						if (texture_option.option.name == prop.name) {
+							own_property = false;
+							break;
+						}
+					}
+					if (!own_property) {
+						continue;
+					}
+					properties.push_back(prop);
+					import_options_default[prop.name] = option.default_value;
+				}
+				own_properties = properties;
+				memdelete(resimp);
+				memdelete(texture_importer);
 			} else if (ClassDB::is_parent_class(name, "ResourceImporter") && name != "EditorImportPlugin" && ClassDB::can_instantiate(name)) {
 				import_option = true;
 				ResourceImporter *resimp = Object::cast_to<ResourceImporter>(ClassDB::instantiate(name));
