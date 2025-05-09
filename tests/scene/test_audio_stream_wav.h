@@ -30,10 +30,7 @@
 
 #pragma once
 
-#include "core/math/math_defs.h"
-#include "core/math/math_funcs.h"
 #include "scene/resources/audio_stream_wav.h"
-
 #include "tests/test_macros.h"
 
 namespace TestAudioStreamWAV {
@@ -44,95 +41,25 @@ constexpr float WAV_RATE = 44100;
 to manually if needed. */
 constexpr int WAV_COUNT = WAV_RATE;
 
-float gen_wav(float frequency, float wav_rate, int wav_number) {
-	// formula for generating a sin wave with given frequency.
-	return Math::sin((Math::TAU * frequency / wav_rate) * wav_number);
-}
-
-/* Generates a 440Hz sin wave in channel 0 (mono channel or left stereo channel)
- * and a 261.63Hz wave in channel 1 (right stereo channel).
- * These waves correspond to the music notes A4 and C4 respectively.
- */
-Vector<uint8_t> gen_pcm8_test(float wav_rate, int wav_count, bool stereo) {
-	Vector<uint8_t> buffer;
-	buffer.resize(stereo ? wav_count * 2 : wav_count);
-
-	uint8_t *write_ptr = buffer.ptrw();
-	for (int i = 0; i < buffer.size(); i++) {
-		float wav;
-		if (stereo) {
-			if (i % 2 == 0) {
-				wav = gen_wav(440, wav_rate, i / 2);
-			} else {
-				wav = gen_wav(261.63, wav_rate, i / 2);
-			}
-		} else {
-			wav = gen_wav(440, wav_rate, i);
-		}
-
-		// Map sin wave to full range of 8-bit values.
-		uint8_t wav_8bit = Math::fast_ftoi(((wav + 1) / 2) * UINT8_MAX);
-		// Unlike the .wav format, AudioStreamWAV expects signed 8-bit wavs.
-		uint8_t wav_8bit_signed = wav_8bit - (INT8_MAX + 1);
-		write_ptr[i] = wav_8bit_signed;
-	}
-
-	return buffer;
-}
-
-// Same as gen_pcm8_test but with 16-bit wavs.
-Vector<uint8_t> gen_pcm16_test(float wav_rate, int wav_count, bool stereo) {
-	Vector<uint8_t> buffer;
-	buffer.resize(stereo ? wav_count * 4 : wav_count * 2);
-
-	uint8_t *write_ptr = buffer.ptrw();
-	for (int i = 0; i < buffer.size() / 2; i++) {
-		float wav;
-		if (stereo) {
-			if (i % 2 == 0) {
-				wav = gen_wav(440, wav_rate, i / 2);
-			} else {
-				wav = gen_wav(261.63, wav_rate, i / 2);
-			}
-		} else {
-			wav = gen_wav(440, wav_rate, i);
-		}
-
-		// Map sin wave to full range of 16-bit values.
-		uint16_t wav_16bit = Math::fast_ftoi(((wav + 1) / 2) * UINT16_MAX);
-		// The .wav format expects wavs larger than 8 bits to be signed.
-		uint16_t wav_16bit_signed = wav_16bit - (INT16_MAX + 1);
-		encode_uint16(wav_16bit_signed, write_ptr + (i * 2));
-	}
-
-	return buffer;
-}
-
 void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo, float wav_rate, float wav_count) {
 	String save_path = TestUtils::get_temp_path(file_name);
+	double length = double(wav_count / wav_rate);
+	Ref<AudioStreamWAV> stream = TestUtils::gen_audio_stream_wav(data_format, stereo, length, wav_rate);
+	Vector<uint8_t> expected_data;
 
-	Vector<uint8_t> test_data;
 	if (data_format == AudioStreamWAV::FORMAT_8_BITS) {
-		test_data = gen_pcm8_test(wav_rate, wav_count, stereo);
+		expected_data = TestUtils::gen_pcm8(wav_rate, wav_count, stereo);
 	} else {
-		test_data = gen_pcm16_test(wav_rate, wav_count, stereo);
+		expected_data = TestUtils::gen_pcm16(wav_rate, wav_count, stereo);
 	}
 
-	Ref<AudioStreamWAV> stream = memnew(AudioStreamWAV);
-	stream->set_mix_rate(wav_rate);
 	CHECK(stream->get_mix_rate() == wav_rate);
-
-	stream->set_format(data_format);
 	CHECK(stream->get_format() == data_format);
-
-	stream->set_stereo(stereo);
 	CHECK(stream->is_stereo() == stereo);
-
-	stream->set_data(test_data);
-	CHECK(stream->get_data() == test_data);
+	CHECK(stream->get_data() == expected_data);
 
 	SUBCASE("Stream length is computed properly") {
-		CHECK(stream->get_length() == doctest::Approx(double(wav_count / wav_rate)));
+		CHECK(stream->get_length() == doctest::Approx(length));
 	}
 
 	SUBCASE("Stream can be saved as .wav") {
@@ -179,7 +106,7 @@ TEST_CASE("[Audio][AudioStreamWAV] Alternate mix rate") {
 
 TEST_CASE("[Audio][AudioStreamWAV] save_to_wav() adds '.wav' file extension automatically") {
 	String save_path = TestUtils::get_temp_path("test_wav_extension");
-	Vector<uint8_t> test_data = gen_pcm8_test(WAV_RATE, WAV_COUNT, false);
+	Vector<uint8_t> test_data = TestUtils::gen_pcm8(WAV_RATE, WAV_COUNT, false);
 	Ref<AudioStreamWAV> stream = memnew(AudioStreamWAV);
 	stream->set_data(test_data);
 
