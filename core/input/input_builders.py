@@ -1,11 +1,12 @@
 """Functions used to generate source files during build time"""
 
 from collections import OrderedDict
+from typing import Any
 
 import methods
 
 
-def make_default_controller_mappings(target, source, env):
+def make_default_controller_mappings(target, source, env) -> None:
     with methods.generated_wrapper(str(target[0])) as file:
         file.write("""\
 #include "core/input/default_controller_mappings.h"
@@ -15,7 +16,7 @@ def make_default_controller_mappings(target, source, env):
 """)
 
         # ensure mappings have a consistent order
-        platform_mappings = OrderedDict()
+        platform_mappings: OrderedDict[Any, Any] = OrderedDict()
         for src_path in map(str, source):
             with open(src_path, "r", encoding="utf-8") as f:
                 # read mapping file and skip header

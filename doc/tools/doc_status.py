@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import fnmatch
 import math
@@ -140,21 +140,23 @@ class ClassStatusProgress:
     def __add__(self, other: "ClassStatusProgress"):
         return ClassStatusProgress(self.described + other.described, self.total + other.total)
 
-    def increment(self, described: bool):
+    def increment(self, described: bool) -> None:
         if described:
             self.described += 1
         self.total += 1
 
-    def is_ok(self):
+    def is_ok(self) -> bool:
         return self.described >= self.total
 
-    def to_configured_colored_string(self):
+    def to_configured_colored_string(self) -> str:
         if flags["p"]:
             return self.to_colored_string("{percent}% ({has}/{total})", "{pad_percent}{pad_described}{s}{pad_total}")
         else:
             return self.to_colored_string()
 
-    def to_colored_string(self, format: str = "{has}/{total}", pad_format: str = "{pad_described}{s}{pad_total}"):
+    def to_colored_string(
+        self, format: str = "{has}/{total}", pad_format: str = "{pad_described}{s}{pad_total}"
+    ) -> str:
         ratio = float(self.described) / float(self.total) if self.total != 0 else 1
         percent = int(round(100 * ratio))
         s = format.format(has=str(self.described), total=str(self.total), percent=str(percent))
@@ -197,7 +199,7 @@ class ClassStatus:
             new_status.progresses[k] = self.progresses[k] + other.progresses[k]
         return new_status
 
-    def is_ok(self):
+    def is_ok(self) -> bool:
         ok = True
         ok = ok and self.has_brief_description
         ok = ok and self.has_description
@@ -205,7 +207,7 @@ class ClassStatus:
             ok = ok and self.progresses[k].is_ok()
         return ok
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         sum = 0
         for k in self.progresses:
             if self.progresses[k].is_ok():
@@ -214,8 +216,7 @@ class ClassStatus:
         return sum < 1
 
     def make_output(self) -> Dict[str, str]:
-        output: Dict[str, str] = {}
-        output["name"] = color("name", self.name)
+        output: Dict[str, str] = {"name": color("name", self.name)}
 
         ok_string = color("part_good", "OK")
         missing_string = color("part_big_problem", "MISSING")
@@ -367,7 +368,6 @@ if len(input_file_list) < 1 or flags["h"]:
         )
     sys.exit(0)
 
-
 ################################################################################
 #                               Parse class list                               #
 ################################################################################
@@ -430,7 +430,6 @@ for cn in filtered_classes:
         row.append(out["comment"])
 
     table.append(row)
-
 
 ################################################################################
 #                              Print output table                              #

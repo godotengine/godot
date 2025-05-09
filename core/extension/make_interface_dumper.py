@@ -1,7 +1,7 @@
 import methods
 
 
-def run(target, source, env):
+def run(target, source, env) -> None:
     buffer = methods.get_buffer(str(source[0]))
     decomp_size = len(buffer)
     buffer = methods.compress_buffer(buffer)

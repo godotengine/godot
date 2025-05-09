@@ -1,3 +1,7 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from godot_typing import PositiveInt
 proto_mod = """
 #define MODBIND$VER($RETTYPE m_name$ARG) \\
 virtual $RETVAL _##m_name($FUNCARGS) $CONST; \\
@@ -7,7 +11,7 @@ _FORCE_INLINE_ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 """
 
 
-def generate_mod_version(argcount, const=False, returns=False):
+def generate_mod_version(argcount: "PositiveInt", const: bool = False, returns: bool = False) -> str:
     s = proto_mod
     sproto = str(argcount)
     if returns:
@@ -64,7 +68,7 @@ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 """
 
 
-def generate_ex_version(argcount, const=False, returns=False):
+def generate_ex_version(argcount: "PositiveInt", const: bool = False, returns: bool = False) -> str:
     s = proto_ex
     sproto = str(argcount)
     if returns:
@@ -116,7 +120,7 @@ def generate_ex_version(argcount, const=False, returns=False):
     return s
 
 
-def run(target, source, env):
+def run(target, source, env) -> None:
     max_versions = 12
 
     txt = "#pragma once"

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Script used to dump case mappings from
 # the Unicode Character Database to the `ucaps.h` file.

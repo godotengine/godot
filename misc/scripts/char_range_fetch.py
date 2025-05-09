@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Script used to dump char ranges for specific properties from
 # the Unicode Character Database to the `char_range.inc` file.
