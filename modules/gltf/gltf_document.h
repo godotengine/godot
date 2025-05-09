@@ -142,11 +142,11 @@ private:
 	Error _parse_accessors(Ref<GLTFState> p_state);
 	Error _decode_buffer_view(Ref<GLTFState> p_state, double *p_dst,
 			const GLTFBufferViewIndex p_buffer_view,
-			const int p_skip_every, const int p_skip_bytes,
-			const int p_element_size, const int p_count,
-			const GLTFAccessor::GLTFAccessorType p_accessor_type, const int p_component_count,
-			const GLTFAccessor::GLTFComponentType p_component_type, const int p_component_size,
-			const bool p_normalized, const int p_byte_offset,
+			const int64_t p_skip_every, const int64_t p_skip_bytes,
+			const int64_t p_element_size, const int64_t p_count,
+			const GLTFAccessor::GLTFAccessorType p_accessor_type, const int64_t p_component_count,
+			const GLTFAccessor::GLTFComponentType p_component_type, const int64_t p_component_size,
+			const bool p_normalized, const int64_t p_byte_offset,
 			const bool p_for_vertex);
 	Vector<double> _decode_accessor(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
@@ -251,14 +251,14 @@ private:
 			const Vector<Vector2> p_attribs,
 			const bool p_for_vertex);
 
-	void _calc_accessor_vec2_min_max(int p_i, const int p_element_count, Vector<double> &p_type_max, Vector2 p_attribs, Vector<double> &p_type_min) {
+	void _calc_accessor_vec2_min_max(int p_i, const int64_t p_element_count, Vector<double> &p_type_max, Vector2 p_attribs, Vector<double> &p_type_min) {
 		if (p_i == 0) {
-			for (int32_t type_i = 0; type_i < p_element_count; type_i++) {
+			for (int64_t type_i = 0; type_i < p_element_count; type_i++) {
 				p_type_max.write[type_i] = p_attribs[(p_i * p_element_count) + type_i];
 				p_type_min.write[type_i] = p_attribs[(p_i * p_element_count) + type_i];
 			}
 		}
-		for (int32_t type_i = 0; type_i < p_element_count; type_i++) {
+		for (int64_t type_i = 0; type_i < p_element_count; type_i++) {
 			p_type_max.write[type_i] = MAX(p_attribs[(p_i * p_element_count) + type_i], p_type_max[type_i]);
 			p_type_min.write[type_i] = MIN(p_attribs[(p_i * p_element_count) + type_i], p_type_min[type_i]);
 			p_type_max.write[type_i] = _filter_number(p_type_max.write[type_i]);
@@ -274,7 +274,7 @@ private:
 			const Vector<Color> p_attribs,
 			const bool p_for_vertex);
 
-	void _calc_accessor_min_max(int p_i, const int p_element_count, Vector<double> &p_type_max, Vector<double> p_attribs, Vector<double> &p_type_min);
+	void _calc_accessor_min_max(int p_i, const int64_t p_element_count, Vector<double> &p_type_max, Vector<double> p_attribs, Vector<double> &p_type_min);
 
 	GLTFAccessorIndex _encode_accessor_as_ints(Ref<GLTFState> p_state,
 			const Vector<int32_t> p_attribs,
@@ -284,9 +284,9 @@ private:
 			const Vector<Transform3D> p_attribs,
 			const bool p_for_vertex);
 	Error _encode_buffer_view(Ref<GLTFState> p_state, const double *p_src,
-			const int p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type,
+			const int64_t p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type,
 			const GLTFAccessor::GLTFComponentType p_component_type, const bool p_normalized,
-			const int p_byte_offset, const bool p_for_vertex,
+			const int64_t p_byte_offset, const bool p_for_vertex,
 			GLTFBufferViewIndex &r_accessor, const bool p_for_indices = false);
 
 	Error _encode_accessors(Ref<GLTFState> p_state);
