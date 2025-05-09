@@ -32,11 +32,15 @@
 
 #include "editor/editor_run.h"
 #include "editor/export/editor_export.h"
+#include "editor/gui/editor_filepath_select.h"
+#include "editor/gui/editor_quick_movie_maker_config.h"
 #include "scene/gui/margin_container.h"
 
 class Button;
 class EditorRunNative;
+class LineEdit;
 class PanelContainer;
+class PopupPanel;
 class HBoxContainer;
 class AcceptDialog;
 
@@ -72,8 +76,12 @@ class EditorRunBar : public MarginContainer {
 	EditorRun editor_run;
 	EditorRunNative *run_native = nullptr;
 
+	HBoxContainer *movie_hbox = nullptr;
 	PanelContainer *write_movie_panel = nullptr;
 	Button *write_movie_button = nullptr;
+	Button *movie_dropdown_button = nullptr;
+
+	EditorQuickMovieMakerConfig *movie_popup = nullptr;
 
 	RunMode current_mode = RunMode::STOPPED;
 	String run_custom_filename;
@@ -83,6 +91,8 @@ class EditorRunBar : public MarginContainer {
 	void _update_play_buttons();
 
 	void _write_movie_toggled(bool p_enabled);
+	void _movie_dropdown_toggled(bool p_enabled);
+	void _movie_popup_close_requested();
 	void _quick_run_selected(const String &p_file_path, int p_id = -1);
 
 	void _play_current_pressed(int p_id = -1);
