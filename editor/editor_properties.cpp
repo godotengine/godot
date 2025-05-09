@@ -31,6 +31,7 @@
 #include "editor_properties.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties_array_dict.h"
@@ -2976,24 +2977,50 @@ void EditorPropertyNodePath::update_property() {
 	const NodePath &p = _get_node_path();
 	assign->set_tooltip_text(p);
 
-	if (p.is_empty()) {
+	if (p.is_empty() || valid_types.is_empty()) {
 		assign->set_button_icon(Ref<Texture2D>());
 		assign->set_text(TTR("Assign..."));
 		assign->set_flat(false);
-		return;
-	}
-	assign->set_flat(true);
-
-	if (!base_node || !base_node->has_node(p)) {
-		assign->set_button_icon(Ref<Texture2D>());
-		assign->set_text(p);
 		return;
 	}
 
 	const Node *target_node = base_node->get_node(p);
 	ERR_FAIL_NULL(target_node);
 
-	if (String(target_node->get_name()).contains_char('@')) {
+	bool is_correct_class = false;
+
+	for (const StringName &E : valid_types) {
+		if (target_node->is_class(E) ||
+				EditorNode::get_singleton()->is_object_of_custom_type(target_node, E)) {
+			is_correct_class = true;
+			break;
+		} else {
+			Ref<Script> node_script = target_node->get_script();
+			while (node_script.is_valid()) {
+				if (node_script->get_path() == E) {
+					is_correct_class = true;
+					break;
+				}
+				node_script = node_script->get_base_script();
+			}
+			if (is_correct_class) {
+				break;
+			}
+		}
+	}
+
+	if (!is_correct_class) {
+		assign->set_button_icon(Ref<Texture2D>());
+		assign->set_text(TTR("Assign..."));
+		assign->set_flat(false);
+		assign->set_tooltip_text("");
+		ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorPropertyNodePath only accepts '%s' and its derivatives.", target_node->get_class(), valid_types));
+		return;
+	}
+
+	assign->set_flat(true);
+
+	if (!base_node || !base_node->has_node(p) || String(target_node->get_name()).contains_char('@')) {
 		assign->set_button_icon(Ref<Texture2D>());
 		assign->set_text(p);
 		return;
@@ -3473,7 +3500,7 @@ void EditorPropertyResource::update_property() {
 		}
 	}
 
-	resource_picker->set_edited_resource_no_check(res);
+	resource_picker->set_edited_resource(res);
 }
 
 void EditorPropertyResource::collapse_all_folding() {
