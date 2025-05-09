@@ -1,3 +1,5 @@
+extends Resource
+
 const BEFORE = 1
 
 @export_range(-10, 10) var a = 0

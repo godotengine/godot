@@ -564,6 +564,9 @@
 		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
 		</member>
+		<member name="debug/gdscript/warnings/export_not_node_or_resource" type="int" setter="" getter="" default="2">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a script that does not extend from either Node or Resource has the [code]@export[/code] annotation applied to any property, as they cannot be the target of an export in the first place.
+		</member>
 		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. Instead, an error is generated if the expression type is known at compile time.">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a property as if it is a function.
 		</member>

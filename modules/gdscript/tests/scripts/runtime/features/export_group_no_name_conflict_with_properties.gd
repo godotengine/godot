@@ -1,3 +1,5 @@
+extends Resource
+
 # GH-73843
 @export_group("Resource")
 

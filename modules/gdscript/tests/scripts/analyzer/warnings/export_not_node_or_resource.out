@@ -1,0 +1,3 @@
+GDTEST_OK
+~~ WARNING at line 3: (EXPORT_NOT_NODE_OR_RESOURCE) Properties can only be exported on classes that extend Resource or Node, but the current class inherits "RefCounted".
+warn

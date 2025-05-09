@@ -1,4 +1,5 @@
 class_name TestMemberInfo
+extends Resource
 
 class MyClass:
 	pass

@@ -1,4 +1,5 @@
 class_name TestExportEnumAsDictionary
+extends Resource
 
 enum MyEnum {A, B, C}
 

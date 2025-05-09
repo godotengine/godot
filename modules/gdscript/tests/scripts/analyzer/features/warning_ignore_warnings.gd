@@ -9,6 +9,10 @@ class A extends Node:
 	@warning_ignore("get_node_default_without_onready")
 	var get_node_default_without_onready = $Node
 
+class B extends RefCounted:
+	@warning_ignore("export_not_node_or_resource")
+	@export var prop: int = 0
+
 @warning_ignore("unused_private_class_variable")
 var _unused_private_class_variable
 
