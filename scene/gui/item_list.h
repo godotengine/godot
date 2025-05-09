@@ -196,6 +196,8 @@ protected:
 	void _accessibility_action_focus(const Variant &p_data, int p_index);
 	void _accessibility_action_blur(const Variant &p_data, int p_index);
 
+	PackedStringArray get_accessibility_configuration_warnings() const override;
+
 public:
 	virtual RID get_focused_accessibility_element() const override;
 
