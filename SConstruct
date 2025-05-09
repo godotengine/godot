@@ -194,10 +194,19 @@ opts.Add(
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("brotli", "Enable Brotli for decompression and WOFF2 fonts support", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver on supported platforms", False))
-opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
-opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
+opts.Add(
+    BoolVariable(
+        "rendering_device",
+        "Enable RenderingDevice abstraction for modern graphics APIs (use the `vulkan`, `d3d12` and `metal` options to toggle individual drivers)",
+        True,
+    )
+)
+opts.Add(BoolVariable("forward_plus_renderer", "Enable the Forward+ renderer (requires RenderingDevice)", True))
+opts.Add(BoolVariable("forward_mobile_renderer", "Enable the Mobile renderer (requires RenderingDevice)", True))
+opts.Add(BoolVariable("vulkan", "Enable the Vulkan rendering driver", True))
 opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
 opts.Add(BoolVariable("metal", "Enable the Metal rendering driver on supported platforms (Apple arm64 only)", False))
+opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
@@ -1015,6 +1024,20 @@ if env["disable_navigation_2d"]:
     env.Append(CPPDEFINES=["NAVIGATION_2D_DISABLED"])
 if env["disable_navigation_3d"]:
     env.Append(CPPDEFINES=["NAVIGATION_3D_DISABLED"])
+if env["rendering_device"]:
+    if env["platform"] == "web":
+        # Not available in the web platform.
+        env["rendering_device"] = False
+    else:
+        env.Append(CPPDEFINES=["RD_ENABLED"])
+        if env["forward_mobile_renderer"]:
+            env.Append(CPPDEFINES=["MOBILE_RD_ENABLED"])
+        if env["forward_plus_renderer"]:
+            env.Append(CPPDEFINES=["FORWARD_RD_ENABLED"])
+if not env["rendering_device"] or not (env["forward_mobile_renderer"] and env["forward_plus_renderer"]):
+    env["d3d12"] = False
+    env["metal"] = False
+    env["vulkan"] = False
 if env["disable_xr"]:
     env.Append(CPPDEFINES=["XR_DISABLED"])
 if env["minizip"]:
