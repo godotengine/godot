@@ -389,7 +389,7 @@ vec3 light_normal_compute(vec3 light_vec, vec3 normal, vec3 base_color, vec3 lig
 vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 #ifdef LIGHT_CODE_USED
 		,
-		vec3 shadow_modulate
+		vec4 shadow_modulate
 #endif
 ) {
 	float shadow;
@@ -427,7 +427,8 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 
 	vec4 shadow_color = unpackUnorm4x8(light_array.data[light_base].shadow_color);
 #ifdef LIGHT_CODE_USED
-	shadow_color.rgb *= shadow_modulate;
+	shadow_color.rgb *= shadow_modulate.rgb;
+	shadow *= shadow_modulate.a;
 #endif
 
 	shadow_color.a *= light_color.a; //respect light alpha
@@ -640,7 +641,7 @@ void main() {
 				light_color = light_shadow_compute(light_base, light_color, shadow_uv
 #ifdef LIGHT_CODE_USED
 						,
-						shadow_modulate.rgb
+						shadow_modulate
 #endif
 				);
 			}
@@ -727,7 +728,7 @@ void main() {
 				light_color = light_shadow_compute(light_base, light_color, shadow_uv
 #ifdef LIGHT_CODE_USED
 						,
-						shadow_modulate.rgb
+						shadow_modulate
 #endif
 				);
 			}
