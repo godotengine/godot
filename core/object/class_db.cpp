@@ -730,8 +730,7 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 }
 #endif
 
-void ClassDB::set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance) {
-	ERR_FAIL_NULL(p_object);
+void ClassDB::set_object_extension_instance(NeverNull<Object *> p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance) {
 	ClassInfo *ti;
 	{
 		Locker::Lock lock(Locker::STATE_READ);
