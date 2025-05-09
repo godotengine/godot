@@ -381,6 +381,10 @@ String TranslationServer::get_locale() const {
 	return locale;
 }
 
+void TranslationServer::set_fallback_locale(const String &p_locale) {
+	fallback = p_locale;
+}
+
 String TranslationServer::get_fallback_locale() const {
 	return fallback;
 }
