@@ -447,28 +447,6 @@ void ColorPicker::_slider_value_changed() {
 	color = modes[current_mode]->get_color();
 	modes[current_mode]->_value_changed();
 
-	if (current_mode == MODE_HSV) {
-		h = sliders[0]->get_value() / 360.0;
-		s = sliders[1]->get_value() / 100.0;
-		v = sliders[2]->get_value() / 100.0;
-		ok_hsl_h = color.get_ok_hsl_h();
-		ok_hsl_s = color.get_ok_hsl_s();
-		ok_hsl_l = color.get_ok_hsl_l();
-
-		circle_keyboard_joypad_picker_cursor_position = Vector2i();
-		last_color = color;
-	} else if (current_mode == MODE_OKHSL) {
-		ok_hsl_h = sliders[0]->get_value() / 360.0;
-		ok_hsl_s = sliders[1]->get_value() / 100.0;
-		ok_hsl_l = sliders[2]->get_value() / 100.0;
-		h = color.get_h();
-		s = color.get_s();
-		v = color.get_v();
-
-		circle_keyboard_joypad_picker_cursor_position = Vector2i();
-		last_color = color;
-	}
-
 	_set_pick_color(color, false);
 	if (!deferred_mode_enabled || !currently_dragging) {
 		emit_signal(SNAME("color_changed"), color);
@@ -845,7 +823,6 @@ void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 		btn_shape->set_button_icon(shape_popup->get_item_icon(p_shape));
 	}
 
-	circle_keyboard_joypad_picker_cursor_position = Vector2i();
 	current_shape = p_shape;
 
 #ifdef TOOLS_ENABLED
@@ -1012,7 +989,6 @@ void ColorPicker::_set_mode_popup_value(ColorModeType p_mode) {
 	} else {
 		set_color_mode(p_mode);
 	}
-	circle_keyboard_joypad_picker_cursor_position = Vector2i();
 }
 
 Variant ColorPicker::_get_drag_data_fw(const Point2 &p_point, Control *p_from_control) {
@@ -1820,7 +1796,6 @@ void ColorPicker::_html_focus_exit() {
 	} else {
 		_update_text_value();
 	}
-	circle_keyboard_joypad_picker_cursor_position = Vector2i();
 }
 
 void ColorPicker::set_can_add_swatches(bool p_enabled) {

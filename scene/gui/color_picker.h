@@ -136,7 +136,6 @@ private:
 #endif
 
 	int current_slider_count = SLIDER_COUNT;
-	Vector2i circle_keyboard_joypad_picker_cursor_position;
 
 	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 1.0 / 2;
 	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 30;
