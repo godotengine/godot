@@ -1065,6 +1065,19 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				if (member.variable->exported && member.variable->onready) {
 					parser->push_warning(member.variable, GDScriptWarning::ONREADY_WITH_EXPORT);
 				}
+
+				if (member.variable->themed) {
+					if (member.variable->exported) {
+						parser->push_error("@themed variable may not be used together with @export.", p_source);
+						return;
+					}
+
+					if (member.variable->onready) {
+						parser->push_error("@themed may not be used together with @onready.", p_source);
+						return;
+					}
+				}
+
 				if (member.variable->initializer) {
 					// Check if it is call to get_node() on self (using shorthand $ or not), so we can check if @onready is needed.
 					// This could be improved by traversing the expression fully and checking the presence of get_node at any level.
