@@ -1810,15 +1810,6 @@ void ScriptEditor::_notification(int p_what) {
 	}
 }
 
-bool ScriptEditor::can_take_away_focus() const {
-	ScriptEditorBase *current = _get_current_editor();
-	if (current) {
-		return current->can_lose_focus_on_node_selection();
-	} else {
-		return true;
-	}
-}
-
 void ScriptEditor::_close_builtin_scripts_from_scene(const String &p_scene) {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
