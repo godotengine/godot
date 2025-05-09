@@ -1,0 +1,59 @@
+<!--
+  Adapted from:
+  https://github.com/lambdageek/monovm-embed-sample/blob/c35f945509b0d1e4f4412a7076c9e769708c3ff1/src/GetRuntimePack/GetRuntimePack.csproj
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+
+  <!-- This plus a non-empty $(RuntimeIdentifier) are enough to choose Mono. -->
+  <PropertyGroup>
+    <UseMonoRuntime>true</UseMonoRuntime>
+  </PropertyGroup>
+
+  <!-- TODO: Hack to make the included stubs get the correct name in pinvoke-table.h -->
+  <PropertyGroup>
+    <AssemblyName>GodotSharp</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!-- Configuration for the Mono WASM runtime. Must match the features supported by the Godot build. -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">
+    <WasmEnableThreads>false</WasmEnableThreads>
+    <WasmEnableExceptionHandling>true</WasmEnableExceptionHandling>
+    <WasmEnableSIMD>true</WasmEnableSIMD>
+  </PropertyGroup>
+
+  <!--
+    This is required to prevent trimming the GodotSharp stub functions included in this assembly for 'browser-wasm'.
+    Otherwise, the generator won't add them to 'pinvoke-table.h'.
+  -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="$(TargetName)" />
+  </ItemGroup>
+
+  <!--
+    This is required to prevent trimming functions in the generated sources in 'browser-wasm/wasm/for-publish'
+    Otherwise, initializing the runtime fails with 'Environment.FailFast'.
+  -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="System.Private.CoreLib" />
+  </ItemGroup>
+
+  <Target Name="EchoRuntimeLocation" AfterTargets="ResolveFrameworkReferences">
+    <Error Condition="'$(RuntimeIdentifier)' == ''" Message="Need to set RuntimeIdentifier to the target platform RID" />
+    <ItemGroup>
+      <ProbablyMono Include="@(ResolvedRuntimePack)" Condition="'%(ResolvedRuntimePack.FrameworkName)' == 'Microsoft.NETCore.App'" />
+    </ItemGroup>
+    <Error Condition="@(ProbablyMono->Count()) != 1" Text="Expected to get exactly one Microsoft.NETCore.App.Mono resolved runtime pack, got @(ProbablyMono->Count())" />
+    <PropertyGroup>
+      <LikelyMono>@(ProbablyMono)</LikelyMono>
+    </PropertyGroup>
+    <Error Condition="!$(LikelyMono.Contains('Microsoft.NETCore.App.Runtime.Mono'))" Message="Expected '@(ProbablyMono)' to include 'Microsoft.NETCore.App.Runtime.Mono' in the name." />
+    <Message Importance="High" Text="Runtime pack %(ProbablyMono.Identity) is in: %(ProbablyMono.PackageDirectory)"/>
+    <WriteLinesToFile Overwrite="true" File="bin\$(RuntimeIdentifier)\runtime-pack-dir.txt" Lines="%(ProbablyMono.PackageDirectory)" />
+  </Target>
+
+</Project>
