@@ -204,7 +204,7 @@ void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 }
 
 String NavigationLink3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	return p_id == 0 ? TTR("Start Location") : TTR("End Location");
+	return p_id == 0 ? TTR("Start Position") : TTR("End Position");
 }
 
 Variant NavigationLink3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
