@@ -153,11 +153,7 @@ private:
 		num_elements = 0;
 		keys = static_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * capacity));
 		values = static_cast<TValue *>(Memory::alloc_static(sizeof(TValue) * capacity));
-		hashes = static_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
-
-		for (uint32_t i = 0; i < capacity; i++) {
-			hashes[i] = 0;
-		}
+		hashes = static_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
 
 		if (old_capacity == 0) {
 			// Nothing to do.
@@ -384,11 +380,7 @@ public:
 
 		keys = static_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * capacity));
 		values = static_cast<TValue *>(Memory::alloc_static(sizeof(TValue) * capacity));
-		hashes = static_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
-
-		for (uint32_t i = 0; i < capacity; i++) {
-			hashes[i] = EMPTY_HASH;
-		}
+		hashes = static_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
 	}
 
 	~OAHashMap() {
