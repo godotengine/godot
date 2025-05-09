@@ -41,16 +41,16 @@ static vfloat bilinear_infill_vla(
 	unsigned int index
 ) {
 	// Load the bilinear filter texel weight indexes in the decimated grid
-	vint weight_idx0 = vint(di.texel_weights_tr[0] + index);
-	vint weight_idx1 = vint(di.texel_weights_tr[1] + index);
-	vint weight_idx2 = vint(di.texel_weights_tr[2] + index);
-	vint weight_idx3 = vint(di.texel_weights_tr[3] + index);
+	const uint8_t* weight_idx0 = di.texel_weights_tr[0] + index;
+	const uint8_t* weight_idx1 = di.texel_weights_tr[1] + index;
+	const uint8_t* weight_idx2 = di.texel_weights_tr[2] + index;
+	const uint8_t* weight_idx3 = di.texel_weights_tr[3] + index;
 
 	// Load the bilinear filter weights from the decimated grid
-	vfloat weight_val0 = gatherf(weights, weight_idx0);
-	vfloat weight_val1 = gatherf(weights, weight_idx1);
-	vfloat weight_val2 = gatherf(weights, weight_idx2);
-	vfloat weight_val3 = gatherf(weights, weight_idx3);
+	vfloat weight_val0 = gatherf_byte_inds<vfloat>(weights, weight_idx0);
+	vfloat weight_val1 = gatherf_byte_inds<vfloat>(weights, weight_idx1);
+	vfloat weight_val2 = gatherf_byte_inds<vfloat>(weights, weight_idx2);
+	vfloat weight_val3 = gatherf_byte_inds<vfloat>(weights, weight_idx3);
 
 	// Load the weight contribution factors for each decimated weight
 	vfloat tex_weight_float0 = loada(di.texel_weight_contribs_float_tr[0] + index);
@@ -81,12 +81,12 @@ static vfloat bilinear_infill_vla_2(
 	unsigned int index
 ) {
 	// Load the bilinear filter texel weight indexes in the decimated grid
-	vint weight_idx0 = vint(di.texel_weights_tr[0] + index);
-	vint weight_idx1 = vint(di.texel_weights_tr[1] + index);
+	const uint8_t* weight_idx0 = di.texel_weights_tr[0] + index;
+	const uint8_t* weight_idx1 = di.texel_weights_tr[1] + index;
 
 	// Load the bilinear filter weights from the decimated grid
-	vfloat weight_val0 = gatherf(weights, weight_idx0);
-	vfloat weight_val1 = gatherf(weights, weight_idx1);
+	vfloat weight_val0 = gatherf_byte_inds<vfloat>(weights, weight_idx0);
+	vfloat weight_val1 = gatherf_byte_inds<vfloat>(weights, weight_idx1);
 
 	// Load the weight contribution factors for each decimated weight
 	vfloat tex_weight_float0 = loada(di.texel_weight_contribs_float_tr[0] + index);
@@ -853,12 +853,6 @@ void compute_ideal_weights_for_decimation(
 	promise(texel_count > 0);
 	promise(weight_count > 0);
 
-	// Ensure that the end of the output arrays that are used for SIMD paths later are filled so we
-	// can safely run SIMD elsewhere without a loop tail. Note that this is always safe as weight
-	// arrays always contain space for 64 elements
-	unsigned int prev_weight_count_simd = round_down_to_simd_multiple_vla(weight_count - 1);
-	storea(vfloat::zero(), dec_weight_ideal_value + prev_weight_count_simd);
-
 	// If we have a 1:1 mapping just shortcut the computation. Transfer enough to also copy the
 	// zero-initialized SIMD over-fetch region
 	if (is_direct)
@@ -889,23 +883,23 @@ void compute_ideal_weights_for_decimation(
 
 		// Accumulate error weighting of all the texels using this weight
 		vint weight_texel_count(di.weight_texel_count + i);
-		unsigned int max_texel_count = hmax(weight_texel_count).lane<0>();
+		unsigned int max_texel_count = hmax_s(weight_texel_count);
 		promise(max_texel_count > 0);
 
 		for (unsigned int j = 0; j < max_texel_count; j++)
 		{
-			vint texel(di.weight_texels_tr[j] + i);
+			const uint8_t* texel = di.weight_texels_tr[j] + i;
 			vfloat weight = loada(di.weights_texel_contribs_tr[j] + i);
 
 			if (!constant_wes)
 			{
-				weight_error_scale = gatherf(ei.weight_error_scale, texel);
+				weight_error_scale = gatherf_byte_inds<vfloat>(ei.weight_error_scale, texel);
 			}
 
 			vfloat contrib_weight = weight * weight_error_scale;
 
 			weight_weight += contrib_weight;
-			initial_weight += gatherf(ei.weights, texel) * contrib_weight;
+			initial_weight += gatherf_byte_inds<vfloat>(ei.weights, texel) * contrib_weight;
 		}
 
 		storea(initial_weight / weight_weight, dec_weight_ideal_value + i);
@@ -947,22 +941,22 @@ void compute_ideal_weights_for_decimation(
 
 		// Accumulate error weighting of all the texels using this weight
 		vint weight_texel_count(di.weight_texel_count + i);
-		unsigned int max_texel_count = hmax(weight_texel_count).lane<0>();
+		unsigned int max_texel_count = hmax_s(weight_texel_count);
 		promise(max_texel_count > 0);
 
 		for (unsigned int j = 0; j < max_texel_count; j++)
 		{
-			vint texel(di.weight_texels_tr[j] + i);
+			const uint8_t* texel = di.weight_texels_tr[j] + i;
 			vfloat contrib_weight = loada(di.weights_texel_contribs_tr[j] + i);
 
 			if (!constant_wes)
 			{
- 				weight_error_scale = gatherf(ei.weight_error_scale, texel);
+				weight_error_scale = gatherf_byte_inds<vfloat>(ei.weight_error_scale, texel);
 			}
 
 			vfloat scale = weight_error_scale * contrib_weight;
-			vfloat old_weight = gatherf(infilled_weights, texel);
-			vfloat ideal_weight = gatherf(ei.weights, texel);
+			vfloat old_weight = gatherf_byte_inds<vfloat>(infilled_weights, texel);
+			vfloat ideal_weight = gatherf_byte_inds<vfloat>(ei.weights, texel);
 
 			error_change0 += contrib_weight * scale;
 			error_change1 += (old_weight - ideal_weight) * scale;
@@ -1023,9 +1017,8 @@ void compute_quantized_weights_for_decimation(
 	// safe data in compute_ideal_weights_for_decimation and arrays are always 64 elements
 	if (get_quant_level(quant_level) <= 16)
 	{
-		vint4 tab0 = vint4::load(qat.quant_to_unquant);
-		vint tab0p;
-		vtable_prepare(tab0, tab0p);
+		vtable_16x8 table;
+		vtable_prepare(table, qat.quant_to_unquant);
 
 		for (int i = 0; i < weight_count; i += ASTCENC_SIMD_WIDTH)
 		{
@@ -1038,8 +1031,8 @@ void compute_quantized_weights_for_decimation(
 			vint weightl = float_to_int(ix1);
 			vint weighth = min(weightl + vint(1), steps_m1);
 
-			vint ixli = vtable_8bt_32bi(tab0p, weightl);
-			vint ixhi = vtable_8bt_32bi(tab0p, weighth);
+			vint ixli = vtable_lookup_32bit(table, weightl);
+			vint ixhi = vtable_lookup_32bit(table, weighth);
 
 			vfloat ixl = int_to_float(ixli);
 			vfloat ixh = int_to_float(ixhi);
@@ -1050,16 +1043,13 @@ void compute_quantized_weights_for_decimation(
 
 			// Invert the weight-scaling that was done initially
 			storea(ixl * rscalev + low_boundv, weight_set_out + i);
-			vint scn = pack_low_bytes(weight);
-			store_nbytes(scn, quantized_weight_set + i);
+			pack_and_store_low_bytes(weight, quantized_weight_set + i);
 		}
 	}
 	else
 	{
-		vint4 tab0 = vint4::load(qat.quant_to_unquant +  0);
-		vint4 tab1 = vint4::load(qat.quant_to_unquant + 16);
-		vint tab0p, tab1p;
-		vtable_prepare(tab0, tab1, tab0p, tab1p);
+		vtable_32x8 table;
+		vtable_prepare(table, qat.quant_to_unquant);
 
 		for (int i = 0; i < weight_count; i += ASTCENC_SIMD_WIDTH)
 		{
@@ -1072,8 +1062,8 @@ void compute_quantized_weights_for_decimation(
 			vint weightl = float_to_int(ix1);
 			vint weighth = min(weightl + vint(1), steps_m1);
 
-			vint ixli = vtable_8bt_32bi(tab0p, tab1p, weightl);
-			vint ixhi = vtable_8bt_32bi(tab0p, tab1p, weighth);
+			vint ixli = vtable_lookup_32bit(table, weightl);
+			vint ixhi = vtable_lookup_32bit(table, weighth);
 
 			vfloat ixl = int_to_float(ixli);
 			vfloat ixh = int_to_float(ixhi);
@@ -1084,8 +1074,7 @@ void compute_quantized_weights_for_decimation(
 
 			// Invert the weight-scaling that was done initially
 			storea(ixl * rscalev + low_boundv, weight_set_out + i);
-			vint scn = pack_low_bytes(weight);
-			store_nbytes(scn, quantized_weight_set + i);
+			pack_and_store_low_bytes(weight, quantized_weight_set + i);
 		}
 	}
 }
