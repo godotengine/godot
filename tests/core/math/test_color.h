@@ -185,6 +185,16 @@ TEST_CASE("[Color] Named colors") {
 			Color::named("doesn't exist").is_equal_approx(Color()),
 			"The invalid named color \"doesn't exist\" should result in a Color with the default values.");
 	ERR_PRINT_ON;
+
+	CHECK(Color(0.5, 0.5, 0.5, 0.5).to_named() == "WEB_GRAY");
+	CHECK(Color(1.0, 0.0, 0.0).to_named() == "RED");
+	CHECK(Color(0.7, 0.4, 0.1).to_named() == "CHOCOLATE");
+	CHECK(Color(0.0, 0.0, 1.0, 0.0).to_named() == "BLUE");
+	CHECK(Color(1.0, 1.0, 1.0, 0.0).to_named() == "TRANSPARENT");
+	// Overbright color.
+	CHECK(Color(16.0, 4.0, 2.0).to_named() == "WHITE");
+	// Negative color.
+	CHECK(Color(-16.0, -4.0, -2.0).to_named() == "BLACK");
 }
 
 TEST_CASE("[Color] Validation methods") {
