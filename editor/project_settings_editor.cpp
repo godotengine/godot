@@ -718,6 +718,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector->register_search_box(search_box);
 	general_settings_inspector->register_advanced_toggle(advanced);
 	general_settings_inspector->get_inspector()->set_use_filter(true);
+	general_settings_inspector->get_inspector()->set_mark_unsaved(false);
 	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
 	general_settings_inspector->get_inspector()->connect("restart_requested", callable_mp(this, &ProjectSettingsEditor::_editor_restart_request));
