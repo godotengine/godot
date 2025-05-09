@@ -232,7 +232,9 @@ AABB MeshInstance3D::get_aabb() const {
 		return mesh->get_aabb();
 	}
 
-	return AABB();
+	AABB aabb;
+	GDVIRTUAL_CALL(_get_aabb, aabb);
+	return aabb;
 }
 
 #ifndef PHYSICS_3D_DISABLED
