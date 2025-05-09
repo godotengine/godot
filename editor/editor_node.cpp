@@ -7229,6 +7229,8 @@ GameViewPluginBase *get_game_view_plugin() {
 #endif
 
 EditorNode::EditorNode() {
+	print_line("Opening editor.");
+
 	DEV_ASSERT(!singleton);
 	singleton = this;
 
