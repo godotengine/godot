@@ -284,7 +284,7 @@ public:
 };
 
 static void test_command_queue_basic(bool p_use_thread_pool_sync) {
-	const char *COMMAND_QUEUE_SETTING = "memory/limits/command_queue/multithreading_queue_size_kb";
+	const char COMMAND_QUEUE_SETTING[] = "memory/limits/command_queue/multithreading_queue_size_kb";
 	ProjectSettings::get_singleton()->set_setting(COMMAND_QUEUE_SETTING, 1);
 	SharedThreadState sts;
 	sts.init_threads(p_use_thread_pool_sync);
@@ -334,7 +334,7 @@ TEST_CASE("[CommandQueue] Test Queue Basics with WorkerThreadPool sync.") {
 }
 
 TEST_CASE("[CommandQueue] Test Queue Wrapping to same spot.") {
-	const char *COMMAND_QUEUE_SETTING = "memory/limits/command_queue/multithreading_queue_size_kb";
+	const char COMMAND_QUEUE_SETTING[] = "memory/limits/command_queue/multithreading_queue_size_kb";
 	ProjectSettings::get_singleton()->set_setting(COMMAND_QUEUE_SETTING, 1);
 	SharedThreadState sts;
 	sts.init_threads();
@@ -392,7 +392,7 @@ TEST_CASE("[CommandQueue] Test Queue Wrapping to same spot.") {
 }
 
 TEST_CASE("[CommandQueue] Test Queue Lapping") {
-	const char *COMMAND_QUEUE_SETTING = "memory/limits/command_queue/multithreading_queue_size_kb";
+	const char COMMAND_QUEUE_SETTING[] = "memory/limits/command_queue/multithreading_queue_size_kb";
 	ProjectSettings::get_singleton()->set_setting(COMMAND_QUEUE_SETTING, 1);
 	SharedThreadState sts;
 	sts.init_threads();
@@ -443,7 +443,7 @@ TEST_CASE("[CommandQueue] Test Queue Lapping") {
 }
 
 TEST_CASE("[Stress][CommandQueue] Stress test command queue") {
-	const char *COMMAND_QUEUE_SETTING = "memory/limits/command_queue/multithreading_queue_size_kb";
+	const char COMMAND_QUEUE_SETTING[] = "memory/limits/command_queue/multithreading_queue_size_kb";
 	ProjectSettings::get_singleton()->set_setting(COMMAND_QUEUE_SETTING, 1);
 	SharedThreadState sts;
 	sts.init_threads();
