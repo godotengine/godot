@@ -391,6 +391,29 @@
 		<member name="audio/buses/channel_disable_time" type="float" setter="" getter="" default="2.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
+		<member name="audio/buses/channel_override/override_channels" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the number of audio channels processed by Godot is set via the Channel Override [code]speaker_mode[/code] instead of the speaker mode of the current audio device.
+			[b]Note:[/b] This setting is intended for debugging, testing, and troubleshooting, and should not be enabled on production builds.
+		</member>
+		<member name="audio/buses/channel_override/remap_channel_0" type="int" setter="" getter="" default="0">
+			Audio channel remapping index for the front left/right speakers (stereo channel 0). This causes the front speakers to play audio from the given stereo channel. Useful for testing different audio device configurations without needing specific hardware.
+			[b]Note:[/b] Channel remapping is only enabled when [code]override_channels[/code] is true.
+		</member>
+		<member name="audio/buses/channel_override/remap_channel_1" type="int" setter="" getter="" default="1">
+			Audio channel remapping index for the center speaker and LFE channel (stereo channel 1). This causes the center speaker (and LFE channel) to play audio from the given stereo channel. Useful for testing different audio device configurations without needing specific hardware.
+			[b]Note:[/b] Channel remapping is only enabled when [code]override_channels[/code] is true.
+		</member>
+		<member name="audio/buses/channel_override/remap_channel_2" type="int" setter="" getter="" default="2">
+			Audio channel remapping index for the rear left/right speakers (stereo channel 2). This causes the rear speakers to play audio from the given stereo channel. Useful for testing different audio device configurations without needing specific hardware.
+			[b]Note:[/b] Channel remapping is only enabled when [code]override_channels[/code] is true.
+		</member>
+		<member name="audio/buses/channel_override/remap_channel_3" type="int" setter="" getter="" default="3">
+			Audio channel remapping index for the side left/right speakers (stereo channel 3). This causes the side speakers to play audio from the given stereo channel. Useful for testing different audio device configurations without needing specific hardware.
+			[b]Note:[/b] Channel remapping is only enabled when [code]override_channels[/code] is true.
+		</member>
+		<member name="audio/buses/channel_override/speaker_mode" type="int" setter="" getter="" default="0">
+			The speaker mode used by Godot when [code]override_channels[/code] is true. Additional channels are muted (e.g. rear speaker channels when set to Stereo speaker mode 0).
+		</member>
 		<member name="audio/buses/default_bus_layout" type="String" setter="" getter="" default="&quot;res://default_bus_layout.tres&quot;">
 			Default [AudioBusLayout] resource file to use in the project, unless overridden by the scene.
 		</member>
