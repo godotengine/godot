@@ -1193,6 +1193,15 @@ public:
 		}
 	}
 
+	template <typename K, typename V>
+	void write(AHashMap<K, V> const &p_map) {
+		write(p_map.size());
+		for (KeyValue<K, V> const &e : p_map) {
+			write(e.key);
+			write(e.value);
+		}
+	}
+
 	uint64_t get_pos() const {
 		return pos;
 	}
@@ -1352,6 +1361,21 @@ public:
 
 	template <typename K, typename V>
 	void read(HashMap<K, V> &p_map) {
+		uint32_t len;
+		read(len);
+		CHECK(len);
+		p_map.reserve(len);
+		for (uint32_t i = 0; i < len; i++) {
+			K key;
+			read(key);
+			V value;
+			read(value);
+			p_map[key] = value;
+		}
+	}
+
+	template <typename K, typename V>
+	void read(AHashMap<K, V> &p_map) {
 		uint32_t len;
 		read(len);
 		CHECK(len);
