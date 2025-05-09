@@ -72,6 +72,8 @@ private:
 	StringName _get_actual_bus();
 	void _update_panning();
 
+	void _play_internal(double p_from_pos = 0.0);
+
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->force_update_panning = true; }
 
 	uint32_t area_mask = 1;
@@ -110,6 +112,7 @@ public:
 	float get_pitch_scale() const;
 
 	void play(float p_from_pos = 0.0);
+	void play_scheduled(double p_abs_time, double p_from_pos = 0.0);
 	void seek(float p_seconds);
 	void stop();
 	bool is_playing() const;

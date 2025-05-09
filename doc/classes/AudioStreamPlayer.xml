@@ -28,7 +28,7 @@
 		<method name="get_stream_playback">
 			<return type="AudioStreamPlayback" />
 			<description>
-				Returns the latest [AudioStreamPlayback] of this node, usually the most recently created by [method play]. If no sounds are playing, this method fails and returns an empty playback.
+				Returns the latest [AudioStreamPlayback] of this node, usually the most recently created by [method play] or [method play_scheduled]. If no sounds are playing, this method fails and returns an empty playback.
 			</description>
 		</method>
 		<method name="has_stream_playback">
@@ -42,6 +42,17 @@
 			<param index="0" name="from_position" type="float" default="0.0" />
 			<description>
 				Plays a sound from the beginning, or the given [param from_position] in seconds.
+			</description>
+		</method>
+		<method name="play_scheduled" experimental="">
+			<return type="void" />
+			<param index="0" name="absolute_time" type="float" />
+			<param index="1" name="from_position" type="float" default="0.0" />
+			<description>
+				Schedules a sound to be played on the [AudioServer]'s timeline at [param absolute_time] in seconds. If the sound is scheduled to play earlier than the value returned by [method AudioServer.get_absolute_time], it will be played immediately. The sound starts from the given [param from_position] in seconds.
+				Use this method for high precision playbacks, such as a metronome or other rhythm-based sounds.
+				[b]Note:[/b] Calling this method after [member max_polyphony] is reached will cut off the oldest sound playing on this node.
+				[b]Note:[/b] On the Web platform, [member playback_type] must be set to [constant AudioServer.PLAYBACK_TYPE_STREAM]. Otherwise, this method will behave like [method play].
 			</description>
 		</method>
 		<method name="seek">
@@ -67,7 +78,7 @@
 			[b]Note:[/b] At runtime, if no bus with the given name exists, all sounds will fall back on [code]"Master"[/code]. See also [method AudioServer.get_bus_name].
 		</member>
 		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
-			The maximum number of sounds this node can play at the same time. Calling [method play] after this value is reached will cut off the oldest sounds.
+			The maximum number of sounds this node can play and schedule at the same time. Calling [method play] or [method play_scheduled] after this value is reached will cut off the oldest sounds.
 		</member>
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget" default="0">
 			The mix target channels, as one of the [enum MixTarget] constants. Has no effect when two speakers or less are detected (see [enum AudioServer.SpeakerMode]).
