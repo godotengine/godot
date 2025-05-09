@@ -1168,6 +1168,47 @@ void godotsharp_array_to_string(const Array *p_self, String *r_str) {
 	*r_str = Variant(*p_self).operator String();
 }
 
+void godotsharp_packed_byte_array_compress(const PackedByteArray *p_src, int p_mode, PackedByteArray *r_dst) {
+	if (p_src->size() > 0) {
+		Compression::Mode mode = (Compression::Mode)(p_mode);
+		r_dst->resize(Compression::get_max_compressed_buffer_size(p_src->size(), mode));
+		int result = Compression::compress(r_dst->ptrw(), p_src->ptr(), p_src->size(), mode);
+
+		result = result >= 0 ? result : 0;
+		r_dst->resize(result);
+	}
+}
+
+void godotsharp_packed_byte_array_decompress(const PackedByteArray *p_src, int64_t p_buffer_size, int p_mode, PackedByteArray *r_dst) {
+	int64_t buffer_size = p_buffer_size;
+	Compression::Mode mode = (Compression::Mode)(p_mode);
+
+	if (buffer_size <= 0) {
+		ERR_FAIL_MSG("Decompression buffer size must be greater than zero.");
+	}
+	if (p_src->size() == 0) {
+		ERR_FAIL_MSG("Compressed buffer size must be greater than zero.");
+	}
+
+	r_dst->resize(buffer_size);
+	int result = Compression::decompress(r_dst->ptrw(), buffer_size, p_src->ptr(), p_src->size(), mode);
+
+	result = result >= 0 ? result : 0;
+	r_dst->resize(result);
+}
+
+void godotsharp_packed_byte_array_decompress_dynamic(const PackedByteArray *p_src, int64_t p_max_output_size, int p_mode, PackedByteArray *r_dst) {
+	int64_t max_output_size = p_max_output_size;
+	Compression::Mode mode = (Compression::Mode)(p_mode);
+
+	int result = Compression::decompress_dynamic(r_dst, max_output_size, p_src->ptr(), p_src->size(), mode);
+
+	if (result != OK) {
+		r_dst->clear();
+		ERR_FAIL_MSG("Decompression failed.");
+	}
+}
+
 // Dictionary
 
 bool godotsharp_dictionary_try_get_value(const Dictionary *p_self, const Variant *p_key, Variant *r_value) {
@@ -1683,6 +1724,9 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_slice,
 	(void *)godotsharp_array_sort,
 	(void *)godotsharp_array_to_string,
+	(void *)godotsharp_packed_byte_array_compress,
+	(void *)godotsharp_packed_byte_array_decompress,
+	(void *)godotsharp_packed_byte_array_decompress_dynamic,
 	(void *)godotsharp_dictionary_try_get_value,
 	(void *)godotsharp_dictionary_set_value,
 	(void *)godotsharp_dictionary_keys,
