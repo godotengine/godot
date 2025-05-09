@@ -47,6 +47,8 @@ SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
 class Node : public Object {
 	GDCLASS(Node, Object);
 
+	friend class SceneTreeFTI;
+
 protected:
 	// During group processing, these are thread-safe.
 	// Outside group processing, these avoid the cost of sync by working as plain primitive types.
