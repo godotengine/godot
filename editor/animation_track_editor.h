@@ -569,6 +569,7 @@ public:
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_root(Node *p_root);
 	void set_editor(AnimationTrackEditor *p_editor);
+	String get_node_name() const;
 
 	AnimationTrackEditGroup();
 };
@@ -805,8 +806,10 @@ class AnimationTrackEditor : public VBoxContainer {
 	Button *function_name_toggler = nullptr;
 
 	void _view_group_toggle();
+
 	Button *view_group = nullptr;
 	Button *selected_filter = nullptr;
+	Button *alphabetic_sorting = nullptr;
 
 	void _auto_fit();
 	void _auto_fit_bezier();
@@ -945,6 +948,7 @@ public:
 	float snap_time(float p_value, bool p_relative = false);
 	float get_snap_unit();
 	bool is_grouping_tracks();
+	bool is_sorting_alphabetically();
 	PackedStringArray get_selected_section() const;
 	bool is_marker_selected(const StringName &p_marker) const;
 	bool is_marker_moving_selection() const;
