@@ -2340,7 +2340,7 @@ String OS_Windows::get_config_path() const {
 	return ".";
 }
 
-String OS_Windows::get_data_path() const {
+String OS_Windows::get_data_home() const {
 	return get_config_path();
 }
 
@@ -2425,7 +2425,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 }
 
 String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
-	return get_data_path().path_join(p_user_dir).replace_char('\\', '/');
+	return get_data_home().path_join(p_user_dir).replace_char('\\', '/');
 }
 
 String OS_Windows::get_unique_id() const {

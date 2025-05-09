@@ -285,7 +285,8 @@ public:
 	String get_safe_dir_name(const String &p_dir_name, bool p_allow_paths = false) const;
 	virtual String get_godot_dir_name() const;
 
-	virtual String get_data_path() const;
+	virtual String get_data_home() const;
+	virtual Vector<String> get_data_dirs() const;
 	virtual String get_config_path() const;
 	virtual String get_cache_path() const;
 	virtual String get_temp_path() const;

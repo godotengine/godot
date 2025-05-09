@@ -195,7 +195,7 @@ String OS_Web::get_config_path() const {
 	return "/home/web_user/.config";
 }
 
-String OS_Web::get_data_path() const {
+String OS_Web::get_data_home() const {
 	return "/home/web_user/.local/share";
 }
 

@@ -38,7 +38,9 @@ class EditorPaths : public Object {
 	GDCLASS(EditorPaths, Object)
 
 	bool paths_valid = false; // If any of the paths can't be created, this is false.
-	String data_dir; // Editor data (templates, shader cache, etc.).
+	String data_home; // Editor data (templates, shader cache, etc.).
+	Vector<String> data_dirs;
+	Vector<String> export_template_dirs;
 	String config_dir; // Editor config (settings, profiles, themes, etc.).
 	String cache_dir; // Editor cache (thumbnails, tmp generated files).
 	String temp_dir; // Editor temporary directory.
@@ -58,12 +60,13 @@ protected:
 public:
 	bool are_paths_valid() const;
 
-	String get_data_dir() const;
+	String get_data_home() const;
+	const Vector<String> &get_data_dirs() const;
 	String get_config_dir() const;
 	String get_cache_dir() const;
 	String get_temp_dir() const;
 	String get_project_data_dir() const;
-	String get_export_templates_dir() const;
+	const Vector<String> &get_export_templates_dirs() const;
 	String get_debug_keystore_path() const;
 	String get_project_settings_dir() const;
 	String get_text_editor_themes_dir() const;

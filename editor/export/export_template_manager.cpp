@@ -85,7 +85,7 @@ static DownloadsAvailability _get_downloads_availability() {
 void ExportTemplateManager::_update_template_status() {
 	// Fetch installed templates from the file system.
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	const String &templates_dir = EditorPaths::get_singleton()->get_export_templates_dir();
+	const String &templates_dir = EditorPaths::get_singleton()->get_export_templates_dirs()[0];
 
 	Error err = da->change_dir(templates_dir);
 	ERR_FAIL_COND_MSG(err != OK, "Could not access templates directory at '" + templates_dir + "'.");
@@ -495,7 +495,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 	}
 
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(version);
+	String template_path = EditorPaths::get_singleton()->get_export_templates_dirs()[0].path_join(version);
 	Error err = d->make_dir_recursive(template_path);
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(TTR("Error creating path for extracting templates:") + "\n" + template_path);
@@ -603,7 +603,7 @@ void ExportTemplateManager::_uninstall_template(const String &p_version) {
 
 void ExportTemplateManager::_uninstall_template_confirmed() {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	const String &templates_dir = EditorPaths::get_singleton()->get_export_templates_dir();
+	const String &templates_dir = EditorPaths::get_singleton()->get_export_templates_dirs()[0];
 
 	Error err = da->change_dir(templates_dir);
 	ERR_FAIL_COND_MSG(err != OK, "Could not access templates directory at '" + templates_dir + "'.");
@@ -681,7 +681,7 @@ void ExportTemplateManager::_installed_table_button_cbk(Object *p_item, int p_co
 }
 
 void ExportTemplateManager::_open_template_folder(const String &p_version) {
-	const String &templates_dir = EditorPaths::get_singleton()->get_export_templates_dir();
+	const String &templates_dir = EditorPaths::get_singleton()->get_export_templates_dirs()[0];
 	OS::get_singleton()->shell_show_in_file_manager(templates_dir.path_join(p_version), true);
 }
 
@@ -790,7 +790,7 @@ String ExportTemplateManager::get_android_source_zip(const Ref<EditorExportPrese
 		}
 	}
 
-	const String templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(GODOT_VERSION_FULL_CONFIG);
+	const String templates_dir = EditorPaths::get_singleton()->get_export_templates_dirs()[0].path_join(GODOT_VERSION_FULL_CONFIG);
 	return templates_dir.path_join("android_source.zip");
 }
 

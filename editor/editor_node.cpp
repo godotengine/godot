@@ -3295,7 +3295,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			editor_settings_dialog->popup_edit_settings();
 		} break;
 		case EDITOR_OPEN_DATA_FOLDER: {
-			OS::get_singleton()->shell_show_in_file_manager(EditorPaths::get_singleton()->get_data_dir(), true);
+			OS::get_singleton()->shell_show_in_file_manager(EditorPaths::get_singleton()->get_data_home(), true);
 		} break;
 		case EDITOR_OPEN_CONFIG_FOLDER: {
 			OS::get_singleton()->shell_show_in_file_manager(EditorPaths::get_singleton()->get_config_dir(), true);
@@ -7930,7 +7930,7 @@ EditorNode::EditorNode() {
 	settings_menu->add_separator();
 
 #ifndef ANDROID_ENABLED
-	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
+	if (OS::get_singleton()->get_data_home() == OS::get_singleton()->get_config_path()) {
 		// Configuration and data folders are located in the same place (Windows/macOS).
 		settings_menu->add_item(TTR("Open Editor Data/Settings Folder"), EDITOR_OPEN_DATA_FOLDER);
 	} else {
