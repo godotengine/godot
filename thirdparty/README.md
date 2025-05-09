@@ -636,8 +636,8 @@ File extracted from upstream release tarball:
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core
-- Added the file `godot_module_mbedtls_config.h` to customize the build
-  configuration when bundling the full library
+- Added 2 files `godot_module_mbedtls_config.h` and `threading_alt.h`
+  to customize the build configuration when bundling the full library
 
 Patches:
 
