@@ -366,7 +366,9 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		if (is_tool) {
 			tooltip = TTR("The script will run in the editor.") + "\n" + tooltip;
 		}
-		r_item->add_button(0, get_editor_theme_icon(SNAME("Script")), 1, false, vformat(tooltip, ScriptServer::get_global_class_path(p_type)));
+		String script_path = ScriptServer::get_global_class_path(p_type);
+		r_item->add_button(0, get_editor_theme_icon(SNAME("Script")), 1, false, vformat(tooltip, script_path));
+		r_item->set_meta("_script_path", script_path);
 		if (is_tool) {
 			int button_index = r_item->get_button_count(0) - 1;
 			r_item->set_button_color(0, button_index, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
@@ -604,11 +606,27 @@ void CreateDialog::select_base() {
 
 String CreateDialog::get_selected_type() {
 	TreeItem *selected = search_options->get_selected();
+
 	if (!selected) {
 		return String();
 	}
 
 	return selected->get_text(0);
+}
+
+Dictionary CreateDialog::get_selected_type_info() {
+	Dictionary dic;
+	dic["type_name"] = "";
+	dic["script_path"] = "";
+
+	TreeItem *selected = search_options->get_selected();
+
+	if (selected) {
+		dic["type_name"] = selected->get_text(0);
+		dic["script_path"] = selected->get_meta("_script_path", "");
+	}
+
+	return dic;
 }
 
 void CreateDialog::set_base_type(const String &p_base) {
