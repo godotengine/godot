@@ -1,0 +1,554 @@
+diff --git a/thirdparty/sdl/SDL.c b/thirdparty/sdl/SDL.c
+index 502f6617a4f..40187749587 100644
+--- a/thirdparty/sdl/SDL.c
++++ b/thirdparty/sdl/SDL.c
+@@ -41,22 +41,13 @@
+ #include "SDL_log_c.h"
+ #include "SDL_properties_c.h"
+ #include "audio/SDL_sysaudio.h"
+-#include "camera/SDL_camera_c.h"
+-#include "cpuinfo/SDL_cpuinfo_c.h"
+ #include "events/SDL_events_c.h"
+ #include "haptic/SDL_haptic_c.h"
+ #include "joystick/SDL_gamepad_c.h"
+ #include "joystick/SDL_joystick_c.h"
+-#include "render/SDL_sysrender.h"
+ #include "sensor/SDL_sensor_c.h"
+ #include "stdlib/SDL_getenv_c.h"
+ #include "thread/SDL_thread_c.h"
+-#include "tray/SDL_tray_utils.h"
+-#include "video/SDL_pixels_c.h"
+-#include "video/SDL_surface_c.h"
+-#include "video/SDL_video_c.h"
+-#include "filesystem/SDL_filesystem_c.h"
+-#include "io/SDL_asyncio_c.h"
+ #ifdef SDL_PLATFORM_ANDROID
+ #include "core/android/SDL_android.h"
+ #endif
+@@ -278,7 +269,7 @@ void SDL_InitMainThread(void)
+     SDL_InitTLSData();
+     SDL_InitEnvironment();
+     SDL_InitTicks();
+-    SDL_InitFilesystem();
++    //SDL_InitFilesystem();
+ 
+     if (!done_info) {
+         const char *value;
+@@ -297,7 +288,7 @@ void SDL_InitMainThread(void)
+ 
+ static void SDL_QuitMainThread(void)
+ {
+-    SDL_QuitFilesystem();
++    //SDL_QuitFilesystem();
+     SDL_QuitTicks();
+     SDL_QuitEnvironment();
+     SDL_QuitTLSData();
+@@ -657,21 +648,21 @@ void SDL_Quit(void)
+     SDL_HelperWindowDestroy();
+ #endif
+     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
+-    SDL_CleanupTrays();
++    //SDL_CleanupTrays();
+ 
+ #ifdef SDL_USE_LIBDBUS
+     SDL_DBus_Quit();
+ #endif
+ 
+     SDL_QuitTimers();
+-    SDL_QuitAsyncIO();
++    //SDL_QuitAsyncIO();
+ 
+     SDL_SetObjectsInvalid();
+     SDL_AssertionsQuit();
+ 
+-    SDL_QuitPixelFormatDetails();
++    //SDL_QuitPixelFormatDetails();
+ 
+-    SDL_QuitCPUInfo();
++    //SDL_QuitCPUInfo();
+ 
+     /* Now that every subsystem has been quit, we reset the subsystem refcount
+      * and the list of initialized subsystems.
+diff --git a/thirdparty/sdl/SDL_assert.c b/thirdparty/sdl/SDL_assert.c
+index 2440d04b1ec..d35e1f7cd48 100644
+--- a/thirdparty/sdl/SDL_assert.c
++++ b/thirdparty/sdl/SDL_assert.c
+@@ -210,10 +210,10 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
+     }
+ 
+     // Leave fullscreen mode, if possible (scary!)
+-    window = SDL_GetToplevelForKeyboardFocus();
++    window = NULL; //SDL_GetToplevelForKeyboardFocus();
+     if (window) {
+         if (window->fullscreen_exclusive) {
+-            SDL_MinimizeWindow(window);
++            //SDL_MinimizeWindow(window);
+         } else {
+             // !!! FIXME: ungrab the input if we're not fullscreen?
+             // No need to mess with the window
+@@ -230,7 +230,8 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
+     messagebox.numbuttons = SDL_arraysize(buttons);
+     messagebox.buttons = buttons;
+ 
+-    if (SDL_ShowMessageBox(&messagebox, &selected)) {
++    //if (SDL_ShowMessageBox(&messagebox, &selected)) {
++    if (false) {
+         if (selected == -1) {
+             state = SDL_ASSERTION_IGNORE;
+         } else {
+@@ -311,13 +312,13 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
+             }
+         }
+ #else
+-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Assertion Failed", message, window);
++        //SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Assertion Failed", message, window);
+ #endif // HAVE_STDIO_H
+     }
+ 
+     // Re-enter fullscreen mode
+     if (window) {
+-        SDL_RestoreWindow(window);
++        //SDL_RestoreWindow(window);
+     }
+ 
+     if (message != stack_buf) {
+diff --git a/thirdparty/sdl/SDL_internal.h b/thirdparty/sdl/SDL_internal.h
+index a345252f3a1..421d4aa2550 100644
+--- a/thirdparty/sdl/SDL_internal.h
++++ b/thirdparty/sdl/SDL_internal.h
+@@ -62,7 +62,7 @@
+ 
+ #include "SDL_build_config.h"
+ 
+-#include "dynapi/SDL_dynapi.h"
++//#include "dynapi/SDL_dynapi.h"
+ 
+ #if SDL_DYNAMIC_API
+ #include "dynapi/SDL_dynapi_overrides.h"
+diff --git a/thirdparty/sdl/SDL_properties.c b/thirdparty/sdl/SDL_properties.c
+index 166ea0f918b..42d48454580 100644
+--- a/thirdparty/sdl/SDL_properties.c
++++ b/thirdparty/sdl/SDL_properties.c
+@@ -409,7 +409,7 @@ static void SDLCALL CleanupSurface(void *userdata, void *value)
+ {
+     SDL_Surface *surface = (SDL_Surface *)value;
+ 
+-    SDL_DestroySurface(surface);
++    //SDL_DestroySurface(surface);
+ }
+ 
+ bool SDL_SetSurfaceProperty(SDL_PropertiesID props, const char *name, SDL_Surface *surface)
+diff --git a/thirdparty/sdl/core/linux/SDL_evdev.c b/thirdparty/sdl/core/linux/SDL_evdev.c
+index 5746e2ef98b..cf2acd6f8db 100644
+--- a/thirdparty/sdl/core/linux/SDL_evdev.c
++++ b/thirdparty/sdl/core/linux/SDL_evdev.c
+@@ -39,7 +39,6 @@
+ #include <linux/input.h>
+ 
+ #include "../../events/SDL_events_c.h"
+-#include "../../events/SDL_scancode_tables_c.h"
+ #include "../../core/linux/SDL_evdev_capabilities.h"
+ #include "../../core/linux/SDL_udev.h"
+ 
+@@ -221,7 +220,7 @@ bool SDL_EVDEV_Init(void)
+         SDL_EVDEV_UpdateKeyboardMute();
+     }
+ 
+-    SDL_GetMouse()->SetRelativeMouseMode = SDL_EVDEV_SetRelativeMouseMode;
++    //SDL_GetMouse()->SetRelativeMouseMode = SDL_EVDEV_SetRelativeMouseMode;
+ 
+     _this->ref_count += 1;
+ 
+@@ -328,7 +327,7 @@ void SDL_EVDEV_Poll(void)
+ 
+     SDL_EVDEV_kbd_update(_this->kbd);
+ 
+-    mouse = SDL_GetMouse();
++    mouse = NULL; //SDL_GetMouse();
+ 
+     for (item = _this->first; item; item = item->next) {
+         while ((len = read(item->fd, events, sizeof(events))) > 0) {
+@@ -345,10 +344,11 @@ void SDL_EVDEV_Poll(void)
+ 
+                 switch (event->type) {
+                 case EV_KEY:
++					break;
+                     if (event->code >= BTN_MOUSE && event->code < BTN_MOUSE + SDL_arraysize(EVDEV_MouseButtons)) {
+                         Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
+                         mouse_button = event->code - BTN_MOUSE;
+-                        SDL_SendMouseButton(timestamp, mouse->focus, (SDL_MouseID)item->fd, EVDEV_MouseButtons[mouse_button], (event->value != 0));
++                        //SDL_SendMouseButton(timestamp, mouse->focus, (SDL_MouseID)item->fd, EVDEV_MouseButtons[mouse_button], (event->value != 0));
+                         break;
+                     }
+ 
+@@ -490,26 +490,20 @@ void SDL_EVDEV_Poll(void)
+                         if (item->relative_mouse) {
+                             if (item->mouse_x != 0 || item->mouse_y != 0) {
+                                 Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
+-                                SDL_SendMouseMotion(timestamp, mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, (float)item->mouse_x, (float)item->mouse_y);
++                                //SDL_SendMouseMotion(timestamp, mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, (float)item->mouse_x, (float)item->mouse_y);
+                                 item->mouse_x = item->mouse_y = 0;
+                             }
+                         } else if (item->range_x > 0 && item->range_y > 0) {
+                             int screen_w = 0, screen_h = 0;
+                             const SDL_DisplayMode *mode = NULL;
+ 
+-                            if (mouse->focus) {
+-                                mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(mouse->focus));
+-                            }
+-                            if (!mode) {
+-                                mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+-                            }
+                             if (mode) {
+                                 screen_w = mode->w;
+                                 screen_h = mode->h;
+                             }
+-                            SDL_SendMouseMotion(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse,
+-                                (float)(item->mouse_x - item->min_x) * screen_w / item->range_x,
+-                                (float)(item->mouse_y - item->min_y) * screen_h / item->range_y);
++                            //SDL_SendMouseMotion(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse,
++                            //    (float)(item->mouse_x - item->min_x) * screen_w / item->range_x,
++                            //    (float)(item->mouse_y - item->min_y) * screen_h / item->range_y);
+                         }
+ 
+                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {
+@@ -546,16 +540,16 @@ void SDL_EVDEV_Poll(void)
+                              * be window-relative in that case. */
+                             switch (item->touchscreen_data->slots[j].delta) {
+                             case EVDEV_TOUCH_SLOTDELTA_DOWN:
+-                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_EVENT_FINGER_DOWN, norm_x, norm_y, norm_pressure);
++                                //SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_EVENT_FINGER_DOWN, norm_x, norm_y, norm_pressure);
+                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
+                                 break;
+                             case EVDEV_TOUCH_SLOTDELTA_UP:
+-                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_EVENT_FINGER_UP, norm_x, norm_y, norm_pressure);
++                                //SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_EVENT_FINGER_UP, norm_x, norm_y, norm_pressure);
+                                 item->touchscreen_data->slots[j].tracking_id = 0;
+                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
+                                 break;
+                             case EVDEV_TOUCH_SLOTDELTA_MOVE:
+-                                SDL_SendTouchMotion(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, norm_x, norm_y, norm_pressure);
++                                //SDL_SendTouchMotion(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, norm_x, norm_y, norm_pressure);
+                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
+                                 break;
+                             default:
+@@ -585,7 +579,7 @@ void SDL_EVDEV_Poll(void)
+ 
+ static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode)
+ {
+-    SDL_Scancode scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_LINUX, keycode);
++    //SDL_Scancode scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_LINUX, keycode);
+ 
+ #ifdef DEBUG_SCANCODES
+     if (scancode == SDL_SCANCODE_UNKNOWN) {
+@@ -602,7 +596,7 @@ static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode)
+     }
+ #endif // DEBUG_SCANCODES
+ 
+-    return scancode;
++    return 0; //scancode;
+ }
+ 
+ static bool SDL_EVDEV_init_keyboard(SDL_evdevlist_item *item, int udev_class)
+@@ -612,14 +606,14 @@ static bool SDL_EVDEV_init_keyboard(SDL_evdevlist_item *item, int udev_class)
+     name[0] = '\0';
+     ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
+ 
+-    SDL_AddKeyboard((SDL_KeyboardID)item->fd, name, true);
++    //SDL_AddKeyboard((SDL_KeyboardID)item->fd, name, true);
+ 
+     return true;
+ }
+ 
+ static void SDL_EVDEV_destroy_keyboard(SDL_evdevlist_item *item)
+ {
+-    SDL_RemoveKeyboard((SDL_KeyboardID)item->fd, true);
++    //SDL_RemoveKeyboard((SDL_KeyboardID)item->fd, true);
+ }
+ 
+ static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
+@@ -631,7 +625,7 @@ static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
+     name[0] = '\0';
+     ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
+ 
+-    SDL_AddMouse((SDL_MouseID)item->fd, name, true);
++    //SDL_AddMouse((SDL_MouseID)item->fd, name, true);
+ 
+     ret = ioctl(item->fd, EVIOCGABS(ABS_X), &abs_info);
+     if (ret < 0) {
+@@ -656,7 +650,7 @@ static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
+ 
+ static void SDL_EVDEV_destroy_mouse(SDL_evdevlist_item *item)
+ {
+-    SDL_RemoveMouse((SDL_MouseID)item->fd, true);
++    //SDL_RemoveMouse((SDL_MouseID)item->fd, true);
+ }
+ 
+ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
+@@ -743,9 +737,10 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
+         return false;
+     }
+ 
+-    ret = SDL_AddTouch(item->fd, // I guess our fd is unique enough
+-                       (udev_class & SDL_UDEV_DEVICE_TOUCHPAD) ? SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE : SDL_TOUCH_DEVICE_DIRECT,
+-                       item->touchscreen_data->name);
++    //ret = SDL_AddTouch(item->fd, // I guess our fd is unique enough
++    //                   (udev_class & SDL_UDEV_DEVICE_TOUCHPAD) ? SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE : SDL_TOUCH_DEVICE_DIRECT,
++    //                   item->touchscreen_data->name);
++	ret = -1;
+     if (ret < 0) {
+         SDL_free(item->touchscreen_data->slots);
+         SDL_free(item->touchscreen_data->name);
+@@ -762,7 +757,7 @@ static void SDL_EVDEV_destroy_touchscreen(SDL_evdevlist_item *item)
+         return;
+     }
+ 
+-    SDL_DelTouch(item->fd);
++    //SDL_DelTouch(item->fd);
+     SDL_free(item->touchscreen_data->slots);
+     SDL_free(item->touchscreen_data->name);
+     SDL_free(item->touchscreen_data);
+diff --git a/thirdparty/sdl/core/linux/SDL_fcitx.c b/thirdparty/sdl/core/linux/SDL_fcitx.c
+index d7a9ed66561..7a0892c5d13 100644
+--- a/thirdparty/sdl/core/linux/SDL_fcitx.c
++++ b/thirdparty/sdl/core/linux/SDL_fcitx.c
+@@ -24,7 +24,6 @@
+ 
+ #include "SDL_fcitx.h"
+ #include "../../video/SDL_sysvideo.h"
+-#include "../../events/SDL_keyboard_c.h"
+ #include "SDL_dbus.h"
+ 
+ #ifdef SDL_VIDEO_DRIVER_X11
+@@ -212,7 +211,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
+             SDL_SendEditingText("", 0, 0);
+         }
+ 
+-        SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
++        //SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
+         return DBUS_HANDLER_RESULT_HANDLED;
+     }
+ 
+@@ -394,7 +393,7 @@ bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
+                             DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &mod_state, DBUS_TYPE_BOOLEAN, &is_release, DBUS_TYPE_UINT32, &event_time, DBUS_TYPE_INVALID,
+                             DBUS_TYPE_BOOLEAN, &handled, DBUS_TYPE_INVALID)) {
+         if (handled) {
+-            SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
++            //SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
+             return true;
+         }
+     }
+@@ -435,7 +434,7 @@ void SDL_Fcitx_UpdateTextInputArea(SDL_Window *window)
+     if (cursor->x == -1 && cursor->y == -1 && cursor->w == 0 && cursor->h == 0) {
+         // move to bottom left
+         int w = 0, h = 0;
+-        SDL_GetWindowSize(window, &w, &h);
++        //SDL_GetWindowSize(window, &w, &h);
+         cursor->x = 0;
+         cursor->y = h;
+     }
+diff --git a/thirdparty/sdl/core/linux/SDL_ibus.c b/thirdparty/sdl/core/linux/SDL_ibus.c
+index ea58ed57787..8d63935858f 100644
+--- a/thirdparty/sdl/core/linux/SDL_ibus.c
++++ b/thirdparty/sdl/core/linux/SDL_ibus.c
+@@ -261,7 +261,7 @@ static DBusHandlerResult IBus_MessageHandler(DBusConnection *conn, DBusMessage *
+             }
+         }
+ 
+-        SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
++        //SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
+ 
+         return DBUS_HANDLER_RESULT_HANDLED;
+     }
+@@ -484,7 +484,7 @@ static bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
+         dbus->connection_flush(ibus_conn);
+     }
+ 
+-    SDL_Window *window = SDL_GetKeyboardFocus();
++    SDL_Window *window = NULL; //SDL_GetKeyboardFocus();
+     if (SDL_TextInputActive(window)) {
+         SDL_IBus_SetFocus(true);
+         SDL_IBus_UpdateTextInputArea(window);
+@@ -678,7 +678,7 @@ bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
+         }
+     }
+ 
+-    SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
++    //SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
+ 
+     return (result != 0);
+ }
+diff --git a/thirdparty/sdl/events/SDL_events.c b/thirdparty/sdl/events/SDL_events.c
+index eff205f71b3..8cef5db3846 100644
+--- a/thirdparty/sdl/events/SDL_events.c
++++ b/thirdparty/sdl/events/SDL_events.c
+@@ -24,10 +24,7 @@
+ 
+ #include "SDL_events_c.h"
+ #include "SDL_eventwatch_c.h"
+-#include "SDL_windowevents_c.h"
+ #include "../SDL_hints_c.h"
+-#include "../audio/SDL_audio_c.h"
+-#include "../camera/SDL_camera_c.h"
+ #include "../timer/SDL_timer_c.h"
+ #ifndef SDL_JOYSTICK_DISABLED
+ #include "../joystick/SDL_joystick_c.h"
+@@ -930,7 +927,7 @@ void SDL_StopEventLoop(void)
+     }
+ 
+     SDL_QuitEventWatchList(&SDL_event_watchers);
+-    SDL_QuitWindowEventWatch();
++    //SDL_QuitWindowEventWatch();
+ 
+     SDL_Mutex *lock = NULL;
+     if (SDL_EventQ.lock) {
+@@ -970,7 +967,7 @@ bool SDL_StartEventLoop(void)
+     }
+ #endif // !SDL_THREADS_DISABLED
+ 
+-    SDL_InitWindowEventWatch();
++    //SDL_InitWindowEventWatch();
+ 
+     SDL_EventQ.active = true;
+ 
+@@ -1072,7 +1069,7 @@ static void SDL_SendWakeupEvent(void)
+ #ifdef SDL_PLATFORM_ANDROID
+     Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_WAKE);
+ #else
+-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
++    SDL_VideoDevice *_this = NULL; //SDL_GetVideoDevice();
+     if (_this == NULL || !_this->SendWakeupEvent) {
+         return;
+     }
+@@ -1425,9 +1422,9 @@ void SDL_PumpEventMaintenance(void)
+     }
+ #endif
+ 
+-    SDL_UpdateTrays();
++    //SDL_UpdateTrays();
+ 
+-    SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.
++    //SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.
+ }
+ 
+ // Run the system dependent event loops
+@@ -1437,7 +1434,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
+     SDL_FreeTemporaryMemory();
+ 
+     // Release any keys held down from last frame
+-    SDL_ReleaseAutoReleaseKeys();
++    //SDL_ReleaseAutoReleaseKeys();
+ 
+     // Run any pending main thread callbacks
+     SDL_RunMainThreadCallbacks();
+@@ -1447,7 +1444,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
+     Android_PumpEvents(0);
+ #else
+     // Get events from the video subsystem
+-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
++    SDL_VideoDevice *_this = NULL; //SDL_GetVideoDevice();
+     if (_this) {
+         _this->PumpEvents(_this);
+     }
+@@ -1680,7 +1677,7 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
+         Android_PumpEvents(delay);
+     }
+ #else
+-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
++    SDL_VideoDevice *_this = NULL; //SDL_GetVideoDevice();
+     if (_this && _this->WaitEventTimeout && _this->SendWakeupEvent) {
+         // Look if a shown window is available to send the wakeup event.
+         SDL_Window *wakeup_window = SDL_find_active_window(_this);
+@@ -1870,7 +1867,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
+         /* turn off drag'n'drop support if we've disabled the events.
+            This might change some UI details at the OS level. */
+         if (type == SDL_EVENT_DROP_FILE || type == SDL_EVENT_DROP_TEXT) {
+-            SDL_ToggleDragAndDropSupport();
++            //SDL_ToggleDragAndDropSupport();
+         }
+     }
+ }
+@@ -1962,14 +1959,14 @@ bool SDL_InitEvents(void)
+         return false;
+     }
+ 
+-    SDL_InitQuit();
++    //SDL_InitQuit();
+ 
+     return true;
+ }
+ 
+ void SDL_QuitEvents(void)
+ {
+-    SDL_QuitQuit();
++    //SDL_QuitQuit();
+     SDL_StopEventLoop();
+     SDL_QuitMainThreadCallbacks();
+     SDL_RemoveHintCallback(SDL_HINT_POLL_SENTINEL, SDL_PollSentinelChanged, NULL);
+diff --git a/thirdparty/sdl/events/SDL_events_c.h b/thirdparty/sdl/events/SDL_events_c.h
+index e56ac475e5a..18fc026bc04 100644
+--- a/thirdparty/sdl/events/SDL_events_c.h
++++ b/thirdparty/sdl/events/SDL_events_c.h
+@@ -27,14 +27,7 @@
+ // Useful functions and variables from SDL_events.c
+ #include "../video/SDL_sysvideo.h"
+ 
+-#include "SDL_clipboardevents_c.h"
+-#include "SDL_displayevents_c.h"
+-#include "SDL_dropevents_c.h"
+-#include "SDL_keyboard_c.h"
+ #include "SDL_mouse_c.h"
+-#include "SDL_touch_c.h"
+-#include "SDL_pen_c.h"
+-#include "SDL_windowevents_c.h"
+ 
+ // Start and stop the event processing loop
+ extern bool SDL_StartEventLoop(void);
+diff --git a/thirdparty/sdl/joystick/SDL_joystick.c b/thirdparty/sdl/joystick/SDL_joystick.c
+index 7878b7cc686..0815173ad8a 100644
+--- a/thirdparty/sdl/joystick/SDL_joystick.c
++++ b/thirdparty/sdl/joystick/SDL_joystick.c
+@@ -1011,7 +1011,8 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, bool invert_sensors)
+        When a phone is being used as a gamepad, its orientation changes,
+        so adjust sensor axes to match.
+      */
+-    if (SDL_GetNaturalDisplayOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
++    //if (SDL_GetNaturalDisplayOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
++    if (true) {
+         /* When a device in landscape orientation is laid flat, the axes change
+            orientation as follows:
+             -X to +X becomes -X to +X
+@@ -2042,11 +2043,6 @@ static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
+     if (SDL_joystick_allows_background_events) {
+         return false;
+     }
+-
+-    if (SDL_HasWindows() && SDL_GetKeyboardFocus() == NULL) {
+-        // We have windows but we don't have focus, ignore the event.
+-        return true;
+-    }
+     return false;
+ }
+ 
+diff --git a/thirdparty/sdl/video/SDL_surface_c.h b/thirdparty/sdl/video/SDL_surface_c.h
+index 9e73a4bca7a..795b23afcff 100644
+--- a/thirdparty/sdl/video/SDL_surface_c.h
++++ b/thirdparty/sdl/video/SDL_surface_c.h
+@@ -25,8 +25,6 @@
+ 
+ // Useful functions and variables from SDL_surface.c
+ 
+-#include "SDL_blit.h"
+-
+ // Surface internal flags
+ typedef Uint32 SDL_SurfaceDataFlags;
+ 
+@@ -77,7 +75,7 @@ struct SDL_Surface
+     SDL_Rect clip_rect;
+ 
+     /** info for fast blit mapping to other surfaces */
+-    SDL_BlitMap map;
++    //SDL_BlitMap map;
+ };
+ 
+ // Surface functions

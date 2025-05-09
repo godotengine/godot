@@ -1,0 +1,93 @@
+# HIDAPI device info struct:
+dev->vendor_id           = 0x046D
+dev->product_id          = 0xC534
+dev->manufacturer_string = "Logitech"
+dev->product_string      = "USB Receiver"
+dev->release_number      = 0x2901
+dev->interface_number    = 1
+dev->usage               = 0x0001
+dev->usage_page          = 0x000C
+dev->path                = "\\?\hid#vid_046d&pid_c534&mi_01&col02#7&1ebb799e&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}"
+
+# Preparsed Data struct:
+pp_data->MagicKey                             = 0x48696450204B4452
+pp_data->Usage                                = 0x0001
+pp_data->UsagePage                            = 0x000C
+pp_data->Reserved                             = 0x00000000
+# Input caps_info struct:
+pp_data->caps_info[0]->FirstCap           = 0
+pp_data->caps_info[0]->LastCap            = 1
+pp_data->caps_info[0]->NumberOfCaps       = 1
+pp_data->caps_info[0]->ReportByteLength   = 5
+# Output caps_info struct:
+pp_data->caps_info[1]->FirstCap           = 1
+pp_data->caps_info[1]->LastCap            = 1
+pp_data->caps_info[1]->NumberOfCaps       = 0
+pp_data->caps_info[1]->ReportByteLength   = 0
+# Feature caps_info struct:
+pp_data->caps_info[2]->FirstCap           = 1
+pp_data->caps_info[2]->LastCap            = 1
+pp_data->caps_info[2]->NumberOfCaps       = 0
+pp_data->caps_info[2]->ReportByteLength   = 0
+# LinkCollectionArray Offset & Size:
+pp_data->FirstByteOfLinkCollectionArray       = 0x0068
+pp_data->NumberLinkCollectionNodes            = 1
+# Input hid_pp_cap struct:
+pp_data->cap[0]->UsagePage                    = 0x000C
+pp_data->cap[0]->ReportID                     = 0x03
+pp_data->cap[0]->BitPosition                  = 0
+pp_data->cap[0]->BitSize                      = 16
+pp_data->cap[0]->ReportCount                  = 2
+pp_data->cap[0]->BytePosition                 = 0x0001
+pp_data->cap[0]->BitCount                     = 32
+pp_data->cap[0]->BitField                     = 0x00
+pp_data->cap[0]->NextBytePosition             = 0x0005
+pp_data->cap[0]->LinkCollection               = 0x0000
+pp_data->cap[0]->LinkUsagePage                = 0x000C
+pp_data->cap[0]->LinkUsage                    = 0x0001
+pp_data->cap[0]->IsMultipleItemsForArray      = 0
+pp_data->cap[0]->IsButtonCap                  = 1
+pp_data->cap[0]->IsPadding                    = 0
+pp_data->cap[0]->IsAbsolute                   = 1
+pp_data->cap[0]->IsRange                      = 1
+pp_data->cap[0]->IsAlias                      = 0
+pp_data->cap[0]->IsStringRange                = 0
+pp_data->cap[0]->IsDesignatorRange            = 0
+pp_data->cap[0]->Reserved1                    = 0x000000
+pp_data->cap[0]->pp_cap->UnknownTokens[0].Token    = 0x00
+pp_data->cap[0]->pp_cap->UnknownTokens[0].Reserved = 0x000000
+pp_data->cap[0]->pp_cap->UnknownTokens[0].BitField = 0x00000000
+pp_data->cap[0]->pp_cap->UnknownTokens[1].Token    = 0x00
+pp_data->cap[0]->pp_cap->UnknownTokens[1].Reserved = 0x000000
+pp_data->cap[0]->pp_cap->UnknownTokens[1].BitField = 0x00000000
+pp_data->cap[0]->pp_cap->UnknownTokens[2].Token    = 0x00
+pp_data->cap[0]->pp_cap->UnknownTokens[2].Reserved = 0x000000
+pp_data->cap[0]->pp_cap->UnknownTokens[2].BitField = 0x00000000
+pp_data->cap[0]->pp_cap->UnknownTokens[3].Token    = 0x00
+pp_data->cap[0]->pp_cap->UnknownTokens[3].Reserved = 0x000000
+pp_data->cap[0]->pp_cap->UnknownTokens[3].BitField = 0x00000000
+pp_data->cap[0]->Range.UsageMin                     = 0x0001
+pp_data->cap[0]->Range.UsageMax                     = 0x028C
+pp_data->cap[0]->Range.StringMin                    = 0
+pp_data->cap[0]->Range.StringMax                    = 0
+pp_data->cap[0]->Range.DesignatorMin                = 0
+pp_data->cap[0]->Range.DesignatorMax                = 0
+pp_data->cap[0]->Range.DataIndexMin                 = 0
+pp_data->cap[0]->Range.DataIndexMax                 = 651
+pp_data->cap[0]->Button.LogicalMin                   = 1
+pp_data->cap[0]->Button.LogicalMax                   = 652
+pp_data->cap[0]->Units                    = 0
+pp_data->cap[0]->UnitsExp                 = 0
+
+# Output hid_pp_cap struct:
+# Feature hid_pp_cap struct:
+# Link Collections:
+pp_data->LinkCollectionArray[0]->LinkUsage          = 0x0001
+pp_data->LinkCollectionArray[0]->LinkUsagePage      = 0x000C
+pp_data->LinkCollectionArray[0]->Parent             = 0
+pp_data->LinkCollectionArray[0]->NumberOfChildren   = 0
+pp_data->LinkCollectionArray[0]->NextSibling        = 0
+pp_data->LinkCollectionArray[0]->FirstChild         = 0
+pp_data->LinkCollectionArray[0]->CollectionType     = 1
+pp_data->LinkCollectionArray[0]->IsAlias            = 0
+pp_data->LinkCollectionArray[0]->Reserved           = 0x00000000

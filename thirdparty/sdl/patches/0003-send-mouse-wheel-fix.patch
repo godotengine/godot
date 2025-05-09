@@ -1,0 +1,21 @@
+diff --git a/thirdparty/sdl/core/linux/SDL_evdev.c b/thirdparty/sdl/core/linux/SDL_evdev.c
+index cf2acd6f8db..29a0beca7a0 100644
+--- a/thirdparty/sdl/core/linux/SDL_evdev.c
++++ b/thirdparty/sdl/core/linux/SDL_evdev.c
+@@ -509,11 +509,11 @@ void SDL_EVDEV_Poll(void)
+                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {
+                             Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
+                             const float denom = (item->high_res_hwheel ? 120.0f : 1.0f);
+-                            SDL_SendMouseWheel(timestamp,
+-                                               mouse->focus, (SDL_MouseID)item->fd,
+-                                               item->mouse_hwheel / denom,
+-                                               item->mouse_wheel / denom,
+-                                               SDL_MOUSEWHEEL_NORMAL);
++                            //SDL_SendMouseWheel(timestamp,
++                            //                   mouse->focus, (SDL_MouseID)item->fd,
++                            //                   item->mouse_hwheel / denom,
++                            //                   item->mouse_wheel / denom,
++                            //                   SDL_MOUSEWHEEL_NORMAL);
+                             item->mouse_wheel = item->mouse_hwheel = 0;
+                         }
+ 

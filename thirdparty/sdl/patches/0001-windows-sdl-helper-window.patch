@@ -1,0 +1,17 @@
+diff --git a/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c b/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
+index b00218d969c..377992ed9ee 100644
+--- a/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
++++ b/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
+@@ -40,11 +40,8 @@
+ #define CONVERT_MAGNITUDE(x) (((x)*10000) / 0x7FFF)
+ 
+ // external variables referenced.
+-#ifdef SDL_VIDEO_DRIVER_WINDOWS
+ extern HWND SDL_HelperWindow;
+-#else
+-static const HWND SDL_HelperWindow = NULL;
+-#endif
++
+ 
+ // local variables
+ static bool coinitialized = false;

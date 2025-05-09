@@ -1,0 +1,53 @@
+HID report descriptor (dumped on Linux with hid-decode)
+Source: https://github.com/libusb/hidapi/issues/703
+
+# device 0:0
+# 0x05, 0x01,                    // Usage Page (Generic Desktop)        0
+# 0x09, 0x02,                    // Usage (Mouse)                       2
+# 0xa1, 0x01,                    // Collection (Application)            4
+# 0x09, 0x01,                    //  Usage (Pointer)                    6
+# 0xa1, 0x00,                    //  Collection (Physical)              8
+# 0x05, 0x09,                    //   Usage Page (Button)               10
+# 0x19, 0x01,                    //   Usage Minimum (1)                 12
+# 0x29, 0x05,                    //   Usage Maximum (5)                 14
+# 0x15, 0x00,                    //   Logical Minimum (0)               16
+# 0x25, 0x01,                    //   Logical Maximum (1)               18
+# 0x75, 0x01,                    //   Report Size (1)                   20
+# 0x95, 0x05,                    //   Report Count (5)                  22
+# 0x81, 0x02,                    //   Input (Data,Var,Abs)              24
+# 0x75, 0x01,                    //   Report Size (1)                   26
+# 0x95, 0x03,                    //   Report Count (3)                  28
+# 0x81, 0x03,                    //   Input (Cnst,Var,Abs)              30
+# 0x06, 0x00, 0xff,              //   Usage Page (Vendor Defined Page 1) 32
+# 0x09, 0x40,                    //   Usage (Vendor Usage 0x40)         35
+# 0x75, 0x08,                    //   Report Size (8)                   37
+# 0x95, 0x02,                    //   Report Count (2)                  39
+# 0x15, 0x81,                    //   Logical Minimum (-127)            41
+# 0x25, 0x7f,                    //   Logical Maximum (127)             43
+# 0x81, 0x02,                    //   Input (Data,Var,Abs)              45
+# 0x05, 0x01,                    //   Usage Page (Generic Desktop)      47
+# 0x09, 0x38,                    //   Usage (Wheel)                     49
+# 0x15, 0x81,                    //   Logical Minimum (-127)            51
+# 0x25, 0x7f,                    //   Logical Maximum (127)             53
+# 0x75, 0x08,                    //   Report Size (8)                   55
+# 0x95, 0x01,                    //   Report Count (1)                  57
+# 0x81, 0x06,                    //   Input (Data,Var,Rel)              59
+# 0x09, 0x30,                    //   Usage (X)                         61
+# 0x09, 0x31,                    //   Usage (Y)                         63
+# 0x16, 0x00, 0x80,              //   Logical Minimum (-32768)          65
+# 0x26, 0xff, 0x7f,              //   Logical Maximum (32767)           68
+# 0x75, 0x10,                    //   Report Size (16)                  71
+# 0x95, 0x02,                    //   Report Count (2)                  73
+# 0x81, 0x06,                    //   Input (Data,Var,Rel)              75
+# 0xc0,                          //  End Collection                     77
+# 0x06, 0x00, 0xff,              //  Usage Page (Vendor Defined Page 1) 78
+# 0x09, 0x02,                    //  Usage (Vendor Usage 2)             81
+# 0x15, 0x00,                    //  Logical Minimum (0)                83
+# 0x25, 0x01,                    //  Logical Maximum (1)                85
+# 0x75, 0x08,                    //  Report Size (8)                    87
+# 0x95, 0x5a,                    //  Report Count (90)                  89
+# 0xb1, 0x01,                    //  Feature (Cnst,Arr,Abs)             91
+# 0xc0,                          // End Collection                      93
+# 
+R: 94 05 01 09 02 a1 01 09 01 a1 00 05 09 19 01 29 05 15 00 25 01 75 01 95 05 81 02 75 01 95 03 81 03 06 00 ff 09 40 75 08 95 02 15 81 25 7f 81 02 05 01 09 38 15 81 25 7f 75 08 95 01 81 06 09 30 09 31 16 00 80 26 ff 7f 75 10 95 02 81 06 c0 06 00 ff 09 02 15 00 25 01 75 08 95 5a b1 01 c0
+N: device 0:0
