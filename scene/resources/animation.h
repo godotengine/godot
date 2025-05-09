@@ -257,6 +257,8 @@ private:
 
 	int _marker_insert(double p_time, Vector<MarkerKey> &p_keys, const MarkerKey &p_value);
 
+	_FORCE_INLINE_ void _remove_track(int p_track);
+
 	template <typename K>
 
 	inline int _find(const Vector<K> &p_keys, double p_time, bool p_backward = false, bool p_limit = false) const;
@@ -407,6 +409,7 @@ protected:
 public:
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
+	Error resize_tracks(int p_size);
 
 	_FORCE_INLINE_ const Vector<Track *> get_tracks() {
 		return tracks;
