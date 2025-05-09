@@ -3093,9 +3093,13 @@ void LineEdit::_update_context_menu() {
 }
 
 void LineEdit::_validate_property(PropertyInfo &p_property) const {
-	if (!caret_blink_enabled && p_property.name == "caret_blink_interval") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (!caret_blink_enabled && p_property.name == "caret_blink_interval") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 void LineEdit::_bind_methods() {

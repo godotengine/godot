@@ -1801,24 +1801,28 @@ PackedStringArray LightmapGI::get_configuration_warnings() const {
 }
 
 void LightmapGI::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "supersampling_factor" && !supersampling_enabled) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "supersampling_factor" && !supersampling_enabled) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+		if (p_property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+		if (p_property.name == "environment_custom_color" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+		if (p_property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+		if (p_property.name == "denoiser_strength" && !use_denoiser) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+		if (p_property.name == "denoiser_range" && !use_denoiser) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
-	if (p_property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "environment_custom_color" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "denoiser_strength" && !use_denoiser) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "denoiser_range" && !use_denoiser) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+#endif
 }
 
 void LightmapGI::_bind_methods() {

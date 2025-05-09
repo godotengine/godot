@@ -302,17 +302,20 @@ void FabrikInverseKinematic::_update_chain(const Skeleton3D *p_sk, ChainItem *p_
 
 void SkeletonIK3D::_validate_property(PropertyInfo &p_property) const {
 	SkeletonModifier3D::_validate_property(p_property);
-
-	if (p_property.name == "root_bone" || p_property.name == "tip_bone") {
-		Skeleton3D *skeleton = get_skeleton();
-		if (skeleton) {
-			p_property.hint = PROPERTY_HINT_ENUM;
-			p_property.hint_string = skeleton->get_concatenated_bone_names();
-		} else {
-			p_property.hint = PROPERTY_HINT_NONE;
-			p_property.hint_string = "";
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "root_bone" || p_property.name == "tip_bone") {
+			Skeleton3D *skeleton = get_skeleton();
+			if (skeleton) {
+				p_property.hint = PROPERTY_HINT_ENUM;
+				p_property.hint_string = skeleton->get_concatenated_bone_names();
+			} else {
+				p_property.hint = PROPERTY_HINT_NONE;
+				p_property.hint_string = "";
+			}
 		}
 	}
+#endif
 }
 
 void SkeletonIK3D::_bind_methods() {

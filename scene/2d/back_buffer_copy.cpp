@@ -80,9 +80,13 @@ BackBufferCopy::CopyMode BackBufferCopy::get_copy_mode() const {
 }
 
 void BackBufferCopy::_validate_property(PropertyInfo &p_property) const {
-	if (copy_mode != COPY_MODE_RECT && p_property.name == "rect") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (copy_mode != COPY_MODE_RECT && p_property.name == "rect") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 void BackBufferCopy::_bind_methods() {

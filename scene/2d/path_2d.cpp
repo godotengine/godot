@@ -276,14 +276,18 @@ bool PathFollow2D::is_cubic_interpolation_enabled() const {
 }
 
 void PathFollow2D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "offset") {
-		real_t max = 10000.0;
-		if (path && path->get_curve().is_valid()) {
-			max = path->get_curve()->get_baked_length();
-		}
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "offset") {
+			real_t max = 10000.0;
+			if (path && path->get_curve().is_valid()) {
+				max = path->get_curve()->get_baked_length();
+			}
 
-		p_property.hint_string = "0," + rtos(max) + ",0.01,or_less,or_greater";
+			p_property.hint_string = "0," + rtos(max) + ",0.01,or_less,or_greater";
+		}
 	}
+#endif
 }
 
 PackedStringArray PathFollow2D::get_configuration_warnings() const {

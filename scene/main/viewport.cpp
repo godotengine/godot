@@ -5290,13 +5290,17 @@ void Viewport::_bind_methods() {
 }
 
 void Viewport::_validate_property(PropertyInfo &p_property) const {
-	if (vrs_mode != VRS_TEXTURE && (p_property.name == "vrs_texture")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (vrs_mode != VRS_TEXTURE && (p_property.name == "vrs_texture")) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (vrs_mode == VRS_DISABLED && (p_property.name == "vrs_update_mode")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if (vrs_mode == VRS_DISABLED && (p_property.name == "vrs_update_mode")) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 Viewport::Viewport() {
@@ -5551,14 +5555,18 @@ void SubViewport::_bind_methods() {
 }
 
 void SubViewport::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "size") {
-		SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
-		if (parent_svc && parent_svc->is_stretch_enabled()) {
-			p_property.usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY;
-		} else {
-			p_property.usage = PROPERTY_USAGE_DEFAULT;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "size") {
+			SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
+			if (parent_svc && parent_svc->is_stretch_enabled()) {
+				p_property.usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY;
+			} else {
+				p_property.usage = PROPERTY_USAGE_DEFAULT;
+			}
 		}
 	}
+#endif
 }
 
 SubViewport::SubViewport() {

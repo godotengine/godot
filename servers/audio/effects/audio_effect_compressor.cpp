@@ -185,15 +185,19 @@ StringName AudioEffectCompressor::get_sidechain() const {
 }
 
 void AudioEffectCompressor::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "sidechain") {
-		String buses = "";
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			buses += ",";
-			buses += AudioServer::get_singleton()->get_bus_name(i);
-		}
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "sidechain") {
+			String buses = "";
+			for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+				buses += ",";
+				buses += AudioServer::get_singleton()->get_bus_name(i);
+			}
 
-		p_property.hint_string = buses;
+			p_property.hint_string = buses;
+		}
 	}
+#endif
 }
 
 void AudioEffectCompressor::_bind_methods() {

@@ -454,9 +454,13 @@ AABB GPUParticles3D::capture_aabb() const {
 }
 
 void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "emitting") {
-		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "emitting") {
+			p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
+		}
 	}
+#endif
 
 	if (p_property.name.begins_with("draw_pass_")) {
 		int index = p_property.name.get_slicec('_', 2).to_int() - 1;

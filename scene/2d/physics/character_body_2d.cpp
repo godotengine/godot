@@ -646,15 +646,19 @@ void CharacterBody2D::_notification(int p_what) {
 }
 
 void CharacterBody2D::_validate_property(PropertyInfo &p_property) const {
-	if (motion_mode == MOTION_MODE_FLOATING) {
-		if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	} else {
-		if (p_property.name == "wall_min_slide_angle") {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (motion_mode == MOTION_MODE_FLOATING) {
+			if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else {
+			if (p_property.name == "wall_min_slide_angle") {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 	}
+#endif
 }
 
 void CharacterBody2D::_bind_methods() {

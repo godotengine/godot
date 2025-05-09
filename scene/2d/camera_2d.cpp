@@ -920,15 +920,19 @@ bool Camera2D::is_margin_drawing_enabled() const {
 }
 
 void Camera2D::_validate_property(PropertyInfo &p_property) const {
-	if (!limit_enabled && (p_property.name == "limit_smoothed" || p_property.name == "limit_left" || p_property.name == "limit_top" || p_property.name == "limit_right" || p_property.name == "limit_bottom")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (!limit_enabled && (p_property.name == "limit_smoothed" || p_property.name == "limit_left" || p_property.name == "limit_top" || p_property.name == "limit_right" || p_property.name == "limit_bottom")) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+		if (!position_smoothing_enabled && p_property.name == "position_smoothing_speed") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+		if (!rotation_smoothing_enabled && p_property.name == "rotation_smoothing_speed") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
-	if (!position_smoothing_enabled && p_property.name == "position_smoothing_speed") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (!rotation_smoothing_enabled && p_property.name == "rotation_smoothing_speed") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+#endif
 }
 
 void Camera2D::_bind_methods() {

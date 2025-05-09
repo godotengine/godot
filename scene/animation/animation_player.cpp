@@ -108,23 +108,29 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
 	AnimationMixer::_validate_property(p_property);
 
-	if (p_property.name == "current_animation") {
-		List<String> names;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "current_animation") {
+			List<String> names;
 
-		for (const KeyValue<StringName, AnimationData> &E : animation_set) {
-			names.push_back(E.key);
-		}
-		names.push_front("[stop]");
-		String hint;
-		for (List<String>::Element *E = names.front(); E; E = E->next()) {
-			if (E != names.front()) {
-				hint += ",";
+			for (const KeyValue<StringName, AnimationData> &E : animation_set) {
+				names.push_back(E.key);
 			}
-			hint += E->get();
-		}
+			names.push_front("[stop]");
+			String hint;
+			for (List<String>::Element *E = names.front(); E; E = E->next()) {
+				if (E != names.front()) {
+					hint += ",";
+				}
+				hint += E->get();
+			}
 
-		p_property.hint_string = hint;
-	} else if (!auto_capture && p_property.name.begins_with("playback_auto_capture_")) {
+			p_property.hint_string = hint;
+			return;
+		}
+	}
+#endif
+	if (!auto_capture && p_property.name.begins_with("playback_auto_capture_")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }

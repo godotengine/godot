@@ -453,19 +453,23 @@ Rect2 Sprite2D::get_rect() const {
 }
 
 void Sprite2D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "frame") {
-		p_property.hint = PROPERTY_HINT_RANGE;
-		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
-		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
-	}
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "frame") {
+			p_property.hint = PROPERTY_HINT_RANGE;
+			p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
+			p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+		}
 
-	if (p_property.name == "frame_coords") {
-		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
-	}
+		if (p_property.name == "frame_coords") {
+			p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+		}
 
-	if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip_enabled")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip_enabled")) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 void Sprite2D::_texture_changed() {

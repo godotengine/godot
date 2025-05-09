@@ -201,11 +201,15 @@ AABB ReflectionProbe::get_aabb() const {
 }
 
 void ReflectionProbe::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "ambient_color" || p_property.name == "ambient_color_energy") {
-		if (ambient_mode != AMBIENT_COLOR) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "ambient_color" || p_property.name == "ambient_color_energy") {
+			if (ambient_mode != AMBIENT_COLOR) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 	}
+#endif
 }
 
 void ReflectionProbe::_bind_methods() {

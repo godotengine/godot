@@ -113,56 +113,60 @@ Rect2 AnimatedSprite2D::_get_rect() const {
 }
 
 void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
-	if (frames.is_null()) {
-		return;
-	}
-
-	if (p_property.name == "animation") {
-		List<StringName> names;
-		frames->get_animation_list(&names);
-		names.sort_custom<StringName::AlphCompare>();
-
-		bool current_found = false;
-		bool is_first_element = true;
-
-		for (const StringName &E : names) {
-			if (!is_first_element) {
-				p_property.hint_string += ",";
-			} else {
-				is_first_element = false;
-			}
-
-			p_property.hint_string += String(E);
-			if (animation == E) {
-				current_found = true;
-			}
-		}
-
-		if (!current_found) {
-			if (p_property.hint_string.is_empty()) {
-				p_property.hint_string = String(animation);
-			} else {
-				p_property.hint_string = String(animation) + "," + p_property.hint_string;
-			}
-		}
-		return;
-	}
-
-	if (p_property.name == "frame") {
-		if (playing) {
-			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (frames.is_null()) {
 			return;
 		}
 
-		p_property.hint = PROPERTY_HINT_RANGE;
-		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 0) {
-			p_property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
-		} else {
-			// Avoid an error, `hint_string` is required for `PROPERTY_HINT_RANGE`.
-			p_property.hint_string = "0,0,1";
+		if (p_property.name == "animation") {
+			List<StringName> names;
+			frames->get_animation_list(&names);
+			names.sort_custom<StringName::AlphCompare>();
+
+			bool current_found = false;
+			bool is_first_element = true;
+
+			for (const StringName &E : names) {
+				if (!is_first_element) {
+					p_property.hint_string += ",";
+				} else {
+					is_first_element = false;
+				}
+
+				p_property.hint_string += String(E);
+				if (animation == E) {
+					current_found = true;
+				}
+			}
+
+			if (!current_found) {
+				if (p_property.hint_string.is_empty()) {
+					p_property.hint_string = String(animation);
+				} else {
+					p_property.hint_string = String(animation) + "," + p_property.hint_string;
+				}
+			}
+			return;
 		}
-		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+
+		if (p_property.name == "frame") {
+			if (playing) {
+				p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+				return;
+			}
+
+			p_property.hint = PROPERTY_HINT_RANGE;
+			if (frames->has_animation(animation) && frames->get_frame_count(animation) > 0) {
+				p_property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
+			} else {
+				// Avoid an error, `hint_string` is required for `PROPERTY_HINT_RANGE`.
+				p_property.hint_string = "0,0,1";
+			}
+			p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+		}
 	}
+#endif
 }
 
 void AnimatedSprite2D::_notification(int p_what) {

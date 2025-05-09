@@ -133,23 +133,27 @@ bool SkeletonProfile::_get(const StringName &p_path, Variant &r_ret) const {
 }
 
 void SkeletonProfile::_validate_property(PropertyInfo &p_property) const {
-	if (is_read_only) {
-		if (p_property.name == ("group_size") || p_property.name == ("bone_size") || p_property.name == ("root_bone") || p_property.name == ("scale_base_bone")) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-			return;
-		}
-	}
-
-	if (p_property.name == ("root_bone") || p_property.name == ("scale_base_bone")) {
-		String hint = "";
-		for (int i = 0; i < bones.size(); i++) {
-			if (i > 0) {
-				hint += ",";
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (is_read_only) {
+			if (p_property.name == ("group_size") || p_property.name == ("bone_size") || p_property.name == ("root_bone") || p_property.name == ("scale_base_bone")) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+				return;
 			}
-			hint += String(bones[i].bone_name);
 		}
-		p_property.hint_string = hint;
+
+		if (p_property.name == ("root_bone") || p_property.name == ("scale_base_bone")) {
+			String hint = "";
+			for (int i = 0; i < bones.size(); i++) {
+				if (i > 0) {
+					hint += ",";
+				}
+				hint += String(bones[i].bone_name);
+			}
+			p_property.hint_string = hint;
+		}
 	}
+#endif
 
 	PackedStringArray split = p_property.name.split("/");
 	if (split.size() == 3 && split[0] == "bones") {

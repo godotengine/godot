@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "gradient.h"
+#include "core/config/engine.h"
 
 Gradient::Gradient() {
 	//Set initial gradient transition from black to white
@@ -88,9 +89,13 @@ void Gradient::_bind_methods() {
 }
 
 void Gradient::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "interpolation_color_space" && interpolation_mode == GRADIENT_INTERPOLATE_CONSTANT) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "interpolation_color_space" && interpolation_mode == GRADIENT_INTERPOLATE_CONSTANT) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 Vector<float> Gradient::get_offsets() const {
