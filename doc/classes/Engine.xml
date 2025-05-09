@@ -228,28 +228,6 @@
 				[b]Note:[/b] Global singletons are not the same as autoloaded nodes, which are configurable in the project settings.
 			</description>
 		</method>
-		<method name="is_editor_hint" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the script is currently running inside the editor, otherwise returns [code]false[/code]. This is useful for [code]@tool[/code] scripts to conditionally draw editor helpers, or prevent accidentally running "game" code that would affect the scene state while in the editor:
-				[codeblocks]
-				[gdscript]
-				if Engine.is_editor_hint():
-				    draw_gizmos()
-				else:
-				    simulate_physics()
-				[/gdscript]
-				[csharp]
-				if (Engine.IsEditorHint())
-				    DrawGizmos();
-				else
-				    SimulatePhysics();
-				[/csharp]
-				[/codeblocks]
-				See [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]Running code in the editor[/url] in the documentation for more information.
-				[b]Note:[/b] To detect whether the script is running on an editor [i]build[/i] (such as when pressing [kbd]F5[/kbd]), use [method OS.has_feature] with the [code]"editor"[/code] argument instead. [code]OS.has_feature("editor")[/code] evaluate to [code]true[/code] both when the script is running in the editor and when running the project from the editor, but returns [code]false[/code] when run from an exported project.
-			</description>
-		</method>
 		<method name="is_embedded_in_editor" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -312,6 +290,25 @@
 		</method>
 	</methods>
 	<members>
+		<member name="editor_hint" type="bool" setter="" getter="is_editor_hint" default="true">
+			If [code]true[/code], the script is currently running inside the editor, otherwise it is [code]false[/code]. This property cannot be modified, and is useful for [annotation @GDScript.@tool] scripts to conditionally draw editor helpers, or prevent accidentally running "game" code that would affect the scene state while in the editor:
+			[codeblocks]
+			[gdscript]
+			if Engine.editor_hint:
+			    draw_gizmos()
+			else:
+			    simulate_physics()
+			[/gdscript]
+			[csharp]
+			if (Engine.editorHint)
+			    DrawGizmos();
+			else
+			    SimulatePhysics();
+			[/csharp]
+			[/codeblocks]
+			See [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]Running code in the editor[/url] in the documentation for more information.
+			[b]Note:[/b] To detect whether the script is run from an editor [i]build[/i] (such as when pressing [kbd]F5[/kbd]), use [method OS.has_feature] with the [code]"editor"[/code] argument instead. [code]OS.has_feature("editor")[/code] returns [code]true[/code] both when the code is running in the editor and when running the project from the editor, but returns [code]false[/code] when the code is run from an exported project.
+		</member>
 		<member name="max_fps" type="int" setter="set_max_fps" getter="get_max_fps" default="0">
 			The maximum number of frames that can be rendered every second (FPS). A value of [code]0[/code] means the framerate is uncapped.
 			Limiting the FPS can be useful to reduce the host machine's power consumption, which reduces heat, noise emissions, and improves battery life.
