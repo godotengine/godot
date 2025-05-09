@@ -4814,7 +4814,7 @@ void EditorNode::_update_recent_scenes() {
 	recent_scenes->clear();
 
 	if (rc.size() == 0) {
-		recent_scenes->add_item(TTR("No Recent Scenes"), -1);
+		recent_scenes->add_item(TTRC("No Recent Scenes"), -1);
 		recent_scenes->set_item_disabled(-1, true);
 	} else {
 		String path;
