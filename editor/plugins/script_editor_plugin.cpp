@@ -2759,6 +2759,8 @@ void ScriptEditor::save_all_scripts() {
 				scenes_to_save.insert(scene_path);
 			}
 		}
+
+		edited_res->emit_changed();
 	}
 
 	if (!scenes_to_save.is_empty()) {
