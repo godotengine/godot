@@ -1,0 +1,8 @@
+#include "color.frag.spv.h"
+#include "linepoint.vert.spv.h"
+#include "texture_rgb.frag.spv.h"
+#include "texture_rgb_pixelart.frag.spv.h"
+#include "texture_rgba.frag.spv.h"
+#include "texture_rgba_pixelart.frag.spv.h"
+#include "tri_color.vert.spv.h"
+#include "tri_texture.vert.spv.h"

@@ -1,0 +1,30 @@
+###########################################
+# Simple Makefile for HIDAPI test program
+#
+# Alan Ott
+# Signal 11 Software
+# 2010-06-01
+###########################################
+
+all: hidtest libhidapi.dll
+
+CC=gcc
+COBJS=hid.o ../hidtest/test.o
+OBJS=$(COBJS)
+CFLAGS=-I../hidapi -I. -g -c
+LIBS=
+DLL_LDFLAGS = -mwindows
+
+hidtest: $(OBJS)
+	$(CC) -g $^ $(LIBS) -o hidtest
+
+libhidapi.dll: $(OBJS)
+	$(CC) -g $^ $(DLL_LDFLAGS) -o libhidapi.dll
+
+$(COBJS): %.o: %.c
+	$(CC) $(CFLAGS) $< -o $@
+
+clean:
+	rm *.o ../hidtest/*.o hidtest.exe
+
+.PHONY: clean

@@ -39,6 +39,8 @@
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
 
+class JoypadSDL;
+
 class OS_MacOS : public OS_Unix {
 #ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
@@ -63,6 +65,9 @@ protected:
 	char **argv = nullptr;
 
 	JoypadApple *joypad_apple = nullptr;
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 	MainLoop *main_loop = nullptr;
 
 	virtual void initialize_core() override;

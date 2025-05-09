@@ -1,0 +1,39 @@
+###########################################
+# Simple Makefile for HIDAPI test program
+#
+# Alan Ott
+# Signal 11 Software
+# 2010-06-01
+###########################################
+
+all: hidtest libs
+
+libs: libhidapi.so
+
+CC       ?= cc
+CFLAGS   ?= -Wall -g -fPIC
+
+COBJS     = hid.o ../hidtest/test.o
+OBJS      = $(COBJS)
+INCLUDES  = -I../hidapi -I. -I/usr/local/include
+LDFLAGS   = -L/usr/local/lib
+LIBS      = -lusb -liconv -pthread
+
+
+# Console Test Program
+hidtest: $(OBJS)
+    $(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
+
+# Shared Libs
+libhidapi.so: $(COBJS)
+    $(CC) $(LDFLAGS) -shared -Wl,-soname,$@.0 $^ -o $@ $(LIBS)
+
+# Objects
+$(COBJS): %.o: %.c
+    $(CC) $(CFLAGS) -c $(INCLUDES) $< -o $@
+
+
+clean:
+    rm -f $(OBJS) hidtest libhidapi.so ../hidtest/hidtest.o
+
+.PHONY: clean libs

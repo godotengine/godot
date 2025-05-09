@@ -1,0 +1,61 @@
+Usage Page (Consumer Devices) 05 0C  
+Usage (Consumer Control) 09 01  
+Collection (Application) A1 01  
+    Report ID (1) 85 01  
+    Logical Minimum (0) 15 00  
+    Logical Maximum (1) 25 01  
+    Usage (Volume Increment) 09 E9  
+    Usage (Volume Decrement) 09 EA  
+    Report Size (1) 75 01  
+    Report Count (2) 95 02  
+    Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit) 81 02  
+    Usage (Mute) 09 E2  
+    Report Count (1) 95 01  
+    Input (Data,Var,Rel,NWrp,Lin,Pref,NNul,Bit) 81 06  
+    Usage (Undefined) 09 00  
+    Report Count (2) 95 02  
+    Input (Cnst,Var,Abs,NWrp,Lin,Pref,NNul,Bit) 81 03  
+    Usage (Function Buttons) 09 36  
+    Collection (Logical) A1 02  
+        Usage Page (Button) 05 09  
+        Usage Minimum (Button 1) 19 01  
+        Usage Maximum (Button 2) 29 02  
+        Report Size (2) 75 02  
+        Report Count (1) 95 01  
+        Logical Minimum (1) 15 01  
+        Logical Maximum (2) 25 02  
+        Input (Data,Ary,Abs) 81 40  
+    End Collection C0  
+    Usage Page (Consumer Devices) 05 0C  
+    Usage (Undefined) 09 00  
+    Logical Minimum (0) 15 00  
+    Logical Maximum (1) 25 01  
+    Report Size (1) 75 01  
+    Report Count (1) 95 01  
+    Input (Cnst,Var,Abs,NWrp,Lin,Pref,NNul,Bit) 81 03  
+    Report ID (2) 85 02  
+    Usage Page (Consumer Devices) 05 0C  
+    Usage (Undefined) 09 00  
+    Report Count (16) 95 10  
+    Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit) 81 02  
+    Report ID (3) 85 03  
+    Usage (Undefined) 09 00  
+    Output (Data,Var,Abs,NWrp,Lin,Pref,NNul,NVol,Bit) 91 02  
+    Report ID (4) 85 04  
+    Usage (Undefined) 09 00  
+    Report Size (8) 75 08  
+    Report Count (36) 95 24  
+    Output (Data,Var,Abs,NWrp,Lin,Pref,NNul,NVol,Bit) 91 02  
+    Report ID (5) 85 05  
+    Usage (Undefined) 09 00  
+    Report Count (32) 95 20  
+    Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit) 81 02  
+    Report ID (6) 85 06  
+    Usage (Undefined) 09 00  
+    Report Count (36) 95 24  
+    Output (Data,Var,Abs,NWrp,Lin,Pref,NNul,NVol,Bit) 91 02  
+    Report ID (7) 85 07  
+    Usage (Undefined) 09 00  
+    Report Count (32) 95 20  
+    Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit) 81 02  
+End Collection C0 
