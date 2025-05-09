@@ -35,6 +35,7 @@
 #include "core/input/default_controller_mappings.h"
 #include "core/input/input_map.h"
 #include "core/os/os.h"
+#include "servers/audio_server.h"
 
 #ifdef DEV_ENABLED
 #include "core/os/thread.h"
@@ -168,6 +169,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_emulating_mouse_from_touch"), &Input::is_emulating_mouse_from_touch);
 	ClassDB::bind_method(D_METHOD("set_emulate_touch_from_mouse", "enable"), &Input::set_emulate_touch_from_mouse);
 	ClassDB::bind_method(D_METHOD("is_emulating_touch_from_mouse"), &Input::is_emulating_touch_from_mouse);
+	ClassDB::bind_method(D_METHOD("start_microphone"), &Input::start_microphone);
+	ClassDB::bind_method(D_METHOD("stop_microphone"), &Input::stop_microphone);
+	ClassDB::bind_method(D_METHOD("get_microphone_frames_available"), &Input::get_microphone_frames_available);
+	ClassDB::bind_method(D_METHOD("get_microphone_buffer", "frames"), &Input::get_microphone_buffer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
@@ -1833,6 +1838,53 @@ void Input::set_disable_input(bool p_disable) {
 
 bool Input::is_input_disabled() const {
 	return disable_input;
+}
+
+Error Input::start_microphone() {
+	if (!GLOBAL_GET("audio/driver/enable_input")) {
+		WARN_PRINT("You must enable the project setting \"audio/driver/enable_input\" to use audio capture.");
+		return FAILED;
+	}
+
+	microphone_buffer_ofs = 0;
+	return AudioDriver::get_singleton()->input_start();
+}
+
+Error Input::stop_microphone() {
+	return AudioDriver::get_singleton()->input_stop();
+}
+
+int Input::get_microphone_frames_available() {
+	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
+	if (input_position < microphone_buffer_ofs) {
+		Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
+		input_position += buf.size();
+	}
+	return (input_position - microphone_buffer_ofs) / 2;
+}
+
+PackedVector2Array Input::get_microphone_buffer(int p_frames) {
+	PackedVector2Array ret;
+	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
+	Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
+	if (input_position < microphone_buffer_ofs) {
+		input_position += buf.size();
+	}
+	if ((microphone_buffer_ofs + p_frames * 2 <= input_position) && (p_frames >= 0)) {
+		ret.resize(p_frames);
+		for (int i = 0; i < p_frames; i++) {
+			float l = (buf[microphone_buffer_ofs++] >> 16) / 32768.f;
+			if (microphone_buffer_ofs >= buf.size()) {
+				microphone_buffer_ofs = 0;
+			}
+			float r = (buf[microphone_buffer_ofs++] >> 16) / 32768.f;
+			if (microphone_buffer_ofs >= buf.size()) {
+				microphone_buffer_ofs = 0;
+			}
+			ret.write[i] = Vector2(l, r);
+		}
+	}
+	return ret;
 }
 
 Input::Input() {
