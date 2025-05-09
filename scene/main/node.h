@@ -501,6 +501,13 @@ public:
 	Node *get_parent() const;
 	Node *find_parent(const String &p_pattern) const;
 
+	// Fast unsafe access to children, for bottleneck code.
+	// Use get_child_count() / get_child() for safe access.
+	// These are raw and include internal children.
+	// Callers *must* call `update_cached_children()` if there is a possibility cached children are not up to date.
+	void update_cached_children() const { _update_children_cache(); }
+	Span<Node *> get_cached_children() const { return data.children_cache.span(); }
+
 	Window *get_window() const;
 	Window *get_last_exclusive_window() const;
 

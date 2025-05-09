@@ -318,12 +318,16 @@ void SceneTreeFTI::_update_dirty_nodes(Node *p_node, uint32_t p_current_frame, f
 		return;
 	}
 
+	p_node->update_cached_children();
+	Span<Node *> children = p_node->get_cached_children();
+	uint32_t num_children = children.size();
+
 	// Not a Node3D.
 	// Could be e.g. a viewport or something
 	// so we should still recurse to children.
 	if (!s) {
-		for (int n = 0; n < p_node->get_child_count(); n++) {
-			_update_dirty_nodes(p_node->get_child(n), p_current_frame, p_interpolation_fraction, p_active, nullptr, p_depth + 1);
+		for (uint32_t n = 0; n < num_children; n++) {
+			_update_dirty_nodes(children.ptr()[n], p_current_frame, p_interpolation_fraction, p_active, nullptr, p_depth + 1);
 		}
 		return;
 	}
@@ -424,8 +428,8 @@ void SceneTreeFTI::_update_dirty_nodes(Node *p_node, uint32_t p_current_frame, f
 	s->_clear_dirty_bits(Node3D::DIRTY_GLOBAL_INTERPOLATED_TRANSFORM);
 
 	// Recurse to children.
-	for (int n = 0; n < p_node->get_child_count(); n++) {
-		_update_dirty_nodes(p_node->get_child(n), p_current_frame, p_interpolation_fraction, p_active, s->data.fti_global_xform_interp_set ? &s->data.global_transform_interpolated : &s->data.global_transform, p_depth + 1);
+	for (uint32_t n = 0; n < num_children; n++) {
+		_update_dirty_nodes(children.ptr()[n], p_current_frame, p_interpolation_fraction, p_active, s->data.fti_global_xform_interp_set ? &s->data.global_transform_interpolated : &s->data.global_transform, p_depth + 1);
 	}
 }
 
