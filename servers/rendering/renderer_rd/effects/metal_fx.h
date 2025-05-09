@@ -92,6 +92,7 @@ public:
 	~MFXSpatialEffect();
 };
 
+#if !defined(VISIONOS_ENABLED)
 struct MFXTemporalContext {
 #ifdef __OBJC__
 	id<MTLFXTemporalScaler> scaler = nullptr;
@@ -173,6 +174,7 @@ public:
 
 	void process(MFXTemporalContext *p_ctx, Params p_params);
 };
+#endif
 
 } //namespace RendererRD
 

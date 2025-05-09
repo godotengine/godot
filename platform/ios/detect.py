@@ -2,7 +2,7 @@ import os
 import sys
 from typing import TYPE_CHECKING
 
-from methods import detect_darwin_sdk_path, print_error, print_warning
+from methods import detect_darwin_sdk_path, detect_darwin_toolchain_path, print_error, print_warning
 from platform_methods import validate_arch
 
 if TYPE_CHECKING:
@@ -26,13 +26,16 @@ def get_opts():
     return [
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
         (
-            "IOS_TOOLCHAIN_PATH",
-            "Path to iOS toolchain",
-            "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain",
+            # Example: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
+            "APPLE_TOOLCHAIN_PATH",
+            "Path to the Apple toolchain",
+            "",
         ),
         ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
-        BoolVariable("ios_simulator", "Build for iOS Simulator", False),
-        ("ios_triple", "Triple for ios toolchain", ""),
+        ("apple_target_triple", "Triple for corresponding target Apple platform toolchain", ""),
+        ("ios_triple", "Deprecated, use 'apple_target_triple' instead", ""),
+        BoolVariable("simulator", "Build for Simulator", False),
+        BoolVariable("ios_simulator", "Deprecated, use 'simulator=yes' instead", False),
         BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
     ]
 
@@ -59,9 +62,15 @@ def get_flags():
 
 
 def configure(env: "SConsEnvironment"):
+    # Backwards compatibility with old 'ios_simulator' option
+    if env["ios_triple"]:
+        print_warning("The 'ios_triple' option is deprecated, use 'apple_target_triple' instead.")
+        env["apple_target_triple"] = env["ios_triple"]
+
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     validate_arch(env["arch"], get_name(), supported_arches)
+    detect_darwin_toolchain_path(env)
 
     ## LTO
 
@@ -82,9 +91,9 @@ def configure(env: "SConsEnvironment"):
     if "OSXCROSS_IOS" in os.environ:
         env["osxcross"] = True
 
-    env["ENV"]["PATH"] = env["IOS_TOOLCHAIN_PATH"] + "/Developer/usr/bin/:" + env["ENV"]["PATH"]
+    env["ENV"]["PATH"] = env["APPLE_TOOLCHAIN_PATH"] + "/Developer/usr/bin/:" + env["ENV"]["PATH"]
 
-    compiler_path = "$IOS_TOOLCHAIN_PATH/usr/bin/${ios_triple}"
+    compiler_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/${apple_target_triple}"
 
     ccache_path = os.environ.get("CCACHE")
     if ccache_path is None:
@@ -102,7 +111,12 @@ def configure(env: "SConsEnvironment"):
 
     ## Compile flags
 
+    # Backwards compatibility with old 'ios_simulator' option
     if env["ios_simulator"]:
+        print_warning("The 'ios_simulator' option is deprecated, use 'simulator=yes' instead.")
+        env["simulator"] = True
+
+    if env["simulator"]:
         detect_darwin_sdk_path("iossimulator", env)
         env.Append(ASFLAGS=["-mios-simulator-version-min=12.0"])
         env.Append(CCFLAGS=["-mios-simulator-version-min=12.0"])
@@ -114,8 +128,8 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-miphoneos-version-min=12.0"])
 
     if env["arch"] == "x86_64":
-        if not env["ios_simulator"]:
-            print_error("Building for iOS with 'arch=x86_64' requires 'ios_simulator=yes'.")
+        if not env["simulator"]:
+            print_error("Building for iOS with 'arch=x86_64' requires 'simulator=yes'.")
             sys.exit(255)
 
         env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
@@ -149,10 +163,10 @@ def configure(env: "SConsEnvironment"):
     )
 
     env.Prepend(CPPPATH=["#platform/ios"])
-    env.Append(CPPDEFINES=["IOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
+    env.Append(CPPDEFINES=["IOS_ENABLED", "APPLE_EMBEDDED_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
-    if env["metal"] and env["ios_simulator"]:
-        print_warning("iOS simulator does not support the Metal rendering driver")
+    if env["metal"] and env["simulator"]:
+        print_warning("iOS Simulator does not support the Metal rendering driver")
         env["metal"] = False
 
     if env["metal"]:
@@ -166,8 +180,8 @@ def configure(env: "SConsEnvironment"):
         )
         env.Prepend(CPPEXTPATH=["#thirdparty/spirv-cross"])
 
-    if env["vulkan"] and env["ios_simulator"]:
-        print_warning("iOS simulator does not support the Vulkan rendering driver")
+    if env["vulkan"] and env["simulator"]:
+        print_warning("iOS Simulator does not support the Vulkan rendering driver")
         env["vulkan"] = False
 
     if env["vulkan"]:

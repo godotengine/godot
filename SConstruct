@@ -647,7 +647,11 @@ if env["scu_build"]:
 # are actually handled to change compile options, etc.
 detect.configure(env)
 
-print(f'Building for platform "{env["platform"]}", architecture "{env["arch"]}", target "{env["target"]}".')
+platform_string = env["platform"]
+if env.get("simulator"):
+    platform_string += " (simulator)"
+print(f'Building for platform "{platform_string}", architecture "{env["arch"]}", target "{env["target"]}".')
+
 if env.dev_build:
     print_info("Developer build, with debug optimization level and debug symbols (unless overridden).")
 
