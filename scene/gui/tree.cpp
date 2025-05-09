@@ -4452,17 +4452,25 @@ void Tree::update_scrollbars() {
 	const int title_button_height = _get_title_button_height();
 
 	Size2 tree_content_size = content_rect.get_size() - Vector2(0, title_button_height);
-	bool display_vscroll = internal_min_size.height > tree_content_size.height;
-	bool display_hscroll = internal_min_size.width > tree_content_size.width;
+
+	bool display_vscroll = v_scroll_enabled && 
+			internal_min_size.height > tree_content_size.height;
+
+	bool display_hscroll = h_scroll_enabled && 
+			internal_min_size.width > tree_content_size.width;
+
 	for (int i = 0; i < 2; i++) {
-		// Check twice, as both values are dependent on each other.
-		if (display_hscroll) {
-			tree_content_size.height = content_rect.get_size().height - title_button_height - hmin.height;
-			display_vscroll = internal_min_size.height > tree_content_size.height;
+		if (display_hscroll) { // 
+			tree_content_size.height =
+					content_rect.get_size().height - title_button_height - hmin.height;
+			display_vscroll = v_scroll_enabled && 
+					internal_min_size.height > tree_content_size.height;
 		}
-		if (display_vscroll) {
-			tree_content_size.width = content_rect.get_size().width - vmin.width;
-			display_hscroll = internal_min_size.width > tree_content_size.width;
+		if (display_vscroll) { 
+			tree_content_size.width =
+					content_rect.get_size().width - vmin.width;
+			display_hscroll = h_scroll_enabled && 
+					internal_min_size.width > tree_content_size.width;
 		}
 	}
 
