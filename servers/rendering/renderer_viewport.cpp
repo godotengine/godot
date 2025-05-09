@@ -182,9 +182,9 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			bool use_taa = p_viewport->use_taa;
 
 			if (scaling_3d_is_not_bilinear && (scaling_3d_scale >= (1.0 + EPSILON))) {
-				// FSR and MetalFX is not designed for downsampling.
+				// FSR, MetalFX and nearest-neighbor scaling are not designed for downsampling.
 				// Fall back to bilinear scaling.
-				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
+				WARN_PRINT_ONCE("FSR, MetalFX or nearest-neighbor 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			}
 
@@ -209,6 +209,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 
 			switch (scaling_3d_mode) {
 				case RS::VIEWPORT_SCALING_3D_MODE_BILINEAR:
+				case RS::VIEWPORT_SCALING_3D_MODE_NEAREST:
 					// Clamp 3D rendering resolution to reasonable values supported on most hardware.
 					// This prevents freezing the engine or outright crashing on lower-end GPUs.
 					target_width = p_viewport->size.width;
