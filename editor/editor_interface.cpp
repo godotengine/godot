@@ -666,7 +666,7 @@ PackedStringArray EditorInterface::get_open_scenes() const {
 	PackedStringArray ret;
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
-	for (EditorData::EditedScene &edited_scene : scenes) {
+	for (const EditorData::EditedScene &edited_scene : scenes) {
 		if (edited_scene.root == nullptr) {
 			continue;
 		}
@@ -679,7 +679,7 @@ TypedArray<Node> EditorInterface::get_open_scene_roots() const {
 	TypedArray<Node> ret;
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
-	for (EditorData::EditedScene &edited_scene : scenes) {
+	for (const EditorData::EditedScene &edited_scene : scenes) {
 		if (edited_scene.root == nullptr) {
 			continue;
 		}

@@ -165,7 +165,7 @@ TEST_CASE("[UDPServer] Handle multiple clients at the same time") {
 
 	wait_for_condition([&]() {
 		bool should_exit = true;
-		for (Ref<PacketPeerUDP> &c : clients) {
+		for (const Ref<PacketPeerUDP> &c : clients) {
 			int count = c->get_available_packet_count();
 			if (count < 0) {
 				return true;
@@ -187,7 +187,7 @@ TEST_CASE("[UDPServer] Handle multiple clients at the same time") {
 		CHECK_EQ(received_var.operator float(), expected);
 	}
 
-	for (Ref<PacketPeerUDP> &c : clients) {
+	for (const Ref<PacketPeerUDP> &c : clients) {
 		c->close();
 	}
 	server->stop();

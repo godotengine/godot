@@ -2786,7 +2786,7 @@ void PopupMenu::add_separator(const String &p_text, int p_id) {
 }
 
 void PopupMenu::clear(bool p_free_submenus) {
-	for (Item &I : items) {
+	for (const Item &I : items) {
 		if (I.accessibility_item_element.is_valid()) {
 			DisplayServer::get_singleton()->accessibility_free_element(I.accessibility_item_element);
 			I.accessibility_item_element = RID();

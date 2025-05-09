@@ -570,7 +570,7 @@ void ScriptCreateDialog::_update_template_menu() {
 						template_menu->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 						separator = true;
 					}
-					for (ScriptLanguage::ScriptTemplate &t : templates_found) {
+					for (ScriptLanguage::ScriptTemplate &t : templates_found.write) {
 						template_menu->add_item(t.inherit + ": " + t.name);
 						int id = template_menu->get_item_count() - 1;
 						// Check if this template should be preselected if node isn't in the last used dictionary.

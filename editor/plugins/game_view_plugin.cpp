@@ -118,7 +118,7 @@ void GameViewDebugger::set_suspend(bool p_enabled) {
 	Array message;
 	message.append(p_enabled);
 
-	for (Ref<EditorDebuggerSession> &I : sessions) {
+	for (const Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
 			I->send_message("scene:suspend_changed", message);
 		}
@@ -126,7 +126,7 @@ void GameViewDebugger::set_suspend(bool p_enabled) {
 }
 
 void GameViewDebugger::next_frame() {
-	for (Ref<EditorDebuggerSession> &I : sessions) {
+	for (const Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
 			I->send_message("scene:next_frame", Array());
 		}
@@ -139,7 +139,7 @@ void GameViewDebugger::set_node_type(int p_type) {
 	Array message;
 	message.append(p_type);
 
-	for (Ref<EditorDebuggerSession> &I : sessions) {
+	for (const Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
 			I->send_message("scene:runtime_node_select_set_type", message);
 		}
@@ -152,7 +152,7 @@ void GameViewDebugger::set_selection_visible(bool p_visible) {
 	Array message;
 	message.append(p_visible);
 
-	for (Ref<EditorDebuggerSession> &I : sessions) {
+	for (const Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
 			I->send_message("scene:runtime_node_select_set_visible", message);
 		}
@@ -165,7 +165,7 @@ void GameViewDebugger::set_select_mode(int p_mode) {
 	Array message;
 	message.append(p_mode);
 
-	for (Ref<EditorDebuggerSession> &I : sessions) {
+	for (const Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
 			I->send_message("scene:runtime_node_select_set_mode", message);
 		}
@@ -190,7 +190,7 @@ void GameViewDebugger::set_camera_manipulate_mode(EditorDebuggerNode::CameraOver
 }
 
 void GameViewDebugger::reset_camera_2d_position() {
-	for (Ref<EditorDebuggerSession> &I : sessions) {
+	for (const Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
 			I->send_message("scene:runtime_node_select_reset_camera_2d", Array());
 		}
@@ -198,7 +198,7 @@ void GameViewDebugger::reset_camera_2d_position() {
 }
 
 void GameViewDebugger::reset_camera_3d_position() {
-	for (Ref<EditorDebuggerSession> &I : sessions) {
+	for (const Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
 			I->send_message("scene:runtime_node_select_reset_camera_3d", Array());
 		}
