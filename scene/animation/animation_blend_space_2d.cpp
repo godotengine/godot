@@ -510,28 +510,52 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationM
 		}
 
 		first = true;
-
 		double max_weight = 0.0;
+
+		int mind_idx = 0;
+		Engine *eng = Engine::get_singleton();
+		double delta = eng->get_process_step() * eng->get_time_scale();
+		//calculate blend points before hand
 		for (int i = 0; i < blend_points_used; i++) {
 			bool found = false;
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
-					//blend with the given weight
-					pi.weight = blend_weights[j];
-					NodeTimeInfo t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
-					if (first || pi.weight > max_weight) {
-						mind = t;
+					blend_points[i].weight = (smooth && sync) ? Math::move_toward(blend_points[i].weight, blend_weights[j], static_cast<float>(delta * smooth_speed)) : blend_weights[j];
+					found = true;
+					if (first || blend_points[i].weight > max_weight) {
+						mind_idx = i;
 						max_weight = pi.weight;
 						first = false;
 					}
-					found = true;
-					break;
 				}
 			}
-
-			if (sync && !found) {
-				pi.weight = 0;
-				blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+			if (!found) {
+				if (sync) {
+					blend_points[i].weight = (smooth) ? MAX(Math::move_toward(blend_points[i].weight, 0.0f, static_cast<float>(delta * smooth_speed)), 0.0) : 0.0;
+				} else {
+					blend_points[i].weight = -1.0;
+				}
+			}
+		}
+		float sum_of_weight = 0.0;
+		if (smooth && sync) {
+			for (int i = 0; i < blend_points_used; i++) {
+				sum_of_weight += blend_points[i].weight;
+			}
+			if (sum_of_weight <= 0.0) {
+				sum_of_weight = 1.0;
+			}
+		}
+		//now we apply them
+		for (int i = 0; i < blend_points_used; i++) {
+			blend_points[i].weight = (smooth && sync) ? blend_points[i].weight / sum_of_weight : blend_points[i].weight;
+			if (blend_points[i].weight == -1.0) {
+				continue;
+			}
+			pi.weight = blend_points[i].weight;
+			NodeTimeInfo t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+			if (mind_idx == i) {
+				mind = t;
 			}
 		}
 	} else {
@@ -653,6 +677,21 @@ void AnimationNodeBlendSpace2D::_animation_node_removed(const ObjectID &p_oid, c
 	AnimationRootNode::_animation_node_removed(p_oid, p_node);
 }
 
+void AnimationNodeBlendSpace2D::set_smooth_speed(const float &p_speed) {
+	smooth_speed = p_speed;
+}
+
+float AnimationNodeBlendSpace2D::get_smooth_speed() const {
+	return smooth_speed;
+}
+void AnimationNodeBlendSpace2D::set_use_smooth(const bool &p_smooth) {
+	smooth = p_smooth;
+}
+
+bool AnimationNodeBlendSpace2D::is_using_smooth() const {
+	return smooth;
+}
+
 void AnimationNodeBlendSpace2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_blend_point", "node", "pos", "at_index"), &AnimationNodeBlendSpace2D::add_blend_point, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_blend_point_position", "point", "pos"), &AnimationNodeBlendSpace2D::set_blend_point_position);
@@ -696,6 +735,12 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeBlendSpace2D::set_use_sync);
 	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeBlendSpace2D::is_using_sync);
 
+	ClassDB::bind_method(D_METHOD("set_smooth_speed", "speed"), &AnimationNodeBlendSpace2D::set_smooth_speed);
+	ClassDB::bind_method(D_METHOD("get_smooth_speed"), &AnimationNodeBlendSpace2D::get_smooth_speed);
+
+	ClassDB::bind_method(D_METHOD("set_use_smooth", "enable"), &AnimationNodeBlendSpace2D::set_use_smooth);
+	ClassDB::bind_method(D_METHOD("is_using_smooth"), &AnimationNodeBlendSpace2D::is_using_smooth);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_triangles", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_auto_triangles", "get_auto_triangles");
 
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
@@ -712,6 +757,8 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "y_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_y_label", "get_y_label");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Interpolated,Discrete,Carry", PROPERTY_USAGE_NO_EDITOR), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_sync", "is_using_sync");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_smooth", "is_using_smooth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "smooth_speed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_smooth_speed", "get_smooth_speed");
 
 	ADD_SIGNAL(MethodInfo("triangles_updated"));
 	BIND_ENUM_CONSTANT(BLEND_MODE_INTERPOLATED);

@@ -88,6 +88,7 @@ void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 	tool_triangle->set_disabled(read_only);
 	auto_triangles->set_disabled(read_only);
 	sync->set_disabled(read_only);
+	smooth->set_disabled(read_only);
 	interpolation->set_disabled(read_only);
 }
 
@@ -650,6 +651,8 @@ void AnimationNodeBlendSpace2DEditor::_update_space() {
 
 	sync->set_pressed(blend_space->is_using_sync());
 	interpolation->select(blend_space->get_blend_mode());
+	smooth->set_pressed(blend_space->is_using_smooth());
+	smooth_speed->set_value(blend_space->get_smooth_speed());
 
 	max_x_value->set_value(blend_space->get_max_space().x);
 	max_y_value->set_value(blend_space->get_max_space().y);
@@ -686,6 +689,12 @@ void AnimationNodeBlendSpace2DEditor::_config_changed(double) {
 	undo_redo->add_undo_method(blend_space.ptr(), "set_use_sync", blend_space->is_using_sync());
 	undo_redo->add_do_method(blend_space.ptr(), "set_blend_mode", interpolation->get_selected());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_mode", blend_space->get_blend_mode());
+	undo_redo->add_do_method(blend_space.ptr(), "set_use_smooth", smooth->is_pressed());
+	smooth_hb->set_visible((sync->is_pressed() && interpolation->get_selected() == AnimationNodeBlendSpace2D::BLEND_MODE_INTERPOLATED));
+	undo_redo->add_undo_method(blend_space.ptr(), "set_use_smooth", blend_space->is_using_smooth());
+	undo_redo->add_do_method(blend_space.ptr(), "set_smooth_speed", smooth_speed->get_value());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_use_smooth", blend_space->get_smooth_speed());
+
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -976,6 +985,24 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	interpolation = memnew(OptionButton);
 	top_hb->add_child(interpolation);
 	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+
+	smooth_hb = memnew(HBoxContainer);
+	top_hb->add_child(smooth_hb);
+	smooth_hb->add_child(memnew(VSeparator));
+
+	smooth_hb->add_child(memnew(Label(TTR("Smooth:"))));
+	smooth = memnew(CheckBox);
+	smooth_hb->add_child(smooth);
+	smooth->connect(SceneStringName(toggled), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+
+	smooth_hb->add_child(memnew(Label(TTR("Speed:"))));
+
+	smooth_speed = memnew(SpinBox);
+	smooth_hb->add_child(smooth_speed);
+	smooth_speed->set_min(0.01);
+	smooth_speed->set_step(0.01);
+	smooth_speed->set_max(1000);
+	smooth_speed->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);
