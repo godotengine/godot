@@ -509,7 +509,7 @@ private:
 
 	void _project_settings_changed();
 
-	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal);
+	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, const Basis &p_relative_basis, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal, bool p_relative);
 
 	void begin_transform(TransformMode p_mode, bool instant);
 	void commit_transform();
@@ -648,6 +648,7 @@ public:
 
 	enum ToolOptions {
 		TOOL_OPT_LOCAL_COORDS,
+		TOOL_OPT_RELATIVE_TRANSFORM,
 		TOOL_OPT_USE_SNAP,
 		TOOL_OPT_MAX
 
@@ -739,6 +740,7 @@ private:
 		MENU_TOOL_SCALE,
 		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
+		MENU_TOOL_RELATIVE_TRANSFORM,
 		MENU_TOOL_USE_SNAP,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_DIALOG,
@@ -822,6 +824,7 @@ private:
 	Ref<Environment> viewport_environment;
 
 	Node3D *selected = nullptr;
+	Node3D *active_node = nullptr;
 
 	void _request_gizmo(Object *p_obj);
 	void _request_gizmo_for_id(ObjectID p_id);
@@ -949,6 +952,7 @@ public:
 	ToolMode get_tool_mode() const { return tool_mode; }
 	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	void set_local_coords_enabled(bool on) const { tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on); }
+	bool is_relative_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_RELATIVE_TRANSFORM]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
 	real_t get_translate_snap() const;
 	real_t get_rotate_snap() const;
@@ -987,6 +991,7 @@ public:
 
 	VSplitContainer *get_shader_split();
 
+	Node3D *get_active_node() { return active_node; }
 	Node3D *get_single_selected_node() { return selected; }
 	bool is_current_selected_gizmo(const EditorNode3DGizmo *p_gizmo);
 	bool is_subgizmo_selected(int p_id);
