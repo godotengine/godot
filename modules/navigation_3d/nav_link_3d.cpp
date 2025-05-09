@@ -162,7 +162,7 @@ void NavLink3D::cancel_sync_request() {
 
 NavLink3D::NavLink3D() :
 		sync_dirty_request_list_element(this) {
-	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_LINK;
+	type = NavigationEnums3D::PathSegmentType::PATH_SEGMENT_TYPE_LINK;
 }
 
 NavLink3D::~NavLink3D() {
