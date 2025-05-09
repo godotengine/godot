@@ -5,5 +5,13 @@ Import("env")
 
 env.add_source_files(env.editor_sources, "*.cpp")
 
+SConscript("2d/SCsub")
+SConscript("3d/SCsub")
+SConscript("animation/SCsub")
+SConscript("gui/SCsub")
 SConscript("gizmos/SCsub")
+SConscript("script/SCsub")
+SConscript("shader/SCsub")
+SConscript("texture/SCsub")
+SConscript("theme/SCsub")
 SConscript("tiles/SCsub")

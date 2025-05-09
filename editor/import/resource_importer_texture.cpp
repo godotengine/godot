@@ -34,7 +34,7 @@
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
 #include "core/version.h"
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/themes/editor_scale.h"

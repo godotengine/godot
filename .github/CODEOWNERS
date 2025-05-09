@@ -52,10 +52,17 @@
 /editor/**/*dock*                             @godotengine/docks
 /editor/**/*script*                           @godotengine/script-editor
 /editor/**/*shader*                           @godotengine/shaders
+/editor/animation/                            @godotengine/animation
 /editor/debugger/                             @godotengine/debugger
+/editor/doc/                                  @godotengine/documentation
 /editor/gui/                                  @godotengine/usability @godotengine/gui-nodes
 /editor/icons/                                @godotengine/usability
 /editor/import/                               @godotengine/import
+/editor/inspector/                            @godotengine/docks
+/editor/plugins/animation/                    @godotengine/animation
+/editor/plugins/gui/                          @godotengine/usability @godotengine/gui-nodes
+/editor/plugins/theme/                        @godotengine/usability @godotengine/gui-nodes
+/editor/plugins/tiles/                        @godotengine/2d-editor
 /editor/themes/                               @godotengine/usability @godotengine/gui-nodes
 
 # Main

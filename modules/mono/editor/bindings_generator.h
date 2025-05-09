@@ -38,8 +38,8 @@
 #include "core/object/class_db.h"
 #include "core/string/string_builder.h"
 #include "core/string/ustring.h"
-#include "editor/doc_tools.h"
-#include "editor/editor_help.h"
+#include "editor/doc/doc_tools.h"
+#include "editor/doc/editor_help.h"
 
 class BindingsGenerator {
 	struct ConstantInterface {

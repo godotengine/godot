@@ -45,7 +45,7 @@
 #include "servers/text_server.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/plugins/control_editor_plugin.h"
+#include "editor/plugins/gui/control_editor_plugin.h"
 #endif // TOOLS_ENABLED
 
 // Editor plugin interoperability.

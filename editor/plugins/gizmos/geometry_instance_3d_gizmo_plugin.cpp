@@ -30,7 +30,7 @@
 
 #include "geometry_instance_3d_gizmo_plugin.h"
 
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/visual_instance_3d.h"
 
 bool GeometryInstance3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
