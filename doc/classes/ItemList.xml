@@ -536,7 +536,7 @@
 			[StyleBox] used for the cursor, when the [ItemList] is not being focused.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
-			The focused style for the [ItemList], drawn on top of the background, but below everything else.
+			The focused style for the [ItemList], drawn on top of everything.
 		</theme_item>
 		<theme_item name="hovered" data_type="style" type="StyleBox">
 			[StyleBox] for the hovered, but not selected items.
