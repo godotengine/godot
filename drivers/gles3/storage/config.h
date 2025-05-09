@@ -82,6 +82,7 @@ public:
 	bool astc_layered_supported = false;
 	bool astc_3d_supported = false;
 	bool srgb_framebuffer_supported = false;
+	bool unorm16_texture_supported = false;
 
 	bool force_vertex_shading = false;
 	bool specular_occlusion = false;
