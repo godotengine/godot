@@ -1850,6 +1850,13 @@ void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collisi
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
 	particles_collision->cull_mask = p_cull_mask;
+	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
+}
+
+uint32_t ParticlesStorage::particles_collision_get_cull_mask(RID p_particles_collision) const {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, 0);
+	return particles_collision->cull_mask;
 }
 
 uint32_t ParticlesStorage::particles_collision_get_height_field_mask(RID p_particles_collision) const {
