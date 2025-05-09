@@ -273,6 +273,19 @@ static void gdextension_mem_free(void *p_mem) {
 	memfree(p_mem);
 }
 
+static void *gdextension_mem_aligned_alloc(size_t p_size, size_t p_alignment) {
+	return Memory::alloc_aligned_static(p_size, p_alignment);
+}
+
+static void *gdextension_mem_aligned_realloc(void *p_mem, size_t p_size, size_t p_prev_size, size_t p_alignment) {
+	return Memory::realloc_aligned_static(p_mem, p_size, p_prev_size, p_alignment);
+}
+
+static void gdextension_mem_aligned_free(void *p_mem) {
+	Memory::free_aligned_static(p_mem);
+}
+
+
 // Helper print functions.
 static void gdextension_print_error(const char *p_description, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify) {
 	_err_print_error(p_function, p_file, p_line, p_description, p_editor_notify, ERR_HANDLER_ERROR);
