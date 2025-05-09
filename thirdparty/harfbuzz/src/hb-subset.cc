@@ -708,3 +708,107 @@ hb_subset_plan_execute_or_fail (hb_subset_plan_t *plan)
 end:
   return success ? hb_face_reference (plan->dest) : nullptr;
 }
+
+
+#ifdef HB_EXPERIMENTAL_API
+
+#include "hb-ot-cff1-table.hh"
+
+template<typename accel_t>
+static hb_blob_t* get_charstrings_data(accel_t& accel, hb_codepoint_t glyph_index) {
+  if (!accel.is_valid()) {
+    return hb_blob_get_empty ();
+  }
+
+  hb_ubytes_t bytes = (*accel.charStrings)[glyph_index];
+  if (!bytes) {
+    return hb_blob_get_empty ();
+  }
+
+  hb_blob_t* cff_blob = accel.get_blob();
+  uint32_t length;
+  const char* cff_data = hb_blob_get_data(cff_blob, &length) ;
+
+  long int offset = (const char*) bytes.arrayZ - cff_data;
+  if (offset < 0 || offset > INT32_MAX) {
+    return hb_blob_get_empty ();
+  }
+
+  return hb_blob_create_sub_blob(cff_blob, (uint32_t) offset, bytes.length);
+}
+
+template<typename accel_t>
+static hb_blob_t* get_charstrings_index(accel_t& accel) {
+  if (!accel.is_valid()) {
+    return hb_blob_get_empty ();
+  }
+
+  const char* charstrings_start = (const char*) accel.charStrings;
+  unsigned charstrings_length = accel.charStrings->get_size();
+
+  hb_blob_t* cff_blob = accel.get_blob();
+  uint32_t length;
+  const char* cff_data = hb_blob_get_data(cff_blob, &length) ;
+
+  long int offset = charstrings_start - cff_data;
+  if (offset < 0 || offset > INT32_MAX) {
+    return hb_blob_get_empty ();
+  }
+
+  return hb_blob_create_sub_blob(cff_blob, (uint32_t) offset, charstrings_length);
+}
+
+/**
+ * hb_subset_cff_get_charstring_data:
+ * @face: A face object
+ * @glyph_index: Glyph index to get data for.
+ *
+ * Returns the raw outline data from the CFF/CFF2 table associated with the given glyph index.
+ *
+ * XSince: EXPERIMENTAL
+ **/
+HB_EXTERN hb_blob_t*
+hb_subset_cff_get_charstring_data(hb_face_t* face, hb_codepoint_t glyph_index) {
+  return get_charstrings_data(*face->table.cff1, glyph_index);
+}
+
+/**
+ * hb_subset_cff_get_charstrings_index:
+ * @face: A face object
+ *
+ * Returns the raw CFF CharStrings INDEX from the CFF table.
+ *
+ * XSince: EXPERIMENTAL
+ **/
+HB_EXTERN hb_blob_t*
+hb_subset_cff_get_charstrings_index (hb_face_t* face) {
+  return get_charstrings_index (*face->table.cff1);
+}
+ 
+/**
+ * hb_subset_cff2_get_charstring_data:
+ * @face: A face object
+ * @glyph_index: Glyph index to get data for.
+ *
+ * Returns the raw outline data from the CFF/CFF2 table associated with the given glyph index.
+ *
+ * XSince: EXPERIMENTAL
+ **/
+HB_EXTERN hb_blob_t*
+hb_subset_cff2_get_charstring_data(hb_face_t* face, hb_codepoint_t glyph_index) {
+  return get_charstrings_data(*face->table.cff2, glyph_index);
+}
+
+/**
+ * hb_subset_cff2_get_charstrings_index:
+ * @face: A face object
+ *
+ * Returns the raw CFF2 CharStrings INDEX from the CFF2 table.
+ *
+ * XSince: EXPERIMENTAL
+ **/
+HB_EXTERN hb_blob_t*
+hb_subset_cff2_get_charstrings_index (hb_face_t* face) {
+  return get_charstrings_index (*face->table.cff2);
+}
+#endif

@@ -30,8 +30,6 @@
 #include "hb-open-type.hh"
 #include "hb-aat-layout-common.hh"
 #include "hb-ot-layout.hh"
-#include "hb-ot-layout-common.hh"
-#include "hb-ot-layout-gdef-table.hh"
 #include "hb-aat-map.hh"
 
 /*
@@ -178,12 +176,6 @@ struct RearrangementSubtable
 
     StateTableDriver<Types, EntryData, Flags> driver (machine, c->face);
 
-    if (!c->buffer_intersects_machine ())
-    {
-      (void) c->buffer->message (c->font, "skipped chainsubtable because no glyph matches");
-      return_trace (false);
-    }
-
     driver.drive (&dc, c);
 
     return_trace (dc.ret);
@@ -242,9 +234,7 @@ struct ContextualSubtable
 	ret (false),
 	c (c_),
 	table (table_),
-	gdef (*c->gdef_table),
 	mark_set (false),
-	has_glyph_classes (gdef.has_glyph_classes ()),
 	mark (0),
 	subs (table+table->substitutionTables) {}
 
@@ -281,12 +271,7 @@ struct ContextualSubtable
       if (replacement)
       {
 	buffer->unsafe_to_break (mark, hb_min (buffer->idx + 1, buffer->len));
-	hb_codepoint_t glyph = *replacement;
-	buffer->info[mark].codepoint = glyph;
-	c->buffer_glyph_set.add (glyph);
-	if (has_glyph_classes)
-	  _hb_glyph_info_set_glyph_props (&buffer->info[mark],
-					  gdef.get_glyph_props (*replacement));
+	c->replace_glyph_inplace (mark, *replacement);
 	ret = true;
       }
 
@@ -312,12 +297,7 @@ struct ContextualSubtable
       }
       if (replacement)
       {
-	hb_codepoint_t glyph = *replacement;
-	buffer->info[idx].codepoint = glyph;
-	c->buffer_glyph_set.add (glyph);
-	if (has_glyph_classes)
-	  _hb_glyph_info_set_glyph_props (&buffer->info[idx],
-					  gdef.get_glyph_props (*replacement));
+	c->replace_glyph_inplace (idx, *replacement);
 	ret = true;
       }
 
@@ -333,9 +313,7 @@ struct ContextualSubtable
     hb_aat_apply_context_t *c;
     const ContextualSubtable *table;
     private:
-    const OT::GDEF &gdef;
     bool mark_set;
-    bool has_glyph_classes;
     unsigned int mark;
     const UnsizedListOfOffset16To<Lookup<HBGlyphID16>, HBUINT, void, false> &subs;
   };
@@ -347,12 +325,6 @@ struct ContextualSubtable
     driver_context_t dc (this, c);
 
     StateTableDriver<Types, EntryData, Flags> driver (machine, c->face);
-
-    if (!c->buffer_intersects_machine ())
-    {
-      (void) c->buffer->message (c->font, "skipped chainsubtable because no glyph matches");
-      return_trace (false);
-    }
 
     driver.drive (&dc, c);
 
@@ -581,7 +553,7 @@ struct LigatureSubtable
 	    hb_codepoint_t lig = ligatureData;
 
 	    DEBUG_MSG (APPLY, nullptr, "Produced ligature %u", lig);
-	    if (unlikely (!buffer->replace_glyph (lig))) return;
+	    if (unlikely (!c->replace_glyph (lig))) return;
 
 	    unsigned int lig_end = match_positions[(match_length - 1u) % ARRAY_LENGTH (match_positions)] + 1u;
 	    /* Now go and delete all subsequent components. */
@@ -589,8 +561,7 @@ struct LigatureSubtable
 	    {
 	      DEBUG_MSG (APPLY, nullptr, "Skipping ligature component");
 	      if (unlikely (!buffer->move_to (match_positions[--match_length % ARRAY_LENGTH (match_positions)]))) return;
-	      _hb_glyph_info_set_default_ignorable (&buffer->cur());
-	      if (unlikely (!buffer->replace_glyph (DELETED_GLYPH))) return;
+	      if (!c->delete_glyph ()) return;
 	    }
 
 	    if (unlikely (!buffer->move_to (lig_end))) return;
@@ -623,12 +594,6 @@ struct LigatureSubtable
     driver_context_t dc (this, c);
 
     StateTableDriver<Types, EntryData, Flags> driver (machine, c->face);
-
-    if (!c->buffer_intersects_machine ())
-    {
-      (void) c->buffer->message (c->font, "skipped chainsubtable because no glyph matches");
-      return_trace (false);
-    }
 
     driver.drive (&dc, c);
 
@@ -665,15 +630,6 @@ struct NoncontextualSubtable
   {
     TRACE_APPLY (this);
 
-    if (!c->buffer_intersects_machine ())
-    {
-      (void) c->buffer->message (c->font, "skipped chainsubtable because no glyph matches");
-      return_trace (false);
-    }
-
-    const OT::GDEF &gdef (*c->gdef_table);
-    bool has_glyph_classes = gdef.has_glyph_classes ();
-
     bool ret = false;
     unsigned int num_glyphs = c->face->get_num_glyphs ();
 
@@ -703,12 +659,7 @@ struct NoncontextualSubtable
       const HBGlyphID16 *replacement = substitute.get_value (info[i].codepoint, num_glyphs);
       if (replacement)
       {
-	hb_codepoint_t glyph = *replacement;
-	info[i].codepoint = glyph;
-	c->buffer_glyph_set.add (glyph);
-	if (has_glyph_classes)
-	  _hb_glyph_info_set_glyph_props (&info[i],
-					  gdef.get_glyph_props (*replacement));
+	c->replace_glyph_inplace (i, *replacement);
 	ret = true;
       }
     }
@@ -850,9 +801,7 @@ struct InsertionSubtable
 	if (buffer->idx < buffer->len && !before)
 	  if (unlikely (!buffer->copy_glyph ())) return;
 	/* TODO We ignore KashidaLike setting. */
-	if (unlikely (!buffer->replace_glyphs (0, count, glyphs))) return;
-	for (unsigned int i = 0; i < count; i++)
-	  c->buffer_glyph_set.add (glyphs[i]);
+	if (unlikely (!c->output_glyphs (count, glyphs))) return;
 	ret = true;
 	if (buffer->idx < buffer->len && !before)
 	  buffer->skip_glyph ();
@@ -881,7 +830,8 @@ struct InsertionSubtable
 	if (buffer->idx < buffer->len && !before)
 	  if (unlikely (!buffer->copy_glyph ())) return;
 	/* TODO We ignore KashidaLike setting. */
-	if (unlikely (!buffer->replace_glyphs (0, count, glyphs))) return;
+	if (unlikely (!c->output_glyphs (count, glyphs))) return;
+	ret = true;
 	if (buffer->idx < buffer->len && !before)
 	  buffer->skip_glyph ();
 
@@ -920,12 +870,6 @@ struct InsertionSubtable
     driver_context_t dc (this, c);
 
     StateTableDriver<Types, EntryData, Flags> driver (machine, c->face);
-
-    if (!c->buffer_intersects_machine ())
-    {
-      (void) c->buffer->message (c->font, "skipped chainsubtable because no glyph matches");
-      return_trace (false);
-    }
 
     driver.drive (&dc, c);
 
@@ -1224,6 +1168,7 @@ struct Chain
       if (hb_none (hb_iter (c->range_flags) |
 		   hb_map ([subtable_flags] (const hb_aat_map_t::range_flags_t _) -> bool { return subtable_flags & (_.flags); })))
 	goto skip;
+
       c->subtable_flags = subtable_flags;
       c->machine_glyph_set = accel ? &accel->subtables[i].glyph_set : &Null(hb_bit_set_t);
       c->machine_class_cache = accel ? &accel->subtables[i].class_cache : nullptr;
@@ -1232,6 +1177,12 @@ struct Chain
 	  HB_DIRECTION_IS_VERTICAL (c->buffer->props.direction) !=
 	  bool (coverage & ChainSubtable<Types>::Vertical))
 	goto skip;
+
+      if (!c->buffer_intersects_machine ())
+      {
+	(void) c->buffer->message (c->font, "skipped chainsubtable %u because no glyph matches", c->lookup_index);
+	goto skip;
+      }
 
       /* Buffer contents is always in logical direction.  Determine if
        * we need to reverse before applying this subtable.  We reverse
@@ -1376,7 +1327,7 @@ struct mortmorx
 
       this->chain_count = table->get_chain_count ();
 
-      this->accels = (hb_atomic_ptr_t<hb_aat_layout_chain_accelerator_t> *) hb_calloc (this->chain_count, sizeof (*accels));
+      this->accels = (hb_atomic_t<hb_aat_layout_chain_accelerator_t *> *) hb_calloc (this->chain_count, sizeof (*accels));
       if (unlikely (!this->accels))
       {
 	this->chain_count = 0;
@@ -1423,7 +1374,8 @@ struct mortmorx
 
     hb_blob_ptr_t<T> table;
     unsigned int chain_count;
-    hb_atomic_ptr_t<hb_aat_layout_chain_accelerator_t> *accels;
+    hb_atomic_t<hb_aat_layout_chain_accelerator_t *> *accels;
+    hb_aat_scratch_t scratch;
   };
 
 

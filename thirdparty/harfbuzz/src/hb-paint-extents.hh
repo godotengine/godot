@@ -35,11 +35,20 @@ typedef struct  hb_paint_extents_context_t hb_paint_extents_context_t;
 
 struct hb_paint_extents_context_t
 {
-  hb_paint_extents_context_t ()
+  void clear ()
   {
+    transforms.clear ();
+    clips.clear ();
+    groups.clear ();
+
     transforms.push (hb_transform_t{});
     clips.push (hb_bounds_t{hb_bounds_t::UNBOUNDED});
     groups.push (hb_bounds_t{hb_bounds_t::EMPTY});
+  }
+
+  hb_paint_extents_context_t ()
+  {
+    clear ();
   }
 
   hb_extents_t get_extents ()

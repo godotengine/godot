@@ -91,8 +91,10 @@ void free_static_shaper_list ()
  *
  * Retrieves the list of shapers supported by HarfBuzz.
  *
- * Return value: (transfer none) (array zero-terminated=1): an array of
- *    constant strings
+ * Return value: (transfer none) (array zero-terminated=1): a
+ *    `NULL`-terminated array of supported shapers constant string.
+ *    The returned array is owned by HarfBuzz and should not be
+ *    modified or freed.
  *
  * Since: 0.9.2
  **/
