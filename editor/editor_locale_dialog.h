@@ -60,10 +60,14 @@ class EditorLocaleDialog : public ConfirmationDialog {
 	Tree *script_list = nullptr;
 	Tree *cnt_list = nullptr;
 
+	Label *script_label1 = nullptr;
+	Label *script_label2 = nullptr;
+
 	bool locale_set = false;
 	bool updating_lists = false;
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _post_popup() override;
 	virtual void ok_pressed() override;

@@ -57,6 +57,12 @@ void EditorAutoloadSettings::_notification(int p_what) {
 			browse_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (!error_message->get_text().is_empty()) {
+				_autoload_text_changed(autoload_add_name->get_text());
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			browse_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 			add_autoload->set_button_icon(get_editor_theme_icon(SNAME("Add")));
@@ -529,7 +535,7 @@ void EditorAutoloadSettings::update_autoload() {
 
 		item->set_cell_mode(2, TreeItem::CELL_MODE_CHECK);
 		item->set_editable(2, true);
-		item->set_text(2, TTR("Enable"));
+		item->set_text(2, TTRC("Enable"));
 		item->set_checked(2, info.is_singleton);
 		item->add_button(3, get_editor_theme_icon(SNAME("Load")), BUTTON_OPEN);
 		item->add_button(3, get_editor_theme_icon(SNAME("MoveUp")), BUTTON_MOVE_UP);
@@ -888,6 +894,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	add_child(hbc);
 
 	error_message = memnew(Label);
+	error_message->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	error_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_message->hide();
 	error_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
@@ -895,7 +902,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	add_child(error_message);
 
 	Label *l = memnew(Label);
-	l->set_text(TTR("Path:"));
+	l->set_text(TTRC("Path:"));
 	hbc->add_child(l);
 
 	autoload_add_path = memnew(LineEdit);
@@ -903,7 +910,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	autoload_add_path->set_accessibility_name(TTRC("Autoload Path"));
 	autoload_add_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	autoload_add_path->set_clear_button_enabled(true);
-	autoload_add_path->set_placeholder(vformat(TTR("Set path or press \"%s\" to create a script."), TTR("Add")));
+	autoload_add_path->set_placeholder(TTRC("Set path or press \"Add\" to create a script."));
 	autoload_add_path->connect(SceneStringName(text_changed), callable_mp(this, &EditorAutoloadSettings::_autoload_path_text_changed));
 
 	browse_button = memnew(Button);
@@ -922,7 +929,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAutoloadSettings::_autoload_file_callback));
 
 	l = memnew(Label);
-	l->set_text(TTR("Node Name:"));
+	l->set_text(TTRC("Node Name:"));
 	hbc->add_child(l);
 
 	autoload_add_name = memnew(LineEdit);
@@ -933,7 +940,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	hbc->add_child(autoload_add_name);
 
 	add_autoload = memnew(Button);
-	add_autoload->set_text(TTR("Add"));
+	add_autoload->set_text(TTRC("Add"));
 	add_autoload->connect(SceneStringName(pressed), callable_mp(this, &EditorAutoloadSettings::_autoload_add));
 	// The button will be enabled once a valid name is entered (either automatically or manually).
 	add_autoload->set_disabled(true);
@@ -950,16 +957,16 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->set_columns(4);
 	tree->set_column_titles_visible(true);
 
-	tree->set_column_title(0, TTR("Name"));
+	tree->set_column_title(0, TTRC("Name"));
 	tree->set_column_expand(0, true);
 	tree->set_column_expand_ratio(0, 1);
 
-	tree->set_column_title(1, TTR("Path"));
+	tree->set_column_title(1, TTRC("Path"));
 	tree->set_column_expand(1, true);
 	tree->set_column_clip_content(1, true);
 	tree->set_column_expand_ratio(1, 2);
 
-	tree->set_column_title(2, TTR("Global Variable"));
+	tree->set_column_title(2, TTRC("Global Variable"));
 	tree->set_column_expand(2, false);
 
 	tree->set_column_expand(3, false);

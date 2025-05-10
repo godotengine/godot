@@ -197,12 +197,12 @@ void EventListenerLineEdit::_on_text_changed(const String &p_text) {
 }
 
 void EventListenerLineEdit::_on_focus() {
-	set_placeholder(TTR("Listening for Input"));
+	set_placeholder(TTRC("Listening for Input"));
 }
 
 void EventListenerLineEdit::_on_unfocus() {
 	ignore_next_event = true;
-	set_placeholder(TTR("Filter by Event"));
+	set_placeholder(TTRC("Filter by Event"));
 }
 
 Ref<InputEvent> EventListenerLineEdit::get_event() const {
@@ -255,5 +255,5 @@ void EventListenerLineEdit::_bind_methods() {
 
 EventListenerLineEdit::EventListenerLineEdit() {
 	set_caret_blink_enabled(false);
-	set_placeholder(TTR("Filter by Event"));
+	set_placeholder(TTRC("Filter by Event"));
 }
