@@ -176,7 +176,7 @@ private:
 		mutable int internal_children_back_count_cache = 0;
 		mutable int external_children_count_cache = 0;
 		mutable int index = -1; // relative to front, normal or back.
-		int depth = -1;
+		int32_t depth = -1;
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
 		SceneTree *tree = nullptr;
@@ -379,6 +379,7 @@ protected:
 
 	void _set_use_identity_transform(bool p_enable) { data.use_identity_transform = p_enable; }
 	bool _is_using_identity_transform() const { return data.use_identity_transform; }
+	int32_t _get_scene_tree_depth() const { return data.depth; }
 
 	//call from SceneTree
 	void _call_input(const Ref<InputEvent> &p_event);

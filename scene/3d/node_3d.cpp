@@ -270,6 +270,10 @@ void Node3D::_notification(int p_what) {
 			// unless they need to perform specific tasks (like changing process modes).
 			fti_pump_xform();
 			fti_pump_property();
+
+			// Detect whether we are using an identity transform.
+			// This is an optimization for faster tree transform concatenation.
+			data.fti_is_identity_xform = data.local_transform == Transform3D();
 		} break;
 		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
@@ -1448,6 +1452,8 @@ Node3D::Node3D() :
 	data.fti_on_tick_property_list = false;
 	data.fti_global_xform_interp_set = false;
 	data.fti_frame_xform_force_update = false;
+	data.fti_is_identity_xform = false;
+	data.fti_processed = false;
 
 #ifdef TOOLS_ENABLED
 	data.gizmos_disabled = false;
