@@ -41,10 +41,10 @@
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 
 #ifndef XR_DISABLED
@@ -95,11 +95,10 @@ void EditorRunBar::_notification(int p_what) {
 
 			if (is_movie_maker_enabled()) {
 				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
-				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
 			} else {
 				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
-				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 			}
+			write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 
 			write_movie_button->set_button_icon(get_editor_theme_icon(SNAME("MainMovieWrite")));
 			// This button behaves differently, so color it as such.
@@ -157,14 +156,30 @@ void EditorRunBar::_update_play_buttons() {
 	}
 }
 
+void EditorRunBar::_movie_maker_item_pressed(int p_id) {
+	switch (p_id) {
+		case 0: { // Toggle Movie Maker mode.
+			bool new_enabled = !is_movie_maker_enabled();
+			set_movie_maker_enabled(new_enabled);
+			write_movie_button->get_popup()->set_item_checked(0, new_enabled);
+			write_movie_button->set_pressed(new_enabled);
+			_write_movie_toggled(new_enabled);
+			break;
+		}
+		case 1: // Open Movie Maker settings.
+			ProjectSettingsEditor::get_singleton()->popup_project_settings(true);
+			ProjectSettingsEditor::get_singleton()->set_general_page("editor/movie_writer");
+			break;
+	}
+}
+
 void EditorRunBar::_write_movie_toggled(bool p_enabled) {
 	if (p_enabled) {
 		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
-		write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
 	} else {
 		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
-		write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 	}
+	write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 }
 
 Vector<String> EditorRunBar::_get_xr_mode_play_args(int p_xr_mode_id) {
@@ -454,11 +469,12 @@ OS::ProcessID EditorRunBar::get_current_process() const {
 }
 
 void EditorRunBar::set_movie_maker_enabled(bool p_enabled) {
-	write_movie_button->set_pressed(p_enabled);
+	movie_maker_enabled = p_enabled;
+	write_movie_button->get_popup()->set_item_checked(0, p_enabled);
 }
 
 bool EditorRunBar::is_movie_maker_enabled() const {
-	return write_movie_button->is_pressed();
+	return movie_maker_enabled;
 }
 
 void EditorRunBar::update_profiler_autostart_indicator() {
@@ -655,13 +671,16 @@ EditorRunBar::EditorRunBar() {
 	write_movie_panel = memnew(PanelContainer);
 	main_hbox->add_child(write_movie_panel);
 
-	write_movie_button = memnew(Button);
+	MenuButton *write_movie_menu_button = memnew(MenuButton);
+	PopupMenu *write_movie_popup = write_movie_menu_button->get_popup();
+	write_movie_popup->add_check_item("Enable Movie Maker Mode", 0);
+	write_movie_popup->add_item("Open Movie Maker Settings...", 1);
+	write_movie_popup->connect(SceneStringName(id_pressed), callable_mp(this, &EditorRunBar::_movie_maker_item_pressed));
+	write_movie_button = write_movie_menu_button;
+
 	write_movie_panel->add_child(write_movie_button);
 	write_movie_button->set_theme_type_variation("RunBarButton");
-	write_movie_button->set_toggle_mode(true);
-	write_movie_button->set_pressed(false);
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
 	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
 	write_movie_button->set_accessibility_name(TTRC("Enable Movie Maker Mode"));
-	write_movie_button->connect(SceneStringName(toggled), callable_mp(this, &EditorRunBar::_write_movie_toggled));
 }
