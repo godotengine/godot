@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/error/error_list.h"
 #include "core/io/config_file.h"
 #include "core/string/ustring.h"
 

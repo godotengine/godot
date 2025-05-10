@@ -5,6 +5,10 @@
 	</brief_description>
 	<description>
 		A multiline text editor. It also has limited facilities for editing code, such as syntax highlighting support. For more advanced facilities for editing code, see [CodeEdit].
+		While entering text, it is possible to insert special characters using Unicode, OEM or Windows alt codes:
+		- To enter Unicode codepoints, hold [kbd]Alt[/kbd] and type the codepoint on the numpad. For example, to enter the character [code]á[/code] (U+00E1), hold [kbd]Alt[/kbd] and type [kbd]+E1[/kbd] on the numpad (the leading zeroes can be omitted).
+		- To enter OEM codepoints, hold [kbd]Alt[/kbd] and type the code on the numpad. For example, to enter the character [code]á[/code] (OEM 160), hold [kbd]Alt[/kbd] and type [code]160[/code] on the numpad.
+		- To enter Windows codepoints, hold [kbd]Alt[/kbd] and type the code on the numpad. For example, to enter the character [code]á[/code] (Windows 0225), hold [kbd]Alt[/kbd] and type [kbd]0[/kbd], [kbd]2[/kbd], [kbd]2[/kbd], [kbd]5[/kbd] on the numpad. The leading zero here must [b]not[/b] be omitted, as this is how Windows codepoints are distinguished from OEM codepoints.
 		[b]Note:[/b] Most viewport, caret, and edit methods contain a [code]caret_index[/code] argument for [member caret_multiple] support. The argument should be one of the following: [code]-1[/code] for all carets, [code]0[/code] for the main caret, or greater than [code]0[/code] for secondary carets in the order they were created.
 		[b]Note:[/b] When holding down [kbd]Alt[/kbd], the vertical scroll wheel will scroll 5 times as fast as it would normally do. This also works in the Godot script editor.
 	</description>
@@ -513,6 +517,15 @@
 				Returns the number of lines that may be drawn on the minimap.
 			</description>
 		</method>
+		<method name="get_next_composite_character_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
+			<description>
+				Returns the correct column at the end of a composite character like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the start of the composite character. Also returns the correct column with the caret at mid grapheme and for non-composite characters.
+				[b]Note:[/b] To check at caret location use [code]get_next_composite_character_column(get_caret_line(), get_caret_column())[/code]
+			</description>
+		</method>
 		<method name="get_next_visible_line_index_offset_from" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="line" type="int" />
@@ -537,6 +550,15 @@
 			<description>
 				Returns the local position for the given [param line] and [param column]. If [code]x[/code] or [code]y[/code] of the returned vector equal [code]-1[/code], the position is outside of the viewable area of the control.
 				[b]Note:[/b] The Y position corresponds to the bottom side of the line. Use [method get_rect_at_line_column] to get the top side position.
+			</description>
+		</method>
+		<method name="get_previous_composite_character_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
+			<description>
+				Returns the correct column at the start of a composite character like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the end of the composite character. Also returns the correct column with the caret at mid grapheme and for non-composite characters.
+				[b]Note:[/b] To check at caret location use [code]get_previous_composite_character_column(get_caret_line(), get_caret_column())[/code]
 			</description>
 		</method>
 		<method name="get_rect_at_line_column" qualifiers="const">
@@ -1261,6 +1283,9 @@
 		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="TextServer.AutowrapMode" default="3">
 			If [member wrap_mode] is set to [constant LINE_WRAPPING_BOUNDARY], sets text wrapping mode. To see how each mode behaves, see [enum TextServer.AutowrapMode].
 		</member>
+		<member name="backspace_deletes_composite_character_enabled" type="bool" setter="set_backspace_deletes_composite_character_enabled" getter="is_backspace_deletes_composite_character_enabled" default="false">
+			If [code]true[/code] and [member caret_mid_grapheme] is [code]false[/code], backspace deletes an entire composite character such as ❤️‍🩹, instead of deleting part of the composite character.
+		</member>
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
 			If [code]true[/code], makes the caret blink.
 		</member>
@@ -1380,6 +1405,9 @@
 			The syntax highlighter to use.
 			[b]Note:[/b] A [SyntaxHighlighter] instance should not be used across multiple [TextEdit] nodes.
 		</member>
+		<member name="tab_input_mode" type="bool" setter="set_tab_input_mode" getter="get_tab_input_mode" default="true">
+			If [code]true[/code], [member ProjectSettings.input/ui_text_indent] input [code]Tab[/code] character, otherwise it moves keyboard focus to the next [Control] in the scene.
+		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [TextEdit].
 		</member>
@@ -1393,7 +1421,10 @@
 			If [code]false[/code], using [kbd]Ctrl + Left[/kbd] or [kbd]Ctrl + Right[/kbd] ([kbd]Cmd + Left[/kbd] or [kbd]Cmd + Right[/kbd] on macOS) bindings will stop moving caret only if a space or punctuation is detected. If [code]true[/code], it will also stop the caret if a character is part of [code]!"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^`{|}~[/code], the Unicode General Punctuation table, or the Unicode CJK Punctuation table. Useful for subword moving. This behavior also will be applied to the behavior of text selection.
 		</member>
 		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
-			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
+			If [code]true[/code], the native virtual keyboard is enabled on platforms that support it.
+		</member>
+		<member name="virtual_keyboard_show_on_focus" type="bool" setter="set_virtual_keyboard_show_on_focus" getter="get_virtual_keyboard_show_on_focus" default="true">
+			If [code]true[/code], the native virtual keyboard is shown on focus events on platforms that support it.
 		</member>
 		<member name="wrap_mode" type="int" setter="set_line_wrapping_mode" getter="get_line_wrapping_mode" enum="TextEdit.LineWrappingMode" default="0">
 			Sets the line wrapping mode to use.

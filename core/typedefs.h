@@ -30,22 +30,30 @@
 
 #pragma once
 
-#include <stddef.h>
-
 /**
  * Basic definitions and simple functions to be used everywhere.
  */
+
+// IWYU pragma: always_keep
+
+// Ensure that C++ standard is at least C++17.
+// If on MSVC, also ensures that the `Zc:__cplusplus` flag is present.
+static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
+
+// IWYU pragma: begin_exports
 
 // Include first in case the platform needs to pre-define/include some things.
 #include "platform_config.h"
 
 // Should be available everywhere.
 #include "core/error/error_list.h"
+
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <utility>
 
-// Ensure that C++ standard is at least C++17. If on MSVC, also ensures that the `Zc:__cplusplus` flag is present.
-static_assert(__cplusplus >= 201703L);
+// IWYU pragma: end_exports
 
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
@@ -65,9 +73,10 @@ static_assert(__cplusplus >= 201703L);
 #endif
 #endif
 
-// Should always inline, except in dev builds because it makes debugging harder.
+// Should always inline, except in dev builds because it makes debugging harder,
+// or `size_enabled` builds where inlining is actively avoided.
 #ifndef _FORCE_INLINE_
-#ifdef DEV_ENABLED
+#if defined(DEV_ENABLED) || defined(SIZE_EXTRA)
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
@@ -106,17 +115,10 @@ static_assert(__cplusplus >= 201703L);
 #endif
 
 // Make room for our constexpr's below by overriding potential system-specific macros.
-#undef ABS
 #undef SIGN
 #undef MIN
 #undef MAX
 #undef CLAMP
-
-// Generic ABS function, for math uses please use Math::abs.
-template <typename T>
-constexpr T ABS(T m_v) {
-	return m_v < 0 ? -m_v : m_v;
-}
 
 template <typename T>
 constexpr const T SIGN(const T m_v) {
@@ -343,3 +345,46 @@ struct is_zero_constructible<const volatile T> : is_zero_constructible<T> {};
 
 template <typename T>
 inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
+
+// Warning suppression helper macros.
+#if defined(__clang__)
+#define GODOT_CLANG_PRAGMA(m_content) _Pragma(#m_content)
+#define GODOT_CLANG_WARNING_PUSH GODOT_CLANG_PRAGMA(clang diagnostic push)
+#define GODOT_CLANG_WARNING_IGNORE(m_warning) GODOT_CLANG_PRAGMA(clang diagnostic ignored m_warning)
+#define GODOT_CLANG_WARNING_POP GODOT_CLANG_PRAGMA(clang diagnostic pop)
+#define GODOT_CLANG_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_CLANG_WARNING_PUSH GODOT_CLANG_WARNING_IGNORE(m_warning)
+#else
+#define GODOT_CLANG_PRAGMA(m_content)
+#define GODOT_CLANG_WARNING_PUSH
+#define GODOT_CLANG_WARNING_IGNORE(m_warning)
+#define GODOT_CLANG_WARNING_POP
+#define GODOT_CLANG_WARNING_PUSH_AND_IGNORE(m_warning)
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+#define GODOT_GCC_PRAGMA(m_content) _Pragma(#m_content)
+#define GODOT_GCC_WARNING_PUSH GODOT_GCC_PRAGMA(GCC diagnostic push)
+#define GODOT_GCC_WARNING_IGNORE(m_warning) GODOT_GCC_PRAGMA(GCC diagnostic ignored m_warning)
+#define GODOT_GCC_WARNING_POP GODOT_GCC_PRAGMA(GCC diagnostic pop)
+#define GODOT_GCC_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_GCC_WARNING_PUSH GODOT_GCC_WARNING_IGNORE(m_warning)
+#else
+#define GODOT_GCC_PRAGMA(m_content)
+#define GODOT_GCC_WARNING_PUSH
+#define GODOT_GCC_WARNING_IGNORE(m_warning)
+#define GODOT_GCC_WARNING_POP
+#define GODOT_GCC_WARNING_PUSH_AND_IGNORE(m_warning)
+#endif
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#define GODOT_MSVC_PRAGMA(m_command) __pragma(m_command)
+#define GODOT_MSVC_WARNING_PUSH GODOT_MSVC_PRAGMA(warning(push))
+#define GODOT_MSVC_WARNING_IGNORE(m_warning) GODOT_MSVC_PRAGMA(warning(disable : m_warning))
+#define GODOT_MSVC_WARNING_POP GODOT_MSVC_PRAGMA(warning(pop))
+#define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_MSVC_WARNING_PUSH GODOT_MSVC_WARNING_IGNORE(m_warning)
+#else
+#define GODOT_MSVC_PRAGMA(m_command)
+#define GODOT_MSVC_WARNING_PUSH
+#define GODOT_MSVC_WARNING_IGNORE(m_warning)
+#define GODOT_MSVC_WARNING_POP
+#define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning)
+#endif

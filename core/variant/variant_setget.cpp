@@ -1379,8 +1379,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 #endif
 			Callable::CallError ce;
 			ce.error = Callable::CallError::CALL_OK;
-			Array ref;
-			ref.push_back(r_iter);
+			Array ref = { r_iter };
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
 			Variant ret = _get_obj().obj->callp(CoreStringName(_iter_init), refp, 1, ce);
@@ -1614,8 +1613,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 #endif
 			Callable::CallError ce;
 			ce.error = Callable::CallError::CALL_OK;
-			Array ref;
-			ref.push_back(r_iter);
+			Array ref = { r_iter };
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
 			Variant ret = _get_obj().obj->callp(CoreStringName(_iter_next), refp, 1, ce);

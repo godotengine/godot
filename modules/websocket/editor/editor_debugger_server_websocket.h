@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
-
 #include "../websocket_peer.h"
 
 #include "core/io/tcp_server.h"
@@ -63,5 +61,3 @@ public:
 	EditorDebuggerServerWebSocket();
 	~EditorDebuggerServerWebSocket();
 };
-
-#endif // TOOLS_ENABLED

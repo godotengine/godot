@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
-
 #include "editor/import/3d/resource_importer_scene.h"
 
 class Animation;
@@ -51,5 +49,3 @@ public:
 			const HashMap<StringName, Variant> &p_options) override;
 	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
 };
-
-#endif // TOOLS_ENABLED

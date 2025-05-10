@@ -32,15 +32,21 @@
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
-#include "core/error/error_list.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "drivers/egl/egl_manager.h"
 #include "servers/display_server.h"
 
+// Suppress redefinition conflicts
+#define FontVariation __FontVariation
+#define BitMap __BitMap
+
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <CoreVideo/CoreVideo.h>
+
+#undef BitMap
+#undef FontVariation
 
 class GLManagerANGLE_MacOS : public EGLManager {
 private:

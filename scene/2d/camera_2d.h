@@ -52,7 +52,7 @@ protected:
 	bool first = true;
 	bool just_exited_tree = false;
 
-	ObjectID custom_viewport_id; // to check validity
+	ObjectID custom_viewport_id; // To check validity.
 	Viewport *custom_viewport = nullptr;
 	Viewport *viewport = nullptr;
 
@@ -73,10 +73,10 @@ protected:
 	bool rotation_smoothing_enabled = false;
 
 	bool limit_enabled = true;
-	int limit[4];
+	int limit[4] = { -10000000, -10000000, 10000000, 10000000 }; // Left, top, right, bottom.
 	bool limit_smoothing_enabled = false;
 
-	real_t drag_margin[4];
+	real_t drag_margin[4] = { 0.2, 0.2, 0.2, 0.2 };
 	bool drag_horizontal_enabled = false;
 	bool drag_vertical_enabled = false;
 	real_t drag_horizontal_offset = 0.0;
@@ -96,8 +96,6 @@ protected:
 
 	void _make_current(Object *p_which);
 	void _reset_just_exited() { just_exited_tree = false; }
-
-	void _set_old_smoothing(real_t p_enable);
 
 	void _update_process_internal_for_smoothing();
 
@@ -160,7 +158,7 @@ public:
 	void set_limit(Side p_side, int p_limit);
 	int get_limit(Side p_side) const;
 
-	void set_limit_smoothing_enabled(bool enable);
+	void set_limit_smoothing_enabled(bool p_enabled);
 	bool is_limit_smoothing_enabled() const;
 
 	void set_drag_horizontal_enabled(bool p_enabled);
@@ -213,13 +211,13 @@ public:
 	void reset_smoothing();
 	void align();
 
-	void set_screen_drawing_enabled(bool enable);
+	void set_screen_drawing_enabled(bool p_enabled);
 	bool is_screen_drawing_enabled() const;
 
-	void set_limit_drawing_enabled(bool enable);
+	void set_limit_drawing_enabled(bool p_enabled);
 	bool is_limit_drawing_enabled() const;
 
-	void set_margin_drawing_enabled(bool enable);
+	void set_margin_drawing_enabled(bool p_enabled);
 	bool is_margin_drawing_enabled() const;
 
 	Camera2D();

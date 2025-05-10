@@ -72,7 +72,7 @@ void ParticlesEditorPlugin::_notification(int p_what) {
 
 bool ParticlesEditorPlugin::need_show_lifetime_dialog(SpinBox *p_seconds) {
 	// Add one second to the default generation lifetime, since the progress is updated every second.
-	p_seconds->set_value(MAX(1.0, trunc(edited_node->get("lifetime").operator double()) + 1.0));
+	p_seconds->set_value(MAX(1.0, std::trunc(edited_node->get("lifetime").operator double()) + 1.0));
 
 	if (p_seconds->get_value() >= 11.0 + CMP_EPSILON) {
 		// Only pop up the time dialog if the particle's lifetime is long enough to warrant shortening it.
@@ -118,6 +118,8 @@ ParticlesEditorPlugin::ParticlesEditorPlugin() {
 
 	menu = memnew(MenuButton);
 	menu->set_switch_on_hover(true);
+	menu->set_flat(false);
+	menu->set_theme_type_variation("FlatMenuButton");
 	toolbar->add_child(menu);
 	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ParticlesEditorPlugin::_menu_callback));
 }
@@ -292,7 +294,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin() {
 }
 
 void Particles2DEditorPlugin::_selection_changed() {
-	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
+	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
 	if (selected_particles.is_empty() && selected_nodes.is_empty()) {
 		return;
 	}
@@ -463,7 +465,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		undo_redo->add_undo_property(pmptr, "emission_color_texture", pm->get_emission_color_texture());
 	}
 
-	if (valid_normals.size()) {
+	if (!valid_normals.is_empty()) {
 		undo_redo->add_do_property(pmptr, "emission_shape", ParticleProcessMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
 		undo_redo->add_undo_property(pmptr, "emission_shape", pm->get_emission_shape());
 		pm->set_emission_shape(ParticleProcessMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
@@ -555,7 +557,7 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 		undo_redo->add_undo_property(particles, "emission_colors", particles->get_emission_colors());
 	}
 
-	if (valid_normals.size()) {
+	if (!valid_normals.is_empty()) {
 		undo_redo->add_do_property(particles, "emission_shape", CPUParticles2D::EMISSION_SHAPE_DIRECTED_POINTS);
 		undo_redo->add_undo_property(particles, "emission_shape", particles->get_emission_shape());
 		PackedVector2Array norms;
@@ -656,7 +658,7 @@ void Particles3DEditorPlugin::_node_selected(const NodePath &p_path) {
 	}
 
 	geometry = mi->get_mesh()->get_faces();
-	if (geometry.size() == 0) {
+	if (geometry.is_empty()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain face geometry."), sel->get_name()));
 		return;
 	}
@@ -826,6 +828,7 @@ Particles3DEditorPlugin::Particles3DEditorPlugin() {
 	generate_aabb->add_child(genvb);
 
 	generate_seconds = memnew(SpinBox);
+	generate_seconds->set_accessibility_name(TTRC("Generation Time"));
 	generate_seconds->set_min(0.1);
 	generate_seconds->set_max(25);
 	generate_seconds->set_value(2);
@@ -850,12 +853,14 @@ Particles3DEditorPlugin::Particles3DEditorPlugin() {
 	emission_dialog->add_child(emd_vb);
 
 	emission_amount = memnew(SpinBox);
+	emission_amount->set_accessibility_name(TTRC("Emission Points"));
 	emission_amount->set_min(1);
 	emission_amount->set_max(100000);
 	emission_amount->set_value(512);
 	emd_vb->add_margin_child(TTR("Emission Points:"), emission_amount);
 
 	emission_fill = memnew(OptionButton);
+	emission_fill->set_accessibility_name(TTRC("Emission Source"));
 	emission_fill->add_item(TTR("Surface Points"));
 	emission_fill->add_item(TTR("Surface Points+Normal (Directed)"));
 	emission_fill->add_item(TTR("Volume"));
@@ -928,7 +933,7 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 	undo_redo->create_action(TTR("Create Emission Points"));
 	ParticleProcessMaterial *matptr = mat.ptr();
 
-	if (normals.size() > 0) {
+	if (!normals.is_empty()) {
 		undo_redo->add_do_property(matptr, "emission_shape", ParticleProcessMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
 		undo_redo->add_undo_property(matptr, "emission_shape", matptr->get_emission_shape());
 
@@ -948,7 +953,7 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 		}
 
 		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
-		undo_redo->add_do_property(matptr, "emission_normal_texture", image2);
+		undo_redo->add_do_property(matptr, "emission_normal_texture", ImageTexture::create_from_image(image2));
 		undo_redo->add_undo_property(matptr, "emission_normal_texture", matptr->get_emission_normal_texture());
 	} else {
 		undo_redo->add_do_property(matptr, "emission_shape", ParticleProcessMaterial::EMISSION_SHAPE_POINTS);

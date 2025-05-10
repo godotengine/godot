@@ -31,6 +31,9 @@
 #import "os_macos.h"
 
 #import "dir_access_macos.h"
+#ifdef DEBUG_ENABLED
+#import "display_server_embedded.h"
+#endif
 #import "display_server_macos.h"
 #import "godot_application.h"
 #import "godot_application_delegate.h"
@@ -45,21 +48,6 @@
 #import <mach-o/dyld.h>
 #include <os/log.h>
 #include <sys/sysctl.h>
-
-void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
-	// Prevent main loop from sleeping and redraw window during modal popup display.
-	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates.
-
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (get_singleton()->get_main_loop() && ds && !get_singleton()->is_separate_thread_rendering_enabled() && !ds->get_is_resizing()) {
-		Main::force_redraw();
-		if (!Main::is_iterating()) { // Avoid cyclic loop.
-			Main::iteration();
-		}
-	}
-
-	CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
-}
 
 void OS_MacOS::initialize() {
 	crash_handler.initialize();
@@ -89,8 +77,34 @@ bool OS_MacOS::is_sandboxed() const {
 	return has_environment("APP_SANDBOX_CONTAINER_ID");
 }
 
+bool OS_MacOS::request_permission(const String &p_name) {
+	if (@available(macOS 10.15, *)) {
+		if (p_name == "macos.permission.RECORD_SCREEN") {
+			if (CGPreflightScreenCaptureAccess()) {
+				return true;
+			} else {
+				CGRequestScreenCaptureAccess();
+				return false;
+			}
+		}
+	} else {
+		if (p_name == "macos.permission.RECORD_SCREEN") {
+			return true;
+		}
+	}
+	return false;
+}
+
 Vector<String> OS_MacOS::get_granted_permissions() const {
 	Vector<String> ret;
+
+	if (@available(macOS 10.15, *)) {
+		if (CGPreflightScreenCaptureAccess()) {
+			ret.push_back("macos.permission.RECORD_SCREEN");
+		}
+	} else {
+		ret.push_back("macos.permission.RECORD_SCREEN");
+	}
 
 	if (is_sandboxed()) {
 		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
@@ -99,8 +113,7 @@ Vector<String> OS_MacOS::get_granted_permissions() const {
 			BOOL isStale = NO;
 			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
 			if (!error && !isStale) {
-				String url_string;
-				url_string.parse_utf8([[url path] UTF8String]);
+				String url_string = String::utf8([[url path] UTF8String]);
 				ret.push_back(url_string);
 			}
 		}
@@ -114,6 +127,59 @@ void OS_MacOS::revoke_granted_permissions() {
 		[[NSUserDefaults standardUserDefaults] setObject:nil forKey:@"sec_bookmarks"];
 	}
 }
+
+#if TOOLS_ENABLED
+
+// Function to check if a debugger is attached to the current process
+bool OS_MacOS::is_debugger_attached() {
+	int mib[4];
+	struct kinfo_proc info{};
+	size_t size = sizeof(info);
+
+	// Initialize the flags so that, if sysctl fails, info.kp_proc.p_flag will be 0.
+	info.kp_proc.p_flag = 0;
+
+	// Initialize mib, which tells sysctl the info we want, in this case we're looking for information
+	// about a specific process ID.
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_PROC;
+	mib[2] = KERN_PROC_PID;
+	mib[3] = getpid();
+
+	if (sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, nullptr, 0) != 0) {
+		perror("sysctl");
+		return false;
+	}
+
+	return (info.kp_proc.p_flag & P_TRACED) != 0;
+}
+
+void OS_MacOS::wait_for_debugger(uint32_t p_msec) {
+	if (p_msec == 0) {
+		return;
+	}
+
+	CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
+	CFTimeInterval wait_time = p_msec / 1000.0;
+
+	NSTimer *timer = [NSTimer timerWithTimeInterval:0.100
+											repeats:YES
+											  block:^(NSTimer *t) {
+												  if (is_debugger_attached() || CFAbsoluteTimeGetCurrent() > start + wait_time) {
+													  [NSApp stopModalWithCode:NSModalResponseContinue];
+													  [t invalidate];
+												  }
+											  }];
+
+	[[NSRunLoop mainRunLoop] addTimer:timer forMode:NSModalPanelRunLoopMode];
+
+	pid_t pid = getpid();
+	alert(vformat("Attach debugger to pid: %d", pid));
+
+	print("continue...");
+}
+
+#endif
 
 void OS_MacOS::initialize_core() {
 	OS_Unix::initialize_core();
@@ -322,7 +388,7 @@ String OS_MacOS::get_bundle_resource_dir() const {
 	NSBundle *main = [NSBundle mainBundle];
 	if (main) {
 		NSString *resource_path = [main resourcePath];
-		ret.parse_utf8([resource_path UTF8String]);
+		ret.append_utf8([resource_path UTF8String]);
 	}
 	return ret;
 }
@@ -334,7 +400,7 @@ String OS_MacOS::get_bundle_icon_path() const {
 	if (main) {
 		NSString *icon_path = [[main infoDictionary] objectForKey:@"CFBundleIconFile"];
 		if (icon_path) {
-			ret.parse_utf8([icon_path UTF8String]);
+			ret.append_utf8([icon_path UTF8String]);
 		}
 	}
 	return ret;
@@ -377,7 +443,7 @@ String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	if (found) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(id, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-			ret.parse_utf8([[paths firstObject] UTF8String]);
+			ret.append_utf8([[paths firstObject] UTF8String]);
 		}
 	}
 
@@ -421,7 +487,7 @@ Error OS_MacOS::shell_open(const String &p_uri) {
 
 String OS_MacOS::get_locale() const {
 	NSString *locale_code = [[NSLocale preferredLanguages] objectAtIndex:0];
-	return String([locale_code UTF8String]).replace("-", "_");
+	return String([locale_code UTF8String]).replace_char('-', '_');
 }
 
 Vector<String> OS_MacOS::get_system_fonts() const {
@@ -544,23 +610,26 @@ Vector<String> OS_MacOS::get_system_font_path_for_text(const String &p_font_name
 	CTFontDescriptorRef font = CTFontDescriptorCreateWithAttributes(attributes);
 	if (font) {
 		CTFontRef family = CTFontCreateWithFontDescriptor(font, 0, nullptr);
-		CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
-		CFRange range = CFRangeMake(0, CFStringGetLength(string));
-		CTFontRef fallback_family = CTFontCreateForString(family, string, range);
-		if (fallback_family) {
-			CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
-			if (fallback_font) {
-				CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
-				if (url) {
-					NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
-					ret.push_back(String::utf8([font_path UTF8String]));
-					CFRelease(url);
+		if (family) {
+			CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
+			CFRange range = CFRangeMake(0, CFStringGetLength(string));
+			CTFontRef fallback_family = CTFontCreateForString(family, string, range);
+			if (fallback_family) {
+				CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
+				if (fallback_font) {
+					CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
+					if (url) {
+						NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
+						ret.push_back(String::utf8([font_path UTF8String]));
+						CFRelease(url);
+					}
+					CFRelease(fallback_font);
 				}
-				CFRelease(fallback_font);
+				CFRelease(fallback_family);
 			}
-			CFRelease(fallback_family);
+			CFRelease(string);
+			CFRelease(family);
 		}
-		CFRelease(string);
 		CFRelease(font);
 	}
 
@@ -637,10 +706,7 @@ String OS_MacOS::get_executable_path() const {
 	if (ret <= 0) {
 		return OS::get_executable_path();
 	} else {
-		String path;
-		path.parse_utf8(pathbuf);
-
-		return path;
+		return String::utf8(pathbuf);
 	}
 }
 
@@ -710,8 +776,7 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname != nil) {
-		String path;
-		path.parse_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+		String path = String::utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
 		return create_process(path, p_arguments, r_child_id, false);
 	} else {
 		return create_process(get_executable_path(), p_arguments, r_child_id, false);
@@ -745,7 +810,7 @@ String OS_MacOS::get_unique_id() const {
 		}
 
 		if (serial_number_ns_string) {
-			serial_number.parse_utf8([serial_number_ns_string UTF8String]);
+			serial_number.append_utf8([serial_number_ns_string UTF8String]);
 		}
 	}
 
@@ -806,7 +871,8 @@ String OS_MacOS::get_system_ca_certificates() {
 		Error err = CryptoCore::b64_encode(pba.ptrw(), pba.size(), &b64len, (unsigned char *)CFDataGetBytePtr(der), derlen);
 		CFRelease(der);
 		ERR_CONTINUE(err != OK);
-		certs += "-----BEGIN CERTIFICATE-----\n" + String((char *)pba.ptr(), b64len) + "\n-----END CERTIFICATE-----\n";
+		// Certificate is bas64 encoded, aka ascii.
+		certs += "-----BEGIN CERTIFICATE-----\n" + String::ascii(Span((char *)pba.ptr(), b64len)) + "\n-----END CERTIFICATE-----\n";
 	}
 	CFRelease(result);
 	return certs;
@@ -818,37 +884,11 @@ OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
 }
 
-void OS_MacOS::run() {
-	if (!main_loop) {
-		return;
-	}
+OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
+	execpath = p_execpath;
+	argc = p_argc;
+	argv = p_argv;
 
-	@autoreleasepool {
-		main_loop->initialize();
-	}
-
-	bool quit = false;
-	while (!quit) {
-		@autoreleasepool {
-			@try {
-				if (DisplayServer::get_singleton()) {
-					DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
-				}
-				joypad_apple->process_joypads();
-
-				if (Main::iteration()) {
-					quit = true;
-				}
-			} @catch (NSException *exception) {
-				ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
-			}
-		}
-	}
-
-	main_loop->finalize();
-}
-
-OS_MacOS::OS_MacOS() {
 	if (is_sandboxed()) {
 		// Load security-scoped bookmarks, request access, remove stale or invalid bookmarks.
 		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
@@ -866,8 +906,6 @@ OS_MacOS::OS_MacOS() {
 		[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
 	}
 
-	main_loop = nullptr;
-
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(MacOSTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
@@ -877,12 +915,99 @@ OS_MacOS::OS_MacOS() {
 #endif
 
 	DisplayServerMacOS::register_macos_driver();
+}
 
+// MARK: - OS_MacOS_NSApp
+
+void OS_MacOS_NSApp::run() {
+	[NSApp run];
+}
+
+void OS_MacOS_NSApp::start_main() {
+	Error err;
+	@autoreleasepool {
+		err = Main::setup(execpath, argc, argv);
+	}
+
+	if (err == OK) {
+		main_started = true;
+
+		int ret;
+		@autoreleasepool {
+			ret = Main::start();
+		}
+		if (ret == EXIT_SUCCESS) {
+			if (main_loop) {
+				@autoreleasepool {
+					main_loop->initialize();
+				}
+				DisplayServer *ds = DisplayServer::get_singleton();
+				DisplayServerMacOS *ds_mac = Object::cast_to<DisplayServerMacOS>(ds);
+
+				pre_wait_observer = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+					@autoreleasepool {
+						@try {
+							if (ds_mac) {
+								ds_mac->_process_events(false);
+							} else if (ds) {
+								ds->process_events();
+							}
+							joypad_apple->process_joypads();
+
+							if (Main::iteration()) {
+								terminate();
+							}
+						} @catch (NSException *exception) {
+							ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
+						}
+					}
+
+					CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
+				});
+				CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+				return;
+			}
+		} else {
+			set_exit_code(EXIT_FAILURE);
+		}
+	} else if (err == ERR_HELP) { // Returned by --help and --version, so success.
+		set_exit_code(EXIT_SUCCESS);
+	} else {
+		set_exit_code(EXIT_FAILURE);
+	}
+
+	terminate();
+}
+
+void OS_MacOS_NSApp::terminate() {
+	if (pre_wait_observer) {
+		CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+		CFRelease(pre_wait_observer);
+		pre_wait_observer = nil;
+	}
+
+	should_terminate = true;
+	[NSApp terminate:nil];
+}
+
+void OS_MacOS_NSApp::cleanup() {
+	if (main_loop) {
+		main_loop->finalize();
+	}
+	if (main_started) {
+		@autoreleasepool {
+			Main::cleanup();
+		}
+	}
+}
+
+OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv) :
+		OS_MacOS(p_execpath, p_argc, p_argv) {
 	// Implicitly create shared NSApplication instance.
 	[GodotApplication sharedApplication];
 
 	// In case we are unbundled, make us a proper UI application.
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
 
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
@@ -890,35 +1015,70 @@ OS_MacOS::OS_MacOS() {
 
 	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
 	[NSApp setMainMenu:main_menu];
-	[NSApp finishLaunching];
 
-	id delegate = [[GodotApplicationDelegate alloc] init];
+	delegate = [[GodotApplicationDelegate alloc] initWithOS:this];
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
 	[NSApp registerUserInterfaceItemSearchHandler:delegate];
+}
 
-	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
-	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+// MARK: - OS_MacOS_Embedded
 
-	// Process application:openFile: event.
-	while (true) {
-		NSEvent *event = [NSApp
-				nextEventMatchingMask:NSEventMaskAny
-							untilDate:[NSDate distantPast]
-							   inMode:NSDefaultRunLoopMode
-							  dequeue:YES];
+#ifdef DEBUG_ENABLED
 
-		if (event == nil) {
-			break;
+void OS_MacOS_Embedded::run() {
+	CFRunLoopGetCurrent();
+
+	@autoreleasepool {
+		Error err = Main::setup(execpath, argc, argv);
+		if (err != OK) {
+			if (err == ERR_HELP) {
+				return set_exit_code(EXIT_SUCCESS);
+			}
+			return set_exit_code(EXIT_FAILURE);
 		}
-
-		[NSApp sendEvent:event];
 	}
 
-	[NSApp activateIgnoringOtherApps:YES];
+	int ret;
+	@autoreleasepool {
+		ret = Main::start();
+	}
+
+	DisplayServerEmbedded *ds = Object::cast_to<DisplayServerEmbedded>(DisplayServer::get_singleton());
+	if (!ds) {
+		ERR_FAIL_MSG("DisplayServerEmbedded is not initialized.");
+	}
+
+	if (ds && ret == EXIT_SUCCESS && main_loop) {
+		@autoreleasepool {
+			main_loop->initialize();
+		}
+
+		while (true) {
+			@autoreleasepool {
+				@try {
+					ds->process_events();
+
+					if (Main::iteration()) {
+						break;
+					}
+
+					CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, 0);
+				} @catch (NSException *exception) {
+					ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
+				}
+			}
+		}
+
+		main_loop->finalize();
+	}
+
+	Main::cleanup();
 }
 
-OS_MacOS::~OS_MacOS() {
-	CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-	CFRelease(pre_wait_observer);
+OS_MacOS_Embedded::OS_MacOS_Embedded(const char *p_execpath, int p_argc, char **p_argv) :
+		OS_MacOS(p_execpath, p_argc, p_argv) {
+	DisplayServerEmbedded::register_embedded_driver();
 }
+
+#endif

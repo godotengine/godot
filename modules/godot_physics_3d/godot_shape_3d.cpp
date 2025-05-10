@@ -216,12 +216,7 @@ bool GodotSeparationRayShape3D::intersect_point(const Vector3 &p_point) const {
 }
 
 Vector3 GodotSeparationRayShape3D::get_closest_point_to(const Vector3 &p_point) const {
-	Vector3 s[2] = {
-		Vector3(0, 0, 0),
-		Vector3(0, 0, length)
-	};
-
-	return Geometry3D::get_closest_point_to_segment(p_point, s);
+	return Geometry3D::get_closest_point_to_segment(p_point, Vector3(0, 0, 0), Vector3(0, 0, length));
 }
 
 Vector3 GodotSeparationRayShape3D::get_moment_of_inertia(real_t p_mass) const {
@@ -455,19 +450,14 @@ Vector3 GodotBoxShape3D::get_closest_point_to(const Vector3 &p_point) const {
 
 	//check segments
 	real_t min_distance = 1e20;
-	Vector3 closest_vertex = half_extents * p_point.sign();
-	Vector3 s[2] = {
-		closest_vertex,
-		closest_vertex
-	};
-
+	const Vector3 closest_vertex = half_extents * p_point.sign();
 	for (int i = 0; i < 3; i++) {
-		s[1] = closest_vertex;
-		s[1][i] = -s[1][i]; //edge
+		Vector3 segment_b = closest_vertex;
+		segment_b[i] = -segment_b[i]; //edge
 
-		Vector3 closest_edge = Geometry3D::get_closest_point_to_segment(p_point, s);
+		const Vector3 closest_edge = Geometry3D::get_closest_point_to_segment(p_point, closest_vertex, segment_b);
 
-		real_t d = p_point.distance_to(closest_edge);
+		const real_t d = p_point.distance_to(closest_edge);
 		if (d < min_distance) {
 			min_point = closest_edge;
 			min_distance = d;
@@ -618,12 +608,10 @@ bool GodotCapsuleShape3D::intersect_point(const Vector3 &p_point) const {
 }
 
 Vector3 GodotCapsuleShape3D::get_closest_point_to(const Vector3 &p_point) const {
-	Vector3 s[2] = {
-		Vector3(0, -height * 0.5 + radius, 0),
-		Vector3(0, height * 0.5 - radius, 0),
-	};
+	const Vector3 segment_a = Vector3(0, -height * 0.5 + radius, 0);
+	const Vector3 segment_b = Vector3(0, height * 0.5 - radius, 0);
 
-	Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, s);
+	const Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, segment_a, segment_b);
 
 	if (p.distance_to(p_point) < radius) {
 		return p_point;
@@ -755,7 +743,7 @@ bool GodotCylinderShape3D::intersect_point(const Vector3 &p_point) const {
 }
 
 Vector3 GodotCylinderShape3D::get_closest_point_to(const Vector3 &p_point) const {
-	if (Math::absf(p_point.y) > height * 0.5) {
+	if (Math::abs(p_point.y) > height * 0.5) {
 		// Project point to top disk.
 		real_t dir = p_point.y > 0.0 ? 1.0 : -1.0;
 		Vector3 circle_pos(0.0, dir * height * 0.5, 0.0);
@@ -772,12 +760,10 @@ Vector3 GodotCylinderShape3D::get_closest_point_to(const Vector3 &p_point) const
 
 		return proj_point;
 	} else {
-		Vector3 s[2] = {
-			Vector3(0, -height * 0.5, 0),
-			Vector3(0, height * 0.5, 0),
-		};
+		const Vector3 segment_a = Vector3(0, -height * 0.5, 0);
+		const Vector3 segment_b = Vector3(0, height * 0.5, 0);
 
-		Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, s);
+		const Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, segment_a, segment_b);
 
 		if (p.distance_to(p_point) < radius) {
 			return p_point;
@@ -852,7 +838,7 @@ void GodotConvexPolygonShape3D::project_range(const Vector3 &p_normal, const Tra
 
 Vector3 GodotConvexPolygonShape3D::get_support(const Vector3 &p_normal) const {
 	// Skip if there are no vertices in the mesh
-	if (mesh.vertices.size() == 0) {
+	if (mesh.vertices.is_empty()) {
 		return Vector3();
 	}
 
@@ -960,7 +946,7 @@ void GodotConvexPolygonShape3D::get_supports(const Vector3 &p_normal, int p_max,
 
 	for (int i = 0; i < ec; i++) {
 		real_t dot = (vertices[edges[i].vertex_a] - vertices[edges[i].vertex_b]).normalized().dot(p_normal);
-		dot = ABS(dot);
+		dot = Math::abs(dot);
 		if (dot < edge_support_threshold_lower && (edges[i].vertex_a == vtx || edges[i].vertex_b == vtx)) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
@@ -1068,12 +1054,10 @@ Vector3 GodotConvexPolygonShape3D::get_closest_point_to(const Vector3 &p_point) 
 	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
 	int ec = mesh.edges.size();
 	for (int i = 0; i < ec; i++) {
-		Vector3 s[2] = {
-			vertices[edges[i].vertex_a],
-			vertices[edges[i].vertex_b]
-		};
+		const Vector3 segment_a = vertices[edges[i].vertex_a];
+		const Vector3 segment_b = vertices[edges[i].vertex_b];
 
-		Vector3 closest = Geometry3D::get_closest_point_to_segment(p_point, s);
+		Vector3 closest = Geometry3D::get_closest_point_to_segment(p_point, segment_a, segment_b);
 		real_t d = closest.distance_to(p_point);
 		if (d < min_distance) {
 			min_distance = d;
@@ -1238,7 +1222,7 @@ void GodotFaceShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[nx]).normalized().dot(n);
-		dot = ABS(dot);
+		dot = Math::abs(dot);
 		if (dot < edge_support_threshold_lower) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
@@ -1385,7 +1369,7 @@ void GodotConcavePolygonShape3D::_cull_segment(int p_idx, _SegmentCullParams *p_
 }
 
 bool GodotConcavePolygonShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, int &r_face_index, bool p_hit_back_faces) const {
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return false;
 	}
 
@@ -1465,7 +1449,7 @@ bool GodotConcavePolygonShape3D::_cull(int p_idx, _CullParams *p_params) const {
 
 void GodotConcavePolygonShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const {
 	// make matrix local to concave
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return;
 	}
 

@@ -30,25 +30,33 @@
 
 #pragma once
 
-#include "box_container.h"
-#include "core/io/dir_access.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/tree.h"
 #include "scene/property_list_helper.h"
 
+class DirAccess;
+class FlowContainer;
 class GridContainer;
+class HBoxContainer;
+class ItemList;
+class LineEdit;
+class OptionButton;
 class PopupMenu;
+class VBoxContainer;
 
 class FileDialog : public ConfirmationDialog {
 	GDCLASS(FileDialog, ConfirmationDialog);
+
+	struct Option {
+		String name;
+		Vector<String> values;
+		int default_idx = 0;
+	};
 
 public:
 	enum Access {
 		ACCESS_RESOURCES,
 		ACCESS_USERDATA,
-		ACCESS_FILESYSTEM
+		ACCESS_FILESYSTEM,
 	};
 
 	enum FileMode {
@@ -56,7 +64,7 @@ public:
 		FILE_MODE_OPEN_FILES,
 		FILE_MODE_OPEN_DIR,
 		FILE_MODE_OPEN_ANY,
-		FILE_MODE_SAVE_FILE
+		FILE_MODE_SAVE_FILE,
 	};
 
 	enum ItemMenu {
@@ -68,63 +76,77 @@ public:
 	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
 	typedef void (*RegisterFunc)(FileDialog *);
 
-	static GetIconFunc get_icon_func;
-	static RegisterFunc register_func;
-	static RegisterFunc unregister_func;
+	inline static GetIconFunc get_icon_func = nullptr;
+	inline static RegisterFunc register_func = nullptr;
+	inline static RegisterFunc unregister_func = nullptr;
 
 private:
-	ConfirmationDialog *makedialog = nullptr;
-	LineEdit *makedirname = nullptr;
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
-	Button *makedir = nullptr;
+	inline static bool default_show_hidden_files = false;
+	bool show_hidden_files = false;
+	bool use_native_dialog = false;
+
 	Access access = ACCESS_RESOURCES;
-	VBoxContainer *vbox = nullptr;
-	GridContainer *grid_options = nullptr;
-	FileMode mode;
-	LineEdit *dir = nullptr;
-	HBoxContainer *drives_container = nullptr;
-	HBoxContainer *shortcuts_container = nullptr;
-	OptionButton *drives = nullptr;
-	Tree *tree = nullptr;
-	HBoxContainer *filename_filter_box = nullptr;
-	LineEdit *filename_filter = nullptr;
-	HBoxContainer *file_box = nullptr;
-	LineEdit *file = nullptr;
-	OptionButton *filter = nullptr;
-	AcceptDialog *mkdirerr = nullptr;
-	AcceptDialog *exterr = nullptr;
+	FileMode mode = FILE_MODE_SAVE_FILE;
 	Ref<DirAccess> dir_access;
-	ConfirmationDialog *confirm_save = nullptr;
-	PopupMenu *item_menu = nullptr;
-
-	Label *message = nullptr;
-
-	Button *dir_prev = nullptr;
-	Button *dir_next = nullptr;
-	Button *dir_up = nullptr;
-
-	Button *refresh = nullptr;
-	Button *show_hidden = nullptr;
-	Button *show_filename_filter_button = nullptr;
 
 	Vector<String> filters;
 	Vector<String> processed_filters;
+
+	Vector<Option> options;
+	Dictionary selected_options;
+	bool options_dirty = false;
+
 	String file_name_filter;
 	bool show_filename_filter = false;
 
 	Vector<String> local_history;
 	int local_history_pos = 0;
-	void _push_history();
 
 	bool mode_overrides_title = true;
 	String root_subfolder;
 	String root_prefix;
-
-	static bool default_show_hidden_files;
-	bool show_hidden_files = false;
-	bool use_native_dialog = false;
+	String full_dir;
 
 	bool is_invalidating = false;
+
+	VBoxContainer *main_vbox = nullptr;
+
+	Button *dir_prev = nullptr;
+	Button *dir_next = nullptr;
+	Button *dir_up = nullptr;
+
+	HBoxContainer *drives_container = nullptr;
+	OptionButton *drives = nullptr;
+	LineEdit *directory_edit = nullptr;
+	HBoxContainer *shortcuts_container = nullptr;
+
+	Button *refresh_button = nullptr;
+	Button *show_hidden = nullptr;
+	Button *show_filename_filter_button = nullptr;
+	Button *make_dir_button = nullptr;
+
+	ItemList *file_list = nullptr;
+	Label *message = nullptr;
+	PopupMenu *item_menu = nullptr;
+
+	HBoxContainer *filename_filter_box = nullptr;
+	LineEdit *filename_filter = nullptr;
+
+	HBoxContainer *file_box = nullptr;
+	LineEdit *filename_edit = nullptr;
+	OptionButton *filter = nullptr;
+
+	FlowContainer *flow_checkbox_options = nullptr;
+	GridContainer *grid_select_options = nullptr;
+
+	ConfirmationDialog *make_dir_dialog = nullptr;
+	LineEdit *new_dir_name = nullptr;
+	AcceptDialog *mkdirerr = nullptr;
+	AcceptDialog *exterr = nullptr;
+	ConfirmationDialog *confirm_save = nullptr;
 
 	struct ThemeCache {
 		Ref<Texture2D> parent_folder;
@@ -147,20 +169,6 @@ private:
 		Color icon_pressed_color;
 	} theme_cache;
 
-	struct Option {
-		String name;
-		Vector<String> values;
-		int default_idx = 0;
-	};
-
-	static inline PropertyListHelper base_property_helper;
-	PropertyListHelper property_helper;
-
-	Vector<Option> options;
-	Dictionary selected_options;
-	bool options_dirty = false;
-	String full_dir;
-
 	void update_dir();
 	void update_file_name();
 	void update_file_list();
@@ -170,15 +178,16 @@ private:
 
 	void _item_menu_id_pressed(int p_option);
 	void _empty_clicked(const Vector2 &p_pos, MouseButton p_button);
-	void _rmb_select(const Vector2 &p_pos, MouseButton p_button = MouseButton::RIGHT);
+	void _item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_button);
 
 	void _focus_file_text();
 
-	void _tree_multi_selected(Object *p_object, int p_cell, bool p_selected);
-	void _tree_selected();
+	int _get_selected_file_idx();
+	void _file_list_multi_selected(int p_item, bool p_selected);
+	void _file_list_selected(int p_item);
+	void _file_list_item_activated(int p_item);
 
 	void _select_drive(int p_idx);
-	void _tree_item_activated();
 	void _dir_submitted(String p_dir);
 	void _file_submitted(const String &p_file);
 	void _action_pressed();
@@ -187,17 +196,19 @@ private:
 	void _filter_selected(int);
 	void _filename_filter_changed();
 	void _filename_filter_selected();
-	void _tree_select_first();
+	void _file_list_select_first();
 	void _make_dir();
 	void _make_dir_confirm();
 	void _go_up();
 	void _go_back();
 	void _go_forward();
+	void _push_history();
 
 	void _change_dir(const String &p_new_dir);
 	void _update_drives(bool p_select = true);
 
 	void _invalidate();
+	void _setup_button(Button *p_button, const Ref<Texture2D> &p_icon);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
@@ -274,8 +285,8 @@ public:
 	void set_file_mode(FileMode p_mode);
 	FileMode get_file_mode() const;
 
-	VBoxContainer *get_vbox();
-	LineEdit *get_line_edit() { return file; }
+	VBoxContainer *get_vbox() { return main_vbox; }
+	LineEdit *get_line_edit() { return filename_edit; }
 
 	void set_access(Access p_access);
 	Access get_access() const;

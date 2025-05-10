@@ -136,7 +136,7 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 		}
 
 		String utf_path;
-		Error err = utf_path.parse_utf8(raw_pdb_path);
+		Error err = utf_path.append_utf8(raw_pdb_path);
 		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to read PDB path from '%s'.", p_dll_path));
 
 		pdb_info.path = utf_path;
@@ -179,7 +179,8 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 		if (new_expected_buffer_size > original_path_size) {
 			ERR_FAIL_COND_V_MSG(original_path_size < min_base_size + suffix_size, FAILED, vformat("The original PDB path size in bytes is too small: '%s'. Expected size: %d or more bytes, but available %d.", pdb_info.path, min_base_size + suffix_size, original_path_size));
 
-			new_pdb_base_name.parse_utf8(utf8_name, original_path_size - suffix_size);
+			new_pdb_base_name.clear();
+			new_pdb_base_name.append_utf8(utf8_name, original_path_size - suffix_size);
 			new_pdb_base_name[new_pdb_base_name.length() - 1] = '_'; // Restore the last '_'
 			WARN_PRINT(vformat("The original path size of '%s' in bytes was too small to fit the new name, so it was shortened to '%s%d.pdb'.", pdb_info.path, new_pdb_base_name, max_pdb_names - 1));
 		}

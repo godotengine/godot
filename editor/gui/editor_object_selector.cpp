@@ -190,7 +190,6 @@ void EditorObjectSelector::_id_pressed(int p_idx) {
 
 void EditorObjectSelector::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
 
@@ -226,6 +225,7 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	main_hb->add_child(current_object_icon);
 
 	current_object_label = memnew(Label);
+	current_object_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	current_object_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	current_object_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	current_object_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

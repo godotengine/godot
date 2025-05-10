@@ -35,24 +35,13 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
 
-void EmbeddedProcess::_notification(int p_what) {
+void EmbeddedProcessBase::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			window = get_window();
 		} break;
-		case NOTIFICATION_PROCESS: {
-			if (updated_embedded_process_queued) {
-				updated_embedded_process_queued = false;
-				_update_embedded_process();
-			}
-		} break;
 		case NOTIFICATION_DRAW: {
 			_draw();
-		} break;
-		case NOTIFICATION_RESIZED:
-		case NOTIFICATION_VISIBILITY_CHANGED:
-		case NOTIFICATION_WM_POSITION_CHANGED: {
-			queue_update_embedded_process();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			focus_style_box = get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles));
@@ -68,60 +57,43 @@ void EmbeddedProcess::_notification(int p_what) {
 				margin_bottom_right = Point2i();
 			}
 		} break;
-		case NOTIFICATION_FOCUS_ENTER: {
-			queue_update_embedded_process();
-		} break;
-		case NOTIFICATION_APPLICATION_FOCUS_IN: {
-			application_has_focus = true;
-			last_application_focus_time = OS::get_singleton()->get_ticks_msec();
-		} break;
-		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			application_has_focus = false;
-		} break;
 	}
 }
 
-void EmbeddedProcess::set_window_size(const Size2i p_window_size) {
+void EmbeddedProcessBase::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("embedding_completed"));
+	ADD_SIGNAL(MethodInfo("embedding_failed"));
+	ADD_SIGNAL(MethodInfo("embedded_process_updated"));
+	ADD_SIGNAL(MethodInfo("embedded_process_focused"));
+}
+
+void EmbeddedProcessBase::_draw() {
+	if (is_process_focused() && focus_style_box.is_valid()) {
+		Size2 size = get_size();
+		Rect2 r = Rect2(Point2(), size);
+		focus_style_box->draw(get_canvas_item(), r);
+	}
+}
+
+void EmbeddedProcessBase::set_window_size(const Size2i &p_window_size) {
 	if (window_size != p_window_size) {
 		window_size = p_window_size;
 		queue_update_embedded_process();
 	}
 }
 
-void EmbeddedProcess::set_keep_aspect(bool p_keep_aspect) {
+void EmbeddedProcessBase::set_keep_aspect(bool p_keep_aspect) {
 	if (keep_aspect != p_keep_aspect) {
 		keep_aspect = p_keep_aspect;
 		queue_update_embedded_process();
 	}
 }
 
-Rect2i EmbeddedProcess::get_adjusted_embedded_window_rect(Rect2i p_rect) {
-	Rect2i control_rect = Rect2i(p_rect.position + margin_top_left, (p_rect.size - get_margins_size()).maxi(1));
-	if (window) {
-		control_rect.position += window->get_position();
-	}
-	if (window_size != Size2i()) {
-		Rect2i desired_rect = Rect2i();
-		if (!keep_aspect && control_rect.size.x >= window_size.x && control_rect.size.y >= window_size.y) {
-			// Fixed at the desired size.
-			desired_rect.size = window_size;
-		} else {
-			float ratio = MIN((float)control_rect.size.x / window_size.x, (float)control_rect.size.y / window_size.y);
-			desired_rect.size = Size2i(window_size.x * ratio, window_size.y * ratio).maxi(1);
-		}
-		desired_rect.position = Size2i(control_rect.position.x + ((control_rect.size.x - desired_rect.size.x) / 2), control_rect.position.y + ((control_rect.size.y - desired_rect.size.y) / 2));
-		return desired_rect;
-	} else {
-		// Stretch, use all the control area.
-		return control_rect;
-	}
-}
-
-Rect2i EmbeddedProcess::get_screen_embedded_window_rect() {
+Rect2i EmbeddedProcessBase::get_screen_embedded_window_rect() const {
 	return get_adjusted_embedded_window_rect(get_global_rect());
 }
 
-int EmbeddedProcess::get_margin_size(Side p_side) const {
+int EmbeddedProcessBase::get_margin_size(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
 
 	switch (p_side) {
@@ -138,16 +110,49 @@ int EmbeddedProcess::get_margin_size(Side p_side) const {
 	return 0;
 }
 
-Size2 EmbeddedProcess::get_margins_size() {
+Size2 EmbeddedProcessBase::get_margins_size() const {
 	return margin_top_left + margin_bottom_right;
 }
 
-bool EmbeddedProcess::is_embedding_in_progress() {
+EmbeddedProcessBase::EmbeddedProcessBase() {
+	set_focus_mode(FOCUS_ALL);
+}
+
+EmbeddedProcessBase::~EmbeddedProcessBase() {
+}
+
+Rect2i EmbeddedProcess::get_adjusted_embedded_window_rect(const Rect2i &p_rect) const {
+	Rect2i control_rect = Rect2i(p_rect.position + margin_top_left, (p_rect.size - get_margins_size()).maxi(1));
+	if (window) {
+		control_rect.position += window->get_position();
+	}
+	if (window_size != Size2i()) {
+		Rect2i desired_rect;
+		if (!keep_aspect && control_rect.size.x >= window_size.x && control_rect.size.y >= window_size.y) {
+			// Fixed at the desired size.
+			desired_rect.size = window_size;
+		} else {
+			float ratio = MIN((float)control_rect.size.x / window_size.x, (float)control_rect.size.y / window_size.y);
+			desired_rect.size = Size2i(window_size.x * ratio, window_size.y * ratio).maxi(1);
+		}
+		desired_rect.position = Size2i(control_rect.position.x + ((control_rect.size.x - desired_rect.size.x) / 2), control_rect.position.y + ((control_rect.size.y - desired_rect.size.y) / 2));
+		return desired_rect;
+	} else {
+		// Stretch, use all the control area.
+		return control_rect;
+	}
+}
+
+bool EmbeddedProcess::is_embedding_in_progress() const {
 	return !timer_embedding->is_stopped();
 }
 
-bool EmbeddedProcess::is_embedding_completed() {
+bool EmbeddedProcess::is_embedding_completed() const {
 	return embedding_completed;
+}
+
+bool EmbeddedProcess::is_process_focused() const {
+	return focused_process_id == current_process_id && has_focus();
 }
 
 int EmbeddedProcess::get_embedded_pid() const {
@@ -270,11 +275,29 @@ void EmbeddedProcess::_timer_embedding_timeout() {
 	_try_embed_process();
 }
 
-void EmbeddedProcess::_draw() {
-	if (focused_process_id == current_process_id && has_focus() && focus_style_box.is_valid()) {
-		Size2 size = get_size();
-		Rect2 r = Rect2(Point2(), size);
-		focus_style_box->draw(get_canvas_item(), r);
+void EmbeddedProcess::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			if (updated_embedded_process_queued) {
+				updated_embedded_process_queued = false;
+				_update_embedded_process();
+			}
+		} break;
+		case NOTIFICATION_RESIZED:
+		case NOTIFICATION_VISIBILITY_CHANGED:
+		case NOTIFICATION_WM_POSITION_CHANGED: {
+			queue_update_embedded_process();
+		} break;
+		case NOTIFICATION_APPLICATION_FOCUS_IN: {
+			application_has_focus = true;
+			last_application_focus_time = OS::get_singleton()->get_ticks_msec();
+		} break;
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			application_has_focus = false;
+		} break;
+		case NOTIFICATION_FOCUS_ENTER: {
+			queue_update_embedded_process();
+		} break;
 	}
 }
 
@@ -386,14 +409,8 @@ Window *EmbeddedProcess::_get_current_modal_window() {
 	return nullptr;
 }
 
-void EmbeddedProcess::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("embedding_completed"));
-	ADD_SIGNAL(MethodInfo("embedding_failed"));
-	ADD_SIGNAL(MethodInfo("embedded_process_updated"));
-	ADD_SIGNAL(MethodInfo("embedded_process_focused"));
-}
-
-EmbeddedProcess::EmbeddedProcess() {
+EmbeddedProcess::EmbeddedProcess() :
+		EmbeddedProcessBase() {
 	timer_embedding = memnew(Timer);
 	timer_embedding->set_wait_time(0.1);
 	timer_embedding->set_one_shot(true);
@@ -404,8 +421,6 @@ EmbeddedProcess::EmbeddedProcess() {
 	timer_update_embedded_process->set_wait_time(0.1);
 	add_child(timer_update_embedded_process);
 	timer_update_embedded_process->connect("timeout", callable_mp(this, &EmbeddedProcess::_timer_update_embedded_process_timeout));
-
-	set_focus_mode(FOCUS_ALL);
 }
 
 EmbeddedProcess::~EmbeddedProcess() {

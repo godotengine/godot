@@ -36,13 +36,6 @@
 #include "core/debugger/script_debugger.h"
 #include "core/os/os.h"
 
-EngineDebugger *EngineDebugger::singleton = nullptr;
-ScriptDebugger *EngineDebugger::script_debugger = nullptr;
-
-HashMap<StringName, EngineDebugger::Profiler> EngineDebugger::profilers;
-HashMap<StringName, EngineDebugger::Capture> EngineDebugger::captures;
-HashMap<String, EngineDebugger::CreatePeerFunc> EngineDebugger::protocols;
-
 void (*EngineDebugger::allow_focus_steal_fn)();
 
 void EngineDebugger::register_profiler(const StringName &p_name, const Profiler &p_func) {
@@ -149,8 +142,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bo
 		singleton = memnew(RemoteDebugger(Ref<RemoteDebuggerPeer>(peer)));
 		script_debugger = memnew(ScriptDebugger);
 		// Notify editor of our pid (to allow focus stealing).
-		Array msg;
-		msg.push_back(OS::get_singleton()->get_process_id());
+		Array msg = { OS::get_singleton()->get_process_id() };
 		singleton->send_message("set_pid", msg);
 	}
 	if (!singleton) {

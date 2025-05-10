@@ -173,6 +173,11 @@ void GraphElement::gui_input(const Ref<InputEvent> &p_ev) {
 
 		emit_signal(SNAME("resize_request"), resizing_from_size + diff);
 	}
+
+	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+	if (graph && has_focus()) {
+		graph->key_input(p_ev);
+	}
 }
 
 void GraphElement::set_resizable(bool p_enable) {

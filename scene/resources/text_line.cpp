@@ -29,14 +29,20 @@
 /**************************************************************************/
 
 #include "text_line.h"
+#include "text_line.compat.inc"
 
 void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TextLine::clear);
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &TextLine::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextLine::get_direction);
+	ClassDB::bind_method(D_METHOD("get_inferred_direction"), &TextLine::get_inferred_direction);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Left-to-right,Right-to-left"), "set_direction", "get_direction");
+	// If compiling the editor with TextServerFallback only,
+	// `--doctool` would change the default value to `TextServer::DIRECTION_LTR`.
+	// Force it so that it's consistent regardless of the backend.
+	ADD_PROPERTY_DEFAULT("direction", TextServer::DIRECTION_AUTO);
 
 	ClassDB::bind_method(D_METHOD("set_orientation", "orientation"), &TextLine::set_orientation);
 	ClassDB::bind_method(D_METHOD("get_orientation"), &TextLine::get_orientation);
@@ -98,8 +104,8 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_underline_position"), &TextLine::get_line_underline_position);
 	ClassDB::bind_method(D_METHOD("get_line_underline_thickness"), &TextLine::get_line_underline_thickness);
 
-	ClassDB::bind_method(D_METHOD("draw", "canvas", "pos", "color"), &TextLine::draw, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color"), &TextLine::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw", "canvas", "pos", "color", "oversampling"), &TextLine::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color", "oversampling"), &TextLine::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextLine::hit_test);
 }
@@ -198,6 +204,10 @@ void TextLine::set_direction(TextServer::Direction p_direction) {
 
 TextServer::Direction TextLine::get_direction() const {
 	return TS->shaped_text_get_direction(rid);
+}
+
+TextServer::Direction TextLine::get_inferred_direction() const {
+	return TS->shaped_text_get_inferred_direction(rid);
 }
 
 void TextLine::set_orientation(TextServer::Orientation p_orientation) {
@@ -381,7 +391,7 @@ float TextLine::get_line_underline_thickness() const {
 	return TS->shaped_text_get_underline_thickness(rid);
 }
 
-void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) const {
+void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color, float p_oversampling) const {
 	_shape();
 
 	Vector2 ofs = p_pos;
@@ -425,10 +435,10 @@ void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) co
 		ofs.x += TS->shaped_text_get_ascent(rid);
 		clip_l = MAX(0, p_pos.y - ofs.y);
 	}
-	return TS->shaped_text_draw(rid, p_canvas, ofs, clip_l, clip_l + width, p_color);
+	return TS->shaped_text_draw(rid, p_canvas, ofs, clip_l, clip_l + width, p_color, p_oversampling);
 }
 
-void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color) const {
+void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color, float p_oversampling) const {
 	_shape();
 
 	Vector2 ofs = p_pos;
@@ -472,7 +482,7 @@ void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_si
 		ofs.x += TS->shaped_text_get_ascent(rid);
 		clip_l = MAX(0, p_pos.y - ofs.y);
 	}
-	return TS->shaped_text_draw_outline(rid, p_canvas, ofs, clip_l, clip_l + width, p_outline_size, p_color);
+	return TS->shaped_text_draw_outline(rid, p_canvas, ofs, clip_l, clip_l + width, p_outline_size, p_color, p_oversampling);
 }
 
 int TextLine::hit_test(float p_coords) const {

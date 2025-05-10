@@ -88,6 +88,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_CREATE_FAVORITE,
 		TOOL_CENTER_PARENT,
 		TOOL_HIDE_FILTERED_OUT_PARENTS,
+		TOOL_ACCESSIBILITY_WARNINGS,
 	};
 
 	enum {
@@ -289,6 +290,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	bool profile_allow_editing = true;
 	bool profile_allow_script_editing = true;
+	bool determine_path_automatically = true;
 
 	static void _update_configuration_warning();
 

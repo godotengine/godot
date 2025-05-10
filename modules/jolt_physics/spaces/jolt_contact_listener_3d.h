@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/hashfuncs.h"
@@ -43,7 +44,6 @@
 #include "Jolt/Physics/Collision/ContactListener.h"
 #include "Jolt/Physics/SoftBody/SoftBodyContactListener.h"
 
-#include <stdint.h>
 #include <new>
 
 class JoltShapedObject3D;

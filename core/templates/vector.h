@@ -39,14 +39,14 @@
  */
 
 #include "core/error/error_macros.h"
-#include "core/os/memory.h"
 #include "core/templates/cowdata.h"
 #include "core/templates/search_array.h"
 #include "core/templates/sort_array.h"
 
-#include <climits>
 #include <initializer_list>
-#include <utility>
+
+template <typename T>
+class Vector;
 
 template <typename T>
 class VectorWriteProxy {
@@ -105,9 +105,25 @@ public:
 	_FORCE_INLINE_ const T &operator[](Size p_index) const { return _cowdata.get(p_index); }
 	// Must take a copy instead of a reference (see GH-31736).
 	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
-	Size find(const T &p_val, Size p_from = 0) const { return _cowdata.find(p_val, p_from); }
-	Size rfind(const T &p_val, Size p_from = -1) const { return _cowdata.rfind(p_val, p_from); }
-	Size count(const T &p_val) const { return _cowdata.count(p_val); }
+	Size find(const T &p_val, Size p_from = 0) const {
+		if (p_from < 0) {
+			p_from = size() + p_from;
+		}
+		if (p_from < 0 || p_from >= size()) {
+			return -1;
+		}
+		return span().find(p_val, p_from);
+	}
+	Size rfind(const T &p_val, Size p_from = -1) const {
+		if (p_from < 0) {
+			p_from = size() + p_from;
+		}
+		if (p_from < 0 || p_from >= size()) {
+			return -1;
+		}
+		return span().rfind(p_val, p_from);
+	}
+	Size count(const T &p_val) const { return span().count(p_val); }
 
 	// Must take a copy instead of a reference (see GH-31736).
 	void append_array(Vector<T> p_other);
@@ -115,7 +131,7 @@ public:
 	_FORCE_INLINE_ bool has(const T &p_val) const { return find(p_val) != -1; }
 
 	void sort() {
-		sort_custom<_DefaultComparator<T>>();
+		sort_custom<Comparator<T>>();
 	}
 
 	template <typename Comparator, bool Validate = SORT_ARRAY_VALIDATE_ENABLED, typename... Args>
@@ -131,7 +147,7 @@ public:
 	}
 
 	Size bsearch(const T &p_value, bool p_before) {
-		return bsearch_custom<_DefaultComparator<T>>(p_value, p_before);
+		return bsearch_custom<Comparator<T>>(p_value, p_before);
 	}
 
 	template <typename Comparator, typename Value, typename... Args>
@@ -154,7 +170,7 @@ public:
 		insert(i, p_val);
 	}
 
-	void operator=(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+	void operator=(const Vector &p_from) { _cowdata = p_from._cowdata; }
 	void operator=(Vector &&p_from) { _cowdata = std::move(p_from._cowdata); }
 
 	Vector<uint8_t> to_byte_array() const {
@@ -291,9 +307,8 @@ public:
 	_FORCE_INLINE_ Vector() {}
 	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) :
 			_cowdata(p_init) {}
-	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
-	_FORCE_INLINE_ Vector(Vector &&p_from) :
-			_cowdata(std::move(p_from._cowdata)) {}
+	_FORCE_INLINE_ Vector(const Vector &p_from) = default;
+	_FORCE_INLINE_ Vector(Vector &&p_from) = default;
 
 	_FORCE_INLINE_ ~Vector() {}
 };

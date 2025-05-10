@@ -153,7 +153,7 @@ protected:
 	static void _bind_methods();
 
 	virtual void _set_active(bool p_active) override;
-	virtual void _process_modification() override;
+	virtual void _process_modification(double p_delta) override;
 	void _init_joints(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
 	void _process_joints(double p_delta, Skeleton3D *p_skeleton, Vector<SpringBone3DJointSetting *> &p_joints, const LocalVector<ObjectID> &p_collisions, const Transform3D &p_center_transform, const Transform3D &p_inverted_center_transform, const Quaternion &p_inverted_center_rotation);
 
@@ -284,6 +284,8 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual bool is_processed_on_saving() const override { return true; }
 #endif
+
+	~SpringBoneSimulator3D();
 };
 
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::BoneDirection);

@@ -119,5 +119,3 @@ void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_und
 AudioStreamRandomizerEditorPlugin::AudioStreamRandomizerEditorPlugin() {
 	EditorNode::get_editor_data().add_move_array_element_function(SNAME("AudioStreamRandomizer"), callable_mp(this, &AudioStreamRandomizerEditorPlugin::_move_stream_array_element));
 }
-
-AudioStreamRandomizerEditorPlugin::~AudioStreamRandomizerEditorPlugin() {}

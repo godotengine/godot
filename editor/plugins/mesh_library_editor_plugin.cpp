@@ -39,7 +39,7 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "main/main.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/gui/menu_button.h"
 #include "scene/resources/packed_scene.h"
@@ -278,6 +278,8 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("MeshLibrary"));
 	menu->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MeshLibrary"), EditorStringName(EditorIcons)));
+	menu->set_flat(false);
+	menu->set_theme_type_variation("FlatMenuButton");
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
 	menu->get_popup()->add_separator();

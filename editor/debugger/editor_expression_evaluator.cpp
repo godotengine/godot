@@ -74,7 +74,8 @@ void EditorExpressionEvaluator::_clear() {
 }
 
 void EditorExpressionEvaluator::_remote_object_selected(ObjectID p_id) {
-	editor_debugger->emit_signal(SNAME("remote_object_requested"), p_id);
+	Array arr = { p_id };
+	editor_debugger->emit_signal(SNAME("remote_objects_requested"), arr);
 }
 
 void EditorExpressionEvaluator::_on_expression_input_changed(const String &p_expression) {
@@ -109,6 +110,7 @@ EditorExpressionEvaluator::EditorExpressionEvaluator() {
 	expression_input = memnew(LineEdit);
 	expression_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	expression_input->set_placeholder(TTR("Expression to evaluate"));
+	expression_input->set_accessibility_name(TTRC("Expression"));
 	expression_input->set_clear_button_enabled(true);
 	expression_input->connect(SceneStringName(text_submitted), callable_mp(this, &EditorExpressionEvaluator::_evaluate).unbind(1));
 	expression_input->connect(SceneStringName(text_changed), callable_mp(this, &EditorExpressionEvaluator::_on_expression_input_changed));

@@ -28,4 +28,6 @@ public:
 	float					mStiffness = 1000.0f;						///< Stiffness (spring constant in N/m) of anti rollbar, can be 0 to disable the anti-rollbar
 };
 
+using VehicleAntiRollBars = Array<VehicleAntiRollBar>;
+
 JPH_NAMESPACE_END

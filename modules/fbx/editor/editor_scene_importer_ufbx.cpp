@@ -30,8 +30,6 @@
 
 #include "editor_scene_importer_ufbx.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "../fbx_document.h"
 #include "editor_scene_importer_fbx2gltf.h"
 
@@ -45,7 +43,7 @@ Node *EditorSceneFormatImporterUFBX::import_scene(const String &p_path, uint32_t
 		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
 	// FIXME: Hack to work around GH-86309.
-	if (p_options.has("fbx/importer") && int(p_options["fbx/importer"]) == FBX_IMPORTER_FBX2GLTF && GLOBAL_GET("filesystem/import/fbx2gltf/enabled")) {
+	if (p_options.has("fbx/importer") && int(p_options["fbx/importer"]) == FBX_IMPORTER_FBX2GLTF && GLOBAL_GET_CACHED(bool, "filesystem/import/fbx2gltf/enabled")) {
 		Ref<EditorSceneFormatImporterFBX2GLTF> fbx2gltf_importer;
 		fbx2gltf_importer.instantiate();
 		Node *scene = fbx2gltf_importer->import_scene(p_path, p_flags, p_options, r_missing_deps, r_err);
@@ -104,5 +102,3 @@ void EditorSceneFormatImporterUFBX::handle_compatibility_options(HashMap<StringN
 		p_import_params["fbx/importer"] = EditorSceneFormatImporterUFBX::FBX_IMPORTER_FBX2GLTF;
 	}
 }
-
-#endif // TOOLS_ENABLED

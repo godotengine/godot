@@ -12,7 +12,7 @@ class Color;
 using ColorArg = Color;
 
 /// Class that holds an RGBA color with 8-bits per component
-class [[nodiscard]] JPH_EXPORT_GCC_BUG_WORKAROUND Color
+class JPH_EXPORT_GCC_BUG_WORKAROUND [[nodiscard]] Color
 {
 public:
 	/// Constructors

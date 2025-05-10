@@ -42,9 +42,9 @@ POSSIBILITY OF SUCH DAMAGE.
 /* The current PCRE version information. */
 
 #define PCRE2_MAJOR           10
-#define PCRE2_MINOR           43
+#define PCRE2_MINOR           45
 #define PCRE2_PRERELEASE      
-#define PCRE2_DATE            2024-02-16
+#define PCRE2_DATE            2025-02-05
 
 /* When an application links to a PCRE DLL in Windows, the symbols that are
 imported have to be identified as such. When building PCRE2, the appropriate
@@ -143,6 +143,7 @@ D   is inspected during pcre2_dfa_match() execution
 #define PCRE2_EXTENDED_MORE       0x01000000u  /* C       */
 #define PCRE2_LITERAL             0x02000000u  /* C       */
 #define PCRE2_MATCH_INVALID_UTF   0x04000000u  /*   J M D */
+#define PCRE2_ALT_EXTENDED_CLASS  0x08000000u  /* C       */
 
 /* An additional compile options word is available in the compile context. */
 
@@ -159,6 +160,10 @@ D   is inspected during pcre2_dfa_match() execution
 #define PCRE2_EXTRA_ASCII_BSW                0x00000400u  /* C */
 #define PCRE2_EXTRA_ASCII_POSIX              0x00000800u  /* C */
 #define PCRE2_EXTRA_ASCII_DIGIT              0x00001000u  /* C */
+#define PCRE2_EXTRA_PYTHON_OCTAL             0x00002000u  /* C */
+#define PCRE2_EXTRA_NO_BS0                   0x00004000u  /* C */
+#define PCRE2_EXTRA_NEVER_CALLOUT            0x00008000u  /* C */
+#define PCRE2_EXTRA_TURKISH_CASING           0x00010000u  /* C */
 
 /* These are for pcre2_jit_compile(). */
 
@@ -166,6 +171,7 @@ D   is inspected during pcre2_dfa_match() execution
 #define PCRE2_JIT_PARTIAL_SOFT    0x00000002u
 #define PCRE2_JIT_PARTIAL_HARD    0x00000004u
 #define PCRE2_JIT_INVALID_UTF     0x00000100u
+#define PCRE2_JIT_TEST_ALLOC      0x00000200u
 
 /* These are for pcre2_match(), pcre2_dfa_match(), pcre2_jit_match(), and
 pcre2_substitute(). Some are allowed only for one of the functions, and in
@@ -318,9 +324,25 @@ pcre2_pattern_convert(). */
 #define PCRE2_ERROR_ALPHA_ASSERTION_UNKNOWN        195
 #define PCRE2_ERROR_SCRIPT_RUN_NOT_AVAILABLE       196
 #define PCRE2_ERROR_TOO_MANY_CAPTURES              197
-#define PCRE2_ERROR_CONDITION_ATOMIC_ASSERTION_EXPECTED  198
+#define PCRE2_ERROR_MISSING_OCTAL_DIGIT            198
 #define PCRE2_ERROR_BACKSLASH_K_IN_LOOKAROUND      199
-
+#define PCRE2_ERROR_MAX_VAR_LOOKBEHIND_EXCEEDED    200
+#define PCRE2_ERROR_PATTERN_COMPILED_SIZE_TOO_BIG  201
+#define PCRE2_ERROR_OVERSIZE_PYTHON_OCTAL          202
+#define PCRE2_ERROR_CALLOUT_CALLER_DISABLED        203
+#define PCRE2_ERROR_EXTRA_CASING_REQUIRES_UNICODE  204
+#define PCRE2_ERROR_TURKISH_CASING_REQUIRES_UTF    205
+#define PCRE2_ERROR_EXTRA_CASING_INCOMPATIBLE      206
+#define PCRE2_ERROR_ECLASS_NEST_TOO_DEEP           207
+#define PCRE2_ERROR_ECLASS_INVALID_OPERATOR        208
+#define PCRE2_ERROR_ECLASS_UNEXPECTED_OPERATOR     209
+#define PCRE2_ERROR_ECLASS_EXPECTED_OPERAND        210
+#define PCRE2_ERROR_ECLASS_MIXED_OPERATORS         211
+#define PCRE2_ERROR_ECLASS_HINT_SQUARE_BRACKET     212
+#define PCRE2_ERROR_PERL_ECLASS_UNEXPECTED_EXPR    213
+#define PCRE2_ERROR_PERL_ECLASS_EMPTY_EXPR         214
+#define PCRE2_ERROR_PERL_ECLASS_MISSING_CLOSE      215
+#define PCRE2_ERROR_PERL_ECLASS_UNEXPECTED_CHAR    216
 
 /* "Expected" matching error codes: no match and partial match. */
 
@@ -407,6 +429,9 @@ released, the numbers must not be changed. */
 #define PCRE2_ERROR_INTERNAL_DUPMATCH (-65)
 #define PCRE2_ERROR_DFA_UINVALID_UTF  (-66)
 #define PCRE2_ERROR_INVALIDOFFSET     (-67)
+#define PCRE2_ERROR_JIT_UNSUPPORTED   (-68)
+#define PCRE2_ERROR_REPLACECASE       (-69)
+#define PCRE2_ERROR_TOOLARGEREPLACE   (-70)
 
 
 /* Request types for pcre2_pattern_info() */
@@ -460,6 +485,30 @@ released, the numbers must not be changed. */
 #define PCRE2_CONFIG_COMPILED_WIDTHS        14
 #define PCRE2_CONFIG_TABLES_LENGTH          15
 
+/* Optimization directives for pcre2_set_optimize().
+For binary compatibility, only add to this list; do not renumber. */
+
+#define PCRE2_OPTIMIZATION_NONE    0
+#define PCRE2_OPTIMIZATION_FULL    1
+
+#define PCRE2_AUTO_POSSESS         64
+#define PCRE2_AUTO_POSSESS_OFF     65
+#define PCRE2_DOTSTAR_ANCHOR       66
+#define PCRE2_DOTSTAR_ANCHOR_OFF   67
+#define PCRE2_START_OPTIMIZE       68
+#define PCRE2_START_OPTIMIZE_OFF   69
+
+/* Types used in pcre2_set_substitute_case_callout().
+
+PCRE2_SUBSTITUTE_CASE_LOWER and PCRE2_SUBSTITUTE_CASE_UPPER are passed to the
+callout to indicate that the case of the entire callout input should be
+case-transformed. PCRE2_SUBSTITUTE_CASE_TITLE_FIRST is passed to indicate that
+only the first character or glyph should be transformed to Unicode titlecase,
+and the rest to lowercase. */
+
+#define PCRE2_SUBSTITUTE_CASE_LOWER        1
+#define PCRE2_SUBSTITUTE_CASE_UPPER        2
+#define PCRE2_SUBSTITUTE_CASE_TITLE_FIRST  3
 
 /* Types for code units in patterns and subject strings. */
 
@@ -604,6 +653,8 @@ PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_max_pattern_length(pcre2_compile_context *, PCRE2_SIZE); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
+  pcre2_set_max_pattern_compiled_length(pcre2_compile_context *, PCRE2_SIZE); \
+PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_max_varlookbehind(pcre2_compile_context *, uint32_t); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_newline(pcre2_compile_context *, uint32_t); \
@@ -611,7 +662,9 @@ PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_parens_nest_limit(pcre2_compile_context *, uint32_t); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_compile_recursion_guard(pcre2_compile_context *, \
-    int (*)(uint32_t, void *), void *);
+    int (*)(uint32_t, void *), void *); \
+PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
+  pcre2_set_optimize(pcre2_compile_context *, uint32_t);
 
 #define PCRE2_MATCH_CONTEXT_FUNCTIONS \
 PCRE2_EXP_DECL pcre2_match_context *PCRE2_CALL_CONVENTION \
@@ -626,6 +679,11 @@ PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_substitute_callout(pcre2_match_context *, \
     int (*)(pcre2_substitute_callout_block *, void *), void *); \
+PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
+  pcre2_set_substitute_case_callout(pcre2_match_context *, \
+    PCRE2_SIZE (*)(PCRE2_SPTR, PCRE2_SIZE, PCRE2_UCHAR *, PCRE2_SIZE, int, \
+                   void *), \
+    void *); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_depth_limit(pcre2_match_context *, uint32_t); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
@@ -737,6 +795,7 @@ PCRE2_EXP_DECL void PCRE2_CALL_CONVENTION \
   pcre2_substring_list_free(PCRE2_UCHAR **); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_substring_list_get(pcre2_match_data *, PCRE2_UCHAR ***, PCRE2_SIZE **);
+
 
 /* Functions for serializing / deserializing compiled patterns. */
 
@@ -901,10 +960,13 @@ pcre2_compile are called by application code. */
 #define pcre2_set_match_limit                 PCRE2_SUFFIX(pcre2_set_match_limit_)
 #define pcre2_set_max_varlookbehind           PCRE2_SUFFIX(pcre2_set_max_varlookbehind_)
 #define pcre2_set_max_pattern_length          PCRE2_SUFFIX(pcre2_set_max_pattern_length_)
+#define pcre2_set_max_pattern_compiled_length PCRE2_SUFFIX(pcre2_set_max_pattern_compiled_length_)
 #define pcre2_set_newline                     PCRE2_SUFFIX(pcre2_set_newline_)
 #define pcre2_set_parens_nest_limit           PCRE2_SUFFIX(pcre2_set_parens_nest_limit_)
 #define pcre2_set_offset_limit                PCRE2_SUFFIX(pcre2_set_offset_limit_)
+#define pcre2_set_optimize                    PCRE2_SUFFIX(pcre2_set_optimize_)
 #define pcre2_set_substitute_callout          PCRE2_SUFFIX(pcre2_set_substitute_callout_)
+#define pcre2_set_substitute_case_callout     PCRE2_SUFFIX(pcre2_set_substitute_case_callout_)
 #define pcre2_substitute                      PCRE2_SUFFIX(pcre2_substitute_)
 #define pcre2_substring_copy_byname           PCRE2_SUFFIX(pcre2_substring_copy_byname_)
 #define pcre2_substring_copy_bynumber         PCRE2_SUFFIX(pcre2_substring_copy_bynumber_)

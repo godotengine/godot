@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+// This file was generated using the `misc/scripts/char_range_fetch.py` script.
+
 #pragma once
 
 #include "core/typedefs.h"

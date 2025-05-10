@@ -6,6 +6,7 @@ float-divide-by-zero:thirdparty/thorvg/src/renderer/sw_engine/tvgSwFill.cpp
 function:thirdparty/embree/common/sys/thread.cpp
 function:thirdparty/embree/kernels/common/accel.h
 function:thirdparty/xatlas/xatlas.cpp
+implicit-integer-sign-change:thirdparty/basis_universal/encoder/jpgd.cpp
 implicit-integer-sign-change:thirdparty/basis_universal/transcoder/basisu_astc_helpers.h
 implicit-integer-sign-change:thirdparty/embree/common/lexers/../sys/ref.h
 implicit-integer-sign-change:thirdparty/embree/common/lexers/tokenstream.cpp
@@ -38,7 +39,6 @@ implicit-integer-sign-change:thirdparty/icu4c/common/unicode/unistr.h
 implicit-integer-sign-change:thirdparty/icu4c/common/unistr.cpp
 implicit-integer-sign-change:thirdparty/icu4c/common/uresbund.cpp
 implicit-integer-sign-change:thirdparty/icu4c/common/ustrtrns.cpp
-implicit-integer-sign-change:thirdparty/jpeg-compressor/jpgd.cpp
 implicit-integer-sign-change:thirdparty/libogg/bitwise.c
 implicit-integer-sign-change:thirdparty/libvorbis/info.c
 implicit-integer-sign-change:thirdparty/libvorbis/sharedbook.c

@@ -40,38 +40,16 @@
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
 #endif
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wswitch"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#elif defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-#pragma clang diagnostic ignored "-Wstring-plus-int"
-#pragma clang diagnostic ignored "-Wswitch"
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
-#endif
-
-#include "d3dx12.h"
+#include <d3dx12.h>
 #include <dxgi1_6.h>
 #define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include "D3D12MemAlloc.h"
+#include <D3D12MemAlloc.h>
 
 #include <wrl/client.h>
 
 #if defined(_MSC_VER) && defined(MemoryBarrier)
 // Annoying define from winnt.h. Reintroduced by some of the headers above.
 #undef MemoryBarrier
-#endif
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#elif defined(__clang__)
-#pragma clang diagnostic pop
 #endif
 
 using Microsoft::WRL::ComPtr;
@@ -115,16 +93,6 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		uint32_t supported_operations_flags_rd() const;
 	};
 
-	struct VRSCapabilities {
-		bool draw_call_supported = false; // We can specify our fragment rate on a draw call level.
-		bool primitive_supported = false; // We can specify our fragment rate on each drawcall.
-		bool primitive_in_multiviewport = false;
-		bool ss_image_supported = false; // We can provide a density map attachment on our framebuffer.
-		uint32_t ss_image_tile_size = 0;
-		uint32_t ss_max_fragment_size = 0;
-		bool additional_rates_supported = false;
-	};
-
 	struct ShaderCapabilities {
 		D3D_SHADER_MODEL shader_model = (D3D_SHADER_MODEL)0;
 		bool native_16bit_ops = false;
@@ -156,7 +124,8 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	uint32_t feature_level = 0; // Major * 10 + minor.
 	SubgroupCapabilities subgroup_capabilities;
 	RDD::MultiviewCapabilities multiview_capabilities;
-	VRSCapabilities vrs_capabilities;
+	FragmentShadingRateCapabilities fsr_capabilities;
+	FragmentDensityMapCapabilities fdm_capabilities;
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
 	FormatCapabilities format_capabilities;
@@ -306,6 +275,9 @@ private:
 
 		UINT mapped_subresource = UINT_MAX;
 		SelfList<TextureInfo> pending_clear{ this };
+#ifdef DEBUG_ENABLED
+		bool created_from_extension = false;
+#endif
 	};
 	SelfList<TextureInfo>::List textures_pending_clear;
 
@@ -325,7 +297,7 @@ protected:
 
 public:
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
-	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) override final;
+	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) override final;
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) override final;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) override final;
 	virtual void texture_free(TextureID p_texture) override final;
@@ -833,7 +805,7 @@ private:
 	};
 
 public:
-	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) override final;
+	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) override final;
 	virtual void render_pass_free(RenderPassID p_render_pass) override final;
 
 	// ----- COMMANDS -----
@@ -1001,6 +973,8 @@ public:
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
 	virtual bool has_feature(Features p_feature) override final;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
+	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() override final;
+	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() override final;
 	virtual String get_api_name() const override final;
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;

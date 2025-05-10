@@ -186,8 +186,8 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		Vector3 ofs = aabb.get_center();
 		aabb.position -= ofs;
 		Transform3D xform;
-		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6);
-		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI / 6) * xform.basis;
+		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math::PI / 6);
+		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math::PI / 6) * xform.basis;
 		AABB rot_aabb = xform.xform(aabb);
 		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 		if (m == 0) {
@@ -282,8 +282,8 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	Vector3 center = scene_aabb.get_center();
 	float camera_size = scene_aabb.get_longest_axis_size();
 
-	const float cam_rot_x = -Math_PI / 4;
-	const float cam_rot_y = -Math_PI / 4;
+	const float cam_rot_x = -Math::PI / 4;
+	const float cam_rot_y = -Math::PI / 4;
 
 	camera->set_orthogonal(camera_size * 2.0, 0.0001, camera_size * 2.0);
 
@@ -295,8 +295,8 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	camera->set_transform(xf);
 
 	Transform3D xform;
-	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6);
-	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI / 6) * xform.basis;
+	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math::PI / 6);
+	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math::PI / 6) * xform.basis;
 
 	light->set_transform(xform * Transform3D().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
 	light2->set_transform(xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
@@ -747,12 +747,11 @@ bool EditorInterface::is_movie_maker_enabled() const {
 	return EditorRunBar::get_singleton()->is_movie_maker_enabled();
 }
 
-#ifdef TOOLS_ENABLED
 void EditorInterface::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "set_main_screen_editor") {
-			for (String E : { "\"2D\"", "\"3D\"", "\"Script\"", "\"AssetLib\"" }) {
+			for (String E : { "\"2D\"", "\"3D\"", "\"Script\"", "\"Game\"", "\"AssetLib\"" }) {
 				r_options->push_back(E);
 			}
 		} else if (pf == "get_editor_viewport_3d") {
@@ -763,7 +762,6 @@ void EditorInterface::get_argument_options(const StringName &p_function, int p_i
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
 
 // Base.
 

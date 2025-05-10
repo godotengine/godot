@@ -99,6 +99,7 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	add_child(vbc);
 
 	method = memnew(Label);
+	method->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	method->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	vbc->add_child(method);
 
@@ -760,7 +761,7 @@ void ScriptTextEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
 	PackedInt32Array bookmark_list = code_editor->get_text_editor()->get_bookmarked_lines();
-	if (bookmark_list.size() == 0) {
+	if (bookmark_list.is_empty()) {
 		return;
 	}
 
@@ -915,7 +916,7 @@ void ScriptTextEditor::_update_breakpoint_list() {
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
 
 	PackedInt32Array breakpoint_list = code_editor->get_text_editor()->get_breakpointed_lines();
-	if (breakpoint_list.size() == 0) {
+	if (breakpoint_list.is_empty()) {
 		return;
 	}
 
@@ -953,7 +954,7 @@ void ScriptTextEditor::_on_caret_moved() {
 		return;
 	}
 	int current_line = code_editor->get_text_editor()->get_caret_line();
-	if (ABS(current_line - previous_line) >= 10) {
+	if (Math::abs(current_line - previous_line) >= 10) {
 		Dictionary nav_state = get_navigation_state();
 		nav_state["row"] = previous_line;
 		nav_state["scroll_position"] = -1;
@@ -1227,8 +1228,8 @@ String ScriptTextEditor::_get_absolute_path(const String &rel_path) {
 	return path.replace("///", "//").simplify_path();
 }
 
-void ScriptTextEditor::update_toggle_scripts_button() {
-	code_editor->update_toggle_scripts_button();
+void ScriptTextEditor::update_toggle_files_button() {
+	code_editor->update_toggle_files_button();
 }
 
 void ScriptTextEditor::_update_connected_methods() {
@@ -1696,7 +1697,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case DEBUG_GOTO_NEXT_BREAKPOINT: {
 			PackedInt32Array bpoints = tx->get_breakpointed_lines();
-			if (bpoints.size() <= 0) {
+			if (bpoints.is_empty()) {
 				return;
 			}
 
@@ -1711,7 +1712,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case DEBUG_GOTO_PREV_BREAKPOINT: {
 			PackedInt32Array bpoints = tx->get_breakpointed_lines();
-			if (bpoints.size() <= 0) {
+			if (bpoints.is_empty()) {
 				return;
 			}
 
@@ -1888,20 +1889,13 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 	return false;
 }
 
-static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
-	// Check scripts only for the nodes belonging to the edited scene.
-	if (p_current_node == p_edited_scene || p_current_node->get_owner() == p_edited_scene) {
-		Ref<Script> scr = p_current_node->get_script();
-		if (scr.is_valid() && scr == script) {
-			return p_current_node;
-		}
+static Node *_find_script_node(Node *p_current_node, const Ref<Script> &script) {
+	if (p_current_node->get_script() == script) {
+		return p_current_node;
 	}
 
-	// Traverse all children, even the ones not owned by the edited scene as they
-	// can still have child nodes added within the edited scene and thus owned by
-	// it (e.g. nodes added to subscene's root or to its editable children).
 	for (int i = 0; i < p_current_node->get_child_count(); i++) {
-		Node *n = _find_script_node(p_edited_scene, p_current_node->get_child(i), script);
+		Node *n = _find_script_node(p_current_node->get_child(i), script);
 		if (n) {
 			return n;
 		}
@@ -1958,7 +1952,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	Dictionary d = p_data;
 
 	CodeEdit *te = code_editor->get_text_editor();
-	Point2i pos = te->get_line_column_at_pos(p_point);
+	Point2i pos = (p_point == Vector2(Math::INF, Math::INF)) ? Point2i(te->get_caret_line(0), te->get_caret_column(0)) : te->get_line_column_at_pos(p_point);
 	int drop_at_line = pos.y;
 	int drop_at_column = pos.x;
 	int selection_index = te->get_selection_at_line_column(drop_at_line, drop_at_column);
@@ -2036,7 +2030,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		Node *sn = _find_script_node(scene_root, scene_root, script);
+		Node *sn = _find_script_node(scene_root, script);
 		if (!sn) {
 			sn = scene_root;
 		}
@@ -2053,14 +2047,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				bool is_unique = false;
-				String path;
-				if (node->is_unique_name_in_owner()) {
-					path = node->get_name();
-					is_unique = true;
-				} else {
-					path = sn->get_path_to(node);
-				}
+				bool is_unique = node->is_unique_name_in_owner() && (node->get_owner() == sn || node->get_owner() == sn->get_owner());
+				String path = is_unique ? String(node->get_name()) : String(sn->get_path_to(node));
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_unicode_identifier()) {
 						path = _quote_drop_data(path);
@@ -2095,15 +2083,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				bool is_unique = false;
-				String path;
-				if (node->is_unique_name_in_owner()) {
-					path = node->get_name();
-					is_unique = true;
-				} else {
-					path = sn->get_path_to(node);
-				}
-
+				bool is_unique = node->is_unique_name_in_owner() && (node->get_owner() == sn || node->get_owner() == sn->get_owner());
+				String path = is_unique ? String(node->get_name()) : String(sn->get_path_to(node));
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_ascii_identifier()) {
 						path = _quote_drop_data(path);
@@ -2382,7 +2363,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_clicked", callable_mp(this, &ScriptTextEditor::_gutter_clicked));
 	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &ScriptTextEditor::_text_edit_gui_input));
-	code_editor->show_toggle_scripts_button();
+	code_editor->show_toggle_files_button();
 	_update_gutter_indexes();
 
 	editor_box->add_child(warnings_panel);

@@ -77,8 +77,12 @@ class InternalEdgeRemovingCollector : public CollideShapeCollector
 public:
 	/// Constructor, configures a collector to be called with all the results that do not hit internal edges
 	explicit				InternalEdgeRemovingCollector(CollideShapeCollector &inChainedCollector) :
+		CollideShapeCollector(inChainedCollector),
 		mChainedCollector(inChainedCollector)
 	{
+		// Initialize arrays to full capacity to avoid needless reallocation calls
+		mVoidedFeatures.reserve(cMaxLocalVoidedFeatures);
+		mDelayedResults.reserve(cMaxLocalDelayedResults);
 	}
 
 	// See: CollideShapeCollector::Reset
@@ -219,6 +223,13 @@ public:
 		// All delayed results have been processed
 		mVoidedFeatures.clear();
 		mDelayedResults.clear();
+	}
+
+	// See: CollideShapeCollector::OnBodyEnd
+	virtual void			OnBodyEnd() override
+	{
+		Flush();
+		mChainedCollector.OnBodyEnd();
 	}
 
 	/// Version of CollisionDispatch::sCollideShapeVsShape that removes internal edges

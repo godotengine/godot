@@ -423,8 +423,8 @@ HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(co
 
 	switch (image_scale_mode) {
 		case 0: {
-			String logo_path = GLOBAL_GET("application/boot_splash/image");
-			bool is_on = GLOBAL_GET("application/boot_splash/fullsize");
+			String logo_path = get_project_setting(p_preset, "application/boot_splash/image");
+			bool is_on = get_project_setting(p_preset, "application/boot_splash/fullsize");
 			// If custom logo is not specified, Godot does not scale default one, so we should do the same.
 			value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
 		} break;
@@ -450,9 +450,8 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	bool valid_rel_specifier = !provisioning_profile_specifier_rel.is_empty();
 	rel_manual |= valid_rel_specifier;
 
-	String str;
+	String str = String::utf8((const char *)pfile.ptr(), pfile.size());
 	String strnew;
-	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
 	Vector<String> lines = str.split("\n");
 	for (int i = 0; i < lines.size(); i++) {
 		if (lines[i].contains("$binary")) {
@@ -587,7 +586,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].contains("$interface_orientations")) {
 			String orientations;
 			const DisplayServer::ScreenOrientation screen_orientation =
-					DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation")));
+					DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
 
 			switch (screen_orientation) {
 				case DisplayServer::SCREEN_LANDSCAPE:
@@ -625,7 +624,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].contains("$ipad_interface_orientations")) {
 			String orientations;
 			const DisplayServer::ScreenOrientation screen_orientation =
-					DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation")));
+					DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
 
 			switch (screen_orientation) {
 				case DisplayServer::SCREEN_LANDSCAPE:
@@ -694,8 +693,8 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 
 			switch (image_scale_mode) {
 				case 0: {
-					String logo_path = GLOBAL_GET("application/boot_splash/image");
-					bool is_on = GLOBAL_GET("application/boot_splash/fullsize");
+					String logo_path = get_project_setting(p_preset, "application/boot_splash/image");
+					bool is_on = get_project_setting(p_preset, "application/boot_splash/fullsize");
 					// If custom logo is not specified, Godot does not scale default one, so we should do the same.
 					value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
 				} break;
@@ -707,7 +706,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$launch_screen_image_mode", value) + "\n";
 		} else if (lines[i].contains("$launch_screen_background_color")) {
 			bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
-			Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : GLOBAL_GET("application/boot_splash/bg_color");
+			Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : get_project_setting(p_preset, "application/boot_splash/bg_color");
 			const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
 
 			Dictionary value_dictionary;
@@ -720,7 +719,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$launch_screen_background_color", value) + "\n";
 		} else if (lines[i].contains("$pbx_locale_file_reference")) {
 			String locale_files;
-			Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
+			Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
 			if (translations.size() > 0) {
 				HashSet<String> languages;
 				for (const String &E : translations) {
@@ -739,7 +738,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$pbx_locale_file_reference", locale_files);
 		} else if (lines[i].contains("$pbx_locale_build_reference")) {
 			String locale_files;
-			Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
+			Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
 			if (translations.size() > 0) {
 				HashSet<String> languages;
 				for (const String &E : translations) {
@@ -958,7 +957,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 		return ERR_CANT_OPEN;
 	}
 
-	Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
+	Color boot_bg_color = get_project_setting(p_preset, "application/boot_splash/bg_color");
 
 	enum IconColorMode {
 		ICON_NORMAL,
@@ -1000,7 +999,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 					continue;
 				}
 				// Resize main app icon.
-				icon_path = GLOBAL_GET("application/config/icon");
+				icon_path = get_project_setting(p_preset, "application/config/icon");
 				Error err = OK;
 				Ref<Image> img = _load_icon_or_splash_image(icon_path, &err);
 				if (err != OK || img.is_null() || img->is_empty()) {
@@ -1134,7 +1133,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 		Error err = OK;
 		Ref<Image> splash;
 
-		const String splash_path = GLOBAL_GET("application/boot_splash/image");
+		const String splash_path = get_project_setting(p_preset, "application/boot_splash/image");
 
 		if (!splash_path.is_empty()) {
 			splash = _load_icon_or_splash_image(splash_path, &err);
@@ -2120,8 +2119,8 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 
 	print_line("Static framework: " + library_to_use);
 	String pkg_name;
-	if (String(GLOBAL_GET("application/config/name")) != "") {
-		pkg_name = String(GLOBAL_GET("application/config/name"));
+	if (String(get_project_setting(p_preset, "application/config/name")) != "") {
+		pkg_name = String(get_project_setting(p_preset, "application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
 	}
@@ -2282,14 +2281,12 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	// Generate translations files.
-
-	Dictionary appnames = GLOBAL_GET("application/config/name_localized");
+	Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
 	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
 	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
 	Dictionary photolibrary_usage_descriptions = p_preset->get("privacy/photolibrary_usage_description_localized");
 
-	Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
+	Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
 	if (translations.size() > 0) {
 		{
 			String fname = binary_dir + "/en.lproj";
@@ -2297,7 +2294,7 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + GLOBAL_GET("application/config/name").operator String() + "\";");
+			f->store_line("CFBundleDisplayName = \"" + get_project_setting(p_preset, "application/config/name").operator String() + "\";");
 			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
 			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
 			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String() + "\";");
@@ -2540,8 +2537,8 @@ bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExp
 		}
 	}
 
-	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
-	String rendering_driver = GLOBAL_GET("rendering/rendering_device/driver.ios");
+	String rendering_method = get_project_setting(p_preset, "rendering/renderer/rendering_method.mobile");
+	String rendering_driver = get_project_setting(p_preset, "rendering/rendering_device/driver.ios");
 	if ((rendering_method == "forward_plus" || rendering_method == "mobile") && rendering_driver == "metal") {
 		float version = p_preset->get("application/min_ios_version").operator String().to_float();
 		if (version < 14.0) {

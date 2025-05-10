@@ -100,9 +100,7 @@ Camera2DEditor::Camera2DEditor() {
 
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Camera2DEditor::_menu_option));
 
-#ifdef TOOLS_ENABLED
 	add_user_signal(MethodInfo("_editor_theme_changed"));
-#endif
 }
 
 void Camera2DEditorPlugin::_update_approach_text_visibility() {
@@ -158,6 +156,7 @@ Camera2DEditorPlugin::Camera2DEditorPlugin() {
 	camera_2d_editor->connect(SNAME("_editor_theme_changed"), callable_mp(this, &Camera2DEditorPlugin::_editor_theme_changed));
 
 	approach_to_move_rect = memnew(Label);
+	approach_to_move_rect->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	approach_to_move_rect->set_text(TTRC("In Move Mode: \nHold Ctrl + left mouse button to move the limit rectangle.\nHold left mouse button to move the camera only."));
 	approach_to_move_rect->hide();
 	_editor_theme_changed();

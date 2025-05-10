@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
+#include "core/math/random_pcg.h"
 #include "core/os/os.h"
 #include "scene/main/node.h" //only so casting works
 
@@ -113,7 +114,7 @@ void Resource::set_path_cache(const String &p_path) {
 	GDVIRTUAL_CALL(_set_path_cache, p_path);
 }
 
-static thread_local RandomPCG unique_id_gen(0, RandomPCG::DEFAULT_INC);
+static thread_local RandomPCG unique_id_gen = RandomPCG(0);
 
 void Resource::seed_scene_unique_id(uint32_t p_seed) {
 	unique_id_gen.seed(p_seed);
@@ -271,9 +272,7 @@ void Resource::_dupe_sub_resources(Variant &r_variant, Node *p_for_scene, HashMa
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = r_variant;
-			List<Variant> keys;
-			d.get_key_list(&keys);
-			for (Variant &k : keys) {
+			for (Variant &k : d.get_key_list()) {
 				if (k.get_type() == Variant::OBJECT) {
 					// Replace in dictionary key.
 					Ref<Resource> sr = k;

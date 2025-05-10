@@ -1120,9 +1120,6 @@ void main() {
 	uvec2 decal_indices = instances.data[draw_call.instance_index].decals;
 	for (uint i = 0; i < sc_decals(); i++) {
 		uint decal_index = (i > 3) ? ((decal_indices.y >> ((i - 4) * 8)) & 0xFF) : ((decal_indices.x >> (i * 8)) & 0xFF);
-		if (!bool(decals.data[decal_index].mask & instances.data[draw_call.instance_index].layer_mask)) {
-			continue; //not masked
-		}
 
 		vec3 uv_local = (decals.data[decal_index].xform * vec4(vertex, 1.0)).xyz;
 		if (any(lessThan(uv_local, vec3(0.0, -1.0, 0.0))) || any(greaterThan(uv_local, vec3(1.0)))) {
@@ -1318,22 +1315,27 @@ void main() {
 	if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
 		uint index = instances.data[draw_call.instance_index].gi_offset;
 
+		// The world normal.
 		vec3 wnormal = mat3(scene_data.inv_view_matrix) * normal;
-		const float c1 = 0.429043;
-		const float c2 = 0.511664;
-		const float c3 = 0.743125;
-		const float c4 = 0.886227;
-		const float c5 = 0.247708;
-		ambient_light += (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
-								 c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
-								 c4 * lightmap_captures.data[index].sh[0].rgb -
-								 c5 * lightmap_captures.data[index].sh[6].rgb +
-								 2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
-								 2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
-								 2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
-								 2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
-								 2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
-								 2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z) *
+
+		// The SH coefficients used for evaluating diffuse data from SH probes.
+		const float c[5] = float[](
+				0.886227, // l0 				sqrt(1.0/(4.0*PI)) 	* PI
+				1.023327, // l1 				sqrt(3.0/(4.0*PI)) 	* PI*2.0/3.0
+				0.858086, // l2n2, l2n1, l2p1 	sqrt(15.0/(4.0*PI)) * PI*1.0/4.0
+				0.247708, // l20 				sqrt(5.0/(16.0*PI)) * PI*1.0/4.0
+				0.429043 // l2p2 				sqrt(15.0/(16.0*PI))* PI*1.0/4.0
+		);
+
+		ambient_light += (c[0] * lightmap_captures.data[index].sh[0].rgb +
+								 c[1] * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
+								 c[1] * lightmap_captures.data[index].sh[2].rgb * wnormal.z +
+								 c[1] * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
+								 c[2] * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
+								 c[2] * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
+								 c[3] * lightmap_captures.data[index].sh[6].rgb * (3.0 * wnormal.z * wnormal.z - 1.0) +
+								 c[2] * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
+								 c[4] * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y)) *
 				scene_data.emissive_exposure_normalization;
 
 	} else if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
@@ -1413,11 +1415,11 @@ void main() {
 		}
 
 		if (ambient_accum.a < 1.0) {
-			ambient_accum.rgb = mix(ambient_light, ambient_accum.rgb, ambient_accum.a);
+			ambient_accum.rgb = ambient_light * (1.0 - ambient_accum.a) + ambient_accum.rgb;
 		}
 
 		if (reflection_accum.a < 1.0) {
-			reflection_accum.rgb = mix(specular_light, reflection_accum.rgb, reflection_accum.a);
+			reflection_accum.rgb = specular_light * (1.0 - reflection_accum.a) + reflection_accum.rgb;
 		}
 
 		if (reflection_accum.a > 0.0) {
@@ -1432,9 +1434,18 @@ void main() {
 	} //Reflection probes
 
 	// finalize ambient light here
-
-	ambient_light *= albedo.rgb;
 	ambient_light *= ao;
+#ifndef SPECULAR_OCCLUSION_DISABLED
+	float specular_occlusion = (ambient_light.r * 0.3 + ambient_light.g * 0.59 + ambient_light.b * 0.11) * 2.0; // Luminance of ambient light.
+	specular_occlusion = min(specular_occlusion * 4.0, 1.0); // This multiplication preserves speculars on bright areas.
+
+	float reflective_f = (1.0 - roughness) * metallic;
+	// 10.0 is a magic number, it gives the intended effect in most scenarios.
+	// Low enough for occlusion, high enough for reaction to lights and shadows.
+	specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+	specular_light *= specular_occlusion;
+#endif // USE_SPECULAR_OCCLUSION
+	ambient_light *= albedo.rgb;
 
 #endif // !AMBIENT_LIGHT_DISABLED
 
@@ -1700,7 +1711,8 @@ void main() {
 
 			light_compute(normal, directional_lights.data[i].direction, view, size_A,
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
-					true, shadow, f0, orms, directional_lights.data[i].specular, albedo, alpha, screen_uv,
+					true, shadow, f0, orms, directional_lights.data[i].specular, albedo, alpha,
+					screen_uv, vec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -1731,7 +1743,7 @@ void main() {
 	uvec2 omni_indices = instances.data[draw_call.instance_index].omni_lights;
 	for (uint i = 0; i < sc_omni_lights(); i++) {
 		uint light_index = (i > 3) ? ((omni_indices.y >> ((i - 4) * 8)) & 0xFF) : ((omni_indices.x >> (i * 8)) & 0xFF);
-		light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
+		light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv, vec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
@@ -1759,7 +1771,7 @@ void main() {
 	uvec2 spot_indices = instances.data[draw_call.instance_index].spot_lights;
 	for (uint i = 0; i < sc_spot_lights(); i++) {
 		uint light_index = (i > 3) ? ((spot_indices.y >> ((i - 4) * 8)) & 0xFF) : ((spot_indices.x >> (i * 8)) & 0xFF);
-		light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
+		light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv, vec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif

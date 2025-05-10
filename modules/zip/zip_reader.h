@@ -51,6 +51,7 @@ public:
 	PackedStringArray get_files();
 	PackedByteArray read_file(const String &p_path, bool p_case_sensitive);
 	bool file_exists(const String &p_path, bool p_case_sensitive);
+	int get_compression_level(const String &p_path, bool p_case_sensitive);
 
 	ZIPReader();
 	~ZIPReader();

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/2d/navigation_agent_2d.h"
+#include "scene/2d/navigation/navigation_agent_2d.h"
 #include "scene/2d/node_2d.h"
 #include "scene/main/window.h"
 #include "scene/resources/world_2d.h"
@@ -39,7 +39,7 @@
 
 namespace TestNavigationAgent2D {
 
-TEST_SUITE("[Navigation]") {
+TEST_SUITE("[Navigation2D]") {
 	TEST_CASE("[SceneTree][NavigationAgent2D] New agent should have valid RID") {
 		NavigationAgent2D *agent_node = memnew(NavigationAgent2D);
 		CHECK(agent_node->get_rid().is_valid());

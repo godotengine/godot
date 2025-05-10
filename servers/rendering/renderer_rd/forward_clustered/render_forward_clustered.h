@@ -43,6 +43,7 @@
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_clustered/best_fit_normal.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/forward_clustered/integrate_dfg.glsl.gen.h"
 
 #define RB_SCOPE_FORWARD_CLUSTERED SNAME("forward_clustered")
 
@@ -179,6 +180,13 @@ private:
 		RID pipeline;
 		RID texture;
 	} best_fit_normal;
+
+	struct IntegrateDFG {
+		IntegrateDfgShaderRD shader;
+		RID shader_version;
+		RID pipeline;
+		RID texture;
+	} dfg_lut;
 
 	enum PassMode {
 		PASS_MODE_COLOR,
@@ -544,7 +552,11 @@ private:
 
 		//used during setup
 		uint64_t prev_transform_change_frame = 0xFFFFFFFF;
-		bool prev_transform_dirty = true;
+		enum TransformStatus {
+			NONE,
+			MOVED,
+			TELEPORTED,
+		} transform_status = TransformStatus::MOVED;
 		Transform3D prev_transform;
 		RID voxel_gi_instances[MAX_VOXEL_GI_INSTANCESS_PER_INSTANCE];
 		GeometryInstanceSurfaceDataCache *surface_caches = nullptr;
@@ -556,6 +568,7 @@ private:
 		virtual void _mark_dirty() override;
 
 		virtual void set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override;
+		virtual void reset_motion_vectors() override;
 		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
 		virtual void set_lightmap_capture(const Color *p_sh9) override;
 
@@ -628,6 +641,14 @@ private:
 	void _mesh_generate_all_pipelines_for_surface_cache(GeometryInstanceSurfaceDataCache *p_surface_cache, const GlobalPipelineData &p_global);
 	void _update_dirty_geometry_instances();
 	void _update_dirty_geometry_pipelines();
+
+	// Global data about the scene that can be used to pre-allocate resources without relying on culling.
+	struct GlobalSurfaceData {
+		bool screen_texture_used = false;
+		bool normal_texture_used = false;
+		bool depth_texture_used = false;
+		bool sss_used = false;
+	} global_surface_data;
 
 	/* Render List */
 

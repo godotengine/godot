@@ -33,7 +33,6 @@
 #include "tile_atlas_view.h"
 
 #include "core/os/thread.h"
-#include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
@@ -46,6 +45,7 @@
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tree.h"
 
+class TileMapLayer;
 class TileMapLayerEditor;
 
 class TileMapLayerSubEditorPlugin : public Object {
@@ -67,6 +67,7 @@ public:
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) {}
 	virtual void tile_set_changed() {}
 	virtual void edit(ObjectID p_tile_map_layer_id) {}
+	virtual void draw_tile_coords_over_viewport(Control *p_overlay, const TileMapLayer *p_edited_layer, Ref<TileSet> p_tile_set, bool p_show_rectangle_size, const Vector2i &p_rectangle_origin);
 };
 
 class TileMapLayerEditorTilesPlugin : public TileMapLayerSubEditorPlugin {
@@ -239,7 +240,6 @@ public:
 	virtual void edit(ObjectID p_tile_map_layer_id) override;
 
 	TileMapLayerEditorTilesPlugin();
-	~TileMapLayerEditorTilesPlugin();
 };
 
 class TileMapLayerEditorTerrainsPlugin : public TileMapLayerSubEditorPlugin {
@@ -331,7 +331,6 @@ public:
 	virtual void edit(ObjectID p_tile_map_layer_id) override;
 
 	TileMapLayerEditorTerrainsPlugin();
-	~TileMapLayerEditorTerrainsPlugin();
 };
 
 class TileMapLayerEditor : public VBoxContainer {

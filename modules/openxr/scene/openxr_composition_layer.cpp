@@ -192,7 +192,7 @@ void OpenXRCompositionLayer::_bind_methods() {
 }
 
 bool OpenXRCompositionLayer::_should_use_fallback_node() {
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint() || openxr_api == nullptr) {
 		return true;
 	} else if (openxr_session_running) {
 		return enable_hole_punch || (!is_natively_supported() && !use_android_surface);
@@ -219,6 +219,7 @@ void OpenXRCompositionLayer::_setup_composition_layer_provider() {
 	if (use_android_surface || layer_viewport) {
 		if (composition_layer_extension) {
 			composition_layer_extension->register_viewport_composition_layer_provider(openxr_layer_provider);
+			registered = true;
 		}
 
 		// NOTE: We don't setup/clear when using Android surfaces, so we don't destroy the surface unexpectedly.
@@ -232,6 +233,7 @@ void OpenXRCompositionLayer::_setup_composition_layer_provider() {
 void OpenXRCompositionLayer::_clear_composition_layer_provider() {
 	if (composition_layer_extension) {
 		composition_layer_extension->unregister_viewport_composition_layer_provider(openxr_layer_provider);
+		registered = false;
 	}
 
 	// NOTE: We don't setup/clear when using Android surfaces, so we don't destroy the surface unexpectedly.
@@ -296,6 +298,9 @@ void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 	}
 
 	layer_viewport = p_viewport;
+	if (!registered && is_natively_supported() && openxr_session_running && is_inside_tree() && is_visible()) {
+		_setup_composition_layer_provider();
+	}
 
 	if (layer_viewport) {
 		SubViewport::UpdateMode update_mode = layer_viewport->get_update_mode();
@@ -399,7 +404,7 @@ bool OpenXRCompositionLayer::get_alpha_blend() const {
 }
 
 bool OpenXRCompositionLayer::is_natively_supported() const {
-	if (composition_layer_extension) {
+	if (composition_layer_extension && openxr_api) {
 		return composition_layer_extension->is_available(openxr_layer_provider->get_openxr_type());
 	}
 	return false;
@@ -657,9 +662,10 @@ void OpenXRCompositionLayer::_get_property_list(List<PropertyInfo> *p_property_l
 bool OpenXRCompositionLayer::_get(const StringName &p_property, Variant &r_value) const {
 	if (extension_property_values.has(p_property)) {
 		r_value = extension_property_values[p_property];
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 bool OpenXRCompositionLayer::_set(const StringName &p_property, const Variant &p_value) {

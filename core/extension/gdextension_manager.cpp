@@ -411,8 +411,6 @@ void GDExtensionManager::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("extension_unloading", PropertyInfo(Variant::OBJECT, "extension", PROPERTY_HINT_RESOURCE_TYPE, "GDExtension")));
 }
 
-GDExtensionManager *GDExtensionManager::singleton = nullptr;
-
 GDExtensionManager::GDExtensionManager() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;

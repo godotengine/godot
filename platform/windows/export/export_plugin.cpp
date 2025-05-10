@@ -43,6 +43,29 @@
 
 #include "modules/svg/image_loader_svg.h"
 
+#ifdef WINDOWS_ENABLED
+#include "shlobj.h"
+
+// Converts long path to Windows UNC format.
+static String fix_path(const String &p_path) {
+	String path = p_path;
+	if (p_path.is_relative_path()) {
+		Char16String current_dir_name;
+		size_t str_len = GetCurrentDirectoryW(0, nullptr);
+		current_dir_name.resize(str_len + 1);
+		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(path);
+	}
+	path = path.simplify_path();
+	path = path.replace_char('/', '\\');
+	if (path.size() >= MAX_PATH && !path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
+		path = R"(\\?\)" + path;
+	}
+	return path;
+}
+
+#endif
+
 Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &p_preset, const String &p_src_path, const String &p_dst_path) {
 	static const uint8_t icon_size[] = { 16, 32, 48, 64, 128, 0 /*256*/ };
 
@@ -195,8 +218,8 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	bool embedded = p_preset->get("binary_format/embed_pck");
 
 	String pkg_name;
-	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
-		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
+	if (String(get_project_setting(p_preset, "application/config/name")) != "") {
+		pkg_name = String(get_project_setting(p_preset, "application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
 	}
@@ -221,15 +244,15 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		path = tmp_dir_path.path_join(p_path.get_file().get_basename() + ".exe");
 	}
 
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	int export_angle = p_preset->get("application/export_angle");
 	bool include_angle_libs = false;
 	if (export_angle == 0) {
-		include_angle_libs = (String(GLOBAL_GET("rendering/gl_compatibility/driver.windows")) == "opengl3_angle") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) == "gl_compatibility");
+		include_angle_libs = (String(get_project_setting(p_preset, "rendering/gl_compatibility/driver.windows")) == "opengl3_angle") && (String(get_project_setting(p_preset, "rendering/renderer/rendering_method")) == "gl_compatibility");
 	} else if (export_angle == 1) {
 		include_angle_libs = true;
 	}
 	if (include_angle_libs) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (da->file_exists(template_path.get_base_dir().path_join("libEGL." + arch + ".dll"))) {
 			da->copy(template_path.get_base_dir().path_join("libEGL." + arch + ".dll"), path.get_base_dir().path_join("libEGL.dll"), get_chmod_flags());
 		}
@@ -237,17 +260,19 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 			da->copy(template_path.get_base_dir().path_join("libGLESv2." + arch + ".dll"), path.get_base_dir().path_join("libGLESv2.dll"), get_chmod_flags());
 		}
 	}
+	if (da->file_exists(template_path.get_base_dir().path_join("accesskit." + arch + ".dll"))) {
+		da->copy(template_path.get_base_dir().path_join("accesskit." + arch + ".dll"), path.get_base_dir().path_join("accesskit." + arch + ".dll"), get_chmod_flags());
+	}
 
 	int export_d3d12 = p_preset->get("application/export_d3d12");
 	bool agility_sdk_multiarch = p_preset->get("application/d3d12_agility_sdk_multiarch");
 	bool include_d3d12_extra_libs = false;
 	if (export_d3d12 == 0) {
-		include_d3d12_extra_libs = (String(GLOBAL_GET("rendering/rendering_device/driver.windows")) == "d3d12") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) != "gl_compatibility");
+		include_d3d12_extra_libs = (String(get_project_setting(p_preset, "rendering/rendering_device/driver.windows")) == "d3d12") && (String(get_project_setting(p_preset, "rendering/renderer/rendering_method")) != "gl_compatibility");
 	} else if (export_d3d12 == 1) {
 		include_d3d12_extra_libs = true;
 	}
 	if (include_d3d12_extra_libs) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (da->file_exists(template_path.get_base_dir().path_join("D3D12Core." + arch + ".dll"))) {
 			if (agility_sdk_multiarch) {
 				da->make_dir_recursive(path.get_base_dir().path_join(arch));
@@ -316,6 +341,23 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 			tmp_app_dir->change_dir("..");
 			tmp_app_dir->remove(pkg_name);
 		}
+#ifdef WINDOWS_ENABLED
+	} else {
+		// Update Windows icon cache.
+		String w_path = fix_path(path);
+		SHChangeNotify(SHCNE_UPDATEITEM, SHCNF_PATH, (LPCWSTR)w_path.utf16().get_data(), nullptr);
+
+		String wrapper_path = path.get_basename() + ".console.exe";
+		if (FileAccess::exists(wrapper_path)) {
+			String w_wrapper_path = fix_path(wrapper_path);
+			SHChangeNotify(SHCNE_UPDATEITEM, SHCNF_PATH, (LPCWSTR)w_wrapper_path.utf16().get_data(), nullptr);
+		}
+
+		w_path = fix_path(path.get_base_dir());
+		SHChangeNotify(SHCNE_UPDATEITEM, SHCNF_PATH, (LPCWSTR)w_path.utf16().get_data(), nullptr);
+
+		SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
+#endif
 	}
 
 	return err;
@@ -489,10 +531,10 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	String icon_path;
 	if (p_preset->get("application/icon") != "") {
 		icon_path = p_preset->get("application/icon");
-	} else if (GLOBAL_GET("application/config/windows_native_icon") != "") {
-		icon_path = GLOBAL_GET("application/config/windows_native_icon");
+	} else if (get_project_setting(p_preset, "application/config/windows_native_icon") != "") {
+		icon_path = get_project_setting(p_preset, "application/config/windows_native_icon");
 	} else {
-		icon_path = GLOBAL_GET("application/config/icon");
+		icon_path = get_project_setting(p_preset, "application/config/icon");
 	}
 	icon_path = ProjectSettings::get_singleton()->globalize_path(icon_path);
 

@@ -35,9 +35,6 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 
-const int InputEvent::DEVICE_ID_EMULATION = -1;
-const int InputEvent::DEVICE_ID_INTERNAL = -2;
-
 void InputEvent::set_device(int p_device) {
 	device = p_device;
 	emit_changed();
@@ -230,7 +227,7 @@ void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModif
 }
 
 BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
-	BitField<KeyModifierMask> mask;
+	BitField<KeyModifierMask> mask = {};
 	if (is_ctrl_pressed()) {
 		mask.set_flag(KeyModifierMask::CTRL);
 	}
@@ -385,11 +382,11 @@ bool InputEventKey::is_echo() const {
 }
 
 Key InputEventKey::get_keycode_with_modifiers() const {
-	return keycode | (int64_t)get_modifiers_mask();
+	return keycode | get_modifiers_mask();
 }
 
 Key InputEventKey::get_physical_keycode_with_modifiers() const {
-	return physical_keycode | (int64_t)get_modifiers_mask();
+	return physical_keycode | get_modifiers_mask();
 }
 
 Key InputEventKey::get_key_label_with_modifiers() const {

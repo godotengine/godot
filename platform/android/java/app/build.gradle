@@ -90,7 +90,7 @@ android {
         jvmTarget = versions.javaVersion
     }
 
-    assetPacks = [":assetPacks:installTime"]
+    assetPacks = [":assetPacksInstallTime"]
 
     namespace = 'com.godot.game'
 
@@ -101,14 +101,10 @@ android {
         }
 
         ndk {
+            debugSymbolLevel 'FULL'
             String[] export_abi_list = getExportEnabledABIs()
             abiFilters export_abi_list
         }
-
-        manifestPlaceholders = [
-            godotEditorVersion: getGodotEditorVersion(),
-            godotRenderingMethod: getGodotRenderingMethod()
-        ]
 
         // Feel free to modify the application id to your own.
         applicationId getExportPackageName()

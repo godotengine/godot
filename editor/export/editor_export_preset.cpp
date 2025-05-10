@@ -60,6 +60,29 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
+Variant EditorExportPreset::get_project_setting(const StringName &p_name) {
+	List<String> ftr_list;
+	platform->get_platform_features(&ftr_list);
+	platform->get_preset_features(this, &ftr_list);
+
+	Vector<String> features;
+	for (const String &E : ftr_list) {
+		features.push_back(E);
+	}
+
+	if (!get_custom_features().is_empty()) {
+		Vector<String> tmp_custom_list = get_custom_features().split(",");
+
+		for (int i = 0; i < tmp_custom_list.size(); i++) {
+			String f = tmp_custom_list[i].strip_edges();
+			if (!f.is_empty()) {
+				features.push_back(f);
+			}
+		}
+	}
+	return ProjectSettings::get_singleton()->get_setting_with_override_and_custom_features(p_name, features);
+}
+
 void EditorExportPreset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &EditorExportPreset::_get_property_warning);
 
@@ -70,6 +93,7 @@ void EditorExportPreset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_customized_files_count"), &EditorExportPreset::get_customized_files_count);
 	ClassDB::bind_method(D_METHOD("has_export_file", "path"), &EditorExportPreset::has_export_file);
 	ClassDB::bind_method(D_METHOD("get_file_export_mode", "path", "default"), &EditorExportPreset::get_file_export_mode, DEFVAL(MODE_FILE_NOT_CUSTOMIZED));
+	ClassDB::bind_method(D_METHOD("get_project_setting", "name"), &EditorExportPreset::get_project_setting);
 
 	ClassDB::bind_method(D_METHOD("get_preset_name"), &EditorExportPreset::get_name);
 	ClassDB::bind_method(D_METHOD("is_runnable"), &EditorExportPreset::is_runnable);
@@ -208,10 +232,9 @@ void EditorExportPreset::update_value_overrides() {
 
 		Dictionary plugin_overrides = export_plugins[i]->_get_export_options_overrides(platform);
 		if (!plugin_overrides.is_empty()) {
-			Array keys = plugin_overrides.keys();
-			for (int x = 0; x < keys.size(); x++) {
-				StringName key = keys[x];
-				Variant value = plugin_overrides[key];
+			for (const KeyValue<Variant, Variant> &kv : plugin_overrides) {
+				const StringName &key = kv.key;
+				const Variant &value = kv.value;
 				if (new_value_overrides.has(key) && new_value_overrides[key] != value) {
 					WARN_PRINT_ED(vformat("Editor export plugin '%s' overrides pre-existing export option override '%s' with new value.", export_plugins[i]->get_name(), key));
 				}
@@ -561,5 +584,3 @@ String EditorExportPreset::get_version(const StringName &p_preset_string, bool p
 
 	return result;
 }
-
-EditorExportPreset::EditorExportPreset() {}

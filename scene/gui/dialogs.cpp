@@ -51,6 +51,12 @@ void AcceptDialog::_parent_focused() {
 
 void AcceptDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_DIALOG);
+		} break;
 		case NOTIFICATION_POST_ENTER_TREE: {
 			if (is_visible()) {
 				get_ok_button()->grab_focus();
@@ -448,17 +454,21 @@ AcceptDialog::AcceptDialog() {
 	set_clamp_to_embedder(true);
 	set_keep_title_visible(true);
 
+	set_flag(FLAG_MINIMIZE_DISABLED, true);
+	set_flag(FLAG_MAXIMIZE_DISABLED, true);
+
 	bg_panel = memnew(Panel);
 	add_child(bg_panel, false, INTERNAL_MODE_FRONT);
 
 	buttons_hbox = memnew(HBoxContainer);
 
 	message_label = memnew(Label);
+	message_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	message_label->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
 	message_label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
 	add_child(message_label, false, INTERNAL_MODE_FRONT);
 
-	add_child(buttons_hbox, false, INTERNAL_MODE_FRONT);
+	add_child(buttons_hbox, false, INTERNAL_MODE_BACK);
 
 	buttons_hbox->add_spacer();
 	ok_button = memnew(Button);

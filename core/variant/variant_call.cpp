@@ -694,11 +694,62 @@ struct _VariantCall {
 		return s;
 	}
 
+	static void func_PackedByteArray_bswap16(PackedByteArray *p_instance, int64_t p_offset, int64_t p_count) {
+		size_t sz = p_instance->size();
+		if (sz == 0 || p_count == 0) {
+			return;
+		}
+		ERR_FAIL_COND(p_offset < 0 || p_offset > int64_t(sz) - 2);
+		if (p_count < 0) {
+			p_count = floor((sz - p_offset) / 2);
+		}
+		ERR_FAIL_COND(p_count > floor((sz - p_offset) / 2));
+
+		uint16_t *w = (uint16_t *)(p_instance->ptrw() + p_offset);
+		for (int64_t i = 0; i < p_count; i++) {
+			w[i] = BSWAP16(w[i]);
+		}
+	}
+
+	static void func_PackedByteArray_bswap32(PackedByteArray *p_instance, int64_t p_offset, int64_t p_count) {
+		size_t sz = p_instance->size();
+		if (sz == 0 || p_count == 0) {
+			return;
+		}
+		ERR_FAIL_COND(p_offset < 0 || p_offset > int64_t(sz) - 4);
+		if (p_count < 0) {
+			p_count = floor((sz - p_offset) / 4);
+		}
+		ERR_FAIL_COND(p_count > floor((sz - p_offset) / 4));
+
+		uint32_t *w = (uint32_t *)(p_instance->ptrw() + p_offset);
+		for (int64_t i = 0; i < p_count; i++) {
+			w[i] = BSWAP32(w[i]);
+		}
+	}
+
+	static void func_PackedByteArray_bswap64(PackedByteArray *p_instance, int64_t p_offset, int64_t p_count) {
+		size_t sz = p_instance->size();
+		if (sz == 0 || p_count == 0) {
+			return;
+		}
+		ERR_FAIL_COND(p_offset < 0 || p_offset > int64_t(sz) - 8);
+		if (p_count < 0) {
+			p_count = floor((sz - p_offset) / 8);
+		}
+		ERR_FAIL_COND(p_count > floor((sz - p_offset) / 8));
+
+		uint64_t *w = (uint64_t *)(p_instance->ptrw() + p_offset);
+		for (int64_t i = 0; i < p_count; i++) {
+			w[i] = BSWAP64(w[i]);
+		}
+	}
+
 	static String func_PackedByteArray_get_string_from_utf8(PackedByteArray *p_instance) {
 		String s;
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
-			s.parse_utf8((const char *)r, p_instance->size());
+			s.append_utf8((const char *)r, p_instance->size());
 		}
 		return s;
 	}
@@ -707,7 +758,7 @@ struct _VariantCall {
 		String s;
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
-			s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
+			s.append_utf16((const char16_t *)r, std::floor((double)p_instance->size() / (double)sizeof(char16_t)));
 		}
 		return s;
 	}
@@ -716,7 +767,7 @@ struct _VariantCall {
 		String s;
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
-			s = String((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)));
+			s.append_utf32(Span((const char32_t *)r, std::floor((double)p_instance->size() / (double)sizeof(char32_t))));
 		}
 		return s;
 	}
@@ -726,10 +777,18 @@ struct _VariantCall {
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
 #ifdef WINDOWS_ENABLED
-			s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
+			s.append_utf16((const char16_t *)r, std::floor((double)p_instance->size() / (double)sizeof(char16_t)));
 #else
-			s = String((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)));
+			s.append_utf32(Span((const char32_t *)r, std::floor((double)p_instance->size() / (double)sizeof(char32_t))));
 #endif
+		}
+		return s;
+	}
+
+	static String func_PackedByteArray_get_string_from_multibyte_char(PackedByteArray *p_instance, const String &p_encoding) {
+		String s;
+		if (p_instance->size() > 0) {
+			s = OS::get_singleton()->multibyte_to_string(p_encoding, *p_instance);
 		}
 		return s;
 	}
@@ -1731,6 +1790,8 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(format, sarray("values", "placeholder"), varray("{_}"));
 	bind_string_methodv(replace, static_cast<String (String::*)(const String &, const String &) const>(&String::replace), sarray("what", "forwhat"), varray());
 	bind_string_methodv(replacen, static_cast<String (String::*)(const String &, const String &) const>(&String::replacen), sarray("what", "forwhat"), varray());
+	bind_string_method(replace_char, sarray("key", "with"), varray());
+	bind_string_methodv(replace_chars, static_cast<String (String::*)(const String &, char32_t) const>(&String::replace_chars), sarray("keys", "with"), varray());
 	bind_string_method(remove_char, sarray("what"), varray());
 	bind_string_methodv(remove_chars, static_cast<String (String::*)(const String &) const>(&String::remove_chars), sarray("chars"), varray());
 	bind_string_method(repeat, sarray("count"), varray());
@@ -1741,6 +1802,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(to_camel_case, sarray(), varray());
 	bind_string_method(to_pascal_case, sarray(), varray());
 	bind_string_method(to_snake_case, sarray(), varray());
+	bind_string_method(to_kebab_case, sarray(), varray());
 	bind_string_methodv(split, static_cast<Vector<String> (String::*)(const String &, bool, int) const>(&String::split), sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
 	bind_string_methodv(rsplit, static_cast<Vector<String> (String::*)(const String &, bool, int) const>(&String::rsplit), sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
 	bind_string_method(split_floats, sarray("delimiter", "allow_empty"), varray(true));
@@ -1758,7 +1820,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(rstrip, sarray("chars"), varray());
 	bind_string_method(get_extension, sarray(), varray());
 	bind_string_method(get_basename, sarray(), varray());
-	bind_string_method(path_join, sarray("file"), varray());
+	bind_string_method(path_join, sarray("path"), varray());
 	bind_string_method(unicode_at, sarray("at"), varray());
 	bind_string_method(indent, sarray("prefix"), varray());
 	bind_string_method(dedent, sarray(), varray());
@@ -1782,6 +1844,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(xml_unescape, sarray(), varray());
 	bind_string_method(uri_encode, sarray(), varray());
 	bind_string_method(uri_decode, sarray(), varray());
+	bind_string_method(uri_file_decode, sarray(), varray());
 	bind_string_method(c_escape, sarray(), varray());
 	bind_string_method(c_unescape, sarray(), varray());
 	bind_string_method(json_escape, sarray(), varray());
@@ -1815,8 +1878,9 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(to_utf8_buffer, sarray(), varray());
 	bind_string_method(to_utf16_buffer, sarray(), varray());
 	bind_string_method(to_utf32_buffer, sarray(), varray());
-	bind_string_method(hex_decode, sarray(), varray());
 	bind_string_method(to_wchar_buffer, sarray(), varray());
+	bind_string_method(to_multibyte_char_buffer, sarray("encoding"), varray(String()));
+	bind_string_method(hex_decode, sarray(), varray());
 
 	bind_static_method(String, num_scientific, sarray("number"), varray());
 	bind_static_method(String, num, sarray("number", "decimals"), varray(-1));
@@ -2458,6 +2522,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_function(PackedByteArray, get_string_from_utf16, _VariantCall::func_PackedByteArray_get_string_from_utf16, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_utf32, _VariantCall::func_PackedByteArray_get_string_from_utf32, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_wchar, _VariantCall::func_PackedByteArray_get_string_from_wchar, sarray(), varray());
+	bind_function(PackedByteArray, get_string_from_multibyte_char, _VariantCall::func_PackedByteArray_get_string_from_multibyte_char, sarray("encoding"), varray(String()));
 	bind_function(PackedByteArray, hex_encode, _VariantCall::func_PackedByteArray_hex_encode, sarray(), varray());
 	bind_function(PackedByteArray, compress, _VariantCall::func_PackedByteArray_compress, sarray("compression_mode"), varray(0));
 	bind_function(PackedByteArray, decompress, _VariantCall::func_PackedByteArray_decompress, sarray("buffer_size", "compression_mode"), varray(0));
@@ -2482,6 +2547,10 @@ static void _register_variant_builtin_methods_array() {
 	bind_function(PackedByteArray, to_int64_array, _VariantCall::func_PackedByteArray_decode_s64_array, sarray(), varray());
 	bind_function(PackedByteArray, to_float32_array, _VariantCall::func_PackedByteArray_decode_float_array, sarray(), varray());
 	bind_function(PackedByteArray, to_float64_array, _VariantCall::func_PackedByteArray_decode_double_array, sarray(), varray());
+
+	bind_functionnc(PackedByteArray, bswap16, _VariantCall::func_PackedByteArray_bswap16, sarray("offset", "count"), varray(0, -1));
+	bind_functionnc(PackedByteArray, bswap32, _VariantCall::func_PackedByteArray_bswap32, sarray("offset", "count"), varray(0, -1));
+	bind_functionnc(PackedByteArray, bswap64, _VariantCall::func_PackedByteArray_bswap64, sarray("offset", "count"), varray(0, -1));
 
 	bind_functionnc(PackedByteArray, encode_u8, _VariantCall::func_PackedByteArray_encode_u8, sarray("byte_offset", "value"), varray());
 	bind_functionnc(PackedByteArray, encode_s8, _VariantCall::func_PackedByteArray_encode_s8, sarray("byte_offset", "value"), varray());
@@ -2727,7 +2796,7 @@ static void _register_variant_builtin_constants() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ZERO", Vector3(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ONE", Vector3(1, 1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "INF", Vector3(INFINITY, INFINITY, INFINITY));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "INF", Vector3(Math::INF, Math::INF, Math::INF));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "LEFT", Vector3(-1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "RIGHT", Vector3(1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "UP", Vector3(0, 1, 0));
@@ -2749,7 +2818,7 @@ static void _register_variant_builtin_constants() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR4, "ZERO", Vector4(0, 0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR4, "ONE", Vector4(1, 1, 1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR4, "INF", Vector4(INFINITY, INFINITY, INFINITY, INFINITY));
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "INF", Vector4(Math::INF, Math::INF, Math::INF, Math::INF));
 
 	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_X", Vector3i::AXIS_X);
 	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_Y", Vector3i::AXIS_Y);
@@ -2784,7 +2853,7 @@ static void _register_variant_builtin_constants() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ZERO", Vector2(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ONE", Vector2(1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "INF", Vector2(INFINITY, INFINITY));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "INF", Vector2(Math::INF, Math::INF));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "LEFT", Vector2(-1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "RIGHT", Vector2(1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP", Vector2(0, -1));

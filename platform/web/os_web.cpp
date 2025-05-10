@@ -46,7 +46,7 @@
 
 #include <dlfcn.h>
 #include <emscripten.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 void OS_Web::alert(const String &p_alert, const String &p_title) {
 	godot_js_display_alert(p_alert.utf8().get_data());
@@ -184,7 +184,7 @@ void OS_Web::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 
 String OS_Web::get_user_data_dir(const String &p_user_dir) const {
 	String userfs = "/userfs";
-	return userfs.path_join(p_user_dir).replace("\\", "/");
+	return userfs.path_join(p_user_dir).replace_char('\\', '/');
 }
 
 String OS_Web::get_cache_path() const {

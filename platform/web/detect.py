@@ -98,7 +98,7 @@ def library_emitter(target, source, env):
 
 
 def configure(env: "SConsEnvironment"):
-    env.Append(LIBEMITTER=library_emitter)
+    env.Append(LIBEMITTER=[library_emitter])
 
     # Validate arch.
     supported_arches = ["wasm32"]
@@ -129,6 +129,10 @@ def configure(env: "SConsEnvironment"):
 
     ## Copy env variables.
     env["ENV"] = os.environ
+
+    # This makes `wasm-ld` treat all warnings as errors.
+    if env["werror"]:
+        env.Append(LINKFLAGS=["-Wl,--fatal-warnings"])
 
     # LTO
 

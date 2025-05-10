@@ -35,13 +35,14 @@
 #include "core/io/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 /// Android implementation of the DirAccess interface used to provide access to
 /// ACCESS_FILESYSTEM and ACCESS_RESOURCES directory resources.
 /// The implementation use jni in order to comply with Android filesystem
 /// access restriction.
 class DirAccessJAndroid : public DirAccessUnix {
+	GDSOFTCLASS(DirAccessJAndroid, DirAccessUnix);
 	static jobject dir_access_handler;
 	static jclass cls;
 
