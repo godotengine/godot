@@ -337,6 +337,15 @@ void SectionedInspector::_advanced_toggled(bool p_toggled_on) {
 	inspector->set_restrict_to_basic_settings(restrict_to_basic);
 }
 
+void SectionedInspector::_notification(int p_notification) {
+	if (p_notification == NOTIFICATION_TRANSLATION_CHANGED) {
+		if (sections->get_root()) {
+			// Only update when initialized.
+			callable_mp(this, &SectionedInspector::update_category_list).call_deferred();
+		}
+	}
+}
+
 EditorInspector *SectionedInspector::get_inspector() {
 	return inspector;
 }
