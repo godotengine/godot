@@ -1889,20 +1889,13 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 	return false;
 }
 
-static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
-	// Check scripts only for the nodes belonging to the edited scene.
-	if (p_current_node == p_edited_scene || p_current_node->get_owner() == p_edited_scene) {
-		Ref<Script> scr = p_current_node->get_script();
-		if (scr.is_valid() && scr == script) {
-			return p_current_node;
-		}
+static Node *_find_script_node(Node *p_current_node, const Ref<Script> &script) {
+	if (p_current_node->get_script() == script) {
+		return p_current_node;
 	}
 
-	// Traverse all children, even the ones not owned by the edited scene as they
-	// can still have child nodes added within the edited scene and thus owned by
-	// it (e.g. nodes added to subscene's root or to its editable children).
 	for (int i = 0; i < p_current_node->get_child_count(); i++) {
-		Node *n = _find_script_node(p_edited_scene, p_current_node->get_child(i), script);
+		Node *n = _find_script_node(p_current_node->get_child(i), script);
 		if (n) {
 			return n;
 		}
@@ -2037,7 +2030,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		Node *sn = _find_script_node(scene_root, scene_root, script);
+		Node *sn = _find_script_node(scene_root, script);
 		if (!sn) {
 			sn = scene_root;
 		}
@@ -2054,14 +2047,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				bool is_unique = false;
-				String path;
-				if (node->is_unique_name_in_owner()) {
-					path = node->get_name();
-					is_unique = true;
-				} else {
-					path = sn->get_path_to(node);
-				}
+				bool is_unique = node->is_unique_name_in_owner() && (node->get_owner() == sn || node->get_owner() == sn->get_owner());
+				String path = is_unique ? String(node->get_name()) : String(sn->get_path_to(node));
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_unicode_identifier()) {
 						path = _quote_drop_data(path);
@@ -2096,15 +2083,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				bool is_unique = false;
-				String path;
-				if (node->is_unique_name_in_owner()) {
-					path = node->get_name();
-					is_unique = true;
-				} else {
-					path = sn->get_path_to(node);
-				}
-
+				bool is_unique = node->is_unique_name_in_owner() && (node->get_owner() == sn || node->get_owner() == sn->get_owner());
+				String path = is_unique ? String(node->get_name()) : String(sn->get_path_to(node));
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_ascii_identifier()) {
 						path = _quote_drop_data(path);

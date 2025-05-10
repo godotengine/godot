@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  navigation_region_2d_editor_plugin.h                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,59 +28,67 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "3d/godot_navigation_server_3d.h"
+#include "editor/plugins/abstract_polygon_2d_editor.h"
+#include "editor/plugins/editor_plugin.h"
 
-#ifndef DISABLE_DEPRECATED
-#include "3d/navigation_mesh_generator.h"
-#endif // DISABLE_DEPRECATED
+class AcceptDialog;
+class HBoxContainer;
+class NavigationPolygon;
+class NavigationRegion2D;
 
-#ifdef TOOLS_ENABLED
-#include "editor/navigation_link_3d_editor_plugin.h"
-#include "editor/navigation_obstacle_3d_editor_plugin.h"
-#include "editor/navigation_region_3d_editor_plugin.h"
-#endif
+class NavigationRegion2DEditor : public AbstractPolygon2DEditor {
+	friend class NavigationRegion2DEditorPlugin;
 
-#include "core/config/engine.h"
-#include "servers/navigation_server_3d.h"
+	GDCLASS(NavigationRegion2DEditor, AbstractPolygon2DEditor);
 
-#ifndef DISABLE_DEPRECATED
-NavigationMeshGenerator *_nav_mesh_generator = nullptr;
-#endif // DISABLE_DEPRECATED
+	NavigationRegion2D *node = nullptr;
 
-NavigationServer3D *new_navigation_server_3d() {
-	return memnew(GodotNavigationServer3D);
-}
+	Ref<NavigationPolygon> _ensure_navpoly() const;
 
-void initialize_navigation_3d_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer3DManager::set_default_server(new_navigation_server_3d);
+	AcceptDialog *err_dialog = nullptr;
 
-#ifndef DISABLE_DEPRECATED
-		_nav_mesh_generator = memnew(NavigationMeshGenerator);
-		GDREGISTER_CLASS(NavigationMeshGenerator);
-		Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
-#endif // DISABLE_DEPRECATED
-	}
+	HBoxContainer *bake_hbox = nullptr;
+	Button *button_bake = nullptr;
+	Button *button_reset = nullptr;
+	Label *bake_info = nullptr;
 
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorPlugins::add_by_type<NavigationLink3DEditorPlugin>();
-		EditorPlugins::add_by_type<NavigationRegion3DEditorPlugin>();
-		EditorPlugins::add_by_type<NavigationObstacle3DEditorPlugin>();
-	}
-#endif
-}
+	Timer *rebake_timer = nullptr;
+	float _rebake_timer_delay = 1.5;
+	void _rebake_timer_timeout();
 
-void uninitialize_navigation_3d_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
-	}
+	void _bake_pressed();
+	void _clear_pressed();
 
-#ifndef DISABLE_DEPRECATED
-	if (_nav_mesh_generator) {
-		memdelete(_nav_mesh_generator);
-	}
-#endif // DISABLE_DEPRECATED
-}
+	void _update_polygon_editing_state();
+
+protected:
+	void _notification(int p_what);
+
+	virtual Node2D *_get_node() const override;
+	virtual void _set_node(Node *p_polygon) override;
+
+	virtual int _get_polygon_count() const override;
+	virtual Variant _get_polygon(int p_idx) const override;
+	virtual void _set_polygon(int p_idx, const Variant &p_polygon) const override;
+
+	virtual void _action_add_polygon(const Variant &p_polygon) override;
+	virtual void _action_remove_polygon(int p_idx) override;
+	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) override;
+
+	virtual bool _has_resource() const override;
+	virtual void _create_resource() override;
+
+public:
+	NavigationRegion2DEditor();
+};
+
+class NavigationRegion2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
+	GDCLASS(NavigationRegion2DEditorPlugin, AbstractPolygon2DEditorPlugin);
+
+	NavigationRegion2DEditor *navigation_polygon_editor = nullptr;
+
+public:
+	NavigationRegion2DEditorPlugin();
+};

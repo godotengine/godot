@@ -188,6 +188,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 		if (cte) {
 			cte->set_zoom_factor(text_shader_zoom_factor);
 			cte->connect("zoomed", callable_mp(this, &ShaderEditorPlugin::_set_text_shader_zoom_factor));
+			cte->connect(SceneStringName(visibility_changed), callable_mp(this, &ShaderEditorPlugin::_update_shader_editor_zoom_factor).bind(cte));
 		}
 
 		if (text_shader_editor->get_top_bar()) {
@@ -768,17 +769,16 @@ void ShaderEditorPlugin::_window_changed(bool p_visible) {
 }
 
 void ShaderEditorPlugin::_set_text_shader_zoom_factor(float p_zoom_factor) {
-	if (text_shader_zoom_factor != p_zoom_factor) {
-		text_shader_zoom_factor = p_zoom_factor;
-		for (const EditedShader &edited_shader : edited_shaders) {
-			TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(edited_shader.shader_editor);
-			if (text_shader_editor) {
-				CodeTextEditor *cte = text_shader_editor->get_code_editor();
-				if (cte && cte->get_zoom_factor() != text_shader_zoom_factor) {
-					cte->set_zoom_factor(text_shader_zoom_factor);
-				}
-			}
-		}
+	if (text_shader_zoom_factor == p_zoom_factor) {
+		return;
+	}
+
+	text_shader_zoom_factor = p_zoom_factor;
+}
+
+void ShaderEditorPlugin::_update_shader_editor_zoom_factor(CodeTextEditor *p_shader_editor) const {
+	if (p_shader_editor && p_shader_editor->is_visible_in_tree() && text_shader_zoom_factor != p_shader_editor->get_zoom_factor()) {
+		p_shader_editor->set_zoom_factor(text_shader_zoom_factor);
 	}
 }
 

@@ -1387,7 +1387,7 @@ void EditorPropertyDictionary::update_property() {
 
 			Variant::Type value_type;
 
-			if (dict.is_typed_value() && slot.prop_key) {
+			if (dict.is_typed_value() && value_subtype != Variant::NIL && slot.prop_key) {
 				value_type = value_subtype;
 			} else {
 				value_type = value.get_type();

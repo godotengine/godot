@@ -3632,6 +3632,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/reflection_atlas/reflection_size", PROPERTY_HINT_RANGE, "0,4096,1"), 256);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/reflection_atlas/reflection_size.mobile", PROPERTY_HINT_RANGE, "0,2048,1"), 128);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/reflection_atlas/reflection_count", PROPERTY_HINT_RANGE, "0,256,1"), 64);
+	GLOBAL_DEF_RST("rendering/reflections/specular_occlusion/enabled", true);
 
 	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
 

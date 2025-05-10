@@ -1420,11 +1420,12 @@ void Control::set_position(const Point2 &p_point, bool p_keep_offsets) {
 
 	real_t edge_pos[4];
 	_compute_edge_positions(get_parent_anchorable_rect(), edge_pos);
+	Point2 offset_pos = Point2(edge_pos[0], edge_pos[1]) + (p_point - data.pos_cache);
 	Size2 offset_size(edge_pos[2] - edge_pos[0], edge_pos[3] - edge_pos[1]);
 	if (p_keep_offsets) {
-		_compute_anchors(Rect2(p_point, offset_size), data.offset, data.anchor);
+		_compute_anchors(Rect2(offset_pos, offset_size), data.offset, data.anchor);
 	} else {
-		_compute_offsets(Rect2(p_point, offset_size), data.anchor, data.offset);
+		_compute_offsets(Rect2(offset_pos, offset_size), data.anchor, data.offset);
 	}
 	_size_changed();
 }

@@ -1382,6 +1382,8 @@ MaterialStorage::MaterialStorage() {
 		}
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
 
+		actions.render_mode_defines["specular_occlusion_disabled"] = "#define SPECULAR_OCCLUSION_DISABLED\n";
+
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 

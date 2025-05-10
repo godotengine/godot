@@ -1151,6 +1151,7 @@ void fragment_shader(in SceneData scene_data) {
 	float clearcoat_roughness = 0.0;
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
+	vec3 energy_compensation = vec3(1.0);
 #ifndef FOG_DISABLED
 	vec4 fog = vec4(0.0);
 #endif // !FOG_DISABLED
@@ -1969,8 +1970,18 @@ void fragment_shader(in SceneData scene_data) {
 
 	//finalize ambient light here
 	{
-		ambient_light *= albedo.rgb;
 		ambient_light *= ao;
+#ifndef SPECULAR_OCCLUSION_DISABLED
+		float specular_occlusion = (ambient_light.r * 0.3 + ambient_light.g * 0.59 + ambient_light.b * 0.11) * 2.0; // Luminance of ambient light.
+		specular_occlusion = min(specular_occlusion * 4.0, 1.0); // This multiplication preserves speculars on bright areas.
+
+		float reflective_f = (1.0 - roughness) * metallic;
+		// 10.0 is a magic number, it gives the intended effect in most scenarios.
+		// Low enough for occlusion, high enough for reaction to lights and shadows.
+		specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+		specular_light *= specular_occlusion;
+#endif // SPECULAR_OCCLUSION_DISABLED
+		ambient_light *= albedo.rgb;
 
 		if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL)) {
 #ifdef USE_MULTIVIEW
@@ -1994,19 +2005,15 @@ void fragment_shader(in SceneData scene_data) {
 		//simplify for toon, as
 		specular_light *= specular * metallic * albedo * 2.0;
 #else
+		// Base Layer
+		float NdotV = clamp(dot(normal, view), 0.0001, 1.0);
+		vec2 envBRDF = prefiltered_dfg(roughness, NdotV).xy;
+		// Multiscattering
+		energy_compensation = get_energy_compensation(f0, envBRDF.y);
 
-		// scales the specular reflections, needs to be computed before lighting happens,
-		// but after environment, GI, and reflection probes are added
-		// Environment brdf approximation (Lazarov 2013)
-		// see https://www.unrealengine.com/en-US/blog/physically-based-shading-on-mobile
-		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
-		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
-		vec4 r = roughness * c0 + c1;
-		float ndotv = clamp(dot(normal, view), 0.0, 1.0);
-		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
-		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
-
-		specular_light *= env.x * f0 + env.y * clamp(50.0 * f0.g, metallic, 1.0);
+		// cheap luminance approximation
+		float f90 = clamp(50.0 * f0.g, metallic, 1.0);
+		specular_light *= energy_compensation * (f90 * envBRDF.x + f0 * envBRDF.y);
 #endif
 	}
 
@@ -2405,7 +2412,7 @@ void fragment_shader(in SceneData scene_data) {
 #else
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
 #endif
-					true, shadow, f0, orms, directional_lights.data[i].specular, albedo, alpha, screen_uv,
+					true, shadow, f0, orms, directional_lights.data[i].specular, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -2475,7 +2482,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
+				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
@@ -2543,7 +2550,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
+				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif

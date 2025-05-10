@@ -1,8 +1,10 @@
 ext.versions = [
     androidGradlePlugin: '8.6.1',
     compileSdk         : 35,
-    // Also update 'platform/android/export/export_plugin.cpp#OPENGL_MIN_SDK_VERSION'
-    minSdk             : 21,
+    // Also update:
+    // - 'platform/android/export/export_plugin.cpp#DEFAULT_MIN_SDK_VERSION'
+    // - 'platform/android/detect.py#get_min_target_api()'
+    minSdk             : 24,
     // Also update 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
     targetSdk          : 35,
     buildTools         : '35.0.0',
@@ -382,17 +384,12 @@ ext.shouldNotStrip = { ->
  */
 ext.shouldUseLegacyPackaging = { ->
     int minSdk = getExportMinSdkVersion()
-    if (minSdk < 23) {
-        // Enforce the default behavior for compatibility with device running api < 23
-        return true
-    }
-
     String legacyPackagingFlag = project.hasProperty("compress_native_libraries") ? project.property("compress_native_libraries") : ""
     if (legacyPackagingFlag != null && !legacyPackagingFlag.isEmpty()) {
         return Boolean.parseBoolean(legacyPackagingFlag)
     }
 
-    // Default behavior for minSdk >= 23
+    // Default behavior for minSdk >= 24
     return false
 }
 

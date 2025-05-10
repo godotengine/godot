@@ -1120,9 +1120,6 @@ void main() {
 	uvec2 decal_indices = instances.data[draw_call.instance_index].decals;
 	for (uint i = 0; i < sc_decals(); i++) {
 		uint decal_index = (i > 3) ? ((decal_indices.y >> ((i - 4) * 8)) & 0xFF) : ((decal_indices.x >> (i * 8)) & 0xFF);
-		if (!bool(decals.data[decal_index].mask & instances.data[draw_call.instance_index].layer_mask)) {
-			continue; //not masked
-		}
 
 		vec3 uv_local = (decals.data[decal_index].xform * vec4(vertex, 1.0)).xyz;
 		if (any(lessThan(uv_local, vec3(0.0, -1.0, 0.0))) || any(greaterThan(uv_local, vec3(1.0)))) {
@@ -1437,9 +1434,18 @@ void main() {
 	} //Reflection probes
 
 	// finalize ambient light here
-
-	ambient_light *= albedo.rgb;
 	ambient_light *= ao;
+#ifndef SPECULAR_OCCLUSION_DISABLED
+	float specular_occlusion = (ambient_light.r * 0.3 + ambient_light.g * 0.59 + ambient_light.b * 0.11) * 2.0; // Luminance of ambient light.
+	specular_occlusion = min(specular_occlusion * 4.0, 1.0); // This multiplication preserves speculars on bright areas.
+
+	float reflective_f = (1.0 - roughness) * metallic;
+	// 10.0 is a magic number, it gives the intended effect in most scenarios.
+	// Low enough for occlusion, high enough for reaction to lights and shadows.
+	specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+	specular_light *= specular_occlusion;
+#endif // USE_SPECULAR_OCCLUSION
+	ambient_light *= albedo.rgb;
 
 #endif // !AMBIENT_LIGHT_DISABLED
 
@@ -1705,7 +1711,8 @@ void main() {
 
 			light_compute(normal, directional_lights.data[i].direction, view, size_A,
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
-					true, shadow, f0, orms, directional_lights.data[i].specular, albedo, alpha, screen_uv,
+					true, shadow, f0, orms, directional_lights.data[i].specular, albedo, alpha,
+					screen_uv, vec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -1736,7 +1743,7 @@ void main() {
 	uvec2 omni_indices = instances.data[draw_call.instance_index].omni_lights;
 	for (uint i = 0; i < sc_omni_lights(); i++) {
 		uint light_index = (i > 3) ? ((omni_indices.y >> ((i - 4) * 8)) & 0xFF) : ((omni_indices.x >> (i * 8)) & 0xFF);
-		light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
+		light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv, vec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
@@ -1764,7 +1771,7 @@ void main() {
 	uvec2 spot_indices = instances.data[draw_call.instance_index].spot_lights;
 	for (uint i = 0; i < sc_spot_lights(); i++) {
 		uint light_index = (i > 3) ? ((spot_indices.y >> ((i - 4) * 8)) & 0xFF) : ((spot_indices.x >> (i * 8)) & 0xFF);
-		light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
+		light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv, vec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif

@@ -177,7 +177,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 			}
 		}
 		return false;
-	} else {
+	} else if (r_functions) {
 		const GDScriptParser::ClassNode *cl = parser.get_tree();
 		HashMap<int, String> funcs;
 
