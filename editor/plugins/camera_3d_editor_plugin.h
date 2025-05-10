@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"
 
@@ -85,3 +87,5 @@ public:
 
 	Camera3DEditorPlugin();
 };
+
+#endif // _3D_DISABLED

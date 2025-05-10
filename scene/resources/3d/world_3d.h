@@ -48,7 +48,9 @@ class World3D : public Resource {
 private:
 	RID scenario;
 	mutable RID space;
+#ifndef NAVIGATION_3D_DISABLED
 	mutable RID navigation_map;
+#endif // NAVIGATION_3D_DISABLED
 
 	Ref<Environment> environment;
 	Ref<Environment> fallback_environment;
@@ -67,7 +69,9 @@ protected:
 
 public:
 	RID get_space() const;
+#ifndef NAVIGATION_3D_DISABLED
 	RID get_navigation_map() const;
+#endif // NAVIGATION_3D_DISABLED
 	RID get_scenario() const;
 
 	void set_environment(const Ref<Environment> &p_environment);

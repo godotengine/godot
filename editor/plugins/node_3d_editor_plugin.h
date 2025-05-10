@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "core/math/dynamic_bvh.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
@@ -1085,3 +1087,5 @@ public:
 	void set_navigation_mode(Node3DEditorViewport::NavigationMode p_nav_mode);
 	void set_viewport(Node3DEditorViewport *p_viewport);
 };
+
+#endif // _3D_DISABLED

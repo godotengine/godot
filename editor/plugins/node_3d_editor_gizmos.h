@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "core/math/dynamic_bvh.h"
 #include "core/templates/hash_map.h"
 #include "scene/3d/camera_3d.h"
@@ -220,3 +222,5 @@ public:
 	EditorNode3DGizmoPlugin();
 	virtual ~EditorNode3DGizmoPlugin();
 };
+
+#endif // _3D_DISABLED

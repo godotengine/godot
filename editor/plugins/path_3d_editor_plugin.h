@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
@@ -187,3 +189,5 @@ public:
 
 	Path3DEditorPlugin();
 };
+
+#endif // _3D_DISABLED

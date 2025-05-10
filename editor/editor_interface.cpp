@@ -48,17 +48,20 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/property_selector.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "plugins/editor_preview_plugins.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
 #include "scene/resources/theme.h"
+
+#ifndef _3D_DISABLED
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#endif // _3D_DISABLED
 
 EditorInterface *EditorInterface::singleton = nullptr;
 
@@ -103,6 +106,7 @@ EditorUndoRedoManager *EditorInterface::get_editor_undo_redo() const {
 	return EditorUndoRedoManager::get_singleton();
 }
 
+#ifndef _3D_DISABLED
 AABB EditorInterface::_calculate_aabb_for_scene(Node *p_node, AABB &p_scene_aabb) {
 	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
@@ -359,6 +363,7 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_path);
 	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed"));
 }
+#endif // _3D_DISABLED
 
 void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
 	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled, true);
@@ -390,10 +395,12 @@ SubViewport *EditorInterface::get_editor_viewport_2d() const {
 	return EditorNode::get_singleton()->get_scene_root();
 }
 
+#ifndef _3D_DISABLED
 SubViewport *EditorInterface::get_editor_viewport_3d(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, static_cast<int>(Node3DEditor::VIEWPORTS_COUNT), nullptr);
 	return Node3DEditor::get_singleton()->get_editor_viewport(p_idx)->get_viewport_node();
 }
+#endif // _3D_DISABLED
 
 void EditorInterface::set_main_screen_editor(const String &p_name) {
 	EditorNode::get_singleton()->get_editor_main_screen()->select_by_name(p_name);
@@ -754,10 +761,12 @@ void EditorInterface::get_argument_options(const StringName &p_function, int p_i
 			for (String E : { "\"2D\"", "\"3D\"", "\"Script\"", "\"Game\"", "\"AssetLib\"" }) {
 				r_options->push_back(E);
 			}
+#ifndef _3D_DISABLED
 		} else if (pf == "get_editor_viewport_3d") {
 			for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
 				r_options->push_back(String::num_int64(i));
 			}
+#endif // _3D_DISABLED
 		}
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
@@ -779,7 +788,9 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_toaster"), &EditorInterface::get_editor_toaster);
 	ClassDB::bind_method(D_METHOD("get_editor_undo_redo"), &EditorInterface::get_editor_undo_redo);
 
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
+#endif // _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
@@ -791,7 +802,9 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_main_screen"), &EditorInterface::get_editor_main_screen);
 	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorInterface::get_script_editor);
 	ClassDB::bind_method(D_METHOD("get_editor_viewport_2d"), &EditorInterface::get_editor_viewport_2d);
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_editor_viewport_3d", "idx"), &EditorInterface::get_editor_viewport_3d, DEFVAL(0));
+#endif // _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);

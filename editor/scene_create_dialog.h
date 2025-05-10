@@ -66,7 +66,9 @@ private:
 
 	Ref<ButtonGroup> node_type_group;
 	CheckBox *node_type_2d = nullptr;
+#ifndef _3D_DISABLED
 	CheckBox *node_type_3d = nullptr;
+#endif // _3D_DISABLED
 	CheckBox *node_type_gui = nullptr;
 	CheckBox *node_type_other = nullptr;
 

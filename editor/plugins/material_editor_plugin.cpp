@@ -36,19 +36,21 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
-#include "scene/gui/label.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"
-#include "scene/resources/3d/fog_material.h"
-#include "scene/resources/3d/sky_material.h"
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/particle_process_material.h"
+
+#ifndef _3D_DISABLED
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/label.h"
+#include "scene/resources/3d/fog_material.h"
+#include "scene/resources/3d/sky_material.h"
 
 void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
@@ -68,22 +70,26 @@ void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 		_store_rotation_metadata();
 	}
 }
+#endif // _3D_DISABLED
 
 void MaterialEditor::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
+#ifndef _3D_DISABLED
 	theme_cache.light_1_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
 	theme_cache.light_2_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
 
 	theme_cache.sphere_icon = get_editor_theme_icon(SNAME("MaterialPreviewSphere"));
 	theme_cache.box_icon = get_editor_theme_icon(SNAME("MaterialPreviewCube"));
 	theme_cache.quad_icon = get_editor_theme_icon(SNAME("MaterialPreviewQuad"));
+#endif // _3D_DISABLED
 
 	theme_cache.checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
 }
 
 void MaterialEditor::_notification(int p_what) {
 	switch (p_what) {
+#ifndef _3D_DISABLED
 		case NOTIFICATION_THEME_CHANGED: {
 			light_1_switch->set_button_icon(theme_cache.light_1_icon);
 			light_2_switch->set_button_icon(theme_cache.light_2_icon);
@@ -94,16 +100,22 @@ void MaterialEditor::_notification(int p_what) {
 
 			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
+#endif // _3D_DISABLED
 
 		case NOTIFICATION_DRAW: {
+#ifndef _3D_DISABLED
 			if (!is_unsupported_shader_mode) {
+#endif // _3D_DISABLED
 				Size2 size = get_size();
 				draw_texture_rect(theme_cache.checkerboard, Rect2(Point2(), size), true);
+#ifndef _3D_DISABLED
 			}
+#endif // _3D_DISABLED
 		} break;
 	}
 }
 
+#ifndef _3D_DISABLED
 void MaterialEditor::_set_rotation(real_t p_x_degrees, real_t p_y_degrees) {
 	rot.x = Math::deg_to_rad(p_x_degrees);
 	rot.y = Math::deg_to_rad(p_y_degrees);
@@ -159,7 +171,22 @@ void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_en
 		hide();
 	}
 }
+#else
+void MaterialEditor::edit(Ref<Material> p_material) {
+	material = p_material;
+	if (material.is_null()) {
+		hide();
+		return;
+	}
 
+	if (p_material->get_shader_mode() == Shader::MODE_CANVAS_ITEM) {
+		layout_2d->show();
+		rect_instance->set_material(material);
+	}
+}
+#endif // _3D_DISABLED
+
+#ifndef _3D_DISABLED
 void MaterialEditor::_on_light_1_switch_pressed() {
 	light1->set_visible(light_1_switch->is_pressed());
 }
@@ -200,6 +227,7 @@ void MaterialEditor::_on_quad_switch_pressed() {
 	_store_rotation_metadata();
 	EditorSettings::get_singleton()->set_project_metadata("inspector_options", "material_preview_mesh", "quad");
 }
+#endif // _3D_DISABLED
 
 MaterialEditor::MaterialEditor() {
 	// Canvas item
@@ -225,6 +253,7 @@ MaterialEditor::MaterialEditor() {
 
 	layout_2d->set_visible(false);
 
+#ifndef _3D_DISABLED
 	layout_error = memnew(VBoxContainer);
 	layout_error->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	layout_error->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
@@ -299,8 +328,6 @@ MaterialEditor::MaterialEditor() {
 	quad_mesh.instantiate();
 	quad_instance->set_mesh(quad_mesh);
 
-	set_custom_minimum_size(Size2(1, 150) * EDSCALE);
-
 	layout_3d = memnew(HBoxContainer);
 	add_child(layout_3d);
 	layout_3d->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
@@ -367,6 +394,9 @@ MaterialEditor::MaterialEditor() {
 
 	Vector2 stored_rot = EditorSettings::get_singleton()->get_project_metadata("inspector_options", "material_preview_rotation", Vector2());
 	_set_rotation(stored_rot.x, stored_rot.y);
+#endif // _3D_DISABLED
+
+	set_custom_minimum_size(Size2(1, 150) * EDSCALE);
 }
 
 ///////////////////////
@@ -388,7 +418,11 @@ void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
 	Ref<Material> m(material);
 
 	MaterialEditor *editor = memnew(MaterialEditor);
+#ifndef _3D_DISABLED
 	editor->edit(m, env);
+#else
+	editor->edit(m);
+#endif // _3D_DISABLED
 	add_custom_control(editor);
 }
 
@@ -428,12 +462,14 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 }
 
 EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
+#ifndef _3D_DISABLED
 	env.instantiate();
 	Ref<Sky> sky = memnew(Sky());
 	env->set_sky(sky);
 	env->set_background(Environment::BG_COLOR);
 	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
 	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
+#endif // _3D_DISABLED
 
 	EditorNode::get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &EditorInspectorPluginMaterial::_undo_redo_inspector_callback));
 }
@@ -444,6 +480,7 @@ MaterialEditorPlugin::MaterialEditorPlugin() {
 	add_inspector_plugin(plugin);
 }
 
+#ifndef _3D_DISABLED
 String StandardMaterial3DConversionPlugin::converts_to() const {
 	return "ShaderMaterial";
 }
@@ -535,6 +572,7 @@ Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_reso
 	smat->set_name(mat->get_name());
 	return smat;
 }
+#endif // _3D_DISABLED
 
 String ParticleProcessMaterialConversionPlugin::converts_to() const {
 	return "ShaderMaterial";
@@ -614,6 +652,7 @@ Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p
 	return smat;
 }
 
+#ifndef _3D_DISABLED
 String ProceduralSkyMaterialConversionPlugin::converts_to() const {
 	return "ShaderMaterial";
 }
@@ -767,3 +806,4 @@ Ref<Resource> FogMaterialConversionPlugin::convert(const Ref<Resource> &p_resour
 	smat->set_render_priority(mat->get_render_priority());
 	return smat;
 }
+#endif // _3D_DISABLED

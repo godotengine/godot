@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/camera_3d.h"
@@ -95,3 +97,5 @@ public:
 
 	MeshEditorPlugin();
 };
+
+#endif // _3D_DISABLED

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef NAVIGATION_3D_DISABLED
+
 #include "navigation_obstacle_3d_editor_plugin.h"
 
 #include "core/math/geometry_2d.h"
@@ -900,3 +902,5 @@ NavigationObstacle3DEditorPlugin::~NavigationObstacle3DEditorPlugin() {
 		point_handle_mesh_rid = RID();
 	}
 }
+
+#endif // NAVIGATION_3D_DISABLED

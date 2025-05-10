@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/resources/material.h"
@@ -64,3 +66,5 @@ public:
 
 	LightmapGIEditorPlugin();
 };
+
+#endif // _3D_DISABLED
