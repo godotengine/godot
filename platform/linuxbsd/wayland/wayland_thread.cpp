@@ -547,6 +547,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		registry->wp_viewporter_name = name;
 	}
 
+	if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
+		registry->wp_cursor_shape_manager = (struct wp_cursor_shape_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_cursor_shape_manager_v1_interface, 1);
+		registry->wp_cursor_shape_manager_name = name;
+		return;
+	}
+
 	if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
 		registry->wp_fractional_scale_manager = (struct wp_fractional_scale_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_fractional_scale_manager_v1_interface, 1);
 		registry->wp_fractional_scale_manager_name = name;
@@ -751,6 +757,15 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		registry->wp_viewporter_name = 0;
 
 		return;
+	}
+
+	if (name == registry->wp_cursor_shape_manager_name) {
+		if (registry->wp_cursor_shape_manager) {
+			wp_cursor_shape_manager_v1_destroy(registry->wp_cursor_shape_manager);
+			registry->wp_cursor_shape_manager = nullptr;
+		}
+
+		registry->wp_cursor_shape_manager_name = 0;
 	}
 
 	if (name == registry->wp_fractional_scale_manager_name) {
@@ -3308,6 +3323,13 @@ void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 		return;
 	}
 
+	if (thread->registry.wp_cursor_shape_manager) {
+		wp_cursor_shape_device_v1_shape shape = thread->standard_cursors.get(thread->cursor_shape);
+		struct wp_cursor_shape_device_v1 *cursor = wp_cursor_shape_manager_v1_get_pointer(thread->registry.wp_cursor_shape_manager, p_ss->wl_pointer);
+		wp_cursor_shape_device_v1_set_shape(cursor, p_ss->pointer_enter_serial, shape);
+		return;
+	}
+
 	// NOTE: Those values are valid by default and will hide the cursor when
 	// unchanged.
 	struct wl_buffer *cursor_buffer = nullptr;
@@ -4310,6 +4332,26 @@ Error WaylandThread::init() {
 	}
 #endif // LIBDECOR_ENABLED
 
+	standard_cursors = HashMap<DisplayServer::CursorShape, wp_cursor_shape_device_v1_shape>();
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_ARROW, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_IBEAM, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_TEXT);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_POINTING_HAND, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_POINTER);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_CROSS, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CROSSHAIR);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_WAIT, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_PROGRESS);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_BUSY, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_WAIT);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_DRAG, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_CAN_DROP, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_FORBIDDEN, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NO_DROP);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_VSIZE, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_HSIZE, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_EW_RESIZE);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_BDIAGSIZE, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NESW_RESIZE);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_FDIAGSIZE, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NWSE_RESIZE);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_MOVE, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_MOVE);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_VSPLIT, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ROW_RESIZE);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_HSPLIT, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_COL_RESIZE);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_HELP, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_HELP);
+	standard_cursors.insert(DisplayServer::CursorShape::CURSOR_MAX, wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT);
+
 	cursor_theme_name = OS::get_singleton()->get_environment("XCURSOR_THEME");
 
 	unscaled_cursor_size = OS::get_singleton()->get_environment("XCURSOR_SIZE").to_int();
@@ -4955,6 +4997,10 @@ void WaylandThread::destroy() {
 
 	if (registry.xdg_decoration_manager) {
 		zxdg_decoration_manager_v1_destroy(registry.xdg_decoration_manager);
+	}
+
+	if (registry.wp_cursor_shape_manager) {
+		wp_cursor_shape_manager_v1_destroy(registry.wp_cursor_shape_manager);
 	}
 
 	if (registry.wp_fractional_scale_manager) {
