@@ -1036,7 +1036,7 @@ void Viewport::set_use_oversampling(bool p_oversampling) {
 		return;
 	}
 	use_font_oversampling = p_oversampling;
-	_set_size(_get_size(), _get_size_2d_override(), _is_size_allocated());
+	_set_size(_get_size(), _get_texture_resolution_override(), _is_size_allocated());
 }
 
 bool Viewport::is_using_oversampling() const {
@@ -1050,7 +1050,7 @@ void Viewport::set_oversampling_override(float p_oversampling) {
 		return;
 	}
 	font_oversampling_override = p_oversampling;
-	_set_size(_get_size(), _get_size_2d_override(), _is_size_allocated());
+	_set_size(_get_size(), _get_texture_resolution_override(), _is_size_allocated());
 }
 
 float Viewport::get_oversampling_override() const {
@@ -1058,11 +1058,11 @@ float Viewport::get_oversampling_override() const {
 	return font_oversampling_override;
 }
 
-bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, bool p_allocated) {
+bool Viewport::_set_size(const Size2 &p_size, const Size2i &p_texture_resolution_override, bool p_allocated) {
 	Transform2D stretch_transform_new = Transform2D();
 	float new_font_oversampling = 1.0;
-	if (is_size_2d_override_stretch_enabled() && p_size_2d_override.width > 0 && p_size_2d_override.height > 0) {
-		Size2 scale = Size2(p_size) / p_size_2d_override;
+	if (p_texture_resolution_override.width > 0 && p_texture_resolution_override.height > 0) {
+		Size2 scale = Size2(p_texture_resolution_override) / p_size;
 		stretch_transform_new.scale(scale);
 
 		if (use_font_oversampling) {
@@ -1078,8 +1078,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 		new_font_oversampling = font_oversampling_override;
 	}
 
-	Size2i new_size = p_size.maxi(2);
-	if (size == new_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override && new_font_oversampling == font_oversampling) {
+	if (size == p_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_texture_resolution_override == texture_resolution_override && new_font_oversampling == font_oversampling) {
 		return false;
 	}
 
@@ -1091,9 +1090,9 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 		SVGTexture::unreference_scaling_level(font_oversampling);
 	}
 
-	size = new_size;
+	size = p_size;
 	size_allocated = p_allocated;
-	size_2d_override = p_size_2d_override;
+	texture_resolution_override = p_texture_resolution_override;
 	stretch_transform = stretch_transform_new;
 	font_oversampling = new_font_oversampling;
 
@@ -1102,7 +1101,8 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 #endif
 
 		if (p_allocated) {
-			RS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
+			Size2i s = _texture_resolution_adjusted();
+			RS::get_singleton()->viewport_set_size(viewport, s.width, s.height);
 		} else {
 			RS::get_singleton()->viewport_set_size(viewport, 0, 0);
 		}
@@ -1135,25 +1135,32 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 	return true;
 }
 
-Size2i Viewport::_get_size() const {
+bool Viewport::_valid_texture_resolution_override() const {
+	return texture_resolution_override.width > 0 && texture_resolution_override.height > 0;
+}
+
+Size2i Viewport::_texture_resolution_adjusted() const {
+	return _valid_texture_resolution_override() ? texture_resolution_override : Size2i(size + Vector2(0.5, 0.5)).maxi(2);
+}
+
+Size2 Viewport::_get_size() const {
 #ifndef XR_DISABLED
 	if (use_xr) {
 		if (XRServer::get_singleton() != nullptr) {
 			Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
 			if (xr_interface.is_valid() && xr_interface->is_initialized()) {
-				Size2 xr_size = xr_interface->get_render_target_size();
-				return (Size2i)xr_size;
+				return xr_interface->get_render_target_size();
 			}
 		}
-		return Size2i();
+		return Size2();
 	}
 #endif // XR_DISABLED
 
 	return size;
 }
 
-Size2 Viewport::_get_size_2d_override() const {
-	return size_2d_override;
+Size2i Viewport::_get_texture_resolution_override() const {
+	return texture_resolution_override;
 }
 
 bool Viewport::_is_size_allocated() const {
@@ -1170,8 +1177,8 @@ Rect2 Viewport::get_visible_rect() const {
 		r = Rect2(Point2(), size);
 	}
 
-	if (size_2d_override != Size2()) {
-		r.size = size_2d_override;
+	if (texture_resolution_override != Size2()) {
+		r.size = texture_resolution_override;
 	}
 
 	return r;
@@ -4805,7 +4812,8 @@ void Viewport::set_use_xr(bool p_use_xr) {
 		if (!use_xr) {
 			// Set viewport to previous size when exiting XR.
 			if (size_allocated) {
-				RS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
+				Size2i s = _texture_resolution_adjusted();
+				RS::get_singleton()->viewport_set_size(viewport, s.width, s.height);
 			} else {
 				RS::get_singleton()->viewport_set_size(viewport, 0, 0);
 			}
@@ -5366,19 +5374,19 @@ Viewport::~Viewport() {
 
 /////////////////////////////////
 
-void SubViewport::set_size(const Size2i &p_size) {
+void SubViewport::set_size(const Size2 &p_size) {
 	ERR_MAIN_THREAD_GUARD;
 	_internal_set_size(p_size);
 }
 
-void SubViewport::set_size_force(const Size2i &p_size) {
+void SubViewport::set_size_force(const Size2 &p_size) {
 	ERR_MAIN_THREAD_GUARD;
 	// Use only for setting the size from the parent SubViewportContainer with enabled stretch mode.
 	// Don't expose function to scripting.
 	_internal_set_size(p_size, true);
 }
 
-void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
+void SubViewport::_internal_set_size(const Size2 &p_size, bool p_force) {
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (!p_force && c && c->is_stretch_enabled()) {
 #ifdef DEBUG_ENABLED
@@ -5387,7 +5395,7 @@ void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
 		return;
 	}
 
-	_set_size(p_size, _get_size_2d_override(), true);
+	_set_size(p_size, _get_texture_resolution_override(), true);
 
 	if (c) {
 		c->update_minimum_size();
@@ -5395,37 +5403,22 @@ void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
 	}
 }
 
-Size2i SubViewport::get_size() const {
+Size2 SubViewport::get_size() const {
 	ERR_READ_THREAD_GUARD_V(Size2());
 	return _get_size();
 }
 
-void SubViewport::set_size_2d_override(const Size2i &p_size) {
+void SubViewport::set_texture_resolution_override(const Size2i &p_size) {
 	ERR_MAIN_THREAD_GUARD;
 	_set_size(_get_size(), p_size, true);
 }
 
-Size2i SubViewport::get_size_2d_override() const {
+Size2i SubViewport::get_texture_resolution_override() const {
 	ERR_READ_THREAD_GUARD_V(Size2i());
 	// Rounding will cause offset issues with the
 	// exact positioning of subwindows, but changing the
-	// type of size_2d_override would break compatibility.
-	return Size2i((_get_size_2d_override() + Size2(0.5, 0.5)).floor());
-}
-
-void SubViewport::set_size_2d_override_stretch(bool p_enable) {
-	ERR_MAIN_THREAD_GUARD;
-	if (p_enable == size_2d_override_stretch) {
-		return;
-	}
-
-	size_2d_override_stretch = p_enable;
-	_set_size(_get_size(), _get_size_2d_override(), true);
-}
-
-bool SubViewport::is_size_2d_override_stretch_enabled() const {
-	ERR_READ_THREAD_GUARD_V(false);
-	return size_2d_override_stretch;
+	// type of texture_resolution_override would break compatibility.
+	return _get_texture_resolution_override();
 }
 
 void SubViewport::set_update_mode(UpdateMode p_mode) {
@@ -5520,11 +5513,8 @@ void SubViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &SubViewport::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &SubViewport::get_size);
 
-	ClassDB::bind_method(D_METHOD("set_size_2d_override", "size"), &SubViewport::set_size_2d_override);
-	ClassDB::bind_method(D_METHOD("get_size_2d_override"), &SubViewport::get_size_2d_override);
-
-	ClassDB::bind_method(D_METHOD("set_size_2d_override_stretch", "enable"), &SubViewport::set_size_2d_override_stretch);
-	ClassDB::bind_method(D_METHOD("is_size_2d_override_stretch_enabled"), &SubViewport::is_size_2d_override_stretch_enabled);
+	ClassDB::bind_method(D_METHOD("set_texture_resolution_override", "size"), &SubViewport::set_texture_resolution_override);
+	ClassDB::bind_method(D_METHOD("get_texture_resolution_override"), &SubViewport::get_texture_resolution_override);
 
 	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &SubViewport::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &SubViewport::get_update_mode);
@@ -5533,8 +5523,7 @@ void SubViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_clear_mode"), &SubViewport::get_clear_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size_2d_override", PROPERTY_HINT_NONE, "suffix:px"), "set_size_2d_override", "get_size_2d_override");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "size_2d_override_stretch"), "set_size_2d_override_stretch", "is_size_2d_override_stretch_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_resolution_override", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_resolution_override", "get_texture_resolution_override");
 	ADD_GROUP("Render Target", "render_target_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,When Parent Visible,Always"), "set_update_mode", "get_update_mode");
