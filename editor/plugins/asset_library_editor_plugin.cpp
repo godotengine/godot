@@ -42,8 +42,18 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/grid_container.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/progress_bar.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/texture_button.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/main/http_request.h"
 #include "scene/resources/image_texture.h"
 
 static inline void setup_http_request(HTTPRequest *request) {
@@ -53,6 +63,119 @@ static inline void setup_http_request(HTTPRequest *request) {
 	const int proxy_port = EDITOR_GET("network/http_proxy/port");
 	request->set_http_proxy(proxy_host, proxy_port);
 	request->set_https_proxy(proxy_host, proxy_port);
+}
+
+static Button *_make_pagination_button(Node *p_parent) {
+	Button *btn = memnew(Button);
+	btn->set_auto_translate_mode(Button::AUTO_TRANSLATE_MODE_DISABLED);
+	btn->set_theme_type_variation("PanelBackgroundButton");
+	p_parent->add_child(btn);
+	return btn;
+}
+
+void EditorAssetLibraryPagination::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("page_pressed", PropertyInfo(Variant::INT, "page")));
+}
+
+void EditorAssetLibraryPagination::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			btn_first->set_text(TTR("First", "Pagination"));
+			btn_prev->set_text(TTR("Previous", "Pagination"));
+			btn_next->set_text(TTR("Next", "Pagination"));
+			btn_last->set_text(TTR("Last", "Pagination"));
+		} break;
+	}
+}
+
+void EditorAssetLibraryPagination::_go_first() {
+	ERR_FAIL_COND(page <= 0);
+	emit_signal(SNAME("page_pressed"), 0);
+}
+
+void EditorAssetLibraryPagination::_go_prev() {
+	ERR_FAIL_COND(page <= 0);
+	emit_signal(SNAME("page_pressed"), page - 1);
+}
+
+void EditorAssetLibraryPagination::_go_next() {
+	ERR_FAIL_COND(page + 1 >= page_count);
+	emit_signal(SNAME("page_pressed"), page + 1);
+}
+
+void EditorAssetLibraryPagination::_go_last() {
+	ERR_FAIL_COND(page + 1 >= page_count);
+	emit_signal(SNAME("page_pressed"), page_count - 1);
+}
+
+void EditorAssetLibraryPagination::_go_page(int p_page) {
+	ERR_FAIL_INDEX(p_page, page_count);
+	emit_signal(SNAME("page_pressed"), p_page);
+}
+
+void EditorAssetLibraryPagination::setup(int p_page, int p_page_count) {
+	page = p_page;
+	page_count = p_page_count;
+
+	while (page_numbers->get_child_count() > 0) {
+		memdelete(page_numbers->get_child(0));
+	}
+
+	if (page_count < 2) {
+		hide();
+		return;
+	}
+
+	const int from = MAX(0, page - (5 / EDSCALE));
+	const int to = MIN(from + (10 / EDSCALE), page_count);
+
+	const bool no_prev = page <= 0;
+	btn_first->set_disabled(no_prev);
+	btn_first->set_focus_mode(no_prev ? FOCUS_NONE : FOCUS_ALL);
+	btn_prev->set_disabled(no_prev);
+	btn_prev->set_focus_mode(no_prev ? FOCUS_NONE : FOCUS_ALL);
+
+	for (int i = from; i < to; i++) {
+		Button *current = _make_pagination_button(page_numbers);
+		current->set_custom_minimum_size(Size2(30 * EDSCALE, 0));
+		current->set_text(itos(i + 1));
+		current->set_disabled(i == page);
+		current->set_focus_mode(i == page ? FOCUS_NONE : FOCUS_ALL);
+		current->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryPagination::_go_page).bind(i));
+	}
+
+	const bool no_next = page + 1 >= page_count;
+	btn_next->set_disabled(no_next);
+	btn_next->set_focus_mode(no_next ? FOCUS_NONE : FOCUS_ALL);
+	btn_last->set_disabled(no_next);
+	btn_last->set_focus_mode(no_next ? FOCUS_NONE : FOCUS_ALL);
+
+	show();
+}
+
+EditorAssetLibraryPagination::EditorAssetLibraryPagination() {
+	set_alignment(ALIGNMENT_CENTER);
+	add_theme_constant_override("separation", 5 * EDSCALE);
+
+	btn_first = _make_pagination_button(this);
+	btn_first->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryPagination::_go_first));
+	btn_prev = _make_pagination_button(this);
+	btn_prev->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryPagination::_go_prev));
+
+	add_child(memnew(VSeparator));
+
+	page_numbers = memnew(HBoxContainer);
+	page_numbers->add_theme_constant_override("separation", 5 * EDSCALE);
+	add_child(page_numbers);
+
+	add_child(memnew(VSeparator));
+
+	btn_next = _make_pagination_button(this);
+	btn_next->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryPagination::_go_next));
+	btn_last = _make_pagination_button(this);
+	btn_last->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryPagination::_go_last));
+
+	hide();
 }
 
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
@@ -1125,91 +1248,6 @@ void EditorAssetLibrary::_request_current_config() {
 	_repository_changed(repository->get_selected());
 }
 
-HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items) {
-	HBoxContainer *hbc = memnew(HBoxContainer);
-
-	if (p_page_count < 2) {
-		return hbc;
-	}
-
-	//do the mario
-	int from = p_page - (5 / EDSCALE);
-	if (from < 0) {
-		from = 0;
-	}
-	int to = from + (10 / EDSCALE);
-	if (to > p_page_count) {
-		to = p_page_count;
-	}
-
-	hbc->add_spacer();
-	hbc->add_theme_constant_override("separation", 5 * EDSCALE);
-
-	Button *first = memnew(Button);
-	first->set_text(TTR("First", "Pagination"));
-	first->set_theme_type_variation("PanelBackgroundButton");
-	if (p_page != 0) {
-		first->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(0));
-	} else {
-		first->set_disabled(true);
-		first->set_focus_mode(Control::FOCUS_NONE);
-	}
-	hbc->add_child(first);
-
-	Button *prev = memnew(Button);
-	prev->set_text(TTR("Previous", "Pagination"));
-	prev->set_theme_type_variation("PanelBackgroundButton");
-	if (p_page > 0) {
-		prev->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page - 1));
-	} else {
-		prev->set_disabled(true);
-		prev->set_focus_mode(Control::FOCUS_NONE);
-	}
-	hbc->add_child(prev);
-	hbc->add_child(memnew(VSeparator));
-
-	for (int i = from; i < to; i++) {
-		Button *current = memnew(Button);
-		// Add padding to make page number buttons easier to click.
-		current->set_text(vformat(" %d ", i + 1));
-		current->set_theme_type_variation("PanelBackgroundButton");
-		if (i == p_page) {
-			current->set_disabled(true);
-			current->set_focus_mode(Control::FOCUS_NONE);
-		} else {
-			current->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(i));
-		}
-		hbc->add_child(current);
-	}
-
-	Button *next = memnew(Button);
-	next->set_text(TTR("Next", "Pagination"));
-	next->set_theme_type_variation("PanelBackgroundButton");
-	if (p_page < p_page_count - 1) {
-		next->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page + 1));
-	} else {
-		next->set_disabled(true);
-		next->set_focus_mode(Control::FOCUS_NONE);
-	}
-	hbc->add_child(memnew(VSeparator));
-	hbc->add_child(next);
-
-	Button *last = memnew(Button);
-	last->set_text(TTR("Last", "Pagination"));
-	last->set_theme_type_variation("PanelBackgroundButton");
-	if (p_page != p_page_count - 1) {
-		last->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page_count - 1));
-	} else {
-		last->set_disabled(true);
-		last->set_focus_mode(Control::FOCUS_NONE);
-	}
-	hbc->add_child(last);
-
-	hbc->add_spacer();
-
-	return hbc;
-}
-
 void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_request_type, const String &p_arguments) {
 	if (requesting != REQUESTING_NONE) {
 		request->cancel_request();
@@ -1309,22 +1347,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 		case REQUESTING_SEARCH: {
 			initial_loading = false;
 
-			if (asset_items) {
-				memdelete(asset_items);
-			}
-
-			if (asset_top_page) {
-				memdelete(asset_top_page);
-			}
-
-			if (asset_bottom_page) {
-				memdelete(asset_bottom_page);
-			}
-
 			int page = 0;
 			int pages = 1;
-			int page_len = 10;
-			int total_items = 1;
 			Array result;
 
 			if (d.has("page")) {
@@ -1333,28 +1357,20 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			if (d.has("pages")) {
 				pages = d["pages"];
 			}
-			if (d.has("page_length")) {
-				page_len = d["page_length"];
-			}
-			if (d.has("total")) {
-				total_items = d["total"];
-			}
 			if (d.has("result")) {
 				result = d["result"];
 			}
 
-			asset_top_page = _make_pages(page, pages, page_len, total_items, result.size());
-			library_vb->add_child(asset_top_page);
+			asset_top_page->setup(page, pages);
 
-			asset_items = memnew(GridContainer);
+			while (asset_items->get_child_count() > 0) {
+				memdelete(asset_items->get_child(0));
+			}
+			asset_items->show();
+
+			asset_bottom_page->setup(page, pages);
+
 			_update_asset_items_columns();
-			asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
-			asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
-
-			library_vb->add_child(asset_items);
-
-			asset_bottom_page = _make_pages(page, pages, page_len, total_items, result.size());
-			library_vb->add_child(asset_bottom_page);
 
 			if (result.is_empty()) {
 				String support_list;
@@ -1728,7 +1744,8 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_message_button->set_theme_type_variation("PanelBackgroundButton");
 	library_message_box->add_child(library_message_button);
 
-	asset_top_page = memnew(HBoxContainer);
+	asset_top_page = memnew(EditorAssetLibraryPagination);
+	asset_top_page->connect("page_pressed", callable_mp(this, &EditorAssetLibrary::_search));
 	library_vb->add_child(asset_top_page);
 
 	asset_items = memnew(GridContainer);
@@ -1738,7 +1755,8 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	library_vb->add_child(asset_items);
 
-	asset_bottom_page = memnew(HBoxContainer);
+	asset_bottom_page = memnew(EditorAssetLibraryPagination);
+	asset_bottom_page->connect("page_pressed", callable_mp(this, &EditorAssetLibrary::_search));
 	library_vb->add_child(asset_bottom_page);
 
 	request = memnew(HTTPRequest);
