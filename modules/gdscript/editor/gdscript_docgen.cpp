@@ -340,8 +340,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 	doc.script_path = p_script->get_script_path();
 
 	if (p_script->base.is_valid() && p_script->base->is_valid()) {
-		if (!p_script->base->doc.name.is_empty()) {
-			doc.inherits = p_script->base->doc.name;
+		if (!p_script->base->fully_qualified_name.is_empty()) {
+			doc.inherits = p_script->base->fully_qualified_name;
 		} else {
 			doc.inherits = p_script->base->get_instance_base_type();
 		}
