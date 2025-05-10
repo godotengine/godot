@@ -6035,11 +6035,13 @@ Dictionary EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from
 
 	{
 		// TODO: make proper previews
-		Ref<ImageTexture> texture = theme->get_icon(SNAME("FileBigThumb"), EditorStringName(EditorIcons));
-		Ref<Image> img = texture->get_image();
-		img = img->duplicate();
-		img->resize(48, 48); // meh
-		preview = ImageTexture::create_from_image(img);
+		Ref<Texture2D> texture = theme->get_icon(SNAME("FileBigThumb"), EditorStringName(EditorIcons));
+		if (texture.is_valid()) {
+			Ref<Image> img = texture->get_image();
+			img = img->duplicate();
+			img->resize(48, 48); // meh
+			preview = ImageTexture::create_from_image(img);
+		}
 	}
 
 	drag_preview->set_texture(preview);
