@@ -38,6 +38,9 @@
 #import "godot_application.h"
 #import "godot_application_delegate.h"
 #import "macos_terminal_logger.h"
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 
 #include "core/crypto/crypto_core.h"
 #include "core/version_generated.gen.h"
@@ -211,9 +214,23 @@ void OS_MacOS::finalize() {
 	if (joypad_apple) {
 		memdelete(joypad_apple);
 	}
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
+	}
+#endif
 }
 
 void OS_MacOS::initialize_joypads() {
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL(Input::get_singleton()));
+	if (joypad_sdl->initialize() == OK) {
+		return;
+	}
+	// SDL init failed, fallback to the native driver
+	memdelete(joypad_sdl);
+	joypad_sdl = nullptr;
+#endif
 	joypad_apple = memnew(JoypadApple());
 }
 
@@ -952,7 +969,14 @@ void OS_MacOS_NSApp::start_main() {
 							} else if (ds) {
 								ds->process_events();
 							}
-							joypad_apple->process_joypads();
+#ifdef SDL_ENABLED
+							if (joypad_sdl) {
+								joypad_sdl->process_events();
+							}
+#endif
+							if (joypad_apple) {
+								joypad_apple->process_joypads();
+							}
 
 							if (Main::iteration()) {
 								terminate();

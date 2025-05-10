@@ -1,0 +1,47 @@
+macOS USB Prober about 0x047F/0xC056 "Plantronics Blackwire 3220 Series"
+05 0C 09 01 A1 01 85 01 15 00 25 01 09 E9 09 EA  
+75 01 95 02 81 06 95 06 81 01 85 02 05 0C 09 00  
+95 10 81 02 85 04 09 00 75 08 95 24 91 02 85 05  
+09 00 95 20 81 02 85 06 09 00 95 24 91 02 85 07  
+09 00 95 20 81 02 C0
+
+# Parser output:
+
+0x05, 0x0C,        // Usage Page (Consumer)
+0x09, 0x01,        // Usage (Consumer Control)
+0xA1, 0x01,        // Collection (Application)
+0x85, 0x01,        //   Report ID (1)
+0x15, 0x00,        //   Logical Minimum (0)
+0x25, 0x01,        //   Logical Maximum (1)
+0x09, 0xE9,        //   Usage (Volume Increment)
+0x09, 0xEA,        //   Usage (Volume Decrement)
+0x75, 0x01,        //   Report Size (1)
+0x95, 0x02,        //   Report Count (2)
+0x81, 0x06,        //   Input (Data,Var,Rel,No Wrap,Linear,Preferred State,No Null Position)
+0x95, 0x06,        //   Report Count (6)
+0x81, 0x01,        //   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+0x85, 0x02,        //   Report ID (2)
+0x05, 0x0C,        //   Usage Page (Consumer)
+0x09, 0x00,        //   Usage (Unassigned)
+0x95, 0x10,        //   Report Count (16)
+0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+0x85, 0x04,        //   Report ID (4)
+0x09, 0x00,        //   Usage (Unassigned)
+0x75, 0x08,        //   Report Size (8)
+0x95, 0x24,        //   Report Count (36)
+0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+0x85, 0x05,        //   Report ID (5)
+0x09, 0x00,        //   Usage (Unassigned)
+0x95, 0x20,        //   Report Count (32)
+0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+0x85, 0x06,        //   Report ID (6)
+0x09, 0x00,        //   Usage (Unassigned)
+0x95, 0x24,        //   Report Count (36)
+0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+0x85, 0x07,        //   Report ID (7)
+0x09, 0x00,        //   Usage (Unassigned)
+0x95, 0x20,        //   Report Count (32)
+0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+0xC0,              // End Collection
+
+// 71 bytes

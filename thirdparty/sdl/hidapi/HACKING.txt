@@ -1,0 +1,19 @@
+This file is mostly for the maintainer.
+
+Updating a Version:
+1. Update VERSION file.
+2. HID_API_VERSION_MAJOR/HID_API_VERSION_MINOR/HID_API_VERSION_PATCH in hidapi.h.
+
+Before firing a new release:
+1. Run the "Checks" Githtub Action
+2. Make sure no defects are found at: https://scan.coverity.com/projects/hidapi
+3. Fix if any
+
+Firing a new release:
+1. Update the Version (if not yet updated).
+2. Prepare the Release Notes.
+3. Store the Release Notes into a file.
+4. Create locally an annotated git tag with release notes attached, e.g.: `git tag -aF ../hidapi_release_notes hidapi-<VERSION>`
+5. Push newly created tag: `git push origin hidapi-<VERSION>`
+6. Grab the hidapi-win.zip from Summary page of "GitHub Builds" Action for latest master build.
+7. Create a Github Release with hidapi-win.zip attached, for newly created tag.

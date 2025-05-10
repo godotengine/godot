@@ -1,0 +1,32 @@
+###########################################
+# Simple Makefile for HIDAPI test program
+#
+# Alan Ott
+# Signal 11 Software
+# 2010-06-01
+###########################################
+
+all: hidapi-testgui
+
+CC=gcc
+CXX=g++
+COBJS=../windows/hid.o
+CPPOBJS=test.o
+OBJS=$(COBJS) $(CPPOBJS)
+CFLAGS=-I../hidapi -I../../hidapi-externals/fox/include -g -c
+LIBS= -mwindows -L../../hidapi-externals/fox/lib -Wl,-Bstatic -lFOX-1.6 -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
+
+
+hidapi-testgui: $(OBJS)
+	g++ -g $^ $(LIBS) -o hidapi-testgui
+
+$(COBJS): %.o: %.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(CPPOBJS): %.o: %.cpp
+	$(CXX) $(CFLAGS) $< -o $@
+
+clean:
+	rm -f *.o hidapi-testgui.exe
+
+.PHONY: clean
