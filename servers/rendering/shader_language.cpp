@@ -2398,7 +2398,6 @@ Vector<ShaderLanguage::Scalar> ShaderLanguage::_eval_vector_transform(const Vect
 const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	// Constructors.
 
-	{ "bool", TYPE_BOOL, { TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "bvec2", TYPE_BVEC2, { TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "bvec2", TYPE_BVEC2, { TYPE_BOOL, TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "bvec3", TYPE_BVEC3, { TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
@@ -2414,7 +2413,6 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC3, TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 
-	{ "float", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "vec2", TYPE_VEC2, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "vec2", TYPE_VEC2, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "vec3", TYPE_VEC3, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
@@ -2430,7 +2428,6 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "vec4", TYPE_VEC4, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "vec4", TYPE_VEC4, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 
-	{ "int", TYPE_INT, { TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "ivec2", TYPE_IVEC2, { TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "ivec2", TYPE_IVEC2, { TYPE_INT, TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "ivec3", TYPE_IVEC3, { TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
@@ -2446,7 +2443,6 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 
-	{ "uint", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
 	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
