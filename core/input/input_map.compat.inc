@@ -30,12 +30,19 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "core/variant/typed_array.h"
+
 void InputMap::_add_action_bind_compat_97281(const StringName &p_action, float p_deadzone) {
 	add_action(p_action, p_deadzone);
 }
 
+TypedArray<StringName> InputMap::_get_actions_bind_compat_106209() {
+	return get_actions();
+}
+
 void InputMap::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::_add_action_bind_compat_97281, DEFVAL(0.5f));
+	ClassDB::bind_compatibility_method(D_METHOD("get_actions"), &InputMap::_get_actions_bind_compat_106209);
 }
 
 #endif // DISABLE_DEPRECATED

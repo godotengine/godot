@@ -2166,7 +2166,7 @@ void EditorSettings::get_argument_options(const StringName &p_function, int p_id
 				r_options->push_back(section.quote());
 			}
 		} else if (pf == "set_builtin_action_override") {
-			for (const StringName &action : InputMap::get_singleton()->get_actions()) {
+			for (const Variant &action : InputMap::get_singleton()->get_actions()) {
 				r_options->push_back(String(action).quote());
 			}
 		}

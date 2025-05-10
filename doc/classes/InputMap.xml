@@ -97,7 +97,7 @@
 				Returns the human-readable description of the given action.
 			</description>
 		</method>
-		<method name="get_actions">
+		<method name="get_actions" qualifiers="const">
 			<return type="StringName[]" />
 			<description>
 				Returns an array of all actions in the [InputMap].
