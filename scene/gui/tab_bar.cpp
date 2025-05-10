@@ -509,13 +509,8 @@ void TabBar::_notification(int p_what) {
 
 			int limit_minus_buttons = size.width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
 
-			int ofs = tabs[offset].ofs_cache;
-			int tab_separation_offset = 0;
-
 			// Draw unselected tabs in the back.
 			for (int i = offset; i <= max_drawn_tab; i++) {
-				tab_separation_offset = (i - offset) * theme_cache.tab_separation;
-
 				if (tabs[i].hidden) {
 					continue;
 				}
@@ -535,23 +530,15 @@ void TabBar::_notification(int p_what) {
 						col = theme_cache.font_unselected_color;
 					}
 
-					_draw_tab(sb, col, i, rtl ? (size.width - ofs - tab_separation_offset - tabs[i].size_cache) : (ofs + tab_separation_offset), false);
+					_draw_tab(sb, col, i, rtl ? (size.width - tabs[i].ofs_cache - tabs[i].size_cache) : tabs[i].ofs_cache, false);
 				}
-
-				ofs += tabs[i].size_cache;
 			}
 
 			// Draw selected tab in the front, but only if it's visible.
 			if (current >= offset && current <= max_drawn_tab && !tabs[current].hidden) {
-				tab_separation_offset = (current - offset) * theme_cache.tab_separation;
-				if (tab_alignment == ALIGNMENT_LEFT && (current - offset) > 1) {
-					tab_separation_offset = theme_cache.tab_separation;
-				}
-
 				Ref<StyleBox> sb = tabs[current].disabled ? theme_cache.tab_disabled_style : theme_cache.tab_selected_style;
-				float x = rtl ? (size.width - tabs[current].ofs_cache - tab_separation_offset - tabs[current].size_cache) : (tabs[current].ofs_cache + tab_separation_offset);
 
-				_draw_tab(sb, theme_cache.font_selected_color, current, x, has_focus());
+				_draw_tab(sb, theme_cache.font_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus());
 			}
 
 			if (buttons_visible) {
@@ -590,38 +577,20 @@ void TabBar::_notification(int p_what) {
 				int closest_tab = get_closest_tab_idx_to_point(get_local_mouse_position());
 				if (closest_tab != -1) {
 					Rect2 tab_rect = get_tab_rect(closest_tab);
+					x = tab_rect.position.x;
+
+					// Only add the tab_separation if closest tab is not on the edge.
+					bool not_leftmost_tab = -1 != (rtl ? get_next_available(closest_tab) : get_previous_available(closest_tab));
+					bool not_rightmost_tab = -1 != (rtl ? get_previous_available(closest_tab) : get_next_available(closest_tab));
 
 					// Calculate midpoint between tabs.
-					if (rtl) {
-						if (get_local_mouse_position().x > tab_rect.position.x + tab_rect.size.width / 2) {
-							if (closest_tab > 0) { // On right side of closest_tab and not first tab.
-								Rect2 next_tab_rect = get_tab_rect(closest_tab - 1);
-								x = (tab_rect.position.x + tab_rect.size.width + next_tab_rect.position.x) / 2;
-							} else { // First tab, will appear on right edge.
-								x = tab_rect.position.x + tab_rect.size.width;
-							}
-						} else {
-							if (closest_tab < max_drawn_tab) { // On left side of closest_tab and not last tab.
-								Rect2 prev_tab_rect = get_tab_rect(closest_tab + 1);
-								x = (tab_rect.position.x + prev_tab_rect.position.x + prev_tab_rect.size.width) / 2;
-							} else { // Last tab, will appear on left edge.
-								x = tab_rect.position.x;
-							}
+					if (get_local_mouse_position().x > tab_rect.get_center().x) {
+						x += tab_rect.size.x;
+						if (not_rightmost_tab) {
+							x += Math::ceil(0.5f * theme_cache.tab_separation);
 						}
-					} else if (get_local_mouse_position().x > tab_rect.position.x + tab_rect.size.width / 2) {
-						if (closest_tab < max_drawn_tab) { // On right side of closest_tab and not last tab.
-							Rect2 next_tab_rect = get_tab_rect(closest_tab + 1);
-							x = (tab_rect.position.x + tab_rect.size.width + next_tab_rect.position.x) / 2;
-						} else { // Last tab, will appear on right edge.
-							x = tab_rect.position.x + tab_rect.size.width;
-						}
-					} else {
-						if (closest_tab > 0) { // On left side of closest_tab and not first tab.
-							Rect2 prev_tab_rect = get_tab_rect(closest_tab - 1);
-							x = (tab_rect.position.x + prev_tab_rect.position.x + prev_tab_rect.size.width) / 2;
-						} else { // First tab, will appear on left edge.
-							x = tab_rect.position.x;
-						}
+					} else if (not_leftmost_tab) {
+						x -= Math::floor(0.5f * theme_cache.tab_separation);
 					}
 				} else {
 					if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
@@ -841,31 +810,49 @@ int TabBar::get_hovered_tab() const {
 	return hover;
 }
 
-bool TabBar::select_previous_available() {
-	const int offset_end = (get_current_tab() + 1);
+int TabBar::get_previous_available(int p_idx) const {
+	ERR_FAIL_COND_V(p_idx < -1 || p_idx > get_tab_count(), -1);
+	const int idx = p_idx == -1 ? get_current_tab() : p_idx;
+	const int offset_end = idx + 1;
 	for (int i = 1; i < offset_end; i++) {
-		int target_tab = get_current_tab() - i;
+		int target_tab = idx - i;
 		if (target_tab < 0) {
 			target_tab += get_tab_count();
 		}
 		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
-			set_current_tab(target_tab);
-			return true;
+			return target_tab;
 		}
 	}
-	return false;
+	return -1;
+}
+
+int TabBar::get_next_available(int p_idx) const {
+	ERR_FAIL_COND_V(p_idx < -1 || p_idx > get_tab_count(), -1);
+	const int idx = p_idx == -1 ? get_current_tab() : p_idx;
+	const int offset_end = get_tab_count() - idx;
+	for (int i = 1; i < offset_end; i++) {
+		int target_tab = (idx + i) % get_tab_count();
+		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
+			return target_tab;
+		}
+	}
+	return -1;
+}
+
+bool TabBar::select_previous_available() {
+	const int previous_available = get_previous_available();
+	if (previous_available != -1) {
+		set_current_tab(previous_available);
+	}
+	return previous_available != -1;
 }
 
 bool TabBar::select_next_available() {
-	const int offset_end = (get_tab_count() - get_current_tab());
-	for (int i = 1; i < offset_end; i++) {
-		int target_tab = (get_current_tab() + i) % get_tab_count();
-		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
-			set_current_tab(target_tab);
-			return true;
-		}
+	const int next_available = get_next_available();
+	if (next_available != -1) {
+		set_current_tab(next_available);
 	}
-	return false;
+	return next_available != -1;
 }
 
 void TabBar::set_tab_offset(int p_offset) {
@@ -1166,6 +1153,7 @@ void TabBar::_update_cache(bool p_update_hover) {
 		tabs.write[i].text_buf->set_width(-1);
 		tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
 		tabs.write[i].size_cache = get_tab_width(i);
+		tabs.write[i].accessibility_item_dirty = true;
 
 		tabs.write[i].truncated = max_width > 0 && tabs[i].size_cache > max_width;
 		if (tabs[i].truncated) {
@@ -1189,9 +1177,6 @@ void TabBar::_update_cache(bool p_update_hover) {
 		}
 
 		w += tabs[i].size_cache;
-		if ((i - offset) > 0) {
-			w += theme_cache.tab_separation;
-		}
 
 		// Check if all tabs would fit inside the area.
 		if (clip_tabs && i > offset && (w > limit || (offset > 0 && w > limit_minus_buttons))) {
@@ -1212,9 +1197,10 @@ void TabBar::_update_cache(bool p_update_hover) {
 
 				max_drawn_tab--;
 			}
+		} else if (i < tabs.size() - 1) {
+			// Only add the tab separation if this isn't the last tab drawn.
+			w += theme_cache.tab_separation;
 		}
-
-		tabs.write[i].accessibility_item_dirty = true;
 	}
 
 	missing_right = max_drawn_tab < tabs.size() - 1;
@@ -1234,10 +1220,11 @@ void TabBar::_update_cache(bool p_update_hover) {
 	}
 
 	for (int i = offset; i <= max_drawn_tab; i++) {
-		tabs.write[i].ofs_cache = w;
-
 		if (!tabs[i].hidden) {
+			tabs.write[i].ofs_cache = w;
+
 			w += tabs[i].size_cache;
+			w += theme_cache.tab_separation;
 		}
 	}
 
@@ -1545,10 +1532,14 @@ void TabBar::_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_in
 }
 
 int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
+	if (tabs.is_empty()) {
+		return -1;
+	}
+
 	int hover_now = -1;
 
-	if (!tabs.is_empty()) {
-		for (int i = offset; i <= max_drawn_tab; i++) {
+	for (int i = offset; i <= max_drawn_tab; i++) {
+		if (!tabs[i].hidden) {
 			Rect2 rect = get_tab_rect(i);
 			if (rect.has_point(p_point)) {
 				hover_now = i;
@@ -1560,16 +1551,23 @@ int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
 }
 
 int TabBar::get_closest_tab_idx_to_point(const Point2 &p_point) const {
-	int closest_tab = get_tab_idx_at_point(p_point); // See if we're hovering over a tab first.
+	if (tabs.is_empty()) {
+		return -1;
+	}
 
-	if (closest_tab == -1) { // Didn't find a tab, so get the closest one.
-		float closest_distance = FLT_MAX;
+	int closest_tab = get_tab_idx_at_point(p_point);
+	float closest_distance = FLT_MAX;
+
+	// Search along the x-axis since the TabBar is horizontal.
+	if (closest_tab == -1) {
 		for (int i = offset; i <= max_drawn_tab; i++) {
-			Vector2 center = get_tab_rect(i).get_center();
-			float distance = center.distance_to(p_point);
-			if (distance < closest_distance) {
-				closest_distance = distance;
-				closest_tab = i;
+			if (!tabs[i].hidden) {
+				float center = get_tab_rect(i).get_center().x;
+				float distance = Math::abs(center - p_point.x);
+				if (distance < closest_distance) {
+					closest_distance = distance;
+					closest_tab = i;
+				}
 			}
 		}
 	}
@@ -1829,14 +1827,11 @@ void TabBar::ensure_tab_visible(int p_idx) {
 
 Rect2 TabBar::get_tab_rect(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
-	int tab_separation_offset = (p_tab - offset) * theme_cache.tab_separation;
-	if (tab_alignment == ALIGNMENT_LEFT && (p_tab - offset) > 1) {
-		tab_separation_offset = theme_cache.tab_separation;
-	}
+
 	if (is_layout_rtl()) {
-		return Rect2(get_size().width - tabs[p_tab].ofs_cache - tab_separation_offset - tabs[p_tab].size_cache, 0, tabs[p_tab].size_cache, get_size().height);
+		return Rect2(get_size().width - tabs[p_tab].ofs_cache - tabs[p_tab].size_cache, 0, tabs[p_tab].size_cache, get_size().height);
 	} else {
-		return Rect2(tabs[p_tab].ofs_cache + tab_separation_offset, 0, tabs[p_tab].size_cache, get_size().height);
+		return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_size().height);
 	}
 }
 
