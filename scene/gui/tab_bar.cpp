@@ -512,8 +512,6 @@ void TabBar::_notification(int p_what) {
 
 			// Draw unselected tabs in the back.
 			for (int i = offset; i <= max_drawn_tab; i++) {
-				tab_separation_offset = (i - offset) * theme_cache.tab_separation;
-
 				if (tabs[i].hidden) {
 					continue;
 				}
@@ -536,6 +534,7 @@ void TabBar::_notification(int p_what) {
 					_draw_tab(sb, col, i, rtl ? (size.width - ofs - tab_separation_offset - tabs[i].size_cache) : (ofs + tab_separation_offset), false);
 				}
 
+				tab_separation_offset += theme_cache.tab_separation;
 				ofs += tabs[i].size_cache;
 			}
 

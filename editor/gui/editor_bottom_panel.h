@@ -36,24 +36,16 @@ class Button;
 class ConfigFile;
 class EditorToaster;
 class HBoxContainer;
-class VBoxContainer;
-class ScrollContainer;
-class PanelContainer;
 
 class EditorBottomPanel : public TabContainer {
 	GDCLASS(EditorBottomPanel, TabContainer);
 
-	PanelContainer *back_panel = nullptr;
 	HBoxContainer *bottom_hbox = nullptr;
-	Button *left_button = nullptr;
-	Button *right_button = nullptr;
-	ScrollContainer *button_scroll = nullptr;
-	HBoxContainer *button_hbox = nullptr;
 	EditorToaster *editor_toaster = nullptr;
 	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
 
-	int tab_offset = 0;
+	int right_margin = 0;
 	bool lock_panel_switching = false;
 
 	void _repaint();
@@ -61,20 +53,12 @@ class EditorBottomPanel : public TabContainer {
 	void _on_button_visibility_changed(Button *p_button, Control *p_control);
 	void _pin_button_toggled(bool p_pressed);
 	void _expand_button_toggled(bool p_pressed);
-	void _scroll(bool p_right);
-	void _update_scroll_buttons();
-	void _update_disabled_buttons();
-
-	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
 
 protected:
 	void _notification(int p_what);
 
-	int _get_tab_height() const override;
-
-	virtual void add_child_notify(Node *p_child) override;
-	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
+	virtual void _update_margins() override;
 
 public:
 	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
@@ -87,9 +71,6 @@ public:
 	void hide_bottom_panel();
 	void toggle_last_opened_bottom_panel();
 	void set_expanded(bool p_expanded);
-	PanelContainer *get_back_panel() { return back_panel; }
-
-	virtual Size2 get_minimum_size() const override;
 
 	EditorBottomPanel();
 };
