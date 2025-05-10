@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "bone_map_editor_plugin.h"
 
 #include "editor/editor_settings.h"
@@ -1477,3 +1479,5 @@ BoneMapEditorPlugin::BoneMapEditorPlugin() {
 	post_import_plugin_rest_fixer.instantiate();
 	add_scene_post_import_plugin(post_import_plugin_rest_fixer);
 }
+
+#endif // _3D_DISABLED

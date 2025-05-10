@@ -32,7 +32,9 @@
 
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
+#ifndef _3D_DISABLED
 #include "scene/3d/skeleton_3d.h"
+#endif // _3D_DISABLED
 #include "scene/animation/animation_mixer.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -124,6 +126,7 @@ void EditorPropertyRootMotion::_node_assign() {
 			continue; //no node, can't edit
 		}
 
+#ifndef _3D_DISABLED
 		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
 		if (skeleton) {
 			HashMap<int, TreeItem *> items;
@@ -153,6 +156,7 @@ void EditorPropertyRootMotion::_node_assign() {
 				joint_item->set_collapsed(true);
 			}
 		}
+#endif // _3D_DISABLED
 	}
 
 	filters->ensure_cursor_is_visible();

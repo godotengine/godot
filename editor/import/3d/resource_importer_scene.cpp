@@ -40,10 +40,18 @@
 #include "editor/import/3d/scene_import_settings.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/occluder_instance_3d.h"
+#include "scene/animation/animation_player.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/animation.h"
+#include "scene/resources/bone_map.h"
+#include "scene/resources/packed_scene.h"
+#include "scene/resources/resource_format_text.h"
+
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/3d/navigation/navigation_region_3d.h"
 #endif // NAVIGATION_3D_DISABLED
-#include "scene/3d/occluder_instance_3d.h"
+
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/area_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
@@ -54,12 +62,6 @@
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 #endif // PHYSICS_3D_DISABLED
-#include "scene/animation/animation_player.h"
-#include "scene/resources/3d/importer_mesh.h"
-#include "scene/resources/animation.h"
-#include "scene/resources/bone_map.h"
-#include "scene/resources/packed_scene.h"
-#include "scene/resources/resource_format_text.h"
 
 void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const {
 	Vector<String> arr;
@@ -798,6 +800,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 		if (mi) {
 			Ref<ImporterMesh> mesh = mi->get_mesh();
+
 			if (mesh.is_valid()) {
 				Vector<Ref<Shape3D>> shapes;
 				if (r_collision_map.has(mesh)) {
@@ -823,6 +826,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 					_add_shapes(col, shapes);
 				}
 			}
+
 		} else if (p_node->has_meta("empty_draw_type")) {
 			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
 			StaticBody3D *sb = memnew(StaticBody3D);
@@ -854,6 +858,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			sb->add_child(colshape, true);
 			colshape->set_owner(sb->get_owner());
 		}
+
 	} else if (_teststr(name, "rigid") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		if (isroot) {
 			return p_node;
@@ -1579,6 +1584,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 				r_scanned_meshes.insert(m);
 			}
+
 #ifndef PHYSICS_3D_DISABLED
 			if (node_settings.has("generate/physics")) {
 				int mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_DISABLED;

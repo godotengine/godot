@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "skeleton_3d_editor_plugin.h"
 
 #include "core/io/resource_saver.h"
@@ -1825,3 +1827,5 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 
 	return surface_tool->commit();
 }
+
+#endif // _3D_DISABLED

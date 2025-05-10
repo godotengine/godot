@@ -44,7 +44,9 @@ class EditorFeatureProfile : public RefCounted {
 
 public:
 	enum Feature {
+#ifndef _3D_DISABLED
 		FEATURE_3D,
+#endif // _3D_DISABLED
 		FEATURE_SCRIPT,
 		FEATURE_ASSET_LIB,
 		FEATURE_SCENE_TREE,

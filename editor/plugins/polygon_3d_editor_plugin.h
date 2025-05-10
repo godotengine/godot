@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/collision_polygon_3d.h"
@@ -111,3 +113,5 @@ public:
 
 	Polygon3DEditorPlugin();
 };
+
+#endif // _3D_DISABLED

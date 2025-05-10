@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "mesh_library_editor_plugin.h"
 
 #include "editor/editor_interface.h"
@@ -340,3 +342,5 @@ MeshLibraryEditorPlugin::MeshLibraryEditorPlugin() {
 	mesh_library_editor->set_end(Point2(0, 22));
 	mesh_library_editor->hide();
 }
+
+#endif // _3D_DISABLED

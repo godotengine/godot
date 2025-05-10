@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "polygon_3d_editor_plugin.h"
 
 #include "core/input/input.h"
@@ -611,3 +613,5 @@ Polygon3DEditorPlugin::Polygon3DEditorPlugin() {
 
 	polygon_editor->hide();
 }
+
+#endif // _3D_DISABLED

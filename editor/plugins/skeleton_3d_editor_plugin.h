@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/add_metadata_dialog.h"
 #include "editor/editor_properties.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -300,3 +302,5 @@ public:
 	Skeleton3DGizmoPlugin();
 	~Skeleton3DGizmoPlugin();
 };
+
+#endif // _3D_DISABLED

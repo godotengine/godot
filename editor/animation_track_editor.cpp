@@ -45,7 +45,9 @@
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#ifndef _3D_DISABLED
 #include "scene/3d/mesh_instance_3d.h"
+#endif // _3D_DISABLED
 #include "scene/animation/animation_player.h"
 #include "scene/animation/tween.h"
 #include "scene/gui/check_box.h"
@@ -4247,7 +4249,7 @@ void AnimationTrackEditor::_insert_track(bool p_reset_wanted, bool p_create_bezi
 		_edit_menu_pressed(EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY);
 	}
 }
-
+#ifndef _3D_DISABLED
 void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value) {
 	ERR_FAIL_NULL(root);
 	ERR_FAIL_COND_MSG(
@@ -4312,6 +4314,7 @@ bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const 
 	}
 	return false;
 }
+#endif // _3D_DISABLED
 
 void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant &p_value) {
 	String path = p_path;
@@ -5589,6 +5592,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 	// id.value is filled in each case handled below.
 
 	switch (animation->track_get_type(p_track)) {
+#ifndef _3D_DISABLED
 		case Animation::TYPE_POSITION_3D: {
 			Node3D *base = Object::cast_to<Node3D>(node);
 
@@ -5629,6 +5633,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			id.value = base->get_blend_shape_value(base->find_blend_shape_by_name(id.path.get_subname(0)));
 		} break;
+#endif // _3D_DISABLED
 		case Animation::TYPE_VALUE: {
 			NodePath bp;
 			_find_hint_for_track(p_track, bp, &id.value);
