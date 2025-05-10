@@ -201,13 +201,13 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	ProjectSettings::get_singleton()->add_hidden_prefix("importer_defaults/");
 
 	HBoxContainer *hb = memnew(HBoxContainer);
-	hb->add_child(memnew(Label(TTR("Importer:"))));
+	hb->add_child(memnew(Label(TTRC("Importer:"))));
 	importers = memnew(OptionButton);
 	hb->add_child(importers);
 	hb->add_spacer();
 	importers->connect(SceneStringName(item_selected), callable_mp(this, &ImportDefaultsEditor::_importer_selected));
 	reset_defaults = memnew(Button);
-	reset_defaults->set_text(TTR("Reset to Defaults"));
+	reset_defaults->set_text(TTRC("Reset to Defaults"));
 	reset_defaults->set_disabled(true);
 	reset_defaults->connect(SceneStringName(pressed), callable_mp(this, &ImportDefaultsEditor::_reset));
 	hb->add_child(reset_defaults);
@@ -222,7 +222,7 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 
 	CenterContainer *cc = memnew(CenterContainer);
 	save_defaults = memnew(Button);
-	save_defaults->set_text(TTR("Save"));
+	save_defaults->set_text(TTRC("Save"));
 	save_defaults->connect(SceneStringName(pressed), callable_mp(this, &ImportDefaultsEditor::_save));
 	cc->add_child(save_defaults);
 	add_child(cc);

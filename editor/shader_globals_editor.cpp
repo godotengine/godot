@@ -358,11 +358,11 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 
 String ShaderGlobalsEditor::_check_new_variable_name(const String &p_variable_name) {
 	if (p_variable_name.is_empty()) {
-		return TTR("Name cannot be empty.");
+		return TTRC("Name cannot be empty.");
 	}
 
 	if (!p_variable_name.is_valid_ascii_identifier()) {
-		return TTR("Name must be a valid identifier.");
+		return TTRC("Name must be a valid identifier.");
 	}
 
 	return "";
@@ -464,7 +464,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	HBoxContainer *add_menu_hb = memnew(HBoxContainer);
 	add_child(add_menu_hb);
 
-	add_menu_hb->add_child(memnew(Label(TTR("Name:"))));
+	add_menu_hb->add_child(memnew(Label(TTRC("Name:"))));
 	variable_name = memnew(LineEdit);
 	variable_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	variable_name->set_clear_button_enabled(true);
@@ -473,7 +473,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 
 	add_menu_hb->add_child(variable_name);
 
-	add_menu_hb->add_child(memnew(Label(TTR("Type:"))));
+	add_menu_hb->add_child(memnew(Label(TTRC("Type:"))));
 	variable_type = memnew(OptionButton);
 	variable_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_menu_hb->add_child(variable_type);
@@ -482,7 +482,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 		variable_type->add_item(global_var_type_names[i]);
 	}
 
-	variable_add = memnew(Button(TTR("Add")));
+	variable_add = memnew(Button(TTRC("Add")));
 	variable_add->set_disabled(true);
 	add_menu_hb->add_child(variable_add);
 	variable_add->connect(SceneStringName(pressed), callable_mp(this, &ShaderGlobalsEditor::_variable_added));
