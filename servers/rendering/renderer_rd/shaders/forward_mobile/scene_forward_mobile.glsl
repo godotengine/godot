@@ -1401,7 +1401,8 @@ void main() {
 		vec3 bent_normal = normal;
 #endif
 		vec3 ref_vec = normalize(reflect(-view, bent_normal));
-		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
+		// Interpolate between mirror and rough reflection by using linear_roughness * linear_roughness.
+		ref_vec = mix(ref_vec, bent_normal, roughness * roughness * roughness * roughness);
 
 		uvec2 reflection_indices = instances.data[draw_call.instance_index].reflection_probes;
 		for (uint i = 0; i < sc_reflection_probes(); i++) {
