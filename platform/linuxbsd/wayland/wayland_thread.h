@@ -51,10 +51,11 @@
 // These must go after the Wayland client include to work properly.
 #include "wayland/protocol/idle_inhibit.gen.h"
 #include "wayland/protocol/primary_selection.gen.h"
-// These three protocol headers name wl_pointer method arguments as `pointer`,
+// These four protocol headers name wl_pointer method arguments as `pointer`,
 // which is the same name as X11's pointer typedef. This trips some very
 // annoying shadowing warnings. A `#define` works around this issue.
 #define pointer wl_pointer
+#include "wayland/protocol/cursor_shape.gen.h"
 #include "wayland/protocol/pointer_constraints.gen.h"
 #include "wayland/protocol/pointer_gestures.gen.h"
 #include "wayland/protocol/relative_pointer.gen.h"
@@ -186,6 +187,9 @@ public:
 
 		struct wp_fractional_scale_manager_v1 *wp_fractional_scale_manager = nullptr;
 		uint32_t wp_fractional_scale_manager_name = 0;
+
+		struct wp_cursor_shape_manager_v1 *wp_cursor_shape_manager = nullptr;
+		uint32_t wp_cursor_shape_manager_name = 0;
 
 		struct zxdg_decoration_manager_v1 *xdg_decoration_manager = nullptr;
 		uint32_t xdg_decoration_manager_name = 0;
@@ -550,6 +554,7 @@ private:
 	struct wl_cursor_theme *wl_cursor_theme = nullptr;
 	struct wl_cursor *wl_cursors[DisplayServer::CURSOR_MAX] = {};
 
+	HashMap<DisplayServer::CursorShape, wp_cursor_shape_device_v1_shape> standard_cursors;
 	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
 
 	DisplayServer::CursorShape cursor_shape = DisplayServer::CURSOR_ARROW;
