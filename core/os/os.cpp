@@ -290,6 +290,11 @@ String OS::get_data_path() const {
 	return ".";
 }
 
+// OS equivalent of XDG_DATA_DIRS, including XDG_DATA_HOME
+Vector<String> OS::get_data_search_paths() const {
+	return { get_data_path() };
+}
+
 // OS equivalent of XDG_CONFIG_HOME
 String OS::get_config_path() const {
 	return ".";
