@@ -922,6 +922,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_shape_get_bounce_override" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="shape" type="RID" />
+			<description>
+				Overridable version of [method PhysicsServer3D.shape_get_bounce_override].
+			</description>
+		</method>
 		<method name="_shape_get_custom_solver_bias" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="shape" type="RID" />
@@ -932,6 +939,13 @@
 			<return type="Variant" />
 			<param index="0" name="shape" type="RID" />
 			<description>
+			</description>
+		</method>
+		<method name="_shape_get_friction_override" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="shape" type="RID" />
+			<description>
+				Overridable version of [method PhysicsServer3D.shape_get_bounce_override].
 			</description>
 		</method>
 		<method name="_shape_get_margin" qualifiers="virtual const">
@@ -946,6 +960,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="_shape_set_bounce_override" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shape" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<param index="2" name="bounce" type="float" />
+			<description>
+				Overridable version of [method PhysicsServer3D.shape_set_bounce_override].
+			</description>
+		</method>
 		<method name="_shape_set_custom_solver_bias" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="shape" type="RID" />
@@ -958,6 +981,15 @@
 			<param index="0" name="shape" type="RID" />
 			<param index="1" name="data" type="Variant" />
 			<description>
+			</description>
+		</method>
+		<method name="_shape_set_friction_override" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shape" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<param index="2" name="friction" type="float" />
+			<description>
+				Overridable version of [method PhysicsServer3D.shape_set_friction_override].
 			</description>
 		</method>
 		<method name="_shape_set_margin" qualifiers="virtual">
