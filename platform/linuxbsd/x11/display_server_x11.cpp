@@ -4467,7 +4467,9 @@ bool DisplayServerX11::_wait_for_events() const {
 
 void DisplayServerX11::_poll_events() {
 	while (!events_thread_done.is_set()) {
-		_wait_for_events();
+		if (Main::is_iterating()) {
+			_wait_for_events();
+		}
 
 		// Process events from the queue.
 		{
