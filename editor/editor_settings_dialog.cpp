@@ -881,7 +881,7 @@ void EditorSettingsDialog::_bind_methods() {
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
-	set_title(TTR("Editor Settings"));
+	set_title(TTRC("Editor Settings"));
 	set_clamp_to_embedder(true);
 
 	tabs = memnew(TabContainer);
@@ -893,20 +893,20 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	tab_general = memnew(VBoxContainer);
 	tabs->add_child(tab_general);
-	tab_general->set_name(TTR("General"));
+	tab_general->set_name(TTRC("General"));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_general->add_child(hbc);
 
 	search_box = memnew(LineEdit);
-	search_box->set_placeholder(TTR("Filter Settings"));
+	search_box->set_placeholder(TTRC("Filter Settings"));
 	search_box->set_accessibility_name(TTRC("Filter Settings"));
 	search_box->set_virtual_keyboard_show_on_focus(false);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
 
-	advanced_switch = memnew(CheckButton(TTR("Advanced Settings")));
+	advanced_switch = memnew(CheckButton(TTRC("Advanced Settings")));
 	hbc->add_child(advanced_switch);
 
 	bool use_advanced = EDITOR_DEF("_editor_settings_advanced_mode", false);
@@ -932,13 +932,13 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_hb->add_child(restart_icon);
 	restart_label = memnew(Label);
 	restart_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	restart_label->set_text(TTR("The editor must be restarted for changes to take effect."));
+	restart_label->set_text(TTRC("The editor must be restarted for changes to take effect."));
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);
 	restart_button->connect(SceneStringName(pressed), callable_mp(this, &EditorSettingsDialog::_editor_restart));
 	restart_hb->add_child(restart_button);
-	restart_button->set_text(TTR("Save & Restart"));
+	restart_button->set_text(TTRC("Save & Restart"));
 	restart_close_button = memnew(Button);
 	restart_close_button->set_accessibility_name(TTRC("Close"));
 	restart_close_button->set_flat(true);
@@ -951,14 +951,14 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_shortcuts = memnew(VBoxContainer);
 
 	tabs->add_child(tab_shortcuts);
-	tab_shortcuts->set_name(TTR("Shortcuts"));
+	tab_shortcuts->set_name(TTRC("Shortcuts"));
 
 	HBoxContainer *top_hbox = memnew(HBoxContainer);
 	top_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_shortcuts->add_child(top_hbox);
 
 	shortcut_search_box = memnew(LineEdit);
-	shortcut_search_box->set_placeholder(TTR("Filter by Name"));
+	shortcut_search_box->set_placeholder(TTRC("Filter by Name"));
 	shortcut_search_box->set_accessibility_name(TTRC("Filter by Name"));
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	top_hbox->add_child(shortcut_search_box);
@@ -974,8 +974,8 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	top_hbox->add_child(shortcut_search_by_event);
 
 	clear_all_search = memnew(Button);
-	clear_all_search->set_text(TTR("Clear All"));
-	clear_all_search->set_tooltip_text(TTR("Clear all search filters."));
+	clear_all_search->set_text(TTRC("Clear All"));
+	clear_all_search->set_tooltip_text(TTRC("Clear all search filters."));
 	clear_all_search->connect(SceneStringName(pressed), callable_mp(shortcut_search_box, &LineEdit::clear));
 	clear_all_search->connect(SceneStringName(pressed), callable_mp(shortcut_search_by_event, &EventListenerLineEdit::clear_event));
 	top_hbox->add_child(clear_all_search);
@@ -1008,5 +1008,5 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	timer->set_one_shot(true);
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_changed));
-	set_ok_button_text(TTR("Close"));
+	set_ok_button_text(TTRC("Close"));
 }
