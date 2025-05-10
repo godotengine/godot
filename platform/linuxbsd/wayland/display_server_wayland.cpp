@@ -2074,6 +2074,16 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	wd.rect.size = p_resolution;
 	wd.title = "Godot";
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver && !accessibility_driver->window_create(wd.id, nullptr)) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+		}
+		memdelete(accessibility_driver);
+		accessibility_driver = nullptr;
+	}
+#endif
+
 	show_window(MAIN_WINDOW_ID);
 
 #ifdef RD_ENABLED

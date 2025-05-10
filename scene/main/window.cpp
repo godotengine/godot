@@ -761,7 +761,7 @@ void Window::_rect_changed_callback(const Rect2i &p_callback) {
 		size = p_callback.size;
 		_update_viewport_size();
 	}
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServer::INVALID_WINDOW_ID && !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
 		Vector2 sz_out = DisplayServer::get_singleton()->window_get_size_with_decorations(window_id);
 		Vector2 pos_out = DisplayServer::get_singleton()->window_get_position_with_decorations(window_id);
 		Vector2 sz_in = DisplayServer::get_singleton()->window_get_size(window_id);
