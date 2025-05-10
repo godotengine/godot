@@ -2482,6 +2482,12 @@
 			[b]Dummy[/b] is a 3D physics server that does nothing and returns only dummy values, effectively disabling all 3D physics functionality.
 			Third-party extensions and modules can add other physics engines to select with this setting.
 		</member>
+		<member name="physics/3d/physics_interpolation/scene_traversal" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+			The approach used for 3D scene traversal when physics interpolation is enabled.
+			- [code]DEFAULT[/code]: The default optimized method.
+			- [code]Legacy[/code]: The previous reference method used for scene tree traversal, which is slower.
+			- [code]Debug[/code]: Swaps between [code]DEFAULT[/code] and [code]Legacy[/code] methods on alternating frames, and provides logging information (which in turn makes it slower). Intended for debugging only; you should use the [code]DEFAULT[/code] method in most cases.
+		</member>
 		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 			[b]Note:[/b] When [member physics/3d/physics_engine] is set to [code]Jolt Physics[/code], enabling this setting will prevent the 3D physics server from being able to provide any context when reporting errors and warnings, and will instead always refer to nodes as [code]&lt;unknown&gt;[/code].
