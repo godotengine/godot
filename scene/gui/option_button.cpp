@@ -314,6 +314,10 @@ void OptionButton::set_item_count(int p_count) {
 		return;
 	}
 
+	if (p_count == count_old - 1) {
+		_select(p_count - 1, false);
+	}
+
 	popup->set_item_count(p_count);
 
 	if (p_count > count_old) {
