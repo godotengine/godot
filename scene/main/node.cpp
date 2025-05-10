@@ -1922,13 +1922,12 @@ void Node::_update_children_cache_impl() const {
 
 int Node::get_child_count(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(0);
-	_update_children_cache();
-
 	if (p_include_internal) {
-		return data.children_cache.size();
-	} else {
-		return data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
+		return data.children.size();
 	}
+
+	_update_children_cache();
+	return data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
 }
 
 Node *Node::get_child(int p_index, bool p_include_internal) const {
