@@ -351,6 +351,7 @@ void ResourceUID::clear() {
 	unique_ids.clear();
 	changed = false;
 }
+
 void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("id_to_text", "id"), &ResourceUID::id_to_text);
 	ClassDB::bind_method(D_METHOD("text_to_id", "text_id"), &ResourceUID::text_to_id);
@@ -366,11 +367,12 @@ void ResourceUID::_bind_methods() {
 
 	BIND_CONSTANT(INVALID_ID)
 }
-ResourceUID *ResourceUID::singleton = nullptr;
+
 ResourceUID::ResourceUID() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 }
+
 ResourceUID::~ResourceUID() {
 	if (crypto != nullptr) {
 		memdelete((CryptoCore::RandomGenerator *)crypto);

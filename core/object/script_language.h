@@ -49,14 +49,14 @@ class ScriptServer {
 		MAX_LANGUAGES = 16
 	};
 
-	static ScriptLanguage *_languages[MAX_LANGUAGES];
-	static int _language_count;
-	static bool languages_ready;
-	static Mutex languages_mutex;
-	static thread_local bool thread_entered;
+	static inline ScriptLanguage *_languages[MAX_LANGUAGES];
+	static inline int _language_count = 0;
+	static inline bool languages_ready = false;
+	static inline Mutex languages_mutex;
+	static inline thread_local bool thread_entered = false;
 
-	static bool scripting_enabled;
-	static bool reload_scripts_on_save;
+	static inline bool scripting_enabled = true;
+	static inline bool reload_scripts_on_save = false;
 
 	struct GlobalScriptClass {
 		StringName language;
@@ -66,12 +66,12 @@ class ScriptServer {
 		bool is_tool = false;
 	};
 
-	static HashMap<StringName, GlobalScriptClass> global_classes;
-	static HashMap<StringName, Vector<StringName>> inheriters_cache;
-	static bool inheriters_cache_dirty;
+	static inline HashMap<StringName, GlobalScriptClass> global_classes;
+	static inline HashMap<StringName, Vector<StringName>> inheriters_cache;
+	static inline bool inheriters_cache_dirty = true;
 
 public:
-	static ScriptEditRequestFunction edit_request_func;
+	static inline ScriptEditRequestFunction edit_request_func = nullptr;
 
 	static void set_scripting_enabled(bool p_enabled);
 	static bool is_scripting_enabled();

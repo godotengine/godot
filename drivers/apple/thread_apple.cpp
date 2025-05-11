@@ -34,9 +34,6 @@
 #include "core/object/script_language.h"
 #include "core/string/ustring.h"
 
-SafeNumeric<uint64_t> Thread::id_counter(1); // The first value after .increment() is 2, hence by default the main thread ID should be 1.
-thread_local Thread::ID Thread::caller_id = Thread::id_counter.increment();
-
 struct ThreadData {
 	Thread::Callback callback;
 	void *userdata;

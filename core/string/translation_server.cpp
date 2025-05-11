@@ -40,15 +40,6 @@
 #include "main/main.h"
 #endif
 
-Vector<TranslationServer::LocaleScriptInfo> TranslationServer::locale_script_info;
-
-HashMap<String, String> TranslationServer::language_map;
-HashMap<String, String> TranslationServer::script_map;
-HashMap<String, String> TranslationServer::locale_rename_map;
-HashMap<String, String> TranslationServer::country_name_map;
-HashMap<String, String> TranslationServer::variant_map;
-HashMap<String, String> TranslationServer::country_rename_map;
-
 void TranslationServer::init_locale_info() {
 	// Init locale info.
 	language_map.clear();
