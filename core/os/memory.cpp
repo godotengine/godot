@@ -229,5 +229,3 @@ _GlobalNil::_GlobalNil() {
 	right = this;
 	parent = this;
 }
-
-_GlobalNil _GlobalNilClass::_nil;
