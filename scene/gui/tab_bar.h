@@ -52,10 +52,21 @@ public:
 		CLOSE_BUTTON_MAX
 	};
 
+	enum DrawMode {
+		DRAW_NORMAL,
+		DRAW_PRESSED,
+		DRAW_HOVER,
+		DRAW_DISABLED,
+		DRAW_MAX,
+	};
+
 private:
 	struct Tab {
 		mutable RID accessibility_item_element;
 		mutable bool accessibility_item_dirty = true;
+
+		// Corresponds to color overrides for the DrawMode enum
+		Color font_color_overrides[DrawMode::DRAW_MAX] = { Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0) };
 
 		String text;
 		String tooltip;
@@ -227,6 +238,10 @@ public:
 
 	void set_tab_icon_max_width(int p_tab, int p_width);
 	int get_tab_icon_max_width(int p_tab) const;
+
+	void set_font_color_override_all(int p_tab, const Color &p_color);
+	void set_font_color_override(int p_tab, DrawMode p_draw_mode, const Color &p_color);
+	Color get_font_color_override(int p_tab, DrawMode p_draw_mode) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool is_tab_disabled(int p_tab) const;
