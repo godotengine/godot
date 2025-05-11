@@ -403,17 +403,6 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	}
 #endif
 
-	GLuint read_fbo = 0;
-	glGenFramebuffers(1, &read_fbo);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, read_fbo);
-
-	if (rt->view_count > 1) {
-		glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->color, 0, p_layer);
-	} else {
-		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
-	}
-
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 	if (p_first) {
@@ -428,7 +417,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 		}
 	}
 
-	Vector2i screen_rect_end = p_screen_rect.get_end();
+	Vector2 screen_rect_end = p_screen_rect.get_end();
 
 	// Adreno (TM) 3xx devices have a bug that create wrong Landscape rotation of 180 degree
 	// Reversing both the X and Y axis is equivalent to rotating 180 degrees
@@ -438,15 +427,23 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 		flip_x = !flip_x;
 	}
 
-	glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
-			flip_x ? screen_rect_end.x : p_screen_rect.position.x, flip_y ? screen_rect_end.y : p_screen_rect.position.y,
-			flip_x ? p_screen_rect.position.x : screen_rect_end.x, flip_y ? p_screen_rect.position.y : screen_rect_end.y,
-			GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	Vector2 p1 = Vector2(flip_x ? screen_rect_end.x : p_screen_rect.position.x, flip_y ? screen_rect_end.y : p_screen_rect.position.y);
+	Vector2 p2 = Vector2(flip_x ? p_screen_rect.position.x : screen_rect_end.x, flip_y ? p_screen_rect.position.y : screen_rect_end.y);
+	Vector2 size = p2 - p1;
 
-	if (read_fbo != 0) {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-		glDeleteFramebuffers(1, &read_fbo);
+	Rect2 screenrect = Rect2(p1 / p_screen_rect.size, (size) / p_screen_rect.size);
+
+	glViewport(0, 0, Math::abs(size.x), Math::abs(size.y));
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, rt->color);
+	if (rt->view_count > 1) {
+		copy_effects->copy_to_rect_3d(screenrect, p_layer, GLES3::Texture::TYPE_LAYERED);
+	} else {
+		copy_effects->copy_to_rect(screenrect);
 	}
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 // is this p_screen useless in a multi window environment?
