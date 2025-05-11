@@ -67,15 +67,15 @@ static MethodInfo info_from_utility_func(const StringName &p_function) {
 	if (Variant::is_utility_function_vararg(p_function)) {
 		info.flags |= METHOD_FLAG_VARARG;
 	} else {
+		info.arguments.resize(Variant::get_utility_function_argument_count(p_function));
 		for (int i = 0; i < Variant::get_utility_function_argument_count(p_function); i++) {
-			PropertyInfo pi;
+			PropertyInfo &pi = info.arguments.write[i];
 #ifdef DEBUG_METHODS_ENABLED
 			pi.name = Variant::get_utility_function_argument_name(p_function, i);
 #else
 			pi.name = "arg" + itos(i + 1);
 #endif
 			pi.type = Variant::get_utility_function_argument_type(p_function, i);
-			info.arguments.push_back(pi);
 		}
 	}
 
@@ -1123,6 +1123,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				// This is the _only_ way to declare a signal. Therefore, we can generate its
 				// MethodInfo inline so it's a tiny bit more efficient.
 				MethodInfo mi = MethodInfo(member.signal->identifier->name);
+				mi.arguments.resize(member.signal->parameters.size());
 
 				for (int j = 0; j < member.signal->parameters.size(); j++) {
 					GDScriptParser::ParameterNode *param = member.signal->parameters[j];
@@ -1133,7 +1134,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 						parser->push_warning(param, GDScriptWarning::UNTYPED_DECLARATION, "Parameter", param->identifier->name);
 					}
 #endif
-					mi.arguments.push_back(param_type.to_property_info(param->identifier->name));
+					mi.arguments.write[j] = param_type.to_property_info(param->identifier->name);
 					// Signals do not support parameter default values.
 				}
 				member.signal->set_datatype(make_signal_type(mi));
@@ -1639,6 +1640,7 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 	p_annotation->is_resolved = true;
 
 	const MethodInfo &annotation_info = parser->valid_annotations[p_annotation->name].info;
+	p_annotation->resolved_arguments.resize(p_annotation->arguments.size());
 
 	for (int64_t i = 0, j = 0; i < p_annotation->arguments.size(); i++) {
 		GDScriptParser::ExpressionNode *argument = p_annotation->arguments[i];
@@ -1682,7 +1684,7 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 			value = converted_to;
 		}
 
-		p_annotation->resolved_arguments.push_back(value);
+		p_annotation->resolved_arguments.write[i] = value;
 	}
 }
 
@@ -1736,10 +1738,10 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		function_visible_name = p_is_lambda ? "<anonymous lambda>" : "<unknown function>";
 	}
 #endif
-
+	method_info.arguments.resize(p_function->parameters.size());
 	for (int i = 0; i < p_function->parameters.size(); i++) {
 		resolve_parameter(p_function->parameters[i]);
-		method_info.arguments.push_back(p_function->parameters[i]->get_datatype().to_property_info(p_function->parameters[i]->identifier->name));
+		method_info.arguments.write[i] = p_function->parameters[i]->get_datatype().to_property_info(p_function->parameters[i]->identifier->name);
 #ifdef DEBUG_ENABLED
 		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_")) {
 			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->parameters[i]->identifier->name);
@@ -3244,8 +3246,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			if (all_is_constant && safe_to_fold) {
 				// Construct here.
 				Vector<const Variant *> args;
+				args.resize(p_call->arguments.size());
 				for (int i = 0; i < p_call->arguments.size(); i++) {
-					args.push_back(&(p_call->arguments[i]->reduced_value));
+					args.write[i] = (&(p_call->arguments[i]->reduced_value));
 				}
 
 				Callable::CallError err;
@@ -3414,8 +3417,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			if (all_is_constant && GDScriptUtilityFunctions::is_function_constant(function_name)) {
 				// Can call on compilation.
 				Vector<const Variant *> args;
+				args.resize(p_call->arguments.size());
 				for (int i = 0; i < p_call->arguments.size(); i++) {
-					args.push_back(&(p_call->arguments[i]->reduced_value));
+					args.write[i] = &(p_call->arguments[i]->reduced_value);
 				}
 
 				Variant value;
@@ -3465,8 +3469,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			if (all_is_constant && Variant::get_utility_function_type(function_name) == Variant::UTILITY_FUNC_TYPE_MATH) {
 				// Can call on compilation.
 				Vector<const Variant *> args;
+				args.resize(p_call->arguments.size());
 				for (int i = 0; i < p_call->arguments.size(); i++) {
-					args.push_back(&(p_call->arguments[i]->reduced_value));
+					args.write[i] = &(p_call->arguments[i]->reduced_value);
 				}
 
 				Variant value;

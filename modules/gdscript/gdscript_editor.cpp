@@ -433,13 +433,17 @@ String GDScriptLanguage::debug_parse_stack_level_expression(int p_level, const S
 	debug_get_stack_level_locals(p_level, &names, &values, p_max_subitems, p_max_depth);
 
 	Vector<String> name_vector;
+	name_vector.resize(names.size());
+	int idx = 0;
 	for (const String &name : names) {
-		name_vector.push_back(name);
+		name_vector.write[idx++] = name;
 	}
 
 	Array value_array;
+	value_array.resize(values.size());
+	idx = 0;
 	for (const Variant &value : values) {
-		value_array.push_back(value);
+		value_array[idx++] = value;
 	}
 
 	Expression expression;
@@ -1936,8 +1940,9 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 
 								if (!found && all_is_const && baseptr) {
 									Vector<const Variant *> argptr;
+									argptr.resize(args.size());
 									for (int i = 0; i < args.size(); i++) {
-										argptr.push_back(&args[i]);
+										argptr.write[i] = &args[i];
 									}
 
 									Callable::CallError ce;

@@ -204,14 +204,6 @@ public:
 		return true;
 	}
 
-	void set_container_element_type(int p_index, const GDScriptDataType &p_element_type) {
-		ERR_FAIL_COND(p_index < 0);
-		while (p_index >= container_element_types.size()) {
-			container_element_types.push_back(GDScriptDataType());
-		}
-		container_element_types.write[p_index] = GDScriptDataType(p_element_type);
-	}
-
 	GDScriptDataType get_container_element_type(int p_index) const {
 		ERR_FAIL_INDEX_V(p_index, container_element_types.size(), GDScriptDataType());
 		return container_element_types[p_index];
