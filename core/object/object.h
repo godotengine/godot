@@ -1085,11 +1085,11 @@ class ObjectDB {
 		Object *object = nullptr;
 	};
 
-	static SpinLock spin_lock;
-	static uint32_t slot_count;
-	static uint32_t slot_max;
-	static ObjectSlot *object_slots;
-	static uint64_t validator_counter;
+	static inline SpinLock spin_lock;
+	static inline uint32_t slot_count = 0;
+	static inline uint32_t slot_max = 0;
+	static inline ObjectSlot *object_slots = nullptr;
+	static inline uint64_t validator_counter = 0;
 
 	friend class Object;
 	friend void unregister_core_types();

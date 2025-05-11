@@ -33,8 +33,6 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 
-uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
-
 Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_mesh) {
 	/* CREATE AABB VOLUME */
 

@@ -789,16 +789,6 @@ Resource::~Resource() {
 	}
 }
 
-HashMap<String, Resource *> ResourceCache::resources;
-#ifdef TOOLS_ENABLED
-HashMap<String, HashMap<String, String>> ResourceCache::resource_path_cache;
-#endif
-
-Mutex ResourceCache::lock;
-#ifdef TOOLS_ENABLED
-RWLock ResourceCache::path_cache_lock;
-#endif
-
 void ResourceCache::clear() {
 	if (!resources.is_empty()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {

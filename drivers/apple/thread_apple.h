@@ -75,8 +75,8 @@ private:
 	ID id = UNASSIGNED_ID;
 	pthread_t pthread;
 
-	static SafeNumeric<uint64_t> id_counter;
-	static thread_local ID caller_id;
+	static inline SafeNumeric<uint64_t> id_counter{ 1 }; // The first value after .increment() is 2, hence by default the main thread ID should be 1.
+	static inline thread_local ID caller_id = Thread::id_counter.increment();
 
 	static void *thread_callback(void *p_data);
 

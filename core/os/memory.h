@@ -282,7 +282,7 @@ struct _GlobalNil {
 };
 
 struct _GlobalNilClass {
-	static _GlobalNil _nil;
+	static inline _GlobalNil _nil;
 };
 
 template <typename T>
