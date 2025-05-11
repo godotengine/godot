@@ -66,11 +66,15 @@
 			The target bus name. All sounds from this node will be playing on this bus.
 			[b]Note:[/b] At runtime, if no bus with the given name exists, all sounds will fall back on [code]"Master"[/code]. See also [method AudioServer.get_bus_name].
 		</member>
+		<member name="downmix" type="bool" setter="set_downmix" getter="is_downmix_enabled" default="true">
+			If [code]true[/code], audio will be downmixed to fit the current [enum AudioServer.SpeakerMode] instead of specifically defined [member output_channels].
+		</member>
 		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
 			The maximum number of sounds this node can play at the same time. Calling [method play] after this value is reached will cut off the oldest sounds.
 		</member>
-		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget" default="0">
-			The mix target channels. Has no effect when two speakers or less are detected (see [enum AudioServer.SpeakerMode]).
+		<member name="output_channels" type="int" setter="set_output_channels" getter="get_output_channels" enum="AudioStreamPlayer.ChannelFlags" is_bitfield="true" default="3">
+			The audio channels the stream should output to. Defaults to Stereo.
+			[b]Note:[/b] Set [member downmix] to [code]false[/code] to only output if selected channel is available in the current [enum AudioServer.SpeakerMode].
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			The audio's pitch and tempo, as a multiplier of the [member stream]'s sample rate. A value of [code]2.0[/code] doubles the audio's pitch, while a value of [code]0.5[/code] halves the pitch.
@@ -105,14 +109,21 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MIX_TARGET_STEREO" value="0" enum="MixTarget">
-			The audio will be played only on the first channel. This is the default.
+		<constant name="AUDIO_CHANNEL_LEFT" value="1" enum="ChannelFlags" is_bitfield="true">
 		</constant>
-		<constant name="MIX_TARGET_SURROUND" value="1" enum="MixTarget">
-			The audio will be played on all surround channels.
+		<constant name="AUDIO_CHANNEL_RIGHT" value="2" enum="ChannelFlags" is_bitfield="true">
 		</constant>
-		<constant name="MIX_TARGET_CENTER" value="2" enum="MixTarget">
-			The audio will be played on the second channel, which is usually the center.
+		<constant name="AUDIO_CHANNEL_CENTER" value="4" enum="ChannelFlags" is_bitfield="true">
+		</constant>
+		<constant name="AUDIO_CHANNEL_LFE" value="8" enum="ChannelFlags" is_bitfield="true">
+		</constant>
+		<constant name="AUDIO_CHANNEL_REAR_LEFT" value="16" enum="ChannelFlags" is_bitfield="true">
+		</constant>
+		<constant name="AUDIO_CHANNEL_REAR_RIGHT" value="32" enum="ChannelFlags" is_bitfield="true">
+		</constant>
+		<constant name="AUDIO_CHANNEL_SIDE_LEFT" value="64" enum="ChannelFlags" is_bitfield="true">
+		</constant>
+		<constant name="AUDIO_CHANNEL_SIDE_RIGHT" value="128" enum="ChannelFlags" is_bitfield="true">
 		</constant>
 	</constants>
 </class>
