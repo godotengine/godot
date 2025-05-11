@@ -2107,6 +2107,7 @@ void reflection_process(samplerCube reflection_map,
 	vec3 ref_normal = normalize(reflect(vertex, normal));
 	ref_normal = (local_matrix * vec4(ref_normal, 0.0)).xyz;
 
+	float roughness_lod = sqrt(roughness) * MAX_ROUGHNESS_LOD;
 	if (use_box_project) { //box project
 
 		vec3 nrdir = normalize(ref_normal);
@@ -2114,13 +2115,19 @@ void reflection_process(samplerCube reflection_map,
 		vec3 rbmin = (-box_extents - local_pos) / nrdir;
 
 		vec3 rbminmax = mix(rbmin, rbmax, vec3(greaterThan(nrdir, vec3(0.0, 0.0, 0.0))));
+		float distance_to_hit_point = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
 
-		float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
-		vec3 posonbox = local_pos + nrdir * fa;
+		vec3 posonbox = local_pos + nrdir * distance_to_hit_point;
 		ref_normal = posonbox - box_offset.xyz;
+
+		float fresnel = 1.0 - max(dot(normal, -normalize(vertex)), 0.0);
+		float bp_roughness = (distance_to_hit_point * (2.0 - fresnel * 2.0)) / (length(local_pos) + 1e-7f) * roughness;
+		bp_roughness = clamp(bp_roughness, 0.0, roughness);
+		bp_roughness = mix(bp_roughness, roughness, roughness * roughness);
+		roughness_lod = sqrt(bp_roughness) * MAX_ROUGHNESS_LOD;
 	}
 
-	reflection.rgb = srgb_to_linear(textureLod(reflection_map, ref_normal, roughness * MAX_ROUGHNESS_LOD).rgb);
+	reflection.rgb = srgb_to_linear(textureLod(reflection_map, ref_normal, roughness_lod).rgb);
 
 	if (exterior) {
 		reflection.rgb = mix(skybox, reflection.rgb, blend);
