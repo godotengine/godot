@@ -50,9 +50,6 @@ MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint3
 
 #endif // DEBUG_ENABLED
 
-ClassDB::APIType ClassDB::current_api = API_CORE;
-HashMap<ClassDB::APIType, uint32_t> ClassDB::api_hashes_cache;
-
 void ClassDB::set_current_api(APIType p_api) {
 	DEV_ASSERT(!api_hashes_cache.has(p_api)); // This API type may not be suitable for caching of hash if it can change later.
 	current_api = p_api;
@@ -62,13 +59,7 @@ ClassDB::APIType ClassDB::get_current_api() {
 	return current_api;
 }
 
-HashMap<StringName, ClassDB::ClassInfo> ClassDB::classes;
-HashMap<StringName, StringName> ClassDB::resource_base_extensions;
-HashMap<StringName, StringName> ClassDB::compat_classes;
-
 #ifdef TOOLS_ENABLED
-HashMap<StringName, ObjectGDExtension> ClassDB::placeholder_extensions;
-
 class PlaceholderExtensionInstance {
 	StringName class_name;
 	HashMap<StringName, Variant> properties;
@@ -2230,9 +2221,6 @@ void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p
 	}
 }
 
-HashMap<StringName, HashMap<StringName, Variant>> ClassDB::default_values;
-HashSet<StringName> ClassDB::default_values_cached;
-
 Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid) {
 	if (!default_values_cached.has(p_class)) {
 		if (!default_values.has(p_class)) {
@@ -2371,7 +2359,6 @@ void ClassDB::unregister_extension_class(const StringName &p_class, bool p_free_
 #endif
 }
 
-HashMap<StringName, ClassDB::NativeStruct> ClassDB::native_structs;
 void ClassDB::register_native_struct(const StringName &p_name, const String &p_code, uint64_t p_current_size) {
 	NativeStruct ns;
 	ns.ccode = p_code;
@@ -2425,9 +2412,6 @@ void ClassDB::cleanup() {
 	compat_classes.clear();
 	native_structs.clear();
 }
-
-// Array to use in optional parameters on methods and the DEFVAL_ARRAY macro.
-Array ClassDB::default_array_arg = Array::create_read_only();
 
 bool ClassDB::is_default_array_arg(const Array &p_array) {
 	return p_array.is_same_instance(default_array_arg);

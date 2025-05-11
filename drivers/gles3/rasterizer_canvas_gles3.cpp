@@ -2641,8 +2641,6 @@ void RasterizerCanvasGLES3::set_time(double p_time) {
 	state.time = p_time;
 }
 
-RasterizerCanvasGLES3 *RasterizerCanvasGLES3::singleton = nullptr;
-
 RasterizerCanvasGLES3 *RasterizerCanvasGLES3::get_singleton() {
 	return singleton;
 }

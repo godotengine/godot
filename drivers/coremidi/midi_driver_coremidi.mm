@@ -36,9 +36,6 @@
 
 #import <CoreServices/CoreServices.h>
 
-Mutex MIDIDriverCoreMidi::mutex;
-bool MIDIDriverCoreMidi::core_midi_closed = false;
-
 MIDIDriverCoreMidi::InputConnection::InputConnection(int p_device_index, MIDIEndpointRef p_source) :
 		parser(p_device_index), source(p_source) {}
 

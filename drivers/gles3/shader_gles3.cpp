@@ -758,11 +758,6 @@ bool ShaderGLES3::version_free(RID p_version) {
 	return true;
 }
 
-bool ShaderGLES3::shader_cache_cleanup_on_start = false;
-
-ShaderGLES3::ShaderGLES3() {
-}
-
 void ShaderGLES3::initialize(const String &p_general_defines, int p_base_texture_index) {
 	general_defines = p_general_defines.utf8();
 	base_texture_index = p_base_texture_index;
@@ -824,11 +819,6 @@ void ShaderGLES3::set_shader_cache_save_compressed_zstd(bool p_enable) {
 void ShaderGLES3::set_shader_cache_save_debug(bool p_enable) {
 	shader_cache_save_debug = p_enable;
 }
-
-String ShaderGLES3::shader_cache_dir;
-bool ShaderGLES3::shader_cache_save_compressed = true;
-bool ShaderGLES3::shader_cache_save_compressed_zstd = true;
-bool ShaderGLES3::shader_cache_save_debug = true;
 
 ShaderGLES3::~ShaderGLES3() {
 	LocalVector<RID> remaining = version_owner.get_owned_list();
