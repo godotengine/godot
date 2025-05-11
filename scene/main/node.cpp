@@ -2901,7 +2901,6 @@ bool Node::get_scene_instance_load_placeholder() const {
 }
 
 Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) const {
-	ERR_THREAD_GUARD_V(nullptr);
 	Node *node = nullptr;
 
 	bool instantiated = false;
@@ -2954,8 +2953,12 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		instance_roots.push_back(this);
 
 		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
-			for (int i = 0; i < N->get()->get_child_count(false); ++i) {
-				Node *descendant = N->get()->get_child(i, false);
+			N->get()->_update_children_cache();
+
+			for (Node *descendant : N->get()->data.children_cache) {
+				if (descendant->is_internal()) {
+					continue;
+				}
 
 				// Skip nodes not really belonging to the instantiated hierarchy; they'll be processed normally later
 				// but remember non-instantiated nodes that are hidden below instantiated ones
@@ -2999,20 +3002,26 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 	}
 
-	for (int i = 0; i < get_child_count(false); i++) {
-		if (instantiated && get_child(i)->data.owner == this) {
-			continue; //part of instance
+	_update_children_cache();
+	for (Node *child : data.children_cache) {
+		if (child->is_internal()) {
+			continue;
 		}
 
-		Node *dup = get_child(i)->_duplicate(p_flags, r_duplimap);
+		if (instantiated && child->data.owner == this) {
+			continue; // Part of instance.
+		}
+
+		Node *dup = child->_duplicate(p_flags, r_duplimap);
 		if (!dup) {
 			memdelete(node);
 			return nullptr;
 		}
-
 		node->add_child(dup);
-		if (i < node->get_child_count() - 1) {
-			node->move_child(dup, i);
+
+		int pos = dup->get_index();
+		if (pos < node->get_child_count(false) - 1) {
+			node->move_child(dup, pos);
 		}
 	}
 
@@ -3028,11 +3037,10 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 			memdelete(node);
 			return nullptr;
 		}
-
 		parent->add_child(dup);
-		int pos = E->get_index();
 
-		if (pos < parent->get_child_count() - 1) {
+		int pos = E->get_index();
+		if (pos < parent->get_child_count(false) - 1) {
 			parent->move_child(dup, pos);
 		}
 	}
@@ -3041,8 +3049,8 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
 Node *Node::duplicate(int p_flags) const {
 	ERR_THREAD_GUARD_V(nullptr);
-	Node *dupe = _duplicate(p_flags);
 
+	Node *dupe = _duplicate(p_flags);
 	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
 
 	_duplicate_properties(this, this, dupe, p_flags);
@@ -3193,10 +3201,19 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 		}
 	}
 
-	for (int i = 0; i < p_original->get_child_count(false); i++) {
-		Node *copy_child = p_copy->get_child(i, false);
-		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
-		_duplicate_properties(p_root, p_original->get_child(i, false), copy_child, p_flags);
+	p_copy->_update_children_cache();
+
+	int i = 0;
+	for (const Node *original_child : p_original->data.children_cache) {
+		if (original_child->is_internal()) {
+			continue;
+		}
+
+		int j = p_copy->data.internal_children_front_count_cache + i;
+		ERR_FAIL_INDEX_MSG(j, p_copy->data.children_cache.size(), "Child node disappeared while duplicating.");
+		Node *copy_child = p_copy->data.children_cache[j];
+		_duplicate_properties(p_root, original_child, copy_child, p_flags);
+		i++;
 	}
 }
 
