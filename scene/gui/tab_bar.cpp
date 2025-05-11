@@ -36,6 +36,10 @@
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
 
+static inline Color _select_color(const Color &p_override_color, const Color &p_default_color) {
+	return p_override_color.a > 0 ? p_override_color : p_default_color;
+}
+
 Size2 TabBar::get_minimum_size() const {
 	Size2 ms;
 
@@ -527,15 +531,15 @@ void TabBar::_notification(int p_what) {
 
 					if (tabs[i].disabled) {
 						sb = theme_cache.tab_disabled_style;
-						fnt_col = theme_cache.font_disabled_color;
+						fnt_col = _select_color(tabs[i].font_color_overrides[DrawMode::DRAW_DISABLED], theme_cache.font_disabled_color);
 						icn_col = theme_cache.icon_disabled_color;
 					} else if (i == hover) {
 						sb = theme_cache.tab_hovered_style;
-						fnt_col = theme_cache.font_hovered_color;
+						fnt_col = _select_color(tabs[i].font_color_overrides[DrawMode::DRAW_HOVER], theme_cache.font_hovered_color);
 						icn_col = theme_cache.icon_hovered_color;
 					} else {
 						sb = theme_cache.tab_unselected_style;
-						fnt_col = theme_cache.font_unselected_color;
+						fnt_col = _select_color(tabs[i].font_color_overrides[DrawMode::DRAW_NORMAL], theme_cache.font_unselected_color);
 						icn_col = theme_cache.icon_unselected_color;
 					}
 
@@ -546,8 +550,9 @@ void TabBar::_notification(int p_what) {
 			// Draw selected tab in the front, but only if it's visible.
 			if (current >= offset && current <= max_drawn_tab && !tabs[current].hidden) {
 				Ref<StyleBox> sb = tabs[current].disabled ? theme_cache.tab_disabled_style : theme_cache.tab_selected_style;
+				Color col = _select_color(tabs[current].font_color_overrides[DrawMode::DRAW_PRESSED], theme_cache.font_selected_color);
 
-				_draw_tab(sb, theme_cache.font_selected_color, theme_cache.icon_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus(true));
+				_draw_tab(sb, col, theme_cache.icon_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus(true));
 			}
 
 			if (buttons_visible) {
@@ -1007,6 +1012,37 @@ void TabBar::set_tab_icon_max_width(int p_tab, int p_width) {
 int TabBar::get_tab_icon_max_width(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), 0);
 	return tabs[p_tab].icon_max_width;
+}
+
+void TabBar::set_font_color_override_all(int p_tab, const Color &p_color) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+
+	Tab &tab = tabs.write[p_tab];
+	for (int i = 0; i < DrawMode::DRAW_MAX; i++) {
+		tab.font_color_overrides[i] = p_color;
+	}
+
+	queue_redraw();
+}
+
+void TabBar::set_font_color_override(int p_tab, DrawMode p_draw_mode, const Color &p_color) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+	ERR_FAIL_INDEX(p_draw_mode, DrawMode::DRAW_MAX);
+
+	if (tabs[p_tab].font_color_overrides[p_draw_mode] == p_color) {
+		return;
+	}
+
+	tabs.write[p_tab].font_color_overrides[p_draw_mode] = p_color;
+
+	queue_redraw();
+}
+
+Color TabBar::get_font_color_override(int p_tab, DrawMode p_draw_mode) const {
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Color());
+	ERR_FAIL_INDEX_V(p_draw_mode, DrawMode::DRAW_MAX, Color());
+
+	return tabs[p_tab].font_color_overrides[p_draw_mode];
 }
 
 void TabBar::set_tab_disabled(int p_tab, bool p_disabled) {
