@@ -531,6 +531,14 @@ Comment: OpenXR Loader
 Copyright: 2020-2025, The Khronos Group Inc.
 License: Apache-2.0
 
+Files: ./thirdparty/opus/*
+Comment: Opus and Opusfile
+Copyright: 2001-2023, Xiph.Org, Skype Limited, Octasic,
+ Jean-Marc Valin, Timothy B. Terriberry,
+ CSIRO, Gregory Maxwell, Mark Borgerding,
+ Erik de Castro Lopo
+License: BSD-3-clause
+
 Files: thirdparty/pcre2/*
 Comment: PCRE2
 Copyright: 1997-2024, University of Cambridge
