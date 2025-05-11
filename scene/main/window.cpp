@@ -1430,8 +1430,12 @@ void Window::_notification(int p_what) {
 				DisplayServer::get_singleton()->accessibility_update_set_name(accessibility_title_element, tr_title);
 				DisplayServer::get_singleton()->accessibility_update_set_bounds(accessibility_title_element, Rect2(Vector2(0, -w), Size2(size.x, w)));
 			} else {
-				DisplayServer::get_singleton()->accessibility_update_set_transform(ae, Transform2D());
-				DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Point2(), size));
+				DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_final_transform());
+				if (_get_size_2d_override() != Size2()) {
+					DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Point2(), _get_size_2d_override()));
+				} else {
+					DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Point2(), _get_size()));
+				}
 
 				if (accessibility_announcement_element.is_null()) {
 					accessibility_announcement_element = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
