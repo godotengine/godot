@@ -3098,7 +3098,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output.append("unsafe ");
 		}
 
-		String return_cs_type = return_type->cs_type + _get_generic_type_parameters(*return_type, p_imethod.return_type.generic_type_parameters);
+		String generic_type = _get_generic_type_parameters(*return_type, p_imethod.return_type.generic_type_parameters);
+		String return_cs_type = return_type->cs_type + generic_type;
 
 		p_output.append(return_cs_type + " ");
 		p_output.append(p_imethod.proxy_name + "(");
@@ -3151,7 +3152,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output << INDENT2 "return " << im_call << "(" << icall_params << ");\n";
 		} else {
 			p_output.append(sformat(return_type->cs_out, im_call, icall_params,
-					return_cs_type, return_type->c_type_out, String(), INDENT2));
+					return_cs_type, return_type->c_type_out, generic_type, INDENT2));
 			p_output.append("\n");
 		}
 
@@ -4856,7 +4857,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
 	// Cannot pass null StringName to ptrcall
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5return " BINDINGS_CLASS_POOLS "." + itype.proxy_name + "PoolInstance.Rent(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_string_name";
 	itype.c_type_in = itype.c_type;
@@ -4874,7 +4875,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
 	// Cannot pass null NodePath to ptrcall
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5return " BINDINGS_CLASS_POOLS "." + itype.proxy_name + "PoolInstance.Rent(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_node_path";
 	itype.c_type_in = itype.c_type;
@@ -4997,7 +4998,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.type_parameter_count = 1;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5return " BINDINGS_CLASS_POOLS "." + itype.proxy_name + "PoolInstance.Rent(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_array";
 	itype.c_type_in = itype.c_type;
@@ -5010,7 +5011,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// Reuse Array's itype
 	itype.name = "Array_@generic";
 	itype.cname = itype.name;
-	itype.cs_out = "%5return new %2(%0(%1));";
+	itype.cs_out = "%5return " BINDINGS_CLASS_POOLS "." + itype.proxy_name + "Pool%4.Instance.Rent(%0(%1));";
 	// For generic Godot collections, Variant.From<T>/As<T> is slower, so we need this special case
 	itype.cs_variant_to_managed = "VariantUtils.ConvertToArray(%0)";
 	itype.cs_managed_to_variant = "VariantUtils.CreateFromArray(%0)";
@@ -5024,7 +5025,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.type_parameter_count = 2;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5return " BINDINGS_CLASS_POOLS "." + itype.proxy_name + "PoolInstance.Rent(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_dictionary";
 	itype.c_type_in = itype.c_type;
@@ -5037,7 +5038,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// Reuse Dictionary's itype
 	itype.name = "Dictionary_@generic";
 	itype.cname = itype.name;
-	itype.cs_out = "%5return new %2(%0(%1));";
+	itype.cs_out = "%5return " BINDINGS_CLASS_POOLS "." + itype.proxy_name + "Pool%4.Instance.Rent(%0(%1));";
 	// For generic Godot collections, Variant.From<T>/As<T> is slower, so we need this special case
 	itype.cs_variant_to_managed = "VariantUtils.ConvertToDictionary(%0)";
 	itype.cs_managed_to_variant = "VariantUtils.CreateFromDictionary(%0)";
