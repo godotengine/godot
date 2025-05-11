@@ -915,6 +915,8 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 
 		vec3 local_ref_vec = (reflections.data[ref_index].local_matrix * vec4(ref_vec, 0.0)).xyz;
 
+		float mip = sqrt(roughness) * MAX_ROUGHNESS_LOD;
+		float mip_min = pow(roughness, 2.0) * MAX_ROUGHNESS_LOD; // Ensures fully rough materials don't have reflection contact hardening.
 		if (reflections.data[ref_index].box_project) { //box project
 
 			vec3 nrdir = normalize(local_ref_vec);
@@ -922,16 +924,26 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 			vec3 rbmin = (-box_extents - local_pos) / nrdir;
 
 			vec3 rbminmax = mix(rbmin, rbmax, greaterThan(nrdir, vec3(0.0, 0.0, 0.0)));
+			float distance_to_hit_point = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
 
-			float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
-			vec3 posonbox = local_pos + nrdir * fa;
+			vec3 posonbox = local_pos + nrdir * distance_to_hit_point;
 			local_ref_vec = posonbox - reflections.data[ref_index].box_offset;
+
+			float fresnel = 1.0 - max(dot(normal, -normalize(vertex)), 0.0);
+			fresnel = pow(fresnel, 2.0);
+
+			float reflection_roughness = distance_to_hit_point * (1.0 - fresnel); // Adjust contact hardening strength by viewing angle.
+			reflection_roughness /= MAX_ROUGHNESS_LOD;
+			reflection_roughness += ((1.0 - fresnel) * sqrt(roughness)); // Increase roughness when viewing angle is perpendicular to avoid overly sharp reflections on rough surfaces.
+
+			float mip_offset = clamp(reflection_roughness, 0.0, 1.0); // Compute new mip level based on the mip offset value (this is mostly arbitrary).
+			mip = mix(mip_min, mip, mip_offset);
 		}
 
 		vec4 reflection;
 		float reflection_blend = max(0.0, blend - reflection_accum.a);
 
-		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_ref_vec, reflections.data[ref_index].index), sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb * sc_luminance_multiplier();
+		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_ref_vec, reflections.data[ref_index].index), mip).rgb * sc_luminance_multiplier();
 		reflection.rgb *= reflections.data[ref_index].exposure_normalization;
 		reflection.a = reflection_blend;
 
