@@ -38,7 +38,7 @@
 #include "core/math/geometry_2d.h"
 #include "servers/navigation/navigation_utilities.h"
 
-using namespace nav_2d;
+using namespace Nav2D;
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
 

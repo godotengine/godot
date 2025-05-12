@@ -37,7 +37,7 @@
 #include "2d/nav_mesh_queries_2d.h"
 #include "2d/nav_region_iteration_2d.h"
 
-using namespace nav_2d;
+using namespace Nav2D;
 
 void NavRegion2D::set_map(NavMap2D *p_map) {
 	if (map == p_map) {
