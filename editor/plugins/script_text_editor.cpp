@@ -575,8 +575,8 @@ void ScriptTextEditor::_validate_script() {
 		script_is_valid = true;
 	}
 	_update_connected_methods();
-	_update_errors();
 	_update_warnings();
+	_update_errors();
 
 	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
@@ -1806,8 +1806,8 @@ void ScriptTextEditor::_notification(int p_what) {
 				break;
 			}
 			if (is_visible_in_tree()) {
-				_update_errors();
 				_update_warnings();
+				_update_errors();
 			}
 			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
