@@ -34,6 +34,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/os/time.h"
 #include "core/version.h"
+#include "scene/main/node.h"
 #include "scene/main/window.h"
 
 HashMap<int, Vector<uint8_t>> SnapshotCollector::pending_snapshots;
@@ -89,13 +90,13 @@ void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_co
 		SnapshotDataTransportObject debug_data(obj);
 
 		// If we're RefCounted, send over our RefCount too. Could add code here to add a few other interesting properties.
-		if (ClassDB::is_parent_class(obj->get_class_name(), RefCounted::get_class_static())) {
-			RefCounted *ref = (RefCounted *)obj;
+		RefCounted *ref = Object::cast_to<RefCounted>(obj);
+		if (ref) {
 			debug_data.extra_debug_data["ref_count"] = ref->get_reference_count();
 		}
 
-		if (ClassDB::is_parent_class(obj->get_class_name(), Node::get_class_static())) {
-			Node *node = (Node *)obj;
+		Node *node = Object::cast_to<Node>(obj);
+		if (node) {
 			debug_data.extra_debug_data["node_name"] = node->get_name();
 			if (node->get_parent() != nullptr) {
 				debug_data.extra_debug_data["node_parent"] = node->get_parent()->get_instance_id();
@@ -125,7 +126,7 @@ void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_co
 		p_arr->push_back(debug_data.extra_debug_data);
 	}
 
-	print_verbose("snapshot size: " + String::num_uint64(p_arr->size()));
+	print_verbose("Snapshot size: " + String::num_uint64(p_arr->size()));
 }
 
 Error SnapshotCollector::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {

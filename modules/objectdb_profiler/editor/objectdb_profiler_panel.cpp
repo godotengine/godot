@@ -31,15 +31,15 @@
 #include "objectdb_profiler_panel.h"
 
 #include "../snapshot_collector.h"
-#include "core/config/project_settings.h"
-#include "core/os/memory.h"
-#include "core/os/time.h"
 #include "data_viewers/class_view.h"
 #include "data_viewers/json_view.h"
 #include "data_viewers/node_view.h"
 #include "data_viewers/object_view.h"
 #include "data_viewers/refcounted_view.h"
 #include "data_viewers/summary_view.h"
+
+#include "core/config/project_settings.h"
+#include "core/os/time.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_node.h"
@@ -308,7 +308,7 @@ void ObjectDBProfilerPanel::_edit_snapshot_name() {
 		}
 	}
 
-	if (name_taken || new_snapshot_name.contains(":") || new_snapshot_name.contains("\\") || new_snapshot_name.contains("/") || new_snapshot_name.begins_with(".") || new_snapshot_name.is_empty()) {
+	if (name_taken || new_snapshot_name.contains_char(':') || new_snapshot_name.contains_char('\\') || new_snapshot_name.contains_char('/') || new_snapshot_name.begins_with(".") || new_snapshot_name.is_empty()) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid snapshot name."));
 		snapshot_list->get_selected()->set_text(0, old_snapshot_name);
 		return;

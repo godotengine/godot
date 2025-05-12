@@ -110,24 +110,24 @@ void SnapshotSummaryView::show_snapshot(GameStateSnapshot *p_data, GameStateSnap
 	String snapshot_a_name = diff_data == nullptr ? TTR("Snapshot") : TTR("Snapshot A");
 	String snapshot_b_name = TTR("Snapshot B");
 
-	_push_overview_blurb(snapshot_a_name + TTR(" Overview"), snapshot_data);
+	_push_overview_blurb(snapshot_a_name + " " + TTR("Overview"), snapshot_data);
 	if (diff_data) {
-		_push_overview_blurb(snapshot_b_name + TTR(" Overview"), diff_data);
+		_push_overview_blurb(snapshot_b_name + " " + TTR("Overview"), diff_data);
 	}
 
-	_push_node_blurb(snapshot_a_name + TTR(" Nodes"), snapshot_data);
+	_push_node_blurb(snapshot_a_name + " " + TTR("Nodes"), snapshot_data);
 	if (diff_data) {
-		_push_node_blurb(snapshot_b_name + TTR(" Nodes"), diff_data);
+		_push_node_blurb(snapshot_b_name + " " + TTR("Nodes"), diff_data);
 	}
 
-	_push_refcounted_blurb(snapshot_a_name + TTR(" RefCounteds"), snapshot_data);
+	_push_refcounted_blurb(snapshot_a_name + " " + TTR("RefCounteds"), snapshot_data);
 	if (diff_data) {
-		_push_refcounted_blurb(snapshot_b_name + TTR(" RefCounteds"), diff_data);
+		_push_refcounted_blurb(snapshot_b_name + " " + TTR("RefCounteds"), diff_data);
 	}
 
-	_push_object_blurb(snapshot_a_name + TTR(" Objects"), snapshot_data);
+	_push_object_blurb(snapshot_a_name + " " + TTR("Objects"), snapshot_data);
 	if (diff_data) {
-		_push_object_blurb(snapshot_b_name + TTR(" Objects"), diff_data);
+		_push_object_blurb(snapshot_b_name + " " + TTR("Objects"), diff_data);
 	}
 }
 
@@ -165,30 +165,30 @@ void SnapshotSummaryView::_push_overview_blurb(const String &p_title, GameStateS
 	String c = "";
 
 	c += "[ul]\n";
-	c += TTR(" [i]Name:[/i] ") + p_snapshot->name + "\n";
+	c += vformat(" [i]%s[/i] %s\n", TTR("Name:"), p_snapshot->name);
 	if (p_snapshot->snapshot_context.has("timestamp")) {
-		c += TTR(" [i]Timestamp:[/i] ") + Time::get_singleton()->get_datetime_string_from_unix_time((double)p_snapshot->snapshot_context["timestamp"]) + "\n";
+		c += vformat(" [i]%s[/i] %s\n", TTR("Timestamp:"), Time::get_singleton()->get_datetime_string_from_unix_time((double)p_snapshot->snapshot_context["timestamp"]));
 	}
 	if (p_snapshot->snapshot_context.has("game_version")) {
-		c += TTR(" [i]Game Version:[/i] ") + (String)p_snapshot->snapshot_context["game_version"] + "\n";
+		c += vformat(" [i]%s[/i] %s\n", TTR("Game Version:"), (String)p_snapshot->snapshot_context["game_version"]);
 	}
 	if (p_snapshot->snapshot_context.has("editor_version")) {
-		c += TTR(" [i]Editor Version:[/i] ") + (String)p_snapshot->snapshot_context["editor_version"] + "\n";
+		c += vformat(" [i]%s[/i] %s\n", TTR("Editor Version:"), (String)p_snapshot->snapshot_context["editor_version"]);
 	}
 
 	double bytes_to_mb = 0.000001;
 	if (p_snapshot->snapshot_context.has("mem_usage")) {
-		c += TTR(" [i]Memory Used:[/i] ") + String::num((double)((uint64_t)p_snapshot->snapshot_context["mem_usage"]) * bytes_to_mb, 3) + " MB\n";
+		c += vformat(" [i]%s[/i] %s\n", TTR("Memory Used:"), String::num((double)((uint64_t)p_snapshot->snapshot_context["mem_usage"]) * bytes_to_mb, 3) + " MB");
 	}
 	if (p_snapshot->snapshot_context.has("mem_max_usage")) {
-		c += TTR(" [i]Max Memory Used:[/i] ") + String::num((double)((uint64_t)p_snapshot->snapshot_context["mem_max_usage"]) * bytes_to_mb, 3) + " MB\n";
+		c += vformat(" [i]%s[/i] %s\n", TTR("Max Memory Used:"), String::num((double)((uint64_t)p_snapshot->snapshot_context["mem_max_usage"]) * bytes_to_mb, 3) + " MB");
 	}
 	if (p_snapshot->snapshot_context.has("mem_available")) {
 		// I'm guessing pretty hard about what this is supposed to be. It's hard coded to be -1 cast to a uint64_t in Memory.h,
 		// so it _could_ be checking if we're on a 64 bit system, I think...
-		c += TTR(" [i]Max uint64 value:[/i] ") + String::num_uint64((uint64_t)p_snapshot->snapshot_context["mem_available"]) + "\n";
+		c += vformat(" [i]%s[/i] %s\n", TTR("Max uint64 Value:"), String::num_uint64((uint64_t)p_snapshot->snapshot_context["mem_available"]));
 	}
-	c += TTR(" [i]Total Objects:[/i] ") + itos(p_snapshot->objects.size()) + "\n";
+	c += vformat(" [i]%s[/i] %s\n", TTR("Total Objects:"), itos(p_snapshot->objects.size()));
 
 	int node_count = 0;
 	for (const KeyValue<ObjectID, SnapshotDataObject *> &pair : p_snapshot->objects) {
@@ -196,7 +196,7 @@ void SnapshotSummaryView::_push_overview_blurb(const String &p_title, GameStateS
 			node_count++;
 		}
 	}
-	c += TTR(" [i]Total Nodes:[/i] ") + itos(node_count) + "\n";
+	c += vformat(" [i]%s[/i] %s\n", TTR("Total Nodes:"), itos(node_count));
 	c += "[/ul]\n";
 
 	blurb_list->add_child(memnew(SummaryBlurb(p_title, c)));
