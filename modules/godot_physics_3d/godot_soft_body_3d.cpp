@@ -272,8 +272,10 @@ void GodotSoftBody3D::update_area() {
 }
 
 void GodotSoftBody3D::reset_link_rest_lengths() {
+	float multiplier = 1.0 - shrinking_factor;
 	for (Link &link : links) {
 		link.rl = (link.n[0]->x - link.n[1]->x).length();
+		link.rl *= multiplier;
 		link.c1 = link.rl * link.rl;
 	}
 }
@@ -861,6 +863,7 @@ void GodotSoftBody3D::append_link(uint32_t p_node1, uint32_t p_node2) {
 	link.n[0] = node1;
 	link.n[1] = node2;
 	link.rl = (node1->x - node2->x).length();
+	link.rl *= 1.0 - shrinking_factor;
 
 	links.push_back(link);
 }
@@ -916,6 +919,10 @@ void GodotSoftBody3D::set_collision_margin(real_t p_val) {
 
 void GodotSoftBody3D::set_linear_stiffness(real_t p_val) {
 	linear_stiffness = p_val;
+}
+
+void GodotSoftBody3D::set_shrinking_factor(real_t p_val) {
+	shrinking_factor = p_val;
 }
 
 void GodotSoftBody3D::set_pressure_coefficient(real_t p_val) {

@@ -1132,6 +1132,20 @@ real_t GodotPhysicsServer3D::soft_body_get_linear_stiffness(RID p_body) const {
 	return soft_body->get_linear_stiffness();
 }
 
+void GodotPhysicsServer3D::soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(soft_body);
+
+	soft_body->set_shrinking_factor(p_shrinking_factor);
+}
+
+real_t GodotPhysicsServer3D::soft_body_get_shrinking_factor(RID p_body) const {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, 0.f);
+
+	return soft_body->get_shrinking_factor();
+}
+
 void GodotPhysicsServer3D::soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);

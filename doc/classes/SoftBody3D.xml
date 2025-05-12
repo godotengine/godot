@@ -156,6 +156,10 @@
 		<member name="ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="true">
 			If [code]true[/code], the [SoftBody3D] will respond to [RayCast3D]s.
 		</member>
+		<member name="shrinking_factor" type="float" setter="set_shrinking_factor" getter="get_shrinking_factor" default="0.0">
+			Scales the rest lengths of [SoftBody3D]'s edge constraints. Positive values shrink the mesh, while negative values expand it. For example, a value of [code]0.1[/code] shortens the edges of the mesh by 10%, while [code]-0.1[/code] expands the edges by 10%.
+			[b]Note:[/b] [member shrinking_factor] is best used on surface meshes with pinned points.
+		</member>
 		<member name="simulation_precision" type="int" setter="set_simulation_precision" getter="get_simulation_precision" default="5">
 			Increasing this value will improve the resulting simulation, but can affect performance. Use with care.
 		</member>

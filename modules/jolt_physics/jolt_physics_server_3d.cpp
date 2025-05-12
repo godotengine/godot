@@ -1154,6 +1154,20 @@ real_t JoltPhysicsServer3D::soft_body_get_linear_stiffness(RID p_body) const {
 	return (real_t)body->get_stiffness_coefficient();
 }
 
+void JoltPhysicsServer3D::soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	return body->set_shrinking_factor((float)p_shrinking_factor);
+}
+
+real_t JoltPhysicsServer3D::soft_body_get_shrinking_factor(RID p_body) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 0.0);
+
+	return (real_t)body->get_shrinking_factor();
+}
+
 void JoltPhysicsServer3D::soft_body_set_pressure_coefficient(RID p_body, real_t p_coefficient) {
 	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
