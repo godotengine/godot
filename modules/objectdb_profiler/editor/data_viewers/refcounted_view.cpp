@@ -106,7 +106,7 @@ void SnapshotRefCountedView::show_snapshot(GameStateSnapshot *p_data, GameStateS
 	refs_list->set_column_title(offset + 5, TTR("ObjectDB Cycles"));
 	refs_list->set_column_expand(offset + 5, false);
 	refs_list->set_column_title_tooltip_text(offset + 5, TTR("Cycles detected in the ObjectDB"));
-	refs_list->connect("item_selected", callable_mp(this, &SnapshotRefCountedView::_refcounted_selected));
+	refs_list->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotRefCountedView::_refcounted_selected));
 	refs_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	refs_list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 

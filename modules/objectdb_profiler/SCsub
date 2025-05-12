@@ -4,17 +4,17 @@ from misc.utility.scons_hints import *
 Import("env")
 Import("env_modules")
 
-env_mp = env_modules.Clone()
+env_objdb = env_modules.Clone()
 
 module_obj = []
 
 # Only include in editor and debug builds.
-if env_mp.debug_features:
-    env_mp.add_source_files(module_obj, "*.cpp")
+if env_objdb.debug_features:
+    env_objdb.add_source_files(module_obj, "*.cpp")
 
     # Only the editor needs these files, don't include them in the game.
     if env.editor_build:
-        env_mp.add_source_files(module_obj, "editor/*.cpp")
-        env_mp.add_source_files(module_obj, "editor/data_viewers/*.cpp")
+        env_objdb.add_source_files(module_obj, "editor/*.cpp")
+        env_objdb.add_source_files(module_obj, "editor/data_viewers/*.cpp")
 
 env.modules_sources += module_obj

@@ -130,7 +130,7 @@ void SnapshotNodeView::_node_selected(Tree *p_tree_selected_from) {
 		return;
 	}
 	if (objects.size() == 1) {
-		EditorNode::get_singleton()->push_item((Object *)(objects.get(0)));
+		EditorNode::get_singleton()->push_item((Object *)objects.get(0));
 	}
 	if (objects.size() == 2) {
 		// This happens if we're in the combined diff view and the node exists in both trees

@@ -30,8 +30,6 @@
 
 #include "snapshot_view.h"
 
-#include "scene/gui/label.h"
-#include "scene/gui/rich_text_label.h"
 #include "scene/gui/tree.h"
 
 void SnapshotView::clear_snapshot() {

@@ -30,25 +30,36 @@
 
 #include "register_types.h"
 
+#include "snapshot_collector.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/objectdb_profiler_plugin.h"
 #endif // TOOLS_ENABLED
-#include "snapshot_collector.h"
 
 void initialize_objectdb_profiler_module(ModuleInitializationLevel p_level) {
+	switch (p_level) {
+		case MODULE_INITIALIZATION_LEVEL_SCENE: {
+			SnapshotCollector::initialize();
+		} break;
+
 #ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorPlugins::add_by_type<ObjectDBProfilerPlugin>();
-	}
+		case MODULE_INITIALIZATION_LEVEL_EDITOR: {
+			EditorPlugins::add_by_type<ObjectDBProfilerPlugin>();
+		} break;
 #endif // TOOLS_ENABLED
 
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		SnapshotCollector::initialize();
+		default:
+			break;
 	}
 }
 
 void uninitialize_objectdb_profiler_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		SnapshotCollector::deinitialize();
+	switch (p_level) {
+		case MODULE_INITIALIZATION_LEVEL_SCENE: {
+			SnapshotCollector::deinitialize();
+		} break;
+
+		default:
+			break;
 	}
 }
