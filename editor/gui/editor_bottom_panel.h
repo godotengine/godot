@@ -50,6 +50,7 @@ class EditorBottomPanel : public PanelContainer {
 
 	Vector<BottomPanelItem> items;
 	bool lock_panel_switching = false;
+	int center_split_start_split_offset = 0;
 
 	VBoxContainer *item_vbox = nullptr;
 	HBoxContainer *bottom_hbox = nullptr;
@@ -69,6 +70,8 @@ class EditorBottomPanel : public PanelContainer {
 	void _scroll(bool p_right);
 	void _update_scroll_buttons();
 	void _update_disabled_buttons();
+	void _center_split_drag_started();
+	void _center_split_drag_ended();
 
 	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
 

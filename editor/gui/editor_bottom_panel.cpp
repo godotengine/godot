@@ -44,6 +44,18 @@
 
 void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			SplitContainer *center_split = Object::cast_to<SplitContainer>(get_parent());
+			ERR_FAIL_NULL(center_split);
+			center_split->connect(SNAME("drag_ended"), callable_mp(this, &EditorBottomPanel::_center_split_drag_ended));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			SplitContainer *center_split = Object::cast_to<SplitContainer>(get_parent());
+			ERR_FAIL_NULL(center_split);
+			center_split->disconnect(SNAME("drag_ended"), callable_mp(this, &EditorBottomPanel::_center_split_drag_ended));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			pin_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 			expand_button->set_button_icon(get_editor_theme_icon(SNAME("ExpandBottomDock")));
@@ -98,6 +110,31 @@ void EditorBottomPanel::_update_disabled_buttons() {
 	HScrollBar *h_scroll = button_scroll->get_h_scroll_bar();
 	left_button->set_disabled(h_scroll->get_value() == 0);
 	right_button->set_disabled(h_scroll->get_value() + h_scroll->get_page() == h_scroll->get_max());
+}
+
+void EditorBottomPanel::_center_split_drag_started() {
+	SplitContainer *center_split = Object::cast_to<SplitContainer>(get_parent());
+	ERR_FAIL_NULL(center_split);
+
+	// Save the split offset so that it can be restored when snapping to top edge
+	center_split_start_split_offset = center_split->get_split_offset();
+}
+
+void EditorBottomPanel::_center_split_drag_ended() {
+	SplitContainer *center_split = Object::cast_to<SplitContainer>(get_parent());
+	ERR_FAIL_NULL(center_split);
+
+	// Reset the snap state after the drag ends to either expanding the bottom panel (when the splitter is snapped
+	// at the top edge) or to collapsing the bottom panel (when the splitter is snapped at the bottom edge)
+	if (center_split->get_snap_state() == SplitContainer::SNAP_FIRST) {
+		center_split->set_snap_state(SplitContainer::SNAP_NONE);
+		center_split->set_split_offset(center_split_start_split_offset);
+		expand_button->set_pressed_no_signal(true);
+		EditorNode::get_top_split()->set_visible(false);
+	} else if (center_split->get_snap_state() == SplitContainer::SNAP_SECOND) {
+		center_split->set_snap_state(SplitContainer::SNAP_NONE);
+		_switch_by_control(false, last_opened_control);
+	}
 }
 
 void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock) {
