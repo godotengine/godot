@@ -1097,7 +1097,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				} else if (step == DRAW_STEP_SHADOW && (font_shadow_color.a == 0)) {
 					continue;
 				} else if (step == DRAW_STEP_TEXT) {
-					bool has_ul = _find_underline(it);
+					Color user_ul_color = Color(0, 0, 0, 0);
+					bool has_ul = _find_underline(it, &user_ul_color);
 					if (!has_ul && underline_meta) {
 						ItemMeta *meta = nullptr;
 						if (_find_meta(it, nullptr, &meta) && meta) {
@@ -1115,20 +1116,25 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						}
 					}
 					if (has_ul) {
-						if (ul_started && font_color != ul_color_prev) {
+						Color new_ul_color;
+						if (user_ul_color.a == 0.0) {
+							new_ul_color = font_color;
+							new_ul_color.a *= float(theme_cache.underline_alpha) / 100.0;
+						} else {
+							new_ul_color = user_ul_color;
+						}
+						if (ul_started && new_ul_color != ul_color_prev) {
 							float y_off = upos;
 							float underline_width = MAX(1.0, uth * theme_cache.base_scale);
 							draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
 							ul_start = p_ofs + Vector2(off_step.x, off_step.y);
-							ul_color_prev = font_color;
-							ul_color = font_color;
-							ul_color.a *= 0.5;
+							ul_color = new_ul_color;
+							ul_color_prev = new_ul_color;
 						} else if (!ul_started) {
 							ul_started = true;
 							ul_start = p_ofs + Vector2(off_step.x, off_step.y);
-							ul_color_prev = font_color;
-							ul_color = font_color;
-							ul_color.a *= 0.5;
+							ul_color = new_ul_color;
+							ul_color_prev = new_ul_color;
 						}
 					} else if (ul_started) {
 						ul_started = false;
@@ -1144,13 +1150,13 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 							dot_ul_start = p_ofs + Vector2(off_step.x, off_step.y);
 							dot_ul_color_prev = font_color;
 							dot_ul_color = font_color;
-							dot_ul_color.a *= 0.5;
+							dot_ul_color.a *= float(theme_cache.underline_alpha) / 100.0;
 						} else if (!dot_ul_started) {
 							dot_ul_started = true;
 							dot_ul_start = p_ofs + Vector2(off_step.x, off_step.y);
 							dot_ul_color_prev = font_color;
 							dot_ul_color = font_color;
-							dot_ul_color.a *= 0.5;
+							dot_ul_color.a *= float(theme_cache.underline_alpha) / 100.0;
 						}
 					} else if (dot_ul_started) {
 						dot_ul_started = false;
@@ -1158,21 +1164,27 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						float underline_width = MAX(1.0, uth * theme_cache.base_scale);
 						draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
 					}
-					if (_find_strikethrough(it)) {
-						if (st_started && font_color != st_color_prev) {
+					Color user_st_color = Color(0, 0, 0, 0);
+					if (_find_strikethrough(it, &user_st_color)) {
+						Color new_st_color;
+						if (user_st_color.a == 0.0) {
+							new_st_color = font_color;
+							new_st_color.a *= float(theme_cache.strikethrough_alpha) / 100.0;
+						} else {
+							new_st_color = user_st_color;
+						}
+						if (st_started && new_st_color != st_color_prev) {
 							float y_off = -l_ascent + l_size.y / 2;
 							float underline_width = MAX(1.0, uth * theme_cache.base_scale);
 							draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), st_color, underline_width);
 							st_start = p_ofs + Vector2(off_step.x, off_step.y);
-							st_color_prev = font_color;
-							st_color = font_color;
-							st_color.a *= 0.5;
+							st_color = new_st_color;
+							st_color_prev = new_st_color;
 						} else if (!st_started) {
 							st_started = true;
 							st_start = p_ofs + Vector2(off_step.x, off_step.y);
-							st_color_prev = font_color;
-							st_color = font_color;
-							st_color.a *= 0.5;
+							st_color = new_st_color;
+							st_color_prev = new_st_color;
 						}
 					} else if (st_started) {
 						st_started = false;
@@ -3362,11 +3374,15 @@ Color RichTextLabel::_find_outline_color(Item *p_item, const Color &p_default_co
 	return p_default_color;
 }
 
-bool RichTextLabel::_find_underline(Item *p_item) {
+bool RichTextLabel::_find_underline(Item *p_item, Color *r_color) {
 	Item *item = p_item;
 
 	while (item) {
 		if (item->type == ITEM_UNDERLINE) {
+			if (r_color) {
+				ItemUnderline *ul = static_cast<ItemUnderline *>(item);
+				*r_color = ul->color;
+			}
 			return true;
 		}
 
@@ -3376,11 +3392,15 @@ bool RichTextLabel::_find_underline(Item *p_item) {
 	return false;
 }
 
-bool RichTextLabel::_find_strikethrough(Item *p_item) {
+bool RichTextLabel::_find_strikethrough(Item *p_item, Color *r_color) {
 	Item *item = p_item;
 
 	while (item) {
 		if (item->type == ITEM_STRIKETHROUGH) {
+			if (r_color) {
+				ItemStrikethrough *st = static_cast<ItemStrikethrough *>(item);
+				*r_color = st->color;
+			}
 			return true;
 		}
 
@@ -4396,24 +4416,26 @@ void RichTextLabel::push_outline_color(const Color &p_color) {
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_underline() {
+void RichTextLabel::push_underline(const Color &p_color) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
 	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemUnderline *item = memnew(ItemUnderline);
+	item->color = p_color;
 	item->owner = get_instance_id();
 	item->rid = items.make_rid(item);
 
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_strikethrough() {
+void RichTextLabel::push_strikethrough(const Color &p_color) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
 	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemStrikethrough *item = memnew(ItemStrikethrough);
+	item->color = p_color;
 	item->owner = get_instance_id();
 	item->rid = items.make_rid(item);
 
@@ -5286,15 +5308,33 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("cell");
 		} else if (tag == "u") {
-			//use underline
 			push_underline();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag.begins_with("u ")) {
+			Color color = Color(0, 0, 0, 0);
+			OptionMap::Iterator color_option = bbcode_options.find("color");
+			if (color_option) {
+				color = Color::from_string(color_option->value, color);
+			}
+
+			push_underline(color);
+			pos = brk_end + 1;
+			tag_stack.push_front("u");
 		} else if (tag == "s") {
-			//use strikethrough
 			push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag.begins_with("s ")) {
+			Color color = Color(0, 0, 0, 0);
+			OptionMap::Iterator color_option = bbcode_options.find("color");
+			if (color_option) {
+				color = Color::from_string(color_option->value, color);
+			}
+
+			push_strikethrough(color);
+			pos = brk_end + 1;
+			tag_stack.push_front("s");
 		} else if (tag.begins_with("char=")) {
 			int32_t char_code = _get_tag_value(tag).hex_to_int();
 			add_text(String::chr(char_code));
@@ -7156,8 +7196,8 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_meta", "data", "underline_mode", "tooltip"), &RichTextLabel::push_meta, DEFVAL(META_UNDERLINE_ALWAYS), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("push_hint", "description"), &RichTextLabel::push_hint);
 	ClassDB::bind_method(D_METHOD("push_language", "language"), &RichTextLabel::push_language);
-	ClassDB::bind_method(D_METHOD("push_underline"), &RichTextLabel::push_underline);
-	ClassDB::bind_method(D_METHOD("push_strikethrough"), &RichTextLabel::push_strikethrough);
+	ClassDB::bind_method(D_METHOD("push_underline", "color"), &RichTextLabel::push_underline, DEFVAL(Color(0, 0, 0, 0)));
+	ClassDB::bind_method(D_METHOD("push_strikethrough", "color"), &RichTextLabel::push_strikethrough, DEFVAL(Color(0, 0, 0, 0)));
 	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align", "align_to_row", "name"), &RichTextLabel::push_table, DEFVAL(INLINE_ALIGNMENT_TOP), DEFVAL(-1), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("push_dropcap", "string", "font", "size", "dropcap_margins", "color", "outline_size", "outline_color"), &RichTextLabel::push_dropcap, DEFVAL(Rect2()), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(0, 0, 0, 0)));
 	ClassDB::bind_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio", "shrink"), &RichTextLabel::set_table_column_expand, DEFVAL(1), DEFVAL(true));
@@ -7410,6 +7450,9 @@ void RichTextLabel::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, text_highlight_h_padding);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, text_highlight_v_padding);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, underline_alpha);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, strikethrough_alpha);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, table_h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, table_v_separation);
