@@ -6,13 +6,13 @@ Import("env_modules")
 
 env_camera = env_modules.Clone()
 
-if env["platform"] in ["windows", "macos", "linuxbsd", "android"]:
+if env["platform"] in ["windows", "macos", "linuxbsd", "android", "ios"]:
     env_camera.add_source_files(env.modules_sources, "register_types.cpp")
 
 if env["platform"] == "windows":
     env_camera.add_source_files(env.modules_sources, "camera_win.cpp")
 
-elif env["platform"] == "macos":
+elif env["platform"] in ["macos", "ios"]:
     env_camera.add_source_files(env.modules_sources, "camera_macos.mm")
 
 elif env["platform"] == "android":
