@@ -141,6 +141,8 @@ protected:
 	void _push_table_bind_compat_76829(int p_columns, InlineAlignment p_alignment, int p_align_to_row);
 	bool _remove_paragraph_bind_compat_91098(int p_paragraph);
 	void _set_table_column_expand_bind_compat_101482(int p_column, bool p_expand, int p_ratio);
+	void _push_underline_bind_compat_106300();
+	void _push_strikethrough_bind_compat_106300();
 
 	static void _bind_compatibility_methods();
 #endif
@@ -323,10 +325,12 @@ private:
 	};
 
 	struct ItemUnderline : public Item {
+		Color color;
 		ItemUnderline() { type = ITEM_UNDERLINE; }
 	};
 
 	struct ItemStrikethrough : public Item {
+		Color color;
 		ItemStrikethrough() { type = ITEM_STRIKETHROUGH; }
 	};
 
@@ -649,8 +653,8 @@ private:
 	String _find_language(Item *p_item);
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	Color _find_outline_color(Item *p_item, const Color &p_default_color);
-	bool _find_underline(Item *p_item);
-	bool _find_strikethrough(Item *p_item);
+	bool _find_underline(Item *p_item, Color *r_color = nullptr);
+	bool _find_strikethrough(Item *p_item, Color *r_color = nullptr);
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
 	bool _find_hint(Item *p_item, String *r_description);
 	Color _find_bgcolor(Item *p_item);
@@ -740,6 +744,9 @@ private:
 		int text_highlight_h_padding;
 		int text_highlight_v_padding;
 
+		int underline_alpha;
+		int strikethrough_alpha;
+
 		int table_h_separation;
 		int table_v_separation;
 		Color table_odd_row_bg;
@@ -773,8 +780,8 @@ public:
 	void push_mono();
 	void push_color(const Color &p_color);
 	void push_outline_color(const Color &p_color);
-	void push_underline();
-	void push_strikethrough();
+	void push_underline(const Color &p_color = Color(0, 0, 0, 0));
+	void push_strikethrough(const Color &p_color = Color(0, 0, 0, 0));
 	void push_language(const String &p_language);
 	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array());
 	void push_indent(int p_level);
