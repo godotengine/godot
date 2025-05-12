@@ -1051,6 +1051,13 @@ void RendererViewport::_viewport_set_size(Viewport *p_viewport, int p_width, int
 	}
 }
 
+Size2i RendererViewport::viewport_get_size(RID p_viewport) const {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL_V(viewport, Size2i());
+
+	return RSG::texture_storage->render_target_get_size(viewport->render_target);
+}
+
 bool RendererViewport::_viewport_requires_motion_vectors(Viewport *p_viewport) {
 	return p_viewport->use_taa ||
 			RS::scaling_3d_mode_type(p_viewport->scaling_3d_mode) == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL ||

@@ -574,6 +574,13 @@ void Viewport::_notification(int p_what) {
 				set_physics_process_internal(true);
 			}
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
+			SceneTree* scene_tree = SceneTree::get_singleton();
+			if (scene_tree) {
+				Viewport* root_vp = scene_tree->get_root()->get_viewport();
+				if (root_vp) {
+					root_vp->connect("size_changed", callable_mp(this, &Viewport::_root_viewport_size_changed));
+				}
+			}
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -633,6 +640,13 @@ void Viewport::_notification(int p_what) {
 
 			RS::get_singleton()->viewport_set_active(viewport, false);
 			RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, RID());
+			SceneTree* scene_tree = SceneTree::get_singleton();
+			if (scene_tree) {
+				Viewport* root_vp = scene_tree->get_root()->get_viewport();
+				if (root_vp) {
+					root_vp->disconnect("size_changed", callable_mp(this, &Viewport::_root_viewport_size_changed));
+				}
+			}
 		} break;
 
 		case NOTIFICATION_PATH_RENAMED: {
@@ -1061,8 +1075,9 @@ float Viewport::get_oversampling_override() const {
 bool Viewport::_set_size(const Size2 &p_size, const Size2i &p_texture_resolution_override, bool p_allocated) {
 	Transform2D stretch_transform_new = Transform2D();
 	float new_font_oversampling = 1.0;
-	if (p_texture_resolution_override.width > 0 && p_texture_resolution_override.height > 0) {
-		Size2 scale = Size2(p_texture_resolution_override) / p_size;
+	const Size2 resolution = _calculate_texture_resolution(p_size, p_texture_resolution_override, auto_adjust_resolution);
+	if (resolution != p_size) {
+		Size2 scale = resolution / p_size;
 		stretch_transform_new.scale(scale);
 
 		if (use_font_oversampling) {
@@ -1078,7 +1093,7 @@ bool Viewport::_set_size(const Size2 &p_size, const Size2i &p_texture_resolution
 		new_font_oversampling = font_oversampling_override;
 	}
 
-	if (size == p_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_texture_resolution_override == texture_resolution_override && new_font_oversampling == font_oversampling) {
+	if (size == p_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && texture_resolution_override == p_texture_resolution_override && font_oversampling == new_font_oversampling) {
 		return false;
 	}
 
@@ -1099,13 +1114,7 @@ bool Viewport::_set_size(const Size2 &p_size, const Size2i &p_texture_resolution
 #ifndef _3D_DISABLED
 	if (!use_xr) {
 #endif
-
-		if (p_allocated) {
-			Size2i s = _texture_resolution_adjusted();
-			RS::get_singleton()->viewport_set_size(viewport, s.width, s.height);
-		} else {
-			RS::get_singleton()->viewport_set_size(viewport, 0, 0);
-		}
+		_update_viewport_resolution();
 
 #ifndef _3D_DISABLED
 	} // if (!use_xr)
@@ -1135,12 +1144,37 @@ bool Viewport::_set_size(const Size2 &p_size, const Size2i &p_texture_resolution
 	return true;
 }
 
-bool Viewport::_valid_texture_resolution_override() const {
-	return texture_resolution_override.width > 0 && texture_resolution_override.height > 0;
+Size2i Viewport::_calculate_texture_resolution(const Size2 &p_size, const Size2i &p_texture_resolution_override, const bool p_auto_adjust) const {
+	Size2i resolution = p_texture_resolution_override.width > 0 && p_texture_resolution_override.height > 0 ? p_texture_resolution_override : Size2i(p_size.ceil()).maxi(2);
+	if(p_auto_adjust) {
+		Size2 scale = Size2(1, 1);
+		SceneTree* scene_tree = SceneTree::get_singleton();
+		if (scene_tree) {
+			Viewport* vp = scene_tree->get_root()->get_viewport();
+			if(vp) {
+				scale = Size2(vp->_calculate_texture_resolution(vp->size, vp->texture_resolution_override, false)) / vp->size;
+			}
+		}
+		resolution = Size2i(Math::ceil(resolution.x * scale.x), Math::ceil(resolution.y * scale.y));
+	}
+	return resolution;
 }
 
-Size2i Viewport::_texture_resolution_adjusted() const {
-	return _valid_texture_resolution_override() ? texture_resolution_override : Size2i(size + Vector2(0.5, 0.5)).maxi(2);
+void Viewport::_root_viewport_size_changed() {
+	if(auto_adjust_resolution) {
+		_set_size(_get_size(), _get_texture_resolution_override(), _is_size_allocated());
+	}
+}
+
+void Viewport::_update_viewport_resolution() {
+	if (size_allocated) {
+		Size2i resolution = _calculate_texture_resolution(_get_size(), texture_resolution_override, auto_adjust_resolution);
+		if(resolution != RS::get_singleton()->viewport_get_size(viewport)) {
+			RS::get_singleton()->viewport_set_size(viewport, resolution.width, resolution.height);
+		}
+	} else {
+		RS::get_singleton()->viewport_set_size(viewport, 0, 0);
+	}
 }
 
 Size2 Viewport::_get_size() const {
@@ -1167,6 +1201,17 @@ bool Viewport::_is_size_allocated() const {
 	return size_allocated;
 }
 
+void Viewport::_set_auto_adjust_resolution(const bool &p_enable) {
+	if(auto_adjust_resolution != p_enable) {
+		auto_adjust_resolution = p_enable;
+		_update_viewport_resolution();
+	}
+}
+
+bool Viewport::_is_auto_adjust_resolution_enabled() const {
+	return auto_adjust_resolution;
+}
+
 Rect2 Viewport::get_visible_rect() const {
 	ERR_READ_THREAD_GUARD_V(Rect2());
 	Rect2 r;
@@ -1175,10 +1220,6 @@ Rect2 Viewport::get_visible_rect() const {
 		r = Rect2(Point2(), DisplayServer::get_singleton()->window_get_size());
 	} else {
 		r = Rect2(Point2(), size);
-	}
-
-	if (texture_resolution_override != Size2()) {
-		r.size = texture_resolution_override;
 	}
 
 	return r;
@@ -4811,12 +4852,7 @@ void Viewport::set_use_xr(bool p_use_xr) {
 
 		if (!use_xr) {
 			// Set viewport to previous size when exiting XR.
-			if (size_allocated) {
-				Size2i s = _texture_resolution_adjusted();
-				RS::get_singleton()->viewport_set_size(viewport, s.width, s.height);
-			} else {
-				RS::get_singleton()->viewport_set_size(viewport, 0, 0);
-			}
+			_update_viewport_resolution();
 
 			// Reset render target override textures.
 			RID rt = RS::get_singleton()->viewport_get_render_target(viewport);
@@ -5415,10 +5451,17 @@ void SubViewport::set_texture_resolution_override(const Size2i &p_size) {
 
 Size2i SubViewport::get_texture_resolution_override() const {
 	ERR_READ_THREAD_GUARD_V(Size2i());
-	// Rounding will cause offset issues with the
-	// exact positioning of subwindows, but changing the
-	// type of texture_resolution_override would break compatibility.
 	return _get_texture_resolution_override();
+}
+
+void SubViewport::set_auto_adjust_resolution(const bool &p_enable) {
+	ERR_MAIN_THREAD_GUARD;
+	_set_auto_adjust_resolution(p_enable);
+}
+
+bool SubViewport::get_auto_adjust_resolution() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return _is_auto_adjust_resolution_enabled();
 }
 
 void SubViewport::set_update_mode(UpdateMode p_mode) {
@@ -5516,6 +5559,9 @@ void SubViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_resolution_override", "size"), &SubViewport::set_texture_resolution_override);
 	ClassDB::bind_method(D_METHOD("get_texture_resolution_override"), &SubViewport::get_texture_resolution_override);
 
+	ClassDB::bind_method(D_METHOD("set_auto_adjust_resolution", "enable"), &SubViewport::set_auto_adjust_resolution);
+	ClassDB::bind_method(D_METHOD("get_auto_adjust_resolution"), &SubViewport::get_auto_adjust_resolution);
+
 	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &SubViewport::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &SubViewport::get_update_mode);
 
@@ -5524,6 +5570,7 @@ void SubViewport::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_resolution_override", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_resolution_override", "get_texture_resolution_override");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_adjust_resolution", PROPERTY_HINT_NONE), "set_auto_adjust_resolution", "get_auto_adjust_resolution");
 	ADD_GROUP("Render Target", "render_target_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,When Parent Visible,Always"), "set_update_mode", "get_update_mode");

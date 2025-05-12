@@ -27,10 +27,13 @@
 			The update mode when the sub-viewport is used as a render target.
 		</member>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(512, 512)">
-			The width and height of the sub-viewport. This will also be used as the resolution of the backing texture unless a resolution is specified in [member SubViewport.texture_resolution_override]
+			The width and height of the sub-viewport. This will also be used as the resolution of the backing texture unless a resolution is specified in [member SubViewport.texture_resolution_override].
 		</member>
 		<member name="texture_resolution_override" type="Vector2i" setter="set_texture_resolution_override" getter="get_texture_resolution_override" default="Vector2i(0, 0)">
-			The size to initialize the backing texture at. If both values are set to a value greater than [code]0[/code], these dimensions will be used when the viewport texture is initialized
+			The size to initialize the backing texture at. If both values are set to a value greater than [code]0[/code], these dimensions will be used when the viewport texture is initialized.
+		</member>
+		<member name="auto_adjust_resolution" type="bool" setter="set_auto_adjust_resolution" getter="get_auto_adjust_resolutione" default="false">
+			Set to true to automatically resize the resolution of the backing texture if the game window is resized. If a [member SubViewport.texture_resolution_override] is set, it will scale this value instead.
 		</member>
 	</members>
 	<constants>

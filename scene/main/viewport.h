@@ -257,6 +257,7 @@ private:
 	Size2 size = Size2(512, 512);
 	Size2i texture_resolution_override;
 	bool size_allocated = false;
+	bool auto_adjust_resolution = false;
 
 	RID contact_2d_debug;
 	RID contact_3d_debug_multimesh;
@@ -500,14 +501,20 @@ private:
 	void _window_start_drag(Window *p_window);
 	void _window_start_resize(SubWindowResize p_edge, Window *p_window);
 
+	void _root_viewport_size_changed();
+	void _update_viewport_resolution();
+
 protected:
 	bool _set_size(const Size2 &p_size, const Size2i &p_texture_resolution_override, bool p_allocated);
 
 	Size2 _get_size() const;
 	Size2i _get_texture_resolution_override() const;
-	bool _valid_texture_resolution_override() const;
-	Size2i _texture_resolution_adjusted() const;
+	Size2i _calculate_texture_resolution(const Size2 &p_size, const Size2i &p_texture_resolution_override, const bool p_auto_adjust) const;
+	
 	bool _is_size_allocated() const;
+
+	void _set_auto_adjust_resolution(const bool &p_enable);
+	bool _is_auto_adjust_resolution_enabled() const;
 
 	void _notification(int p_what);
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
@@ -890,6 +897,9 @@ public:
 	
 	void set_texture_resolution_override(const Size2i &p_size);
 	Size2i get_texture_resolution_override() const;
+
+	void set_auto_adjust_resolution(const bool &p_enable);
+	bool get_auto_adjust_resolution() const;
 
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
