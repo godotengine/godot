@@ -31,10 +31,10 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/tree.h"
 
+class LineEdit;
 class MenuButton;
 
 class SpanningHeader : public PanelContainer {
