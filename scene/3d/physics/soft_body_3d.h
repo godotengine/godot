@@ -164,6 +164,9 @@ public:
 	void set_linear_stiffness(real_t p_linear_stiffness);
 	real_t get_linear_stiffness();
 
+	void set_shrinking_factor(real_t p_shrinking_factor);
+	real_t get_shrinking_factor();
+
 	void set_pressure_coefficient(real_t p_pressure_coefficient);
 	real_t get_pressure_coefficient();
 

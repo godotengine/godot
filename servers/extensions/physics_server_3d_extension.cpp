@@ -338,6 +338,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_soft_body_set_linear_stiffness, "body", "linear_stiffness");
 	GDVIRTUAL_BIND(_soft_body_get_linear_stiffness, "body");
 
+	GDVIRTUAL_BIND(_soft_body_set_shrinking_factor, "body", "shrinking_factor");
+	GDVIRTUAL_BIND(_soft_body_get_shrinking_factor, "body");
+
 	GDVIRTUAL_BIND(_soft_body_set_pressure_coefficient, "body", "pressure_coefficient");
 	GDVIRTUAL_BIND(_soft_body_get_pressure_coefficient, "body");
 

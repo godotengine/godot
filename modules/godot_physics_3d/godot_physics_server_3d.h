@@ -294,6 +294,9 @@ public:
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) override;
 	virtual real_t soft_body_get_linear_stiffness(RID p_body) const override;
 
+	virtual void soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) override;
+	virtual real_t soft_body_get_shrinking_factor(RID p_body) const override;
+
 	virtual void soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) override;
 	virtual real_t soft_body_get_pressure_coefficient(RID p_body) const override;
 

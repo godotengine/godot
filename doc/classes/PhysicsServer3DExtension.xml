@@ -1079,6 +1079,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_soft_body_get_shrinking_factor" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_soft_body_get_simulation_precision" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
@@ -1193,6 +1199,13 @@
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_shrinking_factor" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shrinking_factor" type="float" />
 			<description>
 			</description>
 		</method>
