@@ -3818,6 +3818,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	// Let's zip-align (must be done before signing)
 
+	static const int PAGE_SIZE_KB = 16 * 1024;
 	static const int ZIP_ALIGNMENT = 4;
 
 	// If we're not signing the apk, then the next step should be the last.
@@ -3870,6 +3871,12 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			// Uncompressed file => Align
 			long new_offset = file_offset + bias;
 			padding = (ZIP_ALIGNMENT - (new_offset % ZIP_ALIGNMENT)) % ZIP_ALIGNMENT;
+			const char *ext = strrchr(fname, '.');
+			if (ext && strcmp(ext, ".so") == 0) {
+				padding = (PAGE_SIZE_KB - (new_offset % PAGE_SIZE_KB)) % PAGE_SIZE_KB;
+			} else {
+				padding = (ZIP_ALIGNMENT - (new_offset % ZIP_ALIGNMENT)) % ZIP_ALIGNMENT;
+			}
 		}
 
 		memset(extra + info.size_file_extra, 0, padding);
