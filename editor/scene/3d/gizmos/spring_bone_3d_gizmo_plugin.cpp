@@ -145,8 +145,8 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 
 				// Draw rotation axis vector if not ROTATION_AXIS_ALL.
 				if (j != joint_end || (j == joint_end && is_extended)) {
-					SpringBoneSimulator3D::RotationAxis rotation_axis = p_simulator->get_joint_rotation_axis(i, j);
-					if (rotation_axis != SpringBoneSimulator3D::ROTATION_AXIS_ALL) {
+					SkeletonModifier3D::RotationAxis rotation_axis = p_simulator->get_joint_rotation_axis(i, j);
+					if (rotation_axis != SkeletonModifier3D::ROTATION_AXIS_ALL) {
 						Vector3 axis_vector = p_simulator->get_joint_rotation_axis_vector(i, j);
 						if (!axis_vector.is_zero_approx()) {
 							float line_length = p_simulator->get_joint_radius(i, j - 1) * 2.0;
@@ -173,8 +173,8 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 				surface_tool->set_weights(weights);
 				if (j == 0) {
 					// Draw rotation axis vector if not ROTATION_AXIS_ALL.
-					SpringBoneSimulator3D::RotationAxis rotation_axis = p_simulator->get_joint_rotation_axis(i, j);
-					if (rotation_axis != SpringBoneSimulator3D::ROTATION_AXIS_ALL) {
+					SkeletonModifier3D::RotationAxis rotation_axis = p_simulator->get_joint_rotation_axis(i, j);
+					if (rotation_axis != SkeletonModifier3D::ROTATION_AXIS_ALL) {
 						Vector3 axis_vector = p_simulator->get_joint_rotation_axis_vector(i, j);
 						if (!axis_vector.is_zero_approx()) {
 							float line_length = p_simulator->get_joint_radius(i, j) * 2.0;
