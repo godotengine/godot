@@ -31,14 +31,14 @@
 #include "snapshot_data.h"
 
 #include "core/core_bind.h"
-#include "core/version.h"
+#include "core/object/script_language.h"
+#include "scene/debugger/scene_debugger.h"
+
 #if defined(MODULE_GDSCRIPT_ENABLED) && defined(DEBUG_ENABLED)
 #include "modules/gdscript/gdscript.h"
-#else
-#include "core/object/script_language.h"
 #endif
-#include "scene/debugger/scene_debugger.h"
-#include "zlib.h"
+
+#include <zlib.h>
 
 SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnapshot *p_snapshot, ResourceCache &resource_cache) :
 		snapshot(p_snapshot) {
@@ -365,7 +365,7 @@ Ref<GameStateSnapshotRef> GameStateSnapshot::create_ref(const String &p_snapshot
 	}
 
 	snapshot->recompute_references();
-	print_line("Resource cache hits: " + String::num(resource_cache.hits) + ". Resource cache misses: " + String::num(resource_cache.misses));
+	print_verbose("Resource cache hits: " + String::num(resource_cache.hits) + ". Resource cache misses: " + String::num(resource_cache.misses));
 	return sn;
 }
 

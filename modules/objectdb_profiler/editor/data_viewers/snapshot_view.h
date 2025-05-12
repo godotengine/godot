@@ -31,6 +31,7 @@
 #pragma once
 
 #include "../snapshot_data.h"
+
 #include "scene/gui/control.h"
 
 class Tree;

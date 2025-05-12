@@ -30,11 +30,11 @@
 
 #include "json_view.h"
 
+#include "shared_controls.h"
+
 #include "core/io/json.h"
 #include "scene/gui/center_container.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/split_container.h"
-#include "shared_controls.h"
 
 SnapshotJsonView::SnapshotJsonView() {
 	set_name(TTR("JSON"));
@@ -65,7 +65,7 @@ void SnapshotJsonView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsho
 	String hdr_a_text = diff_data ? TTR("Snapshot A JSON") : TTR("Snapshot JSON");
 	SpanningHeader *hdr_a = memnew(SpanningHeader(hdr_a_text));
 	if (diff_data) {
-		hdr_a->set_tooltip_text(TTR("Snapshot A: ") + snapshot_data->name);
+		hdr_a->set_tooltip_text(TTR("Snapshot A:") + " " + snapshot_data->name);
 	}
 	json_box->add_child(hdr_a);
 
@@ -86,7 +86,7 @@ void SnapshotJsonView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsho
 		box->add_child(diff_json_box);
 		String hrd_b_text = TTR("Snapshot B JSON");
 		SpanningHeader *hdr_b = memnew(SpanningHeader(hrd_b_text));
-		hdr_b->set_tooltip_text(TTR("Snapshot B: ") + diff_data->name);
+		hdr_b->set_tooltip_text(TTR("Snapshot B:") + " " + diff_data->name);
 		diff_json_box->add_child(hdr_b);
 
 		diff_json_content = memnew(EditorJsonVisualizer);

@@ -31,8 +31,9 @@
 #pragma once
 
 #include "../snapshot_data.h"
-#include "editor/editor_json_visualizer.h"
 #include "snapshot_view.h"
+
+#include "editor/editor_json_visualizer.h"
 
 class SnapshotJsonView : public SnapshotView {
 	GDCLASS(SnapshotJsonView, SnapshotView);

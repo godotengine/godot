@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include "core/io/dir_access.h"
-#include "core/templates/lru.h"
 #include "data_viewers/snapshot_view.h"
 #include "snapshot_data.h"
+
+#include "core/io/dir_access.h"
+#include "core/templates/lru.h"
 
 class TabContainer;
 class Tree;

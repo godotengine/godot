@@ -31,8 +31,9 @@
 #pragma once
 
 #include "../snapshot_data.h"
-#include "scene/gui/margin_container.h"
 #include "snapshot_view.h"
+
+#include "scene/gui/margin_container.h"
 
 class CenterContainer;
 class RichTextLabel;
