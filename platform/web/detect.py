@@ -57,6 +57,7 @@ def get_opts():
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
             False,
         ),
+        BoolVariable("wasm_simd", "Use WebAssembly SIMD to improve CPU performance", True),
     ]
 
 
@@ -275,6 +276,10 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=['_emscripten_proxy_main']"])
         # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
         env.Append(LINKFLAGS=["-sTEXTDECODER=0"])
+
+    # Enable WebAssembly SIMD
+    if env["wasm_simd"]:
+        env.Append(CCFLAGS=["-msimd128"])
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-sENVIRONMENT=web,worker"])
