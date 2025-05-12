@@ -4,7 +4,8 @@
 		An input field for numbers.
 	</brief_description>
 	<description>
-		[SpinBox] is a numerical input text field. It allows entering integers and floating-point numbers.
+		[SpinBox] is a numerical input text field. It allows entering integers and floating-point numbers. The [SpinBox] also has up and down buttons that can be clicked increase or decrease the value. The value can also be changed by dragging the mouse up or down over the [SpinBox]'s arrows.
+		Additionally, mathematical expressions can be entered. These are evaluated when the user presses [kbd]Enter[/kbd] while editing the [SpinBox]'s text field. This uses the [Expression] class to parse and evaluate the expression. The result of the expression is then set as the value of the [SpinBox]. Some examples of valid expressions are [code]5 + 2 * 3[/code], [code]pow(2, 4)[/code], and [code]PI + sin(0.5)[/code]. Expressions are case-sensitive.
 		[b]Example:[/b] Create a [SpinBox], disable its context menu and set its text alignment to right.
 		[codeblocks]
 		[gdscript]
@@ -33,7 +34,7 @@
 		<method name="apply">
 			<return type="void" />
 			<description>
-				Applies the current value of this [SpinBox].
+				Applies the current value of this [SpinBox]. This is equivalent to pressing [kbd]Enter[/kbd] while editing the [LineEdit] used by the [SpinBox]. This will cause [signal LineEdit.text_submitted] to be emitted and its currently contained expression to be evaluated.
 			</description>
 		</method>
 		<method name="get_line_edit">
@@ -67,6 +68,7 @@
 		</member>
 		<member name="update_on_text_changed" type="bool" setter="set_update_on_text_changed" getter="get_update_on_text_changed" default="false">
 			Sets the value of the [Range] for this [SpinBox] when the [LineEdit] text is [i]changed[/i] instead of [i]submitted[/i]. See [signal LineEdit.text_changed] and [signal LineEdit.text_submitted].
+			[b]Note:[/b] If set to [code]true[/code], this will interfere with entering mathematical expressions in the [SpinBox]. The [SpinBox] will try to evaluate the expression as you type, which means symbols like a trailing [code]+[/code] are removed immediately by the expression being evaluated.
 		</member>
 	</members>
 	<theme_items>
