@@ -1190,6 +1190,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("text_highlight_h_padding", "RichTextLabel", Math::round(3 * scale));
 	theme->set_constant("text_highlight_v_padding", "RichTextLabel", Math::round(3 * scale));
 
+	theme->set_constant("underline_alpha", "RichTextLabel", 50);
+	theme->set_constant("strikethrough_alpha", "RichTextLabel", 50);
+
 	// Containers
 
 	theme->set_icon("h_touch_dragger", "SplitContainer", icons["h_dragger"]);
