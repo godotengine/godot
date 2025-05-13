@@ -205,6 +205,12 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 	return true;
 }
 
+static void _shape_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata) {
+	PhysicsDirectSpaceState2D::ShapeResult *const result = static_cast<PhysicsDirectSpaceState2D::ShapeResult *>(p_userdata);
+	result->point_a = p_point_A;
+	result->point_b = p_point_B;
+}
+
 int GodotPhysicsDirectSpaceState2D::intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
 	if (p_result_max <= 0) {
 		return 0;
@@ -220,6 +226,11 @@ int GodotPhysicsDirectSpaceState2D::intersect_shape(const ShapeParameters &p_par
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, GodotSpace2D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
 	int cc = 0;
+
+	GodotCollisionSolver2D::CallbackResult cbkres = nullptr;
+	if (p_parameters.result_with_points) {
+		cbkres = _shape_cbk_result;
+	}
 
 	for (int i = 0; i < amount; i++) {
 		if (cc >= p_result_max) {
@@ -237,7 +248,7 @@ int GodotPhysicsDirectSpaceState2D::intersect_shape(const ShapeParameters &p_par
 		const GodotCollisionObject2D *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (!GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), nullptr, nullptr, nullptr, p_parameters.margin)) {
+		if (!GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), cbkres, r_results + cc, nullptr, p_parameters.margin)) {
 			continue;
 		}
 

@@ -75,12 +75,16 @@
 			<return type="Dictionary[]" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
 			<param index="1" name="max_results" type="int" default="32" />
+			<param index="2" name="with_points" type="bool" default="false" />
 			<description>
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. The intersected shapes are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
+				If [param with_points] is [code]true[/code], each result dictionary will also contain:
+				[code]point_a[/code]: The contact point on the shape defined by [PhysicsShapeQueryParameters2D].
+				[code]point_b[/code]: The contact point on the colliding shape.
 				The number of intersections can be limited with the [param max_results] parameter, to reduce the processing time.
 			</description>
 		</method>

@@ -120,13 +120,18 @@ class PhysicsDirectSpaceState2D : public Object {
 
 	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query);
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results = 32);
-	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
+	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32, bool p_with_points = false);
 	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
 	TypedArray<Vector2> _collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	TypedArray<Dictionary> _intersect_shape_bind_compat_106037(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 
 public:
 	struct RayParameters {
@@ -153,6 +158,8 @@ public:
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
 
 	struct ShapeResult {
+		Vector2 point_a;
+		Vector2 point_b;
 		RID rid;
 		ObjectID collider_id;
 		Object *collider = nullptr;
@@ -183,6 +190,7 @@ public:
 
 		bool collide_with_bodies = true;
 		bool collide_with_areas = false;
+		bool result_with_points = false;
 	};
 
 	struct ShapeRestInfo {
