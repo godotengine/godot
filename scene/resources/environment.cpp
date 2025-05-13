@@ -903,6 +903,7 @@ void Environment::_update_volumetric_fog() {
 			environment,
 			volumetric_fog_enabled,
 			volumetric_fog_density,
+			volumetric_fog_fade,
 			volumetric_fog_albedo,
 			volumetric_fog_emission,
 			volumetric_fog_emission_energy,
@@ -931,6 +932,13 @@ void Environment::set_volumetric_fog_density(float p_density) {
 }
 float Environment::get_volumetric_fog_density() const {
 	return volumetric_fog_density;
+}
+void Environment::set_volumetric_fog_fade(float p_fade) {
+	volumetric_fog_fade = p_fade;
+	_update_volumetric_fog();
+}
+float Environment::get_volumetric_fog_fade() const {
+	return volumetric_fog_fade;
 }
 void Environment::set_volumetric_fog_albedo(Color p_color) {
 	volumetric_fog_albedo = p_color;
@@ -1503,6 +1511,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_volumetric_fog_albedo"), &Environment::get_volumetric_fog_albedo);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_density", "density"), &Environment::set_volumetric_fog_density);
 	ClassDB::bind_method(D_METHOD("get_volumetric_fog_density"), &Environment::get_volumetric_fog_density);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_fade", "density"), &Environment::set_volumetric_fog_fade);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_fade"), &Environment::get_volumetric_fog_fade);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_emission_energy", "begin"), &Environment::set_volumetric_fog_emission_energy);
 	ClassDB::bind_method(D_METHOD("get_volumetric_fog_emission_energy"), &Environment::get_volumetric_fog_emission_energy);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_anisotropy", "anisotropy"), &Environment::set_volumetric_fog_anisotropy);
@@ -1525,6 +1535,7 @@ void Environment::_bind_methods() {
 	ADD_GROUP("Volumetric Fog", "volumetric_fog_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "volumetric_fog_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_volumetric_fog_enabled", "is_volumetric_fog_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_density", PROPERTY_HINT_RANGE, "0,1,0.0001,or_greater"), "set_volumetric_fog_density", "get_volumetric_fog_density");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_fade", PROPERTY_HINT_RANGE, "0.0001,1,0.0001,or_greater"), "set_volumetric_fog_fade", "get_volumetric_fog_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "volumetric_fog_albedo", PROPERTY_HINT_COLOR_NO_ALPHA), "set_volumetric_fog_albedo", "get_volumetric_fog_albedo");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "volumetric_fog_emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_volumetric_fog_emission", "get_volumetric_fog_emission");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_emission_energy", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_emission_energy", "get_volumetric_fog_emission_energy");

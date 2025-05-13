@@ -1268,7 +1268,7 @@ public:
 	PASS1RC(float, environment_get_fog_depth_end, RID)
 
 	// Volumentric Fog
-	PASS14(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float, float)
+	PASS15(environment_set_volumetric_fog, RID, bool, float, float, const Color &, const Color &, float, float, float, float, float, bool, float, float, float)
 
 	PASS1RC(bool, environment_get_volumetric_fog_enabled, RID)
 	PASS1RC(float, environment_get_volumetric_fog_density, RID)

@@ -199,6 +199,7 @@ private:
 	// Volumetric Fog
 	bool volumetric_fog_enabled = false;
 	float volumetric_fog_density = 0.05;
+	float volumetric_fog_fade = 0.1;
 	Color volumetric_fog_albedo = Color(1.0, 1.0, 1.0);
 	Color volumetric_fog_emission = Color(0.0, 0.0, 0.0);
 	float volumetric_fog_emission_energy = 1.0;
@@ -407,6 +408,8 @@ public:
 	bool is_volumetric_fog_enabled() const;
 	void set_volumetric_fog_density(float p_density);
 	float get_volumetric_fog_density() const;
+	void set_volumetric_fog_fade(float p_fade);
+	float get_volumetric_fog_fade() const;
 	void set_volumetric_fog_albedo(Color p_color);
 	Color get_volumetric_fog_albedo() const;
 	void set_volumetric_fog_emission(Color p_color);

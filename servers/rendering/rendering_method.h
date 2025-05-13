@@ -212,7 +212,7 @@ public:
 	virtual float environment_get_fog_depth_end(RID p_env) const = 0;
 
 	// Volumetric Fog
-	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) = 0;
+	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, float p_fade, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) = 0;
 
 	virtual bool environment_get_volumetric_fog_enabled(RID p_env) const = 0;
 	virtual float environment_get_volumetric_fog_density(RID p_env) const = 0;

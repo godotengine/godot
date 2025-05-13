@@ -336,7 +336,7 @@ float RendererEnvironmentStorage::environment_get_fog_depth_end(RID p_env) const
 
 // Volumetric Fog
 
-void RendererEnvironmentStorage::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) {
+void RendererEnvironmentStorage::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, float p_fade, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
@@ -346,6 +346,7 @@ void RendererEnvironmentStorage::environment_set_volumetric_fog(RID p_env, bool 
 #endif
 	env->volumetric_fog_enabled = p_enable;
 	env->volumetric_fog_density = p_density;
+	env->volumetric_fog_fade = p_fade;
 	env->volumetric_fog_scattering = p_albedo;
 	env->volumetric_fog_emission = p_emission;
 	env->volumetric_fog_emission_energy = p_emission_energy;
@@ -369,6 +370,12 @@ float RendererEnvironmentStorage::environment_get_volumetric_fog_density(RID p_e
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 0.01);
 	return env->volumetric_fog_density;
+}
+
+float RendererEnvironmentStorage::environment_get_volumetric_fog_fade(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.1);
+	return env->volumetric_fog_fade;
 }
 
 Color RendererEnvironmentStorage::environment_get_volumetric_fog_scattering(RID p_env) const {
