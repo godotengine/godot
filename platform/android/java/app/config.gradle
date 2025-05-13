@@ -13,7 +13,7 @@ ext.versions = [
     nexusPublishVersion: '1.3.0',
     javaVersion        : JavaVersion.VERSION_17,
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
-    ndkVersion         : '27.2.12479018',
+    ndkVersion         : '28.1.13356709',
     splashscreenVersion: '1.0.1',
     openxrVendorsVersion: '4.0.0-stable'
 
