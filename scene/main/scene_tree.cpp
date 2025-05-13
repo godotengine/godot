@@ -186,14 +186,6 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	}
 }
 
-void SceneTree::make_group_changed(const StringName &p_group) {
-	_THREAD_SAFE_METHOD_
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
-	if (E) {
-		E->value.changed = true;
-	}
-}
-
 void SceneTree::flush_transform_notifications() {
 	_THREAD_SAFE_METHOD_
 
