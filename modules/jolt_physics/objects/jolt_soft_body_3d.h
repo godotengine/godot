@@ -166,4 +166,9 @@ public:
 	void unpin_all_vertices();
 
 	bool is_vertex_pinned(int p_index) const;
+
+	void apply_vertex_impulse(int p_index, const Vector3 &p_impulse);
+	void apply_vertex_force(int p_index, const Vector3 &p_force);
+	void apply_central_impulse(const Vector3 &p_impulse);
+	void apply_central_force(const Vector3 &p_force);
 };
