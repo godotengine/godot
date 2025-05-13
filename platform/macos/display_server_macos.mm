@@ -30,9 +30,6 @@
 
 #import "display_server_macos.h"
 
-#ifdef DEBUG_ENABLED
-#import "editor/embedded_process_macos.h"
-#endif
 #import "godot_application.h"
 #import "godot_application_delegate.h"
 #import "godot_button_view.h"
@@ -55,6 +52,10 @@
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/image_texture.h"
+
+#ifdef TOOLS_ENABLED
+#import "editor/embedded_process_macos.h"
+#endif
 
 #include <AppKit/AppKit.h>
 
@@ -3283,7 +3284,7 @@ void DisplayServerMacOS::enable_for_stealing_focus(OS::ProcessID pid) {
 		ERR_FAIL_V(m_retval);                        \
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 
 Error DisplayServerMacOS::embed_process_update(WindowID p_window, const EmbeddedProcessMacOS *p_process) {
 	_THREAD_SAFE_METHOD_
@@ -3297,6 +3298,7 @@ Error DisplayServerMacOS::embed_process_update(WindowID p_window, const Embedded
 	[CATransaction setDisableActions:YES];
 
 	EmbeddedProcessData *ed = embedded_processes.getptr(p_pid);
+	CGFloat scale = screen_get_max_scale();
 	if (ed == nil) {
 		ed = &embedded_processes.insert(p_pid, EmbeddedProcessData())->value;
 
@@ -3305,7 +3307,7 @@ Error DisplayServerMacOS::embed_process_update(WindowID p_window, const Embedded
 		CALayerHost *host = [CALayerHost new];
 		uint32_t p_context_id = p_process->get_context_id();
 		host.contextId = static_cast<CAContextID>(p_context_id);
-		host.contentsScale = wd->window_object.backingScaleFactor;
+		host.contentsScale = scale;
 		host.contentsGravity = kCAGravityCenter;
 		ed->layer_host = host;
 		[wd->window_view.layer addSublayer:host];
@@ -3313,7 +3315,7 @@ Error DisplayServerMacOS::embed_process_update(WindowID p_window, const Embedded
 
 	Rect2i p_rect = p_process->get_screen_embedded_window_rect();
 	CGRect rect = CGRectMake(p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y);
-	rect = CGRectApplyAffineTransform(rect, CGAffineTransformMakeScale(0.5, 0.5));
+	rect = CGRectApplyAffineTransform(rect, CGAffineTransformInvert(CGAffineTransformMakeScale(scale, scale)));
 
 	CGFloat height = wd->window_view.frame.size.height;
 	CGFloat x = rect.origin.x;
