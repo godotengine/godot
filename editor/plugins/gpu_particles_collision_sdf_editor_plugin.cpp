@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "gpu_particles_collision_sdf_editor_plugin.h"
 
 #include "editor/editor_interface.h"
@@ -199,3 +201,5 @@ GPUParticlesCollisionSDF3DEditorPlugin::GPUParticlesCollisionSDF3DEditorPlugin()
 	GPUParticlesCollisionSDF3D::bake_step_function = bake_func_step;
 	GPUParticlesCollisionSDF3D::bake_end_function = bake_func_end;
 }
+
+#endif // _3D_DISABLED

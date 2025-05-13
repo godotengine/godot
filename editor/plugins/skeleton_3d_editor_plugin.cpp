@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "skeleton_3d_editor_plugin.h"
 
 #include "core/io/resource_saver.h"
@@ -41,14 +43,17 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/resources/skeleton_profile.h"
+#include "scene/resources/surface_tool.h"
+
+#ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/physical_bone_3d.h"
 #include "scene/3d/physics/physical_bone_simulator_3d.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
-#include "scene/resources/skeleton_profile.h"
-#include "scene/resources/surface_tool.h"
+#endif // PHYSICS_3D_DISABLED
 
 void BonePropertiesEditor::create_editors() {
 	section = memnew(EditorInspectorSection);
@@ -384,7 +389,9 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 			break;
 		}
 		case SKELETON_OPTION_CREATE_PHYSICAL_SKELETON: {
+#ifndef PHYSICS_3D_DISABLED
 			create_physical_skeleton();
+#endif // PHYSICS_3D_DISABLED
 			break;
 		}
 		case SKELETON_OPTION_EXPORT_SKELETON_PROFILE: {
@@ -497,6 +504,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 	ur->commit_action();
 }
 
+#ifndef PHYSICS_3D_DISABLED
 void Skeleton3DEditor::create_physical_skeleton() {
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ERR_FAIL_NULL(get_tree());
@@ -600,6 +608,7 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	physical_bone->set_joint_offset(joint_transform);
 	return physical_bone;
 }
+#endif // PHYSICS_3D_DISABLED
 
 void Skeleton3DEditor::export_skeleton_profile() {
 	if (!skeleton->get_bone_count()) {
@@ -1011,7 +1020,9 @@ void Skeleton3DEditor::create_editors() {
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_selected_poses", TTRC("Reset Selected Poses")), SKELETON_OPTION_RESET_SELECTED_POSES);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/all_poses_to_rests", TTRC("Apply All Poses to Rests")), SKELETON_OPTION_ALL_POSES_TO_RESTS);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/selected_poses_to_rests", TTRC("Apply Selected Poses to Rests")), SKELETON_OPTION_SELECTED_POSES_TO_RESTS);
+#ifndef PHYSICS_3D_DISABLED
 	p->add_item(TTR("Create Physical Skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
+#endif // PHYSICS_3D_DISABLED
 	p->add_item(TTR("Export Skeleton Profile"), SKELETON_OPTION_EXPORT_SKELETON_PROFILE);
 
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &Skeleton3DEditor::_on_click_skeleton_option));
@@ -1816,3 +1827,5 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 
 	return surface_tool->commit();
 }
+
+#endif // _3D_DISABLED

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef NAVIGATION_3D_DISABLED
+
 #include "navigation_region_3d_gizmo_plugin.h"
 
 #include "core/math/random_pcg.h"
@@ -206,3 +208,5 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(line_vertex_array, navigationregion->is_enabled() ? get_material("edge_material", p_gizmo) : get_material("edge_material_disabled", p_gizmo));
 	}
 }
+
+#endif // NAVIGATION_3D_DISABLED

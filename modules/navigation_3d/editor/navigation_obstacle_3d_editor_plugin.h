@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef NAVIGATION_3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/gui/box_container.h"
@@ -132,3 +134,5 @@ public:
 	NavigationObstacle3DEditorPlugin();
 	~NavigationObstacle3DEditorPlugin();
 };
+
+#endif // NAVIGATION_3D_DISABLED

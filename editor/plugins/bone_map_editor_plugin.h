@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
@@ -221,3 +223,5 @@ public:
 	virtual String get_plugin_name() const override { return "BoneMap"; }
 	BoneMapEditorPlugin();
 };
+
+#endif // _3D_DISABLED

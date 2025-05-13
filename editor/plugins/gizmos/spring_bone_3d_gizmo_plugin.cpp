@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "spring_bone_3d_gizmo_plugin.h"
 
 #include "editor/editor_settings.h"
@@ -422,3 +424,5 @@ void SpringBoneCollision3DGizmoPlugin::draw_plane(Ref<SurfaceTool> &p_surface_to
 		}
 	}
 }
+
+#endif // PHYSICS_3D_DISABLED

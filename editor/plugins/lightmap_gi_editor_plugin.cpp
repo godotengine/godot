@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "lightmap_gi_editor_plugin.h"
 
 #include "editor/editor_node.h"
@@ -214,3 +216,5 @@ LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	file_dialog->connect("file_selected", callable_mp(this, &LightmapGIEditorPlugin::_bake_select_file));
 	bake->add_child(file_dialog);
 }
+
+#endif // _3D_DISABLED

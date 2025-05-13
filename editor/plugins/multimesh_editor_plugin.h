@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/gui/slider.h"
@@ -98,3 +100,5 @@ public:
 
 	MultiMeshEditorPlugin();
 };
+
+#endif // _3D_DISABLED

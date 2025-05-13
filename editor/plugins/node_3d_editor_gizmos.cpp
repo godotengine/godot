@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "node_3d_editor_gizmos.h"
 
 #include "core/math/geometry_2d.h"
@@ -1238,4 +1240,4 @@ EditorNode3DGizmoPlugin::~EditorNode3DGizmoPlugin() {
 	}
 }
 
-//////
+#endif // _3D_DISABLED

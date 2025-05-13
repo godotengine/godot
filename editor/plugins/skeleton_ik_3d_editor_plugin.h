@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 
 class Button;
@@ -53,3 +55,5 @@ public:
 
 	SkeletonIK3DEditorPlugin();
 };
+
+#endif // _3D_DISABLED

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "skeleton_ik_3d_editor_plugin.h"
 
 #include "editor/editor_node.h"
@@ -83,3 +85,5 @@ SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin() {
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, play_btn);
 	skeleton_ik = nullptr;
 }
+
+#endif // _3D_DISABLED
