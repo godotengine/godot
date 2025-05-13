@@ -3132,6 +3132,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 			// from --position and --resolution parameters.
 			window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
 			window_flags = DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
+			if (bool(GLOBAL_GET("display/window/size/transparent"))) {
+				window_flags |= DisplayServer::WINDOW_FLAG_TRANSPARENT_BIT;
+			}
 		}
 
 #ifdef TOOLS_ENABLED
