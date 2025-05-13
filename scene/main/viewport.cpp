@@ -574,9 +574,9 @@ void Viewport::_notification(int p_what) {
 				set_physics_process_internal(true);
 			}
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
-			SceneTree* scene_tree = SceneTree::get_singleton();
+			SceneTree *scene_tree = SceneTree::get_singleton();
 			if (scene_tree) {
-				Viewport* root_vp = scene_tree->get_root()->get_viewport();
+				Viewport *root_vp = scene_tree->get_root()->get_viewport();
 				if (root_vp) {
 					root_vp->connect("size_changed", callable_mp(this, &Viewport::_root_viewport_size_changed));
 				}
@@ -644,9 +644,9 @@ void Viewport::_notification(int p_what) {
 
 			RS::get_singleton()->viewport_set_active(viewport, false);
 			RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, RID());
-			SceneTree* scene_tree = SceneTree::get_singleton();
+			SceneTree *scene_tree = SceneTree::get_singleton();
 			if (scene_tree) {
-				Viewport* root_vp = scene_tree->get_root()->get_viewport();
+				Viewport *root_vp = scene_tree->get_root()->get_viewport();
 				if (root_vp) {
 					root_vp->disconnect("size_changed", callable_mp(this, &Viewport::_root_viewport_size_changed));
 				}
@@ -1150,18 +1150,18 @@ bool Viewport::_set_size(const Size2 &p_size, const Size2i &p_texture_resolution
 
 Size2i Viewport::_calculate_texture_resolution(const Size2 &p_size, const Size2i &p_texture_resolution_override, const bool p_auto_adjust) const {
 	Size2i resolution = p_texture_resolution_override.width > 0 && p_texture_resolution_override.height > 0 ? p_texture_resolution_override : Size2i(p_size.ceil()).maxi(2);
-	if(p_auto_adjust) {
+	if (p_auto_adjust) {
 		Size2 scale = Size2(1, 1);
-		SceneTree* scene_tree = SceneTree::get_singleton();
+		SceneTree *scene_tree = SceneTree::get_singleton();
 		if (scene_tree) {
-			Viewport* vp = scene_tree->get_root()->get_viewport();
-			if(vp) {
+			Viewport *vp = scene_tree->get_root()->get_viewport();
+			if (vp) {
 				scale = Size2(vp->_calculate_texture_resolution(vp->size, vp->texture_resolution_override, false)) / vp->size;
 			}
 		}
 		resolution = Size2i(Math::ceil(resolution.x * scale.x), Math::ceil(resolution.y * scale.y));
 		Size2i current_texture_size = RS::get_singleton()->viewport_get_size(viewport);
-		if(resolution.x < current_texture_size.x && resolution.y < current_texture_size.y) {
+		if (resolution.x < current_texture_size.x && resolution.y < current_texture_size.y) {
 			resolution = current_texture_size;
 		}
 	}
@@ -1169,7 +1169,7 @@ Size2i Viewport::_calculate_texture_resolution(const Size2 &p_size, const Size2i
 }
 
 void Viewport::_root_viewport_size_changed() {
-	if(auto_adjust_resolution) {
+	if (auto_adjust_resolution) {
 		_update_viewport_with_current_settings();
 	}
 }
@@ -1181,7 +1181,7 @@ void Viewport::_update_viewport_with_current_settings() {
 void Viewport::_update_viewport_resolution() {
 	if (size_allocated) {
 		Size2i resolution = _calculate_texture_resolution(_get_size(), texture_resolution_override, auto_adjust_resolution);
-		if(resolution != RS::get_singleton()->viewport_get_size(viewport)) {
+		if (resolution != RS::get_singleton()->viewport_get_size(viewport)) {
 			RS::get_singleton()->viewport_set_size(viewport, resolution.width, resolution.height);
 		}
 	} else {
@@ -1214,7 +1214,7 @@ bool Viewport::_is_size_allocated() const {
 }
 
 void Viewport::_set_auto_adjust_resolution(const bool &p_enable) {
-	if(auto_adjust_resolution != p_enable) {
+	if (auto_adjust_resolution != p_enable) {
 		auto_adjust_resolution = p_enable;
 		_update_viewport_with_current_settings();
 	}
