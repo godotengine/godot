@@ -118,7 +118,15 @@ js_wrapped = env.NoCache(
     env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
 )
 
+main_wasm = build[1]
+side_wasm = build[2] if len(build) > 2 else None
+
+if env["optimize_wasm"]:
+    main_wasm = env.OptimizeWASM(main_wasm)
+    if side_wasm is not None:
+        side_wasm = env.OptimizeWASM(side_wasm)
+
 # 0 - unwrapped js file (use wrapped one instead)
 # 1 - wasm file
 # 2 - wasm side (when dlink is enabled).
-env.CreateTemplateZip(js_wrapped, build[1], build[2] if len(build) > 2 else None)
+env.CreateTemplateZip(js_wrapped, main_wasm, side_wasm)

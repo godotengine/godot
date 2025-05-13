@@ -1,8 +1,11 @@
 import json
 import os
+import subprocess
 
-from SCons.Util import WhereIs
+from SCons.Errors import UserError
+from SCons.Util import WhereIs, splitext
 
+from misc.utility.color import print_info
 from platform_methods import get_build_version
 
 
@@ -127,3 +130,17 @@ def add_js_pre(env, js_pre):
 
 def add_js_externs(env, externs):
     env.Append(JS_EXTERNS=env.File(externs))
+
+
+def run_optimize_wasm(target, source, env):
+    wasmopt_bin_path = WhereIs("wasm-opt")
+    if wasmopt_bin_path is None:
+        raise UserError('[wasm-opt] Cannot find `wasm-opt`. That binary usually comes with the "binaryen" package.')
+
+    for s in source:
+        source_path = str(s)
+        target_path = splitext(source_path)[0] + ".opt.wasm"
+
+        if target_path in [str(t) for t in target]:
+            print_info(f"[wasm-opt] Optimizing {source_path}")
+            subprocess.run([wasmopt_bin_path, source_path, "-o", target_path, "-all", "--post-emscripten", "-Oz"])
