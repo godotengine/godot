@@ -32,6 +32,7 @@
 
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_command_palette.h"
+#include "editor/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
@@ -153,9 +154,9 @@ void EditorBottomPanel::set_expanded(bool p_expanded) {
 	expand_button->set_pressed(p_expanded);
 }
 
+// Keeping this method for compatibility reasons. Return type should be changed to void as soon as possible though.
 Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
-	p_item->set_name(p_text);
-	add_child(p_item);
+	EditorDockManager::get_singleton()->add_dock(p_item, p_text, EditorDockManager::DOCK_SLOT_BOTTOM, p_shortcut);
 	if (p_at_front) {
 		move_child(p_item, 0);
 	}
@@ -164,14 +165,13 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 	Button *tb = memnew(Button);
 	dummy_buttons.insert(tb);
 	tb->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorBottomPanel::_on_button_visibility_changed).bind(tb, p_item));
-	tb->set_shortcut(p_shortcut);
 
 	p_item->set_meta("_editor_dummy_button", tb);
 	return tb;
 }
 
 void EditorBottomPanel::remove_item(Control *p_item) {
-	remove_child(p_item);
+	EditorDockManager::get_singleton()->remove_dock(p_item);
 
 	// Delete dummy button that might have been added.
 	if (p_item->has_meta("_editor_dummy_button")) {
@@ -183,13 +183,7 @@ void EditorBottomPanel::remove_item(Control *p_item) {
 }
 
 void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, Control *p_control) {
-	int tab_index = get_tab_idx_from_control(p_control);
-	if (tab_index == -1) {
-		return;
-	}
-
-	// Ignore the tab if the button is hidden.
-	get_tab_bar()->set_tab_hidden(tab_index, !p_button->is_visible());
+	EditorDockManager::get_singleton()->set_dock_enabled(p_control, p_button->is_visible());
 }
 
 EditorBottomPanel::EditorBottomPanel() {
