@@ -31,10 +31,13 @@
 #import "godot_application_delegate.h"
 
 #import "display_server_macos.h"
+#import "key_mapping_macos.h"
 #import "native_menu_macos.h"
 #import "os_macos.h"
 
 #import "main/main.h"
+
+#import <Carbon/Carbon.h>
 
 @interface GodotApplicationDelegate ()
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
@@ -226,9 +229,60 @@ static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 	}
 }
 
+static const CGKeyCode modifiers[8] = {
+	kVK_Command,
+	kVK_RightCommand,
+	kVK_Shift,
+	kVK_RightShift,
+	kVK_Option,
+	kVK_RightOption,
+	kVK_Control,
+	kVK_RightControl,
+};
+
+// The list of modifier flags we care about for raising pressed events when the application becomes active.
+constexpr static NSEventModifierFlags FLAGS = NSEventModifierFlagCommand | NSEventModifierFlagShift | NSEventModifierFlagOption | NSEventModifierFlagControl;
+
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
 	if (os_mac->get_main_loop()) {
 		os_mac->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+	}
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
+	if (!ds) {
+		return;
+	}
+	Input *input = Input::get_singleton();
+	if (!input) {
+		return;
+	}
+
+	// Poll the modifier keys and submit pressed events if they are down when the application becomes active.
+	int mod = NSEvent.modifierFlags;
+	if ((mod & FLAGS) == 0) {
+		// No flags we care about.
+		return;
+	}
+
+	DisplayServer::WindowID window_id = ds->get_focused_window();
+	NSEventModifierFlags flags = static_cast<NSEventModifierFlags>(mod);
+
+	for (const CGKeyCode key : modifiers) {
+		bool is_down = CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, key);
+		if (likely(!is_down)) {
+			continue;
+		}
+		Ref<InputEventKey> ke;
+		ke.instantiate();
+
+		ke->set_window_id(window_id);
+		ke->set_echo(false);
+		ke->set_pressed(true);
+		ds->get_key_modifier_state(flags, ke);
+		ke->set_keycode(KeyMappingMacOS::remap_key(key, mod, false));
+		ke->set_physical_keycode(KeyMappingMacOS::translate_key(key));
+		ke->set_key_label(KeyMappingMacOS::remap_key(key, mod, true));
+		ke->set_location(KeyMappingMacOS::translate_location(key));
+		input->parse_input_event(ke);
 	}
 }
 
