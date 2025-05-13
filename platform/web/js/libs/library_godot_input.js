@@ -526,7 +526,7 @@ const GodotInput = {
 	godot_js_input_mouse_wheel_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
 		function wheel_cb(evt) {
-			if (func(evt['deltaX'] || 0, evt['deltaY'] || 0)) {
+			if (func(evt.deltaMode, evt.deltaX ?? 0, evt.deltaY ?? 0)) {
 				evt.preventDefault();
 			}
 		}
