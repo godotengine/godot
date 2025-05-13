@@ -1414,20 +1414,7 @@ void ItemList::_notification(int p_what) {
 			const Rect2 clip(-base_ofs, size);
 
 			// Do a binary search to find the first separator that is below clip_position.y.
-			int first_visible_separator = 0;
-			{
-				int lo = 0;
-				int hi = separators.size();
-				while (lo < hi) {
-					const int mid = (lo + hi) / 2;
-					if (separators[mid] < clip.position.y) {
-						lo = mid + 1;
-					} else {
-						hi = mid;
-					}
-				}
-				first_visible_separator = lo;
-			}
+			int64_t first_visible_separator = separators.span().bisect(clip.position.y, true);
 
 			// If not in thumbnails mode, draw visible separators.
 			if (icon_mode != ICON_MODE_TOP) {
