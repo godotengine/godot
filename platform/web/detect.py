@@ -9,7 +9,9 @@ from emscripten_helpers import (
     create_engine_file,
     create_template_zip,
     get_template_zip_path,
+    run_brotli_compression,
     run_closure_compiler,
+    run_gzip_compression,
 )
 from SCons.Util import WhereIs
 
@@ -34,7 +36,7 @@ def get_tools(env: "SConsEnvironment"):
 
 
 def get_opts():
-    from SCons.Variables import BoolVariable
+    from SCons.Variables import BoolVariable, ListVariable
 
     return [
         ("initial_memory", "Initial WASM memory (in MiB)", 32),
@@ -56,6 +58,13 @@ def get_opts():
             "proxy_to_pthread",
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
             False,
+        ),
+        ListVariable(
+            "compress_for_servers",
+            help="Compress ahead files for compatible servers to reduce download size. Compression can take some time",
+            default="none",
+            names=["gzip", "brotli"],
+            map={"gz": "gzip", "br": "brotli"},
         ),
     ]
 
@@ -303,3 +312,21 @@ def configure(env: "SConsEnvironment"):
     # This workaround creates a closure that prevents the garbage collector from freeing the WebGL context.
     # We also only use WebGL2, and changing context version is not widely supported anyway.
     env.Append(LINKFLAGS=["-sGL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0"])
+
+    def generate_compress_emitter(suffix):
+        from SCons.Util import splitext
+
+        def emitter(target, source, env):
+            return [p.target_from_source("", f"{splitext(p.name)[1]}.{suffix}") for p in source], source
+
+        return emitter
+
+    if "gzip" in env["compress_for_servers"]:
+        gzip_action = env.Action(run_gzip_compression)
+        gzip_builder = env.Builder(action=gzip_action, emitter=generate_compress_emitter("gz"))
+        env.Append(BUILDERS={"CompressGZip": gzip_builder})
+
+    if "brotli" in env["compress_for_servers"]:
+        brotli_action = env.Action(run_brotli_compression)
+        brotli_builder = env.Builder(action=brotli_action, emitter=generate_compress_emitter("br"))
+        env.Append(BUILDERS={"CompressBrotli": brotli_builder})
