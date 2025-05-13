@@ -31,8 +31,9 @@
 #pragma once
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/texture.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/texture.h"
+
 
 class Sprite2D : public Node2D {
 	GDCLASS(Sprite2D, Node2D);

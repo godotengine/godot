@@ -502,7 +502,7 @@ private:
 	void _window_start_resize(SubWindowResize p_edge, Window *p_window);
 
 	void _root_viewport_size_changed();
-	void _update_viewport_with_current_settings(); 
+	void _update_viewport_with_current_settings();
 	void _update_viewport_resolution();
 
 protected:
@@ -511,7 +511,7 @@ protected:
 	Size2 _get_size() const;
 	Size2i _get_texture_resolution_override() const;
 	Size2i _calculate_texture_resolution(const Size2 &p_size, const Size2i &p_texture_resolution_override, const bool p_auto_adjust) const;
-	
+
 	bool _is_size_allocated() const;
 
 	void _set_auto_adjust_resolution(const bool &p_enable);
@@ -895,7 +895,7 @@ public:
 	void set_size(const Size2 &p_size);
 	Size2 get_size() const;
 	void set_size_force(const Size2 &p_size);
-	
+
 	void set_texture_resolution_override(const Size2i &p_size);
 	Size2i get_texture_resolution_override() const;
 

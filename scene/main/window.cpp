@@ -1195,7 +1195,7 @@ void Window::_update_viewport_size() {
 
 	Size2 final_viewport_size;
 	Size2i final_viewport_resolution;
-	
+
 	Rect2i attach_to_screen_rect(Point2i(), size);
 	window_transform = Transform2D();
 
