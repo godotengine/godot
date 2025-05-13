@@ -427,7 +427,10 @@ void DisplayServerEmbedded::_dispatch_input_events(const Ref<InputEvent> &p_even
 
 void DisplayServerEmbedded::send_input_event(const Ref<InputEvent> &p_event, WindowID p_id) const {
 	if (p_id != INVALID_WINDOW_ID) {
-		_window_callback(input_event_callbacks[p_id], p_event);
+		const Callable *cb = input_event_callbacks.getptr(p_id);
+		if (cb) {
+			_window_callback(*cb, p_event);
+		}
 	} else {
 		for (const KeyValue<WindowID, Callable> &E : input_event_callbacks) {
 			_window_callback(E.value, p_event);
