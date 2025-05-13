@@ -97,17 +97,21 @@ void NoiseTexture2D::_bind_methods() {
 }
 
 void NoiseTexture2D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "bump_strength") {
-		if (!as_normal_map) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "bump_strength") {
+			if (!as_normal_map) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
-	}
 
-	if (p_property.name == "seamless_blend_skirt") {
-		if (!seamless) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if (p_property.name == "seamless_blend_skirt") {
+			if (!seamless) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 	}
+#endif
 }
 
 void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {

@@ -78,20 +78,24 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::get_node_time_info() const {
 }
 
 void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "animation" && get_editable_animation_list) {
-		Vector<String> names = get_editable_animation_list();
-		String anims;
-		for (int i = 0; i < names.size(); i++) {
-			if (i > 0) {
-				anims += ",";
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "animation" && get_editable_animation_list) {
+			Vector<String> names = get_editable_animation_list();
+			String anims;
+			for (int i = 0; i < names.size(); i++) {
+				if (i > 0) {
+					anims += ",";
+				}
+				anims += String(names[i]);
 			}
-			anims += String(names[i]);
-		}
-		if (!anims.is_empty()) {
-			p_property.hint = PROPERTY_HINT_ENUM;
-			p_property.hint_string = anims;
+			if (!anims.is_empty()) {
+				p_property.hint = PROPERTY_HINT_ENUM;
+				p_property.hint_string = anims;
+			}
 		}
 	}
+#endif
 
 	if (!use_custom_timeline) {
 		if (p_property.name == "timeline_length" || p_property.name == "start_offset" || p_property.name == "loop_mode" || p_property.name == "stretch_time_scale") {

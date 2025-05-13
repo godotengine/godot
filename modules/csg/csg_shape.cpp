@@ -948,13 +948,17 @@ bool CSGShape3D::is_calculating_tangents() const {
 }
 
 void CSGShape3D::_validate_property(PropertyInfo &p_property) const {
-	bool is_collision_prefixed = p_property.name.begins_with("collision_");
-	if ((is_collision_prefixed || p_property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
-		//hide collision if not root
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		bool is_collision_prefixed = p_property.name.begins_with("collision_");
+		if ((is_collision_prefixed || p_property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
+			//hide collision if not root
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		} else if (is_collision_prefixed && !bool(get("use_collision"))) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 Array CSGShape3D::get_meshes() const {

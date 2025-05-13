@@ -96,15 +96,19 @@ RID CameraAttributes::get_rid() const {
 }
 
 void CameraAttributes::_validate_property(PropertyInfo &p_property) const {
-	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && p_property.name == "exposure_sensitivity") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
-		return;
-	}
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && p_property.name == "exposure_sensitivity") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			return;
+		}
 
-	if (p_property.name.begins_with("auto_exposure_") && p_property.name != "auto_exposure_enabled" && !auto_exposure_enabled) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
-		return;
+		if (p_property.name.begins_with("auto_exposure_") && p_property.name != "auto_exposure_enabled" && !auto_exposure_enabled) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			return;
+		}
 	}
+#endif
 }
 
 void CameraAttributes::_bind_methods() {
@@ -253,10 +257,14 @@ void CameraAttributesPractical::_update_auto_exposure() {
 }
 
 void CameraAttributesPractical::_validate_property(PropertyInfo &p_property) const {
-	if ((!dof_blur_far_enabled && (p_property.name == "dof_blur_far_distance" || p_property.name == "dof_blur_far_transition")) ||
-			(!dof_blur_near_enabled && (p_property.name == "dof_blur_near_distance" || p_property.name == "dof_blur_near_transition"))) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if ((!dof_blur_far_enabled && (p_property.name == "dof_blur_far_distance" || p_property.name == "dof_blur_far_transition")) ||
+				(!dof_blur_near_enabled && (p_property.name == "dof_blur_near_distance" || p_property.name == "dof_blur_near_transition"))) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		}
 	}
+#endif
 }
 
 void CameraAttributesPractical::_bind_methods() {

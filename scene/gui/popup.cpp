@@ -148,13 +148,17 @@ void Popup::_post_popup() {
 }
 
 void Popup::_validate_property(PropertyInfo &p_property) const {
-	if (
-			p_property.name == "transient" ||
-			p_property.name == "exclusive" ||
-			p_property.name == "popup_window" ||
-			p_property.name == "unfocusable") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (
+				p_property.name == "transient" ||
+				p_property.name == "exclusive" ||
+				p_property.name == "popup_window" ||
+				p_property.name == "unfocusable") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 Rect2i Popup::_popup_adjust_rect() const {

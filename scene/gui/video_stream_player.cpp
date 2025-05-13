@@ -505,18 +505,22 @@ StringName VideoStreamPlayer::get_bus() const {
 }
 
 void VideoStreamPlayer::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "bus") {
-		String options;
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0) {
-				options += ",";
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "bus") {
+			String options;
+			for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+				if (i > 0) {
+					options += ",";
+				}
+				String name = AudioServer::get_singleton()->get_bus_name(i);
+				options += name;
 			}
-			String name = AudioServer::get_singleton()->get_bus_name(i);
-			options += name;
-		}
 
-		p_property.hint_string = options;
+			p_property.hint_string = options;
+		}
 	}
+#endif
 }
 
 void VideoStreamPlayer::_bind_methods() {

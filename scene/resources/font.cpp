@@ -1069,9 +1069,13 @@ void FontFile::_bind_methods() {
 }
 
 void FontFile::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "fallbacks") {
-		p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "fallbacks") {
+			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+		}
 	}
+#endif
 }
 
 bool FontFile::_set(const StringName &p_name, const Variant &p_value) {

@@ -208,9 +208,13 @@ void GraphFrame::_bind_methods() {
 }
 
 void GraphFrame::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "resizable") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "resizable") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
+#endif
 }
 
 void GraphFrame::set_title(const String &p_title) {

@@ -193,18 +193,22 @@ bool AudioStreamPlayerInternal::get_stream_paused() const {
 }
 
 void AudioStreamPlayerInternal::validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "bus") {
-		String options;
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0) {
-				options += ",";
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "bus") {
+			String options;
+			for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+				if (i > 0) {
+					options += ",";
+				}
+				String name = AudioServer::get_singleton()->get_bus_name(i);
+				options += name;
 			}
-			String name = AudioServer::get_singleton()->get_bus_name(i);
-			options += name;
-		}
 
-		p_property.hint_string = options;
+			p_property.hint_string = options;
+		}
 	}
+#endif
 }
 
 bool AudioStreamPlayerInternal::set(const StringName &p_name, const Variant &p_value) {

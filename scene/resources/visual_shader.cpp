@@ -3618,26 +3618,30 @@ String VisualShaderNodeInput::get_input_index_name(int p_index) const {
 }
 
 void VisualShaderNodeInput::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "input_name") {
-		String port_list;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "input_name") {
+			String port_list;
 
-		int idx = 0;
+			int idx = 0;
 
-		while (ports[idx].mode != Shader::MODE_MAX) {
-			if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type) {
-				if (!port_list.is_empty()) {
-					port_list += ",";
+			while (ports[idx].mode != Shader::MODE_MAX) {
+				if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type) {
+					if (!port_list.is_empty()) {
+						port_list += ",";
+					}
+					port_list += ports[idx].name;
 				}
-				port_list += ports[idx].name;
+				idx++;
 			}
-			idx++;
-		}
 
-		if (port_list.is_empty()) {
-			port_list = RTR("None");
+			if (port_list.is_empty()) {
+				port_list = RTR("None");
+			}
+			p_property.hint_string = port_list;
 		}
-		p_property.hint_string = port_list;
 	}
+#endif
 }
 
 Vector<StringName> VisualShaderNodeInput::get_editable_properties() const {

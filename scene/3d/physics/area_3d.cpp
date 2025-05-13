@@ -645,40 +645,44 @@ float Area3D::get_reverb_uniformity() const {
 }
 
 void Area3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "audio_bus_name" || p_property.name == "reverb_bus_name") {
-		String options;
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0) {
-				options += ",";
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "audio_bus_name" || p_property.name == "reverb_bus_name") {
+			String options;
+			for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+				if (i > 0) {
+					options += ",";
+				}
+				String name = AudioServer::get_singleton()->get_bus_name(i);
+				options += name;
 			}
-			String name = AudioServer::get_singleton()->get_bus_name(i);
-			options += name;
-		}
 
-		p_property.hint_string = options;
-	} else if (p_property.name.begins_with("gravity") && p_property.name != "gravity_space_override") {
-		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		} else {
-			if (gravity_is_point) {
-				if (p_property.name == "gravity_direction") {
-					p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-				}
+			p_property.hint_string = options;
+		} else if (p_property.name.begins_with("gravity") && p_property.name != "gravity_space_override") {
+			if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			} else {
-				if (p_property.name.begins_with("gravity_point_")) {
-					p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+				if (gravity_is_point) {
+					if (p_property.name == "gravity_direction") {
+						p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+					}
+				} else {
+					if (p_property.name.begins_with("gravity_point_")) {
+						p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+					}
 				}
 			}
-		}
-	} else if (p_property.name.begins_with("linear_damp") && p_property.name != "linear_damp_space_override") {
-		if (linear_damp_space_override == SPACE_OVERRIDE_DISABLED) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	} else if (p_property.name.begins_with("angular_damp") && p_property.name != "angular_damp_space_override") {
-		if (angular_damp_space_override == SPACE_OVERRIDE_DISABLED) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		} else if (p_property.name.begins_with("linear_damp") && p_property.name != "linear_damp_space_override") {
+			if (linear_damp_space_override == SPACE_OVERRIDE_DISABLED) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else if (p_property.name.begins_with("angular_damp") && p_property.name != "angular_damp_space_override") {
+			if (angular_damp_space_override == SPACE_OVERRIDE_DISABLED) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 	}
+#endif
 }
 
 void Area3D::_bind_methods() {

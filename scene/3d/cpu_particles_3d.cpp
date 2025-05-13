@@ -587,9 +587,13 @@ void CPUParticles3D::request_particles_process(real_t p_requested_process_time) 
 }
 
 void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "emitting") {
-		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "emitting") {
+			p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
+		}
 	}
+#endif
 
 	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
 		p_property.usage = PROPERTY_USAGE_NONE;

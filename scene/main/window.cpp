@@ -244,31 +244,36 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 		if (initial_position != WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	} else if (p_property.name == "theme_type_variation") {
-		List<StringName> names;
+	}
+#if TOOLS_ENABLED
+	else if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "theme_type_variation") {
+			List<StringName> names;
 
-		// Only the default theme and the project theme are used for the list of options.
-		// This is an imposed limitation to simplify the logic needed to leverage those options.
-		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
-		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
-		}
-		names.sort_custom<StringName::AlphCompare>();
+			// Only the default theme and the project theme are used for the list of options.
+			// This is an imposed limitation to simplify the logic needed to leverage those options.
+			ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
+			if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+				ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
+			}
+			names.sort_custom<StringName::AlphCompare>();
 
-		Vector<StringName> unique_names;
-		String hint_string;
-		for (const StringName &E : names) {
-			// Skip duplicate values.
-			if (unique_names.has(E)) {
-				continue;
+			Vector<StringName> unique_names;
+			String hint_string;
+			for (const StringName &E : names) {
+				// Skip duplicate values.
+				if (unique_names.has(E)) {
+					continue;
+				}
+
+				hint_string += String(E) + ",";
+				unique_names.append(E);
 			}
 
-			hint_string += String(E) + ",";
-			unique_names.append(E);
+			p_property.hint_string = hint_string;
 		}
-
-		p_property.hint_string = hint_string;
 	}
+#endif
 }
 
 //
