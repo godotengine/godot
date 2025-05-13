@@ -19,6 +19,9 @@
 		<link title="3D Resolution Scaling Demo">https://godotengine.org/asset-library/asset/2805</link>
 	</tutorials>
 	<members>
+		<member name="auto_adjust_resolution" type="bool" setter="set_auto_adjust_resolution" getter="get_auto_adjust_resolutione" default="false">
+			Set to true to automatically resize the resolution of the backing texture if the game window is resized. If a [member SubViewport.texture_resolution_override] is set, it will scale this value instead.
+		</member>
 		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="SubViewport.ClearMode" default="0">
 			The clear mode when the sub-viewport is used as a render target.
 			[b]Note:[/b] This property is intended for 2D usage.
@@ -31,9 +34,6 @@
 		</member>
 		<member name="texture_resolution_override" type="Vector2i" setter="set_texture_resolution_override" getter="get_texture_resolution_override" default="Vector2i(0, 0)">
 			The size to initialize the backing texture at. If both values are set to a value greater than [code]0[/code], these dimensions will be used when the viewport texture is initialized.
-		</member>
-		<member name="auto_adjust_resolution" type="bool" setter="set_auto_adjust_resolution" getter="get_auto_adjust_resolutione" default="false">
-			Set to true to automatically resize the resolution of the backing texture if the game window is resized. If a [member SubViewport.texture_resolution_override] is set, it will scale this value instead.
 		</member>
 	</members>
 	<constants>
