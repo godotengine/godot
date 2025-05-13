@@ -73,6 +73,8 @@ public:
 	// Override return type to make writing static callbacks less tedious.
 	static OS_Web *get_singleton();
 
+	_FORCE_INLINE_ bool is_memory64() const { return sizeof(size_t) == sizeof(uint64_t); }
+
 	bool pwa_needs_update() const { return pwa_is_waiting; }
 	Error pwa_update();
 	void force_fs_sync();
