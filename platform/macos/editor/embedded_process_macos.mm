@@ -43,7 +43,10 @@
 
 void EmbeddedProcessMacOS::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_RESIZED:
+		case NOTIFICATION_ENTER_TREE: {
+			set_notify_transform(true);
+		} break;
+		case NOTIFICATION_TRANSFORM_CHANGED:
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_embedded_process();
 		} break;
