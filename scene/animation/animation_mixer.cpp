@@ -1789,19 +1789,28 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							continue;
 						}
 						Ref<Animation> anim = player2->get_animation(anim_name);
+						double start_ofs = a->animation_track_get_key_start_offset(i, idx);
+						double end_ofs = a->animation_track_get_key_end_offset(i, idx);
+						double len = anim->get_length();
+						double effective_start = pos + start_ofs;
+						double effective_end = end_ofs > 0.0 ? pos + len - end_ofs : pos + len;
+
 						double at_anim_pos = start;
 						switch (anim->get_loop_mode()) {
 							case Animation::LOOP_NONE: {
-								if (!is_external_seeking && ((!backward && Animation::is_greater_or_equal_approx(time, pos + end)) || (backward && Animation::is_less_or_equal_approx(time, pos + start)))) {
-									continue; // Do nothing if current time is outside of length when started.
+								if (!is_external_seeking &&
+										((!backward && Animation::is_greater_or_equal_approx(time, effective_end)) ||
+												(backward && Animation::is_less_or_equal_approx(time, effective_start)))) {
+									continue; // Do nothing if current time is outside of effective range.
 								}
-								at_anim_pos = MIN(end, time - pos); // Seek to end.
+								at_anim_pos = MIN(effective_end - pos, time - pos); // Seek within bounds.
 							} break;
 							case Animation::LOOP_LINEAR: {
-								at_anim_pos = Math::fposmod(time - pos - start, end - start) + start; // Seek to loop.
+								at_anim_pos = Math::fposmod(time - effective_start, effective_end - effective_start) + start_ofs;
 							} break;
 							case Animation::LOOP_PINGPONG: {
-								at_anim_pos = Math::pingpong(time - pos - start, end - start) + start;
+								at_anim_pos = Math::pingpong(time - effective_start, effective_end - effective_start) + start_ofs;
+
 							} break;
 							default:
 								break;
@@ -1822,6 +1831,8 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (to_play.size()) {
 							int idx = to_play.back()->get();
 							StringName anim_name = a->animation_track_get_key_animation(i, idx);
+							double start_ofs = a->animation_track_get_key_start_offset(i, idx);
+							double pos = a->track_get_key_time(i, idx);
 							if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name)) {
 								if (playing_caches.has(t)) {
 									playing_caches.erase(t);
@@ -1829,6 +1840,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 									t->playing = false;
 								}
 							} else {
+								player2->seek(start_ofs, false, p_update_only);
 								player2->play(anim_name);
 								t->playing = true;
 								playing_caches.insert(t);
