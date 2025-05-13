@@ -52,10 +52,6 @@
 		<member name="gradle_build/android_source_template" type="String" setter="" getter="">
 			Path to a ZIP file holding the source for the export template used in a Gradle build. If left empty, the default template is used.
 		</member>
-		<member name="gradle_build/compress_native_libraries" type="bool" setter="" getter="">
-			If [code]true[/code], native libraries are compressed when performing a Gradle build.
-			[b]Note:[/b] Although your binary may be smaller, your application may load slower because the native libraries are not loaded directly from the binary at runtime.
-		</member>
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
 			Application export format (*.apk or *.aab).
 		</member>
