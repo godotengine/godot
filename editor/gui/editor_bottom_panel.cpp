@@ -157,8 +157,7 @@ void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
 }
 
 Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
-	p_item->set_name(p_text);
-	add_child(p_item);
+	EditorDockManager::get_singleton()->add_dock(p_item, p_text, EditorDockManager::DOCK_SLOT_BOTTOM, p_shortcut);
 	if (p_at_front) {
 		move_child(p_item, 0);
 	}
@@ -176,8 +175,7 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 }
 
 void EditorBottomPanel::remove_item(Control *p_item) {
-	int item_idx = bottom_docks.find(p_item);
-	ERR_FAIL_COND_MSG(item_idx == -1, vformat("Cannot remove unknown dock \"%s\" from the bottom panel.", p_item->get_name()));
+	EditorDockManager::get_singleton()->remove_dock(p_item);
 
 	bottom_docks.remove_at(item_idx);
 	dock_shortcuts.remove_at(item_idx);
@@ -189,13 +187,7 @@ void EditorBottomPanel::remove_item(Control *p_item) {
 }
 
 void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, Control *p_control) {
-	int tab_index = get_tab_idx_from_control(p_control);
-	if (tab_index == -1) {
-		return;
-	}
-
-	// Ignore the tab if the button is hidden.
-	get_tab_bar()->set_tab_hidden(tab_index, !p_button->is_visible());
+	EditorDockManager::get_singleton()->set_dock_enabled(p_control, p_button->is_visible());
 }
 
 EditorBottomPanel::EditorBottomPanel() {

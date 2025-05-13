@@ -361,7 +361,6 @@ private:
 
 	void _change_bottom_dock_placement();
 
-	bool _can_dock_horizontal() const;
 	void _set_dock_horizontal(bool p_enable);
 
 	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
