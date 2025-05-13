@@ -1181,9 +1181,6 @@ void Viewport::_update_viewport_with_current_settings() {
 void Viewport::_update_viewport_resolution() {
 	if (size_allocated) {
 		Size2i resolution = _calculate_texture_resolution(_get_size(), texture_resolution_override, auto_adjust_resolution);
-		print_line("Size: " + _get_size());
-		print_line("Tex Override: " + texture_resolution_override);
-		print_line("Resolution: " + resolution);
 		if(resolution != RS::get_singleton()->viewport_get_size(viewport)) {
 			RS::get_singleton()->viewport_set_size(viewport, resolution.width, resolution.height);
 		}
