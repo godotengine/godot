@@ -1399,9 +1399,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			display_driver = NULL_DISPLAY_DRIVER;
 
 		} else if (arg == "--embedded") { // Enable embedded mode.
-
+#ifdef MACOS_ENABLED
 			display_driver = EMBEDDED_DISPLAY_DRIVER;
-
+#else
+			OS::get_singleton()->print("--embedded is only supported on macOS, aborting.\n");
+			goto error;
+#endif
 		} else if (arg == "--log-file") { // write to log file
 
 			if (N) {
