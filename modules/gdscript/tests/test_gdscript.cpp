@@ -43,6 +43,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
+#include "gdscript_tree_printer.h"
 #endif
 
 namespace GDScriptTests {
@@ -174,7 +175,7 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 	}
 
 #ifdef TOOLS_ENABLED
-	GDScriptParser::TreePrinter printer;
+	GDScriptTreePrinter printer;
 	printer.print_tree(parser);
 #endif
 }
