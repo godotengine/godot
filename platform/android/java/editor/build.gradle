@@ -162,6 +162,7 @@ android {
             }
             applicationIdSuffix ".meta"
             versionNameSuffix "-meta"
+            minSdkVersion 23
             targetSdkVersion 32
         }
         picoos {

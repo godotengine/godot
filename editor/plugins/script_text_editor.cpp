@@ -575,8 +575,8 @@ void ScriptTextEditor::_validate_script() {
 		script_is_valid = true;
 	}
 	_update_connected_methods();
-	_update_warnings();
 	_update_errors();
+	_update_warnings();
 
 	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
@@ -1806,8 +1806,8 @@ void ScriptTextEditor::_notification(int p_what) {
 				break;
 			}
 			if (is_visible_in_tree()) {
-				_update_warnings();
 				_update_errors();
+				_update_warnings();
 			}
 			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
@@ -1889,13 +1889,20 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 	return false;
 }
 
-static Node *_find_script_node(Node *p_current_node, const Ref<Script> &script) {
-	if (p_current_node->get_script() == script) {
-		return p_current_node;
+static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
+	// Check scripts only for the nodes belonging to the edited scene.
+	if (p_current_node == p_edited_scene || p_current_node->get_owner() == p_edited_scene) {
+		Ref<Script> scr = p_current_node->get_script();
+		if (scr.is_valid() && scr == script) {
+			return p_current_node;
+		}
 	}
 
+	// Traverse all children, even the ones not owned by the edited scene as they
+	// can still have child nodes added within the edited scene and thus owned by
+	// it (e.g. nodes added to subscene's root or to its editable children).
 	for (int i = 0; i < p_current_node->get_child_count(); i++) {
-		Node *n = _find_script_node(p_current_node->get_child(i), script);
+		Node *n = _find_script_node(p_edited_scene, p_current_node->get_child(i), script);
 		if (n) {
 			return n;
 		}
@@ -1921,7 +1928,7 @@ static String _quote_drop_data(const String &str) {
 	return escaped.quote(using_single_quotes ? "'" : "\"");
 }
 
-static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p_create_field, bool p_allow_uid) {
+static String _get_dropped_resource_as_member(const Ref<Resource> &p_resource, bool p_create_field, bool p_allow_uid) {
 	String path = p_resource->get_path();
 	if (p_allow_uid) {
 		ResourceUID::ID id = ResourceLoader::get_resource_uid(path);
@@ -1948,6 +1955,28 @@ static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p
 	return vformat("const %s = preload(%s)", variable_name, _quote_drop_data(path));
 }
 
+static String _get_dropped_resource_as_exported_member(const Ref<Resource> &p_resource, Dictionary &p_dragged_export_refs) {
+	String variable_name = p_resource->get_name();
+	if (variable_name.is_empty()) {
+		variable_name = p_resource->get_path().get_file().get_basename();
+	}
+
+	variable_name = variable_name.to_snake_case().validate_unicode_identifier();
+	p_dragged_export_refs.set(variable_name, p_resource);
+
+	StringName class_name = p_resource->get_class();
+	Ref<Script> resource_script = p_resource->get_script();
+
+	if (resource_script.is_valid()) {
+		StringName global_resource_script_name = resource_script->get_global_name();
+		if (global_resource_script_name != StringName()) {
+			class_name = global_resource_script_name;
+		}
+	}
+
+	return vformat("@export var %s: %s", variable_name, class_name);
+}
+
 void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary d = p_data;
 
@@ -1966,8 +1995,11 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	String text_to_drop;
+	Dictionary dragged_export_refs;
 
-	const bool drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	const bool member_drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	const bool export_drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::ALT);
+
 	const bool allow_uid = Input::get_singleton()->is_key_pressed(Key::SHIFT) != bool(EDITOR_GET("text_editor/behavior/files/drop_preload_resources_as_uid"));
 	const String &line = te->get_line(drop_at_line);
 	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
@@ -1986,16 +2018,20 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		if (drop_modifier_pressed) {
+		if (member_drop_modifier_pressed) {
 			if (resource->is_built_in()) {
 				String warning = TTR("Preloading internal resources is not supported.");
 				EditorToaster::get_singleton()->popup_str(warning, EditorToaster::SEVERITY_ERROR);
 			} else {
-				text_to_drop = _get_dropped_resource_line(resource, is_empty_line, allow_uid);
+				text_to_drop = _get_dropped_resource_as_member(resource, is_empty_line, allow_uid);
 			}
+		} else if (export_drop_modifier_pressed) {
+			text_to_drop = _get_dropped_resource_as_exported_member(resource, dragged_export_refs);
 		} else {
 			text_to_drop = _quote_drop_data(path);
 		}
+
+		text_to_drop += is_empty_line ? "\n" : "";
 	}
 
 	if (type == "files" || type == "files_and_dirs") {
@@ -2003,19 +2039,36 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		PackedStringArray parts;
 
 		for (const String &path : files) {
-			if (drop_modifier_pressed && ResourceLoader::exists(path)) {
+			if (ResourceLoader::exists(path) && (member_drop_modifier_pressed || export_drop_modifier_pressed)) {
 				Ref<Resource> resource = ResourceLoader::load(path);
 				if (resource.is_null()) {
 					// Resource exists, but failed to load. We need only path and name, so we can use a dummy Resource instead.
 					resource.instantiate();
 					resource->set_path_cache(path);
 				}
-				parts.append(_get_dropped_resource_line(resource, is_empty_line, allow_uid));
+
+				if (member_drop_modifier_pressed) {
+					parts.append(_get_dropped_resource_as_member(resource, is_empty_line, allow_uid));
+				} else if (export_drop_modifier_pressed) {
+					Node *scene_root = get_tree()->get_edited_scene_root();
+					if (!scene_root) {
+						EditorNode::get_singleton()->show_warning(TTR("Can't assign @export variables without an open scene."));
+						return;
+					}
+
+					if (!ClassDB::is_parent_class(script->get_instance_base_type(), "Node")) {
+						EditorToaster::get_singleton()->popup_str(vformat(TTR("Can't assign @export variables because script '%s' does not inherit Node."), get_name()), EditorToaster::SEVERITY_WARNING);
+						return;
+					}
+
+					parts.append(_get_dropped_resource_as_exported_member(resource, dragged_export_refs));
+				}
 			} else {
 				parts.append(_quote_drop_data(path));
 			}
 		}
 		text_to_drop = String(is_empty_line ? "\n" : ", ").join(parts);
+		text_to_drop += is_empty_line ? "\n" : "";
 	}
 
 	if (type == "nodes") {
@@ -2030,14 +2083,14 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		Node *sn = _find_script_node(scene_root, script);
+		Node *sn = _find_script_node(scene_root, scene_root, script);
 		if (!sn) {
 			sn = scene_root;
 		}
 
 		Array nodes = d["nodes"];
 
-		if (drop_modifier_pressed) {
+		if (member_drop_modifier_pressed) {
 			const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
 
 			for (int i = 0; i < nodes.size(); i++) {
@@ -2047,8 +2100,14 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				bool is_unique = node->is_unique_name_in_owner() && (node->get_owner() == sn || node->get_owner() == sn->get_owner());
-				String path = is_unique ? String(node->get_name()) : String(sn->get_path_to(node));
+				bool is_unique = false;
+				String path;
+				if (node->is_unique_name_in_owner()) {
+					path = node->get_name();
+					is_unique = true;
+				} else {
+					path = sn->get_path_to(node);
+				}
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_unicode_identifier()) {
 						path = _quote_drop_data(path);
@@ -2071,6 +2130,27 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					text_to_drop += vformat("@onready var %s = %c%s\n", variable_name, is_unique ? '%' : '$', path);
 				}
 			}
+		} else if (export_drop_modifier_pressed) {
+			for (int i = 0; i < nodes.size(); i++) {
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
+
+				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
+				StringName class_name = node->get_class_name();
+				Ref<Script> node_script = node->get_script();
+				if (node_script.is_valid()) {
+					StringName global_node_script_name = node_script->get_global_name();
+					if (global_node_script_name != StringName()) {
+						class_name = global_node_script_name;
+					}
+				}
+
+				text_to_drop += vformat("@export var %s: %s\n", variable_name, class_name);
+				dragged_export_refs.set(variable_name, node);
+			}
 		} else {
 			for (int i = 0; i < nodes.size(); i++) {
 				if (i > 0) {
@@ -2083,8 +2163,15 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				bool is_unique = node->is_unique_name_in_owner() && (node->get_owner() == sn || node->get_owner() == sn->get_owner());
-				String path = is_unique ? String(node->get_name()) : String(sn->get_path_to(node));
+				bool is_unique = false;
+				String path;
+				if (node->is_unique_name_in_owner()) {
+					path = node->get_name();
+					is_unique = true;
+				} else {
+					path = sn->get_path_to(node);
+				}
+
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_ascii_identifier()) {
 						path = _quote_drop_data(path);
@@ -2108,6 +2195,13 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		return;
 	}
 
+	// assign dragged exported variables after script chanes
+	if (dragged_export_refs.size() > 0) {
+		connect("edited_script_changed",
+				callable_mp(this, &ScriptTextEditor::_assign_dragged_export_variables).bind(dragged_export_refs),
+				CONNECT_ONE_SHOT);
+	}
+
 	// Remove drag caret before any actions so it is not included in undo.
 	te->remove_drag_caret();
 	te->begin_complex_operation();
@@ -2121,6 +2215,28 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	te->insert_text_at_caret(text_to_drop);
 	te->end_complex_operation();
 	te->grab_focus();
+}
+
+void ScriptTextEditor::_assign_dragged_export_variables(const Dictionary &p_dragged_export_refs) {
+	ERR_FAIL_COND(p_dragged_export_refs.size() == 0);
+
+	Node *scene_root = get_tree()->get_edited_scene_root();
+
+	// Sanity check, should never be null
+	ERR_FAIL_COND(!scene_root);
+
+	Node *sn = _find_script_node(scene_root, scene_root, script);
+	if (!sn) {
+		sn = scene_root;
+	}
+
+	int n = p_dragged_export_refs.size();
+
+	for (int i = 0; i < n; i++) {
+		String variable_name = p_dragged_export_refs.get_key_at_index(i);
+		Variant ref = p_dragged_export_refs.get_value_at_index(i);
+		sn->set(variable_name, ref);
+	}
 }
 
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {

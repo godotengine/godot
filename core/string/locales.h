@@ -1110,7 +1110,7 @@ static const char *script_list[][2] = {
 	{ "Meitei Mayek", "Mtei" },
 	{ "Multani", "Mult" },
 	{ "Myanmar / Burmese", "Mymr" },
-	{ "Nag Mundari", "Nagm" },
+	{ "​Nag Mundari", "Nagm" },
 	{ "Nandinagari", "Nand" },
 	{ "Old North Arabian", "Narb" },
 	{ "Nabataean", "Nbat" },

@@ -3572,7 +3572,6 @@ int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
 
 void EditorNode::_exit_editor(int p_exit_code) {
 	exiting = true;
-	waiting_for_first_scan = false;
 	resource_preview->stop(); // Stop early to avoid crashes.
 	_save_editor_layout();
 
@@ -4814,7 +4813,7 @@ void EditorNode::_update_recent_scenes() {
 	recent_scenes->clear();
 
 	if (rc.size() == 0) {
-		recent_scenes->add_item(TTRC("No Recent Scenes"), -1);
+		recent_scenes->add_item(TTR("No Recent Scenes"), -1);
 		recent_scenes->set_item_disabled(-1, true);
 	} else {
 		String path;
@@ -6035,13 +6034,11 @@ Dictionary EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from
 
 	{
 		// TODO: make proper previews
-		Ref<Texture2D> texture = theme->get_icon(SNAME("FileBigThumb"), EditorStringName(EditorIcons));
-		if (texture.is_valid()) {
-			Ref<Image> img = texture->get_image();
-			img = img->duplicate();
-			img->resize(48, 48); // meh
-			preview = ImageTexture::create_from_image(img);
-		}
+		Ref<ImageTexture> texture = theme->get_icon(SNAME("FileBigThumb"), EditorStringName(EditorIcons));
+		Ref<Image> img = texture->get_image();
+		img = img->duplicate();
+		img->resize(48, 48); // meh
+		preview = ImageTexture::create_from_image(img);
 	}
 
 	drag_preview->set_texture(preview);

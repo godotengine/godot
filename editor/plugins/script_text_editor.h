@@ -175,6 +175,8 @@ protected:
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);
 
+	void _assign_dragged_export_variables(const Dictionary &p_dragged_export_refs);
+
 	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 	void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 

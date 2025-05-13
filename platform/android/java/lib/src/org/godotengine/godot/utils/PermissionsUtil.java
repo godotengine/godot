@@ -87,6 +87,11 @@ public final class PermissionsUtil {
 			return true;
 		}
 
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			// Not necessary, asked on install already
+			return true;
+		}
+
 		boolean dispatchedPermissionsRequest = false;
 		Set<String> requestedPermissions = new HashSet<>();
 		for (String permission : permissions) {
@@ -194,6 +199,10 @@ public final class PermissionsUtil {
 	public static boolean requestManifestPermissions(Activity activity, @Nullable Set<String> excludes) {
 		if (activity == null) {
 			return false;
+		}
+
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			return true;
 		}
 
 		List<String> manifestPermissions;

@@ -221,8 +221,14 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			Intent notifierIntent = new Intent(activity, activity.getClass());
 			notifierIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-			PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0,
-					notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+			PendingIntent pendingIntent;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				pendingIntent = PendingIntent.getActivity(activity, 0,
+						notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+			} else {
+				pendingIntent = PendingIntent.getActivity(activity, 0,
+						notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+			}
 
 			int startResult;
 			try {

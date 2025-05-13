@@ -865,13 +865,16 @@ class Godot(private val context: Context) {
 		if (packageManager == null) {
 			return false
 		}
-		if (!packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1)) {
-			// Optional requirements.. log as warning if missing
-			Log.w(TAG, "The vulkan hardware level does not meet the minimum requirement: 1")
-		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			if (!packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1)) {
+				// Optional requirements.. log as warning if missing
+				Log.w(TAG, "The vulkan hardware level does not meet the minimum requirement: 1")
+			}
 
-		// Check for api version 1.0
-		return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003)
+			// Check for api version 1.0
+			return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003)
+		}
+		return false
 	}
 
 	private fun setKeepScreenOn(enabled: Boolean) {
