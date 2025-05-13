@@ -719,6 +719,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(Object *p_object, const String &p_path, const String &p_base_type);
+	void set_directory(const String &dir_path);
 
 	void collapse_all_folding() override;
 	void expand_all_folding() override;

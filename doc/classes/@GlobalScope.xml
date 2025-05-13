@@ -2960,7 +2960,10 @@
 		<constant name="PROPERTY_HINT_GROUP_ENABLE" value="42" enum="PropertyHint">
 			Hints that a boolean property will enable the feature associated with the group that it occurs in. Only works within a group or subgroup.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="43" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_RES_FROM_DIR" value="43" enum="PropertyHint">
+			Hints a directory for the [Resource] property to list the resource files from.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="44" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
