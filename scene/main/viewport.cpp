@@ -611,6 +611,10 @@ void Viewport::_notification(int p_what) {
 					first->make_current();
 				}
 			}
+
+			if (auto_adjust_resolution) {
+				_update_viewport_with_current_settings();
+			}
 #endif // _3D_DISABLED
 		} break;
 
@@ -1050,7 +1054,7 @@ void Viewport::set_use_oversampling(bool p_oversampling) {
 		return;
 	}
 	use_font_oversampling = p_oversampling;
-	_set_size(_get_size(), _get_texture_resolution_override(), _is_size_allocated());
+	_update_viewport_with_current_settings();
 }
 
 bool Viewport::is_using_oversampling() const {
@@ -1064,7 +1068,7 @@ void Viewport::set_oversampling_override(float p_oversampling) {
 		return;
 	}
 	font_oversampling_override = p_oversampling;
-	_set_size(_get_size(), _get_texture_resolution_override(), _is_size_allocated());
+	_update_viewport_with_current_settings();
 }
 
 float Viewport::get_oversampling_override() const {
@@ -1075,7 +1079,7 @@ float Viewport::get_oversampling_override() const {
 bool Viewport::_set_size(const Size2 &p_size, const Size2i &p_texture_resolution_override, bool p_allocated) {
 	Transform2D stretch_transform_new = Transform2D();
 	float new_font_oversampling = 1.0;
-	const Size2 resolution = _calculate_texture_resolution(p_size, p_texture_resolution_override, auto_adjust_resolution);
+	Size2 resolution = _calculate_texture_resolution(p_size, p_texture_resolution_override, auto_adjust_resolution);
 	if (resolution != p_size) {
 		Size2 scale = resolution / p_size;
 		stretch_transform_new.scale(scale);
@@ -1156,19 +1160,30 @@ Size2i Viewport::_calculate_texture_resolution(const Size2 &p_size, const Size2i
 			}
 		}
 		resolution = Size2i(Math::ceil(resolution.x * scale.x), Math::ceil(resolution.y * scale.y));
+		Size2i current_texture_size = RS::get_singleton()->viewport_get_size(viewport);
+		if(resolution.x < current_texture_size.x && resolution.y < current_texture_size.y) {
+			resolution = current_texture_size;
+		}
 	}
 	return resolution;
 }
 
 void Viewport::_root_viewport_size_changed() {
 	if(auto_adjust_resolution) {
-		_set_size(_get_size(), _get_texture_resolution_override(), _is_size_allocated());
+		_update_viewport_with_current_settings();
 	}
+}
+
+void Viewport::_update_viewport_with_current_settings() {
+	_set_size(_get_size(), _get_texture_resolution_override(), _is_size_allocated());
 }
 
 void Viewport::_update_viewport_resolution() {
 	if (size_allocated) {
 		Size2i resolution = _calculate_texture_resolution(_get_size(), texture_resolution_override, auto_adjust_resolution);
+		print_line("Size: " + _get_size());
+		print_line("Tex Override: " + texture_resolution_override);
+		print_line("Resolution: " + resolution);
 		if(resolution != RS::get_singleton()->viewport_get_size(viewport)) {
 			RS::get_singleton()->viewport_set_size(viewport, resolution.width, resolution.height);
 		}
@@ -1204,7 +1219,7 @@ bool Viewport::_is_size_allocated() const {
 void Viewport::_set_auto_adjust_resolution(const bool &p_enable) {
 	if(auto_adjust_resolution != p_enable) {
 		auto_adjust_resolution = p_enable;
-		_update_viewport_resolution();
+		_update_viewport_with_current_settings();
 	}
 }
 
@@ -4852,7 +4867,7 @@ void Viewport::set_use_xr(bool p_use_xr) {
 
 		if (!use_xr) {
 			// Set viewport to previous size when exiting XR.
-			_update_viewport_resolution();
+			_update_viewport_with_current_settings();
 
 			// Reset render target override textures.
 			RID rt = RS::get_singleton()->viewport_get_render_target(viewport);

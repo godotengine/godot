@@ -502,6 +502,7 @@ private:
 	void _window_start_resize(SubWindowResize p_edge, Window *p_window);
 
 	void _root_viewport_size_changed();
+	void _update_viewport_with_current_settings(); 
 	void _update_viewport_resolution();
 
 protected:
