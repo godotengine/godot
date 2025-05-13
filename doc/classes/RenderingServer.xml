@@ -3908,6 +3908,13 @@
 				Returns the viewport's last rendered frame.
 			</description>
 		</method>
+		<method name="viewport_get_size">
+			<return type="Size2i" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Gets the viewport's width and height in pixels.
+			</description>
+		</method>
 		<method name="viewport_get_update_mode" qualifiers="const">
 			<return type="int" enum="RenderingServer.ViewportUpdateMode" />
 			<param index="0" name="viewport" type="RID" />
@@ -4165,13 +4172,6 @@
 			<param index="2" name="height" type="int" />
 			<description>
 				Sets the viewport's width and height in pixels.
-			</description>
-		</method>
-		<method name="viewport_get_size">
-			<return type="Size2i" />
-			<param index="0" name="viewport" type="RID" />
-			<description>
-				Gets the viewport's width and height in pixels.
 			</description>
 		</method>
 		<method name="viewport_set_snap_2d_transforms_to_pixel">
