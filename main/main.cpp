@@ -1399,9 +1399,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			display_driver = NULL_DISPLAY_DRIVER;
 
 		} else if (arg == "--embedded") { // Enable embedded mode.
-
+#ifdef MACOS_ENABLED
 			display_driver = EMBEDDED_DISPLAY_DRIVER;
-
+#else
+			OS::get_singleton()->print("--embedded is only supported on macOS, aborting.\n");
+			goto error;
+#endif
 		} else if (arg == "--log-file") { // write to log file
 
 			if (N) {
@@ -3129,6 +3132,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 			// from --position and --resolution parameters.
 			window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
 			window_flags = DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
+			if (bool(GLOBAL_GET("display/window/size/transparent"))) {
+				window_flags |= DisplayServer::WINDOW_FLAG_TRANSPARENT_BIT;
+			}
 		}
 
 #ifdef TOOLS_ENABLED
