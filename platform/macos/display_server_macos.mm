@@ -30,9 +30,6 @@
 
 #import "display_server_macos.h"
 
-#ifdef DEBUG_ENABLED
-#import "editor/embedded_process_macos.h"
-#endif
 #import "godot_application.h"
 #import "godot_application_delegate.h"
 #import "godot_button_view.h"
@@ -55,6 +52,10 @@
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/image_texture.h"
+
+#ifdef TOOLS_ENABLED
+#import "editor/embedded_process_macos.h"
+#endif
 
 #include <AppKit/AppKit.h>
 
@@ -3283,7 +3284,7 @@ void DisplayServerMacOS::enable_for_stealing_focus(OS::ProcessID pid) {
 		ERR_FAIL_V(m_retval);                        \
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 
 Error DisplayServerMacOS::embed_process_update(WindowID p_window, const EmbeddedProcessMacOS *p_process) {
 	_THREAD_SAFE_METHOD_

@@ -460,7 +460,7 @@ public:
 	virtual bool get_swap_cancel_ok() override;
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 	Error embed_process_update(WindowID p_window, const EmbeddedProcessMacOS *p_process);
 #endif
 	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
