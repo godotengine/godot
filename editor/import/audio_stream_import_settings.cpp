@@ -644,14 +644,12 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	_play_button->set_accessibility_name(TTRC("Play"));
 	_play_button->set_flat(true);
 	hbox->add_child(_play_button);
-	_play_button->set_focus_mode(Control::FOCUS_NONE);
 	_play_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_play));
 
 	_stop_button = memnew(Button);
 	_stop_button->set_accessibility_name(TTRC("Stop"));
 	_stop_button->set_flat(true);
 	hbox->add_child(_stop_button);
-	_stop_button->set_focus_mode(Control::FOCUS_NONE);
 	_stop_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_stop));
 
 	_current_label = memnew(Label);
