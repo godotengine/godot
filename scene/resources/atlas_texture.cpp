@@ -113,6 +113,18 @@ Rect2 AtlasTexture::get_margin() const {
 	return margin;
 }
 
+void AtlasTexture::set_pivot(const Vector2 &p_pivot) {
+	if (pivot == p_pivot) {
+		return;
+	}
+	pivot = p_pivot;
+	emit_changed();
+}
+
+Vector2 AtlasTexture::get_pivot() const {
+	return pivot;
+}
+
 void AtlasTexture::set_filter_clip(const bool p_enable) {
 	filter_clip = p_enable;
 	emit_changed();
@@ -145,12 +157,16 @@ void AtlasTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &AtlasTexture::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &AtlasTexture::get_margin);
 
+	ClassDB::bind_method(D_METHOD("set_pivot", "pivot"), &AtlasTexture::set_pivot);
+	ClassDB::bind_method(D_METHOD("get_pivot"), &AtlasTexture::get_pivot);
+
 	ClassDB::bind_method(D_METHOD("set_filter_clip", "enable"), &AtlasTexture::set_filter_clip);
 	ClassDB::bind_method(D_METHOD("has_filter_clip"), &AtlasTexture::has_filter_clip);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "atlas", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_atlas", "get_atlas");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region", PROPERTY_HINT_NONE, "suffix:px"), "set_region", "get_region");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "margin", PROPERTY_HINT_NONE, "suffix:px"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot", PROPERTY_HINT_NONE, "suffix:px"), "set_pivot", "get_pivot");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_clip"), "set_filter_clip", "has_filter_clip");
 }
 

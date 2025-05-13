@@ -104,6 +104,10 @@ Rect2 AnimatedSprite2D::_get_rect() const {
 	if (centered) {
 		ofs -= s / 2;
 	}
+	Ref<AtlasTexture> atlas_texture = t;
+	if (atlas_texture.is_valid()) {
+		ofs -= atlas_texture->get_pivot();
+	}
 
 	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
@@ -277,6 +281,10 @@ void AnimatedSprite2D::_notification(int p_what) {
 			Point2 ofs = offset;
 			if (centered) {
 				ofs -= s / 2;
+			}
+			Ref<AtlasTexture> atlas_texture = texture;
+			if (atlas_texture.is_valid()) {
+				ofs -= atlas_texture->get_pivot();
 			}
 
 			if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
