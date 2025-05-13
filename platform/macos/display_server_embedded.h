@@ -66,6 +66,8 @@ class DisplayServerEmbedded : public DisplayServer {
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 
+	bool transparent = false;
+
 	CAContext *ca_context = nullptr;
 	// Either be a CAMetalLayer or a CALayer depending on the rendering driver.
 	CALayer *layer = nullptr;

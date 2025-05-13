@@ -192,7 +192,8 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	layer.contentsScale = scale;
 	layer.magnificationFilter = kCAFilterNearest;
 	layer.minificationFilter = kCAFilterNearest;
-	layer.opaque = NO; // Never opaque when embedded, clear color is drawn by control under the view.
+	transparent = ((p_flags & WINDOW_FLAG_TRANSPARENT_BIT) == WINDOW_FLAG_TRANSPARENT_BIT);
+	layer.opaque = !(OS::get_singleton()->is_layered_allowed() && transparent);
 	layer.actions = @{ @"contents" : [NSNull null] }; // Disable implicit animations for contents.
 	// AppKit frames, bounds and positions are always in points.
 	CGRect bounds = CGRectMake(0, 0, p_resolution.width, p_resolution.height);
@@ -654,10 +655,16 @@ bool DisplayServerEmbedded::window_is_maximize_allowed(WindowID p_window) const 
 }
 
 void DisplayServerEmbedded::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
-	// Not supported
+	if (p_flag == WINDOW_FLAG_TRANSPARENT && p_window == MAIN_WINDOW_ID) {
+		transparent = p_enabled;
+		layer.opaque = !(OS::get_singleton()->is_layered_allowed() && transparent);
+	}
 }
 
 bool DisplayServerEmbedded::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
+	if (p_flag == WINDOW_FLAG_TRANSPARENT && p_window == MAIN_WINDOW_ID) {
+		return transparent;
+	}
 	return false;
 }
 
