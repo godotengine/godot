@@ -156,12 +156,12 @@ void TreeItem::_change_tree(Tree *p_tree) {
 		DisplayServer::get_singleton()->accessibility_free_element(accessibility_row_element);
 		accessibility_row_element = RID();
 	}
-	for (Cell &cell : cells) {
+	for (const Cell &cell : cells) {
 		if (cell.accessibility_cell_element.is_valid()) {
 			DisplayServer::get_singleton()->accessibility_free_element(cell.accessibility_cell_element);
 			cell.accessibility_cell_element = RID();
 		}
-		for (Cell::Button &btn : cell.buttons) {
+		for (const Cell::Button &btn : cell.buttons) {
 			if (btn.accessibility_button_element.is_valid()) {
 				DisplayServer::get_singleton()->accessibility_free_element(btn.accessibility_button_element);
 				btn.accessibility_button_element = RID();
@@ -853,7 +853,7 @@ void TreeItem::set_custom_minimum_height(int p_height) {
 
 	custom_min_height = p_height;
 
-	for (Cell &c : cells) {
+	for (Cell &c : cells.write) {
 		c.cached_minimum_size_dirty = true;
 	}
 
@@ -1303,9 +1303,9 @@ void TreeItem::deselect(int p_column) {
 
 void TreeItem::clear_buttons() {
 	int i = 0;
-	for (Cell &cell : cells) {
+	for (Cell &cell : cells.write) {
 		if (!cell.buttons.is_empty()) {
-			for (Cell::Button &btn : cell.buttons) {
+			for (const Cell::Button &btn : cell.buttons) {
 				if (btn.accessibility_button_element.is_valid()) {
 					DisplayServer::get_singleton()->accessibility_free_element(btn.accessibility_button_element);
 				}
@@ -1643,7 +1643,7 @@ void TreeItem::set_disable_folding(bool p_disable) {
 
 	disable_folding = p_disable;
 
-	for (Cell &c : cells) {
+	for (Cell &c : cells.write) {
 		c.cached_minimum_size_dirty = true;
 	}
 
@@ -4637,9 +4637,9 @@ RID Tree::get_focused_accessibility_element() const {
 
 void Tree::_accessibility_clean_info(TreeItem *p_item) {
 	p_item->accessibility_row_element = RID();
-	for (TreeItem::Cell &cell : p_item->cells) {
+	for (const TreeItem::Cell &cell : p_item->cells) {
 		cell.accessibility_cell_element = RID();
-		for (TreeItem::Cell::Button &btn : cell.buttons) {
+		for (const TreeItem::Cell::Button &btn : cell.buttons) {
 			btn.accessibility_button_element = RID();
 		}
 	}
@@ -4790,7 +4790,7 @@ void Tree::_notification(int p_what) {
 			if (root) {
 				_accessibility_clean_info(root);
 			}
-			for (ColumnInfo &col : columns) {
+			for (const ColumnInfo &col : columns) {
 				col.accessibility_col_element = RID();
 			}
 			accessibility_scroll_element = RID();
@@ -5496,12 +5496,12 @@ int Tree::get_column_width(int p_column) const {
 void Tree::propagate_set_columns(TreeItem *p_item) {
 	p_item->cells.resize(columns.size());
 	p_item->accessibility_row_dirty = true;
-	for (TreeItem::Cell &cell : p_item->cells) {
+	for (const TreeItem::Cell &cell : p_item->cells) {
 		if (cell.accessibility_cell_element.is_valid()) {
 			DisplayServer::get_singleton()->accessibility_free_element(cell.accessibility_cell_element);
 			cell.accessibility_cell_element = RID();
 		}
-		for (TreeItem::Cell::Button &btn : cell.buttons) {
+		for (const TreeItem::Cell::Button &btn : cell.buttons) {
 			if (btn.accessibility_button_element.is_valid()) {
 				DisplayServer::get_singleton()->accessibility_free_element(btn.accessibility_button_element);
 				btn.accessibility_button_element = RID();

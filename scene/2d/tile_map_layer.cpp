@@ -872,7 +872,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 					// Create shapes for each polygon.
 					int body_shape_index = 0;
 					Vector<Vector<Vector2>> convex_polygons = Geometry2D::decompose_many_polygons_in_convex(out_polygons, out_holes);
-					for (Vector<Vector2> &convex_polygon : convex_polygons) {
+					for (const Vector<Vector2> &convex_polygon : convex_polygons) {
 						Ref<ConvexPolygonShape2D> shape;
 						shape.instantiate();
 						shape->set_points(convex_polygon);

@@ -176,12 +176,12 @@ private:
 			DisplayServer::get_singleton()->accessibility_free_element(accessibility_row_element);
 			accessibility_row_element = RID();
 		}
-		for (Cell &cell : cells) {
+		for (const Cell &cell : cells) {
 			if (cell.accessibility_cell_element.is_valid()) {
 				DisplayServer::get_singleton()->accessibility_free_element(cell.accessibility_cell_element);
 				cell.accessibility_cell_element = RID();
 			}
-			for (Cell::Button &btn : cell.buttons) {
+			for (const Cell::Button &btn : cell.buttons) {
 				if (btn.accessibility_button_element.is_valid()) {
 					DisplayServer::get_singleton()->accessibility_free_element(btn.accessibility_button_element);
 					btn.accessibility_button_element = RID();

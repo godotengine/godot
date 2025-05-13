@@ -136,7 +136,7 @@ TEST_CASE("[TCPServer] Handle multiple clients at the same time") {
 
 	wait_for_condition([&]() {
 		bool should_exit = true;
-		for (Ref<StreamPeerTCP> &c : clients) {
+		for (const Ref<StreamPeerTCP> &c : clients) {
 			if (c->poll() != Error::OK) {
 				return true;
 			}
@@ -151,7 +151,7 @@ TEST_CASE("[TCPServer] Handle multiple clients at the same time") {
 		return should_exit;
 	});
 
-	for (Ref<StreamPeerTCP> &c : clients) {
+	for (const Ref<StreamPeerTCP> &c : clients) {
 		REQUIRE_EQ(c->get_status(), StreamPeerTCP::STATUS_CONNECTED);
 	}
 
@@ -162,7 +162,7 @@ TEST_CASE("[TCPServer] Handle multiple clients at the same time") {
 		CHECK_EQ(clients_from_server[i]->get_string(), hello_client);
 	}
 
-	for (Ref<StreamPeerTCP> &c : clients) {
+	for (const Ref<StreamPeerTCP> &c : clients) {
 		c->disconnect_from_host();
 	}
 	server->stop();
