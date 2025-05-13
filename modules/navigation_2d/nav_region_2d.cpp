@@ -314,7 +314,7 @@ void NavRegion2D::cancel_sync_request() {
 
 NavRegion2D::NavRegion2D() :
 		sync_dirty_request_list_element(this) {
-	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
+	type = NavigationEnums2D::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
 }
 
 NavRegion2D::~NavRegion2D() {

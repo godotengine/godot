@@ -82,7 +82,7 @@
 #endif // LIBDECOR_ENABLED
 
 #include "core/os/thread.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 class WaylandThread {
 public:

@@ -330,7 +330,7 @@ void NavRegion3D::cancel_sync_request() {
 
 NavRegion3D::NavRegion3D() :
 		sync_dirty_request_list_element(this) {
-	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
+	type = NavigationEnums3D::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
 }
 
 NavRegion3D::~NavRegion3D() {
