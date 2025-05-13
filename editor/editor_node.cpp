@@ -96,6 +96,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
+#include "editor/editor_script.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_settings_dialog.h"
 #include "editor/editor_translation_parser.h"
@@ -5766,6 +5767,41 @@ bool EditorNode::validate_custom_directory() {
 	}
 
 	return true;
+}
+
+void EditorNode::run_editor_script(const Ref<Script> &p_script) {
+	Error err = p_script->reload(true); // Always hard reload the script before running.
+	if (err != OK || !p_script->is_valid()) {
+		EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it contains errors, check the output log."), EditorToaster::SEVERITY_WARNING);
+		return;
+	}
+
+	// Perform additional checks on the script to evaluate if it's runnable.
+
+	bool is_runnable = true;
+	if (!ClassDB::is_parent_class(p_script->get_instance_base_type(), "EditorScript")) {
+		is_runnable = false;
+
+		EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it doesn't extend EditorScript."), EditorToaster::SEVERITY_WARNING);
+	}
+	if (!p_script->is_tool()) {
+		is_runnable = false;
+
+		if (p_script->get_class() == "GDScript") {
+			EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script (add the @tool annotation at the top)."), EditorToaster::SEVERITY_WARNING);
+		} else if (p_script->get_class() == "CSharpScript") {
+			EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script (add the [Tool] attribute above the class definition)."), EditorToaster::SEVERITY_WARNING);
+		} else {
+			EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script."), EditorToaster::SEVERITY_WARNING);
+		}
+	}
+	if (!is_runnable) {
+		return;
+	}
+
+	Ref<EditorScript> es = memnew(EditorScript);
+	es->set_script(p_script);
+	es->run();
 }
 
 void EditorNode::_immediate_dialog_confirmed() {

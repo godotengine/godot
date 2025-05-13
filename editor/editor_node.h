@@ -994,6 +994,7 @@ public:
 
 	bool ensure_main_scene(bool p_from_native);
 	bool validate_custom_directory();
+	void run_editor_script(const Ref<Script> &p_script);
 };
 
 class EditorPluginList : public Object {
