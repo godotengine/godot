@@ -357,6 +357,11 @@ public:
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) override {}
 	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) const override { return false; }
 
+	virtual void soft_body_apply_point_impulse(RID p_body, int p_point_index, const Vector3 &p_impulse) override {}
+	virtual void soft_body_apply_point_force(RID p_body, int p_point_index, const Vector3 &p_force) override {}
+	virtual void soft_body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) override {}
+	virtual void soft_body_apply_central_force(RID p_body, const Vector3 &p_force) override {}
+
 	/* JOINT API */
 
 	virtual RID joint_create() override { return RID(); }
