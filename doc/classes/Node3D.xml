@@ -329,7 +329,7 @@
 			- The [member Vector3.x] is the angle around the local X axis (pitch);
 			- The [member Vector3.y] is the angle around the local Y axis (yaw);
 			- The [member Vector3.z] is the angle around the local Z axis (roll).
-			The order of each consecutive rotation can be changed with [member rotation_order] (see [enum EulerOrder] constants). By default, the YXZ convention is used ([constant EULER_ORDER_YXZ]).
+			The order of each consecutive rotation can be changed with [member rotation_order] (see [enum EulerOrder] constants). In Godot, Euler angles always use intrinsic order. By default, the intrinsic YXZ convention is used ([constant EULER_ORDER_YXZ]).
 			[b]Note:[/b] This property is edited in degrees in the inspector. If you want to use degrees in a script, use [member rotation_degrees].
 		</member>
 		<member name="rotation_degrees" type="Vector3" setter="set_rotation_degrees" getter="get_rotation_degrees">
@@ -340,7 +340,7 @@
 			How this node's rotation and scale are displayed in the Inspector dock.
 		</member>
 		<member name="rotation_order" type="int" setter="set_rotation_order" getter="get_rotation_order" enum="EulerOrder" default="2">
-			The axis rotation order of the [member rotation] property. The final orientation is calculated by rotating around the local X, Y, and Z axis in this order.
+			The axis rotation order of the [member rotation] property. In Godot, Euler angles always use intrinsic order, meaning that the final orientation is calculated by rotating around the local axes in this order.
 		</member>
 		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3(1, 1, 1)">
 			Scale of this node in local space (relative to this node). This value is obtained from [member basis]'s scale.
@@ -391,10 +391,10 @@
 			[b]Note:[/b] Some 3D nodes such as [CSGShape3D] or [CollisionShape3D] automatically enable this to function correctly.
 		</constant>
 		<constant name="ROTATION_EDIT_MODE_EULER" value="0" enum="RotationEditMode">
-			The rotation is edited using a [Vector3] in [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url].
+			The rotation is edited using a [Vector3] in [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url]. In Godot, Euler angles always use intrinsic order, meaning that rotation happens around the local axes of the object.
 		</constant>
 		<constant name="ROTATION_EDIT_MODE_QUATERNION" value="1" enum="RotationEditMode">
-			The rotation is edited using a [Quaternion].
+			The rotation is edited using a [Quaternion]. Quaternions avoid [url=$DOCS_URL/tutorials/3d/using_transforms.html]gimbal lock[/url] and having to choose an order of rotation, but are less intuitive. Quaternion rotation is mostly the same as rotors in 3D geometric algebra, except that the numbers are labeled differently.
 		</constant>
 		<constant name="ROTATION_EDIT_MODE_BASIS" value="2" enum="RotationEditMode">
 			The rotation is edited using a [Basis]. In this mode, the raw [member basis]'s axes can be freely modified, but the [member scale] property is not available.
