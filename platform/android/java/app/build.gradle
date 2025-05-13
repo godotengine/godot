@@ -132,14 +132,6 @@ android {
             doNotStrip '**/*.so'
         }
 
-        jniLibs {
-            // Setting this to true causes AGP to package compressed native libraries when building the app
-            // For more background, see:
-            // - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
-            // - https://stackoverflow.com/a/44704840
-            useLegacyPackaging shouldUseLegacyPackaging()
-        }
-
         // Always select Godot's version of libc++_shared.so in case deps have their own
         pickFirst 'lib/x86/libc++_shared.so'
         pickFirst 'lib/x86_64/libc++_shared.so'
