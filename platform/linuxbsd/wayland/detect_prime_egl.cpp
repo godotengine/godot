@@ -48,7 +48,7 @@
 void DetectPrimeEGL::create_context(EGLenum p_platform_enum) {
 #if defined(GLAD_ENABLED)
 	if (!gladLoaderLoadEGL(nullptr)) {
-		print_verbose("Unable to load EGL, GPU detection skipped.");
+		PRINT_VERBOSE("Unable to load EGL, GPU detection skipped.");
 		quick_exit(1);
 	}
 #endif
@@ -72,7 +72,7 @@ void DetectPrimeEGL::create_context(EGLenum p_platform_enum) {
 
 #if defined(GLAD_ENABLED)
 	if (!gladLoaderLoadEGL(egl_display)) {
-		print_verbose("Unable to load EGL, GPU detection skipped.");
+		PRINT_VERBOSE("Unable to load EGL, GPU detection skipped.");
 		quick_exit(1);
 	}
 #endif
@@ -102,7 +102,7 @@ void DetectPrimeEGL::create_context(EGLenum p_platform_enum) {
 
 	egl_context = eglCreateContext(egl_display, egl_config, EGL_NO_CONTEXT, context_attribs);
 	if (egl_context == EGL_NO_CONTEXT) {
-		print_verbose("Unable to create an EGL context, GPU detection skipped.");
+		PRINT_VERBOSE("Unable to create an EGL context, GPU detection skipped.");
 		quick_exit(1);
 	}
 
@@ -124,7 +124,7 @@ int DetectPrimeEGL::detect_prime(EGLenum p_platform_enum) {
 		int fdset[2];
 
 		if (pipe(fdset) == -1) {
-			print_verbose("Failed to pipe(), using default GPU");
+			PRINT_VERBOSE("Failed to pipe(), using default GPU");
 			return 0;
 		}
 
@@ -184,7 +184,7 @@ int DetectPrimeEGL::detect_prime(EGLenum p_platform_enum) {
 			memcpy(&string[vendor_len], renderer, renderer_len);
 
 			if (write(fdset[1], string, vendor_len + renderer_len) == -1) {
-				print_verbose("Couldn't write vendor/renderer string.");
+				PRINT_VERBOSE("Couldn't write vendor/renderer string.");
 			}
 			close(fdset[1]);
 
@@ -198,7 +198,7 @@ int DetectPrimeEGL::detect_prime(EGLenum p_platform_enum) {
 	int priority = 0;
 
 	if (vendors[0] == vendors[1]) {
-		print_verbose("Only one GPU found, using default.");
+		PRINT_VERBOSE("Only one GPU found, using default.");
 		return 0;
 	}
 
@@ -217,12 +217,12 @@ int DetectPrimeEGL::detect_prime(EGLenum p_platform_enum) {
 		}
 	}
 
-	print_verbose("Found renderers:");
+	PRINT_VERBOSE("Found renderers:");
 	for (int i = 0; i < 4; ++i) {
-		print_verbose("Renderer " + itos(i) + ": " + renderers[i] + " with priority: " + itos(priorities[i]));
+		PRINT_VERBOSE("Renderer " + itos(i) + ": " + renderers[i] + " with priority: " + itos(priorities[i]));
 	}
 
-	print_verbose("Using renderer: " + renderers[preferred]);
+	PRINT_VERBOSE("Using renderer: " + renderers[preferred]);
 	return preferred;
 }
 
