@@ -362,7 +362,7 @@ String DirAccessWindows::get_filesystem_type() const {
 				&dwFileSystemFlags,
 				szFileSystemName,
 				sizeof(szFileSystemName)) == TRUE) {
-		return String::utf16((const char16_t *)szFileSystemName);
+		return String::utf16((const char16_t *)szFileSystemName).to_upper();
 	}
 
 	ERR_FAIL_V("");
