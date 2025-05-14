@@ -60,6 +60,22 @@ JPH::ObjectLayer JoltArea3D::_get_object_layer() const {
 	return space->map_to_object_layer(_get_broad_phase_layer(), collision_layer, collision_mask);
 }
 
+void JoltArea3D::_make_body_kinematic() {
+	motion_type = JPH::EMotionType::Kinematic;
+	if (!in_space()) {
+		return;
+	}
+	space->get_body_iface().SetMotionType(jolt_body->GetID(), motion_type, JPH::EActivation::Activate);
+}
+
+void JoltArea3D::_make_body_static() {
+	motion_type = JPH::EMotionType::Static;
+	if (!in_space()) {
+		return;
+	}
+	space->get_body_iface().SetMotionType(jolt_body->GetID(), motion_type, JPH::EActivation::DontActivate);
+}
+
 void JoltArea3D::_add_to_space() {
 	jolt_shape = build_shapes(true);
 
@@ -73,6 +89,7 @@ void JoltArea3D::_add_to_space() {
 	jolt_settings->mMotionType = _get_motion_type();
 	jolt_settings->mIsSensor = true;
 	jolt_settings->mUseManifoldReduction = false;
+	jolt_settings->mAllowDynamicOrKinematic = true;
 	jolt_settings->mOverrideMassProperties = JPH::EOverrideMassProperties::MassAndInertiaProvided;
 	jolt_settings->mMassPropertiesOverride.mMass = 1.0f;
 	jolt_settings->mMassPropertiesOverride.mInertia = JPH::Mat44::sIdentity();
@@ -325,8 +342,10 @@ void JoltArea3D::_body_monitoring_changed() {
 
 void JoltArea3D::_area_monitoring_changed() {
 	if (has_area_monitor_callback()) {
+		_make_body_kinematic();
 		_force_areas_entered();
 	} else {
+		_make_body_static();
 		_force_areas_exited(false);
 	}
 }

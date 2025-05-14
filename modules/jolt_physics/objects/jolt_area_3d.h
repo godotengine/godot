@@ -111,10 +111,15 @@ private:
 	bool monitorable = false;
 	bool point_gravity = false;
 
+	JPH::EMotionType motion_type = JPH::EMotionType::Kinematic;
+
 	virtual JPH::BroadPhaseLayer _get_broad_phase_layer() const override;
 	virtual JPH::ObjectLayer _get_object_layer() const override;
 
-	virtual JPH::EMotionType _get_motion_type() const override { return JPH::EMotionType::Kinematic; }
+	virtual JPH::EMotionType _get_motion_type() const override { return motion_type; }
+
+	void _make_body_kinematic();
+	void _make_body_static();
 
 	virtual void _add_to_space() override;
 
