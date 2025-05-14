@@ -107,10 +107,18 @@ index 0000000000..f6171bf846
 +#define PACKAGE_NAME  "libjpeg-turbo"
 +
 +/* Version number of package */
-+#define VERSION  "3.1.1"
++#define VERSION  "3.1.0"
 +
 +/* The size of `size_t', as computed by sizeof. */
-+#define SIZEOF_SIZE_T  8
++#if defined(__SIZEOF_SIZE_T__)
++	#define SIZEOF_SIZE_T __SIZEOF_SIZE_T__
++#elif defined(_WIN64)
++	#define SIZEOF_SIZE_T 8
++#elif defined(_WIN32)
++	#define SIZEOF_SIZE_T 4
++#else
++	#error "Cannot determine size of size_t"
++#endif
 +
 +/* Define if your compiler has __builtin_ctzl() and sizeof(unsigned long) == sizeof(size_t). */
 +#if defined(__GNUC__)
