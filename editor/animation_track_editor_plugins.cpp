@@ -785,17 +785,258 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 	draw_line(Point2(from_x, y_from + h * tex_h), Point2(to_x, y_from + h_n * tex_h), color, 2);
 }
 
+AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
+	//AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
+}
+
 ////////////////////////
 
-/// AUDIO ///
+/// ANIMATION ///
 
-void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
+void AnimationTrackEditTypeAnimation::_preview_changed(ObjectID p_which) {
 	for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
-		Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), i);
-		if (stream.is_valid() && stream->get_instance_id() == p_which) {
+		StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), i);
+		//if (anim_name == StringName("[stop]")) {
+		//	continue;
+		//}
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
+		//if (!ap || !ap->has_animation(anim_name)) {
+			continue;
+		//}
+
+		Ref<Animation> anim = ap->get_animation(anim_name);
+		//if (!anim.is_valid()) {
+			continue;
+		//}
+
+		if (anim.is_valid() && anim->get_instance_id() == p_which) {
 			queue_redraw();
 			return;
 		}
+	}
+}
+
+bool AnimationTrackEditTypeAnimation::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+	if (p_point.x > get_timeline()->get_name_limit() && p_point.x < get_size().width - get_timeline()->get_buttons_width()) {
+		Dictionary drag_data = p_data;
+		if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
+			Ref<Animation> res = drag_data["resource"];
+			if (res.is_valid()) {
+				return true;
+			}
+		}
+
+		if (drag_data.has("type") && String(drag_data["type"]) == "files") {
+			Vector<String> files = drag_data["files"];
+
+			if (files.size() == 1) {
+				Ref<Animation> res = ResourceLoader::load(files[0]);
+				if (res.is_valid()) {
+					return true;
+				}
+			}
+		}
+	}
+
+	return AnimationTrackEdit::can_drop_data(p_point, p_data);
+}
+
+void AnimationTrackEditTypeAnimation::drop_data(const Point2 &p_point, const Variant &p_data) {
+	if (p_point.x > get_timeline()->get_name_limit() && p_point.x < get_size().width - get_timeline()->get_buttons_width()) {
+		Ref<Animation> anim;
+		Dictionary drag_data = p_data;
+		if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
+			anim = drag_data["resource"];
+		} else if (drag_data.has("type") && String(drag_data["type"]) == "files") {
+			Vector<String> files = drag_data["files"];
+
+			if (files.size() == 1) {
+				anim = ResourceLoader::load(files[0]);
+			}
+		}
+
+		if (anim.is_valid()) {
+			StringName anim_name = anim->get_name();
+			if (anim_name == StringName("[stop]")) {
+				WARN_PRINT("Cannot insert [stop] animation key.");
+				return;
+			}
+
+			int x = p_point.x - get_timeline()->get_name_limit();
+			float ofs = x / get_timeline()->get_zoom_scale();
+			ofs += get_timeline()->get_value();
+
+			ofs = get_editor()->snap_time(ofs);
+
+			while (get_animation()->track_find_key(get_track(), ofs, Animation::FIND_MODE_APPROX) != -1) { //make sure insertion point is valid
+				ofs += 0.0001;
+			}
+
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Add Animation Track Clip"));
+			undo_redo->add_do_method(get_animation().ptr(), "animation_track_insert_key", get_track(), ofs, anim_name);
+			undo_redo->add_undo_method(get_animation().ptr(), "track_remove_key_at_time", get_track(), ofs);
+			undo_redo->commit_action();
+
+			queue_redraw();
+			return;
+		}
+	}
+
+	AnimationTrackEdit::drop_data(p_point, p_data);
+}
+
+void AnimationTrackEditTypeAnimation::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (!len_resizing && mm.is_valid()) {
+		bool use_hsize_cursor = false;
+		for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
+			StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), i);
+			if (anim_name == StringName("[stop]")) {
+				continue;
+			}
+			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
+			if (!ap || !ap->has_animation(anim_name)) {
+				continue;
+			}
+
+			Ref<Animation> anim = ap->get_animation(anim_name);
+			if (!anim.is_valid()) {
+				continue;
+			}
+
+			float len = anim->get_length();
+			if (len == 0) {
+				continue;
+			}
+
+			float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), i);
+			float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), i);
+			len -= end_ofs;
+			len -= start_ofs;
+
+			if (get_animation()->track_get_key_count(get_track()) > i + 1) {
+				len = MIN(len, get_animation()->track_get_key_time(get_track(), i + 1) - get_animation()->track_get_key_time(get_track(), i));
+			}
+
+			float ofs = get_animation()->track_get_key_time(get_track(), i);
+
+			ofs -= get_timeline()->get_value();
+			ofs *= get_timeline()->get_zoom_scale();
+			ofs += get_timeline()->get_name_limit();
+
+			int end = ofs + len * get_timeline()->get_zoom_scale();
+
+			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && Math::abs(mm->get_position().x - end) < 5 * EDSCALE) {
+				len_resizing_start = false;
+				use_hsize_cursor = true;
+				len_resizing_index = i;
+			}
+
+			if (ofs >= get_timeline()->get_name_limit() && ofs <= get_size().width - get_timeline()->get_buttons_width() && Math::abs(mm->get_position().x - ofs) < 5 * EDSCALE) {
+				len_resizing_start = true;
+				use_hsize_cursor = true;
+				len_resizing_index = i;
+			}
+		}
+		over_drag_position = use_hsize_cursor;
+	}
+
+	if (len_resizing && mm.is_valid()) {
+		// Rezising index is some.
+		len_resizing_rel += mm->get_relative().x;
+		float ofs_local = len_resizing_rel / get_timeline()->get_zoom_scale();
+		float prev_ofs_start = get_animation()->animation_track_get_key_start_offset(get_track(), len_resizing_index);
+		float prev_ofs_end = get_animation()->animation_track_get_key_end_offset(get_track(), len_resizing_index);
+		StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), len_resizing_index);
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
+		Ref<Animation> anim = ap ? ap->get_animation(anim_name) : Ref<Animation>();
+		float len = anim->get_length();
+		if (len == 0) {
+			//Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
+			float preview_len = 0.0; //preview->get_length();
+			len = preview_len;
+		}
+
+		if (len_resizing_start) {
+			len_resizing_rel = CLAMP(ofs_local, -prev_ofs_start, len - prev_ofs_end - prev_ofs_start) * get_timeline()->get_zoom_scale();
+		} else {
+			len_resizing_rel = CLAMP(ofs_local, -(len - prev_ofs_end - prev_ofs_start), prev_ofs_end) * get_timeline()->get_zoom_scale();
+		}
+
+		queue_redraw();
+		accept_event();
+		return;
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && over_drag_position) {
+		len_resizing = true;
+		// In case if resizing index is not set yet reset the flag.
+		if (len_resizing_index < 0) {
+			len_resizing = false;
+			return;
+		}
+		len_resizing_from_px = mb->get_position().x;
+		len_resizing_rel = 0;
+		queue_redraw();
+		accept_event();
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	if (len_resizing && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		if (len_resizing_rel == 0 || len_resizing_index < 0) {
+			len_resizing = false;
+			return;
+		}
+
+		if (len_resizing_start) {
+			float ofs_local = len_resizing_rel / get_timeline()->get_zoom_scale();
+			float prev_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), len_resizing_index);
+			float prev_time = get_animation()->track_get_key_time(get_track(), len_resizing_index);
+			float new_ofs = prev_ofs + ofs_local;
+			float new_time = prev_time + ofs_local;
+			if (prev_time != new_time) {
+				undo_redo->create_action(TTR("Change Animation Track Clip Start Offset"));
+
+				undo_redo->add_do_method(get_animation().ptr(), "track_set_key_time", get_track(), len_resizing_index, new_time);
+				undo_redo->add_undo_method(get_animation().ptr(), "track_set_key_time", get_track(), len_resizing_index, prev_time);
+
+				undo_redo->add_do_method(get_animation().ptr(), "animation_track_set_key_start_offset", get_track(), len_resizing_index, new_ofs);
+				undo_redo->add_undo_method(get_animation().ptr(), "animation_track_set_key_start_offset", get_track(), len_resizing_index, prev_ofs);
+
+				undo_redo->commit_action();
+			}
+		} else {
+			float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
+			float prev_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), len_resizing_index);
+			float new_ofs = prev_ofs + ofs_local;
+			if (prev_ofs != new_ofs) {
+				undo_redo->create_action(TTR("Change Animation Track Clip End Offset"));
+				undo_redo->add_do_method(get_animation().ptr(), "animation_track_set_key_end_offset", get_track(), len_resizing_index, new_ofs);
+				undo_redo->add_undo_method(get_animation().ptr(), "animation_track_set_key_end_offset", get_track(), len_resizing_index, prev_ofs);
+				undo_redo->commit_action();
+			}
+		}
+
+		len_resizing_index = -1;
+		len_resizing = false;
+		queue_redraw();
+		accept_event();
+		return;
+	}
+
+	AnimationTrackEdit::gui_input(p_event);
+}
+
+Control::CursorShape AnimationTrackEditTypeAnimation::get_cursor_shape(const Point2 &p_pos) const {
+	if (over_drag_position || len_resizing) {
+		return Control::CURSOR_HSIZE;
+	} else {
+		return get_default_cursor_shape();
 	}
 }
 
@@ -950,6 +1191,20 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
+}
+
+////////////////////////
+
+/// AUDIO ///
+
+void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
+	for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
+		Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), i);
+		if (stream.is_valid() && stream->get_instance_id() == p_which) {
+			queue_redraw();
+			return;
+		}
+	}
 }
 
 bool AnimationTrackEditTypeAudio::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
@@ -1186,10 +1441,20 @@ Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_
 		return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
 	}
 
-	String anim = get_animation()->animation_track_get_key_animation(get_track(), p_index);
+	String anim_name = get_animation()->animation_track_get_key_animation(get_track(), p_index);
+	Ref<Animation> anim = ap->get_animation(anim_name);
+	if (!anim.is_valid()) {
+		return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
+	}
 
-	if (anim != "[stop]" && ap->has_animation(anim)) {
-		float len = ap->get_animation(anim)->get_length();
+	if (anim_name != StringName("[stop]") && ap->has_animation(anim_name)) {
+		float len = anim->get_length();
+
+		if (len == 0) {
+			len = 0.0;
+			//Ref<AnimationPreview> preview = AnimationPreviewGenerator::get_singleton()->generate_preview(anim);
+			//len = preview->get_length();
+		}
 
 		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
 			len = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));

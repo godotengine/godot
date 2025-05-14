@@ -238,6 +238,7 @@ private:
 
 	struct AnimationTrack : public Track {
 		Vector<TKey<AnimationKey>> values;
+		bool use_blend = true;
 
 		AnimationTrack() {
 			type = TYPE_ANIMATION;
@@ -512,6 +513,8 @@ public:
 	StringName animation_track_get_key_animation(int p_track, int p_key) const;
 	real_t animation_track_get_key_start_offset(int p_track, int p_key) const;
 	real_t animation_track_get_key_end_offset(int p_track, int p_key) const;
+	void animation_track_set_use_blend(int p_track, bool p_enable);
+	bool animation_track_is_use_blend(int p_track) const;
 
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);
 	bool track_get_interpolation_loop_wrap(int p_track) const;

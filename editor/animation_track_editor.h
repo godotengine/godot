@@ -501,6 +501,8 @@ protected:
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	Node *get_root() const { return root; }
+
 public:
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
