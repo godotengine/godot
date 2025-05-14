@@ -14,8 +14,6 @@ SConscript("windows/SCsub")
 
 # Sounds drivers
 SConscript("alsa/SCsub")
-if env["platform"] == "ios" or env["platform"] == "macos":
-    SConscript("coreaudio/SCsub")
 SConscript("pulseaudio/SCsub")
 if env["platform"] == "windows":
     SConscript("wasapi/SCsub")
@@ -30,6 +28,9 @@ if env["xaudio2"]:
 # Shared Apple platform drivers
 if env["platform"] in ["macos", "ios"]:
     SConscript("apple/SCsub")
+    SConscript("coreaudio/SCsub")
+if env["platform"] in ["ios"]:
+    SConscript("apple_embedded/SCsub")
 
 # Accessibility
 if env["accesskit"] and env["platform"] in ["macos", "windows", "linuxbsd"]:
