@@ -77,6 +77,15 @@ class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 	String importer;
 	String path;
 
+	struct MasterState {
+		bool mute = false;
+		bool bypass = false;
+		float volume = 0;
+	} master_state;
+
+	void _reset_master();
+	void _load_master_state();
+
 	void _audio_changed();
 
 	static AudioStreamImportSettingsDialog *singleton;
