@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  search_array.h                                                        */
+/*  test_vset.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,35 +30,70 @@
 
 #pragma once
 
-#include "core/typedefs.h"
+#include "core/templates/vset.h"
 
-template <typename T, typename Comparator = Comparator<T>>
-class SearchArray {
+#include "tests/test_macros.h"
+
+namespace TestVSet {
+
+template <typename T>
+class TestClass : public VSet<T> {
 public:
-	Comparator compare;
-
-	inline int64_t bisect(const T *p_array, int64_t p_len, const T &p_value, bool p_before) const {
-		int64_t lo = 0;
-		int64_t hi = p_len;
-		if (p_before) {
-			while (lo < hi) {
-				const int64_t mid = (lo + hi) / 2;
-				if (compare(p_array[mid], p_value)) {
-					lo = mid + 1;
-				} else {
-					hi = mid;
-				}
-			}
-		} else {
-			while (lo < hi) {
-				const int64_t mid = (lo + hi) / 2;
-				if (compare(p_value, p_array[mid])) {
-					hi = mid;
-				} else {
-					lo = mid + 1;
-				}
-			}
-		}
-		return lo;
+	int _find(const T &p_val, bool &r_exact) const {
+		return VSet<T>::_find(p_val, r_exact);
 	}
 };
+
+TEST_CASE("[VSet] _find and _find_exact correctness.") {
+	TestClass<int> set;
+
+	// insert some values
+	set.insert(10);
+	set.insert(20);
+	set.insert(30);
+	set.insert(40);
+	set.insert(50);
+
+	// data should be sorted
+	CHECK(set.size() == 5);
+	CHECK(set[0] == 10);
+	CHECK(set[1] == 20);
+	CHECK(set[2] == 30);
+	CHECK(set[3] == 40);
+	CHECK(set[4] == 50);
+
+	// _find_exact return exact position for existing elements
+	CHECK(set.find(10) == 0);
+	CHECK(set.find(30) == 2);
+	CHECK(set.find(50) == 4);
+
+	// _find_exact return -1 for non-existing elements
+	CHECK(set.find(15) == -1);
+	CHECK(set.find(0) == -1);
+	CHECK(set.find(60) == -1);
+
+	// test _find
+	bool exact;
+
+	// existing elements
+	CHECK(set._find(10, exact) == 0);
+	CHECK(exact == true);
+
+	CHECK(set._find(30, exact) == 2);
+	CHECK(exact == true);
+
+	// non-existing elements
+	CHECK(set._find(25, exact) == 2);
+	CHECK(exact == false);
+
+	CHECK(set._find(35, exact) == 3);
+	CHECK(exact == false);
+
+	CHECK(set._find(5, exact) == 0);
+	CHECK(exact == false);
+
+	CHECK(set._find(60, exact) == 5);
+	CHECK(exact == false);
+}
+
+} // namespace TestVSet
