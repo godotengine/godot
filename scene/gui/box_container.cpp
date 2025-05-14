@@ -34,52 +34,50 @@
 #include "scene/gui/margin_container.h"
 #include "scene/theme/theme_db.h"
 
-struct _MinSizeCache {
-	int min_size = 0;
+struct StretchData {
+	real_t min_size = 0;
+	real_t stretch_ratio = 0.0;
 	bool will_stretch = false;
-	int final_size = 0;
+	real_t final_size = 0;
 };
 
 void BoxContainer::_resort() {
-	/** First pass, determine minimum size AND amount of stretchable elements */
+	const Size2 new_size = get_size();
+	const bool rtl = is_layout_rtl();
 
-	Size2i new_size = get_size();
-
-	bool rtl = is_layout_rtl();
-
-	bool first = true;
 	int children_count = 0;
-	int stretch_min = 0;
-	int stretch_avail = 0;
-	float stretch_ratio_total = 0.0;
-	HashMap<Control *, _MinSizeCache> min_size_cache;
+	real_t stretch_min = 0;
+	real_t stretch_avail = 0;
+	real_t stretch_ratio_total = 0.0;
+	LocalVector<StretchData> stretch_data;
 
+	// First pass, determine minimum sizes and available stretch space.
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
 			continue;
 		}
 
-		Size2i size = c->get_combined_minimum_size();
-		_MinSizeCache msc;
+		const Size2 size = c->get_combined_minimum_size();
+		StretchData sdata;
 
-		if (vertical) { /* VERTICAL */
+		if (vertical) {
 			stretch_min += size.height;
-			msc.min_size = size.height;
-			msc.will_stretch = c->get_v_size_flags().has_flag(SIZE_EXPAND);
-
-		} else { /* HORIZONTAL */
+			sdata.min_size = size.height;
+			sdata.will_stretch = c->get_v_size_flags().has_flag(SIZE_EXPAND);
+		} else {
 			stretch_min += size.width;
-			msc.min_size = size.width;
-			msc.will_stretch = c->get_h_size_flags().has_flag(SIZE_EXPAND);
+			sdata.min_size = size.width;
+			sdata.will_stretch = c->get_h_size_flags().has_flag(SIZE_EXPAND);
 		}
 
-		if (msc.will_stretch) {
-			stretch_avail += msc.min_size;
+		if (sdata.will_stretch) {
+			stretch_avail += sdata.min_size;
 			stretch_ratio_total += c->get_stretch_ratio();
+			sdata.stretch_ratio = c->get_stretch_ratio();
 		}
-		msc.final_size = msc.min_size;
-		min_size_cache[c] = msc;
+		sdata.final_size = sdata.min_size;
+		stretch_data.push_back(sdata);
 		children_count++;
 	}
 
@@ -87,159 +85,94 @@ void BoxContainer::_resort() {
 		return;
 	}
 
-	int stretch_max = (vertical ? new_size.height : new_size.width) - (children_count - 1) * theme_cache.separation;
-	int stretch_diff = stretch_max - stretch_min;
-	if (stretch_diff < 0) {
-		//avoid negative stretch space
-		stretch_diff = 0;
-	}
+	const real_t stretch_max = (vertical ? new_size.height : new_size.width) - (children_count - 1) * theme_cache.separation;
+	// Avoid negative stretch space.
+	const real_t stretch_diff = MAX(0, stretch_max - stretch_min);
 
-	stretch_avail += stretch_diff; //available stretch space.
-	/** Second, pass successively to discard elements that can't be stretched, this will run while stretchable
-		elements exist */
+	stretch_avail += stretch_diff; // Available stretch space.
 
+	// Second pass, determine final sizes for stretchable elements.
+	// Go through all elements that want to stretch and remove ones without enough space.
 	bool has_stretched = false;
-	while (stretch_ratio_total > 0) { // first of all, don't even be here if no stretchable objects exist
-
+	while (stretch_ratio_total > 0) {
 		has_stretched = true;
-		bool refit_successful = true; //assume refit-test will go well
-		float error = 0.0; // Keep track of accumulated error in pixels
+		bool refit_successful = true;
 
-		for (int i = 0; i < get_child_count(); i++) {
-			Control *c = as_sortable_control(get_child(i));
-			if (!c) {
+		for (int i = 0; i < (int)stretch_data.size(); i++) {
+			if (!stretch_data[i].will_stretch) {
 				continue;
 			}
+			// Wants to stretch.
+			const real_t desired_size = stretch_avail * stretch_data[i].stretch_ratio / stretch_ratio_total;
 
-			ERR_FAIL_COND(!min_size_cache.has(c));
-			_MinSizeCache &msc = min_size_cache[c];
-
-			if (msc.will_stretch) { //wants to stretch
-				//let's see if it can really stretch
-				float final_pixel_size = stretch_avail * c->get_stretch_ratio() / stretch_ratio_total;
-				// Add leftover fractional pixels to error accumulator
-				error += final_pixel_size - (int)final_pixel_size;
-				if (final_pixel_size < msc.min_size) {
-					//if available stretching area is too small for widget,
-					//then remove it from stretching area
-					msc.will_stretch = false;
-					stretch_ratio_total -= c->get_stretch_ratio();
-					refit_successful = false;
-					stretch_avail -= msc.min_size;
-					msc.final_size = msc.min_size;
-					break;
-				} else {
-					msc.final_size = final_pixel_size;
-					// Dump accumulated error if one pixel or more
-					if (error >= 1) {
-						msc.final_size += 1;
-						error -= 1;
-					}
-				}
+			// Check if it really can stretch.
+			if (desired_size < stretch_data[i].min_size) {
+				// Available stretching area is too small, remove it and retry.
+				stretch_data[i].will_stretch = false;
+				stretch_ratio_total -= stretch_data[i].stretch_ratio;
+				stretch_avail -= stretch_data[i].min_size;
+				stretch_data[i].final_size = stretch_data[i].min_size;
+				refit_successful = false;
+				break;
 			}
+
+			// Can stretch.
+			stretch_data[i].final_size = desired_size;
 		}
 
-		if (refit_successful) { //uf refit went well, break
+		if (refit_successful) { // Refit went well, break.
 			break;
 		}
 	}
 
-	/** Final pass, draw and stretch elements **/
-
-	int ofs = 0;
+	real_t offset = 0;
 	if (!has_stretched) {
-		if (!vertical) {
-			switch (alignment) {
-				case ALIGNMENT_BEGIN:
-					if (rtl) {
-						ofs = stretch_diff;
-					}
-					break;
-				case ALIGNMENT_CENTER:
-					ofs = stretch_diff / 2;
-					break;
-				case ALIGNMENT_END:
-					if (!rtl) {
-						ofs = stretch_diff;
-					}
-					break;
-			}
-		} else {
-			switch (alignment) {
-				case ALIGNMENT_BEGIN:
-					break;
-				case ALIGNMENT_CENTER:
-					ofs = stretch_diff / 2;
-					break;
-				case ALIGNMENT_END:
-					ofs = stretch_diff;
-					break;
-			}
+		switch (alignment) {
+			case ALIGNMENT_BEGIN:
+				break;
+			case ALIGNMENT_CENTER:
+				offset = stretch_diff / 2;
+				break;
+			case ALIGNMENT_END:
+				offset = stretch_diff;
+				break;
 		}
 	}
 
-	first = true;
+	// Final pass, fit children to final sizes.
 	int idx = 0;
-
-	int start;
-	int end;
-	int delta;
-	if (!rtl || vertical) {
-		start = 0;
-		end = get_child_count();
-		delta = +1;
-	} else {
-		start = get_child_count() - 1;
-		end = -1;
-		delta = -1;
-	}
-
-	for (int i = start; i != end; i += delta) {
+	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
 			continue;
 		}
 
-		_MinSizeCache &msc = min_size_cache[c];
-
-		if (first) {
-			first = false;
-		} else {
-			ofs += theme_cache.separation;
+		if (idx != 0) {
+			offset += theme_cache.separation;
 		}
 
-		int from = ofs;
-		int to = ofs + msc.final_size;
-
-		if (msc.will_stretch && idx == children_count - 1) {
-			//adjust so the last one always fits perfect
-			//compensating for numerical imprecision
-
-			to = vertical ? new_size.height : new_size.width;
-		}
-
-		int size = to - from;
+		const real_t size = stretch_data[idx].final_size;
 
 		Rect2 rect;
-
 		if (vertical) {
-			rect = Rect2(0, from, new_size.width, size);
+			rect = Rect2(0, offset, new_size.width, size);
 		} else {
-			rect = Rect2(from, 0, size, new_size.height);
+			if (rtl) {
+				rect = Rect2(new_size.width - offset - size, 0, size, new_size.height);
+			} else {
+				rect = Rect2(offset, 0, size, new_size.height);
+			}
 		}
 
 		fit_child_in_rect(c, rect);
 
-		ofs = to;
+		offset += size;
 		idx++;
 	}
 }
 
 Size2 BoxContainer::get_minimum_size() const {
-	/* Calculate MINIMUM SIZE */
-
-	Size2i minimum;
-
+	Size2 minimum;
 	bool first = true;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -248,22 +181,17 @@ Size2 BoxContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = c->get_combined_minimum_size();
+		const Size2 size = c->get_combined_minimum_size();
 
-		if (vertical) { /* VERTICAL */
-
+		if (vertical) {
 			if (size.width > minimum.width) {
 				minimum.width = size.width;
 			}
-
 			minimum.height += size.height + (first ? 0 : theme_cache.separation);
-
-		} else { /* HORIZONTAL */
-
+		} else {
 			if (size.height > minimum.height) {
 				minimum.height = size.height;
 			}
-
 			minimum.width += size.width + (first ? 0 : theme_cache.separation);
 		}
 
