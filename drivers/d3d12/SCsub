@@ -111,8 +111,8 @@ mesa_blacklist_inc_paths = [mesa_dir + "/" + v for v in mesa_blacklist_inc_paths
 mesa_private_inc_paths = [v for v in mesa_private_inc_paths if v not in mesa_blacklist_inc_paths]
 
 # This is needed since rendering_device_d3d12.cpp needs to include some Mesa internals.
-# Not using CPPEXTPATH because our Mesa build setup is brittle and windows.h lies in wait (GH-106376).
-env_d3d12_rdd.Prepend(CPPPATH=mesa_private_inc_paths)
+# Appending instead of prepending to ensure we keep Windows SDKs included first (GH-106376).
+env_d3d12_rdd.Append(CPPEXTPATH=mesa_private_inc_paths)
 
 # Added by ourselves.
 extra_defines = [
