@@ -49,11 +49,25 @@ class MethodBind {
 	bool _const = false;
 	bool _returns = false;
 	bool _returns_raw_obj_ptr = false;
+	bool _returns_not_null = false;
 
 protected:
 	Variant::Type *argument_types = nullptr;
 #ifdef DEBUG_METHODS_ENABLED
-	Vector<StringName> arg_names;
+public:
+	struct AnnotatedName {
+		StringName name;
+		bool not_null = false;
+		AnnotatedName() = default;
+		AnnotatedName(const String &p_name) :
+				name(p_name.lstrip(NOT_NULL)),
+				not_null(p_name.begins_with(NOT_NULL)) {}
+		AnnotatedName(const char *p_name) :
+				AnnotatedName(String(p_name)) {}
+	};
+
+protected:
+	Vector<AnnotatedName> arg_names;
 #endif
 	void _set_const(bool p_const);
 	void _set_static(bool p_static);
@@ -97,8 +111,8 @@ public:
 	PropertyInfo get_return_info() const;
 
 #ifdef DEBUG_METHODS_ENABLED
-	void set_argument_names(const Vector<StringName> &p_names); // Set by ClassDB, can't be inferred otherwise.
-	Vector<StringName> get_argument_names() const;
+	void set_argument_names(const Vector<AnnotatedName> &p_names) { arg_names = p_names; } // Set by ClassDB, can't be inferred otherwise.
+	Vector<AnnotatedName> get_argument_names() const { return arg_names; }
 
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const = 0;
 #endif
@@ -127,8 +141,10 @@ public:
 	_FORCE_INLINE_ bool has_return() const { return _returns; }
 	virtual bool is_vararg() const { return false; }
 
-	_FORCE_INLINE_ bool is_return_type_raw_object_ptr() { return _returns_raw_obj_ptr; }
+	_FORCE_INLINE_ bool is_return_type_raw_object_ptr() const { return _returns_raw_obj_ptr; }
 	_FORCE_INLINE_ void set_return_type_is_raw_object_ptr(bool p_returns_raw_obj) { _returns_raw_obj_ptr = p_returns_raw_obj; }
+	_FORCE_INLINE_ bool is_return_type_not_null() const { return _returns_not_null; }
+	_FORCE_INLINE_ void set_return_type_not_null(bool p_not_null) { _returns_not_null = p_not_null; }
 
 	void set_default_arguments(const Vector<Variant> &p_defargs);
 
@@ -188,7 +204,7 @@ public:
 		at[0] = _gen_return_type_info().type;
 		if (method_info.arguments.size()) {
 #ifdef DEBUG_METHODS_ENABLED
-			Vector<StringName> names;
+			Vector<AnnotatedName> names;
 			names.resize(method_info.arguments.size());
 #endif
 			for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
@@ -323,7 +339,7 @@ protected:
 public:
 #ifdef DEBUG_METHODS_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
-		return call_get_argument_metadata<P...>(p_arg);
+		return arg_names[p_arg].not_null ? GodotTypeInfo::METADATA_OBJECT_IS_NOT_NULL : call_get_argument_metadata<P...>(p_arg);
 	}
 
 #endif
@@ -407,7 +423,7 @@ protected:
 public:
 #ifdef DEBUG_METHODS_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
-		return call_get_argument_metadata<P...>(p_arg);
+		return arg_names[p_arg].not_null ? GodotTypeInfo::METADATA_OBJECT_IS_NOT_NULL : call_get_argument_metadata<P...>(p_arg);
 	}
 
 #endif
@@ -497,9 +513,9 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		if (p_arg >= 0) {
-			return call_get_argument_metadata<P...>(p_arg);
+			return arg_names[p_arg].not_null ? GodotTypeInfo::METADATA_OBJECT_IS_NOT_NULL : call_get_argument_metadata<P...>(p_arg);
 		} else {
-			return GetTypeInfo<R>::METADATA;
+			return is_return_type_not_null() ? GodotTypeInfo::METADATA_OBJECT_IS_NOT_NULL : GetTypeInfo<R>::METADATA;
 		}
 	}
 #endif
@@ -592,9 +608,9 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		if (p_arg >= 0) {
-			return call_get_argument_metadata<P...>(p_arg);
+			return arg_names[p_arg].not_null ? GodotTypeInfo::METADATA_OBJECT_IS_NOT_NULL : call_get_argument_metadata<P...>(p_arg);
 		} else {
-			return GetTypeInfo<R>::METADATA;
+			return is_return_type_not_null() ? GodotTypeInfo::METADATA_OBJECT_IS_NOT_NULL : GetTypeInfo<R>::METADATA;
 		}
 	}
 #endif
@@ -680,7 +696,7 @@ protected:
 public:
 #ifdef DEBUG_METHODS_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
-		return call_get_argument_metadata<P...>(p_arg);
+		return arg_names[p_arg].not_null ? GodotTypeInfo::METADATA_OBJECT_IS_NOT_NULL : call_get_argument_metadata<P...>(p_arg);
 	}
 
 #endif
@@ -743,9 +759,9 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		if (p_arg >= 0) {
-			return call_get_argument_metadata<P...>(p_arg);
+			return arg_names[p_arg].not_null ? GodotTypeInfo::METADATA_OBJECT_IS_NOT_NULL : call_get_argument_metadata<P...>(p_arg);
 		} else {
-			return GetTypeInfo<R>::METADATA;
+			return is_return_type_not_null() ? GodotTypeInfo::METADATA_OBJECT_IS_NOT_NULL : GetTypeInfo<R>::METADATA;
 		}
 	}
 

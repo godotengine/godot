@@ -39,10 +39,10 @@
 
 MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint32_t p_argcount) {
 	MethodDefinition md;
-	md.name = StringName(p_name);
+	md.name = p_name;
 	md.args.resize(p_argcount);
 	for (uint32_t i = 0; i < p_argcount; i++) {
-		md.args.write[i] = StringName(*p_args[i]);
+		md.args.write[i] = *p_args[i];
 	}
 	return md;
 }
@@ -1929,7 +1929,7 @@ MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p
 
 #ifdef DEBUG_METHODS_ENABLED
 MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
-	StringName mdname = method_name.name;
+	StringName mdname = method_name.name.name;
 #else
 MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname = StringName(method_name);
@@ -1971,6 +1971,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 	}
 
 	p_bind->set_argument_names(method_name.args);
+	p_bind->set_return_type_not_null(method_name.name.not_null);
 
 	if (!p_compatibility) {
 		type->method_order.push_back(mdname);

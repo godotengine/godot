@@ -47,12 +47,12 @@
 #ifdef DEBUG_METHODS_ENABLED
 
 struct MethodDefinition {
-	StringName name;
-	Vector<StringName> args;
-	MethodDefinition() {}
+	MethodBind::AnnotatedName name;
+	Vector<MethodBind::AnnotatedName> args;
+	MethodDefinition() = default;
 	MethodDefinition(const char *p_name) :
 			name(p_name) {}
-	MethodDefinition(const StringName &p_name) :
+	MethodDefinition(const String &p_name) :
 			name(p_name) {}
 };
 
