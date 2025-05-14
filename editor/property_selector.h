@@ -53,6 +53,7 @@ class PropertySelector : public ConfirmationDialog {
 	EditorHelpBit *help_bit = nullptr;
 
 	bool properties = false;
+	bool signals = false;
 	String selected;
 	Variant::Type type;
 	String base_type;
@@ -74,6 +75,11 @@ public:
 	void select_method_from_script(const Ref<Script> &p_script, const String &p_current = "");
 	void select_method_from_basic_type(Variant::Type p_type, const String &p_current = "");
 	void select_method_from_instance(Object *p_instance, const String &p_current = "");
+
+	void select_signal_from_base_type(const String &p_base, const String &p_current = "", bool p_virtuals_only = false);
+	void select_signal_from_script(const Ref<Script> &p_script, const String &p_current = "");
+	void select_signal_from_basic_type(Variant::Type p_type, const String &p_current = "");
+	void select_signal_from_instance(Object *p_instance, const String &p_current = "");
 
 	void select_property_from_base_type(const String &p_base, const String &p_current = "");
 	void select_property_from_script(const Ref<Script> &p_script, const String &p_current = "");
