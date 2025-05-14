@@ -3797,7 +3797,7 @@ static MainTimerSync main_timer_sync;
 int Main::start() {
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Start");
 
-	ERR_FAIL_COND_V(!_start_success, false);
+	ERR_FAIL_COND_V(!_start_success, EXIT_FAILURE);
 
 	bool has_icon = false;
 	String positional_arg;

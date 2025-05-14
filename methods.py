@@ -609,17 +609,33 @@ def Run(env, function):
     return Action(function, "$GENCOMSTR")
 
 
+def detect_darwin_toolchain_path(env):
+    var_name = "APPLE_TOOLCHAIN_PATH"
+    if not env[var_name]:
+        try:
+            xcode_path = subprocess.check_output(["xcode-select", "-p"]).strip().decode("utf-8")
+            if xcode_path:
+                env[var_name] = xcode_path + "/Toolchains/XcodeDefault.xctoolchain"
+        except (subprocess.CalledProcessError, OSError):
+            print_error("Failed to find SDK path while running 'xcode-select -p'.")
+            raise
+
+
 def detect_darwin_sdk_path(platform, env):
     sdk_name = ""
+
     if platform == "macos":
         sdk_name = "macosx"
         var_name = "MACOS_SDK_PATH"
+
     elif platform == "ios":
         sdk_name = "iphoneos"
         var_name = "IOS_SDK_PATH"
+
     elif platform == "iossimulator":
         sdk_name = "iphonesimulator"
         var_name = "IOS_SDK_PATH"
+
     else:
         raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
 
@@ -629,7 +645,7 @@ def detect_darwin_sdk_path(platform, env):
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
-            print_error("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
+            print_error("Failed to find SDK path while running 'xcrun --sdk {} --show-sdk-path'.".format(sdk_name))
             raise
 
 

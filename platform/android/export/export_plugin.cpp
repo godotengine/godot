@@ -713,7 +713,7 @@ Vector<PluginConfigAndroid> EditorExportPlatformAndroid::get_plugins() {
 		Vector<String> plugins_filenames = list_gdap_files(plugins_dir);
 
 		if (!plugins_filenames.is_empty()) {
-			Ref<ConfigFile> config_file = memnew(ConfigFile);
+			Ref<ConfigFile> config_file;
 			for (int i = 0; i < plugins_filenames.size(); i++) {
 				PluginConfigAndroid config = PluginConfigAndroid::load_plugin_config(config_file, plugins_dir.path_join(plugins_filenames[i]));
 				if (config.valid_config) {
