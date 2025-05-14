@@ -168,6 +168,9 @@ protected:
 	virtual Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir) { return OK; }
 
 	virtual String get_platform_name() const = 0;
+	virtual String get_sdk_name() const = 0;
+	virtual String get_minimum_deployment_target() const = 0;
+
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;

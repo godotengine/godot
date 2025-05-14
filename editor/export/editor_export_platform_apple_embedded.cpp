@@ -1128,30 +1128,35 @@ Error EditorExportPlatformAppleEmbedded::_convert_to_framework(const String &p_s
 					lib_clean_name[i] = '-';
 				}
 			}
-			String info_plist_format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-									   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
-									   "<plist version=\"1.0\">\n"
-									   "  <dict>\n"
-									   "    <key>CFBundleShortVersionString</key>\n"
-									   "    <string>1.0</string>\n"
-									   "    <key>CFBundleIdentifier</key>\n"
-									   "    <string>$id.framework.$cl_name</string>\n"
-									   "    <key>CFBundleName</key>\n"
-									   "    <string>$name</string>\n"
-									   "    <key>CFBundleExecutable</key>\n"
-									   "    <string>$name</string>\n"
-									   "    <key>DTPlatformName</key>\n"
-									   "    <string>iphoneos</string>\n"
-									   "    <key>CFBundleInfoDictionaryVersion</key>\n"
-									   "    <string>6.0</string>\n"
-									   "    <key>CFBundleVersion</key>\n"
-									   "    <string>1</string>\n"
-									   "    <key>CFBundlePackageType</key>\n"
-									   "    <string>FMWK</string>\n"
-									   "    <key>MinimumOSVersion</key>\n"
-									   "    <string>12.0</string>\n"
-									   "  </dict>\n"
-									   "</plist>";
+			String info_plist_format =
+					"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+					"<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+					"<plist version=\"1.0\">\n"
+					"  <dict>\n"
+					"    <key>CFBundleShortVersionString</key>\n"
+					"    <string>1.0</string>\n"
+					"    <key>CFBundleIdentifier</key>\n"
+					"    <string>$id.framework.$cl_name</string>\n"
+					"    <key>CFBundleName</key>\n"
+					"    <string>$name</string>\n"
+					"    <key>CFBundleExecutable</key>\n"
+					"    <string>$name</string>\n"
+					"    <key>DTPlatformName</key>\n"
+					"    <string>" +
+					get_sdk_name() +
+					"</string>\n"
+					"    <key>CFBundleInfoDictionaryVersion</key>\n"
+					"    <string>6.0</string>\n"
+					"    <key>CFBundleVersion</key>\n"
+					"    <string>1</string>\n"
+					"    <key>CFBundlePackageType</key>\n"
+					"    <string>FMWK</string>\n"
+					"    <key>MinimumOSVersion</key>\n"
+					"    <string>" +
+					get_minimum_deployment_target() +
+					"</string>\n"
+					"  </dict>\n"
+					"</plist>";
 
 			String info_plist = info_plist_format.replace("$id", p_id).replace("$name", file_name).replace("$cl_name", lib_clean_name);
 
@@ -2124,6 +2129,8 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		return ERR_SKIP;
 	}
 
+	String platform_name = get_platform_name();
+
 	String archive_path = p_path.get_basename() + ".xcarchive";
 	List<String> archive_args;
 	archive_args.push_back("-project");
@@ -2131,7 +2138,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	archive_args.push_back("-scheme");
 	archive_args.push_back(binary_name);
 	archive_args.push_back("-sdk");
-	archive_args.push_back("iphoneos");
+	archive_args.push_back(get_sdk_name());
 	archive_args.push_back("-configuration");
 	archive_args.push_back(p_debug ? "Debug" : "Release");
 	archive_args.push_back("-destination");
