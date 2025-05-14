@@ -1287,6 +1287,7 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 	ERR_FAIL_NULL(parent);
 
 	Point2i pos = Point2i(x, y);
+#ifdef LIBDECOR_ENABLED
 	if (parent->libdecor_frame) {
 		int translated_x = x;
 		int translated_y = y;
@@ -1295,6 +1296,7 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 		pos.x = translated_x;
 		pos.y = translated_y;
 	}
+#endif
 
 	// Looks like the position returned here is relative to the parent. We have to
 	// accumulate it or there's gonna be a lot of confusion godot-side.
