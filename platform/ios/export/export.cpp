@@ -35,6 +35,7 @@
 #include "editor/export/editor_export.h"
 
 void register_ios_exporter_types() {
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformAppleEmbedded);
 	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformIOS);
 }
 

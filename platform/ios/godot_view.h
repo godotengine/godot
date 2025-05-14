@@ -30,35 +30,8 @@
 
 #pragma once
 
-#import <UIKit/UIKit.h>
+#include "drivers/apple_embedded/godot_view.h"
 
-class String;
-
-@class GodotView;
-@protocol DisplayLayer;
-@protocol GodotViewRendererProtocol;
-
-@protocol GodotViewDelegate
-
-- (BOOL)godotViewFinishedSetup:(GodotView *)view;
-
-@end
-
-@interface GodotView : UIView
-
-@property(assign, nonatomic) id<GodotViewRendererProtocol> renderer;
-@property(assign, nonatomic) id<GodotViewDelegate> delegate;
-
-@property(assign, readonly, nonatomic) BOOL isActive;
-
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<DisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
-
-@property(assign, nonatomic) NSTimeInterval renderingInterval;
-
-- (CALayer<DisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
-- (void)stopRendering;
-- (void)startRendering;
+@interface GDTViewIOS : GDTView
 
 @end
