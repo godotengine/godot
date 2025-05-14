@@ -1171,6 +1171,7 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			mesh_library_palette->disconnect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
 			_clear_clipboard_data();
 
 			for (int i = 0; i < 3; i++) {

@@ -119,7 +119,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			updating = false;
 		} break;
 
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			tool_anim->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
 
 			onion_skinning->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));

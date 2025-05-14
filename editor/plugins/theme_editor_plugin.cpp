@@ -1863,7 +1863,7 @@ void ThemeItemEditorDialog::_select_another_theme_cbk(const String &p_path) {
 
 void ThemeItemEditorDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			connect("about_to_popup", callable_mp(this, &ThemeItemEditorDialog::_dialog_about_to_show));
 			[[fallthrough]];
 		}
@@ -2216,7 +2216,7 @@ void ThemeTypeDialog::_add_type_confirmed() {
 
 void ThemeTypeDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			connect("about_to_popup", callable_mp(this, &ThemeTypeDialog::_dialog_about_to_show));
 			[[fallthrough]];
 		}

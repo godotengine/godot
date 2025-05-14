@@ -132,7 +132,7 @@ void EditorLog::_editor_settings_changed() {
 
 void EditorLog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			_update_theme();
 			_load_state();
 		} break;

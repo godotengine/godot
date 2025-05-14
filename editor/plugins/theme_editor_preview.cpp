@@ -204,14 +204,13 @@ void ThemeEditorPreview::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				set_process(true);
 			}
-
-			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
 		} break;
 
 		case NOTIFICATION_READY: {
 			Vector<Ref<Theme>> preview_themes;
 			preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
 			ThemeDB::get_singleton()->create_theme_context(preview_root, preview_themes);
+			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
