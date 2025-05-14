@@ -1527,6 +1527,44 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		resolve_pending_lambda_bodies();
 	}
 
+	// Resolve base abstract class/method implementation requirements.
+	if (!p_class->is_abstract) {
+		HashSet<StringName> implemented_funcs;
+		const GDScriptParser::ClassNode *base_class = p_class;
+		while (base_class != nullptr) {
+			if (!base_class->is_abstract && base_class != p_class) {
+				break;
+			}
+			for (GDScriptParser::ClassNode::Member member : base_class->members) {
+				if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
+					if (member.function->is_abstract) {
+						if (base_class == p_class) {
+							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
+							push_error(vformat(R"*(Class "%s" is not abstract but contains abstract methods. Mark the class as abstract or remove "abstract" from all methods in this class.)*", class_name), p_class);
+							break;
+						} else if (!implemented_funcs.has(member.function->identifier->name)) {
+							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
+							const String base_class_name = base_class->identifier == nullptr ? base_class->fqcn.get_file() : String(base_class->identifier->name);
+							push_error(vformat(R"*(Class "%s" must implement "%s.%s()" and other inherited abstract methods or be marked as abstract.)*", class_name, base_class_name, member.function->identifier->name), p_class);
+							break;
+						}
+					} else {
+						implemented_funcs.insert(member.function->identifier->name);
+					}
+				}
+			}
+			if (base_class->base_type.kind == GDScriptParser::DataType::CLASS) {
+				base_class = base_class->base_type.class_type;
+			} else if (base_class->base_type.kind == GDScriptParser::DataType::SCRIPT) {
+				Ref<GDScriptParserRef> base_parser_ref = parser->get_depended_parser_for(base_class->base_type.script_path);
+				ERR_BREAK(base_parser_ref.is_null());
+				base_class = base_parser_ref->get_parser()->head;
+			} else {
+				break;
+			}
+		}
+	}
+
 	parser->current_class = previous_class;
 }
 
@@ -1741,7 +1779,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		resolve_parameter(p_function->parameters[i]);
 		method_info.arguments.push_back(p_function->parameters[i]->get_datatype().to_property_info(p_function->parameters[i]->identifier->name));
 #ifdef DEBUG_ENABLED
-		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_")) {
+		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_") && !p_function->is_abstract) {
 			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->parameters[i]->identifier->name);
 		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter", true);
@@ -1920,7 +1958,7 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 		// Use the suite inferred type if return isn't explicitly set.
 		p_function->set_datatype(p_function->body->get_datatype());
 	} else if (p_function->get_datatype().is_hard_type() && (p_function->get_datatype().kind != GDScriptParser::DataType::BUILTIN || p_function->get_datatype().builtin_type != Variant::NIL)) {
-		if (!p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
+		if (!p_function->is_abstract && !p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
 			push_error(R"(Not all code paths return a value.)", p_function);
 		}
 	}
@@ -3585,11 +3623,15 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 	}
 
 	if (get_function_signature(p_call, is_constructor, base_type, p_call->function_name, return_type, par_types, default_arg_count, method_flags)) {
-		// If the method is implemented in the class hierarchy, the virtual flag will not be set for that MethodInfo and the search stops there.
-		// Virtual check only possible for super() calls because class hierarchy is known. Node/Objects may have scripts attached we don't know of at compile-time.
 		p_call->is_static = method_flags.has_flag(METHOD_FLAG_STATIC);
-		if (p_call->is_super && method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
-			push_error(vformat(R"*(Cannot call the parent class' virtual function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
+		// If the method is implemented in the class hierarchy, the virtual/abstract flag will not be set for that `MethodInfo` and the search stops there.
+		// Virtual/abstract check only possible for super calls because class hierarchy is known. Objects may have scripts attached we don't know of at compile-time.
+		if (p_call->is_super) {
+			if (method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
+				push_error(vformat(R"*(Cannot call the parent class' virtual function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
+			} else if (method_flags.has_flag(METHOD_FLAG_VIRTUAL_REQUIRED)) {
+				push_error(vformat(R"*(Cannot call the parent class' abstract function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
+			}
 		}
 
 		// If the function requires typed arrays we must make literals be typed.
@@ -5799,6 +5841,9 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 	}
 
 	if (found_function != nullptr) {
+		if (found_function->is_abstract) {
+			r_method_flags.set_flag(METHOD_FLAG_VIRTUAL_REQUIRED);
+		}
 		if (p_is_constructor || found_function->is_static) {
 			r_method_flags.set_flag(METHOD_FLAG_STATIC);
 		}

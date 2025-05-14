@@ -407,7 +407,15 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				method_doc.deprecated_message = m_func->doc_data.deprecated_message;
 				method_doc.is_experimental = m_func->doc_data.is_experimental;
 				method_doc.experimental_message = m_func->doc_data.experimental_message;
-				method_doc.qualifiers = m_func->is_static ? "static" : "";
+
+				// Currently, an abstract function cannot be static.
+				if (m_func->is_abstract) {
+					method_doc.qualifiers = "abstract";
+				} else if (m_func->is_static) {
+					method_doc.qualifiers = "static";
+				} else {
+					method_doc.qualifiers = "";
+				}
 
 				if (func_name == "_init") {
 					method_doc.return_type = "void";
