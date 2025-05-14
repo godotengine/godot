@@ -37,6 +37,10 @@ class EditorExportPlatformIOS : public EditorExportPlatformAppleEmbedded {
 
 	virtual String get_platform_name() const override { return "ios"; }
 
+	virtual String get_sdk_name() const override { return "iphoneos"; }
+
+	virtual String get_minimum_deployment_target() const override { return "14.0"; }
+
 	virtual Vector<IconInfo> get_icon_infos() const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) const override;

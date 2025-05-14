@@ -290,7 +290,11 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	// Usage.
 
 	MTLResourceOptions options = 0;
+#if defined(VISIONOS_ENABLED)
+	const bool supports_memoryless = true;
+#else
 	const bool supports_memoryless = (*device_properties).features.highestFamily >= MTLGPUFamilyApple2 && (*device_properties).features.highestFamily < MTLGPUFamilyMac1;
+#endif
 	if (supports_memoryless && p_format.usage_bits & TEXTURE_USAGE_TRANSIENT_BIT) {
 		options = MTLResourceStorageModeMemoryless | MTLResourceHazardTrackingModeTracked;
 		desc.storageMode = MTLStorageModeMemoryless;
@@ -2493,7 +2497,11 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 		cd->name = binary_data.shader_name;
 		cd->stage = shader_data.stage;
 		options.preserveInvariance = shader_data.is_position_invariant;
+#if defined(VISIONOS_ENABLED)
+		options.mathMode = MTLMathModeFast;
+#else
 		options.fastMathEnabled = YES;
+#endif
 		MDLibrary *library = [MDLibrary newLibraryWithCacheEntry:cd
 														  device:device
 														  source:source
