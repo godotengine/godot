@@ -10,8 +10,6 @@ Import("env")
 
 env_d3d12_rdd = env.Clone()
 
-thirdparty_obj = []
-
 
 # DirectX Headers (must take precedence over Windows SDK's).
 
@@ -112,6 +110,10 @@ mesa_blacklist_inc_paths = [
 mesa_blacklist_inc_paths = [mesa_dir + "/" + v for v in mesa_blacklist_inc_paths]
 mesa_private_inc_paths = [v for v in mesa_private_inc_paths if v not in mesa_blacklist_inc_paths]
 
+# This is needed since rendering_device_d3d12.cpp needs to include some Mesa internals.
+# Not using CPPEXTPATH because our Mesa build setup is brittle and windows.h lies in wait (GH-106376).
+env_d3d12_rdd.Prepend(CPPPATH=mesa_private_inc_paths)
+
 # Added by ourselves.
 extra_defines = [
     "WINDOWS_NO_FUTEX",
@@ -154,15 +156,8 @@ else:
         env_d3d12_rdd.Append(CCFLAGS=["-Wno-unknown-pragmas"])
         env.Append(CCFLAGS=["-Wno-unknown-pragmas"])
 
-# This is needed since rendering_device_d3d12.cpp needs to include some Mesa internals.
-env_d3d12_rdd.Prepend(CPPEXTPATH=mesa_private_inc_paths)
 # For the same reason as above, the defines must be the same as in the 3rd-party code itself.
 env_d3d12_rdd.Append(CPPDEFINES=extra_defines)
-
-
-# Add all.
-
-env.drivers_sources += thirdparty_obj
 
 
 # Godot source files.
@@ -170,6 +165,3 @@ env.drivers_sources += thirdparty_obj
 driver_obj = []
 env_d3d12_rdd.add_source_files(driver_obj, "*.cpp")
 env.drivers_sources += driver_obj
-
-# Needed to force rebuilding the driver files when the thirdparty code is updated.
-env.Depends(driver_obj, thirdparty_obj)
