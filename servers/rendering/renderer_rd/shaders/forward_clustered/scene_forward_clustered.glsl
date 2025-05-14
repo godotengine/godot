@@ -1916,7 +1916,8 @@ void fragment_shader(in SceneData scene_data) {
 		vec3 bent_normal = normal;
 #endif
 		vec3 ref_vec = normalize(reflect(-view, bent_normal));
-		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
+		// Interpolate between mirror and rough reflection by using linear_roughness * linear_roughness.
+		ref_vec = mix(ref_vec, bent_normal, roughness * roughness * roughness * roughness);
 
 		for (uint i = item_from; i < item_to; i++) {
 			uint mask = cluster_buffer.data[cluster_reflection_offset + i];
