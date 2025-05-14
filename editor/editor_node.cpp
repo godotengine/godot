@@ -2733,7 +2733,11 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 			SceneTreeDock::get_singleton()->set_selection({ current_node });
 			InspectorDock::get_singleton()->update(current_node);
 			if (!inspector_only && !skip_main_plugin) {
-				skip_main_plugin = stay_in_script_editor_on_node_selected && !ScriptEditor::get_singleton()->is_editor_floating() && ScriptEditor::get_singleton()->is_visible_in_tree();
+				if (!ScriptEditor::get_singleton()->is_editor_floating() && ScriptEditor::get_singleton()->is_visible_in_tree()) {
+					skip_main_plugin = stay_in_script_editor_on_node_selected;
+				} else {
+					skip_main_plugin = !editor_main_screen->can_auto_switch_screens();
+				}
 			}
 		} else {
 			NodeDock::get_singleton()->set_node(nullptr);
@@ -2812,9 +2816,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 				if (!changing_scene) {
 					main_plugin->edit(current_obj);
 				}
-			}
-
-			else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
+			} else if (main_plugin != editor_plugin_screen) {
 				// Unedit previous plugin.
 				editor_plugin_screen->edit(nullptr);
 				active_plugins[editor_owner_id].erase(editor_plugin_screen);
@@ -4021,18 +4023,15 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 	changing_scene = false;
 
 	if (get_edited_scene()) {
-		int current_tab = editor_main_screen->get_selected_index();
-		if (current_tab < 2) {
+		if (editor_main_screen->can_auto_switch_screens()) {
 			// Switch between 2D and 3D if currently in 2D or 3D.
 			Node *selected_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
 			if (!selected_node) {
 				selected_node = get_edited_scene();
 			}
-
-			if (Object::cast_to<CanvasItem>(selected_node)) {
-				editor_main_screen->select(EditorMainScreen::EDITOR_2D);
-			} else if (Object::cast_to<Node3D>(selected_node)) {
-				editor_main_screen->select(EditorMainScreen::EDITOR_3D);
+			const int plugin_index = editor_main_screen->get_plugin_index(editor_data.get_handling_main_editor(selected_node));
+			if (plugin_index >= 0) {
+				editor_main_screen->select(plugin_index);
 			}
 		}
 	}
@@ -7904,6 +7903,7 @@ EditorNode::EditorNode() {
 
 	HBoxContainer *main_editor_button_hb = memnew(HBoxContainer);
 	main_editor_button_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
+	main_editor_button_hb->set_name("EditorMainScreenButtons");
 	editor_main_screen->set_button_container(main_editor_button_hb);
 	title_bar->add_child(main_editor_button_hb);
 	title_bar->set_center_control(main_editor_button_hb);
