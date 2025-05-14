@@ -3205,6 +3205,8 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (scr.is_null()) {
 			EditorNode::add_io_error(TTR("Couldn't load post-import script:") + " " + post_import_script_path);
+		} else if (scr->get_instance_base_type() != "EditorScenePostImport") {
+			EditorNode::add_io_error(TTR("Script is not a subtype of EditorScenePostImport:") + " " + post_import_script_path);
 		} else {
 			post_import_script.instantiate();
 			post_import_script->set_script(scr);
