@@ -43,9 +43,11 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 #include "scene/main/window.h"
 
 void GridMapEditor::_configure() {
@@ -84,13 +86,9 @@ void GridMapEditor::_menu_option(int p_option) {
 			}
 
 			if (edit_axis != new_axis) {
-				if (edit_axis == Vector3::AXIS_Y) {
-					floor->set_tooltip_text("Change Grid Plane");
-				} else if (new_axis == Vector3::AXIS_Y) {
-					floor->set_tooltip_text("Change Grid Floor");
-				}
+				edit_axis = Vector3::Axis(new_axis);
+				_update_floor_tooltip_text();
 			}
-			edit_axis = Vector3::Axis(new_axis);
 			update_grid();
 
 		} break;
@@ -500,6 +498,15 @@ void GridMapEditor::_fill_selection() {
 	undo_redo->add_do_method(this, "_set_selection", !selection.active, selection.begin, selection.end);
 	undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 	undo_redo->commit_action();
+}
+
+void GridMapEditor::_update_floor_tooltip_text() {
+	String action_name = edit_axis == Vector3::AXIS_Y ? TTR("Change Grid Plane") : TTR("Change Grid Floor");
+	// TRANSLATORS: The placeholders are the keyboard shortcut texts.
+	String shortcuts = vformat(TTR("Previous Plane: %s\nNext Plane: %s"),
+			ED_GET_SHORTCUT("grid_map/previous_floor")->get_as_text(),
+			ED_GET_SHORTCUT("grid_map/next_floor")->get_as_text());
+	floor->set_tooltip_text(action_name + '\n' + shortcuts);
 }
 
 void GridMapEditor::_clear_clipboard_data() {
@@ -1494,10 +1501,8 @@ GridMapEditor::GridMapEditor() {
 	floor->set_max(32767);
 	floor->set_step(1);
 	floor->set_accessibility_name(TTRC("Change Grid Floor:"));
-	floor->set_tooltip_text(
-			vformat(TTR("Change Grid Floor:\nPrevious Plane (%s)\nNext Plane (%s)"),
-					ED_GET_SHORTCUT("grid_map/previous_floor")->get_as_text(),
-					ED_GET_SHORTCUT("grid_map/next_floor")->get_as_text()));
+	floor->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	_update_floor_tooltip_text();
 	toolbar->add_child(floor);
 	floor->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
 	floor->get_line_edit()->set_context_menu_enabled(false);

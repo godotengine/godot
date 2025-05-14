@@ -34,16 +34,16 @@
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
 
+class BaseButton;
+class ButtonGroup;
 class ConfirmationDialog;
+class EditorZoomWidget;
+class ItemList;
+class LineEdit;
 class MenuButton;
 class Node3DEditorPlugin;
-class ButtonGroup;
-class EditorZoomWidget;
-class BaseButton;
+class SpinBox;
 
 class GridMapEditor : public VBoxContainer {
 	GDCLASS(GridMapEditor, VBoxContainer);
@@ -94,7 +94,6 @@ class GridMapEditor : public VBoxContainer {
 	Button *mode_thumbnail = nullptr;
 	Button *mode_list = nullptr;
 	LineEdit *search_box = nullptr;
-	HSlider *size_slider = nullptr;
 	ConfirmationDialog *settings_dialog = nullptr;
 	VBoxContainer *settings_vbc = nullptr;
 	SpinBox *settings_pick_distance = nullptr;
@@ -247,6 +246,8 @@ class GridMapEditor : public VBoxContainer {
 
 	void _delete_selection();
 	void _fill_selection();
+
+	void _update_floor_tooltip_text();
 
 	bool do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click);
 
