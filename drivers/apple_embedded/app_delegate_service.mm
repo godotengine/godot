@@ -71,9 +71,13 @@ static GDTViewController *mainViewController = nil;
 	// TODO: logo screen is not displayed while shaders are compiling
 	// DummyViewController(Splash/LoadingViewController) -> setup -> GodotViewController
 
+#if !defined(VISIONOS_ENABLED)
 	// Create a full-screen window
 	CGRect windowBounds = [[UIScreen mainScreen] bounds];
 	self.window = [[UIWindow alloc] initWithFrame:windowBounds];
+#else
+	self.window = [[UIWindow alloc] init];
+#endif
 
 	int err = apple_embedded_main(gargc, gargv);
 

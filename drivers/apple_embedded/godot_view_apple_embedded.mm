@@ -117,7 +117,9 @@ static const float earth_gravity = 9.80665;
 }
 
 - (void)godot_commonInit {
+#if !defined(VISIONOS_ENABLED)
 	self.contentScaleFactor = [UIScreen mainScreen].scale;
+#endif
 
 	if (@available(iOS 17.0, *)) {
 		[self registerForTraitChanges:@[ [UITraitUserInterfaceStyle class] ] withTarget:self action:@selector(traitCollectionDidChangeWithView:previousTraitCollection:)];
@@ -148,7 +150,9 @@ static const float earth_gravity = 9.80665;
 
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
 	if (@available(iOS 13.0, *)) {
+#if !defined(VISIONOS_ENABLED)
 		[super traitCollectionDidChange:previousTraitCollection];
+#endif
 		[self traitCollectionDidChangeWithView:self
 					   previousTraitCollection:previousTraitCollection];
 	}
@@ -419,6 +423,7 @@ static const float earth_gravity = 9.80665;
 
 	UIInterfaceOrientation interfaceOrientation = UIInterfaceOrientationUnknown;
 
+#if !defined(VISIONOS_ENABLED)
 #if __IPHONE_OS_VERSION_MAX_ALLOWED < 140000
 	interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
 #else
@@ -429,6 +434,9 @@ static const float earth_gravity = 9.80665;
 		interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
 #endif
 	}
+#endif
+#else
+	interfaceOrientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
 #endif
 
 	switch (interfaceOrientation) {

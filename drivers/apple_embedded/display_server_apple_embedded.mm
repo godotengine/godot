@@ -643,9 +643,12 @@ void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServer::ScreenOri
 	screen_orientation = p_orientation;
 	if (@available(iOS 16.0, *)) {
 		[GDTAppDelegateService.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
-	} else {
+	}
+#if !defined(VISIONOS_ENABLED)
+	else {
 		[UIViewController attemptRotationToDeviceOrientation];
 	}
+#endif
 }
 
 DisplayServer::ScreenOrientation DisplayServerAppleEmbedded::screen_get_orientation(int p_screen) const {
