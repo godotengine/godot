@@ -212,8 +212,9 @@ float TextEdit::Text::get_indent_offset(int p_line, bool p_rtl) const {
 	return text_line.indent_ofs;
 }
 
-_FORCE_INLINE_ String TextEdit::Text::operator[](int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), "");
+_FORCE_INLINE_ const String &TextEdit::Text::operator[](int p_line) const {
+	static const String empty;
+	ERR_FAIL_INDEX_V(p_line, text.size(), empty);
 	return text[p_line].data;
 }
 
@@ -4696,113 +4697,76 @@ void TextEdit::set_search_flags(uint32_t p_flags) {
 }
 
 Point2i TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const {
-	if (p_key.length() == 0) {
+	if (p_key.is_empty()) {
 		return Point2(-1, -1);
 	}
 	ERR_FAIL_INDEX_V(p_from_line, text.size(), Point2i(-1, -1));
 	ERR_FAIL_INDEX_V(p_from_column, text[p_from_line].length() + 1, Point2i(-1, -1));
 
-	// Search through the whole document, but start by current line.
+	const bool key_start_is_symbol = is_symbol(p_key[0]);
+	const bool key_end_is_symbol = is_symbol(p_key[p_key.length() - 1]);
 
-	int line = p_from_line;
-	int pos = -1;
+	// Search the whole document, starting from the current line.
+	// We'll auto-wrap through the start / end to search every line.
+	int current_line = p_from_line;
+	int current_column = p_from_column;
 
-	bool key_start_is_symbol = is_symbol(p_key[0]);
-	bool key_end_is_symbol = is_symbol(p_key[p_key.length() - 1]);
-
+	// + 1 because we'll search p_from_line twice - starting from p_from_column, and then again at the very end.
 	for (int i = 0; i < text.size() + 1; i++) {
-		if (line < 0) {
-			line = text.size() - 1;
-		}
-		if (line == text.size()) {
-			line = 0;
-		}
+		const String &text_line = text[current_line];
 
-		String text_line = text[line];
-		int from_column = 0;
-		if (line == p_from_line) {
-			if (i == text.size()) {
-				// Wrapped.
-
-				if (p_search_flags & SEARCH_BACKWARDS) {
-					from_column = text_line.length();
-				} else {
-					from_column = 0;
-				}
-
-			} else {
-				from_column = p_from_column;
-			}
-
-		} else {
-			if (p_search_flags & SEARCH_BACKWARDS) {
-				from_column = text_line.length() - 1;
-			} else {
-				from_column = 0;
-			}
-		}
-
-		pos = -1;
-
-		int pos_from = (p_search_flags & SEARCH_BACKWARDS) ? text_line.length() : 0;
-		int last_pos = -1;
-
+		// Search the current line as often as necessary.
 		while (true) {
 			if (p_search_flags & SEARCH_BACKWARDS) {
-				while ((last_pos = (p_search_flags & SEARCH_MATCH_CASE) ? text_line.rfind(p_key, pos_from) : text_line.rfindn(p_key, pos_from)) != -1) {
-					if (last_pos <= from_column) {
-						pos = last_pos;
-						break;
-					}
-					pos_from = last_pos - p_key.length();
-					if (pos_from < 0) {
-						break;
-					}
-				}
+				current_column = (p_search_flags & SEARCH_MATCH_CASE) ? text_line.rfind(p_key, current_column) : text_line.rfindn(p_key, current_column);
 			} else {
-				while ((last_pos = (p_search_flags & SEARCH_MATCH_CASE) ? text_line.find(p_key, pos_from) : text_line.findn(p_key, pos_from)) != -1) {
-					if (last_pos >= from_column) {
-						pos = last_pos;
-						break;
-					}
-					pos_from = last_pos + p_key.length();
-				}
+				current_column = (p_search_flags & SEARCH_MATCH_CASE) ? text_line.find(p_key, current_column) : text_line.findn(p_key, current_column);
+			}
+
+			if (current_column == -1) {
+				break; // Nothing else found on the current line.
 			}
 
 			bool is_match = true;
 
-			if (pos != -1 && (p_search_flags & SEARCH_WHOLE_WORDS)) {
+			if (p_search_flags & SEARCH_WHOLE_WORDS) {
 				// Validate for whole words.
-				if (!key_start_is_symbol && pos > 0 && !is_symbol(text_line[pos - 1])) {
+				if (!key_start_is_symbol && current_column > 0 && !is_symbol(text_line[current_column - 1])) {
 					is_match = false;
-				} else if (!key_end_is_symbol && pos + p_key.length() < text_line.length() && !is_symbol(text_line[pos + p_key.length()])) {
+				} else if (!key_end_is_symbol && current_column + p_key.length() < text_line.length() && !is_symbol(text_line[current_column + p_key.length()])) {
 					is_match = false;
 				}
 			}
 
-			if (pos_from == -1) {
-				pos = -1;
+			if (is_match) {
+				// Found the string!
+				return Point2i(current_column, current_line);
 			}
 
-			if (is_match || last_pos == -1 || pos == -1) {
-				break;
-			}
-
-			pos_from = (p_search_flags & SEARCH_BACKWARDS) ? pos - 1 : pos + 1;
-			pos = -1;
+			// Advance past the current occurrence.
+			current_column += p_search_flags & SEARCH_BACKWARDS ? -1 : 1;
 		}
 
-		if (pos != -1) {
-			break;
-		}
-
+		// Prepare for next iteration.
 		if (p_search_flags & SEARCH_BACKWARDS) {
-			line--;
+			current_column = -1;
+			current_line--;
+			if (current_line < 0) {
+				// Searched the whole document backwards; wrap to end.
+				current_line = text.size() - 1;
+			}
 		} else {
-			line++;
+			current_line++;
+			current_column = 0;
+			if (current_line == text.size()) {
+				// Searched the whole document forwards; wrap to start.
+				current_line = 0;
+			}
 		}
 	}
-	return (pos == -1) ? Point2i(-1, -1) : Point2i(pos, line);
+
+	// Nothing found!
+	return Point2i(-1, -1);
 }
 
 /* Mouse */

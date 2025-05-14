@@ -256,7 +256,7 @@ private:
 		void invalidate_all();
 		void invalidate_all_lines();
 
-		_FORCE_INLINE_ String operator[](int p_line) const;
+		_FORCE_INLINE_ const String &operator[](int p_line) const;
 		_FORCE_INLINE_ const String &get_text_with_ime(int p_line) const;
 
 		/* Gutters. */
