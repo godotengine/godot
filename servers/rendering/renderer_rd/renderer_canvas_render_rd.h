@@ -550,8 +550,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 			uint32_t directional_light_count;
 			float tex_to_sdf;
+			float shadow_pixel_size;
 			uint32_t flags;
-			uint32_t pad2;
 		};
 
 		DataBuffer canvas_instance_data_buffers[BATCH_DATA_BUFFER_COUNT];
