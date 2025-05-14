@@ -2821,7 +2821,10 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 					handled = true;
 				}
 				if (k->is_action("ui_copy", true)) {
-					selection_copy();
+					const String txt = get_selected_text();
+					if (!txt.is_empty()) {
+						DisplayServer::get_singleton()->clipboard_set(txt);
+					}
 					handled = true;
 				}
 			}
@@ -6634,14 +6637,6 @@ void RichTextLabel::deselect() {
 	queue_redraw();
 }
 
-void RichTextLabel::selection_copy() {
-	String txt = get_selected_text();
-
-	if (!txt.is_empty()) {
-		DisplayServer::get_singleton()->clipboard_set(txt);
-	}
-}
-
 void RichTextLabel::select_all() {
 	_validate_line_caches();
 
@@ -7618,7 +7613,14 @@ Key RichTextLabel::_get_menu_action_accelerator(const String &p_action) {
 void RichTextLabel::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY: {
-			selection_copy();
+			String txt = get_selected_text();
+			if (txt.is_empty()) {
+				txt = get_parsed_text();
+			}
+
+			if (!txt.is_empty()) {
+				DisplayServer::get_singleton()->clipboard_set(txt);
+			}
 		} break;
 		case MENU_SELECT_ALL: {
 			select_all();
