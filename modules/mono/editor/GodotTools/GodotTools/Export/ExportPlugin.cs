@@ -406,7 +406,7 @@ namespace GodotTools.Export
                                 {
                                     if (platform == OS.Platforms.iOS && path.EndsWith(".dat", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        AddIosBundleFile(path);
+                                        AddAppleEmbeddedPlatformBundleFile(path);
                                     }
                                     else
                                     {
@@ -453,7 +453,7 @@ namespace GodotTools.Export
                     throw new InvalidOperationException("Failed to generate xcframework.");
                 }
 
-                AddIosEmbeddedFramework(xcFrameworkPath);
+                AddAppleEmbeddedPlatformEmbeddedFramework(xcFrameworkPath);
             }
         }
 

@@ -1,5 +1,6 @@
 import os
 import platform
+import shutil
 import subprocess
 import sys
 
@@ -160,3 +161,79 @@ def detect_mvk(env, osname):
             return mvk_path
 
     return ""
+
+
+def combine_libs_apple_embedded(target, source, env):
+    lib_path = target[0].srcnode().abspath
+    if "osxcross" in env:
+        libtool = "$APPLE_TOOLCHAIN_PATH/usr/bin/${apple_target_triple}libtool"
+    else:
+        libtool = "$APPLE_TOOLCHAIN_PATH/usr/bin/libtool"
+    env.Execute(
+        libtool + ' -static -o "' + lib_path + '" ' + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
+    )
+
+
+def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, use_mkv, target, source, env):
+    bin_dir = env.Dir("#bin").abspath
+
+    # Template bundle.
+    app_prefix = "godot." + platform
+    rel_prefix = "libgodot." + platform + "." + "template_release"
+    dbg_prefix = "libgodot." + platform + "." + "template_debug"
+    if env.dev_build:
+        app_prefix += ".dev"
+        rel_prefix += ".dev"
+        dbg_prefix += ".dev"
+    if env["precision"] == "double":
+        app_prefix += ".double"
+        rel_prefix += ".double"
+        dbg_prefix += ".double"
+
+    # Lipo template libraries.
+    #
+    # env.extra_suffix contains ".simulator" when building for simulator,
+    # but it's undesired when calling lipo()
+    extra_suffix = env.extra_suffix.replace(".simulator", "")
+    rel_target_bin = lipo(bin_dir + "/" + rel_prefix, extra_suffix + ".a")
+    dbg_target_bin = lipo(bin_dir + "/" + dbg_prefix, extra_suffix + ".a")
+    rel_target_bin_sim = lipo(bin_dir + "/" + rel_prefix, ".simulator" + extra_suffix + ".a")
+    dbg_target_bin_sim = lipo(bin_dir + "/" + dbg_prefix, ".simulator" + extra_suffix + ".a")
+    # Assemble Xcode project bundle.
+    app_dir = env.Dir("#bin/" + platform + "_xcode").abspath
+    templ = env.Dir("#misc/dist/" + platform + "_xcode").abspath
+    if os.path.exists(app_dir):
+        shutil.rmtree(app_dir)
+    shutil.copytree(templ, app_dir)
+    if rel_target_bin != "":
+        print(f' Copying "{platform}" release framework')
+        shutil.copy(
+            rel_target_bin, app_dir + "/libgodot." + platform + ".release.xcframework/" + framework_dir + "/libgodot.a"
+        )
+    if dbg_target_bin != "":
+        print(f' Copying "{platform}" debug framework')
+        shutil.copy(
+            dbg_target_bin, app_dir + "/libgodot." + platform + ".debug.xcframework/" + framework_dir + "/libgodot.a"
+        )
+    if rel_target_bin_sim != "":
+        print(f' Copying "{platform}" (simulator) release framework')
+        shutil.copy(
+            rel_target_bin_sim,
+            app_dir + "/libgodot." + platform + ".release.xcframework/" + framework_dir_sim + "/libgodot.a",
+        )
+    if dbg_target_bin_sim != "":
+        print(f' Copying "{platform}" (simulator) debug framework')
+        shutil.copy(
+            dbg_target_bin_sim,
+            app_dir + "/libgodot." + platform + ".debug.xcframework/" + framework_dir_sim + "/libgodot.a",
+        )
+
+    if use_mkv:
+        mvk_path = detect_mvk(env, "ios-arm64")
+        if mvk_path != "":
+            shutil.copytree(mvk_path, app_dir + "/MoltenVK.xcframework")
+
+    # ZIP Xcode project bundle.
+    zip_dir = env.Dir("#bin/" + (app_prefix + extra_suffix).replace(".", "_")).abspath
+    shutil.make_archive(zip_dir, "zip", root_dir=app_dir)
+    shutil.rmtree(app_dir)

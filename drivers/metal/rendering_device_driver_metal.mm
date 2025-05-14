@@ -4184,8 +4184,8 @@ Error RenderingDeviceDriverMetal::initialize(uint32_t p_device_index, uint32_t p
 			error_string += "- No support for image cube arrays.\n";
 		}
 
-#if defined(IOS_ENABLED)
-		// iOS platform ports currently don't exit themselves when this method returns `ERR_CANT_CREATE`.
+#if defined(APPLE_EMBEDDED_ENABLED)
+		// Apple Embedded platforms exports currently don't exit themselves when this method returns `ERR_CANT_CREATE`.
 		OS::get_singleton()->alert(error_string + "\nClick OK to exit (black screen will be visible).");
 #else
 		OS::get_singleton()->alert(error_string + "\nClick OK to exit.");
