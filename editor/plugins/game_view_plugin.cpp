@@ -498,6 +498,13 @@ void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 				EditorSettings::get_singleton()->set_project_metadata("game_view", "make_floating_on_play", make_floating_on_play);
 			}
 		} break;
+		case EMBED_MAKE_FLOATING_TRANSPARENT: {
+			make_floating_transp = !make_floating_transp;
+			int game_mode = EDITOR_GET("run/window_placement/game_embed_mode");
+			if (game_mode == 0) { // Save only if not overridden by editor.
+				EditorSettings::get_singleton()->set_project_metadata("game_view", "make_floating_transp", make_floating_transp);
+			}
+		} break;
 	}
 	_update_embed_menu_options();
 	_update_ui();
@@ -596,6 +603,18 @@ void GameView::_update_ui() {
 		state_label->add_theme_color_override(SceneStringName(font_color), state_label->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	}
 
+	if (make_floating_on_play && make_floating_transp && EditorRunBar::get_singleton()->is_playing() && embedded_process->is_embedding_completed()) {
+		embedded_process->set_floating_transp(true);
+		Ref<StyleBoxEmpty> sbempty = memnew(StyleBoxEmpty);
+		panel->add_theme_style_override(SceneStringName(panel), sbempty);
+		window_wrapper->get_window_background()->set_visible(false);
+		get_window()->set_flag(Window::FLAG_TRANSPARENT, true);
+	} else {
+		embedded_process->set_floating_transp(false);
+		panel->remove_theme_style_override(SceneStringName(panel));
+		window_wrapper->get_window_background()->set_visible(true);
+		get_window()->set_flag(Window::FLAG_TRANSPARENT, false);
+	}
 	game_size_label->set_visible(show_game_size);
 }
 
@@ -604,8 +623,10 @@ void GameView::_update_embed_menu_options() {
 	PopupMenu *menu = embed_options_menu->get_popup();
 	menu->set_item_checked(menu->get_item_index(EMBED_RUN_GAME_EMBEDDED), embed_on_play);
 	menu->set_item_checked(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), make_floating_on_play && is_multi_window);
+	menu->set_item_checked(menu->get_item_index(EMBED_MAKE_FLOATING_TRANSPARENT), make_floating_transp);
 
 	menu->set_item_disabled(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), !embed_on_play || !is_multi_window);
+	menu->set_item_disabled(menu->get_item_index(EMBED_MAKE_FLOATING_TRANSPARENT), !make_floating_on_play || !is_multi_window);
 
 	fixed_size_button->set_pressed(embed_size_mode == SIZE_MODE_FIXED);
 	keep_aspect_button->set_pressed(embed_size_mode == SIZE_MODE_KEEP_ASPECT);
@@ -693,6 +714,7 @@ void GameView::_camera_override_menu_id_pressed(int p_id) {
 void GameView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			toolbar_panel_style = get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles));
 			suspend_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			next_frame_button->set_button_icon(get_editor_theme_icon(SNAME("NextFrame")));
 
@@ -723,18 +745,22 @@ void GameView::_notification(int p_what) {
 					case -1: { // Disabled.
 						embed_on_play = false;
 						make_floating_on_play = false;
+						make_floating_transp = false;
 					} break;
 					case 1: { // Embed.
 						embed_on_play = true;
 						make_floating_on_play = false;
+						make_floating_transp = false;
 					} break;
 					case 2: { // Floating.
 						embed_on_play = true;
 						make_floating_on_play = true;
+						make_floating_transp = EditorSettings::get_singleton()->get_project_metadata("game_view", "make_floating_transp", false);
 					} break;
 					default: {
 						embed_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_on_play", true);
 						make_floating_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "make_floating_on_play", true);
+						make_floating_transp = EditorSettings::get_singleton()->get_project_metadata("game_view", "make_floating_transp", false);
 					} break;
 				}
 				embed_size_mode = (EmbedSizeMode)(int)EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_size_mode", SIZE_MODE_FIXED);
@@ -762,6 +788,12 @@ void GameView::_notification(int p_what) {
 		case NOTIFICATION_WM_POSITION_CHANGED: {
 			if (window_wrapper->get_window_enabled()) {
 				_update_floating_window_settings();
+			}
+		} break;
+		case NOTIFICATION_DRAW: {
+			if (toolbar_panel_style.is_valid()) {
+				RID ci = get_canvas_item();
+				toolbar_panel_style->draw(ci, Rect2(Point2(), toolbar_margin->get_size()));
 			}
 		} break;
 	}
@@ -963,7 +995,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	// Add some margin to the sides for better aesthetics.
 	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
 	// which looks ugly.
-	MarginContainer *toolbar_margin = memnew(MarginContainer);
+	toolbar_margin = memnew(MarginContainer);
 	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
 	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
 	add_child(toolbar_margin);
@@ -1124,6 +1156,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_embed_options_menu_menu_id_pressed));
 	menu->add_check_item(TTR("Embed Game on Next Play"), EMBED_RUN_GAME_EMBEDDED);
 	menu->add_check_item(TTR("Make Game Workspace Floating on Next Play"), EMBED_MAKE_FLOATING_ON_PLAY);
+	menu->add_check_item(TTR("Make Floating Window Transparent"), EMBED_MAKE_FLOATING_TRANSPARENT);
 
 	main_menu_hbox->add_spacer();
 

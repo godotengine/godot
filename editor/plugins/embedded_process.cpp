@@ -81,7 +81,7 @@ void EmbeddedProcessBase::_bind_methods() {
 }
 
 void EmbeddedProcessBase::_draw() {
-	if (is_embedding_completed()) {
+	if (is_embedding_completed() && !floating_transp) {
 		Rect2 r = get_adjusted_embedded_window_rect(get_rect());
 #ifndef MACOS_ENABLED
 		r.position -= get_window()->get_position();
