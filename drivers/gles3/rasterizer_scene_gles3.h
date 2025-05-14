@@ -869,6 +869,7 @@ public:
 	void update() override;
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override;
 
+	void reflections_set_filter(RS::ReflectionFilter p_filter) override;
 	void decals_set_filter(RS::DecalFilter p_filter) override;
 	void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) override;

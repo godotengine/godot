@@ -15,7 +15,7 @@
 			The sky's overall brightness multiplier. Higher values result in a brighter sky.
 		</member>
 		<member name="filter" type="bool" setter="set_filtering_enabled" getter="is_filtering_enabled" default="true">
-			A boolean value to determine if the background texture should be filtered or not.
+			If [code]true[/code], uses bilinear filtering to display the background texture. If [code]false[/code], nearest-neighbor filtering is used instead. When [member filter] is set to [code]false[/code], you may want reflections to use nearest-neighbor filtering as well. This can be done by changing [member ProjectSettings.rendering/reflections/filter] to [b]Nearest[/b].
 		</member>
 		<member name="panorama" type="Texture2D" setter="set_panorama" getter="get_panorama">
 			[Texture2D] to be applied to the [PanoramaSkyMaterial].
