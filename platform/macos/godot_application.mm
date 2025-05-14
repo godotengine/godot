@@ -63,11 +63,14 @@ GodotApplication *GodotApp = nil;
 	NSString *nsbundleid_env = [NSString stringWithUTF8String:(bundled_id != nullptr) ? bundled_id : ""];
 	NSString *nsbundleid = [[NSBundle mainBundle] bundleIdentifier];
 	if (nsappname == nil || isatty(STDOUT_FILENO) || isatty(STDIN_FILENO) || isatty(STDERR_FILENO) || ![nsbundleid isEqualToString:nsbundleid_env]) {
-#if DEV_ENABLED
-		if (!OS_MacOS::is_debugger_attached())
+#ifdef TOOLS_ENABLED
+		if (!OS_MacOS::is_debugger_attached()) {
+#else
+		{
 #endif
 			// If the executable is started from terminal or is not bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
 			[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
+		}
 	}
 }
 
