@@ -1564,6 +1564,12 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/size/minimize_disabled", false);
 	GLOBAL_DEF("display/window/size/maximize_disabled", false);
 
+	GLOBAL_DEF("display/window/hdr/enabled", false);
+	GLOBAL_DEF("display/window/hdr/prefer_high_precision", false);
+	GLOBAL_DEF("display/window/hdr/use_screen_luminance", true);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "display/window/hdr/reference_luminance", PROPERTY_HINT_RANGE, "0,2000,1,or_greater"), 200.0f); // BT.2408 recommendation of 203 nits for HDR Reference White, rounded to 200 to be a more pleasant player-facing value.
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "display/window/hdr/max_luminance", PROPERTY_HINT_RANGE, "0,2000,1,or_greater"), 1000.0f);
+
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 
