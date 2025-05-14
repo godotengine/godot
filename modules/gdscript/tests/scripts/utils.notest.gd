@@ -100,6 +100,8 @@ static func print_property_extended_info(property: Dictionary, base: Object = nu
 
 static func get_method_signature(method: Dictionary, is_signal: bool = false) -> String:
 	var result: String = ""
+	if method.flags & METHOD_FLAG_VIRTUAL_REQUIRED:
+		result += "abstract "
 	if method.flags & METHOD_FLAG_STATIC:
 		result += "static "
 	result += ("signal " if is_signal else "func ") + method.name + "("
