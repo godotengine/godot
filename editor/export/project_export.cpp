@@ -1521,10 +1521,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Main preset parameters.
 
 	parameters = memnew(EditorInspector);
-	sections->add_child(parameters);
-	parameters->set_name(TTR("Options"));
+	parameters->set_name(TTRC("Options"));
+	parameters->set_mark_unsaved(false);
 	parameters->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	parameters->set_use_doc_hints(true);
+	sections->add_child(parameters);
 	parameters->connect("property_edited", callable_mp(this, &ProjectExportDialog::_update_parameters));
 	EditorExport::get_singleton()->connect("export_presets_updated", callable_mp(this, &ProjectExportDialog::_force_update_current_preset_parameters));
 
