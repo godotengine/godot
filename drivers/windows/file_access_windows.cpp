@@ -214,7 +214,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 		path = tmpfile;
 	}
 
-	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), mode_string, is_backup_save_enabled() ? _SH_SECURE : _SH_DENYNO);
+	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), mode_string, is_backup_save_enabled() ? ((p_mode_flags == READ) ? _SH_DENYWR : _SH_DENYRW) : _SH_DENYNO);
 
 	if (f == nullptr) {
 		switch (errno) {
