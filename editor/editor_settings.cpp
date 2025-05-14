@@ -694,6 +694,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_load_godot2_text_editor_theme();
 
 	// Appearance
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "text_editor/appearance/enable_inline_color_picker", true, "");
+
 	// Appearance: Caret
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/appearance/caret/type", 0, "Line,Block")
 	_initial_set("text_editor/appearance/caret/caret_blink", true, true);
