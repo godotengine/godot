@@ -184,8 +184,10 @@ void AudioStreamImportSettingsDialog::_preview_zoom_in() {
 		return;
 	}
 	float page_size = zoom_bar->get_page();
+	zoom_spacer->hide();
 	zoom_bar->set_page(page_size * 0.5);
 	zoom_bar->set_value(zoom_bar->get_value() + page_size * 0.25);
+	zoom_bar->show();
 
 	_preview->queue_redraw();
 	_indicator->queue_redraw();
@@ -198,6 +200,10 @@ void AudioStreamImportSettingsDialog::_preview_zoom_out() {
 	float page_size = zoom_bar->get_page();
 	zoom_bar->set_page(MIN(zoom_bar->get_max(), page_size * 2.0));
 	zoom_bar->set_value(zoom_bar->get_value() - page_size * 0.5);
+	if (zoom_bar->get_value() == 0) {
+		zoom_bar->hide();
+		zoom_spacer->show();
+	}
 
 	_preview->queue_redraw();
 	_indicator->queue_redraw();
@@ -210,6 +216,9 @@ void AudioStreamImportSettingsDialog::_preview_zoom_reset() {
 	zoom_bar->set_max(stream->get_length());
 	zoom_bar->set_page(zoom_bar->get_max());
 	zoom_bar->set_value(0);
+	zoom_bar->hide();
+	zoom_spacer->show();
+
 	_preview->queue_redraw();
 	_indicator->queue_redraw();
 }
@@ -608,6 +617,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 
 	HBoxContainer *zoom_hbox = memnew(HBoxContainer);
 	zoom_bar = memnew(HScrollBar);
+	zoom_bar->hide();
 	zoom_in = memnew(Button);
 	zoom_in->set_accessibility_name(TTRC("Zoom In"));
 	zoom_in->set_flat(true);
@@ -618,6 +628,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	zoom_out->set_accessibility_name(TTRC("Zoom Out"));
 	zoom_out->set_flat(true);
 	zoom_hbox->add_child(zoom_bar);
+	zoom_spacer = zoom_hbox->add_spacer();
 	zoom_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	zoom_bar->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	zoom_hbox->add_child(zoom_out);
