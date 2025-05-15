@@ -214,6 +214,13 @@ struct [[nodiscard]] Vector3 {
 	explicit operator String() const;
 	operator Vector3i() const;
 
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(x);
+		h = hash_murmur3_one_real(y, h);
+		h = hash_murmur3_one_real(z, h);
+		return hash_fmix32(h);
+	}
+
 	constexpr Vector3() :
 			x(0), y(0), z(0) {}
 	constexpr Vector3(real_t p_x, real_t p_y, real_t p_z) :

@@ -637,7 +637,7 @@ private:
 		};
 
 		MethodInfo user;
-		HashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
+		HashMap<Callable, Slot> slot_map;
 		bool removable = false;
 	};
 	friend struct _ObjectSignalLock;

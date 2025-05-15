@@ -109,22 +109,22 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const ui
 
 	tvg::Result res = sw_canvas->target((uint32_t *)buffer.ptrw(), width, width, height, tvg::SwCanvas::ABGR8888S);
 	if (res != tvg::Result::Success) {
-		ERR_FAIL_V_MSG(FAILED, "ImageLoaderSVG: Couldn't set target on ThorVG canvas.");
+		ERR_FAIL_V_MSG(FAILED, vformat("ImageLoaderSVG: Couldn't set target on ThorVG canvas, error code %d.", res));
 	}
 
 	res = sw_canvas->push(std::move(picture));
 	if (res != tvg::Result::Success) {
-		ERR_FAIL_V_MSG(FAILED, "ImageLoaderSVG: Couldn't insert ThorVG picture on canvas.");
+		ERR_FAIL_V_MSG(FAILED, vformat("ImageLoaderSVG: Couldn't insert ThorVG picture on canvas, error code %d.", res));
 	}
 
 	res = sw_canvas->draw();
 	if (res != tvg::Result::Success) {
-		ERR_FAIL_V_MSG(FAILED, "ImageLoaderSVG: Couldn't draw ThorVG pictures on canvas.");
+		ERR_FAIL_V_MSG(FAILED, vformat("ImageLoaderSVG: Couldn't draw ThorVG pictures on canvas, error code %d.", res));
 	}
 
 	res = sw_canvas->sync();
 	if (res != tvg::Result::Success) {
-		ERR_FAIL_V_MSG(FAILED, "ImageLoaderSVG: Couldn't sync ThorVG canvas.");
+		ERR_FAIL_V_MSG(FAILED, vformat("ImageLoaderSVG: Couldn't sync ThorVG canvas, error code %d.", res));
 	}
 
 	p_image->set_data(width, height, false, Image::FORMAT_RGBA8, buffer);

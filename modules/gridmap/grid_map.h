@@ -70,6 +70,8 @@ class GridMap : public Node3D {
 			return Vector3i(x, y, z);
 		}
 
+		uint32_t hash() const { return operator Vector3i().hash(); }
+
 		IndexKey(Vector3i p_vector) {
 			x = (int16_t)p_vector.x;
 			y = (int16_t)p_vector.y;

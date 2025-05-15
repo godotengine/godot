@@ -43,6 +43,7 @@ using namespace godot;
 // Headers for building as built-in module.
 
 #include "core/os/mutex.h"
+#include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/typedefs.h"
 
