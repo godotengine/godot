@@ -232,18 +232,18 @@ void ProjectSettings::set_as_internal(const String &p_name, bool p_internal) {
 
 void ProjectSettings::set_ignore_value_in_docs(const String &p_name, bool p_ignore) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	props[p_name].ignore_value_in_docs = p_ignore;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 bool ProjectSettings::get_ignore_value_in_docs(const String &p_name) const {
 	ERR_FAIL_COND_V_MSG(!props.has(p_name), false, vformat("Request for nonexistent project setting: '%s'.", p_name));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	return props[p_name].ignore_value_in_docs;
 #else
 	return false;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void ProjectSettings::add_hidden_prefix(const String &p_prefix) {
