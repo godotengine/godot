@@ -448,8 +448,10 @@ Dictionary ResourceImporterTexture::_load_editor_meta(const String &p_path) cons
 }
 
 void ResourceImporterTexture::_remap_channels(Ref<Image> &r_image, ChannelRemap p_options[4]) {
-	bool attempted_hdr_inverted = false;
+	ERR_FAIL_COND(r_image->is_compressed());
 
+	// Currently HDR inverted remapping is not allowed.
+	bool attempted_hdr_inverted = false;
 	if (r_image->get_format() >= Image::FORMAT_RF && r_image->get_format() <= Image::FORMAT_RGBE9995) {
 		// Formats which can hold HDR data cannot be inverted the same way as unsigned normalized ones (1.0 - channel).
 		for (int i = 0; i < 4; i++) {
@@ -480,11 +482,127 @@ void ResourceImporterTexture::_remap_channels(Ref<Image> &r_image, ChannelRemap 
 		WARN_PRINT("Attempted to use an inverted channel remap on an HDR image. The remap has been changed to its uninverted equivalent.");
 	}
 
-	if (p_options[0] == REMAP_R && p_options[1] == REMAP_G && p_options[2] == REMAP_B && p_options[3] == REMAP_A) {
+	// Optimization: Set the remap from 'unused' to either 0 or 1 to avoid repeated checks in the conversion loop.
+	for (int i = 0; i < 4; i++) {
+		if (p_options[i] == REMAP_UNUSED) {
+			p_options[i] = i == 3 ? REMAP_1 : REMAP_0;
+		}
+	}
+
+	// Expand the image's channel count in the event that the current set of channels doesn't allow for the desired remap.
+	const Image::Format original_format = r_image->get_format();
+	const uint32_t channel_mask = Image::get_format_component_mask(original_format);
+
+	// Whether a channel is supported by the format itself.
+	const bool has_channel_r = channel_mask & 0x1;
+	const bool has_channel_g = channel_mask & 0x2;
+	const bool has_channel_b = channel_mask & 0x4;
+	const bool has_channel_a = channel_mask & 0x8;
+
+	// Whether a certain channel needs to be remapped.
+	const bool remap_r = p_options[0] != REMAP_R ? !(!has_channel_r && p_options[0] == REMAP_0) : false;
+	const bool remap_g = p_options[1] != REMAP_G ? !(!has_channel_g && p_options[1] == REMAP_0) : false;
+	const bool remap_b = p_options[2] != REMAP_B ? !(!has_channel_b && p_options[2] == REMAP_0) : false;
+	const bool remap_a = p_options[3] != REMAP_A ? !(!has_channel_a && p_options[3] == REMAP_1) : false;
+
+	if (!(remap_r || remap_g || remap_b || remap_a)) {
 		// Default color map, do nothing.
 		return;
 	}
 
+	// Whether a certain channel set is needed, either from the source or the remap.
+	const bool needs_rg = remap_g || has_channel_g;
+	const bool needs_rgb = remap_b || has_channel_b;
+	const bool needs_rgba = remap_a || has_channel_a;
+
+	bool could_not_expand = false;
+	switch (original_format) {
+		case Image::FORMAT_R8:
+		case Image::FORMAT_RG8:
+		case Image::FORMAT_RGB8: {
+			// Convert to either RGBA8, RGB8 or RG8.
+			if (needs_rgba) {
+				r_image->convert(Image::FORMAT_RGBA8);
+			} else if (needs_rgb) {
+				r_image->convert(Image::FORMAT_RGB8);
+			} else if (needs_rg) {
+				r_image->convert(Image::FORMAT_RG8);
+			}
+		} break;
+		case Image::FORMAT_RH:
+		case Image::FORMAT_RGH:
+		case Image::FORMAT_RGBH: {
+			// Convert to either RGBAH, RGBH or RGH.
+			if (needs_rgba) {
+				r_image->convert(Image::FORMAT_RGBAH);
+			} else if (needs_rgb) {
+				r_image->convert(Image::FORMAT_RGBH);
+			} else if (needs_rg) {
+				r_image->convert(Image::FORMAT_RGH);
+			}
+		} break;
+		case Image::FORMAT_RF:
+		case Image::FORMAT_RGF:
+		case Image::FORMAT_RGBF: {
+			// Convert to either RGBAF, RGBF or RGF.
+			if (needs_rgba) {
+				r_image->convert(Image::FORMAT_RGBAF);
+			} else if (needs_rgb) {
+				r_image->convert(Image::FORMAT_RGBF);
+			} else if (needs_rg) {
+				r_image->convert(Image::FORMAT_RGF);
+			}
+		} break;
+		case Image::FORMAT_L8: {
+			const bool uniform_rgb = (p_options[0] == p_options[1] && p_options[1] == p_options[2]) || !(remap_r || remap_g || remap_b);
+			if (uniform_rgb) {
+				// Uniform RGB.
+				if (needs_rgba) {
+					r_image->convert(Image::FORMAT_LA8);
+				}
+			} else {
+				// Non-uniform RGB.
+				if (needs_rgba) {
+					r_image->convert(Image::FORMAT_RGBA8);
+				} else {
+					r_image->convert(Image::FORMAT_RGB8);
+				}
+				could_not_expand = true;
+			}
+		} break;
+		case Image::FORMAT_LA8: {
+			const bool uniform_rgb = (p_options[0] == p_options[1] && p_options[1] == p_options[2]) || !(remap_r || remap_g || remap_b);
+			if (!uniform_rgb) {
+				// Non-uniform RGB.
+				r_image->convert(Image::FORMAT_RGBA8);
+				could_not_expand = true;
+			}
+		} break;
+		case Image::FORMAT_RGB565: {
+			if (needs_rgba) {
+				// RGB565 doesn't have an alpha expansion, convert to RGBA8.
+				r_image->convert(Image::FORMAT_RGBA8);
+				could_not_expand = true;
+			}
+		} break;
+		case Image::FORMAT_RGBE9995: {
+			if (needs_rgba) {
+				// RGB9995 doesn't have an alpha expansion, convert to RGBAH.
+				r_image->convert(Image::FORMAT_RGBAH);
+				could_not_expand = true;
+			}
+		} break;
+
+		default: {
+		} break;
+	}
+
+	if (could_not_expand) {
+		WARN_PRINT(vformat("Unable to expand image format %s's channels (the target format does not exist), converting to %s as a fallback.",
+				Image::get_format_name(original_format), Image::get_format_name(r_image->get_format())));
+	}
+
+	// Remap the channels.
 	for (int x = 0; x < r_image->get_width(); x++) {
 		for (int y = 0; y < r_image->get_height(); y++) {
 			Color src = r_image->get_pixel(x, y);
@@ -516,11 +634,6 @@ void ResourceImporterTexture::_remap_channels(Ref<Image> &r_image, ChannelRemap 
 						break;
 					case REMAP_INV_A:
 						dst[i] = 1.0f - src.a;
-						break;
-
-					case REMAP_UNUSED:
-						// For Alpha the unused value is 1, for other channels it's 0.
-						dst[i] = (i == 3) ? 1.0f : 0.0f;
 						break;
 
 					case REMAP_0:
