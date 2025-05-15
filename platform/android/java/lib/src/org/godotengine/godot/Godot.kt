@@ -73,6 +73,7 @@ import org.godotengine.godot.utils.benchmarkFile
 import org.godotengine.godot.utils.dumpBenchmark
 import org.godotengine.godot.utils.endBenchmarkMeasure
 import org.godotengine.godot.utils.useBenchmark
+import org.godotengine.godot.variant.Callable
 import org.godotengine.godot.xr.XRMode
 import java.io.File
 import java.io.FileInputStream
@@ -1194,5 +1195,11 @@ class Godot(private val context: Context) {
 	@Keep
 	private fun nativeOnEditorWorkspaceSelected(workspace: String) {
 		primaryHost?.onEditorWorkspaceSelected(workspace)
+	}
+
+	@Keep
+	private fun nativeTermuxExecute(path: String, arguments: Array<String>, workDir: String, background: Boolean, resultCallback: Callable): Boolean {
+		// @todo I don't know if the indirection to primaryHost makes sense, but everyone else was doing it...
+		return primaryHost?.termuxExecute(path, arguments, workDir, background, resultCallback) ?: false
 	}
 }
