@@ -56,6 +56,22 @@ public:
 		SHADER_VERSION_MAX
 	};
 
+	enum ShaderCount {
+		SHADER_COUNT_NONE,
+		SHADER_COUNT_SINGLE,
+		SHADER_COUNT_MULTIPLE
+	};
+
+	_FORCE_INLINE_ static ShaderCount shader_count_for(uint32_t p_count) {
+		if (p_count == 0) {
+			return SHADER_COUNT_NONE;
+		} else if (p_count == 1) {
+			return SHADER_COUNT_SINGLE;
+		} else {
+			return SHADER_COUNT_MULTIPLE;
+		}
+	}
+
 	struct ShaderSpecialization {
 		union {
 			uint32_t packed_0;
@@ -91,25 +107,18 @@ public:
 			struct {
 				uint32_t directional_soft_shadow_samples : 6;
 				uint32_t directional_penumbra_shadow_samples : 6;
-				uint32_t omni_lights : 4;
-				uint32_t spot_lights : 4;
-				uint32_t reflection_probes : 4;
-				uint32_t directional_lights : 4;
-				uint32_t decals : 4;
-			};
-		};
-
-		union {
-			uint32_t packed_2;
-
-			struct {
+				uint32_t omni_lights : 2;
+				uint32_t spot_lights : 2;
+				uint32_t reflection_probes : 2;
+				uint32_t directional_lights : 2;
+				uint32_t decals : 1;
 				uint32_t directional_light_blend_splits : 8;
-				uint32_t padding_1 : 24;
+				uint32_t padding_1 : 3;
 			};
 		};
 
 		union {
-			float packed_3;
+			float packed_2;
 			float luminance_multiplier;
 		};
 	};
@@ -122,10 +131,6 @@ public:
 				uint32_t cull_mode : 2;
 			};
 		};
-
-		uint32_t padding_1;
-		uint32_t padding_2;
-		uint32_t padding_3;
 	};
 
 	struct ShaderData : public RendererRD::MaterialStorage::ShaderData {
@@ -172,8 +177,7 @@ public:
 				h = hash_murmur3_one_32(primitive_type, h);
 				h = hash_murmur3_one_32(shader_specialization.packed_0, h);
 				h = hash_murmur3_one_32(shader_specialization.packed_1, h);
-				h = hash_murmur3_one_32(shader_specialization.packed_2, h);
-				h = hash_murmur3_one_float(shader_specialization.packed_3, h);
+				h = hash_murmur3_one_float(shader_specialization.packed_2, h);
 				h = hash_murmur3_one_32(version, h);
 				h = hash_murmur3_one_32(render_pass, h);
 				h = hash_murmur3_one_32(wireframe, h);
