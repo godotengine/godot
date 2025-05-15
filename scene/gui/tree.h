@@ -31,14 +31,16 @@
 #pragma once
 
 #include "scene/gui/control.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/scroll_bar.h"
-#include "scene/gui/slider.h"
 #include "scene/resources/text_paragraph.h"
 
+class HScrollBar;
+class HSlider;
+class LineEdit;
+class Popup;
+class PopupMenu;
 class TextEdit;
 class Tree;
+class VScrollBar;
 
 class TreeItem : public Object {
 	GDCLASS(TreeItem, Object);
@@ -439,8 +441,6 @@ public:
 
 VARIANT_ENUM_CAST(TreeItem::TreeCellMode);
 
-class VBoxContainer;
-
 class Tree : public Control {
 	GDCLASS(Tree, Control);
 
@@ -525,8 +525,6 @@ private:
 	};
 
 	bool show_column_titles = false;
-
-	VBoxContainer *popup_editor_vb = nullptr;
 
 	bool popup_edit_committed = true;
 	RID accessibility_scroll_element;

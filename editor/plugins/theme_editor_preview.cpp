@@ -47,6 +47,7 @@
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"

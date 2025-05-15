@@ -36,6 +36,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/control.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tree.h"
 

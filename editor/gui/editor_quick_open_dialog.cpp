@@ -43,6 +43,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"

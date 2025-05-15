@@ -37,6 +37,10 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/scroll_bar.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -6637,7 +6641,7 @@ Tree::Tree() {
 	popup_editor = memnew(Popup);
 	add_child(popup_editor, false, INTERNAL_MODE_FRONT);
 
-	popup_editor_vb = memnew(VBoxContainer);
+	VBoxContainer *popup_editor_vb = memnew(VBoxContainer);
 	popup_editor_vb->add_theme_constant_override("separation", 0);
 	popup_editor_vb->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	popup_editor->add_child(popup_editor_vb);
