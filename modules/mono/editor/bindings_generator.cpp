@@ -30,7 +30,7 @@
 
 #include "bindings_generator.h"
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 #include "../godotsharp_defs.h"
 #include "../utils/naming_utils.h"
@@ -5300,4 +5300,4 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	}
 }
 
-#endif
+#endif // DEBUG_ENABLED
