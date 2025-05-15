@@ -377,16 +377,20 @@ void EditorUndoRedoManager::set_history_as_saved(int p_id) {
 
 void EditorUndoRedoManager::set_history_as_unsaved(int p_id) {
 	History &history = get_or_create_history(p_id);
-	history.saved_version = -1;
+	history.saved_version = 0;
 }
 
 bool EditorUndoRedoManager::is_history_unsaved(int p_id) {
 	History &history = get_or_create_history(p_id);
+	if (history.saved_version == 0) {
+		return true;
+	}
 
 	int version_difference = history.undo_redo->get_version() - history.saved_version;
 	if (version_difference > 0) {
 		List<Action>::Element *E = history.undo_stack.back();
 		for (int i = 0; i < version_difference; i++) {
+			ERR_FAIL_NULL_V_MSG(E, false, "Inconsistent undo history.");
 			if (E->get().mark_unsaved) {
 				return true;
 			}
@@ -395,6 +399,7 @@ bool EditorUndoRedoManager::is_history_unsaved(int p_id) {
 	} else if (version_difference < 0) {
 		List<Action>::Element *E = history.redo_stack.back();
 		for (int i = 0; i > version_difference; i--) {
+			ERR_FAIL_NULL_V_MSG(E, false, "Inconsistent redo history.");
 			if (E->get().mark_unsaved) {
 				return true;
 			}
