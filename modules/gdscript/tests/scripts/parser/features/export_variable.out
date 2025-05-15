@@ -18,7 +18,7 @@ var test_node_path: NodePath = NodePath("hello")
 var test_side: Side = 0
   hint=ENUM hint_string="Side Left:0,Side Top:1,Side Right:2,Side Bottom:3" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Side"
 var test_atm: Node.AutoTranslateMode = 0
-  hint=ENUM hint_string="Auto Translate Mode Inherit:0,Auto Translate Mode Always:1,Auto Translate Mode Disabled:2" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Node.AutoTranslateMode"
+  hint=ENUM hint_string="Auto Translate Mode Inherit:0,Auto Translate Mode Always:1,Auto Translate Mode Disabled:2,Auto Translate Mode Disabled Including Accessibility:3" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Node.AutoTranslateMode"
 var test_image: Image = null
   hint=RESOURCE_TYPE hint_string="Image" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"Image"
 var test_timer: Timer = null
@@ -38,7 +38,7 @@ var test_array_array: Array = Array[Array]([])
 var test_array_side: Array = Array[int]([])
   hint=TYPE_STRING hint_string="<int>/<ENUM>:Side Left:0,Side Top:1,Side Right:2,Side Bottom:3" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_array_atm: Array = Array[int]([])
-  hint=TYPE_STRING hint_string="<int>/<ENUM>:Auto Translate Mode Inherit:0,Auto Translate Mode Always:1,Auto Translate Mode Disabled:2" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+  hint=TYPE_STRING hint_string="<int>/<ENUM>:Auto Translate Mode Inherit:0,Auto Translate Mode Always:1,Auto Translate Mode Disabled:2,Auto Translate Mode Disabled Including Accessibility:3" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_array_image: Array = Array[Image]([])
   hint=TYPE_STRING hint_string="<Object>/<RESOURCE_TYPE>:Image" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_array_timer: Array = Array[Timer]([])

@@ -1748,7 +1748,6 @@ void ScriptEditor::_notification(int p_what) {
 		}
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			disk_changed_list->set_accessibility_name(TTR("The following files are newer on disk"));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
@@ -4464,6 +4463,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 		disk_changed_list->set_hide_root(true);
 		disk_changed_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
+		disk_changed_list->set_accessibility_name(TTRC("The following files are newer on disk"));
 		vbc->add_child(disk_changed_list);
 
 		Label *what_action_label = memnew(Label);

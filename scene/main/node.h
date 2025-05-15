@@ -122,6 +122,7 @@ public:
 		AUTO_TRANSLATE_MODE_INHERIT,
 		AUTO_TRANSLATE_MODE_ALWAYS,
 		AUTO_TRANSLATE_MODE_DISABLED,
+		AUTO_TRANSLATE_MODE_DISABLED_INCLUDING_ACCESSIBILITY,
 	};
 
 	struct Comparator {
@@ -262,6 +263,7 @@ private:
 
 		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 		mutable bool is_auto_translating = true;
+		mutable bool is_auto_translating_ac = true;
 		mutable bool is_auto_translate_dirty = true;
 
 		mutable bool is_translation_domain_inherited = true;
@@ -809,12 +811,14 @@ public:
 	void set_auto_translate_mode(AutoTranslateMode p_mode);
 	AutoTranslateMode get_auto_translate_mode() const;
 	bool can_auto_translate() const;
+	bool can_auto_translate_accessibility() const;
 
 	virtual StringName get_translation_domain() const override;
 	virtual void set_translation_domain(const StringName &p_domain) override;
 	void set_translation_domain_inherited();
 
 	_FORCE_INLINE_ String atr(const String &p_message, const StringName &p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
+	_FORCE_INLINE_ String ac_atr(const String &p_message, const StringName &p_context = "") const { return can_auto_translate_accessibility() ? tr(p_message, p_context) : p_message; }
 	_FORCE_INLINE_ String atr_n(const String &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const {
 		if (can_auto_translate()) {
 			return tr_n(p_message, p_message_plural, p_n, p_context);
