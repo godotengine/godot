@@ -471,6 +471,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				prop_doc.deprecated_message = m_var->doc_data.deprecated_message;
 				prop_doc.is_experimental = m_var->doc_data.is_experimental;
 				prop_doc.experimental_message = m_var->doc_data.experimental_message;
+				prop_doc.qualifiers = m_var->is_static ? "static" : "";
 				_doctype_from_gdtype(m_var->get_datatype(), prop_doc.type, prop_doc.enumeration);
 
 				switch (m_var->property) {

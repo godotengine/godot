@@ -151,7 +151,7 @@ static void _add_qualifiers_to_rt(const String &p_qualifiers, RichTextLabel *p_r
 		} else if (qualifier == "const") {
 			hint = TTR("This method has no side effects.\nIt does not modify the object in any way.");
 		} else if (qualifier == "static") {
-			hint = TTR("This method does not need an instance to be called.\nIt can be called directly using the class name.");
+			hint = TTR("This member does not need an instance to be accessed or called.\nIt can be accessed or called directly using the class name.");
 		}
 
 		p_rt->add_text(" ");
@@ -532,6 +532,14 @@ void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &
 	} else {                                                                                    \
 		_add_text(m_message);                                                                   \
 	}
+
+void EditorHelp::_add_property_qualifiers(const DocData::PropertyDoc &p_prop) {
+	if (!p_prop.qualifiers.is_empty()) {
+		class_desc->push_color(theme_cache.qualifier_color);
+		_add_qualifiers_to_rt(p_prop.qualifiers, class_desc);
+		class_desc->pop(); // color
+	}
+}
 
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview, bool p_override) {
 	if (p_override) {
@@ -1284,7 +1292,7 @@ void EditorHelp::_update_doc() {
 
 			class_desc->pop(); // cell
 
-			// Property setter/getter and deprecated/experimental marks.
+			// Property setter/getter, qualifiers and deprecated/experimental marks.
 			class_desc->push_cell();
 
 			bool has_prev_text = false;
@@ -1316,6 +1324,8 @@ void EditorHelp::_update_doc() {
 				class_desc->add_text("]");
 				class_desc->pop(); // color
 			}
+
+			_add_property_qualifiers(prop);
 
 			if (prop.is_deprecated) {
 				if (has_prev_text) {
@@ -2226,6 +2236,9 @@ void EditorHelp::_update_doc() {
 			}
 
 			class_desc->pop(); // table
+
+			// Property qualifiers
+			_add_property_qualifiers(prop);
 
 			class_desc->add_newline();
 			class_desc->add_newline();
