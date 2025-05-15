@@ -281,6 +281,7 @@ void OS_Windows::initialize() {
 	QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second);
 	QueryPerformanceCounter((LARGE_INTEGER *)&ticks_start);
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
 	TIMECAPS time_caps;
@@ -292,6 +293,9 @@ void OS_Windows::initialize() {
 		delay_resolution = 1000;
 		timeBeginPeriod(1);
 	}
+#else
+	delay_resolution = 1000;
+#endif
 
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -374,7 +378,9 @@ void OS_Windows::finalize_core() {
 
 	FileAccessWindows::finalize();
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 	timeEndPeriod(1);
+#endif
 
 	memdelete(process_map);
 	NetSocketWinSock::cleanup();
