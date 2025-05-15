@@ -151,6 +151,8 @@ public:
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
 
+	bool _validate_type_match(const Variant &p_from, Variant &r_to);
+
 	// The time information is passed from upstream to downstream by AnimationMixer::PlaybackInfo::p_playback_info until AnimationNodeAnimation processes it.
 	// Conversely, AnimationNodeAnimation returns the processed result as NodeTimeInfo from downstream to upstream.
 	NodeTimeInfo _blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false, real_t *r_activity = nullptr);
