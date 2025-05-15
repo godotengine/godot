@@ -4813,6 +4813,8 @@ void FindBar::popup_search() {
 		search_text->select_all();
 		search_text->set_caret_column(search_text->get_text().length());
 		if (grabbed_focus) {
+			rich_text_label->deselect();
+			results_count_to_current = 0;
 			_search();
 		}
 	}
