@@ -3056,8 +3056,8 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					text += TTR("End (s):") + " " + rtos(eo) + "\n";
 				} break;
 				case Animation::TYPE_ANIMATION: {
-					String name = animation->animation_track_get_key_animation(track, key_idx);
-					text += TTR("Animation Clip:") + " " + name + "\n";
+					String anim_name = animation->animation_track_get_key_animation(track, key_idx);
+					text += TTR("Animation Clip:") + " " + anim_name + "\n";
 					float so = animation->animation_track_get_key_start_offset(track, key_idx);
 					text += TTR("Start (s):") + " " + rtos(so) + "\n";
 					float eo = animation->animation_track_get_key_end_offset(track, key_idx);

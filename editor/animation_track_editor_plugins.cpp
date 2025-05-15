@@ -31,6 +31,7 @@
 #include "animation_track_editor_plugins.h"
 
 #include "editor/audio_stream_preview.h"
+#include "editor/animation_preview.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -786,7 +787,7 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 }
 
 AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
-	//AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
+	AnimationPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAnimation::_preview_changed));
 }
 
 ////////////////////////
@@ -796,18 +797,15 @@ AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
 void AnimationTrackEditTypeAnimation::_preview_changed(ObjectID p_which) {
 	for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
 		StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), i);
-		//if (anim_name == StringName("[stop]")) {
-		//	continue;
-		//}
-		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
-		//if (!ap || !ap->has_animation(anim_name)) {
+		if (anim_name == StringName("[stop]")) {
 			continue;
-		//}
+		}
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
+		if (!ap || !ap->has_animation(anim_name)) {
+			continue;
+		}
 
 		Ref<Animation> anim = ap->get_animation(anim_name);
-		//if (!anim.is_valid()) {
-			continue;
-		//}
 
 		if (anim.is_valid() && anim->get_instance_id() == p_which) {
 			queue_redraw();
@@ -955,8 +953,8 @@ void AnimationTrackEditTypeAnimation::gui_input(const Ref<InputEvent> &p_event) 
 		Ref<Animation> anim = ap ? ap->get_animation(anim_name) : Ref<Animation>();
 		float len = anim->get_length();
 		if (len == 0) {
-			//Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
-			float preview_len = 0.0; //preview->get_length();
+			Ref<AnimationPreview> preview = AnimationPreviewGenerator::get_singleton()->generate_preview(anim);
+			float preview_len = preview->get_length();
 			len = preview_len;
 		}
 
@@ -1448,13 +1446,22 @@ Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_
 	}
 
 	if (anim_name != StringName("[stop]") && ap->has_animation(anim_name)) {
+		float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), p_index);
+		float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), p_index);
+
 		float len = anim->get_length();
 
 		if (len == 0) {
-			len = 0.0;
-			//Ref<AnimationPreview> preview = AnimationPreviewGenerator::get_singleton()->generate_preview(anim);
-			//len = preview->get_length();
+			Ref<AnimationPreview> preview = AnimationPreviewGenerator::get_singleton()->generate_preview(anim);
+			len = preview->get_length();
 		}
+
+		len -= end_ofs;
+		len -= start_ofs;
+		if (len <= 0.0001) {
+			len = 0.0001;
+		}
+
 
 		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
 			len = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
@@ -1474,112 +1481,125 @@ bool AnimationTrackEditTypeAnimation::is_key_selectable_by_distance() const {
 }
 
 void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	Object *object = ObjectDB::get_instance(id);
-
-	if (!object) {
-		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
+	StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), p_index);
+	if (anim_name == StringName("[stop]")) {
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right); // Draw diamond.
 		return;
 	}
 
-	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(object);
-
-	if (!ap) {
-		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
+	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(ObjectDB::get_instance(id));
+	if (!ap || !ap->has_animation(anim_name)) {
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right); // Draw diamond.
 		return;
 	}
 
-	String anim = get_animation()->animation_track_get_key_animation(get_track(), p_index);
+	Ref<Animation> anim = ap->get_animation(anim_name);
+	if (!anim.is_valid()) {
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right); // Draw diamond.
+		return;
+	}
 
-	if (anim != "[stop]" && ap->has_animation(anim)) {
-		float len = ap->get_animation(anim)->get_length();
+	Ref<AnimationPreview> preview = AnimationPreviewGenerator::get_singleton()->generate_preview(anim);
+	if (!preview.is_valid() || preview->get_version() == 1) {
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right); // Draw diamond.
+		return;
+	}
 
-		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-			len = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+	float len = preview->get_length();
+	if (len == 0) {
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right); // Draw diamond.
+		return;
+	}
+
+	float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), p_index);
+	float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), p_index);
+
+	int px_offset = 0;
+	if (len_resizing && p_index == len_resizing_index) {
+		float ofs_local = len_resizing_rel / get_timeline()->get_zoom_scale();
+		if (len_resizing_start) {
+			start_ofs += ofs_local;
+			px_offset = ofs_local * p_pixels_sec;
+		} else {
+			end_ofs -= ofs_local;
+		}
+	}
+
+	int pixel_total_len = len * p_pixels_sec;
+	len -= end_ofs;
+	len -= start_ofs;
+
+	if (len <= 0.0001) {
+		len = 0.0001;
+	}
+
+	int pixel_len = len * p_pixels_sec;
+	int pixel_begin = px_offset + p_x;
+	int pixel_end = px_offset + p_x + pixel_len;
+
+	if (pixel_end < p_clip_left || pixel_begin > p_clip_right) {
+		return;
+	}
+
+	int from_x = MAX(pixel_begin, p_clip_left);
+	int to_x = MIN(pixel_end, p_clip_right);
+
+	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
+		float limit = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+		int limit_x = pixel_begin + limit * p_pixels_sec;
+		to_x = MIN(limit_x, to_x);
+	}
+
+	if (to_x <= from_x) {
+		to_x = from_x + 1;
+	}
+
+	int h = get_size().height;
+	float fh = h * 0.9;
+	Rect2 rect = Rect2(from_x, (h - fh) / 2, to_x - from_x, fh);
+	draw_rect(rect, Color(0.25, 0.25, 0.25));
+
+	// Zeichne Keyframe-Marker mit AnimationPreview
+	Vector<Vector2> points;
+	Vector<Color> colors = { Color(1.0, 1.0, 1.0) };
+	Vector<TrackKeyTime> key_times = preview->get_key_times_with_tracks();
+	int track_count = anim->get_track_count();
+	float track_h = track_count > 0 ? (rect.size.height - 2) / track_count : rect.size.height;
+
+	for (const TrackKeyTime &kt : key_times) {
+		float ofs = kt.time - start_ofs; // Verschiebe Keyframe relativ zu start_offset
+		if (ofs < 0 || ofs > len) {
+			continue; // Ignoriere Keyframes außerhalb des sichtbaren Bereichs
+		}
+		int x = pixel_begin + ofs * p_pixels_sec;
+
+		if (x < from_x || x >= to_x) {
+			continue;
 		}
 
-		int pixel_len = len * p_pixels_sec;
+		int y = rect.position.y + 2 + track_h * kt.track_index + track_h / 2;
+		points.push_back(Point2(x, y));
+		points.push_back(Point2(x + 1, y));
+	}
 
-		int pixel_begin = p_x;
-		int pixel_end = p_x + pixel_len;
+	if (!points.is_empty()) {
+		draw_multiline_colors(points, colors);
+	}
 
-		if (pixel_end < p_clip_left) {
-			return;
-		}
+	// Zeichne Offset-Markierungen
+	Color cut_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+	cut_color.a = 0.7;
+	if (start_ofs > 0 && pixel_begin > p_clip_left) {
+		draw_rect(Rect2(pixel_begin, rect.position.y, 1, rect.size.y), cut_color);
+	}
+	if (end_ofs > 0 && pixel_end < p_clip_right) {
+		draw_rect(Rect2(pixel_end, rect.position.y, 1, rect.size.y), cut_color);
+	}
 
-		if (pixel_begin > p_clip_right) {
-			return;
-		}
-
-		int from_x = MAX(pixel_begin, p_clip_left);
-		int to_x = MIN(pixel_end, p_clip_right);
-
-		if (to_x <= from_x) {
-			return;
-		}
-
-		Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-		int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-		int fh = font->get_height(font_size) * 1.5;
-
-		Rect2 rect(from_x, int(get_size().height - fh) / 2, to_x - from_x, fh);
-
-		Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-		Color bg = color;
-		bg.r = 1 - color.r;
-		bg.g = 1 - color.g;
-		bg.b = 1 - color.b;
-		draw_rect(rect, bg);
-
-		Vector<Vector2> points;
-		Vector<Color> colors = { color };
-		{
-			Ref<Animation> ap_anim = ap->get_animation(anim);
-
-			for (int i = 0; i < ap_anim->get_track_count(); i++) {
-				float h = (rect.size.height - 2) / ap_anim->get_track_count();
-
-				int y = 2 + h * i + h / 2;
-
-				for (int j = 0; j < ap_anim->track_get_key_count(i); j++) {
-					float ofs = ap_anim->track_get_key_time(i, j);
-					int x = p_x + ofs * p_pixels_sec + 2;
-
-					if (x < from_x || x >= (to_x - 4)) {
-						continue;
-					}
-
-					points.push_back(Point2(x, y));
-					points.push_back(Point2(x + 1, y));
-				}
-			}
-		}
-
-		if (points.size() > 2) {
-			RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), points, colors);
-		}
-
-		int limit = to_x - from_x - 4;
-		if (limit > 0) {
-			draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
-		}
-
-		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-			draw_rect(rect, accent, false);
-		}
-	} else {
-		Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-		int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-		int fh = font->get_height(font_size) * 0.8;
-		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
-
-		Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-		draw_rect_clipped(rect, color);
-
-		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-			draw_rect_clipped(rect, accent, false);
-		}
+	// Hervorhebung bei Auswahl
+	if (p_selected) {
+		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		draw_rect(rect, accent, false);
 	}
 }
 
