@@ -86,7 +86,7 @@ private:
 		WindowWrapper *dock_window = nullptr;
 		int dock_slot_index = DOCK_SLOT_NONE;
 		Ref<Shortcut> shortcut;
-		Ref<Texture2D> icon; // Only used when `icon_name` is empty.
+		Ref<Texture2D> icon; // Used an an override for `icon_name`.
 		StringName icon_name;
 	};
 
