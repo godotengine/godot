@@ -793,22 +793,7 @@ _FORCE_INLINE_ String ETRN(const String &p_text, const String &p_text_plural, in
 
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
 
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {
-}
-
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str) {
-	arr.push_back(p_str);
-}
-
-template <typename... P>
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str, P... p_args) {
-	arr.push_back(p_str);
-	sarray_add_str(arr, p_args...);
-}
-
 template <typename... P>
 _FORCE_INLINE_ Vector<String> sarray(P... p_args) {
-	Vector<String> arr;
-	sarray_add_str(arr, p_args...);
-	return arr;
+	return Vector<String>({ String(p_args)... });
 }
