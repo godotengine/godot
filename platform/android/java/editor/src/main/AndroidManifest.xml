@@ -102,6 +102,18 @@
             android:resizeableActivity="false"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
+
+        <!--
+        We remove this meta-data originating from the vendors plugin as we only need the loader for
+        now since the project being edited provides its own version of the vendors plugin.
+
+        This needs to be removed once we start implementing the immersive version of the project
+        manager and editor windows.
+         -->
+        <meta-data
+            android:name="org.godotengine.plugin.v2.GodotOpenXR"
+            android:value="org.godotengine.openxr.vendors.GodotOpenXR"
+            tools:node="remove" />
     </application>
 
 </manifest>

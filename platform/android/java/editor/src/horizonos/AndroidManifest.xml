@@ -79,18 +79,6 @@
             android:value="quest3|questpro"
             tools:replace="android:value" />
 
-        <!--
-        We remove this meta-data originating from the vendors plugin as we only need the loader for
-        now since the project being edited provides its own version of the vendors plugin.
-
-        This needs to be removed once we start implementing the immersive version of the project
-        manager and editor windows.
-         -->
-        <meta-data
-            android:name="org.godotengine.plugin.v2.GodotOpenXRMeta"
-            android:value="org.godotengine.openxr.vendors.meta.GodotOpenXRMeta"
-            tools:node="remove" />
-
         <!-- Enable system splash screen -->
         <meta-data android:name="com.oculus.ossplash" android:value="true"/>
         <!-- Enable passthrough background during the splash screen -->
