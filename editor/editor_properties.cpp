@@ -223,9 +223,10 @@ EditorPropertyText::EditorPropertyText() {
 	add_child(hb);
 
 	text = memnew(LineEdit);
+	text->set_h_size_flags(SIZE_EXPAND_FILL);
+	text->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Prevents translating placeholder.
 	hb->add_child(text);
 	add_focusable(text);
-	text->set_h_size_flags(SIZE_EXPAND_FILL);
 	text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyText::_text_changed));
 	text->connect(SceneStringName(text_submitted), callable_mp(this, &EditorPropertyText::_text_submitted));
 }
