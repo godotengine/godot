@@ -18,15 +18,20 @@
 #include <map>
 #include <set>
 
-#include "./collider.h"
-#include "./parallel.h"
-#include "./utils.h"
+#include "manifold/manifold.h"
 #include "manifold/optional_assert.h"
+#include "parallel.h"
+#include "tree2d.h"
+#include "utils.h"
+
+#ifdef MANIFOLD_DEBUG
+#include <iomanip>
+#endif
 
 namespace {
 using namespace manifold;
 
-static ExecutionParams params;
+constexpr int TRIANGULATOR_VERBOSE_LEVEL = 2;
 
 constexpr double kBest = -std::numeric_limits<double>::infinity();
 
@@ -40,9 +45,9 @@ struct PolyEdge {
   int startVert, endVert;
 };
 
-std::vector<PolyEdge> Polygons2Edges(const PolygonsIdx &polys) {
+std::vector<PolyEdge> Polygons2Edges(const PolygonsIdx& polys) {
   std::vector<PolyEdge> halfedges;
-  for (const auto &poly : polys) {
+  for (const auto& poly : polys) {
     for (size_t i = 1; i < poly.size(); ++i) {
       halfedges.push_back({poly[i - 1].idx, poly[i].idx});
     }
@@ -51,10 +56,10 @@ std::vector<PolyEdge> Polygons2Edges(const PolygonsIdx &polys) {
   return halfedges;
 }
 
-std::vector<PolyEdge> Triangles2Edges(const std::vector<ivec3> &triangles) {
+std::vector<PolyEdge> Triangles2Edges(const std::vector<ivec3>& triangles) {
   std::vector<PolyEdge> halfedges;
   halfedges.reserve(triangles.size() * 3);
-  for (const ivec3 &tri : triangles) {
+  for (const ivec3& tri : triangles) {
     halfedges.push_back({tri[0], tri[1]});
     halfedges.push_back({tri[1], tri[2]});
     halfedges.push_back({tri[2], tri[0]});
@@ -62,7 +67,7 @@ std::vector<PolyEdge> Triangles2Edges(const std::vector<ivec3> &triangles) {
   return halfedges;
 }
 
-void CheckTopology(const std::vector<PolyEdge> &halfedges) {
+void CheckTopology(const std::vector<PolyEdge>& halfedges) {
   DEBUG_ASSERT(halfedges.size() % 2 == 0, topologyErr,
                "Odd number of halfedges.");
   size_t n_edges = halfedges.size() / 2;
@@ -83,8 +88,8 @@ void CheckTopology(const std::vector<PolyEdge> &halfedges) {
   backward.resize(n_edges);
 
   std::for_each(backward.begin(), backward.end(),
-                [](PolyEdge &e) { std::swap(e.startVert, e.endVert); });
-  auto cmp = [](const PolyEdge &a, const PolyEdge &b) {
+                [](PolyEdge& e) { std::swap(e.startVert, e.endVert); });
+  auto cmp = [](const PolyEdge& a, const PolyEdge& b) {
     return a.startVert < b.startVert ||
            (a.startVert == b.startVert && a.endVert < b.endVert);
   };
@@ -97,8 +102,8 @@ void CheckTopology(const std::vector<PolyEdge> &halfedges) {
   }
 }
 
-void CheckTopology(const std::vector<ivec3> &triangles,
-                   const PolygonsIdx &polys) {
+void CheckTopology(const std::vector<ivec3>& triangles,
+                   const PolygonsIdx& polys) {
   std::vector<PolyEdge> halfedges = Triangles2Edges(triangles);
   std::vector<PolyEdge> openEdges = Polygons2Edges(polys);
   for (PolyEdge e : openEdges) {
@@ -107,23 +112,24 @@ void CheckTopology(const std::vector<ivec3> &triangles,
   CheckTopology(halfedges);
 }
 
-void CheckGeometry(const std::vector<ivec3> &triangles,
-                   const PolygonsIdx &polys, double epsilon) {
+void CheckGeometry(const std::vector<ivec3>& triangles,
+                   const PolygonsIdx& polys, double epsilon) {
   std::unordered_map<int, vec2> vertPos;
-  for (const auto &poly : polys) {
+  for (const auto& poly : polys) {
     for (size_t i = 0; i < poly.size(); ++i) {
       vertPos[poly[i].idx] = poly[i].pos;
     }
   }
   DEBUG_ASSERT(std::all_of(triangles.begin(), triangles.end(),
-                           [&vertPos, epsilon](const ivec3 &tri) {
+                           [&vertPos, epsilon](const ivec3& tri) {
                              return CCW(vertPos[tri[0]], vertPos[tri[1]],
                                         vertPos[tri[2]], epsilon) >= 0;
                            }),
                geometryErr, "triangulation is not entirely CCW!");
 }
 
-void Dump(const PolygonsIdx &polys, double epsilon) {
+void Dump(const PolygonsIdx& polys, double epsilon) {
+  std::cout << std::setprecision(19);
   std::cout << "Polygon 0 " << epsilon << " " << polys.size() << std::endl;
   for (auto poly : polys) {
     std::cout << poly.size() << std::endl;
@@ -141,12 +147,18 @@ void Dump(const PolygonsIdx &polys, double epsilon) {
   }
 }
 
-void PrintFailure(const std::exception &e, const PolygonsIdx &polys,
-                  std::vector<ivec3> &triangles, double epsilon) {
+std::atomic<int> numFailures(0);
+
+void PrintFailure(const std::exception& e, const PolygonsIdx& polys,
+                  std::vector<ivec3>& triangles, double epsilon) {
+  // only print the first triangulation failure
+  if (numFailures.fetch_add(1) != 0) return;
+  std::cout << std::setprecision(19);
   std::cout << "-----------------------------------" << std::endl;
   std::cout << "Triangulation failed! Precision = " << epsilon << std::endl;
   std::cout << e.what() << std::endl;
-  if (triangles.size() > 1000 && !PolygonParams().verbose) {
+  if (triangles.size() > 1000 &&
+      ManifoldParams().verbose < TRIANGULATOR_VERBOSE_LEVEL) {
     std::cout << "Output truncated due to producing " << triangles.size()
               << " triangles." << std::endl;
     return;
@@ -159,8 +171,9 @@ void PrintFailure(const std::exception &e, const PolygonsIdx &polys,
   }
 }
 
-#define PRINT(msg) \
-  if (params.verbose) std::cout << msg << std::endl;
+#define PRINT(msg)                                            \
+  if (ManifoldParams().verbose >= TRIANGULATOR_VERBOSE_LEVEL) \
+    std::cout << msg << std::endl;
 #else
 #define PRINT(msg)
 #endif
@@ -170,8 +183,8 @@ void PrintFailure(const std::exception &e, const PolygonsIdx &polys,
  * Exactly colinear edges and zero-length edges are treated conservatively as
  * reflex. Does not check for overlaps.
  */
-bool IsConvex(const PolygonsIdx &polys, double epsilon) {
-  for (const SimplePolygonIdx &poly : polys) {
+bool IsConvex(const PolygonsIdx& polys, double epsilon) {
+  for (const SimplePolygonIdx& poly : polys) {
     const vec2 firstEdge = poly[0].pos - poly[poly.size() - 1].pos;
     // Zero-length edges comes out NaN, which won't trip the early return, but
     // it's okay because that zero-length edge will also get tested
@@ -193,14 +206,14 @@ bool IsConvex(const PolygonsIdx &polys, double epsilon) {
  * Triangulates a set of convex polygons by alternating instead of a fan, to
  * avoid creating high-degree vertices.
  */
-std::vector<ivec3> TriangulateConvex(const PolygonsIdx &polys) {
+std::vector<ivec3> TriangulateConvex(const PolygonsIdx& polys) {
   const size_t numTri = manifold::transform_reduce(
       polys.begin(), polys.end(), 0_uz,
       [](size_t a, size_t b) { return a + b; },
-      [](const SimplePolygonIdx &poly) { return poly.size() - 2; });
+      [](const SimplePolygonIdx& poly) { return poly.size() - 2; });
   std::vector<ivec3> triangles;
   triangles.reserve(numTri);
-  for (const SimplePolygonIdx &poly : polys) {
+  for (const SimplePolygonIdx& poly : polys) {
     size_t i = 0;
     size_t k = poly.size() - 1;
     bool right = true;
@@ -222,9 +235,7 @@ std::vector<ivec3> TriangulateConvex(const PolygonsIdx &polys) {
  * Ear-clipping triangulator based on David Eberly's approach from Geometric
  * Tools, but adjusted to handle epsilon-valid polygons, and including a
  * fallback that ensures a manifold triangulation even for overlapping polygons.
- * This is an O(n^2) algorithm, but hopefully this is not a big problem as the
- * number of edges in a given polygon is generally much less than the number of
- * triangles in a mesh, and relatively few faces even need triangulation.
+ * This is reduced from an O(n^2) algorithm by means of our BVH Collider.
  *
  * The main adjustments for robustness involve clipping the sharpest ears first
  * (a known technique to get higher triangle quality), and doing an exhaustive
@@ -234,11 +245,11 @@ std::vector<ivec3> TriangulateConvex(const PolygonsIdx &polys) {
 
 class EarClip {
  public:
-  EarClip(const PolygonsIdx &polys, double epsilon) : epsilon_(epsilon) {
+  EarClip(const PolygonsIdx& polys, double epsilon) : epsilon_(epsilon) {
     ZoneScoped;
 
     size_t numVert = 0;
-    for (const SimplePolygonIdx &poly : polys) {
+    for (const SimplePolygonIdx& poly : polys) {
       numVert += poly.size();
     }
     polygon_.reserve(numVert + 2 * polys.size());
@@ -272,19 +283,19 @@ class EarClip {
 
  private:
   struct Vert;
-  typedef std::vector<Vert>::iterator VertItr;
-  typedef std::vector<Vert>::const_iterator VertItrC;
+  using VertItr = std::vector<Vert>::iterator;
+  using VertItrC = std::vector<Vert>::const_iterator;
   struct MaxX {
-    bool operator()(const VertItr &a, const VertItr &b) const {
+    bool operator()(const VertItr& a, const VertItr& b) const {
       return a->pos.x > b->pos.x;
     }
   };
   struct MinCost {
-    bool operator()(const VertItr &a, const VertItr &b) const {
+    bool operator()(const VertItr& a, const VertItr& b) const {
       return a->cost < b->cost;
     }
   };
-  typedef std::set<VertItr, MinCost>::iterator qItr;
+  using qItr = std::set<VertItr, MinCost>::iterator;
 
   // The flat list where all the Verts are stored. Not used much for traversal.
   std::vector<Vert> polygon_;
@@ -306,9 +317,8 @@ class EarClip {
   double epsilon_;
 
   struct IdxCollider {
-    Collider collider;
+    Vec<PolyVert> points;
     std::vector<VertItr> itr;
-    SparseIndices ind;
   };
 
   // A circularly-linked list representing the polygon(s) that still need to be
@@ -399,20 +409,9 @@ class EarClip {
       return true;
     }
 
-    // A major key to robustness is to only clip convex ears, but this is
-    // difficult to determine when an edge is folded back on itself. This
-    // function walks down the kinks in a degenerate portion of a polygon until
-    // it finds a clear geometric result. In the vast majority of cases the loop
-    // will only need one or two iterations.
+    // Returns true for convex or colinear ears.
     bool IsConvex(double epsilon) const {
-      const int convexity = CCW(left->pos, pos, right->pos, epsilon);
-      if (convexity != 0) {
-        return convexity > 0;
-      }
-      if (la::dot(left->pos - pos, right->pos - pos) <= 0) {
-        return true;
-      }
-      return left->InsideEdge(left->right, epsilon, true);
+      return CCW(left->pos, pos, right->pos, epsilon) >= 0;
     }
 
     // Subtly different from !IsConvex because IsConvex will return true for
@@ -489,7 +488,7 @@ class EarClip {
     // values < -epsilon so they will never affect validity. The first
     // totalCost is designed to give priority to sharper angles. Any cost < (-1
     // - epsilon) has satisfied the Delaunay condition.
-    double EarCost(double epsilon, IdxCollider &collider) const {
+    double EarCost(double epsilon, IdxCollider& collider) const {
       vec2 openSide = left->pos - right->pos;
       const vec2 center = 0.5 * (left->pos + right->pos);
       const double scale = 4 / la::dot(openSide, openSide);
@@ -502,38 +501,32 @@ class EarClip {
         return totalCost;
       }
 
-      Box earBox = Box{vec3(center.x - radius, center.y - radius, 0),
-                       vec3(center.x + radius, center.y + radius, 0)};
-      earBox.Union(vec3(pos, 0));
-      collider.collider.Collisions(VecView<const Box>(&earBox, 1),
-                                   collider.ind);
+      Rect earBox = Rect(vec2(center.x - radius, center.y - radius),
+                         vec2(center.x + radius, center.y + radius));
+      earBox.Union(pos);
+      earBox.min -= epsilon;
+      earBox.max += epsilon;
 
       const int lid = left->mesh_idx;
       const int rid = right->mesh_idx;
-
-      totalCost = transform_reduce(
-          countAt(0), countAt(collider.ind.size()), totalCost,
-          [](double a, double b) { return std::max(a, b); },
-          [&](size_t i) {
-            const VertItr test = collider.itr[collider.ind.Get(i, true)];
-            if (!Clipped(test) && test->mesh_idx != mesh_idx &&
-                test->mesh_idx != lid &&
-                test->mesh_idx != rid) {  // Skip duplicated verts
-              double cost = Cost(test, openSide, epsilon);
-              if (cost < -epsilon) {
-                cost = DelaunayCost(test->pos - center, scale, epsilon);
-              }
-              return cost;
-            }
-            return std::numeric_limits<double>::lowest();
-          });
-      collider.ind.Clear();
+      QueryTwoDTree(collider.points, earBox, [&](PolyVert point) {
+        const VertItr test = collider.itr[point.idx];
+        if (!Clipped(test) && test->mesh_idx != mesh_idx &&
+            test->mesh_idx != lid &&
+            test->mesh_idx != rid) {  // Skip duplicated verts
+          double cost = Cost(test, openSide, epsilon);
+          if (cost < -epsilon) {
+            cost = DelaunayCost(test->pos - center, scale, epsilon);
+          }
+          if (cost > totalCost) totalCost = cost;
+        }
+      });
       return totalCost;
     }
 
     void PrintVert() const {
 #ifdef MANIFOLD_DEBUG
-      if (!params.verbose) return;
+      if (ManifoldParams().verbose < TRIANGULATOR_VERBOSE_LEVEL) return;
       std::cout << "vert: " << mesh_idx << ", left: " << left->mesh_idx
                 << ", right: " << right->mesh_idx << ", cost: " << cost
                 << std::endl;
@@ -603,8 +596,7 @@ class EarClip {
 
   // If an ear will make a degenerate triangle, clip it early to avoid
   // difficulty in key-holing. This function is recursive, as the process of
-  // clipping may cause the neighbors to degenerate. Reflex degenerates *must
-  // not* be clipped, unless they have a short edge.
+  // clipping may cause the neighbors to degenerate.
   void ClipIfDegenerate(VertItr ear) {
     if (Clipped(ear)) {
       return;
@@ -614,8 +606,7 @@ class EarClip {
     }
     if (ear->IsShort(epsilon_) ||
         (CCW(ear->left->pos, ear->pos, ear->right->pos, epsilon_) == 0 &&
-         la::dot(ear->left->pos - ear->pos, ear->right->pos - ear->pos) > 0 &&
-         ear->IsConvex(epsilon_))) {
+         la::dot(ear->left->pos - ear->pos, ear->right->pos - ear->pos) > 0)) {
       ClipEar(ear);
       ClipIfDegenerate(ear->left);
       ClipIfDegenerate(ear->right);
@@ -623,11 +614,18 @@ class EarClip {
   }
 
   // Build the circular list polygon structures.
-  std::vector<VertItr> Initialize(const PolygonsIdx &polys) {
+  std::vector<VertItr> Initialize(const PolygonsIdx& polys) {
     std::vector<VertItr> starts;
-    for (const SimplePolygonIdx &poly : polys) {
+    const auto invalidItr = polygon_.begin();
+    for (const SimplePolygonIdx& poly : polys) {
       auto vert = poly.begin();
-      polygon_.push_back({vert->idx, 0.0, earsQueue_.end(), vert->pos});
+      polygon_.push_back({vert->idx,
+                          0.0,
+                          earsQueue_.end(),
+                          vert->pos,
+                          {0, 0},
+                          invalidItr,
+                          invalidItr});
       const VertItr first = std::prev(polygon_.end());
 
       bBox_.Union(first->pos);
@@ -639,7 +637,13 @@ class EarClip {
       for (++vert; vert != poly.end(); ++vert) {
         bBox_.Union(vert->pos);
 
-        polygon_.push_back({vert->idx, 0.0, earsQueue_.end(), vert->pos});
+        polygon_.push_back({vert->idx,
+                            0.0,
+                            earsQueue_.end(),
+                            vert->pos,
+                            {0, 0},
+                            invalidItr,
+                            invalidItr});
         VertItr next = std::prev(polygon_.end());
 
         Link(last, next);
@@ -740,7 +744,7 @@ class EarClip {
     JoinPolygons(start, connector);
 
 #ifdef MANIFOLD_DEBUG
-    if (params.verbose) {
+    if (ManifoldParams().verbose >= TRIANGULATOR_VERBOSE_LEVEL) {
       std::cout << "connected " << start->mesh_idx << " to "
                 << connector->mesh_idx << std::endl;
     }
@@ -767,7 +771,8 @@ class EarClip {
           above * CCW(start->pos, vert->pos, connector->pos, epsilon_);
       if (vert->pos.x > start->pos.x - epsilon_ &&
           vert->pos.y * above > start->pos.y * above - epsilon_ &&
-          (inside > 0 || (inside == 0 && vert->pos.x < connector->pos.x)) &&
+          (inside > 0 || (inside == 0 && vert->pos.x < connector->pos.x &&
+                          vert->pos.y * above < connector->pos.y * above)) &&
           vert->InsideEdge(edge, epsilon_, true) && vert->IsReflex(epsilon_)) {
         connector = vert;
       }
@@ -803,7 +808,7 @@ class EarClip {
 
   // Recalculate the cost of the Vert v ear, updating it in the queue by
   // removing and reinserting it.
-  void ProcessEar(VertItr v, IdxCollider &collider) {
+  void ProcessEar(VertItr v, IdxCollider& collider) {
     if (v->ear != earsQueue_.end()) {
       earsQueue_.erase(v->ear);
       v->ear = earsQueue_.end();
@@ -823,35 +828,16 @@ class EarClip {
   // epsilon_. Each ear uses this BVH to quickly find a subset of vertices to
   // check for cost.
   IdxCollider VertCollider(VertItr start) const {
-    Vec<Box> vertBox;
-    Vec<uint32_t> vertMorton;
+    ZoneScoped;
     std::vector<VertItr> itr;
-    const Box box(vec3(bBox_.min, 0), vec3(bBox_.max, 0));
-
-    Loop(start, [&vertBox, &vertMorton, &itr, &box, this](VertItr v) {
+    Vec<PolyVert> points;
+    Loop(start, [&itr, &points](VertItr v) {
+      points.push_back({v->pos, static_cast<int>(itr.size())});
       itr.push_back(v);
-      const vec3 pos(v->pos, 0);
-      vertBox.push_back({pos - epsilon_, pos + epsilon_});
-      vertMorton.push_back(Collider::MortonCode(pos, box));
     });
 
-    if (itr.empty()) {
-      return {Collider(), itr};
-    }
-
-    const int numVert = itr.size();
-    Vec<int> vertNew2Old(numVert);
-    sequence(vertNew2Old.begin(), vertNew2Old.end());
-
-    stable_sort(vertNew2Old.begin(), vertNew2Old.end(),
-                [&vertMorton](const int a, const int b) {
-                  return vertMorton[a] < vertMorton[b];
-                });
-    Permute(vertMorton, vertNew2Old);
-    Permute(vertBox, vertNew2Old);
-    Permute(itr, vertNew2Old);
-
-    return {Collider(vertBox, vertMorton), itr};
+    BuildTwoDTree(points);
+    return {std::move(points), std::move(itr)};
   }
 
   // The main ear-clipping loop. This is called once for each simple polygon -
@@ -907,7 +893,7 @@ class EarClip {
 
   void Dump(VertItrC start) const {
 #ifdef MANIFOLD_DEBUG
-    if (!params.verbose) return;
+    if (ManifoldParams().verbose < TRIANGULATOR_VERBOSE_LEVEL) return;
     VertItrC v = start;
     std::cout << "show(array([" << std::setprecision(15) << std::endl;
     do {
@@ -944,16 +930,21 @@ namespace manifold {
  * references back to the original vertices.
  * @param epsilon The value of &epsilon;, bounding the uncertainty of the
  * input.
+ * @param allowConvex If true (default), the triangulator will use a fast
+ * triangulation if the input is convex, falling back to ear-clipping if not.
+ * The triangle quality may be lower, so set to false to disable this
+ * optimization.
  * @return std::vector<ivec3> The triangles, referencing the original
  * vertex indicies.
  */
-std::vector<ivec3> TriangulateIdx(const PolygonsIdx &polys, double epsilon) {
+std::vector<ivec3> TriangulateIdx(const PolygonsIdx& polys, double epsilon,
+                                  bool allowConvex) {
   std::vector<ivec3> triangles;
   double updatedEpsilon = epsilon;
 #ifdef MANIFOLD_DEBUG
   try {
 #endif
-    if (IsConvex(polys, epsilon)) {  // fast path
+    if (allowConvex && IsConvex(polys, epsilon)) {  // fast path
       triangles = TriangulateConvex(polys);
     } else {
       EarClip triangulator(polys, epsilon);
@@ -961,18 +952,18 @@ std::vector<ivec3> TriangulateIdx(const PolygonsIdx &polys, double epsilon) {
       updatedEpsilon = triangulator.GetPrecision();
     }
 #ifdef MANIFOLD_DEBUG
-    if (params.intermediateChecks) {
+    if (ManifoldParams().intermediateChecks) {
       CheckTopology(triangles, polys);
-      if (!params.processOverlaps) {
+      if (!ManifoldParams().processOverlaps) {
         CheckGeometry(triangles, polys, 2 * updatedEpsilon);
       }
     }
-  } catch (const geometryErr &e) {
-    if (!params.suppressErrors) {
+  } catch (const geometryErr& e) {
+    if (!ManifoldParams().suppressErrors) {
       PrintFailure(e, polys, triangles, updatedEpsilon);
     }
     throw;
-  } catch (const std::exception &e) {
+  } catch (const std::exception& e) {
     PrintFailure(e, polys, triangles, updatedEpsilon);
     throw;
   }
@@ -989,22 +980,25 @@ std::vector<ivec3> TriangulateIdx(const PolygonsIdx &polys, double epsilon) {
  * polygons and/or holes.
  * @param epsilon The value of &epsilon;, bounding the uncertainty of the
  * input.
+ * @param allowConvex If true (default), the triangulator will use a fast
+ * triangulation if the input is convex, falling back to ear-clipping if not.
+ * The triangle quality may be lower, so set to false to disable this
+ * optimization.
  * @return std::vector<ivec3> The triangles, referencing the original
  * polygon points in order.
  */
-std::vector<ivec3> Triangulate(const Polygons &polygons, double epsilon) {
+std::vector<ivec3> Triangulate(const Polygons& polygons, double epsilon,
+                               bool allowConvex) {
   int idx = 0;
   PolygonsIdx polygonsIndexed;
-  for (const auto &poly : polygons) {
+  for (const auto& poly : polygons) {
     SimplePolygonIdx simpleIndexed;
-    for (const vec2 &polyVert : poly) {
+    for (const vec2& polyVert : poly) {
       simpleIndexed.push_back({polyVert, idx++});
     }
     polygonsIndexed.push_back(simpleIndexed);
   }
-  return TriangulateIdx(polygonsIndexed, epsilon);
+  return TriangulateIdx(polygonsIndexed, epsilon, allowConvex);
 }
-
-ExecutionParams &PolygonParams() { return params; }
 
 }  // namespace manifold

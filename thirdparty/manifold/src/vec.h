@@ -21,8 +21,8 @@
 #endif
 #include <vector>
 
-#include "./parallel.h"
 #include "manifold/vec_view.h"
+#include "parallel.h"
 
 namespace manifold {
 
@@ -45,40 +45,40 @@ class Vec : public VecView<T> {
   // Note that the vector constructed with this constructor will contain
   // uninitialized memory. Please specify `val` if you need to make sure that
   // the data is initialized.
-  Vec(size_t size) {
+  Vec(size_t size) : VecView<T>() {
     reserve(size);
     this->size_ = size;
   }
 
-  Vec(size_t size, T val) { resize(size, val); }
+  Vec(size_t size, T val) : VecView<T>() { resize(size, val); }
 
-  Vec(const Vec<T> &vec) { *this = Vec(vec.view()); }
+  Vec(const Vec<T>& vec) : VecView<T>() { *this = Vec(vec.view()); }
 
-  Vec(const VecView<const T> &vec) {
+  Vec(const VecView<const T>& vec) : VecView<T>() {
     this->size_ = vec.size();
     this->capacity_ = this->size_;
     auto policy = autoPolicy(this->size_);
     if (this->size_ != 0) {
-      this->ptr_ = reinterpret_cast<T *>(malloc(this->size_ * sizeof(T)));
+      this->ptr_ = reinterpret_cast<T*>(malloc(this->size_ * sizeof(T)));
       ASSERT(this->ptr_ != nullptr, std::bad_alloc());
       TracyAllocS(this->ptr_, this->size_ * sizeof(T), 3);
       copy(policy, vec.begin(), vec.end(), this->ptr_);
     }
   }
 
-  Vec(const std::vector<T> &vec) {
+  Vec(const std::vector<T>& vec) : VecView<T>() {
     this->size_ = vec.size();
     this->capacity_ = this->size_;
     auto policy = autoPolicy(this->size_);
     if (this->size_ != 0) {
-      this->ptr_ = reinterpret_cast<T *>(malloc(this->size_ * sizeof(T)));
+      this->ptr_ = reinterpret_cast<T*>(malloc(this->size_ * sizeof(T)));
       ASSERT(this->ptr_ != nullptr, std::bad_alloc());
       TracyAllocS(this->ptr_, this->size_ * sizeof(T), 3);
       copy(policy, vec.begin(), vec.end(), this->ptr_);
     }
   }
 
-  Vec(Vec<T> &&vec) {
+  Vec(Vec<T>&& vec) : VecView<T>() {
     this->ptr_ = vec.ptr_;
     this->size_ = vec.size_;
     capacity_ = vec.capacity_;
@@ -100,7 +100,7 @@ class Vec : public VecView<T> {
     capacity_ = 0;
   }
 
-  Vec<T> &operator=(const Vec<T> &other) {
+  Vec<T>& operator=(const Vec<T>& other) {
     if (&other == this) return *this;
     if (this->ptr_ != nullptr) {
       TracyFreeS(this->ptr_, 3);
@@ -109,7 +109,7 @@ class Vec : public VecView<T> {
     this->size_ = other.size_;
     capacity_ = other.size_;
     if (this->size_ != 0) {
-      this->ptr_ = reinterpret_cast<T *>(malloc(this->size_ * sizeof(T)));
+      this->ptr_ = reinterpret_cast<T*>(malloc(this->size_ * sizeof(T)));
       ASSERT(this->ptr_ != nullptr, std::bad_alloc());
       TracyAllocS(this->ptr_, this->size_ * sizeof(T), 3);
       manifold::copy(other.begin(), other.end(), this->ptr_);
@@ -117,7 +117,7 @@ class Vec : public VecView<T> {
     return *this;
   }
 
-  Vec<T> &operator=(Vec<T> &&other) {
+  Vec<T>& operator=(Vec<T>&& other) {
     if (&other == this) return *this;
     if (this->ptr_ != nullptr) {
       TracyFreeS(this->ptr_, 3);
@@ -134,38 +134,37 @@ class Vec : public VecView<T> {
 
   operator VecView<T>() const { return {this->ptr_, this->size_}; }
 
-  void swap(Vec<T> &other) {
+  void swap(Vec<T>& other) {
     std::swap(this->ptr_, other.ptr_);
     std::swap(this->size_, other.size_);
     std::swap(capacity_, other.capacity_);
   }
 
-  inline void push_back(const T &val, bool seq = false) {
+  inline void push_back(const T& val) {
     if (this->size_ >= capacity_) {
       // avoid dangling pointer in case val is a reference of our array
       T val_copy = val;
-      reserve(capacity_ == 0 ? 128 : capacity_ * 2, seq);
+      reserve(capacity_ == 0 ? 128 : capacity_ * 2);
       this->ptr_[this->size_++] = val_copy;
       return;
     }
     this->ptr_[this->size_++] = val;
   }
 
-  inline void extend(size_t n, bool seq = false) {
+  inline void extend(size_t n) {
     if (this->size_ + n >= capacity_)
-      reserve(capacity_ == 0 ? 128 : std::max(capacity_ * 2, this->size_ + n),
-              seq);
+      reserve(capacity_ == 0 ? 128 : std::max(capacity_ * 2, this->size_ + n));
     this->size_ += n;
   }
 
-  void reserve(size_t n, bool seq = false) {
+  void reserve(size_t n) {
     if (n > capacity_) {
-      T *newBuffer = reinterpret_cast<T *>(malloc(n * sizeof(T)));
+      T* newBuffer = reinterpret_cast<T*>(malloc(n * sizeof(T)));
       ASSERT(newBuffer != nullptr, std::bad_alloc());
       TracyAllocS(newBuffer, n * sizeof(T), 3);
       if (this->size_ > 0)
-        manifold::copy(seq ? ExecutionPolicy::Seq : autoPolicy(this->size_),
-                       this->ptr_, this->ptr_ + this->size_, newBuffer);
+        manifold::copy(autoPolicy(this->size_), this->ptr_,
+                       this->ptr_ + this->size_, newBuffer);
       if (this->ptr_ != nullptr) {
         TracyFreeS(this->ptr_, 3);
         free(this->ptr_);
@@ -176,7 +175,7 @@ class Vec : public VecView<T> {
   }
 
   void resize(size_t newSize, T val = T()) {
-    bool shrink = this->size_ > 2 * newSize;
+    bool shrink = this->size_ > 2 * newSize && this->size_ > 16;
     reserve(newSize);
     if (this->size_ < newSize) {
       fill(autoPolicy(newSize - this->size_), this->ptr_ + this->size_,
@@ -186,7 +185,14 @@ class Vec : public VecView<T> {
     if (shrink) shrink_to_fit();
   }
 
-  void pop_back() { resize(this->size_ - 1); }
+  void resize_nofill(size_t newSize) {
+    bool shrink = this->size_ > 2 * newSize && this->size_ > 16;
+    reserve(newSize);
+    this->size_ = newSize;
+    if (shrink) shrink_to_fit();
+  }
+
+  void pop_back() { resize_nofill(this->size_ - 1); }
 
   void clear(bool shrink = true) {
     this->size_ = 0;
@@ -194,9 +200,9 @@ class Vec : public VecView<T> {
   }
 
   void shrink_to_fit() {
-    T *newBuffer = nullptr;
+    T* newBuffer = nullptr;
     if (this->size_ > 0) {
-      newBuffer = reinterpret_cast<T *>(malloc(this->size_ * sizeof(T)));
+      newBuffer = reinterpret_cast<T*>(malloc(this->size_ * sizeof(T)));
       ASSERT(newBuffer != nullptr, std::bad_alloc());
       TracyAllocS(newBuffer, this->size_ * sizeof(T), 3);
       manifold::copy(this->ptr_, this->ptr_ + this->size_, newBuffer);

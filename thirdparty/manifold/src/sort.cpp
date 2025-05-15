@@ -15,8 +15,9 @@
 #include <atomic>
 #include <set>
 
-#include "./impl.h"
-#include "./parallel.h"
+#include "impl.h"
+#include "parallel.h"
+#include "shared.h"
 
 namespace {
 using namespace manifold;
@@ -30,37 +31,6 @@ uint32_t MortonCode(vec3 position, Box bBox) {
 
   return Collider::MortonCode(position, bBox);
 }
-
-struct Reindex {
-  VecView<const int> indexInv;
-
-  void operator()(Halfedge& edge) {
-    if (edge.startVert < 0) return;
-    edge.startVert = indexInv[edge.startVert];
-    edge.endVert = indexInv[edge.endVert];
-  }
-};
-
-struct MarkProp {
-  VecView<int> keep;
-
-  void operator()(ivec3 triProp) {
-    for (const int i : {0, 1, 2}) {
-      reinterpret_cast<std::atomic<int>*>(&keep[triProp[i]])
-          ->store(1, std::memory_order_relaxed);
-    }
-  }
-};
-
-struct ReindexProps {
-  VecView<const int> old2new;
-
-  void operator()(ivec3& triProp) {
-    for (const int i : {0, 1, 2}) {
-      triProp[i] = old2new[triProp[i]];
-    }
-  }
-};
 
 struct ReindexFace {
   VecView<Halfedge> halfedge;
@@ -180,17 +150,19 @@ bool MergeMeshGLP(MeshGLP<Precision, I>& mesh) {
   Permute(vertMorton, vertNew2Old);
   Permute(vertBox, vertNew2Old);
   Permute(openVerts, vertNew2Old);
-  Collider collider(vertBox, vertMorton);
-  SparseIndices toMerge = collider.Collisions<true>(vertBox.cview());
 
+  Collider collider(vertBox, vertMorton);
   UnionFind<> uf(numVert);
+
+  auto f = [&uf, &openVerts](int a, int b) {
+    return uf.unionXY(openVerts[a], openVerts[b]);
+  };
+  auto recorder = MakeSimpleRecorder(f);
+  collider.Collisions<true>(vertBox.cview(), recorder, false);
+
   for (size_t i = 0; i < mesh.mergeFromVert.size(); ++i) {
     uf.unionXY(static_cast<int>(mesh.mergeFromVert[i]),
                static_cast<int>(mesh.mergeToVert[i]));
-  }
-  for (size_t i = 0; i < toMerge.size(); ++i) {
-    uf.unionXY(openVerts[toMerge.Get(i, false)],
-               openVerts[toMerge.Get(i, true)]);
   }
 
   mesh.mergeToVert.clear();
@@ -221,7 +193,7 @@ void Manifold::Impl::Finish() {
   SetEpsilon(epsilon_);
   if (!bBox_.IsFinite()) {
     // Decimated out of existence - early out.
-    MarkFailure(Error::NoError);
+    MakeEmpty(Error::NoError);
     return;
   }
 
@@ -237,31 +209,33 @@ void Manifold::Impl::Finish() {
                "Not an even number of faces after sorting faces!");
 
 #ifdef MANIFOLD_DEBUG
-  auto MaxOrMinus = [](int a, int b) {
-    return std::min(a, b) < 0 ? -1 : std::max(a, b);
-  };
-  int face = 0;
-  Halfedge extrema = {0, 0, 0};
-  for (size_t i = 0; i < halfedge_.size(); i++) {
-    Halfedge e = halfedge_[i];
-    if (!e.IsForward()) std::swap(e.startVert, e.endVert);
-    extrema.startVert = std::min(extrema.startVert, e.startVert);
-    extrema.endVert = std::min(extrema.endVert, e.endVert);
-    extrema.pairedHalfedge =
-        MaxOrMinus(extrema.pairedHalfedge, e.pairedHalfedge);
-    face = MaxOrMinus(face, i / 3);
+  if (ManifoldParams().intermediateChecks) {
+    auto MaxOrMinus = [](int a, int b) {
+      return std::min(a, b) < 0 ? -1 : std::max(a, b);
+    };
+    int face = 0;
+    Halfedge extrema = {0, 0, 0};
+    for (size_t i = 0; i < halfedge_.size(); i++) {
+      Halfedge e = halfedge_[i];
+      if (!e.IsForward()) std::swap(e.startVert, e.endVert);
+      extrema.startVert = std::min(extrema.startVert, e.startVert);
+      extrema.endVert = std::min(extrema.endVert, e.endVert);
+      extrema.pairedHalfedge =
+          MaxOrMinus(extrema.pairedHalfedge, e.pairedHalfedge);
+      face = MaxOrMinus(face, i / 3);
+    }
+    DEBUG_ASSERT(extrema.startVert >= 0, topologyErr,
+                 "Vertex index is negative!");
+    DEBUG_ASSERT(extrema.endVert < static_cast<int>(NumVert()), topologyErr,
+                 "Vertex index exceeds number of verts!");
+    DEBUG_ASSERT(extrema.pairedHalfedge >= 0, topologyErr,
+                 "Halfedge index is negative!");
+    DEBUG_ASSERT(extrema.pairedHalfedge < 2 * static_cast<int>(NumEdge()),
+                 topologyErr, "Halfedge index exceeds number of halfedges!");
+    DEBUG_ASSERT(face >= 0, topologyErr, "Face index is negative!");
+    DEBUG_ASSERT(face < static_cast<int>(NumTri()), topologyErr,
+                 "Face index exceeds number of faces!");
   }
-  DEBUG_ASSERT(extrema.startVert >= 0, topologyErr,
-               "Vertex index is negative!");
-  DEBUG_ASSERT(extrema.endVert < static_cast<int>(NumVert()), topologyErr,
-               "Vertex index exceeds number of verts!");
-  DEBUG_ASSERT(extrema.pairedHalfedge >= 0, topologyErr,
-               "Halfedge index is negative!");
-  DEBUG_ASSERT(extrema.pairedHalfedge < 2 * static_cast<int>(NumEdge()),
-               topologyErr, "Halfedge index exceeds number of halfedges!");
-  DEBUG_ASSERT(face >= 0, topologyErr, "Face index is negative!");
-  DEBUG_ASSERT(face < static_cast<int>(NumTri()), topologyErr,
-               "Face index exceeds number of faces!");
 #endif
 
   DEBUG_ASSERT(meshRelation_.triRef.size() == NumTri() ||
@@ -301,11 +275,12 @@ void Manifold::Impl::SortVerts() {
 
   // Verts were flagged for removal with NaNs and assigned kNoCode to sort
   // them to the end, which allows them to be removed.
-  const auto newNumVert = std::find_if(vertNew2Old.begin(), vertNew2Old.end(),
-                                       [&vertMorton](const int vert) {
-                                         return vertMorton[vert] == kNoCode;
-                                       }) -
-                          vertNew2Old.begin();
+  const auto newNumVert =
+      std::lower_bound(vertNew2Old.begin(), vertNew2Old.end(), kNoCode,
+                       [&vertMorton](const int vert, const uint32_t val) {
+                         return vertMorton[vert] < val;
+                       }) -
+      vertNew2Old.begin();
 
   vertNew2Old.resize(newNumVert);
   Permute(vertPos_, vertNew2Old);
@@ -326,31 +301,41 @@ void Manifold::Impl::ReindexVerts(const Vec<int>& vertNew2Old,
   Vec<int> vertOld2New(oldNumVert);
   scatter(countAt(0), countAt(static_cast<int>(NumVert())), vertNew2Old.begin(),
           vertOld2New.begin());
+  const bool hasProp = NumProp() > 0;
   for_each(autoPolicy(oldNumVert, 1e5), halfedge_.begin(), halfedge_.end(),
-           Reindex({vertOld2New}));
+           [&vertOld2New, hasProp](Halfedge& edge) {
+             if (edge.startVert < 0) return;
+             edge.startVert = vertOld2New[edge.startVert];
+             edge.endVert = vertOld2New[edge.endVert];
+             if (!hasProp) {
+               edge.propVert = edge.startVert;
+             }
+           });
 }
 
 /**
- * Removes unreferenced property verts and reindexes triProperties.
+ * Removes unreferenced property verts and reindexes propVerts.
  */
 void Manifold::Impl::CompactProps() {
   ZoneScoped;
-  if (meshRelation_.numProp == 0) return;
+  if (numProp_ == 0) return;
 
-  const auto numVerts = meshRelation_.properties.size() / meshRelation_.numProp;
+  const int numProp = NumProp();
+  const auto numVerts = properties_.size() / numProp;
   Vec<int> keep(numVerts, 0);
   auto policy = autoPolicy(numVerts, 1e5);
 
-  for_each(policy, meshRelation_.triProperties.cbegin(),
-           meshRelation_.triProperties.cend(), MarkProp({keep}));
+  for_each(policy, halfedge_.cbegin(), halfedge_.cend(), [&keep](Halfedge h) {
+    reinterpret_cast<std::atomic<int>*>(&keep[h.propVert])
+        ->store(1, std::memory_order_relaxed);
+  });
   Vec<int> propOld2New(numVerts + 1, 0);
   inclusive_scan(keep.begin(), keep.end(), propOld2New.begin() + 1);
 
-  Vec<double> oldProp = meshRelation_.properties;
+  Vec<double> oldProp = properties_;
   const int numVertsNew = propOld2New[numVerts];
-  const int numProp = meshRelation_.numProp;
-  auto& properties = meshRelation_.properties;
-  properties.resize(numProp * numVertsNew);
+  auto& properties = properties_;
+  properties.resize_nofill(numProp * numVertsNew);
   for_each_n(
       policy, countAt(0), numVerts,
       [&properties, &oldProp, &propOld2New, &keep, &numProp](const int oldIdx) {
@@ -360,8 +345,10 @@ void Manifold::Impl::CompactProps() {
               oldProp[oldIdx * numProp + p];
         }
       });
-  for_each_n(policy, meshRelation_.triProperties.begin(), NumTri(),
-             ReindexProps({propOld2New}));
+  for_each(policy, halfedge_.begin(), halfedge_.end(),
+           [&propOld2New](Halfedge& edge) {
+             edge.propVert = propOld2New[edge.propVert];
+           });
 }
 
 /**
@@ -372,8 +359,9 @@ void Manifold::Impl::CompactProps() {
 void Manifold::Impl::GetFaceBoxMorton(Vec<Box>& faceBox,
                                       Vec<uint32_t>& faceMorton) const {
   ZoneScoped;
-  faceBox.resize(NumTri());
-  faceMorton.resize(NumTri());
+  // faceBox should be initialized
+  faceBox.resize(NumTri(), Box());
+  faceMorton.resize_nofill(NumTri());
   for_each_n(autoPolicy(NumTri(), 1e5), countAt(0), NumTri(),
              [this, &faceBox, &faceMorton](const int face) {
                // Removed tris are marked by all halfedges having pairedHalfedge
@@ -413,11 +401,12 @@ void Manifold::Impl::SortFaces(Vec<Box>& faceBox, Vec<uint32_t>& faceMorton) {
 
   // Tris were flagged for removal with pairedHalfedge = -1 and assigned kNoCode
   // to sort them to the end, which allows them to be removed.
-  const int newNumTri = std::find_if(faceNew2Old.begin(), faceNew2Old.end(),
-                                     [&faceMorton](const int face) {
-                                       return faceMorton[face] == kNoCode;
-                                     }) -
-                        faceNew2Old.begin();
+  const int newNumTri =
+      std::lower_bound(faceNew2Old.begin(), faceNew2Old.end(), kNoCode,
+                       [&faceMorton](const int face, const uint32_t val) {
+                         return faceMorton[face] < val;
+                       }) -
+      faceNew2Old.begin();
   faceNew2Old.resize(newNumTri);
 
   Permute(faceMorton, faceNew2Old);
@@ -435,8 +424,6 @@ void Manifold::Impl::GatherFaces(const Vec<int>& faceNew2Old) {
   const auto numTri = faceNew2Old.size();
   if (meshRelation_.triRef.size() == NumTri())
     Permute(meshRelation_.triRef, faceNew2Old);
-  if (meshRelation_.triProperties.size() == NumTri())
-    Permute(meshRelation_.triProperties, faceNew2Old);
   if (faceNormal_.size() == NumTri()) Permute(faceNormal_, faceNew2Old);
 
   Vec<Halfedge> oldHalfedge(std::move(halfedge_));
@@ -446,8 +433,9 @@ void Manifold::Impl::GatherFaces(const Vec<int>& faceNew2Old) {
   scatter(countAt(0_uz), countAt(numTri), faceNew2Old.begin(),
           faceOld2New.begin());
 
-  halfedge_.resize(3 * numTri);
-  if (oldHalfedgeTangent.size() != 0) halfedgeTangent_.resize(3 * numTri);
+  halfedge_.resize_nofill(3 * numTri);
+  if (oldHalfedgeTangent.size() != 0)
+    halfedgeTangent_.resize_nofill(3 * numTri);
   for_each_n(policy, countAt(0), numTri,
              ReindexFace({halfedge_, halfedgeTangent_, oldHalfedge,
                           oldHalfedgeTangent, faceNew2Old, faceOld2New}));
@@ -457,7 +445,7 @@ void Manifold::Impl::GatherFaces(const Impl& old, const Vec<int>& faceNew2Old) {
   ZoneScoped;
   const auto numTri = faceNew2Old.size();
 
-  meshRelation_.triRef.resize(numTri);
+  meshRelation_.triRef.resize_nofill(numTri);
   gather(faceNew2Old.begin(), faceNew2Old.end(),
          old.meshRelation_.triRef.begin(), meshRelation_.triRef.begin());
 
@@ -465,17 +453,13 @@ void Manifold::Impl::GatherFaces(const Impl& old, const Vec<int>& faceNew2Old) {
     meshRelation_.meshIDtransform[pair.first] = pair.second;
   }
 
-  if (old.meshRelation_.triProperties.size() > 0) {
-    meshRelation_.triProperties.resize(numTri);
-    gather(faceNew2Old.begin(), faceNew2Old.end(),
-           old.meshRelation_.triProperties.begin(),
-           meshRelation_.triProperties.begin());
-    meshRelation_.numProp = old.meshRelation_.numProp;
-    meshRelation_.properties = old.meshRelation_.properties;
+  if (old.NumProp() > 0) {
+    numProp_ = old.numProp_;
+    properties_ = old.properties_;
   }
 
   if (old.faceNormal_.size() == old.NumTri()) {
-    faceNormal_.resize(numTri);
+    faceNormal_.resize_nofill(numTri);
     gather(faceNew2Old.begin(), faceNew2Old.end(), old.faceNormal_.begin(),
            faceNormal_.begin());
   }
@@ -484,8 +468,9 @@ void Manifold::Impl::GatherFaces(const Impl& old, const Vec<int>& faceNew2Old) {
   scatter(countAt(0_uz), countAt(numTri), faceNew2Old.begin(),
           faceOld2New.begin());
 
-  halfedge_.resize(3 * numTri);
-  if (old.halfedgeTangent_.size() != 0) halfedgeTangent_.resize(3 * numTri);
+  halfedge_.resize_nofill(3 * numTri);
+  if (old.halfedgeTangent_.size() != 0)
+    halfedgeTangent_.resize_nofill(3 * numTri);
   for_each_n(autoPolicy(numTri, 1e5), countAt(0), numTri,
              ReindexFace({halfedge_, halfedgeTangent_, old.halfedge_,
                           old.halfedgeTangent_, faceNew2Old, faceOld2New}));
