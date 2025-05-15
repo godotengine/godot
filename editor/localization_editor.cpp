@@ -32,21 +32,24 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/translation_server.h"
+#include "editor/editor_locale_dialog.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/pot_generator.h"
-#include "scene/gui/control.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/tree.h"
+#include "scene/main/timer.h"
 
 void LocalizationEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			translation_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_delete));
-			translation_pot_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_pot_delete));
 			translation_pot_add_builtin->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot"));
+			translation_pot_exclude_prefix->set_text(GLOBAL_GET("internationalization/locale/translation_exclude_prefix"));
 
 			List<String> tfn;
 			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
@@ -400,6 +403,11 @@ void LocalizationEditor::_pot_add_builtin_toggled() {
 	ProjectSettings::get_singleton()->save();
 }
 
+void LocalizationEditor::_pot_prefix_changed() {
+	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_exclude_prefix", translation_pot_exclude_prefix->get_text());
+	ProjectSettings::get_singleton()->save();
+}
+
 void LocalizationEditor::_pot_generate(const String &p_file) {
 	EditorSettings::get_singleton()->set_project_metadata("pot_generator", "last_pot_path", p_file);
 	POTGenerator::get_singleton()->generate_pot(p_file);
@@ -652,6 +660,7 @@ LocalizationEditor::LocalizationEditor() {
 		translation_list = memnew(Tree);
 		translation_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		tmc->add_child(translation_list);
+		translation_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_delete));
 
 		locale_select = memnew(EditorLocaleDialog);
 		locale_select->connect("locale_selected", callable_mp(this, &LocalizationEditor::_translation_res_option_selected));
@@ -755,11 +764,35 @@ LocalizationEditor::LocalizationEditor() {
 		translation_pot_list = memnew(Tree);
 		translation_pot_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		tvb->add_child(translation_pot_list);
+		translation_pot_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_pot_delete));
+
+		HBoxContainer *config_hb = memnew(HBoxContainer);
+		tvb->add_child(config_hb);
 
 		translation_pot_add_builtin = memnew(CheckBox(TTR("Add Built-in Strings to POT")));
+		translation_pot_add_builtin->set_h_size_flags(SIZE_EXPAND_FILL);
 		translation_pot_add_builtin->set_tooltip_text(TTR("Add strings from built-in components such as certain Control nodes."));
 		translation_pot_add_builtin->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_add_builtin_toggled));
-		tvb->add_child(translation_pot_add_builtin);
+		config_hb->add_child(translation_pot_add_builtin);
+
+		{
+			Label *label = memnew(Label(TTRC("Exclude Prefix")));
+			label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+			label->set_h_size_flags(SIZE_EXPAND_FILL);
+			config_hb->add_child(label);
+		}
+
+		translation_pot_exclude_prefix = memnew(LineEdit);
+		translation_pot_exclude_prefix->set_tooltip_text(TTRC("Strings that begin with this prefix will not be added to POT."));
+		translation_pot_exclude_prefix->set_h_size_flags(SIZE_EXPAND_FILL);
+		config_hb->add_child(translation_pot_exclude_prefix);
+
+		translation_pot_exclude_prefix_debounce = memnew(Timer);
+		translation_pot_exclude_prefix_debounce->set_wait_time(0.5);
+		translation_pot_exclude_prefix_debounce->set_one_shot(true);
+		translation_pot_exclude_prefix->add_child(translation_pot_exclude_prefix_debounce);
+		translation_pot_exclude_prefix->connect("text_changed", callable_mp(translation_pot_exclude_prefix_debounce, &Timer::start).bind(-1).unbind(1));
+		translation_pot_exclude_prefix_debounce->connect("timeout", callable_mp(this, &LocalizationEditor::_pot_prefix_changed));
 
 		pot_generate_dialog = memnew(EditorFileDialog);
 		pot_generate_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
