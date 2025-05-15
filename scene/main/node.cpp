@@ -223,7 +223,7 @@ void Node::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {
-			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED && data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED_INCLUDING_ACCESSIBILITY) {
 				notification(NOTIFICATION_TRANSLATION_CHANGED);
 			}
 		} break;
@@ -1380,7 +1380,8 @@ void Node::set_auto_translate_mode(AutoTranslateMode p_mode) {
 	}
 
 	data.auto_translate_mode = p_mode;
-	data.is_auto_translating = p_mode != AUTO_TRANSLATE_MODE_DISABLED;
+	data.is_auto_translating = (p_mode != AUTO_TRANSLATE_MODE_DISABLED && p_mode != AUTO_TRANSLATE_MODE_DISABLED_INCLUDING_ACCESSIBILITY);
+	data.is_auto_translating_ac = (p_mode != AUTO_TRANSLATE_MODE_DISABLED_INCLUDING_ACCESSIBILITY);
 	data.is_auto_translate_dirty = true;
 
 	propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
@@ -1388,6 +1389,28 @@ void Node::set_auto_translate_mode(AutoTranslateMode p_mode) {
 
 Node::AutoTranslateMode Node::get_auto_translate_mode() const {
 	return data.auto_translate_mode;
+}
+
+bool Node::can_auto_translate_accessibility() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (!data.is_auto_translate_dirty || data.auto_translate_mode != AUTO_TRANSLATE_MODE_INHERIT) {
+		return data.is_auto_translating_ac;
+	}
+
+	data.is_auto_translate_dirty = false;
+
+	Node *parent = data.parent;
+	while (parent) {
+		if (parent->data.auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT) {
+			parent = parent->data.parent;
+			continue;
+		}
+
+		data.is_auto_translating_ac = parent->data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED_INCLUDING_ACCESSIBILITY;
+		break;
+	}
+
+	return data.is_auto_translating_ac;
 }
 
 bool Node::can_auto_translate() const {
@@ -1455,7 +1478,7 @@ void Node::_propagate_translation_domain_dirty() {
 		}
 	}
 
-	if (is_inside_tree() && data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+	if (is_inside_tree() && data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED && data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED_INCLUDING_ACCESSIBILITY) {
 		notification(NOTIFICATION_TRANSLATION_CHANGED);
 	}
 }
@@ -1470,7 +1493,7 @@ void Node::set_accessibility_name(const String &p_name) {
 }
 
 String Node::get_accessibility_name() const {
-	return atr(data.accessibility_name);
+	return ac_atr(data.accessibility_name);
 }
 
 void Node::set_accessibility_description(const String &p_description) {
@@ -1482,7 +1505,7 @@ void Node::set_accessibility_description(const String &p_description) {
 }
 
 String Node::get_accessibility_description() const {
-	return atr(data.accessibility_description);
+	return ac_atr(data.accessibility_description);
 }
 
 void Node::set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode) {
@@ -4121,6 +4144,7 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_INHERIT);
 	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_ALWAYS);
 	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_DISABLED_INCLUDING_ACCESSIBILITY);
 
 	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
