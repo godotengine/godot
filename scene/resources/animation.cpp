@@ -442,7 +442,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 						if (!d2.has("end_offset")) {
 							continue;
 						}
-						if (!d2.has("stream")) {
+						if (!d2.has("animation")) {
 							continue;
 						}
 
@@ -904,7 +904,7 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::ARRAY, "tracks/" + itos(i) + "/keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
-		if (track_get_type(i) == TYPE_AUDIO) {
+		if (track_get_type(i) == TYPE_AUDIO || track_get_type(i) == TYPE_ANIMATION) {
 			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/use_blend", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 	}
@@ -1853,11 +1853,9 @@ int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key
 
 			TKey<AnimationKey> ak;
 			ak.time = p_time;
-			//ak.value = p_key;
 			ak.value.start_offset = k["start_offset"];
 			ak.value.end_offset = k["end_offset"];
 			ak.value.animation = k["animation"];
-
 			ret = _insert(p_time, at->values, ak);
 
 		} break;
