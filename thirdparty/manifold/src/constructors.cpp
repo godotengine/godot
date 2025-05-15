@@ -12,10 +12,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "./csg_tree.h"
-#include "./impl.h"
-#include "./parallel.h"
+#include "csg_tree.h"
+#include "impl.h"
+#include "manifold/manifold.h"
 #include "manifold/polygon.h"
+#include "parallel.h"
+
+namespace {
+using namespace manifold;
+
+template <typename P, typename I>
+std::shared_ptr<Manifold::Impl> SmoothImpl(
+    const MeshGLP<P, I>& meshGL,
+    const std::vector<Smoothness>& sharpenedEdges) {
+  DEBUG_ASSERT(meshGL.halfedgeTangent.empty(), std::runtime_error,
+               "when supplying tangents, the normal constructor should be used "
+               "rather than Smooth().");
+
+  MeshGLP<P, I> meshTmp = meshGL;
+  meshTmp.faceID.resize(meshGL.NumTri());
+  std::iota(meshTmp.faceID.begin(), meshTmp.faceID.end(), 0);
+
+  std::shared_ptr<Manifold::Impl> impl =
+      std::make_shared<Manifold::Impl>(meshTmp);
+  impl->CreateTangents(impl->UpdateSharpenedEdges(sharpenedEdges));
+  // Restore the original faceID
+  const size_t numTri = impl->NumTri();
+  for (size_t i = 0; i < numTri; ++i) {
+    if (meshGL.faceID.size() == numTri) {
+      impl->meshRelation_.triRef[i].faceID =
+          meshGL.faceID[impl->meshRelation_.triRef[i].faceID];
+    } else {
+      impl->meshRelation_.triRef[i].faceID = -1;
+    }
+  }
+  return impl;
+}
+}  // namespace
 
 namespace manifold {
 /**
@@ -48,13 +81,7 @@ namespace manifold {
  */
 Manifold Manifold::Smooth(const MeshGL& meshGL,
                           const std::vector<Smoothness>& sharpenedEdges) {
-  DEBUG_ASSERT(meshGL.halfedgeTangent.empty(), std::runtime_error,
-               "when supplying tangents, the normal constructor should be used "
-               "rather than Smooth().");
-
-  std::shared_ptr<Impl> impl = std::make_shared<Impl>(meshGL);
-  impl->CreateTangents(impl->UpdateSharpenedEdges(sharpenedEdges));
-  return Manifold(impl);
+  return Manifold(SmoothImpl(meshGL, sharpenedEdges));
 }
 
 /**
@@ -87,13 +114,7 @@ Manifold Manifold::Smooth(const MeshGL& meshGL,
  */
 Manifold Manifold::Smooth(const MeshGL64& meshGL64,
                           const std::vector<Smoothness>& sharpenedEdges) {
-  DEBUG_ASSERT(meshGL64.halfedgeTangent.empty(), std::runtime_error,
-               "when supplying tangents, the normal constructor should be used "
-               "rather than Smooth().");
-
-  std::shared_ptr<Impl> impl = std::make_shared<Impl>(meshGL64);
-  impl->CreateTangents(impl->UpdateSharpenedEdges(sharpenedEdges));
-  return Manifold(impl);
+  return Manifold(SmoothImpl(meshGL64, sharpenedEdges));
 }
 
 /**
@@ -173,8 +194,7 @@ Manifold Manifold::Sphere(double radius, int circularSegments) {
   int n = circularSegments > 0 ? (circularSegments + 3) / 4
                                : Quality::GetCircularSegments(radius) / 4;
   auto pImpl_ = std::make_shared<Impl>(Impl::Shape::Octahedron);
-  pImpl_->Subdivide(
-      [n](vec3 edge, vec4 tangentStart, vec4 tangentEnd) { return n - 1; });
+  pImpl_->Subdivide([n](vec3, vec4, vec4) { return n - 1; });
   for_each_n(autoPolicy(pImpl_->NumVert(), 1e5), pImpl_->vertPos_.begin(),
              pImpl_->NumVert(), [radius](vec3& v) {
                v = la::cos(kHalfPi * (1.0 - v));
@@ -277,7 +297,7 @@ Manifold Manifold::Extrude(const Polygons& crossSection, double height,
   pImpl_->CreateHalfedges(triVertsDH);
   pImpl_->Finish();
   pImpl_->InitializeOriginal();
-  pImpl_->CreateFaces();
+  pImpl_->MarkCoplanar();
   return Manifold(pImpl_);
 }
 
@@ -316,7 +336,7 @@ Manifold Manifold::Revolve(const Polygons& crossSection, int circularSegments,
       }
       const size_t next = i + 1 == poly.size() ? 0 : i + 1;
       if ((poly[next].x < 0) != (poly[i].x < 0)) {
-        const double y = poly[next].y + poly[next].x *
+        const double y = poly[next].y - poly[next].x *
                                             (poly[i].y - poly[next].y) /
                                             (poly[i].x - poly[next].x);
         polygons.back().push_back({0, y});
@@ -352,8 +372,8 @@ Manifold Manifold::Revolve(const Polygons& crossSection, int circularSegments,
   const int nSlices = isFullRevolution ? nDivisions : nDivisions + 1;
 
   for (const auto& poly : polygons) {
-    std::size_t nPosVerts = 0;
-    std::size_t nRevolveAxisVerts = 0;
+    size_t nPosVerts = 0;
+    size_t nRevolveAxisVerts = 0;
     for (auto& pt : poly) {
       if (pt.x > 0) {
         nPosVerts++;
@@ -420,7 +440,7 @@ Manifold Manifold::Revolve(const Polygons& crossSection, int circularSegments,
   pImpl_->CreateHalfedges(triVertsDH);
   pImpl_->Finish();
   pImpl_->InitializeOriginal();
-  pImpl_->CreateFaces();
+  pImpl_->MarkCoplanar();
   return Manifold(pImpl_);
 }
 
