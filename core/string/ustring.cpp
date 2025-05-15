@@ -168,16 +168,18 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 }
 
 void String::append_latin1(const Span<char> &p_cstr) {
-	if (p_cstr.is_empty()) {
+	const uint64_t p_cstr_size = p_cstr.size();
+
+	if (!p_cstr_size) {
 		return;
 	}
 
 	const int prev_length = length();
-	resize(prev_length + p_cstr.size() + 1); // include 0
+	resize(prev_length + p_cstr_size + 1); // include 0
 
-	const char *src = p_cstr.ptr();
-	const char *end = src + p_cstr.size();
-	char32_t *dst = ptrw() + prev_length;
+	const char * src = p_cstr.ptr();
+	const char * end = src + p_cstr_size;
+	char32_t * dst = ptrw() + prev_length;
 
 	for (; src < end; ++src, ++dst) {
 		// If char is int8_t, a set sign bit will be reinterpreted as 256 - val implicitly.
