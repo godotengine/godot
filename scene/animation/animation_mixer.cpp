@@ -1684,7 +1684,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					track_info.loop = a->get_loop_mode() != Animation::LOOP_NONE;
 					track_info.backward = backward;
 					track_info.use_blend = a->audio_track_is_use_blend(i);
-					AHashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
+					AHashMap<int, PlayingAudioStreamInfo>& map = track_info.stream_info;
 
 					// Main process to fire key is started from here.
 					if (p_update_only) {
@@ -1701,7 +1701,8 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							t->audio_stream_playback->stop_stream(map[idx].index);
 							map.erase(idx);
 						}
-					} else {
+					}
+					else {
 						List<int> to_play;
 						a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
 						if (to_play.size()) {
@@ -1757,7 +1758,8 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						pasi.start = time;
 						if (len && Animation::is_greater_approx(end_ofs, 0)) { // Force an end at a time.
 							pasi.len = len - start_ofs - end_ofs;
-						} else {
+						}
+						else {
 							pasi.len = 0;
 						}
 						map[idx] = pasi;
@@ -1767,12 +1769,12 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					if (Math::is_zero_approx(blend)) {
 						continue;
 					}
-					TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
-					Object *t_obj = ObjectDB::get_instance(t->object_id);
+					TrackCacheAnimation* t = static_cast<TrackCacheAnimation*>(track);
+					Object* t_obj = ObjectDB::get_instance(t->object_id);
 					if (!t_obj) {
 						continue;
 					}
-					AnimationPlayer *player2 = Object::cast_to<AnimationPlayer>(t_obj);
+					AnimationPlayer* player2 = Object::cast_to<AnimationPlayer>(t_obj);
 					if (!player2) {
 						continue;
 					}
@@ -1781,7 +1783,17 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						// Seek.
 						int idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, true);
 						if (idx < 0) {
+							//bool skip = true;
+							//if (a->track_get_key_count(i) != 0) {
+							//	double key_time = a->track_get_key_time(i, 0);
+							//	if (time < key_time) {
+							//		//StringName anim_name = a->animation_track_get_key_animation(i, idx);
+							//		skip = false;
+							//	}
+							//}
+							//if (skip) {
 							continue;
+							//}
 						}
 						double pos = a->track_get_key_time(i, idx);
 						StringName anim_name = a->animation_track_get_key_animation(i, idx);
@@ -1791,38 +1803,40 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						Ref<Animation> anim = player2->get_animation(anim_name);
 						double start_ofs = a->animation_track_get_key_start_offset(i, idx);
 						double end_ofs = a->animation_track_get_key_end_offset(i, idx);
-						double len = anim->get_length();
-						double effective_start = pos + start_ofs;
-						double effective_end = end_ofs > 0.0 ? pos + len - end_ofs : pos + len;
+						double anim_length = anim->get_length();
+						double effective_length = anim_length - start_ofs - end_ofs;
 
-						double at_anim_pos = start;
+						double local_time = time - pos;
 						switch (anim->get_loop_mode()) {
 							case Animation::LOOP_NONE: {
-								if (!is_external_seeking &&
-										((!backward && Animation::is_greater_or_equal_approx(time, effective_end)) ||
-												(backward && Animation::is_less_or_equal_approx(time, effective_start)))) {
-									continue; // Do nothing if current time is outside of effective range.
+								if (!is_external_seeking && ((!backward && Animation::is_greater_or_equal_approx(time, pos + end)) || (backward && Animation::is_less_or_equal_approx(time, pos + start)))) {
+									continue; // Do nothing if current time is outside of length when started.
 								}
-								at_anim_pos = MIN(effective_end - pos, time - pos); // Seek within bounds.
+								local_time = MIN(end, local_time); // Seek to end.
 							} break;
 							case Animation::LOOP_LINEAR: {
-								at_anim_pos = Math::fposmod(time - effective_start, effective_end - effective_start) + start_ofs;
+								local_time = Math::fposmod(local_time - start, end - start) + start; // Seek to loop.
 							} break;
 							case Animation::LOOP_PINGPONG: {
-								at_anim_pos = Math::pingpong(time - effective_start, effective_end - effective_start) + start_ofs;
-
+								local_time = Math::pingpong(local_time - start, end - start) + start;
 							} break;
 							default:
 								break;
 						}
 						if (player2->is_playing() || !is_external_seeking) {
-							player2->seek(at_anim_pos, false, p_update_only);
+							double effective_time = local_time + start_ofs;
+							double effective_clamp_time = MIN(start_ofs + effective_length, MAX(0, effective_time));
+
+							player2->seek(effective_clamp_time, false, p_update_only);
 							player2->play(anim_name);
 							t->playing = true;
 							playing_caches.insert(t);
 						} else {
+							double effective_time = local_time + start_ofs;
+							double effective_clamp_time = MIN(start_ofs + effective_length, MAX(0, effective_time));
+
 							player2->set_assigned_animation(anim_name);
-							player2->seek(at_anim_pos, true, p_update_only);
+							player2->seek(effective_clamp_time, true, p_update_only);
 						}
 					} else {
 						// Find stuff to play.
@@ -1831,8 +1845,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (to_play.size()) {
 							int idx = to_play.back()->get();
 							StringName anim_name = a->animation_track_get_key_animation(i, idx);
-							double start_ofs = a->animation_track_get_key_start_offset(i, idx);
-							double pos = a->track_get_key_time(i, idx);
 							if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name)) {
 								if (playing_caches.has(t)) {
 									playing_caches.erase(t);
@@ -1840,7 +1852,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 									t->playing = false;
 								}
 							} else {
-								player2->seek(start_ofs, false, p_update_only);
 								player2->play(anim_name);
 								t->playing = true;
 								playing_caches.insert(t);
