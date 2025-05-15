@@ -190,6 +190,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			// The RECORD_AUDIO permission is requested when the "audio/driver/enable_input" project
 			// setting is enabled.
 			Manifest.permission.RECORD_AUDIO,
+			// The CAMERA permission is requested when `CameraFeed.feed_is_active` is enabled.
+			Manifest.permission.CAMERA,
 		)
 
 		excludedPermissions.add(
