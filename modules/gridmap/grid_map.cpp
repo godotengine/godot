@@ -83,7 +83,10 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 
 		Array meshes = p_value;
 
-		const RID scenario = get_world_3d()->get_scenario();
+		RID scenario;
+		if (is_inside_tree()) {
+			scenario = get_world_3d()->get_scenario();
+		}
 
 		for (int i = 0; i < meshes.size(); i++) {
 			BakedMesh bm;
