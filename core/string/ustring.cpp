@@ -177,9 +177,9 @@ void String::append_latin1(const Span<char> &p_cstr) {
 	const int prev_length = length();
 	resize(prev_length + p_cstr_size + 1); // include 0
 
-	const char * src = p_cstr.ptr();
-	const char * end = src + p_cstr_size;
-	char32_t * dst = ptrw() + prev_length;
+	const char *src = p_cstr.ptr();
+	const char *end = src + p_cstr_size;
+	char32_t *dst = ptrw() + prev_length;
 
 	for (; src < end; ++src, ++dst) {
 		// If char is int8_t, a set sign bit will be reinterpreted as 256 - val implicitly.
