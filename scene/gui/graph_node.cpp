@@ -536,74 +536,91 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 	GraphElement::gui_input(p_event);
 }
 
+PackedStringArray GraphNode::get_accessibility_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
+
+	String ac_name = get_accessibility_name();
+	if (!get_title().is_empty() && ac_name.is_empty()) {
+		ac_name = get_title();
+	}
+	_accessibility_configuration_check_name(String(), ac_name, RTR("Title"), warnings);
+
+	return warnings;
+}
+
+String GraphNode::_get_ac_name() const {
+	String name = get_accessibility_name();
+	if (name.is_empty()) {
+		name = get_name();
+	}
+	name = vformat(ETR("graph node %s (%s)"), name, get_title());
+
+	if (slot_table.has(selected_slot)) {
+		GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+		Dictionary type_info;
+		if (graph) {
+			type_info = graph->get_type_names();
+		}
+		const Slot &slot = slot_table[selected_slot];
+		name += ", " + vformat(ETR("slot %d of %d"), selected_slot + 1, slot_count);
+		if (slot.enable_left) {
+			if (type_info.has(slot.type_left)) {
+				name += "," + vformat(ETR("input port, type: %s"), type_info[slot.type_left]);
+			} else {
+				name += "," + vformat(ETR("input port, type: %d"), slot.type_left);
+			}
+			if (graph) {
+				for (int i = 0; i < left_port_cache.size(); i++) {
+					if (left_port_cache[i].slot_index == selected_slot) {
+						String cd = graph->get_connections_description(get_name(), i);
+						if (cd.is_empty()) {
+							name += " " + ETR("no connections");
+						} else {
+							name += " " + cd;
+						}
+						break;
+					}
+				}
+			}
+		}
+		if (slot.enable_left) {
+			if (type_info.has(slot.type_right)) {
+				name += "," + vformat(ETR("output port, type: %s"), type_info[slot.type_right]);
+			} else {
+				name += "," + vformat(ETR("output port, type: %d"), slot.type_right);
+			}
+			if (graph) {
+				for (int i = 0; i < right_port_cache.size(); i++) {
+					if (right_port_cache[i].slot_index == selected_slot) {
+						String cd = graph->get_connections_description(get_name(), i);
+						if (cd.is_empty()) {
+							name += " " + ETR("no connections");
+						} else {
+							name += " " + cd;
+						}
+						break;
+					}
+				}
+			}
+		}
+		if (graph && graph->is_keyboard_connecting()) {
+			name += ", " + ETR("currently selecting target port");
+		}
+	} else {
+		name += ", " + vformat(ETR("has %d slots"), slot_count);
+	}
+	return name;
+}
+
 void GraphNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			String name = get_accessibility_name();
-			if (name.is_empty()) {
-				name = get_name();
-			}
-			name = vformat(ETR("graph node %s (%s)"), name, get_title());
-
-			if (slot_table.has(selected_slot)) {
-				GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
-				Dictionary type_info;
-				if (graph) {
-					type_info = graph->get_type_names();
-				}
-				const Slot &slot = slot_table[selected_slot];
-				name += ", " + vformat(ETR("slot %d of %d"), selected_slot + 1, slot_count);
-				if (slot.enable_left) {
-					if (type_info.has(slot.type_left)) {
-						name += "," + vformat(ETR("input port, type: %s"), type_info[slot.type_left]);
-					} else {
-						name += "," + vformat(ETR("input port, type: %d"), slot.type_left);
-					}
-					if (graph) {
-						for (int i = 0; i < left_port_cache.size(); i++) {
-							if (left_port_cache[i].slot_index == selected_slot) {
-								String cd = graph->get_connections_description(get_name(), i);
-								if (cd.is_empty()) {
-									name += " " + ETR("no connections");
-								} else {
-									name += " " + cd;
-								}
-								break;
-							}
-						}
-					}
-				}
-				if (slot.enable_left) {
-					if (type_info.has(slot.type_right)) {
-						name += "," + vformat(ETR("output port, type: %s"), type_info[slot.type_right]);
-					} else {
-						name += "," + vformat(ETR("output port, type: %d"), slot.type_right);
-					}
-					if (graph) {
-						for (int i = 0; i < right_port_cache.size(); i++) {
-							if (right_port_cache[i].slot_index == selected_slot) {
-								String cd = graph->get_connections_description(get_name(), i);
-								if (cd.is_empty()) {
-									name += " " + ETR("no connections");
-								} else {
-									name += " " + cd;
-								}
-								break;
-							}
-						}
-					}
-				}
-				if (graph && graph->is_keyboard_connecting()) {
-					name += ", " + ETR("currently selecting target port");
-				}
-			} else {
-				name += ", " + vformat(ETR("has %d slots"), slot_count);
-			}
 			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST);
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, name);
+			DisplayServer::get_singleton()->accessibility_update_set_name(ae, _get_ac_name());
 			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_INPUT, ETR("Edit Input Port Connection"));
 			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_OUTPUT, ETR("Edit Output Port Connection"));
 			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_INPUT, ETR("Follow Input Port Connection"));
