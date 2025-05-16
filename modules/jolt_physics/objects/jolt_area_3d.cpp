@@ -72,14 +72,11 @@ void JoltArea3D::_add_to_space() {
 	jolt_settings->mCollisionGroup = JPH::CollisionGroup(nullptr, group_id, sub_group_id);
 	jolt_settings->mMotionType = _get_motion_type();
 	jolt_settings->mIsSensor = true;
+	jolt_settings->mCollideKinematicVsNonDynamic = true;
 	jolt_settings->mUseManifoldReduction = false;
 	jolt_settings->mOverrideMassProperties = JPH::EOverrideMassProperties::MassAndInertiaProvided;
 	jolt_settings->mMassPropertiesOverride.mMass = 1.0f;
 	jolt_settings->mMassPropertiesOverride.mInertia = JPH::Mat44::sIdentity();
-
-	if (JoltProjectSettings::areas_detect_static_bodies) {
-		jolt_settings->mCollideKinematicVsNonDynamic = true;
-	}
 
 	jolt_settings->SetShape(jolt_shape);
 
