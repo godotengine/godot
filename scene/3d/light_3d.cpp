@@ -222,6 +222,24 @@ Ref<Texture2D> Light3D::get_projector() const {
 	return projector;
 }
 
+void Light3D::set_projector_scale(const Vector2 &p_scale) {
+	projector_scale = p_scale;
+	RS::get_singleton()->light_set_projector_scale(light, p_scale);
+}
+
+Vector2 Light3D::get_projector_scale() const {
+	return projector_scale;
+}
+
+void Light3D::set_projector_offset(const Vector2 &p_offset) {
+	projector_offset = p_offset;
+	RS::get_singleton()->light_set_projector_offset(light, p_offset);
+}
+
+Vector2 Light3D::get_projector_offset() const {
+	return projector_offset;
+}
+
 void Light3D::owner_changed_notify() {
 	// For cases where owner changes _after_ entering tree (as example, editor editing).
 	_update_visibility();
@@ -327,8 +345,8 @@ void Light3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (get_light_type() != RS::LIGHT_DIRECTIONAL && (p_property.name == "light_angular_distance" || p_property.name == "light_intensity_lux")) {
-		// Angular distance and Light Intensity Lux are only used in DirectionalLight3D.
+	if (get_light_type() != RS::LIGHT_DIRECTIONAL && (p_property.name == "light_angular_distance" || p_property.name == "light_intensity_lux" || p_property.name == "Projector" || p_property.name == "light_projector_scale" || p_property.name == "light_projector_offset")) {
+		// Angular distance, Light Intensity Lux and Projector Subgroup/Scale/Offset are only used in DirectionalLight3D.
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (get_light_type() == RS::LIGHT_DIRECTIONAL && p_property.name == "light_intensity_lumens") {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -386,6 +404,12 @@ void Light3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_projector", "projector"), &Light3D::set_projector);
 	ClassDB::bind_method(D_METHOD("get_projector"), &Light3D::get_projector);
 
+	ClassDB::bind_method(D_METHOD("set_projector_scale", "scale"), &Light3D::set_projector_scale);
+	ClassDB::bind_method(D_METHOD("get_projector_scale"), &Light3D::get_projector_scale);
+
+	ClassDB::bind_method(D_METHOD("set_projector_offset", "offset"), &Light3D::set_projector_offset);
+	ClassDB::bind_method(D_METHOD("get_projector_offset"), &Light3D::get_projector_offset);
+
 	ClassDB::bind_method(D_METHOD("set_temperature", "temperature"), &Light3D::set_temperature);
 	ClassDB::bind_method(D_METHOD("get_temperature"), &Light3D::get_temperature);
 	ClassDB::bind_method(D_METHOD("get_correlated_color"), &Light3D::get_correlated_color);
@@ -398,8 +422,13 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.001,or_greater"), "set_param", "get_param", PARAM_ENERGY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.001,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_volumetric_fog_energy", PROPERTY_HINT_RANGE, "0,16,0.001,or_greater"), "set_param", "get_param", PARAM_VOLUMETRIC_FOG_ENERGY);
+
 	// Only allow texture types that display correctly.
+	ADD_SUBGROUP("Projector", "light_projector_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_projector", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture"), "set_projector", "get_projector");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "light_projector_scale", PROPERTY_HINT_NONE, "suffix:px"), "set_projector_scale", "get_projector_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "light_projector_offset"), "set_projector_offset", "get_projector_offset");
+
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_size", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_angular_distance", PROPERTY_HINT_RANGE, "0,90,0.01,degrees"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
@@ -560,7 +589,7 @@ void DirectionalLight3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (p_property.name == "light_size" || p_property.name == "light_projector") {
+	if (p_property.name == "light_size") {
 		// Not implemented in DirectionalLight3D (`light_size` is replaced by `light_angular_distance`).
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
@@ -614,6 +643,7 @@ DirectionalLight3D::DirectionalLight3D() :
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	blend_splits = false;
 	set_sky_mode(SKY_MODE_LIGHT_AND_SKY);
+	set_projector_scale(Vector2(1, 1));
 }
 
 void OmniLight3D::set_shadow_mode(ShadowMode p_mode) {
