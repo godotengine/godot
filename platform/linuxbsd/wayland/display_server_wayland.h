@@ -108,6 +108,7 @@ class DisplayServerWayland : public DisplayServer {
 		Callable input_text_callback;
 
 		String title;
+		String session_id;
 		ObjectID instance_id;
 	};
 
@@ -192,6 +193,9 @@ public:
 
 	virtual String get_name() const override;
 
+	virtual void set_session(const String &p_name) override;
+	virtual void set_session_path(const String &p_path) override;
+
 #ifdef SPEECHD_ENABLED
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;
@@ -262,6 +266,8 @@ public:
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual void window_set_session_id(const String &p_session_id, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual String window_get_session_id(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window_id = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window_id = MAIN_WINDOW_ID) override;
