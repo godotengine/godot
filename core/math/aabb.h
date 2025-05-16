@@ -61,9 +61,6 @@ struct [[nodiscard]] AABB {
 	constexpr bool operator==(const AABB &p_rval) const {
 		return position == p_rval.position && size == p_rval.size;
 	}
-	constexpr bool operator!=(const AABB &p_rval) const {
-		return position != p_rval.position || size != p_rval.size;
-	}
 
 	bool is_equal_approx(const AABB &p_aabb) const;
 	bool is_same(const AABB &p_aabb) const;
