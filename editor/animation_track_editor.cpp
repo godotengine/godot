@@ -1456,6 +1456,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			add_track->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
 			time_icon->set_texture(get_editor_theme_icon(SNAME("Time")));
+			filter_track->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 			add_track->get_popup()->clear();
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyValue")), TTR("Property Track..."));
@@ -1483,6 +1484,8 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		case NOTIFICATION_RESIZED: {
 			len_hb->set_position(Vector2(get_size().width - get_buttons_width(), 0));
 			len_hb->set_size(Size2(get_buttons_width(), get_size().height));
+			int hsize_icon_width = get_editor_theme_icon(SNAME("Hsize"))->get_width();
+			add_track_hb->set_size(Size2(name_limit - ((hsize_icon_width + 16) * EDSCALE), 0));
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -1714,6 +1717,7 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 
 	if (animation.is_valid()) {
 		len_hb->show();
+		filter_track->show();
 		if (read_only) {
 			add_track->hide();
 		} else {
@@ -1722,6 +1726,7 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 		play_position->show();
 	} else {
 		len_hb->hide();
+		filter_track->hide();
 		add_track->hide();
 		play_position->hide();
 	}
@@ -1729,7 +1734,7 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 }
 
 Size2 AnimationTimelineEdit::get_minimum_size() const {
-	Size2 ms = add_track->get_minimum_size();
+	Size2 ms = filter_track->get_minimum_size();
 	const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	ms.height = MAX(ms.height, font->get_height(font_size));
@@ -1936,6 +1941,8 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (dragging_hsize) {
 			int ofs = mm->get_position().x - dragging_hsize_from;
 			name_limit = dragging_hsize_at + ofs;
+			int hsize_icon_width = get_editor_theme_icon(SNAME("Hsize"))->get_width();
+			add_track_hb->set_size(Size2(name_limit - ((hsize_icon_width + 16) * EDSCALE), 0));
 			// Make sure name_limit is clamped to the range that UI allows.
 			name_limit = get_name_limit();
 			queue_redraw();
@@ -1993,6 +2000,7 @@ void AnimationTimelineEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "timeline_only")));
 	ADD_SIGNAL(MethodInfo("track_added", PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("length_changed", PropertyInfo(Variant::FLOAT, "size")));
+	ADD_SIGNAL(MethodInfo("filter_changed"));
 
 	ClassDB::bind_method(D_METHOD("update_values"), &AnimationTimelineEdit::update_values);
 }
@@ -2006,10 +2014,21 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	play_position->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	play_position->connect(SceneStringName(draw), callable_mp(this, &AnimationTimelineEdit::_play_position_draw));
 
+	add_track_hb = memnew(HBoxContainer);
+	add_child(add_track_hb);
+
 	add_track = memnew(MenuButton);
+	add_track->set_tooltip_text(TTR("Select a new track by type to add to this animation."));
 	add_track->set_position(Vector2(0, 0));
-	add_child(add_track);
-	add_track->set_text(TTR("Add Track"));
+	add_track_hb->add_child(add_track);
+	filter_track = memnew(LineEdit);
+	filter_track->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter_track->set_placeholder(TTR("Filter Tracks"));
+	filter_track->set_tooltip_text(TTR("Filter tracks by entering part of their node name or property."));
+	filter_track->connect(SceneStringName(text_changed), callable_mp((AnimationTrackEditor *)this, &AnimationTrackEditor::_on_filter_updated));
+	filter_track->set_clear_button_enabled(true);
+	filter_track->hide();
+	add_track_hb->add_child(filter_track);
 
 	len_hb = memnew(HBoxContainer);
 
@@ -4867,6 +4886,10 @@ bool AnimationTrackEditor::can_add_reset_key() const {
 	return false;
 }
 
+void AnimationTrackEditor::_on_filter_updated(const String &p_filter) {
+	emit_signal(SNAME("filter_changed"));
+}
+
 void AnimationTrackEditor::_update_tracks() {
 	int selected = _get_track_selected();
 
@@ -4929,6 +4952,15 @@ void AnimationTrackEditor::_update_tracks() {
 				if (!EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
 					continue; // Skip track due to not selected.
 				}
+			}
+		}
+
+		String filter_text = timeline->filter_track->get_text();
+
+		if (!filter_text.is_empty()) {
+			String target = animation->track_get_path(i);
+			if (!target.containsn(filter_text)) {
+				continue;
 			}
 		}
 
@@ -7669,6 +7701,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline->connect("track_added", callable_mp(this, &AnimationTrackEditor::_add_track));
 	timeline->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_timeline_value_changed));
 	timeline->connect("length_changed", callable_mp(this, &AnimationTrackEditor::_update_length));
+	timeline->connect("filter_changed", callable_mp(this, &AnimationTrackEditor::_update_tracks));
 
 	panner.instantiate();
 	panner->set_scroll_zoom_factor(AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_IN);
