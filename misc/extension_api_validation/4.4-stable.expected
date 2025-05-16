@@ -111,3 +111,11 @@ Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/cre
 Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/create_action/arguments': size changed value in new API, from 3 to 5.
 
 New argument added. Compatibility method registered.
+
+
+GH-100019
+---------
+Validate extension JSON: Error: Field 'classes/CodeEdit/methods/add_code_completion_option/arguments': size changed value in new API, from 6 to 8.
+Validate extension JSON: Error: Field 'classes/CodeEdit/methods/add_code_completion_option/arguments': size changed value in new API, from 7 to 8.
+
+New argument `deprecated` added to `add_code_completion_option`. Compatibility method registered.
