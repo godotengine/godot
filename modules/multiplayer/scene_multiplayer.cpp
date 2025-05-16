@@ -203,8 +203,9 @@ void SceneMultiplayer::set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) 
 	multiplayer_peer = p_peer;
 
 	if (multiplayer_peer.is_valid()) {
-		multiplayer_peer->connect("peer_connected", callable_mp(this, &SceneMultiplayer::_add_peer));
-		multiplayer_peer->connect("peer_disconnected", callable_mp(this, &SceneMultiplayer::_del_peer));
+		// We need to insert these first, otherwise prior bound events will not be able to utilize Network abilities like RPCs.
+		multiplayer_peer->connect("peer_connected", callable_mp(this, &SceneMultiplayer::_add_peer), CONNECT_FRONTINSERT);
+		multiplayer_peer->connect("peer_disconnected", callable_mp(this, &SceneMultiplayer::_del_peer), CONNECT_FRONTINSERT);
 	}
 	_update_status();
 }

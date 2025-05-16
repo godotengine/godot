@@ -1531,8 +1531,13 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 		slot.reference_count = 1;
 	}
 
-	//use callable version as key, so binds can be ignored
-	s->slot_map[*p_callable.get_base_comparator()] = slot;
+	// Add first in the HashMap, if requested.
+	if (p_flags & CONNECT_FRONTINSERT) {
+		s->slot_map.insert(*p_callable.get_base_comparator(), slot, true);
+	} else {
+		//use callable version as key, so binds can be ignored
+		s->slot_map[*p_callable.get_base_comparator()] = slot;
+	}
 
 	return OK;
 }
