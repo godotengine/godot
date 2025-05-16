@@ -14,4 +14,5 @@ struct DecalData {
 	mediump mat3x4 normal_xform;
 	mediump vec3 normal;
 	mediump float normal_fade;
+	uint keep_decal_opacity;
 };
