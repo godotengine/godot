@@ -102,4 +102,7 @@ public:
 
 	static RunInstancesDialog *get_singleton() { return singleton; }
 	RunInstancesDialog();
+
+protected:
+	void _notification(int p_what);
 };

@@ -97,7 +97,9 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 
 	// Multi-instance, start/stop.
 	debug_menu->add_separator();
-	debug_menu->add_item(TTR("Customize Run Instances..."), RUN_MULTIPLE_INSTANCES);
+	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/run_multiple_instances", TTRC("Enable Multiple Instances")), RUN_MULTIPLE_INSTANCES);
+	debug_menu->add_item(TTR("Customize Run Instances..."), OPEN_INSTANCES_DIALOG);
+
 	debug_menu->connect(SceneStringName(id_pressed), callable_mp(this, &DebuggerEditorPlugin::_menu_option));
 
 	run_instances_dialog = memnew(RunInstancesDialog);
@@ -207,6 +209,18 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 		} break;
 		case RUN_MULTIPLE_INSTANCES: {
+			const int idx = debug_menu->get_item_index(RUN_MULTIPLE_INSTANCES);
+			bool is_checked = debug_menu->is_item_checked(idx);
+			debug_menu->set_item_checked(idx, !is_checked);
+
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "multiple_instances_enabled", !is_checked);
+				EditorSettings::get_singleton()->notify_changes();
+			}
+
+		} break;
+
+		case OPEN_INSTANCES_DIALOG: {
 			run_instances_dialog->popup_dialog();
 
 		} break;
@@ -223,6 +237,11 @@ void DebuggerEditorPlugin::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 			file_server->poll();
 		} break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			bool check_server_keep_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false);
+			const int idx = debug_menu->get_item_index(RUN_MULTIPLE_INSTANCES);
+			debug_menu->set_item_checked(idx, check_server_keep_open);
+		} break;
 	}
 }
 
@@ -237,6 +256,7 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
 	bool check_server_keep_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "server_keep_open", false);
+	bool check_run_multiple_instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false);
 
 	if (check_deploy_remote) {
 		_menu_option(RUN_DEPLOY_REMOTE_DEBUG);
@@ -267,5 +287,8 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	}
 	if (check_server_keep_open) {
 		_menu_option(SERVER_KEEP_OPEN);
+	}
+	if (check_run_multiple_instances) {
+		_menu_option(RUN_MULTIPLE_INSTANCES);
 	}
 }
