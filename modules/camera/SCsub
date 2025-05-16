@@ -11,6 +11,7 @@ if env["platform"] in ["windows", "macos", "linuxbsd", "android"]:
 
 if env["platform"] == "windows":
     env_camera.add_source_files(env.modules_sources, "camera_win.cpp")
+    env.Append(LINKFLAGS=["mf.lib", "mfplat.lib", "mfreadwrite.lib"])
 
 elif env["platform"] == "macos":
     env_camera.add_source_files(env.modules_sources, "camera_macos.mm")
