@@ -151,6 +151,17 @@ enum PropertyUsageFlags {
 #define ADD_ARRAY_COUNT_WITH_USAGE_FLAGS(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix, m_property_usage_flags) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, StringName(m_count_property_setter), StringName(m_count_property_getter), m_prefix, m_property_usage_flags)
 #define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
 
+#ifdef DEBUG_METHODS_ENABLED
+// TODO: We want a more elegant solution in the future for handling non-nullable objects, but that
+//  would require significant codestyle/functional changes. To allow for bindings to still take
+//  advantage of this concept, we'll utilize the `NOT_NULL` macro as a pseudo-attribute.
+// By prepending this macro to a function/argument name, it will pass the escape character `\x1b`,
+//  allowing the binder to apply the proper hint when the name is parsed.
+#define NOT_NULL "\x1b"
+#else
+#define NOT_NULL
+#endif
+
 // Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
 // PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)

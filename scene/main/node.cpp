@@ -3843,18 +3843,18 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
 	ClassDB::bind_static_method("Node", D_METHOD("get_orphan_node_ids"), &Node::get_orphan_node_ids);
-	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_sibling", NOT_NULL "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
-	ClassDB::bind_method(D_METHOD("add_child", "node", "force_readable_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
+	ClassDB::bind_method(D_METHOD("add_child", NOT_NULL "node", "force_readable_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("remove_child", NOT_NULL "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("reparent", "new_parent", "keep_global_transform"), &Node::reparent, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_child_count", "include_internal"), &Node::get_child_count, DEFVAL(false)); // Note that the default value bound for include_internal is false, while the method is declared with true. This is because internal nodes are irrelevant for GDSCript.
 	ClassDB::bind_method(D_METHOD("get_children", "include_internal"), &Node::get_children, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_child", "idx", "include_internal"), &Node::get_child, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("has_node", "path"), &Node::has_node);
-	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
+	ClassDB::bind_method(D_METHOD(NOT_NULL "get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
 	ClassDB::bind_method(D_METHOD("find_child", "pattern", "recursive", "owned"), &Node::find_child, DEFVAL(true), DEFVAL(true));

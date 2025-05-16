@@ -52,7 +52,7 @@ PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 	PropertyInfo info = _gen_argument_type_info(p_argument);
 #ifdef DEBUG_METHODS_ENABLED
 	if (info.name.is_empty()) {
-		info.name = p_argument < arg_names.size() ? String(arg_names[p_argument]) : String("_unnamed_arg" + itos(p_argument));
+		info.name = p_argument < arg_names.size() ? String(arg_names[p_argument].name) : String("_unnamed_arg" + itos(p_argument));
 	}
 #endif
 	return info;
@@ -81,17 +81,6 @@ StringName MethodBind::get_name() const {
 void MethodBind::set_name(const StringName &p_name) {
 	name = p_name;
 }
-
-#ifdef DEBUG_METHODS_ENABLED
-void MethodBind::set_argument_names(const Vector<StringName> &p_names) {
-	arg_names = p_names;
-}
-
-Vector<StringName> MethodBind::get_argument_names() const {
-	return arg_names;
-}
-
-#endif
 
 void MethodBind::set_default_arguments(const Vector<Variant> &p_defargs) {
 	default_arguments = p_defargs;
