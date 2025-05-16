@@ -94,6 +94,15 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #endif
 #endif
 
+// Convenient macros to specify inline and constexpr simultaneously.
+#ifndef _ALWAYS_CONSTEXPR_INLINE_
+#define _ALWAYS_CONSTEXPR_INLINE_ _ALWAYS_INLINE_ constexpr
+#endif
+
+#ifndef _FORCE_CONSTEXPR_INLINE_
+#define _FORCE_CONSTEXPR_INLINE_ _FORCE_INLINE_ constexpr
+#endif
+
 // In some cases [[nodiscard]] will get false positives,
 // we can prevent the warning in specific cases by preceding the call with a cast.
 #ifndef _ALLOW_DISCARD_
