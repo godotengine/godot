@@ -213,6 +213,9 @@ void main() {
 	}
 
 	mat4 matrix;
+#ifdef USE_DOUBLE_PRECISION
+	vec3 matrix_translation;
+#endif
 	mat4 read_model_matrix = model_matrix;
 
 	if (sc_multimesh()) {
@@ -288,15 +291,13 @@ void main() {
 #endif
 		//transpose
 		matrix = transpose(matrix);
-
-#if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED) || defined(MODEL_MATRIX_USED)
-		// Normally we can bake the multimesh transform into the model matrix, but when using double precision
-		// we avoid baking it in so we can emulate high precision.
+#ifdef USE_DOUBLE_PRECISION
+		// Strip the translation from the matrix for emulating high precision later.
+		matrix_translation = matrix[3].xyz;
+		matrix[3].xyz = vec3(0.0);
+#endif
 		read_model_matrix = model_matrix * matrix;
-#if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED)
 		model_matrix = read_model_matrix;
-#endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED)
-#endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED) || defined(MODEL_MATRIX_USED)
 		model_normal_matrix = model_normal_matrix * mat3(matrix);
 	}
 
@@ -397,10 +398,9 @@ void main() {
 	// We add the result to the vertex and ignore the final lost precision.
 	vec3 model_origin = model_matrix[3].xyz;
 	if (sc_multimesh()) {
-		vertex = mat3(matrix) * vertex;
-		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
+		model_origin = double_add_vec3(model_origin, model_precision, matrix_translation, vec3(0.0), model_precision);
 	}
-	vertex = mat3(inv_view_matrix * modelview) * vertex;
+	vertex = mat3(inv_view_matrix) * mat3(modelview) * vertex;
 	vec3 temp_precision;
 	vertex += double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
 	vertex = mat3(scene_data.view_matrix) * vertex;
