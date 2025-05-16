@@ -65,6 +65,12 @@ public:
 		}
 	}
 
+	// Create Span from a single value.
+	// We're using SFINAE to make the conversion only work if a Span is explicitly requested.
+	template <typename T1, typename = std::enable_if_t<std::is_same_v<T1, T>>>
+	_FORCE_INLINE_ constexpr Span(const T1 &p_value) :
+			_ptr(&p_value), _len(1) {}
+
 	_FORCE_INLINE_ constexpr uint64_t size() const { return _len; }
 	_FORCE_INLINE_ constexpr bool is_empty() const { return _len == 0; }
 
@@ -74,7 +80,7 @@ public:
 	//       This is slower than direct buffer access and can prevent autovectorization.
 	//       If the bounds are known, use ptr() subscript instead.
 	_FORCE_INLINE_ constexpr const T &operator[](uint64_t p_idx) const {
-		CRASH_COND(p_idx >= _len);
+		DEV_ASSERT(p_idx < _len);
 		return _ptr[p_idx];
 	}
 
