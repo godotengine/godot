@@ -133,6 +133,10 @@ void Node::_notification(int p_notification) {
 			GDVIRTUAL_CALL(_physics_process, get_physics_process_delta_time());
 		} break;
 
+		case NOTIFICATION_LATE_PHYSICS_PROCESS: {
+			GDVIRTUAL_CALL(_late_physics_process, get_physics_process_delta_time());
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_NULL(get_viewport());
 			ERR_FAIL_NULL(get_tree());
@@ -314,6 +318,9 @@ void Node::_notification(int p_notification) {
 			}
 			if (GDVIRTUAL_IS_OVERRIDDEN(_physics_process)) {
 				set_physics_process(true);
+			}
+			if (GDVIRTUAL_IS_OVERRIDDEN(_late_physics_process)) {
+				set_late_physics_process(true);
 			}
 
 			GDVIRTUAL_CALL(_ready);
@@ -671,6 +678,32 @@ void Node::set_physics_process(bool p_process) {
 	}
 }
 
+bool Node::is_late_physics_processing() const {
+	return data.late_physics_process;
+}
+
+void Node::set_late_physics_process(bool p_process) {
+	ERR_THREAD_GUARD
+	if (data.late_physics_process == p_process) {
+		return;
+	}
+
+	if (!is_inside_tree()) {
+		data.late_physics_process = p_process;
+		return;
+	}
+
+	if (_is_any_processing()) {
+		_remove_from_process_thread_group();
+	}
+
+	data.late_physics_process = p_process;
+
+	if (_is_any_processing()) {
+		_add_to_process_thread_group();
+	}
+}
+
 bool Node::is_physics_processing() const {
 	return data.physics_process;
 }
@@ -934,6 +967,8 @@ bool Node::can_process_notification(int p_what) const {
 			return data.process_internal;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
 			return data.physics_process_internal;
+		case NOTIFICATION_LATE_PHYSICS_PROCESS:
+			return data.late_physics_process;
 	}
 
 	return true;
@@ -3888,6 +3923,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process", "enable"), &Node::set_physics_process);
 	ClassDB::bind_method(D_METHOD("get_physics_process_delta_time"), &Node::get_physics_process_delta_time);
 	ClassDB::bind_method(D_METHOD("is_physics_processing"), &Node::is_physics_processing);
+	ClassDB::bind_method(D_METHOD("set_late_physics_process", "enable"), &Node::set_late_physics_process);
+	ClassDB::bind_method(D_METHOD("is_late_physics_processing"), &Node::is_late_physics_processing);
 	ClassDB::bind_method(D_METHOD("get_process_delta_time"), &Node::get_process_delta_time);
 	ClassDB::bind_method(D_METHOD("set_process", "enable"), &Node::set_process);
 	ClassDB::bind_method(D_METHOD("set_process_priority", "priority"), &Node::set_process_priority);
@@ -4061,6 +4098,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
 	BIND_CONSTANT(NOTIFICATION_DISABLED);
 	BIND_CONSTANT(NOTIFICATION_ENABLED);
+	BIND_CONSTANT(NOTIFICATION_LATE_PHYSICS_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_PRE_SAVE);
@@ -4171,6 +4209,7 @@ void Node::_bind_methods() {
 
 	GDVIRTUAL_BIND(_process, "delta");
 	GDVIRTUAL_BIND(_physics_process, "delta");
+	GDVIRTUAL_BIND(_late_physics_process, "delta");
 	GDVIRTUAL_BIND(_enter_tree);
 	GDVIRTUAL_BIND(_exit_tree);
 	GDVIRTUAL_BIND(_ready);
@@ -4207,6 +4246,7 @@ Node::Node() {
 	data.physics_interpolation_mode = PHYSICS_INTERPOLATION_MODE_INHERIT;
 
 	data.physics_process = false;
+	data.late_physics_process = false;
 	data.process = false;
 
 	data.physics_process_internal = false;
