@@ -116,6 +116,8 @@ private:
 
 	virtual JPH::EMotionType _get_motion_type() const override { return JPH::EMotionType::Kinematic; }
 
+	bool _should_sleep() const { return !is_monitoring(); }
+
 	virtual void _add_to_space() override;
 
 	void _enqueue_call_queries();
@@ -137,6 +139,7 @@ private:
 	void _force_areas_entered();
 	void _force_areas_exited(bool p_remove);
 
+	void _update_sleeping();
 	void _update_group_filter();
 	void _update_default_gravity();
 
@@ -164,6 +167,10 @@ public:
 
 	bool has_area_monitor_callback() const { return area_monitor_callback.is_valid(); }
 	void set_area_monitor_callback(const Callable &p_callback);
+
+	bool is_monitoring_bodies() const { return has_body_monitor_callback(); }
+	bool is_monitoring_areas() const { return has_area_monitor_callback(); }
+	bool is_monitoring() const { return is_monitoring_bodies() || is_monitoring_areas(); }
 
 	bool is_monitorable() const { return monitorable; }
 	void set_monitorable(bool p_monitorable);
