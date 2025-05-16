@@ -555,7 +555,7 @@
 		<method name="free" keywords="delete, remove, kill, die">
 			<return type="void" />
 			<description>
-				Deletes the object from memory. Pre-existing references to the object become invalid, and any attempt to access them will result in a run-time error. Checking the references with [method @GlobalScope.is_instance_valid] will return [code]false[/code].
+				Deletes the object from memory. Pre-existing references to the object become invalid, and any attempt to access them will result in a runtime error. Checking the references with [method @GlobalScope.is_instance_valid] will return [code]false[/code]. This is equivalent to the [code]memdelete[/code] function in GDExtension C++.
 			</description>
 		</method>
 		<method name="get" qualifiers="const">
