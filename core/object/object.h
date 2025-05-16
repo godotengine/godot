@@ -997,6 +997,9 @@ public:
 
 	void cancel_free();
 
+	/// Use memdelete(object) instead.
+	void free() = delete;
+
 	Object();
 	virtual ~Object();
 };
