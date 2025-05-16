@@ -89,6 +89,7 @@ class EditorSelectionHistory;
 class EditorSettingsDialog;
 class EditorTitleBar;
 class ExportTemplateManager;
+class FindInFilesDialog;
 class EditorQuickOpenDialog;
 class FBXImporterManager;
 class FileSystemDock;
@@ -179,6 +180,7 @@ public:
 		// Editor menu.
 		EDITOR_OPEN_SETTINGS,
 		EDITOR_COMMAND_PALETTE,
+		EDITOR_FIND_IN_FILES,
 		EDITOR_TAKE_SCREENSHOT,
 		EDITOR_TOGGLE_FULLSCREEN,
 		EDITOR_OPEN_DATA_FOLDER,
@@ -263,6 +265,7 @@ private:
 	EditorResourcePreview *resource_preview = nullptr;
 	EditorSelection *editor_selection = nullptr;
 	EditorSettingsDialog *editor_settings_dialog = nullptr;
+	FindInFilesDialog *find_in_files_dialog = nullptr;
 	HistoryDock *history_dock = nullptr;
 
 	ProjectExportDialog *project_export = nullptr;
