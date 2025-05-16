@@ -116,6 +116,8 @@ private:
 
 	virtual JPH::EMotionType _get_motion_type() const override { return JPH::EMotionType::Kinematic; }
 
+	bool _should_sleep() const { return !has_body_monitor_callback() && !has_area_monitor_callback(); }
+
 	virtual void _add_to_space() override;
 
 	void _enqueue_call_queries();
@@ -137,6 +139,7 @@ private:
 	void _force_areas_entered();
 	void _force_areas_exited(bool p_remove);
 
+	void _update_sleeping();
 	void _update_group_filter();
 	void _update_default_gravity();
 
