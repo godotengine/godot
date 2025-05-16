@@ -1903,10 +1903,11 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 	for (int i = 0; i < p_block->statements.size(); i++) {
 		const GDScriptParser::Node *s = p_block->statements[i];
 
-#ifdef DEBUG_ENABLED
-		// Add a newline before each statement, since the debugger needs those.
-		gen->write_newline(s->start_line);
-#endif
+		if (enable_newline) {
+			// Add a newline before each statement, since the debugger needs those.
+			// Also needed when tracking call stacks is enabled in the project settings.
+			gen->write_newline(s->start_line);
+		}
 
 		switch (s->type) {
 			case GDScriptParser::Node::MATCH: {
@@ -3311,4 +3312,9 @@ int GDScriptCompiler::get_error_column() const {
 }
 
 GDScriptCompiler::GDScriptCompiler() {
+#ifdef DEBUG_ENABLED
+	enable_newline = true;
+#else // !DEBUG_ENABLED
+	enable_newline = GLOBAL_GET("debug/settings/gdscript/always_track_call_stacks");
+#endif // DEBUG_ENABLED
 }
