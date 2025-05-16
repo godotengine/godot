@@ -310,7 +310,7 @@ void main() {
 	vec3 binormal;
 	float binormal_sign;
 	vec3 tangent;
-	if (axis_tangent_attrib.z > 0.0 || axis_tangent_attrib.w < 1.0) {
+	if (!sc_mesh_compressed_attributes()) {
 		// Uncompressed format.
 		vec2 signed_tangent_attrib = axis_tangent_attrib.zw * 2.0 - 1.0;
 		tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
@@ -489,9 +489,12 @@ void main() {
 				continue; // Not masked, skip.
 			}
 
-			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+#ifdef USE_LIGHTMAP
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && !sc_use_lightmap_capture()) {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
+#endif
+
 			if (i == 0) {
 				light_compute_vertex(normal_interp, directional_lights.data[0].direction, view,
 						directional_lights.data[0].color * directional_lights.data[0].energy,
@@ -1122,7 +1125,7 @@ void main() {
 	// to maximize VGPR usage
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 
-	if (!sc_disable_fog() && scene_data.fog_enabled) {
+	if (!sc_disable_fog()) {
 		fog = fog_process(vertex);
 	}
 
@@ -1287,7 +1290,7 @@ void main() {
 
 #ifndef USE_LIGHTMAP
 	//lightmap overrides everything
-	if (scene_data.use_ambient_light) {
+	if (sc_scene_use_ambient_light()) {
 		ambient_light = scene_data.ambient_light_color_energy.rgb;
 
 		if (sc_scene_use_ambient_cubemap()) {
@@ -1346,7 +1349,7 @@ void main() {
 #ifdef USE_LIGHTMAP
 
 	//lightmap
-	if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
+	if (sc_use_lightmap_capture()) { //has lightmap capture
 		uint index = instances.data[draw_call.instance_index].gi_offset;
 
 		// The world normal.
@@ -1372,15 +1375,14 @@ void main() {
 								 c[4] * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y)) *
 				scene_data.emissive_exposure_normalization;
 
-	} else if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
-		bool uses_sh = bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
+	} else { // has actual lightmap
 		uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
 		uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
 		vec3 uvw;
 		uvw.xy = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
 		uvw.z = float(slice);
 
-		if (uses_sh) {
+		if (sc_use_sh_lightmap()) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
 			vec3 lm_light_l0;
 			vec3 lm_light_l1n1;
@@ -1550,8 +1552,7 @@ void main() {
 
 #ifdef USE_LIGHTMAP
 		uint shadowmask_mode = LIGHTMAP_SHADOWMASK_MODE_NONE;
-
-		if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+		if (!sc_use_lightmap_capture()) {
 			const uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
 			shadowmask_mode = lightmaps.data[ofs].flags;
 
@@ -1581,9 +1582,11 @@ void main() {
 					continue; //not masked
 				}
 
-				if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+#ifdef USE_LIGHTMAP
+				if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && !sc_use_lightmap_capture()) {
 					continue; // Statically baked light and object uses lightmap, skip.
 				}
+#endif
 
 				float shadow = 1.0;
 
@@ -1723,9 +1726,11 @@ void main() {
 				continue; //not masked
 			}
 
-			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+#ifdef USE_LIGHTMAP
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && !sc_use_lightmap_capture()) {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
+#endif
 
 			// We're not doing light transmittence
 
