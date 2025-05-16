@@ -139,6 +139,8 @@ private:
 	Button *show_search_button = nullptr;
 	LineEdit *search_box = nullptr;
 
+	Button *show_find_selection_in_files_button = nullptr;
+
 	// Reference to the "Output" button on the toolbar so we can update its icon when warnings or errors are encountered.
 	Button *tool_button = nullptr;
 
@@ -153,6 +155,7 @@ private:
 	void _meta_clicked(const String &p_meta);
 	void _clear_request();
 	void _copy_request();
+	void _find_selection_in_files_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 	void _rebuild_log();

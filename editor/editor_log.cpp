@@ -37,6 +37,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/find_in_files.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
@@ -215,6 +216,22 @@ void EditorLog::_copy_request() {
 
 	if (!text.is_empty()) {
 		DisplayServer::get_singleton()->clipboard_set(text);
+	}
+}
+
+void EditorLog::_find_selection_in_files_request() {
+	String text = log->get_selected_text();
+
+	if (!text.is_empty()) {
+		// if you selected a whole line, its very unlikely you want the trailing newline
+		if (text.ends_with("\n")) {
+			text = text.substr(0, text.length() - 1);
+		}
+
+		FindInFilesDialog *find_in_files_dialog = FindInFilesDialog::get_singleton();
+		find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
+		find_in_files_dialog->set_search_text(text);
+		find_in_files_dialog->popup_centered();
 	}
 }
 
@@ -499,13 +516,29 @@ EditorLog::EditorLog() {
 	copy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_copy_request));
 	hb_tools->add_child(copy_button);
 
-	// Separate toggle buttons from normal buttons.
-	vb_right->add_child(memnew(HSeparator));
-
-	// A second hbox to make a 2x2 grid of buttons.
+	// A second hbox to form part of a 2x3 grid of buttons.
 	HBoxContainer *hb_tools2 = memnew(HBoxContainer);
 	hb_tools2->set_h_size_flags(SIZE_SHRINK_CENTER);
 	vb_right->add_child(hb_tools2);
+
+	// Find Selection in Files.
+	show_find_selection_in_files_button = memnew(Button);
+	show_find_selection_in_files_button->set_text("FiF"); // TODO icon would be better
+	show_find_selection_in_files_button->set_accessibility_name(TTRC("Find Selection in Files"));
+	show_find_selection_in_files_button->set_theme_type_variation(SceneStringName(FlatButton));
+	show_find_selection_in_files_button->set_focus_mode(FOCUS_NONE);
+	show_find_selection_in_files_button->set_shortcut(ED_SHORTCUT("editor/find_in_files", TTRC("Find Selection in Files"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F));
+	show_find_selection_in_files_button->set_shortcut_context(this);
+	show_find_selection_in_files_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_find_selection_in_files_request));
+	hb_tools2->add_child(show_find_selection_in_files_button);
+
+	// Separate toggle buttons from normal buttons.
+	vb_right->add_child(memnew(HSeparator));
+
+	// A third hbox to form part of a 2x3 grid of buttons.
+	HBoxContainer *hb_tools3 = memnew(HBoxContainer);
+	hb_tools3->set_h_size_flags(SIZE_SHRINK_CENTER);
+	vb_right->add_child(hb_tools3);
 
 	// Collapse.
 	collapse_button = memnew(Button);
@@ -516,7 +549,7 @@ EditorLog::EditorLog() {
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
 	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
-	hb_tools2->add_child(collapse_button);
+	hb_tools3->add_child(collapse_button);
 
 	// Show Search.
 	show_search_button = memnew(Button);
@@ -528,7 +561,7 @@ EditorLog::EditorLog() {
 	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTRC("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F));
 	show_search_button->set_shortcut_context(this);
 	show_search_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_visible));
-	hb_tools2->add_child(show_search_button);
+	hb_tools3->add_child(show_search_button);
 
 	// Message Type Filters.
 	vb_right->add_child(memnew(HSeparator));
