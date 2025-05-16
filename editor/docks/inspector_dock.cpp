@@ -40,10 +40,10 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_object_selector.h"
 #include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-
-InspectorDock *InspectorDock::singleton = nullptr;
+#include "scene/gui/box_container.h"
 
 void InspectorDock::_prepare_menu() {
 	PopupMenu *menu = object_menu->get_popup();
@@ -707,14 +707,20 @@ void InspectorDock::shortcut_input(const Ref<InputEvent> &p_event) {
 
 InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	singleton = this;
-	set_name("Inspector");
+	set_name(TTRC("Inspector"));
+	set_icon_name("AnimationTrackList");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_inspector", TTRC("Open Inspector Dock")));
+	set_default_slot(EditorDockManager::DOCK_SLOT_RIGHT_UL);
+
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
 
 	editor_data = &p_editor_data;
 
 	property_name_style = EditorPropertyNameProcessor::get_default_inspector_style();
 
 	HBoxContainer *general_options_hb = memnew(HBoxContainer);
-	add_child(general_options_hb);
+	main_vb->add_child(general_options_hb);
 
 	resource_new_button = memnew(Button);
 	resource_new_button->set_theme_type_variation("FlatMenuButton");
@@ -782,7 +788,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	history_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_select_history));
 
 	HBoxContainer *subresource_hb = memnew(HBoxContainer);
-	add_child(subresource_hb);
+	main_vb->add_child(subresource_hb);
 	object_selector = memnew(EditorObjectSelector(EditorNode::get_singleton()->get_editor_selection_history()));
 	object_selector->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	subresource_hb->add_child(object_selector);
@@ -801,7 +807,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	new_resource_dialog->connect("create", callable_mp(this, &InspectorDock::_resource_created));
 
 	HBoxContainer *property_tools_hb = memnew(HBoxContainer);
-	add_child(property_tools_hb);
+	main_vb->add_child(property_tools_hb);
 
 	search = memnew(LineEdit);
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -818,14 +824,14 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	object_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_menu_option));
 
 	info = memnew(Button);
-	add_child(info);
+	main_vb->add_child(info);
 	info->set_clip_text(true);
 	info->set_accessibility_name(TTRC("Information"));
 	info->hide();
 	info->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_info_pressed));
 
 	unique_resources_confirmation = memnew(ConfirmationDialog);
-	add_child(unique_resources_confirmation);
+	main_vb->add_child(unique_resources_confirmation);
 
 	VBoxContainer *container = memnew(VBoxContainer);
 	unique_resources_confirmation->add_child(container);
@@ -852,12 +858,12 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	EditorNode::get_singleton()->get_gui_base()->add_child(info_dialog);
 
 	load_resource_dialog = memnew(EditorFileDialog);
-	add_child(load_resource_dialog);
+	main_vb->add_child(load_resource_dialog);
 	load_resource_dialog->set_current_dir("res://");
 	load_resource_dialog->connect("file_selected", callable_mp(this, &InspectorDock::_resource_file_selected));
 
 	inspector = memnew(EditorInspector);
-	add_child(inspector);
+	main_vb->add_child(inspector);
 	inspector->set_autoclear(true);
 	inspector->set_show_categories(true, true);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
