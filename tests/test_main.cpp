@@ -363,10 +363,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 			ERR_PRINT_OFF;
 #ifndef NAVIGATION_3D_DISABLED
-			navigation_server_3d = NavigationServer3DManager::new_default_server();
+			navigation_server_3d = NavigationServer3DManager::get_singleton()->new_default_server();
 #endif // NAVIGATION_3D_DISABLED
 #ifndef NAVIGATION_2D_DISABLED
-			navigation_server_2d = NavigationServer2DManager::new_default_server();
+			navigation_server_2d = NavigationServer2DManager::get_singleton()->new_default_server();
 #endif // NAVIGATION_2D_DISABLED
 			ERR_PRINT_ON;
 
@@ -402,7 +402,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 #ifndef NAVIGATION_3D_DISABLED
 		if (suite_name.contains("[Navigation3D]") && navigation_server_3d == nullptr) {
 			ERR_PRINT_OFF;
-			navigation_server_3d = NavigationServer3DManager::new_default_server();
+			navigation_server_3d = NavigationServer3DManager::get_singleton()->new_default_server();
 			ERR_PRINT_ON;
 			return;
 		}
@@ -411,7 +411,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 #ifndef NAVIGATION_2D_DISABLED
 		if (suite_name.contains("[Navigation2D]") && navigation_server_2d == nullptr) {
 			ERR_PRINT_OFF;
-			navigation_server_2d = NavigationServer2DManager::new_default_server();
+			navigation_server_2d = NavigationServer2DManager::get_singleton()->new_default_server();
 			ERR_PRINT_ON;
 			return;
 		}
