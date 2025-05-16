@@ -53,11 +53,13 @@
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/scene/scene_create_dialog.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/shader/shader_create_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
@@ -4008,16 +4010,13 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 	return button;
 }
 
-bool FileSystemDock::_can_dock_horizontal() const {
-	return true;
-}
-
-void FileSystemDock::_set_dock_horizontal(bool p_enable) {
-	if (button_dock_placement->is_visible() == p_enable) {
+void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
+	bool horizontal = p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL;
+	if (button_dock_placement->is_visible() == horizontal) {
 		return;
 	}
 
-	if (p_enable) {
+	if (horizontal) {
 		set_meta("_dock_display_mode", get_display_mode());
 		set_meta("_dock_file_display_mode", get_file_list_display_mode());
 
@@ -4041,75 +4040,49 @@ void FileSystemDock::_set_dock_horizontal(bool p_enable) {
 		set_file_list_display_mode(new_file_display_mode);
 		set_custom_minimum_size(Size2(0, 0));
 	}
-
-	button_dock_placement->set_visible(p_enable);
+	button_dock_placement->set_visible(horizontal);
 }
 
-void FileSystemDock::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("navigate_to_path", "path"), &FileSystemDock::navigate_to_path);
-
-	ClassDB::bind_method(D_METHOD("add_resource_tooltip_plugin", "plugin"), &FileSystemDock::add_resource_tooltip_plugin);
-	ClassDB::bind_method(D_METHOD("remove_resource_tooltip_plugin", "plugin"), &FileSystemDock::remove_resource_tooltip_plugin);
-
-	ClassDB::bind_method(D_METHOD("_set_dock_horizontal", "enable"), &FileSystemDock::_set_dock_horizontal);
-	ClassDB::bind_method(D_METHOD("_can_dock_horizontal"), &FileSystemDock::_can_dock_horizontal);
-
-	ClassDB::bind_method(D_METHOD("_save_layout_to_config"), &FileSystemDock::_save_layout_to_config);
-	ClassDB::bind_method(D_METHOD("_load_layout_from_config"), &FileSystemDock::_load_layout_from_config);
-
-	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
-	ADD_SIGNAL(MethodInfo("instantiate", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
-
-	ADD_SIGNAL(MethodInfo("resource_removed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
-	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
-	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
-	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));
-	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_folder")));
-	ADD_SIGNAL(MethodInfo("folder_color_changed"));
-
-	ADD_SIGNAL(MethodInfo("display_mode_changed"));
-}
-
-void FileSystemDock::_save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
-	p_layout->set_value(p_section, "dock_filesystem_h_split_offset", get_h_split_offset());
-	p_layout->set_value(p_section, "dock_filesystem_v_split_offset", get_v_split_offset());
-	p_layout->set_value(p_section, "dock_filesystem_display_mode", get_display_mode());
-	p_layout->set_value(p_section, "dock_filesystem_file_sort", (int)get_file_sort());
-	p_layout->set_value(p_section, "dock_filesystem_file_list_display_mode", get_file_list_display_mode());
+void FileSystemDock::save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const {
+	p_layout->set_value(p_section, "h_split_offset", get_h_split_offset());
+	p_layout->set_value(p_section, "v_split_offset", get_v_split_offset());
+	p_layout->set_value(p_section, "display_mode", get_display_mode());
+	p_layout->set_value(p_section, "file_sort", (int)get_file_sort());
+	p_layout->set_value(p_section, "file_list_display_mode", get_file_list_display_mode());
 	PackedStringArray selected_files = get_selected_paths();
-	p_layout->set_value(p_section, "dock_filesystem_selected_paths", selected_files);
+	p_layout->set_value(p_section, "selected_paths", selected_files);
 	Vector<String> uncollapsed_paths = get_uncollapsed_paths();
-	p_layout->set_value(p_section, "dock_filesystem_uncollapsed_paths", searched_tokens.is_empty() ? uncollapsed_paths : uncollapsed_paths_before_search);
+	p_layout->set_value(p_section, "uncollapsed_paths", searched_tokens.is_empty() ? uncollapsed_paths : uncollapsed_paths_before_search);
 }
 
-void FileSystemDock::_load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
-	if (p_layout->has_section_key(p_section, "dock_filesystem_h_split_offset")) {
-		int fs_h_split_ofs = p_layout->get_value(p_section, "dock_filesystem_h_split_offset");
+void FileSystemDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) {
+	if (p_layout->has_section_key(p_section, "h_split_offset")) {
+		int fs_h_split_ofs = p_layout->get_value(p_section, "h_split_offset");
 		set_h_split_offset(fs_h_split_ofs);
 	}
 
-	if (p_layout->has_section_key(p_section, "dock_filesystem_v_split_offset")) {
-		int fs_v_split_ofs = p_layout->get_value(p_section, "dock_filesystem_v_split_offset");
+	if (p_layout->has_section_key(p_section, "v_split_offset")) {
+		int fs_v_split_ofs = p_layout->get_value(p_section, "v_split_offset");
 		set_v_split_offset(fs_v_split_ofs);
 	}
 
-	if (p_layout->has_section_key(p_section, "dock_filesystem_display_mode")) {
-		DisplayMode dock_filesystem_display_mode = DisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_display_mode")));
+	if (p_layout->has_section_key(p_section, "display_mode")) {
+		DisplayMode dock_filesystem_display_mode = DisplayMode(int(p_layout->get_value(p_section, "display_mode")));
 		set_display_mode(dock_filesystem_display_mode);
 	}
 
-	if (p_layout->has_section_key(p_section, "dock_filesystem_file_sort")) {
-		FileSortOption dock_filesystem_file_sort = FileSortOption(int(p_layout->get_value(p_section, "dock_filesystem_file_sort")));
+	if (p_layout->has_section_key(p_section, "file_sort")) {
+		FileSortOption dock_filesystem_file_sort = FileSortOption(int(p_layout->get_value(p_section, "file_sort")));
 		set_file_sort(dock_filesystem_file_sort);
 	}
 
-	if (p_layout->has_section_key(p_section, "dock_filesystem_file_list_display_mode")) {
-		FileListDisplayMode dock_filesystem_file_list_display_mode = FileListDisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_file_list_display_mode")));
+	if (p_layout->has_section_key(p_section, "file_list_display_mode")) {
+		FileListDisplayMode dock_filesystem_file_list_display_mode = FileListDisplayMode(int(p_layout->get_value(p_section, "file_list_display_mode")));
 		set_file_list_display_mode(dock_filesystem_file_list_display_mode);
 	}
 
-	if (p_layout->has_section_key(p_section, "dock_filesystem_selected_paths")) {
-		PackedStringArray dock_filesystem_selected_paths = p_layout->get_value(p_section, "dock_filesystem_selected_paths");
+	if (p_layout->has_section_key(p_section, "selected_paths")) {
+		PackedStringArray dock_filesystem_selected_paths = p_layout->get_value(p_section, "selected_paths");
 		for (int i = 0; i < dock_filesystem_selected_paths.size(); i++) {
 			select_file(dock_filesystem_selected_paths[i]);
 		}
@@ -4117,8 +4090,8 @@ void FileSystemDock::_load_layout_from_config(Ref<ConfigFile> p_layout, const St
 
 	// Restore collapsed state.
 	PackedStringArray uncollapsed_tis;
-	if (p_layout->has_section_key(p_section, "dock_filesystem_uncollapsed_paths")) {
-		uncollapsed_tis = p_layout->get_value(p_section, "dock_filesystem_uncollapsed_paths");
+	if (p_layout->has_section_key(p_section, "uncollapsed_paths")) {
+		uncollapsed_tis = p_layout->get_value(p_section, "uncollapsed_paths");
 	} else {
 		uncollapsed_tis = { "res://" };
 	}
@@ -4134,10 +4107,32 @@ void FileSystemDock::_load_layout_from_config(Ref<ConfigFile> p_layout, const St
 	}
 }
 
+void FileSystemDock::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("navigate_to_path", "path"), &FileSystemDock::navigate_to_path);
+
+	ClassDB::bind_method(D_METHOD("add_resource_tooltip_plugin", "plugin"), &FileSystemDock::add_resource_tooltip_plugin);
+	ClassDB::bind_method(D_METHOD("remove_resource_tooltip_plugin", "plugin"), &FileSystemDock::remove_resource_tooltip_plugin);
+
+	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
+	ADD_SIGNAL(MethodInfo("instantiate", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
+
+	ADD_SIGNAL(MethodInfo("resource_removed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
+	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
+	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));
+	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_folder")));
+	ADD_SIGNAL(MethodInfo("folder_color_changed"));
+
+	ADD_SIGNAL(MethodInfo("display_mode_changed"));
+}
+
 FileSystemDock::FileSystemDock() {
 	singleton = this;
-	set_name("FileSystem");
-	current_path = "res://";
+	set_name(TTRC("FileSystem"));
+	set_icon_name("Folder");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_filesystem", TTRC("Open FileSystem Dock"), KeyModifierMask::ALT | Key::F));
+	set_default_slot(EditorDockManager::DOCK_SLOT_LEFT_BR);
+	set_available_layouts(DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_HORIZONTAL);
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("file_customization/");
 
@@ -4171,8 +4166,11 @@ FileSystemDock::FileSystemDock() {
 
 	editor_is_dark_theme = EditorThemeManager::is_dark_theme();
 
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
+
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
-	add_child(top_vbc);
+	main_vb->add_child(top_vbc);
 
 	HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
 	top_vbc->add_child(toolbar_hbc);
@@ -4241,7 +4239,7 @@ FileSystemDock::FileSystemDock() {
 	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	split_box->connect("dragged", callable_mp(this, &FileSystemDock::_split_dragged));
 	split_box_offset_h = 240 * EDSCALE;
-	add_child(split_box);
+	main_vb->add_child(split_box);
 
 	tree = memnew(FileSystemTree);
 	tree->set_accessibility_name(TTRC("Directories"));
@@ -4305,7 +4303,7 @@ FileSystemDock::FileSystemDock() {
 
 	scanning_vb = memnew(VBoxContainer);
 	scanning_vb->hide();
-	add_child(scanning_vb);
+	main_vb->add_child(scanning_vb);
 
 	Label *slabel = memnew(Label);
 	slabel->set_text(TTRC("Scanning Files,\nPlease Wait..."));
