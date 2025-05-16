@@ -1276,9 +1276,10 @@ public:
 		ENV_TONE_MAPPER_FILMIC,
 		ENV_TONE_MAPPER_ACES,
 		ENV_TONE_MAPPER_AGX,
+		ENV_TONE_MAPPER_ADJUSTABLE,
 	};
 
-	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) = 0;
+	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, float p_black, float p_contrast = 1.25) = 0;
 	virtual void environment_set_max_value(RID p_env, float p_max_value) = 0;
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) = 0;
 

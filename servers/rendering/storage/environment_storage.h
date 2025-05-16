@@ -61,7 +61,9 @@ private:
 		// Tonemap
 		RS::EnvironmentToneMapper tone_mapper;
 		float exposure = 1.0;
+		float black = 0.0;
 		float white = 1.0;
+		float tonemap_contrast = 1.25; // Default to approximately Blender's AgX contrast
 		float max_value = 1.0;
 
 		// Fog
@@ -159,6 +161,19 @@ private:
 	mutable RID_Owner<Environment, true> environment_owner;
 
 public:
+	struct TonemapParameters {
+		float tonemap_black = 0.0;
+		float tonemap_a = 0.0;
+		float tonemap_b = 0.0;
+		float tonemap_c = 0.0;
+		float tonemap_d = 0.0;
+		float tonemap_e = 0.0;
+		float tonemap_f = 0.0;
+		float tonemap_g = 0.0;
+		float exposure = 1.0;
+		float max_value = 1.0;
+	};
+
 	static RendererEnvironmentStorage *get_singleton() { return singleton; }
 
 	RendererEnvironmentStorage();
@@ -200,12 +215,15 @@ public:
 	RS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const;
 
 	// Tonemap
-	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white);
+	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, float p_black, float p_contrast);
 	void environment_set_max_value(RID p_env, float p_max_value);
 	RS::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const;
 	float environment_get_exposure(RID p_env) const;
 	float environment_get_white(RID p_env) const;
+	float environment_get_black(RID p_env) const;
+	float environment_get_tonemap_contrast(RID p_env) const;
 	float environment_get_max_value(RID p_env) const;
+	TonemapParameters environment_get_tonemap_parameters(RID p_env) const;
 
 	// Fog
 	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode);

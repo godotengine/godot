@@ -227,12 +227,32 @@ float Environment::get_tonemap_white() const {
 	return tonemap_white;
 }
 
+void Environment::set_tonemap_black(float p_black) {
+	tonemap_black = p_black;
+	_update_tonemap();
+}
+
+float Environment::get_tonemap_black() const {
+	return tonemap_black;
+}
+
+void Environment::set_tonemap_contrast(float p_contrast) {
+	tonemap_contrast = p_contrast;
+	_update_tonemap();
+}
+
+float Environment::get_tonemap_contrast() const {
+	return tonemap_contrast;
+}
+
 void Environment::_update_tonemap() {
 	RS::get_singleton()->environment_set_tonemap(
 			environment,
 			RS::EnvironmentToneMapper(tone_mapper),
 			tonemap_exposure,
-			tonemap_white);
+			tonemap_white,
+			tonemap_black,
+			tonemap_contrast);
 }
 
 // SSR
@@ -1115,8 +1135,15 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
-	if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR || tone_mapper == TONE_MAPPER_AGX)) {
-		// Whitepoint adjustment is not available with AgX or linear as it's hardcoded there.
+	if (p_property.name == "tonemap_white" && tone_mapper == TONE_MAPPER_LINEAR) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "tonemap_black" && (tone_mapper == TONE_MAPPER_LINEAR)) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "tonemap_contrast" && tone_mapper != TONE_MAPPER_AGX && tone_mapper != TONE_MAPPER_ADJUSTABLE) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -1243,11 +1270,17 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tonemap_exposure"), &Environment::get_tonemap_exposure);
 	ClassDB::bind_method(D_METHOD("set_tonemap_white", "white"), &Environment::set_tonemap_white);
 	ClassDB::bind_method(D_METHOD("get_tonemap_white"), &Environment::get_tonemap_white);
+	ClassDB::bind_method(D_METHOD("set_tonemap_black", "black"), &Environment::set_tonemap_black);
+	ClassDB::bind_method(D_METHOD("get_tonemap_black"), &Environment::get_tonemap_black);
+	ClassDB::bind_method(D_METHOD("set_tonemap_contrast", "contrast"), &Environment::set_tonemap_contrast);
+	ClassDB::bind_method(D_METHOD("get_tonemap_contrast"), &Environment::get_tonemap_contrast);
 
 	ADD_GROUP("Tonemap", "tonemap_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES,AgX"), "set_tonemapper", "get_tonemapper");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES,AgX,Adjustable"), "set_tonemapper", "get_tonemapper");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_white", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_white", "get_tonemap_white");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_white", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_tonemap_white", "get_tonemap_white");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_black", PROPERTY_HINT_RANGE, "0.0,0.15,0.001"), "set_tonemap_black", "get_tonemap_black");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_contrast", PROPERTY_HINT_RANGE, "1.0,5,0.01"), "set_tonemap_contrast", "get_tonemap_contrast");
 
 	// SSR
 
@@ -1551,6 +1584,7 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(TONE_MAPPER_FILMIC);
 	BIND_ENUM_CONSTANT(TONE_MAPPER_ACES);
 	BIND_ENUM_CONSTANT(TONE_MAPPER_AGX);
+	BIND_ENUM_CONSTANT(TONE_MAPPER_ADJUSTABLE);
 
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_ADDITIVE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_SCREEN);
