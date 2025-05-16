@@ -42,6 +42,7 @@ class EditorFileSystem;
 class EditorInspector;
 class EditorPaths;
 class EditorPlugin;
+class EditorResourceConversionPlugin;
 class EditorResourcePreview;
 class EditorSelection;
 class EditorSettings;
@@ -114,6 +115,8 @@ public:
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
+	Array find_resource_conversion_plugin_for_resource(const Ref<Resource> &p_for_resource);
+	Array find_resource_conversion_plugin_for_type_name(const String &p_type);
 
 	// Editor GUI.
 
