@@ -71,7 +71,10 @@ Quaternion Quaternion::normalized() const {
 }
 
 bool Quaternion::is_normalized() const {
-	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON); //use less epsilon
+	// Float input precision is 0.001 per component, then worst case sums push len2 off by about 0.004.
+	// So round-off margin bumps limit to 0.005.
+	constexpr real_t NRM_EPSILON = 0.005;
+	return Math::is_equal_approx(length_squared(), 1, NRM_EPSILON);
 }
 
 Quaternion Quaternion::inverse() const {
