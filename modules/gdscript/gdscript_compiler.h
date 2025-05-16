@@ -42,6 +42,7 @@ class GDScriptCompiler {
 	HashSet<GDScript *> parsed_classes;
 	HashSet<GDScript *> parsing_classes;
 	GDScript *main_script = nullptr;
+	bool enable_newline = false;
 
 	struct FunctionLambdaInfo {
 		GDScriptFunction *function = nullptr;
