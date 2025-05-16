@@ -71,7 +71,6 @@
 #include "servers/camera_server.h"
 #include "servers/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
-#include "servers/movie_writer/movie_writer_mjpeg.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server_dummy.h"
