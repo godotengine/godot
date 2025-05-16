@@ -25,9 +25,11 @@ thirdparty_sources = [
     "src/polygon.cpp",
     "src/properties.cpp",
     "src/quickhull.cpp",
+    "src/sdf.cpp",
     "src/smoothing.cpp",
     "src/sort.cpp",
     "src/subdivision.cpp",
+    "src/tree2d.cpp",
 ]
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
