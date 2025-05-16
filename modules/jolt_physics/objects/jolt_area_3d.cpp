@@ -83,7 +83,7 @@ void JoltArea3D::_add_to_space() {
 
 	jolt_settings->SetShape(jolt_shape);
 
-	JPH::Body *new_jolt_body = space->add_rigid_body(*this, *jolt_settings);
+	JPH::Body *new_jolt_body = space->add_rigid_body(*this, *jolt_settings, _should_sleep());
 	if (new_jolt_body == nullptr) {
 		return;
 	}
@@ -275,6 +275,18 @@ void JoltArea3D::_force_areas_exited(bool p_remove) {
 	}
 }
 
+void JoltArea3D::_update_sleeping() {
+	if (space == nullptr) {
+		return;
+	}
+
+	if (_should_sleep()) {
+		space->get_body_iface().DeactivateBody(jolt_body->GetID());
+	} else {
+		space->get_body_iface().ActivateBody(jolt_body->GetID());
+	}
+}
+
 void JoltArea3D::_update_group_filter() {
 	if (!in_space()) {
 		return;
@@ -321,6 +333,8 @@ void JoltArea3D::_body_monitoring_changed() {
 	} else {
 		_force_bodies_exited(false);
 	}
+
+	_update_sleeping();
 }
 
 void JoltArea3D::_area_monitoring_changed() {
@@ -329,6 +343,8 @@ void JoltArea3D::_area_monitoring_changed() {
 	} else {
 		_force_areas_exited(false);
 	}
+
+	_update_sleeping();
 }
 
 void JoltArea3D::_monitorable_changed() {
