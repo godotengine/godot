@@ -195,7 +195,7 @@ LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 #else
 	// Disable lightmap baking if the module is disabled at compile-time.
 	bake->set_disabled(true);
-#if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+#if defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	bake->set_tooltip_text(vformat(TTR("Lightmaps cannot be baked on %s."), OS::get_singleton()->get_name()));
 #else
 	bake->set_tooltip_text(TTR("Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at compile-time."));

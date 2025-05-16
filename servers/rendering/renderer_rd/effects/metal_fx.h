@@ -30,6 +30,12 @@
 
 #pragma once
 
+#if defined(METAL_ENABLED) && !defined(VISIONOS_ENABLED)
+#define METAL_MFXTEMPORAL_ENABLED 1
+#else
+#define METAL_MFXTEMPORAL_ENABLED 0
+#endif
+
 #ifdef METAL_ENABLED
 
 #include "spatial_upscaler.h"
@@ -91,6 +97,8 @@ public:
 	MFXSpatialEffect();
 	~MFXSpatialEffect();
 };
+
+#if METAL_MFXTEMPORAL_ENABLED
 
 struct MFXTemporalContext {
 #ifdef __OBJC__
@@ -173,6 +181,8 @@ public:
 
 	void process(MFXTemporalContext *p_ctx, Params p_params);
 };
+
+#endif
 
 } //namespace RendererRD
 
