@@ -81,7 +81,7 @@ _ALWAYS_INLINE_ static void _cpu_pause() {
 	__builtin_ia32_pause();
 #elif defined(__arm__) || defined(__aarch64__) // ARM.
 	asm volatile("yield");
-#elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__) // PowerPC.
+#elif defined(__powerpc__) // PowerPC.
 	asm volatile("or 27,27,27");
 #elif defined(__riscv) // RISC-V.
 	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010");
