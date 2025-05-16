@@ -937,6 +937,13 @@ public:
 			options.push_back(p_arg5);
 			options.push_back(p_arg6);
 		}
+
+		ModeInfo(const StringName &p_name, std::initializer_list<StringName> p_args) :
+				name(p_name) {
+			for (const StringName &arg : p_args) {
+				options.push_back(arg);
+			}
+		}
 	};
 
 	struct FunctionInfo {
