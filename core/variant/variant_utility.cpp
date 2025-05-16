@@ -1035,6 +1035,23 @@ void VariantUtilityFunctions::push_warning(const Variant **p_args, int p_arg_cou
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
+Variant VariantUtilityFunctions::dump(const Variant &p_variant) {
+#ifdef DEBUG_ENABLED
+	::dump(p_variant);
+#else
+	print_line(p_variant);
+#endif
+	return p_variant;
+}
+
+String VariantUtilityFunctions::dump_string(const Variant &p_variant) {
+#ifdef DEBUG_ENABLED
+	return p_variant.dump();
+#else
+	return p_variant.operator String();
+#endif
+}
+
 String VariantUtilityFunctions::var_to_str(const Variant &p_var) {
 	String vars;
 	VariantWriter::write_to_string(p_var, vars);
@@ -1760,6 +1777,9 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVARARGV_CNAME(print_verbose, _print_verbose, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_error, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_warning, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+
+	FUNCBINDR(dump, sarray("variant"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(dump_string, sarray("variant"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
 	FUNCBINDR(var_to_str, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(str_to_var, sarray("string"), Variant::UTILITY_FUNC_TYPE_GENERAL);
