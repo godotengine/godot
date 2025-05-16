@@ -69,11 +69,11 @@ String ReflectionProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gi
 	}
 	switch (p_id) {
 		case 6:
-			return "Origin X";
+			return TTR("Origin X");
 		case 7:
-			return "Origin Y";
+			return TTR("Origin Y");
 		case 8:
-			return "Origin Z";
+			return TTR("Origin Z");
 	}
 	return "";
 }

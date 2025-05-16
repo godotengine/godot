@@ -50,18 +50,18 @@ String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 
 	// Primary handles: position.
 	if (!p_secondary) {
-		return TTR("Curve Point #") + itos(p_id);
+		return TTR("Curve point #") + itos(p_id);
 	}
 
 	// Secondary handles: in, out, tilt.
 	const HandleInfo info = _secondary_handles_info[p_id];
 	switch (info.type) {
 		case HandleType::HANDLE_TYPE_IN:
-			return TTR("Handle In #") + itos(info.point_idx);
+			return TTR("In handle #") + itos(info.point_idx);
 		case HandleType::HANDLE_TYPE_OUT:
-			return TTR("Handle Out #") + itos(info.point_idx);
+			return TTR("Out handle #") + itos(info.point_idx);
 		case HandleType::HANDLE_TYPE_TILT:
-			return TTR("Handle Tilt #") + itos(info.point_idx);
+			return TTR("Tilt handle #") + itos(info.point_idx);
 	}
 
 	return "";
