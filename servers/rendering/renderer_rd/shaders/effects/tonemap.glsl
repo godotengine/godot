@@ -75,7 +75,15 @@ layout(push_constant, std430) uniform Params {
 
 	vec2 pixel_size;
 	uint tonemapper;
-	uint pad1;
+	float tonemap_black;
+	float tonemap_a;
+	float tonemap_b;
+	float tonemap_c;
+	float tonemap_d;
+	float tonemap_e;
+	float tonemap_f;
+	float tonemap_g;
+	uint pad;
 
 	uvec2 glow_texture_size;
 	float glow_intensity;
@@ -85,12 +93,10 @@ layout(push_constant, std430) uniform Params {
 	float glow_levels[7];
 
 	float exposure;
-	float white;
 	float auto_exposure_scale;
 	float luminance_multiplier;
 
 	float output_max_value;
-	uint pad2[3];
 }
 params;
 
@@ -202,17 +208,17 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 #endif // !USE_GLOW_FILTER_BICUBIC
 
 // Based on Reinhard's extended formula, see equation 4 in https://doi.org/cjbgrt
-vec3 tonemap_reinhard(vec3 color, float white) {
-	float white_squared = white * white;
-
-	// Updated version of the Reinhard tonemapper supporting HDR rendering.
-	return color * (1.0f + color / (white_squared / params.output_max_value)) / (1.0f + color / params.output_max_value);
+vec3 tonemap_reinhard(vec3 color) {
+	float w = params.tonemap_a;
+	// Maybe this can be optimized further? I stomped over the old optimization to add in HDR support.
+	return color * (1 + color / w) / (1 + color / params.output_max_value);
 }
 
-vec3 tonemap_filmic(vec3 color, float white) {
+vec3 tonemap_filmic(vec3 color) {
 	// exposure bias: input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
 	// also useful to scale the input to the range that the tonemapper is designed for (some require very high input values)
 	// has no effect on the curve's general shape or visual properties
+	// These constants must match the those in the C++ code that calculates the parameters.
 	const float exposure_bias = 2.0f;
 	const float A = 0.22f * exposure_bias * exposure_bias; // bias baked into constants for performance
 	const float B = 0.30f * exposure_bias;
@@ -222,14 +228,14 @@ vec3 tonemap_filmic(vec3 color, float white) {
 	const float F = 0.30f;
 
 	vec3 color_tonemapped = ((color * (A * color + C * B) + D * E) / (color * (A * color + B) + D * F)) - E / F;
-	float white_tonemapped = ((white * (A * white + C * B) + D * E) / (white * (A * white + B) + D * F)) - E / F;
 
-	return color_tonemapped / white_tonemapped;
+	return color_tonemapped / params.tonemap_a;
 }
 
 // Adapted from https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
 // (MIT License).
-vec3 tonemap_aces(vec3 color, float white) {
+vec3 tonemap_aces(vec3 color) {
+	// These constants must match the those in the C++ code that calculates the parameters.
 	const float exposure_bias = 1.8f;
 	const float A = 0.0245786f;
 	const float B = 0.000090537f;
@@ -252,46 +258,40 @@ vec3 tonemap_aces(vec3 color, float white) {
 	vec3 color_tonemapped = (color * (color + A) - B) / (color * (C * color + D) + E);
 	color_tonemapped *= odt_to_rgb;
 
-	white *= exposure_bias;
-	float white_tonemapped = (white * (white + A) - B) / (white * (C * white + D) + E);
-
-	return color_tonemapped / white_tonemapped;
+	return color_tonemapped / params.tonemap_a;
 }
 
-// Polynomial approximation of EaryChow's AgX sigmoid curve.
-// x must be within the range [0.0, 1.0]
-vec3 agx_contrast_approx(vec3 x) {
-	// Generated with Excel trendline
-	// Input data: Generated using python sigmoid with EaryChow's configuration and 57 steps
-	// Additional padding values were added to give correct intersections at 0.0 and 1.0
-	// 6th order, intercept of 0.0 to remove an operation and ensure intersection at 0.0
-	vec3 x2 = x * x;
-	vec3 x4 = x2 * x2;
-	return 0.021 * x + 4.0111 * x2 - 25.682 * x2 * x + 70.359 * x4 - 74.778 * x4 * x + 27.069 * x4 * x2;
+// allenwp tonemapping curve; developed for use in the Godot game engine
+// Source and details: https://allenwp.com/blog/2025/05/29/allenwp-tonemapping-curve/
+// Input must be a non-negative linear scene value
+vec3 allenwp_curve(vec3 x) {
+	float awp_contrast = params.tonemap_a;
+	float awp_toe_a = params.tonemap_b;
+	float awp_slope = params.tonemap_c;
+	float awp_w = params.tonemap_d;
+	float awp_shoulder_max = params.tonemap_e;
+	float awp_mid_in = params.tonemap_f;
+	float awp_mid_out = params.tonemap_g;
+
+	// Reinhard-like shoulder:
+	vec3 s = x - awp_mid_in;
+	vec3 slope_s = awp_slope * s;
+	s = slope_s * (1.0 + s / awp_w) / (1.0 + (slope_s / awp_shoulder_max));
+	s += awp_mid_out;
+
+	// Sigmoid power function toe:
+	vec3 t = pow(x, vec3(awp_contrast));
+	t = t / (t + awp_toe_a);
+
+	return mix(s, t, lessThan(x, vec3(awp_mid_in)));
 }
 
 // This is an approximation and simplification of EaryChow's AgX implementation that is used by Blender.
 // This code is based off of the script that generates the AgX_Base_sRGB.cube LUT that Blender uses.
 // Source: https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBasesRGB.py
+// Colorspace transformation source: https://www.colour-science.org:8010/apps/rgb_colourspace_transformation_matrix
 vec3 tonemap_agx(vec3 color) {
-	// Combined linear sRGB to linear Rec 2020 and Blender AgX inset matrices:
-	const mat3 srgb_to_rec2020_agx_inset_matrix = mat3(
-			0.54490813676363087053, 0.14044005884001287035, 0.088827411851915368603,
-			0.37377945959812267119, 0.75410959864013760045, 0.17887712465043811023,
-			0.081384976686407536266, 0.10543358536857773485, 0.73224999956948382528);
-
-	// Combined inverse AgX outset matrix and linear Rec 2020 to linear sRGB matrices.
-	const mat3 agx_outset_rec2020_to_srgb_matrix = mat3(
-			1.9645509602733325934, -0.29932243390911083839, -0.16436833806080403409,
-			-0.85585845117807513559, 1.3264510741502356555, -0.23822464068860595117,
-			-0.10886710826831608324, -0.027084020983874825605, 1.402665347143271889);
-
-	// LOG2_MIN      = -10.0
-	// LOG2_MAX      =  +6.5
-	// MIDDLE_GRAY   =  0.18
-	const float min_ev = -12.4739311883324; // log2(pow(2, LOG2_MIN) * MIDDLE_GRAY)
-	const float max_ev = 4.02606881166759; // log2(pow(2, LOG2_MAX) * MIDDLE_GRAY)
-
+	// Input color should be non-negative!
 	// Large negative values in one channel and large positive values in other
 	// channels can result in a colour that appears darker and more saturated than
 	// desired after passing it through the inset matrix. For this reason, it is
@@ -299,28 +299,38 @@ vec3 tonemap_agx(vec3 color) {
 	// This is done before the Rec. 2020 transform to allow the Rec. 2020
 	// transform to be combined with the AgX inset matrix. This results in a loss
 	// of color information that could be correctly interpreted within the
-	// Rec. 2020 color space as positive RGB values, but it is less common for Godot
-	// to provide this function with negative sRGB values and therefore not worth
+	// Rec. 2020 color space as positive RGB values, but is often not worth
 	// the performance cost of an additional matrix multiplication.
-	// A value of 2e-10 intentionally introduces insignificant error to prevent
-	// log2(0.0) after the inset matrix is applied; color will be >= 1e-10 after
-	// the matrix transform.
-	color = max(color, 2e-10);
+	//
+	// Additionally, this AgX configuration was created subjectively based on
+	// output appearance in the sRGB color space, so it is possible that these
+	// matrices will not perform well with non-sRGB output (more testing with
+	// future wide-gamut displays is be needed).
+	// See this comment from the author on the decisions made to create the matrices:
+	// https://github.com/godotengine/godot-proposals/issues/12317#issuecomment-2835824250
 
-	// Do AGX in rec2020 to match Blender and then apply inset matrix.
+	// Combined linear sRGB to linear Rec 2020 and Blender AgX inset matrices:
+	const mat3 srgb_to_rec2020_agx_inset_matrix = mat3(
+			0.544814746488245, 0.140416948464053, 0.0888104196149096,
+			0.373787398372697, 0.754137554567394, 0.178871756420858,
+			0.0813978551390581, 0.105445496968552, 0.732317823964232);
+
+	// Combined inverse AgX outset matrix and linear Rec 2020 to linear sRGB matrices.
+	const mat3 agx_outset_rec2020_to_srgb_matrix = mat3(
+			1.96488741169489, -0.299313364904742, -0.164352742528393,
+			-0.855988495690215, 1.32639796461980, -0.238183969428088,
+			-0.108898916004672, -0.0270845997150571, 1.40253671195648);
+
+	// Apply inset matrix.
 	color = srgb_to_rec2020_agx_inset_matrix * color;
 
-	// Log2 space encoding.
-	// Must be clamped because agx_contrast_approx may not work
-	// well with values outside of the range [0.0, 1.0]
-	color = clamp(log2(color), min_ev, max_ev);
-	color = (color - min_ev) / (max_ev - min_ev);
+	// Use the allenwp tonemapping curve to match the Blender AgX curve while
+	// providing stability across all variable dyanimc range (SDR, HDR, EDR).
+	color = allenwp_curve(color);
 
-	// Apply sigmoid function approximation.
-	color = agx_contrast_approx(color);
-
-	// Convert back to linear before applying outset matrix.
-	color = pow(color, vec3(2.4));
+	// Clipping to output_max_value is required to address a cyan colour that occurs
+	// with very bright inputs.
+	color = min(vec3(params.output_max_value), color);
 
 	// Apply outset to make the result more chroma-laden and then go back to linear sRGB.
 	color = agx_outset_rec2020_to_srgb_matrix * color;
@@ -329,6 +339,10 @@ vec3 tonemap_agx(vec3 color) {
 	// simply return the color, even if it has negative components. These negative
 	// components may be useful for subsequent color adjustments.
 	return color;
+}
+
+vec3 tonemap_adjustable(vec3 color) {
+	return allenwp_curve(color);
 }
 
 vec3 linear_to_srgb(vec3 color) {
@@ -344,21 +358,61 @@ vec3 linear_to_srgb(vec3 color) {
 #define TONEMAPPER_FILMIC 2
 #define TONEMAPPER_ACES 3
 #define TONEMAPPER_AGX 4
+#define TONEMAPPER_ADJUSTABLE 5
 
-vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR
-	// Ensure color values passed to tonemappers are positive.
-	// They can be negative in the case of negative lights, which leads to undesired behavior.
+vec3 apply_tonemapping(vec3 color) { // inputs are LINEAR
 	// Linear is special: it always passes through with no adjustments.
 	if (params.tonemapper == TONEMAPPER_LINEAR) {
 		return color;
-	} else if (params.tonemapper == TONEMAPPER_REINHARD) {
-		return tonemap_reinhard(max(vec3(0.0f), color), white);
+	}
+
+	// Ensure color values passed to tonemappers are positive.
+	// They can be negative in the case of negative lights, which leads to undesired behavior.
+	color = max(vec3(0.0), color);
+
+	// Entirely unoptimized demonstration of a CIE-correct "black" parameter
+	// Matrix from https://www.colour-science.org/apps/
+	const mat3 linear_sRGB_to_XYZ = transpose(mat3(
+			0.4338873456, 0.3762240091, 0.1898886453,
+			0.2126390059, 0.7151686788, 0.0721923154,
+			0.0177500401, 0.1094476209, 0.8728023391));
+	const mat3 XYZ_to_linear_sRGB = inverse(linear_sRGB_to_XYZ);
+	if (params.tonemap_black > 0.0) {
+		vec3 XYZ = linear_sRGB_to_XYZ * color;
+		if (XYZ.y > 0.0) {
+			// Black parameter has been set and input color is non-black.
+			// This means we need to apply the black parameter to color:
+			float new_y = XYZ.y - params.tonemap_black;
+			if (new_y <= 0.0) {
+				color = vec3(0.0);
+			} else {
+				// First record the original chromaticity coords
+				vec2 xy = vec2(XYZ.x / (XYZ.x + XYZ.y + XYZ.z), XYZ.y / (XYZ.x + XYZ.y + XYZ.z));
+				// Construct new XYZ with old chromaticity coords and new luminance
+				XYZ.y = new_y;
+				XYZ.x = new_y * (xy.x / xy.y);
+				XYZ.z = new_y * ((1.0 - xy.x - xy.y) / xy.y);
+				color = XYZ_to_linear_sRGB * XYZ;
+				// XYZ_to_linear_sRGB transformation can result in negative
+				// numbers that are extremely close to zero. These need to be
+				// turned into non-negative for tonemappers to work well.
+				color = max(vec3(0.0), color);
+			}
+		}
+	}
+
+	if (params.tonemapper == TONEMAPPER_REINHARD) {
+		return tonemap_reinhard(color);
 	} else if (params.tonemapper == TONEMAPPER_FILMIC) {
-		return tonemap_filmic(max(vec3(0.0f), color), white);
+		// Filmic is SDR only because of the white parameter implementation.
+		return tonemap_filmic(color);
 	} else if (params.tonemapper == TONEMAPPER_ACES) {
-		return tonemap_aces(max(vec3(0.0f), color), white);
-	} else { // TONEMAPPER_AGX
+		// ACES is SDR only because of the white parameter implementation.
+		return tonemap_aces(color);
+	} else if (params.tonemapper == TONEMAPPER_AGX) {
 		return tonemap_agx(color);
+	} else { // TONEMAPPER_ADJUSTABLE
+		return tonemap_adjustable(color);
 	}
 }
 
@@ -896,7 +950,7 @@ void main() {
 	}
 #endif
 
-	color.rgb = apply_tonemapping(color.rgb, params.white);
+	color.rgb = apply_tonemapping(color.rgb);
 
 	bool convert_to_srgb = bool(params.flags & FLAG_CONVERT_TO_SRGB);
 	if (convert_to_srgb) {
@@ -911,7 +965,7 @@ void main() {
 		}
 
 		// high dynamic range -> SRGB
-		glow = apply_tonemapping(glow, params.white);
+		glow = apply_tonemapping(glow);
 		if (convert_to_srgb) {
 			glow = linear_to_srgb(glow);
 		}

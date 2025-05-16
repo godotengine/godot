@@ -184,7 +184,7 @@ public:
 	virtual RS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const = 0;
 
 	// Tonemap
-	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) = 0;
+	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, float p_black, float p_contrast) = 0;
 	virtual void environment_set_max_value(RID p_env, float p_max_value) = 0;
 
 	virtual RS::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const = 0;

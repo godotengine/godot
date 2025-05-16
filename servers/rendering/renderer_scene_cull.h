@@ -1239,7 +1239,7 @@ public:
 	PASS1RC(RS::EnvironmentReflectionSource, environment_get_reflection_source, RID)
 
 	// Tonemap
-	PASS4(environment_set_tonemap, RID, RS::EnvironmentToneMapper, float, float)
+	PASS6(environment_set_tonemap, RID, RS::EnvironmentToneMapper, float, float, float, float)
 	PASS2(environment_set_max_value, RID, float)
 	PASS1RC(RS::EnvironmentToneMapper, environment_get_tone_mapper, RID)
 	PASS1RC(float, environment_get_exposure, RID)

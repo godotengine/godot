@@ -1500,6 +1500,8 @@
 			<param index="1" name="tone_mapper" type="int" enum="RenderingServer.EnvironmentToneMapper" />
 			<param index="2" name="exposure" type="float" />
 			<param index="3" name="white" type="float" />
+			<param index="4" name="black" type="float" />
+			<param index="5" name="contrast" type="float" default="1.25" />
 			<description>
 				Sets the variables to be used with the "tonemap" post-process effect. See [Environment] for more details.
 			</description>
@@ -5458,15 +5460,18 @@
 			[b]Note:[/b] When [member Environment.tonemap_white] is left at the default value of [code]1.0[/code], [constant ENV_TONE_MAPPER_REINHARD] produces an identical image to [constant ENV_TONE_MAPPER_LINEAR].
 		</constant>
 		<constant name="ENV_TONE_MAPPER_FILMIC" value="2" enum="EnvironmentToneMapper">
-			Uses a film-like tonemapping curve to prevent clipping of bright values and provide better contrast than [constant ENV_TONE_MAPPER_REINHARD]. Slightly slower than [constant ENV_TONE_MAPPER_REINHARD].
+			Uses a film-like tonemapping curve to prevent clipping of bright values and provide better contrast than [constant ENV_TONE_MAPPER_REINHARD]. Slightly slower than [constant ENV_TONE_MAPPER_REINHARD]. This tonemapper only supports Standard Dynamic Range (SDR) output.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
-			Uses a high-contrast film-like tonemapping curve and desaturates bright values for a more realistic appearance. Slightly slower than [constant ENV_TONE_MAPPER_FILMIC].
+			Uses a high-contrast film-like tonemapping curve and desaturates bright values for a more realistic appearance. Slightly slower than [constant ENV_TONE_MAPPER_FILMIC]. This tonemapper only supports Standard Dynamic Range (SDR) output.
 			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_AGX" value="4" enum="EnvironmentToneMapper">
-			Uses a film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
-			[b]Note:[/b] [member Environment.tonemap_white] is fixed at a value of [code]16.29[/code], which makes [constant ENV_TONE_MAPPER_AGX] unsuitable for use with the Mobile rendering method.
+			Uses an adjustable film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
+			[b]Note:[/b] When using [constant ENV_TONE_MAPPER_AGX], the minimum supported [member Environment.tonemap_white] is [code]2.0[/code] and a value of [code]16.0[/code] is recommended for use with the Compatibility and Forward+ rendering methods.
+		</constant>
+		<constant name="ENV_TONE_MAPPER_ADJUSTABLE" value="5" enum="EnvironmentToneMapper">
+			Uses a film-like tonemapping curve with an adjustable contrast. Slightly slower than [constant ENV_TONE_MAPPER_ACES] (That's my goal, anyway!).
 		</constant>
 		<constant name="ENV_SSR_ROUGHNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
 			Lowest quality of roughness filter for screen-space reflections. Rough materials will not have blurrier screen-space reflections compared to smooth (non-rough) materials. This is the fastest option.
