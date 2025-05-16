@@ -152,7 +152,6 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	/* STEP 1, CREATE */
 
 	GDScriptInstance *instance = memnew(GDScriptInstance);
-	instance->base_ref_counted = p_is_ref_counted;
 	instance->members.resize(member_indices.size());
 	instance->script = Ref<GDScript>(this);
 	instance->owner = p_owner;
@@ -694,7 +693,7 @@ void GDScript::_static_default_init() {
 	for (const KeyValue<StringName, MemberInfo> &E : static_variables_indices) {
 		const GDScriptDataType &type = E.value.data_type;
 		// Only initialize builtin types, which are not expected to be `null`.
-		if (!type.has_type || type.kind != GDScriptDataType::BUILTIN) {
+		if (type.kind != GDScriptDataType::BUILTIN) {
 			continue;
 		}
 		if (type.builtin_type == Variant::ARRAY && type.has_container_element_type(0)) {
@@ -1018,7 +1017,7 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 		if (E) {
 			const MemberInfo *member = &E->value;
 			Variant value = p_value;
-			if (member->data_type.has_type && !member->data_type.is_type(value)) {
+			if (!member->data_type.is_type(value)) {
 				const Variant *args = &p_value;
 				Callable::CallError err;
 				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
@@ -1678,7 +1677,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 		if (E) {
 			const GDScript::MemberInfo *member = &E->value;
 			Variant value = p_value;
-			if (member->data_type.has_type && !member->data_type.is_type(value)) {
+			if (!member->data_type.is_type(value)) {
 				const Variant *args = &p_value;
 				Callable::CallError err;
 				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
@@ -1705,7 +1704,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 			if (E) {
 				const GDScript::MemberInfo *member = &E->value;
 				Variant value = p_value;
-				if (member->data_type.has_type && !member->data_type.is_type(value)) {
+				if (!member->data_type.is_type(value)) {
 					const Variant *args = &p_value;
 					Callable::CallError err;
 					Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
@@ -2159,11 +2158,6 @@ void GDScriptInstance::reload_members() {
 	}
 
 #endif
-}
-
-GDScriptInstance::GDScriptInstance() {
-	owner = nullptr;
-	base_ref_counted = false;
 }
 
 GDScriptInstance::~GDScriptInstance() {
