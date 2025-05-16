@@ -648,6 +648,8 @@ static Vector<Ref<Image>> _dds_load_images_from_buffer(Ref<FileAccess> p_f, DDSF
 			// Without alpha.
 			if (format_rgb_bits == 8 && format_red_mask == 0xff) {
 				r_dds_format = DDS_LUMINANCE;
+			} else if (format_rgb_bits == 16 && format_red_mask == 0xffff) {
+				r_dds_format = DDS_R16;
 			}
 		}
 	}
