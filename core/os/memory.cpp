@@ -56,11 +56,6 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 }
 #endif
 
-#ifdef DEBUG_ENABLED
-SafeNumeric<uint64_t> Memory::mem_usage;
-SafeNumeric<uint64_t> Memory::max_usage;
-#endif
-
 void *Memory::alloc_aligned_static(size_t p_bytes, size_t p_alignment) {
 	DEV_ASSERT(is_power_of_2(p_alignment));
 
@@ -220,5 +215,3 @@ _GlobalNil::_GlobalNil() {
 	right = this;
 	parent = this;
 }
-
-_GlobalNil _GlobalNilClass::_nil;

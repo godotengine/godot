@@ -38,8 +38,8 @@
 
 class Memory {
 #ifdef DEBUG_ENABLED
-	static SafeNumeric<uint64_t> mem_usage;
-	static SafeNumeric<uint64_t> max_usage;
+	static inline SafeNumeric<uint64_t> mem_usage;
+	static inline SafeNumeric<uint64_t> max_usage;
 #endif
 
 public:
@@ -248,7 +248,7 @@ struct _GlobalNil {
 };
 
 struct _GlobalNilClass {
-	static _GlobalNil _nil;
+	static inline _GlobalNil _nil;
 };
 
 template <typename T>
