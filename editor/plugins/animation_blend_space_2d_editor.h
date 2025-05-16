@@ -33,7 +33,9 @@
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_blend_space_2d.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/tree.h"
 
 class Button;
 class CheckBox;
@@ -43,8 +45,10 @@ class PanelContainer;
 class SpinBox;
 class VSeparator;
 
+class BlendPointEditor;
 class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendSpace2DEditor, AnimationTreeNodeEditorPlugin);
+	friend BlendPointEditor;
 
 	Ref<AnimationNodeBlendSpace2D> blend_space;
 	bool read_only = false;
@@ -60,7 +64,17 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	SpinBox *snap_x = nullptr;
 	SpinBox *snap_y = nullptr;
 	CheckBox *sync = nullptr;
+
 	OptionButton *interpolation = nullptr;
+
+	HBoxContainer *blending_hb = nullptr;
+	SpinBox *default_blend_time = nullptr;
+	CheckBox *override_delta = nullptr;
+	Ref<BlendPointEditor> current_blend_point_editor;
+
+	HBoxContainer *edit_fade_hb = nullptr;
+	SpinBox *edit_fade_in = nullptr;
+	SpinBox *edit_fade_out = nullptr;
 
 	Button *auto_triangles = nullptr;
 
@@ -145,4 +159,32 @@ public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
 	AnimationNodeBlendSpace2DEditor();
+	~AnimationNodeBlendSpace2DEditor();
+};
+
+class BlendPointEditor : public RefCounted {
+	GDCLASS(BlendPointEditor, RefCounted);
+
+private:
+	Ref<AnimationNodeBlendSpace2D> blend_space;
+	Ref<AnimationNode> anim_node;
+	int selected_point = -1;
+	Vector2 fades;
+	bool updating = false;
+
+public:
+	void setup(Ref<AnimationNodeBlendSpace2D> p_blend_space, int idx, Ref<AnimationNode> p_anim_node);
+
+	void set_fade_in(float p_value);
+	double get_fade_in() const;
+
+	void set_fade_out(float p_value);
+	double get_fade_out() const;
+	void _edit_point_fade();
+	Ref<AnimationNode> get_anim_node() const;
+	bool _hide_script_from_inspector() { return true; }
+	bool _hide_metadata_from_inspector() { return true; }
+	bool _dont_undo_redo() { return true; }
+
+	static void _bind_methods();
 };
