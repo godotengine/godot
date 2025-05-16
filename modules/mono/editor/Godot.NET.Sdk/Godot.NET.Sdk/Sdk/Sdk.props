@@ -52,7 +52,7 @@
     <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'ExportRelease' ">
-    <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
+    <Optimize Condition=" '$(GodotTargetPlatform)' != 'ios' and '$(Optimize)' == '' ">false</Optimize>
   </PropertyGroup>
 
   <PropertyGroup>
