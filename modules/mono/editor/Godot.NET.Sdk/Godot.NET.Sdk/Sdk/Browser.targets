@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <UseMonoRuntime Condition=" '$(UseMonoRuntime)' == '' and '$(PublishAot)' != 'true' ">true</UseMonoRuntime>
+
+    <!-- Default to relinking in ExportDebug and ExportRelease configurations. -->
+    <WasmBuildNative Condition=" '$(WasmBuildNative)' == '' and '$(Configuration)' == 'ExportDebug' ">true</WasmBuildNative>
+    <WasmBuildNative Condition=" '$(WasmBuildNative)' == '' and '$(Configuration)' == 'ExportRelease' ">true</WasmBuildNative>
+  </PropertyGroup>
+
+  <!-- Configuration for the Mono WASM runtime. Must match the features enabled on GetRuntimePack.csproj. -->
+  <PropertyGroup>
+    <WasmEnableThreads>false</WasmEnableThreads>
+    <WasmEnableExceptionHandling>true</WasmEnableExceptionHandling>
+    <WasmEnableSIMD>true</WasmEnableSIMD>
+  </PropertyGroup>
+
+  <!-- Godot doesn't load globalization data so we must enable invariant mode. -->
+  <PropertyGroup>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="GodotSharp" />
+    <TrimmerRootAssembly Include="$(TargetName)" />
+  </ItemGroup>
+</Project>
