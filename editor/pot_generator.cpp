@@ -56,6 +56,7 @@ void POTGenerator::_print_all_translation_strings() {
 
 void POTGenerator::generate_pot(const String &p_file) {
 	Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
+	const String exclude_prefix = GLOBAL_GET("internationalization/locale/translation_exclude_prefix");
 
 	if (files.is_empty()) {
 		WARN_PRINT("No files selected for POT generation.");
@@ -81,6 +82,10 @@ void POTGenerator::generate_pot(const String &p_file) {
 
 		for (const Vector<String> &translation : translations) {
 			ERR_CONTINUE(translation.is_empty());
+			if (!exclude_prefix.is_empty() && translation[0].begins_with(exclude_prefix)) {
+				continue;
+			}
+
 			const String &msgctxt = (translation.size() > 1) ? translation[1] : String();
 			const String &msgid_plural = (translation.size() > 2) ? translation[2] : String();
 			const String &comment = (translation.size() > 3) ? translation[3] : String();
