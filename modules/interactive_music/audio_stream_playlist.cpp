@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "audio_stream_playlist.h"
+#include "scene/audio/audio_stream_player.h"
 
 #include "core/math/math_funcs.h"
 
@@ -61,6 +62,20 @@ Ref<AudioStream> AudioStreamPlaylist::get_list_stream(int p_stream_index) const 
 	ERR_FAIL_INDEX_V(p_stream_index, MAX_STREAMS, Ref<AudioStream>());
 
 	return audio_streams[p_stream_index];
+}
+
+void AudioStreamPlaylist::set_stream_pitch(int p_index, float p_pitch) {
+	ERR_FAIL_INDEX(p_index, MAX_STREAMS); // possible error
+	stream_pitch[p_index] = p_pitch;
+	// Immediately update any live playbacks:
+	for (auto *pl : playbacks) {
+		pl->_update_playback_instances();
+	}
+}
+
+float AudioStreamPlaylist::get_stream_pitch(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, MAX_STREAMS, 1.0f); // possible error
+	return stream_pitch[p_index];
 }
 
 double AudioStreamPlaylist::get_bpm() const {
@@ -164,6 +179,16 @@ void AudioStreamPlaylist::_bind_methods() {
 	for (int i = 0; i < MAX_STREAMS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "stream_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_stream", "get_list_stream", i);
 	}
+	
+	ClassDB::bind_method(D_METHOD("set_stream_pitch", "stream_index", "pitch_scale"), &AudioStreamPlaylist::set_stream_pitch);
+		ClassDB::bind_method(D_METHOD("get_stream_pitch", "stream_index"), &AudioStreamPlaylist::get_stream_pitch);
+		for (int i = 0; i < MAX_STREAMS; i++) {
+			ADD_PROPERTYI(
+				PropertyInfo(Variant::FLOAT, "stream_pitch", PROPERTY_HINT_RANGE, "0.01,4,0.01"),
+				"set_stream_pitch", "get_stream_pitch",
+				i
+			);
+		}
 
 	BIND_CONSTANT(MAX_STREAMS);
 }
