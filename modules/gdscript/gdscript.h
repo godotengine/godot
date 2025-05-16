@@ -583,6 +583,7 @@ public:
 
 	} strings;
 
+	_FORCE_INLINE_ bool should_track_call_stack() const { return track_call_stack; }
 	_FORCE_INLINE_ bool should_track_locals() const { return track_locals; }
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
 	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }
