@@ -141,9 +141,11 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bo
 		}
 		singleton = memnew(RemoteDebugger(Ref<RemoteDebuggerPeer>(peer)));
 		script_debugger = memnew(ScriptDebugger);
+#ifndef WEB_ENABLED
 		// Notify editor of our pid (to allow focus stealing).
 		Array msg = { OS::get_singleton()->get_process_id() };
 		singleton->send_message("set_pid", msg);
+#endif
 	}
 	if (!singleton) {
 		return;
