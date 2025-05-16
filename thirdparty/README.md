@@ -418,7 +418,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 10.4.0 (3ef8709829a5884517ad91a97b32b9435b2f20d1, 2025)
+- Version: 11.1.0 (416e6b692132cef49edfa814c451aae2f5d84de5, 2025)
 - License: MIT
 
 Files extracted from upstream source:

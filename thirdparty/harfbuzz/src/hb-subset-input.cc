@@ -868,7 +868,7 @@ hb_subset_input_override_name_table (hb_subset_input_t  *input,
         src = hb_utf8_t::next (src, src_end, &unicode, replacement);
         if (unicode >= 0x0080u)
         {
-          printf ("Non-ascii character detected, ignored...This API supports ascii characters only for mac platform\n");
+          // Non-ascii character detected, ignored...
           return false;
         }
       }
