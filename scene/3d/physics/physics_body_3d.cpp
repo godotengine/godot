@@ -210,6 +210,16 @@ real_t PhysicsBody3D::get_inverse_mass() const {
 	return 0;
 }
 
+PackedStringArray PhysicsBody3D::get_configuration_warnings() const {
+	PackedStringArray warnings = CollisionObject3D::get_configuration_warnings();
+
+	if (!is_physics_interpolated()) {
+		warnings.push_back(RTR("PhysicsBody3D will not work correctly on a non-interpolated branch of the SceneTree.\nCheck the node's inherited physics_interpolation_mode."));
+	}
+
+	return warnings;
+}
+
 ///////////////////////////////////////
 
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
