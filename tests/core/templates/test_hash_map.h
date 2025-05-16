@@ -145,4 +145,32 @@ TEST_CASE("[HashMap] Const iteration") {
 		++idx;
 	}
 }
+
+TEST_CASE("[HashMap] Sort") {
+	HashMap<int, int> hashmap;
+	int shuffled_ints[]{ 6, 1, 9, 8, 3, 0, 4, 5, 7, 2 };
+
+	for (int i : shuffled_ints) {
+		hashmap[i] = i;
+	}
+	hashmap.sort();
+
+	int i = 0;
+	for (const KeyValue<int, int> &kv : hashmap) {
+		CHECK_EQ(kv.key, i);
+		i++;
+	}
+
+	struct ReverseSort {
+		bool operator()(const KeyValue<int, int> &p_a, const KeyValue<int, int> &p_b) {
+			return p_a.key > p_b.key;
+		}
+	};
+	hashmap.sort_custom<ReverseSort>();
+
+	for (const KeyValue<int, int> &kv : hashmap) {
+		i--;
+		CHECK_EQ(kv.key, i);
+	}
+}
 } // namespace TestHashMap
