@@ -4652,11 +4652,8 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 			property_info_base = node;
 		}
 
-		if (leftover_path.size()) {
-			leftover_path.remove_at(leftover_path.size() - 1);
-		}
-
-		for (int i = 0; i < leftover_path.size() - 1; i++) {
+		// just skip the last one, don't modify the leftover_path.
+		for (int i = 0; i < leftover_path.size() - 2; i++) {
 			bool valid;
 			property_info_base = property_info_base.get_named(leftover_path[i], valid);
 		}
