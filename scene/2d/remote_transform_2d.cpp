@@ -60,51 +60,45 @@ void RemoteTransform2D::_update_remote() {
 		return;
 	}
 
-	if (!(update_remote_position || update_remote_rotation || update_remote_scale)) {
+	int count = update_remote_position + update_remote_rotation + update_remote_scale;
+
+	if (count == 0) {
 		return; // The transform data of the RemoteTransform2D is not used at all.
 	}
 
 	//todo make faster
+
+	Transform2D n_trans = use_global_coordinates ? n->get_global_transform() : n->get_transform();
+	Transform2D our_trans = use_global_coordinates ? get_global_transform() : get_transform();
+
+	if (count == 1) {
+		if (update_remote_position) {
+			n_trans.set_origin(our_trans.get_origin());
+		} else if (update_remote_rotation) {
+			n_trans.set_rotation_scale_and_skew(our_trans.get_rotation(), n_trans.get_scale(), n_trans.get_skew());
+		} else if (update_remote_scale) {
+			n_trans.set_scale(our_trans.get_scale());
+		}
+	} else if (count == 2) {
+		if (update_remote_position) {
+			n_trans.set_origin(our_trans.get_origin());
+			if (update_remote_rotation) {
+				n_trans.set_rotation_scale_and_skew(our_trans.get_rotation(), n_trans.get_scale(), n_trans.get_skew());
+			} else if (update_remote_scale) {
+				n_trans.set_scale(our_trans.get_scale());
+			}
+		} else {
+			n_trans.set_rotation_scale_and_skew(our_trans.get_rotation(), our_trans.get_scale(), n_trans.get_skew());
+		}
+	} else if (count == 3) {
+		n_trans.set_origin(our_trans.get_origin());
+		n_trans.set_rotation_scale_and_skew(our_trans.get_rotation(), our_trans.get_scale(), n_trans.get_skew());
+	}
+
 	if (use_global_coordinates) {
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_global_transform(get_global_transform());
-			return;
-		}
-
-		Transform2D n_trans = n->get_global_transform();
-		Transform2D our_trans = get_global_transform();
-
-		// There are more steps in the operation of set_rotation, so avoid calling it.
-		Transform2D trans = update_remote_rotation ? our_trans : n_trans;
-
-		if (update_remote_rotation ^ update_remote_position) {
-			trans.set_origin(update_remote_position ? our_trans.get_origin() : n_trans.get_origin());
-		}
-		if (update_remote_rotation ^ update_remote_scale) {
-			trans.set_scale(update_remote_scale ? our_trans.get_scale() : n_trans.get_scale());
-		}
-
-		n->set_global_transform(trans);
+		n->set_global_transform(n_trans);
 	} else {
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_transform(get_transform());
-			return;
-		}
-
-		Transform2D n_trans = n->get_transform();
-		Transform2D our_trans = get_transform();
-
-		// There are more steps in the operation of set_rotation, so avoid calling it.
-		Transform2D trans = update_remote_rotation ? our_trans : n_trans;
-
-		if (update_remote_rotation ^ update_remote_position) {
-			trans.set_origin(update_remote_position ? our_trans.get_origin() : n_trans.get_origin());
-		}
-		if (update_remote_rotation ^ update_remote_scale) {
-			trans.set_scale(update_remote_scale ? our_trans.get_scale() : n_trans.get_scale());
-		}
-
-		n->set_transform(trans);
+		n->set_transform(n_trans);
 	}
 }
 
