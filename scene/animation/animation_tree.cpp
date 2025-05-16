@@ -77,7 +77,11 @@ void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_val
 
 	const AHashMap<StringName, int>::Iterator it = property_cache.find(p_name);
 	if (it) {
-		process_state->tree->property_map.get_by_index(it->value).value.first = p_value;
+		Pair<Variant, bool> &parameter = process_state->tree->property_map.get_by_index(it->value).value;
+		Variant value = p_value;
+		if (_validate_type_match(parameter.first, value)) {
+			parameter.first = value;
+		}
 		return;
 	}
 
@@ -452,6 +456,20 @@ void AnimationNode::_set_filters(const Array &p_filters) {
 	for (int i = 0; i < p_filters.size(); i++) {
 		set_filter_path(p_filters[i], true);
 	}
+}
+
+bool AnimationNode::_validate_type_match(const Variant &p_from, Variant &r_to) {
+	if (p_from.get_type() != r_to.get_type()) {
+		// Cast r_to between double and int to avoid minor annoyances.
+		if (p_from.get_type() == Variant::FLOAT && r_to.get_type() == Variant::INT) {
+			r_to = double(r_to);
+		} else if (p_from.get_type() == Variant::INT && r_to.get_type() == Variant::FLOAT) {
+			r_to = int(r_to);
+		} else {
+			ERR_FAIL_V_MSG(false, vformat("Type mismatch between parameter and new value: %s and %s.", Variant::get_type_name(p_from.get_type()), Variant::get_type_name(r_to.get_type())));
+		}
+	}
+	return true;
 }
 
 void AnimationNode::_validate_property(PropertyInfo &p_property) const {
