@@ -487,6 +487,11 @@ Comment: SMOL-V
 Copyright: 2016-2024, Aras Pranckevicius
 License: public-domain or Unlicense or Expat
 
+Files: ./thirdparty/sdl/
+Comment: SDL
+Copyright: 1997-2025 Sam Lantinga
+License: Zlib
+
 Files: thirdparty/misc/stb_rect_pack.h
 Comment: stb libraries
 Copyright: Sean Barrett

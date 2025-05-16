@@ -1,0 +1,12 @@
+Usage Page (Consumer Devices) 05 0C  
+Usage (Consumer Control) 09 01  
+Collection (Application) A1 01  
+    Report ID (3) 85 03  
+    Report Size (16) 75 10  
+    Report Count (2) 95 02  
+    Logical Minimum (1) 15 01  
+    Logical Maximum (652) 26 8C 02  
+    Usage Minimum (Consumer Control) 19 01  
+    Usage Maximum (AC Send) 2A 8C 02  
+    Input (Data,Ary,Abs) 81 00  
+End Collection C0  
