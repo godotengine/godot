@@ -2987,13 +2987,15 @@
 			The property is checked in the [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_GROUP" value="64" enum="PropertyUsageFlags" is_bitfield="true">
-			Used to group properties together in the editor. See [EditorInspector].
+			Used to group properties together in the editor. See [EditorInspector]. The hint string may contain commas, separating it into up to 3 elements.
+			- The first element is the substring each property in the group should start with. [br]- The second element is the indentation amount for the group. [br]- The 3rd element can be 1, -1, or 0. This element is used to reorder properties in the inspector. The name of the group is the destination, where all the items inside the group will be sent. A value of 1 sends the items to right below the last property with that destination name, and -1 sends them to right above it. 0 does nothing.
+			For example, if a group is named [code]texture_filter[/code] has 3 properties inside it, and a hint string of [code],,1[/code], all 3 of those properties will be taken outside the group and moved to the last property that is called [code]texture_filter[/code] (if one exists).
 		</constant>
 		<constant name="PROPERTY_USAGE_CATEGORY" value="128" enum="PropertyUsageFlags" is_bitfield="true">
 			Used to categorize properties together in the editor.
 		</constant>
 		<constant name="PROPERTY_USAGE_SUBGROUP" value="256" enum="PropertyUsageFlags" is_bitfield="true">
-			Used to group properties together in the editor in a subgroup (under a group). See [EditorInspector].
+			Used to group properties together in the editor in a subgroup (under a group). See [EditorInspector]. This accepts the same hint string as [constant PROPERTY_USAGE_GROUP].
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_BITFIELD" value="512" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is a bitfield, i.e. it contains multiple flags represented as bits.
