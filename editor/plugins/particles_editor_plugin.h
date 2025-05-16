@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
+#include <editor/multi_node_edit.h>
 
 class CheckBox;
 class ConfirmationDialog;
@@ -60,6 +61,7 @@ protected:
 	String conversion_option_name;
 
 	Node *edited_node = nullptr;
+	Ref<MultiNodeEdit> mne;
 
 	void _notification(int p_what);
 
