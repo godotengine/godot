@@ -66,7 +66,10 @@ void EditorPluginSettings::update_plugins() {
 	updating = true;
 	TreeItem *root = plugin_list->create_item();
 
-	Vector<String> plugins = _get_plugins("res://addons");
+	Vector<EditorAddonInfo> addons;
+	bool pf;
+	Vector<String> plugins = _get_plugins("res://addons", addons, pf);
+	RBMap<String, String> script_map;
 	plugins.sort();
 
 	for (int i = 0; i < plugins.size(); i++) {
@@ -94,6 +97,7 @@ void EditorPluginSettings::update_plugins() {
 				String version = cfg->get_value("plugin", "version");
 				String description = cfg->get_value("plugin", "description");
 				String scr = cfg->get_value("plugin", "script");
+				script_map[path] = scr;
 
 				bool is_enabled = EditorNode::get_singleton()->is_addon_plugin_enabled(path);
 				Color disabled_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
@@ -129,6 +133,20 @@ void EditorPluginSettings::update_plugins() {
 	}
 
 	updating = false;
+
+	Array arr;
+	arr.set_typed(Variant::DICTIONARY, StringName(), Variant());
+	for (const EditorAddonInfo &addon : addons) {
+		Dictionary d;
+		d.set_typed(Variant::STRING_NAME, StringName(), Variant(), Variant::NIL, StringName(), Variant());
+		d[SNAME("dir_name")] = addon.dir_name;
+		d[SNAME("config_path")] = addon.config_path;
+		String script_path = script_map.has(addon.config_path) ? script_map[addon.config_path] : String();
+		d[SNAME("script_path")] = script_path.length() > 0 ? addon.config_path.get_base_dir().path_join(script_path).simplify_path() : String();
+		d[SNAME("plugin")] = addon.plugin;
+		arr.push_back(d);
+	}
+	emit_signal("editor_addons_updated", arr);
 }
 
 void EditorPluginSettings::_plugin_activity_changed() {
@@ -179,31 +197,52 @@ void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, in
 	}
 }
 
-Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
+Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir, Vector<EditorAddonInfo> &r_addons, bool &r_has_public_file) {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	Error err = da->change_dir(p_dir);
 	if (err != OK) {
 		return Vector<String>();
 	}
 
+	const int root_path_length = 12;
 	Vector<String> plugins;
 	da->list_dir_begin();
 	for (String path = da->get_next(); !path.is_empty(); path = da->get_next()) {
-		if (path[0] == '.' || !da->current_is_dir()) {
+		if (path[0] == '.') {
+			continue;
+		}
+		if (!da->current_is_dir()) {
+			r_has_public_file = true;
 			continue;
 		}
 
 		const String full_path = p_dir.path_join(path);
 		const String plugin_config = full_path.path_join("plugin.cfg");
-		if (FileAccess::exists(plugin_config)) {
+		bool exists = FileAccess::exists(plugin_config);
+		bool has_public_file = false;
+		if (exists) {
 			plugins.push_back(plugin_config);
 		} else {
-			plugins.append_array(_get_plugins(full_path));
+			plugins.append_array(_get_plugins(full_path, r_addons, has_public_file));
+		}
+
+		if (has_public_file || exists) {
+			EditorAddonInfo addon;
+			addon.dir_name = full_path.substr(root_path_length + 1);
+			if (exists) {
+				addon.config_path = plugin_config;
+			}
+			addon.has_public_file = has_public_file;
+			r_addons.push_back(addon);
 		}
 	}
 
 	da->list_dir_end();
 	return plugins;
+}
+
+void EditorPluginSettings::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("editor_addons_updated", PropertyInfo(Variant::ARRAY, "addons", PROPERTY_HINT_ARRAY_TYPE, "Dictionary")));
 }
 
 EditorPluginSettings::EditorPluginSettings() {
