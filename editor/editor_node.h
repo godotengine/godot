@@ -488,6 +488,8 @@ private:
 	bool was_window_windowed_last = false;
 
 	bool unfocused_low_processor_usage_mode_enabled = true;
+	bool is_set_main_scene_state_queued = false;
+	Dictionary new_main_scene_state;
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
@@ -645,7 +647,7 @@ private:
 	void _restart_editor(bool p_goto_project_manager = false);
 
 	Dictionary _get_main_scene_state();
-	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
+	void _set_main_scene_state();
 
 	void _save_editor_layout();
 	void _load_editor_layout();
@@ -934,6 +936,8 @@ public:
 			_save_scene(p_file);
 		}
 	}
+
+	bool close_scene();
 
 	bool is_scene_in_use(const String &p_path);
 
