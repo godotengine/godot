@@ -712,8 +712,9 @@ def get_compiler_version(env):
     # Not using -dumpversion as some GCC distros only return major, and
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
     try:
+        cxx_path = env["CXX"].replace("\\", "/")  # win32
         version = subprocess.check_output(
-            shlex.split(env.subst(env["CXX"])) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
+            shlex.split(env.subst(cxx_path)) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
         ).strip()
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
