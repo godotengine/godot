@@ -60,20 +60,12 @@ JPH::ObjectLayer JoltArea3D::_get_object_layer() const {
 	return space->map_to_object_layer(_get_broad_phase_layer(), collision_layer, collision_mask);
 }
 
-void JoltArea3D::_make_body_kinematic() {
-	motion_type = JPH::EMotionType::Kinematic;
+void JoltArea3D::_update_body_motion_type() const {
 	if (!in_space()) {
 		return;
 	}
-	space->get_body_iface().SetMotionType(jolt_body->GetID(), motion_type, JPH::EActivation::Activate);
-}
 
-void JoltArea3D::_make_body_static() {
-	motion_type = JPH::EMotionType::Static;
-	if (!in_space()) {
-		return;
-	}
-	space->get_body_iface().SetMotionType(jolt_body->GetID(), motion_type, JPH::EActivation::DontActivate);
+	space->get_body_iface().SetMotionType(jolt_body->GetID(), _get_motion_type(), JPH::EActivation::Activate);
 }
 
 void JoltArea3D::_add_to_space() {
@@ -338,16 +330,18 @@ void JoltArea3D::_body_monitoring_changed() {
 	} else {
 		_force_bodies_exited(false);
 	}
+
+	_update_body_motion_type();
 }
 
 void JoltArea3D::_area_monitoring_changed() {
 	if (has_area_monitor_callback()) {
-		_make_body_kinematic();
 		_force_areas_entered();
 	} else {
-		_make_body_static();
 		_force_areas_exited(false);
 	}
+
+	_update_body_motion_type();
 }
 
 void JoltArea3D::_monitorable_changed() {
