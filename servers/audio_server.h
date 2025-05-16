@@ -224,9 +224,8 @@ private:
 	int channel_count = 0;
 	int to_mix = 0;
 
-	bool override_channels = false;
-	SpeakerMode override_speaker_mode = SPEAKER_MODE_STEREO;
-	int override_remap_channel[MAX_CHANNELS_PER_BUS];
+	int speaker_mode_config = -1;
+	int channel_remap[MAX_CHANNELS_PER_BUS];
 
 	float playback_speed_scale = 1.0f;
 
@@ -326,9 +325,11 @@ private:
 
 	void _update_bus_effects(int p_bus);
 
-	void _get_configured_channel_remap();
+	String _get_speaker_mode_name() const;
 
 	static AudioServer *singleton;
+
+	void init_channel_remap();
 
 	void init_channels_and_buffers();
 
@@ -381,7 +382,7 @@ public:
 	bool get_debug_mute() const;
 #endif // DEBUG_ENABLED
 
-	void _project_settings_changed();
+	void project_settings_changed();
 
 	void set_bus_count(int p_count);
 	int get_bus_count() const;
@@ -431,6 +432,9 @@ public:
 	float get_bus_peak_volume_right_db(int p_bus, int p_channel) const;
 
 	bool is_bus_channel_active(int p_bus, int p_channel) const;
+
+	void set_channel_remap(int p_output_channel, int p_source_channel);
+	int get_channel_remap(int p_output_channel) const;
 
 	void set_playback_speed_scale(float p_scale);
 	float get_playback_speed_scale() const;

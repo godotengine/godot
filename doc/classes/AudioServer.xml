@@ -118,6 +118,19 @@
 				[b]Note:[/b] The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on the result of [method get_bus_volume_db].
 			</description>
 		</method>
+		<method name="get_channel_remap" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="output_channel" type="int" />
+			<description>
+				Returns the mapping for the stereo channel index at [param output_channel]. Channel index values correspond to the following stereo channels:
+				- [code]0[/code]: Front left and right
+				- [code]1[/code]: Center and LFE (bass)
+				- [code]2[/code]: Back left and right
+				- [code]3[/code]: Side left and right
+				- [code]-1[/code]: Muted
+				The default is for the [param output_channel] to map to the same corresponding internal stereo channel.
+			</description>
+		</method>
 		<method name="get_driver_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -320,6 +333,19 @@
 			<description>
 				Sets the volume as a linear value of the bus at index [param bus_idx] to [param volume_linear].
 				[b]Note:[/b] Using this method is equivalent to calling [method set_bus_volume_db] with the result of [method @GlobalScope.linear_to_db] on a value.
+			</description>
+		</method>
+		<method name="set_channel_remap">
+			<return type="void" />
+			<param index="0" name="output_channel" type="int" />
+			<param index="1" name="source_channel" type="int" />
+			<description>
+				Given a stereo channel index [param output_channel], configures the [AudioServer] to map it to the internal channel [param source_channel]. Channel index values correspond to the following stereo channels:
+				- [code]0[/code]: Front left and right
+				- [code]1[/code]: Center and LFE (bass)
+				- [code]2[/code]: Back left and right
+				- [code]3[/code]: Side left and right
+				Setting an output channel to an invalid source channel (e.g. [code]-1[/code]) will mute output from that channel. If the current [method get_speaker_mode] does not use a particular channel, mapping that source channel to an output channel will mute the output channel.
 			</description>
 		</method>
 		<method name="set_enable_tagging_used_audio_streams">
