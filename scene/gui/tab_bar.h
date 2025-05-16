@@ -119,6 +119,7 @@ private:
 	bool dragging_valid_tab = false;
 	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
+	bool switch_on_hover = true;
 
 	static const int CURRENT_TAB_UNINITIALIZED = -2;
 	bool initialized = false;
@@ -201,6 +202,7 @@ public:
 	Variant _handle_get_drag_data(const String &p_type, const Point2 &p_point);
 	bool _handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const;
 	void _handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback);
+	void _handle_switch_on_hover(const Variant &p_data) const;
 
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 
@@ -285,6 +287,9 @@ public:
 
 	void set_scroll_to_selected(bool p_enabled);
 	bool get_scroll_to_selected() const;
+
+	void set_switch_on_hover(bool p_enabled);
+	bool get_switch_on_hover() const;
 
 	void set_select_with_rmb(bool p_enabled);
 	bool get_select_with_rmb() const;
