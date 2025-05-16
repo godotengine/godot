@@ -892,7 +892,7 @@ void AnimationTrackEditTypeAnimation::gui_input(const Ref<InputEvent> &p_event) 
 		bool use_hsize_cursor = false;
 		for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
 			StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), i);
-			if (anim_name == StringName("[stop]")) {
+			if (anim_name.is_empty()) {
 				continue;
 			}
 			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
