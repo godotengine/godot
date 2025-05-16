@@ -433,6 +433,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Asset library
 	_initial_set("asset_library/use_threads", true);
+	Dictionary favorite_assets;
+	_initial_set("asset_library/favorites", favorite_assets);
 
 	/* Interface */
 
