@@ -37,7 +37,9 @@
 #include "scene/resources/animation_library.h"
 #include "scene/resources/audio_stream_polyphonic.h"
 
+
 class AnimatedValuesBackup;
+//class AnimationPlayer;
 
 class AnimationMixer : public Node {
 	GDCLASS(AnimationMixer, Node);
@@ -295,8 +297,37 @@ protected:
 		}
 	};
 
+	// Animation information for each animation placed on the track.
+	struct PlayingAnimationInfo {
+		StringName anim_name; //AnimationPlayer::ID index = -1; // ID retrieved from AudioStreamPlaybackPolyphonic.
+		double start = 0.0;
+		double len = 0.0;
+	};
+
+	// Animation information for mixng and ending.
+	struct PlayingAnimationTrackInfo {
+		AHashMap<int, PlayingAnimationInfo> anim_info;
+		double length = 0.0;
+		double time = 0.0;
+		real_t weight = 0.0;
+		bool loop = false;
+		bool backward = false;
+		bool use_blend = false;
+	};
+
 	struct TrackCacheAnimation : public TrackCache {
-		bool playing = false;
+		//bool playing = false;
+		//Ref<Animation> animation;
+		//Ref<AnimationPlayer> animation_player;
+		StringName anim_name;
+		HashMap<ObjectID, PlayingAnimationTrackInfo> playing_anims; // Key is Animation resource ObjectID.
+
+		TrackCacheAnimation(const TrackCacheAnimation &p_other) :
+				TrackCache(p_other),
+				//animation(p_other.animation),
+				//animation_player(p_other.animation_player),
+				anim_name(p_other.anim_name),
+				playing_anims(p_other.playing_anims) {}
 
 		TrackCacheAnimation() {
 			type = Animation::TYPE_ANIMATION;
@@ -308,10 +339,12 @@ protected:
 	AHashMap<Ref<Animation>, LocalVector<TrackCache *>> animation_track_num_to_track_cache;
 	HashSet<TrackCache *> playing_caches;
 	Vector<Node *> playing_audio_stream_players;
+	Vector<Node *> playing_animation_players;
 
 	// Helpers.
 	void _clear_caches();
 	void _clear_audio_streams();
+	void _clear_animations();
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
 	bool _update_caches();
