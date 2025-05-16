@@ -255,6 +255,9 @@
 		<theme_item name="reload" data_type="icon" type="Texture2D">
 			Custom icon for the reload button.
 		</theme_item>
+		<theme_item name="sort" data_type="icon" type="Texture2D">
+			Custom icon for the sorting options menu.
+		</theme_item>
 		<theme_item name="toggle_filename_filter" data_type="icon" type="Texture2D">
 			Custom icon for the toggle button for the filter for file names.
 		</theme_item>
