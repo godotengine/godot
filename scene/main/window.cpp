@@ -3256,6 +3256,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_wm_hint"), "set_flag", "get_flag", FLAG_POPUP_WM_HINT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "minimize_disabled"), "set_flag", "get_flag", FLAG_MINIMIZE_DISABLED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "maximize_disabled"), "set_flag", "get_flag", FLAG_MAXIMIZE_DISABLED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "wallpaper"), "set_flag", "get_flag", FLAG_WALLPAPER);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_native"), "set_force_native", "get_force_native");
 
 	ADD_GROUP("Limits", "");
