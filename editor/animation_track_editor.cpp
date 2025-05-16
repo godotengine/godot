@@ -2177,7 +2177,8 @@ void AnimationTrackEdit::_notification(int p_what) {
 					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
 					const Vector2 icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
-					draw_texture_rect(icon, Rect2(Point2(ofs, (get_size().height - icon_size.y) / 2).round(), icon_size));
+					icon_rect = Rect2(Point2(ofs, (get_size().height - check->get_height()) / 2).round(), icon->get_size());
+					draw_texture_rect(icon, icon_rect);
 					icon_cache = icon;
 
 					text = String() + node->get_name() + ":" + anim_path.get_concatenated_subnames();
@@ -2805,6 +2806,10 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 		return TTR("Toggle this track on/off.");
 	}
 
+	if (icon_rect.has_point(p_pos)) {
+		return TTR("Select node in scene.");
+	}
+
 	// Don't overlap track keys if they start at 0.
 	if (path_rect.has_point(p_pos + Size2(type_icon->get_width(), 0))) {
 		return animation->track_get_path(track);
@@ -3014,6 +3019,15 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				undo_redo->commit_action();
 				queue_redraw();
 				accept_event();
+			}
+
+			if (icon_rect.has_point(pos)) {
+				EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
+				editor_selection->clear();
+				Node *n = root->get_node_or_null(node_path);
+				if (n) {
+					editor_selection->add_node(n);
+				}
 			}
 
 			// Don't overlap track keys if they start at 0.
