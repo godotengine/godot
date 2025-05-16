@@ -593,6 +593,10 @@ public:
 	void set_controller_value(const int p_controller_value);
 	int get_controller_value() const;
 
+	static void open_inputs();
+	static void close_inputs();
+	static PackedStringArray get_connected_inputs();
+
 	virtual String as_text() const override;
 	virtual String to_string() override;
 

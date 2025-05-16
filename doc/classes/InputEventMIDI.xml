@@ -6,12 +6,12 @@
 	<description>
 		InputEventMIDI stores information about messages from [url=https://en.wikipedia.org/wiki/MIDI]MIDI[/url] (Musical Instrument Digital Interface) devices. These may include musical keyboards, synthesizers, and drum machines.
 		MIDI messages can be received over a 5-pin MIDI connector or over USB. If your device supports both be sure to check the settings in the device to see which output it is using.
-		By default, Godot does not detect MIDI devices. You need to call [method OS.open_midi_inputs], first. You can check which devices are detected with [method OS.get_connected_midi_inputs], and close the connection with [method OS.close_midi_inputs].
+		By default, Godot does not detect MIDI devices. You need to call [method open_inputs], first. You can check which devices are detected with [method get_connected_inputs], and close the connection with [method close_inputs].
 		[codeblocks]
 		[gdscript]
 		func _ready():
-		    OS.open_midi_inputs()
-		    print(OS.get_connected_midi_inputs())
+		    InputEventMIDI.open_inputs()
+		    print(InputEventMIDI.get_connected_inputs())
 
 		func _input(input_event):
 		    if input_event is InputEventMIDI:
@@ -31,8 +31,8 @@
 		[csharp]
 		public override void _Ready()
 		{
-		    OS.OpenMidiInputs();
-		    GD.Print(OS.GetConnectedMidiInputs());
+		    InputEventMIDI.OpenInputs();
+		    GD.Print(InputEventMIDI.GetConnectedInputs());
 		}
 
 		public override void _Input(InputEvent inputEvent)
@@ -58,13 +58,40 @@
 		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Godot does not support MIDI output, so there is no way to emit MIDI messages from Godot. Only MIDI input is supported.
-		[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method OS.open_midi_inputs]. MIDI input will not work until the user accepts the permission request.
+		[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_inputs]. MIDI input will not work until the user accepts the permission request.
 	</description>
 	<tutorials>
 		<link title="MIDI Message Status Byte List">https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-status-bytes</link>
 		<link title="Wikipedia General MIDI Instrument List">https://en.wikipedia.org/wiki/General_MIDI#Program_change_events</link>
 		<link title="Wikipedia Piano Key Frequencies List">https://en.wikipedia.org/wiki/Piano_key_frequencies#List</link>
 	</tutorials>
+	<methods>
+		<method name="close_inputs" qualifiers="static">
+			<return type="void" />
+			<description>
+				Shuts down the system MIDI driver. Godot will no longer receive [InputEventMIDI]. See also [method open_inputs] and [method get_connected_inputs].
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
+			</description>
+		</method>
+		<method name="get_connected_inputs" qualifiers="static">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of connected MIDI device names, if they exist. Returns an empty array if the system MIDI driver has not previously been initialized with [method open_inputs]. See also [method close_inputs].
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
+				[b]Note:[/b] On the Web platform, Web MIDI needs to be supported by the browser. [url=https://caniuse.com/midi]For the time being[/url], it is currently supported by all major browsers, except Safari.
+				[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_inputs]. The browser will refrain from processing MIDI input until the user accepts the permission request.
+			</description>
+		</method>
+		<method name="open_inputs" qualifiers="static">
+			<return type="void" />
+			<description>
+				Initializes the singleton for the system MIDI driver, allowing Godot to receive [InputEventMIDI]. See also [method get_connected_inputs] and [method close_inputs].
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
+				[b]Note:[/b] On the Web platform, Web MIDI needs to be supported by the browser. [url=https://caniuse.com/midi]For the time being[/url], it is currently supported by all major browsers, except Safari.
+				[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_inputs]. The browser will refrain from processing MIDI input until the user accepts the permission request.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="channel" type="int" setter="set_channel" getter="get_channel" default="0">
 			The MIDI channel of this message, ranging from [code]0[/code] to [code]15[/code]. MIDI channel [code]9[/code] is reserved for percussion instruments.
