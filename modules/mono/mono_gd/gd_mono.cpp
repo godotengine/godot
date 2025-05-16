@@ -615,7 +615,8 @@ void GDMono::initialize() {
 		if (load_coreclr(coreclr_dll_handle)) {
 			godot_plugins_initialize = initialize_coreclr_and_godot_plugins(runtime_initialized);
 		} else {
-			godot_plugins_initialize = try_load_native_aot_library(hostfxr_dll_handle);
+			void *dll_handle = nullptr;
+			godot_plugins_initialize = try_load_native_aot_library(dll_handle);
 			if (godot_plugins_initialize != nullptr) {
 				runtime_initialized = true;
 			}
