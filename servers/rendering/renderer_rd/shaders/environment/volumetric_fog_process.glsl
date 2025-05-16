@@ -213,6 +213,9 @@ layout(set = 0, binding = 19) uniform textureCube sky_texture;
 #endif
 #endif // MODE_COPY
 
+layout(set = 0, binding = 20) uniform texture2D decal_atlas_srgb;
+layout(set = 0, binding = 21) uniform sampler light_projector_sampler;
+
 float get_depth_at_pos(float cell_depth_size, int z) {
 	float d = float(z) * cell_depth_size + cell_depth_size * 0.5; //center of voxels
 	d = pow(d, params.detail_spread);
@@ -276,7 +279,7 @@ const vec3 halton_map[TEMPORAL_FRAMES] = vec3[](
 		vec3(0.03125, 0.59259259, 0.32));
 
 // Higher values will make light in volumetric fog fade out sooner when it's occluded by shadow.
-const float INV_FOG_FADE = 10.0;
+const float INV_FOG_FADE = 300.0; //TODO: We should change this constant to a user setting
 
 void main() {
 	vec3 fog_cell_size = 1.0 / vec3(params.fog_volume_size);
@@ -385,6 +388,7 @@ void main() {
 		for (uint i = 0; i < params.directional_light_count; i++) {
 			if (directional_lights.data[i].volumetric_fog_energy > 0.001) {
 				vec3 shadow_attenuation = vec3(1.0);
+				vec3 light_color = directional_lights.data[i].color;
 
 				if (directional_lights.data[i].shadow_opacity > 0.001) {
 					float depth_z = -view_pos.z;
@@ -420,10 +424,24 @@ void main() {
 
 					shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, view_pos.z)); //done with negative values for performance
 
+					// Compute projector color
+					if (directional_lights.data[i].projector_rect != vec4(0.0)) {
+						vec4 splane = (directional_lights.data[i].projector_matrix * v);
+						splane /= splane.w;
+
+						splane.xy = (splane.xy * 0.5 + 0.5) * directional_lights.data[i].projector_scale.xy + directional_lights.data[i].projector_offset.xy;
+						splane.xy = fract(splane.xy);
+						vec2 proj_uv = splane.xy * directional_lights.data[i].projector_rect.zw;
+
+						vec4 proj = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + directional_lights.data[i].projector_rect.xy, 0.0);
+
+						light_color *= proj.rgb * proj.a;
+					}
+
 					shadow_attenuation = mix(vec3(1.0 - directional_lights.data[i].shadow_opacity), vec3(1.0), shadow);
 				}
 
-				total_light += shadow_attenuation * directional_lights.data[i].color * directional_lights.data[i].energy * henyey_greenstein(dot(normalize(view_pos), normalize(directional_lights.data[i].direction)), params.phase_g) * directional_lights.data[i].volumetric_fog_energy;
+				total_light += shadow_attenuation * light_color * directional_lights.data[i].energy * henyey_greenstein(dot(normalize(view_pos), normalize(directional_lights.data[i].direction)), params.phase_g) * directional_lights.data[i].volumetric_fog_energy;
 			}
 		}
 
@@ -505,13 +523,16 @@ void main() {
 
 							float shadow_len = length(local_vert); //need to remember shadow len from here
 							vec3 shadow_sample = normalize(local_vert);
+							float original_shadow_sample_z = shadow_sample.z;
 
-							if (shadow_sample.z >= 0.0) {
+							if (original_shadow_sample_z >= 0.0) {
 								uv_rect.xy += flip_offset;
 							}
 
 							shadow_sample.z = 1.0 + abs(shadow_sample.z);
-							vec3 pos = vec3(shadow_sample.xy / shadow_sample.z, shadow_len - omni_lights.data[light_index].shadow_bias);
+							shadow_sample.xy /= shadow_sample.z;
+
+							vec3 pos = vec3(shadow_sample.xy, shadow_len - omni_lights.data[light_index].shadow_bias);
 							pos.z *= omni_lights.data[light_index].inv_radius;
 							pos.z = 1.0 - pos.z;
 
@@ -519,6 +540,19 @@ void main() {
 							pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
 
 							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
+
+							// Compute projector color
+							if (omni_lights.data[light_index].projector_rect != vec4(0.0)) {
+								vec4 atlas_rect = omni_lights.data[light_index].projector_rect;
+								if (original_shadow_sample_z >= 0.0) {
+									atlas_rect.y += atlas_rect.w;
+								}
+
+								vec2 proj_uv = (shadow_sample.xy * 0.5 + 0.5) * atlas_rect.zw;
+
+								vec4 proj = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + atlas_rect.xy, 0.0);
+								light *= proj.rgb * proj.a;
+							}
 
 							shadow_attenuation = mix(1.0 - omni_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (pos.z - depth)) / omni_lights.data[light_index].inv_radius * INV_FOG_FADE));
 						}
@@ -597,6 +631,14 @@ void main() {
 							vec3 pos = vec3(splane.xy * spot_lights.data[light_index].atlas_rect.zw + spot_lights.data[light_index].atlas_rect.xy, splane.z);
 
 							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
+
+							// Compute projector color
+							if (spot_lights.data[light_index].projector_rect != vec4(0.0)) {
+								vec2 proj_uv = splane.xy * spot_lights.data[light_index].projector_rect.zw;
+
+								vec4 proj = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + spot_lights.data[light_index].projector_rect.xy, 0.0);
+								light *= proj.rgb * proj.a;
+							}
 
 							shadow_attenuation = mix(1.0 - spot_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (pos.z - depth)) / spot_lights.data[light_index].inv_radius * INV_FOG_FADE));
 						}
