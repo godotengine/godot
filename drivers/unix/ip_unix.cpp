@@ -83,6 +83,7 @@ void IPUnix::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_hos
 		hints.ai_flags = AI_ADDRCONFIG;
 	}
 	hints.ai_flags &= ~AI_NUMERICHOST;
+	hints.ai_socktype = SOCK_STREAM;
 
 	int s = getaddrinfo(p_hostname.utf8().get_data(), nullptr, &hints, &result);
 	if (s != 0) {
