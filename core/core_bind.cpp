@@ -661,7 +661,7 @@ bool OS::is_debug_build() const {
 	return true;
 #else
 	return false;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
@@ -1669,13 +1669,13 @@ TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class,
 	TypedArray<Dictionary> ret;
 
 	for (const MethodInfo &E : methods) {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		ret.push_back(E.operator Dictionary());
 #else
 		Dictionary dict;
 		dict["name"] = E.name;
 		ret.push_back(dict);
-#endif
+#endif // DEBUG_ENABLED
 	}
 
 	return ret;

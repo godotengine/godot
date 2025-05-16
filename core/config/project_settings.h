@@ -74,9 +74,9 @@ protected:
 		Variant initial;
 		bool hide_from_editor = false;
 		bool restart_if_changed = false;
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		bool ignore_value_in_docs = false;
-#endif
+#endif // DEBUG_ENABLED
 
 		VariantContainer() {}
 

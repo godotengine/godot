@@ -104,11 +104,11 @@ class VariantConstructor {
 	static _FORCE_INLINE_ void construct_helper(T &base, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
 		r_error.error = Callable::CallError::CALL_OK;
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		base = T(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
 #else
 		base = T(VariantCaster<P>::cast(*p_args[Is])...);
-#endif
+#endif // DEBUG_ENABLED
 	}
 
 	template <size_t... Is>
