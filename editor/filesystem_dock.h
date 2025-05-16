@@ -31,11 +31,11 @@
 #pragma once
 
 #include "editor/dependency_editor.h"
+#include "editor/editor_dock.h"
 #include "editor/editor_file_system.h"
 #include "editor/file_info.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/script_create_dialog.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
@@ -44,6 +44,7 @@
 
 class CreateDialog;
 class EditorDirDialog;
+class HBoxContainer;
 class ItemList;
 class LineEdit;
 class ProgressBar;
@@ -51,6 +52,7 @@ class SceneCreateDialog;
 class ShaderCreateDialog;
 class DirectoryCreateDialog;
 class EditorResourceTooltipPlugin;
+class VBoxContainer;
 
 class FileSystemTree : public Tree {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
@@ -78,8 +80,8 @@ public:
 	FileSystemList();
 };
 
-class FileSystemDock : public VBoxContainer {
-	GDCLASS(FileSystemDock, VBoxContainer);
+class FileSystemDock : public EditorDock {
+	GDCLASS(FileSystemDock, EditorDock);
 
 public:
 	enum FileListDisplayMode {
@@ -229,7 +231,7 @@ private:
 	int history_pos;
 	int history_max_size;
 
-	String current_path;
+	String current_path = "res://";
 	String select_after_scan;
 
 	bool updating_tree = false;
@@ -360,12 +362,6 @@ private:
 
 	void _change_bottom_dock_placement();
 
-	bool _can_dock_horizontal() const;
-	void _set_dock_horizontal(bool p_enable);
-
-	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
-	void _load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
-
 private:
 	inline static FileSystemDock *singleton = nullptr;
 
@@ -375,6 +371,10 @@ public:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const override;
+	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
 
 public:
 	static constexpr double ITEM_COLOR_SCALE = 1.75;
