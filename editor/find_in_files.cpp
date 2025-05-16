@@ -328,6 +328,8 @@ void FindInFiles::_bind_methods() {
 const char *FindInFilesDialog::SIGNAL_FIND_REQUESTED = "find_requested";
 const char *FindInFilesDialog::SIGNAL_REPLACE_REQUESTED = "replace_requested";
 
+FindInFilesDialog *FindInFilesDialog::singleton = nullptr;
+
 FindInFilesDialog::FindInFilesDialog() {
 	set_min_size(Size2(500 * EDSCALE, 0));
 	set_title(TTR("Find in Files"));
@@ -565,6 +567,13 @@ HashSet<String> FindInFilesDialog::get_excludes() const {
 		excludes.insert(validate_filter_wildcard(wildcard));
 	}
 	return excludes;
+}
+
+FindInFilesDialog *FindInFilesDialog::get_singleton() {
+	if (singleton == nullptr) {
+		singleton = memnew(FindInFilesDialog);
+	}
+	return singleton;
 }
 
 void FindInFilesDialog::_notification(int p_what) {

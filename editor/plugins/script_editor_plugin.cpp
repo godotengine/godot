@@ -4457,7 +4457,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	add_child(help_search_dialog);
 	help_search_dialog->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 
-	find_in_files_dialog = memnew(FindInFilesDialog);
+	find_in_files_dialog = FindInFilesDialog::get_singleton();
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(false));
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(true));
 	add_child(find_in_files_dialog);
