@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "scene/gui/base_button.h"
 #include "scene/gui/control.h"
 #include "scene/property_list_helper.h"
 #include "scene/resources/text_line.h"
@@ -56,6 +57,10 @@ private:
 	struct Tab {
 		mutable RID accessibility_item_element;
 		mutable bool accessibility_item_dirty = true;
+
+		// Corresponds to color overrides for the BaseButton::DrawMode enum.
+		// Currently doesn't support DRAW_HOVER_PRESSED.
+		Color font_color_overrides[BaseButton::DrawMode::DRAW_HOVER_PRESSED] = { Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0) };
 
 		String text;
 		String tooltip;
@@ -221,6 +226,10 @@ public:
 
 	void set_tab_icon_max_width(int p_tab, int p_width);
 	int get_tab_icon_max_width(int p_tab) const;
+
+	void set_font_color_override_all(int p_tab, Color p_color);
+	void set_font_color_override(BaseButton::DrawMode p_draw_mode, int p_tab, Color p_color);
+	Color get_font_color_override(BaseButton::DrawMode p_draw_mode, int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool is_tab_disabled(int p_tab) const;

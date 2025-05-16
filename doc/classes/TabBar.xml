@@ -30,6 +30,15 @@
 				Moves the scroll view to make the tab visible.
 			</description>
 		</method>
+		<method name="get_font_color_override" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="draw_mode" type="int" enum="BaseButton.DrawMode" />
+			<param index="1" name="tab_idx" type="int" />
+			<description>
+				Returns the [Color] override to the tab at index [param tab_idx] when it is displaying the [param draw_mode].
+				[b]Note:[/b] TabBar does not currently support [code]DRAW_PRESSED_HOVERED[/code] styling.
+			</description>
+		</method>
 		<method name="get_offset_buttons_visible" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -157,6 +166,24 @@
 			<return type="bool" />
 			<description>
 				Selects the first available tab with lower index than the currently selected. Returns [code]true[/code] if tab selection changed.
+			</description>
+		</method>
+		<method name="set_font_color_override">
+			<return type="void" />
+			<param index="0" name="draw_mode" type="int" enum="BaseButton.DrawMode" />
+			<param index="1" name="tab_idx" type="int" />
+			<param index="2" name="color" type="Color" />
+			<description>
+				Sets a [param color] override to the tab at index [param tab_idx] when it is displaying the [param draw_mode].
+				[b]Note:[/b] TabBar does not currently support [code]DRAW_PRESSED_HOVERED[/code] styling.
+			</description>
+		</method>
+		<method name="set_font_color_override_all">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets a [param color] override to the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="set_tab_button_icon">

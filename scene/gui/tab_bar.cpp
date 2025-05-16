@@ -521,13 +521,13 @@ void TabBar::_notification(int p_what) {
 
 					if (tabs[i].disabled) {
 						sb = theme_cache.tab_disabled_style;
-						col = theme_cache.font_disabled_color;
+						col = tabs[i].font_color_overrides[BaseButton::DrawMode::DRAW_DISABLED].a > 0 ? tabs[i].font_color_overrides[BaseButton::DrawMode::DRAW_DISABLED] : theme_cache.font_disabled_color;
 					} else if (i == hover) {
 						sb = theme_cache.tab_hovered_style;
-						col = theme_cache.font_hovered_color;
+						col = tabs[i].font_color_overrides[BaseButton::DrawMode::DRAW_HOVER].a > 0 ? tabs[i].font_color_overrides[BaseButton::DrawMode::DRAW_HOVER] : theme_cache.font_hovered_color;
 					} else {
 						sb = theme_cache.tab_unselected_style;
-						col = theme_cache.font_unselected_color;
+						col = tabs[i].font_color_overrides[BaseButton::DrawMode::DRAW_NORMAL].a > 0 ? tabs[i].font_color_overrides[BaseButton::DrawMode::DRAW_NORMAL] : theme_cache.font_unselected_color;
 					}
 
 					_draw_tab(sb, col, i, rtl ? (size.width - tabs[i].ofs_cache - tabs[i].size_cache) : tabs[i].ofs_cache, false);
@@ -537,8 +537,9 @@ void TabBar::_notification(int p_what) {
 			// Draw selected tab in the front, but only if it's visible.
 			if (current >= offset && current <= max_drawn_tab && !tabs[current].hidden) {
 				Ref<StyleBox> sb = tabs[current].disabled ? theme_cache.tab_disabled_style : theme_cache.tab_selected_style;
+				Color col = tabs[current].font_color_overrides[BaseButton::DrawMode::DRAW_PRESSED].a > 0 ? tabs[current].font_color_overrides[BaseButton::DrawMode::DRAW_PRESSED] : theme_cache.font_selected_color;
 
-				_draw_tab(sb, theme_cache.font_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus());
+				_draw_tab(sb, col, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus());
 			}
 
 			if (buttons_visible) {
@@ -992,6 +993,36 @@ void TabBar::set_tab_icon_max_width(int p_tab, int p_width) {
 int TabBar::get_tab_icon_max_width(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), 0);
 	return tabs[p_tab].icon_max_width;
+}
+
+void TabBar::set_font_color_override_all(int p_tab, Color p_color) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+
+	for (int i = 0; i < BaseButton::DrawMode::DRAW_HOVER_PRESSED; i++) {
+		tabs.write[p_tab].font_color_overrides[i] = p_color;
+	}
+
+	queue_redraw();
+}
+
+void TabBar::set_font_color_override(BaseButton::DrawMode p_draw_mode, int p_tab, Color p_color) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+	ERR_FAIL_INDEX_EDMSG(p_draw_mode, BaseButton::DrawMode::DRAW_HOVER_PRESSED, "TabBar does not support hover_pressed styles.");
+
+	if (tabs[p_tab].font_color_overrides[p_draw_mode] == p_color) {
+		return;
+	}
+
+	tabs.write[p_tab].font_color_overrides[p_draw_mode] = p_color;
+
+	queue_redraw();
+}
+
+Color TabBar::get_font_color_override(BaseButton::DrawMode p_draw_mode, int p_tab) const {
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Color());
+	ERR_FAIL_INDEX_V_EDMSG(p_draw_mode, BaseButton::DrawMode::DRAW_HOVER_PRESSED, Color(), "TabBar does not support hover_pressed styles.");
+
+	return tabs[p_tab].font_color_overrides[p_draw_mode];
 }
 
 void TabBar::set_tab_disabled(int p_tab, bool p_disabled) {
@@ -1966,6 +1997,9 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_icon_max_width", "tab_idx"), &TabBar::get_tab_icon_max_width);
 	ClassDB::bind_method(D_METHOD("set_tab_button_icon", "tab_idx", "icon"), &TabBar::set_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_button_icon", "tab_idx"), &TabBar::get_tab_button_icon);
+	ClassDB::bind_method(D_METHOD("set_font_color_override_all", "tab_idx", "color"), &TabBar::set_font_color_override_all);
+	ClassDB::bind_method(D_METHOD("set_font_color_override", "draw_mode", "tab_idx", "color"), &TabBar::set_font_color_override);
+	ClassDB::bind_method(D_METHOD("get_font_color_override", "draw_mode", "tab_idx"), &TabBar::get_font_color_override);
 	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &TabBar::set_tab_disabled);
 	ClassDB::bind_method(D_METHOD("is_tab_disabled", "tab_idx"), &TabBar::is_tab_disabled);
 	ClassDB::bind_method(D_METHOD("set_tab_hidden", "tab_idx", "hidden"), &TabBar::set_tab_hidden);
