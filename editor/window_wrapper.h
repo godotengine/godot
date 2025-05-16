@@ -68,6 +68,7 @@ protected:
 public:
 	void set_wrapped_control(Control *p_control, const Ref<Shortcut> &p_enable_shortcut = Ref<Shortcut>());
 	Control *get_wrapped_control() const;
+	Panel *get_window_background() const { return window_background; }
 	Control *release_wrapped_control();
 
 	bool is_window_available() const;
