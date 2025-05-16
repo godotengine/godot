@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # This script makes RST files from the XML class reference for use with the online docs.
 
@@ -649,7 +649,7 @@ class ClassDef(DefinitionBase):
 
 
 # Checks if code samples have both GDScript and C# variations.
-# For simplicity we assume that a GDScript example is always present, and ignore contexts
+# For simplicity, we assume that a GDScript example is always present, and ignore contexts
 # which don't necessarily need C# examples.
 class ScriptLanguageParityCheck:
     def __init__(self) -> None:

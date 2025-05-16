@@ -33,7 +33,7 @@ def is_stderr_color() -> bool:
 def force_stdout_color(value: bool) -> None:
     """
     Explicitly set `stdout` support for ANSI escape codes.
-    If environment overrides exist, does nothing.
+    If the environment overrides exist, does nothing.
     """
     if not NO_COLOR or not CLICOLOR_FORCE:
         global _stdout_override

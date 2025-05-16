@@ -2,6 +2,7 @@ import os
 import platform
 import subprocess
 import sys
+from typing import Any, Dict, List, Literal, cast
 
 import methods
 
@@ -16,8 +17,19 @@ compatibility_platform_aliases = {
 }
 
 # CPU architecture options.
-architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "wasm32", "loongarch64"]
-architecture_aliases = {
+ArchitectureType = Literal["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "wasm32", "loongarch64"]
+architectures: List[ArchitectureType] = [
+    "x86_32",
+    "x86_64",
+    "arm32",
+    "arm64",
+    "rv64",
+    "ppc32",
+    "ppc64",
+    "wasm32",
+    "loongarch64",
+]
+architecture_aliases: Dict[str, ArchitectureType] = {
     "x86": "x86_32",
     "x64": "x86_64",
     "amd64": "x86_64",
@@ -35,10 +47,10 @@ architecture_aliases = {
 }
 
 
-def detect_arch():
+def detect_arch() -> ArchitectureType:
     host_machine = platform.machine().lower()
     if host_machine in architectures:
-        return host_machine
+        return cast(ArchitectureType, host_machine)
     elif host_machine in architecture_aliases.keys():
         return architecture_aliases[host_machine]
     elif "86" in host_machine:
@@ -49,7 +61,7 @@ def detect_arch():
         return "x86_64"
 
 
-def validate_arch(arch, platform_name, supported_arches):
+def validate_arch(arch, platform_name, supported_arches) -> None:
     if arch not in supported_arches:
         methods.print_error(
             'Unsupported CPU architecture "%s" for %s. Supported architectures are: %s.'
@@ -58,12 +70,12 @@ def validate_arch(arch, platform_name, supported_arches):
         sys.exit(255)
 
 
-def get_build_version(short):
+def get_build_version(short: bool) -> str:
     import version
 
     name = "custom_build"
     if os.getenv("BUILD_NAME") is not None:
-        name = os.getenv("BUILD_NAME")
+        name = os.getenv("BUILD_NAME") or ""
     v = "%d.%d" % (version.major, version.minor)
     if version.patch > 0:
         v += ".%d" % version.patch
@@ -75,7 +87,7 @@ def get_build_version(short):
     return v
 
 
-def lipo(prefix, suffix):
+def lipo(prefix: str, suffix: str) -> str:
     from pathlib import Path
 
     target_bin = ""
@@ -97,7 +109,7 @@ def lipo(prefix, suffix):
     return target_bin
 
 
-def get_mvk_sdk_path(osname):
+def get_mvk_sdk_path(osname: str) -> str:
     def int_or_zero(i):
         try:
             return int(i)
@@ -136,7 +148,7 @@ def get_mvk_sdk_path(osname):
     return lib_name_out
 
 
-def detect_mvk(env, osname):
+def detect_mvk(env: Dict[Any, Any], osname: str) -> str:
     mvk_list = [
         get_mvk_sdk_path(osname),
         "/opt/homebrew/Frameworks/MoltenVK.xcframework",
