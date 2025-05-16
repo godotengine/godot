@@ -157,8 +157,12 @@ public:
 
 		_FORCE_INLINE_ void set_container_element_type(int p_index, const DataType &p_type) {
 			ERR_FAIL_COND(p_index < 0);
-			while (p_index >= container_element_types.size()) {
-				container_element_types.push_back(get_variant_type());
+			const int64_t container_size = container_element_types.size();
+			if (p_index >= container_size) {
+				container_element_types.resize(p_index + 1);
+				for (int64_t i = container_size; i < p_index; i++) {
+					container_element_types.write[i] = get_variant_type();
+				}
 			}
 			container_element_types.write[p_index] = DataType(p_type);
 		}

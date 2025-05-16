@@ -199,8 +199,9 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		}
 	}
 
+	result.container_element_types.resize(p_datatype.container_element_types.size());
 	for (int i = 0; i < p_datatype.container_element_types.size(); i++) {
-		result.set_container_element_type(i, _gdtype_from_datatype(p_datatype.get_container_element_type_or_variant(i), p_owner, false));
+		result.container_element_types.write[i] = _gdtype_from_datatype(p_datatype.get_container_element_type_or_variant(i), p_owner, false);
 	}
 
 	return result;
@@ -500,6 +501,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		case GDScriptParser::Node::ARRAY: {
 			const GDScriptParser::ArrayNode *an = static_cast<const GDScriptParser::ArrayNode *>(p_expression);
 			Vector<GDScriptCodeGenerator::Address> values;
+			values.resize(an->elements.size());
 
 			// Create the result temporary first since it's the last to be killed.
 			GDScriptDataType array_type = _gdtype_from_datatype(an->get_datatype(), codegen.script);
@@ -510,7 +512,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
-				values.push_back(val);
+				values.write[i] = val;
 			}
 
 			if (array_type.has_container_element_type(0)) {
@@ -530,6 +532,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		case GDScriptParser::Node::DICTIONARY: {
 			const GDScriptParser::DictionaryNode *dn = static_cast<const GDScriptParser::DictionaryNode *>(p_expression);
 			Vector<GDScriptCodeGenerator::Address> elements;
+			elements.resize(dn->elements.size() * 2);
 
 			// Create the result temporary first since it's the last to be killed.
 			GDScriptDataType dict_type = _gdtype_from_datatype(dn->get_datatype(), codegen.script);
@@ -553,14 +556,14 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						break;
 				}
 
-				elements.push_back(element);
+				elements.write[i * 2] = element;
 
 				element = _parse_expression(codegen, r_error, dn->elements[i].value);
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
 
-				elements.push_back(element);
+				elements.write[i * 2 + 1] = element;
 			}
 
 			if (dict_type.has_container_element_types()) {
@@ -611,12 +614,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 
 			Vector<GDScriptCodeGenerator::Address> arguments;
+			arguments.resize(call->arguments.size());
 			for (int i = 0; i < call->arguments.size(); i++) {
 				GDScriptCodeGenerator::Address arg = _parse_expression(codegen, r_error, call->arguments[i]);
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
-				arguments.push_back(arg);
+				arguments.write[i] = arg;
 			}
 
 			if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(call->function_name) < Variant::VARIANT_MAX) {
@@ -2296,13 +2300,14 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	int optional_parameters = 0;
 
 	if (p_func) {
+		method_info.arguments.resize(p_func->parameters.size());
 		for (int i = 0; i < p_func->parameters.size(); i++) {
 			const GDScriptParser::ParameterNode *parameter = p_func->parameters[i];
 			GDScriptDataType par_type = _gdtype_from_datatype(parameter->get_datatype(), p_script);
 			uint32_t par_addr = codegen.generator->add_parameter(parameter->identifier->name, parameter->initializer != nullptr, par_type);
 			codegen.parameters[parameter->identifier->name] = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::FUNCTION_PARAMETER, par_addr, par_type);
 
-			method_info.arguments.push_back(parameter->get_datatype().to_property_info(parameter->identifier->name));
+			method_info.arguments.write[i] = parameter->get_datatype().to_property_info(parameter->identifier->name);
 
 			if (parameter->initializer != nullptr) {
 				optional_parameters++;
@@ -3158,9 +3163,10 @@ GDScriptCompiler::FunctionLambdaInfo GDScriptCompiler::_get_function_replacement
 
 Vector<GDScriptCompiler::FunctionLambdaInfo> GDScriptCompiler::_get_function_lambda_replacement_info(GDScriptFunction *p_func, int p_depth, GDScriptFunction *p_parent_func) {
 	Vector<FunctionLambdaInfo> result;
+	result.resize(p_func->lambdas.size());
 	// Only scrape the lambdas inside p_func.
 	for (int i = 0; i < p_func->lambdas.size(); ++i) {
-		result.push_back(_get_function_replacement_info(p_func->lambdas[i], i, p_depth + 1, p_func));
+		result.write[i] = _get_function_replacement_info(p_func->lambdas[i], i, p_depth + 1, p_func);
 	}
 	return result;
 }
