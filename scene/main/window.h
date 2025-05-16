@@ -121,6 +121,8 @@ private:
 
 	String title;
 	String tr_title;
+	String default_title;
+
 	mutable int current_screen = 0;
 	mutable Point2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
@@ -232,6 +234,7 @@ private:
 	} theme_cache;
 
 	void _settings_changed();
+	void _update_title();
 
 	Viewport *embedder = nullptr;
 
@@ -294,6 +297,7 @@ public:
 	void set_title(const String &p_title);
 	String get_title() const;
 	String get_translated_title() const;
+	void set_default_title(const String &p_title);
 
 	void set_initial_position(WindowInitialPosition p_initial_position);
 	WindowInitialPosition get_initial_position() const;
