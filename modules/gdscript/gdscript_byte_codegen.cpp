@@ -30,8 +30,6 @@
 
 #include "gdscript_byte_codegen.h"
 
-#include "gdscript.h"
-
 #include "core/debugger/engine_debugger.h"
 
 uint32_t GDScriptByteCodeGenerator::add_parameter(const StringName &p_name, bool p_is_optional, const GDScriptDataType &p_type) {
@@ -161,7 +159,6 @@ void GDScriptByteCodeGenerator::end_parameters() {
 
 void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Variant p_rpc_config, const GDScriptDataType &p_return_type) {
 	function = memnew(GDScriptFunction);
-	debug_stack = GDScriptLanguage::get_singleton()->should_track_locals();
 
 	function->name = p_function_name;
 	function->_script = p_script;
@@ -395,7 +392,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_lambdas_count = 0;
 	}
 
-	if (debug_stack) {
+	if (GDScriptLanguage::get_singleton()->should_track_locals()) {
 		function->stack_debug = stack_debug;
 	}
 	function->_stack_size = GDScriptFunction::FIXED_ADDRESSES_MAX + max_locals + temporaries.size();
@@ -1762,9 +1759,12 @@ void GDScriptByteCodeGenerator::write_breakpoint() {
 }
 
 void GDScriptByteCodeGenerator::write_newline(int p_line) {
-	append_opcode(GDScriptFunction::OPCODE_LINE);
-	append(p_line);
-	current_line = p_line;
+	if (GDScriptLanguage::get_singleton()->should_track_call_stack()) {
+		// Add newline for debugger and stack tracking if enabled in the project settings.
+		append_opcode(GDScriptFunction::OPCODE_LINE);
+		append(p_line);
+		current_line = p_line;
+	}
 }
 
 void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
