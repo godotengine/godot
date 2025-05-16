@@ -1122,7 +1122,7 @@ void main() {
 	// to maximize VGPR usage
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 
-	if (!sc_disable_fog() && scene_data.fog_enabled) {
+	if (!sc_disable_fog()) {
 		fog = fog_process(vertex);
 	}
 
@@ -1287,7 +1287,7 @@ void main() {
 
 #ifndef USE_LIGHTMAP
 	//lightmap overrides everything
-	if (scene_data.use_ambient_light) {
+	if (sc_scene_use_ambient_light()) {
 		ambient_light = scene_data.ambient_light_color_energy.rgb;
 
 		if (sc_scene_use_ambient_cubemap()) {

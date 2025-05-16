@@ -135,16 +135,20 @@ bool sc_multimesh_has_custom_data() {
 	return ((sc_packed_0() >> 14) & 1U) != 0;
 }
 
-bool sc_scene_use_ambient_cubemap() {
+bool sc_scene_use_ambient_light() {
 	return ((sc_packed_0() >> 15) & 1U) != 0;
 }
 
-bool sc_scene_use_reflection_cubemap() {
+bool sc_scene_use_ambient_cubemap() {
 	return ((sc_packed_0() >> 16) & 1U) != 0;
 }
 
-bool sc_scene_roughness_limiter_enabled() {
+bool sc_scene_use_reflection_cubemap() {
 	return ((sc_packed_0() >> 17) & 1U) != 0;
+}
+
+bool sc_scene_roughness_limiter_enabled() {
+	return ((sc_packed_0() >> 18) & 1U) != 0;
 }
 
 uint sc_soft_shadow_samples() {
@@ -220,15 +224,10 @@ float sc_luminance_multiplier() {
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
-#define INSTANCE_FLAGS_DYNAMIC (1 << 3)
 #define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 4)
-#define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 5)
-#define INSTANCE_FLAGS_USE_SDFGI (1 << 6)
 #define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 7)
 #define INSTANCE_FLAGS_USE_LIGHTMAP (1 << 8)
 #define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 9)
-#define INSTANCE_FLAGS_USE_VOXEL_GI (1 << 10)
-#define INSTANCE_FLAGS_PARTICLES (1 << 11)
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
@@ -252,9 +251,6 @@ layout(set = 0, binding = 6, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
-
-#define LIGHTMAP_FLAG_USE_DIRECTION 1
-#define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
 
 #define LIGHTMAP_SHADOWMASK_MODE_NONE 0
 #define LIGHTMAP_SHADOWMASK_MODE_REPLACE 1

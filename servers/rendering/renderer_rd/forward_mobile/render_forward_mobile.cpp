@@ -953,6 +953,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	bool load_color = false;
 	bool copy_canvas = false;
 	bool use_ambient_cubemap = false;
+	bool use_ambient_light = false;
 	bool use_reflection_cubemap = false;
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
@@ -964,6 +965,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		bg_energy_multiplier *= environment_get_bg_intensity(p_render_data->environment);
 		RS::EnvironmentReflectionSource reflection_source = environment_get_reflection_source(p_render_data->environment);
 		use_ambient_cubemap = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
+		use_ambient_light = use_ambient_cubemap || ambient_source == RS::ENV_AMBIENT_SOURCE_COLOR;
 		use_reflection_cubemap = (reflection_source == RS::ENV_REFLECTION_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || reflection_source == RS::ENV_REFLECTION_SOURCE_SKY;
 
 		if (p_render_data->camera_attributes.is_valid()) {
@@ -1048,20 +1050,22 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		base_specialization.directional_lights = SceneShaderForwardMobile::shader_count_for(p_render_data->directional_light_count);
 		base_specialization.directional_light_blend_splits = light_storage->get_directional_light_blend_splits(p_render_data->directional_light_count);
 
-		if (!is_environment(p_render_data->environment) || !environment_get_fog_enabled(p_render_data->environment)) {
+		bool fog_enabled = environment_get_fog_enabled(p_render_data->environment);
+		if (!is_environment(p_render_data->environment) || !fog_enabled) {
 			base_specialization.disable_fog = true;
 			base_specialization.use_fog_aerial_perspective = false;
 			base_specialization.use_fog_sun_scatter = false;
 			base_specialization.use_fog_height_density = false;
 			base_specialization.use_depth_fog = false;
 		} else {
-			base_specialization.disable_fog = false;
+			base_specialization.disable_fog = !fog_enabled;
 			base_specialization.use_fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment) > 0.0;
 			base_specialization.use_fog_sun_scatter = environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
 			base_specialization.use_fog_height_density = std::abs(environment_get_fog_height_density(p_render_data->environment)) >= 0.0001;
 			base_specialization.use_depth_fog = p_render_data->environment.is_valid() && environment_get_fog_mode(p_render_data->environment) == RS::EnvironmentFogMode::ENV_FOG_MODE_DEPTH;
 		}
 
+		base_specialization.scene_use_ambient_light = use_ambient_light;
 		base_specialization.scene_use_ambient_cubemap = use_ambient_cubemap;
 		base_specialization.scene_use_reflection_cubemap = use_reflection_cubemap;
 		base_specialization.scene_roughness_limiter_enabled = p_render_data->render_buffers.is_valid() && screen_space_roughness_limiter_is_active();
