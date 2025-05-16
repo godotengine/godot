@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/os/time.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_interface.h"
@@ -907,7 +908,7 @@ void VersionControlEditorPlugin::fetch_available_vcs_plugin_names() {
 }
 
 void VersionControlEditorPlugin::register_editor() {
-	EditorDockManager::get_singleton()->add_dock(version_commit_dock, "", EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_version_control", TTRC("Open Version Control Dock")));
+	EditorDockManager::get_singleton()->add_dock(version_commit_dock);
 
 	version_control_dock_button = EditorNode::get_bottom_panel()->add_item(TTRC("Version Control"), version_control_dock, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_version_control_bottom_panel", TTRC("Toggle Version Control Bottom Panel")));
 
@@ -1144,14 +1145,21 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_warning_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_settings_vbc->add_child(set_up_warning_text);
 
-	version_commit_dock = memnew(VBoxContainer);
+	version_commit_dock = memnew(EditorDock);
 	version_commit_dock->set_visible(false);
-	version_commit_dock->set_name(TTR("Commit"));
+	version_commit_dock->set_name(TTRC("Commit"));
+	version_commit_dock->set_layout_key("VersionCommit");
+	version_commit_dock->set_icon_name("VcsBranches");
+	version_commit_dock->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_version_control", TTRC("Open Version Control Dock")));
+	version_commit_dock->set_default_slot(EditorDockManager::DOCK_SLOT_RIGHT_UL);
+
+	VBoxContainer *dock_vb = memnew(VBoxContainer);
+	version_commit_dock->add_child(dock_vb);
 
 	VBoxContainer *unstage_area = memnew(VBoxContainer);
 	unstage_area->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	unstage_area->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	version_commit_dock->add_child(unstage_area);
+	dock_vb->add_child(unstage_area);
 
 	HBoxContainer *unstage_title = memnew(HBoxContainer);
 	unstage_area->add_child(unstage_title);
@@ -1178,7 +1186,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	discard_all_confirm->set_hide_on_ok(true);
 	discard_all_confirm->set_ok_button_text(TTR("Permanentally delete my changes"));
 	discard_all_confirm->add_cancel_button();
-	version_commit_dock->add_child(discard_all_confirm);
+	dock_vb->add_child(discard_all_confirm);
 
 	discard_all_confirm->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_discard_all));
 
@@ -1210,7 +1218,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	VBoxContainer *stage_area = memnew(VBoxContainer);
 	stage_area->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	stage_area->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	version_commit_dock->add_child(stage_area);
+	dock_vb->add_child(stage_area);
 
 	HBoxContainer *stage_title = memnew(HBoxContainer);
 	stage_area->add_child(stage_title);
@@ -1242,10 +1250,10 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	unstage_all_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_move_all).bind(staged_files));
 	stage_all_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_move_all).bind(unstaged_files));
 
-	version_commit_dock->add_child(memnew(HSeparator));
+	dock_vb->add_child(memnew(HSeparator));
 
 	VBoxContainer *commit_area = memnew(VBoxContainer);
-	version_commit_dock->add_child(commit_area);
+	dock_vb->add_child(commit_area);
 
 	Label *commit_label = memnew(Label);
 	commit_label->set_text(TTR("Commit Message"));
@@ -1271,10 +1279,10 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_commit));
 	commit_area->add_child(commit_button);
 
-	version_commit_dock->add_child(memnew(HSeparator));
+	dock_vb->add_child(memnew(HSeparator));
 
 	HBoxContainer *commit_list_hbc = memnew(HBoxContainer);
-	version_commit_dock->add_child(commit_list_hbc);
+	dock_vb->add_child(commit_list_hbc);
 
 	Label *commit_list_label = memnew(Label);
 	commit_list_label->set_text(TTR("Commit List"));
@@ -1304,14 +1312,14 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list->set_column_custom_minimum_width(1, 20);
 	commit_list->set_theme_type_variation("TreeSecondary");
 	commit_list->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_load_diff).bind(commit_list));
-	version_commit_dock->add_child(commit_list);
+	dock_vb->add_child(commit_list);
 
-	version_commit_dock->add_child(memnew(HSeparator));
+	dock_vb->add_child(memnew(HSeparator));
 
 	HFlowContainer *menu_bar = memnew(HFlowContainer);
 	menu_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	menu_bar->set_v_size_flags(Control::SIZE_FILL);
-	version_commit_dock->add_child(menu_bar);
+	dock_vb->add_child(menu_bar);
 
 	branch_select = memnew(OptionButton);
 	branch_select->set_tooltip_text(TTR("Branches"));
