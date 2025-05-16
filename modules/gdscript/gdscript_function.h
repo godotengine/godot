@@ -566,7 +566,6 @@ public:
 #endif
 		Vector<uint8_t> stack;
 		int stack_size = 0;
-		uint32_t alloca_size = 0;
 		int ip = 0;
 		int line = 0;
 		int defarg = 0;
