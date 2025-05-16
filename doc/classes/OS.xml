@@ -441,7 +441,7 @@
 			<return type="int" />
 			<description>
 				Returns the number used by the host machine to uniquely identify this application.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS, and Windows.
+				[b]Note:[/b] On Web, this method always returns [code]0[/code].
 			</description>
 		</method>
 		<method name="get_processor_count" qualifiers="const">
