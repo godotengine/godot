@@ -162,6 +162,12 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The default value uses "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
+		case ACCESS_PRIVATE_MEMBER:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(The member "%s" is private. It should not be accessed from an external script.)", symbols[0]);
+		case CALL_PRIVATE_METHOD:
+			CHECK_SYMBOLS(1);
+			return vformat(R"*(The method "%s()" is private. It should not be called from an external script.)*", symbols[0]);
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
@@ -238,6 +244,8 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"NATIVE_METHOD_OVERRIDE",
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",
 		"ONREADY_WITH_EXPORT",
+		"ACCESS_PRIVATE_MEMBER",
+		"CALL_PRIVATE_METHOD",
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",
