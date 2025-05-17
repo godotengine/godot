@@ -1692,7 +1692,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 				callp(member->setter, &args, 1, err);
 				return err.error == Callable::CallError::CALL_OK;
 			} else {
-				members.write[member->index] = value;
+				members[member->index] = std::move(value);
 				return true;
 			}
 		}
@@ -1755,7 +1755,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 				r_ret = (err.error == Callable::CallError::CALL_OK) ? ret : Variant();
 				return true;
 			}
-			r_ret = members[E->value.index];
+			r_ret = std::move(members[E->value.index]);
 			return true;
 		}
 	}
@@ -2136,21 +2136,19 @@ const Variant GDScriptInstance::get_rpc_config() const {
 void GDScriptInstance::reload_members() {
 #ifdef DEBUG_ENABLED
 
-	Vector<Variant> new_members;
+	LocalVector<Variant> new_members;
 	new_members.resize(script->member_indices.size());
 
 	//pass the values to the new indices
 	for (KeyValue<StringName, GDScript::MemberInfo> &E : script->member_indices) {
 		if (member_indices_cache.has(E.key)) {
 			Variant value = members[member_indices_cache[E.key]];
-			new_members.write[E.value.index] = value;
+			new_members[E.value.index] = value;
 		}
 	}
 
-	members.resize(new_members.size()); //resize
-
 	//apply
-	members = new_members;
+	members = std::move(new_members);
 
 	//pass the values to the new indices
 	member_indices_cache.clear();
