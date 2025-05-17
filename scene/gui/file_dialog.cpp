@@ -40,7 +40,9 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/separator.h"
 #include "scene/theme/theme_db.h"
 
 void FileDialog::popup_file_dialog() {
@@ -267,6 +269,7 @@ void FileDialog::_notification(int p_what) {
 			_setup_button(show_hidden, theme_cache.toggle_hidden);
 			_setup_button(make_dir_button, theme_cache.create_folder);
 			_setup_button(show_filename_filter_button, theme_cache.toggle_filename_filter);
+			_setup_button(file_sort_button, theme_cache.sort);
 			invalidate();
 		} break;
 
@@ -779,17 +782,14 @@ void FileDialog::update_file_list() {
 		item = dir_access->get_next();
 	}
 
-	dirs.sort_custom<FileNoCaseComparator>();
-	files.sort_custom<FileNoCaseComparator>();
-
 	String filename_filter_lower = file_name_filter.to_lower();
 
 	List<String> patterns;
-	// build filter
+	// Build filter.
 	if (filter->get_selected() == filter->get_item_count() - 1) {
-		// match all
+		// Match all.
 	} else if (filters.size() > 1 && filter->get_selected() == 0) {
-		// match all filters
+		// Match all filters.
 		for (int i = 0; i < filters.size(); i++) {
 			String f = filters[i].get_slicec(';', 0);
 			for (int j = 0; j < f.get_slice_count(","); j++) {
@@ -810,6 +810,10 @@ void FileDialog::update_file_list() {
 		}
 	}
 
+	LocalVector<DirInfo> filtered_dirs;
+	filtered_dirs.reserve(dirs.size());
+	const String base_dir = dir_access->get_current_dir();
+
 	for (const String &dir_name : dirs) {
 		bool bundle = dir_access->is_bundle(dir_name);
 		bool found = true;
@@ -825,18 +829,39 @@ void FileDialog::update_file_list() {
 		}
 
 		if (found && (filename_filter_lower.is_empty() || dir_name.to_lower().contains(filename_filter_lower))) {
-			file_list->add_item(dir_name, theme_cache.folder);
-			file_list->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
-
-			Dictionary d;
-			d["name"] = dir_name;
-			d["dir"] = !bundle;
-			d["bundle"] = bundle;
-			file_list->set_item_metadata(-1, d);
+			DirInfo di;
+			di.name = dir_name;
+			di.bundle = bundle;
+			if (file_sort == FileSortOption::MODIFIED_TIME || file_sort == FileSortOption::MODIFIED_TIME_REVERSE) {
+				di.modified_time = FileAccess::get_modified_time(base_dir.path_join(dir_name));
+			}
+			filtered_dirs.push_back(di);
 		}
 	}
 
-	String base_dir = dir_access->get_current_dir();
+	if (file_sort == FileSortOption::MODIFIED_TIME || file_sort == FileSortOption::MODIFIED_TIME_REVERSE) {
+		filtered_dirs.sort_custom<DirInfo::TimeComparator>();
+	} else {
+		filtered_dirs.sort_custom<DirInfo::NameComparator>();
+	}
+
+	if (file_sort == FileSortOption::NAME_REVERSE || file_sort == FileSortOption::MODIFIED_TIME_REVERSE) {
+		filtered_dirs.reverse();
+	}
+
+	for (const DirInfo &info : filtered_dirs) {
+		file_list->add_item(info.name, theme_cache.folder);
+		file_list->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
+
+		Dictionary d;
+		d["name"] = info.name;
+		d["dir"] = !info.bundle;
+		d["bundle"] = info.bundle;
+		file_list->set_item_metadata(-1, d);
+	}
+
+	LocalVector<FileInfo> filtered_files;
+	filtered_files.reserve(files.size());
 
 	for (const String &filename : files) {
 		bool match = patterns.is_empty();
@@ -851,22 +876,57 @@ void FileDialog::update_file_list() {
 		}
 
 		if (match && (filename_filter_lower.is_empty() || filename.to_lower().contains(filename_filter_lower))) {
-			const Ref<Texture2D> icon = get_icon_func ? get_icon_func(base_dir.path_join(filename)) : theme_cache.file;
-			file_list->add_item(filename, icon);
-			file_list->set_item_icon_modulate(-1, theme_cache.file_icon_color);
+			FileInfo fi;
+			fi.name = filename;
+			fi.match_string = match_str;
 
-			if (mode == FILE_MODE_OPEN_DIR) {
-				file_list->set_item_disabled(-1, true);
+			// Only assign sorting fields when needed.
+			if (file_sort == FileSortOption::TYPE || file_sort == FileSortOption::TYPE_REVERSE) {
+				fi.type_sort = filename.get_extension() + filename.get_basename();
+			} else if (file_sort == FileSortOption::MODIFIED_TIME || file_sort == FileSortOption::MODIFIED_TIME_REVERSE) {
+				fi.modified_time = FileAccess::get_modified_time(base_dir.path_join(filename));
 			}
-			Dictionary d;
-			d["name"] = filename;
-			d["dir"] = false;
-			d["bundle"] = false;
-			file_list->set_item_metadata(-1, d);
+			filtered_files.push_back(fi);
+		}
+	}
 
-			if (filename_edit->get_text() == filename || match_str == filename) {
-				file_list->select(file_list->get_item_count() - 1);
-			}
+	switch (file_sort) {
+		case FileSortOption::NAME:
+		case FileSortOption::NAME_REVERSE:
+			filtered_files.sort_custom<FileInfo::NameComparator>();
+			break;
+		case FileSortOption::TYPE:
+		case FileSortOption::TYPE_REVERSE:
+			filtered_files.sort_custom<FileInfo::TypeComparator>();
+			break;
+		case FileSortOption::MODIFIED_TIME:
+		case FileSortOption::MODIFIED_TIME_REVERSE:
+			filtered_files.sort_custom<FileInfo::TimeComparator>();
+			break;
+		default:
+			ERR_PRINT(vformat("Invalid FileDialog sort option: %d", int(file_sort)));
+	}
+
+	if (file_sort == FileSortOption::NAME_REVERSE || file_sort == FileSortOption::TYPE_REVERSE || file_sort == FileSortOption::MODIFIED_TIME_REVERSE) {
+		filtered_files.reverse();
+	}
+
+	for (const FileInfo &info : filtered_files) {
+		const Ref<Texture2D> icon = get_icon_func ? get_icon_func(base_dir.path_join(info.name)) : theme_cache.file;
+		file_list->add_item(info.name, icon);
+		file_list->set_item_icon_modulate(-1, theme_cache.file_icon_color);
+
+		if (mode == FILE_MODE_OPEN_DIR) {
+			file_list->set_item_disabled(-1, true);
+		}
+		Dictionary d;
+		d["name"] = info.name;
+		d["dir"] = false;
+		d["bundle"] = false;
+		file_list->set_item_metadata(-1, d);
+
+		if (filename_edit->get_text() == info.name || info.match_string == info.name) {
+			file_list->select(file_list->get_item_count() - 1);
 		}
 	}
 
@@ -1314,6 +1374,14 @@ void FileDialog::_update_drives(bool p_select) {
 	}
 }
 
+void FileDialog::_sort_option_selected(int p_option) {
+	for (int i = 0; i < int(FileSortOption::MAX); i++) {
+		file_sort_button->get_popup()->set_item_checked(i, (i == p_option));
+	}
+	file_sort = FileSortOption(p_option);
+	invalidate();
+}
+
 TypedArray<Dictionary> FileDialog::_get_options() const {
 	TypedArray<Dictionary> out;
 	for (const FileDialog::Option &opt : options) {
@@ -1563,6 +1631,7 @@ void FileDialog::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, toggle_filename_filter);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, file);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, create_folder);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, sort);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, folder_icon_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, file_icon_color);
@@ -1706,23 +1775,7 @@ FileDialog::FileDialog() {
 	top_toolbar->add_child(refresh_button);
 	refresh_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::update_file_list));
 
-	show_hidden = memnew(Button);
-	show_hidden->set_theme_type_variation(SceneStringName(FlatButton));
-	show_hidden->set_toggle_mode(true);
-	show_hidden->set_pressed(is_showing_hidden_files());
-	show_hidden->set_accessibility_name(ETR("Show Hidden Files"));
-	show_hidden->set_tooltip_text(ETR("Toggle the visibility of hidden files."));
-	top_toolbar->add_child(show_hidden);
-	show_hidden->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_hidden_files));
-
-	show_filename_filter_button = memnew(Button);
-	show_filename_filter_button->set_theme_type_variation(SceneStringName(FlatButton));
-	show_filename_filter_button->set_toggle_mode(true);
-	show_filename_filter_button->set_pressed(false);
-	show_filename_filter_button->set_accessibility_name(ETR("Filter File Names"));
-	show_filename_filter_button->set_tooltip_text(ETR("Toggle the visibility of the filter for file names."));
-	top_toolbar->add_child(show_filename_filter_button);
-	show_filename_filter_button->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_filename_filter));
+	top_toolbar->add_child(memnew(VSeparator));
 
 	make_dir_button = memnew(Button);
 	make_dir_button->set_theme_type_variation(SceneStringName(FlatButton));
@@ -1731,11 +1784,52 @@ FileDialog::FileDialog() {
 	top_toolbar->add_child(make_dir_button);
 	make_dir_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_make_dir));
 
+	HBoxContainer *lower_toolbar = memnew(HBoxContainer);
+	main_vbox->add_child(lower_toolbar);
+
 	{
 		Label *label = memnew(Label(ETR("Directories & Files:")));
+		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		label->set_theme_type_variation("HeaderSmall");
-		main_vbox->add_child(label);
+		lower_toolbar->add_child(label);
 	}
+
+	show_hidden = memnew(Button);
+	show_hidden->set_theme_type_variation(SceneStringName(FlatButton));
+	show_hidden->set_toggle_mode(true);
+	show_hidden->set_pressed(is_showing_hidden_files());
+	show_hidden->set_accessibility_name(ETR("Show Hidden Files"));
+	show_hidden->set_tooltip_text(ETR("Toggle the visibility of hidden files."));
+	lower_toolbar->add_child(show_hidden);
+	show_hidden->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_hidden_files));
+
+	lower_toolbar->add_child(memnew(VSeparator));
+
+	show_filename_filter_button = memnew(Button);
+	show_filename_filter_button->set_theme_type_variation(SceneStringName(FlatButton));
+	show_filename_filter_button->set_toggle_mode(true);
+	show_filename_filter_button->set_pressed(false);
+	show_filename_filter_button->set_accessibility_name(ETR("Filter File Names"));
+	show_filename_filter_button->set_tooltip_text(ETR("Toggle the visibility of the filter for file names."));
+	lower_toolbar->add_child(show_filename_filter_button);
+	show_filename_filter_button->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_filename_filter));
+
+	file_sort_button = memnew(MenuButton);
+	file_sort_button->set_flat(false);
+	file_sort_button->set_theme_type_variation("FlatMenuButton");
+	file_sort_button->set_tooltip_text(ETR("Sort files"));
+	file_sort_button->set_accessibility_name(ETR("Sort Files"));
+
+	PopupMenu *sort_menu = file_sort_button->get_popup();
+	sort_menu->add_radio_check_item(ETR("Sort by Name (Ascending)"), int(FileSortOption::NAME));
+	sort_menu->add_radio_check_item(ETR("Sort by Name (Descending)"), int(FileSortOption::NAME_REVERSE));
+	sort_menu->add_radio_check_item(ETR("Sort by Type (Ascending)"), int(FileSortOption::TYPE));
+	sort_menu->add_radio_check_item(ETR("Sort by Type (Descending)"), int(FileSortOption::TYPE_REVERSE));
+	sort_menu->add_radio_check_item(ETR("Sort by Modified Time (Newest First)"), int(FileSortOption::MODIFIED_TIME));
+	sort_menu->add_radio_check_item(ETR("Sort by Modified Time (Oldest First)"), int(FileSortOption::MODIFIED_TIME_REVERSE));
+	sort_menu->set_item_checked(0, true);
+	lower_toolbar->add_child(file_sort_button);
+	sort_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileDialog::_sort_option_selected));
 
 	file_list = memnew(ItemList);
 	file_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

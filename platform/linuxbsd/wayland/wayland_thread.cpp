@@ -547,6 +547,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		registry->wp_viewporter_name = name;
 	}
 
+	if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
+		registry->wp_cursor_shape_manager = (struct wp_cursor_shape_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_cursor_shape_manager_v1_interface, 1);
+		registry->wp_cursor_shape_manager_name = name;
+		return;
+	}
+
 	if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
 		registry->wp_fractional_scale_manager = (struct wp_fractional_scale_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_fractional_scale_manager_v1_interface, 1);
 		registry->wp_fractional_scale_manager_name = name;
@@ -751,6 +757,25 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		registry->wp_viewporter_name = 0;
 
 		return;
+	}
+
+	if (name == registry->wp_cursor_shape_manager_name) {
+		if (registry->wp_cursor_shape_manager) {
+			wp_cursor_shape_manager_v1_destroy(registry->wp_cursor_shape_manager);
+			registry->wp_cursor_shape_manager = nullptr;
+		}
+
+		registry->wp_cursor_shape_manager_name = 0;
+
+		for (struct wl_seat *wl_seat : registry->wl_seats) {
+			SeatState *ss = wl_seat_get_seat_state(wl_seat);
+			ERR_FAIL_NULL(ss);
+
+			if (ss->wp_cursor_shape_device) {
+				wp_cursor_shape_device_v1_destroy(ss->wp_cursor_shape_device);
+				ss->wp_cursor_shape_device = nullptr;
+			}
+		}
 	}
 
 	if (name == registry->wp_fractional_scale_manager_name) {
@@ -1454,6 +1479,10 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 			ss->wl_pointer = wl_seat_get_pointer(wl_seat);
 			wl_pointer_add_listener(ss->wl_pointer, &wl_pointer_listener, ss);
 
+			if (ss->registry->wp_cursor_shape_manager) {
+				ss->wp_cursor_shape_device = wp_cursor_shape_manager_v1_get_pointer(ss->registry->wp_cursor_shape_manager, ss->wl_pointer);
+			}
+
 			if (ss->registry->wp_relative_pointer_manager) {
 				ss->wp_relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(ss->registry->wp_relative_pointer_manager, ss->wl_pointer);
 				zwp_relative_pointer_v1_add_listener(ss->wp_relative_pointer, &wp_relative_pointer_listener, ss);
@@ -1483,6 +1512,11 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 		if (ss->wl_pointer) {
 			wl_pointer_destroy(ss->wl_pointer);
 			ss->wl_pointer = nullptr;
+		}
+
+		if (ss->wp_cursor_shape_device) {
+			wp_cursor_shape_device_v1_destroy(ss->wp_cursor_shape_device);
+			ss->wp_cursor_shape_device = nullptr;
 		}
 
 		if (ss->wp_relative_pointer) {
@@ -3330,6 +3364,12 @@ void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 			// We can't really reasonably scale custom cursors, so we'll let the
 			// compositor do it for us (badly).
 			scale = 1;
+		} else if (thread->registry.wp_cursor_shape_manager) {
+			wp_cursor_shape_device_v1_shape wp_shape = thread->standard_cursors[shape];
+			wp_cursor_shape_device_v1_set_shape(p_ss->wp_cursor_shape_device, p_ss->pointer_enter_serial, wp_shape);
+
+			// We should avoid calling the `wl_pointer_set_cursor` at the end of this method.
+			return;
 		} else {
 			struct wl_cursor *wl_cursor = thread->wl_cursors[shape];
 
@@ -4892,6 +4932,10 @@ void WaylandThread::destroy() {
 			wl_data_device_destroy(ss->wl_data_device);
 		}
 
+		if (ss->wp_cursor_shape_device) {
+			wp_cursor_shape_device_v1_destroy(ss->wp_cursor_shape_device);
+		}
+
 		if (ss->wp_relative_pointer) {
 			zwp_relative_pointer_v1_destroy(ss->wp_relative_pointer);
 		}
@@ -4957,6 +5001,10 @@ void WaylandThread::destroy() {
 
 	if (registry.xdg_decoration_manager) {
 		zxdg_decoration_manager_v1_destroy(registry.xdg_decoration_manager);
+	}
+
+	if (registry.wp_cursor_shape_manager) {
+		wp_cursor_shape_manager_v1_destroy(registry.wp_cursor_shape_manager);
 	}
 
 	if (registry.wp_fractional_scale_manager) {
