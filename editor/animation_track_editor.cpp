@@ -3152,7 +3152,10 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationTrackEdit::_menu_selected));
 				}
 				menu->clear();
-				if (animation->track_get_type(track) == Animation::TYPE_AUDIO || animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
+				if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
+					menu->add_icon_item(get_editor_theme_icon(SNAME("UseBlendEnable")), TTR("Use Blend"), MENU_USE_BLEND_ENABLED);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("UseBlendDisable")), TTR("Don't Use Blend"), MENU_USE_BLEND_DISABLED);
+				} else if (animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
 					menu->add_icon_item(get_editor_theme_icon(SNAME("UseBlendEnable")), TTR("Use Blend"), MENU_USE_BLEND_ENABLED);
 					menu->add_icon_item(get_editor_theme_icon(SNAME("UseBlendDisable")), TTR("Don't Use Blend"), MENU_USE_BLEND_DISABLED);
 				} else {
@@ -3722,7 +3725,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 				undo_redo->add_do_method(animation.ptr(), "audio_track_set_use_blend", track, use_blend);
 				undo_redo->add_undo_method(animation.ptr(), "audio_track_set_use_blend", track, animation->audio_track_is_use_blend(track));
 				undo_redo->commit_action();
-			} else if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
+			} else if (animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
 				undo_redo->create_action(TTR("Change Animation Use Blend"));
 				undo_redo->add_do_method(animation.ptr(), "animation_track_set_use_blend", track, use_blend);
 				undo_redo->add_undo_method(animation.ptr(), "animation_track_set_use_blend", track, animation->animation_track_is_use_blend(track));
