@@ -101,7 +101,7 @@
 		pointsDict["Blue"] = 150; // Add "Blue" as a key and assign 150 as its value.
 		[/csharp]
 		[/codeblocks]
-		Finally, dictionaries can contain different types of keys and values in the same dictionary:
+		Finally, untyped dictionaries can contain different types of keys and values in the same dictionary:
 		[codeblocks]
 		[gdscript]
 		# This is a valid dictionary.
