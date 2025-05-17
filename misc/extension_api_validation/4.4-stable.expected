@@ -111,3 +111,34 @@ Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/cre
 Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/create_action/arguments': size changed value in new API, from 3 to 5.
 
 New argument added. Compatibility method registered.
+
+
+GH-106533
+---------
+Validate extension JSON: Error: Field 'classes/OptionButton/methods/add_icon_item/arguments/2': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/OptionButton/methods/add_item/arguments/1': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/OptionButton/methods/get_item_id/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/OptionButton/methods/get_item_index/arguments/0': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/OptionButton/methods/get_selected_id/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/OptionButton/methods/set_item_id/arguments/1': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_check_item/arguments/1': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_check_shortcut/arguments/1': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_icon_check_item/arguments/2': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_icon_check_shortcut/arguments/2': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_icon_item/arguments/2': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_icon_radio_check_item/arguments/2': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_icon_radio_check_shortcut/arguments/2': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_icon_shortcut/arguments/2': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_item/arguments/1': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_multistate_item/arguments/3': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_radio_check_item/arguments/1': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_radio_check_shortcut/arguments/1': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_separator/arguments/1': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_shortcut/arguments/1': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_submenu_item/arguments/2': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/get_item_id/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/get_item_index/arguments/0': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/set_item_id/arguments/1': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_submenu_node_item/arguments/2': meta changed value in new API, from "int32" to "int64".
+
+ID type changed to 64-bit. No compatibility methods needed.

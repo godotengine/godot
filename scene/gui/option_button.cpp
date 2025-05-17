@@ -200,7 +200,7 @@ void OptionButton::pressed() {
 	show_popup();
 }
 
-void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id) {
+void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int64_t p_id) {
 	bool first_selectable = !has_selectable_items();
 	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
 	if (first_selectable) {
@@ -209,7 +209,7 @@ void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_l
 	_queue_update_size_cache();
 }
 
-void OptionButton::add_item(const String &p_label, int p_id) {
+void OptionButton::add_item(const String &p_label, int64_t p_id) {
 	bool first_selectable = !has_selectable_items();
 	popup->add_radio_check_item(p_label, p_id);
 	if (first_selectable) {
@@ -236,7 +236,7 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	_queue_update_size_cache();
 }
 
-void OptionButton::set_item_id(int p_idx, int p_id) {
+void OptionButton::set_item_id(int p_idx, int64_t p_id) {
 	popup->set_item_id(p_idx, p_id);
 }
 
@@ -275,7 +275,7 @@ Ref<Texture2D> OptionButton::get_item_icon(int p_idx) const {
 	return popup->get_item_icon(p_idx);
 }
 
-int OptionButton::get_item_id(int p_idx) const {
+int64_t OptionButton::get_item_id(int p_idx) const {
 	if (p_idx == NONE_SELECTED) {
 		return NONE_SELECTED;
 	}
@@ -283,7 +283,7 @@ int OptionButton::get_item_id(int p_idx) const {
 	return popup->get_item_id(p_idx);
 }
 
-int OptionButton::get_item_index(int p_id) const {
+int OptionButton::get_item_index(int64_t p_id) const {
 	return popup->get_item_index(p_id);
 }
 
@@ -485,7 +485,7 @@ int OptionButton::get_selected() const {
 	return current;
 }
 
-int OptionButton::get_selected_id() const {
+int64_t OptionButton::get_selected_id() const {
 	return get_item_id(current);
 }
 
