@@ -75,7 +75,7 @@ void LineEdit::_edit(bool p_show_virtual_keyboard) {
 	editing = true;
 	_validate_caret_can_draw();
 
-	if (p_show_virtual_keyboard) {
+	if (p_show_virtual_keyboard && !pending_select_all_on_focus) {
 		show_virtual_keyboard();
 	}
 	queue_redraw();
