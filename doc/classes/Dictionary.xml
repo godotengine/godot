@@ -166,6 +166,17 @@
 			<param index="6" name="value_script" type="Variant" />
 			<description>
 				Creates a typed dictionary from the [param base] dictionary. A typed dictionary can only contain keys and values of the given types, or that inherit from the given classes, as described by this constructor's parameters.
+				The type of keys and values are set through the key/value [code]_type[/code], [code]_class_name[/code] and [code]_script[/code] parameters:
+				Key type properties:
+				- [param key_type] is the [Variant] type of the key, as one of the [enum Variant.Type] constants.
+				- [param key_class_name] is the class name of the key.
+				- [param key_script] is the assigned script. It must be a [Script] instance or [code]null[/code].
+				Value type properties:
+				- [param value_type] is the [Variant] type of the key, as one of the [enum Variant.Type] constants.
+				- [param key_class_name] is the class name of the key.
+				- [param key_script] is the assigned script. It must be a [Script] instance or [code]null[/code].
+				If [code]key/value_type[/code] is not [constant TYPE_OBJECT], the corresponding [code]class_name[/code] must be an empty [StringName] and [code]script[/code] must be [code]null[/code].
+				The [param base] dictionary's elements are converted when necessary. If this is not possible or [param base] is already typed, this constructor fails and returns an empty [Dictionary].
 			</description>
 		</constructor>
 		<constructor name="Dictionary">
