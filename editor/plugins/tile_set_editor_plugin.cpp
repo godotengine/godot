@@ -2457,6 +2457,7 @@ void TileSetEditor::_zoom_on_position(float p_zoom, const Vector2 &p_position) {
 
 void TileSetEditor::draw_highlight_current_tile() {
 	Color shadow_color = Color(0.3, 0.3, 0.3, 0.3);
+	Color border_color_red = Color(1, 0.1, 0.1, 0.9);
 	if ((workspace_mode == WORKSPACE_EDIT && get_current_tile() >= 0) || !edited_region.has_no_area()) {
 		Rect2 region;
 		if (edited_region.has_no_area()) {
@@ -2478,6 +2479,7 @@ void TileSetEditor::draw_highlight_current_tile() {
 		if (region.position.y + region.size.y <= workspace->get_rect().size.y) {
 			workspace->draw_rect(Rect2(0, region.position.y + region.size.y, workspace->get_rect().size.x, workspace->get_rect().size.y - region.size.y - region.position.y), shadow_color);
 		}
+		workspace->draw_rect(region.grow_individual(1.0f, 0.0f, 0.0f, 1.0f), border_color_red, false, 2.0f);
 	} else {
 		workspace->draw_rect(Rect2(Point2(0, 0), workspace->get_rect().size), shadow_color);
 	}
