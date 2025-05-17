@@ -49,6 +49,8 @@ protected:
 	PhysicsBody(PhysicsServer::BodyMode p_mode);
 
 public:
+	virtual String get_configuration_warning() const;
+
 	virtual Vector3 get_linear_velocity() const;
 	virtual Vector3 get_angular_velocity() const;
 	virtual float get_inverse_mass() const;
