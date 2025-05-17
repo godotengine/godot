@@ -58,15 +58,15 @@
 				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
 				[codeblock]
 				@export var energy = 0:
-				    set(value):
-				        energy = value
-				        update_configuration_warnings()
+					set(value):
+						energy = value
+						update_configuration_warnings()
 
 				func _get_configuration_warnings():
-				    if energy &lt; 0:
-				        return ["Energy must be 0 or greater."]
-				    else:
-				        return []
+					if energy &lt; 0:
+						return ["Energy must be 0 or greater."]
+					else:
+						return []
 				[/codeblock]
 			</description>
 		</method>
@@ -168,14 +168,14 @@
 				[gdscript]
 				var child_node = get_child(0)
 				if child_node.get_parent():
-				    child_node.get_parent().remove_child(child_node)
+					child_node.get_parent().remove_child(child_node)
 				add_child(child_node)
 				[/gdscript]
 				[csharp]
 				Node childNode = GetChild(0);
 				if (childNode.GetParent() != null)
 				{
-				    childNode.GetParent().RemoveChild(childNode);
+					childNode.GetParent().RemoveChild(childNode);
 				}
 				AddChild(childNode);
 				[/csharp]
@@ -372,16 +372,16 @@
 				# Stores the node's non-internal groups only (as an array of StringNames).
 				var non_internal_groups = []
 				for group in get_groups():
-				    if not str(group).begins_with("_"):
-				        non_internal_groups.push_back(group)
+					if not str(group).begins_with("_"):
+						non_internal_groups.push_back(group)
 				[/gdscript]
 				[csharp]
 				// Stores the node's non-internal groups only (as a List of StringNames).
 				List&lt;string&gt; nonInternalGroups = new List&lt;string&gt;();
 				foreach (string group in GetGroups())
 				{
-				    if (!group.BeginsWith("_"))
-				        nonInternalGroups.Add(group);
+					if (!group.BeginsWith("_"))
+						nonInternalGroups.Add(group);
 				}
 				[/csharp]
 				[/codeblocks]
@@ -1300,10 +1300,10 @@
 			[b]Note:[/b] This notification is received alongside [constant NOTIFICATION_ENTER_TREE], so if you are instantiating a scene, the child nodes will not be initialized yet. You can use it to setup translations for this node, child nodes created from script, or if you want to access child nodes added in the editor, make sure the node is ready using [method is_node_ready].
 			[codeblock]
 			func _notification(what):
-			    if what == NOTIFICATION_TRANSLATION_CHANGED:
-			        if not is_node_ready():
-			            await ready # Wait until ready signal.
-			        $Label.text = atr("%d Bananas") % banana_counter
+				if what == NOTIFICATION_TRANSLATION_CHANGED:
+					if not is_node_ready():
+						await ready # Wait until ready signal.
+					$Label.text = atr("%d Bananas") % banana_counter
 			[/codeblock]
 		</constant>
 		<constant name="NOTIFICATION_WM_ABOUT" value="2011">

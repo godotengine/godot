@@ -764,10 +764,10 @@
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
 				[codeblock]
 				func _ready():
-				    get_window().files_dropped.connect(on_files_dropped)
+					get_window().files_dropped.connect(on_files_dropped)
 
 				func on_files_dropped(files):
-				    print(files)
+					print(files)
 				[/codeblock]
 				[b]Note:[/b] This signal only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
 			</description>

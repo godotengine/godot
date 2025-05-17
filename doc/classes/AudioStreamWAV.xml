@@ -32,15 +32,15 @@
 				@onready var audio_player = $AudioStreamPlayer
 
 				func _ready():
-				    get_window().files_dropped.connect(_on_files_dropped)
+					get_window().files_dropped.connect(_on_files_dropped)
 
 				func _on_files_dropped(files):
-				    if files[0].get_extension() == "wav":
-				        audio_player.stream = AudioStreamWAV.load_from_file(files[0], {
-				                "force/max_rate": true,
-				                "force/max_rate_hz": 11025
-				            })
-				        audio_player.play()
+					if files[0].get_extension() == "wav":
+						audio_player.stream = AudioStreamWAV.load_from_file(files[0], {
+								"force/max_rate": true,
+								"force/max_rate_hz": 11025
+							})
+						audio_player.play()
 				[/codeblock]
 			</description>
 		</method>

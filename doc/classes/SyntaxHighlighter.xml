@@ -46,12 +46,12 @@
 				[b]Example:[/b] Possible return value. This means columns [code]0[/code] to [code]4[/code] should be red, and columns [code]5[/code] to the end of the line should be green:
 				[codeblock]
 				{
-				    0: {
-				        "color": Color(1, 0, 0)
-				    },
-				    5: {
-				        "color": Color(0, 1, 0)
-				    }
+					0: {
+						"color": Color(1, 0, 0)
+					},
+					5: {
+						"color": Color(0, 1, 0)
+					}
 				}
 				[/codeblock]
 			</description>

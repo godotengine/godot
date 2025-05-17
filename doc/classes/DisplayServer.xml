@@ -1783,7 +1783,7 @@
 				[codeblock]
 				var refresh_rate = DisplayServer.screen_get_refresh_rate()
 				if refresh_rate &lt; 0:
-				    refresh_rate = 60.0
+					refresh_rate = 60.0
 				[/codeblock]
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Linux (X11 and Wayland), and Windows. On other platforms, this method always returns [code]-1.0[/code].
