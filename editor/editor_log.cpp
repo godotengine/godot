@@ -37,6 +37,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/find_in_files.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
@@ -215,6 +216,22 @@ void EditorLog::_copy_request() {
 
 	if (!text.is_empty()) {
 		DisplayServer::get_singleton()->clipboard_set(text);
+	}
+}
+
+void EditorLog::_find_selection_in_files_request() {
+	String text = log->get_selected_text();
+
+	if (!text.is_empty()) {
+		// if you selected a whole line, its very unlikely you want the trailing newline
+		if (text.ends_with("\n")) {
+			text = text.substr(0, text.length() - 1);
+		}
+
+		FindInFilesDialog *find_in_files_dialog = FindInFilesDialog::get_singleton();
+		find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
+		find_in_files_dialog->set_search_text(text);
+		find_in_files_dialog->popup_centered();
 	}
 }
 
@@ -430,12 +447,24 @@ void EditorLog::_reset_message_counts() {
 	}
 }
 
+void EditorLog::shortcut_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> &key = p_event;
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("editor/find_in_files", p_event)) {
+			_find_selection_in_files_request();
+		}
+	}
+}
+
 EditorLog::EditorLog() {
 	save_state_timer = memnew(Timer);
 	save_state_timer->set_wait_time(2);
 	save_state_timer->set_one_shot(true);
 	save_state_timer->connect("timeout", callable_mp(this, &EditorLog::_save_state));
 	add_child(save_state_timer);
+
+	find_in_files_shortcut = ED_SHORTCUT("editor/find_in_files", TTRC("Find Selection in Files"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F);
+	this->set_process_shortcut_input(true);
 
 	line_limit = int(EDITOR_GET("run/output/max_lines"));
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorLog::_editor_settings_changed));

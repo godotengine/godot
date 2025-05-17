@@ -106,6 +106,7 @@
 #include "editor/export/project_zip_packer.h"
 #include "editor/fbx_importer_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/find_in_files.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
@@ -3144,6 +3145,12 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case PROJECT_OPEN_SETTINGS: {
 			project_settings_editor->popup_project_settings();
+		} break;
+
+		case PROJECT_FIND_IN_FILES: {
+			find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
+			find_in_files_dialog->set_search_text("");
+			find_in_files_dialog->popup_centered();
 		} break;
 
 		case PROJECT_INSTALL_ANDROID_SOURCE: {
@@ -7795,6 +7802,8 @@ EditorNode::EditorNode() {
 	command_palette->set_title(TTR("Command Palette"));
 	gui_base->add_child(command_palette);
 
+	find_in_files_dialog = FindInFilesDialog::get_singleton();
+
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/new_scene", TTRC("New Scene"), KeyModifierMask::CMD_OR_CTRL + Key::N), SCENE_NEW_SCENE);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/new_inherited_scene", TTRC("New Inherited Scene..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::N), SCENE_NEW_INHERITED_SCENE);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/open_scene", TTRC("Open Scene..."), KeyModifierMask::CMD_OR_CTRL + Key::O), SCENE_OPEN_SCENE);
@@ -7857,6 +7866,9 @@ EditorNode::EditorNode() {
 
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTRC("Project Settings..."), Key::NONE, TTRC("Project Settings")), PROJECT_OPEN_SETTINGS);
 	project_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
+
+	ED_SHORTCUT_AND_COMMAND("editor/find_in_files", TTRC("Find in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F);
+	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), PROJECT_FIND_IN_FILES);
 
 	project_menu->add_separator();
 	project_menu->add_item(TTR("Version Control"), PROJECT_VERSION_CONTROL);

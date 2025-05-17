@@ -122,6 +122,8 @@ private:
 		}
 	};
 
+	Ref<Shortcut> find_in_files_shortcut;
+
 	int line_limit = 10000;
 
 	Vector<LogMessage> messages;
@@ -153,6 +155,7 @@ private:
 	void _meta_clicked(const String &p_meta);
 	void _clear_request();
 	void _copy_request();
+	void _find_selection_in_files_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 	void _rebuild_log();
@@ -185,6 +188,8 @@ public:
 	void deinit();
 
 	void clear();
+
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	EditorLog();
 	~EditorLog();

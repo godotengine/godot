@@ -99,6 +99,8 @@ class HBoxContainer;
 class FindInFilesDialog : public AcceptDialog {
 	GDCLASS(FindInFilesDialog, AcceptDialog);
 
+	static FindInFilesDialog *singleton;
+
 public:
 	enum FindInFilesMode {
 		SEARCH_MODE,
@@ -123,6 +125,7 @@ public:
 	HashSet<String> get_filter() const;
 	HashSet<String> get_includes() const;
 	HashSet<String> get_excludes() const;
+	static FindInFilesDialog *get_singleton();
 
 protected:
 	void _notification(int p_what);

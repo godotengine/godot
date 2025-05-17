@@ -89,6 +89,7 @@ class EditorSelectionHistory;
 class EditorSettingsDialog;
 class EditorTitleBar;
 class ExportTemplateManager;
+class FindInFilesDialog;
 class EditorQuickOpenDialog;
 class FBXImporterManager;
 class FileSystemDock;
@@ -160,6 +161,7 @@ public:
 
 		// Project menu.
 		PROJECT_OPEN_SETTINGS,
+		PROJECT_FIND_IN_FILES,
 		PROJECT_VERSION_CONTROL,
 		PROJECT_EXPORT,
 		PROJECT_PACK_AS_ZIP,
@@ -263,6 +265,7 @@ private:
 	EditorResourcePreview *resource_preview = nullptr;
 	EditorSelection *editor_selection = nullptr;
 	EditorSettingsDialog *editor_settings_dialog = nullptr;
+	FindInFilesDialog *find_in_files_dialog = nullptr;
 	HistoryDock *history_dock = nullptr;
 
 	ProjectExportDialog *project_export = nullptr;
