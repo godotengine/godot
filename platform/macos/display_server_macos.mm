@@ -37,6 +37,7 @@
 #import "godot_menu_delegate.h"
 #import "godot_menu_item.h"
 #import "godot_open_save_delegate.h"
+#import "godot_progress_view.h"
 #import "godot_status_item.h"
 #import "godot_window.h"
 #import "godot_window_delegate.h"
@@ -2773,6 +2774,28 @@ void DisplayServerMacOS::window_request_attention(WindowID p_window) {
 	[NSApp requestUserAttention:NSCriticalRequest];
 }
 
+void DisplayServerMacOS::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
+	ERR_FAIL_COND(p_window != MAIN_WINDOW_ID);
+
+	if (!dock_progress) {
+		dock_progress = [[GodotProgressView alloc] init];
+		[NSApp.dockTile setContentView:dock_progress];
+	}
+
+	[dock_progress setValue:p_value];
+}
+
+void DisplayServerMacOS::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	ERR_FAIL_COND(p_window != MAIN_WINDOW_ID);
+
+	if (!dock_progress) {
+		dock_progress = [[GodotProgressView alloc] init];
+		[NSApp.dockTile setContentView:dock_progress];
+	}
+
+	[dock_progress setState:p_state];
+}
+
 void DisplayServerMacOS::window_move_to_foreground(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -3309,6 +3332,11 @@ void DisplayServerMacOS::_process_events(bool p_pump) {
 				[wd.window_object setIgnoresMouseEvents:NO];
 			}
 		}
+	}
+
+	if (dock_progress) {
+		dock_progress.needsDisplay = true;
+		[NSApp.dockTile display];
 	}
 
 	_THREAD_SAFE_UNLOCK_
