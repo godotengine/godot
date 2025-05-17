@@ -1974,9 +1974,10 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			};
 		}
 
-		String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
+		bool sparse = p_preset->has("binary_format/sparse_pck") && p_preset->get("binary_format/sparse_pck");
+		String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + (sparse ? ".sparsepck" : ".pck");
 		Vector<SharedObject> shared_objects;
-		err = save_pack(p_preset, p_debug, pack_path, &shared_objects);
+		err = save_pack(p_preset, p_debug, pack_path, &shared_objects, nullptr, nullptr, false, nullptr, nullptr, sparse);
 
 		bool lib_validation = p_preset->get("codesign/entitlements/disable_library_validation");
 		if (!shared_objects.is_empty() && sign_enabled && ad_hoc && !lib_validation) {
