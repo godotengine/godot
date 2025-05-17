@@ -12,30 +12,30 @@
 		var enemies = [] # An array to be filled with enemies.
 
 		func process_enemy_ai(enemy_index):
-		    var processed_enemy = enemies[enemy_index]
-		    # Expensive logic...
+			var processed_enemy = enemies[enemy_index]
+			# Expensive logic...
 
 		func _process(delta):
-		    var task_id = WorkerThreadPool.add_group_task(process_enemy_ai, enemies.size())
-		    # Other code...
-		    WorkerThreadPool.wait_for_group_task_completion(task_id)
-		    # Other code that depends on the enemy AI already being processed.
+			var task_id = WorkerThreadPool.add_group_task(process_enemy_ai, enemies.size())
+			# Other code...
+			WorkerThreadPool.wait_for_group_task_completion(task_id)
+			# Other code that depends on the enemy AI already being processed.
 		[/gdscript]
 		[csharp]
 		private List&lt;Node&gt; _enemies = new List&lt;Node&gt;(); // A list to be filled with enemies.
 
 		private void ProcessEnemyAI(int enemyIndex)
 		{
-		    Node processedEnemy = _enemies[enemyIndex];
-		    // Expensive logic here.
+			Node processedEnemy = _enemies[enemyIndex];
+			// Expensive logic here.
 		}
 
 		public override void _Process(double delta)
 		{
-		    long taskId = WorkerThreadPool.AddGroupTask(Callable.From&lt;int&gt;(ProcessEnemyAI), _enemies.Count);
-		    // Other code...
-		    WorkerThreadPool.WaitForGroupTaskCompletion(taskId);
-		    // Other code that depends on the enemy AI already being processed.
+			long taskId = WorkerThreadPool.AddGroupTask(Callable.From&lt;int&gt;(ProcessEnemyAI), _enemies.Count);
+			// Other code...
+			WorkerThreadPool.WaitForGroupTaskCompletion(taskId);
+			// Other code that depends on the enemy AI already being processed.
 		}
 		[/csharp]
 		[/codeblocks]
