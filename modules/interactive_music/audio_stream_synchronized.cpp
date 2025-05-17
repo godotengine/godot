@@ -36,7 +36,9 @@ AudioStreamSynchronized::AudioStreamSynchronized() {
 }
 
 AudioStreamSynchronized::~AudioStreamSynchronized() {
-	playback_sync.unref();
+	if (playback_sync.is_valid()) {
+		playback_sync.unref();
+	}
 }
 
 Ref<AudioStreamPlayback> AudioStreamSynchronized::instantiate_playback() {
