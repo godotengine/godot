@@ -1094,6 +1094,19 @@ public:
 
 	FUNC4S(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
 
+	/* MESH RASTERIZER API */
+#undef ServerName
+#undef server_name
+#define ServerName MeshRasterizer
+#define server_name RSG::mesh_rasterizer
+
+	FUNCRIDSPLIT4(mesh_rasterizer, int, int, RasterizedTextureFormat, bool);
+	FUNC2(mesh_rasterizer_set_bg_color, RID, const Color &);
+	FUNC3(mesh_rasterizer_set_mesh, RID, RID, int);
+	FUNC2(mesh_rasterizer_set_material, RID, RID);
+	FUNC1(mesh_rasterizer_draw, RID);
+	FUNC1R(RID, mesh_rasterizer_get_rd_texture, RID);
+
 	/* STATUS INFORMATION */
 
 #undef server_name

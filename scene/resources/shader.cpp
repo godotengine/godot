@@ -118,6 +118,8 @@ void Shader::set_code(const String &p_code) {
 		mode = MODE_SKY;
 	} else if (type == "fog") {
 		mode = MODE_FOG;
+	} else if (type == "rasterize_mesh") {
+		mode = MODE_RASTERIZE_MESH;
 	} else {
 		mode = MODE_SPATIAL;
 	}

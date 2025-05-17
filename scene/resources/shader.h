@@ -47,6 +47,7 @@ public:
 		MODE_PARTICLES,
 		MODE_SKY,
 		MODE_FOG,
+		MODE_RASTERIZE_MESH,
 		MODE_MAX
 	};
 
