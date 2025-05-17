@@ -57,6 +57,9 @@ class GodotBody3D : public GodotCollisionObject3D {
 	real_t friction = 1.0;
 	Vector3 inertia;
 
+	LocalVector<real_t> shape_frictions;
+	LocalVector<real_t> shape_bounces;
+
 	PhysicsServer3D::BodyDampMode linear_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
 	PhysicsServer3D::BodyDampMode angular_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
 
@@ -336,6 +339,12 @@ public:
 	_FORCE_INLINE_ real_t compute_angular_impulse_denominator(const Vector3 &p_axis) const {
 		return p_axis.dot(_inv_inertia_tensor.xform_inv(p_axis));
 	}
+
+	void set_shape_friction(int p_index, real_t p_friction);
+	void set_shape_bounce(int p_index, real_t p_bounce);
+
+	real_t get_shape_friction(int p_index) const;
+	real_t get_shape_bounce(int p_index) const;
 
 	//void simulate_motion(const Transform3D& p_xform,real_t p_step);
 	void call_queries();

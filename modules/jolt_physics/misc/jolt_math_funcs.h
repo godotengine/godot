@@ -53,4 +53,12 @@ public:
 		decompose(new_transform, r_scale);
 		r_new_transform = new_transform;
 	}
+
+	static _FORCE_INLINE_ float combine_friction(float p_friction1, float p_friction2) {
+		return Math::abs(MIN(p_friction1, p_friction2));
+	}
+
+	static _FORCE_INLINE_ float combine_bounce(float p_bounce1, float p_bounce2) {
+		return CLAMP(p_bounce1 + p_bounce2, 0.0f, 1.0f);
+	}
 };

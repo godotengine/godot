@@ -74,6 +74,7 @@ void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {
 	if (p_xform_only) {
 		return;
 	}
+	_material_changed();
 	collision_object->shape_owner_set_disabled(owner_id, disabled);
 }
 
@@ -173,6 +174,10 @@ void CollisionShape3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
+	ClassDB::bind_method(D_METHOD("set_physics_material", "material"), &CollisionShape3D::set_physics_material);
+	ClassDB::bind_method(D_METHOD("get_physics_material"), &CollisionShape3D::get_physics_material);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material", "get_physics_material");
+
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape3D::set_debug_color);
 	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape3D::get_debug_color);
 
@@ -213,6 +218,7 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 		shape->connect_changed(callable_mp(this, &CollisionShape3D::_shape_changed));
 #endif // DEBUG_ENABLED
 	}
+
 	update_gizmos();
 	if (collision_object) {
 		collision_object->shape_owner_clear_shapes(owner_id);
@@ -230,6 +236,24 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 
 Ref<Shape3D> CollisionShape3D::get_shape() const {
 	return shape;
+}
+
+void CollisionShape3D::set_physics_material(const Ref<PhysicsMaterial> &p_material) {
+	physics_material = p_material;
+
+	if (shape.is_null()) {
+		return;
+	}
+
+	_material_changed();
+
+	if (p_material.is_valid()) {
+		p_material->connect_changed(callable_mp(this, &CollisionShape3D::_material_changed));
+	}
+}
+
+Ref<PhysicsMaterial> CollisionShape3D::get_physics_material() const {
+	return physics_material;
 }
 
 void CollisionShape3D::set_disabled(bool p_disabled) {
@@ -279,6 +303,28 @@ void CollisionShape3D::set_debug_fill_enabled(bool p_enable) {
 
 bool CollisionShape3D::get_debug_fill_enabled() const {
 	return debug_fill;
+}
+
+void CollisionShape3D::_material_changed() const {
+	if (shape.is_null()) {
+		return;
+	}
+
+	if (collision_object == nullptr || collision_object->is_area()) {
+		return;
+	}
+
+	RID body_rid = collision_object->get_rid();
+
+	if (physics_material.is_null()) {
+		// Disable override and use the body's physics material.
+		PhysicsServer3D::get_singleton()->body_set_shape_friction_override(body_rid, owner_id, false);
+		PhysicsServer3D::get_singleton()->body_set_shape_bounce_override(body_rid, owner_id, false);
+	} else {
+		// Enable material override for this shape.
+		PhysicsServer3D::get_singleton()->body_set_shape_friction_override(body_rid, owner_id, true, physics_material->computed_friction());
+		PhysicsServer3D::get_singleton()->body_set_shape_bounce_override(body_rid, owner_id, true, physics_material->computed_bounce());
+	}
 }
 
 #ifdef DEBUG_ENABLED
