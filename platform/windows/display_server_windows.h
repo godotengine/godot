@@ -66,6 +66,7 @@
 #include <cstdio>
 
 #define WIN32_LEAN_AND_MEAN
+#include <shobjidl.h>
 #include <windows.h>
 #include <windowsx.h>
 
@@ -290,12 +291,15 @@ class DisplayServerWindows : public DisplayServer {
 
 	TTS_Windows *tts = nullptr;
 	NativeMenuWindows *native_menu = nullptr;
+	ITaskbarList3 *taskbar = nullptr;
 
 	struct WindowData {
 		HWND hWnd;
 		WindowID id;
 
 		Vector<Vector2> mpath;
+		ProgressState progress_state = PROGRESS_STATE_NOPROGRESS;
+		float progress_value = 0.0;
 
 		bool create_completed = false;
 		bool pre_fs_valid = false;
@@ -680,6 +684,8 @@ public:
 	virtual bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_taskbar_progress_value(float p_value, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
