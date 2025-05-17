@@ -76,9 +76,9 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 			read_pos += echo_buffer_size;
 		}
 
-		float in = undenormalize(echo_buffer[read_pos] * params.predelay_fb + p_src[i]);
+		float in = echo_buffer[read_pos];
 
-		echo_buffer[echo_buffer_pos] = in;
+		echo_buffer[echo_buffer_pos] = undenormalize(in * params.predelay_fb + p_src[i]);
 
 		input_buffer[i] = in;
 
