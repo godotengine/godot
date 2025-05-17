@@ -39,6 +39,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/popup_menu.h"
 
 void DependencyEditor::_searched(const String &p_path) {
 	HashMap<String, String> dep_rename;

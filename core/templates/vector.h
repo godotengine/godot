@@ -40,7 +40,6 @@
 
 #include "core/error/error_macros.h"
 #include "core/templates/cowdata.h"
-#include "core/templates/search_array.h"
 #include "core/templates/sort_array.h"
 
 #include <initializer_list>
@@ -152,8 +151,7 @@ public:
 
 	template <typename Comparator, typename Value, typename... Args>
 	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) {
-		SearchArray<T, Comparator> search{ args... };
-		return search.bisect(ptrw(), size(), p_value, p_before);
+		return span().bisect(p_value, p_before, Comparator{ args... });
 	}
 
 	Vector<T> duplicate() {
@@ -315,8 +313,8 @@ public:
 
 template <typename T>
 void Vector<T>::reverse() {
+	T *p = ptrw();
 	for (Size i = 0; i < size() / 2; i++) {
-		T *p = ptrw();
 		SWAP(p[i], p[size() - i - 1]);
 	}
 }
@@ -329,8 +327,9 @@ void Vector<T>::append_array(Vector<T> p_other) {
 	}
 	const Size bs = size();
 	resize(bs + ds);
+	T *p = ptrw();
 	for (Size i = 0; i < ds; ++i) {
-		ptrw()[bs + i] = p_other[i];
+		p[bs + i] = p_other[i];
 	}
 }
 

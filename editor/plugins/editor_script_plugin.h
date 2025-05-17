@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  search_array.h                                                        */
+/*  editor_script_plugin.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,35 +30,19 @@
 
 #pragma once
 
-#include "core/typedefs.h"
+#include "editor/plugins/editor_plugin.h"
 
-template <typename T, typename Comparator = Comparator<T>>
-class SearchArray {
+class EditorScriptPlugin : public EditorPlugin {
+	GDCLASS(EditorScriptPlugin, EditorPlugin);
+
+private:
+	List<StringName> commands;
+
+	void run_command(const StringName &p_name);
+	void command_palette_about_to_popup();
+
 public:
-	Comparator compare;
+	EditorScriptPlugin();
 
-	inline int64_t bisect(const T *p_array, int64_t p_len, const T &p_value, bool p_before) const {
-		int64_t lo = 0;
-		int64_t hi = p_len;
-		if (p_before) {
-			while (lo < hi) {
-				const int64_t mid = (lo + hi) / 2;
-				if (compare(p_array[mid], p_value)) {
-					lo = mid + 1;
-				} else {
-					hi = mid;
-				}
-			}
-		} else {
-			while (lo < hi) {
-				const int64_t mid = (lo + hi) / 2;
-				if (compare(p_value, p_array[mid])) {
-					hi = mid;
-				} else {
-					lo = mid + 1;
-				}
-			}
-		}
-		return lo;
-	}
+	virtual String get_plugin_name() const override { return "EditorScript"; }
 };

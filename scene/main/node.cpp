@@ -1922,13 +1922,12 @@ void Node::_update_children_cache_impl() const {
 
 int Node::get_child_count(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(0);
-	_update_children_cache();
-
 	if (p_include_internal) {
-		return data.children_cache.size();
-	} else {
-		return data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
+		return data.children.size();
 	}
+
+	_update_children_cache();
+	return data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
 }
 
 Node *Node::get_child(int p_index, bool p_include_internal) const {
@@ -3000,18 +2999,18 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 	}
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		if (instantiated && get_child(i)->data.owner == this) {
+		if (instantiated && get_child(i, false)->data.owner == this) {
 			continue; //part of instance
 		}
 
-		Node *dup = get_child(i)->_duplicate(p_flags, r_duplimap);
+		Node *dup = get_child(i, false)->_duplicate(p_flags, r_duplimap);
 		if (!dup) {
 			memdelete(node);
 			return nullptr;
 		}
 
 		node->add_child(dup);
-		if (i < node->get_child_count() - 1) {
+		if (i < node->get_child_count(false) - 1) {
 			node->move_child(dup, i);
 		}
 	}
@@ -3030,9 +3029,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 
 		parent->add_child(dup);
-		int pos = E->get_index();
+		int pos = E->get_index(false);
 
-		if (pos < parent->get_child_count() - 1) {
+		if (pos < parent->get_child_count(false) - 1) {
 			parent->move_child(dup, pos);
 		}
 	}

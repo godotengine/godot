@@ -45,6 +45,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/separator.h"
 
 #define CHECK_PLUGIN_INITIALIZED() \
