@@ -91,6 +91,12 @@ public:
 	FUNC2(shape_set_margin, RID, real_t)
 	FUNC1RC(real_t, shape_get_margin, RID)
 
+	FUNC4(body_set_shape_friction_override, RID, int, bool, real_t)
+	FUNC4(body_set_shape_bounce_override, RID, int, bool, real_t)
+
+	FUNC2RC(real_t, body_get_shape_friction_override, RID, int)
+	FUNC2RC(real_t, body_get_shape_bounce_override, RID, int)
+
 	FUNC1RC(ShapeType, shape_get_type, RID);
 	FUNC1RC(Variant, shape_get_data, RID);
 	FUNC1RC(real_t, shape_get_custom_solver_bias, RID);
