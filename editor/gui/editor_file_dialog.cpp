@@ -201,7 +201,9 @@ void EditorFileDialog::_focus_file_text() {
 	int lp = file->get_text().rfind_char('.');
 	if (lp != -1) {
 		file->select(0, lp);
-		file->grab_focus();
+		if (file->is_inside_tree()) {
+			file->grab_focus();
+		}
 	}
 }
 
