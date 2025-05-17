@@ -9,26 +9,26 @@
 		[codeblocks]
 		[gdscript]
 		func save_to_file(content):
-		    var file = FileAccess.open("user://save_game.dat", FileAccess.WRITE)
-		    file.store_string(content)
+			var file = FileAccess.open("user://save_game.dat", FileAccess.WRITE)
+			file.store_string(content)
 
 		func load_from_file():
-		    var file = FileAccess.open("user://save_game.dat", FileAccess.READ)
-		    var content = file.get_as_text()
-		    return content
+			var file = FileAccess.open("user://save_game.dat", FileAccess.READ)
+			var content = file.get_as_text()
+			return content
 		[/gdscript]
 		[csharp]
 		public void SaveToFile(string content)
 		{
-		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Write);
-		    file.StoreString(content);
+			using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Write);
+			file.StoreString(content);
 		}
 
 		public string LoadFromFile()
 		{
-		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Read);
-		    string content = file.GetAsText();
-		    return content;
+			using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Read);
+			string content = file.GetAsText();
+			return content;
 		}
 		[/csharp]
 		[/codeblocks]
@@ -71,12 +71,12 @@
 				[codeblocks]
 				[gdscript]
 				while file.get_position() &lt; file.get_length():
-				    # Read data
+					# Read data
 				[/gdscript]
 				[csharp]
 				while (file.GetPosition() &lt; file.GetLength())
 				{
-				    // Read data
+					// Read data
 				}
 				[/csharp]
 				[/codeblocks]
@@ -431,29 +431,29 @@
 				const MAX_16B = 1 &lt;&lt; 16
 
 				func unsigned16_to_signed(unsigned):
-				    return (unsigned + MAX_15B) % MAX_16B - MAX_15B
+					return (unsigned + MAX_15B) % MAX_16B - MAX_15B
 
 				func _ready():
-				    var f = FileAccess.open("user://file.dat", FileAccess.WRITE_READ)
-				    f.store_16(-42) # This wraps around and stores 65494 (2^16 - 42).
-				    f.store_16(121) # In bounds, will store 121.
-				    f.seek(0) # Go back to start to read the stored value.
-				    var read1 = f.get_16() # 65494
-				    var read2 = f.get_16() # 121
-				    var converted1 = unsigned16_to_signed(read1) # -42
-				    var converted2 = unsigned16_to_signed(read2) # 121
+					var f = FileAccess.open("user://file.dat", FileAccess.WRITE_READ)
+					f.store_16(-42) # This wraps around and stores 65494 (2^16 - 42).
+					f.store_16(121) # In bounds, will store 121.
+					f.seek(0) # Go back to start to read the stored value.
+					var read1 = f.get_16() # 65494
+					var read2 = f.get_16() # 121
+					var converted1 = unsigned16_to_signed(read1) # -42
+					var converted2 = unsigned16_to_signed(read2) # 121
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    using var f = FileAccess.Open("user://file.dat", FileAccess.ModeFlags.WriteRead);
-				    f.Store16(unchecked((ushort)-42)); // This wraps around and stores 65494 (2^16 - 42).
-				    f.Store16(121); // In bounds, will store 121.
-				    f.Seek(0); // Go back to start to read the stored value.
-				    ushort read1 = f.Get16(); // 65494
-				    ushort read2 = f.Get16(); // 121
-				    short converted1 = (short)read1; // -42
-				    short converted2 = (short)read2; // 121
+					using var f = FileAccess.Open("user://file.dat", FileAccess.ModeFlags.WriteRead);
+					f.Store16(unchecked((ushort)-42)); // This wraps around and stores 65494 (2^16 - 42).
+					f.Store16(121); // In bounds, will store 121.
+					f.Seek(0); // Go back to start to read the stored value.
+					ushort read1 = f.Get16(); // 65494
+					ushort read2 = f.Get16(); // 121
+					short converted1 = (short)read1; // -42
+					short converted2 = (short)read2; // 121
 				}
 				[/csharp]
 				[/codeblocks]

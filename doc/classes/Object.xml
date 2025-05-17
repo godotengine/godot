@@ -39,36 +39,36 @@
 				[codeblocks]
 				[gdscript]
 				func _get(property):
-				    if property == "fake_property":
-				        print("Getting my property!")
-				        return 4
+					if property == "fake_property":
+						print("Getting my property!")
+						return 4
 
 				func _get_property_list():
-				    return [
-				        { "name": "fake_property", "type": TYPE_INT }
-				    ]
+					return [
+						{ "name": "fake_property", "type": TYPE_INT }
+					]
 				[/gdscript]
 				[csharp]
 				public override Variant _Get(StringName property)
 				{
-				    if (property == "FakeProperty")
-				    {
-				        GD.Print("Getting my property!");
-				        return 4;
-				    }
-				    return default;
+					if (property == "FakeProperty")
+					{
+						GD.Print("Getting my property!");
+						return 4;
+					}
+					return default;
 				}
 
 				public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
 				{
-				    return
-				    [
-				        new Godot.Collections.Dictionary()
-				        {
-				            { "name", "FakeProperty" },
-				            { "type", (int)Variant.Type.Int },
-				        },
-				    ];
+					return
+					[
+						new Godot.Collections.Dictionary()
+						{
+							{ "name", "FakeProperty" },
+							{ "type", (int)Variant.Type.Int },
+						},
+					];
 				}
 				[/csharp]
 				[/codeblocks]
@@ -87,98 +87,98 @@
 				extends Node
 
 				@export var number_count = 3:
-				    set(nc):
-				        number_count = nc
-				        numbers.resize(number_count)
-				        notify_property_list_changed()
+					set(nc):
+						number_count = nc
+						numbers.resize(number_count)
+						notify_property_list_changed()
 
 				var numbers = PackedInt32Array([0, 0, 0])
 
 				func _get_property_list():
-				    var properties = []
+					var properties = []
 
-				    for i in range(number_count):
-				        properties.append({
-				            "name": "number_%d" % i,
-				            "type": TYPE_INT,
-				            "hint": PROPERTY_HINT_ENUM,
-				            "hint_string": "ZERO,ONE,TWO,THREE,FOUR,FIVE",
-				        })
+					for i in range(number_count):
+						properties.append({
+							"name": "number_%d" % i,
+							"type": TYPE_INT,
+							"hint": PROPERTY_HINT_ENUM,
+							"hint_string": "ZERO,ONE,TWO,THREE,FOUR,FIVE",
+						})
 
-				    return properties
+					return properties
 
 				func _get(property):
-				    if property.begins_with("number_"):
-				        var index = property.get_slice("_", 1).to_int()
-				        return numbers[index]
+					if property.begins_with("number_"):
+						var index = property.get_slice("_", 1).to_int()
+						return numbers[index]
 
 				func _set(property, value):
-				    if property.begins_with("number_"):
-				        var index = property.get_slice("_", 1).to_int()
-				        numbers[index] = value
-				        return true
-				    return false
+					if property.begins_with("number_"):
+						var index = property.get_slice("_", 1).to_int()
+						numbers[index] = value
+						return true
+					return false
 				[/gdscript]
 				[csharp]
 				[Tool]
 				public partial class MyNode : Node
 				{
-				    private int _numberCount;
+					private int _numberCount;
 
-				    [Export]
-				    public int NumberCount
-				    {
-				        get =&gt; _numberCount;
-				        set
-				        {
-				            _numberCount = value;
-				            _numbers.Resize(_numberCount);
-				            NotifyPropertyListChanged();
-				        }
-				    }
+					[Export]
+					public int NumberCount
+					{
+						get =&gt; _numberCount;
+						set
+						{
+							_numberCount = value;
+							_numbers.Resize(_numberCount);
+							NotifyPropertyListChanged();
+						}
+					}
 
-				    private Godot.Collections.Array&lt;int&gt; _numbers = [];
+					private Godot.Collections.Array&lt;int&gt; _numbers = [];
 
-				    public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
-				    {
-				        Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; properties = [];
+					public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
+					{
+						Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; properties = [];
 
-				        for (int i = 0; i &lt; _numberCount; i++)
-				        {
-				            properties.Add(new Godot.Collections.Dictionary()
-				            {
-				                { "name", $"number_{i}" },
-				                { "type", (int)Variant.Type.Int },
-				                { "hint", (int)PropertyHint.Enum },
-				                { "hint_string", "Zero,One,Two,Three,Four,Five" },
-				            });
-				        }
+						for (int i = 0; i &lt; _numberCount; i++)
+						{
+							properties.Add(new Godot.Collections.Dictionary()
+							{
+								{ "name", $"number_{i}" },
+								{ "type", (int)Variant.Type.Int },
+								{ "hint", (int)PropertyHint.Enum },
+								{ "hint_string", "Zero,One,Two,Three,Four,Five" },
+							});
+						}
 
-				        return properties;
-				    }
+						return properties;
+					}
 
-				    public override Variant _Get(StringName property)
-				    {
-				        string propertyName = property.ToString();
-				        if (propertyName.StartsWith("number_"))
-				        {
-				            int index = int.Parse(propertyName.Substring("number_".Length));
-				            return _numbers[index];
-				        }
-				        return default;
-				    }
+					public override Variant _Get(StringName property)
+					{
+						string propertyName = property.ToString();
+						if (propertyName.StartsWith("number_"))
+						{
+							int index = int.Parse(propertyName.Substring("number_".Length));
+							return _numbers[index];
+						}
+						return default;
+					}
 
-				    public override bool _Set(StringName property, Variant value)
-				    {
-				        string propertyName = property.ToString();
-				        if (propertyName.StartsWith("number_"))
-				        {
-				            int index = int.Parse(propertyName.Substring("number_".Length));
-				            _numbers[index] = value.As&lt;int&gt;();
-				            return true;
-				        }
-				        return false;
-				    }
+					public override bool _Set(StringName property, Variant value)
+					{
+						string propertyName = property.ToString();
+						if (propertyName.StartsWith("number_"))
+						{
+							int index = int.Parse(propertyName.Substring("number_".Length));
+							_numbers[index] = value.As&lt;int&gt;();
+							return true;
+						}
+						return false;
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -208,29 +208,29 @@
 				Initializes the iterator. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
 				[codeblock]
 				class MyRange:
-				    var _from
-				    var _to
+					var _from
+					var _to
 
-				    func _init(from, to):
-				        assert(from &lt;= to)
-				        _from = from
-				        _to = to
+					func _init(from, to):
+						assert(from &lt;= to)
+						_from = from
+						_to = to
 
-				    func _iter_init(iter):
-				        iter[0] = _from
-				        return iter[0] &lt; _to
+					func _iter_init(iter):
+						iter[0] = _from
+						return iter[0] &lt; _to
 
-				    func _iter_next(iter):
-				        iter[0] += 1
-				        return iter[0] &lt; _to
+					func _iter_next(iter):
+						iter[0] += 1
+						return iter[0] &lt; _to
 
-				    func _iter_get(iter):
-				        return iter
+					func _iter_get(iter):
+						return iter
 
 				func _ready():
-				    var my_range = MyRange.new(2, 5)
-				    for x in my_range:
-				        print(x) # Prints 2, 3, 4.
+					var my_range = MyRange.new(2, 5)
+					for x in my_range:
+						print(x) # Prints 2, 3, 4.
 				[/codeblock]
 				[b]Note:[/b] Alternatively, you can ignore [param iter] and use the object's state instead, see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_advanced.html#custom-iterators]online docs[/url] for an example. Note that in this case you will not be able to reuse the same iterator instance in nested loops. Also, make sure you reset the iterator state in this method if you want to reuse the same instance multiple times.
 			</description>
@@ -250,16 +250,16 @@
 				[codeblocks]
 				[gdscript]
 				func _notification(what):
-				    if what == NOTIFICATION_PREDELETE:
-				        print("Goodbye!")
+					if what == NOTIFICATION_PREDELETE:
+						print("Goodbye!")
 				[/gdscript]
 				[csharp]
 				public override void _Notification(int what)
 				{
-				    if (what == NotificationPredelete)
-				    {
-				        GD.Print("Goodbye!");
-				    }
+					if (what == NotificationPredelete)
+					{
+						GD.Print("Goodbye!");
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -294,42 +294,42 @@
 				var internal_data = {}
 
 				func _set(property, value):
-				    if property == "fake_property":
-				        # Storing the value in the fake property.
-				        internal_data["fake_property"] = value
-				        return true
-				    return false
+					if property == "fake_property":
+						# Storing the value in the fake property.
+						internal_data["fake_property"] = value
+						return true
+					return false
 
 				func _get_property_list():
-				    return [
-				        { "name": "fake_property", "type": TYPE_INT }
-				    ]
+					return [
+						{ "name": "fake_property", "type": TYPE_INT }
+					]
 				[/gdscript]
 				[csharp]
 				private Godot.Collections.Dictionary _internalData = new Godot.Collections.Dictionary();
 
 				public override bool _Set(StringName property, Variant value)
 				{
-				    if (property == "FakeProperty")
-				    {
-				        // Storing the value in the fake property.
-				        _internalData["FakeProperty"] = value;
-				        return true;
-				    }
+					if (property == "FakeProperty")
+					{
+						// Storing the value in the fake property.
+						_internalData["FakeProperty"] = value;
+						return true;
+					}
 
-				    return false;
+					return false;
 				}
 
 				public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
 				{
-				    return
-				    [
-				        new Godot.Collections.Dictionary()
-				        {
-				            { "name", "FakeProperty" },
-				            { "type", (int)Variant.Type.Int },
-				        },
-				    ];
+					return
+					[
+						new Godot.Collections.Dictionary()
+						{
+							{ "name", "FakeProperty" },
+							{ "type", (int)Variant.Type.Int },
+						},
+					];
 				}
 				[/csharp]
 				[/codeblocks]
@@ -341,11 +341,11 @@
 				Override this method to customize the return value of [method to_string], and therefore the object's representation as a [String].
 				[codeblock]
 				func _to_string():
-				    return "Welcome to Godot 4!"
+					return "Welcome to Godot 4!"
 
 				func _init():
-				    print(self)       # Prints "Welcome to Godot 4!"
-				    var a = str(self) # a is "Welcome to Godot 4!"
+					print(self)       # Prints "Welcome to Godot 4!"
+					var a = str(self) # a is "Welcome to Godot 4!"
 				[/codeblock]
 			</description>
 		</method>
@@ -360,43 +360,43 @@
 				extends Node
 
 				@export var is_number_editable: bool:
-				    set(value):
-				        is_number_editable = value
-				        notify_property_list_changed()
+					set(value):
+						is_number_editable = value
+						notify_property_list_changed()
 				@export var number: int
 
 				func _validate_property(property: Dictionary):
-				    if property.name == "number" and not is_number_editable:
-				        property.usage |= PROPERTY_USAGE_READ_ONLY
+					if property.name == "number" and not is_number_editable:
+						property.usage |= PROPERTY_USAGE_READ_ONLY
 				[/gdscript]
 				[csharp]
 				[Tool]
 				public partial class MyNode : Node
 				{
-				    private bool _isNumberEditable;
+					private bool _isNumberEditable;
 
-				    [Export]
-				    public bool IsNumberEditable
-				    {
-				        get =&gt; _isNumberEditable;
-				        set
-				        {
-				            _isNumberEditable = value;
-				            NotifyPropertyListChanged();
-				        }
-				    }
+					[Export]
+					public bool IsNumberEditable
+					{
+						get =&gt; _isNumberEditable;
+						set
+						{
+							_isNumberEditable = value;
+							NotifyPropertyListChanged();
+						}
+					}
 
-				    [Export]
-				    public int Number { get; set; }
+					[Export]
+					public int Number { get; set; }
 
-				    public override void _ValidateProperty(Godot.Collections.Dictionary property)
-				    {
-				        if (property["name"].AsStringName() == PropertyName.Number &amp;&amp; !IsNumberEditable)
-				        {
-				            var usage = property["usage"].As&lt;PropertyUsageFlags&gt;() | PropertyUsageFlags.ReadOnly;
-				            property["usage"] = (int)usage;
-				        }
-				    }
+					public override void _ValidateProperty(Godot.Collections.Dictionary property)
+					{
+						if (property["name"].AsStringName() == PropertyName.Number &amp;&amp; !IsNumberEditable)
+						{
+							var usage = property["usage"].As&lt;PropertyUsageFlags&gt;() | PropertyUsageFlags.ReadOnly;
+							property["usage"] = (int)usage;
+						}
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -411,23 +411,23 @@
 				[codeblocks]
 				[gdscript]
 				add_user_signal("hurt", [
-				    { "name": "damage", "type": TYPE_INT },
-				    { "name": "source", "type": TYPE_OBJECT }
+					{ "name": "damage", "type": TYPE_INT },
+					{ "name": "source", "type": TYPE_OBJECT }
 				])
 				[/gdscript]
 				[csharp]
 				AddUserSignal("Hurt",
 				[
-				    new Godot.Collections.Dictionary()
-				    {
-				        { "name", "damage" },
-				        { "type", (int)Variant.Type.Int },
-				    },
-				    new Godot.Collections.Dictionary()
-				    {
-				        { "name", "source" },
-				        { "type", (int)Variant.Type.Object },
-				    },
+					new Godot.Collections.Dictionary()
+					{
+						{ "name", "damage" },
+						{ "type", (int)Variant.Type.Int },
+					},
+					new Godot.Collections.Dictionary()
+					{
+						{ "name", "source" },
+						{ "type", (int)Variant.Type.Object },
+					},
 				]);
 				[/csharp]
 				[/codeblocks]

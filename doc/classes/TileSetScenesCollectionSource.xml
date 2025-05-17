@@ -12,23 +12,23 @@
 		[gdscript]
 		var source_id = tile_map_layer.get_cell_source_id(Vector2i(x, y))
 		if source_id &gt; -1:
-		    var scene_source = tile_map_layer.tile_set.get_source(source_id)
-		    if scene_source is TileSetScenesCollectionSource:
-		        var alt_id = tile_map_layer.get_cell_alternative_tile(Vector2i(x, y))
-		        # The assigned PackedScene.
-		        var scene = scene_source.get_scene_tile_scene(alt_id)
+			var scene_source = tile_map_layer.tile_set.get_source(source_id)
+			if scene_source is TileSetScenesCollectionSource:
+				var alt_id = tile_map_layer.get_cell_alternative_tile(Vector2i(x, y))
+				# The assigned PackedScene.
+				var scene = scene_source.get_scene_tile_scene(alt_id)
 		[/gdscript]
 		[csharp]
 		int sourceId = tileMapLayer.GetCellSourceId(new Vector2I(x, y));
 		if (sourceId &gt; -1)
 		{
-		    TileSetSource source = tileMapLayer.TileSet.GetSource(sourceId);
-		    if (source is TileSetScenesCollectionSource sceneSource)
-		    {
-		        int altId = tileMapLayer.GetCellAlternativeTile(new Vector2I(x, y));
-		        // The assigned PackedScene.
-		        PackedScene scene = sceneSource.GetSceneTileScene(altId);
-		    }
+			TileSetSource source = tileMapLayer.TileSet.GetSource(sourceId);
+			if (source is TileSetScenesCollectionSource sceneSource)
+			{
+				int altId = tileMapLayer.GetCellAlternativeTile(new Vector2I(x, y));
+				// The assigned PackedScene.
+				PackedScene scene = sceneSource.GetSceneTileScene(altId);
+			}
 		}
 		[/csharp]
 		[/codeblocks]

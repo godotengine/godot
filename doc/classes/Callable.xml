@@ -8,42 +8,42 @@
 		[codeblocks]
 		[gdscript]
 		func print_args(arg1, arg2, arg3 = ""):
-		    prints(arg1, arg2, arg3)
+			prints(arg1, arg2, arg3)
 
 		func test():
-		    var callable = Callable(self, "print_args")
-		    callable.call("hello", "world")  # Prints "hello world ".
-		    callable.call(Vector2.UP, 42, callable)  # Prints "(0.0, -1.0) 42 Node(node.gd)::print_args"
-		    callable.call("invalid")  # Invalid call, should have at least 2 arguments.
+			var callable = Callable(self, "print_args")
+			callable.call("hello", "world")  # Prints "hello world ".
+			callable.call(Vector2.UP, 42, callable)  # Prints "(0.0, -1.0) 42 Node(node.gd)::print_args"
+			callable.call("invalid")  # Invalid call, should have at least 2 arguments.
 		[/gdscript]
 		[csharp]
 		// Default parameter values are not supported.
 		public void PrintArgs(Variant arg1, Variant arg2, Variant arg3 = default)
 		{
-		    GD.PrintS(arg1, arg2, arg3);
+			GD.PrintS(arg1, arg2, arg3);
 		}
 
 		public void Test()
 		{
-		    // Invalid calls fail silently.
-		    Callable callable = new Callable(this, MethodName.PrintArgs);
-		    callable.Call("hello", "world"); // Default parameter values are not supported, should have 3 arguments.
-		    callable.Call(Vector2.Up, 42, callable); // Prints "(0, -1) 42 Node(Node.cs)::PrintArgs"
-		    callable.Call("invalid"); // Invalid call, should have 3 arguments.
+			// Invalid calls fail silently.
+			Callable callable = new Callable(this, MethodName.PrintArgs);
+			callable.Call("hello", "world"); // Default parameter values are not supported, should have 3 arguments.
+			callable.Call(Vector2.Up, 42, callable); // Prints "(0, -1) 42 Node(Node.cs)::PrintArgs"
+			callable.Call("invalid"); // Invalid call, should have 3 arguments.
 		}
 		[/csharp]
 		[/codeblocks]
 		In GDScript, it's possible to create lambda functions within a method. Lambda functions are custom callables that are not associated with an [Object] instance. Optionally, lambda functions can also be named. The name will be displayed in the debugger, or when calling [method get_method].
 		[codeblock]
 		func _init():
-		    var my_lambda = func (message):
-		        print(message)
+			var my_lambda = func (message):
+				print(message)
 
-		    # Prints "Hello everyone!"
-		    my_lambda.call("Hello everyone!")
+			# Prints "Hello everyone!"
+			my_lambda.call("Hello everyone!")
 
-		    # Prints "Attack!", when the button_pressed signal is emitted.
-		    button_pressed.connect(func(): print("Attack!"))
+			# Prints "Attack!", when the button_pressed signal is emitted.
+			button_pressed.connect(func(): print("Attack!"))
 		[/codeblock]
 		In GDScript, you can access methods and global functions as [Callable]s:
 		[codeblock]
@@ -117,12 +117,12 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    grab_focus.call_deferred()
+					grab_focus.call_deferred()
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    Callable.From(GrabFocus).CallDeferred();
+					Callable.From(GrabFocus).CallDeferred();
 				}
 				[/csharp]
 				[/codeblocks]
@@ -158,10 +158,10 @@
 				Returns the array of arguments bound via successive [method bind] or [method unbind] calls. These arguments will be added [i]after[/i] the arguments passed to the call, from which [method get_unbound_arguments_count] arguments on the right have been previously excluded.
 				[codeblock]
 				func get_effective_arguments(callable, call_args):
-				    assert(call_args.size() - callable.get_unbound_arguments_count() &gt;= 0)
-				    var result = call_args.slice(0, call_args.size() - callable.get_unbound_arguments_count())
-				    result.append_array(callable.get_bound_arguments())
-				    return result
+					assert(call_args.size() - callable.get_unbound_arguments_count() &gt;= 0)
+					var result = call_args.slice(0, call_args.size() - callable.get_unbound_arguments_count())
+					result.append_array(callable.get_bound_arguments())
+					return result
 				[/codeblock]
 			</description>
 		</method>
@@ -254,8 +254,8 @@
 				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
 				[codeblock]
 				func _ready():
-				    foo.unbind(1).call(1, 2) # Calls foo(1).
-				    foo.bind(3, 4).unbind(1).call(1, 2) # Calls foo(1, 3, 4), note that it does not change the arguments from bind.
+					foo.unbind(1).call(1, 2) # Calls foo(1).
+					foo.bind(3, 4).unbind(1).call(1, 2) # Calls foo(1, 3, 4), note that it does not change the arguments from bind.
 				[/codeblock]
 			</description>
 		</method>

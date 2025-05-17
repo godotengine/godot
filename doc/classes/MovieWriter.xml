@@ -35,9 +35,9 @@
 				Called when the engine determines whether this [MovieWriter] is able to handle the file at [param path]. Must return [code]true[/code] if this [MovieWriter] is able to handle the given file path, [code]false[/code] otherwise. Typically, [method _handles_file] is overridden as follows to allow the user to record a file at any path with a given file extension:
 				[codeblock]
 				func _handles_file(path):
-				    # Allows specifying an output file with a `.mkv` file extension (case-insensitive),
-				    # either in the Project Settings or with the `--write-movie &lt;path&gt;` command line argument.
-				    return path.get_extension().to_lower() == "mkv"
+					# Allows specifying an output file with a `.mkv` file extension (case-insensitive),
+					# either in the Project Settings or with the `--write-movie &lt;path&gt;` command line argument.
+					return path.get_extension().to_lower() == "mkv"
 				[/codeblock]
 			</description>
 		</method>

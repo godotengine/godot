@@ -457,8 +457,8 @@
 				[codeblock]
 				print(" (x)  (fmod(x, 1.5))   (fposmod(x, 1.5))")
 				for i in 7:
-				    var x = i * 0.5 - 1.5
-				    print("%4.1f           %4.1f  | %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
+					var x = i * 0.5 - 1.5
+					print("%4.1f           %4.1f  | %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
 				[/codeblock]
 				Prints:
 				[codeblock lang=text]
@@ -498,21 +498,21 @@
 				var drink = "water"
 
 				func _ready():
-				    var id = get_instance_id()
-				    var instance = instance_from_id(id)
-				    print(instance.foo) # Prints "water"
+					var id = get_instance_id()
+					var instance = instance_from_id(id)
+					print(instance.foo) # Prints "water"
 				[/gdscript]
 				[csharp]
 				public partial class MyNode : Node
 				{
-				    public string Drink { get; set; } = "water";
+					public string Drink { get; set; } = "water";
 
-				    public override void _Ready()
-				    {
-				        ulong id = GetInstanceId();
-				        var instance = (MyNode)InstanceFromId(Id);
-				        GD.Print(instance.Drink); // Prints "water"
-				    }
+					public override void _Ready()
+					{
+						ulong id = GetInstanceId();
+						var instance = (MyNode)InstanceFromId(Id);
+						GD.Print(instance.Drink); // Prints "water"
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -642,10 +642,10 @@
 				extends Sprite
 				var elapsed = 0.0
 				func _process(delta):
-				    var min_angle = deg_to_rad(0.0)
-				    var max_angle = deg_to_rad(90.0)
-				    rotation = lerp_angle(min_angle, max_angle, elapsed)
-				    elapsed += delta
+					var min_angle = deg_to_rad(0.0)
+					var max_angle = deg_to_rad(90.0)
+					rotation = lerp_angle(min_angle, max_angle, elapsed)
+					elapsed += delta
 				[/codeblock]
 				[b]Note:[/b] This function lerps through the shortest path between [param from] and [param to]. However, when these two angles are approximately [code]PI + k * TAU[/code] apart for any integer [code]k[/code], it's not obvious which way they lerp due to floating-point precision errors. For example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise.
 			</description>
@@ -815,7 +815,7 @@
 				[codeblock]
 				print("#(i)  (i % 3)   (posmod(i, 3))")
 				for i in range(-3, 4):
-				    print("%2d       %2d  | %2d" % [i, i % 3, posmod(i, 3)])
+					print("%2d       %2d  | %2d" % [i, i % 3, posmod(i, 3)])
 				[/codeblock]
 				Prints:
 				[codeblock lang=text]
@@ -1429,9 +1429,9 @@
 				json.parse('["a", "b", "c"]')
 				var result = json.get_data()
 				if result is Array:
-				    print(result[0]) # Prints "a"
+					print(result[0]) # Prints "a"
 				else:
-				    print("Unexpected result!")
+					print("Unexpected result!")
 				[/codeblock]
 				See also [method type_string].
 			</description>
@@ -1471,8 +1471,8 @@
 				Prints:
 				[codeblock lang=text]
 				{
-				    "a": 1,
-				    "b": 2
+					"a": 1,
+					"b": 2
 				}
 				[/codeblock]
 				[b]Note:[/b] Converting [Signal] or [Callable] is not supported and will result in an empty value for these types, regardless of their data.
@@ -2613,11 +2613,11 @@
 			[codeblock]
 			var error = method_that_returns_error()
 			if error != OK:
-			    printerr("Failure!")
+				printerr("Failure!")
 
 			# Or, alternatively:
 			if error:
-			    printerr("Still failing!")
+				printerr("Still failing!")
 			[/codeblock]
 			[b]Note:[/b] Many functions do not return an error code, but will print error messages to standard output.
 		</constant>
