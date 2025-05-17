@@ -245,7 +245,7 @@ void FabrikInverseKinematic::solve(Task *p_task, bool override_tip_basis, bool p
 
 	Vector3 origin_pos = p_task->skeleton->get_bone_global_pose(p_task->chain.chain_root.bone).origin;
 
-	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse());
+	make_goal(p_task, p_task->skeleton->get_global_transform_interpolated().affine_inverse());
 
 	if (p_use_magnet && p_task->chain.middle_chain_item) {
 		p_task->chain.magnet_position = p_magnet_position;

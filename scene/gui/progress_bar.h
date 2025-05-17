@@ -83,7 +83,7 @@ public:
 	ProgressBar();
 
 private:
-	float _inderminate_fill_progress = 0;
+	float _indeterminate_fill_progress = 0;
 
 	FillMode mode = FILL_BEGIN_TO_END;
 };

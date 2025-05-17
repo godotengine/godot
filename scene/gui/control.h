@@ -307,7 +307,6 @@ private:
 
 	void _compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (&r_offsets)[4]);
 	void _compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]);
-	void _compute_edge_positions(Rect2 p_rect, real_t (&r_edge_positions)[4]);
 
 	void _set_layout_mode(LayoutMode p_mode);
 	void _update_layout_mode();
@@ -337,6 +336,7 @@ private:
 
 	// Focus.
 
+	bool _is_focusable() const;
 	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
 	bool _is_focus_mode_enabled() const;

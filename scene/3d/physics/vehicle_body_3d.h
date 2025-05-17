@@ -40,6 +40,44 @@ class VehicleWheel3D : public Node3D {
 
 	friend class VehicleBody3D;
 
+	struct WheelXform {
+		Vector3 up;
+		Vector3 right;
+		Vector3 origin;
+		real_t steering = 0;
+	};
+
+	class FTIData {
+		real_t curr_rotation = 0;
+		real_t curr_rotation_delta = 0;
+
+	public:
+		WheelXform curr;
+		WheelXform prev;
+
+		// If a wheel is added on a frame, the xform will not be set until it has been physics updated at least once.
+		bool unset = true;
+		bool reset_queued = false;
+
+		void rotate(real_t p_delta) {
+			curr_rotation += p_delta;
+			curr_rotation_delta = p_delta;
+
+			// Wrap rotation to prevent float error.
+			double wrapped = Math::fmod(curr_rotation + Math::PI, Math::TAU);
+			if (wrapped < 0) {
+				wrapped += Math::TAU;
+			}
+			curr_rotation = wrapped - Math::PI;
+		}
+
+		void pump() {
+			prev = curr;
+			curr_rotation_delta = 0;
+		}
+		void update_world_xform(Transform3D &r_xform, real_t p_interpolation_fraction);
+	} fti_data;
+
 	Transform3D m_worldTransform;
 	Transform3D local_xform;
 	bool engine_traction = false;
@@ -193,6 +231,8 @@ class VehicleBody3D : public RigidBody3D {
 	void _update_wheel_transform(VehicleWheel3D &wheel, PhysicsDirectBodyState3D *s);
 	void _update_wheel(int p_idx, PhysicsDirectBodyState3D *s);
 
+	void _update_process_mode();
+
 	friend class VehicleWheel3D;
 	Vector<VehicleWheel3D *> wheels;
 
@@ -200,6 +240,12 @@ class VehicleBody3D : public RigidBody3D {
 
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
 	virtual void _body_state_changed(PhysicsDirectBodyState3D *p_state) override;
+
+protected:
+	void _notification(int p_what);
+
+	virtual void _physics_interpolated_changed() override;
+	virtual void fti_pump_xform() override;
 
 public:
 	void set_engine_force(real_t p_engine_force);

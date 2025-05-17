@@ -80,7 +80,6 @@ public:
 
 	void set_timer_process_callback(TimerProcessCallback p_callback);
 	TimerProcessCallback get_timer_process_callback() const;
-	Timer();
 
 private:
 	TimerProcessCallback timer_process_callback = TIMER_PROCESS_IDLE;

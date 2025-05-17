@@ -37,11 +37,15 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/scroll_bar.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 
-#include <limits.h>
+#include <climits>
 
 Size2 TreeItem::Cell::get_icon_size() const {
 	if (icon.is_null()) {
@@ -2391,9 +2395,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				if (i == 0) {
 					r.position.x = p_draw_ofs.x;
 					r.size.x = item_width + ofs;
-				} else {
-					r.position.x -= theme_cache.h_separation;
-					r.size.x += theme_cache.h_separation;
 				}
 				if (rtl) {
 					r.position.x = get_size().width - r.position.x - r.size.x;
@@ -2722,8 +2723,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		TreeItem *c = p_item->first_child;
 
 		int base_ofs = children_pos.y - theme_cache.offset.y + p_draw_ofs.y;
-		int prev_ofs = base_ofs;
-		int prev_hl_ofs = base_ofs;
+		float prev_ofs = base_ofs;
+		float prev_hl_ofs = base_ofs;
 
 		while (c) {
 			int child_h = -1;
@@ -2736,10 +2737,10 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			// Draw relationship lines.
 			if (theme_cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root) && c->is_visible_in_tree()) {
 				int parent_ofs = p_pos.x + theme_cache.item_margin;
-				Point2i parent_pos = Point2i(parent_ofs - theme_cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + theme_cache.arrow->get_height() / 2) - theme_cache.offset + p_draw_ofs;
+				Point2i parent_pos = Point2i(parent_ofs - theme_cache.arrow->get_width() * 0.5, p_pos.y + label_h * 0.5 + theme_cache.arrow->get_height() * 0.5) - theme_cache.offset + p_draw_ofs;
 
 				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin);
-				Point2i root_pos = Point2i(root_ofs, children_pos.y + child_self_height / 2) - theme_cache.offset + p_draw_ofs;
+				Point2i root_pos = Point2i(root_ofs, children_pos.y + child_self_height * 0.5) - theme_cache.offset + p_draw_ofs;
 				if (!hide_folding && !p_item->disable_folding && c->get_visible_child_count() > 0) {
 					root_pos -= Point2i(theme_cache.arrow->get_width(), 0);
 				}
@@ -2751,6 +2752,10 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				float parent_line_width = theme_cache.parent_hl_line_width * Math::round(theme_cache.base_scale);
 				float children_line_width = theme_cache.children_hl_line_width * Math::round(theme_cache.base_scale);
 
+				float line_pixel_shift = int(Math::round(line_width * content_scale_factor)) % 2 == 0 ? 0.0 : 0.5;
+				float parent_line_pixel_shift = int(Math::round(parent_line_width * content_scale_factor)) % 2 == 0 ? 0.0 : 0.5;
+				float children_line_pixel_shift = int(Math::round(children_line_width * content_scale_factor)) % 2 == 0 ? 0.0 : 0.5;
+
 				int more_prev_ofs = 0;
 
 				if (root_pos.y + line_width >= 0) {
@@ -2758,37 +2763,38 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						root_pos.x = get_size().width - root_pos.x;
 						parent_pos.x = get_size().width - parent_pos.x;
 					}
+					float parent_bottom_y = root_pos.y + parent_line_width * 0.5 + parent_line_pixel_shift;
 
 					// Order of parts on this bend: the horizontal line first, then the vertical line.
 					if (_is_branch_selected(c)) {
 						// If this item or one of its children is selected, we draw the line using parent highlight style.
 						if (!is_no_space) {
 							if (htotal >= 0) {
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), theme_cache.parent_hl_line_color, parent_line_width);
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(root_pos.x, root_pos.y + parent_line_pixel_shift), Point2(parent_pos.x + parent_line_width * 0.5 + parent_line_pixel_shift, root_pos.y + parent_line_pixel_shift), theme_cache.parent_hl_line_color, parent_line_width);
 							}
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(parent_pos.x + parent_line_pixel_shift, parent_bottom_y), Point2(parent_pos.x + parent_line_pixel_shift, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
 						}
 
 						more_prev_ofs = theme_cache.parent_hl_line_margin;
-						prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+						prev_hl_ofs = parent_bottom_y;
 					} else if (p_item->is_selected(0)) {
 						// If parent item is selected (but this item is not), we draw the line using children highlight style.
 						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
 						if (_is_sibling_branch_selected(c)) {
 							if (!is_no_space) {
 								if (htotal >= 0) {
-									RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), theme_cache.children_hl_line_color, children_line_width);
+									RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(root_pos.x, root_pos.y + children_line_pixel_shift), Point2i(parent_pos.x + parent_line_width * 0.5 + children_line_pixel_shift, root_pos.y + children_line_pixel_shift), theme_cache.children_hl_line_color, children_line_width);
 								}
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(parent_pos.x + parent_line_pixel_shift, parent_bottom_y), Point2(parent_pos.x + parent_line_pixel_shift, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
 							}
 
-							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+							prev_hl_ofs = parent_bottom_y;
 						} else {
 							if (!is_no_space) {
 								if (htotal >= 0) {
-									RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(children_line_width / 2), root_pos.y), theme_cache.children_hl_line_color, children_line_width);
+									RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(root_pos.x, root_pos.y + children_line_pixel_shift), Point2(parent_pos.x + children_line_width * 0.5 + children_line_pixel_shift, root_pos.y + children_line_pixel_shift), theme_cache.children_hl_line_color, children_line_width);
 								}
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(children_line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(children_line_width / 2)), theme_cache.children_hl_line_color, children_line_width);
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(parent_pos.x + children_line_pixel_shift, root_pos.y + children_line_width * 0.5 + children_line_pixel_shift), Point2(parent_pos.x + children_line_pixel_shift, prev_ofs + children_line_width * 0.5), theme_cache.children_hl_line_color, children_line_width);
 							}
 						}
 					} else {
@@ -2797,24 +2803,24 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						if (_is_sibling_branch_selected(c)) {
 							if (!is_no_space) {
 								if (htotal >= 0) {
-									RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + theme_cache.parent_hl_line_margin, root_pos.y), theme_cache.relationship_line_color, line_width);
+									RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(root_pos.x, root_pos.y + line_pixel_shift), Point2(parent_pos.x + theme_cache.parent_hl_line_margin, root_pos.y + line_pixel_shift), theme_cache.relationship_line_color, line_width);
 								}
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(parent_pos.x + parent_line_pixel_shift, parent_bottom_y), Point2(parent_pos.x + parent_line_pixel_shift, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
 							}
 
-							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+							prev_hl_ofs = parent_bottom_y;
 						} else {
 							if (!is_no_space) {
 								if (htotal >= 0) {
-									RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(line_width / 2), root_pos.y), theme_cache.relationship_line_color, line_width);
+									RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(root_pos.x, root_pos.y + line_pixel_shift), Point2(parent_pos.x + line_width * 0.5 + line_pixel_shift, root_pos.y + line_pixel_shift), theme_cache.relationship_line_color, line_width);
 								}
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(line_width / 2)), theme_cache.relationship_line_color, line_width);
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(parent_pos.x + line_pixel_shift, root_pos.y + line_width * 0.5 + line_pixel_shift), Point2(parent_pos.x + line_pixel_shift, prev_ofs + line_width * 0.5), theme_cache.relationship_line_color, line_width);
 							}
 						}
 					}
 				}
 
-				prev_ofs = root_pos.y + more_prev_ofs;
+				prev_ofs = root_pos.y + more_prev_ofs + line_pixel_shift;
 			}
 
 			if (child_h < 0) {
@@ -3552,6 +3558,47 @@ void Tree::_go_up() {
 	accept_event();
 }
 
+void Tree::_shift_select_range(TreeItem *new_item) {
+	if (!new_item) {
+		new_item = selected_item;
+	}
+	int s_col = selected_col;
+	bool in_range = false;
+	TreeItem *item = root;
+
+	if (!shift_anchor) {
+		shift_anchor = selected_item;
+	}
+
+	while (item) {
+		bool at_range_edge = item == shift_anchor || item == new_item;
+		if (at_range_edge) {
+			in_range = !in_range;
+		}
+		if (new_item == shift_anchor) {
+			in_range = false;
+		}
+		if (item->is_visible_in_tree()) {
+			if (in_range || at_range_edge) {
+				if (!item->is_selected(selected_col) && item->is_selectable(selected_col)) {
+					item->select(selected_col);
+					emit_signal(SNAME("multi_selected"), item, selected_col, true);
+				}
+			} else if (item->is_selected(selected_col)) {
+				item->deselect(selected_col);
+				emit_signal(SNAME("multi_selected"), item, selected_col, false);
+			}
+		}
+		item = item->get_next_in_tree(false);
+	}
+
+	selected_item = new_item;
+	selected_col = s_col;
+	ensure_cursor_is_visible();
+	queue_redraw();
+	accept_event();
+}
+
 void Tree::_go_down() {
 	TreeItem *next = nullptr;
 	if (!selected_item) {
@@ -3641,6 +3688,10 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
+	if (k.is_valid() && k->get_keycode() == Key::SHIFT && !k->is_pressed()) {
+		shift_anchor = nullptr;
+	}
+
 	bool is_command = k.is_valid() && k->is_command_or_control_pressed();
 	if (p_event->is_action(cache.rtl ? "ui_left" : "ui_right") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
@@ -3682,15 +3733,25 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
-
-		_go_up();
+		// Shift Up Selection.
+		if (k.is_valid() && k->is_shift_pressed() && selected_item && select_mode == SELECT_MULTI) {
+			TreeItem *new_item = selected_item->get_prev_visible(false);
+			_shift_select_range(new_item);
+		} else {
+			_go_up();
+		}
 
 	} else if (p_event->is_action("ui_down") && p_event->is_pressed() && !is_command) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
-
-		_go_down();
+		// Shift Down Selection.
+		if (k.is_valid() && k->is_shift_pressed() && selected_item && select_mode == SELECT_MULTI) {
+			TreeItem *new_item = selected_item->get_next_visible(false);
+			_shift_select_range(new_item);
+		} else {
+			_go_down();
+		}
 	} else if (p_event->is_action("ui_menu") && p_event->is_pressed()) {
 		if (allow_rmb_select && selected_item) {
 			emit_signal(SNAME("item_mouse_selected"), get_item_rect(selected_item).position, MouseButton::RIGHT);
@@ -4921,6 +4982,7 @@ void Tree::_notification(int p_what) {
 			draw_size.y -= tbh;
 
 			cache.rtl = is_layout_rtl();
+			content_scale_factor = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
 
 			if (root && get_size().x > 0 && get_size().y > 0) {
 				int self_height = 0; // Just to pass a reference, we don't need the root's `self_height`.
@@ -5899,7 +5961,7 @@ TreeItem *Tree::get_item_with_metadata(const Variant &p_find, int p_column) cons
 void Tree::_do_incr_search(const String &p_add) {
 	uint64_t time = OS::get_singleton()->get_ticks_usec() / 1000; // Convert to msec.
 	uint64_t diff = time - last_keypress;
-	if (diff > uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec"))) {
+	if (diff > uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec"))) {
 		incr_search = p_add;
 	} else if (incr_search != p_add) {
 		incr_search += p_add;
@@ -6579,7 +6641,7 @@ Tree::Tree() {
 	popup_editor = memnew(Popup);
 	add_child(popup_editor, false, INTERNAL_MODE_FRONT);
 
-	popup_editor_vb = memnew(VBoxContainer);
+	VBoxContainer *popup_editor_vb = memnew(VBoxContainer);
 	popup_editor_vb->add_theme_constant_override("separation", 0);
 	popup_editor_vb->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	popup_editor->add_child(popup_editor_vb);

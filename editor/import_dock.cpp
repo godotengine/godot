@@ -190,8 +190,7 @@ void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_
 
 	HashMap<StringName, Variant> import_options;
 	if (p_config.is_valid() && p_config->has_section("params")) {
-		List<String> section_keys;
-		p_config->get_section_keys("params", &section_keys);
+		Vector<String> section_keys = p_config->get_section_keys("params");
 		for (const String &section_key : section_keys) {
 			import_options[section_key] = p_config->get_value("params", section_key);
 		}
@@ -258,8 +257,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 			continue;
 		}
 
-		List<String> keys;
-		config->get_section_keys("params", &keys);
+		Vector<String> keys = config->get_section_keys("params");
 
 		for (const String &E : keys) {
 			if (!value_frequency.has(E)) {
@@ -752,6 +750,7 @@ ImportDock::ImportDock() {
 	content->hide();
 
 	imported = memnew(Label);
+	imported->set_focus_mode(FOCUS_ACCESSIBILITY);
 	imported->add_theme_style_override(CoreStringName(normal), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(CoreStringName(normal), SNAME("LineEdit")));
 	imported->set_clip_text(true);
 	content->add_child(imported);
@@ -813,6 +812,7 @@ ImportDock::ImportDock() {
 	params = memnew(ImportDockParameters);
 
 	select_a_resource = memnew(Label);
+	select_a_resource->set_focus_mode(FOCUS_ACCESSIBILITY);
 	select_a_resource->set_text(TTRC("Select a resource file in the filesystem or in the inspector to adjust import settings."));
 	select_a_resource->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	select_a_resource->set_custom_minimum_size(Size2(100 * EDSCALE, 0));

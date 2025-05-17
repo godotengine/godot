@@ -57,7 +57,6 @@ void OpenXRActionMapEditor::_bind_methods() {
 
 void OpenXRActionMapEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < tabs->get_child_count(); i++) {
 				Control *tab = Object::cast_to<Control>(tabs->get_child(i));
@@ -288,13 +287,12 @@ void OpenXRActionMapEditor::_load_action_map(const String p_path, bool p_create_
 	} else if (p_create_new_if_missing) {
 		action_map.instantiate();
 		action_map->create_default_action_sets();
-		action_map->set_path(p_path);
 
 		// Save it immediately
 		err = ResourceSaver::save(action_map, p_path);
 		if (err != OK) {
 			// Show warning but continue.
-			EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file %s: %s"), edited_path, error_names[err]));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file %s: %s"), p_path, error_names[err]));
 		}
 	}
 
@@ -495,5 +493,5 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 
 	// Our Action map editor is only shown if openxr is enabled in project settings
 	// So load our action map and if it doesn't exist, create it right away.
-	_load_action_map(GLOBAL_GET("xr/openxr/default_action_map"), true);
+	_load_action_map(ResourceUID::ensure_path(GLOBAL_GET("xr/openxr/default_action_map")), true);
 }

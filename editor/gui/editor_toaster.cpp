@@ -435,6 +435,7 @@ void EditorToaster::_popup_str(const String &p_message, Severity p_severity, con
 		hb->add_theme_constant_override("separation", 0);
 
 		Label *label = memnew(Label);
+		label->set_focus_mode(FOCUS_ACCESSIBILITY);
 		hb->add_child(label);
 
 		Label *count_label = memnew(Label);

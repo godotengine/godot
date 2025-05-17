@@ -758,7 +758,7 @@ struct _VariantCall {
 		String s;
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
-			s.append_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
+			s.append_utf16((const char16_t *)r, std::floor((double)p_instance->size() / (double)sizeof(char16_t)));
 		}
 		return s;
 	}
@@ -767,7 +767,7 @@ struct _VariantCall {
 		String s;
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
-			s.append_utf32(Span((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t))));
+			s.append_utf32(Span((const char32_t *)r, std::floor((double)p_instance->size() / (double)sizeof(char32_t))));
 		}
 		return s;
 	}
@@ -777,9 +777,9 @@ struct _VariantCall {
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
 #ifdef WINDOWS_ENABLED
-			s.append_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
+			s.append_utf16((const char16_t *)r, std::floor((double)p_instance->size() / (double)sizeof(char16_t)));
 #else
-			s.append_utf32(Span((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t))));
+			s.append_utf32(Span((const char32_t *)r, std::floor((double)p_instance->size() / (double)sizeof(char32_t))));
 #endif
 		}
 		return s;
@@ -1820,7 +1820,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(rstrip, sarray("chars"), varray());
 	bind_string_method(get_extension, sarray(), varray());
 	bind_string_method(get_basename, sarray(), varray());
-	bind_string_method(path_join, sarray("file"), varray());
+	bind_string_method(path_join, sarray("path"), varray());
 	bind_string_method(unicode_at, sarray("at"), varray());
 	bind_string_method(indent, sarray("prefix"), varray());
 	bind_string_method(dedent, sarray(), varray());

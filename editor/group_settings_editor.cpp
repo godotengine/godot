@@ -37,6 +37,7 @@
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/line_edit.h"
 #include "scene/resources/packed_scene.h"
 
 void GroupSettingsEditor::_notification(int p_what) {
@@ -404,6 +405,7 @@ void GroupSettingsEditor::_show_remove_dialog() {
 
 		VBoxContainer *vbox = memnew(VBoxContainer);
 		remove_label = memnew(Label);
+		remove_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 		vbox->add_child(remove_label);
 
 		remove_check_box = memnew(CheckBox);

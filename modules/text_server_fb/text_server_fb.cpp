@@ -623,7 +623,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 /* Font Cache                                                            */
 /*************************************************************************/
 
-_FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling) const {
+bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling) const {
 	FontForSizeFallback *fd = nullptr;
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(p_font_data, p_size, fd, false, p_oversampling), false);
 
@@ -792,7 +792,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data,
 	return false;
 }
 
-_FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size, FontForSizeFallback *&r_cache_for_size, bool p_silent, uint32_t p_oversampling) const {
+bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size, FontForSizeFallback *&r_cache_for_size, bool p_silent, uint32_t p_oversampling) const {
 	ERR_FAIL_COND_V(p_size.x <= 0, false);
 
 	HashMap<Vector2i, FontForSizeFallback *>::Iterator E = p_font_data->cache.find(p_size);
@@ -2805,8 +2805,12 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 		}
 	}
 	bool skip_oversampling = fd->msdf || fd->fixed_size > 0;
-	uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
-	oversampling_factor = double(oversampling_level) / 64.0;
+	if (skip_oversampling) {
+		oversampling_factor = 1.0;
+	} else {
+		uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
+		oversampling_factor = double(oversampling_level) / 64.0;
+	}
 
 	Vector2i size;
 	if (skip_oversampling) {
@@ -2945,14 +2949,18 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 		}
 	}
 	bool skip_oversampling = fd->msdf || fd->fixed_size > 0;
-	uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
-	oversampling_factor = double(oversampling_level) / 64.0;
+	if (skip_oversampling) {
+		oversampling_factor = 1.0;
+	} else {
+		uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
+		oversampling_factor = double(oversampling_level) / 64.0;
+	}
 
 	Vector2i size;
 	if (skip_oversampling) {
 		size = _get_size_outline(fd, Vector2i(p_size, p_outline_size));
 	} else {
-		size = Vector2i(p_size * 64 * oversampling_factor, p_outline_size);
+		size = Vector2i(p_size * 64 * oversampling_factor, p_outline_size * oversampling_factor);
 	}
 
 	FontForSizeFallback *ffsd = nullptr;

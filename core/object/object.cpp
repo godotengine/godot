@@ -978,7 +978,9 @@ String Object::to_string() {
 		String ret;
 		GDExtensionBool is_valid;
 		_extension->to_string(_extension_instance, &is_valid, &ret);
-		return ret;
+		if (is_valid) {
+			return ret;
+		}
 	}
 	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
 }
@@ -2222,6 +2224,16 @@ void Object::detach_from_objectdb() {
 		ObjectDB::remove_instance(this);
 		_instance_id = ObjectID();
 	}
+}
+
+void Object::assign_class_name_static(const Span<char> &p_name, StringName &r_target) {
+	static BinaryMutex _mutex;
+	MutexLock lock(_mutex);
+	if (r_target) {
+		// Already assigned while we were waiting for the mutex.
+		return;
+	}
+	r_target = StringName(p_name.ptr(), true);
 }
 
 Object::~Object() {

@@ -321,7 +321,8 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		String builder_string = builder.as_string();
 		CharString cs = builder_string.utf8();
 		const char *cstr = cs.ptr();
-		glShaderSource(spec.vert_id, 1, &cstr, nullptr);
+		GLint cstr_len = cs.length();
+		glShaderSource(spec.vert_id, 1, &cstr, &cstr_len);
 		glCompileShader(spec.vert_id);
 
 		glGetShaderiv(spec.vert_id, GL_COMPILE_STATUS, &status);
@@ -369,7 +370,8 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		String builder_string = builder.as_string();
 		CharString cs = builder_string.utf8();
 		const char *cstr = cs.ptr();
-		glShaderSource(spec.frag_id, 1, &cstr, nullptr);
+		GLint cstr_len = cs.length();
+		glShaderSource(spec.frag_id, 1, &cstr, &cstr_len);
 		glCompileShader(spec.frag_id);
 
 		glGetShaderiv(spec.frag_id, GL_COMPILE_STATUS, &status);
@@ -841,13 +843,11 @@ bool ShaderGLES3::shader_cache_save_compressed_zstd = true;
 bool ShaderGLES3::shader_cache_save_debug = true;
 
 ShaderGLES3::~ShaderGLES3() {
-	List<RID> remaining;
-	version_owner.get_owned_list(&remaining);
+	LocalVector<RID> remaining = version_owner.get_owned_list();
 	if (remaining.size()) {
 		ERR_PRINT(itos(remaining.size()) + " shaders of type " + name + " were never freed");
-		while (remaining.size()) {
-			version_free(remaining.front()->get());
-			remaining.pop_front();
+		for (RID &rid : remaining) {
+			version_free(rid);
 		}
 	}
 }

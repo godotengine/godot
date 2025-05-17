@@ -1195,7 +1195,7 @@ String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
 		return "";
 	}
 
-	get_unicode_string(); // type
+	_ALLOW_DISCARD_ get_unicode_string(); // type
 
 	f->get_64(); // Metadata offset
 	uint32_t flags = f->get_32();
@@ -2505,8 +2505,6 @@ void ResourceFormatSaverBinary::get_recognized_extensions(const Ref<Resource> &p
 		p_extensions->push_back("res");
 	}
 }
-
-ResourceFormatSaverBinary *ResourceFormatSaverBinary::singleton = nullptr;
 
 ResourceFormatSaverBinary::ResourceFormatSaverBinary() {
 	singleton = this;

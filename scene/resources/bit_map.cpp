@@ -370,13 +370,13 @@ static float perpendicular_distance(const Vector2 &i, const Vector2 &start, cons
 	float intercept;
 
 	if (start.x == end.x) {
-		res = Math::absf(i.x - end.x);
+		res = Math::abs(i.x - end.x);
 	} else if (start.y == end.y) {
-		res = Math::absf(i.y - end.y);
+		res = Math::abs(i.y - end.y);
 	} else {
 		slope = (end.y - start.y) / (end.x - start.x);
 		intercept = start.y - (slope * start.x);
-		res = Math::absf(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+		res = Math::abs(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
 	}
 	return res;
 }
@@ -727,5 +727,3 @@ void BitMap::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
-
-BitMap::BitMap() {}

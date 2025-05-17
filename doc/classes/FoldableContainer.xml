@@ -44,7 +44,7 @@
 	<members>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="foldable_group" type="FoldableGroup" setter="set_foldable_group" getter="get_foldable_group">
-			The [FoldableGroup] associated with the container.
+			The [FoldableGroup] associated with the container. When multiple [FoldableContainer] nodes share the same group, only one of them is allowed to be unfolded.
 		</member>
 		<member name="folded" type="bool" setter="set_folded" getter="is_folded" default="false">
 			If [code]true[/code], the container will becomes folded and will hide all its children.
@@ -53,20 +53,20 @@
 			Language code used for text shaping algorithms. If left empty, current locale is used instead.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
-		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
-			The Container's title text.
-		</member>
-		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
-			Base text writing direction.
-		</member>
-		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
-			Defines the behavior of the [FoldableContainer] when the text is longer than the available space.
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+			The container's title text.
 		</member>
 		<member name="title_alignment" type="int" setter="set_title_alignment" getter="get_title_alignment" enum="HorizontalAlignment" default="0">
 			Title's horizontal text alignment as defined in the [enum HorizontalAlignment] enum.
 		</member>
 		<member name="title_position" type="int" setter="set_title_position" getter="get_title_position" enum="FoldableContainer.TitlePosition" default="0">
 			Title's position as defined in the [enum TitlePosition] enum.
+		</member>
+		<member name="title_text_direction" type="int" setter="set_title_text_direction" getter="get_title_text_direction" enum="Control.TextDirection" default="0">
+			Title text writing direction.
+		</member>
+		<member name="title_text_overrun_behavior" type="int" setter="set_title_text_overrun_behavior" getter="get_title_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
+			Defines the behavior of the title when the text is longer than the available space.
 		</member>
 	</members>
 	<signals>

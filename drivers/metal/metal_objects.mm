@@ -1571,14 +1571,13 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 		}
 	}
 
-	SearchArray<__unsafe_unretained id<MTLResource>> search;
 	ResourceUsageMap usage_to_resources;
 	for (KeyValue<id<MTLResource>, StageResourceUsage> const &keyval : bound_resources) {
 		ResourceVector *resources = usage_to_resources.getptr(keyval.value);
 		if (resources == nullptr) {
 			resources = &usage_to_resources.insert(keyval.value, ResourceVector())->value;
 		}
-		int64_t pos = search.bisect(resources->ptr(), resources->size(), keyval.key, true);
+		int64_t pos = resources->span().bisect(keyval.key, true);
 		if (pos == resources->size() || (*resources)[pos] != keyval.key) {
 			resources->insert(pos, keyval.key);
 		}

@@ -110,8 +110,8 @@ void ProjectUpgradeTool::finish_upgrade() {
 		for (const String &file_path : paths) {
 			ep.step(TTR("Re-saving scene:") + " " + file_path, step++);
 			EditorNode::get_singleton()->load_scene(file_path);
-			EditorNode::get_singleton()->trigger_menu_option(EditorNode::FILE_SAVE_SCENE, true);
-			EditorNode::get_singleton()->trigger_menu_option(EditorNode::FILE_CLOSE, true);
+			EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_SAVE_SCENE, true);
+			EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_CLOSE, true);
 		}
 		EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_SCENES, Variant());
 	}

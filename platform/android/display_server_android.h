@@ -144,6 +144,7 @@ public:
 
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW) override;
 	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	int get_display_rotation() const;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;

@@ -56,7 +56,7 @@ private:
 	Error _copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int p_chmod_flags, bool p_copy_links);
 	PackedStringArray _get_contents(bool p_directories);
 
-	thread_local static Error last_dir_open_error;
+	static inline thread_local Error last_dir_open_error = OK;
 	bool include_navigational = false;
 	bool include_hidden = false;
 

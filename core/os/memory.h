@@ -33,7 +33,6 @@
 #include "core/error/error_macros.h"
 #include "core/templates/safe_refcount.h"
 
-#include <cstring>
 #include <new> // IWYU pragma: keep // `new` operators.
 #include <type_traits>
 
@@ -42,8 +41,6 @@ class Memory {
 	static SafeNumeric<uint64_t> mem_usage;
 	static SafeNumeric<uint64_t> max_usage;
 #endif
-
-	static SafeNumeric<uint64_t> alloc_count;
 
 public:
 	// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t

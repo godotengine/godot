@@ -36,8 +36,6 @@
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 
-ResourceFormatImporterLoadOnStartup ResourceImporter::load_on_startup = nullptr;
-
 bool ResourceFormatImporter::SortImporterByName::operator()(const Ref<ResourceImporter> &p_a, const Ref<ResourceImporter> &p_b) const {
 	return p_a->get_importer_name() < p_b->get_importer_name();
 }
@@ -121,6 +119,12 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		} else if (next_tag.name != "remap") {
 			break;
 		}
+	}
+
+	if (p_load && !path_found && decomp_path_found) {
+		print_verbose(vformat("No natively supported texture format found for %s, using decompressable format %s.", p_path, decomp_path));
+		r_path_and_type.path = decomp_path;
+		return OK;
 	}
 
 #ifdef TOOLS_ENABLED
@@ -544,8 +548,6 @@ String ResourceFormatImporter::get_import_settings_hash() const {
 	}
 	return hash.md5_text();
 }
-
-ResourceFormatImporter *ResourceFormatImporter::singleton = nullptr;
 
 ResourceFormatImporter::ResourceFormatImporter() {
 	singleton = this;

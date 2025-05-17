@@ -42,6 +42,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_mixer.h"
+#include "scene/gui/line_edit.h"
 
 void AnimationLibraryEditor::set_animation_mixer(Object *p_mixer) {
 	mixer = Object::cast_to<AnimationMixer>(p_mixer);
@@ -889,8 +890,7 @@ Vector<uint64_t> AnimationLibraryEditor::_load_mixer_libs_folding() {
 		//The scene/mixer combination is no longer valid and we'll try to recover
 		uint64_t current_mixer_id = uint64_t(mixer->get_instance_id());
 		String current_mixer_signature = _get_mixer_signature();
-		List<String> sections;
-		config->get_sections(&sections);
+		Vector<String> sections = config->get_sections();
 
 		for (const String &section : sections) {
 			Variant mixer_id = config->get_value(section, "mixer");

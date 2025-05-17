@@ -46,8 +46,6 @@ namespace CoreBind {
 
 ////// ResourceLoader //////
 
-ResourceLoader *ResourceLoader::singleton = nullptr;
-
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, CacheMode p_cache_mode) {
 	return ::ResourceLoader::load_threaded_request(p_path, p_type_hint, p_use_sub_threads, ResourceFormatLoader::CacheMode(p_cache_mode));
 }
@@ -169,6 +167,10 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 	return ::ResourceSaver::save(p_resource, p_path, p_flags);
 }
 
+Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+	return ::ResourceSaver::set_uid(p_path, p_uid);
+}
+
 Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
 	List<String> exts;
 	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
@@ -191,10 +193,9 @@ ResourceUID::ID ResourceSaver::get_resource_id_for_path(const String &p_path, bo
 	return ::ResourceSaver::get_resource_id_for_path(p_path, p_generate);
 }
 
-ResourceSaver *ResourceSaver::singleton = nullptr;
-
 void ResourceSaver::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save", "resource", "path", "flags"), &ResourceSaver::save, DEFVAL(""), DEFVAL((uint32_t)FLAG_NONE));
+	ClassDB::bind_method(D_METHOD("set_uid", "resource", "uid"), &ResourceSaver::set_uid);
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
 	ClassDB::bind_method(D_METHOD("add_resource_format_saver", "format_saver", "at_front"), &ResourceSaver::add_resource_format_saver, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_resource_format_saver", "format_saver"), &ResourceSaver::remove_resource_format_saver);
@@ -210,7 +211,78 @@ void ResourceSaver::_bind_methods() {
 	BIND_BITFIELD_FLAG(FLAG_REPLACE_SUBRESOURCE_PATHS);
 }
 
+////// Logger ///////
+
+void Logger::_bind_methods() {
+	GDVIRTUAL_BIND(_log_error, "function", "file", "line", "code", "rationale", "editor_notify", "error_type", "script_backtraces");
+	GDVIRTUAL_BIND(_log_message, "message", "error");
+	BIND_ENUM_CONSTANT(ERROR_TYPE_ERROR);
+	BIND_ENUM_CONSTANT(ERROR_TYPE_WARNING);
+	BIND_ENUM_CONSTANT(ERROR_TYPE_SCRIPT);
+	BIND_ENUM_CONSTANT(ERROR_TYPE_SHADER);
+}
+
+void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const TypedArray<ScriptBacktrace> &p_script_backtraces) {
+	GDVIRTUAL_CALL(_log_error, String::utf8(p_function), String::utf8(p_file), p_line, String::utf8(p_code), String::utf8(p_rationale), p_editor_notify, p_type, p_script_backtraces);
+}
+
+void Logger::log_message(const String &p_text, bool p_error) {
+	GDVIRTUAL_CALL(_log_message, p_text, p_error);
+}
+
 ////// OS //////
+
+void OS::LoggerBind::logv(const char *p_format, va_list p_list, bool p_err) {
+	if (!should_log(p_err) || is_logging) {
+		return;
+	}
+
+	is_logging = true;
+
+	constexpr int static_buf_size = 1024;
+	char static_buf[static_buf_size] = { '\0' };
+	char *buf = static_buf;
+	va_list list_copy;
+	va_copy(list_copy, p_list);
+	int len = vsnprintf(buf, static_buf_size, p_format, p_list);
+	if (len >= static_buf_size) {
+		buf = (char *)Memory::alloc_static(len + 1);
+		vsnprintf(buf, len + 1, p_format, list_copy);
+	}
+	va_end(list_copy);
+
+	String str;
+	str.append_utf8(buf, len);
+	for (Ref<CoreBind::Logger> &logger : loggers) {
+		logger->log_message(str, p_err);
+	}
+
+	if (len >= static_buf_size) {
+		Memory::free_static(buf);
+	}
+
+	is_logging = false;
+}
+
+void OS::LoggerBind::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
+	if (!should_log(true) || is_logging) {
+		return;
+	}
+
+	TypedArray<ScriptBacktrace> backtraces;
+	backtraces.resize(p_script_backtraces.size());
+	for (int i = 0; i < p_script_backtraces.size(); i++) {
+		backtraces[i] = p_script_backtraces[i];
+	}
+
+	is_logging = true;
+
+	for (Ref<CoreBind::Logger> &logger : loggers) {
+		logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, CoreBind::Logger::ErrorType(p_type), backtraces);
+	}
+
+	is_logging = false;
+}
 
 PackedByteArray OS::get_entropy(int p_bytes) {
 	PackedByteArray pba;
@@ -628,7 +700,23 @@ String OS::get_unique_id() const {
 	return ::OS::get_singleton()->get_unique_id();
 }
 
-OS *OS::singleton = nullptr;
+void OS::add_logger(const Ref<Logger> &p_logger) {
+	ERR_FAIL_COND(p_logger.is_null());
+
+	if (!logger_bind) {
+		logger_bind = memnew(LoggerBind);
+		::OS::get_singleton()->add_logger(logger_bind);
+	}
+
+	ERR_FAIL_COND_MSG(logger_bind->loggers.find(p_logger) != -1, "Could not add logger, as it has already been added.");
+	logger_bind->loggers.push_back(p_logger);
+}
+
+void OS::remove_logger(const Ref<Logger> &p_logger) {
+	ERR_FAIL_COND(p_logger.is_null());
+	ERR_FAIL_COND_MSG(!logger_bind || logger_bind->loggers.find(p_logger) == -1, "Could not remove logger, as it hasn't been added.");
+	logger_bind->loggers.erase(p_logger);
+}
 
 void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_entropy", "size"), &OS::get_entropy);
@@ -734,6 +822,9 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &OS::get_granted_permissions);
 	ClassDB::bind_method(D_METHOD("revoke_granted_permissions"), &OS::revoke_granted_permissions);
 
+	ClassDB::bind_method(D_METHOD("add_logger", "logger"), &OS::add_logger);
+	ClassDB::bind_method(D_METHOD("remove_logger", "logger"), &OS::remove_logger);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
@@ -764,9 +855,21 @@ void OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(STD_HANDLE_UNKNOWN);
 }
 
-////// Geometry2D //////
+OS::OS() {
+	singleton = this;
+}
 
-Geometry2D *Geometry2D::singleton = nullptr;
+OS::~OS() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+
+	if (logger_bind) {
+		logger_bind->clear();
+	}
+}
+
+////// Geometry2D //////
 
 Geometry2D *Geometry2D::get_singleton() {
 	return singleton;
@@ -1027,8 +1130,6 @@ void Geometry2D::_bind_methods() {
 
 ////// Geometry3D //////
 
-Geometry3D *Geometry3D::singleton = nullptr;
-
 Geometry3D *Geometry3D::get_singleton() {
 	return singleton;
 }
@@ -1170,8 +1271,6 @@ void Geometry3D::_bind_methods() {
 }
 
 ////// Marshalls //////
-
-Marshalls *Marshalls::singleton = nullptr;
 
 Marshalls *Marshalls::get_singleton() {
 	return singleton;
@@ -1898,6 +1997,16 @@ ScriptLanguage *Engine::get_script_language(int p_index) const {
 	return ScriptServer::get_language(p_index);
 }
 
+TypedArray<ScriptBacktrace> Engine::capture_script_backtraces(bool p_include_variables) const {
+	Vector<Ref<ScriptBacktrace>> backtraces = ScriptServer::capture_script_backtraces(p_include_variables);
+	TypedArray<ScriptBacktrace> result;
+	result.resize(backtraces.size());
+	for (int i = 0; i < backtraces.size(); i++) {
+		result[i] = backtraces[i];
+	}
+	return result;
+}
+
 void Engine::set_editor_hint(bool p_enabled) {
 	::Engine::get_singleton()->set_editor_hint(p_enabled);
 }
@@ -1985,6 +2094,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_script_language", "language"), &Engine::unregister_script_language);
 	ClassDB::bind_method(D_METHOD("get_script_language_count"), &Engine::get_script_language_count);
 	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
+	ClassDB::bind_method(D_METHOD("capture_script_backtraces", "include_variables"), &Engine::capture_script_backtraces, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_embedded_in_editor"), &Engine::is_embedded_in_editor);
@@ -2005,8 +2115,6 @@ void Engine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
 }
-
-Engine *Engine::singleton = nullptr;
 
 ////// EngineDebugger //////
 
@@ -2152,8 +2260,6 @@ EngineDebugger::~EngineDebugger() {
 	}
 	captures.clear();
 }
-
-EngineDebugger *EngineDebugger::singleton = nullptr;
 
 void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_active"), &EngineDebugger::is_active);

@@ -351,7 +351,7 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 
 			Color emission_col = mat->get_emission();
 			float emission_energy = mat->get_emission_energy_multiplier() * exposure_normalization;
-			if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+			if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 				emission_energy *= mat->get_emission_intensity();
 			}
 

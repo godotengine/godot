@@ -5,7 +5,6 @@ R"<!>(#[compute]
 
 #VERSION_DEFINES
 
-
 #define M_PI 3.14159265359
 
 void main() {

@@ -45,6 +45,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/separator.h"
 
 #define CHECK_PLUGIN_INITIALIZED() \
@@ -1139,6 +1140,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_passphrase_input->add_child(set_up_ssh_passphrase);
 
 	set_up_warning_text = memnew(Label);
+	set_up_warning_text->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	set_up_warning_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	set_up_warning_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_settings_vbc->add_child(set_up_warning_text);
@@ -1503,6 +1505,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_control_dock->add_child(diff_heading);
 
 	diff_title = memnew(Label);
+	diff_title->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	diff_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	diff_heading->add_child(diff_title);
 

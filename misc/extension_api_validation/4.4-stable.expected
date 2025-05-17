@@ -82,3 +82,32 @@ Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shap
 Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_draw_outline/arguments': size changed value in new API, from 7 to 8.
 
 Optional "oversmpling" argument added. Compatibility methods registered.
+
+
+GH-104269
+---------
+Validate extension JSON: API was removed: classes/RenderingServer/methods/instance_set_interpolated
+Validate extension JSON: API was removed: classes/RenderingServer/methods/instance_reset_physics_interpolation
+
+Functionality moved out of server.
+
+
+GH-76560
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/set_name/arguments/0': type changed value in new API, from "String" to "StringName".
+
+Change Node `set_name` to use StringName to improve performance. Compatibility method registered.
+
+
+GH-105570
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_create_from_extension/arguments': size changed value in new API, from 9 to 10.
+
+Argument added; p_mipmaps. Compatibility method registered.
+
+GH-106121
+--------
+Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/create_action/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/create_action/arguments': size changed value in new API, from 3 to 5.
+
+New argument added. Compatibility method registered.

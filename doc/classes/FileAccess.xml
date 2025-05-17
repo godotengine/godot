@@ -517,6 +517,7 @@
 			<param index="0" name="value" type="float" />
 			<description>
 				Stores a half-precision floating-point number as 16 bits in the file.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
 		<method name="store_line">

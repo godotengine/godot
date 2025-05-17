@@ -902,6 +902,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Filter Settings"));
 	search_box->set_accessibility_name(TTRC("Filter Settings"));
+	search_box->set_virtual_keyboard_show_on_focus(false);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
 
@@ -914,6 +915,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	inspector = memnew(SectionedInspector);
 	inspector->get_inspector()->set_use_filter(true);
+	inspector->get_inspector()->set_mark_unsaved(false);
 	inspector->register_search_box(search_box);
 	inspector->register_advanced_toggle(advanced_switch);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -929,6 +931,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_icon->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	restart_hb->add_child(restart_icon);
 	restart_label = memnew(Label);
+	restart_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	restart_label->set_text(TTR("The editor must be restarted for changes to take effect."));
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();

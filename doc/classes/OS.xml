@@ -11,6 +11,13 @@
 		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<methods>
+		<method name="add_logger">
+			<return type="void" />
+			<param index="0" name="logger" type="Logger" />
+			<description>
+				Add a custom logger to intercept the internal message stream.
+			</description>
+		</method>
 		<method name="alert">
 			<return type="void" />
 			<param index="0" name="text" type="String" />
@@ -294,7 +301,7 @@
 			<return type="PackedStringArray" />
 			<description>
 				On Android devices: Returns the list of dangerous permissions that have been granted.
-				On macOS: Returns the list of user selected folders accessible to the application (sandboxed applications only). Use the native file dialog to request folder access permission.
+				On macOS: Returns the list of granted permissions and user selected folders accessible to the application (sandboxed applications only). Use the native file dialog to request folder access permission.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -747,6 +754,13 @@
 				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. If standard input is console, calling this method without console wrapped will freeze permanently. If standard input is pipe or file, it can be used without console wrapper. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
 		</method>
+		<method name="remove_logger">
+			<return type="void" />
+			<param index="0" name="logger" type="Logger" />
+			<description>
+				Remove a custom logger added by [method add_logger].
+			</description>
+		</method>
 		<method name="request_permission">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
@@ -755,8 +769,9 @@
 				The [param name] must be the full permission name. For example:
 				- [code]OS.request_permission("android.permission.READ_EXTERNAL_STORAGE")[/code]
 				- [code]OS.request_permission("android.permission.POST_NOTIFICATIONS")[/code]
-				[b]Note:[/b] Permission must be checked during export.
-				[b]Note:[/b] This method is only implemented on Android.
+				- [code]OS.request_permission("macos.permission.RECORD_SCREEN")[/code]
+				[b]Note:[/b] On Android, permission must be checked during export.
+				[b]Note:[/b] This method is implemented on Android and macOS.
 			</description>
 		</method>
 		<method name="request_permissions">

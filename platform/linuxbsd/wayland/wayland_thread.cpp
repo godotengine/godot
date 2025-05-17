@@ -60,6 +60,10 @@
 #define DEBUG_LOG_WAYLAND_THREAD(...)
 #endif
 
+// Since we're never going to use this interface directly, it's not worth
+// generating the whole deal.
+#define FIFO_INTERFACE_NAME "wp_fifo_manager_v1"
+
 // Read the content pointed by fd into a Vector<uint8_t>.
 Vector<uint8_t> WaylandThread::_read_fd(int fd) {
 	// This is pretty much an arbitrary size.
@@ -543,6 +547,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		registry->wp_viewporter_name = name;
 	}
 
+	if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
+		registry->wp_cursor_shape_manager = (struct wp_cursor_shape_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_cursor_shape_manager_v1_interface, 1);
+		registry->wp_cursor_shape_manager_name = name;
+		return;
+	}
+
 	if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
 		registry->wp_fractional_scale_manager = (struct wp_fractional_scale_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_fractional_scale_manager_v1_interface, 1);
 		registry->wp_fractional_scale_manager_name = name;
@@ -639,6 +649,10 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		}
 
 		return;
+	}
+
+	if (strcmp(interface, FIFO_INTERFACE_NAME) == 0) {
+		registry->wp_fifo_manager_name = name;
 	}
 }
 
@@ -743,6 +757,25 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		registry->wp_viewporter_name = 0;
 
 		return;
+	}
+
+	if (name == registry->wp_cursor_shape_manager_name) {
+		if (registry->wp_cursor_shape_manager) {
+			wp_cursor_shape_manager_v1_destroy(registry->wp_cursor_shape_manager);
+			registry->wp_cursor_shape_manager = nullptr;
+		}
+
+		registry->wp_cursor_shape_manager_name = 0;
+
+		for (struct wl_seat *wl_seat : registry->wl_seats) {
+			SeatState *ss = wl_seat_get_seat_state(wl_seat);
+			ERR_FAIL_NULL(ss);
+
+			if (ss->wp_cursor_shape_device) {
+				wp_cursor_shape_device_v1_destroy(ss->wp_cursor_shape_device);
+				ss->wp_cursor_shape_device = nullptr;
+			}
+		}
 	}
 
 	if (name == registry->wp_fractional_scale_manager_name) {
@@ -1028,6 +1061,10 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 			it = it->next();
 		}
 	}
+
+	if (name == registry->wp_fifo_manager_name) {
+		registry->wp_fifo_manager_name = 0;
+	}
 }
 
 void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
@@ -1275,6 +1312,7 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 	ERR_FAIL_NULL(parent);
 
 	Point2i pos = Point2i(x, y);
+#ifdef LIBDECOR_ENABLED
 	if (parent->libdecor_frame) {
 		int translated_x = x;
 		int translated_y = y;
@@ -1283,6 +1321,7 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 		pos.x = translated_x;
 		pos.y = translated_y;
 	}
+#endif
 
 	// Looks like the position returned here is relative to the parent. We have to
 	// accumulate it or there's gonna be a lot of confusion godot-side.
@@ -1440,6 +1479,10 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 			ss->wl_pointer = wl_seat_get_pointer(wl_seat);
 			wl_pointer_add_listener(ss->wl_pointer, &wl_pointer_listener, ss);
 
+			if (ss->registry->wp_cursor_shape_manager) {
+				ss->wp_cursor_shape_device = wp_cursor_shape_manager_v1_get_pointer(ss->registry->wp_cursor_shape_manager, ss->wl_pointer);
+			}
+
 			if (ss->registry->wp_relative_pointer_manager) {
 				ss->wp_relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(ss->registry->wp_relative_pointer_manager, ss->wl_pointer);
 				zwp_relative_pointer_v1_add_listener(ss->wp_relative_pointer, &wp_relative_pointer_listener, ss);
@@ -1469,6 +1512,11 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 		if (ss->wl_pointer) {
 			wl_pointer_destroy(ss->wl_pointer);
 			ss->wl_pointer = nullptr;
+		}
+
+		if (ss->wp_cursor_shape_device) {
+			wp_cursor_shape_device_v1_destroy(ss->wp_cursor_shape_device);
+			ss->wp_cursor_shape_device = nullptr;
 		}
 
 		if (ss->wp_relative_pointer) {
@@ -1818,7 +1866,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 				if (test_button == MouseButton::WHEEL_RIGHT || test_button == MouseButton::WHEEL_LEFT) {
 					// If this is a discrete scroll, specify how many "clicks" it did for this
 					// pointer frame.
-					mb->set_factor(fabs(pd.discrete_scroll_vector_120.x / (float)120));
+					mb->set_factor(std::abs(pd.discrete_scroll_vector_120.x / (float)120));
 				}
 
 				mb->set_button_mask(pd.pressed_button_mask);
@@ -3216,8 +3264,8 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 // must be scaled with away from zero half-rounding.
 Vector2i WaylandThread::scale_vector2i(const Vector2i &p_vector, double p_amount) {
 	// This snippet is tiny, I know, but this is done a lot.
-	int x = round(p_vector.x * p_amount);
-	int y = round(p_vector.y * p_amount);
+	int x = std::round(p_vector.x * p_amount);
+	int y = std::round(p_vector.y * p_amount);
 
 	return Vector2i(x, y);
 }
@@ -3316,6 +3364,12 @@ void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 			// We can't really reasonably scale custom cursors, so we'll let the
 			// compositor do it for us (badly).
 			scale = 1;
+		} else if (thread->registry.wp_cursor_shape_manager) {
+			wp_cursor_shape_device_v1_shape wp_shape = thread->standard_cursors[shape];
+			wp_cursor_shape_device_v1_set_shape(p_ss->wp_cursor_shape_device, p_ss->pointer_enter_serial, wp_shape);
+
+			// We should avoid calling the `wl_pointer_set_cursor` at the end of this method.
+			return;
 		} else {
 			struct wl_cursor *wl_cursor = thread->wl_cursors[shape];
 
@@ -4186,8 +4240,8 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 		// discussing about this. I'm not really sure about the maths behind this but,
 		// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
 		// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
-		hint_x = round(p_hint.x / window_state_get_scale_factor(ws));
-		hint_y = round(p_hint.y / window_state_get_scale_factor(ws));
+		hint_x = std::round(p_hint.x / window_state_get_scale_factor(ws));
+		hint_y = std::round(p_hint.y / window_state_get_scale_factor(ws));
 	}
 
 	if (ss) {
@@ -4274,6 +4328,10 @@ Error WaylandThread::init() {
 		WARN_PRINT("Can't obtain the idle inhibition manager. The screen might turn off even after calling screen_set_keep_on()!");
 	}
 #endif // DBUS_ENABLED
+
+	if (!registry.wp_fifo_manager_name) {
+		WARN_PRINT("FIFO protocol not found! Frame pacing will be degraded.");
+	}
 
 	// Wait for seat capabilities.
 	wl_display_roundtrip(wl_display);
@@ -4378,7 +4436,7 @@ void WaylandThread::cursor_shape_set_custom_image(DisplayServer::CursorShape p_c
 
 	// Fill the cursor buffer with the image data.
 	for (unsigned int index = 0; index < (unsigned int)(image_size.width * image_size.height); index++) {
-		int row_index = floor(index / image_size.width);
+		int row_index = std::floor(index / image_size.width);
 		int column_index = (index % int(image_size.width));
 
 		cursor.buffer_data[index] = p_image->get_pixel(column_index, row_index).to_argb32();
@@ -4777,6 +4835,10 @@ bool WaylandThread::window_is_suspended(DisplayServer::WindowID p_window_id) con
 	return windows[p_window_id].suspended;
 }
 
+bool WaylandThread::is_fifo_available() const {
+	return registry.wp_fifo_manager_name != 0;
+}
+
 bool WaylandThread::is_suspended() const {
 	for (const KeyValue<DisplayServer::WindowID, WindowState> &E : windows) {
 		if (!E.value.suspended) {
@@ -4870,6 +4932,10 @@ void WaylandThread::destroy() {
 			wl_data_device_destroy(ss->wl_data_device);
 		}
 
+		if (ss->wp_cursor_shape_device) {
+			wp_cursor_shape_device_v1_destroy(ss->wp_cursor_shape_device);
+		}
+
 		if (ss->wp_relative_pointer) {
 			zwp_relative_pointer_v1_destroy(ss->wp_relative_pointer);
 		}
@@ -4935,6 +5001,10 @@ void WaylandThread::destroy() {
 
 	if (registry.xdg_decoration_manager) {
 		zxdg_decoration_manager_v1_destroy(registry.xdg_decoration_manager);
+	}
+
+	if (registry.wp_cursor_shape_manager) {
+		wp_cursor_shape_manager_v1_destroy(registry.wp_cursor_shape_manager);
 	}
 
 	if (registry.wp_fractional_scale_manager) {

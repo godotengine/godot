@@ -2001,7 +2001,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	return TextureID(tex_info);
 }
 
-RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) {
+RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) {
 	VkImage vk_image = (VkImage)p_native_texture;
 
 	// We only need to create a view into the already existing natively-provided texture.
@@ -2015,7 +2015,8 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64
 	image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_G;
 	image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_B;
 	image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_A;
-	image_view_create_info.subresourceRange.levelCount = 1;
+	image_view_create_info.subresourceRange.baseMipLevel = 0;
+	image_view_create_info.subresourceRange.levelCount = p_mipmaps;
 	image_view_create_info.subresourceRange.layerCount = p_array_layers;
 	image_view_create_info.subresourceRange.aspectMask = p_depth_stencil ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 
@@ -2682,8 +2683,10 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 
 	if (p_cmd_buffers.size() > 0) {
 		thread_local LocalVector<VkCommandBuffer> command_buffers;
+		thread_local LocalVector<VkSemaphore> present_semaphores;
 		thread_local LocalVector<VkSemaphore> signal_semaphores;
 		command_buffers.clear();
+		present_semaphores.clear();
 		signal_semaphores.clear();
 
 		for (uint32_t i = 0; i < p_cmd_buffers.size(); i++) {
@@ -2695,27 +2698,11 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 			signal_semaphores.push_back(VkSemaphore(p_cmd_semaphores[i].id));
 		}
 
-		VkSemaphore present_semaphore = VK_NULL_HANDLE;
-		if (p_swap_chains.size() > 0) {
-			if (command_queue->present_semaphores.is_empty()) {
-				// Create the semaphores used for presentation if they haven't been created yet.
-				VkSemaphore semaphore = VK_NULL_HANDLE;
-				VkSemaphoreCreateInfo create_info = {};
-				create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-				for (uint32_t i = 0; i < frame_count; i++) {
-					err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
-					ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
-					command_queue->present_semaphores.push_back(semaphore);
-				}
-			}
-
-			// If a presentation semaphore is required, cycle across the ones available on the queue. It is technically possible
-			// and valid to reuse the same semaphore for this particular operation, but we create multiple ones anyway in case
-			// some hardware expects multiple semaphores to be used.
-			present_semaphore = command_queue->present_semaphores[command_queue->present_semaphore_index];
-			signal_semaphores.push_back(present_semaphore);
-			command_queue->present_semaphore_index = (command_queue->present_semaphore_index + 1) % command_queue->present_semaphores.size();
+		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
+			const SwapChain *swap_chain = (const SwapChain *)(p_swap_chains[i].id);
+			VkSemaphore semaphore = swap_chain->present_semaphores[swap_chain->image_index];
+			present_semaphores.push_back(semaphore);
+			signal_semaphores.push_back(semaphore);
 		}
 
 		VkSubmitInfo submit_info = {};
@@ -2749,10 +2736,9 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 			command_queue->pending_semaphores_for_fence.clear();
 		}
 
-		if (present_semaphore != VK_NULL_HANDLE) {
+		if (!present_semaphores.is_empty()) {
 			// If command buffers were executed, swap chains must wait on the present semaphore used by the command queue.
-			wait_semaphores.clear();
-			wait_semaphores.push_back(present_semaphore);
+			wait_semaphores = present_semaphores;
 		}
 	}
 
@@ -2836,11 +2822,6 @@ void RenderingDeviceDriverVulkan::command_queue_free(CommandQueueID p_cmd_queue)
 	DEV_ASSERT(p_cmd_queue);
 
 	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
-
-	// Erase all the semaphores used for presentation.
-	for (VkSemaphore semaphore : command_queue->present_semaphores) {
-		vkDestroySemaphore(vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
-	}
 
 	// Erase all the semaphores used for image acquisition.
 	for (VkSemaphore semaphore : command_queue->image_semaphores) {
@@ -3023,6 +3004,12 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 
 	swap_chain->command_queues_acquired.clear();
 	swap_chain->command_queues_acquired_semaphores.clear();
+
+	for (VkSemaphore semaphore : swap_chain->present_semaphores) {
+		vkDestroySemaphore(vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
+	}
+
+	swap_chain->present_semaphores.clear();
 }
 
 RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
@@ -3357,6 +3344,17 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 		framebuffer->swap_chain_image = swap_chain->images[i];
 		framebuffer->swap_chain_image_subresource_range = view_create_info.subresourceRange;
 		swap_chain->framebuffers.push_back(RDD::FramebufferID(framebuffer));
+	}
+
+	VkSemaphore vk_semaphore = VK_NULL_HANDLE;
+	for (uint32_t i = 0; i < image_count; i++) {
+		VkSemaphoreCreateInfo create_info = {};
+		create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &vk_semaphore);
+		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+
+		swap_chain->present_semaphores.push_back(vk_semaphore);
 	}
 
 	// Once everything's been created correctly, indicate the surface no longer needs to be resized.
