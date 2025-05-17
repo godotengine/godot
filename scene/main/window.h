@@ -330,6 +330,8 @@ public:
 	bool is_maximize_allowed() const;
 
 	void request_attention();
+	void set_taskbar_progress_value(int p_value, int p_total);
+	void set_taskbar_progress_state(DisplayServer::ProgressState p_state);
 #ifndef DISABLE_DEPRECATED
 	void move_to_foreground();
 #endif // DISABLE_DEPRECATED

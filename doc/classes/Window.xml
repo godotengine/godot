@@ -507,6 +507,23 @@
 				Tells the OS that the [Window] needs an attention. This makes the window stand out in some way depending on the system, e.g. it might blink on the task bar.
 			</description>
 		</method>
+		<method name="set_taskbar_progress_value">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="total" type="int" />
+			<description>
+				Create a progress bar on taskbar icon of the [Window] if not exists, set the progress of the taskbar icon.
+				[b]Note:[/b] This method is implemented only on Windows.
+			</description>
+		</method>
+		<method name="set_taskbar_progress_state">
+			<return type="void" />
+			<param index="0" name="state" type="int" enum="DisplayServer.ProgressState" />
+			<description>
+				Sets the type and state of the progress bar on the taskbar icon of the [Window]. See [enum DisplayServer.ProgressState] for possible values and how each mode behaves.
+				[b]Note:[/b] This method is implemented only on Windows.
+			</description>
+		</method>
 		<method name="reset_size">
 			<return type="void" />
 			<description>

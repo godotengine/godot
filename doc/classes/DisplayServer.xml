@@ -2246,6 +2246,25 @@
 				Makes the window specified by [param window_id] request attention, which is materialized by the window title and taskbar entry blinking until the window is focused. This usually has no visible effect if the window is currently focused. The exact behavior varies depending on the operating system.
 			</description>
 		</method>
+		<method name="window_set_taskbar_progress_value">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="total" type="int" />
+			<param index="2" name="window_id" type="int" default="0" />
+			<description>
+				Create a progress bar on taskbar icon of the window specified by [param window_id] if not exists, set the progress of the taskbar icon.
+				[b]Note:[/b] This method is implemented only on Windows.
+			</description>
+		</method>
+		<method name="window_set_taskbar_progress_state">
+			<return type="void" />
+			<param index="0" name="state" type="int" enum="DisplayServer.ProgressState" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the type and state of the progress bar on the taskbar icon of the window specified by [param window_id]. See [enum ProgressState] for possible values and how each mode behaves.
+				[b]Note:[/b] This method is implemented only on Windows.
+			</description>
+		</method>
 		<method name="window_set_current_screen">
 			<return type="void" />
 			<param index="0" name="screen" type="int" />
@@ -3047,6 +3066,21 @@
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
 			[b]On Linux (Wayland):[/b] Equivalent to [constant WINDOW_MODE_FULLSCREEN].
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
+		</constant>
+		<constant name="PROGRESS_STATE_NOPROGRESS" value="0" enum="ProgressState">
+			Stops displaying progress and returns the button to its normal state. Call this method with this flag to dismiss the progress bar when the operation is complete or canceled.
+		</constant>
+		<constant name="PROGRESS_STATE_INDETERMINATE" value="1" enum="ProgressState">
+			The progress indicator does not grow in size, but cycles repeatedly along the length of the taskbar button. This indicates activity without specifying what proportion of the progress is complete. Progress is taking place, but there is no prediction as to how long the operation will take.
+		</constant>
+		<constant name="PROGRESS_STATE_NORMAL" value="2" enum="ProgressState">
+			The progress indicator grows in size from left to right in proportion to the estimated amount of the operation completed. This is a determinate progress indicator; a prediction is being made as to the duration of the operation.
+		</constant>
+		<constant name="PROGRESS_STATE_ERROR" value="3" enum="ProgressState">
+			The progress indicator turns red to show that an error has occurred in one of the windows that is broadcasting progress. This is a determinate state. If the progress indicator is in the indeterminate state, it switches to a red determinate display of a generic percentage not indicative of actual progress.
+		</constant>
+		<constant name="PROGRESS_STATE_PAUSED" value="4" enum="ProgressState">
+			The progress indicator turns yellow to show that progress is currently stopped in one of the windows but can be resumed by the user. No error condition exists and nothing is preventing the progress from continuing. This is a determinate state.If the progress indicator is in the indeterminate state, it switches to a yellow determinate display of a generic percentage not indicative of actual progress.
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
 			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
