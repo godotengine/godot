@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HelperRect2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2D editor helper node that helps you customize dragging behavior.
+	</brief_description>
+	<description>
+		HelperRect2D is a 2D helper node in the editor that is draggable and allows you to customize your behavior. You can customize the behavior by overriding [method _rect_updated].
+		Unlike [ReferenceRect], this node is light and will not be affected by its parent node (except the parent node's transform).
+		[b]Note:[/b] To get this node work in the editor, you should use a tool script.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_rect_updated" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the [member rect] is changed. You can customize the behavior of dragging in this method.
+				[b]Note:[/b] This will be called no matter when you are dragging the rectangle border of the node in the editor, or setting [member rect] in the inspector. To specify in which condition the behavior should be handled, please use [member dragged] to control this.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color">
+			The color of the rect's border.
+		</member>
+		<member name="dragged" type="bool" setter="" getter="get_global_rotation_degrees">
+			If [code]true[/code], the rectangle is changed by the user dragging the node's rectangle area.
+			See [method _rect_updated] for its usage.
+			[b]Note:[/b] This property is read-only, so you cannot assign any value to it.
+		</member>
+		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect">
+			The rectangle of the node, also the border of the node.
+			See also [method _rect_updated].
+		</member>
+	</members>
+</class>
