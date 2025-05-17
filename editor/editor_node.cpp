@@ -3147,6 +3147,12 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			project_settings_editor->popup_project_settings();
 		} break;
 
+		case PROJECT_FIND_IN_FILES: {
+			find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
+			find_in_files_dialog->set_search_text("");
+			find_in_files_dialog->popup_centered();
+		} break;
+
 		case PROJECT_INSTALL_ANDROID_SOURCE: {
 			if (p_confirmed) {
 				if (export_template_manager->is_android_template_installed(android_export_preset)) {
@@ -3357,11 +3363,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case EDITOR_COMMAND_PALETTE: {
 			command_palette->open_popup();
-		} break;
-		case EDITOR_FIND_IN_FILES: {
-			find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
-			find_in_files_dialog->set_search_text("");
-			find_in_files_dialog->popup_centered();
 		} break;
 		case HELP_DOCS: {
 			OS::get_singleton()->shell_open(GODOT_VERSION_DOCS_URL "/");
@@ -7866,6 +7867,9 @@ EditorNode::EditorNode() {
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTRC("Project Settings..."), Key::NONE, TTRC("Project Settings")), PROJECT_OPEN_SETTINGS);
 	project_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 
+	ED_SHORTCUT_AND_COMMAND("editor/find_in_files", TTRC("Find in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F);
+	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), PROJECT_FIND_IN_FILES);
+
 	project_menu->add_separator();
 	project_menu->add_item(TTR("Version Control"), PROJECT_VERSION_CONTROL);
 
@@ -7931,9 +7935,6 @@ EditorNode::EditorNode() {
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
 #endif
 	settings_menu->add_shortcut(ED_SHORTCUT("editor/command_palette", TTRC("Command Palette..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::P), EDITOR_COMMAND_PALETTE);
-
-	ED_SHORTCUT_AND_COMMAND("editor/find_in_files", TTRC("Find in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F);
-	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), EDITOR_FIND_IN_FILES);
 	settings_menu->add_separator();
 
 	settings_menu->add_submenu_node_item(TTR("Editor Docks"), editor_dock_manager->get_docks_menu());
