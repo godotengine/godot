@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  renderer_compositor.cpp                                               */
+/*  mesh_rasterizer_dummy.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,39 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "renderer_compositor.h"
+#pragma once
 
-#ifndef XR_DISABLED
-#include "core/config/project_settings.h"
-#include "servers/xr_server.h"
-#endif // XR_DISABLED
+#include "servers/rendering/mesh_rasterizer.h"
 
-RendererCompositor *RendererCompositor::singleton = nullptr;
+namespace RendererDummy {
 
-RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;
-bool RendererCompositor::low_end = false;
-
-RendererCompositor *RendererCompositor::create() {
-	return _create_func();
-}
-
-bool RendererCompositor::is_xr_enabled() const {
-	return xr_enabled;
-}
-
-RendererCompositor::RendererCompositor() {
-	ERR_FAIL_COND_MSG(singleton != nullptr, "A RendererCompositor singleton already exists.");
-	singleton = this;
-
-#ifndef XR_DISABLED
-	if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
-		xr_enabled = GLOBAL_GET("xr/shaders/enabled");
-	} else {
-		xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
-	}
-#endif // XR_DISABLED
-}
-
-RendererCompositor::~RendererCompositor() {
-	singleton = nullptr;
-}
+class MeshRasterizerDummy : public MeshRasterizer {
+public:
+	virtual RID mesh_rasterizer_allocate() override { return RID(); }
+	virtual void mesh_rasterizer_initialize(RID p_mesh_rasterizer, int p_width, int p_height, RS::RasterizedTextureFormat p_texture_format, bool p_generate_mipmaps) override {}
+	virtual void mesh_rasterizer_set_bg_color(RID p_mesh_rasterizer, const Color &p_bg_color) override {}
+	virtual void mesh_rasterizer_set_mesh(RID p_mesh_rasterizer, RID p_mesh, int p_surface_index) override {}
+	virtual void mesh_rasterizer_set_material(RID p_mesh_rasterizer, RID p_material) override {}
+	virtual void mesh_rasterizer_draw(RID p_mesh_rasterizer) override {}
+	virtual RID mesh_rasterizer_get_rd_texture(RID p_mesh_rasterizer) override { return RID(); }
+	virtual bool free(RID p_mesh_rasterizer) override { return true; }
+};
+} //namespace RendererDummy

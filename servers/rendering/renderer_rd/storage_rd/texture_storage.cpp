@@ -1727,7 +1727,7 @@ void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_textur
 	texture.validated_format = texture.format; // ??
 
 	RD::TextureView rd_view;
-	rd_view.format_override = imfmt.rd_format == tf.format ? RD::DATA_FORMAT_MAX : imfmt.rd_format;
+	rd_view.format_override = (imfmt.rd_format == tf.format || imfmt.rd_format_srgb == tf.format) ? RD::DATA_FORMAT_MAX : imfmt.rd_format;
 	rd_view.swizzle_r = imfmt.swizzle_r;
 	rd_view.swizzle_g = imfmt.swizzle_g;
 	rd_view.swizzle_b = imfmt.swizzle_b;

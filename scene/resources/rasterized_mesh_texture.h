@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  renderer_compositor.cpp                                               */
+/*  rasterized_mesh_texture.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,39 +28,70 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "renderer_compositor.h"
+#pragma once
 
-#ifndef XR_DISABLED
-#include "core/config/project_settings.h"
-#include "servers/xr_server.h"
-#endif // XR_DISABLED
+#include "scene/resources/texture.h"
 
-RendererCompositor *RendererCompositor::singleton = nullptr;
+class Mesh;
+class ShaderMaterial;
 
-RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;
-bool RendererCompositor::low_end = false;
+class RasterizedMeshTexture : public Texture2D {
+	GDCLASS(RasterizedMeshTexture, Texture2D);
 
-RendererCompositor *RendererCompositor::create() {
-	return _create_func();
-}
+	Size2i size = Size2i(256, 256);
+	int surface_index = 0;
+	Color bg_color = Color(0, 0, 0, 0);
+	Ref<Mesh> mesh;
+	Ref<ShaderMaterial> material;
+	RS::RasterizedTextureFormat texture_format = RS::RASTERIZED_TEXTURE_FORMAT_RGBA8;
+	bool generate_mipmaps = false;
 
-bool RendererCompositor::is_xr_enabled() const {
-	return xr_enabled;
-}
+	RID texture;
+	RID mesh_rasterizer;
 
-RendererCompositor::RendererCompositor() {
-	ERR_FAIL_COND_MSG(singleton != nullptr, "A RendererCompositor singleton already exists.");
-	singleton = this;
+	bool rasterizer_dirty = false;
+	bool mesh_dirty = false;
+	bool material_dirty = false;
 
-#ifndef XR_DISABLED
-	if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
-		xr_enabled = GLOBAL_GET("xr/shaders/enabled");
-	} else {
-		xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
-	}
-#endif // XR_DISABLED
-}
+	bool update_queued = false;
 
-RendererCompositor::~RendererCompositor() {
-	singleton = nullptr;
-}
+	void update();
+	void queue_update();
+	void queue_update_mesh();
+	void queue_update_material();
+
+protected:
+	static void _bind_methods();
+
+public:
+	int get_width() const override;
+	int get_height() const override;
+	bool has_alpha() const override;
+	RID get_rid() const override;
+
+	Ref<Image> get_image() const override;
+
+	void set_width(int p_width);
+	void set_height(int p_height);
+
+	void set_mesh(const Ref<Mesh> &p_mesh);
+	Ref<Mesh> get_mesh() const;
+
+	void set_bg_color(const Color &p_color);
+	Color get_bg_color() const;
+
+	void set_material(const Ref<ShaderMaterial> &p_material);
+	Ref<ShaderMaterial> get_material() const;
+
+	void set_surface_index(int p_surface_index);
+	int get_surface_index() const;
+
+	void set_texture_format(RS::RasterizedTextureFormat p_texture_format);
+	RS::RasterizedTextureFormat get_texture_format() const;
+
+	void set_generate_mipmaps(bool p_generate_mipmaps);
+	bool is_generating_mipmaps() const;
+
+	RasterizedMeshTexture();
+	~RasterizedMeshTexture();
+};
