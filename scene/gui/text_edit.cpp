@@ -7580,6 +7580,7 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("text_set"));
 	ADD_SIGNAL(MethodInfo("text_changed"));
 	ADD_SIGNAL(MethodInfo("lines_edited_from", PropertyInfo(Variant::INT, "from_line"), PropertyInfo(Variant::INT, "to_line")));
+	ADD_SIGNAL(MethodInfo("fold_line_updated"));
 
 	/* Caret. */
 	ADD_SIGNAL(MethodInfo("caret_changed"));

@@ -1672,7 +1672,7 @@ bool CodeEdit::can_fold_line(int p_line) const {
 	return false;
 }
 
-void CodeEdit::fold_line(int p_line) {
+void CodeEdit::_fold_line(int p_line) {
 	ERR_FAIL_INDEX(p_line, get_line_count());
 	if (!is_line_folding_enabled() || !can_fold_line(p_line)) {
 		return;
@@ -1697,7 +1697,6 @@ void CodeEdit::fold_line(int p_line) {
 				}
 			}
 		}
-		set_line_background_color(p_line, theme_cache.folded_code_region_color);
 	}
 
 	int in_comment = is_in_comment(p_line);
@@ -1743,7 +1742,7 @@ void CodeEdit::fold_line(int p_line) {
 	collapse_carets(p_line, get_line(p_line).length(), end_line, get_line(end_line).length(), true);
 }
 
-void CodeEdit::unfold_line(int p_line) {
+void CodeEdit::_unfold_line(int p_line) {
 	ERR_FAIL_INDEX(p_line, get_line_count());
 	if (!is_line_folded(p_line) && !_is_line_hidden(p_line)) {
 		return;
@@ -1762,22 +1761,38 @@ void CodeEdit::unfold_line(int p_line) {
 			break;
 		}
 		_set_line_as_hidden(i, false);
-		if (is_line_code_region_start(i - 1)) {
-			set_line_background_color(i - 1, Color(0.0, 0.0, 0.0, 0.0));
-		}
 	}
-	queue_redraw();
 }
 
 void CodeEdit::fold_all_lines() {
 	for (int i = 0; i < get_line_count(); i++) {
-		fold_line(i);
+		_fold_line(i);
 	}
 	queue_redraw();
+	emit_signal(SNAME("fold_line_updated"));
+}
+
+void CodeEdit::fold_line(int p_line) {
+	_fold_line(p_line);
+	queue_redraw();
+	emit_signal(SNAME("fold_line_updated"));
 }
 
 void CodeEdit::unfold_all_lines() {
-	_unhide_all_lines();
+	for (int i = 0; i < get_line_count(); i++) {
+		_unfold_line(i);
+	}
+	// Missing _update_scrollbars() call to be exactly the same.
+	queue_accessibility_update();
+	queue_redraw();
+	emit_signal(SNAME("fold_line_updated"));
+}
+
+void CodeEdit::unfold_line(int p_line) {
+	_unfold_line(p_line);
+	queue_accessibility_update();
+	queue_redraw();
+	emit_signal(SNAME("fold_line_updated"));
 }
 
 void CodeEdit::toggle_foldable_line(int p_line) {
@@ -1804,6 +1819,18 @@ void CodeEdit::toggle_foldable_lines_at_carets() {
 		}
 	}
 	end_multicaret_edit();
+}
+
+int CodeEdit::get_folded_line_header(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), 0);
+	// Search for the first non hidden line.
+	while (p_line > 0) {
+		if (!_is_line_hidden(p_line)) {
+			break;
+		}
+		p_line--;
+	}
+	return p_line;
 }
 
 bool CodeEdit::is_line_folded(int p_line) const {
