@@ -122,6 +122,8 @@ private:
 		}
 	};
 
+	Ref<Shortcut> find_in_files_shortcut;
+
 	int line_limit = 10000;
 
 	Vector<LogMessage> messages;
@@ -138,8 +140,6 @@ private:
 
 	Button *show_search_button = nullptr;
 	LineEdit *search_box = nullptr;
-
-	Button *show_find_selection_in_files_button = nullptr;
 
 	// Reference to the "Output" button on the toolbar so we can update its icon when warnings or errors are encountered.
 	Button *tool_button = nullptr;
@@ -188,6 +188,8 @@ public:
 	void deinit();
 
 	void clear();
+
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	EditorLog();
 	~EditorLog();
