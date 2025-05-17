@@ -70,7 +70,7 @@ class PopupMenu : public Popup {
 		bool separator = false;
 		bool disabled = false;
 		bool dirty = true;
-		int id = 0;
+		int64_t id = 0;
 		Variant metadata;
 		String submenu_name; // Compatibility.
 		PopupMenu *submenu = nullptr;
@@ -267,24 +267,24 @@ public:
 	void set_system_menu(NativeMenu::SystemMenus p_system_menu_id);
 	NativeMenu::SystemMenus get_system_menu() const;
 
-	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
-	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
-	void add_check_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
-	void add_icon_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
-	void add_radio_check_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
-	void add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+	void add_item(const String &p_label, int64_t p_id = -1, Key p_accel = Key::NONE);
+	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int64_t p_id = -1, Key p_accel = Key::NONE);
+	void add_check_item(const String &p_label, int64_t p_id = -1, Key p_accel = Key::NONE);
+	void add_icon_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int64_t p_id = -1, Key p_accel = Key::NONE);
+	void add_radio_check_item(const String &p_label, int64_t p_id = -1, Key p_accel = Key::NONE);
+	void add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int64_t p_id = -1, Key p_accel = Key::NONE);
 
-	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int p_id = -1, Key p_accel = Key::NONE);
+	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int64_t p_id = -1, Key p_accel = Key::NONE);
 
-	void add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false, bool p_allow_echo = false);
-	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false, bool p_allow_echo = false);
-	void add_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_radio_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_shortcut(const Ref<Shortcut> &p_shortcut, int64_t p_id = -1, bool p_global = false, bool p_allow_echo = false);
+	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int64_t p_id = -1, bool p_global = false, bool p_allow_echo = false);
+	void add_check_shortcut(const Ref<Shortcut> &p_shortcut, int64_t p_id = -1, bool p_global = false);
+	void add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int64_t p_id = -1, bool p_global = false);
+	void add_radio_check_shortcut(const Ref<Shortcut> &p_shortcut, int64_t p_id = -1, bool p_global = false);
+	void add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int64_t p_id = -1, bool p_global = false);
 
-	void add_submenu_item(const String &p_label, const String &p_submenu, int p_id = -1);
-	void add_submenu_node_item(const String &p_label, PopupMenu *p_submenu, int p_id = -1);
+	void add_submenu_item(const String &p_label, const String &p_submenu, int64_t p_id = -1);
+	void add_submenu_node_item(const String &p_label, PopupMenu *p_submenu, int64_t p_id = -1);
 
 	void set_item_text(int p_idx, const String &p_text);
 
@@ -295,7 +295,7 @@ public:
 	void set_item_icon_max_width(int p_idx, int p_width);
 	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
 	void set_item_checked(int p_idx, bool p_checked);
-	void set_item_id(int p_idx, int p_id);
+	void set_item_id(int p_idx, int64_t p_id);
 	void set_item_accelerator(int p_idx, Key p_accel);
 	void set_item_metadata(int p_idx, const Variant &p_meta);
 	void set_item_disabled(int p_idx, bool p_disabled);
@@ -324,8 +324,8 @@ public:
 	int get_item_icon_max_width(int p_idx) const;
 	Color get_item_icon_modulate(int p_idx) const;
 	bool is_item_checked(int p_idx) const;
-	int get_item_id(int p_idx) const;
-	int get_item_index(int p_id) const;
+	int64_t get_item_id(int p_idx) const;
+	int get_item_index(int64_t p_id) const;
 	Key get_item_accelerator(int p_idx) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
@@ -363,7 +363,7 @@ public:
 
 	void remove_item(int p_idx);
 
-	void add_separator(const String &p_text = String(), int p_id = -1);
+	void add_separator(const String &p_text = String(), int64_t p_id = -1);
 
 	void clear(bool p_free_submenus = true);
 
