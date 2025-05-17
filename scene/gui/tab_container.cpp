@@ -347,14 +347,16 @@ void TabContainer::_repaint() {
 }
 
 void TabContainer::_update_margins() {
-	int menu_width = theme_cache.menu_icon->get_width();
-
 	// Directly check for validity, to avoid errors when quitting.
 	bool has_popup = popup_obj_id.is_valid();
+	int menu_width = 0;
+	if (has_popup) {
+		menu_width = theme_cache.menu_icon->get_width();
+	}
 
 	if (get_tab_count() == 0) {
 		tab_bar->set_offset(SIDE_LEFT, 0);
-		tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+		tab_bar->set_offset(SIDE_RIGHT, -menu_width);
 
 		return;
 	}
@@ -362,12 +364,12 @@ void TabContainer::_update_margins() {
 	switch (get_tab_alignment()) {
 		case TabBar::ALIGNMENT_LEFT: {
 			tab_bar->set_offset(SIDE_LEFT, theme_cache.side_margin);
-			tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+			tab_bar->set_offset(SIDE_RIGHT, -menu_width);
 		} break;
 
 		case TabBar::ALIGNMENT_CENTER: {
 			tab_bar->set_offset(SIDE_LEFT, 0);
-			tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+			tab_bar->set_offset(SIDE_RIGHT, -menu_width);
 		} break;
 
 		case TabBar::ALIGNMENT_RIGHT: {
@@ -384,7 +386,7 @@ void TabContainer::_update_margins() {
 
 			// Calculate if all the tabs would still fit if the margin was present.
 			if (get_clip_tabs() && (tab_bar->get_offset_buttons_visible() || (get_tab_count() > 1 && (total_tabs_width + theme_cache.side_margin) > get_size().width))) {
-				tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+				tab_bar->set_offset(SIDE_RIGHT, -menu_width);
 			} else {
 				tab_bar->set_offset(SIDE_RIGHT, -theme_cache.side_margin);
 			}

@@ -1833,6 +1833,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1844,6 +1845,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedByteArray of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1855,6 +1857,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int32_t idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedInt32Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1866,6 +1869,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int64_t idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedInt64Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1877,6 +1881,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedFloat32Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1888,6 +1893,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedFloat64Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1899,6 +1905,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedStringArray of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1910,6 +1917,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedVector2Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1921,6 +1929,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedVector3Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1932,6 +1941,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedColorArray of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1943,6 +1953,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedVector4Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}

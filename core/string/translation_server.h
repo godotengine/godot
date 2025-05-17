@@ -50,7 +50,6 @@ class TranslationServer : public Object {
 	bool enabled = true;
 
 	static inline TranslationServer *singleton = nullptr;
-	bool _load_translations(const String &p_from);
 
 	static void _bind_methods();
 

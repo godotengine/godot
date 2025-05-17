@@ -100,7 +100,7 @@ void RendererCanvasRenderRD::_update_transform_to_mat4(const Transform3D &p_tran
 	p_mat4[15] = 1;
 }
 
-RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights) {
+RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, int p_count) {
 	// Care must be taken to generate array formats
 	// in ways where they could be reused, so we will
 	// put single-occurring elements first, and repeated
@@ -311,14 +311,14 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 	if (p_indices.size()) {
 		//create indices, as indices were requested
 		Vector<uint8_t> index_buffer;
-		index_buffer.resize(p_indices.size() * sizeof(int32_t));
+		index_buffer.resize(p_count * sizeof(int32_t));
 		{
 			uint8_t *w = index_buffer.ptrw();
 			memcpy(w, p_indices.ptr(), sizeof(int32_t) * p_indices.size());
 		}
-		pb.index_buffer = RD::get_singleton()->index_buffer_create(p_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, index_buffer);
-		pb.indices = RD::get_singleton()->index_array_create(pb.index_buffer, 0, p_indices.size());
-		pb.primitive_count = p_indices.size();
+		pb.index_buffer = RD::get_singleton()->index_buffer_create(p_count, RD::INDEX_BUFFER_FORMAT_UINT32, index_buffer);
+		pb.indices = RD::get_singleton()->index_array_create(pb.index_buffer, 0, p_count);
+		pb.primitive_count = p_count;
 	}
 
 	pb.vertex_format_id = vertex_id;
@@ -723,6 +723,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 
 		//print_line("w: " + itos(ssize.width) + " s: " + rtos(canvas_scale));
 		state_buffer.tex_to_sdf = 1.0 / ((canvas_scale.x + canvas_scale.y) * 0.5);
+		state_buffer.shadow_pixel_size = 1.0f / (float)(state.shadow_texture_size);
 
 		state_buffer.flags = use_linear_colors ? CANVAS_FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR : 0;
 
@@ -1923,11 +1924,9 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		state.lights_uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(LightUniform) * state.max_lights_per_render);
 
 		RD::SamplerState shadow_sampler_state;
-		shadow_sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-		shadow_sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+		shadow_sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+		shadow_sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
 		shadow_sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT; //shadow wrap around
-		shadow_sampler_state.compare_op = RD::COMPARE_OP_GREATER;
-		shadow_sampler_state.enable_compare = true;
 		state.shadow_sampler = RD::get_singleton()->sampler_create(shadow_sampler_state);
 	}
 

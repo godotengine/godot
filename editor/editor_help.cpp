@@ -4315,7 +4315,7 @@ void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologu
 			help_data.doc_type.type = ResourceLoader::get_resource_type(path);
 			if (help_data.doc_type.type.is_empty()) {
 				const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
-				symbol_type = textfile_ext.has(path.get_extension()) ? TTR("TextFile") : TTR("File");
+				symbol_type = textfile_ext.has(path.get_extension()) ? TTR("Text File") : TTR("File");
 			} else {
 				symbol_type = TTR("Resource");
 				symbol_hint = SYMBOL_HINT_ASSIGNABLE;
@@ -4497,7 +4497,7 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 						queue_free();
 					}
 				} else if (!Input::get_singleton()->get_last_mouse_velocity().is_zero_approx()) {
-					if (!_is_mouse_inside_tooltip && OS::get_singleton()->get_ticks_msec() - _enter_tree_time > 250) {
+					if (!_is_mouse_inside_tooltip && OS::get_singleton()->get_ticks_msec() - _enter_tree_time > 350) {
 						_start_timer();
 					}
 				}

@@ -37,41 +37,19 @@ template <typename T>
 class VSet {
 	Vector<T> _data;
 
+protected:
 	_FORCE_INLINE_ int _find(const T &p_val, bool &r_exact) const {
 		r_exact = false;
 		if (_data.is_empty()) {
 			return 0;
 		}
 
-		int low = 0;
-		int high = _data.size() - 1;
-		const T *a = &_data[0];
-		int middle = 0;
+		int64_t pos = _data.span().bisect(p_val, true);
 
-#ifdef DEBUG_ENABLED
-		if (low > high) {
-			ERR_PRINT("low > high, this may be a bug");
+		if (pos < _data.size() && !(p_val < _data[pos]) && !(_data[pos] < p_val)) {
+			r_exact = true;
 		}
-#endif
-
-		while (low <= high) {
-			middle = (low + high) / 2;
-
-			if (p_val < a[middle]) {
-				high = middle - 1; //search low end of array
-			} else if (a[middle] < p_val) {
-				low = middle + 1; //search high end of array
-			} else {
-				r_exact = true;
-				return middle;
-			}
-		}
-
-		//return the position where this would be inserted
-		if (a[middle] < p_val) {
-			middle++;
-		}
-		return middle;
+		return pos;
 	}
 
 	_FORCE_INLINE_ int _find_exact(const T &p_val) const {
@@ -79,23 +57,11 @@ class VSet {
 			return -1;
 		}
 
-		int low = 0;
-		int high = _data.size() - 1;
-		int middle;
-		const T *a = &_data[0];
+		int64_t pos = _data.span().bisect(p_val, true);
 
-		while (low <= high) {
-			middle = (low + high) / 2;
-
-			if (p_val < a[middle]) {
-				high = middle - 1; //search low end of array
-			} else if (a[middle] < p_val) {
-				low = middle + 1; //search high end of array
-			} else {
-				return middle;
-			}
+		if (pos < _data.size() && !(p_val < _data[pos]) && !(_data[pos] < p_val)) {
+			return pos;
 		}
-
 		return -1;
 	}
 

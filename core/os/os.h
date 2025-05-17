@@ -77,8 +77,8 @@ class OS {
 	// For tracking benchmark data
 	bool use_benchmark = false;
 	String benchmark_file;
-	HashMap<Pair<String, String>, uint64_t, PairHash<String, String>> benchmark_marks_from;
-	HashMap<Pair<String, String>, double, PairHash<String, String>> benchmark_marks_final;
+	HashMap<Pair<String, String>, uint64_t> benchmark_marks_from;
+	HashMap<Pair<String, String>, double> benchmark_marks_final;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
@@ -365,9 +365,11 @@ public:
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
 
+#ifdef TOOLS_ENABLED
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
 	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const { return true; }
 	virtual bool _test_create_rendering_device(const String &p_display_driver) const { return true; }
+#endif
 
 	OS();
 	virtual ~OS();

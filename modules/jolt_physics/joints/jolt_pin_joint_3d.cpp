@@ -38,9 +38,9 @@
 
 namespace {
 
-constexpr double DEFAULT_BIAS = 0.3;
-constexpr double DEFAULT_DAMPING = 1.0;
-constexpr double DEFAULT_IMPULSE_CLAMP = 0.0;
+constexpr double PIN_DEFAULT_BIAS = 0.3;
+constexpr double PIN_DEFAULT_DAMPING = 1.0;
+constexpr double PIN_DEFAULT_IMPULSE_CLAMP = 0.0;
 
 } // namespace
 
@@ -82,13 +82,13 @@ void JoltPinJoint3D::set_local_b(const Vector3 &p_local_b) {
 double JoltPinJoint3D::get_param(PhysicsServer3D::PinJointParam p_param) const {
 	switch (p_param) {
 		case PhysicsServer3D::PIN_JOINT_BIAS: {
-			return DEFAULT_BIAS;
+			return PIN_DEFAULT_BIAS;
 		}
 		case PhysicsServer3D::PIN_JOINT_DAMPING: {
-			return DEFAULT_DAMPING;
+			return PIN_DEFAULT_DAMPING;
 		}
 		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP: {
-			return DEFAULT_IMPULSE_CLAMP;
+			return PIN_DEFAULT_IMPULSE_CLAMP;
 		}
 		default: {
 			ERR_FAIL_V_MSG(0.0, vformat("Unhandled pin joint parameter: '%d'. This should not happen. Please report this.", p_param));
@@ -99,17 +99,17 @@ double JoltPinJoint3D::get_param(PhysicsServer3D::PinJointParam p_param) const {
 void JoltPinJoint3D::set_param(PhysicsServer3D::PinJointParam p_param, double p_value) {
 	switch (p_param) {
 		case PhysicsServer3D::PIN_JOINT_BIAS: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_BIAS)) {
+			if (!Math::is_equal_approx(p_value, PIN_DEFAULT_BIAS)) {
 				WARN_PRINT(vformat("Pin joint bias is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
 		case PhysicsServer3D::PIN_JOINT_DAMPING: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_DAMPING)) {
+			if (!Math::is_equal_approx(p_value, PIN_DEFAULT_DAMPING)) {
 				WARN_PRINT(vformat("Pin joint damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
 		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_IMPULSE_CLAMP)) {
+			if (!Math::is_equal_approx(p_value, PIN_DEFAULT_IMPULSE_CLAMP)) {
 				WARN_PRINT(vformat("Pin joint impulse clamp is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;

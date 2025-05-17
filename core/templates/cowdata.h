@@ -40,7 +40,9 @@
 
 static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
 
-GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wplacement-new") // Silence a false positive warning (see GH-52119).
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wplacement-new") // Silence a false positive warning (see GH-52119).
+GODOT_GCC_WARNING_IGNORE("-Wmaybe-uninitialized") // False positive raised when using constexpr.
 
 template <typename T>
 class CowData {

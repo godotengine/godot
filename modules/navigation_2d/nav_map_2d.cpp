@@ -44,7 +44,7 @@
 
 #include <Obstacle2d.h>
 
-using namespace nav_2d;
+using namespace Nav2D;
 
 #ifdef DEBUG_ENABLED
 #define NAVMAP_ITERATION_ZERO_ERROR_MSG() \

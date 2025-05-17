@@ -392,12 +392,15 @@ static Vector<Ref<Image>> _dds_load_images(Ref<FileAccess> p_f, DDSFormat p_dds_
 
 	for (uint32_t i = 0; i < p_layer_count; i++) {
 		images.write[i] = _dds_load_layer(p_f, p_dds_format, p_width, p_height, p_mipmaps, p_pitch, p_flags, src_data);
+		ERR_FAIL_COND_V(images.write[i].is_null(), Vector<Ref<Image>>());
 	}
 
 	return images;
 }
 
 static Ref<Resource> _dds_create_texture(const Vector<Ref<Image>> &p_images, uint32_t p_dds_type, uint32_t p_width, uint32_t p_height, uint32_t p_layer_count, uint32_t p_mipmaps, Error *r_error) {
+	ERR_FAIL_COND_V(p_images.is_empty(), Ref<Resource>());
+
 	if ((p_dds_type & DDST_TYPE_MASK) == DDST_2D) {
 		if (p_dds_type & DDST_ARRAY) {
 			Ref<Texture2DArray> texture;

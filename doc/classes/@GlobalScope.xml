@@ -2960,7 +2960,12 @@
 		<constant name="PROPERTY_HINT_GROUP_ENABLE" value="42" enum="PropertyHint">
 			Hints that a boolean property will enable the feature associated with the group that it occurs in. Only works within a group or subgroup.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="43" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INPUT_NAME" value="43" enum="PropertyHint">
+			Hints that a [String] or [StringName] property is the name of an input action. This allows the selection of any action name from the Input Map in the Project Settings. The hint string may contain two options separated by commas:
+			- If it contains [code]"show_builtin"[/code], built-in input actions are included in the selection.
+			- If it contains [code]"loose_mode"[/code], loose mode is enabled. This allows inserting any action name even if it's not present in the input map.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="44" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">

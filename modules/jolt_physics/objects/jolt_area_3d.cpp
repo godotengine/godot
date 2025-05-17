@@ -42,11 +42,11 @@
 
 namespace {
 
-constexpr double DEFAULT_WIND_FORCE_MAGNITUDE = 0.0;
-constexpr double DEFAULT_WIND_ATTENUATION_FACTOR = 0.0;
+constexpr double AREA_DEFAULT_WIND_MAGNITUDE = 0.0;
+constexpr double AREA_DEFAULT_WIND_ATTENUATION = 0.0;
 
-const Vector3 DEFAULT_WIND_SOURCE = Vector3();
-const Vector3 DEFAULT_WIND_DIRECTION = Vector3();
+const Vector3 AREA_DEFAULT_WIND_SOURCE = Vector3();
+const Vector3 AREA_DEFAULT_WIND_DIRECTION = Vector3();
 
 } // namespace
 
@@ -407,16 +407,16 @@ Variant JoltArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
 			return get_priority();
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
-			return DEFAULT_WIND_FORCE_MAGNITUDE;
+			return AREA_DEFAULT_WIND_MAGNITUDE;
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE: {
-			return DEFAULT_WIND_SOURCE;
+			return AREA_DEFAULT_WIND_SOURCE;
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION: {
-			return DEFAULT_WIND_DIRECTION;
+			return AREA_DEFAULT_WIND_DIRECTION;
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
-			return DEFAULT_WIND_ATTENUATION_FACTOR;
+			return AREA_DEFAULT_WIND_ATTENUATION;
 		}
 		default: {
 			ERR_FAIL_V_MSG(Variant(), vformat("Unhandled area parameter: '%d'. This should not happen. Please report this.", p_param));
@@ -457,22 +457,22 @@ void JoltArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Variant
 			set_priority(p_value);
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
-			if (!Math::is_equal_approx((double)p_value, DEFAULT_WIND_FORCE_MAGNITUDE)) {
+			if (!Math::is_equal_approx((double)p_value, AREA_DEFAULT_WIND_MAGNITUDE)) {
 				WARN_PRINT(vformat("Invalid wind force magnitude for '%s'. Area wind force magnitude is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
 			}
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE: {
-			if (!((Vector3)p_value).is_equal_approx(DEFAULT_WIND_SOURCE)) {
+			if (!((Vector3)p_value).is_equal_approx(AREA_DEFAULT_WIND_SOURCE)) {
 				WARN_PRINT(vformat("Invalid wind source for '%s'. Area wind source is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
 			}
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION: {
-			if (!((Vector3)p_value).is_equal_approx(DEFAULT_WIND_DIRECTION)) {
+			if (!((Vector3)p_value).is_equal_approx(AREA_DEFAULT_WIND_DIRECTION)) {
 				WARN_PRINT(vformat("Invalid wind direction for '%s'. Area wind direction is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
 			}
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
-			if (!Math::is_equal_approx((double)p_value, DEFAULT_WIND_ATTENUATION_FACTOR)) {
+			if (!Math::is_equal_approx((double)p_value, AREA_DEFAULT_WIND_ATTENUATION)) {
 				WARN_PRINT(vformat("Invalid wind attenuation for '%s'. Area wind attenuation is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
 			}
 		} break;

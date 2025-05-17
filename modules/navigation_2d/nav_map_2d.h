@@ -99,7 +99,7 @@ class NavMap2D : public NavRid2D {
 	bool avoidance_use_high_priority_threads = true;
 
 	// Performance Monitor
-	nav_2d::PerformanceData performance_data;
+	Nav2D::PerformanceData performance_data;
 
 	struct {
 		SelfList<NavRegion2D>::List regions;
@@ -159,13 +159,13 @@ public:
 		return link_connection_radius;
 	}
 
-	nav_2d::PointKey get_point_key(const Vector2 &p_pos) const;
+	Nav2D::PointKey get_point_key(const Vector2 &p_pos) const;
 	Vector2 get_merge_rasterizer_cell_size() const;
 
 	void query_path(NavMeshQueries2D::NavMeshPathQueryTask2D &p_query_task);
 
 	Vector2 get_closest_point(const Vector2 &p_point) const;
-	nav_2d::ClosestPointQueryResult get_closest_point_info(const Vector2 &p_point) const;
+	Nav2D::ClosestPointQueryResult get_closest_point_info(const Vector2 &p_point) const;
 	RID get_closest_point_owner(const Vector2 &p_point) const;
 
 	void add_region(NavRegion2D *p_region);
