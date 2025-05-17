@@ -8627,7 +8627,7 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	// Generate the skeletons and skins (if any).
 	HashMap<ObjectID, SkinSkeletonIndex> skeleton_map;
 	Error err = SkinTool::_create_skeletons(p_state->unique_names, p_state->skins, p_state->nodes,
-			skeleton_map, p_state->skeletons, p_state->scene_nodes);
+			skeleton_map, p_state->skeletons, p_state->scene_nodes, _naming_version);
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "glTF: Failed to create skeletons.");
 	err = _create_skins(p_state);
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "glTF: Failed to create skins.");
