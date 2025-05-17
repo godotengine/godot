@@ -2783,6 +2783,7 @@ void Viewport::push_text_input(const String &p_text) {
 
 	if (gui.key_focus) {
 		gui.key_focus->call("set_text", p_text);
+		gui.key_focus->call("emit_signal", SNAME("text_changed"), p_text);
 	}
 }
 
