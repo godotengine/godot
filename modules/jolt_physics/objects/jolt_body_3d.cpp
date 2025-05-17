@@ -133,7 +133,7 @@ void JoltBody3D::_add_to_space() {
 	jolt_settings->mAllowedDOFs = _calculate_allowed_dofs();
 	jolt_settings->mAllowDynamicOrKinematic = true;
 	jolt_settings->mCollideKinematicVsNonDynamic = reports_all_kinematic_contacts();
-	jolt_settings->mUseManifoldReduction = !reports_contacts();
+	jolt_settings->mUseManifoldReduction = _can_use_manifold_reduction();
 	jolt_settings->mAllowSleeping = is_sleep_actually_allowed();
 	jolt_settings->mLinearDamping = 0.0f;
 	jolt_settings->mAngularDamping = 0.0f;
@@ -431,6 +431,34 @@ void JoltBody3D::_update_sleep_allowed() {
 	}
 }
 
+void JoltBody3D::_update_manifold_reduction() {
+	const bool value = _can_use_manifold_reduction();
+
+	if (!in_space()) {
+		jolt_settings->mUseManifoldReduction = value;
+	} else {
+		space->get_body_iface().SetUseManifoldReduction(jolt_body->GetID(), value);
+	}
+}
+
+void JoltBody3D::_update_uses_shape_materials() {
+	shape_materials = false;
+
+	for (float friction : shape_frictions) {
+		if (!Math::is_nan(friction)) {
+			shape_materials = true;
+			return;
+		}
+	}
+
+	for (float bounce : shape_bounces) {
+		if (!Math::is_nan(bounce)) {
+			shape_materials = true;
+			return;
+		}
+	}
+}
+
 void JoltBody3D::_destroy_joint_constraints() {
 	for (JoltJoint3D *joint : joints) {
 		joint->destroy();
@@ -473,6 +501,24 @@ void JoltBody3D::_shapes_committed() {
 	_update_mass_properties();
 	_update_joint_constraints();
 	wake_up();
+}
+
+void JoltBody3D::_shape_removed(int p_index) {
+	bool removed_material = false;
+
+	if ((int)shape_frictions.size() > p_index) {
+		shape_frictions.remove_at(p_index);
+		removed_material = true;
+	}
+
+	if ((int)shape_bounces.size() > p_index) {
+		shape_bounces.remove_at(p_index);
+		removed_material = true;
+	}
+
+	if (removed_material) {
+		_shape_materials_changed();
+	}
 }
 
 void JoltBody3D::_space_changing() {
@@ -524,12 +570,18 @@ void JoltBody3D::_axis_lock_changed() {
 void JoltBody3D::_contact_reporting_changed() {
 	_update_possible_kinematic_contacts();
 	_update_sleep_allowed();
+	_update_manifold_reduction();
 	wake_up();
 }
 
 void JoltBody3D::_sleep_allowed_changed() {
 	_update_sleep_allowed();
 	wake_up();
+}
+
+void JoltBody3D::_shape_materials_changed() {
+	_update_uses_shape_materials();
+	_update_manifold_reduction();
 }
 
 JoltBody3D::JoltBody3D() :
@@ -844,14 +896,6 @@ void JoltBody3D::set_max_contacts_reported(int p_count) {
 
 	contacts.resize(p_count);
 	contact_count = MIN(contact_count, p_count);
-
-	const bool use_manifold_reduction = !reports_contacts();
-
-	if (!in_space()) {
-		jolt_settings->mUseManifoldReduction = use_manifold_reduction;
-	} else {
-		space->get_body_iface().SetUseManifoldReduction(jolt_body->GetID(), use_manifold_reduction);
-	}
 
 	_contact_reporting_changed();
 }
@@ -1333,4 +1377,66 @@ bool JoltBody3D::can_interact_with(const JoltSoftBody3D &p_other) const {
 
 bool JoltBody3D::can_interact_with(const JoltArea3D &p_other) const {
 	return p_other.can_interact_with(*this);
+}
+
+float JoltBody3D::get_shape_friction(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), NAN);
+
+	if (p_index >= (int)shape_frictions.size()) {
+		return NAN;
+	}
+
+	return shape_frictions[p_index];
+}
+
+void JoltBody3D::set_shape_friction(int p_index, float p_friction) {
+	ERR_FAIL_INDEX(p_index, (int)shapes.size());
+
+	int old_size = shape_frictions.size();
+	if (old_size <= p_index) {
+		shape_frictions.resize(p_index + 1);
+
+		for (int i = old_size; i < p_index; i++) {
+			shape_frictions[i] = NAN;
+		}
+	}
+
+	if (shape_frictions[p_index] == p_friction) {
+		return;
+	}
+
+	shape_frictions[p_index] = p_friction;
+
+	_shape_materials_changed();
+}
+
+float JoltBody3D::get_shape_bounce(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), NAN);
+
+	if (p_index >= (int)shape_bounces.size()) {
+		return NAN;
+	}
+
+	return shape_bounces[p_index];
+}
+
+void JoltBody3D::set_shape_bounce(int p_index, float p_bounce) {
+	ERR_FAIL_INDEX(p_index, (int)shapes.size());
+
+	int old_size = shape_bounces.size();
+	if (old_size <= p_index) {
+		shape_bounces.resize(p_index + 1);
+
+		for (int i = old_size; i < p_index; i++) {
+			shape_bounces[i] = NAN;
+		}
+	}
+
+	if (shape_bounces[p_index] == p_bounce) {
+		return;
+	}
+
+	shape_bounces[p_index] = p_bounce;
+
+	_shape_materials_changed();
 }

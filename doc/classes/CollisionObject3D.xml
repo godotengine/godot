@@ -126,6 +126,13 @@
 				Returns the parent object of the given shape owner.
 			</description>
 		</method>
+		<method name="shape_owner_get_physics_material" qualifiers="const">
+			<return type="PhysicsMaterial" />
+			<param index="0" name="owner_id" type="int" />
+			<description>
+				Returns the [PhysicsMaterial] (if any) set on the shape owner.
+			</description>
+		</method>
 		<method name="shape_owner_get_shape" qualifiers="const">
 			<return type="Shape3D" />
 			<param index="0" name="owner_id" type="int" />
@@ -170,6 +177,14 @@
 			<param index="1" name="disabled" type="bool" />
 			<description>
 				If [code]true[/code], disables the given shape owner.
+			</description>
+		</method>
+		<method name="shape_owner_set_physics_material">
+			<return type="void" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="material" type="PhysicsMaterial" />
+			<description>
+				Sets the [PhysicsMaterial] for the shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_set_transform">

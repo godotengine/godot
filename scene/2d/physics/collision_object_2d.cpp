@@ -336,6 +336,38 @@ bool CollisionObject2D::is_shape_owner_disabled(uint32_t p_owner) const {
 	return shapes[p_owner].disabled;
 }
 
+void CollisionObject2D::shape_owner_set_physics_material(uint32_t p_owner, const Ref<PhysicsMaterial> &p_material) {
+	ERR_FAIL_COND(!shapes.has(p_owner));
+
+	if (area) {
+		return;
+	}
+
+	ShapeData &sd = shapes[p_owner];
+	if (sd.material == p_material) {
+		return;
+	}
+	sd.material = p_material;
+
+	for (int i = 0; i < sd.shapes.size(); i++) {
+		if (p_material.is_null()) {
+			// Disable override and use the body's physics material.
+			PhysicsServer2D::get_singleton()->body_set_shape_friction_override(rid, sd.shapes[i].index, false);
+			PhysicsServer2D::get_singleton()->body_set_shape_bounce_override(rid, sd.shapes[i].index, false);
+		} else {
+			// Enable material override for this shape.
+			PhysicsServer2D::get_singleton()->body_set_shape_friction_override(rid, sd.shapes[i].index, true, p_material->computed_friction());
+			PhysicsServer2D::get_singleton()->body_set_shape_bounce_override(rid, sd.shapes[i].index, true, p_material->computed_bounce());
+		}
+	}
+}
+
+Ref<PhysicsMaterial> CollisionObject2D::shape_owner_get_physics_material(uint32_t p_owner) const {
+	ERR_FAIL_COND_V(!shapes.has(p_owner), nullptr);
+
+	return shapes[p_owner].material;
+}
+
 void CollisionObject2D::shape_owner_set_one_way_collision(uint32_t p_owner, bool p_enable) {
 	if (area) {
 		return; //not for areas
@@ -615,6 +647,8 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_get_owner", "owner_id"), &CollisionObject2D::shape_owner_get_owner);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_disabled", "owner_id", "disabled"), &CollisionObject2D::shape_owner_set_disabled);
 	ClassDB::bind_method(D_METHOD("is_shape_owner_disabled", "owner_id"), &CollisionObject2D::is_shape_owner_disabled);
+	ClassDB::bind_method(D_METHOD("shape_owner_set_physics_material", "owner_id", "material"), &CollisionObject2D::shape_owner_set_physics_material);
+	ClassDB::bind_method(D_METHOD("shape_owner_get_physics_material", "owner_id"), &CollisionObject2D::shape_owner_get_physics_material);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_one_way_collision", "owner_id", "enable"), &CollisionObject2D::shape_owner_set_one_way_collision);
 	ClassDB::bind_method(D_METHOD("is_shape_owner_one_way_collision_enabled", "owner_id"), &CollisionObject2D::is_shape_owner_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_one_way_collision_margin", "owner_id", "margin"), &CollisionObject2D::shape_owner_set_one_way_collision_margin);
