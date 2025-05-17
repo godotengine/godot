@@ -285,6 +285,10 @@ void Spatial::_notification(int p_what) {
 			// unless they need to perform specific tasks (like changing process modes).
 			fti_pump_xform();
 			fti_pump_property();
+
+			// Detect whether we are using an identity transform.
+			// This is an optimization for faster tree transform concatenation.
+			data.fti_is_identity_xform = data.local_transform == Transform();
 		} break;
 
 		case NOTIFICATION_PAUSED: {
@@ -1127,6 +1131,8 @@ Spatial::Spatial() :
 	data.fti_on_tick_property_list = false;
 	data.fti_global_xform_interp_set = false;
 	data.fti_frame_xform_force_update = false;
+	data.fti_is_identity_xform = false;
+	data.fti_processed = false;
 
 	data.merging_mode = MERGING_MODE_INHERIT;
 
