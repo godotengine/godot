@@ -73,7 +73,7 @@
 				[b]Note:[/b] Downloading large buffers can have a prohibitive cost for real-time even when using the asynchronous method due to hardware bandwidth limitations. When dealing with large resources, you can adjust settings such as [member ProjectSettings.rendering/rendering_device/staging_buffer/block_size_kb] to improve the transfer speed at the cost of extra memory.
 				[codeblock]
 				func _buffer_get_data_callback(array):
-				    value = array.decode_u32(0)
+					value = array.decode_u32(0)
 
 				...
 
@@ -132,9 +132,9 @@
 				rd.compute_list_bind_uniform_set(compute_list, dilate_uniform_set, 1)
 
 				for i in atlas_slices:
-				    rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
-				    rd.compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z)
-				    # No barrier, let them run all together.
+					rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
+					rd.compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z)
+					# No barrier, let them run all together.
 
 				rd.compute_list_end()
 				[/codeblock]
@@ -981,7 +981,7 @@
 				[b]Note:[/b] Downloading large textures can have a prohibitive cost for real-time even when using the asynchronous method due to hardware bandwidth limitations. When dealing with large resources, you can adjust settings such as [member ProjectSettings.rendering/rendering_device/staging_buffer/texture_download_region_size_px] and [member ProjectSettings.rendering/rendering_device/staging_buffer/block_size_kb] to improve the transfer speed at the cost of extra memory.
 				[codeblock]
 				func _texture_get_data_callback(array):
-				    value = array.decode_u32(0)
+					value = array.decode_u32(0)
 
 				...
 
