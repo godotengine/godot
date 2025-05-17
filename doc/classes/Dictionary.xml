@@ -20,6 +20,10 @@
 
 		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
 
+		var typed_dict: Dictionary[int, String] = {} # Creates a typed dictionary
+		var typed_key: Dictionary[int, Variant] = {}
+		var typed_value: Dictionary[Variant, int] = {}
+
 		# Alternative Lua-style syntax.
 		# Doesn't require quotes around keys, but only string constants can be used as key names.
 		# Additionally, key names must start with a letter or an underscore.
@@ -36,6 +40,9 @@
 		    {"Yellow", 75},
 		    {"Orange", 100}
 		};
+		var typedDict = new Godot.Collections.Dictionary<int,String>();
+		var typedKey = new Godot.Collections.Dictionary<int,Variant>();
+		var typedValue = new Godot.Collections.Dictionary<Variant,int>();
 		[/csharp]
 		[/codeblocks]
 		You can access a dictionary's value by referencing its corresponding key. In the above example, [code]points_dict["White"][/code] will return [code]50[/code]. You can also write [code]points_dict.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
