@@ -70,9 +70,19 @@ private:
 		return hash;
 	}
 
+	_FORCE_INLINE_ static constexpr void _increment_mod(uint32_t &r_pos, const uint32_t p_capacity) {
+		r_pos++;
+		// `if` is faster than both fastmod and mod.
+		if (unlikely(r_pos == p_capacity)) {
+			r_pos = 0;
+		}
+	}
+
 	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t p_pos, const uint32_t p_hash, const uint32_t p_capacity, const uint64_t p_capacity_inv) {
 		const uint32_t original_pos = fastmod(p_hash, p_capacity_inv, p_capacity);
-		return fastmod(p_pos - original_pos + p_capacity, p_capacity_inv, p_capacity);
+		const uint32_t distance_pos = p_pos - original_pos + p_capacity;
+		// At most p_capacity over 0, so we can use an if (faster than fastmod).
+		return distance_pos >= p_capacity ? distance_pos - p_capacity : distance_pos;
 	}
 
 	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) const {
@@ -91,16 +101,16 @@ private:
 				return false;
 			}
 
-			if (distance > _get_probe_length(pos, hashes[pos], capacity, capacity_inv)) {
-				return false;
-			}
-
 			if (hashes[pos] == hash && Comparator::compare(keys[hash_to_key[pos]], p_key)) {
 				r_pos = hash_to_key[pos];
 				return true;
 			}
 
-			pos = fastmod(pos + 1, capacity_inv, capacity);
+			if (distance > _get_probe_length(pos, hashes[pos], capacity, capacity_inv)) {
+				return false;
+			}
+
+			_increment_mod(pos, capacity);
 			distance++;
 		}
 	}
@@ -130,7 +140,7 @@ private:
 				distance = existing_probe_len;
 			}
 
-			pos = fastmod(pos + 1, capacity_inv, capacity);
+			_increment_mod(pos, capacity);
 			distance++;
 		}
 	}
@@ -268,7 +278,7 @@ public:
 			SWAP(hash_to_key[next_pos], hash_to_key[pos]);
 
 			pos = next_pos;
-			next_pos = fastmod(pos + 1, capacity_inv, capacity);
+			_increment_mod(next_pos, capacity);
 		}
 
 		hashes[pos] = EMPTY_HASH;
