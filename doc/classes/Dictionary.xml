@@ -181,7 +181,7 @@
 				[codeblock]
 				# Both create a typed dictionary with integer keys and string values
 				var constructor = Dictionary({},TYPE_INT,"",null,TYPE_STRING,"",null)
-				var static: Dictionary[int,String] = {}
+				var static_typing: Dictionary[int,String] = {}
 				[/codeblock]
 			</description>
 		</constructor>
