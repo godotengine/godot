@@ -45,6 +45,7 @@ public:
 	};
 
 	struct Token {
+		// If this enum changes, please increment the TOKENIZER_VERSION in gdscript_tokenizer_buffer.h
 		enum Type {
 			EMPTY,
 			// Basic
