@@ -590,6 +590,8 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (what == "use_blend") {
 			if (track_get_type(track) == TYPE_AUDIO) {
 				r_ret = audio_track_is_use_blend(track);
+			} else if (track_get_type(track) == TYPE_ANIMATION) {
+				r_ret = animation_track_is_use_blend(track);
 			}
 		} else if (what == "interp") {
 			r_ret = track_get_interpolation_type(track);
