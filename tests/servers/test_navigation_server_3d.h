@@ -546,6 +546,7 @@ TEST_SUITE("[Navigation3D]") {
 		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
 		navigation_server->map_set_use_async_iterations(map, false);
 		navigation_server->map_set_active(map, true);
+		navigation_server->region_set_use_async_iterations(region, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
@@ -642,6 +643,7 @@ TEST_SUITE("[Navigation3D]") {
 		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
 		navigation_server->map_set_use_async_iterations(map, false);
 		navigation_server->map_set_active(map, true);
+		navigation_server->region_set_use_async_iterations(region, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
@@ -691,6 +693,7 @@ TEST_SUITE("[Navigation3D]") {
 		RID region = navigation_server->region_create();
 		navigation_server->map_set_active(map, true);
 		navigation_server->map_set_use_async_iterations(map, false);
+		navigation_server->region_set_use_async_iterations(region, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
