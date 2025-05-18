@@ -71,7 +71,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 		script_binding.inited = true;
 		script_binding.type_name = NATIVE_GDMONOCLASS_NAME(klass);
 		script_binding.wrapper_class = klass;
-		script_binding.gchandle = ref ? MonoGCHandle::create_weak(managed) : MonoGCHandle::create_strong(managed);
+		script_binding.gchandle = ref ? gdmono::MonoGCHandle::create_weak(managed) : gdmono::MonoGCHandle::create_strong(managed);
 		script_binding.owner = unmanaged;
 
 		if (ref) {
@@ -101,7 +101,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 		return;
 	}
 
-	Ref<MonoGCHandle> gchandle = ref ? MonoGCHandle::create_weak(managed) : MonoGCHandle::create_strong(managed);
+	Ref<gdmono::MonoGCHandle> gchandle = ref ? gdmono::MonoGCHandle::create_weak(managed) : gdmono::MonoGCHandle::create_strong(managed);
 
 	Ref<CSharpScript> script = CSharpScript::create_for_managed_type(klass, native);
 

@@ -178,7 +178,7 @@ void CachedData::clear_godot_api_cache() {
 
 	// End of MarshalUtils methods
 
-	task_scheduler_handle = Ref<MonoGCHandle>();
+	task_scheduler_handle = Ref<gdmono::MonoGCHandle>();
 }
 
 #define GODOT_API_CLASS(m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, #m_class))
@@ -300,7 +300,7 @@ void update_godot_api_cache() {
 	// TODO Move to CSharpLanguage::init() and do handle disposal
 	MonoObject *task_scheduler = mono_object_new(mono_domain_get(), GODOT_API_CLASS(GodotTaskScheduler)->get_mono_ptr());
 	GDMonoUtils::runtime_object_init(task_scheduler, GODOT_API_CLASS(GodotTaskScheduler));
-	cached_data.task_scheduler_handle = MonoGCHandle::create_strong(task_scheduler);
+	cached_data.task_scheduler_handle = gdmono::MonoGCHandle::create_strong(task_scheduler);
 
 	cached_data.godot_api_cache_updated = true;
 }
