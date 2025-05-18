@@ -71,6 +71,8 @@ public:
 
 	RID region_create() override { return RID(); }
 	uint32_t region_get_iteration_id(RID p_region) const override { return 0; }
+	void region_set_use_async_iterations(RID p_region, bool p_enabled) override {}
+	bool region_get_use_async_iterations(RID p_region) const override { return false; }
 	void region_set_enabled(RID p_region, bool p_enabled) override {}
 	bool region_get_enabled(RID p_region) const override { return false; }
 	void region_set_use_edge_connections(RID p_region, bool p_enabled) override {}
