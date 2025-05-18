@@ -30,8 +30,6 @@
 
 #include "helper_rect_2d.h"
 
-#include "editor/editor_node.h"
-
 Dictionary HelperRect2D::_edit_get_state() const {
 	Dictionary ret = Node2D::_edit_get_state();
 	ret["rect"] = rect;

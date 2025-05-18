@@ -5,8 +5,7 @@
 	</brief_description>
 	<description>
 		HelperRect2D is a 2D helper node in the editor that is draggable and allows you to customize your behavior. You can customize the behavior by overriding [method _rect_updated].
-		Unlike [ReferenceRect], this node is light and will not be affected by its parent node (except the parent node's transform).
-		[b]Note:[/b] To get this node work in the editor, you should use a tool script.
+		Unlike [ReferenceRect], this node is light enough to allow you to customize your own behavior.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +14,7 @@
 			<return type="void" />
 			<description>
 				Called when the [member rect] is changed. You can customize the behavior of dragging in this method.
+				[b]Note:[/b] To make this work in the editor, please consider to annotate the script with an [code]@tool[/code] annotation.
 				[b]Note:[/b] This will be called no matter when you are dragging the rectangle border of the node in the editor, or setting [member rect] in the inspector. To specify in which condition the behavior should be handled, please use [member dragged] to control this.
 			</description>
 		</method>
