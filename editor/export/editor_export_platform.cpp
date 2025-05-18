@@ -1097,6 +1097,17 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 		}
 
 		node->queue_free();
+	} else if (type == "Translation") { // Its a PO translation.
+		if (p_force_save) {
+			Ref<Translation> tr = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
+			ERR_FAIL_COND_V(tr.is_null(), p_path);
+
+			String base_file = p_path.get_file().get_basename() + ".mo";
+			save_path = export_base_path.path_join("export-" + p_path.md5_text() + "-" + base_file);
+
+			Error err = tr->save_mo(save_path);
+			ERR_FAIL_COND_V_MSG(err != OK, p_path, "Unable to save export translation file to: " + save_path);
+		}
 	} else {
 		Ref<Resource> res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 		ERR_FAIL_COND_V(res.is_null(), p_path);
@@ -1711,7 +1722,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				export_path = path;
 			} else {
 				// Customization only happens if plugins did not take care of it before.
-				bool force_binary = convert_text_to_binary && (path.has_extension("tres") || path.has_extension("tscn"));
+				bool force_binary = convert_text_to_binary && (path.has_extension("tres") || path.has_extension("tscn") || path.get_extension().to_lower() == "po");
 				export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, force_binary);
 
 				if (export_path != path) {
