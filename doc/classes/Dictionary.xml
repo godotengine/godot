@@ -177,6 +177,12 @@
 				- [param key_script] is the assigned script. It must be a [Script] instance or [code]null[/code].
 				If [code]key/value_type[/code] is not [constant TYPE_OBJECT], the corresponding [code]class_name[/code] must be an empty [StringName] and [code]script[/code] must be [code]null[/code].
 				The [param base] dictionary's elements are converted when necessary. If this is not possible or [param base] is already typed, this constructor fails and returns an empty [Dictionary].
+				In GDScript, you can also create a typed dictionary using static typing:
+				[codeblock]
+				# Both create a typed dictionary with integer keys and string values
+				var constructor = Dictionary({},TYPE_INT,"",null,TYPE_STRING,"",null)
+				var static: Dictionary[int,String] = {}
+				[/codeblock]
 			</description>
 		</constructor>
 		<constructor name="Dictionary">
