@@ -678,7 +678,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 		double os_rem = os_nti.get_remain(break_loop_at_end) * tscl;
 		if (Animation::is_less_or_equal_approx(os_rem, fade_out)) {
 			is_fading_out = true;
-			cur_fade_out_remaining = os_rem;
+			cur_fade_out_remaining = os_rem + abs_delta;
 			cur_fade_in_remaining = 0;
 			set_parameter(internal_active, false);
 		}
