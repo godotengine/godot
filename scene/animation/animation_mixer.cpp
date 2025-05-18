@@ -583,8 +583,7 @@ void AnimationMixer::_clear_audio_streams() {
 
 void AnimationMixer::_clear_animations() {
 	for (int i = 0; i < playing_animation_players.size(); i++) {
-		playing_animation_players[i]->call(SNAME("stop"));
-		playing_animation_players[i]->call(SNAME("set_assigned_animation"), String(""));
+		playing_animation_players[i]->call(SNAME("stop"), true);
 	}
 	playing_animation_players.clear();
 }
@@ -890,7 +889,7 @@ bool AnimationMixer::_update_caches() {
 						TrackCacheAnimation *track_animation = memnew(TrackCacheAnimation);
 
 						track_animation->object_id = child->get_instance_id();
-						track_animation->anim_name = StringName("");
+						track_animation->anim_name = StringName("[stop]");
 
 						track = track_animation;
 
@@ -1783,9 +1782,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 				} break;
 				case Animation::TYPE_ANIMATION: {
-					if (Math::is_zero_approx(blend)) {
-						continue;
-					}
+					//if (Math::is_zero_approx(blend)) {
+					//	continue;
+					//}
 
 					
 					TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
@@ -1793,11 +1792,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					Node *asp = t_obj ? Object::cast_to<Node>(t_obj) : nullptr;
 					if (!t_obj || !asp) {
 						t->playing_anims.clear();
-						continue;
-					}
-
-					AnimationPlayer *animation_playback = Object::cast_to<AnimationPlayer>(t_obj);
-					if (!animation_playback) {
 						continue;
 					}
 
@@ -1815,22 +1809,20 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					track_info.use_blend = a->animation_track_is_use_blend(i);
 					AHashMap<int, PlayingAnimationInfo> &map = track_info.anim_info;
 
-					// Find stream.
+					AnimationPlayer *animation_playback = Object::cast_to<AnimationPlayer>(t_obj);
+
+					// Find animation.
 					int idx = -1;
 					if (seeked) {
 						// Animation may be playbacked from the middle, should use FIND_MODE_NEAREST.
-						// Then, check the current playing stream to prevent to playback doubly.
+						// Then, check the current playing animation to prevent to playback doubly.
 						idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, true);
 						if (idx < 0 && a->track_get_key_count(i) > 0 && time < a->track_get_key_time(i, 0)) {
 							idx = 0;
 						}
 						
-						// Discard previous stream when seeking.
+						// Discard previous animation when seeking.
 						if (map.has(idx)) {
-							if (animation_playback->get_current_animation() == map[idx].anim_name) {
-								animation_playback->stop();
-							}
-							
 							map.erase(idx);
 						}
 
@@ -1845,37 +1837,37 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						continue;
 					}
 
-					// Play stream.
+					// Play animation.
 					StringName anim_name = a->animation_track_get_key_animation(i, idx);
 					Ref<Animation> anim = animation_playback->get_animation(anim_name);
-					if (!anim.is_null() && anim.is_valid()) {
+					if (anim.is_valid()) {
 						double start_ofs = a->animation_track_get_key_start_offset(i, idx);
 						double end_ofs = a->animation_track_get_key_end_offset(i, idx);
 						double len = anim->get_length();
-						double len_ofs = len - start_ofs - end_ofs;
-						double anim_time = start_ofs;
-						if (seeked) {
-							double pos = a->track_get_key_time(i, idx);
-							switch (a->get_loop_mode()) {
-								case Animation::LOOP_NONE: {
-									time = MIN(end - start, MAX(0.0, time - start)) + start;
-								} break;
-								case Animation::LOOP_LINEAR: {
-									time = Math::fposmod(time - start, end - start) + start;
-								} break;
-								case Animation::LOOP_PINGPONG: {
-									time = Math::pingpong(time - start, end - start) + start;
-								} break;
-								default:
-									break;
-							}
 
-							anim_time += time - pos;
+						double len_ofs = len - start_ofs - end_ofs;
+
+						double anim_time = start_ofs;
+						double pos = a->track_get_key_time(i, idx);
+						switch (a->get_loop_mode()) {
+							case Animation::LOOP_NONE: {
+								time = MIN(end - start, MAX(0.0, time - start)) + start;
+							} break;
+							case Animation::LOOP_LINEAR: {
+								time = Math::fposmod(time - start, end - start) + start;
+							} break;
+							case Animation::LOOP_PINGPONG: {
+								time = Math::pingpong(time - start, end - start) + start;
+							} break;
+							default:
+								break;
 						}
+						anim_time += time - pos;
 
 						t->anim_name = anim_name;
 
 						if (StringName(animation_playback->get_assigned_animation()) != t->anim_name) {
+							animation_playback->stop();
 							animation_playback->set_assigned_animation(t->anim_name);
 
 							if (!playing_animation_players.has(asp)) {
@@ -1883,34 +1875,38 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							}
 						}
 
-						if (StringName(animation_playback->get_assigned_animation()).is_empty()) {
-							continue;
-						}
+						//int prev_idx = idx - 1;
+						//if (prev_idx >= 0) {
+						//	StringName anim_name = a->animation_track_get_key_animation(i, prev_idx);
+						//	//ERR_FAIL_COND_V_MSG(err, ret, "prev idx: " + anim_name);
+						//}
+						//track_info.use_blend
+						
 
-						if (seeked) {
-							double anim_time_end = start_ofs + len_ofs;
-							double anim_time_start = MIN(anim_time_end, MAX(start_ofs, anim_time));
-							animation_playback->stop(true);
-							animation_playback->seek(anim_time_start, true, p_update_only);
+						double anim_time_end = start_ofs + len_ofs;
+						double anim_time_start = MIN(anim_time_end, MAX(start_ofs, anim_time));
 
-							AnimationPlayer *ap_root = Object::cast_to<AnimationPlayer>(this);
-							if (!ap_root || (ap_root && !ap_root->is_playing())) {
-								continue;
-							}
-						}
+						AnimationPlayer *ap_root = Object::cast_to<AnimationPlayer>(this);
+						bool root_is_playing = ap_root && ap_root->is_playing();
+
+						animation_playback->seek(anim_time_start, seeked || !root_is_playing, p_update_only);
 
 						PlayingAnimationInfo pasi;
 
 						pasi.anim_name = t->anim_name;
-						double anim_time_end = start_ofs + len_ofs;
-						double anim_time_start = MIN(anim_time_end, MAX(start_ofs, anim_time));
 
-						animation_playback->seek(anim_time_start, true, p_update_only);
+						if (root_is_playing) {
+							if (anim_time >= anim_time_start && anim_time <= anim_time_end && anim_time_start != anim_time_end) {
+								animation_playback->play_section(t->anim_name, anim_time_start, anim_time_end);
 
-						if (anim_time >= anim_time_start && anim_time <= anim_time_end && anim_time_start != anim_time_end) {
-							animation_playback->play_section(t->anim_name, anim_time_start, anim_time_end);
-						} else {
-							animation_playback->stop(true);
+								if (!playing_caches.has(t)) {
+									playing_caches.insert(t);
+								}
+							} else {
+								if (playing_caches.has(t)) {
+									playing_caches.erase(t);
+								}
+							}
 						}
 						pasi.start = time;
 						if (len && Animation::is_greater_approx(end_ofs, 0)) { // Force an end at a time.
@@ -1920,7 +1916,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 						map[idx] = pasi;
 					}
-					//*/
 				} break;
 			}
 		}
@@ -2088,7 +2083,6 @@ void AnimationMixer::_blend_apply() {
 					t->playing_streams.erase(erase_maps[erase_idx]);
 				}
 			} break;
-			/*
 			case Animation::TYPE_ANIMATION: {
 				TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 
@@ -2102,6 +2096,10 @@ void AnimationMixer::_blend_apply() {
 					for (const KeyValue<int, PlayingAnimationInfo> &M : map) {
 						PlayingAnimationInfo pasi = M.value;
 
+						//double blend_time = seeked ? (1.0 - track_info.weight) * 1.5 : 1.0 - track_info.weight; // Längere Blend-Zeit beim Seeking
+						//blend_time = MAX(0.1, blend_time);
+
+						/*
 						Object *t_obj = ObjectDB::get_instance(t->object_id);
 						if (!t_obj) {
 							continue;
@@ -2145,6 +2143,7 @@ void AnimationMixer::_blend_apply() {
 						} else {
 							ap->set_blend_time(ap->get_current_animation(), pasi.anim_name, weight);
 						}
+						*/
 					}
 					for (uint32_t erase_idx = 0; erase_idx < erase_anims.size(); erase_idx++) {
 						map.erase(erase_anims[erase_idx]);
@@ -2157,7 +2156,6 @@ void AnimationMixer::_blend_apply() {
 					t->playing_anims.erase(erase_maps[erase_idx]);
 				}
 			} break;
-			*/
 			default: {
 			} // The rest don't matter.
 		}
@@ -2352,7 +2350,7 @@ void AnimationMixer::_build_backup_track_cache() {
 				if (t_obj) {
 					Node *asp = Object::cast_to<Node>(t_obj);
 					if (asp) {
-						asp->call(SNAME("set_assigned_animation"), String(""));
+						asp->call(SNAME("stop"), true);
 					}
 				}
 			} break;
