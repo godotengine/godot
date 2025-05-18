@@ -2048,7 +2048,7 @@ size_t meshopt_simplifyEdge(unsigned int* destination, const unsigned int* indic
 
 	// result_error is quadratic; we need to remap it back to linear
 	if (out_result_error)
-		*out_result_error = sqrtf(vertex_error) * error_scale;
+		*out_result_error = sqrtf(result_error) * error_scale;
 
 	return result_count;
 }
