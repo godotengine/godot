@@ -333,6 +333,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --enable-delta-smoothing         When vsync is enabled, enabled frame delta smoothing.\n");
 	OS::get_singleton()->print("  --disable-delta-smoothing        Disable frame delta smoothing.\n");
+	OS::get_singleton()->print("  --gpu-threaded                   Enable / disable graphics driver threaded optimizations ('true' or 'false').\n");
 	OS::get_singleton()->print("  --tablet-driver                  Tablet input driver (");
 	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
 		if (i != 0) {
@@ -496,6 +497,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool force_res = false;
 	bool saw_vsync_via_compositor_override = false;
 	bool delta_smoothing_override = false;
+	String driver_threaded_optimizations_string;
+	bool graphics_driver_threaded_optimizations_override = false;
 #ifdef TOOLS_ENABLED
 	bool found_project = false;
 #endif
@@ -940,6 +943,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing editor PID argument, aborting.\n");
 				goto error;
 			}
+		} else if (I->get() == "--gpu-threaded") {
+			if (I->next()) {
+				if (I->next()->get().to_lower() == "true") {
+					OS::get_singleton()->_set_graphics_driver_threaded_optimizations(OS::GRAPHICS_DRIVER_THREADED_OPTIMIZATIONS_ENABLED);
+					graphics_driver_threaded_optimizations_override = true;
+				} else if (I->next()->get().to_lower() == "false") {
+					OS::get_singleton()->_set_graphics_driver_threaded_optimizations(OS::GRAPHICS_DRIVER_THREADED_OPTIMIZATIONS_DISABLED);
+					graphics_driver_threaded_optimizations_override = true;
+				}
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing gpu-threaded argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--disable-render-loop") {
 			disable_render_loop = true;
 		} else if (I->get() == "--fixed-fps") {
@@ -1253,6 +1270,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);
 	}
 	GLOBAL_DEF("rendering/threads/thread_safe_bvh", false);
+
+	driver_threaded_optimizations_string = GLOBAL_DEF_RST("rendering/misc/compatibility/driver_threaded_optimizations", "DEFAULT");
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/misc/compatibility/driver_threaded_optimizations", PropertyInfo(Variant::STRING, "rendering/misc/compatibility/driver_threaded_optimizations", PROPERTY_HINT_ENUM, "DEFAULT,Disable,Enable"));
+
+	if (!graphics_driver_threaded_optimizations_override) {
+		if (driver_threaded_optimizations_string == "Disable") {
+			OS::get_singleton()->_set_graphics_driver_threaded_optimizations(OS::GRAPHICS_DRIVER_THREADED_OPTIMIZATIONS_DISABLED);
+		} else if (driver_threaded_optimizations_string == "Enable") {
+			OS::get_singleton()->_set_graphics_driver_threaded_optimizations(OS::GRAPHICS_DRIVER_THREADED_OPTIMIZATIONS_ENABLED);
+		}
+	}
 
 	if (rtm >= 0 && rtm < 3) {
 #ifdef NO_THREADS
