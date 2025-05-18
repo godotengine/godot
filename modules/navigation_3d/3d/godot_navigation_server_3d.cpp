@@ -397,6 +397,19 @@ uint32_t GodotNavigationServer3D::region_get_iteration_id(RID p_region) const {
 	return region->get_iteration_id();
 }
 
+COMMAND_2(region_set_use_async_iterations, RID, p_region, bool, p_enabled) {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL(region);
+	region->set_use_async_iterations(p_enabled);
+}
+
+bool GodotNavigationServer3D::region_get_use_async_iterations(RID p_region) const {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, false);
+
+	return region->get_use_async_iterations();
+}
+
 COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled) {
 	NavRegion3D *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL(region);
