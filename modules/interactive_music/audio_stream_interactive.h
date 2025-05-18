@@ -237,8 +237,8 @@ private:
 	bool active = false;
 	int return_memory = -1;
 
-	void _mix_internal(int p_frames);
-	void _mix_internal_state(int p_state_idx, int p_frames);
+	void _mix_internal(int p_frames, float p_rate_scale);
+	void _mix_internal_state(int p_state_idx, int p_frames, float p_rate_scale);
 
 	void _queue(int p_to_clip_index, bool p_is_auto_advance);
 
