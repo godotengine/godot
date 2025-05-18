@@ -37,7 +37,9 @@ const float TRIM_DB_LIMIT = -50;
 const int TRIM_FADE_OUT_FRAMES = 500;
 
 void AudioStreamPlaybackWAV::start(double p_from_pos) {
-	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
+	bool is_format_ima_adpcm = base->format == AudioStreamWAV::FORMAT_IMA_ADPCM;
+
+	if (is_format_ima_adpcm) {
 		//no seeking in IMA_ADPCM
 		for (int i = 0; i < 2; i++) {
 			ima_adpcm[i].step_index = 0;
@@ -54,7 +56,7 @@ void AudioStreamPlaybackWAV::start(double p_from_pos) {
 	active = true;
 	begin_resample();
 
-	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM || p_from_pos == 0.0) {
+	if (is_format_ima_adpcm || p_from_pos == 0.0) {
 		offset = 0;
 	} else {
 		seek(p_from_pos);
