@@ -2742,8 +2742,10 @@ void DisplayServerWindows::window_set_taskbar_progress_value(int p_value, int p_
 	ERR_FAIL_COND(!windows.has(p_window));
 	const WindowData &wd = windows[p_window];
 
-	CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&pTaskbar);
-	pTaskbar->HrInit();
+	if (pTaskbar == nullptr) {
+		CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&pTaskbar);
+		pTaskbar->HrInit();
+	}
 
 	pTaskbar->SetProgressValue(wd.hWnd, (ULONGLONG)p_value, (ULONGLONG)p_total);
 }
@@ -2754,8 +2756,10 @@ void DisplayServerWindows::window_set_taskbar_progress_state(ProgressState p_sta
 	ERR_FAIL_COND(!windows.has(p_window));
 	const WindowData &wd = windows[p_window];
 
-	CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&pTaskbar);
-	pTaskbar->HrInit();
+	if (pTaskbar == nullptr) {
+		CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&pTaskbar);
+		pTaskbar->HrInit();
+	}
 
 	TBPFLAG tbpf = TBPF_NOPROGRESS;
 	switch (p_state) {

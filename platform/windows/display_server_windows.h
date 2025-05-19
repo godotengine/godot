@@ -466,7 +466,7 @@ class DisplayServerWindows : public DisplayServer {
 	TTS_Windows *tts = nullptr;
 	NativeMenuWindows *native_menu = nullptr;
 	typedef ITaskbarList3 *LPITaskbarList3;
-	LPITaskbarList3 pTaskbar;
+	LPITaskbarList3 pTaskbar = nullptr;
 
 	struct WindowData {
 		HWND hWnd;
