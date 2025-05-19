@@ -53,7 +53,7 @@ void EmbeddedProcessMacOS::_notification(int p_what) {
 	}
 }
 
-void EmbeddedProcessMacOS::update_embedded_process() const {
+void EmbeddedProcessMacOS::update_embedded_process() {
 	layer_host->set_rect(get_adjusted_embedded_window_rect(get_rect()));
 	if (is_embedding_completed()) {
 		ds->embed_process_update(window->get_window_id(), this);
@@ -130,24 +130,28 @@ void EmbeddedProcessMacOS::request_close() {
 	}
 }
 
+void EmbeddedProcessMacOS::display_state_changed() {
+	DisplayServerEmbeddedState state;
+	state.screen_max_scale = ds->screen_get_max_scale();
+	state.screen_dpi = ds->screen_get_dpi();
+	state.display_id = ds->window_get_display_id(window->get_window_id());
+	PackedByteArray data;
+	state.serialize(data);
+	script_debugger->send_message("embed:ds_state", { data });
+}
+
 void EmbeddedProcessMacOS::_try_embed_process() {
 	if (current_process_id == 0 || script_debugger == nullptr || context_id == 0) {
 		return;
 	}
 
-	Error err = ds->embed_process_update(window->get_window_id(), this);
+	DisplayServer::WindowID wid = window->get_window_id();
+	Error err = ds->embed_process_update(wid, this);
 	if (err == OK) {
 		layer_host->set_rect(get_adjusted_embedded_window_rect(get_rect()));
 
-		// Replicate some of the DisplayServer state.
-		{
-			DisplayServerEmbeddedState state;
-			state.screen_max_scale = ds->screen_get_max_scale();
-			state.screen_dpi = ds->screen_get_dpi();
-			PackedByteArray data;
-			state.serialize(data);
-			script_debugger->send_message("embed:ds_state", { data });
-		}
+		// Replicate important DisplayServer state.
+		display_state_changed();
 
 		Rect2i rect = get_screen_embedded_window_rect();
 		script_debugger->send_message("embed:window_size", { rect.size });
