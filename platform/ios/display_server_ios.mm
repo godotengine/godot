@@ -683,6 +683,14 @@ void DisplayServerIOS::window_request_attention(WindowID p_window) {
 	// Probably not supported for iOS
 }
 
+void DisplayServerIOS::window_set_taskbar_progress_value(int p_value, int p_total, WindowID p_window) {
+	// Not supported.
+}
+
+void DisplayServerIOS::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	// Not supported.
+}
+
 void DisplayServerIOS::window_move_to_foreground(WindowID p_window) {
 	// Probably not supported for iOS
 }

@@ -4100,6 +4100,14 @@ void WaylandThread::window_request_attention(DisplayServer::WindowID p_window_id
 	}
 }
 
+void WaylandThread::window_set_taskbar_progress_value(int p_value, int p_total, WindowID p_window) {
+	// Not supported.
+}
+
+void WaylandThread::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	// Not supported.
+}
+
 void WaylandThread::window_set_idle_inhibition(DisplayServer::WindowID p_window_id, bool p_enable) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];

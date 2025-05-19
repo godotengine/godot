@@ -2902,6 +2902,14 @@ void DisplayServerMacOS::window_request_attention(WindowID p_window) {
 	[NSApp requestUserAttention:NSCriticalRequest];
 }
 
+void DisplayServerMacOS::window_set_taskbar_progress_value(int p_value, int p_total, WindowID p_window) {
+	// Not supported.
+}
+
+void DisplayServerMacOS::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	// Not supported.
+}
+
 void DisplayServerMacOS::window_move_to_foreground(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
