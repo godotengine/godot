@@ -359,6 +359,39 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 
 			} break;
 
+			case DDS_RGBX8: {
+				// To RGB8.
+				int colcount = size / 4;
+
+				for (int i = 0; i < colcount; i++) {
+					int src_ofs = i * 4;
+					int dst_ofs = i * 3;
+
+					wb[dst_ofs + 0] = wb[src_ofs + 0];
+					wb[dst_ofs + 1] = wb[src_ofs + 1];
+					wb[dst_ofs + 2] = wb[src_ofs + 2];
+				}
+
+				r_src_data.resize(size * 3 / 4);
+
+			} break;
+			case DDS_BGRX8: {
+				// To RGB8.
+				int colcount = size / 4;
+
+				for (int i = 0; i < colcount; i++) {
+					int src_ofs = i * 4;
+					int dst_ofs = i * 3;
+
+					wb[dst_ofs + 0] = wb[src_ofs + 2];
+					wb[dst_ofs + 1] = wb[src_ofs + 1];
+					wb[dst_ofs + 2] = wb[src_ofs + 0];
+				}
+
+				r_src_data.resize(size * 3 / 4);
+
+			} break;
+
 			// Grayscale.
 			case DDS_LUMINANCE_ALPHA_4: {
 				// To LA8.
@@ -622,6 +655,10 @@ static Vector<Ref<Image>> _dds_load_images_from_buffer(Ref<FileAccess> p_f, DDSF
 				r_dds_format = DDS_BGR565;
 			} else if (format_rgb_bits == 8 && format_red_mask == 0xe0 && format_green_mask == 0x1c && format_blue_mask == 0x3) {
 				r_dds_format = DDS_B2GR3;
+			} else if (format_rgb_bits == 32 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff) {
+				r_dds_format = DDS_BGRX8;
+			} else if (format_rgb_bits == 32 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000) {
+				r_dds_format = DDS_RGBX8;
 			}
 		}
 
