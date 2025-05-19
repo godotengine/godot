@@ -522,7 +522,7 @@ License: Expat
 
 Files: thirdparty/openxr/*
 Comment: OpenXR Loader
-Copyright: 2020-2023, The Khronos Group Inc.
+Copyright: 2020-2025, The Khronos Group Inc.
 License: Apache-2.0
 
 Files: thirdparty/pcre2/*
