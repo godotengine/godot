@@ -30,10 +30,11 @@
 
 #include "helper_rect_2d.h"
 
+#ifdef TOOLS_ENABLED
 Dictionary HelperRect2D::_edit_get_state() const {
-	Dictionary ret = Node2D::_edit_get_state();
-	ret["rect"] = rect;
-	return ret;
+	Dictionary state = Node2D::_edit_get_state();
+	state["rect"] = rect;
+	return state;
 }
 
 void HelperRect2D::_edit_set_state(const Dictionary &p_state) {
@@ -62,12 +63,19 @@ void HelperRect2D::_edit_set_pivot(const Point2 &p_pivot) {
 bool HelperRect2D::_edit_use_pivot() const {
 	return true;
 }
+#endif // TOOLS_ENABLED
 
+#ifdef DEBUG_ENABLED
 Rect2 HelperRect2D::_edit_get_rect() const {
 	return rect;
 }
+#endif // DEBUG_ENABLED
 
 void HelperRect2D::set_rect(const Rect2 &p_rect) {
+	if (rect == p_rect) {
+		return;
+	}
+
 	rect = p_rect;
 	GDVIRTUAL_CALL(_rect_updated);
 	item_rect_changed();
@@ -76,10 +84,6 @@ void HelperRect2D::set_rect(const Rect2 &p_rect) {
 
 Rect2 HelperRect2D::get_rect() const {
 	return rect;
-}
-
-bool HelperRect2D::_edit_use_rect() const {
-	return true;
 }
 
 void HelperRect2D::set_border_color(const Color &p_border_color) {

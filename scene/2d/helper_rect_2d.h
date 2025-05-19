@@ -36,10 +36,9 @@ class HelperRect2D : public Node2D {
 	GDCLASS(HelperRect2D, Node2D);
 
 	Rect2 rect = Rect2(-10, -10, 20, 20);
+	Color border_color = Color(1, 1, 1, 0);
 
 	bool dragged;
-
-	Color border_color = Color(1, 1, 1, 0);
 
 protected:
 	static void _bind_methods();
@@ -64,7 +63,7 @@ public:
 
 #ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
-	virtual bool _edit_use_rect() const override;
+	virtual bool _edit_use_rect() const override { return true; }
 #endif // DEBUG_ENABLED
 
 	void set_rect(const Rect2 &p_rect);
