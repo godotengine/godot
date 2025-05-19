@@ -75,6 +75,20 @@ PackedStringArray LookAtModifier3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+void LookAtModifier3D::_validate_bone_names() {
+	// Prior bone name.
+	if (!bone_name.is_empty()) {
+		set_bone_name(bone_name);
+	} else if (bone != -1) {
+		set_bone(bone);
+	}
+	if (!origin_bone_name.is_empty()) {
+		set_origin_bone_name(origin_bone_name);
+	} else if (origin_bone != -1) {
+		set_origin_bone(origin_bone);
+	}
+}
+
 void LookAtModifier3D::set_bone_name(const String &p_bone_name) {
 	bone_name = p_bone_name;
 	Skeleton3D *sk = get_skeleton();
@@ -529,7 +543,7 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 		} else {
 			origin_tr = bone_rest_space;
 		}
-		forward_vector = bone_rest_space.orthonormalized().basis.xform_inv((target->get_global_position() - origin_tr.translated_local(origin_offset).origin));
+		forward_vector = bone_rest_space.orthonormalized().basis.xform_inv(target->get_global_position() - origin_tr.translated_local(origin_offset).origin);
 		forward_vector_nrm = forward_vector.normalized();
 		if (forward_vector_nrm.abs().is_equal_approx(get_vector_from_axis(primary_rotation_axis))) {
 			destination = skeleton->get_bone_pose_rotation(bone);
