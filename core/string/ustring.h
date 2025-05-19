@@ -182,7 +182,7 @@ public:
 	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<T> span() const { return Span(ptr(), length()); }
 
-	_FORCE_INLINE_ Error resize(int p_size) { return _cowdata.resize(p_size); }
+	_FORCE_INLINE_ Error resize(int p_size) { return _cowdata.template resize<false>(p_size); }
 
 	_FORCE_INLINE_ T get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
@@ -324,7 +324,7 @@ public:
 
 	_FORCE_INLINE_ char32_t get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char32_t &p_elem) { _cowdata.set(p_index, p_elem); }
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
+	Error resize(int p_size) { return _cowdata.resize<false>(p_size); }
 
 	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
