@@ -66,7 +66,7 @@
 #include <cstdio>
 
 #define WIN32_LEAN_AND_MEAN
-#include <shobjidl_core.h>
+#include <shobjidl.h>
 #include <windows.h>
 #include <windowsx.h>
 
