@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"composite": true,
+		"allowJs": true,
+		"noEmit": false,
+		"outDir": "__tsoutdir",
+		"strict": true,
+		"types": ["node"],
+		"lib": ["ES2022"],
+		"module": "NodeNext",
+		"moduleResolution": "nodenext",
+		"target": "ES2022"
+	},
+	"include": ["**/*.mjs"]
+}

@@ -387,3 +387,7 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 *.generated.props
+
+# Node / npm
+/node_modules/
+/package-lock.json
