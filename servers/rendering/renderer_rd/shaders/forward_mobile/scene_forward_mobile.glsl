@@ -490,7 +490,7 @@ void main() {
 			}
 
 #ifdef USE_LIGHTMAP
-			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC) {
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && !sc_use_lightmap_capture()) {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 #endif
@@ -1552,18 +1552,20 @@ void main() {
 
 #ifdef USE_LIGHTMAP
 		uint shadowmask_mode = LIGHTMAP_SHADOWMASK_MODE_NONE;
-		const uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
-		shadowmask_mode = lightmaps.data[ofs].flags;
+		if (!sc_use_lightmap_capture()) {
+			const uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
+			shadowmask_mode = lightmaps.data[ofs].flags;
 
-		if (shadowmask_mode != LIGHTMAP_SHADOWMASK_MODE_NONE) {
-			const uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
-			const vec2 scaled_uv = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
-			const vec3 uvw = vec3(scaled_uv, float(slice));
+			if (shadowmask_mode != LIGHTMAP_SHADOWMASK_MODE_NONE) {
+				const uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
+				const vec2 scaled_uv = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
+				const vec3 uvw = vec3(scaled_uv, float(slice));
 
-			if (sc_use_lightmap_bicubic_filter()) {
-				shadowmask = textureArray_bicubic(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], uvw, lightmaps.data[ofs].light_texture_size).x;
-			} else {
-				shadowmask = textureLod(sampler2DArray(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).x;
+				if (sc_use_lightmap_bicubic_filter()) {
+					shadowmask = textureArray_bicubic(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], uvw, lightmaps.data[ofs].light_texture_size).x;
+				} else {
+					shadowmask = textureLod(sampler2DArray(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).x;
+				}
 			}
 		}
 
@@ -1581,7 +1583,7 @@ void main() {
 				}
 
 #ifdef USE_LIGHTMAP
-				if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC) {
+				if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && !sc_use_lightmap_capture()) {
 					continue; // Statically baked light and object uses lightmap, skip.
 				}
 #endif
@@ -1725,7 +1727,7 @@ void main() {
 			}
 
 #ifdef USE_LIGHTMAP
-			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC) {
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && !sc_use_lightmap_capture()) {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 #endif
