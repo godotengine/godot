@@ -440,7 +440,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order.
+				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order. This is not the same as [method contains].
 				[codeblock]
 				var text = "Wow, incredible!"
 
@@ -455,7 +455,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b].
+				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b]. This is not the same as [method containsn].
 			</description>
 		</method>
 		<method name="is_valid_ascii_identifier" qualifiers="const">
