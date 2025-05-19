@@ -137,6 +137,8 @@ void EmbeddedProcessMacOS::_try_embed_process() {
 
 	Error err = ds->embed_process_update(window->get_window_id(), this);
 	if (err == OK) {
+		layer_host->set_rect(get_adjusted_embedded_window_rect(get_rect()));
+
 		// Replicate some of the DisplayServer state.
 		{
 			DisplayServerEmbeddedState state;
