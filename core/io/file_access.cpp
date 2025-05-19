@@ -415,17 +415,17 @@ class CharBuffer {
 	char stack_buffer[256];
 
 	char *buffer = nullptr;
-	int capacity = 0;
-	int written = 0;
+	int64_t capacity = 0;
+	int64_t written = 0;
 
 	bool grow() {
-		if (vector.resize(next_power_of_2(1 + written)) != OK) {
+		if (vector.resize(next_power_of_2((uint64_t)1 + (uint64_t)written)) != OK) {
 			return false;
 		}
 
 		if (buffer == stack_buffer) { // first chunk?
 
-			for (int i = 0; i < written; i++) {
+			for (int64_t i = 0; i < written; i++) {
 				vector.write[i] = stack_buffer[i];
 			}
 		}
