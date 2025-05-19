@@ -511,19 +511,16 @@ Ref<Texture2D> EditorScriptPreviewPlugin::_generate_from_source_code(const Scrip
 		return Ref<Texture2D>();
 	}
 
-	List<String> kwors;
-	if (p_language) {
-		p_language->get_reserved_words(&kwors);
-	}
-
 	HashSet<String> control_flow_keywords;
 	HashSet<String> keywords;
 
-	for (const String &E : kwors) {
-		if (p_language && p_language->is_control_flow_keyword(E)) {
-			control_flow_keywords.insert(E);
-		} else {
-			keywords.insert(E);
+	if (p_language) {
+		for (const String &keyword : p_language->get_reserved_words()) {
+			if (p_language->is_control_flow_keyword(keyword)) {
+				control_flow_keywords.insert(keyword);
+			} else {
+				keywords.insert(keyword);
+			}
 		}
 	}
 
