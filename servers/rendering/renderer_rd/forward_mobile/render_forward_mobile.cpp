@@ -2193,6 +2193,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		pipeline_specialization.multimesh_format_2d = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D);
 		pipeline_specialization.multimesh_has_color = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR);
 		pipeline_specialization.multimesh_has_custom_data = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA);
+		pipeline_specialization.mesh_compressed_attributes = bool(surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_COMPRESSED_ATTRIBUTES);
 
 		SceneState::PushConstant push_constant;
 		push_constant.base_index = i + p_params->element_offset;
@@ -2548,6 +2549,8 @@ void RenderForwardMobile::_update_global_pipeline_data_requirements_from_light_s
 
 void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
+	void *surface = mesh_storage->mesh_get_surface(p_mesh, p_surface);
+	uint64_t format = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_format(surface);
 	uint32_t flags = 0;
 
 	if (p_material->shader_data->uses_sss) {
@@ -2588,6 +2591,10 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_PARTICLE_TRAILS;
 	}
 
+	if (format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_COMPRESSED_ATTRIBUTES;
+	}
+
 	SceneShaderForwardMobile::MaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
 	if (p_material->shader_data->uses_shared_shadow_material()) {
@@ -2611,7 +2618,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->shader = p_material->shader_data;
 	sdcache->material = p_material;
 	sdcache->material_uniform_set = p_material->uniform_set;
-	sdcache->surface = mesh_storage->mesh_get_surface(p_mesh, p_surface);
+	sdcache->surface = surface;
 	sdcache->primitive = mesh_storage->mesh_surface_get_primitive(sdcache->surface);
 	sdcache->surface_index = p_surface;
 
@@ -2641,7 +2648,6 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->sort.geometry_id = p_mesh.get_local_index();
 	sdcache->sort.priority = p_material->priority;
 
-	uint64_t format = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_format(sdcache->surface);
 	if (p_material->shader_data->uses_tangent && !(format & RS::ARRAY_FORMAT_TANGENT)) {
 		String shader_path = p_material->shader_data->path.is_empty() ? "" : "(" + p_material->shader_data->path + ")";
 		String mesh_path = mesh_storage->mesh_get_path(p_mesh).is_empty() ? "" : "(" + mesh_storage->mesh_get_path(p_mesh) + ")";

@@ -310,7 +310,7 @@ void main() {
 	vec3 binormal;
 	float binormal_sign;
 	vec3 tangent;
-	if (axis_tangent_attrib.z > 0.0 || axis_tangent_attrib.w < 1.0) {
+	if (!sc_mesh_compressed_attributes()) {
 		// Uncompressed format.
 		vec2 signed_tangent_attrib = axis_tangent_attrib.zw * 2.0 - 1.0;
 		tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
