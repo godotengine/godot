@@ -616,10 +616,10 @@ void Window::request_attention() {
 	}
 }
 
-void Window::set_taskbar_progress_value(int p_value, int p_total) {
+void Window::set_taskbar_progress_value(float p_value) {
 	ERR_MAIN_THREAD_GUARD;
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_taskbar_progress_value(p_value, p_total, window_id);
+		DisplayServer::get_singleton()->window_set_taskbar_progress_value(p_value, window_id);
 	}
 }
 
@@ -3099,7 +3099,7 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request_attention"), &Window::request_attention);
 
-	ClassDB::bind_method(D_METHOD("set_taskbar_progress_value", "value", "total"), &Window::set_taskbar_progress_value);
+	ClassDB::bind_method(D_METHOD("set_taskbar_progress_value", "value"), &Window::set_taskbar_progress_value);
 	ClassDB::bind_method(D_METHOD("set_taskbar_progress_state", "state"), &Window::set_taskbar_progress_state);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("move_to_foreground"), &Window::move_to_foreground);

@@ -4100,7 +4100,7 @@ void WaylandThread::window_request_attention(DisplayServer::WindowID p_window_id
 	}
 }
 
-void WaylandThread::window_set_taskbar_progress_value(int p_value, int p_total, DisplayServer::WindowID p_window) {
+void WaylandThread::window_set_taskbar_progress_value(float p_value, DisplayServer::WindowID p_window) {
 	// Not supported.
 }
 

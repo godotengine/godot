@@ -1049,7 +1049,7 @@ public:
 
 	// Optional - requires xdg_activation_v1
 	void window_request_attention(DisplayServer::WindowID p_window_id);
-	void window_set_taskbar_progress_value(DisplayServer::WindowID p_window_id, int p_value, int p_total);
+	void window_set_taskbar_progress_value(DisplayServer::WindowID p_window_id, float p_value);
 	void window_set_taskbar_progress_state(DisplayServer::WindowID p_window_id, DisplayServer::ProgressState p_state);
 
 	void window_start_drag(DisplayServer::WindowID p_window_id);

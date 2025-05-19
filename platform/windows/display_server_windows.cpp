@@ -2736,7 +2736,7 @@ void DisplayServerWindows::window_request_attention(WindowID p_window) {
 	FlashWindowEx(&info);
 }
 
-void DisplayServerWindows::window_set_taskbar_progress_value(int p_value, int p_total, WindowID p_window) {
+void DisplayServerWindows::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2747,7 +2747,7 @@ void DisplayServerWindows::window_set_taskbar_progress_value(int p_value, int p_
 		pTaskbar->HrInit();
 	}
 
-	pTaskbar->SetProgressValue(wd.hWnd, (ULONGLONG)p_value, (ULONGLONG)p_total);
+	pTaskbar->SetProgressValue(wd.hWnd, std::round(p_value * 100000), 100000);
 }
 
 void DisplayServerWindows::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {

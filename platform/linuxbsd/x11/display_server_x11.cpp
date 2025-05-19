@@ -3237,7 +3237,7 @@ void DisplayServerX11::window_request_attention(WindowID p_window) {
 	XFlush(x11_display);
 }
 
-void DisplayServerX11::window_set_taskbar_progress_value(int p_value, int p_total, WindowID p_window) {
+void DisplayServerX11::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
 	// Not supported.
 }
 

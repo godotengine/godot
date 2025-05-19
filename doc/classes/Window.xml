@@ -509,10 +509,10 @@
 		</method>
 		<method name="set_taskbar_progress_value">
 			<return type="void" />
-			<param index="0" name="value" type="int" />
-			<param index="1" name="total" type="int" />
+			<param index="0" name="value" type="float" />
 			<description>
 				Create a progress bar on taskbar icon of the [Window] if not exists, set the progress of the taskbar icon.
+				[param value] act as a percentage relative, ranges from [code]0.0[/code] (lowest) to [code]1.0[/code] (highest).
 				[b]Note:[/b] This method is implemented only on Windows.
 			</description>
 		</method>
