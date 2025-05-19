@@ -2246,25 +2246,6 @@
 				Makes the window specified by [param window_id] request attention, which is materialized by the window title and taskbar entry blinking until the window is focused. This usually has no visible effect if the window is currently focused. The exact behavior varies depending on the operating system.
 			</description>
 		</method>
-		<method name="window_set_taskbar_progress_value">
-			<return type="void" />
-			<param index="0" name="value" type="float" />
-			<param index="1" name="window_id" type="int" default="0" />
-			<description>
-				Create a progress bar on taskbar icon of the window specified by [param window_id] if not exists, set the progress of the taskbar icon.
-				[param value] act as a percentage relative, ranges from [code]0.0[/code] (lowest) to [code]1.0[/code] (highest).
-				[b]Note:[/b] This method is implemented only on Windows.
-			</description>
-		</method>
-		<method name="window_set_taskbar_progress_state">
-			<return type="void" />
-			<param index="0" name="state" type="int" enum="DisplayServer.ProgressState" />
-			<param index="1" name="window_id" type="int" default="0" />
-			<description>
-				Sets the type and state of the progress bar on the taskbar icon of the window specified by [param window_id]. See [enum ProgressState] for possible values and how each mode behaves.
-				[b]Note:[/b] This method is implemented only on Windows.
-			</description>
-		</method>
 		<method name="window_set_current_screen">
 			<return type="void" />
 			<param index="0" name="screen" type="int" />
@@ -2443,6 +2424,25 @@
 			<description>
 				Sets the size of the given window to [param size] (in pixels). See also [method window_get_size] and [method window_get_position].
 				[b]Note:[/b] It's recommended to change this value using [member Window.size] instead.
+			</description>
+		</method>
+		<method name="window_set_taskbar_progress_state">
+			<return type="void" />
+			<param index="0" name="state" type="int" enum="DisplayServer.ProgressState" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the type and state of the progress bar on the taskbar icon of the window specified by [param window_id]. See [enum ProgressState] for possible values and how each mode behaves.
+				[b]Note:[/b] This method is implemented only on Windows.
+			</description>
+		</method>
+		<method name="window_set_taskbar_progress_value">
+			<return type="void" />
+			<param index="0" name="value" type="float" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Create a progress bar on taskbar icon of the window specified by [param window_id] if not exists, set the progress of the taskbar icon.
+				[param value] act as a percentage relative, ranges from [code]0.0[/code] (lowest) to [code]1.0[/code] (highest).
+				[b]Note:[/b] This method is implemented only on Windows.
 			</description>
 		</method>
 		<method name="window_set_title">
