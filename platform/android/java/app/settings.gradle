@@ -15,5 +15,5 @@ pluginManagement {
     }
 }
 
-include ':assetPacksInstallTime'
-project(':assetPacksInstallTime').projectDir = file("assetPacks/installTime")
+include ':assetPacks:installTime'
+project(':assetPacks:installTime').projectDir = file("assetPacks/installTime")

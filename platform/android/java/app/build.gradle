@@ -90,7 +90,7 @@ android {
         jvmTarget = versions.javaVersion
     }
 
-    assetPacks = [":assetPacksInstallTime"]
+    assetPacks = [":assetPacks:installTime"]
 
     namespace = 'com.godot.game'
 
