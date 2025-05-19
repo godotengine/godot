@@ -3068,19 +3068,22 @@
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="PROGRESS_STATE_NOPROGRESS" value="0" enum="ProgressState">
-			Stops displaying progress and returns the button to its normal state. Call this method with this flag to dismiss the progress bar when the operation is complete or canceled.
+			Stops displaying progress and returns the button to its normal state.
 		</constant>
 		<constant name="PROGRESS_STATE_INDETERMINATE" value="1" enum="ProgressState">
-			The progress indicator does not grow in size, but cycles repeatedly along the length of the taskbar button. This indicates activity without specifying what proportion of the progress is complete. Progress is taking place, but there is no prediction as to how long the operation will take.
+			The progress indicator shows an indeterminate progress.
+			On Windows, the progress indicator does not grow in size, but cycles repeatedly along the length of the taskbar button by default.
 		</constant>
 		<constant name="PROGRESS_STATE_NORMAL" value="2" enum="ProgressState">
-			The progress indicator grows in size from left to right in proportion to the estimated amount of the operation completed. This is a determinate progress indicator; a prediction is being made as to the duration of the operation.
+			The progress indicator shows progress normally.
 		</constant>
 		<constant name="PROGRESS_STATE_ERROR" value="3" enum="ProgressState">
-			The progress indicator turns red to show that an error has occurred in one of the windows that is broadcasting progress. This is a determinate state. If the progress indicator is in the indeterminate state, it switches to a red determinate display of a generic percentage not indicative of actual progress.
+			The progress indicator shows an error has occurred.
+			On Windows, the progress indicator turns red by default to show that an error has occurred in one of the windows that is broadcasting progress.
 		</constant>
 		<constant name="PROGRESS_STATE_PAUSED" value="4" enum="ProgressState">
-			The progress indicator turns yellow to show that progress is currently stopped in one of the windows but can be resumed by the user. No error condition exists and nothing is preventing the progress from continuing. This is a determinate state.If the progress indicator is in the indeterminate state, it switches to a yellow determinate display of a generic percentage not indicative of actual progress.
+			The progress indicator shows it was paused.
+			On Windows, the progress indicator turns yellow by default to show that progress is currently stopped in one of the windows but can be resumed by the user.
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
 			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
