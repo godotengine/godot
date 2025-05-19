@@ -489,9 +489,12 @@ void main() {
 				continue; // Not masked, skip.
 			}
 
-			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+#ifdef USE_LIGHTMAP
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC) {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
+#endif
+
 			if (i == 0) {
 				light_compute_vertex(normal_interp, directional_lights.data[0].direction, view,
 						directional_lights.data[0].color * directional_lights.data[0].energy,
@@ -1346,7 +1349,7 @@ void main() {
 #ifdef USE_LIGHTMAP
 
 	//lightmap
-	if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
+	if (sc_use_lightmap_capture()) { //has lightmap capture
 		uint index = instances.data[draw_call.instance_index].gi_offset;
 
 		// The world normal.
@@ -1372,15 +1375,14 @@ void main() {
 								 c[4] * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y)) *
 				scene_data.emissive_exposure_normalization;
 
-	} else if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
-		bool uses_sh = bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
+	} else { // has actual lightmap
 		uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
 		uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
 		vec3 uvw;
 		uvw.xy = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
 		uvw.z = float(slice);
 
-		if (uses_sh) {
+		if (sc_use_sh_lightmap()) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
 			vec3 lm_light_l0;
 			vec3 lm_light_l1n1;
@@ -1550,21 +1552,18 @@ void main() {
 
 #ifdef USE_LIGHTMAP
 		uint shadowmask_mode = LIGHTMAP_SHADOWMASK_MODE_NONE;
+		const uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
+		shadowmask_mode = lightmaps.data[ofs].flags;
 
-		if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
-			const uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
-			shadowmask_mode = lightmaps.data[ofs].flags;
+		if (shadowmask_mode != LIGHTMAP_SHADOWMASK_MODE_NONE) {
+			const uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
+			const vec2 scaled_uv = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
+			const vec3 uvw = vec3(scaled_uv, float(slice));
 
-			if (shadowmask_mode != LIGHTMAP_SHADOWMASK_MODE_NONE) {
-				const uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
-				const vec2 scaled_uv = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
-				const vec3 uvw = vec3(scaled_uv, float(slice));
-
-				if (sc_use_lightmap_bicubic_filter()) {
-					shadowmask = textureArray_bicubic(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], uvw, lightmaps.data[ofs].light_texture_size).x;
-				} else {
-					shadowmask = textureLod(sampler2DArray(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).x;
-				}
+			if (sc_use_lightmap_bicubic_filter()) {
+				shadowmask = textureArray_bicubic(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], uvw, lightmaps.data[ofs].light_texture_size).x;
+			} else {
+				shadowmask = textureLod(sampler2DArray(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).x;
 			}
 		}
 
@@ -1581,9 +1580,11 @@ void main() {
 					continue; //not masked
 				}
 
-				if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+#ifdef USE_LIGHTMAP
+				if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC) {
 					continue; // Statically baked light and object uses lightmap, skip.
 				}
+#endif
 
 				float shadow = 1.0;
 
@@ -1723,9 +1724,11 @@ void main() {
 				continue; //not masked
 			}
 
-			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+#ifdef USE_LIGHTMAP
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC) {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
+#endif
 
 			// We're not doing light transmittence
 

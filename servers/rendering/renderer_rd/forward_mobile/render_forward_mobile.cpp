@@ -2194,6 +2194,8 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		pipeline_specialization.multimesh_has_color = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR);
 		pipeline_specialization.multimesh_has_custom_data = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA);
 		pipeline_specialization.mesh_compressed_attributes = bool(surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_COMPRESSED_ATTRIBUTES);
+		pipeline_specialization.use_lightmap_capture = bool(inst->flags_cache & INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE);
+		pipeline_specialization.use_sh_lightmap = bool(inst->flags_cache & INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP);
 
 		SceneState::PushConstant push_constant;
 		push_constant.base_index = i + p_params->element_offset;

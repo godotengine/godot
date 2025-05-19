@@ -218,6 +218,14 @@ bool sc_directional_light_blend_split(uint i) {
 	return ((sc_packed_1() >> (21 + i)) & 1U) != 0;
 }
 
+bool sc_use_lightmap_capture() {
+	return ((sc_packed_1() >> 29) & 1U) != 0;
+}
+
+bool sc_use_sh_lightmap() {
+	return ((sc_packed_1() >> 30) & 1U) != 0;
+}
+
 float sc_luminance_multiplier() {
 	return sc_packed_2();
 }
@@ -229,9 +237,6 @@ float sc_luminance_multiplier() {
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
 #define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 4)
-#define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 7)
-#define INSTANCE_FLAGS_USE_LIGHTMAP (1 << 8)
-#define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 9)
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
