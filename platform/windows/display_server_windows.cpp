@@ -2742,16 +2742,16 @@ void DisplayServerWindows::window_set_taskbar_progress_value(float p_value, Wind
 	ERR_FAIL_COND(!windows.has(p_window));
 	const WindowData &wd = windows[p_window];
 
-	if (pTaskbar == nullptr) {
-		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&pTaskbar) != S_OK) {
-			pTaskbar = nullptr;
+	if (taskbar == nullptr) {
+		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+			taskbar = nullptr;
 			return;
 		} else {
-			pTaskbar->HrInit();
+			taskbar->HrInit();
 		}
 	}
 
-	pTaskbar->SetProgressValue(wd.hWnd, std::round(p_value * 100000), 100000);
+	taskbar->SetProgressValue(wd.hWnd, std::round(p_value * 100000), 100000);
 }
 
 void DisplayServerWindows::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
@@ -2760,12 +2760,12 @@ void DisplayServerWindows::window_set_taskbar_progress_state(ProgressState p_sta
 	ERR_FAIL_COND(!windows.has(p_window));
 	const WindowData &wd = windows[p_window];
 
-	if (pTaskbar == nullptr) {
-		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&pTaskbar) != S_OK) {
-			pTaskbar = nullptr;
+	if (taskbar == nullptr) {
+		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+			taskbar = nullptr;
 			return;
 		} else {
-			pTaskbar->HrInit();
+			taskbar->HrInit();
 		}
 	}
 
@@ -2790,7 +2790,7 @@ void DisplayServerWindows::window_set_taskbar_progress_state(ProgressState p_sta
 			break;
 	}
 
-	pTaskbar->SetProgressState(wd.hWnd, tbpf);
+	taskbar->SetProgressState(wd.hWnd, tbpf);
 }
 
 void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {
