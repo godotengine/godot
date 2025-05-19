@@ -585,7 +585,7 @@ static bool _on_core_api_assembly_loaded() {
 	debug = true;
 #else
 	debug = false;
-#endif
+#endif // DEBUG_ENABLED
 
 	GDMonoCache::managed_callbacks.GD_OnCoreApiAssemblyLoaded(debug);
 
@@ -691,13 +691,13 @@ void GDMono::_try_load_project_assembly() {
 #endif
 
 void GDMono::_init_godot_api_hashes() {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	get_api_core_hash();
 
 #ifdef TOOLS_ENABLED
 	get_api_editor_hash();
 #endif // TOOLS_ENABLED
-#endif // DEBUG_METHODS_ENABLED
+#endif // DEBUG_ENABLED
 }
 
 #ifdef TOOLS_ENABLED

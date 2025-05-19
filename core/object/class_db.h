@@ -44,7 +44,7 @@
 #define DEFVAL(m_defval) (m_defval)
 #define DEFVAL_ARRAY DEFVAL(ClassDB::default_array_arg)
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 struct MethodDefinition {
 	StringName name;
@@ -71,11 +71,11 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 
 #else
 
-// When DEBUG_METHODS_ENABLED is set this will let the engine know
+// When DEBUG_ENABLED is set this will let the engine know
 // the argument names for easier debugging.
 #define D_METHOD(m_c, ...) m_c
 
-#endif
+#endif // DEBUG_ENABLED
 
 class ClassDB {
 	friend class Object;
@@ -118,7 +118,7 @@ public:
 		HashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 		HashMap<StringName, PropertyInfo> property_map;
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		List<StringName> constant_order;
 		List<StringName> method_order;
 		HashSet<StringName> methods_in_properties;
@@ -126,7 +126,7 @@ public:
 		HashMap<StringName, MethodInfo> virtual_methods_map;
 		HashMap<StringName, Vector<Error>> method_error_values;
 		HashMap<StringName, List<StringName>> linked_properties;
-#endif
+#endif // DEBUG_ENABLED
 		HashMap<StringName, PropertySetGet> property_setget;
 		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
@@ -186,11 +186,11 @@ public:
 	static HashMap<StringName, ObjectGDExtension> placeholder_extensions;
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
 #else
 	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount);
-#endif
+#endif // DEBUG_ENABLED
 
 	static APIType current_api;
 	static HashMap<APIType, uint32_t> api_hashes_cache;
@@ -529,7 +529,7 @@ public:
 #define BIND_CONSTANT(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 _FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr) {
 }
@@ -558,7 +558,7 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 
 #define BIND_METHOD_ERR_RETURN_DOC(m_method, ...)
 
-#endif
+#endif // DEBUG_ENABLED
 
 #define GDREGISTER_CLASS(m_class)             \
 	if (m_class::_class_is_enabled) {         \
