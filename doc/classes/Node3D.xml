@@ -340,7 +340,7 @@
 			How this node's rotation and scale are displayed in the Inspector dock.
 		</member>
 		<member name="rotation_order" type="int" setter="set_rotation_order" getter="get_rotation_order" enum="EulerOrder" default="2">
-			The axis rotation order of the [member rotation] property. All rotations are done intrinsically, rotating the object's own axes. The final orientation is calculated by rotating around the local X, Y, and Z axis in this order.
+			The axis rotation order of the [member rotation] property. The final orientation is calculated by rotating around the local X, Y, and Z axis in this order.
 		</member>
 		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3(1, 1, 1)">
 			Scale of this node in local space (relative to this node). This value is obtained from [member basis]'s scale.
