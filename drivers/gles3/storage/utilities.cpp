@@ -335,6 +335,10 @@ void Utilities::capture_timestamp(const String &p_name) {
 	frames[frame].timestamp_count++;
 }
 
+void Utilities::capture_timestamps_sync_mode_auto_end() {
+	// Not implemented for OpenGL.
+}
+
 void Utilities::_capture_timestamps_begin() {
 	// frame is incremented at the end of the frame so this gives us the queries for frame - 2. By then they should be ready.
 	if (frames[frame].timestamp_count) {

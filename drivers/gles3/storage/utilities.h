@@ -201,6 +201,7 @@ public:
 
 	virtual void capture_timestamps_begin() override;
 	virtual void capture_timestamp(const String &p_name) override;
+	virtual void capture_timestamps_sync_mode_auto_end() override;
 	virtual uint32_t get_captured_timestamps_count() const override;
 	virtual uint64_t get_captured_timestamps_frame() const override;
 	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const override;
