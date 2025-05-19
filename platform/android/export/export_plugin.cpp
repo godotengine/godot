@@ -283,7 +283,7 @@ static const int EXPORT_FORMAT_APK = 0;
 static const int EXPORT_FORMAT_AAB = 1;
 
 static const char *APK_ASSETS_DIRECTORY = "assets";
-static const char *AAB_ASSETS_DIRECTORY = "assetPacks/installTime/src/main/assets";
+static const char *AAB_ASSETS_DIRECTORY = "assetPackInstallTime/src/main/assets";
 
 static const int OPENGL_MIN_SDK_VERSION = 21; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
 static const int VULKAN_MIN_SDK_VERSION = 24;

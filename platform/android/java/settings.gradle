@@ -25,5 +25,5 @@ include ':lib'
 include ':nativeSrcsConfigs'
 include ':editor'
 
-include ':assetPacksInstallTime'
-project(':assetPacksInstallTime').projectDir = file("app/assetPacks/installTime")
+include ':assetPackInstallTime'
+project(':assetPackInstallTime').projectDir = file("app/assetPackInstallTime")
