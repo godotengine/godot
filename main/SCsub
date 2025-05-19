@@ -30,11 +30,44 @@ if env_main.editor_build and not env_main["no_editor_splash"]:
         env.Run(main_builders.make_splash_editor),
     )
 
-env_main.CommandNoCache(
-    "#main/app_icon.gen.h",
-    "#main/app_icon.png",
-    env.Run(main_builders.make_app_icon),
-)
+if env["platform"] == "macos":
+    env_main.CommandNoCache(
+        "#main/app_icon.gen.h",
+        "#main/app_icon_macos.png",
+        env.Run(main_builders.make_app_icon),
+    )
+
+    env_main.CommandNoCache(
+        "#main/app_run_icon.gen.h",
+        "#main/app_run_icon_macos.png",
+        env.Run(main_builders.make_app_run_icon),
+    )
+
+    env_main.CommandNoCache(
+        "#main/app_pause_icon.gen.h",
+        "#main/app_pause_icon_macos.png",
+        env.Run(main_builders.make_app_pause_icon),
+    )
+
+else:
+    env_main.CommandNoCache(
+        "#main/app_icon.gen.h",
+        "#main/app_icon.png",
+        env.Run(main_builders.make_app_icon),
+    )
+
+    env_main.CommandNoCache(
+        "#main/app_run_icon.gen.h",
+        "#main/app_run_icon.png",
+        env.Run(main_builders.make_app_run_icon),
+    )
+
+    env_main.CommandNoCache(
+        "#main/app_pause_icon.gen.h",
+        "#main/app_pause_icon.png",
+        env.Run(main_builders.make_app_pause_icon),
+    )
+
 
 lib = env_main.add_library("main", env.main_sources)
 env.Prepend(LIBS=[lib])

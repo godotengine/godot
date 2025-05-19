@@ -45,6 +45,8 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "main/app_pause_icon.gen.h"
+#include "main/app_run_icon.gen.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
 #include "scene/resources/packed_scene.h"
@@ -594,8 +596,12 @@ void EditorDebuggerNode::_paused() {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		if (paused && !dbg->is_breaked()) {
 			dbg->debug_break();
+			Ref<Image> icon = memnew(Image(app_pause_icon_png));
+			DisplayServer::get_singleton()->set_icon(icon);
 		} else if (!paused && dbg->is_breaked()) {
 			dbg->debug_continue();
+			Ref<Image> icon = memnew(Image(app_run_icon_png));
+			DisplayServer::get_singleton()->set_icon(icon);
 		}
 	});
 }
