@@ -4638,30 +4638,6 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 		}
 	}
 
-	for (int i = 0; i < leftover_path.size() - 1; i++) {
-		bool valid;
-		property_info_base = property_info_base.get_named(leftover_path[i], valid);
-	}
-
-	// Hack for the fact that bezier tracks leftover paths can reference
-	// the individual components for types like vectors.
-	if (property_info_base.is_null()) {
-		if (res.is_valid()) {
-			property_info_base = res;
-		} else if (node) {
-			property_info_base = node;
-		}
-
-		if (leftover_path.size()) {
-			leftover_path.remove_at(leftover_path.size() - 1);
-		}
-
-		for (int i = 0; i < leftover_path.size() - 1; i++) {
-			bool valid;
-			property_info_base = property_info_base.get_named(leftover_path[i], valid);
-		}
-	}
-
 	if (property_info_base.is_null()) {
 		WARN_PRINT(vformat("Could not determine track hint for '%s:%s' because its base property is null.",
 				String(path.get_concatenated_names()), String(path.get_concatenated_subnames())));
@@ -4671,9 +4647,11 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 	List<PropertyInfo> pinfo;
 	property_info_base.get_property_list(&pinfo);
 
-	for (const PropertyInfo &E : pinfo) {
-		if (E.name == leftover_path[leftover_path.size() - 1]) {
-			return E;
+	if (leftover_path.size() == 1) {
+		for (const PropertyInfo &E : pinfo) {
+			if (E.name == leftover_path[0]) {
+				return E;
+			}
 		}
 	}
 
