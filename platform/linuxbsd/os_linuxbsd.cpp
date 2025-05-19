@@ -37,10 +37,12 @@
 #include "servers/rendering_server.h"
 
 #ifdef X11_ENABLED
+#include "x11/detect_prime_x11.h"
 #include "x11/display_server_x11.h"
 #endif
 
 #ifdef WAYLAND_ENABLED
+#include "wayland/detect_prime_egl.h"
 #include "wayland/display_server_wayland.h"
 #endif
 
@@ -49,16 +51,31 @@
 #include "modules/regex/regex.h"
 #endif
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#ifdef X11_ENABLED
+#include "x11/rendering_context_driver_vulkan_x11.h"
+#endif
+#ifdef WAYLAND_ENABLED
+#include "wayland/rendering_context_driver_vulkan_wayland.h"
+#endif
+#endif
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
 #include <dlfcn.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include <cstdio>
+#include <cstdlib>
 
-#ifdef HAVE_MNTENT
+#if __has_include(<mntent.h>)
 #include <mntent.h>
 #endif
 
@@ -74,7 +91,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	String program;
 
 	for (int i = 0; i < path_elems.size(); i++) {
-		for (uint64_t k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
+		for (uint64_t k = 0; k < std::size(message_programs); k++) {
 			String tested_path = path_elems[i].path_join(message_programs[k]);
 
 			if (FileAccess::exists(tested_path)) {
@@ -155,7 +172,7 @@ String OS_LinuxBSD::get_unique_id() const {
 		memset(buf, 0, sizeof(buf));
 		size_t len = sizeof(buf) - 1;
 		if (sysctl(mib, 2, buf, &len, 0x0, 0) != -1) {
-			machine_id = String::utf8(buf).replace("-", "");
+			machine_id = String::utf8(buf).remove_char('-');
 		}
 #else
 		Ref<FileAccess> f = FileAccess::open("/etc/machine-id", FileAccess::READ);
@@ -184,7 +201,7 @@ String OS_LinuxBSD::get_processor_name() const {
 
 	while (!f->eof_reached()) {
 		const String line = f->get_line();
-		if (line.find("model name") != -1) {
+		if (line.to_lower().contains("model name")) {
 			return line.split(":")[1].strip_edges();
 		}
 	}
@@ -269,7 +286,7 @@ String OS_LinuxBSD::get_systemd_os_release_info_value(const String &key) const {
 	if (f.is_valid()) {
 		while (!f->eof_reached()) {
 			const String line = f->get_line();
-			if (line.find(key) != -1) {
+			if (line.contains(key)) {
 				String value = line.split("=")[1].strip_edges();
 				value = value.trim_prefix("\"");
 				return value.trim_suffix("\"");
@@ -751,7 +768,7 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 
 	Vector<String> ret;
 	static const char *allowed_formats[] = { "TrueType", "CFF" };
-	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
+	for (size_t i = 0; i < std::size(allowed_formats); i++) {
 		FcPattern *pattern = FcPatternCreate();
 		if (pattern) {
 			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
@@ -771,11 +788,11 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 			FcLangSetAdd(lang_set, reinterpret_cast<const FcChar8 *>(p_locale.utf8().get_data()));
 			FcPatternAddLangSet(pattern, FC_LANG, lang_set);
 
-			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcConfigSubstitute(nullptr, pattern, FcMatchPattern);
 			FcDefaultSubstitute(pattern);
 
 			FcResult result;
-			FcPattern *match = FcFontMatch(0, pattern, &result);
+			FcPattern *match = FcFontMatch(nullptr, pattern, &result);
 			if (match) {
 				char *file_name = nullptr;
 				if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
@@ -816,11 +833,11 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, int p_weight
 			FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
 			FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
 
-			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcConfigSubstitute(nullptr, pattern, FcMatchPattern);
 			FcDefaultSubstitute(pattern);
 
 			FcResult result;
-			FcPattern *match = FcFontMatch(0, pattern, &result);
+			FcPattern *match = FcFontMatch(nullptr, pattern, &result);
 			if (match) {
 				if (!allow_substitutes) {
 					char *family_name = nullptr;
@@ -981,7 +998,7 @@ static String get_mountpoint(const String &p_path) {
 		return "";
 	}
 
-#ifdef HAVE_MNTENT
+#if __has_include(<mntent.h>)
 	dev_t dev = s.st_dev;
 	FILE *fd = setmntent("/proc/mounts", "r");
 	if (!fd) {
@@ -1179,6 +1196,75 @@ String OS_LinuxBSD::get_system_ca_certificates() {
 
 	return f->get_as_text();
 }
+
+#ifdef TOOLS_ENABLED
+bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) const {
+	// Tests Rendering Device creation.
+
+	bool ok = false;
+#if defined(RD_ENABLED)
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+#ifdef X11_ENABLED
+	if (p_display_driver == "x11" || p_display_driver.is_empty()) {
+		rcd = memnew(RenderingContextDriverVulkanX11);
+	}
+#endif
+#ifdef WAYLAND_ENABLED
+	if (p_display_driver == "wayland") {
+		rcd = memnew(RenderingContextDriverVulkanWayland);
+	}
+#endif
+#endif
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				ok = true;
+			}
+		}
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+#endif
+	return ok;
+}
+
+bool OS_LinuxBSD::_test_create_rendering_device_and_gl(const String &p_display_driver) const {
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some drivers.
+
+#ifdef GLES3_ENABLED
+#ifdef X11_ENABLED
+	if (p_display_driver == "x11" || p_display_driver.is_empty()) {
+#ifdef SOWRAP_ENABLED
+		if (initialize_xlib(0) != 0) {
+			return false;
+		}
+#endif
+		DetectPrimeX11::create_context();
+	}
+#endif
+#ifdef WAYLAND_ENABLED
+	if (p_display_driver == "wayland") {
+#ifdef SOWRAP_ENABLED
+		if (initialize_wayland_egl(0) != 0) {
+			return false;
+		}
+#endif
+		DetectPrimeEGL::create_context(EGL_PLATFORM_WAYLAND_KHR);
+	}
+#endif
+	RasterizerGLES3::make_current(true);
+#endif
+	return _test_create_rendering_device(p_display_driver);
+}
+#endif
 
 OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;

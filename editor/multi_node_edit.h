@@ -28,21 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MULTI_NODE_EDIT_H
-#define MULTI_NODE_EDIT_H
+#pragma once
 
-#include "scene/main/node.h"
+#include "core/object/ref_counted.h"
 
 class MultiNodeEdit : public RefCounted {
 	GDCLASS(MultiNodeEdit, RefCounted);
 
 	LocalVector<NodePath> nodes;
+	bool notify_property_list_changed_pending = false;
 	struct PLData {
 		int uses = 0;
 		PropertyInfo info;
 	};
 
 	bool _set_impl(const StringName &p_name, const Variant &p_value, const String &p_field);
+	void _queue_notify_property_list_changed();
+	void _notify_property_list_changed();
 
 protected:
 	static void _bind_methods();
@@ -73,14 +75,11 @@ public:
 			return false;
 		}
 		for (int i = 0; i < get_node_count(); i++) {
-			if (nodes.find(p_other->get_node(i)) == -1) {
+			if (!nodes.has(p_other->get_node(i))) {
 				return false;
 			}
 		}
 
 		return true;
 	}
-	MultiNodeEdit();
 };
-
-#endif // MULTI_NODE_EDIT_H

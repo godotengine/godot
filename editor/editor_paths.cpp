@@ -54,6 +54,10 @@ String EditorPaths::get_cache_dir() const {
 	return cache_dir;
 }
 
+String EditorPaths::get_temp_dir() const {
+	return temp_dir;
+}
+
 String EditorPaths::get_project_data_dir() const {
 	return project_data_dir;
 }
@@ -71,7 +75,11 @@ String EditorPaths::get_export_templates_dir() const {
 }
 
 String EditorPaths::get_debug_keystore_path() const {
+#ifdef ANDROID_ENABLED
+	return "assets://keystores/debug.keystore";
+#else
 	return get_data_dir().path_join("keystores/debug.keystore");
+#endif
 }
 
 String EditorPaths::get_project_settings_dir() const {
@@ -101,6 +109,7 @@ void EditorPaths::create() {
 void EditorPaths::free() {
 	ERR_FAIL_NULL(singleton);
 	memdelete(singleton);
+	singleton = nullptr;
 }
 
 void EditorPaths::_bind_methods() {
@@ -156,6 +165,7 @@ EditorPaths::EditorPaths() {
 		config_dir = data_dir;
 		cache_path = exe_path;
 		cache_dir = data_dir.path_join("cache");
+		temp_dir = data_dir.path_join("temp");
 	} else {
 		// Typically XDG_DATA_HOME or %APPDATA%.
 		data_path = OS::get_singleton()->get_data_path();
@@ -170,6 +180,7 @@ EditorPaths::EditorPaths() {
 		} else {
 			cache_dir = cache_path.path_join(OS::get_singleton()->get_godot_dir_name());
 		}
+		temp_dir = OS::get_singleton()->get_temp_path();
 	}
 
 	paths_valid = (!data_path.is_empty() && !config_path.is_empty() && !cache_path.is_empty());
@@ -226,6 +237,17 @@ EditorPaths::EditorPaths() {
 		}
 	}
 
+	// Temporary dir.
+	{
+		if (dir->change_dir(temp_dir) != OK) {
+			dir->make_dir_recursive(temp_dir);
+			if (dir->change_dir(temp_dir) != OK) {
+				ERR_PRINT("Could not create editor temporary directory: " + temp_dir);
+				paths_valid = false;
+			}
+		}
+	}
+
 	// Validate or create project-specific editor data dir,
 	// including shader cache subdir.
 	if (Engine::get_singleton()->is_project_manager_hint() || (Main::is_cmdline_tool() && !ProjectSettings::get_singleton()->is_project_loaded())) {
@@ -241,7 +263,7 @@ EditorPaths::EditorPaths() {
 			}
 		}
 
-		// Check that the project data directory '.gdignore' file exists
+		// Check that the project data directory `.gdignore` file exists.
 		String project_data_gdignore_file_path = project_data_dir.path_join(".gdignore");
 		if (!FileAccess::exists(project_data_gdignore_file_path)) {
 			// Add an empty .gdignore file to avoid scan.
@@ -249,7 +271,7 @@ EditorPaths::EditorPaths() {
 			if (f.is_valid()) {
 				f->store_line("");
 			} else {
-				ERR_PRINT("Failed to create file " + project_data_gdignore_file_path);
+				ERR_PRINT("Failed to create file " + project_data_gdignore_file_path.quote() + ".");
 			}
 		}
 

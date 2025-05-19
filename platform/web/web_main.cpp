@@ -35,9 +35,15 @@
 #include "core/config/engine.h"
 #include "core/io/resource_loader.h"
 #include "main/main.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h" // SceneTree only forward declares it.
+
+#ifdef TOOLS_ENABLED
+#include "editor/web_tools_editor_plugin.h"
+#endif
 
 #include <emscripten/emscripten.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 static OS_Web *os = nullptr;
 #ifndef PROXY_TO_PTHREAD_ENABLED
@@ -102,6 +108,10 @@ void main_loop_callback() {
 extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 	os = new OS_Web();
 
+#ifdef TOOLS_ENABLED
+	WebToolsEditorPlugin::initialize();
+#endif
+
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
 
@@ -130,7 +140,7 @@ extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 	if (Engine::get_singleton()->is_project_manager_hint() && FileAccess::exists("/tmp/preload.zip")) {
 		PackedStringArray ps;
 		ps.push_back("/tmp/preload.zip");
-		os->get_main_loop()->emit_signal(SNAME("files_dropped"), ps, -1);
+		SceneTree::get_singleton()->get_root()->emit_signal(SNAME("files_dropped"), ps);
 	}
 #endif
 	emscripten_set_main_loop(main_loop_callback, -1, false);

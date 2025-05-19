@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_DATA_RD_H
-#define RENDER_DATA_RD_H
+#pragma once
 
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
@@ -37,9 +36,6 @@
 
 class RenderDataRD : public RenderData {
 	GDCLASS(RenderDataRD, RenderData);
-
-protected:
-	static void _bind_methods();
 
 public:
 	// Access methods to expose data externally
@@ -76,7 +72,13 @@ public:
 	uint32_t directional_light_count = 0;
 	bool directional_light_soft_shadows = false;
 
+	bool lightmap_bicubic_filter = false;
+
 	RenderingMethod::RenderInfo *render_info = nullptr;
+
+	/* Viewport data */
+	bool transparent_bg = false;
+	Rect2i render_region;
 
 	/* Shadow data */
 	const RendererSceneRender::RenderShadowData *render_shadows = nullptr;
@@ -93,5 +95,3 @@ public:
 
 	uint32_t voxel_gi_count = 0;
 };
-
-#endif // RENDER_DATA_RD_H

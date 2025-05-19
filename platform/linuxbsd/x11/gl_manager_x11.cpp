@@ -34,9 +34,9 @@
 
 #include "thirdparty/glad/glad/glx.h"
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
+#include <cstdio>
+#include <cstdlib>
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
@@ -137,6 +137,10 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 		ERR_FAIL_NULL_V(fbc, ERR_UNCONFIGURED);
 
 		for (int i = 0; i < fbcount; i++) {
+			if (vi) {
+				XFree(vi);
+				vi = nullptr;
+			}
 			vi = (XVisualInfo *)glXGetVisualFromFBConfig(x11_display, fbc[i]);
 			if (!vi) {
 				continue;
@@ -357,7 +361,7 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(disp.x11_display, drawable, val);
 	} else {
-		WARN_PRINT("Could not set V-Sync mode. V-Sync is not supported.");
+		WARN_PRINT_ONCE("Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.");
 		return;
 	}
 	use_vsync = p_use;

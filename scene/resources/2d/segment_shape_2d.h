@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SEGMENT_SHAPE_2D_H
-#define SEGMENT_SHAPE_2D_H
+#pragma once
 
 #include "scene/resources/2d/shape_2d.h"
 
@@ -60,5 +59,3 @@ public:
 
 	SegmentShape2D();
 };
-
-#endif // SEGMENT_SHAPE_2D_H

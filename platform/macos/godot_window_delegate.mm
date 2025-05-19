@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_window_delegate.h"
+#import "godot_window_delegate.h"
 
-#include "display_server_macos.h"
-#include "godot_button_view.h"
-#include "godot_window.h"
+#import "display_server_macos.h"
+#import "godot_button_view.h"
+#import "godot_content_view.h"
+#import "godot_window.h"
 
 @implementation GodotWindowDelegate
 
@@ -184,17 +185,19 @@
 	}
 
 	// Restore borderless, transparent and resizability state.
-	if (wd.borderless || wd.layered_window) {
+	if (wd.borderless) {
 		[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
+		[wd.window_object setHasShadow:NO];
 	} else {
 		[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+		[wd.window_object setHasShadow:YES];
 	}
 	if (wd.layered_window) {
 		ds->set_window_per_pixel_transparency_enabled(true, window_id);
 	}
 
 	// Restore on-top state.
-	if (wd.on_top) {
+	if (ds->is_always_on_top_recursive(window_id)) {
 		[wd.window_object setLevel:NSFloatingWindowLevel];
 	}
 
@@ -305,7 +308,7 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 
 	if (wd.window_button_view) {
-		[(GodotButtonView *)wd.window_button_view displayButtons];
+		[wd.window_button_view displayButtons];
 	}
 
 	if (ds->mouse_get_mode() == DisplayServer::MOUSE_MODE_CAPTURED) {
@@ -322,6 +325,9 @@
 
 	wd.focused = true;
 	ds->set_last_focused_window(window_id);
+#ifdef ACCESSKIT_ENABLED
+	ds->accessibility_set_window_focused(window_id, true);
+#endif
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);
 }
 
@@ -334,11 +340,14 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 
 	if (wd.window_button_view) {
-		[(GodotButtonView *)wd.window_button_view displayButtons];
+		[wd.window_button_view displayButtons];
 	}
 
 	wd.focused = false;
 	ds->release_pressed_events();
+#ifdef ACCESSKIT_ENABLED
+	ds->accessibility_set_window_focused(window_id, false);
+#endif
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);
 }
 
@@ -352,6 +361,9 @@
 
 	wd.focused = false;
 	ds->release_pressed_events();
+#ifdef ACCESSKIT_ENABLED
+	ds->accessibility_set_window_focused(window_id, false);
+#endif
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);
 }
 
@@ -366,6 +378,9 @@
 	if ([wd.window_object isKeyWindow]) {
 		wd.focused = true;
 		ds->set_last_focused_window(window_id);
+#ifdef ACCESSKIT_ENABLED
+		ds->accessibility_set_window_focused(window_id, true);
+#endif
 		ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);
 	}
 }

@@ -32,11 +32,11 @@
 
 #ifdef GLES3_ENABLED
 
-#include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 
 #include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/storage/config.h"
 
 static String _mkid(const String &p_id) {
 	String id = "m_" + p_id.replace("__", "_dus_");
@@ -73,7 +73,7 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 		} else if (l.begins_with("#CODE")) {
 			chunk.type = StageTemplate::Chunk::TYPE_CODE;
 			push_chunk = true;
-			chunk.code = l.replace_first("#CODE", String()).replace(":", "").strip_edges().to_upper();
+			chunk.code = l.replace_first("#CODE", String()).remove_char(':').strip_edges().to_upper();
 		} else {
 			text += l + "\n";
 		}
@@ -167,6 +167,10 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 		builder.append("#version 300 es\n");
 	}
 
+	if (GLES3::Config::get_singleton()->polyfill_half2float) {
+		builder.append("#define USE_HALF2FLOAT\n");
+	}
+
 	for (int i = 0; i < specialization_count; i++) {
 		if (p_specialization & (uint64_t(1) << uint64_t(i))) {
 			builder.append("#define " + String(specializations[i].name) + "\n");
@@ -187,6 +191,14 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 		builder.append(p_version->custom_defines[j].get_data());
 	}
 	builder.append("\n"); //make sure defines begin at newline
+
+	// Optional support for external textures.
+	if (GLES3::Config::get_singleton()->external_texture_supported) {
+		builder.append("#extension GL_OES_EGL_image_external : enable\n");
+		builder.append("#extension GL_OES_EGL_image_external_essl3 : enable\n");
+	} else {
+		builder.append("#define samplerExternalOES sampler2D\n");
+	}
 
 	// Insert multiview extension loading, because it needs to appear before
 	// any non-preprocessor code (like the "precision highp..." lines below).
@@ -309,7 +321,8 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		String builder_string = builder.as_string();
 		CharString cs = builder_string.utf8();
 		const char *cstr = cs.ptr();
-		glShaderSource(spec.vert_id, 1, &cstr, nullptr);
+		GLint cstr_len = cs.length();
+		glShaderSource(spec.vert_id, 1, &cstr, &cstr_len);
 		glCompileShader(spec.vert_id);
 
 		glGetShaderiv(spec.vert_id, GL_COMPILE_STATUS, &status);
@@ -328,8 +341,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 					iloglen = 4096; // buggy driver (Adreno 220+)
 				}
 
-				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				memset(ilogmem, 0, iloglen + 1);
+				char *ilogmem = (char *)Memory::alloc_static_zeroed(iloglen + 1);
 				glGetShaderInfoLog(spec.vert_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Vertex shader compilation failed:\n";
@@ -357,7 +369,8 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		String builder_string = builder.as_string();
 		CharString cs = builder_string.utf8();
 		const char *cstr = cs.ptr();
-		glShaderSource(spec.frag_id, 1, &cstr, nullptr);
+		GLint cstr_len = cs.length();
+		glShaderSource(spec.frag_id, 1, &cstr, &cstr_len);
 		glCompileShader(spec.frag_id);
 
 		glGetShaderiv(spec.frag_id, GL_COMPILE_STATUS, &status);
@@ -376,8 +389,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 					iloglen = 4096; // buggy driver (Adreno 220+)
 				}
 
-				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				memset(ilogmem, 0, iloglen + 1);
+				char *ilogmem = (char *)Memory::alloc_static_zeroed(iloglen + 1);
 				glGetShaderInfoLog(spec.frag_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Fragment shader compilation failed:\n";
@@ -678,7 +690,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 
 void ShaderGLES3::_clear_version(Version *p_version) {
 	// Variants not compiled yet, just return
-	if (p_version->variants.size() == 0) {
+	if (p_version->variants.is_empty()) {
 		return;
 	}
 
@@ -697,7 +709,8 @@ void ShaderGLES3::_clear_version(Version *p_version) {
 
 void ShaderGLES3::_initialize_version(Version *p_version) {
 	ERR_FAIL_COND(p_version->variants.size() > 0);
-	if (shader_cache_dir_valid && _load_from_cache(p_version)) {
+	bool use_cache = shader_cache_dir_valid && !(feedback_count > 0 && GLES3::Config::get_singleton()->disable_transform_feedback_shader_cache);
+	if (use_cache && _load_from_cache(p_version)) {
 		return;
 	}
 	p_version->variants.reserve(variant_count);
@@ -708,7 +721,7 @@ void ShaderGLES3::_initialize_version(Version *p_version) {
 		_compile_specialization(spec, i, p_version, specialization_default_mask);
 		p_version->variants[i].insert(specialization_default_mask, spec);
 	}
-	if (shader_cache_dir_valid) {
+	if (use_cache) {
 		_save_to_cache(p_version);
 	}
 }
@@ -801,7 +814,9 @@ void ShaderGLES3::initialize(const String &p_general_defines, int p_base_texture
 		print_verbose("Shader '" + name + "' SHA256: " + base_sha256);
 	}
 
-	glGetInteger64v(GL_MAX_TEXTURE_IMAGE_UNITS, &max_image_units);
+	GLES3::Config *config = GLES3::Config::get_singleton();
+	ERR_FAIL_NULL(config);
+	max_image_units = config->max_texture_image_units;
 }
 
 void ShaderGLES3::set_shader_cache_dir(const String &p_dir) {
@@ -826,13 +841,11 @@ bool ShaderGLES3::shader_cache_save_compressed_zstd = true;
 bool ShaderGLES3::shader_cache_save_debug = true;
 
 ShaderGLES3::~ShaderGLES3() {
-	List<RID> remaining;
-	version_owner.get_owned_list(&remaining);
+	LocalVector<RID> remaining = version_owner.get_owned_list();
 	if (remaining.size()) {
 		ERR_PRINT(itos(remaining.size()) + " shaders of type " + name + " were never freed");
-		while (remaining.size()) {
-			version_free(remaining.front()->get());
-			remaining.pop_front();
+		for (RID &rid : remaining) {
+			version_free(rid);
 		}
 	}
 }

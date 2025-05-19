@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_LAYERED_TEXTURE_H
-#define RESOURCE_IMPORTER_LAYERED_TEXTURE_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
@@ -50,11 +49,13 @@ public:
 	Vector<Ref<Image>> *slices = nullptr;
 	int compress_mode = 0;
 	float lossy = 1.0;
+
+	Image::BasisUniversalPackerParams basisu_params;
+
 	int hdr_compression = 0;
 	bool mipmaps = true;
 	bool high_quality = false;
 	Image::UsedChannels used_channels = Image::USED_CHANNELS_RGBA;
-	virtual ~LayeredTextureImport() {}
 };
 
 class ResourceImporterLayeredTexture : public ResourceImporter {
@@ -110,17 +111,17 @@ public:
 	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
-	void _save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2);
+	void _save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2);
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-	virtual bool are_import_settings_valid(const String &p_path) const override;
+	virtual bool are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const override;
 	virtual String get_import_settings_string() const override;
+
+	virtual bool can_import_threaded() const override { return true; }
 
 	void set_mode(Mode p_mode) { mode = p_mode; }
 
 	ResourceImporterLayeredTexture(bool p_singleton = false);
 	~ResourceImporterLayeredTexture();
 };
-
-#endif // RESOURCE_IMPORTER_LAYERED_TEXTURE_H

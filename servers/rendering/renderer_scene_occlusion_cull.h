@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_SCENE_OCCLUSION_CULL_H
-#define RENDERER_SCENE_OCCLUSION_CULL_H
+#pragma once
 
 #include "core/math/projection.h"
 #include "core/templates/local_vector.h"
@@ -72,7 +71,7 @@ public:
 				return false;
 			}
 
-			float min_depth = -closest_point_view.z * 0.95f;
+			float min_depth = -closest_point_view.z;
 
 			Vector2 rect_min = Vector2(FLT_MAX, FLT_MAX);
 			Vector2 rect_max = Vector2(FLT_MIN, FLT_MIN);
@@ -85,6 +84,7 @@ public:
 
 				Plane vp = Plane(view, 1.0);
 				Plane projected = p_cam_projection.xform4(vp);
+				min_depth = MIN(min_depth, -view.z);
 
 				float w = projected.d;
 				if (w < 1.0) {
@@ -98,8 +98,8 @@ public:
 				rect_max = rect_max.max(normalized);
 			}
 
-			rect_max = rect_max.min(Vector2(1, 1));
-			rect_min = rect_min.max(Vector2(0, 0));
+			rect_max = rect_max.minf(1);
+			rect_min = rect_min.maxf(0);
 
 			int mip_count = mips.size();
 
@@ -192,7 +192,7 @@ public:
 		RID get_debug_texture();
 		const Size2i &get_occlusion_buffer_size() const { return occlusion_buffer_size; }
 
-		virtual ~HZBuffer(){};
+		virtual ~HZBuffer() {}
 	};
 
 	static RendererSceneOcclusionCull *get_singleton() { return singleton; }
@@ -230,11 +230,9 @@ public:
 
 	RendererSceneOcclusionCull() {
 		singleton = this;
-	};
+	}
 
 	virtual ~RendererSceneOcclusionCull() {
 		singleton = nullptr;
-	};
+	}
 };
-
-#endif // RENDERER_SCENE_OCCLUSION_CULL_H

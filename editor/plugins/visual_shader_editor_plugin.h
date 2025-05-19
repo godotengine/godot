@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VISUAL_SHADER_EDITOR_PLUGIN_H
-#define VISUAL_SHADER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
+#include "editor/plugins/shader/shader_editor.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
@@ -49,6 +49,7 @@ class RichTextLabel;
 class Tree;
 
 class VisualShaderEditor;
+class MaterialEditor;
 
 class VisualShaderNodePlugin : public RefCounted {
 	GDCLASS(VisualShaderNodePlugin, RefCounted);
@@ -66,6 +67,34 @@ public:
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
+class VSGraphNode : public GraphNode {
+	GDCLASS(VSGraphNode, GraphNode);
+
+protected:
+	void _draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color, const Color &p_rim_color);
+	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) override;
+};
+
+class VSRerouteNode : public VSGraphNode {
+	GDCLASS(VSRerouteNode, GraphNode);
+
+	const float FADE_ANIMATION_LENGTH_SEC = 0.3;
+
+	float icon_opacity = 0.0;
+
+protected:
+	void _notification(int p_what);
+
+	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) override;
+
+public:
+	VSRerouteNode();
+	void set_icon_opacity(float p_opacity);
+
+	void _on_mouse_entered();
+	void _on_mouse_exited();
+};
+
 class VisualShaderGraphPlugin : public RefCounted {
 	GDCLASS(VisualShaderGraphPlugin, RefCounted);
 
@@ -77,6 +106,7 @@ private:
 	};
 
 	struct Port {
+		VisualShaderNode::PortType type = VisualShaderNode::PORT_TYPE_SCALAR;
 		TextureButton *preview_button = nullptr;
 	};
 
@@ -111,7 +141,7 @@ public:
 	void register_shader(VisualShader *p_visual_shader);
 	void set_connections(const List<VisualShader::Connection> &p_connections);
 	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphElement *p_graph_element);
-	void register_output_port(int p_id, int p_port, TextureButton *p_button);
+	void register_output_port(int p_id, int p_port, VisualShaderNode::PortType p_port_type, TextureButton *p_button);
 	void register_parameter_name(int p_id, LineEdit *p_parameter_name);
 	void register_default_input_button(int p_node_id, int p_port_id, Button *p_button);
 	void register_expression_edit(int p_node_id, CodeEdit *p_expression_edit);
@@ -140,6 +170,7 @@ public:
 	void set_frame_color_enabled(VisualShader::Type p_type, int p_node_id, bool p_enable);
 	void set_frame_color(VisualShader::Type p_type, int p_node_id, const Color &p_color);
 	void set_frame_autoshrink_enabled(VisualShader::Type p_type, int p_node_id, bool p_enable);
+	void update_reroute_nodes();
 	int get_constant_index(float p_constant) const;
 	Ref<Script> get_node_script(int p_node_id) const;
 	void update_theme();
@@ -147,7 +178,6 @@ public:
 	VisualShader::Type get_shader_type() const;
 
 	VisualShaderGraphPlugin();
-	~VisualShaderGraphPlugin();
 };
 
 class VisualShaderEditedProperty : public RefCounted {
@@ -162,12 +192,10 @@ protected:
 public:
 	void set_edited_property(const Variant &p_variant);
 	Variant get_edited_property() const;
-
-	VisualShaderEditedProperty() {}
 };
 
-class VisualShaderEditor : public VBoxContainer {
-	GDCLASS(VisualShaderEditor, VBoxContainer);
+class VisualShaderEditor : public ShaderEditor {
+	GDCLASS(VisualShaderEditor, ShaderEditor);
 	friend class VisualShaderGraphPlugin;
 
 	PopupPanel *property_editor_popup = nullptr;
@@ -176,11 +204,26 @@ class VisualShaderEditor : public VBoxContainer {
 	int editing_port = -1;
 	Ref<VisualShaderEditedProperty> edited_property_holder;
 
+	MaterialEditor *material_editor = nullptr;
 	Ref<VisualShader> visual_shader;
+	Ref<ShaderMaterial> preview_material;
+	Ref<Environment> env;
+	String param_filter_name;
+	EditorProperty *current_prop = nullptr;
+	VBoxContainer *shader_preview_vbox = nullptr;
+	Button *site_search = nullptr;
+	Button *toggle_files_button = nullptr;
+	Control *toggle_files_list = nullptr;
 	GraphEdit *graph = nullptr;
 	Button *add_node = nullptr;
 	MenuButton *varying_button = nullptr;
-	Button *preview_shader = nullptr;
+	Button *code_preview_button = nullptr;
+	Button *shader_preview_button = nullptr;
+	Control *toolbar = nullptr;
+
+	int last_to_node = -1;
+	int last_to_port = -1;
+	Label *info_label = nullptr;
 
 	OptionButton *edit_type = nullptr;
 	OptionButton *edit_type_standard = nullptr;
@@ -192,8 +235,8 @@ class VisualShaderEditor : public VBoxContainer {
 
 	bool pending_update_preview = false;
 	bool shader_error = false;
-	Window *preview_window = nullptr;
-	VBoxContainer *preview_vbox = nullptr;
+	AcceptDialog *code_preview_window = nullptr;
+	VBoxContainer *code_preview_vbox = nullptr;
 	CodeEdit *preview_text = nullptr;
 	Ref<CodeHighlighter> syntax_highlighter = nullptr;
 	PanelContainer *error_panel = nullptr;
@@ -231,8 +274,18 @@ class VisualShaderEditor : public VBoxContainer {
 	PopupPanel *frame_tint_color_pick_popup = nullptr;
 	ColorPicker *frame_tint_color_picker = nullptr;
 
-	bool preview_first = true;
-	bool preview_showed = false;
+	bool code_preview_first = true;
+	bool code_preview_showed = false;
+
+	bool shader_preview_showed = true;
+
+	LineEdit *param_filter = nullptr;
+	MenuButton *preview_tools = nullptr;
+	String selected_param_id;
+	Tree *parameters = nullptr;
+	HashMap<String, PropertyInfo> parameter_props;
+	VBoxContainer *param_vbox = nullptr;
+	VBoxContainer *param_vbox2 = nullptr;
 
 	enum ShaderModeFlags {
 		MODE_FLAGS_SPATIAL_CANVASITEM = 1,
@@ -270,9 +323,10 @@ class VisualShaderEditor : public VBoxContainer {
 		COLLAPSE_ALL
 	};
 
-#ifdef MINGW_ENABLED
-#undef DELETE
-#endif
+	enum PreviewToolsMenuOptions {
+		COPY_PARAMS_FROM_MATERIAL,
+		PASTE_PARAMS_TO_MATERIAL,
+	};
 
 	enum NodeMenuOptions {
 		ADD,
@@ -280,7 +334,7 @@ class VisualShaderEditor : public VBoxContainer {
 		CUT,
 		COPY,
 		PASTE,
-		DELETE,
+		DELETE_, // Conflict with WinAPI.
 		DUPLICATE,
 		CLEAR_COPY_BUFFER,
 		SEPARATOR2, // ignore
@@ -297,6 +351,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	enum ConnectionMenuOptions {
 		INSERT_NEW_NODE,
+		INSERT_NEW_REROUTE,
 		DISCONNECT,
 	};
 
@@ -318,6 +373,11 @@ class VisualShaderEditor : public VBoxContainer {
 	void _show_add_varying_dialog();
 	void _show_remove_varying_dialog();
 
+	void _preview_tools_menu_option(int p_idx);
+	void _clear_preview_param();
+	void _update_preview_parameter_list();
+	bool _update_preview_parameter_tree();
+
 	void _update_nodes();
 	void _update_graph();
 
@@ -334,7 +394,7 @@ class VisualShaderEditor : public VBoxContainer {
 		bool highend = false;
 		bool is_custom = false;
 		bool is_native = false;
-		int temp_idx = 0;
+		mutable int temp_idx = 0;
 
 		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_type = String(), const String &p_description = String(), const Vector<Variant> &p_ops = Vector<Variant>(), int p_return_type = -1, int p_mode = -1, int p_func = -1, bool p_highend = false) {
 			name = p_name;
@@ -362,6 +422,7 @@ class VisualShaderEditor : public VBoxContainer {
 	int custom_node_option_idx;
 	int curve_node_option_idx;
 	int curve_xyz_node_option_idx;
+	int mesh_emitter_option_idx;
 	List<String> keyword_list;
 
 	List<VisualShaderNodeParameterRef> uniform_refs;
@@ -382,6 +443,10 @@ class VisualShaderEditor : public VBoxContainer {
 	void _update_next_previews(int p_node_id);
 	void _get_next_nodes_recursively(VisualShader::Type p_type, int p_node_id, LocalVector<int> &r_nodes) const;
 	String _get_description(int p_idx);
+
+	void _show_shader_preview();
+
+	void _toggle_files_pressed();
 
 	Vector<int> nodes_link_to_frame_buffer; // Contains the nodes that are requested to be linked to a frame. This is used to perform one Undo/Redo operation for dragging nodes.
 	int frame_node_id_to_link_to = -1;
@@ -439,6 +504,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _unlink_node_from_parent_frame(int p_node_id);
 
+	void _connection_drag_ended();
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
 	bool _check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphEdit::Connection> *r_closest_connection, int *r_node_id = nullptr, int *r_to_port = nullptr);
@@ -521,13 +587,15 @@ class VisualShaderEditor : public VBoxContainer {
 	void _graph_gui_input(const Ref<InputEvent> &p_event);
 
 	void _member_filter_changed(const String &p_text);
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _member_selected();
-	void _member_unselected();
 	void _member_create();
 	void _member_cancel();
 
 	void _varying_create();
+	void _varying_validate();
+	void _varying_type_changed(int p_index);
+	void _varying_mode_changed(int p_index);
 	void _varying_name_changed(const String &p_name);
 	void _varying_deleted();
 	void _varying_selected();
@@ -561,11 +629,26 @@ class VisualShaderEditor : public VBoxContainer {
 	void _resource_removed(const Ref<Resource> &p_resource);
 	void _resources_removed();
 
+	void _param_property_changed(const String &p_property, const Variant &p_value, const String &p_field = "", bool p_changing = false);
+	void _update_current_param();
+	void _param_filter_changed(const String &p_text);
+	void _param_selected();
+	void _param_unselected();
+
+	void _help_open();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	virtual void edit_shader(const Ref<Shader> &p_shader) override;
+	virtual void apply_shaders() override;
+	virtual bool is_unsaved() const override;
+	virtual void save_external_data(const String &p_str = "") override;
+	virtual void validate_script() override;
+	virtual Control *get_top_bar() override;
+
 	void add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 	void remove_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 
@@ -573,13 +656,14 @@ public:
 
 	void clear_custom_types();
 	void add_custom_type(const String &p_name, const String &p_type, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend);
+	void set_toggle_list_control(Control *p_control);
 
 	Dictionary get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node);
 	void update_custom_type(const Ref<Resource> &p_resource);
 
 	virtual Size2 get_minimum_size() const override;
+	void update_toggle_files_button();
 
-	void edit(VisualShader *p_visual_shader);
 	Ref<VisualShader> get_visual_shader() const { return visual_shader; }
 
 	VisualShaderEditor();
@@ -598,9 +682,6 @@ class EditorPropertyVisualShaderMode : public EditorProperty {
 
 	void _option_selected(int p_which);
 
-protected:
-	static void _bind_methods();
-
 public:
 	void setup(const Vector<String> &p_options);
 	virtual void update_property() override;
@@ -618,7 +699,9 @@ public:
 
 class VisualShaderNodePortPreview : public Control {
 	GDCLASS(VisualShaderNodePortPreview, Control);
+	TextureRect *checkerboard = nullptr;
 	Ref<VisualShader> shader;
+	Ref<ShaderMaterial> preview_mat;
 	VisualShader::Type type = VisualShader::Type::TYPE_MAX;
 	int node = 0;
 	int port = 0;
@@ -626,11 +709,10 @@ class VisualShaderNodePortPreview : public Control {
 	void _shader_changed(); //must regen
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	virtual Size2 get_minimum_size() const override;
-	void setup(const Ref<VisualShader> &p_shader, VisualShader::Type p_type, int p_node, int p_port, bool p_is_valid);
+	void setup(const Ref<VisualShader> &p_shader, Ref<ShaderMaterial> &p_preview_material, VisualShader::Type p_type, bool p_has_transparency, int p_node, int p_port, bool p_is_valid);
 };
 
 class VisualShaderConversionPlugin : public EditorResourceConversionPlugin {
@@ -641,5 +723,3 @@ public:
 	virtual bool handles(const Ref<Resource> &p_resource) const override;
 	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
 };
-
-#endif // VISUAL_SHADER_EDITOR_PLUGIN_H

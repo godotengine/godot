@@ -30,7 +30,6 @@
 
 #include "tab_bar.h"
 
-#include "core/string/translation.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
@@ -98,6 +97,10 @@ Size2 TabBar::get_minimum_size() const {
 
 		if (ms.width - ofs > style->get_minimum_size().width) {
 			ms.width -= theme_cache.h_separation;
+		}
+
+		if (i < tabs.size() - 1) {
+			ms.width += theme_cache.tab_separation;
 		}
 	}
 
@@ -202,6 +205,12 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 			cb_pressing = false;
 			queue_redraw();
+		}
+
+		if (close_with_middle_mouse && mb->is_pressed() && mb->get_button_index() == MouseButton::MIDDLE) {
+			if (hover != -1) {
+				emit_signal(SNAME("tab_close_pressed"), hover);
+			}
 		}
 
 		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT || (select_with_rmb && mb->get_button_index() == MouseButton::RIGHT))) {
@@ -348,12 +357,43 @@ void TabBar::_shape(int p_tab) {
 	tabs.write[p_tab].text_buf->add_string(atr(tabs[p_tab].text), theme_cache.font, theme_cache.font_size, tabs[p_tab].language);
 }
 
+RID TabBar::get_tab_accessibility_element(int p_tab) const {
+	RID ae = get_accessibility_element();
+	ERR_FAIL_COND_V(ae.is_null(), RID());
+
+	const Tab &item = tabs[p_tab];
+	if (item.accessibility_item_element.is_null()) {
+		item.accessibility_item_element = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_TAB);
+		item.accessibility_item_dirty = true;
+	}
+	return item.accessibility_item_element;
+}
+
+RID TabBar::get_focused_accessibility_element() const {
+	if (current == -1) {
+		return get_accessibility_element();
+	} else {
+		const Tab &item = tabs[current];
+		return item.accessibility_item_element;
+	}
+}
+
+void TabBar::_accessibility_action_scroll_into_view(const Variant &p_data, int p_index) {
+	ensure_tab_visible(p_index);
+}
+
+void TabBar::_accessibility_action_focus(const Variant &p_data, int p_index) {
+	set_current_tab(p_index);
+}
+
 void TabBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (scroll_to_selected) {
 				ensure_tab_visible(current);
 			}
+			// Set initialized even if no tabs were set.
+			initialized = true;
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -378,6 +418,46 @@ void TabBar::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_EXIT_TREE:
+		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
+			for (int i = 0; i < tabs.size(); i++) {
+				tabs.write[i].accessibility_item_element = RID();
+			}
+		} break;
+
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_TAB_BAR);
+			DisplayServer::get_singleton()->accessibility_update_set_list_item_count(ae, tabs.size());
+
+			for (int i = 0; i < tabs.size(); i++) {
+				const Tab &item = tabs[i];
+
+				if (item.accessibility_item_element.is_null()) {
+					item.accessibility_item_element = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_TAB);
+					item.accessibility_item_dirty = true;
+				}
+
+				if (item.accessibility_item_dirty) {
+					DisplayServer::get_singleton()->accessibility_update_add_action(item.accessibility_item_element, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &TabBar::_accessibility_action_scroll_into_view).bind(i));
+					DisplayServer::get_singleton()->accessibility_update_add_action(item.accessibility_item_element, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &TabBar::_accessibility_action_focus).bind(i));
+
+					DisplayServer::get_singleton()->accessibility_update_set_list_item_index(item.accessibility_item_element, i);
+					DisplayServer::get_singleton()->accessibility_update_set_name(item.accessibility_item_element, atr(item.text));
+					DisplayServer::get_singleton()->accessibility_update_set_list_item_selected(item.accessibility_item_element, i == current);
+					DisplayServer::get_singleton()->accessibility_update_set_flag(item.accessibility_item_element, DisplayServer::AccessibilityFlags::FLAG_DISABLED, item.disabled);
+					DisplayServer::get_singleton()->accessibility_update_set_flag(item.accessibility_item_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, item.hidden);
+					DisplayServer::get_singleton()->accessibility_update_set_tooltip(item.accessibility_item_element, item.tooltip);
+
+					DisplayServer::get_singleton()->accessibility_update_set_bounds(item.accessibility_item_element, Rect2(Point2(item.ofs_cache, 0), Size2(item.size_cache, get_size().height)));
+
+					item.accessibility_item_dirty = false;
+				}
+			}
+		} break;
+
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			queue_redraw();
 		} break;
@@ -388,6 +468,7 @@ void TabBar::_notification(int p_what) {
 				_shape(i);
 			}
 
+			queue_accessibility_update();
 			queue_redraw();
 			update_minimum_size();
 
@@ -428,8 +509,6 @@ void TabBar::_notification(int p_what) {
 
 			int limit_minus_buttons = size.width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
 
-			int ofs = tabs[offset].ofs_cache;
-
 			// Draw unselected tabs in the back.
 			for (int i = offset; i <= max_drawn_tab; i++) {
 				if (tabs[i].hidden) {
@@ -451,18 +530,15 @@ void TabBar::_notification(int p_what) {
 						col = theme_cache.font_unselected_color;
 					}
 
-					_draw_tab(sb, col, i, rtl ? size.width - ofs - tabs[i].size_cache : ofs, false);
+					_draw_tab(sb, col, i, rtl ? (size.width - tabs[i].ofs_cache - tabs[i].size_cache) : tabs[i].ofs_cache, false);
 				}
-
-				ofs += tabs[i].size_cache;
 			}
 
 			// Draw selected tab in the front, but only if it's visible.
 			if (current >= offset && current <= max_drawn_tab && !tabs[current].hidden) {
 				Ref<StyleBox> sb = tabs[current].disabled ? theme_cache.tab_disabled_style : theme_cache.tab_selected_style;
-				float x = rtl ? size.width - tabs[current].ofs_cache - tabs[current].size_cache : tabs[current].ofs_cache;
 
-				_draw_tab(sb, theme_cache.font_selected_color, current, x, has_focus());
+				_draw_tab(sb, theme_cache.font_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus());
 			}
 
 			if (buttons_visible) {
@@ -498,13 +574,23 @@ void TabBar::_notification(int p_what) {
 			if (dragging_valid_tab) {
 				int x;
 
-				int tab_hover = get_hovered_tab();
-				if (tab_hover != -1) {
-					Rect2 tab_rect = get_tab_rect(tab_hover);
-
+				int closest_tab = get_closest_tab_idx_to_point(get_local_mouse_position());
+				if (closest_tab != -1) {
+					Rect2 tab_rect = get_tab_rect(closest_tab);
 					x = tab_rect.position.x;
-					if (get_local_mouse_position().x > x + tab_rect.size.width / 2) {
-						x += tab_rect.size.width;
+
+					// Only add the tab_separation if closest tab is not on the edge.
+					bool not_leftmost_tab = -1 != (rtl ? get_next_available(closest_tab) : get_previous_available(closest_tab));
+					bool not_rightmost_tab = -1 != (rtl ? get_previous_available(closest_tab) : get_next_available(closest_tab));
+
+					// Calculate midpoint between tabs.
+					if (get_local_mouse_position().x > tab_rect.get_center().x) {
+						x += tab_rect.size.x;
+						if (not_rightmost_tab) {
+							x += Math::ceil(0.5f * theme_cache.tab_separation);
+						}
+					} else if (not_leftmost_tab) {
+						x -= Math::floor(0.5f * theme_cache.tab_separation);
 					}
 				} else {
 					if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
@@ -620,6 +706,8 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 		}
 
 		cb->draw(ci, Point2i(cb_rect.position.x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
+	} else {
+		tabs.write[p_index].cb_rect = Rect2();
 	}
 }
 
@@ -629,6 +717,15 @@ void TabBar::set_tab_count(int p_count) {
 	}
 
 	ERR_FAIL_COND(p_count < 0);
+
+	if (tabs.size() > p_count) {
+		for (int i = p_count; i < tabs.size(); i++) {
+			if (tabs[i].accessibility_item_element.is_valid()) {
+				DisplayServer::get_singleton()->accessibility_free_element(tabs.write[i].accessibility_item_element);
+				tabs.write[i].accessibility_item_element = RID();
+			}
+		}
+	}
 	tabs.resize(p_count);
 
 	if (p_count == 0) {
@@ -653,12 +750,13 @@ void TabBar::set_tab_count(int p_count) {
 	}
 
 	if (!initialized) {
-		if (queued_current != current) {
-			current = queued_current;
-		}
 		initialized = true;
+		if (queued_current != CURRENT_TAB_UNINITIALIZED && queued_current != current) {
+			set_current_tab(queued_current);
+		}
 	}
 
+	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();
 	notify_property_list_changed();
@@ -694,6 +792,7 @@ void TabBar::set_current_tab(int p_current) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
+	queue_accessibility_update();
 	queue_redraw();
 
 	emit_signal(SNAME("tab_changed"), p_current);
@@ -711,31 +810,57 @@ int TabBar::get_hovered_tab() const {
 	return hover;
 }
 
-bool TabBar::select_previous_available() {
-	const int offset_end = (get_current_tab() + 1);
+int TabBar::get_previous_available(int p_idx) const {
+	ERR_FAIL_COND_V(p_idx < -1 || p_idx > get_tab_count(), -1);
+	const int idx = p_idx == -1 ? get_current_tab() : p_idx;
+	const int offset_end = idx + 1;
 	for (int i = 1; i < offset_end; i++) {
-		int target_tab = get_current_tab() - i;
+		int target_tab = idx - i;
 		if (target_tab < 0) {
 			target_tab += get_tab_count();
 		}
 		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
-			set_current_tab(target_tab);
-			return true;
+			return target_tab;
 		}
 	}
-	return false;
+	return -1;
+}
+
+int TabBar::get_next_available(int p_idx) const {
+	ERR_FAIL_COND_V(p_idx < -1 || p_idx > get_tab_count(), -1);
+	const int idx = p_idx == -1 ? get_current_tab() : p_idx;
+	const int offset_end = get_tab_count() - idx;
+	for (int i = 1; i < offset_end; i++) {
+		int target_tab = (idx + i) % get_tab_count();
+		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
+			return target_tab;
+		}
+	}
+	return -1;
+}
+
+bool TabBar::select_previous_available() {
+	const int previous_available = get_previous_available();
+	if (previous_available != -1) {
+		set_current_tab(previous_available);
+	}
+	return previous_available != -1;
 }
 
 bool TabBar::select_next_available() {
-	const int offset_end = (get_tab_count() - get_current_tab());
-	for (int i = 1; i < offset_end; i++) {
-		int target_tab = (get_current_tab() + i) % get_tab_count();
-		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
-			set_current_tab(target_tab);
-			return true;
-		}
+	const int next_available = get_next_available();
+	if (next_available != -1) {
+		set_current_tab(next_available);
 	}
-	return false;
+	return next_available != -1;
+}
+
+void TabBar::set_tab_offset(int p_offset) {
+	ERR_FAIL_INDEX(p_offset, tabs.size());
+	offset = p_offset;
+	_update_cache();
+	queue_accessibility_update();
+	queue_redraw();
 }
 
 int TabBar::get_tab_offset() const {
@@ -761,6 +886,7 @@ void TabBar::set_tab_title(int p_tab, const String &p_title) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
+	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();
 }
@@ -773,6 +899,7 @@ String TabBar::get_tab_title(int p_tab) const {
 void TabBar::set_tab_tooltip(int p_tab, const String &p_tooltip) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	tabs.write[p_tab].tooltip = p_tooltip;
+	queue_accessibility_update();
 }
 
 String TabBar::get_tab_tooltip(int p_tab) const {
@@ -786,7 +913,9 @@ void TabBar::set_tab_text_direction(int p_tab, Control::TextDirection p_text_dir
 
 	if (tabs[p_tab].text_direction != p_text_direction) {
 		tabs.write[p_tab].text_direction = p_text_direction;
+
 		_shape(p_tab);
+		queue_accessibility_update();
 		queue_redraw();
 	}
 }
@@ -801,12 +930,14 @@ void TabBar::set_tab_language(int p_tab, const String &p_language) {
 
 	if (tabs[p_tab].language != p_language) {
 		tabs.write[p_tab].language = p_language;
+
 		_shape(p_tab);
 		_update_cache();
 		_ensure_no_over_offset();
 		if (scroll_to_selected) {
 			ensure_tab_visible(current);
 		}
+		queue_accessibility_update();
 		queue_redraw();
 		update_minimum_size();
 	}
@@ -877,6 +1008,7 @@ void TabBar::set_tab_disabled(int p_tab, bool p_disabled) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
+	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();
 }
@@ -900,6 +1032,7 @@ void TabBar::set_tab_hidden(int p_tab, bool p_hidden) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
+	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();
 }
@@ -1020,6 +1153,7 @@ void TabBar::_update_cache(bool p_update_hover) {
 		tabs.write[i].text_buf->set_width(-1);
 		tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
 		tabs.write[i].size_cache = get_tab_width(i);
+		tabs.write[i].accessibility_item_dirty = true;
 
 		tabs.write[i].truncated = max_width > 0 && tabs[i].size_cache > max_width;
 		if (tabs[i].truncated) {
@@ -1049,6 +1183,8 @@ void TabBar::_update_cache(bool p_update_hover) {
 			tabs.write[i].ofs_cache = 0;
 
 			w -= tabs[i].size_cache;
+			w -= theme_cache.tab_separation;
+
 			max_drawn_tab = i - 1;
 
 			while (w > limit_minus_buttons && max_drawn_tab > offset) {
@@ -1056,10 +1192,14 @@ void TabBar::_update_cache(bool p_update_hover) {
 
 				if (!tabs[max_drawn_tab].hidden) {
 					w -= tabs[max_drawn_tab].size_cache;
+					w -= theme_cache.tab_separation;
 				}
 
 				max_drawn_tab--;
 			}
+		} else if (i < tabs.size() - 1) {
+			// Only add the tab separation if this isn't the last tab drawn.
+			w += theme_cache.tab_separation;
 		}
 	}
 
@@ -1080,10 +1220,11 @@ void TabBar::_update_cache(bool p_update_hover) {
 	}
 
 	for (int i = offset; i <= max_drawn_tab; i++) {
-		tabs.write[i].ofs_cache = w;
-
 		if (!tabs[i].hidden) {
+			tabs.write[i].ofs_cache = w;
+
 			w += tabs[i].size_cache;
+			w += theme_cache.tab_separation;
 		}
 	}
 
@@ -1115,6 +1256,7 @@ void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
+	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();
 
@@ -1133,12 +1275,19 @@ void TabBar::clear_tabs() {
 		return;
 	}
 
+	for (int i = 0; i < tabs.size(); i++) {
+		if (tabs[i].accessibility_item_element.is_valid()) {
+			DisplayServer::get_singleton()->accessibility_free_element(tabs.write[i].accessibility_item_element);
+			tabs.write[i].accessibility_item_element = RID();
+		}
+	}
 	tabs.clear();
 	offset = 0;
 	max_drawn_tab = 0;
 	current = -1;
 	previous = -1;
 
+	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();
 	notify_property_list_changed();
@@ -1146,6 +1295,11 @@ void TabBar::clear_tabs() {
 
 void TabBar::remove_tab(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, tabs.size());
+
+	if (tabs[p_idx].accessibility_item_element.is_valid()) {
+		DisplayServer::get_singleton()->accessibility_free_element(tabs.write[p_idx].accessibility_item_element);
+		tabs.write[p_idx].accessibility_item_element = RID();
+	}
 	tabs.remove_at(p_idx);
 
 	bool is_tab_changing = current == p_idx;
@@ -1195,6 +1349,7 @@ void TabBar::remove_tab(int p_idx) {
 		}
 	}
 
+	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();
 	notify_property_list_changed();
@@ -1228,14 +1383,14 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_point) {
-	int tab_over = get_tab_idx_at_point(p_point);
+	int tab_over = (p_point == Vector2(Math::INF, Math::INF)) ? current : get_tab_idx_at_point(p_point);
 	if (tab_over < 0) {
 		return Variant();
 	}
 
 	HBoxContainer *drag_preview = memnew(HBoxContainer);
 
-	if (!tabs[tab_over].icon.is_null()) {
+	if (tabs[tab_over].icon.is_valid()) {
 		const Size2 icon_size = _get_tab_icon_size(tab_over);
 
 		TextureRect *tf = memnew(TextureRect);
@@ -1248,6 +1403,7 @@ Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_poin
 	}
 
 	Label *label = memnew(Label(get_tab_title(tab_over)));
+	label->set_auto_translate_mode(get_auto_translate_mode()); // Reflect how the title is displayed.
 	drag_preview->add_child(label);
 
 	set_drag_preview(drag_preview);
@@ -1292,7 +1448,7 @@ void TabBar::_handle_drop_data(const String &p_type, const Point2 &p_point, cons
 
 	if (String(d["type"]) == p_type) {
 		int tab_from_id = d["tab_index"];
-		int hover_now = get_tab_idx_at_point(p_point);
+		int hover_now = (p_point == Vector2(Math::INF, Math::INF)) ? current : get_closest_tab_idx_to_point(p_point);
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
 
@@ -1350,6 +1506,8 @@ void TabBar::_handle_drop_data(const String &p_type, const Point2 &p_point, cons
 
 void TabBar::_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index) {
 	Tab moving_tab = p_from_tabbar->tabs[p_from_index];
+	moving_tab.accessibility_item_element = RID();
+	moving_tab.accessibility_item_dirty = true;
 	p_from_tabbar->remove_tab(p_from_index);
 	tabs.insert(p_to_index, moving_tab);
 
@@ -1369,14 +1527,19 @@ void TabBar::_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_in
 		queue_redraw();
 	}
 
+	queue_accessibility_update();
 	update_minimum_size();
 }
 
 int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
+	if (tabs.is_empty()) {
+		return -1;
+	}
+
 	int hover_now = -1;
 
-	if (!tabs.is_empty()) {
-		for (int i = offset; i <= max_drawn_tab; i++) {
+	for (int i = offset; i <= max_drawn_tab; i++) {
+		if (!tabs[i].hidden) {
 			Rect2 rect = get_tab_rect(i);
 			if (rect.has_point(p_point)) {
 				hover_now = i;
@@ -1385,6 +1548,31 @@ int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
 	}
 
 	return hover_now;
+}
+
+int TabBar::get_closest_tab_idx_to_point(const Point2 &p_point) const {
+	if (tabs.is_empty()) {
+		return -1;
+	}
+
+	int closest_tab = get_tab_idx_at_point(p_point);
+	float closest_distance = FLT_MAX;
+
+	// Search along the x-axis since the TabBar is horizontal.
+	if (closest_tab == -1) {
+		for (int i = offset; i <= max_drawn_tab; i++) {
+			if (!tabs[i].hidden) {
+				float center = get_tab_rect(i).get_center().x;
+				float distance = Math::abs(center - p_point.x);
+				if (distance < closest_distance) {
+					closest_distance = distance;
+					closest_tab = i;
+				}
+			}
+		}
+	}
+
+	return closest_tab;
 }
 
 void TabBar::set_tab_alignment(AlignmentMode p_alignment) {
@@ -1440,6 +1628,8 @@ void TabBar::move_tab(int p_from, int p_to) {
 	ERR_FAIL_INDEX(p_to, tabs.size());
 
 	Tab tab_from = tabs[p_from];
+	tab_from.accessibility_item_dirty = true;
+
 	tabs.remove_at(p_from);
 	tabs.insert(p_to, tab_from);
 
@@ -1464,6 +1654,7 @@ void TabBar::move_tab(int p_from, int p_to) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
+	queue_accessibility_update();
 	queue_redraw();
 	notify_property_list_changed();
 }
@@ -1477,8 +1668,8 @@ int TabBar::get_tab_width(int p_idx) const {
 		style = theme_cache.tab_disabled_style;
 	} else if (current == p_idx) {
 		style = theme_cache.tab_selected_style;
-		// Use the unselected style's width if the hovered one is shorter, to avoid an infinite loop when switching tabs with the mouse.
-	} else if (hover == p_idx && theme_cache.tab_hovered_style->get_minimum_size().width >= theme_cache.tab_unselected_style->get_minimum_size().width) {
+		// Always pick the widest style between hovered and unselected, to avoid an infinite loop when switching tabs with the mouse.
+	} else if (theme_cache.tab_hovered_style->get_minimum_size().width > theme_cache.tab_unselected_style->get_minimum_size().width) {
 		style = theme_cache.tab_hovered_style;
 	} else {
 		style = theme_cache.tab_unselected_style;
@@ -1636,11 +1827,20 @@ void TabBar::ensure_tab_visible(int p_idx) {
 
 Rect2 TabBar::get_tab_rect(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
+
 	if (is_layout_rtl()) {
 		return Rect2(get_size().width - tabs[p_tab].ofs_cache - tabs[p_tab].size_cache, 0, tabs[p_tab].size_cache, get_size().height);
 	} else {
 		return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_size().height);
 	}
+}
+
+void TabBar::set_close_with_middle_mouse(bool p_scroll_close) {
+	close_with_middle_mouse = p_scroll_close;
+}
+
+bool TabBar::get_close_with_middle_mouse() const {
+	return close_with_middle_mouse;
 }
 
 void TabBar::set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy) {
@@ -1784,6 +1984,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("ensure_tab_visible", "idx"), &TabBar::ensure_tab_visible);
 	ClassDB::bind_method(D_METHOD("get_tab_rect", "tab_idx"), &TabBar::get_tab_rect);
 	ClassDB::bind_method(D_METHOD("move_tab", "from", "to"), &TabBar::move_tab);
+	ClassDB::bind_method(D_METHOD("set_close_with_middle_mouse", "enabled"), &TabBar::set_close_with_middle_mouse);
+	ClassDB::bind_method(D_METHOD("get_close_with_middle_mouse"), &TabBar::get_close_with_middle_mouse);
 	ClassDB::bind_method(D_METHOD("set_tab_close_display_policy", "policy"), &TabBar::set_tab_close_display_policy);
 	ClassDB::bind_method(D_METHOD("get_tab_close_display_policy"), &TabBar::get_tab_close_display_policy);
 	ClassDB::bind_method(D_METHOD("set_max_tab_width", "width"), &TabBar::set_max_tab_width);
@@ -1814,6 +2016,7 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "close_with_middle_mouse"), "set_close_with_middle_mouse", "get_close_with_middle_mouse");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_tab_width", PROPERTY_HINT_RANGE, "0,99999,1,suffix:px"), "set_max_tab_width", "get_max_tab_width");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
@@ -1836,6 +2039,7 @@ void TabBar::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_MAX);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, tab_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, icon_max_width);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_unselected_style, "tab_unselected");
@@ -1868,16 +2072,19 @@ void TabBar::_bind_methods() {
 	Tab defaults(true);
 
 	base_property_helper.set_prefix("tab_");
+	base_property_helper.set_array_length_getter(&TabBar::get_tab_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "title"), defaults.text, &TabBar::set_tab_title, &TabBar::get_tab_title);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "tooltip"), defaults.tooltip, &TabBar::set_tab_tooltip, &TabBar::get_tab_tooltip);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &TabBar::set_tab_icon, &TabBar::get_tab_icon);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &TabBar::set_tab_disabled, &TabBar::is_tab_disabled);
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 TabBar::TabBar() {
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_size(Size2(get_size().width, get_minimum_size().height));
 	set_focus_mode(FOCUS_ALL);
-	connect("mouse_exited", callable_mp(this, &TabBar::_on_mouse_exited));
+	connect(SceneStringName(mouse_exited), callable_mp(this, &TabBar::_on_mouse_exited));
 
 	property_helper.setup_for_instance(base_property_helper, this);
 }

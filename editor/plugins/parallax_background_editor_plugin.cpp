@@ -118,8 +118,8 @@ void ParallaxBackgroundEditorPlugin::convert_to_parallax2d() {
 void ParallaxBackgroundEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			menu->get_popup()->connect("id_pressed", callable_mp(this, &ParallaxBackgroundEditorPlugin::_menu_callback));
-			menu->set_icon(menu->get_editor_theme_icon(SNAME("ParallaxBackground")));
+			menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ParallaxBackgroundEditorPlugin::_menu_callback));
+			menu->set_button_icon(menu->get_editor_theme_icon(SNAME("ParallaxBackground")));
 		} break;
 	}
 }
@@ -133,5 +133,7 @@ ParallaxBackgroundEditorPlugin::ParallaxBackgroundEditorPlugin() {
 	menu->get_popup()->add_item(TTR("Convert to Parallax2D"), MENU_CONVERT_TO_PARALLAX_2D);
 	menu->set_text(TTR("ParallaxBackground"));
 	menu->set_switch_on_hover(true);
+	menu->set_flat(false);
+	menu->set_theme_type_variation("FlatMenuButton");
 	toolbar->add_child(menu);
 }

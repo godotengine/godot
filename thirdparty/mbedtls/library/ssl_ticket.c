@@ -534,6 +534,10 @@ cleanup:
  */
 void mbedtls_ssl_ticket_free(mbedtls_ssl_ticket_context *ctx)
 {
+    if (ctx == NULL) {
+        return;
+    }
+
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
     psa_destroy_key(ctx->keys[0].key);
     psa_destroy_key(ctx->keys[1].key);

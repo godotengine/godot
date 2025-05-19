@@ -18,13 +18,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.2-dev\n"
 
-msgid "Example: %s"
-msgstr "Eksempel: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d element"
-msgstr[1] "%d elementer"
+msgid "All Recognized"
+msgstr "Alle gjenkjente"
 
 msgid "Network"
 msgstr "Nettverk"
@@ -35,8 +30,8 @@ msgstr "Åpne"
 msgid "Select Current Folder"
 msgstr "Velg Gjeldende Mappe"
 
-msgid "All Recognized"
-msgstr "Alle gjenkjente"
+msgid "Save"
+msgstr "Lagre"
 
 msgid "Open a File"
 msgstr "Åpne en fil"
@@ -49,9 +44,6 @@ msgstr "Åpne ei mappe"
 
 msgid "Open a File or Directory"
 msgstr "Åpne ei fil eller mappe"
-
-msgid "Save"
-msgstr "Lagre"
 
 msgid "Save a File"
 msgstr "Lagre ei fil"

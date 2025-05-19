@@ -152,7 +152,7 @@
 		<method name="get_time_zone_from_system" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns the current time zone as a dictionary of keys: [code]bias[/code] and [code]name[/code]. 
+				Returns the current time zone as a dictionary of keys: [code]bias[/code] and [code]name[/code].
 				- [code]bias[/code] is the offset from UTC in minutes, since not all time zones are multiples of an hour from UTC.
 				- [code]name[/code] is the localized name of the time zone, according to the OS locale settings of the current user.
 			</description>

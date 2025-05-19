@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FBX_STATE_H
-#define FBX_STATE_H
+#pragma once
 
 #include "modules/gltf/gltf_defines.h"
 #include "modules/gltf/gltf_state.h"
@@ -50,9 +49,10 @@ class FBXState : public GLTFState {
 	bool allow_geometry_helper_nodes = false;
 
 	HashMap<uint64_t, Image::AlphaMode> alpha_mode_cache;
-	HashMap<Pair<uint64_t, uint64_t>, GLTFTextureIndex, PairHash<uint64_t, uint64_t>> albedo_transparency_textures;
+	HashMap<Pair<uint64_t, uint64_t>, GLTFTextureIndex> albedo_transparency_textures;
 
 	Vector<GLTFSkinIndex> skin_indices;
+	Vector<GLTFSkinIndex> original_skin_indices;
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_fbx_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_fbx_skin;
 	HashSet<String> unique_mesh_names; // Not in GLTFState because GLTFState prefixes mesh names with the scene name (or _)
@@ -64,5 +64,3 @@ public:
 	bool get_allow_geometry_helper_nodes();
 	void set_allow_geometry_helper_nodes(bool p_allow_geometry_helper_nodes);
 };
-
-#endif // FBX_STATE_H

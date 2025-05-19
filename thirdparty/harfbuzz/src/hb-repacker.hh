@@ -337,9 +337,10 @@ bool _process_overflows (const hb_vector_t<graph::overflow_record_t>& overflows,
 inline bool
 hb_resolve_graph_overflows (hb_tag_t table_tag,
                             unsigned max_rounds ,
-                            bool recalculate_extensions,
+                            bool always_recalculate_extensions,
                             graph_t& sorted_graph /* IN/OUT */)
 {
+  DEBUG_MSG (SUBSET_REPACK, nullptr, "Repacking %c%c%c%c.", HB_UNTAG(table_tag));
   sorted_graph.sort_shortest_distance ();
   if (sorted_graph.in_error ())
   {
@@ -351,12 +352,12 @@ hb_resolve_graph_overflows (hb_tag_t table_tag,
   if (!will_overflow)
     return true;
 
+  bool is_gsub_or_gpos = (table_tag == HB_OT_TAG_GPOS ||  table_tag == HB_OT_TAG_GSUB);
   graph::gsubgpos_graph_context_t ext_context (table_tag, sorted_graph);
-  if ((table_tag == HB_OT_TAG_GPOS
-       ||  table_tag == HB_OT_TAG_GSUB)
-      && will_overflow)
+  if (is_gsub_or_gpos && will_overflow)
   {
-    if (recalculate_extensions)
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "Applying GSUB/GPOS repacking specializations.");
+    if (always_recalculate_extensions)
     {
       DEBUG_MSG (SUBSET_REPACK, nullptr, "Splitting subtables if needed.");
       if (!_presplit_subtables_if_needed (ext_context)) {
@@ -412,6 +413,13 @@ hb_resolve_graph_overflows (hb_tag_t table_tag,
 
   if (graph::will_overflow (sorted_graph))
   {
+    if (is_gsub_or_gpos && !always_recalculate_extensions) {
+      // If this a GSUB/GPOS table and we didn't try to extension promotion and table splitting then
+      // as a last ditch effort, re-run the repacker with it enabled.
+      DEBUG_MSG (SUBSET_REPACK, nullptr, "Failed to find a resolution. Re-running with extension promotion and table splitting enabled.");
+      return hb_resolve_graph_overflows (table_tag, max_rounds, true, sorted_graph);
+    }
+
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Offset overflow resolution failed.");
     return false;
   }

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PATH_3D_H
-#define PATH_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/curve.h"
@@ -40,11 +39,14 @@ class Path3D : public Node3D {
 private:
 	Ref<Curve3D> curve;
 	RID debug_instance;
+	Color debug_custom_color;
 	Ref<ArrayMesh> debug_mesh;
+	Ref<Material> debug_material;
 
 	Callable update_callback; // Used only by CSG currently.
 
 	void _update_debug_mesh();
+	void _update_debug_path_material();
 	void _curve_changed();
 
 protected:
@@ -57,6 +59,14 @@ public:
 
 	void set_curve(const Ref<Curve3D> &p_curve);
 	Ref<Curve3D> get_curve() const;
+
+	const Color &get_debug_custom_color() const;
+	void set_debug_custom_color(const Color &p_color);
+
+	bool get_debug_show() const;
+	void set_debug_show(bool p_show);
+
+	Ref<StandardMaterial3D> get_debug_material();
 
 	Path3D();
 	~Path3D();
@@ -90,7 +100,6 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 	void _notification(int p_what);
-	void _update_transform();
 
 	static void _bind_methods();
 
@@ -124,13 +133,9 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
-	void update_transform(bool p_immediate = false);
+	void update_transform();
 
 	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
-
-	PathFollow3D() {}
 };
 
 VARIANT_ENUM_CAST(PathFollow3D::RotationMode);
-
-#endif // PATH_3D_H

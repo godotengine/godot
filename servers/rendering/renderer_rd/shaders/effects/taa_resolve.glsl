@@ -250,19 +250,25 @@ vec3 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec3 p, vec3 q) {
 	vec3 rmax = (aabb_max - p.xyz);
 	vec3 rmin = (aabb_min - p.xyz);
 
-	if (r.x > rmax.x + FLT_MIN)
+	if (r.x > rmax.x + FLT_MIN) {
 		r *= (rmax.x / r.x);
-	if (r.y > rmax.y + FLT_MIN)
+	}
+	if (r.y > rmax.y + FLT_MIN) {
 		r *= (rmax.y / r.y);
-	if (r.z > rmax.z + FLT_MIN)
+	}
+	if (r.z > rmax.z + FLT_MIN) {
 		r *= (rmax.z / r.z);
+	}
 
-	if (r.x < rmin.x - FLT_MIN)
+	if (r.x < rmin.x - FLT_MIN) {
 		r *= (rmin.x / r.x);
-	if (r.y < rmin.y - FLT_MIN)
+	}
+	if (r.y < rmin.y - FLT_MIN) {
 		r *= (rmin.y / r.y);
-	if (r.z < rmin.z - FLT_MIN)
+	}
+	if (r.z < rmin.z - FLT_MIN) {
 		r *= (rmin.z / r.z);
+	}
 
 	return p + r;
 }
@@ -307,6 +313,8 @@ float luminance(vec3 color) {
 	return max(dot(color, lumCoeff), 0.0001f);
 }
 
+// This is "velocity disocclusion" as described by https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/.
+// We use texel space, so our scale and threshold differ.
 float get_factor_disocclusion(vec2 uv_reprojected, vec2 velocity) {
 	vec2 velocity_previous = imageLoad(last_velocity_buffer, ivec2(uv_reprojected * params.resolution)).xy;
 	vec2 velocity_texels = velocity * params.resolution;
@@ -336,7 +344,7 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	// Compute blend factor
 	float blend_factor = RPC_16; // We want to be able to accumulate as many jitter samples as we generated, that is, 16.
 	{
-		// If re-projected UV is out of screen, converge to current color immediatel
+		// If re-projected UV is out of screen, converge to current color immediately.
 		float factor_screen = any(lessThan(uv_reprojected, vec2(0.0))) || any(greaterThan(uv_reprojected, vec2(1.0))) ? 1.0 : 0.0;
 
 		// Increase blend factor when there is disocclusion (fixes a lot of the remaining ghosting).

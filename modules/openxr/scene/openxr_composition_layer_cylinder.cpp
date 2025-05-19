@@ -30,28 +30,13 @@
 
 #include "openxr_composition_layer_cylinder.h"
 
-#include "../extensions/openxr_composition_layer_extension.h"
-#include "../openxr_api.h"
 #include "../openxr_interface.h"
 
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/main/viewport.h"
 #include "scene/resources/mesh.h"
 
-OpenXRCompositionLayerCylinder::OpenXRCompositionLayerCylinder() {
-	composition_layer = {
-		XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR, // type
-		nullptr, // next
-		0, // layerFlags
-		XR_NULL_HANDLE, // space
-		XR_EYE_VISIBILITY_BOTH, // eyeVisibility
-		{}, // subImage
-		{ { 0, 0, 0, 0 }, { 0, 0, 0 } }, // pose
-		radius, // radius
-		central_angle, // centralAngle
-		aspect_ratio, // aspectRatio
-	};
-	openxr_layer_provider = memnew(OpenXRViewportCompositionLayerProvider((XrCompositionLayerBaseHeader *)&composition_layer));
+OpenXRCompositionLayerCylinder::OpenXRCompositionLayerCylinder() :
+		OpenXRCompositionLayer((XrCompositionLayerBaseHeader *)&composition_layer) {
+	XRServer::get_singleton()->connect("reference_frame_changed", callable_mp(this, &OpenXRCompositionLayerCylinder::update_transform));
 }
 
 OpenXRCompositionLayerCylinder::~OpenXRCompositionLayerCylinder() {
@@ -76,13 +61,6 @@ void OpenXRCompositionLayerCylinder::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fallback_segments", PROPERTY_HINT_NONE, ""), "set_fallback_segments", "get_fallback_segments");
 }
 
-void OpenXRCompositionLayerCylinder::_on_openxr_session_begun() {
-	OpenXRCompositionLayer::_on_openxr_session_begun();
-	if (openxr_api) {
-		composition_layer.space = openxr_api->get_play_space();
-	}
-}
-
 Ref<Mesh> OpenXRCompositionLayerCylinder::_create_fallback_mesh() {
 	Ref<ArrayMesh> mesh;
 	mesh.instantiate();
@@ -99,7 +77,7 @@ Ref<Mesh> OpenXRCompositionLayerCylinder::_create_fallback_mesh() {
 	Vector<int> indices;
 
 	float delta_angle = central_angle / fallback_segments;
-	float start_angle = (-Math_PI / 2.0) - (central_angle / 2.0);
+	float start_angle = (-Math::PI / 2.0) - (central_angle / 2.0);
 
 	for (uint32_t i = 0; i < fallback_segments + 1; i++) {
 		float current_angle = start_angle + (delta_angle * i);
@@ -138,12 +116,13 @@ Ref<Mesh> OpenXRCompositionLayerCylinder::_create_fallback_mesh() {
 void OpenXRCompositionLayerCylinder::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			Transform3D transform = get_transform();
-			Quaternion quat(transform.basis.orthonormalized());
-			composition_layer.pose.orientation = { (float)quat.x, (float)quat.y, (float)quat.z, (float)quat.w };
-			composition_layer.pose.position = { (float)transform.origin.x, (float)transform.origin.y, (float)transform.origin.z };
+			update_transform();
 		} break;
 	}
+}
+
+void OpenXRCompositionLayerCylinder::update_transform() {
+	composition_layer.pose = get_openxr_pose();
 }
 
 void OpenXRCompositionLayerCylinder::set_radius(float p_radius) {
@@ -213,7 +192,7 @@ Vector2 OpenXRCompositionLayerCylinder::intersects_ray(const Vector3 &p_origin, 
 	Vector3 intersection = p_origin + p_direction * t;
 
 	Basis correction = cylinder_transform.basis.inverse();
-	correction.rotate(Vector3(0.0, 1.0, 0.0), -Math_PI / 2.0);
+	correction.rotate(Vector3(0.0, 1.0, 0.0), -Math::PI / 2.0);
 	Vector3 relative_point = correction.xform(intersection - cylinder_transform.origin);
 
 	Vector2 projected_point = Vector2(relative_point.x, relative_point.z);

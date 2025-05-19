@@ -11,7 +11,9 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/"}
     }
 }
 
-include ':assetPacks:installTime'
+include ':assetPacksInstallTime'
+project(':assetPacksInstallTime').projectDir = file("assetPacks/installTime")

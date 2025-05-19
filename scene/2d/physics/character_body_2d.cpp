@@ -352,14 +352,14 @@ void CharacterBody2D::_apply_floor_snap(bool p_wall_as_floor) {
 			floor_normal = result.collision_normal;
 			_set_platform_data(result);
 
-			if (floor_stop_on_slope) {
-				// move and collide may stray the object a bit because of pre un-stucking,
-				// so only ensure that motion happens on floor direction in this case.
-				if (result.travel.length() > margin) {
-					result.travel = up_direction * up_direction.dot(result.travel);
-				} else {
-					result.travel = Vector2();
-				}
+			// Ensure that we only move the body along the up axis, because
+			// move_and_collide may stray the object a bit when getting it unstuck.
+			// Canceling this motion should not affect move_and_slide, as previous
+			// calls to move_and_collide already took care of freeing the body.
+			if (result.travel.length() > margin) {
+				result.travel = up_direction * up_direction.dot(result.travel);
+			} else {
+				result.travel = Vector2();
 			}
 
 			parameters.from.columns[2] += result.travel;
@@ -409,7 +409,7 @@ void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResu
 		on_wall = true;
 		wall_normal = p_result.collision_normal;
 		// Don't apply wall velocity when the collider is a CharacterBody2D.
-		if (Object::cast_to<CharacterBody2D>(ObjectDB::get_instance(p_result.collider_id)) == nullptr) {
+		if (ObjectDB::get_instance<CharacterBody2D>(p_result.collider_id) == nullptr) {
 			_set_platform_data(p_result);
 		}
 	}
@@ -509,7 +509,7 @@ Ref<KinematicCollision2D> CharacterBody2D::_get_slide_collision(int p_bounce) {
 }
 
 Ref<KinematicCollision2D> CharacterBody2D::_get_last_slide_collision() {
-	if (motion_results.size() == 0) {
+	if (motion_results.is_empty()) {
 		return Ref<KinematicCollision2D>();
 	}
 	return _get_slide_collision(motion_results.size() - 1);

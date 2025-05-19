@@ -142,14 +142,51 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 
 void TabContainer::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
+			tab_panels.clear();
+		} break;
+
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			int tab_index = 0;
+			int tab_cur = tab_bar->get_current_tab();
+			for (int i = 0; i < get_child_count(); i++) {
+				Node *child_node = get_child(i);
+				Window *child_wnd = Object::cast_to<Window>(child_node);
+				if (child_wnd && !child_wnd->is_embedded()) {
+					continue;
+				}
+				if (child_node->is_part_of_edited_scene()) {
+					continue;
+				}
+				Control *control = as_sortable_control(child_node, SortableVisibilityMode::IGNORE);
+				if (!control || control == tab_bar || children_removing.has(control)) {
+					DisplayServer::get_singleton()->accessibility_update_add_child(ae, child_node->get_accessibility_element());
+				} else {
+					if (!tab_panels.has(child_node)) {
+						tab_panels[child_node] = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_TAB_PANEL);
+					}
+					RID panel = tab_panels[child_node];
+					RID tab = tab_bar->get_tab_accessibility_element(tab_index);
+
+					DisplayServer::get_singleton()->accessibility_update_add_related_controls(tab, panel);
+					DisplayServer::get_singleton()->accessibility_update_add_related_labeled_by(panel, tab);
+					DisplayServer::get_singleton()->accessibility_update_set_flag(panel, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, tab_index != tab_cur);
+					DisplayServer::get_singleton()->accessibility_update_add_child(panel, child_node->get_accessibility_element());
+
+					tab_index++;
+				}
+			}
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			// If some nodes happen to be renamed outside the tree, the tab names need to be updated manually.
 			if (get_tab_count() > 0) {
 				_refresh_tab_names();
 			}
-		} break;
 
-		case NOTIFICATION_POST_ENTER_TREE: {
 			if (setup_current_tab >= -1) {
 				set_current_tab(setup_current_tab);
 				setup_current_tab = -2;
@@ -191,6 +228,25 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				return;
+			}
+
+			updating_visibility = true;
+
+			// As the visibility change notification will be triggered for all children soon after,
+			// beat it to the punch and make sure that the correct node is the only one visible first.
+			// Otherwise, it can prevent a tab change done right before this container was made visible.
+			Vector<Control *> controls = _get_tab_controls();
+			int current = setup_current_tab > -2 ? setup_current_tab : get_current_tab();
+			for (int i = 0; i < controls.size(); i++) {
+				controls[i]->set_visible(i == current);
+			}
+
+			updating_visibility = false;
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
@@ -226,10 +282,11 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), theme_cache.font_disabled_color);
 	tab_bar->add_theme_color_override(SNAME("font_outline_color"), theme_cache.font_outline_color);
 
-	tab_bar->add_theme_font_override(SNAME("font"), theme_cache.tab_font);
-	tab_bar->add_theme_font_size_override(SNAME("font_size"), theme_cache.tab_font_size);
+	tab_bar->add_theme_font_override(SceneStringName(font), theme_cache.tab_font);
+	tab_bar->add_theme_font_size_override(SceneStringName(font_size), theme_cache.tab_font_size);
 
 	tab_bar->add_theme_constant_override(SNAME("h_separation"), theme_cache.icon_separation);
+	tab_bar->add_theme_constant_override(SNAME("tab_separation"), theme_cache.tab_separation);
 	tab_bar->add_theme_constant_override(SNAME("icon_max_width"), theme_cache.icon_max_width);
 	tab_bar->add_theme_constant_override(SNAME("outline_size"), theme_cache.outline_size);
 
@@ -250,10 +307,14 @@ void TabContainer::_repaint() {
 	Vector<Control *> controls = _get_tab_controls();
 	int current = get_current_tab();
 
+	// Move the TabBar to the top or bottom.
+	// Don't change the left and right offsets since the TabBar will resize and may change tab offset.
 	if (tabs_position == POSITION_BOTTOM) {
-		tab_bar->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
+		tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 1.0, 0.0);
+		tab_bar->set_anchor_and_offset(SIDE_TOP, 1.0, -_get_tab_height());
 	} else {
-		tab_bar->set_anchors_and_offsets_preset(PRESET_TOP_WIDE);
+		tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height());
+		tab_bar->set_anchor_and_offset(SIDE_TOP, 0.0, 0.0);
 	}
 
 	updating_visibility = true;
@@ -282,19 +343,20 @@ void TabContainer::_repaint() {
 	}
 	updating_visibility = false;
 
-	_update_margins();
 	update_minimum_size();
 }
 
 void TabContainer::_update_margins() {
-	int menu_width = theme_cache.menu_icon->get_width();
-
 	// Directly check for validity, to avoid errors when quitting.
 	bool has_popup = popup_obj_id.is_valid();
+	int menu_width = 0;
+	if (has_popup) {
+		menu_width = theme_cache.menu_icon->get_width();
+	}
 
 	if (get_tab_count() == 0) {
 		tab_bar->set_offset(SIDE_LEFT, 0);
-		tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+		tab_bar->set_offset(SIDE_RIGHT, -menu_width);
 
 		return;
 	}
@@ -302,12 +364,12 @@ void TabContainer::_update_margins() {
 	switch (get_tab_alignment()) {
 		case TabBar::ALIGNMENT_LEFT: {
 			tab_bar->set_offset(SIDE_LEFT, theme_cache.side_margin);
-			tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+			tab_bar->set_offset(SIDE_RIGHT, -menu_width);
 		} break;
 
 		case TabBar::ALIGNMENT_CENTER: {
 			tab_bar->set_offset(SIDE_LEFT, 0);
-			tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+			tab_bar->set_offset(SIDE_RIGHT, -menu_width);
 		} break;
 
 		case TabBar::ALIGNMENT_RIGHT: {
@@ -324,7 +386,7 @@ void TabContainer::_update_margins() {
 
 			// Calculate if all the tabs would still fit if the margin was present.
 			if (get_clip_tabs() && (tab_bar->get_offset_buttons_visible() || (get_tab_count() > 1 && (total_tabs_width + theme_cache.side_margin) > get_size().width))) {
-				tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+				tab_bar->set_offset(SIDE_RIGHT, -menu_width);
 			} else {
 				tab_bar->set_offset(SIDE_RIGHT, -theme_cache.side_margin);
 			}
@@ -345,8 +407,8 @@ void TabContainer::_on_mouse_exited() {
 Vector<Control *> TabContainer::_get_tab_controls() const {
 	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *control = Object::cast_to<Control>(get_child(i));
-		if (!control || control->is_set_as_top_level() || control == tab_bar || children_removing.has(control)) {
+		Control *control = as_sortable_control(get_child(i), SortableVisibilityMode::IGNORE);
+		if (!control || control == tab_bar || children_removing.has(control)) {
 			continue;
 		}
 
@@ -522,8 +584,8 @@ void TabContainer::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	Control *c = Object::cast_to<Control>(p_child);
-	if (!c || c->is_set_as_top_level()) {
+	Control *c = as_sortable_control(p_child, SortableVisibilityMode::IGNORE);
+	if (!c) {
 		return;
 	}
 	c->hide();
@@ -535,9 +597,10 @@ void TabContainer::add_child_notify(Node *p_child) {
 	if (get_tab_count() == 1) {
 		queue_redraw();
 	}
+	queue_accessibility_update();
 
 	p_child->connect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
-	p_child->connect(SNAME("visibility_changed"), callable_mp(this, &TabContainer::_on_tab_visibility_changed).bind(c));
+	p_child->connect(SceneStringName(visibility_changed), callable_mp(this, &TabContainer::_on_tab_visibility_changed).bind(c));
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
@@ -552,23 +615,29 @@ void TabContainer::move_child_notify(Node *p_child) {
 		return;
 	}
 
-	Control *c = Object::cast_to<Control>(p_child);
-	if (c && !c->is_set_as_top_level()) {
+	Control *c = as_sortable_control(p_child, SortableVisibilityMode::IGNORE);
+	if (c) {
 		tab_bar->move_tab(c->get_meta("_tab_index"), get_tab_idx_from_control(c));
 	}
 
 	_refresh_tab_indices();
+	queue_accessibility_update();
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
 	Container::remove_child_notify(p_child);
 
+	if (tab_panels.has(p_child)) {
+		DisplayServer::get_singleton()->accessibility_free_element(tab_panels[p_child]);
+		tab_panels.erase(p_child);
+	}
+
 	if (p_child == tab_bar) {
 		return;
 	}
 
-	Control *c = Object::cast_to<Control>(p_child);
-	if (!c || c->is_set_as_top_level()) {
+	Control *c = as_sortable_control(p_child, SortableVisibilityMode::IGNORE);
+	if (!c) {
 		return;
 	}
 
@@ -586,11 +655,12 @@ void TabContainer::remove_child_notify(Node *p_child) {
 	if (get_tab_count() == 0) {
 		queue_redraw();
 	}
+	queue_accessibility_update();
 
 	p_child->remove_meta("_tab_index");
 	p_child->remove_meta("_tab_name");
 	p_child->disconnect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
-	p_child->disconnect(SNAME("visibility_changed"), callable_mp(this, &TabContainer::_on_tab_visibility_changed));
+	p_child->disconnect(SceneStringName(visibility_changed), callable_mp(this, &TabContainer::_on_tab_visibility_changed));
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
@@ -611,6 +681,7 @@ void TabContainer::set_current_tab(int p_current) {
 		setup_current_tab = p_current;
 		return;
 	}
+
 	tab_bar->set_current_tab(p_current);
 }
 
@@ -891,7 +962,7 @@ Size2 TabContainer::get_minimum_size() const {
 	for (int i = 0; i < controls.size(); i++) {
 		Control *c = controls[i];
 
-		if (!c->is_visible_in_tree() && !use_hidden_tabs_for_min_size) {
+		if (!c->is_visible() && !use_hidden_tabs_for_min_size) {
 			continue;
 		}
 
@@ -929,7 +1000,7 @@ void TabContainer::set_popup(Node *p_popup) {
 
 Popup *TabContainer::get_popup() const {
 	if (popup_obj_id.is_valid()) {
-		Popup *popup = Object::cast_to<Popup>(ObjectDB::get_instance(popup_obj_id));
+		Popup *popup = ObjectDB::get_instance<Popup>(popup_obj_id);
 		if (popup) {
 			return popup;
 		} else {
@@ -1056,6 +1127,7 @@ void TabContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(POSITION_MAX);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, side_margin);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, tab_separation);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tabbar_style, "tabbar_background");
@@ -1103,5 +1175,5 @@ TabContainer::TabContainer() {
 	tab_bar->connect("tab_button_pressed", callable_mp(this, &TabContainer::_on_tab_button_pressed));
 	tab_bar->connect("active_tab_rearranged", callable_mp(this, &TabContainer::_on_active_tab_rearranged));
 
-	connect("mouse_exited", callable_mp(this, &TabContainer::_on_mouse_exited));
+	connect(SceneStringName(mouse_exited), callable_mp(this, &TabContainer::_on_mouse_exited));
 }

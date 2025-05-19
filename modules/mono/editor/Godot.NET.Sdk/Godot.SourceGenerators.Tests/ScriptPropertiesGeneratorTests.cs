@@ -57,4 +57,22 @@ public class ScriptPropertiesGeneratorTests
             "ScriptBoilerplate_ScriptProperties.generated.cs", "OuterClass.NestedClass_ScriptProperties.generated.cs"
         );
     }
+
+    [Fact]
+    public async void AbstractGenericNode()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
+            "AbstractGenericNode.cs",
+            "AbstractGenericNode(Of T)_ScriptProperties.generated.cs"
+        );
+    }
+
+    [Fact]
+    public async void ExportedButtons()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
+            "ExportedToolButtons.cs",
+            "ExportedToolButtons_ScriptProperties.generated.cs"
+        );
+    }
 }

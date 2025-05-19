@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFTexture" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		GLTFTexture represents a texture in a GLTF file.
+		GLTFTexture represents a texture in a glTF file.
 	</brief_description>
 	<description>
 	</description>

@@ -28,20 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STATIC_RAYCASTER_H
-#define STATIC_RAYCASTER_H
+#pragma once
 
 #include "core/object/ref_counted.h"
-
-#if !defined(__aligned)
-
-#if defined(_WIN32) && defined(_MSC_VER)
-#define __aligned(...) __declspec(align(__VA_ARGS__))
-#else
-#define __aligned(...) __attribute__((aligned(__VA_ARGS__)))
-#endif
-
-#endif
 
 class StaticRaycaster : public RefCounted {
 	GDCLASS(StaticRaycaster, RefCounted)
@@ -49,8 +38,8 @@ protected:
 	static StaticRaycaster *(*create_function)();
 
 public:
-	// compatible with embree3 rays
-	struct __aligned(16) Ray {
+	// Compatible with embree4 rays.
+	struct alignas(16) Ray {
 		const static unsigned int INVALID_GEOMETRY_ID = ((unsigned int)-1); // from rtcore_common.h
 
 		/*! Default construction does nothing. */
@@ -62,7 +51,7 @@ public:
 		_FORCE_INLINE_ Ray(const Vector3 &p_org,
 				const Vector3 &p_dir,
 				float p_tnear = 0.0f,
-				float p_tfar = INFINITY) :
+				float p_tfar = Math::INF) :
 				org(p_org),
 				tnear(p_tnear),
 				dir(p_dir),
@@ -107,5 +96,3 @@ public:
 
 	static Ref<StaticRaycaster> create();
 };
-
-#endif // STATIC_RAYCASTER_H

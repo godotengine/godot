@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORLD_BOUNDARY_SHAPE_2D_H
-#define WORLD_BOUNDARY_SHAPE_2D_H
+#pragma once
 
 #include "scene/resources/2d/shape_2d.h"
 
@@ -61,5 +60,3 @@ public:
 
 	WorldBoundaryShape2D();
 };
-
-#endif // WORLD_BOUNDARY_SHAPE_2D_H

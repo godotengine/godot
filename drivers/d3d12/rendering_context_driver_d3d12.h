@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_CONTEXT_DRIVER_D3D12_H
-#define RENDERING_CONTEXT_DRIVER_D3D12_H
+#pragma once
 
-#include "core/error/error_list.h"
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid_owner.h"
@@ -39,31 +37,34 @@
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wswitch"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#endif
-
 #if defined(AS)
 #undef AS
 #endif
 
-#include "d3dx12.h"
+#ifdef DCOMP_ENABLED
+#if (WINVER < _WIN32_WINNT_WIN8) && defined(_MSC_VER)
+#pragma push_macro("NTDDI_VERSION")
+#pragma push_macro("WINVER")
+#undef NTDDI_VERSION
+#undef WINVER
+#define NTDDI_VERSION NTDDI_WIN8
+#define WINVER _WIN32_WINNT_WIN8
+#include <dcomp.h>
+#pragma pop_macro("WINVER")
+#pragma pop_macro("NTDDI_VERSION")
+#else
+#include <dcomp.h>
+#endif
+#endif
+
+#include <d3dx12.h>
 #include <dxgi1_6.h>
 
 #include <wrl/client.h>
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
-
 using Microsoft::WRL::ComPtr;
 
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#define ARRAY_SIZE(a) std::size(a)
 
 class RenderingContextDriverD3D12 : public RenderingContextDriver {
 	ComPtr<ID3D12DeviceFactory> device_factory;
@@ -105,10 +106,18 @@ public:
 		uint32_t height = 0;
 		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
 		bool needs_resize = false;
+#ifdef DCOMP_ENABLED
+		ComPtr<IDCompositionDevice> composition_device;
+		ComPtr<IDCompositionTarget> composition_target;
+		ComPtr<IDCompositionVisual> composition_visual;
+#endif
 	};
 
 	HMODULE lib_d3d12 = nullptr;
 	HMODULE lib_dxgi = nullptr;
+#ifdef DCOMP_ENABLED
+	HMODULE lib_dcomp = nullptr;
+#endif
 
 	IDXGIAdapter1 *create_adapter(uint32_t p_adapter_index) const;
 	ID3D12DeviceFactory *device_factory_get() const;
@@ -119,5 +128,3 @@ public:
 	RenderingContextDriverD3D12();
 	virtual ~RenderingContextDriverD3D12() override;
 };
-
-#endif // RENDERING_CONTEXT_DRIVER_D3D12_H

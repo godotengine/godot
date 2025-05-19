@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROJECT_SETTINGS_EDITOR_H
-#define PROJECT_SETTINGS_EDITOR_H
+#pragma once
 
 #include "core/config/project_settings.h"
 #include "editor/action_map_editor.h"
@@ -41,14 +40,23 @@
 #include "editor/localization_editor.h"
 #include "editor/plugins/editor_plugin_settings.h"
 #include "editor/shader_globals_editor.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/texture_rect.h"
 
 class FileSystemDock;
 
 class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
-	static ProjectSettingsEditor *singleton;
+	inline static ProjectSettingsEditor *singleton = nullptr;
+
+	enum {
+		FEATURE_ALL,
+		FEATURE_CUSTOM,
+		FEATURE_FIRST,
+	};
+
 	ProjectSettings *ps = nullptr;
 	Timer *timer = nullptr;
 
@@ -79,6 +87,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	ImportDefaultsEditor *import_defaults_editor = nullptr;
 	EditorData *data = nullptr;
+
+	bool settings_changed = false;
 
 	void _advanced_toggled(bool p_button_pressed);
 	void _update_advanced(bool p_is_advanced);
@@ -112,6 +122,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before);
 	void _update_action_map_editor();
 	void _update_theme();
+	void _save();
 
 protected:
 	void _notification(int p_what);
@@ -123,6 +134,7 @@ public:
 	void set_plugins_page();
 	void set_general_page(const String &p_category);
 	void update_plugins();
+	void init_autoloads();
 
 	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }
 	GroupSettingsEditor *get_group_settings() { return group_settings; }
@@ -133,5 +145,3 @@ public:
 
 	ProjectSettingsEditor(EditorData *p_data);
 };
-
-#endif // PROJECT_SETTINGS_EDITOR_H

@@ -100,7 +100,7 @@ struct Inlist
         if (element == tail) tail = element->prev;
     }
 
-    bool empty()
+    bool empty() const
     {
         return head ? false : true;
     }

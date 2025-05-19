@@ -1,6 +1,8 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotTools.ProjectEditor", "GodotTools.ProjectEditor\GodotTools.ProjectEditor.csproj", "{A8CDAD94-C6D4-4B19-A7E7-76C53CC92984}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotTools", "GodotTools\GodotTools.csproj", "{27B00618-A6F2-4828-B922-05CAEB08C286}"
@@ -61,5 +63,11 @@ Global
 		{55666071-BEC1-4A52-8A98-9A4A7A947DBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55666071-BEC1-4A52-8A98-9A4A7A947DBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55666071-BEC1-4A52-8A98-9A4A7A947DBF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {521EC35A-F7F0-46A9-92CE-680D2F5B02B8}
 	EndGlobalSection
 EndGlobal

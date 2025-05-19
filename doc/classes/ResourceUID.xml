@@ -4,7 +4,7 @@
 		A singleton that manages the unique identifiers of all resources within a project.
 	</brief_description>
 	<description>
-		Resource UIDs (Unique IDentifiers) allow the engine to keep references between resources intact, even if files can renamed or moved. They can be accessed with [code]uid://[/code].
+		Resource UIDs (Unique IDentifiers) allow the engine to keep references between resources intact, even if files are renamed or moved. They can be accessed with [code]uid://[/code].
 		[ResourceUID] keeps track of all registered resource UIDs in a project, generates new UIDs, and converts between their string and integer representations.
 	</description>
 	<tutorials>
@@ -24,6 +24,13 @@
 			<description>
 				Generates a random resource UID which is guaranteed to be unique within the list of currently loaded UIDs.
 				In order for this UID to be registered, you must call [method add_id] or [method set_id].
+			</description>
+		</method>
+		<method name="create_id_for_path">
+			<return type="int" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Like [method create_id], but the UID is seeded with the provided [param path] and project name. UIDs generated for that path will be always the same within the current project.
 			</description>
 		</method>
 		<method name="get_id_path" qualifiers="const">

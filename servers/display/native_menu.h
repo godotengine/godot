@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NATIVE_MENU_H
-#define NATIVE_MENU_H
+#pragma once
 
 #include "core/input/input.h"
-#include "core/io/resource.h"
-#include "core/os/os.h"
 #include "core/variant/callable.h"
 
 class Texture2D;
@@ -89,6 +86,8 @@ public:
 	virtual Callable get_popup_close_callback(const RID &p_rid) const;
 	virtual void set_minimum_width(const RID &p_rid, float p_width);
 	virtual float get_minimum_width(const RID &p_rid) const;
+
+	virtual bool is_opened(const RID &p_rid) const;
 
 	virtual int add_submenu_item(const RID &p_rid, const String &p_label, const RID &p_submenu_rid, const Variant &p_tag = Variant(), int p_index = -1);
 	virtual int add_item(const RID &p_rid, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
@@ -156,5 +155,3 @@ public:
 
 VARIANT_ENUM_CAST(NativeMenu::Feature);
 VARIANT_ENUM_CAST(NativeMenu::SystemMenus);
-
-#endif // NATIVE_MENU_H

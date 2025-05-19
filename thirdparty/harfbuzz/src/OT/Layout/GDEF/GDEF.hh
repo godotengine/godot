@@ -633,8 +633,8 @@ struct GDEFVersion1_2
 		  ligCaretList.sanitize (c, this) &&
 		  markAttachClassDef.sanitize (c, this) &&
 		  hb_barrier () &&
-		  (version.to_int () < 0x00010002u || markGlyphSetsDef.sanitize (c, this)) &&
-		  (version.to_int () < 0x00010003u || varStore.sanitize (c, this)));
+		  ((version.to_int () < 0x00010002u && hb_barrier ()) || markGlyphSetsDef.sanitize (c, this)) &&
+		  ((version.to_int () < 0x00010003u && hb_barrier ()) || varStore.sanitize (c, this)));
   }
 
   static void remap_varidx_after_instantiation (const hb_map_t& varidx_map,
@@ -668,13 +668,13 @@ struct GDEFVersion1_2
     // the end of the GDEF table.
     // See: https://github.com/harfbuzz/harfbuzz/issues/4636
     auto snapshot_version0 = c->serializer->snapshot ();
-    if (unlikely (version.to_int () >= 0x00010002u && !c->serializer->embed (markGlyphSetsDef)))
+    if (unlikely (version.to_int () >= 0x00010002u && hb_barrier () && !c->serializer->embed (markGlyphSetsDef)))
       return_trace (false);
 
     bool subset_varstore = false;
     unsigned varstore_index = (unsigned) -1;
     auto snapshot_version2 = c->serializer->snapshot ();
-    if (version.to_int () >= 0x00010003u)
+    if (version.to_int () >= 0x00010003u && hb_barrier ())
     {
       if (unlikely (!c->serializer->embed (varStore))) return_trace (false);
       if (c->plan->all_axes_pinned)
@@ -712,7 +712,7 @@ struct GDEFVersion1_2
     }
 
     bool subset_markglyphsetsdef = false;
-    if (version.to_int () >= 0x00010002u)
+    if (version.to_int () >= 0x00010002u && hb_barrier ())
     {
       subset_markglyphsetsdef = out->markGlyphSetsDef.serialize_subset (c, markGlyphSetsDef, this);
     }
@@ -875,7 +875,7 @@ struct GDEF
   bool has_mark_glyph_sets () const
   {
     switch (u.version.major) {
-    case 1: return u.version.to_int () >= 0x00010002u && u.version1.markGlyphSetsDef != 0;
+    case 1: return u.version.to_int () >= 0x00010002u && hb_barrier () && u.version1.markGlyphSetsDef != 0;
 #ifndef HB_NO_BEYOND_64K
     case 2: return u.version2.markGlyphSetsDef != 0;
 #endif
@@ -885,7 +885,7 @@ struct GDEF
   const MarkGlyphSets &get_mark_glyph_sets () const
   {
     switch (u.version.major) {
-    case 1: return u.version.to_int () >= 0x00010002u ? this+u.version1.markGlyphSetsDef : Null(MarkGlyphSets);
+    case 1: return u.version.to_int () >= 0x00010002u && hb_barrier () ? this+u.version1.markGlyphSetsDef : Null(MarkGlyphSets);
 #ifndef HB_NO_BEYOND_64K
     case 2: return this+u.version2.markGlyphSetsDef;
 #endif
@@ -895,7 +895,7 @@ struct GDEF
   bool has_var_store () const
   {
     switch (u.version.major) {
-    case 1: return u.version.to_int () >= 0x00010003u && u.version1.varStore != 0;
+    case 1: return u.version.to_int () >= 0x00010003u && hb_barrier () && u.version1.varStore != 0;
 #ifndef HB_NO_BEYOND_64K
     case 2: return u.version2.varStore != 0;
 #endif
@@ -905,7 +905,7 @@ struct GDEF
   const ItemVariationStore &get_var_store () const
   {
     switch (u.version.major) {
-    case 1: return u.version.to_int () >= 0x00010003u ? this+u.version1.varStore : Null(ItemVariationStore);
+    case 1: return u.version.to_int () >= 0x00010003u && hb_barrier () ? this+u.version1.varStore : Null(ItemVariationStore);
 #ifndef HB_NO_BEYOND_64K
     case 2: return this+u.version2.varStore;
 #endif
@@ -1021,47 +1021,6 @@ struct GDEF
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
   { get_lig_caret_list ().collect_variation_indices (c); }
-
-  void remap_layout_variation_indices (const hb_set_t *layout_variation_indices,
-				       const hb_vector_t<int>& normalized_coords,
-				       bool calculate_delta, /* not pinned at default */
-				       bool no_variations, /* all axes pinned */
-				       hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map /* OUT */) const
-  {
-    if (!has_var_store ()) return;
-    const ItemVariationStore &var_store = get_var_store ();
-    float *store_cache = var_store.create_cache ();
-
-    unsigned new_major = 0, new_minor = 0;
-    unsigned last_major = (layout_variation_indices->get_min ()) >> 16;
-    for (unsigned idx : layout_variation_indices->iter ())
-    {
-      int delta = 0;
-      if (calculate_delta)
-        delta = roundf (var_store.get_delta (idx, normalized_coords.arrayZ,
-                                             normalized_coords.length, store_cache));
-
-      if (no_variations)
-      {
-        layout_variation_idx_delta_map->set (idx, hb_pair_t<unsigned, int> (HB_OT_LAYOUT_NO_VARIATIONS_INDEX, delta));
-        continue;
-      }
-
-      uint16_t major = idx >> 16;
-      if (major >= var_store.get_sub_table_count ()) break;
-      if (major != last_major)
-      {
-	new_minor = 0;
-	++new_major;
-      }
-
-      unsigned new_idx = (new_major << 16) + new_minor;
-      layout_variation_idx_delta_map->set (idx, hb_pair_t<unsigned, int> (new_idx, delta));
-      ++new_minor;
-      last_major = major;
-    }
-    var_store.destroy_cache (store_cache);
-  }
 
   protected:
   union {

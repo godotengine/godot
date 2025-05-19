@@ -159,6 +159,11 @@ template<class T> inline T* NewPoolObject(T, int instances)
     return new(GetThreadPoolAllocator().allocate(instances * sizeof(T))) T[instances];
 }
 
+inline bool StartsWith(TString const &str, const char *prefix)
+{
+    return str.compare(0, strlen(prefix), prefix) == 0;
+}
+
 //
 // Pool allocator versions of vectors, lists, and maps
 //

@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MEMORY_H
-#define MEMORY_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/templates/safe_refcount.h"
 
-#include <stddef.h>
-#include <new>
+#include <new> // IWYU pragma: keep // `new` operators.
 #include <type_traits>
 
 class Memory {
@@ -43,8 +41,6 @@ class Memory {
 	static SafeNumeric<uint64_t> mem_usage;
 	static SafeNumeric<uint64_t> max_usage;
 #endif
-
-	static SafeNumeric<uint64_t> alloc_count;
 
 public:
 	// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
@@ -58,9 +54,35 @@ public:
 	static constexpr size_t ELEMENT_OFFSET = ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t) == 0) ? (SIZE_OFFSET + sizeof(uint64_t)) : ((SIZE_OFFSET + sizeof(uint64_t)) + alignof(uint64_t) - ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t)));
 	static constexpr size_t DATA_OFFSET = ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t) == 0) ? (ELEMENT_OFFSET + sizeof(uint64_t)) : ((ELEMENT_OFFSET + sizeof(uint64_t)) + alignof(max_align_t) - ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t)));
 
+	template <bool p_ensure_zero = false>
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
+	_FORCE_INLINE_ static void *alloc_static_zeroed(size_t p_bytes, bool p_pad_align = false) { return alloc_static<true>(p_bytes, p_pad_align); }
 	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
 	static void free_static(void *p_ptr, bool p_pad_align = false);
+
+	//	                            ↓ return value of alloc_aligned_static
+	//	┌─────────────────┬─────────┬─────────┬──────────────────┐
+	//	│ padding (up to  │ uint32_t│ void*   │ padding (up to   │
+	//	│ p_alignment - 1)│ offset  │ p_bytes │ p_alignment - 1) │
+	//	└─────────────────┴─────────┴─────────┴──────────────────┘
+	//
+	// alloc_aligned_static will allocate p_bytes + p_alignment - 1 + sizeof(uint32_t) and
+	// then offset the pointer until alignment is satisfied.
+	//
+	// This offset is stored before the start of the returned ptr so we can retrieve the original/real
+	// start of the ptr in order to free it.
+	//
+	// The rest is wasted as padding in the beginning and end of the ptr. The sum of padding at
+	// both start and end of the block must add exactly to p_alignment - 1.
+	//
+	// p_alignment MUST be a power of 2.
+	static void *alloc_aligned_static(size_t p_bytes, size_t p_alignment);
+	static void *realloc_aligned_static(void *p_memory, size_t p_bytes, size_t p_prev_bytes, size_t p_alignment);
+	// Pass the ptr returned by alloc_aligned_static to free it.
+	// e.g.
+	//	void *data = realloc_aligned_static( bytes, 16 );
+	//  free_aligned_static( data );
+	static void free_aligned_static(void *p_memory);
 
 	static uint64_t get_mem_available();
 	static uint64_t get_mem_usage();
@@ -87,6 +109,7 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 #endif
 
 #define memalloc(m_size) Memory::alloc_static(m_size)
+#define memalloc_zeroed(m_size) Memory::alloc_static_zeroed(m_size)
 #define memrealloc(m_mem, m_size) Memory::realloc_static(m_mem, m_size)
 #define memfree(m_mem) Memory::free_static(m_mem)
 
@@ -98,10 +121,10 @@ _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 	return p_obj;
 }
 
-#define memnew(m_class) _post_initialize(new ("") m_class)
+#define memnew(m_class) _post_initialize(::new ("") m_class)
 
-#define memnew_allocator(m_class, m_allocator) _post_initialize(new (m_allocator::alloc) m_class)
-#define memnew_placement(m_placement, m_class) _post_initialize(new (m_placement) m_class)
+#define memnew_allocator(m_class, m_allocator) _post_initialize(::new (m_allocator::alloc) m_class)
+#define memnew_placement(m_placement, m_class) _post_initialize(::new (m_placement) m_class)
 
 _ALWAYS_INLINE_ bool predelete_handler(void *) {
 	return true;
@@ -165,11 +188,29 @@ T *memnew_arr_template(size_t p_elements) {
 
 		/* call operator new */
 		for (size_t i = 0; i < p_elements; i++) {
-			new (&elems[i]) T;
+			::new (&elems[i]) T;
 		}
 	}
 
 	return (T *)mem;
+}
+
+// Fast alternative to a loop constructor pattern.
+template <bool p_ensure_zero = false, typename T>
+_FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
+	if constexpr (std::is_trivially_constructible_v<T> && !p_ensure_zero) {
+		// Don't need to do anything :)
+		(void)p_start;
+		(void)p_num;
+	} else if constexpr (is_zero_constructible_v<T>) {
+		// Can optimize with memset.
+		memset(static_cast<void *>(p_start), 0, p_num * sizeof(T));
+	} else {
+		// Need to use a for loop.
+		for (size_t i = 0; i < p_num; i++) {
+			memnew_placement(p_start + i, T);
+		}
+	}
 }
 
 /**
@@ -220,5 +261,3 @@ public:
 	_FORCE_INLINE_ T *new_allocation(const Args &&...p_args) { return memnew(T(p_args...)); }
 	_FORCE_INLINE_ void delete_allocation(T *p_allocation) { memdelete(p_allocation); }
 };
-
-#endif // MEMORY_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_STATUS_ITEM_H
-#define GODOT_STATUS_ITEM_H
+#pragma once
 
 #include "core/input/input_enums.h"
 #include "core/variant/callable.h"
@@ -37,15 +36,12 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
-@interface GodotStatusItemView : NSView {
-	NSImage *image;
+@interface GodotStatusItemDelegate : NSObject {
 	Callable cb;
 }
 
-- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index;
-- (void)setImage:(NSImage *)image;
+- (IBAction)click:(id)sender;
+
 - (void)setCallback:(const Callable &)callback;
 
 @end
-
-#endif // GODOT_STATUS_ITEM_H

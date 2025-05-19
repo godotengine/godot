@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VARIANT_CONVERTERS_H
-#define VARIANT_CONVERTERS_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/variant/array.h"
@@ -239,7 +238,8 @@ inline bool is_convertible_array(Variant::Type type) {
 	return type == Variant::ARRAY ||
 			type == Variant::PACKED_VECTOR2_ARRAY ||
 			type == Variant::PACKED_VECTOR3_ARRAY ||
-			type == Variant::PACKED_COLOR_ARRAY;
+			type == Variant::PACKED_COLOR_ARRAY ||
+			type == Variant::PACKED_VECTOR4_ARRAY;
 }
 
 template <typename, typename = void>
@@ -318,5 +318,3 @@ void write_array_std140(const Vector<From> &p_values, To *p_write, int p_array_s
 		}
 	}
 }
-
-#endif // VARIANT_CONVERTERS_H

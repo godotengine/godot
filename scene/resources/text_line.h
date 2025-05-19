@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_LINE_H
-#define TEXT_LINE_H
+#pragma once
 
 #include "scene/resources/font.h"
 #include "servers/text_server.h"
@@ -42,7 +41,7 @@ class TextLine : public RefCounted {
 private:
 	RID rid;
 
-	bool dirty = true;
+	mutable bool dirty = true;
 
 	float width = -1.0;
 	BitField<TextServer::JustificationFlag> flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
@@ -53,9 +52,15 @@ private:
 	Vector<float> tab_stops;
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	void _draw_bind_compat_104872(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
+	void _draw_outline_bind_compat_104872(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	static void _bind_compatibility_methods();
+#endif
+
 	static void _bind_methods();
 
-	void _shape();
+	void _shape() const;
 
 public:
 	RID get_rid() const;
@@ -64,6 +69,7 @@ public:
 
 	void set_direction(TextServer::Direction p_direction);
 	TextServer::Direction get_direction() const;
+	TextServer::Direction get_inferred_direction() const;
 
 	void set_bidi_override(const Array &p_override);
 
@@ -108,8 +114,8 @@ public:
 	float get_line_underline_position() const;
 	float get_line_underline_thickness() const;
 
-	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
-	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
 
 	int hit_test(float p_coords) const;
 
@@ -117,5 +123,3 @@ public:
 	TextLine();
 	~TextLine();
 };
-
-#endif // TEXT_LINE_H

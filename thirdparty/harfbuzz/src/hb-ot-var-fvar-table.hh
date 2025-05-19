@@ -43,7 +43,7 @@ static bool axis_coord_pinned_or_within_axis_range (const hb_array_t<const F16DO
                                                     unsigned axis_index,
                                                     Triple axis_limit)
 {
-  float axis_coord = coords[axis_index].to_float ();
+  double axis_coord = static_cast<double>(coords[axis_index].to_float ());
   if (axis_limit.is_point ())
   {
     if (axis_limit.minimum != axis_coord)
@@ -233,7 +233,10 @@ struct AxisRecord
   {
     float min, default_, max;
     get_coordinates (min, default_, max);
-    return TripleDistances (min, default_, max);
+    return TripleDistances (
+      static_cast<double>(min),
+      static_cast<double>(default_),
+      static_cast<double>(max));
   }
 
   bool subset (hb_subset_context_t *c) const

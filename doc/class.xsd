@@ -246,6 +246,8 @@
 											<xs:attribute type="xs:string" name="data_type" />
 											<xs:attribute type="xs:string" name="type" />
 											<xs:attribute type="xs:string" name="default" use="optional" />
+											<xs:attribute type="xs:string" name="deprecated" use="optional" />
+											<xs:attribute type="xs:string" name="experimental" use="optional" />
 											<xs:attribute type="xs:string" name="keywords" use="optional" />
 										</xs:extension>
 									</xs:simpleContent>

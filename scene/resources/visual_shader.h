@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VISUAL_SHADER_H
-#define VISUAL_SHADER_H
+#pragma once
 
 #include "core/string/string_builder.h"
 #include "core/templates/safe_refcount.h"
@@ -39,10 +38,11 @@
 class VisualShaderNodeParameter;
 class VisualShaderNode;
 
+template <typename T, typename V>
+class VMap;
+
 class VisualShader : public Shader {
 	GDCLASS(VisualShader, Shader);
-
-	friend class VisualShaderNodeVersionChecker;
 
 public:
 	enum Type {
@@ -68,7 +68,7 @@ public:
 
 	struct DefaultTextureParam {
 		StringName name;
-		List<Ref<Texture2D>> params;
+		List<Ref<Texture>> params;
 	};
 
 	enum VaryingMode {
@@ -142,6 +142,9 @@ private:
 	HashSet<StringName> flags;
 
 	HashMap<String, Varying> varyings;
+#ifdef TOOLS_ENABLED
+	HashMap<String, Variant> preview_params;
+#endif
 	List<Varying> varyings_list;
 
 	mutable SafeFlag dirty;
@@ -153,15 +156,16 @@ private:
 			uint64_t port : 32;
 		};
 		uint64_t key = 0;
-		bool operator<(const ConnectionKey &p_key) const {
-			return key < p_key.key;
-		}
+		// This is used to apply default equal and hash methods for uint64_t to ConnectionKey.
+		operator uint64_t() const { return key; }
 	};
 
-	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &p_output_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
+	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
 	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
+
+	bool _check_reroute_subgraph(Type p_type, int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes = nullptr) const;
 
 protected:
 	virtual void _update_shader() const override;
@@ -197,6 +201,10 @@ public: // internal methods
 	void set_varying_type(const String &p_name, VaryingType p_type);
 	VaryingType get_varying_type(const String &p_name);
 
+	void _set_preview_shader_parameter(const String &p_name, const Variant &p_value);
+	Variant _get_preview_shader_parameter(const String &p_name) const;
+	bool _has_preview_shader_parameter(const String &p_name) const;
+
 	Vector2 get_node_position(Type p_type, int p_id) const;
 	Ref<VisualShaderNode> get_node(Type p_type, int p_id) const;
 
@@ -228,6 +236,8 @@ public: // internal methods
 
 	void attach_node_to_frame(Type p_type, int p_node, int p_frame);
 	void detach_node_from_frame(Type p_type, int p_node);
+
+	String get_reroute_parameter_name(Type p_type, int p_reroute_node) const;
 
 	void rebuild();
 	void get_node_connections(Type p_type, List<Connection> *r_connections) const;
@@ -784,8 +794,6 @@ public:
 
 	void set_description(const String &p_description);
 	String get_description() const;
-
-	VisualShaderNodeComment() {}
 };
 #endif
 
@@ -878,6 +886,7 @@ public:
 	String get_expression() const;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
 	VisualShaderNodeExpression();
 };
@@ -905,13 +914,16 @@ public:
 	};
 
 protected:
+	RID shader_rid;
 	VisualShader::VaryingType varying_type = VisualShader::VARYING_TYPE_FLOAT;
 	String varying_name = "[None]";
 
 public: // internal
-	static void add_varying(const String &p_name, VisualShader::VaryingMode p_mode, VisualShader::VaryingType p_type);
-	static void clear_varyings();
-	static bool has_varying(const String &p_name);
+	static void add_varying(RID p_shader_rid, const String &p_name, VisualShader::VaryingMode p_mode, VisualShader::VaryingType p_type);
+	static void clear_varyings(RID p_shader_rid);
+	static bool has_varying(RID p_shader_rid, const String &p_name);
+
+	void set_shader_rid(const RID &p_shader);
 
 	int get_varyings_count() const;
 	String get_varying_name_by_index(int p_idx) const;
@@ -994,5 +1006,3 @@ public:
 };
 
 extern String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name);
-
-#endif // VISUAL_SHADER_H

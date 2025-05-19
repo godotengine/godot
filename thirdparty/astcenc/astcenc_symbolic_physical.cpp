@@ -330,12 +330,14 @@ void physical_to_symbolic(
 				return;
 			}
 
+			// Low values span 3 bytes so need two read_bits calls
 			int vx_low_s = read_bits(8, 12, pcb) | (read_bits(5, 12 + 8, pcb) << 8);
-			int vx_high_s = read_bits(8, 25, pcb) | (read_bits(5, 25 + 8, pcb) << 8);
+			int vx_high_s = read_bits(13, 25, pcb);
 			int vx_low_t = read_bits(8, 38, pcb) | (read_bits(5, 38 + 8, pcb) << 8);
-			int vx_high_t = read_bits(8, 51, pcb) | (read_bits(5, 51 + 8, pcb) << 8);
+			int vx_high_t = read_bits(13, 51, pcb);
 
-			int all_ones = vx_low_s == 0x1FFF && vx_high_s == 0x1FFF && vx_low_t == 0x1FFF && vx_high_t == 0x1FFF;
+			int all_ones = vx_low_s == 0x1FFF && vx_high_s == 0x1FFF &&
+			               vx_low_t == 0x1FFF && vx_high_t == 0x1FFF;
 
 			if ((vx_low_s >= vx_high_s || vx_low_t >= vx_high_t) && !all_ones)
 			{
@@ -350,12 +352,14 @@ void physical_to_symbolic(
 			int vx_high_s = read_bits(9, 19, pcb);
 			int vx_low_t = read_bits(9, 28, pcb);
 			int vx_high_t = read_bits(9, 37, pcb);
-			int vx_low_p = read_bits(9, 46, pcb);
-			int vx_high_p = read_bits(9, 55, pcb);
+			int vx_low_r = read_bits(9, 46, pcb);
+			int vx_high_r = read_bits(9, 55, pcb);
 
-			int all_ones = vx_low_s == 0x1FF && vx_high_s == 0x1FF && vx_low_t == 0x1FF && vx_high_t == 0x1FF && vx_low_p == 0x1FF && vx_high_p == 0x1FF;
+			int all_ones = vx_low_s == 0x1FF && vx_high_s == 0x1FF &&
+			               vx_low_t == 0x1FF && vx_high_t == 0x1FF &&
+			               vx_low_r == 0x1FF && vx_high_r == 0x1FF;
 
-			if ((vx_low_s >= vx_high_s || vx_low_t >= vx_high_t || vx_low_p >= vx_high_p) && !all_ones)
+			if ((vx_low_s >= vx_high_s || vx_low_t >= vx_high_t || vx_low_r >= vx_high_r) && !all_ones)
 			{
 				scb.block_type = SYM_BTYPE_ERROR;
 				return;
@@ -470,8 +474,7 @@ void physical_to_symbolic(
 				bitpos += 2;
 			}
 		}
-		scb.partition_index = static_cast<uint16_t>(read_bits(6, 13, pcb) |
-		                                            (read_bits(PARTITION_INDEX_BITS - 6, 19, pcb) << 6));
+		scb.partition_index = static_cast<uint16_t>(read_bits(10, 13, pcb));
 	}
 
 	for (int i = 0; i < partition_count; i++)

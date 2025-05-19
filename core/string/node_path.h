@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_PATH_H
-#define NODE_PATH_H
+#pragma once
 
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 
-class NodePath {
+class [[nodiscard]] NodePath {
 	struct Data {
 		SafeRefCount refcount;
 		Vector<StringName> path;
@@ -97,4 +96,6 @@ public:
 	~NodePath();
 };
 
-#endif // NODE_PATH_H
+// Zero-constructing NodePath initializes data to nullptr (and thus empty).
+template <>
+struct is_zero_constructible<NodePath> : std::true_type {};

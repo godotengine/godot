@@ -35,12 +35,11 @@
 #include "core/core_constants.h"
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
-#include "core/io/marshalls.h"
 #include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_settings.h"
-#include "editor/export/editor_export.h"
+#include "editor/export/editor_export_platform.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 
@@ -76,7 +75,7 @@ static String _translate_doc_string(const String &p_text) {
 	return translated.indent(indent);
 }
 
-// Comparator for constructors, based on `MetodDoc` operator.
+// Comparator for constructors, based on `MethodDoc` operator.
 struct ConstructorCompare {
 	_FORCE_INLINE_ bool operator()(const DocData::MethodDoc &p_lhs, const DocData::MethodDoc &p_rhs) const {
 		// Must be a constructor (i.e. assume named for the class)
@@ -179,10 +178,8 @@ static void merge_methods(Vector<DocData::MethodDoc> &p_to, const Vector<DocData
 	DocData::MethodDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::MethodDoc, MethodCompare> search_array;
-
 	for (const DocData::MethodDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect<MethodCompare>(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -207,10 +204,8 @@ static void merge_constants(Vector<DocData::ConstantDoc> &p_to, const Vector<Doc
 	const DocData::ConstantDoc *from_ptr = p_from.ptr();
 	int64_t from_size = p_from.size();
 
-	SearchArray<DocData::ConstantDoc> search_array;
-
 	for (DocData::ConstantDoc &to : p_to) {
-		int64_t found = search_array.bisect(from_ptr, from_size, to, true);
+		int64_t found = p_from.span().bisect(to, true);
 
 		if (found >= from_size) {
 			continue;
@@ -235,10 +230,8 @@ static void merge_properties(Vector<DocData::PropertyDoc> &p_to, const Vector<Do
 	DocData::PropertyDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::PropertyDoc> search_array;
-
 	for (const DocData::PropertyDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -263,10 +256,8 @@ static void merge_theme_properties(Vector<DocData::ThemeItemDoc> &p_to, const Ve
 	DocData::ThemeItemDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::ThemeItemDoc> search_array;
-
 	for (const DocData::ThemeItemDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -277,6 +268,10 @@ static void merge_theme_properties(Vector<DocData::ThemeItemDoc> &p_to, const Ve
 		// Check found entry on name and data type.
 		if (to.name == from.name && to.data_type == from.data_type) {
 			to.description = from.description;
+			to.is_deprecated = from.is_deprecated;
+			to.deprecated_message = from.deprecated_message;
+			to.is_experimental = from.is_experimental;
+			to.experimental_message = from.experimental_message;
 			to.keywords = from.keywords;
 		}
 	}
@@ -287,10 +282,8 @@ static void merge_operators(Vector<DocData::MethodDoc> &p_to, const Vector<DocDa
 	DocData::MethodDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::MethodDoc, OperatorCompare> search_array;
-
 	for (const DocData::MethodDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -344,25 +337,6 @@ void DocTools::merge_from(const DocTools &p_data) {
 		merge_theme_properties(c.theme_properties, cf.theme_properties);
 
 		merge_operators(c.operators, cf.operators);
-
-#ifndef MODULE_MONO_ENABLED
-		// The Mono module defines some properties that we want to keep when
-		// re-generating docs with a non-Mono build, to prevent pointless diffs
-		// (and loss of descriptions) depending on the config of the doc writer.
-		// We use a horrible hack to force keeping the relevant properties,
-		// hardcoded below. At least it's an ad hoc hack... ¯\_(ツ)_/¯
-		// Don't show this to your kids.
-		if (c.name == "@GlobalScope") {
-			// Retrieve GodotSharp singleton.
-			for (int j = 0; j < cf.properties.size(); j++) {
-				if (cf.properties[j].name == "GodotSharp") {
-					c.properties.push_back(cf.properties[j]);
-					c.properties.sort();
-					break;
-				}
-			}
-		}
-#endif
 	}
 }
 
@@ -384,6 +358,15 @@ void DocTools::remove_doc(const String &p_class_name) {
 	class_list.erase(p_class_name);
 }
 
+void DocTools::remove_script_doc_by_path(const String &p_path) {
+	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
+		if (E.value.is_script_doc && E.value.script_path == p_path) {
+			remove_doc(E.key);
+			return;
+		}
+	}
+}
+
 bool DocTools::has_doc(const String &p_class_name) {
 	if (p_class_name.is_empty()) {
 		return false;
@@ -401,9 +384,9 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 		// Cannot get default value of classes that can't be instantiated
 		List<StringName> inheriting_classes;
 		ClassDB::get_direct_inheriters_from_class(p_class_name, &inheriting_classes);
-		for (List<StringName>::Element *E2 = inheriting_classes.front(); E2; E2 = E2->next()) {
-			if (ClassDB::can_instantiate(E2->get())) {
-				default_value = ClassDB::class_get_default_property_value(E2->get(), p_property_name, &r_default_value_valid);
+		for (const StringName &class_name : inheriting_classes) {
+			if (ClassDB::can_instantiate(class_name)) {
+				default_value = ClassDB::class_get_default_property_value(class_name, p_property_name, &r_default_value_valid);
 				if (r_default_value_valid) {
 					break;
 				}
@@ -476,10 +459,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				ResourceImporter *resimp = Object::cast_to<ResourceImporter>(ClassDB::instantiate(name));
 				List<ResourceImporter::ImportOption> options;
 				resimp->get_import_options("", &options);
-				for (int i = 0; i < options.size(); i++) {
-					const PropertyInfo &prop = options[i].option;
+				for (const ResourceImporter::ImportOption &option : options) {
+					const PropertyInfo &prop = option.option;
 					properties.push_back(prop);
-					import_options_default[prop.name] = options[i].default_value;
+					import_options_default[prop.name] = option.default_value;
 				}
 				own_properties = properties;
 				memdelete(resimp);
@@ -590,6 +573,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 							prop.type = retinfo.class_name;
 						} else if (retinfo.type == Variant::ARRAY && retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 							prop.type = retinfo.hint_string + "[]";
+						} else if (retinfo.type == Variant::DICTIONARY && retinfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+							prop.type = "Dictionary[" + retinfo.hint_string.replace(";", ", ") + "]";
 						} else if (retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 							prop.type = retinfo.hint_string;
 						} else if (retinfo.type == Variant::NIL && retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
@@ -633,7 +618,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					// Don't skip parametric setters and getters, i.e. method which require
 					// one or more parameters to define what property should be set or retrieved.
 					// E.g. CPUParticles3D::set_param(Parameter param, float value).
-					if (E.arguments.size() == 0 /* getter */ || (E.arguments.size() == 1 && E.return_val.type == Variant::NIL /* setter */)) {
+					if (E.arguments.is_empty() /* getter */ || (E.arguments.size() == 1 && E.return_val.type == Variant::NIL /* setter */)) {
 						continue;
 					}
 				}
@@ -662,11 +647,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			ClassDB::get_signal_list(name, &signal_list, true);
 
 			if (signal_list.size()) {
-				for (List<MethodInfo>::Element *EV = signal_list.front(); EV; EV = EV->next()) {
+				for (const MethodInfo &mi : signal_list) {
 					DocData::MethodDoc signal;
-					signal.name = EV->get().name;
-					for (int i = 0; i < EV->get().arguments.size(); i++) {
-						const PropertyInfo &arginfo = EV->get().arguments[i];
+					signal.name = mi.name;
+					for (const PropertyInfo &arginfo : mi.arguments) {
 						DocData::ArgumentDoc argument;
 						DocData::argument_doc_from_arginfo(argument, arginfo);
 
@@ -687,6 +671,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				constant.name = E;
 				constant.value = itos(ClassDB::get_integer_constant(name, E));
 				constant.is_value_valid = true;
+				constant.type = "int";
 				constant.enumeration = ClassDB::get_integer_constant_enum(name, E);
 				constant.is_bitfield = ClassDB::is_enum_bitfield(name, constant.enumeration);
 				c.constants.push_back(constant);
@@ -857,10 +842,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 			method.name = mi.name;
 
-			for (int j = 0; j < mi.arguments.size(); j++) {
-				PropertyInfo arginfo = mi.arguments[j];
+			for (int64_t j = 0; j < mi.arguments.size(); ++j) {
+				const PropertyInfo &arginfo = mi.arguments[j];
 				DocData::ArgumentDoc ad;
-				DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
+				DocData::argument_doc_from_arginfo(ad, arginfo);
 				ad.name = arginfo.name;
 
 				int darg_idx = mi.default_arguments.size() - mi.arguments.size() + j;
@@ -920,6 +905,24 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 		c.properties.sort();
 
+		List<StringName> enums;
+		Variant::get_enums_for_type(Variant::Type(i), &enums);
+
+		for (const StringName &E : enums) {
+			List<StringName> enumerations;
+			Variant::get_enumerations_for_enum(Variant::Type(i), E, &enumerations);
+
+			for (const StringName &F : enumerations) {
+				DocData::ConstantDoc constant;
+				constant.name = F;
+				constant.value = itos(Variant::get_enum_value(Variant::Type(i), E, F));
+				constant.is_value_valid = true;
+				constant.type = "int";
+				constant.enumeration = E;
+				c.constants.push_back(constant);
+			}
+		}
+
 		List<StringName> constants;
 		Variant::get_constants_for_type(Variant::Type(i), &constants);
 
@@ -927,8 +930,9 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			DocData::ConstantDoc constant;
 			constant.name = E;
 			Variant value = Variant::get_constant_value(Variant::Type(i), E);
-			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string().replace("\n", " ");
+			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string().replace_char('\n', ' ');
 			constant.is_value_valid = true;
+			constant.type = Variant::get_type_name(value.get_type());
 			c.constants.push_back(constant);
 		}
 	}
@@ -946,6 +950,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 			DocData::ConstantDoc cd;
 			cd.name = CoreConstants::get_global_constant_name(i);
+			cd.type = "int";
+			cd.enumeration = CoreConstants::get_global_constant_enum(i);
 			cd.is_bitfield = CoreConstants::is_global_constant_bitfield(i);
 			if (!CoreConstants::get_ignore_value_in_docs(i)) {
 				cd.value = itos(CoreConstants::get_global_constant_value(i));
@@ -953,7 +959,6 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			} else {
 				cd.is_value_valid = false;
 			}
-			cd.enumeration = CoreConstants::get_global_constant_enum(i);
 			c.constants.push_back(cd);
 		}
 
@@ -993,6 +998,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				DocData::ArgumentDoc ad;
 				DocData::argument_doc_from_arginfo(ad, pi);
 				md.return_type = ad.type;
+			} else {
+				md.return_type = "void";
 			}
 
 			// Utility function's arguments.
@@ -1047,7 +1054,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				DocData::return_doc_from_retinfo(md, mi.return_val);
 
-				for (int j = 0; j < mi.arguments.size(); j++) {
+				for (int64_t j = 0; j < mi.arguments.size(); ++j) {
 					DocData::ArgumentDoc ad;
 					DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
 
@@ -1071,6 +1078,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				cd.name = E.first;
 				cd.value = E.second;
 				cd.is_value_valid = true;
+				cd.type = Variant::get_type_name(E.second.get_type());
 				c.constants.push_back(cd);
 			}
 
@@ -1091,11 +1099,11 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				DocData::return_doc_from_retinfo(atd, ai.return_val);
 
-				for (int j = 0; j < ai.arguments.size(); j++) {
+				for (int64_t j = 0; j < ai.arguments.size(); ++j) {
 					DocData::ArgumentDoc ad;
 					DocData::argument_doc_from_arginfo(ad, ai.arguments[j]);
 
-					int darg_idx = j - (ai.arguments.size() - ai.default_arguments.size());
+					int64_t darg_idx = j - (ai.arguments.size() - ai.default_arguments.size());
 					if (darg_idx >= 0) {
 						ad.default_value = DocData::get_default_value_string(ai.default_arguments[darg_idx]);
 					}
@@ -1436,6 +1444,14 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								prop2.type = parser->get_named_attribute_value("type");
 								ERR_FAIL_COND_V(!parser->has_attribute("data_type"), ERR_FILE_CORRUPT);
 								prop2.data_type = parser->get_named_attribute_value("data_type");
+								if (parser->has_attribute("deprecated")) {
+									prop2.is_deprecated = true;
+									prop2.deprecated_message = parser->get_named_attribute_value("deprecated");
+								}
+								if (parser->has_attribute("experimental")) {
+									prop2.is_experimental = true;
+									prop2.experimental_message = parser->get_named_attribute_value("experimental");
+								}
 								if (parser->has_attribute("keywords")) {
 									prop2.keywords = parser->get_named_attribute_value("keywords");
 								}
@@ -1599,7 +1615,7 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 	}
 }
 
-Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_include_xml_schema) {
+Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_use_relative_schema) {
 	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
 		DocData::ClassDoc &c = E.value;
 
@@ -1611,7 +1627,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		}
 
 		Error err;
-		String save_file = save_path.path_join(c.name.replace("\"", "").replace("/", "--") + ".xml");
+		String save_file = save_path.path_join(c.name.remove_char('\"').replace("/", "--") + ".xml");
 		Ref<FileAccess> f = FileAccess::open(save_file, FileAccess::WRITE, &err);
 
 		ERR_CONTINUE_MSG(err != OK, "Can't write doc file: " + save_file + ".");
@@ -1631,15 +1647,17 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		if (!c.keywords.is_empty()) {
 			header += String(" keywords=\"") + c.keywords.xml_escape(true) + "\"";
 		}
-		if (p_include_xml_schema) {
-			// Reference the XML schema so editors can provide error checking.
+		// Reference the XML schema so editors can provide error checking.
+		String schema_path;
+		if (p_use_relative_schema) {
 			// Modules are nested deep, so change the path to reference the same schema everywhere.
-			const String schema_path = save_path.find("modules/") != -1 ? "../../../doc/class.xsd" : "../class.xsd";
-			header += vformat(
-					R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s")",
-					schema_path);
+			schema_path = save_path.contains("modules/") ? "../../../doc/class.xsd" : "../class.xsd";
+		} else {
+			schema_path = "https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd";
 		}
-		header += ">";
+		header += vformat(
+				R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s">)",
+				schema_path);
 		_write_string(f, 0, header);
 
 		_write_string(f, 1, "<brief_description>");
@@ -1751,6 +1769,12 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				String additional_attributes;
 				if (!ti.default_value.is_empty()) {
 					additional_attributes += String(" default=\"") + ti.default_value.xml_escape(true) + "\"";
+				}
+				if (ti.is_deprecated) {
+					additional_attributes += " deprecated=\"" + ti.deprecated_message.xml_escape(true) + "\"";
+				}
+				if (ti.is_experimental) {
+					additional_attributes += " experimental=\"" + ti.experimental_message.xml_escape(true) + "\"";
 				}
 				if (!ti.keywords.is_empty()) {
 					additional_attributes += String(" keywords=\"") + ti.keywords.xml_escape(true) + "\"";

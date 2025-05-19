@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DOCK_MANAGER_H
-#define EDITOR_DOCK_MANAGER_H
+#pragma once
 
 #include "scene/gui/popup.h"
 #include "scene/gui/split_container.h"
@@ -87,6 +86,8 @@ private:
 		WindowWrapper *dock_window = nullptr;
 		int dock_slot_index = DOCK_SLOT_NONE;
 		Ref<Shortcut> shortcut;
+		Ref<Texture2D> icon; // Only used when `icon_name` is empty.
+		StringName icon_name;
 	};
 
 	static EditorDockManager *singleton;
@@ -111,7 +112,6 @@ private:
 	void _dock_container_update_visibility(TabContainer *p_dock_container);
 	void _update_layout();
 
-	void _update_docks_menu();
 	void _docks_menu_option(int p_id);
 
 	void _window_close_request(WindowWrapper *p_wrapper);
@@ -119,15 +119,21 @@ private:
 	void _open_dock_in_window(Control *p_dock, bool p_show_window = true, bool p_reset_size = false);
 	void _restore_dock_to_saved_window(Control *p_dock, const Dictionary &p_window_dump);
 
-	void _dock_move_to_bottom(Control *p_dock);
+	void _dock_move_to_bottom(Control *p_dock, bool p_visible);
 	void _dock_remove_from_bottom(Control *p_dock);
 	bool _is_dock_at_bottom(Control *p_dock);
 
 	void _move_dock_tab_index(Control *p_dock, int p_tab_index, bool p_set_current);
 	void _move_dock(Control *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
 
+	void _update_tab_style(Control *p_dock);
+
 public:
 	static EditorDockManager *get_singleton() { return singleton; }
+
+	void update_docks_menu();
+	void update_tab_styles();
+	void set_tab_icon_max_width(int p_max_width);
 
 	void add_vsplit(DockSplitContainer *p_split);
 	void add_hsplit(DockSplitContainer *p_split);
@@ -136,7 +142,7 @@ public:
 	PopupMenu *get_docks_menu();
 
 	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
-	void load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+	void load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load = false);
 
 	void set_dock_enabled(Control *p_dock, bool p_enabled);
 	void close_dock(Control *p_dock);
@@ -150,8 +156,10 @@ public:
 	void set_docks_visible(bool p_show);
 	bool are_docks_visible() const;
 
-	void add_dock(Control *p_dock, const String &p_title = "", DockSlot p_slot = DOCK_SLOT_NONE, const Ref<Shortcut> &p_shortcut = nullptr);
+	void add_dock(Control *p_dock, const String &p_title = "", DockSlot p_slot = DOCK_SLOT_NONE, const Ref<Shortcut> &p_shortcut = nullptr, const StringName &p_icon_name = StringName());
 	void remove_dock(Control *p_dock);
+
+	void set_dock_tab_icon(Control *p_dock, const Ref<Texture2D> &p_icon);
 
 	EditorDockManager();
 };
@@ -198,5 +206,3 @@ public:
 
 	DockContextPopup();
 };
-
-#endif // EDITOR_DOCK_MANAGER_H

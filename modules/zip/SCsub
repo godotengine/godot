@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -7,3 +8,7 @@ env_zip = env_modules.Clone()
 
 # Module files
 env_zip.add_source_files(env.modules_sources, "*.cpp")
+
+if env["tests"]:
+    env_zip.Append(CPPDEFINES=["TESTS_ENABLED"])
+    env_zip.add_source_files(env.modules_sources, "./tests/*.cpp")

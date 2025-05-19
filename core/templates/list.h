@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIST_H
-#define LIST_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/sort_array.h"
+
+#include <initializer_list>
 
 /**
  * Generic Templatized Linked List Implementation.
@@ -139,31 +140,6 @@ public:
 
 	typedef T ValueType;
 
-	struct Iterator {
-		_FORCE_INLINE_ T &operator*() const {
-			return E->get();
-		}
-		_FORCE_INLINE_ T *operator->() const { return &E->get(); }
-		_FORCE_INLINE_ Iterator &operator++() {
-			E = E->next();
-			return *this;
-		}
-		_FORCE_INLINE_ Iterator &operator--() {
-			E = E->prev();
-			return *this;
-		}
-
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
-
-		Iterator(Element *p_E) { E = p_E; }
-		Iterator() {}
-		Iterator(const Iterator &p_it) { E = p_it.E; }
-
-	private:
-		Element *E = nullptr;
-	};
-
 	struct ConstIterator {
 		_FORCE_INLINE_ const T &operator*() const {
 			return E->get();
@@ -187,6 +163,35 @@ public:
 
 	private:
 		const Element *E = nullptr;
+	};
+
+	struct Iterator {
+		_FORCE_INLINE_ T &operator*() const {
+			return E->get();
+		}
+		_FORCE_INLINE_ T *operator->() const { return &E->get(); }
+		_FORCE_INLINE_ Iterator &operator++() {
+			E = E->next();
+			return *this;
+		}
+		_FORCE_INLINE_ Iterator &operator--() {
+			E = E->prev();
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+
+		Iterator(Element *p_E) { E = p_E; }
+		Iterator() {}
+		Iterator(const Iterator &p_it) { E = p_it.E; }
+
+		operator ConstIterator() const {
+			return ConstIterator(E);
+		}
+
+	private:
+		Element *E = nullptr;
 	};
 
 	_FORCE_INLINE_ Iterator begin() {
@@ -220,7 +225,7 @@ private:
 		Element *last = nullptr;
 		int size_cache = 0;
 
-		bool erase(const Element *p_I) {
+		bool erase(Element *p_I) {
 			ERR_FAIL_NULL_V(p_I, false);
 			ERR_FAIL_COND_V(p_I->data != this, false);
 
@@ -240,7 +245,7 @@ private:
 				p_I->next_ptr->prev_ptr = p_I->prev_ptr;
 			}
 
-			memdelete_allocator<Element, A>(const_cast<Element *>(p_I));
+			memdelete_allocator<Element, A>(p_I);
 			size_cache--;
 
 			return true;
@@ -426,7 +431,7 @@ public:
 	/**
 	 * erase an element in the list, by iterator pointing to it. Return true if it was found/erased.
 	 */
-	bool erase(const Element *p_I) {
+	bool erase(Element *p_I) {
 		if (_data && p_I) {
 			bool ret = _data->erase(p_I);
 
@@ -518,8 +523,19 @@ public:
 			it = it->next();
 		}
 	}
+	void operator=(List &&p_list) {
+		if (unlikely(this == &p_list)) {
+			return;
+		}
 
-	T &operator[](int p_index) {
+		clear();
+		_data = p_list._data;
+		p_list._data = nullptr;
+	}
+
+	// Random access to elements, use with care,
+	// do not use for iteration.
+	T &get(int p_index) {
 		CRASH_BAD_INDEX(p_index, size());
 
 		Element *I = front();
@@ -532,7 +548,9 @@ public:
 		return I->get();
 	}
 
-	const T &operator[](int p_index) const {
+	// Random access to elements, use with care,
+	// do not use for iteration.
+	const T &get(int p_index) const {
 		CRASH_BAD_INDEX(p_index, size());
 
 		const Element *I = front();
@@ -752,8 +770,18 @@ public:
 			it = it->next();
 		}
 	}
+	List(List &&p_list) {
+		_data = p_list._data;
+		p_list._data = nullptr;
+	}
 
 	List() {}
+
+	List(std::initializer_list<T> p_init) {
+		for (const T &E : p_init) {
+			push_back(E);
+		}
+	}
 
 	~List() {
 		clear();
@@ -800,5 +828,3 @@ void List<T, A>::Element::transfer_to_back(List<T, A> *p_dst_list) {
 	data = p_dst_list->_data;
 	p_dst_list->_data->size_cache++;
 }
-
-#endif // LIST_H

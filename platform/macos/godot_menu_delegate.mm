@@ -28,22 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_menu_delegate.h"
+#import "godot_menu_delegate.h"
 
-#include "display_server_macos.h"
-#include "godot_menu_item.h"
-#include "key_mapping_macos.h"
-#include "native_menu_macos.h"
+#import "display_server_macos.h"
+#import "godot_menu_item.h"
+#import "key_mapping_macos.h"
+#import "native_menu_macos.h"
 
 @implementation GodotMenuDelegate
 
 - (void)doNothing:(id)sender {
 }
 
-- (void)menuNeedsUpdate:(NSMenu *)menu {
+- (void)menuWillOpen:(NSMenu *)menu {
 	if (NativeMenu::get_singleton()) {
 		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
 		nmenu->_menu_open(menu);
+	}
+}
+
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_menu_need_update(menu);
 	}
 }
 
@@ -95,7 +102,11 @@
 					} else {
 						// Otherwise redirect event to the engine.
 						if (DisplayServer::get_singleton()) {
-							[[[NSApplication sharedApplication] keyWindow] sendEvent:event];
+							if ([[NSApplication sharedApplication] keyWindow].sheet) {
+								[[[[NSApplication sharedApplication] keyWindow] sheetParent] sendEvent:event];
+							} else {
+								[[[NSApplication sharedApplication] keyWindow] sendEvent:event];
+							}
 						}
 					}
 

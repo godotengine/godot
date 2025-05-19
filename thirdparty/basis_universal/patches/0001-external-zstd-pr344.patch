@@ -1,0 +1,26 @@
+diff --git a/thirdparty/basis_universal/encoder/basisu_comp.cpp b/thirdparty/basis_universal/encoder/basisu_comp.cpp
+index 59a2a50900..e9aa20f313 100644
+--- a/thirdparty/basis_universal/encoder/basisu_comp.cpp
++++ b/thirdparty/basis_universal/encoder/basisu_comp.cpp
+@@ -33,7 +33,7 @@
+ #endif
+ 
+ #if BASISD_SUPPORT_KTX2_ZSTD
+-#include "../zstd/zstd.h"
++#include <zstd.h>
+ #endif
+ 
+ // Set to 1 to disable the mipPadding alignment workaround (which only seems to be needed when no key-values are written at all)
+diff --git a/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp b/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp
+index 0f7ca1565f..d7bce42013 100644
+--- a/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp
++++ b/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp
+@@ -169,7 +169,7 @@
+    // If BASISD_SUPPORT_KTX2_ZSTD is 0, UASTC files compressed with Zstd cannot be loaded.
+ 	#if BASISD_SUPPORT_KTX2_ZSTD
+ 		// We only use two Zstd API's: ZSTD_decompress() and ZSTD_isError()
+-		#include "../zstd/zstd.h"
++		#include <zstd.h>
+ 	#endif
+ #endif
+ 

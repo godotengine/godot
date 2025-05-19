@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRITE_2D_EDITOR_PLUGIN_H
-#define SPRITE_2D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
@@ -120,15 +119,17 @@ class Sprite2DEditorPlugin : public EditorPlugin {
 
 	Sprite2DEditor *sprite_editor = nullptr;
 
+	Label *dragging_mode_hint = nullptr;
+
+	void _editor_theme_changed();
+	void _update_dragging_mode_hint(bool p_region_enabled);
+
 public:
-	virtual String get_name() const override { return "Sprite2D"; }
+	virtual String get_plugin_name() const override { return "Sprite2D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
 	Sprite2DEditorPlugin();
-	~Sprite2DEditorPlugin();
 };
-
-#endif // SPRITE_2D_EDITOR_PLUGIN_H

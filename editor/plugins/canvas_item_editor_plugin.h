@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CANVAS_ITEM_EDITOR_PLUGIN_H
-#define CANVAS_ITEM_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/base_button.h"
 #include "scene/gui/box_container.h"
 
 class AcceptDialog;
+class Button;
+class ButtonGroup;
 class CanvasItemEditorViewport;
 class ConfirmationDialog;
 class EditorData;
@@ -67,8 +67,6 @@ public:
 	List<Dictionary> pre_drag_bones_undo_state;
 
 	Dictionary undo_state;
-
-	CanvasItemEditorSelectedItem() {}
 };
 
 class CanvasItemEditor : public VBoxContainer {
@@ -187,6 +185,8 @@ private:
 		GRID_VISIBILITY_HIDE,
 	};
 
+	const String locked_transform_warning = TTRC("All selected CanvasItems are either invisible or locked in some way and can't be transformed.");
+
 	bool selection_menu_additive_selection = false;
 
 	Tool tool = TOOL_SELECT;
@@ -252,7 +252,7 @@ private:
 	bool key_scale = false;
 
 	bool pan_pressed = false;
-	Vector2 temp_pivot = Vector2(INFINITY, INFINITY);
+	Vector2 temp_pivot = Vector2(Math::INF, Math::INF);
 
 	bool ruler_tool_active = false;
 	Point2 ruler_tool_origin;
@@ -332,7 +332,6 @@ private:
 	Button *group_button = nullptr;
 	Button *ungroup_button = nullptr;
 
-	Button *override_camera_button = nullptr;
 	MenuButton *view_menu = nullptr;
 	PopupMenu *grid_menu = nullptr;
 	PopupMenu *theme_menu = nullptr;
@@ -378,7 +377,6 @@ private:
 	Ref<Shortcut> divide_grid_step_shortcut;
 
 	Ref<ViewPanner> panner;
-	bool warped_panning = true;
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
@@ -401,6 +399,7 @@ private:
 	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
 
+	void _prepare_view_menu();
 	void _popup_callback(int p_op);
 	bool updating_scroll = false;
 	void _update_scroll(real_t);
@@ -409,7 +408,7 @@ private:
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 	void _add_node_pressed(int p_result);
-	void _node_created(Node *p_node);
+	void _adjust_new_node_position(Node *p_node);
 	void _reset_create_position();
 	void _update_editor_settings();
 	bool _is_grid_visible() const;
@@ -429,7 +428,7 @@ private:
 	ThemePreviewMode theme_preview = THEME_PREVIEW_PROJECT;
 	void _switch_theme_preview(int p_mode);
 
-	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true) const;
+	List<CanvasItem *> _get_edited_canvas_items(bool p_retrieve_locked = false, bool p_remove_canvas_item_if_parent_in_selection = true, bool *r_has_locked_items = nullptr) const;
 	Rect2 _get_encompassing_rect_from_list(const List<CanvasItem *> &p_list);
 	void _expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
 	Rect2 _get_encompassing_rect(const Node *p_node);
@@ -515,10 +514,7 @@ private:
 	void _zoom_on_position(real_t p_zoom, Point2 p_position = Point2());
 	void _button_toggle_smart_snap(bool p_status);
 	void _button_toggle_grid_snap(bool p_status);
-	void _button_override_camera(bool p_pressed);
 	void _button_tool_select(int p_index);
-
-	void _update_override_camera_button(bool p_game_running);
 
 	HSplitContainer *left_panel_split = nullptr;
 	HSplitContainer *right_panel_split = nullptr;
@@ -604,7 +600,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_name() const override { return "2D"; }
+	virtual String get_plugin_name() const override { return TTRC("2D"); }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -616,7 +612,6 @@ public:
 	CanvasItemEditor *get_canvas_item_editor() { return canvas_item_editor; }
 
 	CanvasItemEditorPlugin();
-	~CanvasItemEditorPlugin();
 };
 
 class CanvasItemEditorViewport : public Control {
@@ -634,15 +629,13 @@ class CanvasItemEditorViewport : public Control {
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	Control *preview_node = nullptr;
 	AcceptDialog *accept = nullptr;
-	AcceptDialog *selector = nullptr;
-	Label *selector_label = nullptr;
+	AcceptDialog *texture_node_type_selector = nullptr;
 	Label *label = nullptr;
 	Label *label_desc = nullptr;
-	VBoxContainer *btn_group = nullptr;
 	Ref<ButtonGroup> button_group;
 
 	void _on_mouse_exit();
-	void _on_select_type(Object *selected);
+	void _on_select_texture_node_type(Object *selected);
 	void _on_change_type_confirmed();
 	void _on_change_type_closed();
 
@@ -650,11 +643,12 @@ class CanvasItemEditorViewport : public Control {
 	void _remove_preview();
 
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
-	bool _only_packed_scenes_selected() const;
-	void _create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point);
-	bool _create_instance(Node *parent, String &path, const Point2 &p_point);
+	bool _is_any_texture_selected() const;
+	void _create_texture_node(Node *p_parent, Node *p_child, const String &p_path, const Point2 &p_point);
+	void _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
+	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
-	void _show_resource_type_selector();
+	void _show_texture_node_type_selector();
 	void _update_theme();
 
 protected:
@@ -667,5 +661,3 @@ public:
 	CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor);
 	~CanvasItemEditorViewport();
 };
-
-#endif // CANVAS_ITEM_EDITOR_PLUGIN_H

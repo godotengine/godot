@@ -87,4 +87,7 @@ const char* const E_SPV_NV_shader_invocation_reorder = "SPV_NV_shader_invocation
 //SPV_NV_displacement_micromap
 const char* const E_SPV_NV_displacement_micromap = "SPV_NV_displacement_micromap";
 
+//SPV_NV_shader_atomic_fp16_vector
+const char* const E_SPV_NV_shader_atomic_fp16_vector = "SPV_NV_shader_atomic_fp16_vector";
+
 #endif  // #ifndef GLSLextNV_H

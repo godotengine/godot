@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_BEZIER_EDITOR_H
-#define ANIMATION_BEZIER_EDITOR_H
+#pragma once
 
 #include "animation_track_editor.h"
 #include "core/templates/hashfuncs.h"
@@ -109,7 +108,7 @@ class AnimationBezierTrackEdit : public Control {
 	typedef Pair<int, int> IntPair;
 
 	bool moving_selection_attempt = false;
-	float moving_selection_mouse_begin_x = 0.0;
+	Point2 moving_selection_mouse_begin;
 	IntPair select_single_attempt;
 	bool moving_selection = false;
 	int moving_selection_from_key = 0;
@@ -122,6 +121,15 @@ class AnimationBezierTrackEdit : public Control {
 	bool box_selecting_add = false;
 	Vector2 box_selection_from;
 	Vector2 box_selection_to;
+
+	Rect2 selection_rect;
+	Rect2 selection_handles_rect;
+
+	bool scaling_selection = false;
+	Vector2i scaling_selection_handles;
+	Vector2 scaling_selection_scale = Vector2(1, 1);
+	Vector2 scaling_selection_offset;
+	Point2 scaling_selection_pivot;
 
 	int moving_handle = 0; //0 no move -1 or +1 out, 2 both (drawing only)
 	int moving_handle_key = 0;
@@ -144,7 +152,7 @@ class AnimationBezierTrackEdit : public Control {
 
 	void _clear_selection();
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
-	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, real_t p_pos);
+	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, real_t p_pos, bool p_single);
 	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 	void _change_selected_keys_handle_mode(Animation::HandleMode p_mode, bool p_auto = false);
 
@@ -198,7 +206,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	static Array make_default_bezier_key(float p_value);
 	static float get_bezier_key_value(Array p_bezier_key_array);
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
@@ -222,9 +229,7 @@ public:
 	void paste_keys(real_t p_ofs, bool p_ofs_valid);
 	void delete_selection();
 
-	void _bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode);
+	void _bezier_track_insert_key_at_anim(const Ref<Animation> &p_anim, int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode);
 
 	AnimationBezierTrackEdit();
 };
-
-#endif // ANIMATION_BEZIER_EDITOR_H

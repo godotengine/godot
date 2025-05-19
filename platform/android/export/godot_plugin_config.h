@@ -28,13 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANDROID_GODOT_PLUGIN_CONFIG_H
-#define ANDROID_GODOT_PLUGIN_CONFIG_H
+#pragma once
 
 #ifndef DISABLE_DEPRECATED
 
 #include "core/config/project_settings.h"
-#include "core/error/error_list.h"
 #include "core/io/config_file.h"
 #include "core/string/ustring.h"
 
@@ -104,5 +102,3 @@ struct PluginConfigAndroid {
 };
 
 #endif // DISABLE_DEPRECATED
-
-#endif // ANDROID_GODOT_PLUGIN_CONFIG_H

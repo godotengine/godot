@@ -31,22 +31,67 @@
 #include "camera_2d.h"
 
 #include "core/config/project_settings.h"
-#include "scene/main/window.h"
+#include "core/input/input.h"
+#include "scene/main/viewport.h"
 
-bool Camera2D::_is_editing_in_editor() const {
 #ifdef TOOLS_ENABLED
-	return is_part_of_edited_scene();
-#else
-	return false;
-#endif // TOOLS_ENABLED
+Dictionary Camera2D::_edit_get_state() const {
+	Dictionary state = Node2D::_edit_get_state();
+	state["limit_rect"] = get_limit_rect();
+	return state;
 }
+
+void Camera2D::_edit_set_state(const Dictionary &p_state) {
+	if (p_state.has("limit_rect")) {
+		_set_limit_rect(p_state["limit_rect"]);
+	}
+	Node2D::_edit_set_state(p_state);
+}
+
+void Camera2D::_edit_set_position(const Point2 &p_position) {
+	if (_is_dragging_limit_rect()) {
+		Rect2 rect = get_limit_rect();
+		rect.position = p_position;
+		_set_limit_rect(rect);
+	} else {
+		Node2D::_edit_set_position(p_position);
+	}
+}
+
+Point2 Camera2D::_edit_get_position() const {
+	return _is_dragging_limit_rect() ? get_limit_rect().position : Node2D::_edit_get_position();
+}
+
+void Camera2D::_edit_set_rect(const Rect2 &p_rect) {
+	ERR_FAIL_COND(limit_enabled && !_edit_use_rect());
+	Rect2 rect = p_rect;
+	Vector2 scl = get_global_scale().abs();
+	rect.size *= scl;
+	rect.position = (rect.position + get_global_position()) * scl;
+	_set_limit_rect(rect);
+}
+#endif // TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
+Rect2 Camera2D::_edit_get_rect() const {
+	Rect2 rect = get_limit_rect();
+	Vector2 scl = get_global_scale().abs();
+	rect.size /= scl;
+	rect.position = (rect.position - get_global_position()) / scl;
+	return rect;
+}
+
+bool Camera2D::_edit_use_rect() const {
+	return limit_enabled;
+}
+#endif // DEBUG_ENABLED
 
 void Camera2D::_update_scroll() {
 	if (!is_inside_tree() || !viewport) {
 		return;
 	}
 
-	if (_is_editing_in_editor()) {
+	if (is_part_of_edited_scene()) {
 		queue_redraw();
 		return;
 	}
@@ -54,16 +99,18 @@ void Camera2D::_update_scroll() {
 	if (is_current()) {
 		ERR_FAIL_COND(custom_viewport && !ObjectDB::get_instance(custom_viewport_id));
 
+		Size2 screen_size = _get_camera_screen_size();
+
 		Transform2D xform;
 		if (is_physics_interpolated_and_enabled()) {
 			xform = _interpolation_data.xform_prev.interpolate_with(_interpolation_data.xform_curr, Engine::get_singleton()->get_physics_interpolation_fraction());
+			camera_screen_center = xform.affine_inverse().xform(0.5 * screen_size);
 		} else {
 			xform = get_camera_transform();
 		}
 
 		viewport->set_canvas_transform(xform);
 
-		Size2 screen_size = _get_camera_screen_size();
 		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5) : Point2());
 		Point2 adj_screen_pos = camera_screen_center - (screen_size * 0.5);
 
@@ -71,6 +118,18 @@ void Camera2D::_update_scroll() {
 		get_tree()->call_group(group_name, SNAME("_camera_moved"), xform, screen_offset, adj_screen_pos);
 	}
 }
+
+#ifdef TOOLS_ENABLED
+bool Camera2D::_is_dragging_limit_rect() const {
+	return _edit_use_rect() && Input::get_singleton()->is_key_pressed(Key::CTRL);
+}
+
+void Camera2D::_project_settings_changed() {
+	if (screen_drawing_enabled) {
+		queue_redraw();
+	}
+}
+#endif
 
 void Camera2D::_update_process_callback() {
 	if (is_physics_interpolated_and_enabled()) {
@@ -82,7 +141,7 @@ void Camera2D::_update_process_callback() {
 			WARN_PRINT_ONCE("Camera2D overridden to physics process mode due to use of physics interpolation.");
 		}
 #endif
-	} else if (_is_editing_in_editor()) {
+	} else if (is_part_of_edited_scene()) {
 		set_process_internal(false);
 		set_physics_process_internal(false);
 	} else {
@@ -97,7 +156,7 @@ void Camera2D::_update_process_callback() {
 }
 
 void Camera2D::set_zoom(const Vector2 &p_zoom) {
-	// Setting zoom to zero causes 'affine_invert' issues
+	// Setting zoom to zero causes 'affine_invert' issues.
 	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom.x) || Math::is_zero_approx(p_zoom.y), "Zoom level must be different from 0 (can be negative).");
 
 	zoom = p_zoom;
@@ -105,11 +164,11 @@ void Camera2D::set_zoom(const Vector2 &p_zoom) {
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
 	smoothed_camera_pos = old_smoothed_camera_pos;
-};
+}
 
 Vector2 Camera2D::get_zoom() const {
 	return zoom;
-};
+}
 
 Transform2D Camera2D::get_camera_transform() {
 	if (!get_tree()) {
@@ -125,7 +184,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 	if (!first) {
 		if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
-			if (drag_horizontal_enabled && !_is_editing_in_editor() && !drag_horizontal_offset_changed) {
+			if (drag_horizontal_enabled && !is_part_of_edited_scene() && !drag_horizontal_offset_changed) {
 				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * zoom_scale.x * drag_margin[SIDE_LEFT]));
 				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * zoom_scale.x * drag_margin[SIDE_RIGHT]));
 			} else {
@@ -138,7 +197,7 @@ Transform2D Camera2D::get_camera_transform() {
 				drag_horizontal_offset_changed = false;
 			}
 
-			if (drag_vertical_enabled && !_is_editing_in_editor() && !drag_vertical_offset_changed) {
+			if (drag_vertical_enabled && !is_part_of_edited_scene() && !drag_vertical_offset_changed) {
 				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * zoom_scale.y * drag_margin[SIDE_TOP]));
 				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * zoom_scale.y * drag_margin[SIDE_BOTTOM]));
 
@@ -159,7 +218,7 @@ Transform2D Camera2D::get_camera_transform() {
 		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
 		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom_scale);
 
-		if (limit_smoothing_enabled) {
+		if (limit_enabled && limit_smoothing_enabled) {
 			if (screen_rect.position.x < limit[SIDE_LEFT]) {
 				camera_pos.x -= screen_rect.position.x - limit[SIDE_LEFT];
 			}
@@ -182,7 +241,7 @@ Transform2D Camera2D::get_camera_transform() {
 		// It may be called MULTIPLE TIMES on certain frames,
 		// therefore smoothing is not currently applied only once per frame / tick,
 		// which will result in some haphazard results.
-		if (position_smoothing_enabled && !_is_editing_in_editor()) {
+		if (position_smoothing_enabled && !is_part_of_edited_scene()) {
 			bool physics_process = (process_callback == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
 			real_t delta = physics_process ? get_physics_process_delta_time() : get_process_delta_time();
 			real_t c = position_smoothing_speed * delta;
@@ -201,7 +260,7 @@ Transform2D Camera2D::get_camera_transform() {
 	Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
 
 	if (!ignore_rotation) {
-		if (rotation_smoothing_enabled && !_is_editing_in_editor()) {
+		if (rotation_smoothing_enabled && !is_part_of_edited_scene()) {
 			real_t step = rotation_smoothing_speed * (process_callback == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
 			camera_angle = Math::lerp_angle(camera_angle, get_global_rotation(), step);
 		} else {
@@ -212,17 +271,18 @@ Transform2D Camera2D::get_camera_transform() {
 
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
 
-	if (!position_smoothing_enabled || !limit_smoothing_enabled) {
+	if (limit_enabled && (!position_smoothing_enabled || !limit_smoothing_enabled)) {
+		Point2 bottom_right_corner = Point2(screen_rect.position + 2.0 * (camera_pos - screen_rect.position));
 		if (screen_rect.position.x < limit[SIDE_LEFT]) {
 			screen_rect.position.x = limit[SIDE_LEFT];
 		}
 
-		if (screen_rect.position.x + screen_rect.size.x > limit[SIDE_RIGHT]) {
-			screen_rect.position.x = limit[SIDE_RIGHT] - screen_rect.size.x;
+		if (bottom_right_corner.x > limit[SIDE_RIGHT]) {
+			screen_rect.position.x = limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x);
 		}
 
-		if (screen_rect.position.y + screen_rect.size.y > limit[SIDE_BOTTOM]) {
-			screen_rect.position.y = limit[SIDE_BOTTOM] - screen_rect.size.y;
+		if (bottom_right_corner.y > limit[SIDE_BOTTOM]) {
+			screen_rect.position.y = limit[SIDE_BOTTOM] - (bottom_right_corner.y - screen_rect.position.y);
 		}
 
 		if (screen_rect.position.y < limit[SIDE_TOP]) {
@@ -265,6 +325,14 @@ void Camera2D::_ensure_update_interpolation_data() {
 
 void Camera2D::_notification(int p_what) {
 	switch (p_what) {
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_READY: {
+			if (is_part_of_edited_scene()) {
+				ProjectSettings::get_singleton()->connect(SNAME("settings_changed"), callable_mp(this, &Camera2D::_project_settings_changed));
+			}
+		} break;
+#endif
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			_update_scroll();
 		} break;
@@ -282,15 +350,25 @@ void Camera2D::_notification(int p_what) {
 			// Force the limits etc. to update.
 			_interpolation_data.xform_curr = get_camera_transform();
 			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+			_update_process_callback();
+		} break;
+
+		case NOTIFICATION_SUSPENDED:
+		case NOTIFICATION_PAUSED: {
+			if (is_physics_interpolated_and_enabled()) {
+				_update_scroll();
+			}
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if ((!position_smoothing_enabled && !is_physics_interpolated_and_enabled()) || _is_editing_in_editor()) {
+			if ((!position_smoothing_enabled && !is_physics_interpolated_and_enabled()) || is_part_of_edited_scene()) {
 				_update_scroll();
 			}
 			if (is_physics_interpolated_and_enabled()) {
 				_ensure_update_interpolation_data();
-				_interpolation_data.xform_curr = get_camera_transform();
+				if (Engine::get_singleton()->is_in_physics_frame()) {
+					_interpolation_data.xform_curr = get_camera_transform();
+				}
 			}
 		} break;
 
@@ -311,7 +389,7 @@ void Camera2D::_notification(int p_what) {
 			add_to_group(group_name);
 			add_to_group(canvas_group_name);
 
-			if (!_is_editing_in_editor() && enabled && !viewport->get_camera_2d()) {
+			if (!is_part_of_edited_scene() && enabled && !viewport->get_camera_2d()) {
 				make_current();
 			}
 
@@ -342,7 +420,7 @@ void Camera2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_DRAW: {
-			if (!is_inside_tree() || !_is_editing_in_editor()) {
+			if (!is_inside_tree() || !is_part_of_edited_scene()) {
 				break;
 			}
 
@@ -363,31 +441,30 @@ void Camera2D::_notification(int p_what) {
 					inv_camera_transform.xform(Vector2(0, screen_size.height))
 				};
 
-				Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
+				Transform2D inv_transform = get_global_transform().affine_inverse(); // Undo global space.
 
 				for (int i = 0; i < 4; i++) {
 					draw_line(inv_transform.xform(screen_endpoints[i]), inv_transform.xform(screen_endpoints[(i + 1) % 4]), area_axis_color, area_axis_width);
 				}
 			}
 
-			if (limit_drawing_enabled) {
-				Color limit_drawing_color(1, 1, 0.25, 0.63);
+			if (limit_enabled && limit_drawing_enabled) {
 				real_t limit_drawing_width = -1;
 				if (is_current()) {
 					limit_drawing_width = 3;
 				}
 
-				Vector2 camera_origin = get_global_position();
-				Vector2 camera_scale = get_global_scale().abs();
+				Transform2D inv_transform = get_global_transform().affine_inverse();
+
 				Vector2 limit_points[4] = {
-					(Vector2(limit[SIDE_LEFT], limit[SIDE_TOP]) - camera_origin) / camera_scale,
-					(Vector2(limit[SIDE_RIGHT], limit[SIDE_TOP]) - camera_origin) / camera_scale,
-					(Vector2(limit[SIDE_RIGHT], limit[SIDE_BOTTOM]) - camera_origin) / camera_scale,
-					(Vector2(limit[SIDE_LEFT], limit[SIDE_BOTTOM]) - camera_origin) / camera_scale
+					inv_transform.xform(Vector2(limit[SIDE_LEFT], limit[SIDE_TOP])),
+					inv_transform.xform(Vector2(limit[SIDE_RIGHT], limit[SIDE_TOP])),
+					inv_transform.xform(Vector2(limit[SIDE_RIGHT], limit[SIDE_BOTTOM])),
+					inv_transform.xform(Vector2(limit[SIDE_LEFT], limit[SIDE_BOTTOM]))
 				};
 
 				for (int i = 0; i < 4; i++) {
-					draw_line(limit_points[i], limit_points[(i + 1) % 4], limit_drawing_color, limit_drawing_width);
+					draw_line(limit_points[i], limit_points[(i + 1) % 4], Color(1, 1, 0.25, 0.63), limit_drawing_width);
 				}
 			}
 
@@ -408,7 +485,7 @@ void Camera2D::_notification(int p_what) {
 					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ((screen_size.width / 2) * drag_margin[SIDE_LEFT]), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[SIDE_BOTTOM])))
 				};
 
-				Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
+				Transform2D inv_transform = get_global_transform().affine_inverse(); // Undo global space.
 
 				for (int i = 0; i < 4; i++) {
 					draw_line(inv_transform.xform(margin_endpoints[i]), inv_transform.xform(margin_endpoints[(i + 1) % 4]), margin_drawing_color, margin_drawing_width);
@@ -420,6 +497,9 @@ void Camera2D::_notification(int p_what) {
 }
 
 void Camera2D::set_offset(const Vector2 &p_offset) {
+	if (offset == p_offset) {
+		return;
+	}
 	offset = p_offset;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
@@ -431,6 +511,9 @@ Vector2 Camera2D::get_offset() const {
 }
 
 void Camera2D::set_anchor_mode(AnchorMode p_anchor_mode) {
+	if (anchor_mode == p_anchor_mode) {
+		return;
+	}
 	anchor_mode = p_anchor_mode;
 	_update_scroll();
 }
@@ -440,6 +523,9 @@ Camera2D::AnchorMode Camera2D::get_anchor_mode() const {
 }
 
 void Camera2D::set_ignore_rotation(bool p_ignore) {
+	if (ignore_rotation == p_ignore) {
+		return;
+	}
 	ignore_rotation = p_ignore;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 
@@ -456,6 +542,22 @@ bool Camera2D::is_ignoring_rotation() const {
 	return ignore_rotation;
 }
 
+void Camera2D::set_limit_enabled(bool p_limit_enabled) {
+	if (limit_enabled == p_limit_enabled) {
+		return;
+	}
+	limit_enabled = p_limit_enabled;
+	_update_scroll();
+#ifdef TOOLS_ENABLED
+	emit_signal("_camera_limit_enabled_updated"); // Used for Camera2DEditorPlugin.
+#endif
+	notify_property_list_changed();
+}
+
+bool Camera2D::is_limit_enabled() const {
+	return limit_enabled;
+}
+
 void Camera2D::set_process_callback(Camera2DProcessCallback p_mode) {
 	if (process_callback == p_mode) {
 		return;
@@ -466,6 +568,9 @@ void Camera2D::set_process_callback(Camera2DProcessCallback p_mode) {
 }
 
 void Camera2D::set_enabled(bool p_enabled) {
+	if (enabled == p_enabled) {
+		return;
+	}
 	enabled = p_enabled;
 
 	if (!is_inside_tree()) {
@@ -512,12 +617,16 @@ void Camera2D::_make_current(Object *p_which) {
 	}
 }
 
-void Camera2D::_update_process_internal_for_smoothing() {
-	bool is_not_in_scene_or_editor = !(is_inside_tree() && _is_editing_in_editor());
-	bool is_any_smoothing_valid = position_smoothing_speed > 0 || rotation_smoothing_speed > 0;
+void Camera2D::_set_limit_rect(const Rect2 &p_limit_rect) {
+	Point2 limit_rect_end = p_limit_rect.get_end();
+	set_limit(SIDE_LEFT, p_limit_rect.position.x);
+	set_limit(SIDE_TOP, p_limit_rect.position.y);
+	set_limit(SIDE_RIGHT, limit_rect_end.x);
+	set_limit(SIDE_BOTTOM, limit_rect_end.y);
+}
 
-	bool enable = is_any_smoothing_valid && is_not_in_scene_or_editor;
-	set_process_internal(enable);
+Rect2 Camera2D::get_limit_rect() const {
+	return Rect2(limit[SIDE_LEFT], limit[SIDE_TOP], limit[SIDE_RIGHT] - limit[SIDE_LEFT], limit[SIDE_BOTTOM] - limit[SIDE_TOP]);
 }
 
 void Camera2D::make_current() {
@@ -558,6 +667,9 @@ bool Camera2D::is_current() const {
 
 void Camera2D::set_limit(Side p_side, int p_limit) {
 	ERR_FAIL_INDEX((int)p_side, 4);
+	if (limit[p_side] == p_limit) {
+		return;
+	}
 	limit[p_side] = p_limit;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
@@ -569,8 +681,11 @@ int Camera2D::get_limit(Side p_side) const {
 	return limit[p_side];
 }
 
-void Camera2D::set_limit_smoothing_enabled(bool enable) {
-	limit_smoothing_enabled = enable;
+void Camera2D::set_limit_smoothing_enabled(bool p_enabled) {
+	if (limit_smoothing_enabled == p_enabled) {
+		return;
+	}
+	limit_smoothing_enabled = p_enabled;
 	_update_scroll();
 }
 
@@ -580,6 +695,9 @@ bool Camera2D::is_limit_smoothing_enabled() const {
 
 void Camera2D::set_drag_margin(Side p_side, real_t p_drag_margin) {
 	ERR_FAIL_INDEX((int)p_side, 4);
+	if (drag_margin[p_side] == p_drag_margin) {
+		return;
+	}
 	drag_margin[p_side] = p_drag_margin;
 	queue_redraw();
 }
@@ -627,8 +745,11 @@ void Camera2D::align() {
 }
 
 void Camera2D::set_position_smoothing_speed(real_t p_speed) {
+	if (position_smoothing_speed == p_speed) {
+		return;
+	}
 	position_smoothing_speed = MAX(0, p_speed);
-	_update_process_internal_for_smoothing();
+	_update_process_callback();
 }
 
 real_t Camera2D::get_position_smoothing_speed() const {
@@ -636,8 +757,11 @@ real_t Camera2D::get_position_smoothing_speed() const {
 }
 
 void Camera2D::set_rotation_smoothing_speed(real_t p_speed) {
+	if (rotation_smoothing_speed == p_speed) {
+		return;
+	}
 	rotation_smoothing_speed = MAX(0, p_speed);
-	_update_process_internal_for_smoothing();
+	_update_process_callback();
 }
 
 real_t Camera2D::get_rotation_smoothing_speed() const {
@@ -645,6 +769,9 @@ real_t Camera2D::get_rotation_smoothing_speed() const {
 }
 
 void Camera2D::set_rotation_smoothing_enabled(bool p_enabled) {
+	if (rotation_smoothing_enabled == p_enabled) {
+		return;
+	}
 	rotation_smoothing_enabled = p_enabled;
 	notify_property_list_changed();
 }
@@ -658,8 +785,8 @@ Point2 Camera2D::get_camera_screen_center() const {
 }
 
 Size2 Camera2D::_get_camera_screen_size() const {
-	if (_is_editing_in_editor()) {
-		return Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+	if (is_part_of_edited_scene()) {
+		return Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
 	}
 	return get_viewport_rect().size;
 }
@@ -681,6 +808,9 @@ bool Camera2D::is_drag_vertical_enabled() const {
 }
 
 void Camera2D::set_drag_vertical_offset(real_t p_offset) {
+	if (drag_vertical_offset == p_offset) {
+		return;
+	}
 	drag_vertical_offset = p_offset;
 	drag_vertical_offset_changed = true;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
@@ -693,6 +823,9 @@ real_t Camera2D::get_drag_vertical_offset() const {
 }
 
 void Camera2D::set_drag_horizontal_offset(real_t p_offset) {
+	if (drag_horizontal_offset == p_offset) {
+		return;
+	}
 	drag_horizontal_offset = p_offset;
 	drag_horizontal_offset_changed = true;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
@@ -704,15 +837,10 @@ real_t Camera2D::get_drag_horizontal_offset() const {
 	return drag_horizontal_offset;
 }
 
-void Camera2D::_set_old_smoothing(real_t p_enable) {
-	//compatibility
-	if (p_enable > 0) {
-		position_smoothing_enabled = true;
-		set_position_smoothing_speed(p_enable);
-	}
-}
-
 void Camera2D::set_position_smoothing_enabled(bool p_enabled) {
+	if (position_smoothing_enabled == p_enabled) {
+		return;
+	}
 	position_smoothing_enabled = p_enabled;
 	notify_property_list_changed();
 }
@@ -723,6 +851,10 @@ bool Camera2D::is_position_smoothing_enabled() const {
 
 void Camera2D::set_custom_viewport(Node *p_viewport) {
 	ERR_FAIL_NULL(p_viewport);
+	if (custom_viewport == p_viewport) {
+		return;
+	}
+
 	if (is_inside_tree()) {
 		remove_from_group(group_name);
 		remove_from_group(canvas_group_name);
@@ -755,8 +887,8 @@ Node *Camera2D::get_custom_viewport() const {
 	return custom_viewport;
 }
 
-void Camera2D::set_screen_drawing_enabled(bool enable) {
-	screen_drawing_enabled = enable;
+void Camera2D::set_screen_drawing_enabled(bool p_enabled) {
+	screen_drawing_enabled = p_enabled;
 #ifdef TOOLS_ENABLED
 	queue_redraw();
 #endif
@@ -766,8 +898,8 @@ bool Camera2D::is_screen_drawing_enabled() const {
 	return screen_drawing_enabled;
 }
 
-void Camera2D::set_limit_drawing_enabled(bool enable) {
-	limit_drawing_enabled = enable;
+void Camera2D::set_limit_drawing_enabled(bool p_enabled) {
+	limit_drawing_enabled = p_enabled;
 #ifdef TOOLS_ENABLED
 	queue_redraw();
 #endif
@@ -777,8 +909,8 @@ bool Camera2D::is_limit_drawing_enabled() const {
 	return limit_drawing_enabled;
 }
 
-void Camera2D::set_margin_drawing_enabled(bool enable) {
-	margin_drawing_enabled = enable;
+void Camera2D::set_margin_drawing_enabled(bool p_enabled) {
+	margin_drawing_enabled = p_enabled;
 #ifdef TOOLS_ENABLED
 	queue_redraw();
 #endif
@@ -789,6 +921,9 @@ bool Camera2D::is_margin_drawing_enabled() const {
 }
 
 void Camera2D::_validate_property(PropertyInfo &p_property) const {
+	if (!limit_enabled && (p_property.name == "limit_smoothed" || p_property.name == "limit_left" || p_property.name == "limit_top" || p_property.name == "limit_right" || p_property.name == "limit_bottom")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
 	if (!position_smoothing_enabled && p_property.name == "position_smoothing_speed") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -818,6 +953,9 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_current"), &Camera2D::make_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera2D::is_current);
 	ClassDB::bind_method(D_METHOD("_make_current"), &Camera2D::_make_current);
+
+	ClassDB::bind_method(D_METHOD("set_limit_enabled", "limit_enabled"), &Camera2D::set_limit_enabled);
+	ClassDB::bind_method(D_METHOD("is_limit_enabled"), &Camera2D::is_limit_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_limit", "margin", "limit"), &Camera2D::set_limit);
 	ClassDB::bind_method(D_METHOD("get_limit", "margin"), &Camera2D::get_limit);
@@ -865,8 +1003,6 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reset_smoothing"), &Camera2D::reset_smoothing);
 	ClassDB::bind_method(D_METHOD("align"), &Camera2D::align);
 
-	ClassDB::bind_method(D_METHOD("_set_old_smoothing", "follow_smoothing"), &Camera2D::_set_old_smoothing);
-
 	ClassDB::bind_method(D_METHOD("set_screen_drawing_enabled", "screen_drawing_enabled"), &Camera2D::set_screen_drawing_enabled);
 	ClassDB::bind_method(D_METHOD("is_screen_drawing_enabled"), &Camera2D::is_screen_drawing_enabled);
 
@@ -885,6 +1021,7 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_callback", "get_process_callback");
 
 	ADD_GROUP("Limit", "limit_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_limit_enabled", "is_limit_enabled");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_left", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_top", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_right", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_RIGHT);
@@ -892,11 +1029,11 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_smoothed"), "set_limit_smoothing_enabled", "is_limit_smoothing_enabled");
 
 	ADD_GROUP("Position Smoothing", "position_smoothing_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled"), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
 
 	ADD_GROUP("Rotation Smoothing", "rotation_smoothing_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled"), "set_rotation_smoothing_enabled", "is_rotation_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_rotation_smoothing_enabled", "is_rotation_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_smoothing_speed"), "set_rotation_smoothing_speed", "get_rotation_smoothing_speed");
 
 	ADD_GROUP("Drag", "drag_");
@@ -921,16 +1058,10 @@ void Camera2D::_bind_methods() {
 }
 
 Camera2D::Camera2D() {
-	limit[SIDE_LEFT] = -10000000;
-	limit[SIDE_TOP] = -10000000;
-	limit[SIDE_RIGHT] = 10000000;
-	limit[SIDE_BOTTOM] = 10000000;
-
-	drag_margin[SIDE_LEFT] = 0.2;
-	drag_margin[SIDE_TOP] = 0.2;
-	drag_margin[SIDE_RIGHT] = 0.2;
-	drag_margin[SIDE_BOTTOM] = 0.2;
-
 	set_notify_transform(true);
 	set_hide_clip_children(true);
+
+#ifdef TOOLS_ENABLED
+	add_user_signal(MethodInfo("_camera_limit_enabled_updated")); // Camera2DEditorPlugin listens to this.
+#endif
 }

@@ -189,13 +189,8 @@ namespace embree
       , atype(osAllocation ? EMBREE_OS_MALLOC : ALIGNED_MALLOC)
       , primrefarray(device,0)
     {
-      // -- GODOT start --
-      // if (osAllocation && useUSM)
-      //   throw std::runtime_error("USM allocation cannot be combined with OS allocation.");
-      if (osAllocation && useUSM) {
-        abort();
-      }
-      // -- GODOT end --
+      if (osAllocation && useUSM)
+        abort(); //throw std::runtime_error("USM allocation cannot be combined with OS allocation.");
 
       for (size_t i=0; i<MAX_THREAD_USED_BLOCK_SLOTS; i++)
       {
@@ -507,13 +502,8 @@ namespace embree
         Block* myUsedBlocks = threadUsedBlocks[slot];
         if (myUsedBlocks) {
           void* ptr = myUsedBlocks->malloc(device,bytes,align,partial);
-          // -- GODOT start --
-          // if (ptr == nullptr && !blockAllocation)
-          //   throw std::bad_alloc();
-          if (ptr == nullptr && !blockAllocation) {
-            abort();
-          }
-          // -- GODOT end --
+          if (ptr == nullptr && !blockAllocation)
+            abort(); //throw std::bad_alloc();
           if (ptr) return ptr;
         }
 

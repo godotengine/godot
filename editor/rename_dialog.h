@@ -28,11 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENAME_DIALOG_H
-#define RENAME_DIALOG_H
-
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
+#pragma once
 
 #include "editor/gui/scene_tree_editor.h"
 #include "scene/gui/dialogs.h"
@@ -49,7 +45,7 @@ class TabContainer;
 class RenameDialog : public ConfirmationDialog {
 	GDCLASS(RenameDialog, ConfirmationDialog);
 
-	virtual void ok_pressed() override { rename(); };
+	virtual void ok_pressed() override { rename(); }
 	void _cancel_pressed() {}
 	void _features_toggled(bool pressed);
 	void _insert_text(const String &text);
@@ -113,7 +109,3 @@ public:
 
 	RenameDialog(SceneTreeEditor *p_scene_tree_editor);
 };
-
-#endif // MODULE_REGEX_ENABLED
-
-#endif // RENAME_DIALOG_H

@@ -33,14 +33,10 @@
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
 
-void InputEventConfigContainer::_bind_methods() {
-}
-
 void InputEventConfigContainer::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			open_config_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			open_config_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 		} break;
 	}
 }
@@ -82,19 +78,20 @@ void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
 
 InputEventConfigContainer::InputEventConfigContainer() {
 	input_event_text = memnew(Label);
+	input_event_text->set_focus_mode(FOCUS_ACCESSIBILITY);
 	input_event_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	input_event_text->set_autowrap_mode(TextServer::AutowrapMode::AUTOWRAP_WORD_SMART);
 	input_event_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	add_child(input_event_text);
 
 	open_config_button = EditorInspector::create_inspector_action_button(TTR("Configure"));
-	open_config_button->connect("pressed", callable_mp(this, &InputEventConfigContainer::_configure_pressed));
+	open_config_button->connect(SceneStringName(pressed), callable_mp(this, &InputEventConfigContainer::_configure_pressed));
 	add_child(open_config_button);
 
 	add_child(memnew(Control));
 
 	config_dialog = memnew(InputEventConfigurationDialog);
-	config_dialog->connect("confirmed", callable_mp(this, &InputEventConfigContainer::_config_dialog_confirmed));
+	config_dialog->connect(SceneStringName(confirmed), callable_mp(this, &InputEventConfigContainer::_config_dialog_confirmed));
 	add_child(config_dialog);
 }
 

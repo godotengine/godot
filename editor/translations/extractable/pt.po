@@ -18,16 +18,17 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "Example: %s"
-msgstr "Exemplo: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d item"
-msgstr[1] "%d itens"
+msgid "All Recognized"
+msgstr "Todos Reconhecidos"
 
 msgid "New Code Region"
 msgstr "Nova região de código"
+
+msgid "Pick a color from the screen."
+msgstr "Escolha uma cor na tela."
+
+msgid "Pick a color from the application window."
+msgstr "Escolha uma cor na janela da aplicação."
 
 msgid ""
 "Color: #%s\n"
@@ -47,12 +48,6 @@ msgstr ""
 
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "Introduza um código hex (\"#ff0000\") ou nome da cor (\"red\")."
-
-msgid "Pick a color from the screen."
-msgstr "Escolha uma cor na tela."
-
-msgid "Pick a color from the application window."
-msgstr "Escolha uma cor na janela da aplicação."
 
 msgid "Select a picker shape."
 msgstr "Selecione a forma do seletor."
@@ -82,14 +77,14 @@ msgstr "Abrir"
 msgid "Select Current Folder"
 msgstr "Selecionar pasta atual"
 
+msgid "Save"
+msgstr "Guardar"
+
 msgid "Select This Folder"
 msgstr "Selecionar esta Pasta"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "Não tem permissão para acessar o conteúdo desta pasta."
-
-msgid "All Recognized"
-msgstr "Todos Reconhecidos"
 
 msgid "All Files"
 msgstr "Todos os Ficheiros"
@@ -105,9 +100,6 @@ msgstr "Abrir uma Diretoria"
 
 msgid "Open a File or Directory"
 msgstr "Abrir um Ficheiro ou Diretoria"
-
-msgid "Save"
-msgstr "Guardar"
 
 msgid "Save a File"
 msgstr "Guardar um Ficheiro"

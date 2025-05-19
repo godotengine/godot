@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VISUAL_SHADER_NODES_H
-#define VISUAL_SHADER_NODES_H
+#pragma once
 
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/visual_shader.h"
@@ -341,6 +340,9 @@ public:
 	void set_constant(const Quaternion &p_constant);
 	Quaternion get_constant() const;
 
+	void _set_constant_v4(const Vector4 &p_constant);
+	Vector4 _get_constant_v4() const;
+
 	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeVec4Constant();
@@ -562,9 +564,15 @@ VARIANT_ENUM_CAST(VisualShaderNodeSample3D::Source)
 
 class VisualShaderNodeTexture2DArray : public VisualShaderNodeSample3D {
 	GDCLASS(VisualShaderNodeTexture2DArray, VisualShaderNodeSample3D);
-	Ref<Texture2DArray> texture_array;
+	Ref<TextureLayered> texture_array;
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	void _set_texture_array_bind_compat_95126(Ref<Texture2DArray> p_texture_array);
+	Ref<Texture2DArray> _get_texture_array_bind_compat_95126() const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 	static void _bind_methods();
 
 public:
@@ -575,8 +583,8 @@ public:
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 
-	void set_texture_array(Ref<Texture2DArray> p_texture_array);
-	Ref<Texture2DArray> get_texture_array() const;
+	void set_texture_array(Ref<TextureLayered> p_texture_array);
+	Ref<TextureLayered> get_texture_array() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -608,7 +616,7 @@ public:
 
 class VisualShaderNodeCubemap : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeCubemap, VisualShaderNode);
-	Ref<Cubemap> cube_map;
+	Ref<TextureLayered> cube_map;
 
 public:
 	enum Source {
@@ -629,6 +637,12 @@ private:
 	TextureType texture_type = TYPE_DATA;
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	void _set_cube_map_bind_compat_95126(Ref<Cubemap> p_cube_map);
+	Ref<Cubemap> _get_cube_map_bind_compat_95126() const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 	static void _bind_methods();
 
 public:
@@ -650,8 +664,8 @@ public:
 	void set_source(Source p_source);
 	Source get_source() const;
 
-	void set_cube_map(Ref<Cubemap> p_cube_map);
-	Ref<Cubemap> get_cube_map() const;
+	void set_cube_map(Ref<TextureLayered> p_cube_map);
+	Ref<TextureLayered> get_cube_map() const;
 
 	void set_texture_type(TextureType p_texture_type);
 	TextureType get_texture_type() const;
@@ -1340,6 +1354,8 @@ public:
 		FUNC_HSV2RGB,
 		FUNC_RGB2HSV,
 		FUNC_SEPIA,
+		FUNC_LINEAR_TO_SRGB,
+		FUNC_SRGB_TO_LINEAR,
 		FUNC_MAX,
 	};
 
@@ -2115,6 +2131,7 @@ public:
 		HINT_NONE,
 		HINT_RANGE,
 		HINT_RANGE_STEP,
+		HINT_ENUM,
 		HINT_MAX,
 	};
 
@@ -2123,6 +2140,7 @@ private:
 	int hint_range_min = 0;
 	int hint_range_max = 100;
 	int hint_range_step = 1;
+	PackedStringArray hint_enum_names;
 	bool default_value_enabled = false;
 	int default_value = 0;
 
@@ -2157,6 +2175,9 @@ public:
 
 	void set_step(int p_value);
 	int get_step() const;
+
+	void set_enum_names(const PackedStringArray &p_names);
+	PackedStringArray get_enum_names() const;
 
 	void set_default_value_enabled(bool p_enabled);
 	bool is_default_value_enabled() const;
@@ -2543,6 +2564,7 @@ public:
 
 	virtual HashMap<StringName, String> get_editable_properties_names() const override;
 	virtual bool is_show_prop_names() const override;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	Vector<StringName> get_editable_properties() const override;
 
@@ -3049,8 +3071,28 @@ public:
 	VisualShaderNodeRandomRange();
 };
 
+///////////////////////////////////////
+/// Remap
+///////////////////////////////////////
+
 class VisualShaderNodeRemap : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeRemap, VisualShaderNode);
+
+public:
+	enum OpType {
+		OP_TYPE_SCALAR,
+		OP_TYPE_VECTOR_2D,
+		OP_TYPE_VECTOR_2D_SCALAR,
+		OP_TYPE_VECTOR_3D,
+		OP_TYPE_VECTOR_3D_SCALAR,
+		OP_TYPE_VECTOR_4D,
+		OP_TYPE_VECTOR_4D_SCALAR,
+		OP_TYPE_MAX,
+	};
+
+protected:
+	OpType op_type = OP_TYPE_SCALAR;
+	static void _bind_methods();
 
 public:
 	virtual String get_caption() const override;
@@ -3063,12 +3105,25 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
+	void set_op_type(OpType p_op_type);
+	OpType get_op_type() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	virtual Category get_category() const override { return CATEGORY_UTILITY; }
+	virtual Category get_category() const override {
+		if (op_type == OP_TYPE_SCALAR) {
+			return CATEGORY_SCALAR;
+		} else {
+			return CATEGORY_VECTOR;
+		}
+	}
 
 	VisualShaderNodeRemap();
 };
+
+VARIANT_ENUM_CAST(VisualShaderNodeRemap::OpType)
 
 class VisualShaderNodeRotationByAxis : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeRotationByAxis, VisualShaderNode);
@@ -3092,4 +3147,33 @@ public:
 	VisualShaderNodeRotationByAxis();
 };
 
-#endif // VISUAL_SHADER_NODES_H
+class VisualShaderNodeReroute : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeReroute, VisualShaderNode);
+
+	PortType input_port_type = PORT_TYPE_SCALAR;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+	virtual bool has_output_port_preview(int p_port) const override { return false; }
+	virtual bool is_output_port_expandable(int p_port) const override { return false; }
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual Category get_category() const override { return CATEGORY_SPECIAL; }
+
+	void _set_port_type(PortType p_type);
+	PortType get_port_type() const { return input_port_type; }
+
+	VisualShaderNodeReroute();
+};

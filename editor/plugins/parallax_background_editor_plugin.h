@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARALLAX_BACKGROUND_EDITOR_PLUGIN_H
-#define PARALLAX_BACKGROUND_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 
@@ -55,7 +54,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_name() const override { return "ParallaxBackground"; }
+	virtual String get_plugin_name() const override { return "ParallaxBackground"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -63,5 +62,3 @@ public:
 
 	ParallaxBackgroundEditorPlugin();
 };
-
-#endif // PARALLAX_BACKGROUND_EDITOR_PLUGIN_H

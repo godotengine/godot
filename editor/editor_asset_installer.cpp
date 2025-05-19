@@ -130,14 +130,14 @@ void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_topl
 
 		// Create intermediate directories if they aren't reported by unzip.
 		// We are only interested in subfolders, so skip the root slash.
-		int separator = source_name.find("/", 1);
+		int separator = source_name.find_char('/', 1);
 		while (separator != -1) {
 			String dir_name = source_name.substr(0, separator + 1);
 			if (!dir_name.is_empty() && !asset_files.has(dir_name)) {
 				asset_files.insert(dir_name);
 			}
 
-			separator = source_name.find("/", separator + 1);
+			separator = source_name.find_char('/', separator + 1);
 		}
 
 		if (!source_name.is_empty() && !asset_files.has(source_name)) {
@@ -214,7 +214,7 @@ void EditorAssetInstaller::_rebuild_source_tree() {
 
 		TreeItem *parent_item;
 
-		int separator = path.rfind("/");
+		int separator = path.rfind_char('/');
 		if (separator == -1) {
 			parent_item = root;
 		} else {
@@ -313,7 +313,7 @@ void EditorAssetInstaller::_rebuild_destination_tree() {
 
 		TreeItem *parent_item;
 
-		int separator = path.rfind("/");
+		int separator = path.rfind_char('/');
 		if (separator == -1) {
 			parent_item = root;
 		} else {
@@ -411,9 +411,9 @@ void EditorAssetInstaller::_toggle_source_tree(bool p_visible, bool p_scroll_to_
 	show_source_files_button->set_pressed_no_signal(p_visible); // To keep in sync if triggered by something else.
 
 	if (p_visible) {
-		show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+		show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 	} else {
-		show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
+		show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 	}
 
 	if (p_visible && p_scroll_to_error && first_file_conflict) {
@@ -428,7 +428,7 @@ void EditorAssetInstaller::_check_has_toplevel() {
 	toplevel_prefix = "";
 	skip_toplevel_check->set_pressed(false);
 	skip_toplevel_check->set_disabled(true);
-	skip_toplevel_check->set_tooltip_text(TTR("This asset doesn't have a root directory, so it can't be ignored."));
+	skip_toplevel_check->set_tooltip_text(TTRC("This asset doesn't have a root directory, so it can't be ignored."));
 
 	if (asset_files.is_empty()) {
 		return;
@@ -453,7 +453,7 @@ void EditorAssetInstaller::_check_has_toplevel() {
 
 	toplevel_prefix = first_asset;
 	skip_toplevel_check->set_disabled(false);
-	skip_toplevel_check->set_tooltip_text(TTR("Ignore the root directory when extracting files."));
+	skip_toplevel_check->set_tooltip_text(TTRC("Ignore the root directory when extracting files."));
 }
 
 void EditorAssetInstaller::_set_skip_toplevel(bool p_checked) {
@@ -471,7 +471,7 @@ void EditorAssetInstaller::_open_target_dir_dialog() {
 	if (!target_dir_dialog) {
 		target_dir_dialog = memnew(EditorFileDialog);
 		target_dir_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
-		target_dir_dialog->set_title(TTR("Select Install Folder"));
+		target_dir_dialog->set_title(TTRC("Select Install Folder"));
 		target_dir_dialog->set_current_dir(target_dir_path);
 		target_dir_dialog->connect("dir_selected", callable_mp(this, &EditorAssetInstaller::_target_dir_selected));
 		add_child(target_dir_dialog);
@@ -578,7 +578,7 @@ void EditorAssetInstaller::_install_asset() {
 		}
 	} else {
 		if (EditorNode::get_singleton() != nullptr) {
-			EditorNode::get_singleton()->show_warning(vformat(TTR("Asset \"%s\" installed successfully!"), asset_name), TTR("Success!"));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Asset \"%s\" installed successfully!"), asset_name), TTRC("Success!"));
 		}
 	}
 
@@ -597,11 +597,11 @@ void EditorAssetInstaller::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			if (show_source_files_button->is_pressed()) {
-				show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+				show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 			} else {
-				show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
+				show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			}
-			asset_conflicts_link->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			asset_conflicts_link->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			generic_extension_icon = get_editor_theme_icon(SNAME("Object"));
 
@@ -632,7 +632,7 @@ void EditorAssetInstaller::_notification(int p_what) {
 				extension_icon_map["gdshader"] = get_editor_theme_icon(SNAME("Shader"));
 				extension_icon_map["gdshaderinc"] = get_editor_theme_icon(SNAME("TextFile"));
 				extension_icon_map["gd"] = get_editor_theme_icon(SNAME("GDScript"));
-				if (Engine::get_singleton()->has_singleton("GodotSharp")) {
+				if (ClassDB::class_exists("CSharpScript")) {
 					extension_icon_map["cs"] = get_editor_theme_icon(SNAME("CSharpScript"));
 				} else {
 					// Mark C# support as unavailable.
@@ -659,9 +659,6 @@ void EditorAssetInstaller::_notification(int p_what) {
 	}
 }
 
-void EditorAssetInstaller::_bind_methods() {
-}
-
 EditorAssetInstaller::EditorAssetInstaller() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
@@ -672,11 +669,12 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	vb->add_child(asset_status);
 
 	Label *asset_label = memnew(Label);
-	asset_label->set_text(TTR("Asset:"));
+	asset_label->set_text(TTRC("Asset:"));
 	asset_label->set_theme_type_variation("HeaderSmall");
 	asset_status->add_child(asset_label);
 
 	asset_title_label = memnew(Label);
+	asset_title_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	asset_status->add_child(asset_title_label);
 
 	// File remapping controls.
@@ -686,37 +684,40 @@ EditorAssetInstaller::EditorAssetInstaller() {
 
 	show_source_files_button = memnew(Button);
 	show_source_files_button->set_toggle_mode(true);
-	show_source_files_button->set_tooltip_text(TTR("Open the list of the asset contents and select which files to install."));
+	show_source_files_button->set_tooltip_text(TTRC("Open the list of the asset contents and select which files to install."));
+	show_source_files_button->set_accessibility_name(TTRC("Show Asset Contents"));
 	remapping_tools->add_child(show_source_files_button);
-	show_source_files_button->connect("toggled", callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
+	show_source_files_button->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
 
 	Button *target_dir_button = memnew(Button);
-	target_dir_button->set_text(TTR("Change Install Folder"));
-	target_dir_button->set_tooltip_text(TTR("Change the folder where the contents of the asset are going to be installed."));
+	target_dir_button->set_text(TTRC("Change Install Folder"));
+	target_dir_button->set_tooltip_text(TTRC("Change the folder where the contents of the asset are going to be installed."));
 	remapping_tools->add_child(target_dir_button);
-	target_dir_button->connect("pressed", callable_mp(this, &EditorAssetInstaller::_open_target_dir_dialog));
+	target_dir_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetInstaller::_open_target_dir_dialog));
 
 	remapping_tools->add_child(memnew(VSeparator));
 
 	skip_toplevel_check = memnew(CheckBox);
-	skip_toplevel_check->set_text(TTR("Ignore asset root"));
-	skip_toplevel_check->set_tooltip_text(TTR("Ignore the root directory when extracting files."));
-	skip_toplevel_check->connect("toggled", callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
+	skip_toplevel_check->set_text(TTRC("Ignore asset root"));
+	skip_toplevel_check->set_tooltip_text(TTRC("Ignore the root directory when extracting files."));
+	skip_toplevel_check->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
 	remapping_tools->add_child(skip_toplevel_check);
 
 	remapping_tools->add_spacer();
 
 	asset_conflicts_label = memnew(Label);
+	asset_conflicts_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	asset_conflicts_label->set_theme_type_variation("HeaderSmall");
-	asset_conflicts_label->set_text(TTR("No files conflict with your project"));
+	asset_conflicts_label->set_text(TTRC("No files conflict with your project"));
 	remapping_tools->add_child(asset_conflicts_label);
 	asset_conflicts_link = memnew(LinkButton);
+	asset_conflicts_link->set_accessibility_name(TTRC("Show Conflicting Files"));
 	asset_conflicts_link->set_theme_type_variation("HeaderSmallLink");
 	asset_conflicts_link->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	asset_conflicts_link->set_tooltip_text(TTR("Show contents of the asset and conflicting files."));
+	asset_conflicts_link->set_tooltip_text(TTRC("Show contents of the asset and conflicting files."));
 	asset_conflicts_link->set_visible(false);
 	remapping_tools->add_child(asset_conflicts_link);
-	asset_conflicts_link->connect("pressed", callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(true, true));
+	asset_conflicts_link->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(true, true));
 
 	// File hierarchy trees.
 
@@ -730,14 +731,16 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	tree_split->add_child(source_tree_vb);
 
 	Label *source_tree_label = memnew(Label);
-	source_tree_label->set_text(TTR("Contents of the asset:"));
+	source_tree_label->set_text(TTRC("Contents of the asset:"));
 	source_tree_label->set_theme_type_variation("HeaderSmall");
 	source_tree_vb->add_child(source_tree_label);
 
 	source_tree = memnew(Tree);
+	source_tree->set_accessibility_name(TTRC("Source Files"));
 	source_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	source_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	source_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
+	source_tree->set_theme_type_variation("TreeSecondary");
 	source_tree_vb->add_child(source_tree);
 
 	VBoxContainer *destination_tree_vb = memnew(VBoxContainer);
@@ -745,11 +748,12 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	tree_split->add_child(destination_tree_vb);
 
 	Label *destination_tree_label = memnew(Label);
-	destination_tree_label->set_text(TTR("Installation preview:"));
+	destination_tree_label->set_text(TTRC("Installation preview:"));
 	destination_tree_label->set_theme_type_variation("HeaderSmall");
 	destination_tree_vb->add_child(destination_tree_label);
 
 	destination_tree = memnew(Tree);
+	destination_tree->set_accessibility_name(TTRC("Destination Files"));
 	destination_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	destination_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	destination_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
@@ -757,7 +761,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 
 	// Dialog configuration.
 
-	set_title(TTR("Configure Asset Before Installing"));
-	set_ok_button_text(TTR("Install"));
+	set_title(TTRC("Configure Asset Before Installing"));
+	set_ok_button_text(TTRC("Install"));
 	set_hide_on_ok(true);
 }

@@ -78,8 +78,11 @@
 			<param index="0" name="property" type="String" />
 			<param index="1" name="editor" type="Control" />
 			<param index="2" name="add_to_end" type="bool" default="false" />
+			<param index="3" name="label" type="String" default="&quot;&quot;" />
 			<description>
 				Adds a property editor for an individual property. The [param editor] control must extend [EditorProperty].
+				There can be multiple property editors for a property. If [param add_to_end] is [code]true[/code], this newly added editor will be displayed after all the other editors of the property whose [param add_to_end] is [code]false[/code]. For example, the editor uses this parameter to add an "Edit Region" button for [member Sprite2D.region_rect] below the regular [Rect2] editor.
+				[param label] can be used to choose a custom label for the property editor in the inspector. If left empty, the label is computed from the name of the property instead.
 			</description>
 		</method>
 		<method name="add_property_editor_for_multiple_properties">

@@ -35,9 +35,6 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 
-const int InputEvent::DEVICE_ID_EMULATION = -1;
-const int InputEvent::DEVICE_ID_INTERNAL = -2;
-
 void InputEvent::set_device(int p_device) {
 	device = p_device;
 	emit_changed();
@@ -230,7 +227,7 @@ void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModif
 }
 
 BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
-	BitField<KeyModifierMask> mask;
+	BitField<KeyModifierMask> mask = {};
 	if (is_ctrl_pressed()) {
 		mask.set_flag(KeyModifierMask::CTRL);
 	}
@@ -385,11 +382,11 @@ bool InputEventKey::is_echo() const {
 }
 
 Key InputEventKey::get_keycode_with_modifiers() const {
-	return keycode | (int64_t)get_modifiers_mask();
+	return keycode | get_modifiers_mask();
 }
 
 Key InputEventKey::get_physical_keycode_with_modifiers() const {
-	return physical_keycode | (int64_t)get_modifiers_mask();
+	return physical_keycode | get_modifiers_mask();
 }
 
 Key InputEventKey::get_key_label_with_modifiers() const {
@@ -754,6 +751,8 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 	mb->set_factor(factor);
 	mb->set_button_index(button_index);
 
+	mb->merge_meta_from(this);
+
 	return mb;
 }
 
@@ -974,6 +973,8 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 	mm->set_velocity(p_xform.basis_xform(get_velocity()));
 	mm->set_screen_velocity(get_screen_velocity());
 
+	mm->merge_meta_from(this);
+
 	return mm;
 }
 
@@ -1088,7 +1089,7 @@ void InputEventMouseMotion::_bind_methods() {
 ///////////////////////////////////
 
 void InputEventJoypadMotion::set_axis(JoyAxis p_axis) {
-	ERR_FAIL_COND(p_axis < JoyAxis::LEFT_X || p_axis > JoyAxis::MAX);
+	ERR_FAIL_COND(p_axis < JoyAxis::INVALID || p_axis > JoyAxis::MAX);
 
 	axis = p_axis;
 	emit_changed();
@@ -1100,7 +1101,7 @@ JoyAxis InputEventJoypadMotion::get_axis() const {
 
 void InputEventJoypadMotion::set_axis_value(float p_value) {
 	axis_value = p_value;
-	pressed = Math::abs(axis_value) >= 0.5f;
+	pressed = Math::abs(axis_value) >= InputMap::DEFAULT_TOGGLE_DEADZONE;
 	emit_changed();
 }
 
@@ -1366,6 +1367,8 @@ Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, co
 	st->set_canceled(canceled);
 	st->set_double_tap(double_tap);
 
+	st->merge_meta_from(this);
+
 	return st;
 }
 
@@ -1494,6 +1497,8 @@ Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, con
 	sd->set_velocity(p_xform.basis_xform(velocity));
 	sd->set_screen_velocity(get_screen_velocity());
 
+	sd->merge_meta_from(this);
+
 	return sd;
 }
 
@@ -1585,6 +1590,14 @@ float InputEventAction::get_strength() const {
 	return strength;
 }
 
+void InputEventAction::set_event_index(int p_index) {
+	event_index = p_index;
+}
+
+int InputEventAction::get_event_index() const {
+	return event_index;
+}
+
 bool InputEventAction::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
 	if (p_event.is_null()) {
 		return false;
@@ -1649,9 +1662,13 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &InputEventAction::set_strength);
 	ClassDB::bind_method(D_METHOD("get_strength"), &InputEventAction::get_strength);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action"), "set_action", "get_action");
+	ClassDB::bind_method(D_METHOD("set_event_index", "index"), &InputEventAction::set_event_index);
+	ClassDB::bind_method(D_METHOD("get_event_index"), &InputEventAction::get_event_index);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "event_index", PROPERTY_HINT_RANGE, "-1,31,1"), "set_event_index", "get_event_index"); // The max value equals to Input::MAX_EVENT - 1.
 }
 
 ///////////////////////////////////
@@ -1693,6 +1710,8 @@ Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform,
 	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
 	ev->set_factor(get_factor());
 
+	ev->merge_meta_from(this);
+
 	return ev;
 }
 
@@ -1732,6 +1751,8 @@ Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, con
 
 	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
 	ev->set_delta(get_delta());
+
+	ev->merge_meta_from(this);
 
 	return ev;
 }

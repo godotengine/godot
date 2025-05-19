@@ -10,19 +10,25 @@
 # David Salcas <davisalcas@gmail.com>, 2023.
 # David Fernández Pérez <davidfernandezperez.thezombrex@gmail.com>, 2023.
 # Carlos Cortes Garcia <carlos.cortes.games@gmail.com>, 2023.
+# C H O P O <ograncthulhu@gmail.com>, 2024.
+# ninjum <ninhum@gmx.com>, 2024.
+# spukes <soyceltista@hotmail.com>, 2024.
+# "Aquiles T. M." <aquiles.sonido@gmail.com>, 2024.
+# Guachipoto <guachipoto993@gmail.com>, 2024.
+# "Miguel A. Bouzada" <mbouzada@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-12-11 21:00+0000\n"
-"Last-Translator: Carlos Cortes Garcia <carlos.cortes.games@gmail.com>\n"
+"PO-Revision-Date: 2025-02-11 01:02+0000\n"
+"Last-Translator: \"Miguel A. Bouzada\" <mbouzada@gmail.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
 "Language: gl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "Fío principal"
@@ -34,49 +40,49 @@ msgid "Physical"
 msgstr "Físico"
 
 msgid "Left Mouse Button"
-msgstr "Botón Esquerdo do Rato"
+msgstr "Botón esquerdo do rato"
 
 msgid "Right Mouse Button"
-msgstr "Botón Dereito do Rato"
+msgstr "Botón dereito do rato"
 
 msgid "Middle Mouse Button"
-msgstr "Botón Central do Rato"
+msgstr "Botón central do rato"
 
 msgid "Mouse Wheel Up"
-msgstr "Roda do Rato Cara Arriba"
+msgstr "Roda do rato cara arriba"
 
 msgid "Mouse Wheel Down"
-msgstr "Roda do Rato Cara Abaixo"
+msgstr "Roda do rato cara abaixo"
 
 msgid "Mouse Wheel Left"
-msgstr "Roda do Rato Cara a Esquerda"
+msgstr "Roda do rato cara a esquerda"
 
 msgid "Mouse Wheel Right"
-msgstr "Roda do Rato Cara a Dereita"
+msgstr "Roda do rato cara a dereita"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Botón do Rato Polgar 1"
+msgstr "Botón de polgar do rato 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Botón do Rato Polgar 2"
+msgstr "Botón de polgar do rato 2"
 
 msgid "Button"
 msgstr "Botón"
 
 msgid "Double Click"
-msgstr "Dobre clic"
+msgstr "Duplo Clic"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Movemento do rato na posición (%s) con velocidade (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "Eixe X da Panca Esquerda, Eixe X do Joystick 0"
+msgstr "Eixo X da Panca Esquerda, Eixo X do Joystick 0"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "Eixe Y da Panca Esquerda, Eixe Y do Joystick 0"
+msgstr "Eixo Y da Panca Esquerda, Eixo Y do Joystick 0"
 
 msgid "Right Stick X-Axis, Joystick 1 X-Axis"
-msgstr "Eixe X da Panca Dereita, Eixe X do Joystick 1"
+msgstr "Eixo X da Panca Dereita, Eixo X do Joystick 1"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
 msgstr "Eixe Y da Panca Dereita, Eixe Y do Joystick 1"
@@ -351,6 +357,9 @@ msgstr "Seleccionar Palabra Debaixo do Cursor"
 msgid "Add Selection for Next Occurrence"
 msgstr "Engadir selección para a próxima aparición"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Omitir selección para a próxima aparición"
+
 msgid "Clear Carets and Selection"
 msgstr "Borrar Cursores e Selección"
 
@@ -426,14 +435,6 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
-msgid "Example: %s"
-msgstr "Exemplo: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d elemento"
-msgstr[1] "%d elementos"
-
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -445,7 +446,7 @@ msgid "An action with the name '%s' already exists."
 msgstr "Xa existe unha acción co nome '%s'."
 
 msgid "Cannot Revert - Action is same as initial"
-msgstr "Non se pode reverter - A acción é a mesma que a inicial"
+msgstr "Non se pode reverter - A acción é igual ca inicial"
 
 msgid "Revert Action"
 msgstr "Revertir Acción"
@@ -454,7 +455,7 @@ msgid "Add Event"
 msgstr "Engadir Evento"
 
 msgid "Remove Action"
-msgstr "Eliminar Acción"
+msgstr "Eliminar acción"
 
 msgid "Cannot Remove Action"
 msgstr "Non se pode eliminar a acción"
@@ -465,8 +466,14 @@ msgstr "Editar Evento"
 msgid "Remove Event"
 msgstr "Eliminar Evento"
 
+msgid "Filter by Name"
+msgstr "Filtrar por nome"
+
 msgid "Clear All"
 msgstr "Limpar Todo"
+
+msgid "Clear all search filters."
+msgstr "Limpar tódolos filtros de búsqueda."
 
 msgid "Add New Action"
 msgstr "Engadir Nova Acción"
@@ -483,6 +490,12 @@ msgstr "Acción"
 msgid "Deadzone"
 msgstr "Zona morta"
 
+msgid "Name:"
+msgstr "Nome:"
+
+msgid "Type:"
+msgstr "Tipo:"
+
 msgid "Time:"
 msgstr "Tempo:"
 
@@ -498,6 +511,15 @@ msgstr "Introducir Clave Aquí"
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplicar Clave(s) Seleccionadas(s)"
 
+msgid "Cut Selected Key(s)"
+msgstr "Cortar Clave(s) Seleccionada(s)"
+
+msgid "Copy Selected Key(s)"
+msgstr "Copiar Clave(s) Seleccionada(s)"
+
+msgid "Paste Key(s)"
+msgstr "Pegar Clave(s)"
+
 msgid "Delete Selected Key(s)"
 msgstr "Eliminar Clave(s) Seleccionada(s)"
 
@@ -510,6 +532,15 @@ msgstr "Facer os Manipuladores Lineais"
 msgid "Make Handles Balanced"
 msgstr "Facer os Manipuladores equilibrados"
 
+msgid "Make Handles Mirrored"
+msgstr "Facer os manipuladores simétricos"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Facer os Manipuladores equilibrados (Tanxente Automática)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Facer os Manipuladores espellados (Tanxente Automática)"
+
 msgid "Add Bezier Point"
 msgstr "Engadir Punto Bezier"
 
@@ -519,8 +550,17 @@ msgstr "Mover Punto Bezier"
 msgid "Animation Duplicate Keys"
 msgstr "Duplicar Claves de Animación"
 
+msgid "Animation Cut Keys"
+msgstr "Cortar Claves de Animación"
+
+msgid "Animation Paste Keys"
+msgstr "Pegar Claves de Animación"
+
 msgid "Animation Delete Keys"
 msgstr "Eliminar Claves de Animación"
+
+msgid "Focus"
+msgstr "Foco"
 
 msgid "Select All Keys"
 msgstr "Seleccionar Todas as Claves"
@@ -566,6 +606,33 @@ msgstr "Cambiar Lonxitude da Animación"
 
 msgid "Change Animation Loop"
 msgstr "Cambiar Ciclo da Animación"
+
+msgid "Property Track..."
+msgstr "Pista de Propiedades..."
+
+msgid "3D Position Track..."
+msgstr "Pista de Posición 3D..."
+
+msgid "3D Rotation Track..."
+msgstr "Pista de Rotación 3D..."
+
+msgid "3D Scale Track..."
+msgstr "Pista de Escala 3D..."
+
+msgid "Blend Shape Track..."
+msgstr "Pista de Forma Combinada..."
+
+msgid "Call Method Track..."
+msgstr "Pista de Chamadas de Métodos..."
+
+msgid "Bezier Curve Track..."
+msgstr "Pista de Curva Bezier..."
+
+msgid "Audio Playback Track..."
+msgstr "Pista de Reprodución de audio..."
+
+msgid "Animation Playback Track..."
+msgstr "Pista de Reprodución de animación..."
 
 msgid "Animation length (frames)"
 msgstr "Lonxitude da Animacion (en fotogramas)"
@@ -624,14 +691,29 @@ msgstr "Escala:"
 msgid "Blend Shape:"
 msgstr "Forma Combinada:"
 
-msgid "Type:"
-msgstr "Tipo:"
-
 msgid "(Invalid, expected type: %s)"
 msgstr "(Inválido, tipo esperado: %s)"
 
 msgid "Easing:"
 msgstr "Relaxación:"
+
+msgid "In-Handle:"
+msgstr "No manexo:"
+
+msgid "Out-Handle:"
+msgstr "Manipulador de saída:"
+
+msgid "Handle mode: Free\n"
+msgstr "Modo de manexo: Libre\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Modo de manexo: Lineal\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Modo de manexo: Equilibrado\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Modo de manexo: Espellado\n"
 
 msgid "Stream:"
 msgstr "Fluxo:"
@@ -639,11 +721,17 @@ msgstr "Fluxo:"
 msgid "Start (s):"
 msgstr "Inicio (s):"
 
+msgid "End (s):"
+msgstr "Fin (s):"
+
 msgid "Animation Clip:"
 msgstr "Clip de Animación:"
 
 msgid "Toggle Track Enabled"
 msgstr "Act./Desact. Pista"
+
+msgid "Don't Use Blend"
+msgstr "Non usar mestura"
 
 msgid "Continuous"
 msgstr "Continuo"
@@ -675,8 +763,20 @@ msgstr "Interpolación de Bucle Recortado"
 msgid "Wrap Loop Interp"
 msgstr "Interpolación de Bucle Envolvente"
 
+msgid "Insert Key..."
+msgstr "Insertar Chave..."
+
 msgid "Duplicate Key(s)"
 msgstr "Duplicar Chave(s)"
+
+msgid "Cut Key(s)"
+msgstr "Cortar Nodo(s)"
+
+msgid "Copy Key(s)"
+msgstr "Copiar chave(s)"
+
+msgid "Add RESET Value(s)"
+msgstr "Engadir valor(es) de RESET"
 
 msgid "Delete Key(s)"
 msgstr "Eliminar Chave(s)"
@@ -693,6 +793,13 @@ msgstr "Cambiar Modo de Bucle da Animación"
 msgid "Change Animation Use Blend"
 msgstr "Cambiar Uso de Mezcla na Animación"
 
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"As pistas comprimidas non poden editarse nin eliminarse. Volve a importar a "
+"animación coa compresión desactivada para poder editala."
+
 msgid "Remove Anim Track"
 msgstr "Eliminar Pista de Animación"
 
@@ -701,6 +808,11 @@ msgstr "Crear nova pista para %s e insertar clave?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "Crear %d novas pistas e insertar claves?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Manteña premida a tecla Maiúsculas ao facer clic na icona da chave para "
+"omitir este cadro de diálogo."
 
 msgid "Create"
 msgstr "Crear"
@@ -763,17 +875,8 @@ msgstr "A ruta á pista é inválida, polo que non se poden engadir chaves."
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "A pista non e do tipo Node3D, non se pode insertar a clave"
 
-msgid "Add Position Key"
-msgstr "Añadir Clave de Posición"
-
-msgid "Add Rotation Key"
-msgstr "Añadir Clave de Rotación"
-
-msgid "Add Scale Key"
-msgstr "Añadir Clave de Escala"
-
-msgid "Add Track Key"
-msgstr "Engadir Chave de Pista"
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "A pista non e do tipo MeshInstance3D, non se pode insertar a clave"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
@@ -803,6 +906,9 @@ msgstr "BlendShape"
 msgid "Methods"
 msgstr "Métodos"
 
+msgid "Bezier"
+msgstr "Bezier"
+
 msgid "Audio"
 msgstr "Son"
 
@@ -814,6 +920,15 @@ msgstr "Pegar Pistas"
 
 msgid "Animation Scale Keys"
 msgstr "Escalar Claves de Animación"
+
+msgid "Animation Set Start Offset"
+msgstr "Definir Offset Inicial da Animación"
+
+msgid "Animation Set End Offset"
+msgstr "Definir Offset Final da Animación"
+
+msgid "Make Easing Keys"
+msgstr "Crear Chaves de Interpolación"
 
 msgid "Animation Add RESET Keys"
 msgstr "Añadir Claves de Animación de RESET"
@@ -860,9 +975,6 @@ msgstr "Só mostrar pistas de nodos seleccionados na árbore."
 
 msgid "Group tracks by node or display them as plain list."
 msgstr "Agrupar pistas por nodo ou mostralas coma unha simple lista."
-
-msgid "Snap:"
-msgstr "Axuste de Cuadrícula:"
 
 msgid "Animation step value."
 msgstr "Valor de paso de animación."
@@ -983,6 +1095,12 @@ msgstr "Seleccionar Todas/Ningunha"
 
 msgid "Animation Change Keyframe Time"
 msgstr "Cambiar Tempo do Fotograma Clave da Animación"
+
+msgid "Close"
+msgstr "Pechar"
+
+msgid "Error!"
+msgstr "Erro!"
 
 msgid "Add Audio Track Clip"
 msgstr "Engadir Clip de Pista de Audio"
@@ -1130,9 +1248,6 @@ msgstr "Desconecta a sinal unha vez foi emitida por primeira vez."
 msgid "Cannot connect signal"
 msgstr "No se pode conectar a sinal"
 
-msgid "Close"
-msgstr "Pechar"
-
 msgid "Connect"
 msgstr "Conectar"
 
@@ -1196,9 +1311,6 @@ msgstr "Crear Novo %s"
 msgid "No results for \"%s\"."
 msgstr "Non houbo resultado para \"%s\"."
 
-msgid "No description available for %s."
-msgstr "Non hai descrición dispoñible para %s."
-
 msgid "Favorites:"
 msgstr "Favoritos:"
 
@@ -1232,6 +1344,9 @@ msgstr "Copiar Ruta do Nodo"
 msgid "Instance:"
 msgstr "Instancia:"
 
+msgid "Clear"
+msgstr "Limpar"
+
 msgid "Decompressing remote file system"
 msgstr "Descomprimindo sistema de ficheiros remoto"
 
@@ -1255,9 +1370,6 @@ msgstr "Deter"
 
 msgid "Start"
 msgstr "Iniciar"
-
-msgid "Clear"
-msgstr "Limpar"
 
 msgid "Measure:"
 msgstr "Medida:"
@@ -1297,9 +1409,6 @@ msgstr "Axustar ao Marco"
 
 msgid "Bytes:"
 msgstr "Bytes:"
-
-msgid "Warning:"
-msgstr "Aviso:"
 
 msgid "Error:"
 msgstr "Erro:"
@@ -1482,29 +1591,17 @@ msgstr "O nome do cartafol non pode estar baleiro."
 msgid "Folder name contains invalid characters."
 msgstr "O nome do cartafol contén caracteres non válidos."
 
-msgid "Folder name cannot begin or end with a space."
-msgstr "O nome do cartafol non pode comezar nin rematar cun espazo."
-
-msgid "Folder name cannot begin with a dot."
-msgstr "O nome do cartafol non pode comezar cun punto."
-
 msgid "File with that name already exists."
 msgstr "Un ficheiro con ese nome xa existe."
 
 msgid "Folder with that name already exists."
 msgstr "Un cartafol con ese nome xa existe."
 
-msgid "Could not create folder."
-msgstr "Non se puido crear cartafol."
-
-msgid "Create new folder in %s:"
-msgstr "Crear un novo cartafol en %s:"
-
-msgid "Create Folder"
-msgstr "Crear Cartafol"
-
 msgid "Folder name is valid."
 msgstr "O nome do cartafol é válido."
+
+msgid "Double-click to open in browser."
+msgstr "Dobre-clic para abrir no navegador."
 
 msgid "Thanks from the Godot community!"
 msgstr "Moitas grazas de parte da comunidade de Godot!"
@@ -1527,6 +1624,9 @@ msgstr "Desenvolvedores"
 
 msgid "Authors"
 msgstr "Autores"
+
+msgid "Patrons"
+msgstr "Mecenas"
 
 msgid "Platinum Sponsors"
 msgstr "Patrocinadores Platino"
@@ -1585,9 +1685,6 @@ msgstr "Produciuse un erro ao extraer os seguintes ficheiros do recurso \"%s\":"
 
 msgid "(and %s more files)"
 msgstr "(e %s ficheiros máis)"
-
-msgid "Asset \"%s\" installed successfully!"
-msgstr "O asset \"%s\" foi instalado con éxito!"
 
 msgid "Success!"
 msgstr "Éxito!"
@@ -1691,17 +1788,11 @@ msgstr "Localización para a Nova Disposición..."
 msgid "Open Audio Bus Layout"
 msgstr "Abrir Disposición do Bus de Son"
 
-msgid "There is no '%s' file."
-msgstr "Non hai ningún arquivo '%s'."
+msgid "Error saving file: %s"
+msgstr "Erro gardando o arquivo: %s"
 
 msgid "Layout:"
 msgstr "Disposición:"
-
-msgid "Invalid file, not an audio bus layout."
-msgstr "Arquivo invalido; non é unha disposición dun Bus de son."
-
-msgid "Error saving file: %s"
-msgstr "Erro gardando o arquivo: %s"
 
 msgid "Add Bus"
 msgstr "Engadir Bus"
@@ -1732,27 +1823,6 @@ msgstr "Crear unha nova Disposición de Bus."
 
 msgid "Audio Bus Layout"
 msgstr "Disposición do Bus de Son"
-
-msgid "Invalid name."
-msgstr "Nome inválido."
-
-msgid "Valid characters:"
-msgstr "Caracteres válidos:"
-
-msgid "Must not collide with an existing engine class name."
-msgstr "Non debe coincidir co nome dunha clase xa existente no engine."
-
-msgid "Must not collide with an existing global script class name."
-msgstr "Non debe coincidir cun nome dunha clase global existente."
-
-msgid "Must not collide with an existing built-in type name."
-msgstr "Non debe coincidir co nome dun tipo xa existente no engine."
-
-msgid "Must not collide with an existing global constant name."
-msgstr "Non debe coincidir co nome dunha constante global xa existente."
-
-msgid "Keyword cannot be used as an Autoload name."
-msgstr "A palabra clave non pode empregarse como nome dun Autoload."
 
 msgid "Autoload '%s' already exists!"
 msgstr "AutoCargador '%s' xa existe!"
@@ -1849,9 +1919,6 @@ msgstr "Detectar desde o Proxecto"
 
 msgid "Actions:"
 msgstr "Accións:"
-
-msgid "Configure Engine Build Profile:"
-msgstr "Configurar Perfil de Construcción do Motor:"
 
 msgid "Please Confirm:"
 msgstr "Por favor, confirma:"
@@ -1997,11 +2064,6 @@ msgstr "Importar Perf(il/ís)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Administrar Perfils de Características de Godot"
 
-msgid "Some extensions need the editor to restart to take effect."
-msgstr ""
-"Algunhas extensions necesitan que se reinicie o editor para que produzan "
-"efecto."
-
 msgid "Restart"
 msgstr "Reiniciar"
 
@@ -2086,23 +2148,17 @@ msgstr ""
 "Actualmente non hai unha descripción desta propiedade. Axúdanos [color=$color]"
 "[url=$url]contribuíndo cunha descripción[/url][/color]!"
 
-msgid "Property:"
-msgstr "Propiedade:"
+msgid "Editor"
+msgstr "Editor"
 
-msgid "Signal:"
-msgstr "Sinal:"
+msgid "Show in FileSystem"
+msgstr "Amosar no Sistema de Arquivos"
 
-msgid "%d match."
-msgstr "%d coincidencia."
+msgid "Open in File Manager"
+msgstr "Abrir no Explorador de Arquivos"
 
-msgid "%d matches."
-msgstr "%d coincidencias."
-
-msgid "Method"
-msgstr "Método"
-
-msgid "Signal"
-msgstr "Sinal"
+msgid "Class"
+msgstr "Clase"
 
 msgid "Constant"
 msgstr "Constante"
@@ -2112,6 +2168,18 @@ msgstr "Propiedade"
 
 msgid "Theme Property"
 msgstr "Propiedade de Temas"
+
+msgid "Method"
+msgstr "Método"
+
+msgid "Signal"
+msgstr "Sinal"
+
+msgid "File"
+msgstr "Arquivo"
+
+msgid "%d matches."
+msgstr "%d coincidencias."
 
 msgid "Search Help"
 msgstr "Buscar na Axuda"
@@ -2146,9 +2214,6 @@ msgstr "Só Propiedades de Temas"
 msgid "Member Type"
 msgstr "Tipo do Membro"
 
-msgid "Class"
-msgstr "Clase"
-
 msgid "(%d change)"
 msgid_plural "(%d changes)"
 msgstr[0] "(% cambio)"
@@ -2157,8 +2222,8 @@ msgstr[1] "(% cambios)"
 msgid "Resize Array"
 msgstr "Redimensionar Array"
 
-msgid "Name:"
-msgstr "Nome:"
+msgid "Favorites"
+msgstr "Favoritos"
 
 msgid "Creating Mesh Previews"
 msgstr "Creando Previsualización de Mallas"
@@ -2190,14 +2255,8 @@ msgstr "Proxecto Sen Nome"
 msgid "Spins when the editor window redraws."
 msgstr "Xira cando o editor actualiza a pantalla."
 
-msgid "Imported resources can't be saved."
-msgstr "Os recursos importados non se poden gardar."
-
 msgid "OK"
 msgstr "Vale"
-
-msgid "Error saving resource!"
-msgstr "Erro gardando o recurso!"
 
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
@@ -2209,15 +2268,6 @@ msgstr ""
 msgid "Save Resource As..."
 msgstr "Gardar Recurso Como..."
 
-msgid "Can't open file for writing:"
-msgstr "Non se puido abrir o arquivo para escritura:"
-
-msgid "Requested file format unknown:"
-msgstr "O formato do arquivo solicitado é descoñecido:"
-
-msgid "Error while saving."
-msgstr "Erro ao gardar."
-
 msgid "Saving Scene"
 msgstr "Gardando Escena"
 
@@ -2226,16 +2276,6 @@ msgstr "Analizando"
 
 msgid "Creating Thumbnail"
 msgstr "Creando Miniatura"
-
-msgid "This operation can't be done without a tree root."
-msgstr "Esta operación non pode realizarse sen un nodo raíz."
-
-msgid ""
-"Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
-"be satisfied."
-msgstr ""
-"Non se puido gardar a escena. Posiblemente as dependencias (instancias ou "
-"herenzas) non puideron satisfacerse."
 
 msgid "Save scene before running..."
 msgstr "Garda a escena antes de executala..."
@@ -2246,11 +2286,8 @@ msgstr "Gardar Todas as Escenas"
 msgid "Can't overwrite scene that is still open!"
 msgstr "Non se pode sobreescribir escena que sigue aberta!"
 
-msgid "Can't load MeshLibrary for merging!"
-msgstr "Non se pode cargar MeshLibrary para fusionarse!"
-
-msgid "Error saving MeshLibrary!"
-msgstr "Erro ao gardar MeshLibrary!"
+msgid "Merge With Existing"
+msgstr "Combinar Con Existentes"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -2302,26 +2339,11 @@ msgstr ""
 "Por favor, lea a documentación referente a importación de escenas para "
 "entender o fluxo de traballo."
 
-msgid "Changes may be lost!"
-msgstr "Os cambios poderían perderse!"
-
 msgid "Open Base Scene"
 msgstr "Abrir Escena Base"
 
-msgid "Quick Open..."
-msgstr "Apertura Rápida..."
-
-msgid "Quick Open Scene..."
-msgstr "Apertura Rápida de Escena..."
-
-msgid "Quick Open Script..."
-msgstr "Apertura Rápida de Script..."
-
 msgid "Save Scene As..."
 msgstr "Gardar Escena Como..."
-
-msgid "Current scene not saved. Open anyway?"
-msgstr "Escena actual non gardada ¿Abrir de todos os modos?"
 
 msgid "Can't reload a scene that was never saved."
 msgstr "Non se pode volver a cargar unha escena que nunca foi gardada."
@@ -2340,26 +2362,13 @@ msgstr ""
 msgid "Save & Quit"
 msgstr "Gardar e Saír"
 
-msgid "Save changes to the following scene(s) before quitting?"
-msgstr "Gardar os cambios nas seguintes escenas antes de saír?"
-
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Gardar os cambios nas seguintes escenas antes de abrir o Administrador de "
 "Proxectos?"
 
-msgid ""
-"This option is deprecated. Situations where refresh must be forced are now "
-"considered a bug. Please report."
-msgstr ""
-"Esta opción está anticuada. As situacións nas que a actualización debe ser "
-"forzada agora considéranse un erro. Por favor, repórtao."
-
 msgid "Pick a Main Scene"
 msgstr "Elexir unha Escena Principal"
-
-msgid "This operation can't be done without a scene."
-msgstr "Esta operación non pode realizarse se unha escena."
 
 msgid "Export Mesh Library"
 msgstr "Exportar Biblioteca de Mallas"
@@ -2394,50 +2403,11 @@ msgstr ""
 "A escena '%s' foi automáticamente importada, polo que non pode modificarse.\n"
 "Para facerlle cambios pódese crear unha nova escena herdada."
 
-msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to open "
-"the scene, then save it inside the project path."
-msgstr ""
-"Erro cargando a escena: debe estar dentro da ruta do proxecto. Usa "
-"\"Importar\" para abrir a escena, e despois gardala dentro da ruta do "
-"proxecto."
-
 msgid "Scene '%s' has broken dependencies:"
 msgstr "A escena '%s' ten dependencias rotas:"
 
 msgid "Clear Recent Scenes"
 msgstr "Limpar Escenas Recentes"
-
-msgid "There is no defined scene to run."
-msgstr "Non hai unha escena definida para executar."
-
-msgid ""
-"No main scene has ever been defined, select one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Nunca se definiu unha escena principal. Seleccionar unha?\n"
-"Podes cambialo despois na \"Configuración do Proxecto\", na categoría "
-"\"Aplicación\"."
-
-msgid ""
-"Selected scene '%s' does not exist, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"A escena seleccionada '%s' non existe. Seleccionar unha válida?\n"
-"Podes cambiala despois en \"Configuración do Proxecto\" na categoría "
-"\"aplicación\"."
-
-msgid ""
-"Selected scene '%s' is not a scene file, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"A escena seleccionada '%s' non é un arquivo de escenas. Seleccionar un "
-"arquivo válido?\n"
-"Podes cambialo despois en \"Configuración do Proxecto\" na categoría "
-"\"aplicación\"."
 
 msgid "Default"
 msgstr "Por Defecto"
@@ -2493,6 +2463,15 @@ msgstr "Abrir Recente"
 msgid "Save Scene"
 msgstr "Gardar Escena"
 
+msgid "Quick Open..."
+msgstr "Apertura Rápida..."
+
+msgid "Quick Open Scene..."
+msgstr "Apertura Rápida de Escena..."
+
+msgid "Quick Open Script..."
+msgstr "Apertura Rápida de Script..."
+
 msgid "Close Scene"
 msgstr "Pechar Escena"
 
@@ -2505,14 +2484,8 @@ msgstr "Configuración do Editor..."
 msgid "Project"
 msgstr "Proxecto"
 
-msgid "Project Settings..."
-msgstr "Axustes do Proxecto..."
-
 msgid "Version Control"
 msgstr "Control de Versións"
-
-msgid "Export..."
-msgstr "Exportar..."
 
 msgid "Install Android Build Template..."
 msgstr "Instalar plantilla de compilación de Android..."
@@ -2526,18 +2499,11 @@ msgstr "Explorador de Recursos Orfos..."
 msgid "Quit to Project List"
 msgstr "Saír á Lista de Proxectos"
 
-msgid "Editor"
-msgstr "Editor"
-
 msgid "Editor Layout"
 msgstr "Disposición das Ventás do Editor"
 
 msgid "Take Screenshot"
 msgstr "Captura de Pantalla"
-
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr ""
-"As capturas de pantalla gárdanse no cartafol de Datos/Configuración do Editor."
 
 msgid "Toggle Fullscreen"
 msgstr "Act./Desact. Pantalla Completa"
@@ -2572,9 +2538,6 @@ msgstr "Reportar Problema ca Documentación"
 msgid "Update Continuously"
 msgstr "Actualizar de Maneira Continua"
 
-msgid "FileSystem"
-msgstr "Sistema de Arquivos"
-
 msgid "Inspector"
 msgstr "Inspector"
 
@@ -2583,9 +2546,6 @@ msgstr "Nodo"
 
 msgid "History"
 msgstr "Historial"
-
-msgid "Output"
-msgstr "Saída"
 
 msgid "Don't Save"
 msgstr "Non Gardar"
@@ -2596,17 +2556,8 @@ msgstr "Amosar no Explorador de Arquivos"
 msgid "Export Library"
 msgstr "Biblioteca de Exportación"
 
-msgid "Merge With Existing"
-msgstr "Combinar Con Existentes"
-
 msgid "Open & Run a Script"
 msgstr "Abrir e Executar un Script"
-
-msgid "Reload"
-msgstr "Recargar"
-
-msgid "Resave"
-msgstr "Volver a Gardar"
 
 msgid "New Inherited"
 msgstr "Nova Escena Herdada"
@@ -2635,17 +2586,11 @@ msgstr "Abrir o anterior editor"
 msgid "Warning!"
 msgstr "Aviso!"
 
-msgid "On"
-msgstr "Activado"
-
-msgid "Edit Plugin"
-msgstr "Editar Característica Adicional (Plugin)"
-
-msgid "Installed Plugins:"
-msgstr "Características Adicionais (Plugins) Instalados:"
-
 msgid "Edit Text:"
 msgstr "Editar Texto:"
+
+msgid "On"
+msgstr "Activado"
 
 msgid "No name provided."
 msgstr "Nome non proporcionado."
@@ -2678,14 +2623,14 @@ msgstr "Selecciona unha Mini-Ventá (Viewport)"
 msgid "Selected node is not a Viewport!"
 msgstr "O nodo seleccionado non é unha Mini-Ventá (Viewport)!"
 
-msgid "Remove Item"
-msgstr "Eliminar Elemento"
-
 msgid "New Key:"
 msgstr "Nova Chave:"
 
 msgid "New Value:"
 msgstr "Novo Valor:"
+
+msgid "Remove Item"
+msgstr "Eliminar Elemento"
 
 msgid "Add Key/Value Pair"
 msgstr "Engadir Parella Chave/Valor"
@@ -2706,9 +2651,6 @@ msgstr "Facer Único"
 msgid "Save As..."
 msgstr "Gardar Como..."
 
-msgid "Show in FileSystem"
-msgstr "Amosar no Sistema de Arquivos"
-
 msgid "New %s"
 msgstr "Novo %s"
 
@@ -2727,8 +2669,8 @@ msgstr ""
 msgid "Write your logic in the _run() method."
 msgstr "Escribe a túa lóxica no método '_run()'."
 
-msgid "There is an edited scene already."
-msgstr "Xa hai unha escena editada."
+msgid "None"
+msgstr "Ningún"
 
 msgid "General"
 msgstr "Xeral"
@@ -2747,9 +2689,6 @@ msgstr "Dispositivo"
 
 msgid "Storing File:"
 msgstr "Almacenando Arquivo:"
-
-msgid "No export template found at the expected path:"
-msgstr "Non se encontrou ningún modelo de exportación na ruta esperada:"
 
 msgid "Packing"
 msgstr "Empaquetando"
@@ -2772,32 +2711,11 @@ msgstr "A petición fallou."
 msgid "Cannot remove temporary file:"
 msgstr "Non se pode eliminar o arquivo temporal:"
 
-msgid "Disconnected"
-msgstr "Desconectado"
-
-msgid "Resolving"
-msgstr "Resolvendo"
-
-msgid "Can't Resolve"
-msgstr "Non se puido Resolver"
-
 msgid "Connecting..."
 msgstr "Conectando..."
 
-msgid "Can't Connect"
-msgstr "Non se Pode Conectar"
-
-msgid "Connected"
-msgstr "Conectado"
-
 msgid "Requesting..."
 msgstr "Solicitando..."
-
-msgid "Downloading"
-msgstr "Descargando"
-
-msgid "Connection Error"
-msgstr "Erro de Conexión"
 
 msgid "Importing:"
 msgstr "Importando:"
@@ -2859,9 +2777,6 @@ msgstr "Características"
 msgid "Browse"
 msgstr "Examinar"
 
-msgid "Favorites"
-msgstr "Favoritos"
-
 msgid "View items as a grid of thumbnails."
 msgstr "Ver elementos coma unha cuadrícula de miniaturas."
 
@@ -2898,6 +2813,9 @@ msgstr "Duplicando Arquivo:"
 msgid "Duplicating folder:"
 msgstr "Duplicando Cartafol:"
 
+msgid "Create Folder"
+msgstr "Crear Cartafol"
+
 msgid "New Inherited Scene"
 msgstr "Nova Escena Herdada"
 
@@ -2919,9 +2837,6 @@ msgstr "Eliminar de Favoritos"
 msgid "Reimport"
 msgstr "Reimportar"
 
-msgid "Open in File Manager"
-msgstr "Abrir no Explorador de Arquivos"
-
 msgid "New Folder..."
 msgstr "Novo Cartafol..."
 
@@ -2939,6 +2854,33 @@ msgstr "Duplicar..."
 
 msgid "Rename..."
 msgstr "Renomear..."
+
+msgid "Yellow"
+msgstr "Amarelo"
+
+msgid "Green"
+msgstr "Verde"
+
+msgid "Teal"
+msgstr "Verde Azulado"
+
+msgid "Blue"
+msgstr "Azul"
+
+msgid "Purple"
+msgstr "Morado"
+
+msgid "Pink"
+msgstr "Rosa"
+
+msgid "Gray"
+msgstr "Gris"
+
+msgid "Go to previous selected folder/file."
+msgstr "Ir ao cartafol previamente seleccionado."
+
+msgid "Go to next selected folder/file."
+msgstr "Ir ao seguinte cartafol seleccionado."
 
 msgid "Re-Scan Filesystem"
 msgstr "Reexaminar Sistema de Arquivos"
@@ -3005,14 +2947,21 @@ msgstr "Mover"
 msgid "Select Current Folder"
 msgstr "Seleccionar Cartafol Actual"
 
+msgid "Cannot save file with an empty filename."
+msgstr "Non pode gardar un ficheiro cun nome baleiro."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "Non pode gardar un ficheiro cun nome que comeza cun punto."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"O ficheiro \"%s\" xa existe.\n"
+"Quere sobreescribilo?"
+
 msgid "Select This Folder"
 msgstr "Seleccionar Este Cartafol"
-
-msgid "All Recognized"
-msgstr "Todos Recoñecidos"
-
-msgid "All Files (*)"
-msgstr "Todos os Arquivos (*)"
 
 msgid "Open a File"
 msgstr "Abrir un Arquivo"
@@ -3028,6 +2977,12 @@ msgstr "Abrir un Arquivo ou Directorio"
 
 msgid "Save a File"
 msgstr "Gardar un Arquivo"
+
+msgid "Could not create folder. File with that name already exists."
+msgstr "Non se puido crear o cartafol. Xa existe un ficheiro con ese nome."
+
+msgid "Could not create folder."
+msgstr "Non se puido crear cartafol."
 
 msgid "Go Back"
 msgstr "Retroceder"
@@ -3068,11 +3023,11 @@ msgstr "Actualizar Arquivos."
 msgid "(Un)favorite current folder."
 msgstr "Quitar cartafol actual de favoritos."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Amosar/Ocultar arquivos ocultos."
-
 msgid "Directories & Files:"
 msgstr "Directorios e Arquivos:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Amosar/Ocultar arquivos ocultos."
 
 msgid "Preview:"
 msgstr "Vista Previa:"
@@ -3089,8 +3044,8 @@ msgstr "Reproduce o proxecto."
 msgid "Play the edited scene."
 msgstr "Reproduce a escena actual."
 
-msgid "Quick Run Scene..."
-msgstr "Execución Rápida de Escena..."
+msgid "Network Profiler"
+msgstr "Analítica de Rendemento de Rede"
 
 msgid "Play This Scene"
 msgstr "Reproducir Esta Escena"
@@ -3122,6 +3077,9 @@ msgid ""
 msgstr ""
 "Mantén pulsado %s para redondear a enteiros. \n"
 "Mantén pulsado Shift para cambios máis precisos."
+
+msgid "(unknown)"
+msgstr "(descoñecido)"
 
 msgid "Unlock Node"
 msgstr "Desbloquear Nodo"
@@ -3175,9 +3133,6 @@ msgstr "Dispositivo:"
 msgid "Failed to load resource."
 msgstr "Fallou a carga do Recurso."
 
-msgid "Raw"
-msgstr "Sen Procesar (Raw)"
-
 msgid "Copy Resource"
 msgstr "Copiar Recurso"
 
@@ -3216,33 +3171,6 @@ msgstr "Grupos"
 
 msgid "Select a single node to edit its signals and groups."
 msgstr "Seleccione un nodo para editar as súas sinais e grupos."
-
-msgid "Edit a Plugin"
-msgstr "Editar unha Característica Adicional (Plugin)"
-
-msgid "Create a Plugin"
-msgstr "Crear unha Característica Adicional (Plugin)"
-
-msgid "Update"
-msgstr "Actualizar"
-
-msgid "Plugin Name:"
-msgstr "Nome do Plugin:"
-
-msgid "Subfolder:"
-msgstr "Subcartafol:"
-
-msgid "Author:"
-msgstr "Autor:"
-
-msgid "Version:"
-msgstr "Versión:"
-
-msgid "Script Name:"
-msgstr "Nome do Script:"
-
-msgid "Activate now?"
-msgstr "Activar agora?"
 
 msgid "Create Polygon"
 msgstr "Crear Polígono"
@@ -3387,9 +3315,6 @@ msgstr "Futuro"
 msgid "Depth"
 msgstr "Profundidad"
 
-msgid "Error!"
-msgstr "Erro!"
-
 msgid "Move Node"
 msgstr "Mover Nodo"
 
@@ -3429,8 +3354,8 @@ msgstr "Modo de Reprodución:"
 msgid "Delete Selected"
 msgstr "Eliminar Selección"
 
-msgid "AnimationTree"
-msgstr "AnimationTree"
+msgid "Version:"
+msgstr "Versión:"
 
 msgid "Contents:"
 msgstr "Contidos:"
@@ -3461,9 +3386,6 @@ msgstr "Tempo de espera."
 
 msgid "Failed:"
 msgstr "Fracasado:"
-
-msgid "Expected:"
-msgstr "Esperado:"
 
 msgid "Got:"
 msgstr "Recibido:"
@@ -3503,9 +3425,6 @@ msgstr "Licenza (A-Z)"
 
 msgid "License (Z-A)"
 msgstr "Licenza (Z-A)"
-
-msgid "Official"
-msgstr "Oficial"
 
 msgid "Testing"
 msgstr "Probas"
@@ -3593,9 +3512,6 @@ msgstr "Modo Escalado"
 msgid "Show list of selectable nodes at position clicked."
 msgstr ""
 "Amosa unha lista de nodos seleccionables na posición na que se fixo clic."
-
-msgid "Click to change object's rotation pivot."
-msgstr "Faga clic para cambiar o pivote de rotación do obxecto."
 
 msgid "Ruler Mode"
 msgstr "Modo Regra"
@@ -3710,9 +3626,6 @@ msgstr "Dividir Dimensión da Cuadrícula por 2"
 msgid "Adding %s..."
 msgstr "Engadindo %s..."
 
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Non se pode instanciar varios nodos sen un nodo raíz."
-
 msgid "Create Node"
 msgstr "Crear Nodo"
 
@@ -3766,9 +3679,6 @@ msgstr "Dereito Alto"
 
 msgid "Full Rect"
 msgstr "Recta Completa"
-
-msgid "Generated Point Count:"
-msgstr "Número de Puntos Xerados:"
 
 msgid "Deploy with Remote Debug"
 msgstr "Exportar con Depuración Remota"
@@ -3838,20 +3748,11 @@ msgstr ""
 "Cando é usado remotamente nun dispositivo, é máis eficiente cando o sistema "
 "de arquivos en rede está activado."
 
-msgid " - Variation"
-msgstr " - Variación"
+msgid "Edit Plugin"
+msgstr "Editar Característica Adicional (Plugin)"
 
-msgid "Convert to CPUParticles2D"
-msgstr "Converter a CPUParticles2D"
-
-msgid "GPUParticles2D"
-msgstr "GPUParticles2D"
-
-msgid "Volume"
-msgstr "Volume"
-
-msgid "GPUParticles3D"
-msgstr "GPUParticles3D"
+msgid "Installed Plugins:"
+msgstr "Características Adicionais (Plugins) Instalados:"
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr ""
@@ -3860,6 +3761,15 @@ msgstr ""
 
 msgid "Mesh"
 msgstr "Malla"
+
+msgid "View UV1"
+msgstr "Amosar UV1"
+
+msgid "View UV2"
+msgstr "Amosar UV2"
+
+msgid "Unwrap UV2 for Lightmap/AO"
+msgstr "Facer Unwrap do UV2 para Lightmap/AO"
 
 msgid ""
 "Creates a polygon-based collision shape.\n"
@@ -3874,15 +3784,6 @@ msgid ""
 msgstr ""
 "Crea unha única forma física convexa.\n"
 "Esta é a maneira más eficiente (pero menos precisa) de detectar colisións."
-
-msgid "View UV1"
-msgstr "Amosar UV1"
-
-msgid "View UV2"
-msgstr "Amosar UV2"
-
-msgid "Unwrap UV2 for Lightmap/AO"
-msgstr "Facer Unwrap do UV2 para Lightmap/AO"
 
 msgid "UV Channel Debug"
 msgstr "Depuración do Canle UV"
@@ -3905,11 +3806,8 @@ msgstr "Cantidade:"
 msgid "Populate"
 msgstr "Encher"
 
-msgid "Edit Poly"
-msgstr "Editar Polígono"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Editar Polígono (Eliminar Punto)"
+msgid "Please Confirm..."
+msgstr "Por favor, confirma..."
 
 msgid "Orthogonal"
 msgstr "Ortogonal"
@@ -3943,9 +3841,6 @@ msgstr "Aliñar Transformación con Perspectiva"
 
 msgid "Align Rotation with View"
 msgstr "Aliñar Rotación con Perspectiva"
-
-msgid "None"
-msgstr "Ningún"
 
 msgid "Rotating %s degrees."
 msgstr "Rotando %s graos."
@@ -4120,21 +4015,41 @@ msgstr "Anterior (Pre)"
 msgid "Post"
 msgstr "Posterior (Post)"
 
-msgid "Select Points"
-msgstr "Seleccionar Puntos"
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
+msgid "Convert to CPUParticles2D"
+msgstr "Converter a CPUParticles2D"
+
+msgid "Volume"
+msgstr "Volume"
+
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
 
 msgid "Delete Point"
 msgstr "Eliminar Puntos"
 
-msgid "Please Confirm..."
-msgstr "Por favor, confirma..."
+msgid "Edit a Plugin"
+msgstr "Editar unha Característica Adicional (Plugin)"
 
-msgid ""
-"No texture in this polygon.\n"
-"Set a texture to be able to edit UV."
-msgstr ""
-"Non hai unha textura neste polígono.\n"
-"Engada unha textura para editar o UV."
+msgid "Create a Plugin"
+msgstr "Crear unha Característica Adicional (Plugin)"
+
+msgid "Plugin Name:"
+msgstr "Nome do Plugin:"
+
+msgid "Subfolder:"
+msgstr "Subcartafol:"
+
+msgid "Author:"
+msgstr "Autor:"
+
+msgid "Script Name:"
+msgstr "Nome do Script:"
+
+msgid "Activate now?"
+msgstr "Activar agora?"
 
 msgid "Create UV Map"
 msgstr "Crear Mapa UV"
@@ -4158,26 +4073,17 @@ msgstr "Eliminar Polígono Personalizado"
 msgid "Transform UV Map"
 msgstr "Transformar Mapa UV"
 
-msgid "Open Polygon 2D UV editor."
-msgstr "Abrir Editor UV de Polígonos 2D."
-
-msgid "Polygon 2D UV Editor"
-msgstr "Editor UV de Polígonos 2D"
-
-msgid "UV"
-msgstr "UV"
-
 msgid "Points"
 msgstr "Puntos"
 
 msgid "Polygons"
 msgstr "Polígonos"
 
+msgid "UV"
+msgstr "UV"
+
 msgid "Bones"
 msgstr "Ósos"
-
-msgid "Move Points"
-msgstr "Mover Puntos"
 
 msgid "Move Polygon"
 msgstr "Mover Polígono"
@@ -4211,6 +4117,12 @@ msgstr "Amosar Cuadrícula"
 
 msgid "Configure Grid:"
 msgstr "Configurar Cuadrícula:"
+
+msgid "Edit Poly"
+msgstr "Editar Polígono"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Editar Polígono (Eliminar Punto)"
 
 msgid "Add Resource"
 msgstr "Engadir Recurso"
@@ -4246,6 +4158,12 @@ msgstr "Importar Tema"
 msgid "Error saving"
 msgstr "Erro ao gardar"
 
+msgid "Online Docs"
+msgstr "Documentación En Liña"
+
+msgid "Open Godot online documentation."
+msgstr "Abrir a documentación en liña de Godot."
+
 msgid "Find Next"
 msgstr "Atopar Seguinte"
 
@@ -4254,9 +4172,6 @@ msgstr "Atopar Anterior"
 
 msgid "Sort"
 msgstr "Ordenar"
-
-msgid "File"
-msgstr "Arquivo"
 
 msgid "Open..."
 msgstr "Abrir..."
@@ -4294,12 +4209,6 @@ msgstr "Executar"
 msgid "Search"
 msgstr "Buscar"
 
-msgid "Online Docs"
-msgstr "Documentación En Liña"
-
-msgid "Open Godot online documentation."
-msgstr "Abrir a documentación en liña de Godot."
-
 msgid "Search the reference documentation."
 msgstr "Buscar na documentación de referencia."
 
@@ -4312,8 +4221,14 @@ msgstr "Ir ao seguinte documento editado."
 msgid "Discard"
 msgstr "Descartar"
 
-msgid "Search Results"
-msgstr "Resultados de Búsqueda"
+msgid "Uppercase"
+msgstr "Maiúscula"
+
+msgid "Lowercase"
+msgstr "Minúscula"
+
+msgid "Capitalize"
+msgstr "Capitalizar"
 
 msgid "Standard"
 msgstr "Estándar"
@@ -4327,23 +4242,14 @@ msgstr "Obxectivo"
 msgid "[Ignore]"
 msgstr "[Ignorar]"
 
-msgid "Line"
-msgstr "Liña"
-
 msgid "Go to Function"
 msgstr "Ir a Función"
 
 msgid "Pick Color"
 msgstr "Elexir Cor"
 
-msgid "Uppercase"
-msgstr "Maiúscula"
-
-msgid "Lowercase"
-msgstr "Minúscula"
-
-msgid "Capitalize"
-msgstr "Capitalizar"
+msgid "Line"
+msgstr "Liña"
 
 msgid "Convert Case"
 msgstr "Convertir Mayúsculas/Minúsculas"
@@ -4468,6 +4374,12 @@ msgstr "Eliminar Animación"
 msgid "Zoom Reset"
 msgstr "Restablecer Zoom"
 
+msgid "Reload"
+msgstr "Recargar"
+
+msgid "Resave"
+msgstr "Volver a Gardar"
+
 msgid "Snap Mode:"
 msgstr "Modo de Axuste:"
 
@@ -4547,9 +4459,6 @@ msgstr "Engadir Entrada"
 
 msgid "Boolean"
 msgstr "Booleano"
-
-msgid "Node(s) Moved"
-msgstr "Nodo(s) Movido(s)"
 
 msgid "Vertex"
 msgstr "Vértice"
@@ -4762,6 +4671,9 @@ msgstr "Eliminar Faltantes"
 msgid "Select a Folder to Scan"
 msgstr "Seleccionar un Cartafol para Escanear"
 
+msgid "It would be a good idea to name your project."
+msgstr "Sería unha boa idea nomear o teu proxecto."
+
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
@@ -4770,18 +4682,6 @@ msgstr ""
 
 msgid "New Game Project"
 msgstr "Novo Proxecto de Xogo"
-
-msgid "Imported Project"
-msgstr "Proxecto Importado"
-
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Por favor, elixa un arquivo de tipo 'project.godot' ou '.zip'."
-
-msgid "It would be a good idea to name your project."
-msgstr "Sería unha boa idea nomear o teu proxecto."
-
-msgid "Invalid project path (changed anything?)."
-msgstr "A ruta do proxecto non é valida. (Cambiaches algo?)."
 
 msgid "Couldn't create project.godot in project path."
 msgstr "Non se pudo crear o arquivo 'project.godot' na ruta do proxecto."
@@ -4792,20 +4692,8 @@ msgstr "Erro ao abrir o arquivo comprimido, non está en formato ZIP."
 msgid "The following files failed extraction from package:"
 msgstr "Os seguintes arquivos non se poideron extraer do paquete:"
 
-msgid "Package installed successfully!"
-msgstr "Paquete instalado correctamente!"
-
-msgid "Import & Edit"
-msgstr "Importar e Editar"
-
-msgid "Create & Edit"
-msgstr "Crear e Editar"
-
 msgid "Install Project:"
 msgstr "Instalar Proxecto:"
-
-msgid "Install & Edit"
-msgstr "Instalar e Editar"
 
 msgid "Project Name:"
 msgstr "Nome do Proxecto:"
@@ -4988,15 +4876,6 @@ msgstr "Ruta base inválida."
 msgid "Wrong extension chosen."
 msgstr "Extensión incorrecta elixida."
 
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Tipo de argumento inválido para convert(), utiliza constantes TYPE_*."
-
-msgid "Plane:"
-msgstr "Plano:"
-
-msgid "Floor:"
-msgstr "Chan:"
-
 msgid "Plot direct lighting"
 msgstr "Colocar iluminación directa"
 
@@ -5016,9 +4895,6 @@ msgstr "RPC Entrante"
 msgid "Outgoing RPC"
 msgstr "RPC Saínte"
 
-msgid "Network Profiler"
-msgstr "Analítica de Rendemento de Rede"
-
 msgid "Delete Property?"
 msgstr "Eliminar Propiedad?"
 
@@ -5031,9 +4907,6 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 "O Keystore Release non está configurado correctamente nos axustes de "
 "exportación."
-
-msgid "Signing release %s..."
-msgstr "Asinando a versión %s..."
 
 msgid ""
 "output: \n"
@@ -5060,14 +4933,6 @@ msgstr ""
 "interactuar con outros obxectos.\n"
 "Engade un nodo CollisionShape2D ou CollisionPolygon2D como fillo para definir "
 "a sua forma."
-
-msgid ""
-"Polygon-based shapes are not meant be used nor edited directly through the "
-"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
-msgstr ""
-"As formas físicas baseadas en polígonos non están pensadas para editarse "
-"directamente mediante o nodo CollisionShape2D. Por favor, usa o nodo "
-"CollisionPolygon2D no seu lugar."
 
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Os nodo A e B teñen que ser do tipo PhysicsBody2D"
@@ -5118,9 +4983,6 @@ msgstr ""
 "que se lle engada algún Script que configure a colocación dos seus nodos "
 "fillos.\n"
 "Se non tes pensado engadir un Script, utilizada un nodo Control no seu lugar."
-
-msgid "Alert!"
-msgstr "Alerta!"
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

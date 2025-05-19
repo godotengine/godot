@@ -713,7 +713,7 @@
 			<param index="1" name="callable" type="Callable" />
 			<description>
 				Assigns the [param body] to call the given [param callable] during the synchronization phase of the loop, before [method _step] is called. See also [method _sync].
-				Overridable version of [PhysicsServer2D]'s internal [code]body_set_state_sync_callback[/code] method.
+				Overridable version of [method PhysicsServer2D.body_set_state_sync_callback].
 			</description>
 		</method>
 		<method name="_body_test_motion" qualifiers="virtual const">

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_APPLICATION_H
-#define GODOT_APPLICATION_H
+#pragma once
 
 #include "core/os/os.h"
 
@@ -37,7 +36,15 @@
 #import <Foundation/Foundation.h>
 #import <IOKit/hidsystem/ev_keymap.h>
 
-@interface GodotApplication : NSApplication
-@end
+@class GodotApplicationDelegate;
 
-#endif // GODOT_APPLICATION_H
+@interface GodotApplication : NSApplication
+
+extern "C" GodotApplication *GodotApp;
+
+@property(readonly, nonatomic) GodotApplicationDelegate *godotDelegate;
+
+- (GodotApplication *)init;
+
+- (void)activateApplication;
+@end

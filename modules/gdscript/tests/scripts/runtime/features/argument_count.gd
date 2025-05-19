@@ -57,7 +57,7 @@ func test():
     var lambda_callable_2 : Callable = func(_foo, _bar, _baz): pass
     print(lambda_callable_2.get_argument_count()) # Should print 3.
 
-    # Test lambas with self.
+    # Test lambdas with self.
     var lambda_self_callable_1 : Callable = func(_foo, _bar): return self
     print(lambda_self_callable_1.get_argument_count()) # Should print 2.
     var lambda_self_callable_2 : Callable = func(_foo, _bar, _baz): return self

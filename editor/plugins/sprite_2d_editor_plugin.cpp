@@ -139,7 +139,7 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 void Sprite2DEditor::_popup_debug_uv_dialog() {
 	String error_message;
-	if (node->get_owner() != get_tree()->get_edited_scene_root()) {
+	if (node->get_owner() != get_tree()->get_edited_scene_root() && node != get_tree()->get_edited_scene_root()) {
 		error_message = TTR("Can't convert a sprite from a foreign scene.");
 	}
 	Ref<Texture2D> texture = node->get_texture();
@@ -396,7 +396,7 @@ void Sprite2DEditor::_create_collision_polygon_2d_node() {
 		collision_polygon_2d_instance->set_polygon(outline);
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Create CollisionPolygon2D Sibling"));
+		ur->create_action(TTR("Create CollisionPolygon2D Sibling"), UndoRedo::MERGE_DISABLE, node);
 		ur->add_do_method(this, "_add_as_sibling_or_child", node, collision_polygon_2d_instance);
 		ur->add_do_reference(collision_polygon_2d_instance);
 		ur->add_undo_method(node != get_tree()->get_edited_scene_root() ? node->get_parent() : get_tree()->get_edited_scene_root(), "remove_child", collision_polygon_2d_instance);
@@ -429,7 +429,7 @@ void Sprite2DEditor::_create_light_occluder_2d_node() {
 		light_occluder_2d_instance->set_occluder_polygon(polygon);
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Create LightOccluder2D Sibling"));
+		ur->create_action(TTR("Create LightOccluder2D Sibling"), UndoRedo::MERGE_DISABLE, node);
 		ur->add_do_method(this, "_add_as_sibling_or_child", node, light_occluder_2d_instance);
 		ur->add_do_reference(light_occluder_2d_instance);
 		ur->add_undo_method(node != get_tree()->get_edited_scene_root() ? node->get_parent() : get_tree()->get_edited_scene_root(), "remove_child", light_occluder_2d_instance);
@@ -450,7 +450,7 @@ void Sprite2DEditor::_add_as_sibling_or_child(Node *p_own_node, Node *p_new_node
 }
 
 void Sprite2DEditor::_debug_uv_input(const Ref<InputEvent> &p_input) {
-	if (panner->gui_input(p_input)) {
+	if (panner->gui_input(p_input, debug_uv->get_global_rect())) {
 		accept_event();
 	}
 }
@@ -459,7 +459,7 @@ void Sprite2DEditor::_debug_uv_draw() {
 	debug_uv->draw_set_transform(-draw_offset * draw_zoom, 0, Vector2(draw_zoom, draw_zoom));
 
 	Ref<Texture2D> tex = node->get_texture();
-	ERR_FAIL_COND(!tex.is_valid());
+	ERR_FAIL_COND(tex.is_null());
 
 	debug_uv->draw_texture(tex, Point2());
 
@@ -480,7 +480,7 @@ void Sprite2DEditor::_debug_uv_draw() {
 
 void Sprite2DEditor::_center_view() {
 	Ref<Texture2D> tex = node->get_texture();
-	ERR_FAIL_COND(!tex.is_valid());
+	ERR_FAIL_COND(tex.is_null());
 	Vector2 zoom_factor = (debug_uv->get_size() - Vector2(1, 1) * 50 * EDSCALE) / tex->get_size();
 	zoom_widget->set_zoom(MIN(zoom_factor.x, zoom_factor.y));
 	// Recalculate scroll limits.
@@ -517,7 +517,7 @@ void Sprite2DEditor::_update_zoom_and_pan(bool p_zoom_at_center) {
 	}
 
 	Ref<Texture2D> tex = node->get_texture();
-	ERR_FAIL_COND(!tex.is_valid());
+	ERR_FAIL_COND(tex.is_null());
 
 	Point2 min_corner;
 	Point2 max_corner = tex->get_size();
@@ -556,11 +556,17 @@ void Sprite2DEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->setup_warped_panning(debug_uv_dialog, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_editor_theme_icon(SNAME("Sprite2D")));
+			options->set_button_icon(get_editor_theme_icon(SNAME("Sprite2D")));
 
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_MESH_2D, get_editor_theme_icon(SNAME("MeshInstance2D")));
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_editor_theme_icon(SNAME("Polygon2D")));
@@ -580,6 +586,8 @@ Sprite2DEditor::Sprite2DEditor() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Sprite2D"));
+	options->set_flat(false);
+	options->set_theme_type_variation("FlatMenuButton");
 
 	options->get_popup()->add_item(TTR("Convert to MeshInstance2D"), MENU_OPTION_CONVERT_TO_MESH_2D);
 	options->get_popup()->add_item(TTR("Convert to Polygon2D"), MENU_OPTION_CONVERT_TO_POLYGON_2D);
@@ -587,18 +595,18 @@ Sprite2DEditor::Sprite2DEditor() {
 	options->get_popup()->add_item(TTR("Create LightOccluder2D Sibling"), MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D);
 	options->set_switch_on_hover(true);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &Sprite2DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Sprite2DEditor::_menu_option));
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(ConfirmationDialog);
+	debug_uv_dialog->set_size(Size2(960, 540) * EDSCALE);
 	VBoxContainer *vb = memnew(VBoxContainer);
 	debug_uv_dialog->add_child(vb);
 	debug_uv = memnew(Panel);
-	debug_uv->connect("gui_input", callable_mp(this, &Sprite2DEditor::_debug_uv_input));
-	debug_uv->connect("draw", callable_mp(this, &Sprite2DEditor::_debug_uv_draw));
-	debug_uv->set_custom_minimum_size(Size2(800, 500) * EDSCALE);
+	debug_uv->connect(SceneStringName(gui_input), callable_mp(this, &Sprite2DEditor::_debug_uv_input));
+	debug_uv->connect(SceneStringName(draw), callable_mp(this, &Sprite2DEditor::_debug_uv_draw));
 	debug_uv->set_clip_contents(true);
 	vb->add_margin_child(TTR("Preview:"), debug_uv, true);
 
@@ -613,12 +621,12 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	v_scroll = memnew(VScrollBar);
 	debug_uv->add_child(v_scroll);
-	v_scroll->connect("value_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
 	h_scroll = memnew(HScrollBar);
 	debug_uv->add_child(h_scroll);
-	h_scroll->connect("value_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
 
-	debug_uv_dialog->connect("confirmed", callable_mp(this, &Sprite2DEditor::_create_node));
+	debug_uv_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Sprite2DEditor::_create_node));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_child(memnew(Label(TTR("Simplification:"))));
@@ -627,6 +635,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	simplification->set_max(10.00);
 	simplification->set_step(0.01);
 	simplification->set_value(2);
+	simplification->set_accessibility_name(TTRC("Simplification"));
 	hb->add_child(simplification);
 	hb->add_spacer();
 	hb->add_child(memnew(Label(TTR("Shrink (Pixels):"))));
@@ -635,6 +644,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	shrink_pixels->set_max(10);
 	shrink_pixels->set_step(1);
 	shrink_pixels->set_value(0);
+	shrink_pixels->set_accessibility_name(TTRC("Shrink"));
 	hb->add_child(shrink_pixels);
 	hb->add_spacer();
 	hb->add_child(memnew(Label(TTR("Grow (Pixels):"))));
@@ -643,19 +653,50 @@ Sprite2DEditor::Sprite2DEditor() {
 	grow_pixels->set_max(10);
 	grow_pixels->set_step(1);
 	grow_pixels->set_value(2);
+	grow_pixels->set_accessibility_name(TTRC("Grow"));
 	hb->add_child(grow_pixels);
 	hb->add_spacer();
 	update_preview = memnew(Button);
 	update_preview->set_text(TTR("Update Preview"));
-	update_preview->connect("pressed", callable_mp(this, &Sprite2DEditor::_update_mesh_data));
+	update_preview->connect(SceneStringName(pressed), callable_mp(this, &Sprite2DEditor::_update_mesh_data));
 	hb->add_child(update_preview);
 	vb->add_margin_child(TTR("Settings:"), hb);
 
 	add_child(debug_uv_dialog);
 }
 
+void Sprite2DEditorPlugin::_editor_theme_changed() {
+	dragging_mode_hint->add_theme_color_override(SceneStringName(font_color), Color(0.6f, 0.6f, 0.6f, 1));
+	dragging_mode_hint->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
+	dragging_mode_hint->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
+	dragging_mode_hint->add_theme_constant_override("line_spacing", 0);
+}
+
+void Sprite2DEditorPlugin::_update_dragging_mode_hint(bool p_region_enabled) {
+	if (p_region_enabled) {
+		dragging_mode_hint->show();
+	} else {
+		dragging_mode_hint->hide();
+	}
+}
+
 void Sprite2DEditorPlugin::edit(Object *p_object) {
-	sprite_editor->edit(Object::cast_to<Sprite2D>(p_object));
+	Callable update_text = callable_mp(this, &Sprite2DEditorPlugin::_update_dragging_mode_hint);
+	StringName update_signal = SNAME("_editor_region_rect_enabled");
+
+	Sprite2D *spr = sprite_editor->node;
+	if (spr != nullptr && spr->is_connected(update_signal, update_text)) {
+		spr->disconnect(update_signal, update_text);
+	}
+
+	spr = Object::cast_to<Sprite2D>(p_object);
+	sprite_editor->edit(spr);
+	if (spr != nullptr) {
+		_update_dragging_mode_hint(spr->is_editor_region_rect_draggable());
+		if (!spr->is_connected(update_signal, update_text)) {
+			spr->connect(update_signal, update_text);
+		}
+	}
 }
 
 bool Sprite2DEditorPlugin::handles(Object *p_object) const {
@@ -667,17 +708,20 @@ void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 		sprite_editor->options->show();
 	} else {
 		sprite_editor->options->hide();
+		dragging_mode_hint->hide();
 		sprite_editor->edit(nullptr);
 	}
 }
 
 Sprite2DEditorPlugin::Sprite2DEditorPlugin() {
 	sprite_editor = memnew(Sprite2DEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(sprite_editor);
+	sprite_editor->connect(SceneStringName(theme_changed), callable_mp(this, &Sprite2DEditorPlugin::_editor_theme_changed));
+	EditorNode::get_singleton()->get_gui_base()->add_child(sprite_editor);
+
+	dragging_mode_hint = memnew(Label);
+	dragging_mode_hint->set_text(TTRC("When dragging:\nHold Ctrl + left mouse button to change the region_rect and position.\nHold left mouse button to modify the scale of the sprite."));
+	CanvasItemEditor::get_singleton()->get_controls_container()->add_child(dragging_mode_hint);
+
 	make_visible(false);
-
 	//sprite_editor->options->hide();
-}
-
-Sprite2DEditorPlugin::~Sprite2DEditorPlugin() {
 }

@@ -28,25 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONTROL_EDITOR_PLUGIN_H
-#define CONTROL_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/control.h"
-#include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/texture_rect.h"
 
+class CheckBox;
+class CheckButton;
 class EditorSelection;
 class GridContainer;
+class Label;
+class OptionButton;
+class PanelContainer;
+class Separator;
+class TextureRect;
 
 // Inspector controls.
 class ControlPositioningWarning : public MarginContainer {
@@ -84,6 +81,7 @@ class EditorPropertyAnchorsPreset : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
 
 public:
 	void setup(const Vector<String> &p_options);
@@ -170,9 +168,6 @@ protected:
 
 	void _add_row_button(HBoxContainer *p_row, const int p_preset, const String &p_name);
 	void _add_separator(BoxContainer *p_box, Separator *p_separator);
-
-public:
-	ControlEditorPresetPicker() {}
 };
 
 class AnchorPresetPicker : public ControlEditorPresetPicker {
@@ -191,11 +186,12 @@ public:
 class SizeFlagPresetPicker : public ControlEditorPresetPicker {
 	GDCLASS(SizeFlagPresetPicker, ControlEditorPresetPicker);
 
-	CheckBox *expand_button = nullptr;
+	CheckButton *expand_button = nullptr;
 
 	bool vertical = false;
 
 	virtual void _preset_button_pressed(const int p_preset) override;
+	void _expand_button_pressed();
 
 protected:
 	void _notification(int p_notification);
@@ -203,6 +199,7 @@ protected:
 
 public:
 	void set_allowed_flags(Vector<SizeFlags> &p_flags);
+	void set_expand_flag(bool p_expand);
 
 	SizeFlagPresetPicker(bool p_vertical);
 };
@@ -225,6 +222,7 @@ class ControlEditorToolbar : public HBoxContainer {
 	void _anchors_to_current_ratio();
 	void _anchor_mode_toggled(bool p_status);
 	void _container_flags_selected(int p_flags, bool p_vertical);
+	void _expand_flag_toggled(bool p_expand, bool p_vertical);
 
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
 	bool _is_node_locked(const Node *p_node);
@@ -237,7 +235,7 @@ protected:
 	static ControlEditorToolbar *singleton;
 
 public:
-	bool is_anchors_mode_enabled() { return anchors_mode; };
+	bool is_anchors_mode_enabled() { return anchors_mode; }
 
 	static ControlEditorToolbar *get_singleton() { return singleton; }
 
@@ -251,9 +249,7 @@ class ControlEditorPlugin : public EditorPlugin {
 	ControlEditorToolbar *toolbar = nullptr;
 
 public:
-	virtual String get_name() const override { return "Control"; }
+	virtual String get_plugin_name() const override { return "Control"; }
 
 	ControlEditorPlugin();
 };
-
-#endif // CONTROL_EDITOR_PLUGIN_H

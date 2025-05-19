@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CODE_EDITOR_H
-#define CODE_EDITOR_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -37,47 +36,56 @@
 #include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
-#include "scene/gui/line_edit.h"
+#include "scene/gui/popup.h"
 #include "scene/main/timer.h"
 
 class MenuButton;
+class CodeTextEditor;
+class LineEdit;
 
-class GotoLineDialog : public ConfirmationDialog {
-	GDCLASS(GotoLineDialog, ConfirmationDialog);
+class GotoLinePopup : public PopupPanel {
+	GDCLASS(GotoLinePopup, PopupPanel);
 
-	Label *line_label = nullptr;
-	LineEdit *line = nullptr;
+	Variant original_state;
+	LineEdit *line_input = nullptr;
+	CodeTextEditor *text_editor = nullptr;
 
-	CodeEdit *text_editor = nullptr;
+	void _goto_line();
+	void _submit();
 
-	virtual void ok_pressed() override;
+protected:
+	void _notification(int p_what);
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
 public:
-	void popup_find_line(CodeEdit *p_edit);
-	int get_line() const;
+	void popup_find_line(CodeTextEditor *p_text_editor);
 
-	GotoLineDialog();
+	GotoLinePopup();
 };
-
-class CodeTextEditor;
 
 class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
+	enum SearchMode {
+		SEARCH_CURRENT,
+		SEARCH_NEXT,
+		SEARCH_PREV,
+	};
+
+	Button *toggle_replace_button = nullptr;
 	LineEdit *search_text = nullptr;
 	Label *matches_label = nullptr;
 	Button *find_prev = nullptr;
 	Button *find_next = nullptr;
 	CheckBox *case_sensitive = nullptr;
 	CheckBox *whole_words = nullptr;
-	TextureButton *hide_button = nullptr;
+	Button *hide_button = nullptr;
 
 	LineEdit *replace_text = nullptr;
 	Button *replace = nullptr;
 	Button *replace_all = nullptr;
 	CheckBox *selection_only = nullptr;
 
-	VBoxContainer *vbc_lineedit = nullptr;
 	HBoxContainer *hbc_button_replace = nullptr;
 	HBoxContainer *hbc_option_replace = nullptr;
 
@@ -94,23 +102,25 @@ class FindReplaceBar : public HBoxContainer {
 	bool replace_all_mode = false;
 	bool preserve_cursor = false;
 
-	void _get_search_from(int &r_line, int &r_col, bool p_is_searching_next = false);
+	virtual void input(const Ref<InputEvent> &p_event) override;
+
+	void _get_search_from(int &r_line, int &r_col, SearchMode p_search_mode);
 	void _update_results_count();
 	void _update_matches_display();
 
 	void _show_search(bool p_with_replace, bool p_show_only);
-	void _hide_bar(bool p_force_focus = false);
+	void _hide_bar();
+	void _update_toggle_replace_button(bool p_replace_visible);
 
 	void _editor_text_changed();
 	void _search_options_changed(bool p_pressed);
 	void _search_text_changed(const String &p_text);
 	void _search_text_submitted(const String &p_text);
 	void _replace_text_submitted(const String &p_text);
+	void _toggle_replace_pressed();
 
 protected:
 	void _notification(int p_what);
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
-	void _focus_lost();
 
 	void _update_flags(bool p_direction_backwards);
 
@@ -154,7 +164,8 @@ class CodeTextEditor : public VBoxContainer {
 	FindReplaceBar *find_replace_bar = nullptr;
 	HBoxContainer *status_bar = nullptr;
 
-	Button *toggle_scripts_button = nullptr;
+	Button *toggle_files_button = nullptr;
+	Control *toggle_files_list = nullptr;
 	Button *error_button = nullptr;
 	Button *warning_button = nullptr;
 
@@ -164,6 +175,8 @@ class CodeTextEditor : public VBoxContainer {
 
 	Label *info = nullptr;
 	Timer *idle = nullptr;
+	float idle_time = 0.0f;
+	float idle_time_with_errors = 0.0f;
 	bool code_complete_enabled = true;
 	Timer *code_complete_timer = nullptr;
 	int code_complete_timer_line = 0;
@@ -174,6 +187,7 @@ class CodeTextEditor : public VBoxContainer {
 	int error_line;
 	int error_column;
 
+	bool preview_navigation_change = false;
 	Dictionary previous_state;
 
 	void _update_text_editor_theme();
@@ -205,10 +219,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _zoom_popup_id_pressed(int p_idx);
 
-	void _toggle_scripts_pressed();
-
-	int _get_affected_lines_from(int p_caret);
-	int _get_affected_lines_to(int p_caret);
+	void _toggle_files_pressed();
 
 protected:
 	virtual void _load_theme_settings() {}
@@ -227,6 +238,7 @@ protected:
 
 public:
 	void trim_trailing_whitespace();
+	void trim_final_newlines();
 	void insert_final_newline();
 
 	enum CaseStyle {
@@ -238,18 +250,13 @@ public:
 
 	void set_indent_using_spaces(bool p_use_spaces);
 
-	void move_lines_up();
-	void move_lines_down();
-	void delete_lines();
-	void duplicate_selection();
-
 	/// Toggle inline comment on currently selected lines, or on current line if nothing is selected,
 	/// by adding or removing comment delimiter
 	void toggle_inline_comment(const String &delimiter);
 
-	void goto_line(int p_line);
+	void goto_line(int p_line, int p_column = 0);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void goto_line_centered(int p_line);
+	void goto_line_centered(int p_line, int p_column = 0);
 	void set_executing_line(int p_line);
 	void clear_executing_line();
 
@@ -258,6 +265,9 @@ public:
 	Variant get_navigation_state();
 	Variant get_previous_state();
 	void store_previous_state();
+
+	bool is_previewing_navigation_change() const;
+	void set_preview_navigation_change(bool p_preview);
 
 	void set_error_count(int p_error_count);
 	void set_warning_count(int p_warning_count);
@@ -286,10 +296,9 @@ public:
 
 	void validate_script();
 
-	void show_toggle_scripts_button();
-	void update_toggle_scripts_button();
+	void set_toggle_list_control(Control *p_control);
+	void show_toggle_files_button();
+	void update_toggle_files_button();
 
 	CodeTextEditor();
 };
-
-#endif // CODE_EDITOR_H

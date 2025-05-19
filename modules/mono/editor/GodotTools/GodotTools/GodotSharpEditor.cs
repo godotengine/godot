@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using GodotTools.Build;
 using GodotTools.Ides;
 using GodotTools.Ides.Rider;
@@ -176,7 +177,7 @@ namespace GodotTools
 
         private static readonly string[] VsCodeNames =
         {
-            "code", "code-oss", "vscode", "vscode-oss", "visual-studio-code", "visual-studio-code-oss"
+            "code", "code-oss", "vscode", "vscode-oss", "visual-studio-code", "visual-studio-code-oss", "codium"
         };
 
         [UsedImplicitly]
@@ -259,11 +260,12 @@ namespace GodotTools
 
                     var args = new List<string>
                     {
+                        Path.Combine(GodotSharpDirs.DataEditorToolsDir, "GodotTools.OpenVisualStudio.dll"),
                         GodotSharpDirs.ProjectSlnPath,
                         line >= 0 ? $"{scriptPath};{line + 1};{col + 1}" : scriptPath
                     };
 
-                    string command = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "GodotTools.OpenVisualStudio.exe");
+                    string command = DotNetFinder.FindDotNetExe() ?? "dotnet";
 
                     try
                     {
@@ -284,9 +286,10 @@ namespace GodotTools
                 case ExternalEditorId.VisualStudioForMac:
                     goto case ExternalEditorId.MonoDevelop;
                 case ExternalEditorId.Rider:
+                case ExternalEditorId.Fleet:
                 {
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
-                    RiderPathManager.OpenFile(GodotSharpDirs.ProjectSlnPath, scriptPath, line + 1, col);
+                    RiderPathManager.OpenFile(editorId, GodotSharpDirs.ProjectSlnPath, scriptPath, line + 1, col);
                     return Error.Ok;
                 }
                 case ExternalEditorId.MonoDevelop:
@@ -328,7 +331,7 @@ namespace GodotTools
                             args.Add("-b");
                             args.Add(vscodeBundleId);
 
-                            // The reusing of existing windows made by the 'open' command might not choose a wubdiw that is
+                            // The reusing of existing windows made by the 'open' command might not choose a window that is
                             // editing our folder. It's better to ask for a new window and let VSCode do the window management.
                             args.Add("-n");
 
@@ -336,6 +339,28 @@ namespace GodotTools
                             args.Add("--wait-apps");
 
                             args.Add("--args");
+                        }
+
+                        // Try VSCodium as a fallback if Visual Studio Code can't be found.
+                        if (!macOSAppBundleInstalled)
+                        {
+                            const string VscodiumBundleId = "com.vscodium.codium";
+                            macOSAppBundleInstalled = Internal.IsMacOSAppBundleInstalled(VscodiumBundleId);
+
+                            if (macOSAppBundleInstalled)
+                            {
+                                args.Add("-b");
+                                args.Add(VscodiumBundleId);
+
+                                // The reusing of existing windows made by the 'open' command might not choose a window that is
+                                // editing our folder. It's better to ask for a new window and let VSCode do the window management.
+                                args.Add("-n");
+
+                                // The open process must wait until the application finishes (which is instant in VSCode's case)
+                                args.Add("--wait-apps");
+
+                                args.Add("--args");
+                            }
                         }
                     }
 
@@ -359,7 +384,7 @@ namespace GodotTools
                     {
                         if (!macOSAppBundleInstalled && string.IsNullOrEmpty(_vsCodePath))
                         {
-                            GD.PushError("Cannot find code editor: VSCode");
+                            GD.PushError("Cannot find code editor: Visual Studio Code or VSCodium");
                             return Error.FileNotFound;
                         }
 
@@ -369,7 +394,7 @@ namespace GodotTools
                     {
                         if (string.IsNullOrEmpty(_vsCodePath))
                         {
-                            GD.PushError("Cannot find code editor: VSCode");
+                            GD.PushError("Cannot find code editor: Visual Studio Code or VSCodium");
                             return Error.FileNotFound;
                         }
 
@@ -382,7 +407,7 @@ namespace GodotTools
                     }
                     catch (Exception e)
                     {
-                        GD.PushError($"Error when trying to run code editor: VSCode. Exception message: '{e.Message}'");
+                        GD.PushError($"Error when trying to run code editor: Visual Studio Code or VSCodium. Exception message: '{e.Message}'");
                     }
 
                     break;
@@ -415,12 +440,7 @@ namespace GodotTools
                 var msbuildProject = ProjectUtils.Open(GodotSharpDirs.ProjectCsProjPath)
                                      ?? throw new InvalidOperationException("Cannot open C# project.");
 
-                // NOTE: The order in which changes are made to the project is important
-
-                // Migrate to MSBuild project Sdks style if using the old style
-                ProjectUtils.MigrateToProjectSdksStyle(msbuildProject, GodotSharpDirs.ProjectAssemblyName);
-
-                ProjectUtils.EnsureGodotSdkIsUpToDate(msbuildProject);
+                ProjectUtils.UpgradeProjectIfNeeded(msbuildProject, GodotSharpDirs.ProjectAssemblyName);
 
                 if (msbuildProject.HasUnsavedChanges)
                 {
@@ -548,23 +568,26 @@ namespace GodotTools
             {
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudio}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
+                                   $",Visual Studio Code and VSCodium:{(int)ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Fleet:{(int)ExternalEditorId.Fleet}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
             else if (OS.IsMacOS)
             {
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudioForMac}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
+                                   $",Visual Studio Code and VSCodium:{(int)ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Fleet:{(int)ExternalEditorId.Fleet}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
             else if (OS.IsUnixLike)
             {
                 settingsHintStr += $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
+                                   $",Visual Studio Code and VSCodium:{(int)ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Fleet:{(int)ExternalEditorId.Fleet}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
 
@@ -621,7 +644,6 @@ namespace GodotTools
             _inspectorPluginWeak = WeakRef(inspectorPlugin);
 
             BuildManager.Initialize();
-            RiderPathManager.Initialize();
 
             GodotIdeManager = new GodotIdeManager();
             AddChild(GodotIdeManager);
@@ -645,13 +667,28 @@ namespace GodotTools
 
         private void OnSettingsChanged()
         {
-            // We want to force NoConsoleLogging to true when the VerbosityLevel is at Detailed or above.
-            // At that point, there's so much info logged that it doesn't make sense to display it in
-            // the tiny editor window, and it'd make the editor hang or crash anyway.
-            var verbosityLevel = _editorSettings.GetSetting(Settings.VerbosityLevel).As<VerbosityLevelId>();
-            var hideConsoleLog = (bool)_editorSettings.GetSetting(Settings.NoConsoleLogging);
-            if (verbosityLevel >= VerbosityLevelId.Detailed && !hideConsoleLog)
-                _editorSettings.SetSetting(Settings.NoConsoleLogging, Variant.From(true));
+            var changedSettings = _editorSettings.GetChangedSettings();
+            if (changedSettings.Contains(Settings.VerbosityLevel))
+            {
+                // We want to force NoConsoleLogging to true when the VerbosityLevel is at Detailed or above.
+                // At that point, there's so much info logged that it doesn't make sense to display it in
+                // the tiny editor window, and it'd make the editor hang or crash anyway.
+                var verbosityLevel = _editorSettings.GetSetting(Settings.VerbosityLevel).As<VerbosityLevelId>();
+                var hideConsoleLog = (bool)_editorSettings.GetSetting(Settings.NoConsoleLogging);
+                if (verbosityLevel >= VerbosityLevelId.Detailed && !hideConsoleLog)
+                    _editorSettings.SetSetting(Settings.NoConsoleLogging, Variant.From(true));
+            }
+
+            if (changedSettings.Contains(Settings.ExternalEditor) && !changedSettings.Contains(RiderPathManager.EditorPathSettingName))
+            {
+                var editor = _editorSettings.GetSetting(Settings.ExternalEditor).As<ExternalEditorId>();
+                if (editor != ExternalEditorId.Fleet && editor != ExternalEditorId.Rider)
+                {
+                    return;
+                }
+
+                RiderPathManager.InitializeIfNeeded(editor);
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -700,6 +737,23 @@ namespace GodotTools
         private static IntPtr InternalCreateInstance(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             Internal.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
+
+            var populateConstructorMethod =
+                AppDomain.CurrentDomain
+                    .GetAssemblies()
+                    .First(x => x.GetName().Name == "GodotSharpEditor")
+                    .GetType("Godot.EditorConstructors")?
+                    .GetMethod("AddEditorConstructors",
+                        BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+
+            if (populateConstructorMethod == null)
+            {
+                throw new MissingMethodException("Godot.EditorConstructors",
+                    "AddEditorConstructors");
+            }
+
+            populateConstructorMethod.Invoke(null, null);
+
             return new GodotSharpEditor().NativeInstance;
         }
     }

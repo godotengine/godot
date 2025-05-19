@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_AUTOLOAD_SETTINGS_H
-#define EDITOR_AUTOLOAD_SETTINGS_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -104,6 +103,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void init_autoloads();
 	void update_autoload();
 	bool autoload_add(const String &p_name, const String &p_path);
 	void autoload_remove(const String &p_name);
@@ -113,5 +113,3 @@ public:
 	EditorAutoloadSettings();
 	~EditorAutoloadSettings();
 };
-
-#endif // EDITOR_AUTOLOAD_SETTINGS_H

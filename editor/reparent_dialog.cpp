@@ -30,7 +30,6 @@
 
 #include "reparent_dialog.h"
 
-#include "core/string/print_string.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
@@ -38,11 +37,11 @@
 void ReparentDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
+			connect(SceneStringName(confirmed), callable_mp(this, &ReparentDialog::_reparent));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &ReparentDialog::_reparent));
 		} break;
 	}
 }
@@ -76,6 +75,7 @@ ReparentDialog::ReparentDialog() {
 	add_child(vbc);
 
 	tree = memnew(SceneTreeEditor(false));
+	tree->set_update_when_invisible(false);
 	tree->set_show_enabled_subscene(true);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ReparentDialog::_reparent));
 	vbc->add_margin_child(TTR("Select new parent:"), tree, true);
@@ -86,7 +86,4 @@ ReparentDialog::ReparentDialog() {
 	vbc->add_child(keep_transform);
 
 	set_ok_button_text(TTR("Reparent"));
-}
-
-ReparentDialog::~ReparentDialog() {
 }

@@ -162,8 +162,26 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	// Allow releasing focus by holding "ui_cancel" action.
+	bool accept_release = false;
+	uint64_t hold_to_unfocus_timeout = 3000;
+	if (p_event->is_action_pressed(SNAME("ui_cancel"), true, true)) {
+		if ((OS::get_singleton()->get_ticks_msec() - hold_next) < hold_to_unfocus_timeout) {
+			hold_next = 0;
+			Control *next = find_next_valid_focus();
+			next->grab_focus();
+		} else {
+			hold_next = OS::get_singleton()->get_ticks_msec();
+		}
+		accept_event();
+		return;
+	} else if (p_event->is_action_released(SNAME("ui_cancel"), true)) {
+		accept_release = true;
+	}
+	hold_next = 0;
+
 	accept_event();
-	if (!p_event->is_pressed() || p_event->is_echo() || p_event->is_match(event) || !_is_event_allowed(p_event)) {
+	if (!(p_event->is_pressed() || accept_release) || p_event->is_echo() || p_event->is_match(event) || !_is_event_allowed(p_event)) {
 		return;
 	}
 
@@ -215,10 +233,16 @@ void EventListenerLineEdit::grab_focus() {
 
 void EventListenerLineEdit::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(TTR("Listening for Input. Hold %s to release focus."), InputMap::get_singleton()->get_action_description("ui_cancel")));
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
-			connect("text_changed", callable_mp(this, &EventListenerLineEdit::_on_text_changed));
-			connect("focus_entered", callable_mp(this, &EventListenerLineEdit::_on_focus));
-			connect("focus_exited", callable_mp(this, &EventListenerLineEdit::_on_unfocus));
+			connect(SceneStringName(text_changed), callable_mp(this, &EventListenerLineEdit::_on_text_changed));
+			connect(SceneStringName(focus_entered), callable_mp(this, &EventListenerLineEdit::_on_focus));
+			connect(SceneStringName(focus_exited), callable_mp(this, &EventListenerLineEdit::_on_unfocus));
 			set_right_icon(get_editor_theme_icon(SNAME("Keyboard")));
 			set_clear_button_enabled(true);
 		} break;

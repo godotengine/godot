@@ -279,9 +279,11 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 		// Create a third point from the light direction.
 		Vector3 pt2 = pt0 - p_light_source.dir;
 
-		// Create plane from 3 points.
-		Plane p(pt0, pt1, pt2);
-		r_cull_planes.add_cull_plane(p);
+		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+			// Create plane from 3 points.
+			Plane p(pt0, pt1, pt2);
+			r_cull_planes.add_cull_plane(p);
+		}
 	}
 
 	// Last to 0 edge.
@@ -295,9 +297,11 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 		// Create a third point from the light direction.
 		Vector3 pt2 = pt0 - p_light_source.dir;
 
-		// Create plane from 3 points.
-		Plane p(pt0, pt1, pt2);
-		r_cull_planes.add_cull_plane(p);
+		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+			// Create plane from 3 points.
+			Plane p(pt0, pt1, pt2);
+			r_cull_planes.add_cull_plane(p);
+		}
 	}
 
 #ifdef LIGHT_CULLER_DEBUG_LOGGING
@@ -692,10 +696,11 @@ void RenderingLightCuller::debug_print_LUT_as_table() {
 		int s = entry.size();
 
 		for (int p = 0; p < 8; p++) {
-			if (p < s)
+			if (p < s) {
 				sz += itos(entry[p]);
-			else
+			} else {
 				sz += "0"; // just a spacer
+			}
 
 			sz += ", ";
 		}
@@ -761,12 +766,14 @@ void RenderingLightCuller::add_LUT(int p_plane_0, int p_plane_1, PointOrder p_pt
 	// All entries of the LUT that have plane 0 set and plane 1 not set.
 	for (uint32_t n = 0; n < 64; n++) {
 		// If bit0 not set...
-		if (!(n & bit0))
+		if (!(n & bit0)) {
 			continue;
+		}
 
 		// If bit1 set...
-		if (n & bit1)
+		if (n & bit1) {
 			continue;
+		}
 
 		// Meets criteria.
 		add_LUT_entry(n, p_pts);
@@ -787,8 +794,9 @@ void RenderingLightCuller::compact_LUT_entry(uint32_t p_entry_id) {
 
 	int num_pairs = entry.size() / 2;
 
-	if (num_pairs == 0)
+	if (num_pairs == 0) {
 		return;
+	}
 
 	LocalVector<uint8_t> temp;
 
@@ -812,8 +820,9 @@ void RenderingLightCuller::compact_LUT_entry(uint32_t p_entry_id) {
 		for (int p = 1; p < num_pairs; p++) {
 			unsigned int bit = 1 << p;
 			// Is it done already?
-			if (BFpairs & bit)
+			if (BFpairs & bit) {
 				continue;
+			}
 
 			// There must be at least 1 free pair.
 			// Attempt to add.

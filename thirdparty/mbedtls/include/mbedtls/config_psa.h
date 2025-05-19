@@ -22,6 +22,8 @@
 
 #include "psa/crypto_adjust_config_synonyms.h"
 
+#include "psa/crypto_adjust_config_dependencies.h"
+
 #include "mbedtls/config_adjust_psa_superset_legacy.h"
 
 #if defined(MBEDTLS_PSA_CRYPTO_CONFIG)
@@ -32,7 +34,11 @@
  * before we deduce what built-ins are required. */
 #include "psa/crypto_adjust_config_key_pair_types.h"
 
+#if defined(MBEDTLS_PSA_CRYPTO_C)
+/* If we are implementing PSA crypto ourselves, then we want to enable the
+ * required built-ins. Otherwise, PSA features will be provided by the server. */
 #include "mbedtls/config_adjust_legacy_from_psa.h"
+#endif
 
 #else /* MBEDTLS_PSA_CRYPTO_CONFIG */
 

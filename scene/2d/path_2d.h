@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PATH_2D_H
-#define PATH_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/curve.h"
@@ -48,7 +47,7 @@ protected:
 	static void _bind_methods();
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
@@ -56,8 +55,6 @@ public:
 
 	void set_curve(const Ref<Curve2D> &p_curve);
 	Ref<Curve2D> get_curve() const;
-
-	Path2D() {}
 };
 
 class PathFollow2D : public Node2D {
@@ -107,8 +104,4 @@ public:
 	bool is_cubic_interpolation_enabled() const;
 
 	PackedStringArray get_configuration_warnings() const override;
-
-	PathFollow2D() {}
 };
-
-#endif // PATH_2D_H

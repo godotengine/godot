@@ -196,16 +196,13 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
-                if (marshalType == MarshalType.GodotObjectOrDerived)
+                if (!isNode && MemberHasNodeType(propertyType, marshalType.Value))
                 {
-                    if (!isNode && propertyType.InheritsFrom("GodotSharp", GodotClasses.Node))
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            Common.OnlyNodesShouldExportNodesRule,
-                            property.Locations.FirstLocationWithSourceTreeOrDefault()
-                        ));
-                        continue;
-                    }
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.OnlyNodesShouldExportNodesRule,
+                        property.Locations.FirstLocationWithSourceTreeOrDefault()
+                    ));
+                    continue;
                 }
 
                 var propertyDeclarationSyntax = property.DeclaringSyntaxReferences
@@ -218,7 +215,11 @@ namespace Godot.SourceGenerators
                     if (propertyDeclarationSyntax.Initializer != null)
                     {
                         var sm = context.Compilation.GetSemanticModel(propertyDeclarationSyntax.Initializer.SyntaxTree);
-                        value = propertyDeclarationSyntax.Initializer.Value.FullQualifiedSyntax(sm);
+                        var initializerValue = propertyDeclarationSyntax.Initializer.Value;
+                        if (!IsStaticallyResolvable(initializerValue, sm))
+                            value = "default";
+                        else
+                            value = propertyDeclarationSyntax.Initializer.Value.FullQualifiedSyntax(sm);
                     }
                     else
                     {
@@ -315,16 +316,13 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
-                if (marshalType == MarshalType.GodotObjectOrDerived)
+                if (!isNode && MemberHasNodeType(fieldType, marshalType.Value))
                 {
-                    if (!isNode && fieldType.InheritsFrom("GodotSharp", GodotClasses.Node))
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            Common.OnlyNodesShouldExportNodesRule,
-                            field.Locations.FirstLocationWithSourceTreeOrDefault()
-                        ));
-                        continue;
-                    }
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.OnlyNodesShouldExportNodesRule,
+                        field.Locations.FirstLocationWithSourceTreeOrDefault()
+                    ));
+                    continue;
                 }
 
                 EqualsValueClauseSyntax? initializer = field.DeclaringSyntaxReferences
@@ -386,7 +384,7 @@ namespace Godot.SourceGenerators
                     source.Append(" = ");
                     source.Append(exportedMember.Value ?? "default");
                     source.Append(";\n");
-                    source.Append("        values.Add(PropertyName.");
+                    source.Append("        values.Add(PropertyName.@");
                     source.Append(exportedMember.Name);
                     source.Append(", ");
                     source.AppendManagedToVariantExpr(defaultValueLocalName,
@@ -422,6 +420,134 @@ namespace Godot.SourceGenerators
             }
 
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
+        }
+
+        private static bool IsStaticallyResolvable(ExpressionSyntax expression, SemanticModel semanticModel)
+        {
+            // Handle literals (e.g., `10`, `"string"`, `true`, etc.)
+            if (expression is LiteralExpressionSyntax)
+            {
+                return true;
+            }
+
+            // Handle negative literals (e.g., `-10`)
+            if (expression is PrefixUnaryExpressionSyntax { Operand: LiteralExpressionSyntax } &&
+                expression.Kind() == SyntaxKind.UnaryMinusExpression)
+            {
+                return true;
+            }
+
+            // Handle identifiers (e.g., variable names)
+            if (expression is IdentifierNameSyntax identifier)
+            {
+                var symbolInfo = semanticModel.GetSymbolInfo(identifier).Symbol;
+
+                // Ensure it's a static member
+                return symbolInfo is { IsStatic: true };
+            }
+
+            // Handle member access (e.g., `MyClass.StaticValue`)
+            if (expression is MemberAccessExpressionSyntax memberAccess)
+            {
+                var symbolInfo = semanticModel.GetSymbolInfo(memberAccess).Symbol;
+
+                // Ensure it's referring to a static member
+                return symbolInfo is { IsStatic: true };
+            }
+
+            // Handle object creation expressions (e.g., `new Vector2(1.0f, 2.0f)`)
+            if (expression is ObjectCreationExpressionSyntax objectCreation)
+            {
+                // Recursively ensure all its arguments are self-contained
+                if (objectCreation.ArgumentList == null)
+                {
+                    return true;
+                }
+                foreach (var argument in objectCreation.ArgumentList.Arguments)
+                {
+                    if (!IsStaticallyResolvable(argument.Expression, semanticModel))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            if (expression is ImplicitObjectCreationExpressionSyntax)
+            {
+                return true;
+            }
+
+            if (expression is InvocationExpressionSyntax invocationExpression)
+            {
+                // Resolve the method being invoked
+                var symbolInfo = semanticModel.GetSymbolInfo(invocationExpression).Symbol;
+
+                if (symbolInfo is IMethodSymbol methodSymbol)
+                {
+                    // Ensure the method is static
+                    if (methodSymbol.IsStatic)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            if (expression is InterpolatedStringExpressionSyntax interpolatedString)
+            {
+                foreach (var content in interpolatedString.Contents)
+                {
+                    if (content is not InterpolationSyntax interpolation)
+                    {
+                        continue;
+                    }
+                    // Analyze the expression inside `${...}`
+                    var interpolatedExpression = interpolation.Expression;
+
+                    if (!IsStaticallyResolvable(interpolatedExpression, semanticModel))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            if (expression is InitializerExpressionSyntax initializerExpressionSyntax)
+            {
+                foreach (var content in initializerExpressionSyntax.Expressions)
+                {
+                    if (!IsStaticallyResolvable(content, semanticModel))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            // Handle other expressions conservatively (e.g., method calls, instance references, etc.)
+            return false;
+        }
+
+        private static bool MemberHasNodeType(ITypeSymbol memberType, MarshalType marshalType)
+        {
+            if (marshalType == MarshalType.GodotObjectOrDerived)
+            {
+                return memberType.InheritsFrom("GodotSharp", GodotClasses.Node);
+            }
+            if (marshalType == MarshalType.GodotObjectOrDerivedArray)
+            {
+                var elementType = ((IArrayTypeSymbol)memberType).ElementType;
+                return elementType.InheritsFrom("GodotSharp", GodotClasses.Node);
+            }
+            if (memberType is INamedTypeSymbol { IsGenericType: true } genericType)
+            {
+                return genericType.TypeArguments
+                    .Any(static typeArgument
+                        => typeArgument.InheritsFrom("GodotSharp", GodotClasses.Node));
+            }
+
+            return false;
         }
 
         private struct ExportedPropertyMetadata

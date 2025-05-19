@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEBUGGER_EDITOR_PLUGIN_H
-#define DEBUGGER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 
@@ -60,16 +59,16 @@ private:
 		RUN_MULTIPLE_INSTANCES,
 	};
 
+	bool initializing = true;
+
 	void _update_debug_options();
 	void _notification(int p_what);
 	void _menu_option(int p_option);
 
 public:
-	virtual String get_name() const override { return "Debugger"; }
+	virtual String get_plugin_name() const override { return "Debugger"; }
 	bool has_main_screen() const override { return false; }
 
 	DebuggerEditorPlugin(PopupMenu *p_menu);
 	~DebuggerEditorPlugin();
 };
-
-#endif // DEBUGGER_EDITOR_PLUGIN_H

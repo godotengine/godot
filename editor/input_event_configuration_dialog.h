@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_EVENT_CONFIGURATION_DIALOG_H
-#define INPUT_EVENT_CONFIGURATION_DIALOG_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 
@@ -107,6 +106,7 @@ private:
 
 	void _search_term_updated(const String &p_term);
 	void _update_input_list();
+	void _input_list_item_activated();
 	void _input_list_item_selected();
 
 	void _mod_toggled(bool p_checked, int p_index);
@@ -131,5 +131,3 @@ public:
 
 	InputEventConfigurationDialog();
 };
-
-#endif // INPUT_EVENT_CONFIGURATION_DIALOG_H
