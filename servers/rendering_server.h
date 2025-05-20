@@ -216,6 +216,7 @@ public:
 		SHADER_PARTICLES,
 		SHADER_SKY,
 		SHADER_FOG,
+		SHADER_MESH_RASTERIZER,
 		SHADER_MAX
 	};
 
@@ -1169,6 +1170,19 @@ public:
 	virtual void viewport_set_vrs_update_mode(RID p_viewport, ViewportVRSUpdateMode p_mode) = 0;
 	virtual void viewport_set_vrs_texture(RID p_viewport, RID p_texture) = 0;
 
+	/* MESH RASTERIZER API */
+
+	enum RasterizedTextureFormat {
+		RASTERIZED_TEXTURE_FORMAT_RGBA8,
+		RASTERIZED_TEXTURE_FORMAT_RGBA8_SRGB,
+		RASTERIZED_TEXTURE_FORMAT_RGBAH,
+		RASTERIZED_TEXTURE_FORMAT_RGBAF
+	};
+	virtual RID mesh_rasterizer_create(int p_width, int p_height, RasterizedTextureFormat p_texture_format, bool p_generate_mipmaps = false, RD::TextureSamples p_samples = RD::TEXTURE_SAMPLES_1) = 0;
+	virtual void mesh_rasterizer_set_mesh(RID p_mesh_rasterizer, RID p_mesh, int p_surface_index) = 0;
+	virtual void mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, const Color &p_bg_color) = 0;
+	virtual RID mesh_rasterizer_get_texture(RID p_mesh_rasterizer) = 0;
+
 	/* SKY API */
 
 	enum SkyMode {
@@ -1987,6 +2001,7 @@ VARIANT_ENUM_CAST(RenderingServer::GlobalShaderParameterType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);
 VARIANT_ENUM_CAST(RenderingServer::BakeChannels);
+VARIANT_ENUM_CAST(RenderingServer::RasterizedTextureFormat);
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(RenderingServer::Features);

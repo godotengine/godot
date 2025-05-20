@@ -450,6 +450,7 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 		param_cache.erase(p_param);
 		if (material_rid.is_valid()) {
 			RS::get_singleton()->material_set_param(material_rid, p_param, Variant());
+			emit_signal(SNAME("shader_parameter_changed"));
 		}
 	} else {
 		Variant *v = param_cache.getptr(p_param);
@@ -468,12 +469,15 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 
 				if (material_rid.is_valid()) {
 					RS::get_singleton()->material_set_param(material_rid, p_param, Variant());
+					emit_signal(SNAME("shader_parameter_changed"));
 				}
 			} else if (material_rid.is_valid()) {
 				RS::get_singleton()->material_set_param(material_rid, p_param, tex_rid);
+				emit_signal(SNAME("shader_parameter_changed"));
 			}
 		} else if (material_rid.is_valid()) {
 			RS::get_singleton()->material_set_param(material_rid, p_param, p_value);
+			emit_signal(SNAME("shader_parameter_changed"));
 		}
 	}
 }
@@ -523,6 +527,8 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shader_parameter", "param"), &ShaderMaterial::get_shader_parameter);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_shader", "get_shader");
+
+	ADD_SIGNAL(MethodInfo("shader_parameter_changed"));
 }
 
 #ifdef TOOLS_ENABLED

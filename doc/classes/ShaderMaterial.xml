@@ -35,4 +35,10 @@
 			The [Shader] program used to render this material.
 		</member>
 	</members>
+	<signals>
+		<signal name="shader_parameter_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 </class>
