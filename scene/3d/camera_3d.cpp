@@ -117,6 +117,9 @@ void Camera3D::_update_camera_mode() {
 }
 
 void Camera3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "fov") {
 		if (mode != PROJECTION_PERSPECTIVE) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -139,8 +142,6 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 			}
 		}
 	}
-
-	Node3D::_validate_property(p_property);
 }
 
 void Camera3D::_update_camera() {

@@ -2453,18 +2453,20 @@ void BaseMaterial3D::_validate_feature(const String &text, Feature feature, Prop
 }
 
 void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
-	_validate_feature("normal", FEATURE_NORMAL_MAPPING, p_property);
-	_validate_feature("bent_normal", FEATURE_BENT_NORMAL_MAPPING, p_property);
-	_validate_feature("emission", FEATURE_EMISSION, p_property);
-	_validate_feature("rim", FEATURE_RIM, p_property);
-	_validate_feature("clearcoat", FEATURE_CLEARCOAT, p_property);
-	_validate_feature("anisotropy", FEATURE_ANISOTROPY, p_property);
-	_validate_feature("ao", FEATURE_AMBIENT_OCCLUSION, p_property);
-	_validate_feature("heightmap", FEATURE_HEIGHT_MAPPING, p_property);
-	_validate_feature("subsurf_scatter", FEATURE_SUBSURFACE_SCATTERING, p_property);
-	_validate_feature("backlight", FEATURE_BACKLIGHT, p_property);
-	_validate_feature("refraction", FEATURE_REFRACTION, p_property);
-	_validate_feature("detail", FEATURE_DETAIL, p_property);
+	if (Engine::get_singleton()->is_editor_hint()) {
+		_validate_feature("normal", FEATURE_NORMAL_MAPPING, p_property);
+		_validate_feature("bent_normal", FEATURE_BENT_NORMAL_MAPPING, p_property);
+		_validate_feature("emission", FEATURE_EMISSION, p_property);
+		_validate_feature("rim", FEATURE_RIM, p_property);
+		_validate_feature("clearcoat", FEATURE_CLEARCOAT, p_property);
+		_validate_feature("anisotropy", FEATURE_ANISOTROPY, p_property);
+		_validate_feature("ao", FEATURE_AMBIENT_OCCLUSION, p_property);
+		_validate_feature("heightmap", FEATURE_HEIGHT_MAPPING, p_property);
+		_validate_feature("subsurf_scatter", FEATURE_SUBSURFACE_SCATTERING, p_property);
+		_validate_feature("backlight", FEATURE_BACKLIGHT, p_property);
+		_validate_feature("refraction", FEATURE_REFRACTION, p_property);
+		_validate_feature("detail", FEATURE_DETAIL, p_property);
+	}
 
 	if (p_property.name == "emission_intensity" && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -2474,40 +2476,42 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (p_property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "grow_amount" && !grow_enabled) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "grow_amount" && !grow_enabled) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "point_size" && !flags[FLAG_USE_POINT_SIZE]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "point_size" && !flags[FLAG_USE_POINT_SIZE]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "msdf_pixel_range" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "msdf_pixel_range" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "msdf_outline_size" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "msdf_outline_size" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if ((p_property.name == "distance_fade_max_distance" || p_property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if ((p_property.name == "distance_fade_max_distance" || p_property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if ((p_property.name == "uv1_triplanar_sharpness" || p_property.name == "uv1_world_triplanar") && !flags[FLAG_UV1_USE_TRIPLANAR]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if ((p_property.name == "uv1_triplanar_sharpness" || p_property.name == "uv1_world_triplanar") && !flags[FLAG_UV1_USE_TRIPLANAR]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if ((p_property.name == "uv2_triplanar_sharpness" || p_property.name == "uv2_world_triplanar") && !flags[FLAG_UV2_USE_TRIPLANAR]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if ((p_property.name == "uv2_triplanar_sharpness" || p_property.name == "uv2_world_triplanar") && !flags[FLAG_UV2_USE_TRIPLANAR]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 
 	// you can only enable anti-aliasing (in materials) on alpha scissor and alpha hash

@@ -244,6 +244,9 @@ real_t Light2D::get_shadow_smooth() const {
 }
 
 void Light2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (!shadow && (p_property.name == "shadow_color" || p_property.name == "shadow_filter" || p_property.name == "shadow_filter_smooth" || p_property.name == "shadow_item_cull_mask")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

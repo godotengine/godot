@@ -202,6 +202,9 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void Skeleton3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	PackedStringArray split = p_property.name.split("/");
 	if (split.size() == 3 && split[0] == "bones") {
 		if (split[2] == "rest") {

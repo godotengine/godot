@@ -120,10 +120,12 @@ void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
 #ifdef TOOLS_ENABLED
-	if (editing && (p_property.name == "active" || p_property.name == "deterministic" || p_property.name == "root_motion_track")) {
+	// `editing` is surrounded by TOOLS_ENABLED.
+	if (Engine::get_singleton()->is_editor_hint() && editing && (p_property.name == "active" || p_property.name == "deterministic" || p_property.name == "root_motion_track")) {
 		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 	}
-#endif // TOOLS_ENABLED
+#endif
+
 	if (root_motion_track.is_empty() && p_property.name == "root_motion_local") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}

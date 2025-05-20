@@ -33,19 +33,21 @@
 
 void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "bone_name") {
-		// Because it is a constant function, we cannot use the get_skeleton function.
-		const Skeleton3D *parent = nullptr;
-		if (use_external_skeleton) {
-			if (external_skeleton_node_cache.is_valid()) {
-				parent = ObjectDB::get_instance<Skeleton3D>(external_skeleton_node_cache);
+		if (Engine::get_singleton()->is_editor_hint()) {
+			// Because it is a constant function, we cannot use the get_skeleton function.
+			const Skeleton3D *parent = nullptr;
+			if (use_external_skeleton) {
+				if (external_skeleton_node_cache.is_valid()) {
+					parent = ObjectDB::get_instance<Skeleton3D>(external_skeleton_node_cache);
+				}
+			} else {
+				parent = Object::cast_to<Skeleton3D>(get_parent());
 			}
-		} else {
-			parent = Object::cast_to<Skeleton3D>(get_parent());
-		}
 
-		if (parent) {
-			p_property.hint = PROPERTY_HINT_ENUM;
-			p_property.hint_string = parent->get_concatenated_bone_names();
+			if (parent) {
+				p_property.hint = PROPERTY_HINT_ENUM;
+				p_property.hint_string = parent->get_concatenated_bone_names();
+			}
 		} else {
 			p_property.hint = PROPERTY_HINT_NONE;
 			p_property.hint_string = "";
