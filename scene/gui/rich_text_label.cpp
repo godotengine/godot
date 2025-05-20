@@ -1708,7 +1708,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 						} else if (!(glyphs[glyph_idx].flags & TextServer::GRAPHEME_IS_VIRTUAL)) {
 							// Hex code box.
 							Vector2 gl_size = TS->get_hex_code_box_size(glyphs[glyph_idx].font_size, glyphs[glyph_idx].index);
-							if (p_click.y >= baseline_y - gl_size.y * 0.9 && p_click.y <= baseline_y + gl_size.y * 0.2) {
+							if (p_click.y >= baseline_y - gl_size.y * 0.85 && p_click.y <= baseline_y + gl_size.y * 0.15) {
 								char_pos = glyphs[glyph_idx].start;
 								char_clicked = true;
 							}
