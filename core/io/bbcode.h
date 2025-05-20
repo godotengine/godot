@@ -44,6 +44,8 @@ public:
 	};
 
 private:
+	int position_start = 0;
+	String parsed_bbcode;
 	TokenType type = TokenType::TOKEN_TYPE_TEXT;
 	String value;
 	Dictionary parameters;
@@ -52,12 +54,18 @@ protected:
 	static void _bind_methods();
 
 public:
+	String get_normalized_bbcode() const;
+	String get_parsed_bbcode() const { return parsed_bbcode; }
+	void set_parsed_bbcode(const String &p_parsed_bbcode) { parsed_bbcode = p_parsed_bbcode; }
 	TokenType get_type() const { return type; }
 	void set_type(TokenType p_type) { type = p_type; }
 	String get_value() const { return value; }
-	void set_value(String p_value) { value = p_value; }
+	void set_value(const String &p_value) { value = p_value; }
 	Dictionary get_parameters() const { return parameters; }
-	void set_parameters(Dictionary p_parameters) { parameters = p_parameters; }
+	void set_parameters(const Dictionary &p_parameters) { parameters = p_parameters; }
+	int get_position_start() const { return position_start; }
+	void set_position_start(int p_position_start) { position_start = p_position_start; }
+	int get_position_end() const { return position_start + parsed_bbcode.length(); }
 };
 
 class BBCodeParser : public Resource {
@@ -77,6 +85,7 @@ protected:
 	GDVIRTUAL2RC(Dictionary, _validate_tag, String, Dictionary)
 	GDVIRTUAL1RC(Error, _validate_text, String)
 
+	int position = 0;
 	bool backslash_escape_quotes = true;
 	bool escape_contents = false;
 	BitField<EscapeBrackets> escape_brackets = ESCAPE_BRACKETS_NONE;
@@ -90,6 +99,10 @@ protected:
 			error = p_error;
 		}
 	}
+	void _parsed_push_text(const String &p_parsed_bbcode, const String &p_text);
+	void _parsed_push_tag(const String &p_parsed_bbcode, const String &p_tag, const Dictionary &p_parameters);
+	void _parsed_pop_tag(const String &p_parsed_bbcode, const String &p_tag);
+	void _push_token(const String &p_parsed_bbcode, BBCodeToken *p_token);
 
 public:
 	// Returns { error: Error = OK, escape_contents: boolean = false, self_closing: boolean = false }

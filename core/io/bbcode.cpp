@@ -30,17 +30,42 @@
 
 #include "bbcode.h"
 
-void BBCodeToken::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_token_type"), &BBCodeToken::get_type);
-	ClassDB::bind_method(D_METHOD("set_token_type", "type"), &BBCodeToken::set_type);
-	ClassDB::bind_method(D_METHOD("get_value"), &BBCodeToken::get_value);
-	ClassDB::bind_method(D_METHOD("set_value", "value"), &BBCodeToken::set_value);
-	ClassDB::bind_method(D_METHOD("get_parameters"), &BBCodeToken::get_parameters);
-	ClassDB::bind_method(D_METHOD("set_parameters", "parameters"), &BBCodeToken::set_parameters);
+String BBCodeToken::get_normalized_bbcode() const {
+	switch (type) {
+		case TOKEN_TYPE_TEXT:
+			return value;
+		case TOKEN_TYPE_OPEN_TAG: {
+			PackedStringArray contents;
+			contents.append(value);
+			for (const KeyValue<Variant, Variant> &E : parameters) {
+				const String &param_name = static_cast<String>(E.key);
+				const Variant &param_value = E.value;
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "type", PROPERTY_HINT_ENUM, "Text,Open Tag,Close Tag"), "set_token_type", "get_token_type");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "value"), "set_value", "get_value");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "parameters", PROPERTY_HINT_DICTIONARY_TYPE, "String;Variant"), "set_parameters", "get_parameters");
+				String param;
+				if (param_value.is_null()) {
+					param = param_name;
+				} else {
+					param = vformat("%s=\"%s\"", param_name, param_value.operator String().replace("\"", "\\\""));
+				}
+				contents.append(param);
+			}
+			return vformat("[%s]", String(" ").join(contents));
+		}
+		case TOKEN_TYPE_CLOSE_TAG:
+			return vformat("[/%s]", value);
+		default:
+			ERR_FAIL_V(String());
+	}
+}
+
+void BBCodeToken::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_parsed_bbcode"), &BBCodeToken::get_parsed_bbcode);
+	ClassDB::bind_method(D_METHOD("get_normalized_bbcode"), &BBCodeToken::get_normalized_bbcode);
+	ClassDB::bind_method(D_METHOD("get_position_start"), &BBCodeToken::get_position_start);
+	ClassDB::bind_method(D_METHOD("get_position_end"), &BBCodeToken::get_position_end);
+	ClassDB::bind_method(D_METHOD("get_token_type"), &BBCodeToken::get_type);
+	ClassDB::bind_method(D_METHOD("get_value"), &BBCodeToken::get_value);
+	ClassDB::bind_method(D_METHOD("get_parameters"), &BBCodeToken::get_parameters);
 
 	BIND_ENUM_CONSTANT(TOKEN_TYPE_TEXT);
 	BIND_ENUM_CONSTANT(TOKEN_TYPE_OPEN_TAG);
@@ -248,6 +273,17 @@ END:
 	r_end = pos;
 }
 
+void BBCodeParser::_push_token(const String &p_parsed_bbcode, BBCodeToken *p_token) {
+	p_token->set_position_start(position);
+	if (p_parsed_bbcode.is_empty()) {
+		p_token->set_parsed_bbcode(p_token->get_normalized_bbcode());
+	} else {
+		p_token->set_parsed_bbcode(p_parsed_bbcode);
+	}
+	position += p_token->get_parsed_bbcode().length();
+	tokens.append(p_token);
+}
+
 TypedArray<BBCodeToken> BBCodeParser::get_items() const {
 	TypedArray<BBCodeToken> arr;
 	int size = tokens.size();
@@ -263,6 +299,7 @@ void BBCodeParser::clear() {
 		memdelete(token);
 	}
 	tokens.clear();
+	position = 0;
 }
 
 void BBCodeParser::push_bbcode(const String &p_bbcode) {
@@ -270,6 +307,10 @@ void BBCodeParser::push_bbcode(const String &p_bbcode) {
 	int pos = 0;
 	int escape_pos = -1;
 	while (pos <= bbcode.length()) {
+		// TODO: we are manipulating the bbcode string when escaping brackets, which desyncs token position start/end info...
+		// We must keep track of our modifications, such that we can refer back to the unmodified p_bbcode for indexing
+		// and passing it along to _parsed_* methods 1st parameter.
+
 		if (escape_brackets & ESCAPE_BRACKETS_BACKSLASH) {
 			if (pos < bbcode.length()) {
 				int escape_char_pos = bbcode.find_char('\\', escape_pos + 1);
@@ -362,17 +403,17 @@ void BBCodeParser::push_bbcode(const String &p_bbcode) {
 	}
 }
 
-void BBCodeParser::push_text(const String &p_text) {
+void BBCodeParser::_parsed_push_text(const String &p_parsed_bbcode, const String &p_text) {
 	_update_error(validate_text(p_text));
 	if (error == OK) {
 		BBCodeToken *token = memnew(BBCodeToken);
 		token->set_type(BBCodeToken::TOKEN_TYPE_TEXT);
 		token->set_value(p_text);
-		tokens.append(token);
+		_push_token(p_parsed_bbcode, token);
 	}
 }
 
-void BBCodeParser::push_tag(const String &p_tag, const Dictionary &p_parameters) {
+void BBCodeParser::_parsed_push_tag(const String &p_parsed_bbcode, const String &p_tag, const Dictionary &p_parameters) {
 	Dictionary result = validate_tag(p_tag, p_parameters);
 
 	Variant error_var = result.get("error", OK);
@@ -384,7 +425,7 @@ void BBCodeParser::push_tag(const String &p_tag, const Dictionary &p_parameters)
 		token->set_type(BBCodeToken::TOKEN_TYPE_OPEN_TAG);
 		token->set_value(p_tag);
 		token->set_parameters(p_parameters);
-		tokens.append(token);
+		_push_token(p_parsed_bbcode, token);
 
 		Variant self_closing_var = result.get("self_closing", false);
 		ERR_FAIL_COND(self_closing_var.get_type() != Variant::Type::BOOL);
@@ -398,7 +439,7 @@ void BBCodeParser::push_tag(const String &p_tag, const Dictionary &p_parameters)
 	}
 }
 
-void BBCodeParser::pop_tag(const String &p_tag) {
+void BBCodeParser::_parsed_pop_tag(const String &p_parsed_bbcode, const String &p_tag) {
 	if (!tag_stack.is_empty()) {
 		const String &top_tag = tag_stack[tag_stack.size() - 1];
 		if (top_tag != p_tag) {
@@ -412,7 +453,19 @@ void BBCodeParser::pop_tag(const String &p_tag) {
 	BBCodeToken *token = memnew(BBCodeToken);
 	token->set_type(BBCodeToken::TOKEN_TYPE_CLOSE_TAG);
 	token->set_value(p_tag);
-	tokens.append(token);
+	_push_token(p_parsed_bbcode, token);
+}
+
+void BBCodeParser::push_text(const String &p_text) {
+	_parsed_push_text("", p_text);
+}
+
+void BBCodeParser::push_tag(const String &p_tag, const Dictionary &p_parameters) {
+	_parsed_push_tag("", p_tag, p_parameters);
+}
+
+void BBCodeParser::pop_tag(const String &p_tag) {
+	_parsed_pop_tag("", p_tag);
 }
 
 void BBCodeParser::_bind_methods() {
