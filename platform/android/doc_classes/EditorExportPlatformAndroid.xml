@@ -33,6 +33,9 @@
 		<member name="architectures/x86_64" type="bool" setter="" getter="">
 			If [code]true[/code], [code]x86_64[/code] binaries are included into exported project.
 		</member>
+		<member name="binary_format/sparse_pck" type="bool" setter="" getter="">
+			If [code]true[/code], sparse pack is used.
+		</member>
 		<member name="command_line/extra_args" type="String" setter="" getter="">
 			A list of additional command line arguments, separated by space, which the exported project will receive when started.
 		</member>
