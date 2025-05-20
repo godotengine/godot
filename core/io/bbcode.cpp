@@ -31,14 +31,14 @@
 #include "bbcode.h"
 
 void BBCodeToken::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_type"), &BBCodeToken::get_type);
-	ClassDB::bind_method(D_METHOD("set_type", "type"), &BBCodeToken::set_type);
+	ClassDB::bind_method(D_METHOD("get_token_type"), &BBCodeToken::get_type);
+	ClassDB::bind_method(D_METHOD("set_token_type", "type"), &BBCodeToken::set_type);
 	ClassDB::bind_method(D_METHOD("get_value"), &BBCodeToken::get_value);
 	ClassDB::bind_method(D_METHOD("set_value", "value"), &BBCodeToken::set_value);
 	ClassDB::bind_method(D_METHOD("get_parameters"), &BBCodeToken::get_parameters);
 	ClassDB::bind_method(D_METHOD("set_parameters", "parameters"), &BBCodeToken::set_parameters);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type"); // TODO: bind enum
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_token_type", "get_token_type"); // TODO: bind enum
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "value"), "set_value", "get_value");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "parameters", PROPERTY_HINT_DICTIONARY_TYPE, "String;Variant"), "set_parameters", "get_parameters");
 }
