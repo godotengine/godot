@@ -6767,9 +6767,24 @@ void RichTextLabel::_apply_translation() {
 
 	internal_stack_editing = true;
 
+	// Infer closing tags for `bbcode_prefix` by reversing their order and removing parameters.
+	// Also use this to reconstruct a valid, matching BBCode prefix.
+	const PackedStringArray tags = bbcode_prefix.replace("[", "").split("]");
+	String valid_bbcode_prefix;
+	String bbcode_suffix;
+	for (const String &tag : tags) {
+		if (!tag.is_empty()) {
+			valid_bbcode_prefix += "[" + tag + "]";
+			// Take the first "word" of the tag before any parameters to form the closing tag.
+			// For example, `[font slant=0.3 emb=1.0]`'s closing tag is just `[/font]`.
+			bbcode_suffix = "[/" + tag.get_slice("=", 0).get_slice(" ", 0) + "]" + bbcode_suffix;
+		}
+	}
+
 	String xl_text = atr(text);
+
 	if (use_bbcode) {
-		parse_bbcode(xl_text);
+		parse_bbcode(valid_bbcode_prefix + xl_text + bbcode_suffix);
 	} else { // Raw text.
 		clear();
 		add_text(xl_text);
@@ -6780,6 +6795,21 @@ void RichTextLabel::_apply_translation() {
 
 String RichTextLabel::get_text() const {
 	return text;
+}
+
+void RichTextLabel::set_bbcode_prefix(const String &p_prefix) {
+	if (p_prefix == bbcode_prefix) {
+		return;
+	}
+
+	bbcode_prefix = p_prefix;
+	if (use_bbcode) {
+		_apply_translation();
+	}
+}
+
+String RichTextLabel::get_bbcode_prefix() const {
+	return bbcode_prefix;
 }
 
 void RichTextLabel::set_use_bbcode(bool p_enable) {
@@ -7131,10 +7161,19 @@ bool RichTextLabel::_set(const StringName &p_name, const Variant &p_value) {
 }
 #endif
 
+void RichTextLabel::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "bbcode_prefix") {
+		if (!use_bbcode) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+}
+
 void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_parsed_text"), &RichTextLabel::get_parsed_text);
 	ClassDB::bind_method(D_METHOD("add_text", "text"), &RichTextLabel::add_text);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
+	ClassDB::bind_method(D_METHOD("set_bbcode_prefix", "bbcode_prefix"), &RichTextLabel::set_bbcode_prefix);
 	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region", "key", "pad", "tooltip", "size_in_percent", "alt_text"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(Variant()), DEFVAL(false), DEFVAL(String()), DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("update_image", "key", "mask", "image", "width", "height", "color", "inline_align", "region", "pad", "tooltip", "size_in_percent"), &RichTextLabel::update_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(false), DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
@@ -7252,6 +7291,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("append_text", "bbcode"), &RichTextLabel::append_text);
 
 	ClassDB::bind_method(D_METHOD("get_text"), &RichTextLabel::get_text);
+	ClassDB::bind_method(D_METHOD("get_bbcode_prefix"), &RichTextLabel::get_bbcode_prefix);
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("is_ready"), &RichTextLabel::is_finished);
@@ -7310,6 +7350,7 @@ void RichTextLabel::_bind_methods() {
 	// Note: set "bbcode_enabled" first, to avoid unnecessary "text" resets.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bbcode_prefix"), "set_bbcode_prefix", "get_bbcode_prefix");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_content"), "set_fit_content", "is_fit_content_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_active"), "set_scroll_active", "is_scroll_active");
