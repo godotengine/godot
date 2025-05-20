@@ -47,7 +47,9 @@ private:
 	IMFSourceReader *imf_source_reader = NULL;
 	std::thread *worker;
 	Vector<GUID> format_guids;
-	Vector<IMFMediaType *> format_mediatypes;
+	Vector<uint32_t> format_mediatypes;
+
+	Vector<uint32_t> warned_formats;
 
 	// image_y is used as unique image when format is RGB
 	Ref<Image> image_y;
@@ -58,6 +60,7 @@ private:
 	static void capture(CameraFeedWindows *feed);
 
 	void read();
+	void fill_formats(IMFMediaTypeHandler *imf_media_type_handler);
 
 protected:
 public:
@@ -78,4 +81,6 @@ private:
 public:
 	CameraWindows();
 	~CameraWindows();
+
+	virtual void set_monitoring_feeds(bool p_monitoring_feeds) override;
 };
