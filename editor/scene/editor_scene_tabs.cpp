@@ -208,7 +208,8 @@ void EditorSceneTabs::_update_context_menu() {
 		DISABLE_LAST_OPTION_IF(EditorNode::get_editor_data().get_edited_scene_count() <= 1);
 		scene_tabs_context_menu->add_item(TTR("Close Tabs to the Right"), SCENE_CLOSE_RIGHT);
 		DISABLE_LAST_OPTION_IF(EditorNode::get_editor_data().get_edited_scene_count() == tab_id + 1);
-		scene_tabs_context_menu->add_item(TTR("Close All Tabs"), SCENE_CLOSE_ALL);
+		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_all_scenes"), EditorNode::SCENE_CLOSE_ALL);
+		scene_tabs_context_menu->set_item_text(-1, TTRC("Close All Tabs"));
 
 		const PackedStringArray paths = { EditorNode::get_editor_data().get_scene_path(tab_id) };
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, paths);

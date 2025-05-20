@@ -3051,7 +3051,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 			_proceed_closing_scene_tabs();
 		} break;
-		case EditorSceneTabs::SCENE_CLOSE_ALL: {
+		case SCENE_CLOSE_ALL: {
 			tab_closing_menu_option = -1;
 			for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 				tabs_to_close.push_back(editor_data.get_scene_path(i));
@@ -8108,6 +8108,7 @@ EditorNode::EditorNode() {
 	file_menu->add_separator();
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/reload_saved_scene", TTRC("Reload Saved Scene")), SCENE_RELOAD_SAVED_SCENE);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/close_scene", TTRC("Close Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::W), SCENE_CLOSE);
+	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/close_all_scenes", TTRC("Close All Scenes")), SCENE_CLOSE_ALL);
 	ED_SHORTCUT_OVERRIDE("editor/close_scene", "macos", KeyModifierMask::CMD_OR_CTRL + Key::W);
 
 	if (!global_menu || !OS::get_singleton()->has_feature("macos")) {
