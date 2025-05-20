@@ -179,12 +179,6 @@ namespace GodotTools.Export
             if (!TryDeterminePlatformFromOSName(osName, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
-            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
-                    .Contains(platform))
-            {
-                throw new NotImplementedException("Target platform not yet implemented.");
-            }
-
             bool useAndroidLinuxBionic = (bool)GetOption("dotnet/android_use_linux_bionic");
             PublishConfig publishConfig = new()
             {
@@ -225,6 +219,11 @@ namespace GodotTools.Export
                 }
             }
 
+            if (features.Contains("wasm32"))
+            {
+                publishConfig.Archs.Add("wasm32");
+            }
+
             var targets = new List<PublishConfig> { publishConfig };
 
             if (platform == OS.Platforms.iOS)
@@ -242,7 +241,7 @@ namespace GodotTools.Export
 
             List<string> outputPaths = new();
 
-            bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android) && platform != OS.Platforms.MacOS;
+            bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android || platform == OS.Platforms.Web) && platform != OS.Platforms.MacOS;
 
             var exportedJars = new HashSet<string>();
 
@@ -349,6 +348,15 @@ namespace GodotTools.Export
                             // We get called back for both directories and files, but we only package files for now.
                             if (isFile)
                             {
+                                if (path.EndsWith(".c") || path.EndsWith(".h") || path.EndsWith(".ts") || path.EndsWith(".js") || path.EndsWith(".js.map") || path.EndsWith(".js.symbols") || path.EndsWith(".rsp") || path.EndsWith(".wasm"))
+                                {
+                                    // Ignore source files and other output files that we don't use in the final build.
+                                    // These files may be included by some runtime packs but we don't need them at this
+                                    // point. Libraries are provided as `.dll` and/or `.a` archive files (we currently
+                                    // don't support Webcil wrapped wasm files).
+                                    return;
+                                }
+
                                 if (embedBuildResults)
                                 {
                                     if (platform == OS.Platforms.Android)
@@ -510,6 +518,7 @@ namespace GodotTools.Export
                 "arm64-v8a" => "arm64",
                 "arm32" => "arm",
                 "arm64" => "arm64",
+                "wasm32" => "wasm",
                 _ => throw new ArgumentOutOfRangeException(nameof(arch), arch, "Unexpected architecture")
             };
         }
