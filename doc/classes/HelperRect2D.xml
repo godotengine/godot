@@ -20,15 +20,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color">
+		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color(1, 1, 1, 0)">
 			The color of the rect's border.
 		</member>
-		<member name="dragged" type="bool" setter="" getter="get_global_rotation_degrees">
+		<member name="dragged" type="bool" setter="" getter="is_being_dragged">
 			If [code]true[/code], the rectangle is changed by the user dragging the node's rectangle area.
 			See [method _rect_updated] for its usage.
 			[b]Note:[/b] This property is read-only, so you cannot assign any value to it.
 		</member>
-		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect">
+		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect" default="Rect2(-10, -10, 20, 20)">
 			The rectangle of the node, also the border of the node.
 			See also [method _rect_updated].
 		</member>
