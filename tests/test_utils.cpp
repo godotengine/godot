@@ -34,8 +34,8 @@
 #include "core/math/math_funcs.h"
 #include "core/os/os.h"
 
-#include "tests/test_utils.h"
 #include "scene/resources/audio_stream_wav.h"
+#include "tests/test_utils.h"
 
 String TestUtils::get_data_path(const String &p_file) {
 	String data_path = "../tests/data";
