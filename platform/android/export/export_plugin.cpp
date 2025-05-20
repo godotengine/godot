@@ -279,7 +279,7 @@ static const int EXPORT_FORMAT_APK = 0;
 static const int EXPORT_FORMAT_AAB = 1;
 
 static const char *APK_ASSETS_DIRECTORY = "assets";
-static const char *AAB_ASSETS_DIRECTORY = "assetPacks/installTime/src/main/assets";
+static const char *AAB_ASSETS_DIRECTORY = "assetPackInstallTime/src/main/assets";
 
 static const int DEFAULT_MIN_SDK_VERSION = 24; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
 static const int DEFAULT_TARGET_SDK_VERSION = 35; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
@@ -713,7 +713,7 @@ Vector<PluginConfigAndroid> EditorExportPlatformAndroid::get_plugins() {
 		Vector<String> plugins_filenames = list_gdap_files(plugins_dir);
 
 		if (!plugins_filenames.is_empty()) {
-			Ref<ConfigFile> config_file = memnew(ConfigFile);
+			Ref<ConfigFile> config_file;
 			for (int i = 0; i < plugins_filenames.size(); i++) {
 				PluginConfigAndroid config = PluginConfigAndroid::load_plugin_config(config_file, plugins_dir.path_join(plugins_filenames[i]));
 				if (config.valid_config) {

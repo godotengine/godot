@@ -3,6 +3,10 @@
 This folder contains the C++, Objective-C and Objective-C++ code for the iOS
 platform port.
 
+This platform derives from the Apple embedded abstract platform ([`drivers/apple_embedded`](/drivers/apple_embedded)).
+
+This platform uses shared Apple code ([`drivers/apple`](/drivers/apple)).
+
 See also [`misc/dist/ios_xcode`](/misc/dist/ios_xcode) folder for the Xcode
 project template used for packaging the iOS export templates.
 
