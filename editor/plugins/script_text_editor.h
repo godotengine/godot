@@ -211,6 +211,7 @@ protected:
 	String _picker_color_stringify(const Color &p_color, COLOR_MODE p_mode);
 	void _picker_color_changed(const Color &p_color);
 	void _update_color_constructor_options();
+	void _update_background_color();
 	void _update_color_text();
 
 	void _notification(int p_what);
