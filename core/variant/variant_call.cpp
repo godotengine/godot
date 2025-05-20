@@ -659,10 +659,16 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 
 #define VARCALL_ARRAY_GETTER_SETTER(m_packed_type, m_type)                                                      \
 	static m_type func_##m_packed_type##_get(m_packed_type *p_instance, int64_t p_index) {                      \
+		if (p_index < 0) {                                                                                      \
+			p_index += p_instance->size();                                                                      \
+		}                                                                                                       \
 		ERR_FAIL_INDEX_V(p_index, p_instance->size(), m_type());                                                \
 		return p_instance->get(p_index);                                                                        \
 	}                                                                                                           \
 	static void func_##m_packed_type##_set(m_packed_type *p_instance, int64_t p_index, const m_type &p_value) { \
+		if (p_index < 0) {                                                                                      \
+			p_index += p_instance->size();                                                                      \
+		}                                                                                                       \
 		ERR_FAIL_INDEX(p_index, p_instance->size());                                                            \
 		p_instance->set(p_index, p_value);                                                                      \
 	}
