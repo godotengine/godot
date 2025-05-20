@@ -124,7 +124,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, int64_t> &F : t->constant_map) {
+			for (const KeyValue<StringName, int64_t *> &F : t->constant_map) {
 				snames.push_back(F.key);
 			}
 
@@ -149,7 +149,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, MethodInfo> &F : t->signal_map) {
+			for (const KeyValue<StringName, MethodInfo *> &F : t->signal_map) {
 				snames.push_back(F.key);
 			}
 
@@ -161,12 +161,12 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				Dictionary signal_dict;
 				signals.push_back(signal_dict);
 
-				MethodInfo &mi = t->signal_map[F];
+				MethodInfo *mi = t->signal_map[F];
 				signal_dict["name"] = F;
 
 				Array arguments;
 				signal_dict["arguments"] = arguments;
-				for (const PropertyInfo &pi : mi.arguments) {
+				for (const PropertyInfo &pi : mi->arguments) {
 					Dictionary argument_dict;
 					arguments.push_back(argument_dict);
 					argument_dict["type"] = pi.type;
@@ -182,7 +182,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, ClassDB::PropertySetGet> &F : t->property_setget) {
+			for (const KeyValue<StringName, ClassDB::PropertySetGet *> &F : t->property_setget) {
 				snames.push_back(F.key);
 			}
 
@@ -194,7 +194,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				Dictionary property_dict;
 				properties.push_back(property_dict);
 
-				ClassDB::PropertySetGet *psg = t->property_setget.getptr(F);
+				ClassDB::PropertySetGet *psg = *t->property_setget.getptr(F);
 
 				property_dict["name"] = F;
 				property_dict["setter"] = psg->setter;

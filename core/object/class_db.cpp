@@ -442,7 +442,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, int64_t> &F : t->constant_map) {
+			for (const KeyValue<StringName, int64_t *> &F : t->constant_map) {
 				snames.push_back(F.key);
 			}
 
@@ -458,14 +458,14 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, MethodInfo> &F : t->signal_map) {
+			for (const KeyValue<StringName, MethodInfo *> &F : t->signal_map) {
 				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
-				MethodInfo &mi = t->signal_map[F];
+				MethodInfo &mi = *t->signal_map[F];
 				hash = hash_murmur3_one_64(F.hash(), hash);
 				for (const PropertyInfo &pi : mi.arguments) {
 					hash = hash_murmur3_one_64(pi.type, hash);
@@ -477,15 +477,16 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, PropertySetGet> &F : t->property_setget) {
+			for (const KeyValue<StringName, PropertySetGet *> &F : t->property_setget) {
 				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
-				PropertySetGet *psg = t->property_setget.getptr(F);
-				ERR_FAIL_NULL_V(psg, 0);
+				PropertySetGet **psg_ = t->property_setget.getptr(F);
+				ERR_FAIL_NULL_V(psg_, 0);
+				PropertySetGet *psg = *psg_;
 
 				hash = hash_murmur3_one_64(F.hash(), hash);
 				hash = hash_murmur3_one_64(psg->setter.hash(), hash);
@@ -626,6 +627,22 @@ bool ClassDB::_can_instantiate(ClassInfo *p_class_info, bool p_exposed_only) {
 	}
 #endif //  DISABLE_DEPRECATED
 	return false;
+}
+
+void ClassDB::_insert_property_cache(ClassInfo *p_class_info, const StringName &p_property_name, const PropertyVariant &p_variant) {
+	LocalVector<StringName> inheritors;
+	get_inheriters_from_class(p_class_info->name, inheritors);
+
+	HashMap<StringName, PropertyVariant> &cache_class = p_class_info->property_cache;
+	cache_class.insert(p_property_name, p_variant);
+
+	for (const StringName &inheritor : inheritors) {
+		HashMap<StringName, PropertyVariant> &cache_subclass = classes[inheritor].property_cache;
+		// Avoid overriding shadowed properties.
+		if (!cache_subclass.has(p_property_name)) {
+			cache_subclass.insert(p_property_name, p_variant);
+		}
+	}
 }
 
 Object *ClassDB::instantiate(const StringName &p_class) {
@@ -857,6 +874,7 @@ void ClassDB::_add_class(const StringName &p_class, const StringName &p_inherits
 		ERR_FAIL_COND(!classes.has(ti.inherits)); //it MUST be registered.
 		ti.inherits_ptr = &classes[ti.inherits];
 
+		ti.property_cache = ti.inherits_ptr->property_cache;
 	} else {
 		ti.inherits_ptr = nullptr;
 	}
@@ -1119,7 +1137,11 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 		ERR_FAIL();
 	}
 
-	type->constant_map[p_name] = p_constant;
+	int64_t *constant = memnew(int64_t);
+	*constant = p_constant;
+	type->constant_map[p_name] = constant;
+
+	_insert_property_cache(type, p_name, { PropertyVariant::CONSTANT, constant });
 
 	String enum_name = p_enum;
 	if (!enum_name.is_empty()) {
@@ -1157,7 +1179,7 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 		}
 #else
 
-		for (const KeyValue<StringName, int64_t> &E : type->constant_map) {
+		for (const KeyValue<StringName, int64_t *> &E : type->constant_map) {
 			p_constants->push_back(E.key);
 		}
 
@@ -1176,12 +1198,12 @@ int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringNam
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		int64_t *constant = type->constant_map.getptr(p_name);
+		int64_t **constant = type->constant_map.getptr(p_name);
 		if (constant) {
 			if (p_success) {
 				*p_success = true;
 			}
-			return *constant;
+			return **constant;
 		}
 
 		type = type->inherits_ptr;
@@ -1358,7 +1380,11 @@ void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) 
 	}
 #endif // DEBUG_ENABLED
 
-	type->signal_map[sname] = p_signal;
+	MethodInfo *method_info = memnew(MethodInfo);
+	*method_info = p_signal;
+	type->signal_map[sname] = method_info;
+
+	_insert_property_cache(type, sname, { PropertyVariant::SIGNAL, method_info });
 }
 
 void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_signals, bool p_no_inheritance) {
@@ -1370,8 +1396,8 @@ void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_sig
 	ClassInfo *check = type;
 
 	while (check) {
-		for (KeyValue<StringName, MethodInfo> &E : check->signal_map) {
-			p_signals->push_back(E.value);
+		for (KeyValue<StringName, MethodInfo *> &E : check->signal_map) {
+			p_signals->push_back(*E.value);
 		}
 
 		if (p_no_inheritance) {
@@ -1406,7 +1432,7 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 	while (check) {
 		if (check->signal_map.has(p_signal)) {
 			if (r_signal) {
-				*r_signal = check->signal_map[p_signal];
+				*r_signal = *check->signal_map[p_signal];
 			}
 			return true;
 		}
@@ -1500,7 +1526,7 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 		type->methods_in_properties.insert(p_setter);
 	}
 #endif // DEBUG_ENABLED
-	PropertySetGet psg;
+	PropertySetGet &psg = *memnew(PropertySetGet);
 	psg.setter = p_setter;
 	psg.getter = p_getter;
 	psg._setptr = mb_set;
@@ -1508,7 +1534,9 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 	psg.index = p_index;
 	psg.type = p_pinfo.type;
 
-	type->property_setget[p_pinfo.name] = psg;
+	type->property_setget[p_pinfo.name] = &psg;
+
+	_insert_property_cache(type, p_pinfo.name, { PropertyVariant::PROPERTY, &psg });
 }
 
 void ClassDB::set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default) {
@@ -1606,59 +1634,74 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 	ERR_FAIL_NULL_V(p_object, false);
 
 	ClassInfo *type = classes.getptr(p_object->get_class_name());
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
-			if (!psg->setter) {
-				if (r_valid) {
-					*r_valid = false;
-				}
-				return true; //return true but do nothing
-			}
-
-			Callable::CallError ce;
-
-			if (psg->index >= 0) {
-				Variant index = psg->index;
-				const Variant *arg[2] = { &index, &p_value };
-				//p_object->call(psg->setter,arg,2,ce);
-				if (psg->_setptr) {
-					psg->_setptr->call(p_object, arg, 2, ce);
-				} else {
-					p_object->callp(psg->setter, arg, 2, ce);
-				}
-
-			} else {
-				const Variant *arg[1] = { &p_value };
-				if (psg->_setptr) {
-					psg->_setptr->call(p_object, arg, 1, ce);
-				} else {
-					p_object->callp(psg->setter, arg, 1, ce);
-				}
-			}
-
-			if (r_valid) {
-				*r_valid = ce.error == Callable::CallError::CALL_OK;
-			}
-
-			return true;
-		}
-
-		check = check->inherits_ptr;
+	if (!type) {
+		return false;
 	}
 
-	return false;
+	const PropertyVariant *property = type->property_cache.getptr(p_property);
+	if (!property || property->type != PropertyVariant::PROPERTY) {
+		return false;
+	}
+
+	const PropertySetGet *psg = static_cast<const PropertySetGet *>(property->ptr);
+
+	if (!psg->setter) {
+		if (r_valid) {
+			*r_valid = false;
+		}
+		return true; //return true but do nothing
+	}
+
+	Callable::CallError ce;
+
+	if (psg->index >= 0) {
+		Variant index = psg->index;
+		const Variant *arg[2] = { &index, &p_value };
+		//p_object->call(psg->setter,arg,2,ce);
+		if (psg->_setptr) {
+			psg->_setptr->call(p_object, arg, 2, ce);
+		} else {
+			p_object->callp(psg->setter, arg, 2, ce);
+		}
+
+	} else {
+		const Variant *arg[1] = { &p_value };
+		if (psg->_setptr) {
+			psg->_setptr->call(p_object, arg, 1, ce);
+		} else {
+			p_object->callp(psg->setter, arg, 1, ce);
+		}
+	}
+
+	if (r_valid) {
+		*r_valid = ce.error == Callable::CallError::CALL_OK;
+	}
+
+	return true;
 }
 
 bool ClassDB::get_property(Object *p_object, const StringName &p_property, Variant &r_value) {
 	ERR_FAIL_NULL_V(p_object, false);
 
+	// The "free()" method is special, so we assume it exists and return a Callable.
+	if (p_property == CoreStringName(free_)) {
+		r_value = Callable(p_object, p_property);
+		return true;
+	}
+
 	ClassInfo *type = classes.getptr(p_object->get_class_name());
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
+	if (!type) {
+		return false;
+	}
+
+	const PropertyVariant *property = type->property_cache.getptr(p_property);
+	if (!property) {
+		return false;
+	}
+
+	switch (property->type) {
+		case PropertyVariant::PROPERTY: {
+			const PropertySetGet *psg = static_cast<const PropertySetGet *>(property->ptr);
 			if (!psg->getter) {
 				return true; //return true but do nothing
 			}
@@ -1680,31 +1723,20 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 				}
 			}
 			return true;
-		}
-
-		const int64_t *c = check->constant_map.getptr(p_property); //constants count
-		if (c) {
+		} break;
+		case PropertyVariant::CONSTANT: {
+			const int64_t *c = static_cast<int64_t *>(property->ptr); //constants count
 			r_value = *c;
 			return true;
-		}
-
-		if (check->method_map.has(p_property)) { //methods count
+		} break;
+		case PropertyVariant::METHOD: {
 			r_value = Callable(p_object, p_property);
 			return true;
-		}
-
-		if (check->signal_map.has(p_property)) { //signals count
+		} break;
+		case PropertyVariant::SIGNAL: {
 			r_value = Signal(p_object, p_property);
 			return true;
-		}
-
-		check = check->inherits_ptr;
-	}
-
-	// The "free()" method is special, so we assume it exists and return a Callable.
-	if (p_property == CoreStringName(free_)) {
-		r_value = Callable(p_object, p_property);
-		return true;
+		} break;
 	}
 
 	return false;
@@ -1712,19 +1744,17 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 
 int ClassDB::get_property_index(const StringName &p_class, const StringName &p_property, bool *r_is_valid) {
 	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
+	if (type) {
+		const PropertyVariant *property = type->property_cache.getptr(p_property);
+		if (property && property->type == PropertyVariant::PROPERTY) {
+			const PropertySetGet *psg = static_cast<const PropertySetGet *>(property->ptr);
 			if (r_is_valid) {
 				*r_is_valid = true;
 			}
-
 			return psg->index;
 		}
-
-		check = check->inherits_ptr;
 	}
+
 	if (r_is_valid) {
 		*r_is_valid = false;
 	}
@@ -1734,19 +1764,17 @@ int ClassDB::get_property_index(const StringName &p_class, const StringName &p_p
 
 Variant::Type ClassDB::get_property_type(const StringName &p_class, const StringName &p_property, bool *r_is_valid) {
 	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
+	if (type) {
+		const PropertyVariant *property = type->property_cache.getptr(p_property);
+		if (property && property->type == PropertyVariant::PROPERTY) {
+			const PropertySetGet *psg = static_cast<const PropertySetGet *>(property->ptr);
 			if (r_is_valid) {
 				*r_is_valid = true;
 			}
-
 			return psg->type;
 		}
-
-		check = check->inherits_ptr;
 	}
+
 	if (r_is_valid) {
 		*r_is_valid = false;
 	}
@@ -1756,14 +1784,12 @@ Variant::Type ClassDB::get_property_type(const StringName &p_class, const String
 
 StringName ClassDB::get_property_setter(const StringName &p_class, const StringName &p_property) {
 	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
+	if (type) {
+		const PropertyVariant *property = type->property_cache.getptr(p_property);
+		if (property && property->type == PropertyVariant::PROPERTY) {
+			const PropertySetGet *psg = static_cast<const PropertySetGet *>(property->ptr);
 			return psg->setter;
 		}
-
-		check = check->inherits_ptr;
 	}
 
 	return StringName();
@@ -1771,14 +1797,12 @@ StringName ClassDB::get_property_setter(const StringName &p_class, const StringN
 
 StringName ClassDB::get_property_getter(const StringName &p_class, const StringName &p_property) {
 	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
+	if (type) {
+		const PropertyVariant *property = type->property_cache.getptr(p_property);
+		if (property && property->type == PropertyVariant::PROPERTY) {
+			const PropertySetGet *psg = static_cast<const PropertySetGet *>(property->ptr);
 			return psg->getter;
 		}
-
-		check = check->inherits_ptr;
 	}
 
 	return StringName();
@@ -1892,6 +1916,8 @@ void ClassDB::_bind_method_custom(const StringName &p_class, MethodBind *p_metho
 #endif // DEBUG_ENABLED
 
 	type->method_map[method_name] = p_method;
+
+	_insert_property_cache(type, method_name, { PropertyVariant::METHOD, p_method });
 }
 
 MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility) {
@@ -1923,6 +1949,8 @@ MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p
 	//bind->set_return_type("Variant");
 	type->method_order.push_back(p_name);
 #endif // DEBUG_ENABLED
+
+	_insert_property_cache(type, p_name, { PropertyVariant::METHOD, bind });
 
 	return bind;
 }
@@ -1981,6 +2009,8 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 		_bind_compatibility(type, p_bind);
 	} else {
 		type->method_map[mdname] = p_bind;
+
+		_insert_property_cache(type, mdname, { PropertyVariant::METHOD, p_bind });
 	}
 
 	Vector<Variant> defvals;
@@ -2324,6 +2354,7 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 	c.is_runtime = p_extension->is_runtime;
 #endif
 
+	c.property_cache = parent->property_cache;
 	classes[p_extension->class_name] = c;
 }
 
@@ -2332,6 +2363,15 @@ void ClassDB::unregister_extension_class(const StringName &p_class, bool p_free_
 	ERR_FAIL_NULL_MSG(c, vformat("Class '%s' does not exist.", String(p_class)));
 	if (p_free_method_binds) {
 		for (KeyValue<StringName, MethodBind *> &F : c->method_map) {
+			memdelete(F.value);
+		}
+		for (KeyValue<StringName, int64_t *> &F : c->constant_map) {
+			memdelete(F.value);
+		}
+		for (KeyValue<StringName, PropertySetGet *> &F : c->property_setget) {
+			memdelete(F.value);
+		}
+		for (KeyValue<StringName, MethodInfo *> &F : c->signal_map) {
 			memdelete(F.value);
 		}
 	}
@@ -2383,6 +2423,15 @@ void ClassDB::cleanup() {
 		ClassInfo &ti = E.value;
 
 		for (KeyValue<StringName, MethodBind *> &F : ti.method_map) {
+			memdelete(F.value);
+		}
+		for (KeyValue<StringName, int64_t *> &F : ti.constant_map) {
+			memdelete(F.value);
+		}
+		for (KeyValue<StringName, PropertySetGet *> &F : ti.property_setget) {
+			memdelete(F.value);
+		}
+		for (KeyValue<StringName, MethodInfo *> &F : ti.signal_map) {
 			memdelete(F.value);
 		}
 		for (KeyValue<StringName, LocalVector<MethodBind *>> &F : ti.method_map_compatibility) {
