@@ -39,8 +39,8 @@ namespace SignalAwaiterUtils {
 Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p_target, MonoObject *p_awaiter);
 }
 
-class SignalAwaiterHandle : public MonoGCHandle {
-	GDCLASS(SignalAwaiterHandle, MonoGCHandle);
+class SignalAwaiterHandle : public gdmono::MonoGCHandle {
+	GDCLASS(SignalAwaiterHandle, gdmono::MonoGCHandle);
 
 	bool completed;
 

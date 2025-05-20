@@ -220,7 +220,7 @@ class CSharpInstance : public ScriptInstance {
 	bool destructing_script_instance;
 
 	Ref<CSharpScript> script;
-	Ref<MonoGCHandle> gchandle;
+	Ref<gdmono::MonoGCHandle> gchandle;
 
 	bool _reference_owner_unsafe();
 
@@ -236,7 +236,7 @@ class CSharpInstance : public ScriptInstance {
 
 	// Do not use unless you know what you are doing
 	friend void GDMonoInternals::tie_managed_to_unmanaged(MonoObject *, Object *);
-	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const Ref<MonoGCHandle> &p_gchandle);
+	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const Ref<gdmono::MonoGCHandle> &p_gchandle);
 
 	void _call_multilevel(MonoObject *p_mono_object, const StringName &p_method, const Variant **p_args, int p_argcount);
 
@@ -293,7 +293,7 @@ struct CSharpScriptBinding {
 	bool inited;
 	StringName type_name;
 	GDMonoClass *wrapper_class;
-	Ref<MonoGCHandle> gchandle;
+	Ref<gdmono::MonoGCHandle> gchandle;
 	Object *owner;
 };
 
@@ -371,8 +371,8 @@ public:
 	_FORCE_INLINE_ EditorPlugin *get_godotsharp_editor() const { return godotsharp_editor; }
 #endif
 
-	static void release_script_gchandle(Ref<MonoGCHandle> &p_gchandle);
-	static void release_script_gchandle(MonoObject *p_expected_obj, Ref<MonoGCHandle> &p_gchandle);
+	static void release_script_gchandle(Ref<gdmono::MonoGCHandle> &p_gchandle);
+	static void release_script_gchandle(MonoObject *p_expected_obj, Ref<gdmono::MonoGCHandle> &p_gchandle);
 
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);

@@ -35,6 +35,8 @@
 
 #include "core/reference.h"
 
+namespace gdmono {
+
 class MonoGCHandle : public Reference {
 	GDCLASS(MonoGCHandle, Reference);
 
@@ -71,5 +73,7 @@ public:
 	MonoGCHandle(uint32_t p_handle, HandleType p_handle_type);
 	~MonoGCHandle();
 };
+
+} // namespace gdmono
 
 #endif // MONO_GC_HANDLE_H
