@@ -813,6 +813,14 @@ void TreeItem::set_visible(bool p_visible) {
 	}
 	visible = p_visible;
 	if (tree) {
+		if (!visible) {
+			for (int i = 0; i < tree->columns.size(); i++) {
+				if (cells[i].selected) {
+					deselect(i);
+				}
+			}
+		}
+
 		tree->queue_accessibility_update();
 		tree->queue_redraw();
 		_changed_notify();
