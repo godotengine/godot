@@ -66,6 +66,7 @@
 @class GodotWindowDelegate;
 @class GodotButtonView;
 @class GodotEmbeddedView;
+@class GodotProgressView;
 @class CALayerHost;
 
 #undef BitMap
@@ -149,6 +150,8 @@ public:
 
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;
+
+	GodotProgressView *dock_progress = nullptr;
 
 private:
 #if defined(GLES3_ENABLED)
