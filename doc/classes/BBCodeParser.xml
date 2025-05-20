@@ -94,4 +94,30 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="backslash_escape_quotes" type="bool" setter="set_backslash_escape_quotes" getter="get_backslash_escape_quotes" default="true">
+			Allow single and double quotes used inside of opening BBCode tags to be escaped by prefixing them with a backslash.
+			Quotes used in plain-text are always treated as literals and do not need to be escaped.
+			In order to write a literal backslash inside of opening BBCode tags after enabling this escaping syntax, use [code]\\[/code].
+		</member>
+		<member name="escape_brackets" type="int" setter="set_escape_brackets" getter="get_escape_brackets" enum="BBCodeParser.EscapeBrackets" is_bitfield="true" default="0">
+			Configure which syntax is supported for escaping brackets. Instead of parsing these brackets as part of tags, they are instead treated as text that contains literal brackets.
+			[b]Note:[/b] When specifying a parameter value in BBCode surrounded with quotes, the contents are handled verbatim, including brackets. Every escape mode except for [constant ESCAPE_BRACKETS_BACKSLASH] is not respected and will be left unchanged.
+		</member>
+	</members>
+	<constants>
+		<constant name="ESCAPE_BRACKETS_NONE" value="0" enum="EscapeBrackets" is_bitfield="true">
+			Brackets can not be escaped.
+		</constant>
+		<constant name="ESCAPE_BRACKETS_WRAPPED" value="1" enum="EscapeBrackets" is_bitfield="true">
+			Brackets are escaped by wrapping the literal bracket into a tag: [code][[][/code] and [code][]][/code].
+		</constant>
+		<constant name="ESCAPE_BRACKETS_BACKSLASH" value="2" enum="EscapeBrackets" is_bitfield="true">
+			Brackets are escaped by prefixing the bracket with a backslash: [code]\[[/code] and [code]\][/code].
+			In order to write a literal backslash after enabling this escape syntax, use [code]\\[/code].
+		</constant>
+		<constant name="ESCAPE_BRACKETS_ABBREVIATION" value="4" enum="EscapeBrackets" is_bitfield="true">
+			Brackets are escaped by using special abbreviated tags: [code][lb][/code] for opening bracket and [code][rb][/code] for closing bracket.
+		</constant>
+	</constants>
 </class>

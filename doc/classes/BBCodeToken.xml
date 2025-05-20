@@ -13,11 +13,22 @@
 		<member name="parameters" type="Dictionary" setter="set_parameters" getter="get_parameters" default="{}">
 			For opening tags, this contains the names and values of all parameters. Values are strings, except for parameters without an explicit value, as they have [code]null[/code] as their value instead.
 		</member>
-		<member name="type" type="int" setter="set_token_type" getter="get_token_type" default="0">
+		<member name="type" type="int" setter="set_token_type" getter="get_token_type" enum="BBCodeToken.TokenType" default="0">
 			Type of BBCode token.
 		</member>
 		<member name="value" type="String" setter="set_value" getter="get_value" default="&quot;&quot;">
 			For text tokens, this is the text itself. For tags, it is the name of the tag.
 		</member>
 	</members>
+	<constants>
+		<constant name="TOKEN_TYPE_TEXT" value="0" enum="TokenType">
+			Literal text. [member value] contains the text.
+		</constant>
+		<constant name="TOKEN_TYPE_OPEN_TAG" value="1" enum="TokenType">
+			Opening tag. [member value] contains the tag name and [member parameters] is filled.
+		</constant>
+		<constant name="TOKEN_TYPE_CLOSE_TAG" value="2" enum="TokenType">
+			Closing tag. [member value] contains the tag name.
+		</constant>
+	</constants>
 </class>

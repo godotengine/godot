@@ -37,14 +37,14 @@ class BBCodeToken : public Object {
 	GDCLASS(BBCodeToken, Object);
 
 public:
-	enum Type {
-		TEXT,
-		OPEN_TAG,
-		CLOSE_TAG,
+	enum TokenType {
+		TOKEN_TYPE_TEXT,
+		TOKEN_TYPE_OPEN_TAG,
+		TOKEN_TYPE_CLOSE_TAG,
 	};
 
 private:
-	int type;
+	TokenType type = TokenType::TOKEN_TYPE_TEXT;
 	String value;
 	Dictionary parameters;
 
@@ -52,8 +52,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	int get_type() const { return type; }
-	void set_type(int p_type) { type = p_type; }
+	TokenType get_type() const { return type; }
+	void set_type(TokenType p_type) { type = p_type; }
 	String get_value() const { return value; }
 	void set_value(String p_value) { value = p_value; }
 	Dictionary get_parameters() const { return parameters; }
@@ -63,13 +63,23 @@ public:
 class BBCodeParser : public Resource {
 	GDCLASS(BBCodeParser, Resource);
 
+public:
+	enum EscapeBrackets {
+		ESCAPE_BRACKETS_NONE = 0,
+		ESCAPE_BRACKETS_WRAPPED = (1 << 0),
+		ESCAPE_BRACKETS_BACKSLASH = (1 << 1),
+		ESCAPE_BRACKETS_ABBREVIATION = (1 << 2),
+	};
+
 protected:
 	static void _bind_methods();
 
 	GDVIRTUAL2RC(Dictionary, _validate_tag, String, Dictionary)
 	GDVIRTUAL1RC(Error, _validate_text, String)
 
+	bool backslash_escape_quotes = true;
 	bool escape_contents = false;
+	BitField<EscapeBrackets> escape_brackets = ESCAPE_BRACKETS_NONE;
 	Error error = OK;
 	Vector<BBCodeToken *> tokens;
 	Vector<String> tag_stack;
@@ -91,6 +101,12 @@ public:
 	Error get_error() const { return error; }
 	TypedArray<BBCodeToken> get_items() const;
 
+	EscapeBrackets get_escape_brackets() const { return escape_brackets; }
+	void set_escape_brackets(const EscapeBrackets p_value) { escape_brackets = p_value; }
+
+	bool get_backslash_escape_quotes() const { return backslash_escape_quotes; }
+	void set_backslash_escape_quotes(const bool p_value) { backslash_escape_quotes = p_value; }
+
 	void clear();
 	void push_bbcode(const String &p_bbcode);
 	void push_text(const String &p_text);
@@ -99,3 +115,6 @@ public:
 
 	~BBCodeParser();
 };
+
+VARIANT_ENUM_CAST(BBCodeToken::TokenType);
+VARIANT_BITFIELD_CAST(BBCodeParser::EscapeBrackets);
