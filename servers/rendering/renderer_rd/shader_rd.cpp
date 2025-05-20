@@ -508,7 +508,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 void ShaderRD::_save_to_cache(Version *p_version, int p_group) {
 	ERR_FAIL_COND(!shader_cache_dir_valid);
 	const String &path = _get_cache_file_path(p_version, p_group);
-	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE, nullptr, FileAccess::SAVE_INTEGRITY_SAVE_SWAP);
 	ERR_FAIL_COND(f.is_null());
 	f->store_buffer((const uint8_t *)shader_file_header, 4);
 	f->store_32(cache_file_version); // File version.

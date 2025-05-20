@@ -61,7 +61,7 @@ Error FileAccessUnixPipe::open_existing(int p_rfd, int p_wfd, bool p_blocking) {
 	return OK;
 }
 
-Error FileAccessUnixPipe::open_internal(const String &p_path, int p_mode_flags) {
+Error FileAccessUnixPipe::open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) {
 	_close();
 
 	path_src = p_path;

@@ -54,7 +54,7 @@ Error FileAccessWindowsPipe::open_existing(HANDLE p_rfd, HANDLE p_wfd, bool p_bl
 	return OK;
 }
 
-Error FileAccessWindowsPipe::open_internal(const String &p_path, int p_mode_flags) {
+Error FileAccessWindowsPipe::open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) {
 	_close();
 
 	path_src = p_path;

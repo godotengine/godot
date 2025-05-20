@@ -162,7 +162,7 @@ public:
 
 class ResourceFormatSaverCrypto : public ResourceFormatSaver {
 public:
-	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT) override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 };

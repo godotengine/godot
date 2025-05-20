@@ -35,15 +35,18 @@
 #include "core/io/file_access.h"
 #include "core/io/stream_peer.h"
 
-Error save_dds(const String &p_path, const Ref<Image> &p_img) {
+Error save_dds(const String &p_path, const Ref<Image> &p_img, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Vector<uint8_t> buffer = save_dds_buffer(p_img);
 
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE);
-	if (file.is_null()) {
-		return ERR_CANT_CREATE;
-	}
+	Error err;
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
+	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save DDS at path: '%s'.", p_path));
 
 	file->store_buffer(buffer.ptr(), buffer.size());
+
+	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
+		return ERR_CANT_CREATE;
+	}
 
 	return OK;
 }

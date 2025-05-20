@@ -232,7 +232,7 @@ ZipArchive::~ZipArchive() {
 	packages.clear();
 }
 
-Error FileAccessZip::open_internal(const String &p_path, int p_mode_flags) {
+Error FileAccessZip::open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) {
 	_close();
 
 	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, FAILED);
@@ -333,7 +333,7 @@ void FileAccessZip::close() {
 }
 
 FileAccessZip::FileAccessZip(const String &p_path, const PackedData::PackedFile &p_file) {
-	open_internal(p_path, FileAccess::READ);
+	open_internal(p_path, FileAccess::READ, SAVE_INTEGRITY_NONE);
 }
 
 FileAccessZip::~FileAccessZip() {
