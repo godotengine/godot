@@ -13,7 +13,7 @@
 		<member name="parameters" type="Dictionary" setter="set_parameters" getter="get_parameters" default="{}">
 			For opening tags, this contains the names and values of all parameters. Values are strings, except for parameters without an explicit value, as they have [code]null[/code] as their value instead.
 		</member>
-		<member name="type" type="int" setter="set_type" getter="get_type" default="0">
+		<member name="type" type="int" setter="set_token_type" getter="get_token_type" default="0">
 			Type of BBCode token.
 		</member>
 		<member name="value" type="String" setter="set_value" getter="get_value" default="&quot;&quot;">
