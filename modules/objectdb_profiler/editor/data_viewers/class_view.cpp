@@ -149,7 +149,7 @@ void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsh
 		classes_todo.push_front(c);
 	}
 	while (classes_todo.size() > 0) {
-		String next_class_name = classes_todo.get(0);
+		String next_class_name = classes_todo.front()->get();
 		classes_todo.pop_front();
 		ClassData &next = grouped_by_class[next_class_name];
 		ClassData &nexts_parent = grouped_by_class[next.parent_class_name];

@@ -130,7 +130,7 @@ void SnapshotNodeView::_node_selected(Tree *p_tree_selected_from) {
 		return;
 	}
 	if (objects.size() == 1) {
-		EditorNode::get_singleton()->push_item((Object *)objects.get(0));
+		EditorNode::get_singleton()->push_item((Object *)objects.front()->get());
 	}
 	if (objects.size() == 2) {
 		// This happens if we're in the combined diff view and the node exists in both trees
@@ -223,11 +223,11 @@ void SnapshotNodeView::_add_tree_item_owner(TreeItem *p_item, SnapshotDataObject
 
 void SnapshotNodeView::_refresh_icons() {
 	for (TreeItem *item : _get_children_recursive(main_tree.tree)) {
-		item->set_icon(0, EditorNode::get_singleton()->get_class_icon(tree_item_owners[item].get(0)->type_name, ""));
+		item->set_icon(0, EditorNode::get_singleton()->get_class_icon(tree_item_owners[item].front()->get()->type_name, ""));
 	}
 	if (diff_tree.tree) {
 		for (TreeItem *item : _get_children_recursive(diff_tree.tree)) {
-			item->set_icon(0, EditorNode::get_singleton()->get_class_icon(tree_item_owners[item].get(0)->type_name, ""));
+			item->set_icon(0, EditorNode::get_singleton()->get_class_icon(tree_item_owners[item].front()->get()->type_name, ""));
 		}
 	}
 }

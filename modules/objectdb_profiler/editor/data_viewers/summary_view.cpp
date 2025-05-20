@@ -183,11 +183,6 @@ void SnapshotSummaryView::_push_overview_blurb(const String &p_title, GameStateS
 	if (p_snapshot->snapshot_context.has("mem_max_usage")) {
 		c += vformat(" [i]%s[/i] %s\n", TTR("Max Memory Used:"), String::num((double)((uint64_t)p_snapshot->snapshot_context["mem_max_usage"]) * bytes_to_mb, 3) + " MB");
 	}
-	if (p_snapshot->snapshot_context.has("mem_available")) {
-		// I'm guessing pretty hard about what this is supposed to be. It's hard coded to be -1 cast to a uint64_t in Memory.h,
-		// so it _could_ be checking if we're on a 64 bit system, I think...
-		c += vformat(" [i]%s[/i] %s\n", TTR("Max uint64 Value:"), String::num_uint64((uint64_t)p_snapshot->snapshot_context["mem_available"]));
-	}
 	c += vformat(" [i]%s[/i] %s\n", TTR("Total Objects:"), itos(p_snapshot->objects.size()));
 
 	int node_count = 0;
