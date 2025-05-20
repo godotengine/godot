@@ -266,27 +266,52 @@ void BBCodeParser::clear() {
 }
 
 void BBCodeParser::push_bbcode(const String &p_bbcode) {
+	String bbcode = p_bbcode;
 	int pos = 0;
-	while (pos <= p_bbcode.length()) {
-		// TODO: must properly handle backslash escaping of brackets, based on settings
-		int brk_pos = p_bbcode.find_char('[', pos);
-
-		if (brk_pos < 0) {
-			brk_pos = p_bbcode.length();
+	int escape_pos = -1;
+	while (pos <= bbcode.length()) {
+		if (escape_brackets & ESCAPE_BRACKETS_BACKSLASH) {
+			if (pos < bbcode.length()) {
+				int escape_char_pos = bbcode.find_char('\\', escape_pos + 1);
+				if (escape_char_pos >= 0) {
+					const char32_t peek = bbcode[escape_char_pos + 1];
+					switch (peek) {
+						case '[':
+							// brk_pos should skip over the escaped opening bracket.
+							escape_pos = escape_char_pos;
+							[[fallthrough]];
+						case ']':
+						case '\\':
+							// Remove the leading backslash.
+							bbcode.remove_at(escape_char_pos);
+							break;
+					}
+					if (escape_pos >= 0) {
+						continue;
+					}
+				}
+			}
 		}
 
-		String txt = brk_pos > pos ? p_bbcode.substr(pos, brk_pos - pos) : "";
+		int brk_pos = bbcode.find_char('[', escape_pos < 0 ? pos : (escape_pos + 1));
+		escape_pos = -1;
+
+		if (brk_pos < 0) {
+			brk_pos = bbcode.length();
+		}
+
+		String txt = brk_pos > pos ? bbcode.substr(pos, brk_pos - pos) : "";
 
 		if (!txt.is_empty()) {
 			push_text(txt);
 		}
 
-		if (brk_pos == p_bbcode.length()) {
+		if (brk_pos == bbcode.length()) {
 			break; // Nothing else to add.
 		}
 
 		if (escape_brackets & ESCAPE_BRACKETS_WRAPPED) {
-			String escape = p_bbcode.substr(brk_pos, 3);
+			String escape = bbcode.substr(brk_pos, 3);
 			if (escape == "[[]") {
 				push_text("[");
 				pos = brk_pos + 3;
@@ -300,7 +325,7 @@ void BBCodeParser::push_bbcode(const String &p_bbcode) {
 
 		String tag;
 		Dictionary parameters;
-		_parse_tag(p_bbcode, brk_pos + 1, tag, parameters, pos);
+		_parse_tag(bbcode, brk_pos + 1, tag, parameters, pos);
 		// Move after the closing brace.
 		pos++;
 
@@ -324,7 +349,7 @@ void BBCodeParser::push_bbcode(const String &p_bbcode) {
 			if (tag_stack[tag_stack.size() - 1] == tag) {
 				escape_contents = false;
 			} else {
-				push_text(p_bbcode.substr(brk_pos, pos - brk_pos));
+				push_text(bbcode.substr(brk_pos, pos - brk_pos));
 				continue;
 			}
 		}
