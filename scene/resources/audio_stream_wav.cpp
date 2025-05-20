@@ -695,7 +695,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 	// Let users override potential loop points from the WAV.
 	// We parse the WAV loop points only with "Detect From WAV" (0).
-	int import_loop_mode = p_options["edit/loop_mode"];
+	int import_loop_mode = p_options.get("edit/loop_mode", 0);
 
 	uint16_t format_bits = 0;
 	uint16_t format_channels = 0;
@@ -933,8 +933,8 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 	//apply frequency limit
 
-	bool limit_rate = p_options["force/max_rate"];
-	uint32_t limit_rate_hz = p_options["force/max_rate_hz"];
+	bool limit_rate = p_options.get("force/max_rate", false);
+	uint32_t limit_rate_hz = p_options.get("force/max_rate_hz", 0);
 	if (limit_rate && rate > limit_rate_hz && rate > 0 && frames > 0) {
 		// resample!
 		int64_t new_data_frames = (int64_t)(frames * (float)limit_rate_hz / (float)rate);
@@ -975,7 +975,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		frames = new_data_frames;
 	}
 
-	bool normalize = p_options["edit/normalize"];
+	bool normalize = p_options.get("edit/normalize", false);
 
 	if (normalize) {
 		float max = 0.0;
@@ -994,7 +994,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		}
 	}
 
-	bool trim = p_options["edit/trim"];
+	bool trim = p_options.get("edit/trim", false);
 
 	if (trim && (loop_mode == AudioStreamWAV::LOOP_DISABLED) && format_channels > 0) {
 		int64_t first = 0;
@@ -1042,8 +1042,8 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 	if (import_loop_mode >= 2) {
 		loop_mode = (AudioStreamWAV::LoopMode)(import_loop_mode - 1);
-		loop_begin = p_options["edit/loop_begin"];
-		loop_end = p_options["edit/loop_end"];
+		loop_begin = p_options.get("edit/loop_begin", 0);
+		loop_end = p_options.get("edit/loop_end", 0);
 		// Wrap around to max frames, so `-1` can be used to select the end, etc.
 		if (loop_begin < 0) {
 			loop_begin = CLAMP(loop_begin + frames, 0, frames - 1);
@@ -1053,8 +1053,8 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		}
 	}
 
-	int compression = p_options["compress/mode"];
-	bool force_mono = p_options["force/mono"];
+	int compression = p_options.get("compress/mode", 0);
+	bool force_mono = p_options.get("force/mono", false);
 
 	if (force_mono && format_channels == 2) {
 		Vector<float> new_data;
@@ -1067,7 +1067,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		format_channels = 1;
 	}
 
-	bool force_8_bit = p_options["force/8_bit"];
+	bool force_8_bit = p_options.get("force/8_bit", false);
 	if (force_8_bit) {
 		is16 = false;
 	}
