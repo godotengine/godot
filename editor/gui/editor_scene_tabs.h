@@ -47,7 +47,7 @@ class EditorSceneTabs : public MarginContainer {
 
 public:
 	enum {
-		SCENE_SHOW_IN_FILESYSTEM = 3000, // Prevents conflicts with EditorNode options.
+		SCENE_SHOW_IN_FILESYSTEM = 1000, // Prevents conflicts with EditorNode options.
 		SCENE_RUN,
 		SCENE_CLOSE_OTHERS,
 		SCENE_CLOSE_RIGHT,
