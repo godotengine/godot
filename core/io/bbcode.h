@@ -97,6 +97,5 @@ public:
 	void push_open_tag(const String &p_tag, const Dictionary &p_parameters);
 	void push_close_tag(const String &p_tag);
 
-	BBCodeParser();
 	~BBCodeParser();
 };

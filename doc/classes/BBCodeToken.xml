@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BBCodeToken" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		BBCode tokens of a [BBCodeParser].
+	</brief_description>
+	<description>
+		BBCode tokens generated from calls to [method BBCodeParser.get_items].
+		[b]Note:[/b] When the parser is cleared or freed, all of its tokens are also freed. Do not hold on to references of tokens for longer than necessary.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="parameters" type="Dictionary" setter="set_parameters" getter="get_parameters" default="{}">
+			For opening tags, this contains the names and values of all parameters. Values are strings, except for parameters without an explicit value, as they have [code]null[/code] as their value instead.
+		</member>
+		<member name="type" type="int" setter="set_type" getter="get_type" default="0">
+			Type of BBCode token.
+		</member>
+		<member name="value" type="String" setter="set_value" getter="get_value" default="&quot;&quot;">
+			For text tokens, this is the text itself. For tags, it is the name of the tag.
+		</member>
+	</members>
+</class>

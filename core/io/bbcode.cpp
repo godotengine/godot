@@ -40,7 +40,7 @@ void BBCodeToken::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type"); // TODO: bind enum
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "value"), "set_value", "get_value");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "parameters"), "set_parameters", "get_parameters");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "parameters", PROPERTY_HINT_DICTIONARY_TYPE, "String;Variant"), "set_parameters", "get_parameters");
 }
 
 Dictionary BBCodeParser::validate_tag(const String &p_tag, const Dictionary &p_parameters) {
@@ -351,10 +351,6 @@ void BBCodeParser::_bind_methods() {
 
 	GDVIRTUAL_BIND(_validate_tag, "tag", "parameters")
 	GDVIRTUAL_BIND(_validate_text, "text")
-}
-
-BBCodeParser::BBCodeParser() {
-	set_local_to_scene(true);
 }
 
 BBCodeParser::~BBCodeParser() {

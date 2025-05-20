@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BBCodeParser" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Parser for BBCode.
+	</brief_description>
+	<description>
+		Configurable parser for BBCode strings, converting them to a list of tokens.
+		Validate methods can be overridden to create parser errors for determining invalid tag names or parameters.
+		Push methods can be called multiple times, keeping the current stack of tags and previously parsed tokens in memory.
+		[b]Note:[/b] When the parser is cleared or freed, all of its tokens are also freed. Do not hold on to references of tokens for longer than necessary.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_validate_tag" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="tag" type="String" />
+			<param index="1" name="parameters" type="Dictionary" />
+			<description>
+				Check whether the specified [param tag] with [param parameters] is valid. This gets called while parsing BBCode tags to decide whether parsing should be successful.
+			</description>
+		</method>
+		<method name="_validate_text" qualifiers="virtual const">
+			<return type="int" enum="Error" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Check whether the specified [param text] is valid. This gets called while parsing plain-text to decide whether parsing should be successful.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clear the list of previously parsed tokens stored in this parser.
+				[b]Note:[/b] Upon calling this method, all of the tokens are also freed. Do not hold on to references of tokens for longer than necessary.
+			</description>
+		</method>
+		<method name="get_error" qualifiers="const">
+			<return type="int" enum="Error" />
+			<description>
+				Returns the last error encountered during parsing of BBCode.
+				This includes syntax errors, as well as validation errors triggered by the various validate methods.
+			</description>
+		</method>
+		<method name="get_items" qualifiers="const">
+			<return type="BBCodeToken[]" />
+			<description>
+				Returns the list of tokens parsed by this parser.
+			</description>
+		</method>
+		<method name="push_bbcode">
+			<return type="void" />
+			<param index="0" name="bbcode" type="String" />
+			<description>
+				Append a string containing BBCode.
+			</description>
+		</method>
+		<method name="push_close_tag">
+			<return type="void" />
+			<param index="0" name="tag" type="String" />
+			<description>
+				Append a closing BBCode tag.
+			</description>
+		</method>
+		<method name="push_open_tag">
+			<return type="void" />
+			<param index="0" name="tag" type="String" />
+			<param index="1" name="parameters" type="Dictionary" />
+			<description>
+				Append an opening BBCode tag.
+			</description>
+		</method>
+		<method name="push_text">
+			<return type="void" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Append plain-text string. Brackets are automatically escaped and treated literally.
+			</description>
+		</method>
+		<method name="validate_tag">
+			<return type="Dictionary" />
+			<param index="0" name="tag" type="String" />
+			<param index="1" name="parameters" type="Dictionary" />
+			<description>
+				Check whether the specified [param tag] with [param parameters] is valid. This gets called while parsing BBCode tags to decide whether parsing should be successful.
+				For the default [BBCodeParser], every tag is considered valid. However, sub-classes can override [method _validate_tag] to configure this behavior.
+			</description>
+		</method>
+		<method name="validate_text">
+			<return type="int" enum="Error" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Check whether the specified [param text] is valid. This gets called while parsing plain-text to decide whether parsing should be successful.
+				For the default [BBCodeParser], all text is considered valid. However, sub-classes can override [method _validate_text] to configure this behavior.
+			</description>
+		</method>
+	</methods>
+</class>
