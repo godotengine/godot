@@ -131,6 +131,7 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 #ifndef DISABLE_DEPRECATED
 	void _push_font_bind_compat_79053(const Ref<Font> &p_font, int p_size);
@@ -702,6 +703,7 @@ private:
 #endif
 	bool use_bbcode = false;
 	String text;
+	String bbcode_prefix;
 	void _apply_translation();
 
 	bool internal_stack_editing = false;
@@ -922,6 +924,9 @@ public:
 
 	void set_text(const String &p_bbcode);
 	String get_text() const;
+
+	void set_bbcode_prefix(const String &p_prefix);
+	String get_bbcode_prefix() const;
 
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;
