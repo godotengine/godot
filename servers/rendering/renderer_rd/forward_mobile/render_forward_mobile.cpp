@@ -1050,7 +1050,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	{
 		base_specialization.use_directional_soft_shadows = p_render_data->directional_light_count > 0 ? p_render_data->directional_light_soft_shadows : false;
-		base_specialization.directional_lights = p_render_data->directional_light_count;
+		base_specialization.directional_lights = SceneShaderForwardMobile::shader_count_for(p_render_data->directional_light_count);
 		base_specialization.directional_light_blend_splits = light_storage->get_directional_light_blend_splits(p_render_data->directional_light_count);
 
 		if (!is_environment(p_render_data->environment) || !environment_get_fog_enabled(p_render_data->environment)) {
@@ -2214,10 +2214,10 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		} else {
 			pipeline_specialization.use_light_projector = inst->use_projector;
 			pipeline_specialization.use_light_soft_shadows = inst->use_soft_shadow;
-			pipeline_specialization.omni_lights = inst->omni_light_count;
-			pipeline_specialization.spot_lights = inst->spot_light_count;
-			pipeline_specialization.reflection_probes = inst->reflection_probe_count;
-			pipeline_specialization.decals = inst->decals_count;
+			pipeline_specialization.omni_lights = SceneShaderForwardMobile::shader_count_for(inst->omni_light_count);
+			pipeline_specialization.spot_lights = SceneShaderForwardMobile::shader_count_for(inst->spot_light_count);
+			pipeline_specialization.reflection_probes = SceneShaderForwardMobile::shader_count_for(inst->reflection_probe_count);
+			pipeline_specialization.decals = inst->decals_count > 0;
 
 #ifdef DEBUG_ENABLED
 			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
