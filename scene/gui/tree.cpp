@@ -5787,11 +5787,6 @@ String Tree::get_column_title(int p_column) const {
 
 void Tree::set_column_title_tooltip_text(int p_column, const String &p_tooltip) {
 	ERR_FAIL_INDEX(p_column, columns.size());
-
-	if (columns.write[p_column].title_tooltip == p_tooltip) {
-		return;
-	}
-
 	columns.write[p_column].title_tooltip = p_tooltip;
 }
 

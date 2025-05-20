@@ -56,7 +56,7 @@ DarkPanelContainer::DarkPanelContainer() {
 	Ref<StyleBoxFlat> content_wrapper_sbf;
 	content_wrapper_sbf.instantiate();
 	content_wrapper_sbf->set_bg_color(EditorNode::get_singleton()->get_editor_theme()->get_color("dark_color_2", "Editor"));
-	add_theme_style_override("panel", content_wrapper_sbf);
+	add_theme_style_override(SceneStringName(panel), content_wrapper_sbf);
 }
 
 void TreeSortAndFilterBar::_apply_filter(TreeItem *p_current_node) {

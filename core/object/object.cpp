@@ -2336,6 +2336,7 @@ void postinitialize_handler(Object *p_object) {
 
 void ObjectDB::debug_objects(DebugFunc p_func, void *p_user_data) {
 	spin_lock.lock();
+
 	for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
 		if (object_slots[i].validator) {
 			p_func(object_slots[i].object, p_user_data);
@@ -2507,7 +2508,7 @@ void ObjectDB::cleanup() {
 						extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
 					}
 					if (obj->is_class("RefCounted")) {
-						extra_info = " - RefCount: " + itos(((RefCounted *)obj)->get_reference_count());
+						extra_info = " - Reference count: " + itos((static_cast<RefCounted *>(obj))->get_reference_count());
 					}
 
 					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_SLOT_MAX_COUNT_BITS) | (object_slots[i].is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);

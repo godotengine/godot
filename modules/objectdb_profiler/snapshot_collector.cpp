@@ -37,8 +37,6 @@
 #include "scene/main/node.h"
 #include "scene/main/window.h"
 
-HashMap<int, Vector<uint8_t>> SnapshotCollector::pending_snapshots;
-
 void SnapshotCollector::initialize() {
 	pending_snapshots.clear();
 	EngineDebugger::register_message_capture("snapshot", EngineDebugger::Capture(nullptr, SnapshotCollector::parse_message));
@@ -69,15 +67,10 @@ void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_co
 		ObjectID oid = ids.first;
 		Object *obj = ObjectDB::get_instance(oid);
 
-		if (obj == nullptr) {
-			print_error("An object was deleted while the ObjectDB was being snapshotted. \
-				The debugger is automatically paused when snapshots are taken, so this should not happen. \
-				The missing object's ID was " +
-					String::num_uint64(oid) + ". \
-				 It's class was " +
-					ids.second + ". Consider reporting this.");
-			continue;
-		}
+		ERR_CONTINUE_MSG(obj == nullptr, vformat("An object was deleted while the ObjectDB was being snapshotted. This should not happen. "
+												 "The missing object's ID was %ud. Its class was '%s'. "
+												 "Consider reporting this.",
+												 (uint64_t)oid, ids.second));
 
 		if (obj->get_class_name() == SNAME("EditorInterface")) {
 			// The EditorInterface + EditorNode is _kind of_ constructored in a debug game, but many properties rae null
@@ -115,7 +108,6 @@ void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_co
 	}
 
 	// Add a header to the snapshot with general data about the state of the game, not tied to any particular object.
-	p_snapshot_context["mem_available"] = Memory::get_mem_available();
 	p_snapshot_context["mem_usage"] = Memory::get_mem_usage();
 	p_snapshot_context["mem_max_usage"] = Memory::get_mem_max_usage();
 	p_snapshot_context["timestamp"] = Time::get_singleton()->get_unix_time_from_system();
@@ -136,7 +128,7 @@ Error SnapshotCollector::parse_message(void *p_user, const String &p_msg, const 
 		Dictionary snapshot_context;
 		snapshot_context["editor_version"] = (String)p_args.get(1);
 		Array objects;
-		SnapshotCollector::snapshot_objects(&objects, snapshot_context);
+		snapshot_objects(&objects, snapshot_context);
 		// Debugger networking has a limit on both how many objects can be queued to send and how
 		// many bytes can be queued to send. Serializing to a string means we never hit the object
 		// limit, and only have to deal with the byte limit.

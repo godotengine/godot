@@ -120,7 +120,7 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 
 void ObjectDBProfilerPanel::receive_snapshot(int request_id) {
 	const Vector<uint8_t> &in_data = partial_snapshots[request_id].data;
-	String snapshot_file_name = Time::get_singleton()->get_datetime_string_from_system(false).replace("T", "_").replace(":", "-");
+	String snapshot_file_name = Time::get_singleton()->get_datetime_string_from_system(false).replace_char('T', '_').replace_char(':', '-');
 	Ref<DirAccess> snapshot_dir = _get_and_create_snapshot_storage_dir();
 	if (snapshot_dir.is_valid()) {
 		Error err;
@@ -404,10 +404,8 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 	if (snapshot_dir.is_valid()) {
 		for (const String &file_name : snapshot_dir->get_files()) {
 			Vector<String> name_parts = file_name.split(".");
-			if (name_parts.size() != 2 || name_parts[1] != "odb_snapshot") {
-				ERR_PRINT("ObjectDB Snapshot file did not have .odb_snapshot extension. Skipping: " + file_name);
-				continue;
-			}
+			ERR_CONTINUE_MSG(name_parts.size() != 2 || name_parts[1] != "odb_snapshot", "ObjectDB snapshot file did not have .odb_snapshot extension. Skipping: " + file_name);
+			_add_snapshot_button(name_parts[0], snapshot_dir->get_current_dir().path_join(file_name));
 		}
 	}
 }
