@@ -42,6 +42,7 @@
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
+#include "core/io/bbcode.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/dtls_server.h"
@@ -275,6 +276,9 @@ void register_core_types() {
 	GDREGISTER_CLASS(PackedDataContainer);
 	GDREGISTER_ABSTRACT_CLASS(PackedDataContainerRef);
 #endif
+
+	GDREGISTER_CLASS(BBCodeToken);
+	GDREGISTER_CLASS(BBCodeParser);
 
 	GDREGISTER_ABSTRACT_CLASS(ImageFormatLoader);
 	GDREGISTER_CLASS(ImageFormatLoaderExtension);
