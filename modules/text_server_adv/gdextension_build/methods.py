@@ -1,5 +1,10 @@
-def disable_warnings(self):
-    # 'self' is the environment
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons.Script.SConscript import SConsEnvironment
+
+
+def disable_warnings(self: "SConsEnvironment") -> None:
     if self["platform"] == "windows" and not self["use_mingw"]:
         # We have to remove existing warning level defines before appending /w,
         # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
@@ -12,7 +17,7 @@ def disable_warnings(self):
         self.AppendUnique(CCFLAGS=["-w"])
 
 
-def prepare_timer():
+def prepare_timer() -> None:
     import atexit
     import time
 
@@ -49,7 +54,7 @@ def make_icu_data(target, source, env):
         g.write("#endif")
 
 
-def write_macos_plist(target, binary_name, identifier, name):
+def write_macos_plist(target: str, binary_name: str, identifier: str, name: str) -> None:
     import os
 
     os.makedirs(f"{target}/Resource/", exist_ok=True)

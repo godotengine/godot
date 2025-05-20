@@ -1,7 +1,10 @@
 """Functions used to generate source files during build time"""
 
 import os.path
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from godot_typing import GodotSConsEnvironment
 from methods import generated_wrapper, print_error, to_raw_cstring
 
 
@@ -130,7 +133,7 @@ public:
 """)
 
 
-def build_rd_headers(target, source, env):
+def build_rd_headers(target, source, env: "GodotSConsEnvironment"):
     env.NoCache(target)
     for src in source:
         build_rd_header(f"{src}.gen.h", str(src))
@@ -169,7 +172,7 @@ static const char {os.path.basename(shader).replace(".glsl", "_shader_glsl")}[] 
 """)
 
 
-def build_raw_headers(target, source, env):
+def build_raw_headers(target, source, env) -> None:
     env.NoCache(target)
     for src in source:
         build_raw_header(f"{src}.gen.h", str(src))

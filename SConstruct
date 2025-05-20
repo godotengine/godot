@@ -22,7 +22,7 @@ from SCons.Builder import ListEmitter
 # folder when doing `import editor.template_builder`)
 
 
-def _helper_module(name, path):
+def _helper_module(name, path) -> None:
     spec = spec_from_file_location(name, path)
     module = module_from_spec(spec)
     spec.loader.exec_module(module)
