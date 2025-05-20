@@ -96,7 +96,7 @@ void ProjectUpgradeTool::begin_upgrade() {
 }
 
 void ProjectUpgradeTool::finish_upgrade() {
-	EditorNode::get_singleton()->trigger_menu_option(EditorSceneTabs::SCENE_CLOSE_ALL, true);
+	EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_CLOSE_ALL, true);
 
 	Vector<String> paths = EditorSettings::get_singleton()->get_project_metadata(META_PROJECT_UPGRADE_TOOL, META_REIMPORT_PATHS, Vector<String>());
 	EditorFileSystem::get_singleton()->reimport_files(paths);
