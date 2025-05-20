@@ -110,8 +110,8 @@ public:
 	void clear();
 	void push_bbcode(const String &p_bbcode);
 	void push_text(const String &p_text);
-	void push_open_tag(const String &p_tag, const Dictionary &p_parameters);
-	void push_close_tag(const String &p_tag);
+	void push_tag(const String &p_tag, const Dictionary &p_parameters);
+	void pop_tag(const String &p_tag);
 
 	~BBCodeParser();
 };

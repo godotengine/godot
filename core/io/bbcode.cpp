@@ -355,9 +355,9 @@ void BBCodeParser::push_bbcode(const String &p_bbcode) {
 		}
 
 		if (is_closing_tag) {
-			push_close_tag(tag);
+			pop_tag(tag);
 		} else {
-			push_open_tag(tag, parameters);
+			push_tag(tag, parameters);
 		}
 	}
 }
@@ -372,7 +372,7 @@ void BBCodeParser::push_text(const String &p_text) {
 	}
 }
 
-void BBCodeParser::push_open_tag(const String &p_tag, const Dictionary &p_parameters) {
+void BBCodeParser::push_tag(const String &p_tag, const Dictionary &p_parameters) {
 	Dictionary result = validate_tag(p_tag, p_parameters);
 
 	Variant error_var = result.get("error", OK);
@@ -398,7 +398,7 @@ void BBCodeParser::push_open_tag(const String &p_tag, const Dictionary &p_parame
 	}
 }
 
-void BBCodeParser::push_close_tag(const String &p_tag) {
+void BBCodeParser::pop_tag(const String &p_tag) {
 	if (!tag_stack.is_empty()) {
 		const String &top_tag = tag_stack[tag_stack.size() - 1];
 		if (top_tag != p_tag) {
@@ -430,8 +430,8 @@ void BBCodeParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &BBCodeParser::clear);
 	ClassDB::bind_method(D_METHOD("push_bbcode", "bbcode"), &BBCodeParser::push_bbcode);
 	ClassDB::bind_method(D_METHOD("push_text", "text"), &BBCodeParser::push_text);
-	ClassDB::bind_method(D_METHOD("push_open_tag", "tag", "parameters"), &BBCodeParser::push_open_tag);
-	ClassDB::bind_method(D_METHOD("push_close_tag", "tag"), &BBCodeParser::push_close_tag);
+	ClassDB::bind_method(D_METHOD("push_tag", "tag", "parameters"), &BBCodeParser::push_tag);
+	ClassDB::bind_method(D_METHOD("pop_tag", "tag"), &BBCodeParser::pop_tag);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "escape_brackets", PROPERTY_HINT_FLAGS, "Double Brackets,Wrapped Brackets,Backslash,Abbreviation"), "set_escape_brackets", "get_escape_brackets");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "backslash_escape_quotes"), "set_backslash_escape_quotes", "get_backslash_escape_quotes");

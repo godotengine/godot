@@ -47,6 +47,13 @@
 				Returns the list of tokens parsed by this parser.
 			</description>
 		</method>
+		<method name="pop_tag">
+			<return type="void" />
+			<param index="0" name="tag" type="String" />
+			<description>
+				Append a closing BBCode tag. Errors if the specified tag name does not match the last opened tag on the stack.
+			</description>
+		</method>
 		<method name="push_bbcode">
 			<return type="void" />
 			<param index="0" name="bbcode" type="String" />
@@ -54,26 +61,19 @@
 				Append a string containing BBCode.
 			</description>
 		</method>
-		<method name="push_close_tag">
-			<return type="void" />
-			<param index="0" name="tag" type="String" />
-			<description>
-				Append a closing BBCode tag.
-			</description>
-		</method>
-		<method name="push_open_tag">
+		<method name="push_tag">
 			<return type="void" />
 			<param index="0" name="tag" type="String" />
 			<param index="1" name="parameters" type="Dictionary" />
 			<description>
-				Append an opening BBCode tag.
+				Append an opening BBCode tag. Queries [method validate_tag] to determine if the specified tag is valid, auto-escaping or self-closing.
 			</description>
 		</method>
 		<method name="push_text">
 			<return type="void" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Append plain-text string. Brackets are automatically escaped and treated literally.
+				Append plain-text string. The string is pushed verbatim, no escaping is supported. Queries [method validate_text] to determine if the specified text is valid.
 			</description>
 		</method>
 		<method name="validate_tag">
