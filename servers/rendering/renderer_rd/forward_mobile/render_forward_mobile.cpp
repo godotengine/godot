@@ -883,6 +883,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			using_subpass_post_process = false;
 		}
 
+		if (rb->get_screen_space_aa() == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
+			// Can't do blit subpass because we're using FXAA.
+			using_subpass_post_process = false;
+		}
+
 		if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
 			// can't use our last two subpasses because we're reading from screen texture or depth texture
 			merge_transparent_pass = false;
