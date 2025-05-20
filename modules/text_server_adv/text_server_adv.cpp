@@ -6289,7 +6289,7 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 			// No data - use fallback.
 			int limit = 0;
 			for (int i = 0; i < sd->text.length(); i++) {
-				if (is_whitespace(data[i])) {
+				if (is_whitespace(sd->text[i])) {
 					int ks = _generate_kashida_justification_opportunities(sd->text, limit, i) + sd->start;
 					if (ks != -1) {
 						sd->jstops[ks] = true;
