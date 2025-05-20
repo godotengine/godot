@@ -524,6 +524,76 @@ bool JoltPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_paramet
 	return true;
 }
 
+
+int JoltPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_results, int p_result_max) {
+	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "intersect_ray must not be called while the physics space is being stepped.");
+
+	if (p_result_max == 0) {
+		return 0;
+	}
+
+	space->try_optimize();
+
+	const JoltQueryFilter3D query_filter(*this, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.exclude, p_parameters.pick_ray);
+
+	const JPH::RVec3 from = to_jolt_r(p_parameters.from);
+	const JPH::RVec3 to = to_jolt_r(p_parameters.to);
+	const JPH::Vec3 vector = JPH::Vec3(to - from);
+	const JPH::RRayCast ray(from, vector);
+
+	const JPH::EBackFaceMode back_face_mode = p_parameters.hit_back_faces ? JPH::EBackFaceMode::CollideWithBackFaces : JPH::EBackFaceMode::IgnoreBackFaces;
+
+	JPH::RayCastSettings settings;
+	settings.mTreatConvexAsSolid = p_parameters.hit_from_inside;
+	settings.mBackFaceModeTriangles = back_face_mode;
+
+	JoltQueryCollectorAnyMulti<JPH::CastRayCollector, 32> collector(p_result_max);
+	space->get_narrow_phase_query().CastRay(ray, settings, collector, query_filter, query_filter, query_filter);
+
+	const int hit_count = collector.get_hit_count();
+
+	for (int i = 0; i < hit_count; ++i) {
+		const JPH::RayCastResult &hit = collector.get_hit(i);
+
+		const JPH::BodyID &body_id = hit.mBodyID;
+		const JPH::SubShapeID &sub_shape_id = hit.mSubShapeID2;
+
+		const JoltObject3D *object = space->try_get_object(body_id);
+		ERR_FAIL_NULL_V(object, false);
+
+		const JPH::RVec3 position = ray.GetPointOnRay(hit.mFraction);
+
+		JPH::Vec3 normal = JPH::Vec3::sZero();
+
+		RayResult &result = *r_results++;
+
+		if (!p_parameters.hit_from_inside || hit.mFraction > 0.0f) {
+			normal = object->get_jolt_body()->GetWorldSpaceSurfaceNormal(sub_shape_id, position);
+
+			// If we got a back-face normal we need to flip it.
+			if (normal.Dot(vector) > 0) {
+				normal = -normal;
+			}
+		}
+
+		result.position = to_godot(position);
+		result.normal = to_godot(normal);
+		result.rid = object->get_rid();
+		result.collider_id = object->get_instance_id();
+		result.collider = object->get_instance();
+		result.shape = 0;
+
+		if (const JoltShapedObject3D *shaped_object = object->as_shaped()) {
+			const int shape_index = shaped_object->find_shape_index(sub_shape_id);
+			ERR_FAIL_COND_V(shape_index == -1, false);
+			result.shape = shape_index;
+			result.face_index = _try_get_face_index(*object->get_jolt_body(), sub_shape_id);
+		}
+	}
+
+	return hit_count;
+}
+
 int JoltPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "intersect_point must not be called while the physics space is being stepped.");
 
