@@ -4111,18 +4111,36 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
+			bool failed = true;
 			memdelete(rendering_context);
 			rendering_context = nullptr;
+#if defined(METAL_ENABLED)
+			bool fallback_to_metal = GLOBAL_GET("rendering/rendering_device/fallback_to_metal");
+			if (failed && fallback_to_metal && rendering_driver != "metal") {
+				memdelete(rendering_context);
+				rendering_context = memnew(RenderingContextDriverMetal);
+				rendering_driver = "metal";
+				if (rendering_context->initialize() == OK) {
+					WARN_PRINT("Your device seem not to support MoltenVK, switching to Metal.");
+					rendering_driver = "metal";
+					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+					failed = false;
+				}
+			}
+#endif
 #if defined(GLES3_ENABLED)
 			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
+			if (failed && fallback_to_opengl3 && rendering_driver != "opengl3") {
+				failed = false;
+				memdelete(rendering_context);
+				rendering_context = nullptr;
 				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
 				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-			} else
+			}
 #endif
-			{
+			if (failed) {
 				r_error = ERR_CANT_CREATE;
 				ERR_FAIL_MSG("Could not initialize " + rendering_driver);
 			}

@@ -3173,6 +3173,10 @@
 			If [code]true[/code], the forward renderer will fall back to Direct3D 12 if Vulkan is not supported. The fallback is always attempted regardless of this setting if Vulkan driver support was disabled at compile time.
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
+		<member name="rendering/rendering_device/fallback_to_metal" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the forward renderer will fall back to Metal if Vulkan is not supported.
+			[b]Note:[/b] This setting is implemented only on macOS and iOS.
+		</member>
 		<member name="rendering/rendering_device/fallback_to_opengl3" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the forward renderer will fall back to OpenGL 3 if Direct3D 12, Metal, and Vulkan are not supported.
 			[b]Note:[/b] This setting is implemented on Windows, Android, macOS, iOS, and Linux/X11.
